@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbZGDJWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbZGDJal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbZGDJWe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 05:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZGDJWX
+	id S1755462AbZGDJal (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 05:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZGDJab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 05:22:23 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38605 "EHLO mail.dvmed.net"
+	Sat, 4 Jul 2009 05:30:31 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36000 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751414AbZGDJWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 05:22:22 -0400
-Message-ID: <4A4F1EA0.3070501@garzik.org>
-Date: Sat, 04 Jul 2009 05:19:28 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751414AbZGDJa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 05:30:29 -0400
+Date: Sat, 4 Jul 2009 11:29:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: Greg KH <greg@kroah.com>, Robert Hancock <hancockr@shaw.ca>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-pci@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Daniel Ritz <daniel.ritz@gmx.ch>,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Axel Birndt <towerlexa@gmx.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/3] pci: determine CLS more intelligently
+Message-ID: <20090704092956.GA26456@elte.hu>
+References: <4A4EE3E9.7090205@kernel.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Arjan van de Ven <arjan@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       Chinang Ma <chinang.ma@intel.com>,
-       "Prickett, Terry O" <terry.o.prickett@intel.com>,
-       Matthew Wilcox <matthew.r.wilcox@intel.com>, Eric.Moore@lsi.com,
-       DL-MPTFusionLinux@lsi.com, NetDev <netdev@vger.kernel.org>
-Subject: Re: >10% performance degradation since 2.6.18
-References: <20090703025607.GK5480@parisc-linux.org> <87skhdaaub.fsf@basil.nowhere.org> <20090703185414.GP23611@kernel.dk> <20090703191321.GO5480@parisc-linux.org> <20090703192235.GV23611@kernel.dk> <20090703194557.GQ5480@parisc-linux.org> <20090703195458.GK2041@one.firstfloor.org> <20090703130421.646fe5cb@infradead.org> <20090703233505.GL2041@one.firstfloor.org> <20090703230408.4433ee39@infradead.org> <20090704084430.GO2041@one.firstfloor.org>
-In-Reply-To: <20090704084430.GO2041@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A4EE3E9.7090205@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> for networking, especially for incoming data such as new connections,
->> that isn't the case.. that's more or less randomly (well hash based)
->> distributed.
+
+* Tejun Heo <tj@kernel.org> wrote:
+
+> Till now, CLS has been determined either by arch code or as 
+> L1_CACHE_BYTES.  Only x86 and ia64 set CLS explicitly and x86 
+> doesn't always get it right.  On most configurations, the chance 
+> is that firmware configures the correct value during boot.
 > 
-> Ok. Still binding them all to a single CPU all is quite dumb. It
-> makes MSI-X quite useless and probably even harmful.
+> This patch makes pci_init() determine CLS by looking at what 
+> firmware has configured.  It scans all devices and if all non-zero 
+> values agree, the value is used.  If none is configured or there 
+> is a disagreement, pci_dfl_cache_line_size is used.  arch can set 
+> the dfl value (via PCI_CACHE_LINE_BYTES or 
+> pci_dfl_cache_line_size) or override the actual one.
 > 
-> We don't default to socket power saving for normal scheduling either, 
-> but only when you specify a special knob. I don't see why interrupts
-> should be different.
+> ia64, x86 and sparc64 updated to set the default cls instead of 
+> the actual one.
+> 
+> While at it, declare pci_cache_line_size and 
+> pci_dfl_cache_line_size in pci.h and drop private declarations 
+> from arch code.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Acked-by: David Miller <davem@davemloft.net>
+> Acked-by: Greg KH <gregkh@suse.de>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Tony Luck <tony.luck@intel.com>
 
-In the pre-MSI-X days, you'd have cachelines bouncing all over the place 
-if you distributed networking interrupts across CPUs, particularly given 
-that NAPI would run some things on a single CPU anyway.
+The principle looks good to me. Regressions could be expected though 
+- these details are fragile and affect the way how we talk to 
+hardware.
 
-Today, machines are faster, we have multiple interrupts per device, and 
-we have multiple RX/TX queues.  I would be interested to see hard 
-numbers (as opposed to guesses) about various new ways to distributed 
-interrupts across CPUs.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-What's the best setup for power usage?
-What's the best setup for performance?
-Are they the same?
-Is it most optimal to have the interrupt for socket $X occur on the same 
-CPU as where the app is running?
-If yes, how to best handle when the scheduler moves app to another CPU?
-Should we reprogram the NIC hardware flow steering mechanism at that point?
-
-Interesting questions, and I hope we'd see some hard number comparisons 
-before solutions start flowing into the kernel.
-
-	Jeff
-
-
-
-
+	Ingo
