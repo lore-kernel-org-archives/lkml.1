@@ -1,121 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbZGENFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbZGENJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbZGENFh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 09:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbZGENFa
+	id S1756261AbZGENJe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 09:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbZGENJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 09:05:30 -0400
-Received: from hera.mpi-sb.mpg.de ([139.19.1.49]:36392 "EHLO
-	hera.mpi-sb.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753478AbZGENF3 (ORCPT
+	Sun, 5 Jul 2009 09:09:24 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:60036 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754423AbZGENJY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 09:05:29 -0400
-X-Greylist: delayed 913 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Jul 2009 09:05:29 EDT
-Message-ID: <4A50A187.9080304@mpi-sb.mpg.de>
-Date: Sun, 05 Jul 2009 14:50:15 +0200
-From: Lars Kunert <lkunert@mpi-sb.mpg.de>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051117)
-X-Accept-Language: en-us, en
+	Sun, 5 Jul 2009 09:09:24 -0400
+Date: Sun, 5 Jul 2009 07:09:26 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Jeff Garzik <jeff@garzik.org>, andi@firstfloor.org, arjan@infradead.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       douglas.w.styner@intel.com, chinang.ma@intel.com,
+       terry.o.prickett@intel.com, matthew.r.wilcox@intel.com,
+       netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: >10% performance degradation since 2.6.18
+Message-ID: <20090705130926.GS5480@parisc-linux.org>
+References: <4A4F1EA0.3070501@garzik.org> <20090705040137.GA7747@gondor.apana.org.au>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: kernel:Disabling IRQ #23
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090705040137.GA7747@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-yesterday evening I lost the ssh connection to my server,
-the last message was:
+On Sun, Jul 05, 2009 at 12:01:37PM +0800, Herbert Xu wrote:
+> > If yes, how to best handle when the scheduler moves app to another CPU?
+> > Should we reprogram the NIC hardware flow steering mechanism at that point?
+> 
+> Not really.  For now the best thing to do is to pin everything
+> down and not move at all, because we can't afford to move.
+> 
+> The only way for moving to work is if we had the ability to get
+> the sockets to follow the processes.  That means, we must have
+> one RX queue per socket.
 
-> Message from syslogd@guest-195 at Jul  4 23:29:08 ...
-> kernel:Disabling IRQ #23
+Maybe not one RX queue per socket -- sockets belonging to the same
+thread could share the same RX queue.  I'm fairly ignorant of the way
+networking works these days; is it possible to dynamically reassign a
+socket between RX queues, so we'd only need one RX queue per CPU?
 
-I could not renew the connection. After a reboot I found the following
-messages in /var/log/messages (attached below)
+It seems the 82575 device has four queues per port, and it's a dual-port
+card, so that's eight queues in the system.  We'd need hundreds of queues
+to get one queue per client process.  The 82576 has sixteen queues per
+port, but that's still not enough (funnily, the driver still limits you
+to four per port).
 
-The server contains 10 harddisks
-- 2 SAS drives connected as SAS drives
-- 6 SATA drives connected via SAS, and
-- 2 SATA drives connected via SATA
+For what it's worth, I believe the current setup pins the client tasks to
+a package, but they are allowed to move between cores on that package.
+My information may be out of date; hopefully Doug, Chinang or Terry can
+clarify how the tasks are currently bound.
 
-Do these messages point to a single harddisk as the source of the problem?
+I know this test still uses SCHED_RR for the client tasks (using
+SCHED_OTHER results in another couple of percentage points off the
+overall performance).
 
-
-> distribution
-Fedora 10 server
-
-> uname -a
-Linux guest-195.mpi-sb.mpg.de 2.6.27.24-170.2.68.fc10.x86_64 #1 SMP Wed
-May 20 22:47:23 EDT 2009 x86_64 x86_64 x86_64 GNU/Linux
-
-> cat /var/log/messages
-# at this point I lost the ssh connection to the server
-Jul  4 23:29:08 guest-195 kernel: irq 23: nobody cared (try booting with
-the "irqpoll" option)
-Jul  4 23:29:08 guest-195 kernel: Pid: 0, comm: swapper Tainted:
-P          2.6.27.21-170.2.56.fc10.x86_64 #1
-Jul  4 23:29:08 guest-195 kernel:
-Jul  4 23:29:08 guest-195 kernel: Call Trace:
-Jul  4 23:29:08 guest-195 kernel: <IRQ>  [<ffffffff81083523>]
-__report_bad_irq+0x38/0x7c
-Jul  4 23:29:08 guest-195 kernel: [<ffffffff8108376f>]
-note_interrupt+0x208/0x26d
-Jul  4 23:29:08 guest-195 kernel: [<ffffffff81083e9c>]
-handle_fasteoi_irq+0xbb/0xeb
-Jul  4 23:29:08 guest-195 kernel: [<ffffffff810130ce>] do_IRQ+0xf7/0x169
-Jul  4 23:29:08 guest-195 kernel: [<ffffffff81010963>]
-ret_from_intr+0x0/0x2e
-Jul  4 23:29:08 guest-195 kernel: <EOI>  [<ffffffff810173a9>] ?
-mwait_idle+0x3e/0x4f
-Jul  4 23:29:08 guest-195 kernel: [<ffffffff810173a0>] ?
-mwait_idle+0x35/0x4f
-Jul  4 23:29:08 guest-195 kernel: [<ffffffff8100f2a7>] ? cpu_idle+0xb2/0x10b
-Jul  4 23:29:08 guest-195 kernel: [<ffffffff8132e04b>] ?
-start_secondary+0x16e/0x173
-Jul  4 23:29:08 guest-195 kernel:
-Jul  4 23:29:08 guest-195 kernel: handlers:
-Jul  4 23:29:08 guest-195 kernel: [<ffffffff812256e5>]
-(ata_sff_interrupt+0x0/0xc2)
-Jul  4 23:29:08 guest-195 kernel: [<ffffffff8123c306>]
-(usb_hcd_irq+0x0/0xb3)
-Jul  4 23:29:08 guest-195 kernel: Disabling IRQ #23
-Jul  4 23:29:39 guest-195 kernel: ata3.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x6 frozen
-Jul  4 23:29:39 guest-195 kernel: ata3.00: cmd
-a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-Jul  4 23:29:39 guest-195 kernel:         cdb 00 00 00 00 00 00 00 00 
-00 00 00 00 00 00 00 00
-Jul  4 23:29:39 guest-195 kernel:         res
-40/00:02:00:08:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-Jul  4 23:29:39 guest-195 kernel: ata3.00: status: { DRDY }
-Jul  4 23:29:39 guest-195 kernel: ata3: soft resetting link
-Jul  4 23:29:44 guest-195 kernel: ata3.01: qc timeout (cmd 0x27)
-Jul  4 23:29:44 guest-195 kernel: ata3.01: failed to read native max
-address (err_mask=0x4)
-Jul  4 23:29:44 guest-195 kernel: ata3.01: HPA support seems broken,
-skipping HPA handling
-Jul  4 23:29:44 guest-195 kernel: ata3.01: revalidation failed (errno=-5)
-Jul  4 23:29:44 guest-195 kernel: ata3: soft resetting link
-Jul  4 23:29:44 guest-195 kernel: ata3.00: configured for UDMA/100
-Jul  4 23:29:44 guest-195 kernel: ata3.01: configured for UDMA/133
-Jul  4 23:29:44 guest-195 kernel: ata3: EH complete
-
-# the log continues with the following message, repeated every 30 seconds...
-
-Jul  4 23:30:14 guest-195 kernel: ata3.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x6 frozen
-Jul  4 23:30:14 guest-195 kernel: ata3.00: cmd
-a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-Jul  4 23:30:14 guest-195 kernel:         cdb 00 00 00 00 00 00 00 00 
-00 00 00 00 00 00 00 00
-Jul  4 23:30:14 guest-195 kernel:         res
-40/00:02:00:08:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-Jul  4 23:30:14 guest-195 kernel: ata3.00: status: { DRDY }
-Jul  4 23:30:14 guest-195 kernel: ata3: soft resetting link
-Jul  4 23:30:14 guest-195 kernel: ata3.00: configured for UDMA/100
-Jul  4 23:30:14 guest-195 kernel: ata3.01: configured for UDMA/133
-Jul  4 23:30:14 guest-195 kernel: ata3: EH complete
-
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
