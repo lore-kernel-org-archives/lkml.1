@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZGEQJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbZGEQMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756807AbZGEQJa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 12:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZGEQJX
+	id S1756387AbZGEQMk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 12:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZGEQM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 12:09:23 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:54512 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753995AbZGEQJW (ORCPT
+	Sun, 5 Jul 2009 12:12:29 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:47639 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752059AbZGEQM3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 12:09:22 -0400
-Date: Sun, 5 Jul 2009 12:07:14 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: what's with the git status of drivers/char/vr41xx_giu.c?
-Message-ID: <alpine.LFD.2.00.0907051205420.16532@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 5 Jul 2009 12:12:29 -0400
+Date: Mon, 6 Jul 2009 00:11:51 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Jeff Garzik <jeff@garzik.org>, andi@firstfloor.org, arjan@infradead.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       douglas.w.styner@intel.com, chinang.ma@intel.com,
+       terry.o.prickett@intel.com, matthew.r.wilcox@intel.com,
+       netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: >10% performance degradation since 2.6.18
+Message-ID: <20090705161151.GA11923@gondor.apana.org.au>
+References: <4A4F1EA0.3070501@garzik.org> <20090705040137.GA7747@gondor.apana.org.au> <20090705130926.GS5480@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090705130926.GS5480@parisc-linux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jul 05, 2009 at 07:09:26AM -0600, Matthew Wilcox wrote:
+> 
+> Maybe not one RX queue per socket -- sockets belonging to the same
+> thread could share the same RX queue.  I'm fairly ignorant of the way
+> networking works these days; is it possible to dynamically reassign a
+> socket between RX queues, so we'd only need one RX queue per CPU?
 
-  a couple times this morning already, git diff has shown:
+Not reliably.  You can tweak the hash in the NIC to redirect
+traffic (aka flow director) but ultimately if you've got more
+sockets than queues then it's a losing game.
 
-diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
-deleted file mode 100644
-index e69de29..0000000
+A better strategy for now is to pin everything down and try to
+get user-space involved by using threads and distributing the
+sockets based on which queue they're associated with.
 
-but i'm not touching that file.  and even after doing a pull and
-reset, that message eventually came back.
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
