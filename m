@@ -1,105 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbZGEIeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZGEItD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754160AbZGEIeW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 04:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZGEIeO
+	id S1754930AbZGEItD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 04:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZGEIsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 04:34:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42740 "EHLO mx2.mail.elte.hu"
+	Sun, 5 Jul 2009 04:48:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33014 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752893AbZGEIeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 04:34:13 -0400
-Date: Sun, 5 Jul 2009 10:34:00 +0200
+	id S1752311AbZGEIsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 04:48:52 -0400
+Date: Sun, 5 Jul 2009 10:48:49 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 5/5] perf report: Support callchains with relative
-	overhead rate
-Message-ID: <20090705083400.GB12783@elte.hu>
-References: <1246772361-9960-1-git-send-email-fweisbec@gmail.com> <1246772361-9960-5-git-send-email-fweisbec@gmail.com>
+To: "Figo.zhang" <figo1802@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2]mempool.c : clean up type-casting twice
+Message-ID: <20090705084849.GA21067@elte.hu>
+References: <1246762120.15308.3.camel@myhost> <1246766651.15308.13.camel@myhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246772361-9960-5-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1246766651.15308.13.camel@myhost>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
+X-ELTE-SpamScore: -0.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.5
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0599]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+* Figo.zhang <figo1802@gmail.com> wrote:
 
-> The current callchain displays the overhead rates as absolute:
-> relative to the total overhead.
+> clean up type-casting twice. "size_t" typedef as "unsigned long" in 64-bit system,
+> and "unsigned int" in 32-bit system.
 > 
-> This patch provides relative overhead percentage, in which each
-> branch of the callchain tree is a independant instrumentated object.
+> Signed-off-by: Figo.zhang <figo1802@gmail.com>
+> ---   
+> mm/mempool.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> You can produce such output by using the "relative" mode
-> that you can lower in r, re, rel, etc...
-> 
-> ./perf report -s sym -c relative
-> 
-> Example:
-> 
->      8.46%  [k] copy_user_generic_string
->                 |
->                 |--52.01%-- generic_file_aio_read
->                 |          do_sync_read
->                 |          vfs_read
->                 |          |
->                 |          |--97.20%-- sys_pread64
->                 |          |          system_call_fastpath
->                 |          |          pread64
->                 |          |
->                 |           --2.81%-- sys_read
->                 |                     system_call_fastpath
->                 |                     __read
->                 |
->                 |--39.85%-- generic_file_buffered_write
->                 |          __generic_file_aio_write_nolock
->                 |          generic_file_aio_write
->                 |          do_sync_write
->                 |          reiserfs_file_write
->                 |          vfs_write
->                 |          |
->                 |          |--97.05%-- sys_pwrite64
->                 |          |          system_call_fastpath
->                 |          |          __pwrite64
->                 |          |
->                 |           --2.95%-- sys_write
->                 |                     system_call_fastpath
->                 |                     __write_nocancel
-> [...]
+> diff --git a/mm/mempool.c b/mm/mempool.c
+> index a46eb1b..bd22982 100644
+> --- a/mm/mempool.c
+> +++ b/mm/mempool.c
+> @@ -303,7 +303,7 @@ EXPORT_SYMBOL(mempool_free_slab);
+>   */
+>  void *mempool_kmalloc(gfp_t gfp_mask, void *pool_data)
+>  {
+> -	size_t size = (size_t)(long)pool_data;
+> +	size_t size = (size_t) pool_data;
+>  	return kmalloc(size, gfp_mask);
+>  }
+>  EXPORT_SYMBOL(mempool_kmalloc);
 
-Wow, this is extremely intuitive and powerful looking!
+(Style detail: please dont add spaces to casts. That should be fixed 
+in mempool_kzalloc() too btw.)
 
-It's basically a fractal structure: each sub-graph looks like a 
-full-blown profile in itself. Thus the overhead of individual 
-components of the graph profile can be analyzed without having to 
-think in small numbers.
-
-The above example shows it particularly well - it shows that in 
-regard to generic_file_buffered_write() overhead, the system is 
-doing 97% sys_pwrite64() calls and 3% sys_write() calls.
-
-Thus i took the liberty to change your last patch in two ways: i 
-renamed 'relative' to 'fractal' (it was not a proper counterpart to 
-'graph' anyway - we have no 'absolute' output mode name either), and 
-i changed it to be the default output mode. This stuff rocks!
-
-absolute-graph and flat mode can be displayed too, via the option, 
-as usual.
+Looks good otherwise - size_t ought to be long on all 64-bit 
+architectures.
 
 	Ingo
