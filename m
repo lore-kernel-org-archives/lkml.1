@@ -1,65 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbZGEGD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZGEGgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbZGEGD4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 02:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbZGEGDr
+	id S1754766AbZGEGgD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 02:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZGEGfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 02:03:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46648 "EHLO hera.kernel.org"
+	Sun, 5 Jul 2009 02:35:52 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:48506 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZGEGDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 02:03:46 -0400
-Subject: Re: [tip:x86/cleanups] x86: Clean up mtrr/cleanup.c
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       jaswinderrajput@gmail.com, akpm@linux-foundation.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090705002709.GA28424@elte.hu>
-References: <20090703164225.GA21447@elte.hu>
-	 <tip-63f9600fadb10ea739108ae93e3e842d9843c58b@git.kernel.org>
-	 <4A4FC5D0.6090000@kernel.org>  <20090705002709.GA28424@elte.hu>
-Content-Type: text/plain
-Date: Sun, 05 Jul 2009 11:32:57 +0530
-Message-Id: <1246773777.2325.113.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1750754AbZGEGfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 02:35:51 -0400
+Date: Sun, 5 Jul 2009 08:35:51 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] drivers/ata: Use resource_size
+Message-ID: <Pine.LNX.4.64.0907050835260.27464@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-05 at 02:27 +0200, Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
-> > >  static struct var_mtrr_range_state __initdata range_state[RANGE_NUM];
-> > > +
-> > >  static int __initdata debug_print;
-> > > +#define Dprintk(x...) do { if (debug_print) printk(KERN_DEBUG x); } while (0)
-> > > +
-> > > +
-> > 
-> > two blank lines?
-> 
-> ah, yes - i moved them around.
-> 
-> > > +#define BIOS_BUG_MSG KERN_WARNING \
-> > > +	"WARNING: BIOS bug: VAR MTRR %d contains strange UC entry under 1M, check with your system vendor!\n"
-> > 
-> > No user for this
-> 
-> yeah. Mind sending a patch for these? (and any other things you 
-> might notice)
-> 
+From: Julia Lawall <julia@diku.dk>
 
-But why you did this stupidity.
+Use the function resource_size, which reduces the chance of introducing
+off-by-one errors in calculating the resource size.
 
-I clearly specified that these are trivial clean-ups, if you found any
-issue in the patch you should ping me. Instead of adding crap from your
-side.
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-Thanks,
---
-JSR
+// <smpl>
+@@
+struct resource *res;
+@@
 
+- (res->end - res->start) + 1
++ resource_size(res)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/ata/pata_octeon_cf.c |    2 +-
+ drivers/ata/pata_platform.c  |    8 ++++----
+ drivers/ata/pata_rb532_cf.c  |    2 +-
+ drivers/ata/sata_mv.c        |    2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
+
+diff -u -p a/drivers/ata/pata_octeon_cf.c b/drivers/ata/pata_octeon_cf.c
+--- a/drivers/ata/pata_octeon_cf.c 2009-04-13 16:04:29.000000000 +0200
++++ b/drivers/ata/pata_octeon_cf.c 2009-07-04 21:39:00.000000000 +0200
+@@ -840,7 +840,7 @@ static int __devinit octeon_cf_probe(str
+ 	ocd = pdev->dev.platform_data;
+ 
+ 	cs0 = devm_ioremap_nocache(&pdev->dev, res_cs0->start,
+-				   res_cs0->end - res_cs0->start + 1);
++				   resource_size(res_cs0));
+ 
+ 	if (!cs0)
+ 		return -ENOMEM;
+diff -u -p a/drivers/ata/pata_platform.c b/drivers/ata/pata_platform.c
+--- a/drivers/ata/pata_platform.c 2009-01-09 22:41:01.000000000 +0100
++++ b/drivers/ata/pata_platform.c 2009-07-04 21:37:16.000000000 +0200
+@@ -151,14 +151,14 @@ int __devinit __pata_platform_probe(stru
+ 	 */
+ 	if (mmio) {
+ 		ap->ioaddr.cmd_addr = devm_ioremap(dev, io_res->start,
+-				io_res->end - io_res->start + 1);
++				resource_size(io_res));
+ 		ap->ioaddr.ctl_addr = devm_ioremap(dev, ctl_res->start,
+-				ctl_res->end - ctl_res->start + 1);
++				resource_size(ctl_res));
+ 	} else {
+ 		ap->ioaddr.cmd_addr = devm_ioport_map(dev, io_res->start,
+-				io_res->end - io_res->start + 1);
++				resource_size(io_res));
+ 		ap->ioaddr.ctl_addr = devm_ioport_map(dev, ctl_res->start,
+-				ctl_res->end - ctl_res->start + 1);
++				resource_size(ctl_res));
+ 	}
+ 	if (!ap->ioaddr.cmd_addr || !ap->ioaddr.ctl_addr) {
+ 		dev_err(dev, "failed to map IO/CTL base\n");
+diff -u -p a/drivers/ata/pata_rb532_cf.c b/drivers/ata/pata_rb532_cf.c
+--- a/drivers/ata/pata_rb532_cf.c 2009-03-28 23:34:54.000000000 +0100
++++ b/drivers/ata/pata_rb532_cf.c 2009-07-04 21:37:20.000000000 +0200
+@@ -151,7 +151,7 @@ static __devinit int rb532_pata_driver_p
+ 	info->irq = irq;
+ 
+ 	info->iobase = devm_ioremap_nocache(&pdev->dev, res->start,
+-				res->end - res->start + 1);
++				resource_size(res));
+ 	if (!info->iobase)
+ 		return -ENOMEM;
+ 
+diff -u -p a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
+--- a/drivers/ata/sata_mv.c 2009-05-16 16:21:16.000000000 +0200
++++ b/drivers/ata/sata_mv.c 2009-07-04 21:37:17.000000000 +0200
+@@ -4013,7 +4013,7 @@ static int mv_platform_probe(struct plat
+ 
+ 	host->iomap = NULL;
+ 	hpriv->base = devm_ioremap(&pdev->dev, res->start,
+-				   res->end - res->start + 1);
++				   resource_size(res));
+ 	hpriv->base -= SATAHC0_REG_BASE;
+ 
+ 	/*
