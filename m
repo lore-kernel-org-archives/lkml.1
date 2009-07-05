@@ -1,163 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZGEH6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZGEIGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbZGEH6m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 03:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZGEH6d
+	id S1754128AbZGEIGO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 04:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZGEIFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 03:58:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33660 "EHLO hera.kernel.org"
+	Sun, 5 Jul 2009 04:05:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55472 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751680AbZGEH6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 03:58:32 -0400
-Date: Sun, 5 Jul 2009 07:57:57 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090703164225.GA21447@elte.hu>
-References: <20090703164225.GA21447@elte.hu>
-Subject: [tip:x86/cleanups] x86: Further clean up of mtrr/generic.c
-Message-ID: <tip-e3d0e69268dffb9676bf0800a60fb3573a723480@git.kernel.org>
-Git-Commit-ID: e3d0e69268dffb9676bf0800a60fb3573a723480
-X-Mailer: tip-git-log-daemon
+	id S1752534AbZGEIFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 04:05:50 -0400
+Date: Sun, 5 Jul 2009 10:04:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 4/6 -tip] perf_counter: Add Generalized Hardware
+	interrupt support for AMD
+Message-ID: <20090705080459.GA11636@elte.hu>
+References: <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <1246441094.3403.10.camel@hpdv5.satnam> <20090701112406.GE15958@elte.hu> <1246622515.2322.30.camel@jaswinder.satnam> <20090704102230.GE2139@elte.hu> <1246717039.2329.26.camel@jaswinder.satnam> <20090705011123.GA31673@elte.hu> <1246768166.2325.8.camel@jaswinder.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 05 Jul 2009 07:58:02 +0000 (UTC)
+In-Reply-To: <1246768166.2325.8.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e3d0e69268dffb9676bf0800a60fb3573a723480
-Gitweb:     http://git.kernel.org/tip/e3d0e69268dffb9676bf0800a60fb3573a723480
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sun, 5 Jul 2009 09:44:11 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 5 Jul 2009 09:46:10 +0200
 
-x86: Further clean up of mtrr/generic.c
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-Yinghai noticed that i defined BIOS_BUG_MSG but added no
-usage for it. The usage is to clean up this turd in generic.c:
+> On Sun, 2009-07-05 at 03:11 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > 
+> > > On Sat, 2009-07-04 at 12:22 +0200, Ingo Molnar wrote:
+> > > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > > > 
+> > > > > On Wed, 2009-07-01 at 13:24 +0200, Ingo Molnar wrote:
+> > > > > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > > > > > 
+> > > > > > > 
+> > > > > > > $ ./perf stat -e interrupts -e masked -e int-pending-mask-cycles -- ls -lR /usr/include/ > /dev/null
+> > > > > > > 
+> > > > > > >  Performance counter stats for 'ls -lR /usr/include/':
+> > > > > > > 
+> > > > > > >             377  interrupts
+> > > > > > >        53429936  int-mask-cycles
+> > > > > > >            1119  int-pending-mask-cycles
+> > > > > > > 
+> > > > > > >     0.371457539  seconds time elapsed
+> > > > > > 
+> > > > > > Agreed, this is another useful generalization - and the 'cycles 
+> > > > > > pending' metrics are not retrievable via any software means.
+> > > > > > 
+> > > > > > We could and should probably add a software counter for hardirqs 
+> > > > > > as wel. That would allow the vector/irqnr information to be 
+> > > > > > passed in, and it would allow architectures without irq metrics 
+> > > > > > in the PMU to have this counter too.
+> > > > > > 
+> > > > > 
+> > > > > Please let me know that addition of software counter will be 
+> > > > > in this patch or we can do it incrementally after this patch.
+> > > > 
+> > > > It should be in this series. That way we can cross-check whether 
+> > > > the soft counts and the hard counts match up and find potential 
+> > > > bugs that way, etc.
+> > > > 
+> > > 
+> > > You want to cross check performance counter events ?
+> > 
+> > Yes. The events are also more complete if we add per IRQ source 
+> > counts as well, not just summary counts.
+> 
+> If you ask me about 'complete', I will say : "No-one is 'complete' 
+> except God".
+> 
+> Let me know what you mean by 'complete' and 'more complete'.
+> 
+> This is a hardware performance interrupt event patch. If you want 
+> to add IRQ source, of course you can add it in another patch, it 
+> is a never ending task.
+> 
+> I do not understand why you behave like this :
+> 
+> 1. Is today the last day of the creation.
+> 2. Or you will not collect any further patches.
+> 
+> Of course answer is "no" then what is the problem with you.
+> 
+> Stop this complete-ness madness. You will never complete atleast 
+> in this life no matter what you will do.
 
-			printk(KERN_WARNING "WARNING: BIOS bug: VAR MTRR %d "
-				"contains strange UC entry under 1M, check "
-				"with your system vendor!\n", i);
+I'm simply not going to apply patches from you for what i consider a 
+half-done feature.
 
-Breaking printk lines in the middle looks ugly, is hard to read
-and breaks 'git grep'. Use the BIOS_BUG_MSG instead.
-
-Also complete the moving of structure definitions and variables
-to the top of the file.
-
-Reported-by: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <20090703164225.GA21447@elte.hu>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/cpu/mtrr/cleanup.c |   56 +++++++++++++++++------------------
- 1 files changed, 27 insertions(+), 29 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/mtrr/cleanup.c b/arch/x86/kernel/cpu/mtrr/cleanup.c
-index b8aba81..315738c 100644
---- a/arch/x86/kernel/cpu/mtrr/cleanup.c
-+++ b/arch/x86/kernel/cpu/mtrr/cleanup.c
-@@ -34,14 +34,37 @@
- 
- #include "mtrr.h"
- 
--/* Should be related to MTRR_VAR_RANGES nums */
--#define RANGE_NUM 256
--
- struct res_range {
- 	unsigned long	start;
- 	unsigned long	end;
- };
- 
-+struct var_mtrr_range_state {
-+	unsigned long	base_pfn;
-+	unsigned long	size_pfn;
-+	mtrr_type	type;
-+};
-+
-+struct var_mtrr_state {
-+	unsigned long	range_startk;
-+	unsigned long	range_sizek;
-+	unsigned long	chunk_sizek;
-+	unsigned long	gran_sizek;
-+	unsigned int	reg;
-+};
-+
-+/* Should be related to MTRR_VAR_RANGES nums */
-+#define RANGE_NUM				256
-+
-+static struct res_range __initdata		range[RANGE_NUM];
-+static int __initdata				nr_range;
-+
-+static struct var_mtrr_range_state __initdata	range_state[RANGE_NUM];
-+
-+static int __initdata debug_print;
-+#define Dprintk(x...) do { if (debug_print) printk(KERN_DEBUG x); } while (0)
-+
-+
- static int __init
- add_range(struct res_range *range, int nr_range,
- 	  unsigned long start, unsigned long end)
-@@ -147,18 +170,6 @@ static int __init cmp_range(const void *x1, const void *x2)
- 	return start1 - start2;
- }
- 
--struct var_mtrr_range_state {
--	unsigned long	base_pfn;
--	unsigned long	size_pfn;
--	mtrr_type	type;
--};
--
--static struct var_mtrr_range_state __initdata range_state[RANGE_NUM];
--
--static int __initdata debug_print;
--#define Dprintk(x...) do { if (debug_print) printk(KERN_DEBUG x); } while (0)
--
--
- #define BIOS_BUG_MSG KERN_WARNING \
- 	"WARNING: BIOS bug: VAR MTRR %d contains strange UC entry under 1M, check with your system vendor!\n"
- 
-@@ -200,9 +211,7 @@ x86_get_mtrr_mem_range(struct res_range *range, int nr_range,
- 		if (base < (1<<(20-PAGE_SHIFT)) && mtrr_state.have_fixed &&
- 		    (mtrr_state.enabled & 1)) {
- 			/* Var MTRR contains UC entry below 1M? Skip it: */
--			printk(KERN_WARNING "WARNING: BIOS bug: VAR MTRR %d "
--				"contains strange UC entry under 1M, check "
--				"with your system vendor!\n", i);
-+			printk(BIOS_BUG_MSG, i);
- 			if (base + size <= (1<<(20-PAGE_SHIFT)))
- 				continue;
- 			size -= (1<<(20-PAGE_SHIFT)) - base;
-@@ -244,9 +253,6 @@ x86_get_mtrr_mem_range(struct res_range *range, int nr_range,
- 	return nr_range;
- }
- 
--static struct res_range __initdata range[RANGE_NUM];
--static int __initdata nr_range;
--
- #ifdef CONFIG_MTRR_SANITIZER
- 
- static unsigned long __init sum_ranges(struct res_range *range, int nr_range)
-@@ -284,14 +290,6 @@ static int __init mtrr_cleanup_debug_setup(char *str)
- }
- early_param("mtrr_cleanup_debug", mtrr_cleanup_debug_setup);
- 
--struct var_mtrr_state {
--	unsigned long	range_startk;
--	unsigned long	range_sizek;
--	unsigned long	chunk_sizek;
--	unsigned long	gran_sizek;
--	unsigned int	reg;
--};
--
- static void __init
- set_var_mtrr(unsigned int reg, unsigned long basek, unsigned long sizek,
- 	     unsigned char type, unsigned int address_bits)
+	Ingo
