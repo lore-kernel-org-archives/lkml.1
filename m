@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbZGEO4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbZGEO5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756547AbZGEO4b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 10:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbZGEO4W
+	id S1757076AbZGEO5Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 10:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbZGEO5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 10:56:22 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:8128 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753316AbZGEO4W (ORCPT
+	Sun, 5 Jul 2009 10:57:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42376 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753995AbZGEO5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 10:56:22 -0400
-Date: Sun, 5 Jul 2009 17:05:47 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
+	Sun, 5 Jul 2009 10:57:15 -0400
+Date: Sun, 5 Jul 2009 07:56:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Paul Mundt <lethal@linux-sh.org>
+cc: Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
        Krzysztof Helt <krzysztof.h1@wp.pl>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        "Rafael J. Wysocki" <rjw@sisk.pl>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       =?UTF-8?Q?=E6=99=8F=E5=8D=8E?= <yanh@lemote.com>,
+       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
        zhangfx <zhangfx@lemote.com>
-Subject: Re: [BUG] drivers/video/sis: deadlock introduced by
- "fbdev: add mutex for fb_mmap locking"
-Message-Id: <20090705170547.c83f1cb9.krzysztof.h1@poczta.fm>
-In-Reply-To: <alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
-References: <1246785112.14240.34.camel@falcon>
-	<alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: e6e2b138
+Subject: Re: [BUG] drivers/video/sis: deadlock introduced by "fbdev: add
+ mutex for fb_mmap locking"
+In-Reply-To: <20090705145203.GA8326@linux-sh.org>
+Message-ID: <alpine.LFD.2.01.0907050756280.3210@localhost.localdomain>
+References: <1246785112.14240.34.camel@falcon> <alpine.LFD.2.01.0907050715490.3210@localhost.localdomain> <20090705145203.GA8326@linux-sh.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Jul 2009 07:19:33 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> 
-> 
-> On Sun, 5 Jul 2009, Wu Zhangjin wrote:
-> > 
-> > then it works! so, I guess there is a deadlock introduced by the above
-> > commit.
-> 
-> Hmm. Perhaps more likely, the 'mm_lock' mutex hasn't even been initialized 
-> yet.  We appear to have had that problem with matroxfb and sm501fb, and it 
-> may be more common than that. See commit f50bf2b2.
-> 
-> That said, I do agree that the mm_lock seems to be causing more problems 
-> than it actually fixes, and maybe we should revert it. Krzysztof?
-> 
 
-I vote for fixing these drivers after my change. I will send a patch for the sis driver soon. I am building new kernel now.
+On Sun, 5 Jul 2009, Paul Mundt wrote:
+>  			break;
+>  	fb_info->node = i;
+>  	mutex_init(&fb_info->lock);
+> -	mutex_init(&fb_info->mm_lock);
 
-Regards,
-Krzysztof
+Why not "lock" as well?
 
-----------------------------------------------------------------------
-Rozwiaz krzyzowke i  wygraj nagrody! 
-Sprawdz >>  http://link.interia.pl/f2232 
-
+		Linus
