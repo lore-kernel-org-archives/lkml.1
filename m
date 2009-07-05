@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbZGEQeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbZGEQvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757468AbZGEQeN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 12:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbZGEQd7
+	id S1757229AbZGEQvT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 12:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZGEQvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 12:33:59 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:29054 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756918AbZGEQd6 (ORCPT
+	Sun, 5 Jul 2009 12:51:08 -0400
+Received: from smtprelay05.ispgateway.de ([80.67.31.39]:60056 "EHLO
+	smtprelay05.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752674AbZGEQvH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 12:33:58 -0400
-Date: Sun, 5 Jul 2009 18:43:19 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
-       zhangfx <zhangfx@lemote.com>
-Subject: Re: [BUG] drivers/video/sis: deadlock introduced by
- "fbdev: add mutex for fb_mmap locking"
-Message-Id: <20090705184319.6e77be82.krzysztof.h1@poczta.fm>
-In-Reply-To: <20090705152557.GA10588@linux-sh.org>
-References: <1246785112.14240.34.camel@falcon>
-	<alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
-	<20090705145203.GA8326@linux-sh.org>
-	<alpine.LFD.2.01.0907050756280.3210@localhost.localdomain>
-	<20090705150134.GB8326@linux-sh.org>
-	<alpine.LFD.2.01.0907050816110.3210@localhost.localdomain>
-	<20090705152557.GA10588@linux-sh.org>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+	Sun, 5 Jul 2009 12:51:07 -0400
+References: <20090705135806.GB9778@liondog.tnic>
+Message-ID: <cone.1246812673.209196.4691.1000@onepiie>
+X-Mailer: http://www.courier-mta.org/cone/
+From: Peter Feuerer <peter@piie.net>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
+       Andreas Mohr <andi@lisas.de>
+Subject: Re: [PATCH] Acerhdf: fix fan control for BIOS 3309
+Date: Sun, 05 Jul 2009 18:51:13 +0200
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-X-EMID: 38e2b138
+X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009 00:25:57 +0900
-Paul Mundt <lethal@linux-sh.org> wrote:
+Hi Boris,
 
-> Ok, here is an updated version with an updated matroxfb and the sm501fb
-> change reverted.
+Borislav Petkov writes:
+
+> Hi Len,
 > 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> please apply.
 > 
+> ---
+> From: Borislav Petkov <petkovbb@gmail.com>
+> Date: Sun, 5 Jul 2009 14:35:01 +0200
+> Subject: [PATCH] Acerhdf: fix fan control for BIOS 3309
+> 
+> With BIOS update v3309, the Aspire One has had some changes to how
+> the fan is being controlled. Reads to the fanreg (0x55) do not simply
+> return the on/off values of the fan anymore but rather a different
+> fan stage based on the current temperature. Empirically, I could
+> observe the fan stage being 0x1 when booting the machine, then the
+> temperature went up and the BIOS switched the fan to stage 0x2, making
+> it rotate faster with final stage being fan state 0x3, aka max.
 
-Here is a patch which should fix problem with sm501fb driver:
+I think it was already like that before v3309. But in my opinion it doesn't 
+matter how fast the fan spins. As soon as it's spinning it's making too much 
+noise. That's why I like to use only two states for the fan, "on" (noisy, 
+doesn't matter how fast it's spinning) and "off" (quiet ;))
 
-diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-index 16d4f4c..924d794 100644
---- a/drivers/video/sm501fb.c
-+++ b/drivers/video/sm501fb.c
-@@ -1540,9 +1540,6 @@ static int sm501fb_init_fb(struct fb_info *fb,
- 	if (ret)
- 		dev_err(info->dev, "check_var() failed on initial setup?\n");
- 
--	/* ensure we've activated our new configuration */
--	(fb->fbops->fb_set_par)(fb);
--
- 	return 0;
- }
- 
+> This requires some changes to the controlling code so that it can still
+> be done adequately. Also, the OFF switch has changed from 0x21 to 0x20.
+> It seems almost as if they're using the least significant nibble of the
+> command written to the ioport for the different fan stages.
 
-Paul, please test it (without additional initialization of the mm_lock mutext). I will post the patch
-if it works for you.
+I've been developping acerhdf with BIOS v3309 since the very beginning. And 
+it was working fine with 0x21 all the time. I'm going to do some further 
+inverstigations next few days. Thanks for reporting!
 
-An issue here is that these drivers calls fb_set_par() function (or part of it as the sisfb driver) 
-but the register_framebuffer() calls the fb_set_par() also after all structures are set up. There
-should be no need to call the fb_set_par() just before the register_framebuffer().
+> 
+> While at it, convert the fancmd[] array to a real struct thus
+> disambiguating command handling and making code more readable.
 
-The matroxfb driver is quite far from standard driver framework by now. I vote for fixing it
-by adding this early initialization of the mm_mutex for now.
+Good!
 
-Kind regards,
-Krzysztof
-
-----------------------------------------------------------------------
-Promocja ubezpieczen komunikacyjnych Ergo Hestia. Sprawdz!
-http://link.interia.pl/f222f
-
+kind regards,
+--peter
