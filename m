@@ -1,119 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZGEMMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZGEMNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbZGEMMT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 08:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZGEMMK
+	id S1756473AbZGEMNZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 08:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZGEMNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 08:12:10 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:44577 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753607AbZGEMMJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 08:12:09 -0400
-Date: Sun, 5 Jul 2009 14:12:00 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Julia Lawall <julia@diku.dk>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [lm-sensors] [PATCH 4/5] drivers/hwmon: Use resource_size
-Message-ID: <20090705141200.6b0deb34@hyperion.delvare>
-In-Reply-To: <Pine.LNX.4.64.0907050836530.27464@ask.diku.dk>
-References: <Pine.LNX.4.64.0907050836530.27464@ask.diku.dk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 5 Jul 2009 08:13:18 -0400
+Received: from mga14.intel.com ([143.182.124.37]:40018 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753845AbZGEMNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 08:13:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,351,1243839600"; 
+   d="scan'208";a="161644864"
+Date: Sun, 5 Jul 2009 20:13:08 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
+Message-ID: <20090705121308.GC5252@localhost>
+References: <20090705181400.08F1.A69D9226@jp.fujitsu.com> <20090705182533.0902.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090705182533.0902.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Jul 2009 08:37:14 +0200 (CEST), Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+On Sun, Jul 05, 2009 at 05:26:18PM +0800, KOSAKI Motohiro wrote:
+> Subject: [PATCH] add NR_ANON_PAGES to OOM log
 > 
-> Use the function resource_size, which reduces the chance of introducing
-> off-by-one errors in calculating the resource size.
+> show_free_areas can display NR_FILE_PAGES, but it can't display
+> NR_ANON_PAGES.
 > 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
+> this patch fix its inconsistency.
 > 
-> // <smpl>
-> @@
-> struct resource *res;
-> @@
 > 
-> - (res->end - res->start) + 1
-> + resource_size(res)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
+> Reported-by: Wu Fengguang <fengguang.wu@gmail.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 > ---
->  drivers/hwmon/pc87427.c |    6 +++---
->  drivers/hwmon/vt1211.c  |    6 +++---
->  2 files changed, 6 insertions(+), 6 deletions(-)
+>  mm/page_alloc.c |    1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff -u -p a/drivers/hwmon/pc87427.c b/drivers/hwmon/pc87427.c
-> --- a/drivers/hwmon/pc87427.c 2009-01-09 22:41:01.000000000 +0100
-> +++ b/drivers/hwmon/pc87427.c 2009-07-04 21:38:15.000000000 +0200
-> @@ -435,7 +435,7 @@ static int __devinit pc87427_probe(struc
->  	/* This will need to be revisited when we add support for
->  	   temperature and voltage monitoring. */
->  	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-> -	if (!request_region(res->start, res->end - res->start + 1, DRVNAME)) {
-> +	if (!request_region(res->start, resource_size(res), DRVNAME)) {
->  		err = -EBUSY;
->  		dev_err(&pdev->dev, "Failed to request region 0x%lx-0x%lx\n",
->  			(unsigned long)res->start, (unsigned long)res->end);
-> @@ -475,7 +475,7 @@ exit_remove_files:
->  		sysfs_remove_group(&pdev->dev.kobj, &pc87427_group_fan[i]);
->  	}
->  exit_release_region:
-> -	release_region(res->start, res->end - res->start + 1);
-> +	release_region(res->start, resource_size(res));
->  exit_kfree:
->  	platform_set_drvdata(pdev, NULL);
->  	kfree(data);
-> @@ -500,7 +500,7 @@ static int __devexit pc87427_remove(stru
->  	kfree(data);
->  
->  	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-> -	release_region(res->start, res->end - res->start + 1);
-> +	release_region(res->start, resource_size(res));
->  
->  	return 0;
->  }
-> diff -u -p a/drivers/hwmon/vt1211.c b/drivers/hwmon/vt1211.c
-> --- a/drivers/hwmon/vt1211.c 2009-03-02 11:33:15.000000000 +0100
-> +++ b/drivers/hwmon/vt1211.c 2009-07-04 21:38:17.000000000 +0200
-> @@ -1136,7 +1136,7 @@ static int __devinit vt1211_probe(struct
+> Index: b/mm/page_alloc.c
+> ===================================================================
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -2216,6 +2216,7 @@ void show_free_areas(void)
+>  		printk("= %lukB\n", K(total));
 >  	}
 >  
->  	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-> -	if (!request_region(res->start, res->end - res->start + 1, DRVNAME)) {
-> +	if (!request_region(res->start, resource_size(res), DRVNAME)) {
->  		err = -EBUSY;
->  		dev_err(dev, "Failed to request region 0x%lx-0x%lx\n",
->  			(unsigned long)res->start, (unsigned long)res->end);
-> @@ -1209,7 +1209,7 @@ EXIT_DEV_REMOVE:
->  	dev_err(dev, "Sysfs interface creation failed (%d)\n", err);
->  EXIT_DEV_REMOVE_SILENT:
->  	vt1211_remove_sysfs(pdev);
-> -	release_region(res->start, res->end - res->start + 1);
-> +	release_region(res->start, resource_size(res));
->  EXIT_KFREE:
->  	platform_set_drvdata(pdev, NULL);
->  	kfree(data);
-> @@ -1228,7 +1228,7 @@ static int __devexit vt1211_remove(struc
->  	kfree(data);
->  
->  	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-> -	release_region(res->start, res->end - res->start + 1);
-> +	release_region(res->start, resource_size(res));
->  
->  	return 0;
->  }
+> +	printk("%ld total anon pages\n", global_page_state(NR_ANON_PAGES));
+>  	printk("%ld total pagecache pages\n", global_page_state(NR_FILE_PAGES));
 
-Applied, thanks.
+Can we put related items together, ie. this looks more friendly:
 
--- 
-Jean Delvare
+        Anon:XXX active_anon:XXX inactive_anon:XXX
+        File:XXX active_file:XXX inactive_file:XXX
+
+Thanks,
+Fengguang
+
