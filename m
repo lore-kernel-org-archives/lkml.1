@@ -1,105 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbZGEMoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZGEMoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756572AbZGEMoY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 08:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbZGEMoP
+	id S1755494AbZGEMoj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 08:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756635AbZGEMoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 08:44:15 -0400
-Received: from thunk.org ([69.25.196.29]:45928 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbZGEMoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 08:44:14 -0400
-Date: Sun, 5 Jul 2009 08:43:33 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Roland Dreier <roland@digitalvampire.org>
-Cc: adilger@sun.com, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: ext4 lockdep report re possible reclaim deadlock on jbd2_handle
-Message-ID: <20090705124333.GA6757@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Roland Dreier <roland@digitalvampire.org>, adilger@sun.com,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <87prcgp19p.fsf@shaolin.home.digitalvampire.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87prcgp19p.fsf@shaolin.home.digitalvampire.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sun, 5 Jul 2009 08:44:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:6170 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756630AbZGEMo1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 08:44:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=OvMa2y75iuKZ8uctmX+5KLH0zL+Cd1YLEQz2eA8uesypbdwqmBPK1IywOI1B2rPFec
+         +ZKN6InOezbgt6oIbNI/BpVIv6RaRfQd2be35sC9PLY+cArtXvnaKh55jAdS5QdpA+g8
+         W6/pNFyqE8vhgSYf7LQSOUwYCHgfuJvFWkwp4=
+Date: Sun, 5 Jul 2009 20:44:18 +0800
+From: Ming Lei <tom.leiming@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/3] dma-mapping:remove CONFIG_HAVE_DMA_ATTRS
+Message-ID: <20090705204418.44fc38c1@linux-lm>
+In-Reply-To: <200907051319.37169.arnd@arndb.de>
+References: <1246674895-9610-1-git-send-email-tom.leiming@gmail.com>
+	<200907051319.37169.arnd@arndb.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.4; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 04, 2009 at 02:49:06PM -0700, Roland Dreier wrote:
+On Sun, 5 Jul 2009 13:19:36 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
+
+> On Saturday 04 July 2009, tom.leiming@gmail.com wrote:
+> > 2,Disabling CONFIG_HAVE_DMA_ATTRS may lead to a compile failure;
 > 
-> I recently got the following lockdep warning on my laptop.  The kernel
-> is Ubuntu's tree with Linus's git up to d960eea9 pulled it; I don't
-> think there are any non-mainline ext4 changes involved, and the
-> warning below does look valid on mainline.
+> I'm not sure I understand this point. CONFIG_HAVE_DMA_ATTRS tells
+> the common code whether the architecture understands dma attributes.
 
-Yeah, it looks valid.  And thanks.  This looks like it might be
-related to a long-standing bug which has puzzled me a lot of other
-people, Ubuntu Launchpad #330824:
+If a new arch does not define CONFIG_HAVE_DMA_ATTRS but uses
+dma-mapping-common.h, it will lead to a compile failure. 
 
-	https://bugs.launchpad.net/ubuntu/+source/linux/+bug/330824
+include/asm-generic/dma-mapping-common.h
 
-> It does seem a little odd to me that no one else has seen this,
-> since I thought quite a few people tested with lockdep enabled.  So
-> maybe something is odd about my system or kernel config.  Anyway, I'm
-> happy to try further tests and/or debugging patches.
+	#define dma_map_single(d, a, s, r) dma_map_single_attrs(d, a,
+	s, r, NULL)
+	...
 
-The funny thing has been that many people using Ubuntu kernels haven't
-been able to replicate it (myself and a number of Canonical kernel
-people included), and people who *can* reproduce it report that it
-goes away the moment they go use a stock mainline kernel ---
-regardless of whether it's 2.6.28, 2.6.29, 2.6.30, or any number of
-other -rc kernels.
+include/linux/dma-mapping.h
+	
+	#ifndef CONFIG_HAVE_DMA_ATTRS
+	struct dma_attrs;
 
-The other funny thing is that if the lockdep warning you've reported
-also explains Ubuntu Launchpad #330824, it doesn't make any sense,
-since there the problem shows up when deleting a large number of
-files, and in that case, we should be truncating the file down to zero
---- so (inode->i_size & (sb->s_blocksize - 1)) should be evaluating to
-zero, and so ext4_block_truncate_page() shouldn't be getting called in
-that case.
-
-> As far as I can tell, lockdep is warning that jbd2_handle is usually
-> acquired while doing reclaim -- which makes sense, as pushing dirty
-> inodes out of memory is of course going to want to do fs transactions;
-
-Actually, it's not that common that we would be pushing dirty inodes
-out of memory during a reclaim, since normally the transaction is
-assocated with the foreground kernel syscall that modified the inode
-in the first place (i.e., chmod, rename, utimes, etc.).  And when an
-inode gets deleted, the filesystem transaction either happens
-immediately, as a result of the unlink call, or if there is a file
-descriptor holding it open, in the close() system call that releases
-the file descriptor.
-
-What seems to be happening here is the ecryptfs is holding the file
-open, because of the upper dentry reference.  So that's not a normal
-thing, and maybe that's why most people haven't noticed the problem;
-they're not doing enough with ecryptfs to trigger things.
+	#define dma_map_single_attrs(dev, cpu_addr, size, dir, attrs) \
+        dma_map_single(dev, cpu_addr, size, dir)
+	...
+	#endif
 
 
-How easily can you reproduce the lockdep warning?  Does this patch
-(not tested; sorry, am in the Berkshires for the July 4th holiday)
-make it go away?
+> If you enable it on all architectures, you will get new compile
+> failures on all those that don't understand them, while the current
+> code correctly falls back on the standard functions.
 
-					- Ted
+You are right, the patch will lead to new compile failure for the
+ARCHs, on which disables CONFIG_HAVE_DMA_ATTRS and doesn't use
+dma-mapping-common.h. So the patch is not mature.
 
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 60a26f3..9760ba0 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -3583,7 +3583,8 @@ int ext4_block_truncate_page(handle_t *handle,
- 	struct page *page;
- 	int err = 0;
- 
--	page = grab_cache_page(mapping, from >> PAGE_CACHE_SHIFT);
-+	page = find_or_create_page(mapping, from >> PAGE_CACHE_SHIFT,
-+				   mapping_gfp_mask(mapping) & ~__GFP_FS);
- 	if (!page)
- 		return -EINVAL;
- 
+> 
+> I think it makes sense to combine CONFIG_HAVE_DMA_ATTRS with the
+> use of dma-mapping-common.h, but the majority of the architectures
+> just uses a static mapping, where attributes make no sense.
+> 
+> You also missed powerpc64, which selects CONFIG_HAVE_DMA_ATTRS
+> but does not (yet) use dma-mapping-common.h.
+
+ppc64 doesn't use dma-mapping-common.h, so the patch doesn't consider
+it.
+
+-- 
+Lei Ming
