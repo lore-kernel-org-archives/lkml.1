@@ -1,124 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757165AbZGEQI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZGEQJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757165AbZGEQI7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 12:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbZGEQIq
+	id S1756807AbZGEQJa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 12:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZGEQJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 12:08:46 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:11744 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbZGEQIp (ORCPT
+	Sun, 5 Jul 2009 12:09:23 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:54512 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbZGEQJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 12:08:45 -0400
-Date: Sun, 5 Jul 2009 18:18:08 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
-       zhangfx <zhangfx@lemote.com>
-Subject: Re: [BUG] drivers/video/sis: deadlock introduced by
- "fbdev: add mutex for fb_mmap locking"
-Message-Id: <20090705181808.93be24a9.krzysztof.h1@poczta.fm>
-In-Reply-To: <20090705152557.GA10588@linux-sh.org>
-References: <1246785112.14240.34.camel@falcon>
-	<alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
-	<20090705145203.GA8326@linux-sh.org>
-	<alpine.LFD.2.01.0907050756280.3210@localhost.localdomain>
-	<20090705150134.GB8326@linux-sh.org>
-	<alpine.LFD.2.01.0907050816110.3210@localhost.localdomain>
-	<20090705152557.GA10588@linux-sh.org>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: c2e2b138
+	Sun, 5 Jul 2009 12:09:22 -0400
+Date: Sun, 5 Jul 2009 12:07:14 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: what's with the git status of drivers/char/vr41xx_giu.c?
+Message-ID: <alpine.LFD.2.00.0907051205420.16532@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009 00:25:57 +0900
-Paul Mundt <lethal@linux-sh.org> wrote:
 
-> On Sun, Jul 05, 2009 at 08:19:40AM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Mon, 6 Jul 2009, Paul Mundt wrote:
-> > > >
-> > > > Why not "lock" as well?
-> > > 
-> > > I had that initially, but matroxfb will break if we do that, and
-> > > presently nothing cares about trying to take ->lock that early on.
-> > 
-> > I really would rather have consistency than some odd rules like that.
-> > 
-> > In particular - if matroxfb is different and needs its own lock 
-> > initialization because it doesn't use the common allocation routine, then 
-> > please make _that_ consistent too. Rather than have it special-case just 
-> > one lock that it needs to initialize separately, make it clear that since 
-> > it does its own allocations it needs to initialize _everything_ 
-> > separately.
-> > 
-> Ok, here is an updated version with an updated matroxfb and the sm501fb
-> change reverted.
-> 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> 
-> ---
-> 
+  a couple times this morning already, git diff has shown:
 
-This is incorrect way to fix this as some drivers do not use the framebuffer_alloc() 
-at all. They use global (for a file) fb_info structure. I have done some cleanups to
-the fbdev layer before the 2.6.31 and there should no drivers which uses kmalloc or
-kzalloc to allocate the fb_info (your patch would break these drivers too).
+diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
+deleted file mode 100644
+index e69de29..0000000
 
-A root of the whole mm_lock issue is that the fb_mmap() BKL protected two fb_info
-fields which were never protected when set. I changed this by add the mm_lock 
-around these fields but only in drivers which modified this fields AFTER call
-to the register_framebuffer(). Some drivers set these fields using the same
-function before and after the register_framebuffer(). I strongly believe that
-setting these fields before the register_framebuffer() is wrong or redundant for
-these drivers. See my fix for the sisfb driver below. 
+but i'm not touching that file.  and even after doing a pull and
+reset, that message eventually came back.
 
-I have tested the patch below. Wu Zhangjin, can you also confirm that this 
-works for you (without your patch)?
+rday
+--
 
-I will look into the matroxfb and sm501fb drivers now. The same problem is
-already fixed for the mx3fb driver and the patch is sent to Andrew Morton.
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-Regards,
-Krzysztof
+        Linux Consulting, Training and Annoying Kernel Pedantry.
 
-
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-
-Remove redundant call to the sisfb_get_fix() before sis frambuffer is registered.
-
-This fixes a problem with uninitialized the fb_info->mm_lock mutex.
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
-
-diff -urp linux-ref/drivers/video/sis/sis_main.c linux-next/drivers/video/sis/sis_main.c
---- linux-ref/drivers/video/sis/sis_main.c	2009-07-01 18:07:05.000000000 +0200
-+++ linux-next/drivers/video/sis/sis_main.c	2009-07-05 17:20:33.000000000 +0200
-@@ -6367,7 +6367,6 @@ error_3:	vfree(ivideo->bios_abase);
- 		sis_fb_info->fix = ivideo->sisfb_fix;
- 		sis_fb_info->screen_base = ivideo->video_vbase + ivideo->video_offset;
- 		sis_fb_info->fbops = &sisfb_ops;
--		sisfb_get_fix(&sis_fb_info->fix, -1, sis_fb_info);
- 		sis_fb_info->pseudo_palette = ivideo->pseudo_palette;
- 
- 		fb_alloc_cmap(&sis_fb_info->cmap, 256 , 0);
-
-
-
-----------------------------------------------------------------------
-Najlepsze OC i AC tylko w Ergo Hestia
-http://link.interia.pl/f222
-
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
