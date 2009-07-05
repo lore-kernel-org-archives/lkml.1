@@ -1,124 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZGENTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZGENVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbZGENTo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 09:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbZGENTe
+	id S1756712AbZGENVo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 09:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbZGENVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 09:19:34 -0400
-Received: from ey-out-1920.google.com ([74.125.78.147]:25021 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497AbZGENTd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 09:19:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ofenVYMMeEYSwTYOE317+L/Y1eQvGR0RxWwGI0i5/3qsO+YRVsbFfNTgQUz9JTg9S+
-         +TpMz7hWA1FLzmTuX+pXEQKTLa4CKZ17VKzgqa34wpuPG0L6IFK2eihMi+alXZ0Jgj4b
-         wzHrWIL6bEt9GH5yWNx4Vf36hNYWVnzP2yVBc=
-Date: Sun, 5 Jul 2009 15:19:33 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 5/5] perf report: Support callchains with relative
-	overhead rate
-Message-ID: <20090705131931.GA4912@nowhere>
-References: <1246772361-9960-1-git-send-email-fweisbec@gmail.com> <1246772361-9960-5-git-send-email-fweisbec@gmail.com> <20090705083400.GB12783@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090705083400.GB12783@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 5 Jul 2009 09:21:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37246 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753720AbZGENVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 09:21:36 -0400
+Subject: Re: [tip:x86/cleanups] x86: Clean up mtrr/cleanup.c
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk, jaswinderrajput@gmail.com,
+       akpm@linux-foundation.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <84144f020907050459x6a9a11fmf8f3050f085c8d85@mail.gmail.com>
+References: <20090703164225.GA21447@elte.hu>
+	 <tip-63f9600fadb10ea739108ae93e3e842d9843c58b@git.kernel.org>
+	 <4A4FC5D0.6090000@kernel.org> <20090705002709.GA28424@elte.hu>
+	 <1246773777.2325.113.camel@jaswinder.satnam>
+	 <84144f020907050459x6a9a11fmf8f3050f085c8d85@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 05 Jul 2009 18:49:55 +0530
+Message-Id: <1246799995.2442.7.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 10:34:00AM +0200, Ingo Molnar wrote:
-> 
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > The current callchain displays the overhead rates as absolute:
-> > relative to the total overhead.
-> > 
-> > This patch provides relative overhead percentage, in which each
-> > branch of the callchain tree is a independant instrumentated object.
-> > 
-> > You can produce such output by using the "relative" mode
-> > that you can lower in r, re, rel, etc...
-> > 
-> > ./perf report -s sym -c relative
-> > 
-> > Example:
-> > 
-> >      8.46%  [k] copy_user_generic_string
-> >                 |
-> >                 |--52.01%-- generic_file_aio_read
-> >                 |          do_sync_read
-> >                 |          vfs_read
-> >                 |          |
-> >                 |          |--97.20%-- sys_pread64
-> >                 |          |          system_call_fastpath
-> >                 |          |          pread64
-> >                 |          |
-> >                 |           --2.81%-- sys_read
-> >                 |                     system_call_fastpath
-> >                 |                     __read
-> >                 |
-> >                 |--39.85%-- generic_file_buffered_write
-> >                 |          __generic_file_aio_write_nolock
-> >                 |          generic_file_aio_write
-> >                 |          do_sync_write
-> >                 |          reiserfs_file_write
-> >                 |          vfs_write
-> >                 |          |
-> >                 |          |--97.05%-- sys_pwrite64
-> >                 |          |          system_call_fastpath
-> >                 |          |          __pwrite64
-> >                 |          |
-> >                 |           --2.95%-- sys_write
-> >                 |                     system_call_fastpath
-> >                 |                     __write_nocancel
-> > [...]
-> 
-> Wow, this is extremely intuitive and powerful looking!
-> 
-> It's basically a fractal structure: each sub-graph looks like a 
-> full-blown profile in itself. Thus the overhead of individual 
-> components of the graph profile can be analyzed without having to 
-> think in small numbers.
-> 
-> The above example shows it particularly well - it shows that in 
-> regard to generic_file_buffered_write() overhead, the system is 
-> doing 97% sys_pwrite64() calls and 3% sys_write() calls.
-> 
-> Thus i took the liberty to change your last patch in two ways: i 
-> renamed 'relative' to 'fractal' (it was not a proper counterpart to 
-> 'graph' anyway - we have no 'absolute' output mode name either), and 
-> i changed it to be the default output mode. This stuff rocks!
+Hello Pekka,
 
-
-
-Ok.
-
-I first planned to add a submode, or more likely a parameter structured
-like the following:
-
-perf report -c layout,min,mode
-
-where layout=flat|graph
-and   mode=abs|rel
-
-But relative flat doesn't make sense.
-fractal is nice, it's just a pity that "graph" mode doesn't tell much
-about it's absolute measure context.
- 
-> absolute-graph and flat mode can be displayed too, via the option, 
-> as usual.
+On Sun, 2009-07-05 at 14:59 +0300, Pekka Enberg wrote:
+> Hi Jaswinder,
 > 
-> 	Ingo
+> On Sun, Jul 5, 2009 at 9:02 AM, Jaswinder Singh
+> Rajput<jaswinder@kernel.org> wrote:
+> > On Sun, 2009-07-05 at 02:27 +0200, Ingo Molnar wrote:
+> >> * Yinghai Lu <yinghai@kernel.org> wrote:
+> >>
+> >> > >  static struct var_mtrr_range_state __initdata range_state[RANGE_NUM];
+> >> > > +
+> >> > >  static int __initdata debug_print;
+> >> > > +#define Dprintk(x...) do { if (debug_print) printk(KERN_DEBUG x); } while (0)
+> >> > > +
+> >> > > +
+> >> >
+> >> > two blank lines?
+> >>
+> >> ah, yes - i moved them around.
+> >>
+> >> > > +#define BIOS_BUG_MSG KERN_WARNING \
+> >> > > + "WARNING: BIOS bug: VAR MTRR %d contains strange UC entry under 1M, check with your system vendor!\n"
+> >> >
+> >> > No user for this
+> >>
+> >> yeah. Mind sending a patch for these? (and any other things you
+> >> might notice)
+> >>
+> >
+> > But why you did this stupidity.
+> >
+> > I clearly specified that these are trivial clean-ups, if you found any
+> > issue in the patch you should ping me. Instead of adding crap from your
+> > side.
+> 
+> What's with the attitude? It's perfectly okay for a commiter to change
+> the patch as long as it's mentioned in the changelog. And that's
+> usually much faster to do that for minor issues rather than ping the
+> original submitter and wait for a resend.
+> 
+
+I was also thankful to him but then he send me a long email and blamed
+me that I wasted his 6 hours to do further cleanup and solve bugs and
+other irrelevant things. And told me to not send further patches
+otherwise he will ignore it.
+
+He is doing mistakes and blaming others and misusing maintainer-ship.
+
+You still thinks it's perfectly okay.
+
+Thanks,
+--
+JSR
 
