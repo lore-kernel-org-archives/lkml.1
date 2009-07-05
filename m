@@ -1,380 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbZGEJ1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbZGEJwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbZGEJ1m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 05:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbZGEJ1d
+	id S1755078AbZGEJwh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 05:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbZGEJw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 05:27:33 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:6107
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756360AbZGEJ1b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 05:27:31 -0400
-Message-ID: <4A507203.8020001@panasas.com>
-Date: Sun, 05 Jul 2009 12:27:31 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Sun, 5 Jul 2009 05:52:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55401 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752302AbZGEJw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 05:52:27 -0400
+Date: Sun, 5 Jul 2009 09:51:51 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, anton@samba.org, paulus@samba.org,
+       acme@redhat.com, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, jens.axboe@oracle.com,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       anton@samba.org, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       efault@gmx.de, jens.axboe@oracle.com, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1246772361-9960-1-git-send-email-fweisbec@gmail.com>
+References: <1246772361-9960-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/urgent] perf report: Warn on callchain output request from non-callchain file
+Message-ID: <tip-91b4eaea93f5be95f4477554399680a53aff2343@git.kernel.org>
+Git-Commit-ID: 91b4eaea93f5be95f4477554399680a53aff2343
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Niel Lambrechts <niel.lambrechts@gmail.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <axboe@kernel.dk>
-Subject: Re: [PATCH 3/4] block: implement mixed merge of different failfast
- requests
-References: <1246610898-22350-1-git-send-email-tj@kernel.org> <1246610898-22350-4-git-send-email-tj@kernel.org>
-In-Reply-To: <1246610898-22350-4-git-send-email-tj@kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Jul 2009 09:27:34.0839 (UTC) FILETIME=[D4570C70:01C9FD52]
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 05 Jul 2009 09:51:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/03/2009 11:48 AM, Tejun Heo wrote:
-> Failfast has characteristics from other attributes.  When issuing,
-> executing and successuflly completing requests, failfast doesn't make
-> any difference.  It only affects how a request is handled on failure.
-> Allowing requests with different failfast settings to be merged cause
-> normal IOs to fail prematurely while not allowing has performance
-> penalties as failfast is used for read aheads which are likely to be
-> located near in-flight or to-be-issued normal IOs.
-> 
-> This patch introduces the concept of 'mixed merge'.  A request is a
-> mixed merge if it is merge of segments which require different
-> handling on failure.  Currently the only mixable attributes are
-> failfast ones (or lack thereof).
-> 
-> When a bio with different failfast settings is added to an existing
-> request or requests of different failfast settings are merged, the
-> merged request is marked mixed.  Each bio carries failfast settings
-> and the request always tracks failfast state of the first bio.  When
-> the request fails, blk_rq_err_bytes() can be used to determine how
-> many bytes can be safely failed without crossing into an area which
-> requires further retrials.
-> 
-> This allows request merging regardless of failfast settings while
-> keeping the failure handling correct.
-> 
-> This patch only implements mixed merge but doesn't enable it.  The
-> next one will update SCSI to make use of mixed merge.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Jens Axboe <axboe@kernel.dk>
-> Cc: Niel Lambrechts <niel.lambrechts@gmail.com>
-> ---
->  block/blk-core.c       |   99 ++++++++++++++++++++++++++++++++++++++++++++++++
->  block/blk-merge.c      |   43 +++++++++++++++++++++
->  block/blk.h            |    1 +
->  include/linux/blkdev.h |   23 +++++++++--
->  4 files changed, 161 insertions(+), 5 deletions(-)
-> 
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index cd3b265..0214837 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -1165,6 +1165,7 @@ static int __make_request(struct request_queue *q, struct bio *bio)
->  	const unsigned short prio = bio_prio(bio);
->  	const int sync = bio_sync(bio);
->  	const int unplug = bio_unplug(bio);
-> +	const unsigned int ff = bio->bi_rw & REQ_FAILFAST_MASK;
+Commit-ID:  91b4eaea93f5be95f4477554399680a53aff2343
+Gitweb:     http://git.kernel.org/tip/91b4eaea93f5be95f4477554399680a53aff2343
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Sun, 5 Jul 2009 07:39:17 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 5 Jul 2009 10:30:21 +0200
 
-Perhaps a bio_fail_fast(bio)
-and also an blk_failfast(rq).
+perf report: Warn on callchain output request from non-callchain file
 
-Also blk_noretry_request() could see some love now
+perf report segfaults while trying to handle callchains from a non
+callchain data file.
 
->  	int rw_flags;
->  
->  	if (bio_barrier(bio) && bio_has_data(bio) &&
-> @@ -1194,6 +1195,9 @@ static int __make_request(struct request_queue *q, struct bio *bio)
->  
->  		trace_block_bio_backmerge(q, bio);
->  
-> +		if ((req->cmd_flags & REQ_FAILFAST_MASK) != ff)
-> +			blk_rq_set_mixed_merge(req);
-> +
->  		req->biotail->bi_next = bio;
->  		req->biotail = bio;
->  		req->__data_len += bytes;
-> @@ -1213,6 +1217,12 @@ static int __make_request(struct request_queue *q, struct bio *bio)
->  
->  		trace_block_bio_frontmerge(q, bio);
->  
-> +		if ((req->cmd_flags & REQ_FAILFAST_MASK) != ff) {
-> +			blk_rq_set_mixed_merge(req);
-> +			req->cmd_flags &= ~REQ_FAILFAST_MASK;
-> +			req->cmd_flags |= ff;
-> +		}
-> +
->  		bio->bi_next = req->bio;
->  		req->bio = bio;
->  
-> @@ -1657,6 +1667,50 @@ int blk_insert_cloned_request(struct request_queue *q, struct request *rq)
->  }
->  EXPORT_SYMBOL_GPL(blk_insert_cloned_request);
->  
-> +/**
-> + * blk_rq_err_bytes - determine number of bytes till the next failure boundary
-> + * @rq: request to examine
-> + *
-> + * Description:
-> + *     A request could be merge of IOs which require different failure
-> + *     handling.  This function determines the number of bytes which
-> + *     can be failed from the beginning of the request without
-> + *     crossing into area which need to be retried further.
-> + *
-> + * Return:
-> + *     The number of bytes to fail.
-> + *
-> + * Context:
-> + *     queue_lock must be held.
-> + */
-> +unsigned int blk_rq_err_bytes(const struct request *rq)
-> +{
-> +	unsigned int ff = rq->cmd_flags & REQ_FAILFAST_MASK;
-> +	unsigned int bytes = 0;
-> +	struct bio *bio;
-> +
-> +	if (!(rq->cmd_flags & REQ_MIXED_MERGE))
-> +		return blk_rq_bytes(rq);
-> +
-> +	/*
-> +	 * Currently the only 'mixing' which can happen is between
-> +	 * different fastfail types.  We can safely fail portions
-> +	 * which have all the failfast bits that the first one has -
-> +	 * the ones which are at least as eager to fail as the first
-> +	 * one.
-> +	 */
-> +	for (bio = rq->bio; bio; bio = bio->bi_next) {
-> +		if ((bio->bi_rw & ff) != ff)
-> +			break;
-> +		bytes += bio->bi_size;
-> +	}
-> +
-> +	/* this could lead to infinite loop */
-> +	BUG_ON(blk_rq_bytes(rq) && !bytes);
-> +	return bytes;
-> +}
-> +EXPORT_SYMBOL_GPL(blk_rq_err_bytes);
-> +
->  static void blk_account_io_completion(struct request *req, unsigned int bytes)
->  {
->  	if (blk_do_io_stat(req)) {
-> @@ -2003,6 +2057,12 @@ bool blk_update_request(struct request *req, int error, unsigned int nr_bytes)
->  	if (blk_fs_request(req) || blk_discard_rq(req))
->  		req->__sector += total_bytes >> 9;
->  
-> +	/* mixed attributes always follow the first bio */
-> +	if (req->cmd_flags & REQ_MIXED_MERGE) {
-> +		req->cmd_flags &= ~REQ_FAILFAST_MASK;
-> +		req->cmd_flags |= req->bio->bi_rw & REQ_FAILFAST_MASK;
-> +	}
-> +
->  	/*
->  	 * If total number of sectors is less than the first segment
->  	 * size, something has gone terribly wrong.
-> @@ -2182,6 +2242,25 @@ bool blk_end_request_cur(struct request *rq, int error)
->  EXPORT_SYMBOL_GPL(blk_end_request_cur);
->  
->  /**
-> + * blk_end_request_err - Finish a request till the next failure boundary.
-> + * @rq: the request to finish till the next failure boundary for
-> + * @error: must be negative errno
-> + *
-> + * Description:
-> + *     Complete @rq till the next failure boundary.
-> + *
-> + * Return:
-> + *     %false - we are done with this request
-> + *     %true  - still buffers pending for this request
-> + */
-> +bool blk_end_request_err(struct request *rq, int error)
-> +{
-> +	WARN_ON(error >= 0);
-> +	return blk_end_request(rq, error, blk_rq_err_bytes(rq));
-> +}
-> +EXPORT_SYMBOL_GPL(blk_end_request_err);
-> +
-> +/**
->   * __blk_end_request - Helper function for drivers to complete the request.
->   * @rq:       the request being processed
->   * @error:    %0 for success, < %0 for error
-> @@ -2240,6 +2319,26 @@ bool __blk_end_request_cur(struct request *rq, int error)
->  }
->  EXPORT_SYMBOL_GPL(__blk_end_request_cur);
->  
-> +/**
-> + * __blk_end_request_err - Finish a request till the next failure boundary.
-> + * @rq: the request to finish till the next failure boundary for
-> + * @error: must be negative errno
-> + *
-> + * Description:
-> + *     Complete @rq till the next failure boundary.  Must be called
-> + *     with queue lock held.
-> + *
-> + * Return:
-> + *     %false - we are done with this request
-> + *     %true  - still buffers pending for this request
-> + */
-> +bool __blk_end_request_err(struct request *rq, int error)
-> +{
-> +	WARN_ON(error >= 0);
-> +	return __blk_end_request(rq, error, blk_rq_err_bytes(rq));
-> +}
-> +EXPORT_SYMBOL_GPL(__blk_end_request_err);
-> +
->  void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
->  		     struct bio *bio)
->  {
-> diff --git a/block/blk-merge.c b/block/blk-merge.c
-> index e199967..7c9ca01 100644
-> --- a/block/blk-merge.c
-> +++ b/block/blk-merge.c
-> @@ -311,6 +311,36 @@ static int ll_merge_requests_fn(struct request_queue *q, struct request *req,
->  	return 1;
->  }
->  
-> +/**
-> + * blk_rq_set_mixed_merge - mark a request as mixed merge
-> + * @rq: request to mark as mixed merge
-> + *
-> + * Description:
-> + *     @rq is about to be mixed merged.  Make sure the attributes
-> + *     which can be mixed are set in each bio and mark @rq as mixed
-> + *     merged.
-> + */
-> +void blk_rq_set_mixed_merge(struct request *rq)
-> +{
-> +	unsigned int ff = rq->cmd_flags & REQ_FAILFAST_MASK;
-> +	struct bio *bio;
-> +
-> +	if (rq->cmd_flags & REQ_MIXED_MERGE)
-> +		return;
-> +
-> +	/*
-> +	 * @rq will no longer represent mixable attributes for all the
-> +	 * contained bios.  It will just track those of the first one.
-> +	 * Distributes the attributs to each bio.
-> +	 */
-> +	for (bio = rq->bio; bio; bio = bio->bi_next) {
-> +		WARN_ON_ONCE((bio->bi_rw & REQ_FAILFAST_MASK) &&
-> +			     (bio->bi_rw & REQ_FAILFAST_MASK) != ff);
-> +		bio->bi_rw |= ff;
-> +	}
-> +	rq->cmd_flags |= REQ_MIXED_MERGE;
-> +}
-> +
->  static void blk_account_io_merge(struct request *req)
->  {
->  	if (blk_do_io_stat(req)) {
-> @@ -366,6 +396,19 @@ static int attempt_merge(struct request_queue *q, struct request *req,
->  		return 0;
->  
->  	/*
-> +	 * If failfast settings disagree or any of the two is already
-> +	 * a mixed merge, mark both as mixed before proceeding.  This
-> +	 * makes sure that all involved bios have mixable attributes
-> +	 * set properly.
-> +	 */
-> +	if ((req->cmd_flags | next->cmd_flags) & REQ_MIXED_MERGE ||
-> +	    (req->cmd_flags & REQ_FAILFAST_MASK) !=
-> +	    (next->cmd_flags & REQ_FAILFAST_MASK)) {
-> +		blk_rq_set_mixed_merge(req);
-> +		blk_rq_set_mixed_merge(next);
-> +	}
-> +
-> +	/*
->  	 * At this point we have either done a back merge
->  	 * or front merge. We need the smaller start_time of
->  	 * the merged requests to be the current request
-> diff --git a/block/blk.h b/block/blk.h
-> index 3fae6ad..5ee3d7e 100644
-> --- a/block/blk.h
-> +++ b/block/blk.h
-> @@ -104,6 +104,7 @@ int ll_front_merge_fn(struct request_queue *q, struct request *req,
->  int attempt_back_merge(struct request_queue *q, struct request *rq);
->  int attempt_front_merge(struct request_queue *q, struct request *rq);
->  void blk_recalc_rq_segments(struct request *rq);
-> +void blk_rq_set_mixed_merge(struct request *rq);
->  
->  void blk_queue_congestion_threshold(struct request_queue *q);
->  
-> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-> index a0e5ce1..e58079f 100644
-> --- a/include/linux/blkdev.h
-> +++ b/include/linux/blkdev.h
-> @@ -120,6 +120,7 @@ enum rq_flag_bits {
->  	__REQ_INTEGRITY,	/* integrity metadata has been remapped */
->  	__REQ_NOIDLE,		/* Don't anticipate more IO after this one */
->  	__REQ_IO_STAT,		/* account I/O stat */
-> +	__REQ_MIXED_MERGE,	/* merge of different types, fail separately */
->  	__REQ_NR_BITS,		/* stops here */
->  };
->  
-> @@ -148,6 +149,7 @@ enum rq_flag_bits {
->  #define REQ_INTEGRITY	(1 << __REQ_INTEGRITY)
->  #define REQ_NOIDLE	(1 << __REQ_NOIDLE)
->  #define REQ_IO_STAT	(1 << __REQ_IO_STAT)
-> +#define REQ_MIXED_MERGE	(1 << __REQ_MIXED_MERGE)
->  
->  #define REQ_FAILFAST_MASK	(REQ_FAILFAST_DEV | REQ_FAILFAST_TRANSPORT | \
->  				 REQ_FAILFAST_DRIVER)
-> @@ -836,11 +838,13 @@ static inline void blk_run_address_space(struct address_space *mapping)
->  }
->  
->  /*
-> - * blk_rq_pos()		: the current sector
-> - * blk_rq_bytes()	: bytes left in the entire request
-> - * blk_rq_cur_bytes()	: bytes left in the current segment
-> - * blk_rq_sectors()	: sectors left in the entire request
-> - * blk_rq_cur_sectors()	: sectors left in the current segment
-> + * blk_rq_pos()			: the current sector
-> + * blk_rq_bytes()		: bytes left in the entire request
-> + * blk_rq_cur_bytes()		: bytes left in the current segment
-> + * blk_rq_err_bytes()		: bytes left till the next error boundary
-> + * blk_rq_sectors()		: sectors left in the entire request
-> + * blk_rq_cur_sectors()		: sectors left in the current segment
-> + * blk_rq_err_sectors()		: sectors left till the next error boundary
->   */
->  static inline sector_t blk_rq_pos(const struct request *rq)
->  {
-> @@ -857,6 +861,8 @@ static inline int blk_rq_cur_bytes(const struct request *rq)
->  	return rq->bio ? bio_cur_bytes(rq->bio) : 0;
->  }
->  
-> +extern unsigned int blk_rq_err_bytes(const struct request *rq);
-> +
->  static inline unsigned int blk_rq_sectors(const struct request *rq)
->  {
->  	return blk_rq_bytes(rq) >> 9;
-> @@ -867,6 +873,11 @@ static inline unsigned int blk_rq_cur_sectors(const struct request *rq)
->  	return blk_rq_cur_bytes(rq) >> 9;
->  }
->  
-> +static inline unsigned int blk_rq_err_sectors(const struct request *rq)
-> +{
-> +	return blk_rq_err_bytes(rq) >> 9;
-> +}
-> +
->  /*
->   * Request issue related functions.
->   */
-> @@ -893,10 +904,12 @@ extern bool blk_end_request(struct request *rq, int error,
->  			    unsigned int nr_bytes);
->  extern void blk_end_request_all(struct request *rq, int error);
->  extern bool blk_end_request_cur(struct request *rq, int error);
-> +extern bool blk_end_request_err(struct request *rq, int error);
->  extern bool __blk_end_request(struct request *rq, int error,
->  			      unsigned int nr_bytes);
->  extern void __blk_end_request_all(struct request *rq, int error);
->  extern bool __blk_end_request_cur(struct request *rq, int error);
-> +extern bool __blk_end_request_err(struct request *rq, int error);
->  
->  extern void blk_complete_request(struct request *);
->  extern void __blk_complete_request(struct request *);
+Instead of a segfault, print a useful message to the user.
 
-Boaz
+Reported-by: Jens Axboe <jens.axboe@oracle.com>
+Reported-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1246772361-9960-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/builtin-report.c |   16 +++++++++++++---
+ 1 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index fa937f5..9f9575a 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -1684,9 +1684,19 @@ static int __cmd_report(void)
+ 
+ 	sample_type = perf_header__sample_type();
+ 
+-	if (sort__has_parent && !(sample_type & PERF_SAMPLE_CALLCHAIN)) {
+-		fprintf(stderr, "selected --sort parent, but no callchain data\n");
+-		exit(-1);
++	if (!(sample_type & PERF_SAMPLE_CALLCHAIN)) {
++		if (sort__has_parent) {
++			fprintf(stderr, "selected --sort parent, but no"
++					" callchain data. Did you call"
++					" perf record without -g?\n");
++			exit(-1);
++		}
++		if (callchain) {
++			fprintf(stderr, "selected -c but no callchain data."
++					" Did you call perf record without"
++					" -g?\n");
++			exit(-1);
++		}
+ 	}
+ 
+ 	if (load_kernel() < 0) {
