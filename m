@@ -1,92 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbZGEUq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbZGEVVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756549AbZGEUq0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 16:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbZGEUqP
+	id S1754659AbZGEVVh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 17:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbZGEVV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 16:46:15 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35635 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752845AbZGEUqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 16:46:14 -0400
-Message-ID: <4A5110B9.4030904@garzik.org>
-Date: Sun, 05 Jul 2009 16:44:41 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 5 Jul 2009 17:21:28 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:60665 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753743AbZGEVV1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 17:21:27 -0400
+Message-ID: <4A51194D.8000403@novell.com>
+Date: Sun, 05 Jul 2009 17:21:17 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: andi@firstfloor.org, arjan@infradead.org, matthew@wil.cx,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       douglas.w.styner@intel.com, chinang.ma@intel.com,
-       terry.o.prickett@intel.com, matthew.r.wilcox@intel.com,
-       Eric.Moore@lsi.com, DL-MPTFusionLinux@lsi.com, netdev@vger.kernel.org
-Subject: Re: >10% performance degradation since 2.6.18
-References: <20090705040137.GA7747@gondor.apana.org.au>
-In-Reply-To: <20090705040137.GA7747@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mst@redhat.com,
+       davidel@xmailserver.org
+Subject: Re: [KVM PATCH v9 0/5] irqfd fixes and enhancements
+References: <20090702153454.20186.99191.stgit@dev.haskins.net> <4A4CD729.6050300@redhat.com> <4A50723E.6030305@redhat.com>
+In-Reply-To: <4A50723E.6030305@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig3618C4AD8C6FF7C25E60662E"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> Jeff Garzik <jeff@garzik.org> wrote:
->> What's the best setup for power usage?
->> What's the best setup for performance?
->> Are they the same?
-> 
-> Yes.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig3618C4AD8C6FF7C25E60662E
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Is this a blind guess, or is there real world testing across multiple 
-setups behind this answer?
+Avi Kivity wrote:
+> On 07/02/2009 06:50 PM, Avi Kivity wrote:
+>> On 07/02/2009 06:37 PM, Gregory Haskins wrote:
+>>> (Applies to kvm.git/master:1f9050fd)
+>>>
+>>> The following is the latest attempt to fix the races in
+>>> irqfd/eventfd, as
+>>> well as restore DEASSIGN support.  For more details, please read the
+>>> patch
+>>> headers.
+>>>
+>>> As always, this series has been tested against the kvm-eventfd unit
+>>> test
+>>> and everything appears to be functioning properly. You can download
+>>> this
+>>> test here:
+>>
+>> Applied, thanks.
+>>
+>
+> ... and unapplied.  There's a refcounting mismatch in irqfd_cleanup: a
+> reference is taken for each irqfd, but dropped for each guest.
 
-Consider a 2-package, quad-core system with 3 userland threads actively 
-performing network communication, plus periodic, low levels of network 
-activity from OS utilities (such as nightly 'yum upgrade').
+Doh!
 
-That is essentially an under-utilized 8-CPU system.  For such a case, it 
-seems like a power win to idle or power down a few cores, or maybe even 
-an entire package.
+Note that the kvm->irqfds.init boolean was supposed to make it both
+acquire and release the reference on a per-vm basis.  Obviously,
+something is wrong. :)
 
-Efficient power usage means scaling _down_ when activity decreases.  A 
-blind "distribute network activity across all CPUs" policy does not 
-appear to be responsive to that type of situation.
+But I see later in the thread you guys have already figured out that
+only the last patch needs to be reverted.  Ill take a look at the last
+patch and fix the issue once I am back in the office tomorrow.  Sorry
+for the trouble.
+
+Kind Regards,
+-Greg
+
+>   This causes an oops if a guest with no irqfds is created and destroye=
+d:
+>
+> IP: [<ffffffff8105254a>] flush_workqueue+0x23/0x6e
+> PGD 0
+> Oops: 0000 [4] SMP
+> CPU 1
+> Modules linked in: kvm_intel kvm nfs lockd nfs_acl sco bridge stp bnep
+> l2cap bluetooth autofs4 sunrpc ipv6 dm_multipath uinput i5000_edac
+> e1000e edac_core iTCO_wdt
+>  iTCO_vendor_support i2c_i801 i2c_core e100 mii floppy pcspkr shpchp
+> serio_raw ata_generic pata_acpi [last unloaded: kvm]
+> Pid: 2088, comm: qemu Tainted: G      D =20
+> 2.6.27.19-170.2.35.fc10.x86_64 #1 TYAN Transport GT20-B5372
+> RIP: 0010:[<ffffffff8105254a>]  [<ffffffff8105254a>]
+> flush_workqueue+0x23/0x6e
+> RSP: 0018:ffff8801077d1b08  EFLAGS: 00010292
+> RAX: ffffffff8156de08 RBX: ffff8801097e8a50 RCX: 0000000000000000
+> RDX: 0000000000000000 RSI: 000000000000019f RDI: 0000000000000000
+> RBP: ffff8801077d1b28 R08: 0000000000000000 R09: ffffffff81140027
+> R10: ffff88012f402340 R11: ffff880125daf820 R12: ffffffff8156de10
+> R13: 0000000000000000 R14: ffff88012f449cd8 R15: ffff88012f002900
+> FS:  00007f9b67295950(0000) GS:ffff88012fc04980(0000)
+> knlGS:0000000000000000
+> CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
+> CR2: 0000000000000020 CR3: 0000000000201000 CR4: 00000000000026e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process qemu (pid: 2088, threadinfo ffff8801077d0000, task
+> ffff88012984c530)
+> Stack:  ffff8801077d1b28 ffff8801097e8a50 ffff8801097e8000
+> ffff8801097e8a68
+>  ffff8801077d1b58 ffffffffa01c4eec 0000000800000000 ffff8801097e8000
+>  ffff88012f449cd8 ffff88012c80c600 ffff8801077d1b78 ffffffffa01af34b
+> Call Trace:
+>  [<ffffffffa01c4eec>] kvm_irqfd_release+0x7a/0xcc [kvm]
+>  [<ffffffffa01af34b>] kvm_vm_release+0x18/0x27 [kvm]
+>  [<ffffffff810c14c7>] __fput+0xca/0x16d
+>  [<ffffffff810c157f>] fput+0x15/0x17
+>  [<ffffffff810bea29>] filp_close+0x67/0x72
+>  [<ffffffff810433ec>] put_files_struct+0x74/0xc8
+>  [<ffffffff81043488>] exit_files+0x48/0x51
+>  [<ffffffff81044de9>] do_exit+0x26a/0x8a0
+>  [<ffffffffa01da330>] ? vmx_vcpu_put+0x9/0xb [kvm_intel]
+>  [<ffffffff810454a1>] do_group_exit+0x82/0xaf
+>  [<ffffffff8104eabb>] get_signal_to_deliver+0x2b0/0x2dc
+>  [<ffffffff81010379>] ? sysret_signal+0x42/0x71
+>  [<ffffffff8100f45f>] do_notify_resume+0x90/0x93f
+>  [<ffffffff81060cca>] ? do_futex+0x90/0x973
+>  [<ffffffffa01ad956>] ? kvm_vcpu_ioctl+0x470/0x485 [kvm]
+>  [<ffffffff81333801>] ? trace_hardirqs_on_thunk+0x3a/0x3c
+>  [<ffffffff810616a2>] ? sys_futex+0xf5/0x113
+>  [<ffffffff81010379>] ? sysret_signal+0x42/0x71
+>  [<ffffffff81010737>] ptregscall_common+0x67/0xb0
+>
+> irqfd_cleanup.wq has never been initialized, but is destroyed.
+>
 
 
->> Is it most optimal to have the interrupt for socket $X occur on the same 
->> CPU as where the app is running?
-> 
-> Yes.
 
-Same question:  blind guess, or do you have numbers?
+--------------enig3618C4AD8C6FF7C25E60662E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Consider two competing CPU hogs:  a kernel with tons of netfilter tables 
-and rules, plus an application that uses a lot of CPU.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Can you not reach a threshold where it makes more sense to split kernel 
-and userland work onto different CPUs?
+iEYEARECAAYFAkpRGVEACgkQlOSOBdgZUxl6FwCfZr0+6SOV6HaFFHiLXrs0mD1y
+2X8Anifta5sQv8oPgzEDgTS60JeGWTq0
+=SKpz
+-----END PGP SIGNATURE-----
 
-
->> If yes, how to best handle when the scheduler moves app to another CPU?
->> Should we reprogram the NIC hardware flow steering mechanism at that point?
-> 
-> Not really.  For now the best thing to do is to pin everything
-> down and not move at all, because we can't afford to move.
-> 
-> The only way for moving to work is if we had the ability to get
-> the sockets to follow the processes.  That means, we must have
-> one RX queue per socket.
-
-That seems to presume it is impossible to reprogram the NIC RX queue 
-selection rules?
-
-If you can add a new 'flow' to a NIC hardware RX queue, surely you can 
-imagine a remove + add operation for a migrated 'flow'...  and thus, at 
-least on the NIC hardware level, flows can follow processes.
-
-	Jeff
-
-
+--------------enig3618C4AD8C6FF7C25E60662E--
