@@ -1,213 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbZGEMKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZGEMMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbZGEMKZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 08:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZGEMKO
+	id S1756218AbZGEMMT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 08:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZGEMMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 08:10:14 -0400
-Received: from mga14.intel.com ([143.182.124.37]:16057 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752978AbZGEMKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 08:10:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,351,1243839600"; 
-   d="scan'208";a="161644436"
-Date: Sun, 5 Jul 2009 20:10:03 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 4/5] add isolate pages vmstat
-Message-ID: <20090705121003.GB5252@localhost>
-References: <20090705181400.08F1.A69D9226@jp.fujitsu.com> <20090705182451.08FF.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090705182451.08FF.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 5 Jul 2009 08:12:10 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:44577 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753607AbZGEMMJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 08:12:09 -0400
+Date: Sun, 5 Jul 2009 14:12:00 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Julia Lawall <julia@diku.dk>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [lm-sensors] [PATCH 4/5] drivers/hwmon: Use resource_size
+Message-ID: <20090705141200.6b0deb34@hyperion.delvare>
+In-Reply-To: <Pine.LNX.4.64.0907050836530.27464@ask.diku.dk>
+References: <Pine.LNX.4.64.0907050836530.27464@ask.diku.dk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 05:25:32PM +0800, KOSAKI Motohiro wrote:
-> Subject: [PATCH] add isolate pages vmstat
+On Sun, 5 Jul 2009 08:37:14 +0200 (CEST), Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> If the system have plenty threads or processes, concurrent reclaim can
-> isolate very much pages.
-> Unfortunately, current /proc/meminfo and OOM log can't show it.
+> Use the function resource_size, which reduces the chance of introducing
+> off-by-one errors in calculating the resource size.
 > 
-> This patch provide the way of showing this information.
->
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
 > 
-> reproduce way
-> -----------------------
-> % ./hackbench 140 process 1000
->    => couse OOM
+> // <smpl>
+> @@
+> struct resource *res;
+> @@
 > 
-> Active_anon:4419 active_file:120 inactive_anon:1418
->  inactive_file:61 unevictable:0 isolated:45311
->                                          ^^^^^
->  dirty:0 writeback:580 unstable:0
->  free:27 slab_reclaimable:297 slab_unreclaimable:4050
->  mapped:221 kernel_stack:5758 pagetables:28219 bounce:0
+> - (res->end - res->start) + 1
+> + resource_size(res)
+> // </smpl>
 > 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 > 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 > ---
->  drivers/base/node.c    |    2 ++
->  fs/proc/meminfo.c      |    2 ++
->  include/linux/mmzone.h |    1 +
->  mm/page_alloc.c        |    6 ++++--
->  mm/vmscan.c            |    4 ++++
->  mm/vmstat.c            |    2 +-
->  6 files changed, 14 insertions(+), 3 deletions(-)
+>  drivers/hwmon/pc87427.c |    6 +++---
+>  drivers/hwmon/vt1211.c  |    6 +++---
+>  2 files changed, 6 insertions(+), 6 deletions(-)
 > 
-> Index: b/fs/proc/meminfo.c
-> ===================================================================
-> --- a/fs/proc/meminfo.c
-> +++ b/fs/proc/meminfo.c
-> @@ -65,6 +65,7 @@ static int meminfo_proc_show(struct seq_
->  		"Active(file):   %8lu kB\n"
->  		"Inactive(file): %8lu kB\n"
->  		"Unevictable:    %8lu kB\n"
-> +		"IsolatedPages:  %8lu kB\n"
->  		"Mlocked:        %8lu kB\n"
->  #ifdef CONFIG_HIGHMEM
->  		"HighTotal:      %8lu kB\n"
-> @@ -109,6 +110,7 @@ static int meminfo_proc_show(struct seq_
->  		K(pages[LRU_ACTIVE_FILE]),
->  		K(pages[LRU_INACTIVE_FILE]),
->  		K(pages[LRU_UNEVICTABLE]),
-> +		K(global_page_state(NR_ISOLATED)),
-
-Glad to see you renamed it to NR_ISOLATED :)
-But for the user visible name, how about IsolatedLRU?
-
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
-
->  		K(global_page_state(NR_MLOCK)),
->  #ifdef CONFIG_HIGHMEM
->  		K(i.totalhigh),
-> Index: b/include/linux/mmzone.h
-> ===================================================================
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -100,6 +100,7 @@ enum zone_stat_item {
->  	NR_BOUNCE,
->  	NR_VMSCAN_WRITE,
->  	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
-> +	NR_ISOLATED,		/* Temporary isolated pages from lru */
->  #ifdef CONFIG_NUMA
->  	NUMA_HIT,		/* allocated in intended node */
->  	NUMA_MISS,		/* allocated in non intended node */
-> Index: b/mm/page_alloc.c
-> ===================================================================
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2116,8 +2116,7 @@ void show_free_areas(void)
+> diff -u -p a/drivers/hwmon/pc87427.c b/drivers/hwmon/pc87427.c
+> --- a/drivers/hwmon/pc87427.c 2009-01-09 22:41:01.000000000 +0100
+> +++ b/drivers/hwmon/pc87427.c 2009-07-04 21:38:15.000000000 +0200
+> @@ -435,7 +435,7 @@ static int __devinit pc87427_probe(struc
+>  	/* This will need to be revisited when we add support for
+>  	   temperature and voltage monitoring. */
+>  	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> -	if (!request_region(res->start, res->end - res->start + 1, DRVNAME)) {
+> +	if (!request_region(res->start, resource_size(res), DRVNAME)) {
+>  		err = -EBUSY;
+>  		dev_err(&pdev->dev, "Failed to request region 0x%lx-0x%lx\n",
+>  			(unsigned long)res->start, (unsigned long)res->end);
+> @@ -475,7 +475,7 @@ exit_remove_files:
+>  		sysfs_remove_group(&pdev->dev.kobj, &pc87427_group_fan[i]);
 >  	}
+>  exit_release_region:
+> -	release_region(res->start, res->end - res->start + 1);
+> +	release_region(res->start, resource_size(res));
+>  exit_kfree:
+>  	platform_set_drvdata(pdev, NULL);
+>  	kfree(data);
+> @@ -500,7 +500,7 @@ static int __devexit pc87427_remove(stru
+>  	kfree(data);
 >  
->  	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
-> -		" inactive_file:%lu"
-> -		" unevictable:%lu"
-> +		" inactive_file:%lu unevictable:%lu isolated:%lu\n"
->  		" dirty:%lu writeback:%lu buffer:%lu unstable:%lu\n"
->  		" free:%lu slab_reclaimable:%lu slab_unreclaimable:%lu\n"
->  		" mapped:%lu pagetables:%lu bounce:%lu\n",
-> @@ -2126,6 +2125,7 @@ void show_free_areas(void)
->  		global_page_state(NR_INACTIVE_ANON),
->  		global_page_state(NR_INACTIVE_FILE),
->  		global_page_state(NR_UNEVICTABLE),
-> +		global_page_state(NR_ISOLATED),
->  		global_page_state(NR_FILE_DIRTY),
->  		global_page_state(NR_WRITEBACK),
->  		K(nr_blockdev_pages()),
-> @@ -2151,6 +2151,7 @@ void show_free_areas(void)
->  			" active_file:%lukB"
->  			" inactive_file:%lukB"
->  			" unevictable:%lukB"
-> +			" isolated:%lukB"
->  			" present:%lukB"
->  			" mlocked:%lukB"
->  			" dirty:%lukB"
-> @@ -2176,6 +2177,7 @@ void show_free_areas(void)
->  			K(zone_page_state(zone, NR_ACTIVE_FILE)),
->  			K(zone_page_state(zone, NR_INACTIVE_FILE)),
->  			K(zone_page_state(zone, NR_UNEVICTABLE)),
-> +			K(zone_page_state(zone, NR_ISOLATED)),
->  			K(zone->present_pages),
->  			K(zone_page_state(zone, NR_MLOCK)),
->  			K(zone_page_state(zone, NR_FILE_DIRTY)),
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1082,6 +1082,7 @@ static unsigned long shrink_inactive_lis
->  						-count[LRU_ACTIVE_ANON]);
->  		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
->  						-count[LRU_INACTIVE_ANON]);
-> +		__mod_zone_page_state(zone, NR_ISOLATED, nr_taken);
+>  	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> -	release_region(res->start, res->end - res->start + 1);
+> +	release_region(res->start, resource_size(res));
 >  
->  		if (scanning_global_lru(sc))
->  			zone->pages_scanned += nr_scan;
-> @@ -1131,6 +1132,7 @@ static unsigned long shrink_inactive_lis
->  			goto done;
->  
->  		spin_lock(&zone->lru_lock);
-> +		__mod_zone_page_state(zone, NR_ISOLATED, -nr_taken);
->  		/*
->  		 * Put back any unfreeable pages.
->  		 */
-> @@ -1232,6 +1234,7 @@ static void move_active_pages_to_lru(str
->  		}
->  	}
->  	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
-> +	__mod_zone_page_state(zone, NR_ISOLATED, -pgmoved);
->  	if (!is_active_lru(lru))
->  		__count_vm_events(PGDEACTIVATE, pgmoved);
+>  	return 0;
 >  }
-> @@ -1267,6 +1270,7 @@ static void shrink_active_list(unsigned 
->  		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
->  	else
->  		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -pgmoved);
-> +	__mod_zone_page_state(zone, NR_ISOLATED, pgmoved);
->  	spin_unlock_irq(&zone->lru_lock);
+> diff -u -p a/drivers/hwmon/vt1211.c b/drivers/hwmon/vt1211.c
+> --- a/drivers/hwmon/vt1211.c 2009-03-02 11:33:15.000000000 +0100
+> +++ b/drivers/hwmon/vt1211.c 2009-07-04 21:38:17.000000000 +0200
+> @@ -1136,7 +1136,7 @@ static int __devinit vt1211_probe(struct
+>  	}
 >  
->  	pgmoved = 0;  /* count referenced (mapping) mapped pages */
-> Index: b/mm/vmstat.c
-> ===================================================================
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -644,7 +644,7 @@ static const char * const vmstat_text[] 
->  	"nr_bounce",
->  	"nr_vmscan_write",
->  	"nr_writeback_temp",
-> -
-> +	"nr_isolated_pages",
->  #ifdef CONFIG_NUMA
->  	"numa_hit",
->  	"numa_miss",
-> Index: b/drivers/base/node.c
-> ===================================================================
-> --- a/drivers/base/node.c
-> +++ b/drivers/base/node.c
-> @@ -73,6 +73,7 @@ static ssize_t node_read_meminfo(struct 
->  		       "Node %d Active(file):   %8lu kB\n"
->  		       "Node %d Inactive(file): %8lu kB\n"
->  		       "Node %d Unevictable:    %8lu kB\n"
-> +		       "Node %d IsolatedPages:  %8lu kB\n"
->  		       "Node %d Mlocked:        %8lu kB\n"
->  #ifdef CONFIG_HIGHMEM
->  		       "Node %d HighTotal:      %8lu kB\n"
-> @@ -105,6 +106,7 @@ static ssize_t node_read_meminfo(struct 
->  		       nid, K(node_page_state(nid, NR_ACTIVE_FILE)),
->  		       nid, K(node_page_state(nid, NR_INACTIVE_FILE)),
->  		       nid, K(node_page_state(nid, NR_UNEVICTABLE)),
-> +		       nid, K(node_page_state(nid, NR_ISOLATED)),
->  		       nid, K(node_page_state(nid, NR_MLOCK)),
->  #ifdef CONFIG_HIGHMEM
->  		       nid, K(i.totalhigh),
-> 
+>  	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> -	if (!request_region(res->start, res->end - res->start + 1, DRVNAME)) {
+> +	if (!request_region(res->start, resource_size(res), DRVNAME)) {
+>  		err = -EBUSY;
+>  		dev_err(dev, "Failed to request region 0x%lx-0x%lx\n",
+>  			(unsigned long)res->start, (unsigned long)res->end);
+> @@ -1209,7 +1209,7 @@ EXIT_DEV_REMOVE:
+>  	dev_err(dev, "Sysfs interface creation failed (%d)\n", err);
+>  EXIT_DEV_REMOVE_SILENT:
+>  	vt1211_remove_sysfs(pdev);
+> -	release_region(res->start, res->end - res->start + 1);
+> +	release_region(res->start, resource_size(res));
+>  EXIT_KFREE:
+>  	platform_set_drvdata(pdev, NULL);
+>  	kfree(data);
+> @@ -1228,7 +1228,7 @@ static int __devexit vt1211_remove(struc
+>  	kfree(data);
+>  
+>  	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> -	release_region(res->start, res->end - res->start + 1);
+> +	release_region(res->start, resource_size(res));
+>  
+>  	return 0;
+>  }
+
+Applied, thanks.
+
+-- 
+Jean Delvare
