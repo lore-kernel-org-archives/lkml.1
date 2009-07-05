@@ -1,99 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751447AbZHAC62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751447AbZHAC62 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 22:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbZHAC61
+	id S1756828AbZGEOWS (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sun, 5 Jul 2009 10:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZGEOWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 22:58:27 -0400
-Received: from mga14.intel.com ([143.182.124.37]:59628 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbZHAC61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 22:58:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,305,1246863600"; 
-   d="scan'208";a="171164109"
-Date: Sat, 1 Aug 2009 10:58:13 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Martin Bligh <mbligh@google.com>
-Cc: Chad Talbott <ctalbott@google.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
-       "sandeen@redhat.com" <sandeen@redhat.com>,
-       Michael Davidson <md@google.com>
-Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
-Message-ID: <20090801025813.GB6542@localhost>
-References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com> <33307c790907281449k5e8d4f6cib2c93848f5ec2661@mail.gmail.com> <33307c790907290015m1e6b5666x9c0014cdaf5ed08@mail.gmail.com> <20090729114322.GA9335@localhost> <33307c790907291719r2caf7914xb543877464ba6fc2@mail.gmail.com> <33307c790907291828x6906e874l4d75e695116aa874@mail.gmail.com> <20090730020922.GD7326@localhost> <33307c790907291957n35c55afehfe809c6583b10a76@mail.gmail.com> <20090730031927.GA17669@localhost> <33307c790907301333i28b571eat29460164d558d370@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <33307c790907301333i28b571eat29460164d558d370@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 5 Jul 2009 10:22:09 -0400
+Received: from fb1.tech.numericable.fr ([82.216.111.51]:57486 "EHLO
+	fb1.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754169AbZGEOWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 10:22:08 -0400
+X-Greylist: delayed 504 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Jul 2009 10:22:07 EDT
+Subject: kernel 2.6.31-rc2 compilation warnings
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 05 Jul 2009 16:16:04 +0200
+Message-Id: <1246803364.15322.2.camel@athlon64_X2_Gentoo>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 31, 2009 at 04:33:09AM +0800, Martin Bligh wrote:
-> (BTW: background ... I'm not picking through this code for fun, I'm
-> trying to debug writeback problems introduced in our new kernel
-> that are affecting Google production workloads ;-))
-> 
-> >> Well, I see two problems. One is that we set more_io based on
-> >> whether s_more_io is empty or not before we finish the loop.
-> >> I can't see how this can be correct, especially as there can be
-> >> other concurrent writers. So somehow we need to check when
-> >> we exit the loop, not during it.
-> >
-> > It is correct inside the loop, however with some overheads.
-> >
-> > We put it inside the loop because sometimes the whole filesystem is
-> > skipped and we shall not set more_io on them whether or not s_more_io
-> > is empty.
-> 
-> My point was that you're setting more_io based on a condition
-> at a point in time that isn't when you return to the caller.
-> 
-> By the time you return to the caller (after several more loops
-> iterations), that condition may no longer be true.
+Hi all,
 
-You are right in that sense. Sorry that my claim of correctness is
-somehow biased: we normally care much about early abortion, and don't
-mind one extra trip over the superblocks. And the extra trip should be
-rare enough. I'd be surprised if you observed much of them in real
-workloads.
+Here are my compilation warnings for fresh 2.6.31-rc2 kernel, hope it 
+could help you to fix them.
 
-> One other way to address that would to be only to set if if we're
-> about to fall off the end of the loop, ie change it to:
-> 
-> if (!list_empty(&sb->s_more_io) && list_empty(&sb->s_io))
->        wbc->more_io = 1;
+Thanks for your attention and good job.
 
-Let more_io=0 when there are more inodes in s_io to be worked on?
-I cannot understand it, and suspect we are talking about imaginary
-problem on this point ;)
 
-> >> The other is that we're saying we are setting more_io when
-> >> nr_to_write is <=0 ... but we only really check it when
-> >> nr_to_write is > 0 ... I can't see how this can be useful?
-> >
-> > That's the caller's fault - I guess the logic was changed a bit by
-> > Jens in linux-next. I noticed this just now. It shall be fixed.
-> 
-> I am guessing you're setting more_io here because we're stopping
-> because our slice expired, presumably without us completing
-> all the io there was to do? That doesn't seem entirely accurate,
-> we could have finished all the pending IO (particularly given that
-> we can go over nr_to_write somewhat and send it negative).
-> Hence, I though that checking whether s_more_io and s_io were
-> empty at the time of return might be a more accurate check,
-> but on the other hand they are shared lists.
+------------------------------------------------------------------------
+warnings with CONFIG_ENABLE_MUST_CHECK=y
 
-Yes the current more_io logic is not entirely accurate, but I doubt we
-can gain much and the improvement can be done trivially (not the line
-of code, but the analyzes and tests involved).
 
-Anyway if you would take the time to push forward a patch for reducing
-the overheads of possible extra trips, I'll take the time to review it ;)
+scripts/kconfig/conf.c: In function 'conf_askvalue':
+scripts/kconfig/conf.c:105: warning: ignoring return value of 'fgets', 
+declared with attribute warn_unused_result
 
-Thanks,
-Fengguang
+scripts/kconfig/conf.c: In function 'conf_choice':
+scripts/kconfig/conf.c:307: warning: ignoring return value of 'fgets', 
+declared with attribute warn_unused_result
+
+In file included from scripts/kconfig/zconf.tab.c:2486:
+
+scripts/kconfig/confdata.c: In function 'conf_write':
+scripts/kconfig/confdata.c:508: warning: ignoring return value of 
+'fwrite', declared with attribute warn_unused_result
+
+scripts/kconfig/confdata.c: In function 'conf_write_autoconf':
+scripts/kconfig/confdata.c:745: warning: ignoring return value of 
+'fwrite', declared with attribute warn_unused_result
+scripts/kconfig/confdata.c:746: warning: ignoring return value of 
+'fwrite', declared with attribute warn_unused_result
+
+
+In file included from scripts/kconfig/zconf.tab.c:2487:
+
+scripts/kconfig/expr.c: In function 'expr_print_file_helper':
+scripts/kconfig/expr.c:1090: warning: ignoring return value of
+'fwrite', 
+declared with attribute warn_unused_result
+
+scripts/mod/modpost.c: In function 'get_markers':
+scripts/mod/modpost.c:1562: warning: ignoring return value of
+'asprintf', 
+declared with attribute warn_unused_result
+
+scripts/mod/modpost.c: In function 'add_marker':
+scripts/mod/modpost.c:1982: warning: ignoring return value of
+'asprintf', 
+declared with attribute warn_unused_result
+
+scripts/kallsyms.c: In function 'read_symbol':
+scripts/kallsyms.c:112: warning: ignoring return value of 'fgets', 
+declared with attribute warn_unused_result
+
+usr/gen_init_cpio.c: In function 'cpio_mkfile':
+usr/gen_init_cpio.c:357: warning: ignoring return value of 'fwrite', 
+declared with attribute warn_unused_result
+
+drivers/platform/x86/thinkpad_acpi.c: In function 'tpacpi_new_rfkill':
+drivers/platform/x86/thinkpad_acpi.c:1272: warning: ignoring return
+value 
+of 'rfkill_set_hw_state', declared with attribute warn_unused_result
+
+
+arch/x86/boot/compressed/mkpiggy.c: In function 'main':
+arch/x86/boot/compressed/mkpiggy.c:65: warning: ignoring return value
+of 
+'fread', declared with attribute warn_unused_result
+
+-------------------------------------------------------------------------
+warnings for variables length
+
+
+drivers/staging/comedi/comedi_fops.c: In function 'resize_async_buffer':
+drivers/staging/comedi/comedi_fops.c:2311: warning: format '%d' expects 
+type 'int', but argument 3 has type 'long int'
+
+drivers/staging/epl/EplApiGeneric.c: In function 'EplApiInitialize':
+drivers/staging/epl/EplApiGeneric.c:238: warning: comparison of
+distinct 
+pointer types lacks a cast
+
+drivers/staging/epl/EplApiLinuxKernel.c: In function 'EplLinIoctl':
+drivers/staging/epl/EplApiLinuxKernel.c:938: warning: comparison of 
+distinct pointer types lacks a cast
+
+drivers/staging/epl/EplSdoUdpu.c: In function 'EplSdoUdpuDelInstance':
+drivers/staging/epl/EplSdoUdpu.c:249: warning: passing argument 2 of 
+'send_sig' makes pointer from integer without a cast
+
+drivers/staging/epl/EplSdoUdpu.c: In function 'EplSdoUdpuConfig':
+drivers/staging/epl/EplSdoUdpu.c:299: warning: passing argument 2 of 
+'send_sig' makes pointer from integer without a cast
+
+drivers/staging/epl/ShbIpc-LinuxKernel.c: In function 
+'ShbIpcStopSignalingNewData':
+drivers/staging/epl/ShbIpc-LinuxKernel.c:571: warning: passing argument
+2 
+of 'send_sig' makes pointer from integer without a cast
+
+drivers/staging/epl/Edrv8139.c: In function 'EdrvInitOne':
+drivers/staging/epl/Edrv8139.c:1021: warning: passing argument 2 of 
+'request_irq' from incompatible pointer type
+
+-----------------------------------------------------------------------
+warnings for used_unitialized or defined_but_not_used variables
+
+
+drivers/uwb/i1480/i1480-est.c:94: warning: 'i1480_est_id_table' defined 
+but not used
+drivers/uwb/wlp/messages.c: In function 'wlp_parse_f0':
+
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[15]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[14]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[13]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[12]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[11]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[10]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[9]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[8]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[7]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[6]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[5]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[4]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[3]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'enonce.data[2]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[15]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[14]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[13]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[12]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[11]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[10]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[9]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[8]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[7]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[6]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[5]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[4]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[3]' may be used 
+uninitialized in this function
+drivers/uwb/wlp/messages.c:906: warning: 'rnonce.data[2]' may be used 
+uninitialized in this function
+
+drivers/uwb/whc-rc.c:451: warning: 'whcrc_id_table' defined but not used
+
+------------------------------------------------------------------------
+warning for section mismatch
+
+
+WARNING: drivers/staging/comedi/drivers/cb_pcidio.o(.text+0x1c6):
+Section 
+mismatch in reference from the function pcidio_attach() to the 
+variable .devinit.rodata:pcidio_pci_table
+The function pcidio_attach() references
+the variable __devinitconst pcidio_pci_table.
+This is often because pcidio_attach lacks a __devinitconst 
+annotation or the annotation of pcidio_pci_table is wrong.
+
