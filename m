@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbZGEAdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZGEAqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbZGEAdR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 20:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbZGEAdE
+	id S1753977AbZGEAqX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 20:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZGEAqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 20:33:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45875 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752812AbZGEAdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 20:33:04 -0400
-Date: Sun, 5 Jul 2009 02:32:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Anton Blanchard <anton@samba.org>
-Cc: Roland Dreier <rdreier@cisco.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] perf_counter tools: shorten names for events
-Message-ID: <20090705003239.GB28564@elte.hu>
-References: <1245760130.3776.6.camel@localhost.localdomain> <20090623195656.GC8777@elte.hu> <1245876060.3038.7.camel@localhost.localdomain> <20090625093346.GD23547@elte.hu> <1245934522.5308.39.camel@hpdv5.satnam> <ada3a9ol58t.fsf@cisco.com> <20090705002536.GA28060@kryten>
+	Sat, 4 Jul 2009 20:46:14 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:37627 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbZGEAqN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 20:46:13 -0400
+Date: Sat, 4 Jul 2009 20:44:04 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org
+Subject: [PATCH] SOUND: Remove commented out usage of dead MODULE_PARM().
+Message-ID: <alpine.LFD.2.00.0907042040540.10980@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090705002536.GA28060@kryten>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Anton Blanchard <anton@samba.org> wrote:
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-> 
-> Hi,
-> 
-> > IMHO "L1d" is too abbreviated for it to be obvious that it means L1 data
-> > cache.  If you want something really short maybe "L1-d$" might be a
-> > little clearer, but I stil like "L1-dcache" best.
-> 
-> There's one problem with L1-d$-* for event names. It took me a few goes
-> before I realised I was being hit by bash variable expansion:
-> 
-> 
-> #  perf stat -e L1-d$-loads ls
-> 
->  usage: perf stat [<options>] <command>
-> 
-> ...
-> 
-> 
-> # perf stat -e 'L1-d$-loads' ls
-> 
->  Performance counter stats for 'ls':
-> 
->         1273291  L1-d$-loads             
-> 
->     0.004434037  seconds time elapsed
-> 
-> 
-> I also prefer the more verbose L1-dcache-* names, and since we 
-> support aliases its mostly a matter of screen real estate when 
-> printing out the statistics.
+---
 
-ok - mind sending a patch for this?
+  get rid of that commented usage of the now defunct MODULE_PARM macro
+simply because it pollutes a scan for actual references to that dead
+macro.
 
-	Ingo
+diff --git a/sound/oss/swarm_cs4297a.c b/sound/oss/swarm_cs4297a.c
+index 1edab7b..3136c88 100644
+--- a/sound/oss/swarm_cs4297a.c
++++ b/sound/oss/swarm_cs4297a.c
+@@ -110,9 +110,6 @@ static void start_adc(struct cs4297a_state *s);
+ // rather than 64k as some of the games work more responsively.
+ // log base 2( buff sz = 32k).
+
+-//static unsigned long defaultorder = 3;
+-//MODULE_PARM(defaultorder, "i");
+-
+ //
+ // Turn on/off debugging compilation by commenting out "#define CSDEBUG"
+ //
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
