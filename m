@@ -1,133 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbZGEGh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbZGEGjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbZGEGh7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 02:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZGEGhu
+	id S1755826AbZGEGjB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 02:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZGEGix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 02:37:50 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:48560 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751641AbZGEGht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 02:37:49 -0400
-Date: Sun, 5 Jul 2009 08:37:50 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: linux-i2c@vger.kernel.org, linus.walleij@stericsson.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/5] drivers/i2c: Use resource_size
-Message-ID: <Pine.LNX.4.64.0907050837160.27464@ask.diku.dk>
+	Sun, 5 Jul 2009 02:38:53 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:51796 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752440AbZGEGiw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 02:38:52 -0400
+Date: Sun, 5 Jul 2009 12:08:50 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: lizf@cn.fujitzu.com, serue@us.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, bblum@google.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] CGroups: cgroup member list enhancement/fix
+Message-ID: <20090705063850.GX11273@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+* menage@google.com <menage@google.com> [2009-07-02 16:26:15]:
 
-Use the function resource_size, which reduces the chance of introducing
-off-by-one errors in calculating the resource size.
+> The following series (written by Ben Blum) adds a "cgroup.procs" file
+> to each cgroup that reports unique tgids rather than pids, and fixes a
+> pid namespace bug in the existing "tasks" file that could cause
+> readers in different namespaces to interfere with one another.
+> 
+> The patches as a pair provide similar functionality to Li Zefan's
+> patch posted yesterday, with the addition on the "cgroup.procs" file;
+> if it's decided that Li's patch needs to be fast-tracked to 2.6.31,
+> then these patches can be rebased as a small extension of Li's patch;
+> if Li'z patch doesn't need to go to 2.6.31 then it makes more sense to
+> take this pair since they provide more overall functionality.
+>
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+Paul, I don't see an interface to migrate all procs or at-least I
+can't read it in the changelog. As discussed in the containers
+mini-summit in 2008, it would be a nice thing to have (I've not looked
+at the implementation yet).
+ 
+> ---
+> 
+> Ben Blum (2):
+>       Adds a read-only "procs" file similar to "tasks" that shows only unique tgids
+>       Ensures correct concurrent opening/reading of pidlists across pid namespaces
+> 
+> 
+>  include/linux/cgroup.h |   46 +++++-
+>  kernel/cgroup.c        |  355 +++++++++++++++++++++++++++++++++---------------
+>  2 files changed, 285 insertions(+), 116 deletions(-)
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
 
-// <smpl>
-@@
-struct resource *res;
-@@
-
-- (res->end - res->start) + 1
-+ resource_size(res)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/i2c/busses/i2c-davinci.c   |    6 +++---
- drivers/i2c/busses/i2c-omap.c      |    6 +++---
- drivers/i2c/busses/i2c-sh_mobile.c |    2 +-
- drivers/i2c/busses/i2c-simtec.c    |    2 +-
- 4 files changed, 8 insertions(+), 8 deletions(-)
-
-diff -u -p a/drivers/i2c/busses/i2c-davinci.c b/drivers/i2c/busses/i2c-davinci.c
---- a/drivers/i2c/busses/i2c-davinci.c 2009-03-28 23:34:54.000000000 +0100
-+++ b/drivers/i2c/busses/i2c-davinci.c 2009-07-04 21:38:17.000000000 +0200
-@@ -505,7 +505,7 @@ static int davinci_i2c_probe(struct plat
- 		return -ENODEV;
- 	}
- 
--	ioarea = request_mem_region(mem->start, (mem->end - mem->start) + 1,
-+	ioarea = request_mem_region(mem->start, resource_size(mem),
- 				    pdev->name);
- 	if (!ioarea) {
- 		dev_err(&pdev->dev, "I2C region already claimed\n");
-@@ -568,7 +568,7 @@ err_free_mem:
- 	put_device(&pdev->dev);
- 	kfree(dev);
- err_release_region:
--	release_mem_region(mem->start, (mem->end - mem->start) + 1);
-+	release_mem_region(mem->start, resource_size(mem));
- 
- 	return r;
- }
-@@ -591,7 +591,7 @@ static int davinci_i2c_remove(struct pla
- 	kfree(dev);
- 
- 	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	release_mem_region(mem->start, (mem->end - mem->start) + 1);
-+	release_mem_region(mem->start, resource_size(mem));
- 	return 0;
- }
- 
-diff -u -p a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
---- a/drivers/i2c/busses/i2c-omap.c 2009-06-24 21:18:49.000000000 +0200
-+++ b/drivers/i2c/busses/i2c-omap.c 2009-07-04 21:38:17.000000000 +0200
-@@ -806,7 +806,7 @@ omap_i2c_probe(struct platform_device *p
- 		return -ENODEV;
- 	}
- 
--	ioarea = request_mem_region(mem->start, (mem->end - mem->start) + 1,
-+	ioarea = request_mem_region(mem->start, resource_size(mem),
- 			pdev->name);
- 	if (!ioarea) {
- 		dev_err(&pdev->dev, "I2C region already claimed\n");
-@@ -905,7 +905,7 @@ err_free_mem:
- 	platform_set_drvdata(pdev, NULL);
- 	kfree(dev);
- err_release_region:
--	release_mem_region(mem->start, (mem->end - mem->start) + 1);
-+	release_mem_region(mem->start, resource_size(mem));
- 
- 	return r;
- }
-@@ -925,7 +925,7 @@ omap_i2c_remove(struct platform_device *
- 	iounmap(dev->base);
- 	kfree(dev);
- 	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	release_mem_region(mem->start, (mem->end - mem->start) + 1);
-+	release_mem_region(mem->start, resource_size(mem));
- 	return 0;
- }
- 
-diff -u -p a/drivers/i2c/busses/i2c-sh_mobile.c b/drivers/i2c/busses/i2c-sh_mobile.c
---- a/drivers/i2c/busses/i2c-sh_mobile.c 2009-01-09 22:41:01.000000000 +0100
-+++ b/drivers/i2c/busses/i2c-sh_mobile.c 2009-07-04 21:38:18.000000000 +0200
-@@ -563,7 +563,7 @@ static int sh_mobile_i2c_probe(struct pl
- 		goto err_irq;
- 	}
- 
--	size = (res->end - res->start) + 1;
-+	size = resource_size(res);
- 
- 	pd->reg = ioremap(res->start, size);
- 	if (pd->reg == NULL) {
-diff -u -p a/drivers/i2c/busses/i2c-simtec.c b/drivers/i2c/busses/i2c-simtec.c
---- a/drivers/i2c/busses/i2c-simtec.c 2008-12-07 19:29:06.000000000 +0100
-+++ b/drivers/i2c/busses/i2c-simtec.c 2009-07-04 21:38:16.000000000 +0200
-@@ -92,7 +92,7 @@ static int simtec_i2c_probe(struct platf
- 		goto err;
- 	}
- 
--	size = (res->end-res->start)+1;
-+	size = resource_size(res);
- 
- 	pd->ioarea = request_mem_region(res->start, size, dev->name);
- 	if (pd->ioarea == NULL) {
+-- 
+	Balbir
