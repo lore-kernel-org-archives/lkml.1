@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbZGENJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbZGENT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbZGENJe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 09:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbZGENJY
+	id S1756746AbZGENT5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 09:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756712AbZGENTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 09:09:24 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:60036 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754423AbZGENJY (ORCPT
+	Sun, 5 Jul 2009 09:19:46 -0400
+Received: from mail-vw0-f202.google.com ([209.85.212.202]:63898 "EHLO
+	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756541AbZGENTo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 09:09:24 -0400
-Date: Sun, 5 Jul 2009 07:09:26 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Jeff Garzik <jeff@garzik.org>, andi@firstfloor.org, arjan@infradead.org,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       douglas.w.styner@intel.com, chinang.ma@intel.com,
-       terry.o.prickett@intel.com, matthew.r.wilcox@intel.com,
-       netdev@vger.kernel.org, Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: Re: >10% performance degradation since 2.6.18
-Message-ID: <20090705130926.GS5480@parisc-linux.org>
-References: <4A4F1EA0.3070501@garzik.org> <20090705040137.GA7747@gondor.apana.org.au>
+	Sun, 5 Jul 2009 09:19:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=nFYqPoEtT/B2eQS8E33Z1y5Yt0hz5OboSmes6NqWc77rjnoQqVtGWCJZgClP7OzMpu
+         1gODdbufv2eXikGlQn0KGl53P9sVyUMgdvrrDN4f6/2d8wdtIn1MORm3ng2aqULXGBLS
+         5wsl0lsV5gbgEhGbijNYEoGg64vbiWJTWfla4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090705040137.GA7747@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090705130200.GA6585@localhost>
+References: <20090705182533.0902.A69D9226@jp.fujitsu.com>
+	 <20090705121308.GC5252@localhost>
+	 <20090705211739.091D.A69D9226@jp.fujitsu.com>
+	 <20090705130200.GA6585@localhost>
+Date: Sun, 5 Jul 2009 22:19:47 +0900
+X-Google-Sender-Auth: df827bc40124cbde
+Message-ID: <2f11576a0907050619t5dea33cfwc46344600c2b17b5@mail.gmail.com>
+Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 12:01:37PM +0800, Herbert Xu wrote:
-> > If yes, how to best handle when the scheduler moves app to another CPU?
-> > Should we reprogram the NIC hardware flow steering mechanism at that point?
-> 
-> Not really.  For now the best thing to do is to pin everything
-> down and not move at all, because we can't afford to move.
-> 
-> The only way for moving to work is if we had the ability to get
-> the sockets to follow the processes.  That means, we must have
-> one RX queue per socket.
+>> > > + printk("%ld total anon pages\n", global_page_state(NR_ANON_PAGES));
+>> > >   printk("%ld total pagecache pages\n", global_page_state(NR_FILE_PAGES));
+>> >
+>> > Can we put related items together, ie. this looks more friendly:
+>> >
+>> >         Anon:XXX active_anon:XXX inactive_anon:XXX
+>> >         File:XXX active_file:XXX inactive_file:XXX
+>>
+>> hmmm. Actually NR_ACTIVE_ANON + NR_INACTIVE_ANON != NR_ANON_PAGES.
+>> tmpfs pages are accounted as FILE, but it is stay in anon lru.
+>
+> Right, that's exactly the reason I propose to put them together: to
+> make the number of tmpfs pages obvious.
+>
+>> I think your proposed format easily makes confusion. this format cause to
+>> imazine Anon = active_anon + inactive_anon.
+>
+> Yes it may confuse normal users :(
+>
+>> At least, we need to use another name, I think.
+>
+> Hmm I find it hard to work out a good name.
+>
+> But instead, it may be a good idea to explicitly compute the tmpfs
+> pages, because the excessive use of tmpfs pages could be a common
+> reason of OOM.
 
-Maybe not one RX queue per socket -- sockets belonging to the same
-thread could share the same RX queue.  I'm fairly ignorant of the way
-networking works these days; is it possible to dynamically reassign a
-socket between RX queues, so we'd only need one RX queue per CPU?
-
-It seems the 82575 device has four queues per port, and it's a dual-port
-card, so that's eight queues in the system.  We'd need hundreds of queues
-to get one queue per client process.  The 82576 has sixteen queues per
-port, but that's still not enough (funnily, the driver still limits you
-to four per port).
-
-For what it's worth, I believe the current setup pins the client tasks to
-a package, but they are allowed to move between cores on that package.
-My information may be out of date; hopefully Doug, Chinang or Terry can
-clarify how the tasks are currently bound.
-
-I know this test still uses SCHED_RR for the client tasks (using
-SCHED_OTHER results in another couple of percentage points off the
-overall performance).
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Yeah,  explicite tmpfs/shmem accounting is also useful for /proc/meminfo.
