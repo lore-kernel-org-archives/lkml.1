@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZGETgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZGETqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519AbZGETgZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 15:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZGETgO
+	id S1754036AbZGETqT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 15:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZGETqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 15:36:14 -0400
-Received: from mail-vw0-f202.google.com ([209.85.212.202]:45421 "EHLO
-	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752778AbZGETgN convert rfc822-to-8bit (ORCPT
+	Sun, 5 Jul 2009 15:46:07 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:47739 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752778AbZGETqF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 15:36:13 -0400
+	Sun, 5 Jul 2009 15:46:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=JzynYnZzGX3Mi/EJmXMyBK2l0bkV1EbBDBt+s62G3LA+9zqpArN6sbX+Vfhy2C8Drq
-         LNRRM9qX0HSYpK5KfKhFrrm+E5Iu5ejT+vCn80XvlY/foH2aO7QPTAiW8bYPpeJjG9GS
-         17A0kpz/kyIA/N1wINuwaSBD4gNHSOUPb/6CM=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=e4cMH92IG3MEFEoguHEq/bj863tKCPeA+STWubuUhagV6s4kfrKrqaQPz809AD3rKm
+         LZcuxwNXSGkjbBxvtfpR230WXJB9a4z0Q4S+5ySZX2ed7hdUb0YX1v0OINra8aa1Pwqv
+         zayh5/oNqDEenyZq6YkbbOg4lfD8J7C9BS2HQ=
+Date: Sun, 5 Jul 2009 23:46:08 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC -tip] x86,apic -- reduce disable_apic usage
+Message-ID: <20090705194608.GL4791@lenovo>
+References: <20090705162044.GC4791@lenovo> <alpine.LFD.2.00.0907051737100.13862@eddie.linux-mips.org> <4A50E323.6060109@zytor.com> <20090705190211.GK4791@lenovo> <4A50FC68.1030002@zytor.com>
 MIME-Version: 1.0
-In-Reply-To: <E1MLruc-0007O1-Sp@pomaz-ex.szeredi.hu>
-References: <E1MLa4R-00054S-94@pomaz-ex.szeredi.hu> <2547.1246393535@redhat.com> 
-	<E1MLruc-0007O1-Sp@pomaz-ex.szeredi.hu>
-From: Ulrich Drepper <drepper@gmail.com>
-Date: Sun, 5 Jul 2009 12:35:51 -0700
-Message-ID: <a36005b50907051235h17f559c6w1937998c7eec0b0@mail.gmail.com>
-Subject: Re: [RFC PATCH] vfs: new open(2) flag to open filesystem node
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: dhowells@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@infradead.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, adilger@sun.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A50FC68.1030002@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 21:59, Miklos Szeredi<miklos@szeredi.hu> wrote:
-> This patch adds a new open flag, O_NODE.  This flag means: open just
-> the filesystem node instead of the object referenced by the node.
+[H. Peter Anvin - Sun, Jul 05, 2009 at 12:18:00PM -0700]
+| Cyrill Gorcunov wrote:
+| > 
+| > Peter, Maciej but how kernel behaved on older cpu long time ago?
+| > 
+| > I mean -- should user pass "lapic" cmdline option too be
+| > able to use apic functionality? (i'm asking since I just
+| > don't know how it had been working before). Current
+| > code (if only I'm not _missing_ something) relies on cpu_has_apic
+| > bit. And even if MP table has been parsed and APIC base found,
+| > cpu_has_apic could be not set so detect_init_APIC will fail
+| > if no "lapic" option passed (in case of old cpu without this cpuid
+| > bit produced) as we eventually stay with pic mode.
+| > 
+| 
+| Well, systems with discrete APICs were few and far between.  I'm not
+| sure if there are any such systems still in meaningful existence (kind
+| of like Voyager.)  That makes it a bit hard to test things, and
+| certainly means we shouldn't bend over backwards in doing *anything*
+| that could possibly break other machines.
+| 
+| 	-hpa
+| 
 
-I am still not sure whether this shouldn't rather be an implementation
-of POSIX's O_SEARCH or whether it is already an O_SEARCH
-implementation. If it's close enough it seems wasteful to add yet
-another mode.  I probably cannot research it this coming week but can
-try to look at it the week after that.
+Then this patch (eventually) should be dropped. I need to re-check
+all this.
+
+	-- Cyrill
