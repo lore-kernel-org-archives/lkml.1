@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZGELAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZGEKjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbZGELAh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 07:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbZGELA3
+	id S1754475AbZGEKjI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 06:39:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZGEKiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 07:00:29 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:49833 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbZGELA3 (ORCPT
+	Sun, 5 Jul 2009 06:38:55 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54836 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065AbZGEKiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 07:00:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ZV3Yyc4nkbutCfN6kgzqG8miZ/IZhcOpoTKVYPMzVJzsruRw7PdJzs1X5C1DxTB8Jf
-         VeCLXvPNxaXofuQ8FNASg35KEHmqYqK2ecPlLBGMe3s0X6VOpSZTWGDLnb8i5F8CIYcN
-         6jW1oE0AaQ1QsTr+Fy3zBNWMlBGsp4jKAeQWY=
+	Sun, 5 Jul 2009 06:38:55 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@gmail.com>
+Subject: Re: Found the commit that causes the OOMs
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       David Howells <dhowells@redhat.com>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+In-Reply-To: <20090705095520.GA31587@localhost>
+References: <4A4AD07E.2040508@redhat.com> <20090705095520.GA31587@localhost>
+Message-Id: <20090705193551.090E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Date: Sun, 5 Jul 2009 12:00:31 +0100
-Message-ID: <6278d2220907050400k1359df3av4045d3bba07d2be7@mail.gmail.com>
-Subject: Re: >10% performance degradation since 2.6.18
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Sun,  5 Jul 2009 19:38:54 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 3, 9:10 pm, Arjan van de Ven <ar...@infradead.org> wrote:
-> On Fri, 3 Jul 2009 21:54:58 +0200
->
-> Andi Kleen <a...@firstfloor.org> wrote:
-> > > That would seem to be a fruitful avenue of
-> > > investigation -- whether limiting the cards to a single RX/TX
-> > > interrupt would be advantageous, or whether spreading the eight
-> > > interrupts out over the CPUs would be advantageous.
->
-> > The kernel should really do the per cpu binding of MSIs by default.
->
-> ... so that you can't do power management on a per socket basis?
-> hardly a good idea.
->
-> just need to use a new enough irqbalance and it will spread out the
-> interrupts unless your load is low enough to go into low power mode.
+> >> OK. thanks.
+> >> I plan to submit this patch after small more tests. it is useful for OOM analysis.
+> >
+> > It is also useful for throttling page reclaim.
+> >
+> > If more than half of the inactive pages in a zone are
+> > isolated, we are probably beyond the point where adding
+> > additional reclaim processes will do more harm than good.
+> 
+> Maybe we can try limiting the isolation phase of direct reclaims to
+> one per CPU?
+> 
+>         mutex_lock(per_cpu_lock);
+>         isolate_pages();
+>         shrink_page_list();
+>         put_back_pages();
+>         mutex_unlock(per_cpu_lock);
+> 
+> This way the isolated pages as well as major parts of direct reclaims
+> will be bounded by CPU numbers. The added overheads should be trivial
+> comparing to the reclaim costs.
 
-I was finding newer kernels (>~2.6.24) would set the Redirection Hint
-bit in the MSI address vector, allowing the processors to deliver the
-interrupt to the lowest interrupt priority (eg idle, no powersave)
-core (http://www.intel.com/Assets/PDF/manual/253668.pdf pp10-66) and
-older irqbalance daemons would periodically naively rewrite the
-bitmask of cores, delivering the interrupt to a static one.
+hm, this idea makes performance degression on few CPU machine, I think.
 
-Thus, it may be worth checking if disabling any older irqbalance
-daemon gives any win.
+e.g.
+if system have only one cpu and sysmtem makes lumpy reclaim, lumpy reclaim
+makes synchronous pageout and it makes very long waiting time.
 
-Perhaps there is value in writing different subsets of cores to the
-MSI address vector core bitmask (with the redirection hint enabled)
-for different I/O queues on heavy interrupt sources? By default, it's
-all cores.
+I suspect per-cpu decision is not useful in this area.
 
-Daniel
--- 
-Daniel J Blueman
+thanks.
+
+
