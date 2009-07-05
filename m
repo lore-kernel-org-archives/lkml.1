@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZGEKJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbZGEKRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbZGEKJo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 06:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZGEKJf
+	id S1755581AbZGEKRM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 06:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZGEKRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 06:09:35 -0400
-Received: from mail-ew0-f211.google.com ([209.85.219.211]:39044 "EHLO
-	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751221AbZGEKJe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 06:09:34 -0400
-X-Greylist: delayed 357 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Jul 2009 06:09:34 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uloPYRqrrEzwOfWe3wTsiQgi2EqU5OAC804gImUebFVL0RYu3hwna2ZdFaShnvnqvy
-         a0GyccjAFSa10wMzmF8ka3LS4z1y86HsMtLYu1HZqddztRAwroel28gL+hcwnRBGeU5o
-         Tox1wY+v/PAevOCn7iHC4w3y7951zWpjTfZzg=
+	Sun, 5 Jul 2009 06:17:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33573 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751221AbZGEKRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 06:17:00 -0400
+Date: Sun, 5 Jul 2009 13:16:24 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v9 0/5] irqfd fixes and enhancements
+Message-ID: <20090705101623.GA3014@redhat.com>
+References: <20090702153454.20186.99191.stgit@dev.haskins.net> <4A4CD729.6050300@redhat.com> <4A50723E.6030305@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20090629131440.GN5139@amd.com>
-References: <6278d2220906280405y731f7f2l65472ec5f62dbc83@mail.gmail.com>
-	 <20090629131440.GN5139@amd.com>
-Date: Sun, 5 Jul 2009 11:03:40 +0100
-Message-ID: <6278d2220907050303y5442cb05h6098a9c7a6beeb6e@mail.gmail.com>
-Subject: Re: [2.6.30-rc1] lockdep false positive in DMA debug API...
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A50723E.6030305@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 2:14 PM, Joerg Roedel<joerg.roedel@amd.com> wrote:
-> On Sun, Jun 28, 2009 at 12:05:17PM +0100, Daniel J Blueman wrote:
->> With 2.6.30-rc1, I'm seeing the lockdep validator spinning it's wheels
->> [1] (also already seen [2]) on the DMA debug interface, with the
->> hashed locks.
+On Sun, Jul 05, 2009 at 12:28:30PM +0300, Avi Kivity wrote:
+> On 07/02/2009 06:50 PM, Avi Kivity wrote:
+>> On 07/02/2009 06:37 PM, Gregory Haskins wrote:
+>>> (Applies to kvm.git/master:1f9050fd)
+>>>
+>>> The following is the latest attempt to fix the races in  
+>>> irqfd/eventfd, as
+>>> well as restore DEASSIGN support.  For more details, please read the  
+>>> patch
+>>> headers.
+>>>
+>>> As always, this series has been tested against the kvm-eventfd unit test
+>>> and everything appears to be functioning properly. You can download this
+>>> test here:
+>>
+>> Applied, thanks.
+>>
 >
-> If you don't actually mean 2.6.3_1_-rc1 this is a known bug which was
-> fixed for 2.6.30-final.
+> ... and unapplied.  There's a refcounting mismatch in irqfd_cleanup: a  
+> reference is taken for each irqfd, but dropped for each guest.  This  
+> causes an oops if a guest with no irqfds is created and destroyed:
 
-It's in 2.6.30 proper, but is now fixed in 2.6.31-rc and 2.6.30.1 by
-"dma-debug: Put all hash-chain locks into the same lock class":
-http://groups.google.com/group/linux.kernel/browse_thread/thread/73ae3a0fc04185c8#
+Ugh, apparently this logic has been changed between I acked v7 of the
+patches and between Avi applied v9. Will have to find the time to redo
+the review - or maybe just go back to v7? Is on-demand wq creation
+really that important?
 
-Thanks anyway!
-  Daniel
 -- 
-Daniel J Blueman
+MST
