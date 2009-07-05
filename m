@@ -1,72 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbZGEQdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbZGEQeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbZGEQdg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 12:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbZGEQco
+	id S1757468AbZGEQeN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 12:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbZGEQd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 12:32:44 -0400
-Received: from fifo99.com ([67.223.236.141]:41198 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756793AbZGEQcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 12:32:43 -0400
-From: Daniel Walker <dwalker@fifo99.com>
-To: Greg Kroah-Hartman <greg@kroah.com>
-Cc: =?utf-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
-       Brian Swetland <swetland@google.com>, linux-kernel@vger.kernel.org,
-       Daniel Walker <dwalker@fifo99.com>
-Subject: [PATCH 4/4] staging: android: binder: partial checkpatch cleanup
-Date: Sun,  5 Jul 2009 09:32:45 -0700
-Message-Id: <1246811565-8548-4-git-send-email-dwalker@fifo99.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1246811565-8548-3-git-send-email-dwalker@fifo99.com>
-References: <>
- <1246811565-8548-1-git-send-email-dwalker@fifo99.com>
- <1246811565-8548-2-git-send-email-dwalker@fifo99.com>
- <1246811565-8548-3-git-send-email-dwalker@fifo99.com>
+	Sun, 5 Jul 2009 12:33:59 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:29054 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756918AbZGEQd6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 12:33:58 -0400
+Date: Sun, 5 Jul 2009 18:43:19 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
+       zhangfx <zhangfx@lemote.com>
+Subject: Re: [BUG] drivers/video/sis: deadlock introduced by
+ "fbdev: add mutex for fb_mmap locking"
+Message-Id: <20090705184319.6e77be82.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090705152557.GA10588@linux-sh.org>
+References: <1246785112.14240.34.camel@falcon>
+	<alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
+	<20090705145203.GA8326@linux-sh.org>
+	<alpine.LFD.2.01.0907050756280.3210@localhost.localdomain>
+	<20090705150134.GB8326@linux-sh.org>
+	<alpine.LFD.2.01.0907050816110.3210@localhost.localdomain>
+	<20090705152557.GA10588@linux-sh.org>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: 38e2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clean up 3 or so checkpatch errors from one of my prior patches.
+On Mon, 6 Jul 2009 00:25:57 +0900
+Paul Mundt <lethal@linux-sh.org> wrote:
 
-Signed-off-by: Daniel Walker <dwalker@fifo99.com>
----
- drivers/staging/android/binder.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+> Ok, here is an updated version with an updated matroxfb and the sm501fb
+> change reverted.
+> 
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> 
 
-diff --git a/drivers/staging/android/binder.c b/drivers/staging/android/binder.c
-index 7e15f6e..c6dc58e 100644
---- a/drivers/staging/android/binder.c
-+++ b/drivers/staging/android/binder.c
-@@ -785,8 +785,8 @@ static struct binder_buffer *binder_alloc_buf(struct binder_proc *proc,
- 	if (is_async) {
- 		proc->free_async_space -= size + sizeof(struct binder_buffer);
- 		binder_debug(BINDER_DEBUG_BUFFER_ALLOC_ASYNC,
--		             "binder: %d: binder_alloc_buf size %zd "
--		             "async free %zd\n", proc->pid, size,
-+			     "binder: %d: binder_alloc_buf size %zd "
-+			     "async free %zd\n", proc->pid, size,
- 			     proc->free_async_space);
- 	}
+Here is a patch which should fix problem with sm501fb driver:
+
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index 16d4f4c..924d794 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -1540,9 +1540,6 @@ static int sm501fb_init_fb(struct fb_info *fb,
+ 	if (ret)
+ 		dev_err(info->dev, "check_var() failed on initial setup?\n");
  
-@@ -1146,7 +1146,7 @@ static void binder_delete_ref(struct binder_ref *ref)
- 		binder_debug(BINDER_DEBUG_DEAD_BINDER,
- 			     "binder: %d delete ref %d desc %d "
- 			     "has death notification\n", ref->proc->pid,
--		             ref->debug_id, ref->desc);
-+			     ref->debug_id, ref->desc);
- 		list_del(&ref->death->work.entry);
- 		kfree(ref->death);
- 		binder_stats_deleted(BINDER_STAT_DEATH);
-@@ -2331,7 +2331,7 @@ retry:
- 				if (!weak && !strong) {
- 					binder_debug(BINDER_DEBUG_INTERNAL_REFS,
- 						     "binder: %d:%d node %d u%p c%p deleted\n",
--					    	     proc->pid, thread->pid, node->debug_id,
-+						     proc->pid, thread->pid, node->debug_id,
- 						     node->ptr, node->cookie);
- 					rb_erase(&node->rb_node, &proc->nodes);
- 					kfree(node);
--- 
-1.5.4.3
+-	/* ensure we've activated our new configuration */
+-	(fb->fbops->fb_set_par)(fb);
+-
+ 	return 0;
+ }
+ 
+
+Paul, please test it (without additional initialization of the mm_lock mutext). I will post the patch
+if it works for you.
+
+An issue here is that these drivers calls fb_set_par() function (or part of it as the sisfb driver) 
+but the register_framebuffer() calls the fb_set_par() also after all structures are set up. There
+should be no need to call the fb_set_par() just before the register_framebuffer().
+
+The matroxfb driver is quite far from standard driver framework by now. I vote for fixing it
+by adding this early initialization of the mm_mutex for now.
+
+Kind regards,
+Krzysztof
+
+----------------------------------------------------------------------
+Promocja ubezpieczen komunikacyjnych Ergo Hestia. Sprawdz!
+http://link.interia.pl/f222f
 
