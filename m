@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbZGEKjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZGELAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbZGEKjm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 06:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbZGEKjd
+	id S1755120AbZGELAh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 07:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbZGELA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 06:39:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40170 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752557AbZGEKjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 06:39:33 -0400
-Date: Sun, 5 Jul 2009 13:38:57 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v9 0/5] irqfd fixes and enhancements
-Message-ID: <20090705103857.GA3923@redhat.com>
-References: <20090702153454.20186.99191.stgit@dev.haskins.net> <4A4CD729.6050300@redhat.com> <4A50723E.6030305@redhat.com>
+	Sun, 5 Jul 2009 07:00:29 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:49833 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbZGELA3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 07:00:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ZV3Yyc4nkbutCfN6kgzqG8miZ/IZhcOpoTKVYPMzVJzsruRw7PdJzs1X5C1DxTB8Jf
+         VeCLXvPNxaXofuQ8FNASg35KEHmqYqK2ecPlLBGMe3s0X6VOpSZTWGDLnb8i5F8CIYcN
+         6jW1oE0AaQ1QsTr+Fy3zBNWMlBGsp4jKAeQWY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A50723E.6030305@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Date: Sun, 5 Jul 2009 12:00:31 +0100
+Message-ID: <6278d2220907050400k1359df3av4045d3bba07d2be7@mail.gmail.com>
+Subject: Re: >10% performance degradation since 2.6.18
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 12:28:30PM +0300, Avi Kivity wrote:
-> On 07/02/2009 06:50 PM, Avi Kivity wrote:
->> On 07/02/2009 06:37 PM, Gregory Haskins wrote:
->>> (Applies to kvm.git/master:1f9050fd)
->>>
->>> The following is the latest attempt to fix the races in  
->>> irqfd/eventfd, as
->>> well as restore DEASSIGN support.  For more details, please read the  
->>> patch
->>> headers.
->>>
->>> As always, this series has been tested against the kvm-eventfd unit test
->>> and everything appears to be functioning properly. You can download this
->>> test here:
->>
->> Applied, thanks.
->>
+On Jul 3, 9:10 pm, Arjan van de Ven <ar...@infradead.org> wrote:
+> On Fri, 3 Jul 2009 21:54:58 +0200
 >
-> ... and unapplied.  There's a refcounting mismatch in irqfd_cleanup: a  
-> reference is taken for each irqfd, but dropped for each guest.  This  
-> causes an oops if a guest with no irqfds is created and destroyed:
+> Andi Kleen <a...@firstfloor.org> wrote:
+> > > That would seem to be a fruitful avenue of
+> > > investigation -- whether limiting the cards to a single RX/TX
+> > > interrupt would be advantageous, or whether spreading the eight
+> > > interrupts out over the CPUs would be advantageous.
+>
+> > The kernel should really do the per cpu binding of MSIs by default.
+>
+> ... so that you can't do power management on a per socket basis?
+> hardly a good idea.
+>
+> just need to use a new enough irqbalance and it will spread out the
+> interrupts unless your load is low enough to go into low power mode.
 
-Avi, I verified and it seems that reverting just the last patch
-in series should be enough. Comments?
+I was finding newer kernels (>~2.6.24) would set the Redirection Hint
+bit in the MSI address vector, allowing the processors to deliver the
+interrupt to the lowest interrupt priority (eg idle, no powersave)
+core (http://www.intel.com/Assets/PDF/manual/253668.pdf pp10-66) and
+older irqbalance daemons would periodically naively rewrite the
+bitmask of cores, delivering the interrupt to a static one.
 
+Thus, it may be worth checking if disabling any older irqbalance
+daemon gives any win.
+
+Perhaps there is value in writing different subsets of cores to the
+MSI address vector core bitmask (with the redirection hint enabled)
+for different I/O queues on heavy interrupt sources? By default, it's
+all cores.
+
+Daniel
 -- 
-MST
+Daniel J Blueman
