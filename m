@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZGESzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbZGETCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbZGESzI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 14:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbZGESy6
+	id S1754350AbZGETCS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 15:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbZGETCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 14:54:58 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44997 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbZGESy5 (ORCPT
+	Sun, 5 Jul 2009 15:02:10 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:62987 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753614AbZGETCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 14:54:57 -0400
-Date: Sun, 5 Jul 2009 20:54:47 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Cc: axboe@kernel.dk, aeb@cwi.nl, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.31-rc0: sdb1 only starts to exist when sdb is accessed?
-Message-ID: <20090705185447.GA18498@elf.ucw.cz>
+	Sun, 5 Jul 2009 15:02:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=cacAzNTsOWhp7MtY/hESEPuNZfp/r6Lv5AuTeJrbiT8oFn+GZ+GDEh5YULibzDYJlZ
+         zKl4yZGlD+dpf8mIUOx9xpcaeFB0RVaGZnmq5XmmvHnnJ0lbka4SrlQH/4T2WVLymYxN
+         CoHKBM/Nmoau0Rh3q+QOc4rGlQ/u9BlWrWXMg=
+Date: Sun, 5 Jul 2009 23:02:11 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC -tip] x86,apic -- reduce disable_apic usage
+Message-ID: <20090705190211.GK4791@lenovo>
+References: <20090705162044.GC4791@lenovo> <alpine.LFD.2.00.0907051737100.13862@eddie.linux-mips.org> <4A50E323.6060109@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <4A50E323.6060109@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[H. Peter Anvin - Sun, Jul 05, 2009 at 10:30:11AM -0700]
+| Maciej W. Rozycki wrote:
+| > 
+| >  How do you set cpu_has_apic for systems with discrete local APICs?  The 
+| > CPUID flag is not set in this case.
+| > 
+| 
+| Well, should it be?  We do set flags when they're appropriate to us, and
+| if the semantics are such as that is inappropriate we can set a custom bit.
+| 
+| 	-hpa
+| 
 
-...happens with android phone doing usb storage emulation. I'm using
-static /dev/ ... I hope!
+Peter, Maciej but how kernel behaved on older cpu long time ago?
 
-Jul  5 20:06:02 amd udevd-event[17666]: mknod(/dev/bus/usb/001/073, 020664, (189,72) failed: Operation not permitted 
-Jul  5 20:06:07 amd kernel: scsi 24:0:0:0: Direct-Access     HTC      Android Phone    0100 PQ: 0 ANSI: 2
-Jul  5 20:06:07 amd kernel: sd 24:0:0:0: Attached scsi generic sg1 type 0
-Jul  5 20:06:07 amd kernel: sd 24:0:0:0: [sdb] Attached SCSI removable disk
-Jul  5 20:13:08 amd pand[17815]: Bluetooth PAN daemon version 3.36
-...
-Jul  5 20:51:02 amd kernel: sd 24:0:0:0: [sdb] 3862528 512-byte hardware sectors: (1.97 GB/1.84 GiB)
-Jul  5 20:51:02 amd kernel: sd 24:0:0:0: [sdb] Assuming drive cache: write through
-Jul  5 20:51:02 amd kernel: sd 24:0:0:0: [sdb] Assuming drive cache: write through
-Jul  5 20:51:02 amd kernel:  sdb: sdb1
+I mean -- should user pass "lapic" cmdline option too be
+able to use apic functionality? (i'm asking since I just
+don't know how it had been working before). Current
+code (if only I'm not _missing_ something) relies on cpu_has_apic
+bit. And even if MP table has been parsed and APIC base found,
+cpu_has_apic could be not set so detect_init_APIC will fail
+if no "lapic" option passed (in case of old cpu without this cpuid
+bit produced) as we eventually stay with pic mode.
 
-You see? Partitions are only detected long after device is
-detected. IIRC it did not behave like that before...
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	-- Cyrill
