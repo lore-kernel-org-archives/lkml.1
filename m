@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbZGEOUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZGEOEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756554AbZGEOUa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 10:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZGEOUT
+	id S1755644AbZGEOEU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 10:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZGEOEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 10:20:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59842 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753697AbZGEOUR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 10:20:17 -0400
-Date: Sun, 5 Jul 2009 07:19:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       =?GB2312?B?6sy7qg==?= <yanh@lemote.com>, zhangfx <zhangfx@lemote.com>
-Subject: Re: [BUG] drivers/video/sis: deadlock introduced by "fbdev: add
- mutex for fb_mmap locking"
-In-Reply-To: <1246785112.14240.34.camel@falcon>
-Message-ID: <alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
-References: <1246785112.14240.34.camel@falcon>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sun, 5 Jul 2009 10:04:10 -0400
+Received: from eta-ori.net ([91.121.142.51]:60459 "EHLO orion.eta-ori.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753583AbZGEOEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 10:04:09 -0400
+X-Greylist: delayed 565 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Jul 2009 10:04:09 EDT
+Message-ID: <4A50B09B.9030901@impulze.org>
+Date: Sun, 05 Jul 2009 15:54:35 +0200
+From: Daniel Mierswa <impulze@impulze.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090628)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: Parsing kernel parameters and escaping "
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig7BCD7DE93CB0F1C9E3A4B334"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig7BCD7DE93CB0F1C9E3A4B334
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi list,
+I was wondering why " cannot be escaped when parsing kernel parameters
+in kernel/params.c. Given a disk label like 'foo " bar' and passing
+something to the kernel command line like real_root=3DLABEL=3D"foo \" bar=
+"
+this would make 'bar' a kernel parameter which is misleading imho. Any
+ideas why this path was chosen and how I am supposed to pass such a
+parameter that it is considered as one entity?
+
+--=20
+Mierswa, Daniel
+
+If you still don't like it, that's ok: that's why I'm boss. I simply
+know better than you do.
+               --- Linus Torvalds, comp.os.linux.advocacy, 1996/07/22
 
 
-On Sun, 5 Jul 2009, Wu Zhangjin wrote:
-> 
-> then it works! so, I guess there is a deadlock introduced by the above
-> commit.
+--------------enig7BCD7DE93CB0F1C9E3A4B334
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Hmm. Perhaps more likely, the 'mm_lock' mutex hasn't even been initialized 
-yet.  We appear to have had that problem with matroxfb and sm501fb, and it 
-may be more common than that. See commit f50bf2b2.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
 
-That said, I do agree that the mm_lock seems to be causing more problems 
-than it actually fixes, and maybe we should revert it. Krzysztof?
+iEYEARECAAYFAkpQsKAACgkQm9l44K3zL5cMYQCeOIqTDcuRSjbrKGqdTObCPSQ9
+Q+AAnRlrXcS/na8MgDmRgSs4UjT9kA0P
+=tMNE
+-----END PGP SIGNATURE-----
 
-		Linus
+--------------enig7BCD7DE93CB0F1C9E3A4B334--
