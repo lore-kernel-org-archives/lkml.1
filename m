@@ -1,61 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbZGEVZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756452AbZGEVrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbZGEVZR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 17:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZGEVZH
+	id S1756452AbZGEVrr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 17:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZGEVrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 17:25:07 -0400
-Received: from jenny.ondioline.org ([66.220.1.122]:48452 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753494AbZGEVZG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 17:25:06 -0400
-From: Paul Collins <paul@burly.ondioline.org>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-nfs@vger.kernel.org,
-       Andy Adamson <andros@netapp.com>, Benny Halevy <bhalevy@panasas.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31-rc2 soft lockups; traces point at rpc_wake_up, nfs4_run_state_manager, bit_waitqueue
-References: <87eisv7g5p.fsf@bulky.wgtn.ondioline.org>
-	<20090705081225.GA12783@elte.hu>
-	<1246800661.5937.1.camel@heimdal.trondhjem.org>
-Date: Mon, 06 Jul 2009 09:25:07 +1200
-In-Reply-To: <1246800661.5937.1.camel@heimdal.trondhjem.org> (Trond
-	Myklebust's message of "Sun, 05 Jul 2009 09:31:01 -0400")
-Message-ID: <8763e6aklo.fsf@jenny.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.91 (gnu/linux)
+	Sun, 5 Jul 2009 17:47:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51031 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752266AbZGEVrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 17:47:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] Run-time PM framework (was: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices (rev. 6))
+Date: Sun, 5 Jul 2009 23:47:54 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+References: <Pine.LNX.4.44L0.0907041938580.10275-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0907041938580.10275-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907052347.55717.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <Trond.Myklebust@netapp.com> writes:
+On Sunday 05 July 2009, Alan Stern wrote:
+> On Sat, 4 Jul 2009, Rafael J. Wysocki wrote:
+> 
+> > > As for whether or not we should actually call cancel_work...  Which is 
+> > > more expensive: Calling cancel_work when no work is pending, or letting 
+> > > the work item run when it doesn't have anything to do?  Probably the 
+> > > latter.
+> > 
+> > Agreed, but that doesn't affect functionality.  We can get the desired
+> > functionality without the cancel_work() patch and then optimize things along
+> > with that patch.  This way it'll be easier to demontrate the benefit of it.
+> 
+> Good idea.
+> 
+> > That almost entirely depends on the bus type.  For PCI and probably PNP as well
+> > there's a notion of ACPI low power states and there are AML methods to put the
+> > devices into these states.  Unfortunately, the ACPI low power state to put the
+> > device into depends on the target sleep state of the system, so these devices
+> > will probably have to be put into D0 before system suspend anyway.
+> > 
+> > I think that the bus type can handle this as long as it knows the state the
+> > device is in before system suspend.  So, the only thing the core should do is
+> > to block the execution of run-time PM framework functions during system
+> > sleep and resume.  The state it leaves the device in shouldn't matter.
+> > 
+> > So, I think we can simply freeze the workqueue, set the 'disabled' bit for each
+> > device and wait for all run-time PM operations on it in progress to complete.
+> > 
+> > In the 'disabled' state the bus type or driver can modify the run-time PM
+> > status to whatever they like anyway.  Perhaps we can provide a helper to
+> > change 'request type' to RPM_REQ_NONE.
+> 
+> The only modification that really makes sense is like you said, going
+> back to full power in preparation for the platform suspend operation.  
+> Therefore perhaps we should allow pm_runtime_resume to work even when
+> rpm_disabled is set.  And if we're going to cancel pending suspend and
+> idle requests, then rpm_request would normally be RPM_REQ_NONE anyway.
 
-> On Sun, 2009-07-05 at 10:12 +0200, Ingo Molnar wrote:
->> (added more Cc:s)
->> 
->> potential suspects are:
->> 
->> 1f84603: Merge branch 'devel-for-2.6.31' into for-2.6.31
->> 3f09df7: NFS: Ensure we always hold the BKL when dereferencing inode->i_flock
->> 965b5d6: NFSv4: Handle more errors when recovering open file and locking state
->> 34dc1ad: nfs41: increment_{open,lock}_seqid
->> 78722e9: nfs41: only retry EXCHANGE_ID on recoverable errors
->> b4b8260: nfs41: get_clid_cred for EXCHANGE_ID
->> 90a1661: nfs41: add a get_clid_cred function to nfs4_state_recovery_ops
->> 591d71c: nfs41: establish sessions-based clientid
->> a7b7210: nfs41: introduce get_state_renewal_cred
->> 8e69514f: nfs41: support minorversion 1 for nfs4_check_lease
->> c3fad1b: nfs41: add session reset to state manager
->> 76db6d95: nfs41: add session setup to the state manager
->> c2e713d: nfs41: translate NFS4ERR_MINOR_VERS_MISMATCH to EPROTONOSUPPORT
->
-> Or possibly either rpc.gssd or rpc.idmapd dying. Have you checked to see
-> if they are up and running correctly?
+After we've disabled run-time PM with pm_runtime_disable(), the bus type
+and driver can do whatever they like with the device, we don't care.  However,
+they need to make sure that the state of the device will match its run-time PM
+status when its run-time PM is enabled again.
 
-I hadn't checked because my NFS4 setup has been solid for a while now.
-But I'll give it a lash again.  I don't have NFS 4.1 support enabled,
-which may eliminate some of the commits above from consideration.
+> Which leaves only the question of what to do when a resume request is 
+> pending...
 
-        Paul
+I think the pm_runtime_disable() can carry out a synchronous wake-up if it
+sees a pending resume request.  That would make sense in general, IMO, becuase
+having a resume request pending usually means there's I/O to process and it's
+better to allow the device to process that I/O before disabling the run-time
+PM of it.
+
+To put it differently, if there's a resume request pending, the run-time PM of
+the device should be disabled while in the 'active' state rather than while in
+the 'suspended' state.
+
+Now, if we do that, the problem of run-time resume requests pending while
+entering a system sleep state can be solved.  Namely, we can make
+pm_runtime_disable() return a result that will be -EBUSY if a pending resume
+request is found by it and 0 otherwise.  Then, that result can be used by
+dpm_prepare() to decide whether to continue suspend or to terminate it if
+the device is a wake-up one.
+
+> > So, I guess we have the majority of things clarified and perhaps its time to
+> > write a patch for further discussion. :-)
+> 
+> Go ahead!
+
+In fact I've already done that, but I need to have a final look at it to check
+if there are no obvious mistakes in there.
+
+Best,
+Rafael
