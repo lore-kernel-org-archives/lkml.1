@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZGEKjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbZGELKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbZGEKjI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 06:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZGEKiz
+	id S1755827AbZGELKc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 07:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZGELKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 06:38:55 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54836 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751065AbZGEKiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 06:38:55 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@gmail.com>
-Subject: Re: Found the commit that causes the OOMs
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       David Howells <dhowells@redhat.com>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-In-Reply-To: <20090705095520.GA31587@localhost>
-References: <4A4AD07E.2040508@redhat.com> <20090705095520.GA31587@localhost>
-Message-Id: <20090705193551.090E.A69D9226@jp.fujitsu.com>
+	Sun, 5 Jul 2009 07:10:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33109 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751641AbZGELKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 07:10:17 -0400
+Date: Sun, 5 Jul 2009 11:09:31 GMT
+From: "tip-bot for Rafael J. Wysocki" <rjw@sisk.pl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, rjw@sisk.pl
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, rjw@sisk.pl
+In-Reply-To: <200907050022.35117.rjw@sisk.pl>
+References: <200907050022.35117.rjw@sisk.pl>
+Subject: [tip:irq/core] genirq: Fix comment describing suspend_device_irqs()
+Message-ID: <tip-c71320d0c445e01555a86fa6523609db47eeaef6@git.kernel.org>
+Git-Commit-ID: c71320d0c445e01555a86fa6523609db47eeaef6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Sun,  5 Jul 2009 19:38:54 +0900 (JST)
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 05 Jul 2009 11:09:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> OK. thanks.
-> >> I plan to submit this patch after small more tests. it is useful for OOM analysis.
-> >
-> > It is also useful for throttling page reclaim.
-> >
-> > If more than half of the inactive pages in a zone are
-> > isolated, we are probably beyond the point where adding
-> > additional reclaim processes will do more harm than good.
-> 
-> Maybe we can try limiting the isolation phase of direct reclaims to
-> one per CPU?
-> 
->         mutex_lock(per_cpu_lock);
->         isolate_pages();
->         shrink_page_list();
->         put_back_pages();
->         mutex_unlock(per_cpu_lock);
-> 
-> This way the isolated pages as well as major parts of direct reclaims
-> will be bounded by CPU numbers. The added overheads should be trivial
-> comparing to the reclaim costs.
+Commit-ID:  c71320d0c445e01555a86fa6523609db47eeaef6
+Gitweb:     http://git.kernel.org/tip/c71320d0c445e01555a86fa6523609db47eeaef6
+Author:     Rafael J. Wysocki <rjw@sisk.pl>
+AuthorDate: Sun, 5 Jul 2009 00:22:34 +0200
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Sun, 5 Jul 2009 13:07:00 +0200
 
-hm, this idea makes performance degression on few CPU machine, I think.
+genirq: Fix comment describing suspend_device_irqs()
 
-e.g.
-if system have only one cpu and sysmtem makes lumpy reclaim, lumpy reclaim
-makes synchronous pageout and it makes very long waiting time.
+The kerneldoc comment describing suspend_device_irqs() is currently
+misleading, because generally the function doesn't really disable
+interrupt lines at the chip level.  Replace it with a more accurate
+one.
 
-I suspect per-cpu decision is not useful in this area.
-
-thanks.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+LKML-Reference: <200907050022.35117.rjw@sisk.pl>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
+---
+ kernel/irq/pm.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+index 638d8be..a0bb09e 100644
+--- a/kernel/irq/pm.c
++++ b/kernel/irq/pm.c
+@@ -15,10 +15,10 @@
+ /**
+  * suspend_device_irqs - disable all currently enabled interrupt lines
+  *
+- * During system-wide suspend or hibernation device interrupts need to be
+- * disabled at the chip level and this function is provided for this purpose.
+- * It disables all interrupt lines that are enabled at the moment and sets the
+- * IRQ_SUSPENDED flag for them.
++ * During system-wide suspend or hibernation device drivers need to be prevented
++ * from receiving interrupts and this function is provided for this purpose.
++ * It marks all interrupt lines in use, except for the timer ones, as disabled
++ * and sets the IRQ_SUSPENDED flag for each of them.
+  */
+ void suspend_device_irqs(void)
+ {
