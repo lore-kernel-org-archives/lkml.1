@@ -1,129 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbZGEP0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbZGEP11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757224AbZGEP0T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 11:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZGEP0I
+	id S1756792AbZGEP11 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 11:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZGEP1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 11:26:08 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49323 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752258AbZGEP0G (ORCPT
+	Sun, 5 Jul 2009 11:27:20 -0400
+Received: from mail-vw0-f202.google.com ([209.85.212.202]:33958 "EHLO
+	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752340AbZGEP1T convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 11:26:06 -0400
-Date: Mon, 6 Jul 2009 00:25:57 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
-       zhangfx <zhangfx@lemote.com>
-Subject: Re: [BUG] drivers/video/sis: deadlock introduced by "fbdev: add mutex for fb_mmap locking"
-Message-ID: <20090705152557.GA10588@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-	Krzysztof Helt <krzysztof.h1@wp.pl>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
-	zhangfx <zhangfx@lemote.com>
-References: <1246785112.14240.34.camel@falcon> <alpine.LFD.2.01.0907050715490.3210@localhost.localdomain> <20090705145203.GA8326@linux-sh.org> <alpine.LFD.2.01.0907050756280.3210@localhost.localdomain> <20090705150134.GB8326@linux-sh.org> <alpine.LFD.2.01.0907050816110.3210@localhost.localdomain>
+	Sun, 5 Jul 2009 11:27:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VlH+r19sLpr6dVfkP94TZ5Byj5aYFTTDaLk7lfADPilylmIjTEbUoAIpG0GMHr2+PL
+         bADLUJOl8HQZHO13GZU3tvcI29OtLfpj96mCOCNy+xj+1Qk63OacLgoaBeAM0VZ2CLSU
+         uqM6BDMY2fSD+EFfJ9YPotWJyCZMTu+221l4o=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0907050816110.3210@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090705151628.GA11307@localhost>
+References: <20090705182533.0902.A69D9226@jp.fujitsu.com>
+	 <20090705121308.GC5252@localhost>
+	 <20090705211739.091D.A69D9226@jp.fujitsu.com>
+	 <20090705130200.GA6585@localhost>
+	 <2f11576a0907050619t5dea33cfwc46344600c2b17b5@mail.gmail.com>
+	 <28c262360907050804p70bc293uc7330a6d968c0486@mail.gmail.com>
+	 <20090705151628.GA11307@localhost>
+Date: Mon, 6 Jul 2009 00:27:20 +0900
+Message-ID: <28c262360907050827y577c3859g5e05e82935e96010@mail.gmail.com>
+Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 08:19:40AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 6 Jul 2009, Paul Mundt wrote:
-> > >
-> > > Why not "lock" as well?
-> > 
-> > I had that initially, but matroxfb will break if we do that, and
-> > presently nothing cares about trying to take ->lock that early on.
-> 
-> I really would rather have consistency than some odd rules like that.
-> 
-> In particular - if matroxfb is different and needs its own lock 
-> initialization because it doesn't use the common allocation routine, then 
-> please make _that_ consistent too. Rather than have it special-case just 
-> one lock that it needs to initialize separately, make it clear that since 
-> it does its own allocations it needs to initialize _everything_ 
-> separately.
-> 
-Ok, here is an updated version with an updated matroxfb and the sm501fb
-change reverted.
+On Mon, Jul 6, 2009 at 12:16 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> On Sun, Jul 05, 2009 at 11:04:17PM +0800, Minchan Kim wrote:
+>> On Sun, Jul 5, 2009 at 10:19 PM, KOSAKI
+>> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> >>> > > + printk("%ld total anon pages\n", global_page_state(NR_ANON_PAGES));
+>> >>> > >   printk("%ld total pagecache pages\n", global_page_state(NR_FILE_PAGES));
+>> >>> >
+>> >>> > Can we put related items together, ie. this looks more friendly:
+>> >>> >
+>> >>> >         Anon:XXX active_anon:XXX inactive_anon:XXX
+>> >>> >         File:XXX active_file:XXX inactive_file:XXX
+>> >>>
+>> >>> hmmm. Actually NR_ACTIVE_ANON + NR_INACTIVE_ANON != NR_ANON_PAGES.
+>> >>> tmpfs pages are accounted as FILE, but it is stay in anon lru.
+>> >>
+>> >> Right, that's exactly the reason I propose to put them together: to
+>> >> make the number of tmpfs pages obvious.
+>> >>
+>> >>> I think your proposed format easily makes confusion. this format cause to
+>> >>> imazine Anon = active_anon + inactive_anon.
+>> >>
+>> >> Yes it may confuse normal users :(
+>> >>
+>> >>> At least, we need to use another name, I think.
+>> >>
+>> >> Hmm I find it hard to work out a good name.
+>> >>
+>> >> But instead, it may be a good idea to explicitly compute the tmpfs
+>> >> pages, because the excessive use of tmpfs pages could be a common
+>> >> reason of OOM.
+>> >
+>> > Yeah,  explicite tmpfs/shmem accounting is also useful for /proc/meminfo.
+>>
+>> Do we have to account it explicitly?
+>
+> When OOM happens, one frequent question to ask is: are there too many
+> tmpfs/shmem pages?  Exporting this number makes our oom-message-decoding
+> life easier :)
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Indeed.
 
----
+>> If we know the exact isolate pages of each lru,
+>>
+>> tmpfs/shmem = (NR_ACTIVE_ANON + NR_INACTIVE_ANON + isolate(anon)) -
+>> NR_ANON_PAGES.
+>>
+>> Is there any cases above equation is wrong ?
+>
+> That's right, but the calculation may be too complex (and boring) for
+> our little brain ;)
 
- drivers/video/fbmem.c                |    2 --
- drivers/video/fbsysfs.c              |    3 +++
- drivers/video/matrox/matroxfb_base.c |    1 +
- drivers/video/sm501fb.c              |    2 --
- 4 files changed, 4 insertions(+), 4 deletions(-)
+Yes. if something is change in future or we miss someting, the above
+question may be wrong.
+I wanted to remove overhead of new accouting.
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 53ea056..53eb396 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1513,8 +1513,6 @@ register_framebuffer(struct fb_info *fb_info)
- 		if (!registered_fb[i])
- 			break;
- 	fb_info->node = i;
--	mutex_init(&fb_info->lock);
--	mutex_init(&fb_info->mm_lock);
- 
- 	fb_info->dev = device_create(fb_class, fb_info->device,
- 				     MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index d4a2c11..afc04df 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -62,6 +62,9 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
- 	mutex_init(&info->bl_curve_mutex);
- #endif
- 
-+	mutex_init(&info->lock);
-+	mutex_init(&info->mm_lock);
-+
- 	return info;
- #undef PADDING
- #undef BYTES_PER_LONG
-diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
-index 59c3a2e..76bc51b 100644
---- a/drivers/video/matrox/matroxfb_base.c
-+++ b/drivers/video/matrox/matroxfb_base.c
-@@ -2083,6 +2083,7 @@ static int matroxfb_probe(struct pci_dev* pdev, const struct pci_device_id* dumm
- 	spin_lock_init(&ACCESS_FBINFO(lock.accel));
- 	init_rwsem(&ACCESS_FBINFO(crtc2.lock));
- 	init_rwsem(&ACCESS_FBINFO(altout.lock));
-+	mutex_init(&ACCESS_FBINFO(fbcon).lock);
- 	mutex_init(&ACCESS_FBINFO(fbcon).mm_lock);
- 	ACCESS_FBINFO(irq_flags) = 0;
- 	init_waitqueue_head(&ACCESS_FBINFO(crtc1.vsync.wait));
-diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-index 16d4f4c..98f24f0 100644
---- a/drivers/video/sm501fb.c
-+++ b/drivers/video/sm501fb.c
-@@ -1624,8 +1624,6 @@ static int __devinit sm501fb_start_one(struct sm501fb_info *info,
- 	if (!fbi)
- 		return 0;
- 
--	mutex_init(&info->fb[head]->mm_lock);
--
- 	ret = sm501fb_init_fb(info->fb[head], head, drvname);
- 	if (ret) {
- 		dev_err(info->dev, "cannot initialise fb %s\n", drvname);
+Anyway, I think it's not a big cost in normal system.
+So If you want to add new accounting, I don't have any objection. :)
+
+> Thanks,
+> Fengguang
+>
+
+
+
+-- 
+Kind regards,
+Minchan Kim
