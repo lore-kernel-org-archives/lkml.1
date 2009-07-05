@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZGETrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbZGEUMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445AbZGETrG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 15:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZGETqz
+	id S1755315AbZGEUMy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 16:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbZGEUMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 15:46:55 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34831 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752778AbZGETqy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 15:46:54 -0400
-Date: Sun, 5 Jul 2009 21:46:46 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Renninger <trenn@suse.de>
-Cc: kernel@stable.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, rjw@sisk.pl, hidave.darkstar@gmail.com,
-       penberg@cs.helsinki.fi, kernel-testers@vger.kernel.org,
-       davej@redhat.com, mathieu.desnoyers@polymtl.ca,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH 1/2] CPUFREQ: Remove unneeded dbs_mutexes from ondemand
-	and conservative governors
-Message-ID: <20090705194646.GF17910@elf.ucw.cz>
-References: <20090623193215.GA31374@elte.hu> <1245938485-12663-2-git-send-email-trenn@suse.de> <20090630063339.GF1351@ucw.cz> <200907031210.16828.trenn@suse.de>
+	Sun, 5 Jul 2009 16:12:46 -0400
+Received: from www.tglx.de ([62.245.132.106]:34328 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753801AbZGEUMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 16:12:45 -0400
+Date: Sun, 5 Jul 2009 22:11:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       jaswinderrajput@gmail.com, akpm@linux-foundation.org,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/cleanups] x86: Clean up mtrr/cleanup.c
+In-Reply-To: <1246799995.2442.7.camel@ht.satnam>
+Message-ID: <alpine.LFD.2.00.0907052134530.2771@localhost.localdomain>
+References: <20090703164225.GA21447@elte.hu>  <tip-63f9600fadb10ea739108ae93e3e842d9843c58b@git.kernel.org>  <4A4FC5D0.6090000@kernel.org> <20090705002709.GA28424@elte.hu>  <1246773777.2325.113.camel@jaswinder.satnam>  <84144f020907050459x6a9a11fmf8f3050f085c8d85@mail.gmail.com>
+ <1246799995.2442.7.camel@ht.satnam>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907031210.16828.trenn@suse.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-07-03 12:10:15, Thomas Renninger wrote:
-> Hi Pavel,
+Jaswinder,
+
+On Sun, 5 Jul 2009, Jaswinder Singh Rajput wrote:
+> On Sun, 2009-07-05 at 14:59 +0300, Pekka Enberg wrote:
+> > What's with the attitude? It's perfectly okay for a commiter to change
+> > the patch as long as it's mentioned in the changelog. And that's
+> > usually much faster to do that for minor issues rather than ping the
+> > original submitter and wait for a resend.
+> > 
 > 
-> On Tuesday 30 June 2009 08:33:39 Pavel Machek wrote:
-> > On Thu 2009-06-25 16:01:24, Thomas Renninger wrote:
-> > > Comment from Venkatesh:
-> > > ...
-> > > This mutex is just serializing the changes to those variables. I could't
-> > > think of any functionality issues of not having the lock as such.
-> > > 
-> > > -> rip it out.
-> > > 
-> > > CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> > > Signed-off-by: Thomas Renninger <trenn@suse.de>
-> > 
-> > >  static struct dbs_tuners {
-> > > @@ -236,10 +222,7 @@ static ssize_t store_sampling_down_factor(struct cpufreq_policy *unused,
-> > >  	if (ret != 1 || input > MAX_SAMPLING_DOWN_FACTOR || input < 1)
-> > >  		return -EINVAL;
-> > >  
-> > > -	mutex_lock(&dbs_mutex);
-> > >  	dbs_tuners_ins.sampling_down_factor = input;
-> > > -	mutex_unlock(&dbs_mutex);
-> > > -
-> > 
-> > You'd need to make s_down_factor atomic_t for this to work....
-> Can you provide a userspace scenario (or tell which kind of event must
-> happen in between), that this would cause problems, please.
+> I was also thankful to him but then he send me a long email and blamed
+> me that I wasted his 6 hours to do further cleanup and solve bugs and
+> other irrelevant things.
 
+Err, you managed to create _three_ bugs in your trivial cleanup
+patches and that's not irrelevant at all. That's a sign of sloppiness
+and a pretty good reason not to trust any of your patches at all.
 
-Imagine 
+> And told me to not send further patches otherwise he will ignore it.
 
-dbs_tuners_ins.sampling_down_factor = 0xd0000;
-input = 0xabcd;
+Right, and he is correct about that. This is not the first time and
+you have been asked to be more careful with your patches several times
+in the last months. It's _you_ who is not listening and not caring at
+all.
 
-..then other threads can see 0xdabcd; if they read at "bad"
-moment. Not on i386, but this is generic code (right?). Just use
-atomic_t.
-									Pavel   
+> He is doing mistakes and blaming others and misusing maintainer-ship.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Ingo did clean up _your_ mess and there was no mistake at all. He
+blames _you_ correctly that _your_ trivial patches are buggy.
+
+There is no misuse at all. Ingo is doing what a responsible maintainer
+does: reviewing patches and fixing them up when necessary. 
+
+His decision not to take any more cleanup patches from you is just the
+result of your unwillingness to listen and to react on the requests
+which were made to you from Ingo, myself and others.
+
+Thanks,
+
+	tglx
