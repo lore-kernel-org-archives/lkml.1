@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbZGEEIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbZGEEKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752960AbZGEEIa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 00:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbZGEEIX
+	id S1754453AbZGEEKW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 00:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbZGEEKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 00:08:23 -0400
-Received: from liberdade.minaslivre.org ([72.232.18.203]:34824 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbZGEEIX (ORCPT
+	Sun, 5 Jul 2009 00:10:10 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:59576 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751004AbZGEEKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 00:08:23 -0400
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: rtc-linux@googlegroups.com
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       bjorn.helgaas@hp.com,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: [PATCH] RTC: mark if rtc-cmos drivers were successfully registered.
-Date: Sun,  5 Jul 2009 01:07:59 -0300
-Message-Id: <1246766879-5784-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: git-send-email 1.6.3
+	Sun, 5 Jul 2009 00:10:08 -0400
+Date: Sun, 5 Jul 2009 12:09:53 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: eric.dumazet@gmail.com, joerg.roedel@amd.com, davem@davemloft.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       aabdulla@nvidia.com
+Subject: Re: [GIT]: Networking
+Message-ID: <20090705040953.GA7814@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703214609.GA7776@elte.hu>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rtc-cmos has two drivers, one PNP and one platform. When PNP has not
-succeeded probing, platform is registered. However, it tries to
-unregister both drivers unconditionally, instead of only unregistering
-those that were successfully registered. Fix that with a boolean
-variable for each driver indicating whether registering was successful.
+Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> I triggered other networking problems today though, a trylock 
+> failure message in netconsole, plus a dma-debug assert from e1000e:
+> 
+> [ 1275.442025] Hangcheck: hangcheck value past margin!
+> [ 1451.860024] ------------[ cut here ]------------
+> [ 1451.860024] BUG: spinlock trylock failure on UP on CPU#0, distcc/32540
+> [ 1451.860024]  lock: f5318760, .magic: dead4ead, .owner: distcc/32540, .owner_cpu: 0
+> [ 1451.860024] Pid: 32540, comm: distcc Tainted: G        W  2.6.31-rc1-tip-01236-gb62d24b-dirty #6631
+> [ 1451.860024] Call Trace:
+> [ 1451.860024]  [<c17764e8>] spin_bug+0x98/0x140
+> [ 1451.860024]  [<c1776d01>] _raw_spin_trylock+0x71/0xc0
+> [ 1451.860024]  [<c283ffbb>] _spin_trylock+0x1b/0x80
+> [ 1451.860024]  [<c23c7868>] netpoll_send_skb+0x198/0x470
+> [ 1451.860024]  [<c23c7eb0>] netpoll_send_udp+0x240/0x290
+> [ 1451.860024]  [<c2840884>] ? _spin_lock_irqsave+0x64/0x90
+> [ 1451.860024]  [<c1d69beb>] write_msg+0xeb/0x160
+> [ 1451.860024]  [<c10933c8>] __call_console_drivers+0x78/0xa0
+> [ 1451.860024]  [<c10934d9>] _call_console_drivers+0xe9/0x120
+> [ 1451.860024]  [<c10938e7>] call_console_drivers+0x137/0x260
+> [ 1451.860024]  [<c1093aaa>] release_console_sem+0x9a/0x1a0
+> [ 1451.860024]  [<c10949b6>] vprintk+0x416/0x500
+> [ 1451.860024]  [<c178b8f7>] ? check_for_illegal_area+0x197/0x340
+> [ 1451.860024]  [<c1094abb>] printk+0x1b/0x20
+> [ 1451.860024]  [<c1092bdb>] warn_slowpath_common+0x1b/0xe0
+> [ 1451.860024]  [<c1092ce9>] warn_slowpath_fmt+0x29/0x30
+> [ 1451.860024]  [<c178b8f7>] check_for_illegal_area+0x197/0x340
+> [ 1451.860024]  [<c178be4c>] debug_dma_map_page+0x1cc/0x310
+> [ 1451.860024]  [<c239fe19>] skb_dma_map+0x219/0x580
+> [ 1451.860024]  [<c23919b6>] ? skb_copy_bits+0x126/0x590
+> [ 1451.860024]  [<c1ab920f>] e1000_tx_map+0x4f/0x2a0
+> [ 1451.860024]  [<c1abbb6b>] e1000_xmit_frame+0x28b/0x5a0
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
----
- drivers/rtc/rtc-cmos.c |   23 ++++++++++++++++++-----
- 1 files changed, 18 insertions(+), 5 deletions(-)
+I don't know about the DMA error but this is perfectly normal.
+You're invoking netpoll from within the NIC's xmit routine,
+that's why the trylock fails.  So I guess you should fix spinlock
+debugging instead :)
 
-diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-index 23e10b6..f7a4701 100644
---- a/drivers/rtc/rtc-cmos.c
-+++ b/drivers/rtc/rtc-cmos.c
-@@ -1174,23 +1174,34 @@ static struct platform_driver cmos_platform_driver = {
- 	}
- };
- 
-+#ifdef CONFIG_PNP
-+static bool pnp_driver_registered;
-+#endif
-+static bool platform_driver_registered;
-+
- static int __init cmos_init(void)
- {
- 	int retval = 0;
- 
- #ifdef	CONFIG_PNP
--	pnp_register_driver(&cmos_pnp_driver);
-+	retval = pnp_register_driver(&cmos_pnp_driver);
-+	if (retval == 0)
-+		pnp_driver_registered = true;
- #endif
- 
--	if (!cmos_rtc.dev)
-+	if (!cmos_rtc.dev) {
- 		retval = platform_driver_probe(&cmos_platform_driver,
- 					       cmos_platform_probe);
-+		if (retval == 0)
-+			platform_driver_registered = true;
-+	}
- 
- 	if (retval == 0)
- 		return 0;
- 
- #ifdef	CONFIG_PNP
--	pnp_unregister_driver(&cmos_pnp_driver);
-+	if (pnp_driver_registered)
-+		pnp_unregister_driver(&cmos_pnp_driver);
- #endif
- 	return retval;
- }
-@@ -1199,9 +1210,11 @@ module_init(cmos_init);
- static void __exit cmos_exit(void)
- {
- #ifdef	CONFIG_PNP
--	pnp_unregister_driver(&cmos_pnp_driver);
-+	if (pnp_driver_registered)
-+		pnp_unregister_driver(&cmos_pnp_driver);
- #endif
--	platform_driver_unregister(&cmos_platform_driver);
-+	if (platform_driver_registered)
-+		platform_driver_unregister(&cmos_platform_driver);
- }
- module_exit(cmos_exit);
- 
+Cheers,
 -- 
-1.6.3
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
