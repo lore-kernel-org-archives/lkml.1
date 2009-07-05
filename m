@@ -1,103 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZGEJ05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZGEJ1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbZGEJ05 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 05:26:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZGEJ0s
+	id S1756758AbZGEJ1V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 05:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbZGEJ1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 05:26:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47465 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754298AbZGEJ0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 05:26:46 -0400
-Message-ID: <4A50723E.6030305@redhat.com>
-Date: Sun, 05 Jul 2009 12:28:30 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Sun, 5 Jul 2009 05:27:09 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:6121
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755784AbZGEJ1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 05:27:07 -0400
+Message-ID: <4A5071E5.8030908@panasas.com>
+Date: Sun, 05 Jul 2009 12:27:01 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mst@redhat.com,
-       davidel@xmailserver.org
-Subject: Re: [KVM PATCH v9 0/5] irqfd fixes and enhancements
-References: <20090702153454.20186.99191.stgit@dev.haskins.net> <4A4CD729.6050300@redhat.com>
-In-Reply-To: <4A4CD729.6050300@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Tejun Heo <tj@kernel.org>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Niel Lambrechts <niel.lambrechts@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH 2/4] block: use the same failfast bits for bio and request
+References: <1246610898-22350-1-git-send-email-tj@kernel.org> <1246610898-22350-3-git-send-email-tj@kernel.org>
+In-Reply-To: <1246610898-22350-3-git-send-email-tj@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jul 2009 09:27:05.0666 (UTC) FILETIME=[C2F39A20:01C9FD52]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/02/2009 06:50 PM, Avi Kivity wrote:
-> On 07/02/2009 06:37 PM, Gregory Haskins wrote:
->> (Applies to kvm.git/master:1f9050fd)
->>
->> The following is the latest attempt to fix the races in 
->> irqfd/eventfd, as
->> well as restore DEASSIGN support.  For more details, please read the 
->> patch
->> headers.
->>
->> As always, this series has been tested against the kvm-eventfd unit test
->> and everything appears to be functioning properly. You can download this
->> test here:
->
-> Applied, thanks.
->
+On 07/03/2009 11:48 AM, Tejun Heo wrote:
+> bio and request use the same set of failfast bits.  This patch makes
+> the following changes to simplify things.
+> 
+> * enumify BIO_RW* bits and reorder bits such that BIOS_RW_FAILFAST_*
+>   bits coincide with __REQ_FAILFAST_* bits.
+> 
+> * The above pushes BIO_RW_AHEAD out of sync with __REQ_FAILFAST_DEV
+>   but the matching is useless anyway.  init_request_from_bio() is
+>   responsible for setting FAILFAST bits on FS requests and non-FS
+>   requests never use BIO_RW_AHEAD.  Drop the code and comment from
+>   blk_rq_bio_prep().
+> 
+> * Define REQ_FAILFAST_MASK which is OR of all FAILFAST bits and
+>   simplify FAILFAST flags handling in init_request_from_bio().
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Jens Axboe <axboe@kernel.dk>
 
-... and unapplied.  There's a refcounting mismatch in irqfd_cleanup: a 
-reference is taken for each irqfd, but dropped for each guest.  This 
-causes an oops if a guest with no irqfds is created and destroyed:
+Hi Tejun.
 
-IP: [<ffffffff8105254a>] flush_workqueue+0x23/0x6e
-PGD 0
-Oops: 0000 [4] SMP
-CPU 1
-Modules linked in: kvm_intel kvm nfs lockd nfs_acl sco bridge stp bnep 
-l2cap bluetooth autofs4 sunrpc ipv6 dm_multipath uinput i5000_edac 
-e1000e edac_core iTCO_wdt
-  iTCO_vendor_support i2c_i801 i2c_core e100 mii floppy pcspkr shpchp 
-serio_raw ata_generic pata_acpi [last unloaded: kvm]
-Pid: 2088, comm: qemu Tainted: G      D   2.6.27.19-170.2.35.fc10.x86_64 
-#1 TYAN Transport GT20-B5372
-RIP: 0010:[<ffffffff8105254a>]  [<ffffffff8105254a>] 
-flush_workqueue+0x23/0x6e
-RSP: 0018:ffff8801077d1b08  EFLAGS: 00010292
-RAX: ffffffff8156de08 RBX: ffff8801097e8a50 RCX: 0000000000000000
-RDX: 0000000000000000 RSI: 000000000000019f RDI: 0000000000000000
-RBP: ffff8801077d1b28 R08: 0000000000000000 R09: ffffffff81140027
-R10: ffff88012f402340 R11: ffff880125daf820 R12: ffffffff8156de10
-R13: 0000000000000000 R14: ffff88012f449cd8 R15: ffff88012f002900
-FS:  00007f9b67295950(0000) GS:ffff88012fc04980(0000) knlGS:0000000000000000
-CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-CR2: 0000000000000020 CR3: 0000000000201000 CR4: 00000000000026e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process qemu (pid: 2088, threadinfo ffff8801077d0000, task ffff88012984c530)
-Stack:  ffff8801077d1b28 ffff8801097e8a50 ffff8801097e8000 ffff8801097e8a68
-  ffff8801077d1b58 ffffffffa01c4eec 0000000800000000 ffff8801097e8000
-  ffff88012f449cd8 ffff88012c80c600 ffff8801077d1b78 ffffffffa01af34b
-Call Trace:
-  [<ffffffffa01c4eec>] kvm_irqfd_release+0x7a/0xcc [kvm]
-  [<ffffffffa01af34b>] kvm_vm_release+0x18/0x27 [kvm]
-  [<ffffffff810c14c7>] __fput+0xca/0x16d
-  [<ffffffff810c157f>] fput+0x15/0x17
-  [<ffffffff810bea29>] filp_close+0x67/0x72
-  [<ffffffff810433ec>] put_files_struct+0x74/0xc8
-  [<ffffffff81043488>] exit_files+0x48/0x51
-  [<ffffffff81044de9>] do_exit+0x26a/0x8a0
-  [<ffffffffa01da330>] ? vmx_vcpu_put+0x9/0xb [kvm_intel]
-  [<ffffffff810454a1>] do_group_exit+0x82/0xaf
-  [<ffffffff8104eabb>] get_signal_to_deliver+0x2b0/0x2dc
-  [<ffffffff81010379>] ? sysret_signal+0x42/0x71
-  [<ffffffff8100f45f>] do_notify_resume+0x90/0x93f
-  [<ffffffff81060cca>] ? do_futex+0x90/0x973
-  [<ffffffffa01ad956>] ? kvm_vcpu_ioctl+0x470/0x485 [kvm]
-  [<ffffffff81333801>] ? trace_hardirqs_on_thunk+0x3a/0x3c
-  [<ffffffff810616a2>] ? sys_futex+0xf5/0x113
-  [<ffffffff81010379>] ? sysret_signal+0x42/0x71
-  [<ffffffff81010737>] ptregscall_common+0x67/0xb0
+Thanks for doing this, it has been neglected for a long time.
+However, it will happen again, I don't like these implicit matches
+which are not enforced, They get to drift away. There are several ways
+to make sure two sets of enums stay in sync. (I'll have a try at it
+tomorrow. if you want). 
 
-irqfd_cleanup.wq has never been initialized, but is destroyed.
+> ---
+>  block/blk-core.c       |   19 +++++++------------
+>  include/linux/bio.h    |   43 +++++++++++++++++++++++--------------------
+>  include/linux/blkdev.h |    4 ++++
+>  3 files changed, 34 insertions(+), 32 deletions(-)
+> 
+> diff --git a/block/blk-core.c b/block/blk-core.c
+> index 8f4b9e0..cd3b265 100644
+> --- a/block/blk-core.c
+> +++ b/block/blk-core.c
+> @@ -1119,17 +1119,13 @@ void init_request_from_bio(struct request *req, struct bio *bio)
+>  	req->cmd_type = REQ_TYPE_FS;
+>  
+>  	/*
+> -	 * inherit FAILFAST from bio (for read-ahead, and explicit FAILFAST)
+> +	 * Inherit FAILFAST from bio (for read-ahead, and explicit
+> +	 * FAILFAST).  FAILFAST flags are identical for req and bio.
+>  	 */
+>  	if (bio_rw_ahead(bio))
+> -		req->cmd_flags |= (REQ_FAILFAST_DEV | REQ_FAILFAST_TRANSPORT |
+> -				   REQ_FAILFAST_DRIVER);
+> -	if (bio_failfast_dev(bio))
+> -		req->cmd_flags |= REQ_FAILFAST_DEV;
+> -	if (bio_failfast_transport(bio))
+> -		req->cmd_flags |= REQ_FAILFAST_TRANSPORT;
+> -	if (bio_failfast_driver(bio))
+> -		req->cmd_flags |= REQ_FAILFAST_DRIVER;
+> +		req->cmd_flags |= REQ_FAILFAST_MASK;
+> +	else
+> +		req->cmd_flags |= bio->bi_rw & REQ_FAILFAST_MASK;
+>  
+>  	if (unlikely(bio_discard(bio))) {
+>  		req->cmd_flags |= REQ_DISCARD;
+> @@ -2247,9 +2243,8 @@ EXPORT_SYMBOL_GPL(__blk_end_request_cur);
+>  void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
+>  		     struct bio *bio)
+>  {
+> -	/* Bit 0 (R/W) is identical in rq->cmd_flags and bio->bi_rw, and
+> -	   we want BIO_RW_AHEAD (bit 1) to imply REQ_FAILFAST (bit 1). */
+> -	rq->cmd_flags |= (bio->bi_rw & 3);
+> +	/* Bit 0 (R/W) is identical in rq->cmd_flags and bio->bi_rw */
+> +	rq->cmd_flags |= bio->bi_rw & REQ_RW;
+>  
+>  	if (bio_has_data(bio)) {
+>  		rq->nr_phys_segments = bio_phys_segments(q, bio);
+> diff --git a/include/linux/bio.h b/include/linux/bio.h
+> index 2892b71..a299ed3 100644
+> --- a/include/linux/bio.h
+> +++ b/include/linux/bio.h
+> @@ -142,37 +142,40 @@ struct bio {
+>   *
+>   * bit 0 -- data direction
+>   *	If not set, bio is a read from device. If set, it's a write to device.
+> - * bit 1 -- rw-ahead when set
+> - * bit 2 -- barrier
+> + * bit 1 -- fail fast device errors
+> + * bit 2 -- fail fast transport errors
+> + * bit 3 -- fail fast driver errors
+> + * bit 4 -- rw-ahead when set
+> + * bit 5 -- barrier
 
--- 
-error compiling committee.c: too many arguments to function
+Please kill all these evil bit 1, bit 2 ,bit n comments. The ways we
+invent to torture ourselfs...
 
+Just move all the comments to the enums declarations below. And be done
+with it, also for the next time.
+
+>   *	Insert a serialization point in the IO queue, forcing previously
+>   *	submitted IO to be completed before this one is issued.
+> - * bit 3 -- synchronous I/O hint.
+> - * bit 4 -- Unplug the device immediately after submitting this bio.
+> - * bit 5 -- metadata request
+> + * bit 6 -- synchronous I/O hint.
+> + * bit 7 -- Unplug the device immediately after submitting this bio.
+> + * bit 8 -- metadata request
+>   *	Used for tracing to differentiate metadata and data IO. May also
+>   *	get some preferential treatment in the IO scheduler
+> - * bit 6 -- discard sectors
+> + * bit 9 -- discard sectors
+>   *	Informs the lower level device that this range of sectors is no longer
+>   *	used by the file system and may thus be freed by the device. Used
+>   *	for flash based storage.
+> - * bit 7 -- fail fast device errors
+> - * bit 8 -- fail fast transport errors
+> - * bit 9 -- fail fast driver errors
+>   *	Don't want driver retries for any fast fail whatever the reason.
+>   * bit 10 -- Tell the IO scheduler not to wait for more requests after this
+>  	one has been submitted, even if it is a SYNC request.
+>   */
+> -#define BIO_RW		0	/* Must match RW in req flags (blkdev.h) */
+> -#define BIO_RW_AHEAD	1	/* Must match FAILFAST in req flags */
+> -#define BIO_RW_BARRIER	2
+> -#define BIO_RW_SYNCIO	3
+> -#define BIO_RW_UNPLUG	4
+> -#define BIO_RW_META	5
+> -#define BIO_RW_DISCARD	6
+> -#define BIO_RW_FAILFAST_DEV		7
+> -#define BIO_RW_FAILFAST_TRANSPORT	8
+> -#define BIO_RW_FAILFAST_DRIVER		9
+> -#define BIO_RW_NOIDLE	10
+> +enum bio_rw_flags {
+> +	BIO_RW,
+> +	BIO_RW_FAILFAST_DEV,
+> +	BIO_RW_FAILFAST_TRANSPORT,
+> +	BIO_RW_FAILFAST_DRIVER,
+> +	/* above flags must match REQ_* */
+> +	BIO_RW_AHEAD,
+> +	BIO_RW_BARRIER,
+> +	BIO_RW_SYNCIO,
+> +	BIO_RW_UNPLUG,
+> +	BIO_RW_META,
+> +	BIO_RW_DISCARD,
+> +	BIO_RW_NOIDLE,
+> +};
+>  
+>  #define bio_rw_flagged(bio, flag)	((bio)->bi_rw & (1 << (flag)))
+>  
+
+I wish there was also an helper to set these bits. it gives me an heart attack
+every time I need to:
+	bio->bi_rw &= ~(1 << BIO_RW);
+
+> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+> index 49ae079..a0e5ce1 100644
+> --- a/include/linux/blkdev.h
+> +++ b/include/linux/blkdev.h
+> @@ -98,6 +98,7 @@ enum rq_flag_bits {
+>  	__REQ_FAILFAST_DEV,	/* no driver retries of device errors */
+>  	__REQ_FAILFAST_TRANSPORT, /* no driver retries of transport errors */
+>  	__REQ_FAILFAST_DRIVER,	/* no driver retries of driver errors */
+> +	/* above flags must match BIO_RW_* */
+>  	__REQ_DISCARD,		/* request to discard sectors */
+>  	__REQ_SORTED,		/* elevator knows about this request */
+>  	__REQ_SOFTBARRIER,	/* may not be passed by ioscheduler */
+> @@ -148,6 +149,9 @@ enum rq_flag_bits {
+>  #define REQ_NOIDLE	(1 << __REQ_NOIDLE)
+>  #define REQ_IO_STAT	(1 << __REQ_IO_STAT)
+>  
+> +#define REQ_FAILFAST_MASK	(REQ_FAILFAST_DEV | REQ_FAILFAST_TRANSPORT | \
+> +				 REQ_FAILFAST_DRIVER)
+> +
+>  #define BLK_MAX_CDB	16
+>  
+>  /*
+
+Thanks
+Boaz
