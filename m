@@ -1,148 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbZGEVVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbZGEVZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbZGEVVh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 17:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbZGEVV2
+	id S1754301AbZGEVZR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 17:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZGEVZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 17:21:28 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:60665 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753743AbZGEVV1 (ORCPT
+	Sun, 5 Jul 2009 17:25:07 -0400
+Received: from jenny.ondioline.org ([66.220.1.122]:48452 "EHLO
+	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753494AbZGEVZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 17:21:27 -0400
-Message-ID: <4A51194D.8000403@novell.com>
-Date: Sun, 05 Jul 2009 17:21:17 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Sun, 5 Jul 2009 17:25:06 -0400
+From: Paul Collins <paul@burly.ondioline.org>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-nfs@vger.kernel.org,
+       Andy Adamson <andros@netapp.com>, Benny Halevy <bhalevy@panasas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.31-rc2 soft lockups; traces point at rpc_wake_up, nfs4_run_state_manager, bit_waitqueue
+References: <87eisv7g5p.fsf@bulky.wgtn.ondioline.org>
+	<20090705081225.GA12783@elte.hu>
+	<1246800661.5937.1.camel@heimdal.trondhjem.org>
+Date: Mon, 06 Jul 2009 09:25:07 +1200
+In-Reply-To: <1246800661.5937.1.camel@heimdal.trondhjem.org> (Trond
+	Myklebust's message of "Sun, 05 Jul 2009 09:31:01 -0400")
+Message-ID: <8763e6aklo.fsf@jenny.ondioline.org>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mst@redhat.com,
-       davidel@xmailserver.org
-Subject: Re: [KVM PATCH v9 0/5] irqfd fixes and enhancements
-References: <20090702153454.20186.99191.stgit@dev.haskins.net> <4A4CD729.6050300@redhat.com> <4A50723E.6030305@redhat.com>
-In-Reply-To: <4A50723E.6030305@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3618C4AD8C6FF7C25E60662E"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3618C4AD8C6FF7C25E60662E
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Trond Myklebust <Trond.Myklebust@netapp.com> writes:
 
-Avi Kivity wrote:
-> On 07/02/2009 06:50 PM, Avi Kivity wrote:
->> On 07/02/2009 06:37 PM, Gregory Haskins wrote:
->>> (Applies to kvm.git/master:1f9050fd)
->>>
->>> The following is the latest attempt to fix the races in
->>> irqfd/eventfd, as
->>> well as restore DEASSIGN support.  For more details, please read the
->>> patch
->>> headers.
->>>
->>> As always, this series has been tested against the kvm-eventfd unit
->>> test
->>> and everything appears to be functioning properly. You can download
->>> this
->>> test here:
->>
->> Applied, thanks.
->>
+> On Sun, 2009-07-05 at 10:12 +0200, Ingo Molnar wrote:
+>> (added more Cc:s)
+>> 
+>> potential suspects are:
+>> 
+>> 1f84603: Merge branch 'devel-for-2.6.31' into for-2.6.31
+>> 3f09df7: NFS: Ensure we always hold the BKL when dereferencing inode->i_flock
+>> 965b5d6: NFSv4: Handle more errors when recovering open file and locking state
+>> 34dc1ad: nfs41: increment_{open,lock}_seqid
+>> 78722e9: nfs41: only retry EXCHANGE_ID on recoverable errors
+>> b4b8260: nfs41: get_clid_cred for EXCHANGE_ID
+>> 90a1661: nfs41: add a get_clid_cred function to nfs4_state_recovery_ops
+>> 591d71c: nfs41: establish sessions-based clientid
+>> a7b7210: nfs41: introduce get_state_renewal_cred
+>> 8e69514f: nfs41: support minorversion 1 for nfs4_check_lease
+>> c3fad1b: nfs41: add session reset to state manager
+>> 76db6d95: nfs41: add session setup to the state manager
+>> c2e713d: nfs41: translate NFS4ERR_MINOR_VERS_MISMATCH to EPROTONOSUPPORT
 >
-> ... and unapplied.  There's a refcounting mismatch in irqfd_cleanup: a
-> reference is taken for each irqfd, but dropped for each guest.
+> Or possibly either rpc.gssd or rpc.idmapd dying. Have you checked to see
+> if they are up and running correctly?
 
-Doh!
+I hadn't checked because my NFS4 setup has been solid for a while now.
+But I'll give it a lash again.  I don't have NFS 4.1 support enabled,
+which may eliminate some of the commits above from consideration.
 
-Note that the kvm->irqfds.init boolean was supposed to make it both
-acquire and release the reference on a per-vm basis.  Obviously,
-something is wrong. :)
-
-But I see later in the thread you guys have already figured out that
-only the last patch needs to be reverted.  Ill take a look at the last
-patch and fix the issue once I am back in the office tomorrow.  Sorry
-for the trouble.
-
-Kind Regards,
--Greg
-
->   This causes an oops if a guest with no irqfds is created and destroye=
-d:
->
-> IP: [<ffffffff8105254a>] flush_workqueue+0x23/0x6e
-> PGD 0
-> Oops: 0000 [4] SMP
-> CPU 1
-> Modules linked in: kvm_intel kvm nfs lockd nfs_acl sco bridge stp bnep
-> l2cap bluetooth autofs4 sunrpc ipv6 dm_multipath uinput i5000_edac
-> e1000e edac_core iTCO_wdt
->  iTCO_vendor_support i2c_i801 i2c_core e100 mii floppy pcspkr shpchp
-> serio_raw ata_generic pata_acpi [last unloaded: kvm]
-> Pid: 2088, comm: qemu Tainted: G      D =20
-> 2.6.27.19-170.2.35.fc10.x86_64 #1 TYAN Transport GT20-B5372
-> RIP: 0010:[<ffffffff8105254a>]  [<ffffffff8105254a>]
-> flush_workqueue+0x23/0x6e
-> RSP: 0018:ffff8801077d1b08  EFLAGS: 00010292
-> RAX: ffffffff8156de08 RBX: ffff8801097e8a50 RCX: 0000000000000000
-> RDX: 0000000000000000 RSI: 000000000000019f RDI: 0000000000000000
-> RBP: ffff8801077d1b28 R08: 0000000000000000 R09: ffffffff81140027
-> R10: ffff88012f402340 R11: ffff880125daf820 R12: ffffffff8156de10
-> R13: 0000000000000000 R14: ffff88012f449cd8 R15: ffff88012f002900
-> FS:  00007f9b67295950(0000) GS:ffff88012fc04980(0000)
-> knlGS:0000000000000000
-> CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-> CR2: 0000000000000020 CR3: 0000000000201000 CR4: 00000000000026e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process qemu (pid: 2088, threadinfo ffff8801077d0000, task
-> ffff88012984c530)
-> Stack:  ffff8801077d1b28 ffff8801097e8a50 ffff8801097e8000
-> ffff8801097e8a68
->  ffff8801077d1b58 ffffffffa01c4eec 0000000800000000 ffff8801097e8000
->  ffff88012f449cd8 ffff88012c80c600 ffff8801077d1b78 ffffffffa01af34b
-> Call Trace:
->  [<ffffffffa01c4eec>] kvm_irqfd_release+0x7a/0xcc [kvm]
->  [<ffffffffa01af34b>] kvm_vm_release+0x18/0x27 [kvm]
->  [<ffffffff810c14c7>] __fput+0xca/0x16d
->  [<ffffffff810c157f>] fput+0x15/0x17
->  [<ffffffff810bea29>] filp_close+0x67/0x72
->  [<ffffffff810433ec>] put_files_struct+0x74/0xc8
->  [<ffffffff81043488>] exit_files+0x48/0x51
->  [<ffffffff81044de9>] do_exit+0x26a/0x8a0
->  [<ffffffffa01da330>] ? vmx_vcpu_put+0x9/0xb [kvm_intel]
->  [<ffffffff810454a1>] do_group_exit+0x82/0xaf
->  [<ffffffff8104eabb>] get_signal_to_deliver+0x2b0/0x2dc
->  [<ffffffff81010379>] ? sysret_signal+0x42/0x71
->  [<ffffffff8100f45f>] do_notify_resume+0x90/0x93f
->  [<ffffffff81060cca>] ? do_futex+0x90/0x973
->  [<ffffffffa01ad956>] ? kvm_vcpu_ioctl+0x470/0x485 [kvm]
->  [<ffffffff81333801>] ? trace_hardirqs_on_thunk+0x3a/0x3c
->  [<ffffffff810616a2>] ? sys_futex+0xf5/0x113
->  [<ffffffff81010379>] ? sysret_signal+0x42/0x71
->  [<ffffffff81010737>] ptregscall_common+0x67/0xb0
->
-> irqfd_cleanup.wq has never been initialized, but is destroyed.
->
-
-
-
---------------enig3618C4AD8C6FF7C25E60662E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpRGVEACgkQlOSOBdgZUxl6FwCfZr0+6SOV6HaFFHiLXrs0mD1y
-2X8Anifta5sQv8oPgzEDgTS60JeGWTq0
-=SKpz
------END PGP SIGNATURE-----
-
---------------enig3618C4AD8C6FF7C25E60662E--
+        Paul
