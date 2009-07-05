@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbZGELUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbZGELWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbZGELUc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 07:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbZGELUZ
+	id S1756075AbZGELWS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 07:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbZGELWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 07:20:25 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:58791 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752518AbZGELUY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 07:20:24 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: tom.leiming@gmail.com
-Subject: Re: [PATCH 0/3] dma-mapping:remove CONFIG_HAVE_DMA_ATTRS
-Date: Sun, 5 Jul 2009 13:19:36 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30-10-generic; KDE/4.2.95; x86_64; ; )
-Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <1246674895-9610-1-git-send-email-tom.leiming@gmail.com>
-In-Reply-To: <1246674895-9610-1-git-send-email-tom.leiming@gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sun, 5 Jul 2009 07:22:08 -0400
+Received: from mga14.intel.com ([143.182.124.37]:48539 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752518AbZGELWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 07:22:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,351,1243839600"; 
+   d="scan'208";a="161637243"
+Date: Sun, 5 Jul 2009 19:21:59 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 2/5] add buffer cache information to show_free_areas()
+Message-ID: <20090705112159.GB1898@localhost>
+References: <20090705181400.08F1.A69D9226@jp.fujitsu.com> <20090705182337.08F9.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907051319.37169.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/8wAdZgEzvMAUjbRCm+4PER0oLGMJ1WnuP7fn
- Ybse6RGJ6mRtG5ZNuH+uyTgyhOoqptN98CAwRxk3h8zP803gqM
- LphIYbjlWIEwTYRMhpKZg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090705182337.08F9.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 04 July 2009, tom.leiming@gmail.com wrote:
-> 2,Disabling CONFIG_HAVE_DMA_ATTRS may lead to a compile failure;
+On Sun, Jul 05, 2009 at 05:24:07PM +0800, KOSAKI Motohiro wrote:
+> Subject: [PATCH] add buffer cache information to show_free_areas()
+> 
+> When administrator analysis memory shortage reason from OOM log, They
+> often need to know rest number of cache like pages.
 
-I'm not sure I understand this point. CONFIG_HAVE_DMA_ATTRS tells
-the common code whether the architecture understands dma attributes.
-If you enable it on all architectures, you will get new compile
-failures on all those that don't understand them, while the current
-code correctly falls back on the standard functions.
+nr_blockdev_pages() pages are also accounted in NR_FILE_PAGES.
 
-I think it makes sense to combine CONFIG_HAVE_DMA_ATTRS with the
-use of dma-mapping-common.h, but the majority of the architectures
-just uses a static mapping, where attributes make no sense.
+> Then, show_free_areas() shouldn't only display page cache, but also it
+> should display buffer cache.
 
-You also missed powerpc64, which selects CONFIG_HAVE_DMA_ATTRS
-but does not (yet) use dma-mapping-common.h.
+So if we are to add this, I'd suggest to put it close to the total
+pagecache line:
 
-	Arnd <><
+        printk("%ld total pagecache pages\n", global_page_state(NR_FILE_PAGES));
++       printk("%ld blkdev pagecache pages\n", nr_blockdev_pages());
+
+Thanks,
+Fengguang
+
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/page_alloc.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: b/mm/page_alloc.c
+> ===================================================================
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -2118,7 +2118,7 @@ void show_free_areas(void)
+>  	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
+>  		" inactive_file:%lu"
+>  		" unevictable:%lu"
+> -		" dirty:%lu writeback:%lu unstable:%lu\n"
+> +		" dirty:%lu writeback:%lu buffer:%lu unstable:%lu\n"
+>  		" free:%lu slab_reclaimable:%lu slab_unreclaimable:%lu\n"
+>  		" mapped:%lu pagetables:%lu bounce:%lu\n",
+>  		global_page_state(NR_ACTIVE_ANON),
+> @@ -2128,6 +2128,7 @@ void show_free_areas(void)
+>  		global_page_state(NR_UNEVICTABLE),
+>  		global_page_state(NR_FILE_DIRTY),
+>  		global_page_state(NR_WRITEBACK),
+> +		K(nr_blockdev_pages()),
+>  		global_page_state(NR_UNSTABLE_NFS),
+>  		global_page_state(NR_FREE_PAGES),
+>  		global_page_state(NR_SLAB_RECLAIMABLE),
+> 
