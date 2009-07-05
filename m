@@ -1,26 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZGEIXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZGEI2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZGEIXh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 04:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbZGEIX0
+	id S1754904AbZGEI2s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 04:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZGEI2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 04:23:26 -0400
-Received: from mxa.rambler.ru ([81.19.66.231]:53377 "EHLO mxa.rambler.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752949AbZGEIXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 04:23:25 -0400
-From: =?windows-1251?B?8eD44A==?= Nikishin <73086017@rambler.ru>
-To: <linux-kernel@vger.kernel.org>
-Subject: IsONi	
-Date: Sun, 05 Jul 2009 12:22:15 +0400
-MIME-Version: 1.0
-Content-Disposition: inline
+	Sun, 5 Jul 2009 04:28:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35249 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752893AbZGEI2j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 04:28:39 -0400
+Date: Sun, 5 Jul 2009 01:30:01 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Felix von Leitner <felix-linuxkernel@fefe.de>
+Cc: Linux Kernel Mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: Core i7 not scaling frequency down
+Message-ID: <20090705013001.6e0c17bf@infradead.org>
+In-Reply-To: <20090704203732.GA20170@codeblau.de>
+References: <20090704203732.GA20170@codeblau.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-Message-Id: <813164761.1246782135.174378068.34283@mcgi27.rambler.ru>
-X-Mailer: Ramail 3u, (mail-pda), http://mail.rambler.ru
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	wTiDvX	http://love22.nm.ru
+On Sat, 4 Jul 2009 22:37:32 +0200
+Felix von Leitner <felix-linuxkernel@fefe.de> wrote:
+
+> Hi,
+> 
+> I just got a Nehalem CPU and it works OK except that the fans are
+> always running full power and it produces heat like an oven.
+> 
+>   $ cat /proc/acpi/processor/P001/info
+>   processor id:            0
+>   acpi id:                 1
+>   bus mastering control:   yes
+>   power management:        yes
+>   throttling control:      no
+>   limit interface:         no
+>   $
+> 
+> Oh, no throttling and no limit support?  How can this be?  I'm using
+> 2.6.30 but this appears to be bogus; Windows scales down the CPU
+> frequency OK.
+
+how do you determine linux isn't scaling down? PowerTOP?
+(if not powertop.. you might want to use that ;-)
+
+>   ACPI Warning (tbutils-0246): Incorrect checksum in table [OEMB] -
+> 00, should be FE [20090320]
+
+that's pretty bad, but might not be a table critical for C/P states...
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
