@@ -1,74 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753142AbZGERRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbZGERcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753142AbZGERRr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 13:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZGERRk
+	id S1754298AbZGERcB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 13:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbZGERbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 13:17:40 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:33098 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752124AbZGERRk (ORCPT
+	Sun, 5 Jul 2009 13:31:53 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:39727 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861AbZGERbw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 13:17:40 -0400
+	Sun, 5 Jul 2009 13:31:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=h9PIVDFbBuNv3d7RqwOz27fbVh00aCRdkWx+pgG/6h+FrYJJCabbHP9OT1hpdXUATs
-         PI0sjrsd/QO9kRRBNBTU8jFzTj4yKoyiMfhBb2ket0Z+dQp+I3J0A5+dwAv+ZeaxBr91
-         Bw74uggXUgcA9Jert+93XbezOwzPP9Nbx2dzU=
-Date: Sun, 5 Jul 2009 21:17:39 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC -tip] x86,apic -- reduce disable_apic usage
-Message-ID: <20090705171739.GF4791@lenovo>
-References: <20090705162044.GC4791@lenovo> <alpine.LFD.2.00.0907051737100.13862@eddie.linux-mips.org> <20090705165947.GD4791@lenovo> <20090705171251.GE4791@lenovo>
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=Jji50jgjZaxEeBsilrJmUuZDqqC6j+me3W/qXAr4p/SKIm+uuADaVFxRJXp4XCWfyC
+         467z9vaheotvOTFIH5c0FcApHHyBdO6OVHDEahzUWhdZSe5+aSbgvF+OLJq/WHkcKEl7
+         QDXh3mvXV7vHOx/WQOnU6lXgT3a9zrs8wq9Hs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090705171251.GE4791@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Sun, 5 Jul 2009 18:31:54 +0100
+Message-ID: <6278d2220907051031r50280d2ch903b7804e9e95696@mail.gmail.com>
+Subject: [2.6.30.1] DMA debug/AHCI SG inconsistency...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Sun, Jul 05, 2009 at 09:12:51PM +0400]
-| [Cyrill Gorcunov - Sun, Jul 05, 2009 at 08:59:47PM +0400]
-| | [Maciej W. Rozycki - Sun, Jul 05, 2009 at 05:38:52PM +0100]
-| | | On Sun, 5 Jul 2009, Cyrill Gorcunov wrote:
-| | | 
-| | | > Here is an attempt to bring more consistency for apic
-| | | > presence check. I hope I covered all the code flows.
-| | | > Though it's RFC. Please review and test if possible.
-| | | > 
-| | | > 	-- Cyrill
-| | | > ---
-| | | > Instead of messing with (cpu_has_apic|disable_apic)
-| | | > to check if we have apic functional, better to distinguish
-| | | > them by logical kind. cpu_has_apic -- to check if we may
-| | | > use apic functionality, disable_apic -- to note that
-| | | > apic was disabled via command line.
-| | | 
-| | |  How do you set cpu_has_apic for systems with discrete local APICs?  The 
-| | | CPUID flag is not set in this case.
-| | | 
-| | |   Maciej
-| | | --
-| | | 
-| | 
-| | Well, indeed, somehow forgot about this case. Thanks Maciej!
-| | The patch should be dropped.
-| | 
-| | 	-- Cyrill
-| 
-| Hmm... But if we have no MP table parsed and no "lapic" option
-| passed we should leave execution in pure PIC mode. Or I miss
-| something?
-| 
-| 	-- Cyrill
+When running 2.6.30.1 checked for a while, I observed:
 
-To be precise -- for discrete apic we set this bit manually.
+WARNING: at lib/dma-debug.c:565 check_unmap+0x518/0x5f0()
 
-	-- Cyrill
+Hardware name: OEM
+
+ahci 0000:00:1f.2: DMA-API: device driver frees DMA sg list with
+different entry count [map count=124] [unmap count=117]
+
+Modules linked in: coretemp w83627ehf hwmon_vid snd_hda_codec_realtek
+snd_hda_intel snd_hda_codec snd_pcm snd_timer ath9k snd mac80211
+led_class soundcore snd_page_alloc pl2303
+
+Pid: 0, comm: swapper Not tainted 2.6.30.1-273s #1
+
+Call Trace:
+
+ <IRQ>  [<ffffffff803f6b98>] ? check_unmap+0x518/0x5f0
+
+ [<ffffffff8023ffb8>] warn_slowpath_common+0x78/0xd0
+
+ [<ffffffff80240094>] warn_slowpath_fmt+0x64/0x70
+
+ [<ffffffff805ca430>] ? _spin_lock_irqsave+0x70/0x90
+
+ [<ffffffff803f678c>] ? check_unmap+0x10c/0x5f0
+
+ [<ffffffff803f6b98>] check_unmap+0x518/0x5f0
+
+ [<ffffffff80266675>] ? lock_release_holdtime+0x35/0x1c0
+
+ [<ffffffff803f6e2d>] debug_dma_unmap_sg+0x12d/0x1e0
+
+ [<ffffffff804794c7>] ata_sg_clean+0x77/0xf0
+
+ [<ffffffff80479575>] __ata_qc_complete+0x35/0x110
+
+ [<ffffffff8047970d>] ata_qc_complete+0xbd/0x250
+
+ [<ffffffff80479c47>] ata_qc_complete_multiple+0x97/0xe0
+
+ [<ffffffff8048ee74>] ahci_interrupt+0x94/0x550
+
+ [<ffffffff80266675>] ? lock_release_holdtime+0x35/0x1c0
+
+ [<ffffffff8027a5da>] handle_IRQ_event+0x3a/0xe0
+
+ [<ffffffff8027c291>] handle_edge_irq+0xc1/0x160
+
+ [<ffffffff8020efc6>] handle_irq+0x46/0xa0
+
+ [<ffffffff8020e42a>] do_IRQ+0x6a/0xf0
+
+ [<ffffffff8020c793>] ret_from_intr+0x0/0xf
+
+ <EOI>  [<ffffffff80213e25>] ? mwait_idle+0x75/0x90
+
+ [<ffffffff80213e1c>] ? mwait_idle+0x6c/0x90
+
+ [<ffffffff8020b030>] ? cpu_idle+0xa0/0x140
+
+ [<ffffffff805bc6d5>] ? rest_init+0x65/0x70
+
+ [<ffffffff807bbb9d>] ? start_kernel+0x39a/0x449
+
+ [<ffffffff807bb0a9>] ? x86_64_start_reservations+0x99/0xb9
+
+ [<ffffffff807bb1a9>] ? x86_64_start_kernel+0xe0/0xf2
+
+---[ end trace df6d791d18fe80b5 ]---
+
+Mapped at:
+
+ [<ffffffffffffffff>] 0xffffffffffffffff
+
+(then ~4000s later)
+DMA-API: debugging out of memory - disabling
+
+The logic in the ata_sg_setup->dma_map_sg->debug_dma_map_sg and
+ata_sg_clean->dma_unmap_sg->debug_dma_unmap_sg->check_unmap call
+chains looks good, perhaps pointing to data corruption/race in the DMA
+debug API or problem with the AHCI driver?
+
+Daniel
+-- 
+Daniel J Blueman
