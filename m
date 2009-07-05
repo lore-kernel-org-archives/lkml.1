@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbZGEOwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbZGEO4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbZGEOwY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 10:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbZGEOwP
+	id S1756547AbZGEO4b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 10:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbZGEO4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 10:52:15 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:55248 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753239AbZGEOwO (ORCPT
+	Sun, 5 Jul 2009 10:56:22 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:8128 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753316AbZGEO4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 10:52:14 -0400
-Date: Sun, 5 Jul 2009 23:52:03 +0900
-From: Paul Mundt <lethal@linux-sh.org>
+	Sun, 5 Jul 2009 10:56:22 -0400
+Date: Sun, 5 Jul 2009 17:05:47 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
@@ -19,31 +19,27 @@ Cc: Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        "Rafael J. Wysocki" <rjw@sisk.pl>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       =?UTF-8?Q?=E6=99=8F=E5=8D=8E?= <yanh@lemote.com>,
        zhangfx <zhangfx@lemote.com>
-Subject: Re: [BUG] drivers/video/sis: deadlock introduced by "fbdev: add mutex for fb_mmap locking"
-Message-ID: <20090705145203.GA8326@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Wu Zhangjin <wuzhangjin@gmail.com>, linux-media@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-	Krzysztof Helt <krzysztof.h1@wp.pl>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
-	zhangfx <zhangfx@lemote.com>
-References: <1246785112.14240.34.camel@falcon> <alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Subject: Re: [BUG] drivers/video/sis: deadlock introduced by
+ "fbdev: add mutex for fb_mmap locking"
+Message-Id: <20090705170547.c83f1cb9.krzysztof.h1@poczta.fm>
 In-Reply-To: <alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1246785112.14240.34.camel@falcon>
+	<alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: e6e2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 07:19:33AM -0700, Linus Torvalds wrote:
+On Sun, 5 Jul 2009 07:19:33 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
 > 
 > On Sun, 5 Jul 2009, Wu Zhangjin wrote:
@@ -58,48 +54,13 @@ On Sun, Jul 05, 2009 at 07:19:33AM -0700, Linus Torvalds wrote:
 > That said, I do agree that the mm_lock seems to be causing more problems 
 > than it actually fixes, and maybe we should revert it. Krzysztof?
 > 
-Looking at this a bit closer, just moving the mutex initialization in to
-framebuffer_alloc() should basically fix most of these, at least it
-certainly does for sm501fb and for this sis case as well. So, here's a
-patch to do that.
 
-As an aside note, matroxfb is the odd one out, as it doesn't use
-framebuffer_alloc() directly for whatever reason. This actually raises an
-additional issue, in that framebuffer_alloc() is already where other
-mutexes are initialized, which will simply never happen on matroxfb
-(suggesting that at least the FB_BACKLIGHT and matroxfb combination will
-blow up, although perhaps that's not a valid combination).
+I vote for fixing these drivers after my change. I will send a patch for the sis driver soon. I am building new kernel now.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Regards,
+Krzysztof
 
----
+----------------------------------------------------------------------
+Rozwiaz krzyzowke i  wygraj nagrody! 
+Sprawdz >>  http://link.interia.pl/f2232 
 
- drivers/video/fbmem.c   |    1 -
- drivers/video/fbsysfs.c |    2 ++
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 53ea056..27a5271 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1514,7 +1514,6 @@ register_framebuffer(struct fb_info *fb_info)
- 			break;
- 	fb_info->node = i;
- 	mutex_init(&fb_info->lock);
--	mutex_init(&fb_info->mm_lock);
- 
- 	fb_info->dev = device_create(fb_class, fb_info->device,
- 				     MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index d4a2c11..dd413ad 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -62,6 +62,8 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
- 	mutex_init(&info->bl_curve_mutex);
- #endif
- 
-+	mutex_init(&info->mm_lock);
-+
- 	return info;
- #undef PADDING
- #undef BYTES_PER_LONG
