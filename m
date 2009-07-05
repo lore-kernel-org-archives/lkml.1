@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbZGEJCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbZGEJEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbZGEJCu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 05:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZGEJCn
+	id S1755461AbZGEJEv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 05:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZGEJEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 05:02:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36863 "EHLO hera.kernel.org"
+	Sun, 5 Jul 2009 05:04:43 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59876 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbZGEJCn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 05:02:43 -0400
-Subject: Re: [PATCH 4/6 -tip] perf_counter: Add Generalized Hardware
- interrupt support for AMD
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20090705080459.GA11636@elte.hu>
-References: <1246440909.3403.5.camel@hpdv5.satnam>
-	 <1246440977.3403.7.camel@hpdv5.satnam>
-	 <1246441043.3403.9.camel@hpdv5.satnam>
-	 <1246441094.3403.10.camel@hpdv5.satnam> <20090701112406.GE15958@elte.hu>
-	 <1246622515.2322.30.camel@jaswinder.satnam> <20090704102230.GE2139@elte.hu>
-	 <1246717039.2329.26.camel@jaswinder.satnam>
-	 <20090705011123.GA31673@elte.hu> <1246768166.2325.8.camel@jaswinder.satnam>
-	 <20090705080459.GA11636@elte.hu>
-Content-Type: text/plain
-Date: Sun, 05 Jul 2009 14:31:38 +0530
-Message-Id: <1246784498.2467.10.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1751088AbZGEJEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 05:04:43 -0400
+Date: Sun, 5 Jul 2009 11:04:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Figo.zhang" <figo1802@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3]mempool.c : clean up type-casting twice
+Message-ID: <20090705090441.GA24502@elte.hu>
+References: <1246762120.15308.3.camel@myhost> <1246766651.15308.13.camel@myhost> <1246784484.4358.3.camel@myhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246784484.4358.3.camel@myhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-05 at 10:04 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+* Figo.zhang <figo1802@gmail.com> wrote:
+
+> clean up type-casting twice. "size_t" typedef as "unsigned long" in 64-bit system,
+> and "unsigned int" in 32-bit system.
+
+[
+  You should line-length limit your changelogs btw., to 60 
+  characters or so. git log will add another 4 characters. The 
+  ~/.vimrc magic for this is:
+
+  autocmd BufNewFile,BufRead *.patch setlocal textwidth=60
+]
+
 > 
-
-> I'm simply not going to apply patches from you for what i consider a 
-> half-done feature.
+> in v3, remove the space to casts.
 > 
+> Signed-off-by: Figo.zhang <figo1802@gmail.com>
+> ---    
+> mm/mempool.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/mempool.c b/mm/mempool.c
+> index a46eb1b..32e75d4 100644
+> --- a/mm/mempool.c
+> +++ b/mm/mempool.c
+> @@ -303,14 +303,14 @@ EXPORT_SYMBOL(mempool_free_slab);
+>   */
+>  void *mempool_kmalloc(gfp_t gfp_mask, void *pool_data)
+>  {
+> -	size_t size = (size_t)(long)pool_data;
+> +	size_t size = (size_t)pool_data;
+>  	return kmalloc(size, gfp_mask);
+>  }
+>  EXPORT_SYMBOL(mempool_kmalloc);
+>  
+>  void *mempool_kzalloc(gfp_t gfp_mask, void *pool_data)
+>  {
+> -	size_t size = (size_t) pool_data;
+> +	size_t size = (size_t)pool_data;
+>  	return kzalloc(size, gfp_mask);
+>  }
+>  EXPORT_SYMBOL(mempool_kzalloc);
 
-This is not half-done. There are only 3 hardware interrupt performance
-counter events in Intel and AMD. And I supported all of them.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-I also supported all relevant Intel models and all AMD models.
-
-You are requesting for software counter for hardirqs, I have no problem
-to support it, I have also plan to add exceptions through software
-counters, but again it will be different patch. And there is no point of
-blocking this patch, as this will never change even if you add software
-counters.
-
-And you not even telling the problem in this patch, but you want to add
-more stuff, which is independent of this.
-
-So it is time to reconsider your consideration.
-
-Thanks,
---
-JSR
-
-
+	Ingo
