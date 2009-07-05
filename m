@@ -1,83 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbZGEOQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZGEOEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbZGEOQe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 10:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZGEOQY
+	id S1756123AbZGEOEc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 10:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927AbZGEOEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 10:16:24 -0400
-Received: from mail-vw0-f202.google.com ([209.85.212.202]:43573 "EHLO
-	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbZGEOQY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 10:16:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DZh0wmrg7xmDo1DeFsEWSPo1iLfagO6jvDeIx+2cP/H1i5VhyR1JE4W4KmVpAJlmEj
-         PWbXCzvOh0m8jt0zlW8Mo4H7IMRiHFbDBY95S28XyyX3TumWk1t76oWUjqIzVkW/sMU+
-         y69mDhXMjr32BvKHwxl0HbxijcZbDOXDQ0MGU=
+	Sun, 5 Jul 2009 10:04:14 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:41366 "EHLO d1.icnet.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754727AbZGEOEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 10:04:12 -0400
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+To: Jonathan McDowell <noodles@earth.li>
+Subject: [PATCH v2] OMAP1: AMS_DELTA: add modem support
+Date: Sun, 5 Jul 2009 16:01:48 +0200
+User-Agent: KMail/1.9.10
+Cc: Tony Lindgren <tony@atomide.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20090705182337.08F9.A69D9226@jp.fujitsu.com>
-References: <20090705181400.08F1.A69D9226@jp.fujitsu.com>
-	 <20090705182337.08F9.A69D9226@jp.fujitsu.com>
-Date: Sun, 5 Jul 2009 23:16:27 +0900
-Message-ID: <28c262360907050716x28671070of7ab21556213b337@mail.gmail.com>
-Subject: Re: [PATCH 2/5] add buffer cache information to show_free_areas()
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907051601.49194.jkrzyszt@tis.icnet.pl>
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 5, 2009 at 6:24 PM, KOSAKI
-Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
-> Subject: [PATCH] add buffer cache information to show_free_areas()
->
-> When administrator analysis memory shortage reason from OOM log, They
-> often need to know rest number of cache like pages.
->
-> Then, show_free_areas() shouldn't only display page cache, but also it
-> should display buffer cache.
->
->
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/page_alloc.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> Index: b/mm/page_alloc.c
-> ===================================================================
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2118,7 +2118,7 @@ void show_free_areas(void)
->        printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
->                " inactive_file:%lu"
->                " unevictable:%lu"
-> -               " dirty:%lu writeback:%lu unstable:%lu\n"
-> +               " dirty:%lu writeback:%lu buffer:%lu unstable:%lu\n"
->                " free:%lu slab_reclaimable:%lu slab_unreclaimable:%lu\n"
->                " mapped:%lu pagetables:%lu bounce:%lu\n",
->                global_page_state(NR_ACTIVE_ANON),
-> @@ -2128,6 +2128,7 @@ void show_free_areas(void)
->                global_page_state(NR_UNEVICTABLE),
->                global_page_state(NR_FILE_DIRTY),
->                global_page_state(NR_WRITEBACK),
-> +               K(nr_blockdev_pages()),
+This patch adds support for modem device found on Amstrad E3 (Delta) board.
 
-Why do you show the number with kilobyte unit ?
-Others are already number of pages.
+Created against linux-2.6.31-rc1.
 
-Do you have any reason ?
+Based on earlier patch by Jonathan McDowell, available at 
+http://the.earth.li/pub/e3/2.6.19/ams-delta-modem.patch.
+Modified after Ladislav Michl's arch/arm/mach-omap1/board-voiceblue.c.
 
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+---
+Registering the modem platform device from a separate arch_initcall (and not
+from init_machine() callback) preserves serial console port at ttyS0.
 
--- 
-Kind regards,
-Minchan Kim
+OMAP mux pin set up just for case if Amstrad bootloader is ever replaced.
+
+--- linux-2.6.31-rc1/arch/arm/mach-omap1/board-ams-delta.c.orig	2009-07-04 16:39:37.000000000 +0200
++++ linux-2.6.31-rc1/arch/arm/mach-omap1/board-ams-delta.c	2009-07-05 13:41:08.000000000 +0200
+@@ -15,8 +15,11 @@
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/input.h>
++#include <linux/irq.h>
+ #include <linux/platform_device.h>
++#include <linux/serial_8250.h>
+ 
++#include <asm/serial.h>
+ #include <mach/hardware.h>
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+@@ -235,6 +238,41 @@ static void __init ams_delta_init(void)
+ 	platform_add_devices(ams_delta_devices, ARRAY_SIZE(ams_delta_devices));
+ }
+ 
++static struct plat_serial8250_port ams_delta_modem_ports[] = {
++	{
++		.membase	= (void *) AMS_DELTA_MODEM_VIRT,
++		.mapbase	= AMS_DELTA_MODEM_PHYS,
++		.irq		= -EINVAL, /* changed later */
++		.flags		= UPF_BOOT_AUTOCONF,
++		.iotype		= UPIO_MEM,
++		.regshift	= 1,
++		.uartclk	= BASE_BAUD * 16,
++	},
++	{ },
++};
++
++static struct platform_device ams_delta_modem_device = {
++	.name	= "serial8250",
++	.id	= PLAT8250_DEV_PLATFORM1,
++	.dev		= {
++		.platform_data = ams_delta_modem_ports,
++	},
++};
++
++static int __init ams_delta_modem_init(void)
++{
++	omap_cfg_reg(M14_1510_GPIO2);
++	ams_delta_modem_ports[0].irq = gpio_to_irq(2);
++	set_irq_type(gpio_to_irq(2), IRQ_TYPE_EDGE_RISING);
++
++	ams_delta_latch2_write(
++		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC,
++		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC);
++
++	return platform_device_register(&ams_delta_modem_device);
++}
++arch_initcall(ams_delta_modem_init);
++
+ static void __init ams_delta_map_io(void)
+ {
+ 	omap1_map_common_io();
+
