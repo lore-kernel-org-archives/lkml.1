@@ -1,96 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbZGENXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZGENhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756826AbZGENXo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 09:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZGENXh
+	id S1753995AbZGENhZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 09:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbZGENhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 09:23:37 -0400
-Received: from ey-out-1920.google.com ([74.125.78.146]:1623 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755030AbZGENXg (ORCPT
+	Sun, 5 Jul 2009 09:37:14 -0400
+Received: from mail-pz0-f193.google.com ([209.85.222.193]:42744 "EHLO
+	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbZGENhN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 09:23:36 -0400
+	Sun, 5 Jul 2009 09:37:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=saVc2HSjvbradGjjHifEPAI2IJ7URERss6xvoem+2GRBv9P3pHFt1bN9VOczux7iVd
-         LNoNvee0YCBQXxp/5vfiBJjoZQWH+D/qXOTfwBFyyiB9BTRlTB6UQE8/E6h0ANVLWVOI
-         /9sFbgUOQessuTy1dW5MjzWmk7Fzu3j5Noa2I=
-Date: Sun, 5 Jul 2009 15:23:35 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 5/5] perf report: Support callchains with relative
-	overhead rate
-Message-ID: <20090705132333.GB4912@nowhere>
-References: <1246772361-9960-1-git-send-email-fweisbec@gmail.com> <1246772361-9960-5-git-send-email-fweisbec@gmail.com> <20090705083400.GB12783@elte.hu> <20090705085949.GA23780@elte.hu>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=wZQqgw6AZPkDenMRNwL0NHX6tAD1Fc+OvHiJ9uVfgGBaV46CvEsyPhLuBqVhV8AFp7
+         1skPBqutfKbhfOFF2IcfUTlTc4gSrUy+7A4ieGhzogaXA5K+mC98w3dZms/MQKXKLca0
+         RTksOA6g74TmOoK6hKWok3tyIJPH8evXjebjg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090705085949.GA23780@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090705204418.44fc38c1@linux-lm>
+References: <1246674895-9610-1-git-send-email-tom.leiming@gmail.com>
+	 <200907051319.37169.arnd@arndb.de> <20090705204418.44fc38c1@linux-lm>
+Date: Sun, 5 Jul 2009 21:37:16 +0800
+Message-ID: <d82e647a0907050637l532d40e8u4b67ecefa303415e@mail.gmail.com>
+Subject: Re: [PATCH 0/3] dma-mapping:remove CONFIG_HAVE_DMA_ATTRS
+From: Ming Lei <tom.leiming@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 10:59:49AM +0200, Ingo Molnar wrote:
-> 
-> btw., i get some buggy looking output with:
-> 
->   $ perf record -f -g ~/hackbench 10
-> 
->   $ perf report -c
-> 
-> 
->                 |--5.11%-- unix_stream_sendmsg
->                 |          |          
->                 |          |--100.00%-- __sock_sendmsg
->                 |          |          sock_aio_write
->                 |          |          do_sync_write
->                 |          |          vfs_write
->                 |          |          sys_write
->                 |          |          sysenter_dispatch
->                 |          |          0xf7f72430
->                 |          |          0xffebbca000000014
->                 |          |          
->                 |           --11.11%-- sock_aio_write
->                 |                     do_sync_write
->                 |                     vfs_write
->                 |                     sys_write
->                 |                     sysenter_dispatch
->                 |                     0xf7f72430
->                 |                     0xffebbca000000014
-> 
-> Those percentages dont sum up to 100% :-)
+2009/7/5 Ming Lei <tom.leiming@gmail.com>:
+> On Sun, 5 Jul 2009 13:19:36 +0200
+> Arnd Bergmann <arnd@arndb.de> wrote:
+>
+>> On Saturday 04 July 2009, tom.leiming@gmail.com wrote:
+>> > 2,Disabling CONFIG_HAVE_DMA_ATTRS may lead to a compile failure;
+>>
+>> I'm not sure I understand this point. CONFIG_HAVE_DMA_ATTRS tells
+>> the common code whether the architecture understands dma attributes.
+>
+> If a new arch does not define CONFIG_HAVE_DMA_ATTRS but uses
+> dma-mapping-common.h, it will lead to a compile failure.
+>
+> include/asm-generic/dma-mapping-common.h
+>
+>        #define dma_map_single(d, a, s, r) dma_map_single_attrs(d, a,
+>        s, r, NULL)
+>        ...
+>
+> include/linux/dma-mapping.h
+>
+>        #ifndef CONFIG_HAVE_DMA_ATTRS
+>        struct dma_attrs;
+>
+>        #define dma_map_single_attrs(dev, cpu_addr, size, dir, attrs) \
+>        dma_map_single(dev, cpu_addr, size, dir)
+>        ...
+>        #endif
+>
+>
+
+I have another idea to fix the possible compile failure.  Does the
+following patch
+work?
+
+diff --git a/include/asm-generic/dma-mapping-common.h
+b/include/asm-generic/dma-mapping-common.h
+index 5406a60..39e2ec5 100644
+--- a/include/asm-generic/dma-mapping-common.h
++++ b/include/asm-generic/dma-mapping-common.h
+@@ -6,6 +6,8 @@
+ #include <linux/dma-debug.h>
+ #include <linux/dma-attrs.h>
+
++#define ARCH_USE_DMA_MAPPING_COMMON
++
+ static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
+ 					      size_t size,
+ 					      enum dma_data_direction dir,
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 07dfd46..4be1121 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -219,6 +219,7 @@ static inline void
+dmam_release_declared_memory(struct device *dev)
+ }
+ #endif /* ARCH_HAS_DMA_DECLARE_COHERENT_MEMORY */
+
++#ifndef ARCH_USE_DMA_MAPPING_COMMON
+ #ifndef CONFIG_HAVE_DMA_ATTRS
+ struct dma_attrs;
+
+@@ -235,5 +236,7 @@ struct dma_attrs;
+ 	dma_unmap_sg(dev, sgl, nents, dir)
+
+ #endif /* CONFIG_HAVE_DMA_ATTRS */
++#endif /* ARCH_USE_DMA_MAPPING_COMMON */
++
+
+ #endif
 
 
-Argh. I can reproduce it, will have a look.
 
-
-> Another detail: i think we should signal when we crop the output due 
-> to the filter, via a line of:
-> 
->                 |          [...]
-> 
-> or so.
-
-
-Ok.
-
-
-
-> Plus, when doing 'perf report' on a call-chain recording, shouldnt 
-> we auto-detect this fact and default to fractal output 
-> automatically, instead of flat mode?
-> 
-> User can still force flat mode via 'perf report -c flat'.
-
-
-Yeah but the user won't be able to ignore the callchain.
-May be I may add a -c none in this case?
-
+-- 
+Lei Ming
