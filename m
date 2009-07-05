@@ -1,111 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbZGEP11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZGEOdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbZGEP11 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 11:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZGEP1U
+	id S1756218AbZGEOdT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 10:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZGEOdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 11:27:20 -0400
-Received: from mail-vw0-f202.google.com ([209.85.212.202]:33958 "EHLO
-	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752340AbZGEP1T convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 11:27:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VlH+r19sLpr6dVfkP94TZ5Byj5aYFTTDaLk7lfADPilylmIjTEbUoAIpG0GMHr2+PL
-         bADLUJOl8HQZHO13GZU3tvcI29OtLfpj96mCOCNy+xj+1Qk63OacLgoaBeAM0VZ2CLSU
-         uqM6BDMY2fSD+EFfJ9YPotWJyCZMTu+221l4o=
+	Sun, 5 Jul 2009 10:33:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47512 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752780AbZGEOdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 10:33:01 -0400
+Date: Sun, 5 Jul 2009 17:32:54 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>
+Subject: [PATCH] enable x2APIC without interrupt remapping under KVM
+Message-ID: <20090705143254.GJ881@redhat.com>
+References: <20090701133007.GC27539@redhat.com> <1246482017.27006.10670.camel@localhost.localdomain> <20090703082905.GF21833@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090705151628.GA11307@localhost>
-References: <20090705182533.0902.A69D9226@jp.fujitsu.com>
-	 <20090705121308.GC5252@localhost>
-	 <20090705211739.091D.A69D9226@jp.fujitsu.com>
-	 <20090705130200.GA6585@localhost>
-	 <2f11576a0907050619t5dea33cfwc46344600c2b17b5@mail.gmail.com>
-	 <28c262360907050804p70bc293uc7330a6d968c0486@mail.gmail.com>
-	 <20090705151628.GA11307@localhost>
-Date: Mon, 6 Jul 2009 00:27:20 +0900
-Message-ID: <28c262360907050827y577c3859g5e05e82935e96010@mail.gmail.com>
-Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703082905.GF21833@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 6, 2009 at 12:16 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> On Sun, Jul 05, 2009 at 11:04:17PM +0800, Minchan Kim wrote:
->> On Sun, Jul 5, 2009 at 10:19 PM, KOSAKI
->> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
->> >>> > > + printk("%ld total anon pages\n", global_page_state(NR_ANON_PAGES));
->> >>> > >   printk("%ld total pagecache pages\n", global_page_state(NR_FILE_PAGES));
->> >>> >
->> >>> > Can we put related items together, ie. this looks more friendly:
->> >>> >
->> >>> >         Anon:XXX active_anon:XXX inactive_anon:XXX
->> >>> >         File:XXX active_file:XXX inactive_file:XXX
->> >>>
->> >>> hmmm. Actually NR_ACTIVE_ANON + NR_INACTIVE_ANON != NR_ANON_PAGES.
->> >>> tmpfs pages are accounted as FILE, but it is stay in anon lru.
->> >>
->> >> Right, that's exactly the reason I propose to put them together: to
->> >> make the number of tmpfs pages obvious.
->> >>
->> >>> I think your proposed format easily makes confusion. this format cause to
->> >>> imazine Anon = active_anon + inactive_anon.
->> >>
->> >> Yes it may confuse normal users :(
->> >>
->> >>> At least, we need to use another name, I think.
->> >>
->> >> Hmm I find it hard to work out a good name.
->> >>
->> >> But instead, it may be a good idea to explicitly compute the tmpfs
->> >> pages, because the excessive use of tmpfs pages could be a common
->> >> reason of OOM.
->> >
->> > Yeah,  explicite tmpfs/shmem accounting is also useful for /proc/meminfo.
->>
->> Do we have to account it explicitly?
->
-> When OOM happens, one frequent question to ask is: are there too many
-> tmpfs/shmem pages?  Exporting this number makes our oom-message-decoding
-> life easier :)
+KVM would like to provide x2APIC interface to a guest without emulating
+interrupt remapping device. The reason KVM prefers guest to use x2APIC
+is that x2APIC interface is better virtualizable and provides better
+performance than mmio xAPIC interface:
+    
+- msr exits are faster than mmio (no page table walk, emulation)
+- no need to read back ICR to look at the busy bit
+- one 64 bit ICR write instead of two 32 bit writes
+- shared code with the Hyper-V paravirt interface
+    
+Included patch changes x2APIC enabling logic to enable it even if IR
+initialization failed, but kernel runs under KVM and no apic id is
+greater than 255 (if there is one spec requires BIOS to move to x2apic
+mode before starting an OS).
 
-Indeed.
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
 
->> If we know the exact isolate pages of each lru,
->>
->> tmpfs/shmem = (NR_ACTIVE_ANON + NR_INACTIVE_ANON + isolate(anon)) -
->> NR_ANON_PAGES.
->>
->> Is there any cases above equation is wrong ?
->
-> That's right, but the calculation may be too complex (and boring) for
-> our little brain ;)
+This is the same as v5 only rebased on x86 tree (a74d2cea).
 
-Yes. if something is change in future or we miss someting, the above
-question may be wrong.
-I wanted to remove overhead of new accouting.
-
-Anyway, I think it's not a big cost in normal system.
-So If you want to add new accounting, I don't have any objection. :)
-
-> Thanks,
-> Fengguang
->
-
-
-
--- 
-Kind regards,
-Minchan Kim
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 0a1c283..9e0b37a 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -49,6 +49,7 @@
+ #include <asm/mtrr.h>
+ #include <asm/smp.h>
+ #include <asm/mce.h>
++#include <asm/kvm_para.h>
+ 
+ unsigned int num_processors;
+ 
+@@ -1361,52 +1362,74 @@ void enable_x2apic(void)
+ }
+ #endif /* CONFIG_X86_X2APIC */
+ 
+-void __init enable_IR_x2apic(void)
++int __init enable_IR(void)
+ {
+ #ifdef CONFIG_INTR_REMAP
+ 	int ret;
+-	unsigned long flags;
+-	struct IO_APIC_route_entry **ioapic_entries = NULL;
+ 
+ 	ret = dmar_table_init();
+ 	if (ret) {
+ 		pr_debug("dmar_table_init() failed with %d:\n", ret);
+-		goto ir_failed;
++		return 0;
+ 	}
+ 
+ 	if (!intr_remapping_supported()) {
+ 		pr_debug("intr-remapping not supported\n");
+-		goto ir_failed;
++		return 0;
+ 	}
+ 
+-
+ 	if (!x2apic_preenabled && skip_ioapic_setup) {
+ 		pr_info("Skipped enabling intr-remap because of skipping "
+ 			"io-apic setup\n");
+-		return;
++		return 0;
+ 	}
+ 
++	if (enable_intr_remapping(x2apic_supported()))
++		return 0;
++
++	pr_info("Enabled Interrupt-remapping\n");
++
++	return 1;
++
++#endif
++	return 0;
++}
++
++void __init enable_IR_x2apic(void)
++{
++	unsigned long flags;
++	struct IO_APIC_route_entry **ioapic_entries = NULL;
++	int ret, x2apic_enabled = 0;
++
+ 	ioapic_entries = alloc_ioapic_entries();
+ 	if (!ioapic_entries) {
+-		pr_info("Allocate ioapic_entries failed: %d\n", ret);
+-		goto end;
++		 pr_info("Allocate ioapic_entries failed\n");
++		 goto out;
+ 	}
+ 
+ 	ret = save_IO_APIC_setup(ioapic_entries);
+ 	if (ret) {
+ 		pr_info("Saving IO-APIC state failed: %d\n", ret);
+-		goto end;
++		goto out;
+ 	}
+ 
+ 	local_irq_save(flags);
+-	mask_IO_APIC_setup(ioapic_entries);
+ 	mask_8259A();
++	mask_IO_APIC_setup(ioapic_entries);
+ 
+-	ret = enable_intr_remapping(x2apic_supported());
+-	if (ret)
+-		goto end_restore;
++	ret = enable_IR();
++	if (!ret) {
++		/* IR is required if x2apic is enabled by BIOS even
++		 * when running in kvm since this indicates present
++		 * of APIC ID > 255 */
++	       	if (max_physical_apicid > 255 || !kvm_para_available())
++			goto nox2apic;
++		/* without IR all CPUs can be addressed by IOAPIC/MSI
++		 * only in physical mode */
++		x2apic_phys = 1;
++	}
+ 
+-	pr_info("Enabled Interrupt-remapping\n");
++	x2apic_enabled = 1;
+ 
+ 	if (x2apic_supported() && !x2apic_mode) {
+ 		x2apic_mode = 1;
+@@ -1414,41 +1437,30 @@ void __init enable_IR_x2apic(void)
+ 		pr_info("Enabled x2apic\n");
+ 	}
+ 
+-end_restore:
+-	if (ret)
+-		/*
+-		 * IR enabling failed
+-		 */
++nox2apic:
++	if (!ret) /* IR enabling failed */
+ 		restore_IO_APIC_setup(ioapic_entries);
+-
+ 	unmask_8259A();
+ 	local_irq_restore(flags);
+ 
+-end:
++out:
+ 	if (ioapic_entries)
+ 		free_ioapic_entries(ioapic_entries);
+ 
+-	if (!ret)
++	if (x2apic_enabled)
+ 		return;
+ 
+-ir_failed:
+-	if (x2apic_preenabled)
++	if (x2apic_preenabled) {
++#ifdef CONFIG_INTR_REMAP
+ 		panic("x2apic enabled by bios. But IR enabling failed");
+-	else if (cpu_has_x2apic)
+-		pr_info("Not enabling x2apic,Intr-remapping\n");
+ #else
+-	if (!cpu_has_x2apic)
+-		return;
+-
+-	if (x2apic_preenabled)
+ 		panic("x2apic enabled prior OS handover,"
+-		      " enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
++				" enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
+ #endif
+-
+-	return;
++	} else if (cpu_has_x2apic)
++		pr_info("Not enabling x2apic,Intr-remapping\n");
+ }
+ 
+-
+ #ifdef CONFIG_X86_64
+ /*
+  * Detect and enable local APICs on non-SMP boards.
+diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
+index bc3e880..f3b1037 100644
+--- a/arch/x86/kernel/apic/probe_64.c
++++ b/arch/x86/kernel/apic/probe_64.c
+@@ -50,11 +50,11 @@ static struct apic *apic_probe[] __initdata = {
+ void __init default_setup_apic_routing(void)
+ {
+ #ifdef CONFIG_X86_X2APIC
+-	if (x2apic_mode && (apic != &apic_x2apic_phys &&
++	if (x2apic_mode
+ #ifdef CONFIG_X86_UV
+-		       apic != &apic_x2apic_uv_x &&
++		       && apic != &apic_x2apic_uv_x
+ #endif
+-		       apic != &apic_x2apic_cluster)) {
++		       ) {
+ 		if (x2apic_phys)
+ 			apic = &apic_x2apic_phys;
+ 		else
+--
+			Gleb.
