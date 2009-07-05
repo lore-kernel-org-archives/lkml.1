@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZGEJ4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZGEKJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbZGEJ4y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 05:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbZGEJ4r
+	id S1756122AbZGEKJo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 06:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZGEKJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 05:56:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51958 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbZGEJ4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 05:56:46 -0400
-Subject: Re: [PATCH 4/6 -tip] perf_counter: Add Generalized Hardware
- interrupt support for AMD
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20090705080459.GA11636@elte.hu>
-References: <1246440909.3403.5.camel@hpdv5.satnam>
-	 <1246440977.3403.7.camel@hpdv5.satnam>
-	 <1246441043.3403.9.camel@hpdv5.satnam>
-	 <1246441094.3403.10.camel@hpdv5.satnam> <20090701112406.GE15958@elte.hu>
-	 <1246622515.2322.30.camel@jaswinder.satnam> <20090704102230.GE2139@elte.hu>
-	 <1246717039.2329.26.camel@jaswinder.satnam>
-	 <20090705011123.GA31673@elte.hu> <1246768166.2325.8.camel@jaswinder.satnam>
-	 <20090705080459.GA11636@elte.hu>
-Content-Type: text/plain
-Date: Sun, 05 Jul 2009 15:25:40 +0530
-Message-Id: <1246787740.2467.13.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Sun, 5 Jul 2009 06:09:35 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:39044 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbZGEKJe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 06:09:34 -0400
+X-Greylist: delayed 357 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Jul 2009 06:09:34 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=uloPYRqrrEzwOfWe3wTsiQgi2EqU5OAC804gImUebFVL0RYu3hwna2ZdFaShnvnqvy
+         a0GyccjAFSa10wMzmF8ka3LS4z1y86HsMtLYu1HZqddztRAwroel28gL+hcwnRBGeU5o
+         Tox1wY+v/PAevOCn7iHC4w3y7951zWpjTfZzg=
+MIME-Version: 1.0
+In-Reply-To: <20090629131440.GN5139@amd.com>
+References: <6278d2220906280405y731f7f2l65472ec5f62dbc83@mail.gmail.com>
+	 <20090629131440.GN5139@amd.com>
+Date: Sun, 5 Jul 2009 11:03:40 +0100
+Message-ID: <6278d2220907050303y5442cb05h6098a9c7a6beeb6e@mail.gmail.com>
+Subject: Re: [2.6.30-rc1] lockdep false positive in DMA debug API...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-05 at 10:04 +0200, Ingo Molnar wrote:
+On Mon, Jun 29, 2009 at 2:14 PM, Joerg Roedel<joerg.roedel@amd.com> wrote:
+> On Sun, Jun 28, 2009 at 12:05:17PM +0100, Daniel J Blueman wrote:
+>> With 2.6.30-rc1, I'm seeing the lockdep validator spinning it's wheels
+>> [1] (also already seen [2]) on the DMA debug interface, with the
+>> hashed locks.
+>
+> If you don't actually mean 2.6.3_1_-rc1 this is a known bug which was
+> fixed for 2.6.30-final.
 
-> I'm simply not going to apply patches from you for what i consider a 
-> half-done feature.
-> 
+It's in 2.6.30 proper, but is now fixed in 2.6.31-rc and 2.6.30.1 by
+"dma-debug: Put all hash-chain locks into the same lock class":
+http://groups.google.com/group/linux.kernel/browse_thread/thread/73ae3a0fc04185c8#
 
-OK, can you suggest me how output will look like so that I can start
-preparing the hardirq patch.
-
-Thanks,
---
-JSR
-
+Thanks anyway!
+  Daniel
+-- 
+Daniel J Blueman
