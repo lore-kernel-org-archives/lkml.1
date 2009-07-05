@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZGEMoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbZGENCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZGEMoj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 08:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756635AbZGEMoa
+	id S1755601AbZGENCS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 09:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbZGENCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 08:44:30 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:6170 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756630AbZGEMo1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 08:44:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=OvMa2y75iuKZ8uctmX+5KLH0zL+Cd1YLEQz2eA8uesypbdwqmBPK1IywOI1B2rPFec
-         +ZKN6InOezbgt6oIbNI/BpVIv6RaRfQd2be35sC9PLY+cArtXvnaKh55jAdS5QdpA+g8
-         W6/pNFyqE8vhgSYf7LQSOUwYCHgfuJvFWkwp4=
-Date: Sun, 5 Jul 2009 20:44:18 +0800
-From: Ming Lei <tom.leiming@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 0/3] dma-mapping:remove CONFIG_HAVE_DMA_ATTRS
-Message-ID: <20090705204418.44fc38c1@linux-lm>
-In-Reply-To: <200907051319.37169.arnd@arndb.de>
-References: <1246674895-9610-1-git-send-email-tom.leiming@gmail.com>
-	<200907051319.37169.arnd@arndb.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.4; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 5 Jul 2009 09:02:11 -0400
+Received: from mga03.intel.com ([143.182.124.21]:41500 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753462AbZGENCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 09:02:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,351,1243839600"; 
+   d="scan'208";a="161651572"
+Date: Sun, 5 Jul 2009 21:02:00 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
+Message-ID: <20090705130200.GA6585@localhost>
+References: <20090705182533.0902.A69D9226@jp.fujitsu.com> <20090705121308.GC5252@localhost> <20090705211739.091D.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090705211739.091D.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Jul 2009 13:19:36 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
-
-> On Saturday 04 July 2009, tom.leiming@gmail.com wrote:
-> > 2,Disabling CONFIG_HAVE_DMA_ATTRS may lead to a compile failure;
+On Sun, Jul 05, 2009 at 08:21:20PM +0800, KOSAKI Motohiro wrote:
+> > On Sun, Jul 05, 2009 at 05:26:18PM +0800, KOSAKI Motohiro wrote:
+> > > Subject: [PATCH] add NR_ANON_PAGES to OOM log
+> > > 
+> > > show_free_areas can display NR_FILE_PAGES, but it can't display
+> > > NR_ANON_PAGES.
+> > > 
+> > > this patch fix its inconsistency.
+> > > 
+> > > 
+> > > Reported-by: Wu Fengguang <fengguang.wu@gmail.com>
+> > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > ---
+> > >  mm/page_alloc.c |    1 +
+> > >  1 file changed, 1 insertion(+)
+> > > 
+> > > Index: b/mm/page_alloc.c
+> > > ===================================================================
+> > > --- a/mm/page_alloc.c
+> > > +++ b/mm/page_alloc.c
+> > > @@ -2216,6 +2216,7 @@ void show_free_areas(void)
+> > >  		printk("= %lukB\n", K(total));
+> > >  	}
+> > >  
+> > > +	printk("%ld total anon pages\n", global_page_state(NR_ANON_PAGES));
+> > >  	printk("%ld total pagecache pages\n", global_page_state(NR_FILE_PAGES));
+> > 
+> > Can we put related items together, ie. this looks more friendly:
+> > 
+> >         Anon:XXX active_anon:XXX inactive_anon:XXX
+> >         File:XXX active_file:XXX inactive_file:XXX
 > 
-> I'm not sure I understand this point. CONFIG_HAVE_DMA_ATTRS tells
-> the common code whether the architecture understands dma attributes.
+> hmmm. Actually NR_ACTIVE_ANON + NR_INACTIVE_ANON != NR_ANON_PAGES.
+> tmpfs pages are accounted as FILE, but it is stay in anon lru.
 
-If a new arch does not define CONFIG_HAVE_DMA_ATTRS but uses
-dma-mapping-common.h, it will lead to a compile failure. 
+Right, that's exactly the reason I propose to put them together: to
+make the number of tmpfs pages obvious.
 
-include/asm-generic/dma-mapping-common.h
+> I think your proposed format easily makes confusion. this format cause to
+> imazine Anon = active_anon + inactive_anon.
 
-	#define dma_map_single(d, a, s, r) dma_map_single_attrs(d, a,
-	s, r, NULL)
-	...
+Yes it may confuse normal users :(
 
-include/linux/dma-mapping.h
-	
-	#ifndef CONFIG_HAVE_DMA_ATTRS
-	struct dma_attrs;
+> At least, we need to use another name, I think.
 
-	#define dma_map_single_attrs(dev, cpu_addr, size, dir, attrs) \
-        dma_map_single(dev, cpu_addr, size, dir)
-	...
-	#endif
+Hmm I find it hard to work out a good name.
 
+But instead, it may be a good idea to explicitly compute the tmpfs
+pages, because the excessive use of tmpfs pages could be a common
+reason of OOM.
 
-> If you enable it on all architectures, you will get new compile
-> failures on all those that don't understand them, while the current
-> code correctly falls back on the standard functions.
-
-You are right, the patch will lead to new compile failure for the
-ARCHs, on which disables CONFIG_HAVE_DMA_ATTRS and doesn't use
-dma-mapping-common.h. So the patch is not mature.
-
-> 
-> I think it makes sense to combine CONFIG_HAVE_DMA_ATTRS with the
-> use of dma-mapping-common.h, but the majority of the architectures
-> just uses a static mapping, where attributes make no sense.
-> 
-> You also missed powerpc64, which selects CONFIG_HAVE_DMA_ATTRS
-> but does not (yet) use dma-mapping-common.h.
-
-ppc64 doesn't use dma-mapping-common.h, so the patch doesn't consider
-it.
-
--- 
-Lei Ming
+Thanks,
+Fengguang
