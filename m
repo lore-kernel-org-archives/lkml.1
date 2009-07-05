@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZGEGgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751851AbZGEGgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbZGEGgD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 02:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZGEGfw
+	id S1751851AbZGEGgc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 02:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZGEGgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 02:35:52 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:48506 "EHLO mgw2.diku.dk"
+	Sun, 5 Jul 2009 02:36:23 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:48512 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750754AbZGEGfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 02:35:51 -0400
-Date: Sun, 5 Jul 2009 08:35:51 +0200 (CEST)
+	id S1751487AbZGEGgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 02:36:22 -0400
+Date: Sun, 5 Jul 2009 08:36:22 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/5] drivers/ata: Use resource_size
-Message-ID: <Pine.LNX.4.64.0907050835260.27464@ask.diku.dk>
+To: dmitry.torokhov@gmail.com, dtor@mail.ru, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/5] drivers/input: Use resource_size
+Message-ID: <Pine.LNX.4.64.0907050835530.27464@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,67 +41,108 @@ struct resource *res;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/ata/pata_octeon_cf.c |    2 +-
- drivers/ata/pata_platform.c  |    8 ++++----
- drivers/ata/pata_rb532_cf.c  |    2 +-
- drivers/ata/sata_mv.c        |    2 +-
- 4 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/input/misc/cobalt_btns.c         |    2 +-
+ drivers/input/serio/at32psif.c           |    2 +-
+ drivers/input/touchscreen/atmel_tsadcc.c |    8 ++++----
+ drivers/input/touchscreen/w90p910_ts.c   |    8 ++++----
+ 4 files changed, 10 insertions(+), 10 deletions(-)
 
-diff -u -p a/drivers/ata/pata_octeon_cf.c b/drivers/ata/pata_octeon_cf.c
---- a/drivers/ata/pata_octeon_cf.c 2009-04-13 16:04:29.000000000 +0200
-+++ b/drivers/ata/pata_octeon_cf.c 2009-07-04 21:39:00.000000000 +0200
-@@ -840,7 +840,7 @@ static int __devinit octeon_cf_probe(str
- 	ocd = pdev->dev.platform_data;
- 
- 	cs0 = devm_ioremap_nocache(&pdev->dev, res_cs0->start,
--				   res_cs0->end - res_cs0->start + 1);
-+				   resource_size(res_cs0));
- 
- 	if (!cs0)
- 		return -ENOMEM;
-diff -u -p a/drivers/ata/pata_platform.c b/drivers/ata/pata_platform.c
---- a/drivers/ata/pata_platform.c 2009-01-09 22:41:01.000000000 +0100
-+++ b/drivers/ata/pata_platform.c 2009-07-04 21:37:16.000000000 +0200
-@@ -151,14 +151,14 @@ int __devinit __pata_platform_probe(stru
- 	 */
- 	if (mmio) {
- 		ap->ioaddr.cmd_addr = devm_ioremap(dev, io_res->start,
--				io_res->end - io_res->start + 1);
-+				resource_size(io_res));
- 		ap->ioaddr.ctl_addr = devm_ioremap(dev, ctl_res->start,
--				ctl_res->end - ctl_res->start + 1);
-+				resource_size(ctl_res));
- 	} else {
- 		ap->ioaddr.cmd_addr = devm_ioport_map(dev, io_res->start,
--				io_res->end - io_res->start + 1);
-+				resource_size(io_res));
- 		ap->ioaddr.ctl_addr = devm_ioport_map(dev, ctl_res->start,
--				ctl_res->end - ctl_res->start + 1);
-+				resource_size(ctl_res));
+diff -u -p a/drivers/input/misc/cobalt_btns.c b/drivers/input/misc/cobalt_btns.c
+--- a/drivers/input/misc/cobalt_btns.c 2009-07-04 21:32:44.000000000 +0200
++++ b/drivers/input/misc/cobalt_btns.c 2009-07-04 21:37:23.000000000 +0200
+@@ -116,7 +116,7 @@ static int __devinit cobalt_buttons_prob
  	}
- 	if (!ap->ioaddr.cmd_addr || !ap->ioaddr.ctl_addr) {
- 		dev_err(dev, "failed to map IO/CTL base\n");
-diff -u -p a/drivers/ata/pata_rb532_cf.c b/drivers/ata/pata_rb532_cf.c
---- a/drivers/ata/pata_rb532_cf.c 2009-03-28 23:34:54.000000000 +0100
-+++ b/drivers/ata/pata_rb532_cf.c 2009-07-04 21:37:20.000000000 +0200
-@@ -151,7 +151,7 @@ static __devinit int rb532_pata_driver_p
- 	info->irq = irq;
  
- 	info->iobase = devm_ioremap_nocache(&pdev->dev, res->start,
--				res->end - res->start + 1);
-+				resource_size(res));
- 	if (!info->iobase)
- 		return -ENOMEM;
+ 	bdev->poll_dev = poll_dev;
+-	bdev->reg = ioremap(res->start, res->end - res->start + 1);
++	bdev->reg = ioremap(res->start, resource_size(res));
+ 	dev_set_drvdata(&pdev->dev, bdev);
  
-diff -u -p a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
---- a/drivers/ata/sata_mv.c 2009-05-16 16:21:16.000000000 +0200
-+++ b/drivers/ata/sata_mv.c 2009-07-04 21:37:17.000000000 +0200
-@@ -4013,7 +4013,7 @@ static int mv_platform_probe(struct plat
+ 	error = input_register_polled_device(poll_dev);
+diff -u -p a/drivers/input/serio/at32psif.c b/drivers/input/serio/at32psif.c
+--- a/drivers/input/serio/at32psif.c 2008-12-07 19:29:06.000000000 +0100
++++ b/drivers/input/serio/at32psif.c 2009-07-04 21:37:23.000000000 +0200
+@@ -231,7 +231,7 @@ static int __init psif_probe(struct plat
+ 		goto out_free_io;
+ 	}
  
- 	host->iomap = NULL;
- 	hpriv->base = devm_ioremap(&pdev->dev, res->start,
--				   res->end - res->start + 1);
-+				   resource_size(res));
- 	hpriv->base -= SATAHC0_REG_BASE;
+-	psif->regs = ioremap(regs->start, regs->end - regs->start + 1);
++	psif->regs = ioremap(regs->start, resource_size(regs));
+ 	if (!psif->regs) {
+ 		ret = -ENOMEM;
+ 		dev_dbg(&pdev->dev, "could not map I/O memory\n");
+diff -u -p a/drivers/input/touchscreen/atmel_tsadcc.c b/drivers/input/touchscreen/atmel_tsadcc.c
+--- a/drivers/input/touchscreen/atmel_tsadcc.c 2009-03-13 13:37:47.000000000 +0100
++++ b/drivers/input/touchscreen/atmel_tsadcc.c 2009-07-04 21:37:23.000000000 +0200
+@@ -204,14 +204,14 @@ static int __devinit atmel_tsadcc_probe(
+ 		goto err_free_dev;
+ 	}
  
- 	/*
+-	if (!request_mem_region(res->start, res->end - res->start + 1,
++	if (!request_mem_region(res->start, resource_size(res),
+ 				"atmel tsadcc regs")) {
+ 		dev_err(&pdev->dev, "resources is unavailable.\n");
+ 		err = -EBUSY;
+ 		goto err_free_dev;
+ 	}
+ 
+-	tsc_base = ioremap(res->start, res->end - res->start + 1);
++	tsc_base = ioremap(res->start, resource_size(res));
+ 	if (!tsc_base) {
+ 		dev_err(&pdev->dev, "failed to map registers.\n");
+ 		err = -ENOMEM;
+@@ -286,7 +286,7 @@ err_free_irq:
+ err_unmap_regs:
+ 	iounmap(tsc_base);
+ err_release_mem:
+-	release_mem_region(res->start, res->end - res->start + 1);
++	release_mem_region(res->start, resource_size(res));
+ err_free_dev:
+ 	input_free_device(ts_dev->input);
+ err_free_mem:
+@@ -305,7 +305,7 @@ static int __devexit atmel_tsadcc_remove
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	iounmap(tsc_base);
+-	release_mem_region(res->start, res->end - res->start + 1);
++	release_mem_region(res->start, resource_size(res));
+ 
+ 	clk_disable(ts_dev->clk);
+ 	clk_put(ts_dev->clk);
+diff -u -p a/drivers/input/touchscreen/w90p910_ts.c b/drivers/input/touchscreen/w90p910_ts.c
+--- a/drivers/input/touchscreen/w90p910_ts.c 2009-06-24 21:18:49.000000000 +0200
++++ b/drivers/input/touchscreen/w90p910_ts.c 2009-07-04 21:37:23.000000000 +0200
+@@ -241,13 +241,13 @@ static int __devinit w90x900ts_probe(str
+ 		goto fail1;
+ 	}
+ 
+-	if (!request_mem_region(res->start, res->end - res->start + 1,
++	if (!request_mem_region(res->start, resource_size(res),
+ 				pdev->name)) {
+ 		err = -EBUSY;
+ 		goto fail1;
+ 	}
+ 
+-	w90p910_ts->ts_reg = ioremap(res->start, res->end - res->start + 1);
++	w90p910_ts->ts_reg = ioremap(res->start, resource_size(res));
+ 	if (!w90p910_ts->ts_reg) {
+ 		err = -ENOMEM;
+ 		goto fail2;
+@@ -296,7 +296,7 @@ static int __devinit w90x900ts_probe(str
+ 
+ fail4:	free_irq(w90p910_ts->irq_num, w90p910_ts);
+ fail3:	iounmap(w90p910_ts->ts_reg);
+-fail2:	release_mem_region(res->start, res->end - res->start + 1);
++fail2:	release_mem_region(res->start, resource_size(res));
+ fail1:	input_free_device(input_dev);
+ 	kfree(w90p910_ts);
+ 	return err;
+@@ -312,7 +312,7 @@ static int __devexit w90x900ts_remove(st
+ 	iounmap(w90p910_ts->ts_reg);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	release_mem_region(res->start, res->end - res->start + 1);
++	release_mem_region(res->start, resource_size(res));
+ 
+ 	input_unregister_device(w90p910_ts->input);
+ 	kfree(w90p910_ts);
