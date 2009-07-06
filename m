@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbZGFHTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbZGFHVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755883AbZGFHTb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 03:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZGFHTV
+	id S1755959AbZGFHVX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 03:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZGFHVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 03:19:21 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:63965 "EHLO
+	Mon, 6 Jul 2009 03:21:16 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:58974 "EHLO
 	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752976AbZGFHTU (ORCPT
+	with ESMTP id S1752796AbZGFHVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 03:19:20 -0400
-Message-ID: <4A51A577.6050202@petalogix.com>
-Date: Mon, 06 Jul 2009 09:19:19 +0200
+	Mon, 6 Jul 2009 03:21:15 -0400
+Message-ID: <4A51A5E9.1030605@petalogix.com>
+Date: Mon, 06 Jul 2009 09:21:13 +0200
 From: Michal Simek <michal.simek@petalogix.com>
 Reply-To: michal.simek@petalogix.com
 User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
@@ -42,14 +42,21 @@ Stephen Rothwell wrote:
 >
 > Just overlapping additions.  I fixed it up (see below) and can carry the
 > fix as necessary.
->
-> P.S. Michal, that microblaze commit has an invalid email address for the
-> Author (John Linn <linnj@xaqlinnj41.(none)>).
 >   
-Yes, I see.  I'll rebase that branch and I fix it.
+I'll revert this patch and I'll add it later.
+Rafael you don't need to do any changes. I'll do them.
+This John L patch is not important - just for any drivers which are not
+in mainline.
+I'll add it later.
 
 Thanks,
 Michal
+
+
+> P.S. Michal, that microblaze commit has an invalid email address for the
+> Author (John Linn <linnj@xaqlinnj41.(none)>).
+>   
+
 
 -- 
 Michal Simek, Ing. (M.Eng)
