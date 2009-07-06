@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbZGFHwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbZGFHz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbZGFHwU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 03:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZGFHwM
+	id S1757426AbZGFHz7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 03:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZGFHzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 03:52:12 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:53080 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752208AbZGFHwL (ORCPT
+	Mon, 6 Jul 2009 03:55:51 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:60924 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753168AbZGFHzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 03:52:11 -0400
-Date: Mon, 6 Jul 2009 09:16:00 +0200
-From: Nico Schottelius <nico-linux-20090706@schottelius.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>
-Subject: FREEZE with 2.6.31-rc1-next-20090626-02876-g39ddbf4
-Message-ID: <20090706071600.GA9488@ikn.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090706@schottelius.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linux Next Mailing List <linux-next@vger.kernel.org>
+	Mon, 6 Jul 2009 03:55:51 -0400
+Date: Mon, 6 Jul 2009 15:55:22 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: sergey.senozhatsky@mail.by, rabin@rab.in, mingo@elte.hu,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: BUG: scheduling while atomic
+Message-ID: <20090706075522.GA17653@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://www.nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.30-rc7 x86_64)
+In-Reply-To: <20090622133612.22fd84b8@lxorguk.ukuu.org.uk>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.kernel
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> Just delete the tty_unthrottle() from drivers/net/ppp/ppp_async.c - it
+> never throttles the port so it never needs to unthrottle it (which is why
+> it happened never to cause crashes before)
 
---huq684BweRXVnRxX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm not sure about that.  The PTY driver is always in the throttled
+state, so tty_unthrottle isn't a noop.
 
-Hello!
-
-I just gave 2.6.31-rc1-next-20090626-02876-g39ddbf4 a try on X200 (amd64); =
-The result
-is a bit shocking:
-
-It freezes after some minutes running xorg. The image is still fine, no mov=
-ements,
-no keyboard.
-
-Nico
-
---=20
-Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---huq684BweRXVnRxX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpRpLAACgkQuL75KpiFGIxhJACg3lotn5MEAE12pSELTVPjOKyi
-cCMAoKyQRBK2h6Pl/qtPuygTjjaVTzAF
-=869m
------END PGP SIGNATURE-----
-
---huq684BweRXVnRxX--
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
