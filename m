@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbZGFNQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZGFNTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754181AbZGFNQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 09:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZGFNQt
+	id S1754699AbZGFNTS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 09:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZGFNTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 09:16:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59694 "EHLO mx2.redhat.com"
+	Mon, 6 Jul 2009 09:19:04 -0400
+Received: from mail.samba.org ([66.70.73.150]:58879 "EHLO lists.samba.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752277AbZGFNQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 09:16:48 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FDPIC: Ignore the loader's PT_GNU_STACK when calculating the
-	stack size [ver #2]
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: rgetz@blackfin.uclinux.org, gerg@uclinux.org,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, Mike Frysinger <vapier@gentoo.org>,
-       Paul Mundt <lethal@linux-sh.org>
-Date: Mon, 06 Jul 2009 14:15:13 +0100
-Message-ID: <20090706131513.16304.33549.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S1753109AbZGFNTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 09:19:04 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19025.63119.656216.431469@samba.org>
+Date: Mon, 6 Jul 2009 23:05:19 +1000
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Theodore Tso <tytso@mit.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+In-Reply-To: <alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<200907012019.53932.rusty@rustcorp.com.au>
+	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	<20090701140503.GA21185@mit.edu>
+	<alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
+	<alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
+	<19021.19842.663727.146474@samba.org>
+	<87hbxu60qm.fsf@devron.myhome.or.jp>
+	<19021.23231.213863.726785@samba.org>
+	<alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
+	<19021.26102.80885.330380@samba.org>
+	<alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr>
+	<19021.31291.642416.956966@samba.org>
+	<alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr>
+	<19021.63615.450348.192109@samba.org>
+	<alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ignore the loader's PT_GNU_STACK when calculating the stack size, and only
-consider the executable's PT_GNU_STACK, assuming the executable has one.
+Hi Jan,
 
-Currently the behaviour is to take the largest stack size and use that, but
-that means you can't reduce the stack size in the executable.  The loader's
-stack size should probably only be used when executing the loader directly.
+ > With this extra patch:
+ > 
+ >  * "cp dscf4160.jpg dscf3010.jpg" works
 
-WARNING: This patch is slightly dangerous - it may render a system inoperable
-if the loader's stack size is larger than that of important executables, and
-the system relies unknowingly on this increasing the size of the stack.
+good
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
----
+ >  * "cp dscf4160.jpg dscF3011.jpg" does not work - i.e. cam ignores the
+ >    file without error.
+ >    Reason for that is that dscF3011 has an illegal 8.3 name
 
- fs/binfmt_elf_fdpic.c |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+yep, that's expected. I suggested a possible way of handling this to
+Hirofumi-san (ie. change the case of the name), but he prefers to keep
+things simple for now.
 
+It is probably not unreasonable to say that you should not be using
+mixed case names when you are putting files onto a device that doesn't
+understand mixed case. The reason it worked before my patch is that
+the kernel forced the case of the 8.3 name, and only retained the
+mixed case for the long name.
 
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 81ca047..a1e6365 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -283,20 +283,23 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- 	}
- 
- 	stack_size = exec_params.stack_size;
--	if (stack_size < interp_params.stack_size)
--		stack_size = interp_params.stack_size;
--
- 	if (exec_params.flags & ELF_FDPIC_FLAG_EXEC_STACK)
- 		executable_stack = EXSTACK_ENABLE_X;
- 	else if (exec_params.flags & ELF_FDPIC_FLAG_NOEXEC_STACK)
- 		executable_stack = EXSTACK_DISABLE_X;
--	else if (interp_params.flags & ELF_FDPIC_FLAG_EXEC_STACK)
--		executable_stack = EXSTACK_ENABLE_X;
--	else if (interp_params.flags & ELF_FDPIC_FLAG_NOEXEC_STACK)
--		executable_stack = EXSTACK_DISABLE_X;
- 	else
- 		executable_stack = EXSTACK_DEFAULT;
- 
-+	if (stack_size == 0) {
-+		stack_size = interp_params.stack_size;
-+		if (interp_params.flags & ELF_FDPIC_FLAG_EXEC_STACK)
-+			executable_stack = EXSTACK_ENABLE_X;
-+		else if (interp_params.flags & ELF_FDPIC_FLAG_NOEXEC_STACK)
-+			executable_stack = EXSTACK_DISABLE_X;
-+		else
-+			executable_stack = EXSTACK_DEFAULT;
-+	}
-+
- 	retval = -ENOEXEC;
- 	if (stack_size == 0)
- 		goto error;
+How did things go with your mp3 players?
 
+Cheers, Tridge
