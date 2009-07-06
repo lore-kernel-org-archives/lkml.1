@@ -1,103 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZGFTZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZGFTZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbZGFTZL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 15:25:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbZGFTYr
+	id S1754789AbZGFTZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 15:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZGFTZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 15:24:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38300 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754010AbZGFTYq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 15:24:46 -0400
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090706924.495556466@firstfloor.org>
-In-Reply-To: <20090706924.495556466@firstfloor.org>
-To: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [PATCH] [2/2] Optimize touch_time too
-Message-Id: <20090706192447.9D0531D024A@basil.firstfloor.org>
-Date: Mon,  6 Jul 2009 21:24:47 +0200 (CEST)
+	Mon, 6 Jul 2009 15:25:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43352 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753062AbZGFTZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 15:25:48 -0400
+Message-ID: <4A525042.5030702@redhat.com>
+Date: Mon, 06 Jul 2009 15:28:02 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Roland McGrath <roland@redhat.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH -tip -v10 5/7] x86: add pt_regs register and stack access
+ APIs
+References: <20090701010838.32547.62843.stgit@localhost.localdomain>	<20090701010911.32547.1313.stgit@localhost.localdomain> <871votop6a.fsf@basil.nowhere.org>
+In-Reply-To: <871votop6a.fsf@basil.nowhere.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> Masami Hiramatsu <mhiramat@redhat.com> writes:
+> 
+>> Add following APIs for accessing registers and stack entries from pt_regs.
+> 
+> You forgot to state who calls these functions/why are they added?
+> Who only has strings for registers?
 
-Do a similar optimization as earlier for touch_atime. Getting
-the lock in mnt_get_write is relatively costly, so try all
-avenues to avoid it first.
+Oh, yes. This patch is needed for kprobes based event tracer on ftrace.
+Some other debugging tools might be able to use it.
 
-This patch is careful to still only update inode fields
-inside the lock region.
+> I can see the point of having a function for nth argument though,
+> that's useful.
+> 
+>> +static inline unsigned long regs_get_argument_nth(struct pt_regs *regs,
+>> +						  unsigned n)
+>> +{
+>> +	if (n < NR_REGPARMS) {
+>> +		switch (n) {
+>> +		case 0:
+>> +			return regs->ax;
+>> +		case 1:
+>> +			return regs->dx;
+>> +		case 2:
+>> +			return regs->cx;
+> 
+> 
+> [....]
+> 
+> That could be done shorter with a offsetof table.
+> 
+>> +	if (n < NR_REGPARMS) {
+>> +		switch (n) {
+>> +		case 0:
+>> +			return regs->di;
+>> +		case 1:
+>> +			return regs->si;
+>> +		case 2:
+>> +			return regs->dx;
+>> +		case 3:
+>> +			return regs->cx;
+>> +		case 4:
+>> +			return regs->r8;
+>> +		case 5:
+>> +			return regs->r9;
+> 
+> and that too.
 
-This didn't show up in benchmarks, but it's easy enough
-to do.
+I'm not so sure about your idea.
+Would you mean below code?
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+int offs_table[NR_REGPARMS] = {
+	[0] = offsetof(struct pt_regs, di),
+	...
+};
+if (n < NR_REGPARMS)
+	return *((unsigned long *)regs + offs_table[n]);
 
----
- fs/inode.c |   43 +++++++++++++++++++++++--------------------
- 1 file changed, 23 insertions(+), 20 deletions(-)
 
-Index: linux-2.6.31-rc1-ak/fs/inode.c
-===================================================================
---- linux-2.6.31-rc1-ak.orig/fs/inode.c
-+++ linux-2.6.31-rc1-ak/fs/inode.c
-@@ -1431,34 +1431,37 @@ void file_update_time(struct file *file)
- {
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct timespec now;
--	int sync_it = 0;
--	int err;
-+	enum { S_MTIME = 1, S_CTIME = 2, S_VERSION = 4 } sync_it = 0;
- 
-+	/* First try to exhause all avenues to not sync */
- 	if (IS_NOCMTIME(inode))
- 		return;
- 
--	err = mnt_want_write_file(file);
--	if (err)
--		return;
--
- 	now = current_fs_time(inode->i_sb);
--	if (!timespec_equal(&inode->i_mtime, &now)) {
--		inode->i_mtime = now;
--		sync_it = 1;
--	}
-+	if (!timespec_equal(&inode->i_mtime, &now))
-+		sync_it = S_MTIME;
- 
--	if (!timespec_equal(&inode->i_ctime, &now)) {
--		inode->i_ctime = now;
--		sync_it = 1;
--	}
-+	if (!timespec_equal(&inode->i_ctime, &now))
-+		sync_it |= S_CTIME;
- 
--	if (IS_I_VERSION(inode)) {
--		inode_inc_iversion(inode);
--		sync_it = 1;
--	}
-+	if (IS_I_VERSION(inode))
-+		sync_it |= S_VERSION;
-+
-+	if (!sync_it)
-+		return;
-+
-+	/* Finally allowed to write? Takes lock. */
-+	if (!mnt_want_write_file(file))
-+		return;
- 
--	if (sync_it)
--		mark_inode_dirty_sync(inode);
-+	/* Only change inode inside the lock region */
-+	if (sync_it & S_VERSION)
-+		inode_inc_iversion(inode);
-+	if (sync_it & S_CTIME)
-+		inode->i_ctime = now;
-+	if (sync_it & S_MTIME)
-+		inode->i_mtime = now;
-+	mark_inode_dirty_sync(inode);
- 	mnt_drop_write(file->f_path.mnt);
- }
- EXPORT_SYMBOL(file_update_time);
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
