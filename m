@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZGFE4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbZGFFGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbZGFE4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 00:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZGFE4m
+	id S1754527AbZGFFGy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 01:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZGFFGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 00:56:42 -0400
-Received: from mail-vw0-f202.google.com ([209.85.212.202]:60084 "EHLO
-	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbZGFE4l convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 00:56:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=oZV8Nz6zSsrg+eF1BboSh3VqVO6f5If3nsQdBT61+VsN6M9tO5GTAlpdm2IoRpNnAv
-         jNGcP+MbE4YFWa08XjcFspNAXbWdkoKG64OatdEr7WWNMhQTXtny8ASRI7YsF7fuoJMg
-         cG+JEYWaweuOJFFgXzBRB/dQ0oehogHRUDaHA=
-MIME-Version: 1.0
-In-Reply-To: <200907060038.18323.rgetz@blackfin.uclinux.org>
-References: <1243622057-17671-1-git-send-email-jason.wessel@windriver.com> 
-	<200907051254.41964.rgetz@blackfin.uclinux.org> <20090705191751.6bbf594c@lxorguk.ukuu.org.uk> 
-	<200907060038.18323.rgetz@blackfin.uclinux.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 6 Jul 2009 00:56:24 -0400
-Message-ID: <8bd0f97a0907052156m44483903i9b2f35428d1bbe62@mail.gmail.com>
-Subject: Re: [PATCH 2/2] usb_serial: only allow sysrq on a console port
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, greg@kroah.com,
-       Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 6 Jul 2009 01:06:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58986 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750722AbZGFFGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 01:06:44 -0400
+Date: Mon, 6 Jul 2009 15:06:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: linux-next: manual merge of the percpu tree with the tip tree
+Message-Id: <20090706150634.04255209.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 6, 2009 at 00:38, Robin Getz wrote:
-> On Sun 5 Jul 2009 14:17, Alan Cox pondered:
->> > If Jason's patch is necessary () - should this be fixed up for
->> > standard UARTs too?
->>
->> I think so yes, although I'd not realised it wasn't protected currently
->> ?
->
-> Hmm - try as I may - I can't get this to fail - so it must be protected
-> somewhere....
->
-> Ahh---
->
-> It is in include/linux/serial_core.h:uart_handle_break() - never checked the
-> header for the magic before I bugged you... sorry about that...
->
->> > The above patch would sync the (seemlying duplicated) code between
->> > drivers/usb/serial/generic.c and include/linux/serial_core.h
->>
->> There is a lot of near duplicate code like this. That is one reason for
->> adding struct tty_port. In theory both could be collapsed into
->>
->>       int tty_port_handle_sysrq(struct tty_port *port, unsigned int ch)
->>       {
->>       }
->>
->> at this point as both USB and serial layer UARTs now have a port object.
->> That would just need port->sysrq collapsing into the tty_port.
->> port->console sort of already is.
->
-> It appears that the usb serial doesn't handle breaks like serial_core does. (I
-> don't see any support for SAK in usb_serial either?)
->
-> Maybe _that_ is the real problem that Jason is trying to work around???
+Hi all,
 
-perhaps, but what Jason proposed originally sounds pretty sane.  if i
-enable sysrq support on my desktop, i dont want some development board
-being able to send a sysrq request back over my serial port and
-rebooting my desktop.
--mike
+Today's linux-next merge of the percpu tree got a conflict in
+arch/x86/kernel/cpu/perf_counter.c between commit
+0406ca6d8e849d9dd027c8cb6791448e81411aef ("perf_counter: Ignore the nmi
+call frames in the x86-64 backtraces") from the tip tree and commit
+245b2e70eabd797932adb263a65da0bab3711753 ("percpu: clean up percpu
+variable definitions") from the percpu tree.
+
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/x86/kernel/cpu/perf_counter.c
+index 36c3dc7,13bd6d6..0000000
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@@ -1559,9 -1559,8 +1559,9 @@@ void callchain_store(struct perf_callch
+  		entry->ip[entry->nr++] = ip;
+  }
+  
+- static DEFINE_PER_CPU(struct perf_callchain_entry, irq_entry);
+- static DEFINE_PER_CPU(struct perf_callchain_entry, nmi_entry);
++ static DEFINE_PER_CPU(struct perf_callchain_entry, pmc_irq_entry);
++ static DEFINE_PER_CPU(struct perf_callchain_entry, pmc_nmi_entry);
+ +static DEFINE_PER_CPU(int, in_nmi_frame);
+  
+  
+  static void
