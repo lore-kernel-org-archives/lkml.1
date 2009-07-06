@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbZGFJDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbZGFJIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757598AbZGFJDu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 05:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbZGFJDn
+	id S1757609AbZGFJIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 05:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbZGFJID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 05:03:43 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:33263 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753703AbZGFJDm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 05:03:42 -0400
-Message-ID: <4A51BD2C.7010105@gmail.com>
-Date: Mon, 06 Jul 2009 11:00:28 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Linda Walsh <lkml@tlinx.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: pipe(2), read/write, maximums and behavior.
-References: <4A51B127.8080807@tlinx.org>
-In-Reply-To: <4A51B127.8080807@tlinx.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 06 Jul 2009 11:00:28 +0200 (CEST)
+	Mon, 6 Jul 2009 05:08:03 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40304 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752330AbZGFJIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 05:08:02 -0400
+Date: Mon, 6 Jul 2009 11:08:04 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 02/11] vfs: Add better VFS support for page_mkwrite when blocksize < pagesize
+Message-ID: <20090706090804.GM2714@wotan.suse.de>
+References: <1245088797-29533-1-git-send-email-jack@suse.cz> <1245088797-29533-3-git-send-email-jack@suse.cz> <20090625161753.GB30755@wotan.suse.de> <20090625174754.GA21957@infradead.org> <20090626084225.GA12201@wotan.suse.de> <20090630173716.GA3150@infradead.org> <20090702072225.GC2714@wotan.suse.de> <20090704151801.GA19682@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090704151801.GA19682@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linda Walsh a écrit :
-> I've seen a few shells claim to limit pipe sizes to 8 512Byte buffers.
-> Don't know where they get this value or how they think it applies, but
-> it certainly doesn't seem to apply in linux.   However, I'm not
-> sure what limits do apply compared to available memory.
-> I suppose, starting off, one might look at at a maximum of
-> (Physical+Swap-resident-non-swappable mem)/2 as a top limit.
+On Sat, Jul 04, 2009 at 11:18:01AM -0400, Christoph Hellwig wrote:
+> On Thu, Jul 02, 2009 at 09:22:25AM +0200, Nick Piggin wrote:
+> > I guess truncate can be considered special because it operates on
+> > data not only metadata.
+> > 
+> > Looks like ->setsize would need a flag for ATTR_OPEN too? Any others?
+> > I'll do a bit of an audit when I get around to it...
 > 
-> A test machine I have has 8GB physical memory with a bit over 4GB
-> of swap space making for about 12GB of memory.
+> In the end ATTR_SIZE should not be passed to ->setattr anymore, and
+> ->setsize should become mandatory.  For the transition I would recommend
+> calling ->setsize if present else fall back to the current way.  That
+> way we can migreate one filesystem per patch to the new scheme.
 > 
-> If total memory was to go toward my proglet that splits into a master
-> writer and slave pipe reader, they'd have to split memory to have
-> matching buffer read/write sizes. I'd "expect", (I think) at least
-> a 2GB write/read to work, and possibly a 4GB write/read to work
-> with alot of swap activity -- that's assuming there are no other
-> restraints in dividing 12GB of address space.
+> I would suggest giving the flags to ->setsize their own namespace with
+> two flags so far SETSIZE_FTRUNCATE (need to update the file size and
+> have a file struct available) and SETSIZE_OPEN for the ATTR_OPEN case.
 > 
-> As it turns out -- the program dies at 2GB (the 1GB write/read works)
-> but when the program tries a 2GB write & read it refuses the full write
-> and the child gets less than 2GB.
-> 
-> The master gets back that it wrote 2097148KB, though it tried to
-> write 2097152KB (and the child receives the 2GB-4K buffer upon read).
-> 
-> This is on a x86_64 machine, and unsigned long values are 8-bytes
-> wide and being used with the read and write calls for lengths.
-> 
-> Shouldn't a 2GB read/write work?  At most, together the master
-> and slave would have only used 4GB for each to have a 2GB buffer.
-> 
-> How would one determine the maximum size for 1 huge read or write
-> through the pipe (from the pipe system call)?
-> 
-> On 2GHz multi-core machines, I get about 512MB/s throughput.
-> 
-> I attached the source file so anyone can see my methodology.
-> 
-> you have to include "-lrt" on the gcc command line as it uses
-> clock_gettime to estimate the time for the write call (the read
-> call always comes back with values too small to be reasonable, so
-> I don't bother printing them.
-> 
-> 
-> 
+> That beeing said I reallye hate the conditiona file argument for
+> ftrunctate (currently hidden inside struct iattr), maybe we're better
+> off having am optional int (*ftruncate)(struct file *) method for those
+> filesystems that need it, with a fallback to ->setsize.
 
-read()/write() system calls use generic vfs_read()/vfs_write() calls,
-that in turn use rw_verify_area() which limits 'count' of bytes
-to MAX_RW_COUNT
+OK, hmm, but I wonder -- most of the time do_truncate will need to
+call notify_change anyway, so I wonder if avoiding the double
+indirection saves us anything? (It requires 2 indirect calls either
+way). And if we call ->setsize from ->setattr, then a filesystem
+which implements its own ->setattr could avoid one of those indirect
+calls. Not so if do_truncate has to call ->setattr then ->setsize.
 
-#define MAX_RW_COUNT (INT_MAX & PAGE_CACHE_MASK)
+We definitely could call the method ->ftruncate, however (regardless
+of where we call it from). In fact, we could just have a single new
+->ftruncate where struct file * argument is NULL if not called via
+an open file. This should also solve the namimg issue without
+renaming the old method (having both ->truncate and ->ftruncate
+could be slightly confusing at a glance, but we will remove
+->truncate ASAP).
 
-So yes, this currently limits to 2GB - (PAGE_SIZE)  (PAGE_SIZE=4KB on i386),
-even on x86_64 kernels.
+Anyway, let me finish the first draft and post my series and we
+can go over it further.
 
+
+> And yeah, maybe ->setsize might better be left as ->truncate, but if
+> we want a nicely bisectable migration we'd have to rename the old
+> truncate to e.g. ->old_truncate before.  That's probably worth having
+> the better naming in the end.
+
+It is definitely better to not break things as my first patch has
+done. I think it should not be too hard to have intermediate steps.
+
+Thanks,
+Nick
