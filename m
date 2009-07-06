@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZGFThw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbZGFTnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbZGFThw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 15:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbZGFThp
+	id S1754260AbZGFTnd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 15:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbZGFTnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 15:37:45 -0400
-Received: from www.tglx.de ([62.245.132.106]:42092 "EHLO www.tglx.de"
+	Mon, 6 Jul 2009 15:43:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47325 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751806AbZGFTho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 15:37:44 -0400
-Date: Mon, 6 Jul 2009 21:37:14 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 3/3] ftrace: add tracepoint for itimer
-In-Reply-To: <20090706133108.GA7082@Krystal>
-Message-ID: <alpine.LFD.2.00.0907062117590.19480@localhost.localdomain>
-References: <4A51C5C2.20802@cn.fujitsu.com> <4A51C6F9.3080100@cn.fujitsu.com> <20090706133108.GA7082@Krystal>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753017AbZGFTnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 15:43:21 -0400
+Date: Mon, 6 Jul 2009 15:47:39 -0400
+From: Josef Bacik <josef@redhat.com>
+To: linux-ext4@vger.kernel.org
+Cc: emcnabb@redhat.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: [PATCH] fix softlockups in ext2/3 when trying to allocate blocks
+Message-ID: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009, Mathieu Desnoyers wrote:
-> * Xiao Guangrong (xiaoguangrong@cn.fujitsu.com) wrote:
-> > +
-> > +TRACE_EVENT(itimer_state,
-> > +
-> 
-> Hrm, I'd reserve the use of the *_state namespace for something
-> different if possible.
+This isn't a huge deal, but using a big beefy box with more CPUs than what is
+sane, you can get a nice flood of softlockup messages when running heavy
+multi-threaded io tests on ext2/3.  The processors compete for blocks from the
+allocator, so they will loop quite a bit trying to get their allocation.  This
+patch simply makes sure that we reschedule if need be.  This made the softlockup
+messages disappear whereas before they happened almost immediately.  Thanks,
 
-See below.
+Tested-by: Evan McNabb <emcnabb@redhat.com>
+Signed-off-by: Josef Bacik <josef@redhat.com>
+---
+ fs/ext2/balloc.c |    1 +
+ fs/ext3/balloc.c |    2 ++
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-> In LTTng, we have the ability to list a set of data structures at trace
-> start (we call this state dump). In this case, we could add a list of
-> all active timers at trace start. This is useful if the trace started
-> after timer inits.
-
-Can you please spare us the gory details of LTTng. We already know
-that it can do everything plus brewing coffee, so no need to advertise
-it in every tracing related mail.
-
-> So having "_state" without much meaning here might eventually be
-> confusing.
-> 
-> "_action" or "_call" (like IPCs) might be more appropriate ?
-
-Err, where is this an action or a call ? Care to look at the call site
-of this tracepoint. It's at the end of do_setitimer() and records the
-_state_ of the itimer _after_ the syscall was handled.
-
-> Mathieu
-
-Can you please remove the hundred lines you are not commenting on next
-time ?
+diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
+index 7f8d2e5..17dd55f 100644
+--- a/fs/ext2/balloc.c
++++ b/fs/ext2/balloc.c
+@@ -1176,6 +1176,7 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
+ 			break;				/* succeed */
+ 		}
+ 		num = *count;
++		cond_resched();
+ 	}
+ 	return ret;
+ }
+diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
+index 27967f9..cffc8cd 100644
+--- a/fs/ext3/balloc.c
++++ b/fs/ext3/balloc.c
+@@ -735,6 +735,7 @@ bitmap_search_next_usable_block(ext3_grpblk_t start, struct buffer_head *bh,
+ 	struct journal_head *jh = bh2jh(bh);
  
-> > +	TP_PROTO(int which, struct itimerval *value, cputime_t expires),
+ 	while (start < maxblocks) {
++		cond_resched();
+ 		next = ext3_find_next_zero_bit(bh->b_data, maxblocks, start);
+ 		if (next >= maxblocks)
+ 			return -1;
+@@ -1391,6 +1392,7 @@ ext3_try_to_allocate_with_rsv(struct super_block *sb, handle_t *handle,
+ 			break;				/* succeed */
+ 		}
+ 		num = *count;
++		cond_resched();
+ 	}
+ out:
+ 	if (ret >= 0) {
+-- 
+1.6.2.2
 
-Thanks,
-
-	tglx
