@@ -1,102 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbZGFQ0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbZGFQbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753936AbZGFQ0g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 12:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZGFQ0a
+	id S1753461AbZGFQbN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 12:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZGFQa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 12:26:30 -0400
-Received: from araneidae.co.uk ([62.3.233.233]:3726 "EHLO araneidae.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751743AbZGFQ03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 12:26:29 -0400
-Date: Mon, 6 Jul 2009 17:26:32 +0100 (BST)
-From: Michael Abbott <michael@araneidae.co.uk>
-To: lm-sensors@lm-sensors.org
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Add low_power support for adm1021 driver.
-Message-ID: <Pine.LNX.4.64.0907061725170.11795@venus.araneidae.co.uk>
+	Mon, 6 Jul 2009 12:30:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50045 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751709AbZGFQa5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 12:30:57 -0400
+Date: Mon, 6 Jul 2009 09:29:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+cc: wuzhangjin@gmail.com, Paul Mundt <lethal@linux-sh.org>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
+       zhangfx <zhangfx@lemote.com>
+Subject: Re: [BUG] drivers/video/sis: deadlock introduced by "fbdev: add
+ mutex for fb_mmap locking"
+In-Reply-To: <20090706165036.d21bfaaa.krzysztof.h1@poczta.fm>
+Message-ID: <alpine.LFD.2.01.0907060927561.3210@localhost.localdomain>
+References: <1246785112.14240.34.camel@falcon> <alpine.LFD.2.01.0907050715490.3210@localhost.localdomain> <20090705145203.GA8326@linux-sh.org> <alpine.LFD.2.01.0907050756280.3210@localhost.localdomain> <20090705150134.GB8326@linux-sh.org>
+ <alpine.LFD.2.01.0907050816110.3210@localhost.localdomain> <20090705152557.GA10588@linux-sh.org> <20090705181808.93be24a9.krzysztof.h1@poczta.fm> <1246842791.29532.2.camel@falcon> <20090706165036.d21bfaaa.krzysztof.h1@poczta.fm>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending this patch previously sent some months again.
 
-Occasionally it is helpful to be able to turn a temperature sensor off
-(for example if it's making unwanted electrical noise).  This patch
-adds a sysfs node to put any adm1021 compatible device into low power mode.
 
-Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
----
- drivers/hwmon/adm1021.c |   33 +++++++++++++++++++++++++++++++++
- 1 files changed, 33 insertions(+), 0 deletions(-)
+On Mon, 6 Jul 2009, Krzysztof Helt wrote:
+> 
+> Who should I send this patch to be included as a 2.6.31 regression fix?
 
-diff --git a/drivers/hwmon/adm1021.c b/drivers/hwmon/adm1021.c
-index de84398..39434e1 100644
---- a/drivers/hwmon/adm1021.c
-+++ b/drivers/hwmon/adm1021.c
-@@ -83,6 +83,7 @@ struct adm1021_data {
- 
- 	struct mutex update_lock;
- 	char valid;		/* !=0 if following fields are valid */
-+	char low_power;		/* !=0 if device in low power mode */
- 	unsigned long last_updated;	/* In jiffies */
- 
- 	int temp_max[2];		/* Register values */
-@@ -213,6 +214,35 @@ static ssize_t set_temp_min(struct device *dev,
- 	return count;
- }
- 
-+static ssize_t show_low_power(
-+	struct device *dev, struct device_attribute *devattr, char *buf)
-+{
-+	struct adm1021_data *data = adm1021_update_device(dev);
-+	return sprintf(buf, "%d\n", data->low_power);
-+}
-+
-+static ssize_t set_low_power(
-+	struct device *dev, struct device_attribute *devattr,
-+	const char *buf, size_t count)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	struct adm1021_data *data = i2c_get_clientdata(client);
-+	int low_power = simple_strtol(buf, NULL, 10) != 0;
-+	mutex_lock(&data->update_lock);
-+
-+	if (low_power != data->low_power) {
-+		int config = i2c_smbus_read_byte_data(
-+			client, ADM1021_REG_CONFIG_R);
-+		data->low_power = low_power;
-+		i2c_smbus_write_byte_data(client, ADM1021_REG_CONFIG_W,
-+			(config & 0xBF) | (low_power << 6));
-+	}
-+	mutex_unlock(&data->update_lock);
-+
-+	return count;
-+}
-+
-+
- static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp, NULL, 0);
- static SENSOR_DEVICE_ATTR(temp1_max, S_IWUSR | S_IRUGO, show_temp_max,
- 			  set_temp_max, 0);
-@@ -230,6 +260,8 @@ static SENSOR_DEVICE_ATTR(temp2_min_alarm, S_IRUGO, show_alarm, NULL, 3);
- static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_alarm, NULL, 2);
- 
- static DEVICE_ATTR(alarms, S_IRUGO, show_alarms, NULL);
-+static DEVICE_ATTR(
-+	low_power, S_IWUSR | S_IRUGO, show_low_power, set_low_power);
- 
- static struct attribute *adm1021_attributes[] = {
- 	&sensor_dev_attr_temp1_max.dev_attr.attr,
-@@ -244,6 +276,7 @@ static struct attribute *adm1021_attributes[] = {
- 	&sensor_dev_attr_temp2_min_alarm.dev_attr.attr,
- 	&sensor_dev_attr_temp2_fault.dev_attr.attr,
- 	&dev_attr_alarms.attr,
-+	&dev_attr_low_power.attr,
- 	NULL
- };
- 
--- 
-1.6.1.3
+Just send the patches to me. I've got the patch, but no changelog, and so 
+I'd like to see them again, with changelogs and the proper "Acked-by:" or 
+"Tested-by" lines etc.
 
+		Linus
