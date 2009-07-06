@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZGFGPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbZGFGPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756510AbZGFGPZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 02:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbZGFGOu
+	id S1756894AbZGFGPm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 02:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZGFGOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 02:14:50 -0400
-Received: from sh.osrg.net ([192.16.179.4]:37830 "EHLO sh.osrg.net"
+	Mon, 6 Jul 2009 02:14:52 -0400
+Received: from sh.osrg.net ([192.16.179.4]:37826 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756218AbZGFGOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756185AbZGFGOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 6 Jul 2009 02:14:44 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: davem@davemloft.net
 Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       reif@earthlink.net, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH 3/5] sparc: remove no-op dma_4v_sync_single_for_cpu and dma_4v_sync_sg_for_cpu
-Date: Mon,  6 Jul 2009 15:13:38 +0900
-Message-Id: <1246860820-20629-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+       reif@earthlink.net
+Subject: [PATCH 0/5] sparc: use asm-generic/dma-mapping-common.h and pci-dma-compat.h
+Date: Mon,  6 Jul 2009 15:13:35 +0900
+Message-Id: <1246860820-20629-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1246860820-20629-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1246860820-20629-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 06 Jul 2009 15:14:43 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 06 Jul 2009 15:14:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now sparc uses include/asm-generic/dma-mapping-common.h. pci_sun4v.c
-doesn't need to have no-op dma_4v_sync_single_for_cpu and
-dma_4v_sync_sg_for_cpu (dma-mapping-common.h does nothing if
-sync_{single|sg}_for_cpu hook is not defined). So we can remove them
-safely.
+This patchset converts SPARC to use asm-generic/dma-mapping-common.h
+and pci-dma-compat.h.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/sparc/kernel/pci_sun4v.c |   16 ----------------
- 1 files changed, 0 insertions(+), 16 deletions(-)
+1/5, 2/5, and 3/5 converts SPARC to use
+asm-generic/dma-mapping-common.h. All the preparation for this was
+already merged in 2.6.31-rc1 so the chages are pretty trivial.
 
-diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
-index ee800f9..23c33ff 100644
---- a/arch/sparc/kernel/pci_sun4v.c
-+++ b/arch/sparc/kernel/pci_sun4v.c
-@@ -525,20 +525,6 @@ static void dma_4v_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 	spin_unlock_irqrestore(&iommu->lock, flags);
- }
- 
--static void dma_4v_sync_single_for_cpu(struct device *dev,
--				       dma_addr_t bus_addr, size_t sz,
--				       enum dma_data_direction direction)
--{
--	/* Nothing to do... */
--}
--
--static void dma_4v_sync_sg_for_cpu(struct device *dev,
--				   struct scatterlist *sglist, int nelems,
--				   enum dma_data_direction direction)
--{
--	/* Nothing to do... */
--}
--
- static struct dma_map_ops sun4v_dma_ops = {
- 	.alloc_coherent			= dma_4v_alloc_coherent,
- 	.free_coherent			= dma_4v_free_coherent,
-@@ -546,8 +532,6 @@ static struct dma_map_ops sun4v_dma_ops = {
- 	.unmap_page			= dma_4v_unmap_page,
- 	.map_sg				= dma_4v_map_sg,
- 	.unmap_sg			= dma_4v_unmap_sg,
--	.sync_single_for_cpu		= dma_4v_sync_single_for_cpu,
--	.sync_sg_for_cpu		= dma_4v_sync_sg_for_cpu,
- };
- 
- static void __devinit pci_sun4v_scan_bus(struct pci_pbm_info *pbm,
--- 
-1.6.0.6
+4/5 and 5/5 converts SPARC to use asm-generic/pci-dma-compat.h instead of 
+the homegrown mechnism to handle dma_* and pci_* API.
+
+SPARC32 has two dma_map_ops structures for pci and sbus (removing
+arch/sparc/kernel/dma.c, PCI and SBUS DMA accessor). The global
+'dma_ops' is set to sbus_dma_ops and get_dma_ops() returns
+pci32_dma_ops for pci devices so we can use the appropriate dma
+mapping operations.
+
+The patchset is only compile-tested (sorry about it).
+
+=
+ arch/sparc/Kconfig                   |    1 +
+ arch/sparc/include/asm/dma-mapping.h |  138 +++-------------------------
+ arch/sparc/include/asm/pci.h         |    3 +
+ arch/sparc/include/asm/pci_32.h      |  105 ----------------------
+ arch/sparc/include/asm/pci_64.h      |   88 ------------------
+ arch/sparc/kernel/dma.c              |  152 ++------------------------------
+ arch/sparc/kernel/dma.h              |   14 ---
+ arch/sparc/kernel/iommu.c            |   20 +++--
+ arch/sparc/kernel/ioport.c           |  163 ++++++++++++++++------------------
+ arch/sparc/kernel/pci.c              |    2 +-
+ arch/sparc/kernel/pci_sun4v.c        |   30 ++-----
+ 11 files changed, 127 insertions(+), 589 deletions(-)
+
+
 
