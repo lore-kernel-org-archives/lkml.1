@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbZGFUb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZGFUd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbZGFUb7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 16:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbZGFUbw
+	id S1754833AbZGFUd5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 16:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbZGFUdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 16:31:52 -0400
-Received: from www.tglx.de ([62.245.132.106]:41112 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752744AbZGFUbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 16:31:51 -0400
-Date: Mon, 6 Jul 2009 22:31:39 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] optimized ktime_get[_ts] for GENERIC_TIME=y
-In-Reply-To: <20090706154933.5a1f8990@skybase>
-Message-ID: <alpine.LFD.2.00.0907062215380.19480@localhost.localdomain>
-References: <20090706154933.5a1f8990@skybase>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 6 Jul 2009 16:33:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:30039 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753467AbZGFUdp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 16:33:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=s9qZyfj4ahTaB4CUUSGdF5y8HWhaIoRnHiCCjX36lOdUrDR6PFuWM1OxprEqpfWPn1
+         9wYQLG/qmCbYgVJkocxkZu8YNgyLG/F7Cx/reoX6WnpqOSp3G3ZuYFA3inHAOdu1bQUp
+         2jA8IqZwMPXAcpz/aVBBGyHFCl/ajWVmSJ5ec=
+Message-ID: <4A525FA8.80509@gmail.com>
+Date: Mon, 06 Jul 2009 16:33:44 -0400
+From: "Alan D. Brunelle" <adbrunelle@gmail.com>
+Reply-To: Alan.Brunelle@pobox.com
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Hannes Reinecke <hare@suse.de>
+CC: Jens Axboe <jens.axboe@oracle.com>, scameron@beardog.cca.cpqcorp.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cciss: Ignore stale commands after reboot
+References: <20090702082313.F3754D340B@pentland.suse.de>
+In-Reply-To: <20090702082313.F3754D340B@pentland.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009, Martin Schwidefsky wrote:
-> +ktime_t ktime_get(void)
-> +{
-> +	cycle_t cycle_now, cycle_delta;
-> +	struct timespec time;
-> +	unsigned long seq;
-> +	s64 nsecs;
-> +
-> +	do {
-> +		seq = read_seqbegin(&xtime_lock);
-> +		time.tv_sec = xtime.tv_sec + wall_to_monotonic.tv_sec;
-> +		time.tv_nsec = xtime.tv_nsec + wall_to_monotonic.tv_nsec;
+Hannes Reinecke wrote:
+> When doing an unexpected shutdown like kexec the cciss
+> firmware might still have some commands in flight, which
+> it is trying to complete.
+> The driver is doing it's best on resetting the HBA,
+> but sadly there's a firmware issue causing the firmware
+> _not_ to abort or drop old commands.
+> So the firmware will send us commands which we haven't
+> accounted for, causing the driver to panic.
+> 
+> With this patch we're just ignoring these commands as
+> there is nothing we could be doing with them anyway.
+> 
+> Signed-off-by: Hannes Reinecke <hare@suse.de>
 
-That's actually a violation of the timespec semantics. tv_nsec can end
-up greater than (10^9 - 1). Please use separate sec and nsec variables.
+Pardon my ignorance here, but don't you have a bigger problem: if the 
+reset is not dropping or aborting old commands, doesn't this also mean 
+that these old commands can still be _executing_? In which case any 
+(old) reads being executed could be scribbling over memory? (Memory that 
+may be being used for other purposes?)
 
-  	        secs = xtime.tv_sec + wall_to_monotonic.tv_sec;
-  	     	nsecs = xtime.tv_nsec + wall_to_monotonic.tv_nsec;
+Alan D. Brunelle
 
-> +		/* read clocksource: */
-> +		cycle_now = clocksource_read(clock);
-> +
-> +		/* calculate the delta since the last update_wall_time: */
-> +		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-> +
-> +		/* convert to nanoseconds: */
-> +		nsecs = cyc2ns(clock, cycle_delta);
-
-So that needs to be changed to:
-
-		nsecs += cyc2ns(clock, cycle_delta);
-
-> +
-> +	} while (read_seqretry(&xtime_lock, seq));
-> +	nsecs += time.tv_sec * 1000000000ULL + time.tv_nsec;
-> +	return (ktime_t) { .tv64 = nsecs };
-
-This will break all 32bit architectures which do not have
-CONFIG_KTIME_SCALAR set.
-
-With the above changes applied:
-
-  return ktime_add_ns(ktime_set(secs, 0), nsecs);
-
-will do the trick. Might need some comments though :)
-
-Thanks,
-
-	tglx
