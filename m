@@ -1,94 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbZGFHtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbZGFHwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757120AbZGFHtS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 03:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZGFHtI
+	id S1756970AbZGFHwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 03:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZGFHwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 03:49:08 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:60828 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752831AbZGFHtH (ORCPT
+	Mon, 6 Jul 2009 03:52:12 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:53080 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752208AbZGFHwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 03:49:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=FTRY62H9y7aYRug+nIdgPK/Btk9wGyCyo0FJRBOKYVXnL3yy6eLP0cILpZ4YyANXjR
-         dXpK4q0U1wSms9CsdpxWoIulyzmZJ5RiYyLq/jkdmpYohkZzYARDsepm+i9YJnjATbEr
-         hgslCxF9mgu0v2q985lIrSyex8+KXCDkUl31w=
-Date: Mon, 6 Jul 2009 09:49:04 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Peter Feuerer <peter@piie.net>, Len Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Acerhdf: fix fan control for BIOS 3309
-Message-ID: <20090706074904.GB27582@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Andreas Mohr <andi@lisas.de>, Peter Feuerer <peter@piie.net>,
-	Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
-References: <20090705135806.GB9778@liondog.tnic>
- <cone.1246812673.209196.4691.1000@onepiie>
- <20090705190815.GA25926@rhlx01.hs-esslingen.de>
+	Mon, 6 Jul 2009 03:52:11 -0400
+Date: Mon, 6 Jul 2009 09:16:00 +0200
+From: Nico Schottelius <nico-linux-20090706@schottelius.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>
+Subject: FREEZE with 2.6.31-rc1-next-20090626-02876-g39ddbf4
+Message-ID: <20090706071600.GA9488@ikn.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-linux-20090706@schottelius.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Linux Next Mailing List <linux-next@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
 Content-Disposition: inline
-In-Reply-To: <20090705190815.GA25926@rhlx01.hs-esslingen.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://www.nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.30-rc7 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 09:08:15PM +0200, Andreas Mohr wrote:
-> Hi,
-> 
-> On Sun, Jul 05, 2009 at 06:51:13PM +0200, Peter Feuerer wrote:
-> > Hi Boris,
-> >
-> > Borislav Petkov writes:
-> >> With BIOS update v3309, the Aspire One has had some changes to how
-> >> the fan is being controlled. Reads to the fanreg (0x55) do not simply
-> >> return the on/off values of the fan anymore but rather a different
-> >> fan stage based on the current temperature. Empirically, I could
-> >> observe the fan stage being 0x1 when booting the machine, then the
-> >> temperature went up and the BIOS switched the fan to stage 0x2, making
-> >> it rotate faster with final stage being fan state 0x3, aka max.
-> >
-> > I think it was already like that before v3309. But in my opinion it 
-> > doesn't matter how fast the fan spins. As soon as it's spinning it's 
-> > making too much noise. That's why I like to use only two states for the 
-> > fan, "on" (noisy, doesn't matter how fast it's spinning) and "off" (quiet 
-> > ;))
-> 
-> I really don't think so.
-> 
-> If you're in a meeting (think university environment, where _many_ netbooks
-> end up being used due to highly mobile requirements...)
-> or a moderately occupied room, then there's some ambient noise
-> (say, one guy speaking) which I'm pretty damn sure fully drowns out
-> the first level of fan operation but certainly NOT the second or third level
-> (extrapolating from my very own experience here...).
-> 
-> Due to these effects I'd think we want to adapt the driver to handle this.
-> Though I'm very well aware that going the extra mile of "intelligent"
-> temperature handling might cause a ton of extra risks if we aren't
-> careful. ;)
-> 
-> Still, I believe it would be very useful to keep fan operation low for
-> moderate distances beyond fan trip point.
-> 
-> And ideally add a module parameter for aggressive ("binary" fan
-> operation) vs. soft ("intelligent" fan operation) handling, whatever
-> a user desires, for noise or power consumption or whatever reasons.
 
-That functionality is already in the BIOS. At least the v3309 I got
-here. You simply remove the module and it does the intelligent control
-with the different fan levels based on current temperature. But when
-you're somewhere really quiet or you're getting annoyed even by the
-level 1 fan rotation you'd still like to kill that noise (you know how
-those cheap fans are :)) and that's when the module comes in.
+--huq684BweRXVnRxX
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Regards/Gruss,
-    Boris.
+Hello!
+
+I just gave 2.6.31-rc1-next-20090626-02876-g39ddbf4 a try on X200 (amd64); =
+The result
+is a bit shocking:
+
+It freezes after some minutes running xorg. The image is still fine, no mov=
+ements,
+no keyboard.
+
+Nico
+
+--=20
+Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--huq684BweRXVnRxX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpRpLAACgkQuL75KpiFGIxhJACg3lotn5MEAE12pSELTVPjOKyi
+cCMAoKyQRBK2h6Pl/qtPuygTjjaVTzAF
+=869m
+-----END PGP SIGNATURE-----
+
+--huq684BweRXVnRxX--
