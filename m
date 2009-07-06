@@ -1,93 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbZGFWY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbZGFWas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755132AbZGFWY7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 18:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZGFWYu
+	id S1754163AbZGFWas (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 18:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbZGFWal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 18:24:50 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:38827 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753016AbZGFWYt (ORCPT
+	Mon, 6 Jul 2009 18:30:41 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:37312 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753213AbZGFWak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 18:24:49 -0400
-Date: Mon, 6 Jul 2009 23:24:38 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-Message-ID: <20090706222438.GA21584@shareable.org>
-References: <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr> <19021.31291.642416.956966@samba.org> <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr> <19021.63615.450348.192109@samba.org> <alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr> <19025.63119.656216.431469@samba.org> <alpine.LSU.2.00.0907061932120.20434@fbirervta.pbzchgretzou.qr> <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr> <20090706205844.GE13638@shareable.org> <alpine.LSU.2.00.0907062304310.31166@fbirervta.pbzchgretzou.qr>
+	Mon, 6 Jul 2009 18:30:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        b=wbYfw0bKqAxB7nQUSBh5BmD4OD/P6E9WGMB6rMwbPE/HfvvNRf/Y9FnIPOOKXXaGQY
+         x5Gzzx0X049zFPgAQ2oqHf6wkt8YoTmiZZT5NDIdgrZgXubUtvsidgWySyZZz8aYIX3z
+         405rhb3gPXPe3x90kj6c8ZjvQBonz9uVj4Gak=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.00.0907062304310.31166@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Date: Mon, 6 Jul 2009 23:30:41 +0100
+X-Google-Sender-Auth: f4f4bb58e874b1d8
+Message-ID: <b0943d9e0907061530u2d375fe5x91f92cfee3166c91@mail.gmail.com>
+Subject: Possible memory leak in fs/sysfs/bin.c
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> 
-> On Monday 2009-07-06 22:58, Jamie Lokier wrote:
-> >> On Monday 2009-07-06 20:55, Jan Engelhardt wrote:
-> >> >>How did things go with your mp3 players?
-> >> >[...]
-> >> >As it stands, my two devices always want a valid 8.3 name.
-> >> 
-> >> On or about June 26, James Bottomley exchanged these words to Andrew Tridgell:
-> >> >So the patch has been tested with Vista, Windows 7 and Windows XP
-> >> 
-> >> [Test with Windows 98, and 16-bit GDI programs under XP]
-> >> [3] http://picpaste.de/w98dualnames.png
-> >> [4] http://picpaste.de/xpwith16bit.png
-> >> (pics kept for 7 days from now)
-> >
-> >Summary of pics, for posterity:
-> >[3] shows an [...] Question: In Windows 98, is it just the MS-DOS box
-> >which cannot see some of the filenames, or is the normal file explorer
-> >affected too?
-> 
-> [3] shows an MS-DOS window on a Win98 desktop, having just run the
-> "dir" command. In the background is a Win98 explorer window, for
-> comparison with the dir command.
-> Neither of the two ways of listing the contents of a directory show
-> any filenames for <illegal 8.3, long name present> entries as produced
-> by tridge's vfat patches.
+Hi,
 
-Indeed.  I missed the explorer window behind the MS-DOS box, because
-it has a few icons but the file names are missing.  They're missing
-because of modified FAT.
+I get about 28 (after 1 hour uptime) kmemleak reports like the one below:
 
-> >[4] shows a old-looking Windows application, presumably 16-bit running
-> >    on XP, with a File Selection box listing the a:\ drive.  Four
-> >    files are shown on the a:\ drive in a selection box, but the first
-> >    of them is completely blank.
->
-> As the filename and the intro text had said..
->
-> [4] 16-bit program (Windows 3.x era) running on XP (but probably also
-> happens earlier). File dialog shows blank line where an entry has an
-> illegal 8.3 name; also as a result of the vfat aptches.
+unreferenced object 0xc24ab090 (size 4096):
+  comm "cat", pid 2930, jiffies 4294902918
+  backtrace:
+    [<c01e0c3a>] create_object+0xfa/0x250
+    [<c01e1e7d>] kmemleak_alloc+0x5d/0x70
+    [<c01dbc2d>] __kmalloc_track_caller+0x10d/0x1e0
+    [<c01bf5e4>] memdup_user+0x24/0x70
+    [<c02394d9>] write+0xb9/0x1b0
+    [<c01e480c>] vfs_write+0x9c/0x190
+    [<c01e49bd>] sys_write+0x3d/0x70
+    [<c010300c>] sysenter_do_call+0x12/0x38
+    [<ffffffff>] 0xffffffff
 
-Your original mail didn't say about the	MS-DOS box in the 98 pic,
-which is why I explained it (since the pics will disappear but the l-k
-mail will be archived).
+This is the write() function in the file mention in subject. It looks
+to me like commit 1c8542c7bb replaced kmalloc() with memdup_user() but
+also dropped the kfree(temp). The memdup_user() function allocates
+memory but that's never freed in write().
 
-I wanted to point that out because MS-DOS file access (even in a DOS
-box) is different from Windows file access.
+Maybe something like this:
 
-It wouldn't be surprising if modified FAT broke on MS-DOS but worked
-in 16-bit Windows - but thanks for showing that it breaks 16-bit Windows too.
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index 9345806..bde6602 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -164,6 +164,7 @@ static ssize_t write(struct file *file, const char
+__user *userbuf,
+ 	mutex_lock(&bb->mutex);
 
-And then I wanted to say the XP pic wasn't an MS-DOS box like the 98 pic...
+ 	memcpy(bb->buffer, temp, count);
++	kfree(temp);
 
-That's all.
+ 	count = flush_write(dentry, bb->buffer, offs, count);
+ 	mutex_unlock(&bb->mutex);
 
--- Jamie
+-- 
+Catalin
