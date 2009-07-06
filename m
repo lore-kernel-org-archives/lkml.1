@@ -1,105 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbZGFIPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZGFIPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757706AbZGFIPO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZGFIPA
+	id S1757887AbZGFIPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbZGFIPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:15:00 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58542 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753220AbZGFIPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:15:00 -0400
-Message-ID: <4A51B288.70505@cn.fujitsu.com>
-Date: Mon, 06 Jul 2009 16:15:04 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+	Mon, 6 Jul 2009 04:15:05 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:40504 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756996AbZGFIPD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 04:15:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=C/UwgwIu93/DnX+bGhLVhNFpsb11gZlUZAktDZ6hLpIZDX6Zxj30qmgDLYJ6ZStcko
+         XSGIMfOcgURLzeNBNs8VvqTD4YEu2doMJHgTyIMpKO7cflrTYdeZqM6Rz7GRv7cTcQnR
+         ctXf9H/8w+YCxLq1kf5C7ctfzQL6J8jmQ+OH4=
+Date: Mon, 6 Jul 2009 10:14:32 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Joao Correia <joaomiguelcorreia@gmail.com>
+Cc: Andres Freund <andres@anarazel.de>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kmemtrace: rename some functions
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
+	possibly?caused by netem)
+Message-ID: <20090706081432.GA3065@ami.dom.local>
+References: <200907031326.21822.andres@anarazel.de> <20090704151855.GA21896@ami.dom.local> <a5d9929e0907052153x2db851bcj26f1433c716c8a90@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a5d9929e0907052153x2db851bcj26f1433c716c8a90@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So we have:
-- kmemtrace_print_alloc/free() for kmemtrace default output
-- kmemtrace_print_alloc/free_user() for binary output used
-  by kmemtrace-user.
+On Mon, Jul 06, 2009 at 05:53:51AM +0100, Joao Correia wrote:
+> Hello
+Hi,
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
+> System freezes immediatly after grub, no init processing at all, after
+> applying those patches on top of vanilla 2.6.30 on my box.
+> 
+> Also, 2nd patch, this piece:
+> 
+> +#ifdef CONFIG_SCHED_DEBUG
+> +static inline unsigned int get_sysctl_timer_migration(void)
+> +{
+> +       return sysctl_timer_migration;
+> +}
+> +#else
+> +static inline unsigned int get_sysctl_timer_migration(void)
+> +{
+> +       return 1;
+> +}
+> +#endif
+> 
+> doesnt work on top of 2.6.30. It complains, while compiling, that
+> sysctl_timer_migration is not defined. So i just replaced that call
+> with return 1, like on the not debug case. Hope this doesnt defeat
+> your test case, but it wouldnt compile otherwise. Probably that was
+> just introduced after 2.6.30?
 
-forgot to CC LKML...again..
+Yes, it would be too easy if it had worked just like this... (I only
+test-compiled it, without such warnings, but without CONFIG_SCHED_DEBUG.)
+I'll look at this again.
 
----
- kernel/trace/kmemtrace.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> (Have also tried latest .31-rc2, original bug still exists.)
 
-diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
-index 74903b6..256827b 100644
---- a/kernel/trace/kmemtrace.c
-+++ b/kernel/trace/kmemtrace.c
-@@ -239,7 +239,7 @@ struct kmemtrace_user_event_alloc {
- };
- 
- static enum print_line_t
--kmemtrace_print_alloc_user(struct trace_iterator *iter, int flags)
-+kmemtrace_print_alloc(struct trace_iterator *iter, int flags)
- {
- 	struct trace_seq *s = &iter->seq;
- 	struct kmemtrace_alloc_entry *entry;
-@@ -259,7 +259,7 @@ kmemtrace_print_alloc_user(struct trace_iterator *iter, int flags)
- }
- 
- static enum print_line_t
--kmemtrace_print_free_user(struct trace_iterator *iter, int flags)
-+kmemtrace_print_free(struct trace_iterator *iter, int flags)
- {
- 	struct trace_seq *s = &iter->seq;
- 	struct kmemtrace_free_entry *entry;
-@@ -277,7 +277,7 @@ kmemtrace_print_free_user(struct trace_iterator *iter, int flags)
- }
- 
- static enum print_line_t
--kmemtrace_print_alloc_user_bin(struct trace_iterator *iter, int flags)
-+kmemtrace_print_alloc_user(struct trace_iterator *iter, int flags)
- {
- 	struct trace_seq *s = &iter->seq;
- 	struct kmemtrace_alloc_entry *entry;
-@@ -311,7 +311,7 @@ kmemtrace_print_alloc_user_bin(struct trace_iterator *iter, int flags)
- }
- 
- static enum print_line_t
--kmemtrace_print_free_user_bin(struct trace_iterator *iter, int flags)
-+kmemtrace_print_free_user(struct trace_iterator *iter, int flags)
- {
- 	struct trace_seq *s = &iter->seq;
- 	struct kmemtrace_free_entry *entry;
-@@ -482,14 +482,14 @@ static enum print_line_t kmemtrace_print_line(struct trace_iterator *iter)
- 
- static struct trace_event kmem_trace_alloc = {
- 	.type			= TRACE_KMEM_ALLOC,
--	.trace			= kmemtrace_print_alloc_user,
--	.binary			= kmemtrace_print_alloc_user_bin,
-+	.trace			= kmemtrace_print_alloc,
-+	.binary			= kmemtrace_print_alloc_user,
- };
- 
- static struct trace_event kmem_trace_free = {
- 	.type			= TRACE_KMEM_FREE,
--	.trace			= kmemtrace_print_free_user,
--	.binary			= kmemtrace_print_free_user_bin,
-+	.trace			= kmemtrace_print_free,
-+	.binary			= kmemtrace_print_free_user,
- };
- 
- static struct tracer kmem_tracer __read_mostly = {
--- 
-1.5.4.rc3
+Btw., could you send your .config? Do you have lockdep enabled (if so
+did you try without it)? Is it 'a real' box or something virtual?
 
+Thanks,
+Jarek P.
