@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZGFOP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbZGFOQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396AbZGFOP5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 10:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbZGFOPt
+	id S1755653AbZGFOQc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 10:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZGFOQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 10:15:49 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:62715 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753580AbZGFOPs (ORCPT
+	Mon, 6 Jul 2009 10:16:24 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:51692 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753714AbZGFOQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 10:15:48 -0400
-Date: Mon, 6 Jul 2009 16:15:35 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] optimized ktime_get[_ts] for GENERIC_TIME=y
-Message-ID: <20090706161535.4a36b4cb@skybase>
-In-Reply-To: <4A52051A.60407@gmail.com>
-References: <20090706154933.5a1f8990@skybase>
-	<4A52051A.60407@gmail.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.3; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Jul 2009 10:16:24 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: michal.simek@petalogix.com
+Subject: Re: mmap syscall problem
+Date: Mon, 6 Jul 2009 16:16:11 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.30-9-generic; KDE/4.2.95; x86_64; ; )
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       LTP <ltp-list@lists.sourceforge.net>,
+       John Williams <john.williams@petalogix.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Grant Likely <grant.likely@secretlab.ca>, subrata@linux.vnet.ibm.com
+References: <4A4DFB77.1080700@petalogix.com> <20090706121455.GA16908@linux-sh.org> <4A51F3F3.6040501@petalogix.com>
+In-Reply-To: <4A51F3F3.6040501@petalogix.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907061616.12220.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19T9sstvn5SpBZn7Kleq7KLF9I8uoygHYoecKO
+ R1c2nZ18cn7Gy8FEgWDm/pn/9Klw+1NOh31M1Mdyo7L4+Ongn0
+ 8v9SRhHYWFCoUixsQ7gUA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 06 Jul 2009 16:07:22 +0200
-Eric Dumazet <eric.dumazet@gmail.com> wrote:
-
-> > diff -urpN linux-2.5/kernel/time/timekeeping.c linux-2.5-patched/kernel/time/timekeeping.c
-> > --- linux-2.5/kernel/time/timekeeping.c	2009-07-03 10:46:07.000000000 +0200
-> > +++ linux-2.5-patched/kernel/time/timekeeping.c	2009-07-03 10:46:23.000000000 +0200
-> > @@ -118,6 +118,69 @@ void getnstimeofday(struct timespec *ts)
-> >  
-> >  EXPORT_SYMBOL(getnstimeofday);
-> >  
-> > +ktime_t ktime_get(void)
-> > +{
-> > +	cycle_t cycle_now, cycle_delta;
-> > +	struct timespec time;
-> > +	unsigned long seq;
-> > +	s64 nsecs;
-> > +
-> > +	do {
-> > +		seq = read_seqbegin(&xtime_lock);  
+On Monday 06 July 2009, Michal Simek wrote:
 > 
-> minor nit : read_seqbegin() returns an "unsigned int", not an "unsigned long"
- 
-Hmm, just cut-copy-pasted the seq-loop. Seems like a job for the janitor ..
-But I will update my patch.
+> > Not necessarily, even on platforms that manage aliases in hardware
+> > mappings that violate the aliasing constraints can still result in
+> > undefined behaviour, this really depends more on your cache controller
+> > and MMU than anything else. I notice that microblaze sets SHMLBA to
+> > PAGE_SIZE, you may want to see if this test still breaks after bumping it
+> > up to something like PAGE_SIZE * 4.
+> >   
+> Yes, test still break - behavior is the same. I don't have accurate
+> information about MMU unit
+> but I will ask a question about. We are able to turn off cache
+> controller directly in HW.
 
--- 
-blue skies,
-   Martin.
+There may still be a problem with data being queued in some write
+buffers that don't get flushed before reading back from another
+address.
 
-"Reality continues to ruin my life." - Calvin.
+What happens in a simple user space program that mmaps the same
+page to two addresses? Something like
 
+#include <sys/mman.h>
+#include <fcntl.h>
+int main(void)
+{
+	int fd = open("existing-4k-file", O_RDWR);
+	char *p1 = mmap(0, 4096, PROT_READ | PROT_WRITE,
+				MAP_SHARED, fd, 0);
+	char *p2 = mmap(p1 + 4096, 4096, PROT_READ | PROT_WRITE,
+				MAP_SHARED | MAP_FIXED, fd, 0);
+
+	*p1 = 0xaa; *p2 = 0x55;
+
+	return *p1; /* returns 0xaa if broken, 0x55 if correct */
+}
+
+	Arnd <><
