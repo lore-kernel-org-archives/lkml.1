@@ -1,53 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbZGFQba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZGFQdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbZGFQba (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 12:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZGFQbM
+	id S1754012AbZGFQdK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 12:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZGFQc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 12:31:12 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:35950 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753233AbZGFQbL (ORCPT
+	Mon, 6 Jul 2009 12:32:56 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:49566 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbZGFQcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 12:31:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=R2jhwqDiHHFO6mo1tRTCHfliY4kaLj4M5a7bid1ThaPT+ppmBWC3gHprTjtOV5ZnXe
-         WEVd2ULbu9Smn6BV2Rk4NQo4P4+Uhhs38LWoJT7HZLYPaaEIiG10OtS8enVh86ZkoiWo
-         pWvnGBTS2zX2vi9QZZ0uVB6Uzn/lNG5rrg+3g=
-Date: Mon, 6 Jul 2009 18:31:06 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Andres Freund <andres@anarazel.de>
-Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
-	possibly?caused by netem)
-Message-ID: <20090706163106.GA4559@ami.dom.local>
-References: <200907031326.21822.andres@anarazel.de> <a5d9929e0907052153x2db851bcj26f1433c716c8a90@mail.gmail.com> <20090706141916.GA3477@ami.dom.local> <200907061813.29379.andres@anarazel.de>
+	Mon, 6 Jul 2009 12:32:55 -0400
+Message-ID: <4A52272A.2060101@novell.com>
+Date: Mon, 06 Jul 2009 12:32:42 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907061813.29379.andres@anarazel.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org
+Subject: Re: [KVM PATCH v9 5/5] KVM: create irqfd-cleanup-wq on demand
+References: <20090702153454.20186.99191.stgit@dev.haskins.net> <20090702153821.20186.9344.stgit@dev.haskins.net> <20090706155850.GA12399@redhat.com> <4A522050.7030200@novell.com> <20090706161444.GC12399@redhat.com>
+In-Reply-To: <20090706161444.GC12399@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4534F80F3EEEC52661E832DA"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 06:13:29PM +0200, Andres Freund wrote:
-...
-> > > Btw, I ran netem with delay for more than 48h on around 80mbit... That
-> > > does  not exclude such a rarely triggered race, but makes it a bit more
-> > > unlikely. (With migration thats around 3sec or so)
-...
-> Sorry once more.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4534F80F3EEEC52661E832DA
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Andres, the bisection + the above - you did 'the whole lotta work' and
-you shouldn't be sorry at all! ;-)
+Michael S. Tsirkin wrote:
+> On Mon, Jul 06, 2009 at 12:03:28PM -0400, Gregory Haskins wrote:
+>  =20
+>> Michael S. Tsirkin wrote:
+>>    =20
+>>> On Thu, Jul 02, 2009 at 11:38:22AM -0400, Gregory Haskins wrote:
+>>>  =20
+>>>      =20
+>>>> We currently create this wq on module_init, which may be wasteful if=
+ the
+>>>> host never creates a guest that uses irqfd.  This patch changes the
+>>>> algorithm so that the workqueue is only created when at least one gu=
+est
+>>>> is using irqfd.  The queue is cleaned up when the last guest using i=
+rqfd
+>>>> is shutdown.
+>>>>
+>>>> To keep things simple, we only check whether the guest has tried to =
+create
+>>>> an irqfd, not whether there are actually irqfds active.
+>>>>
+>>>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>>>> ---
+>>>>
+>>>>  include/linux/kvm_host.h |    1=20
+>>>>  virt/kvm/eventfd.c       |  100 ++++++++++++++++++++++++++++++++++-=
+-----------
+>>>>  2 files changed, 75 insertions(+), 26 deletions(-)
+>>>>
+>>>> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+>>>> index 8e04a34..cd1a0f3 100644
+>>>> --- a/include/linux/kvm_host.h
+>>>> +++ b/include/linux/kvm_host.h
+>>>> @@ -149,6 +149,7 @@ struct kvm {
+>>>>  	struct {
+>>>>  		spinlock_t        lock;
+>>>>  		struct list_head  items;
+>>>> +		bool              init;
+>>>>  	} irqfds;
+>>>>  #endif
+>>>>  	struct kvm_vm_stat stat;
+>>>> diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+>>>> index 4092b8d..fcc3469 100644
+>>>> --- a/virt/kvm/eventfd.c
+>>>> +++ b/virt/kvm/eventfd.c
+>>>> @@ -49,7 +49,16 @@ struct _irqfd {
+>>>>  	struct work_struct        shutdown;
+>>>>  };
+>>>> =20
+>>>> -static struct workqueue_struct *irqfd_cleanup_wq;
+>>>> +struct _irqfd_cleanup {
+>>>> +	struct mutex             lock;
+>>>> +	int                      refs;
+>>>> +	struct workqueue_struct *wq;
+>>>> +};
+>>>> +
+>>>> +static struct _irqfd_cleanup irqfd_cleanup =3D {
+>>>> +	.lock =3D __MUTEX_INITIALIZER(irqfd_cleanup.lock),
+>>>> +	.refs =3D 0,
+>>>> +};
+>>>> =20
+>>>>  static void
+>>>>  irqfd_inject(struct work_struct *work)
+>>>> @@ -110,7 +119,7 @@ irqfd_deactivate(struct _irqfd *irqfd)
+>>>> =20
+>>>>  	list_del_init(&irqfd->list);
+>>>> =20
+>>>> -	queue_work(irqfd_cleanup_wq, &irqfd->shutdown);
+>>>> +	queue_work(irqfd_cleanup.wq, &irqfd->shutdown);
+>>>>  }
+>>>> =20
+>>>>  /*
+>>>> @@ -161,6 +170,62 @@ irqfd_ptable_queue_proc(struct file *file, wait=
+_queue_head_t *wqh,
+>>>>  	add_wait_queue(wqh, &irqfd->wait);
+>>>>  }
+>>>> =20
+>>>> +/*
+>>>> + * create a host-wide workqueue for issuing deferred shutdown reque=
+sts
+>>>> + * aggregated from all vm* instances. We need our own isolated sing=
+le-thread
+>>>> + * queue to prevent deadlock against flushing the normal work-queue=
+=2E
+>>>> + */
+>>>> +static int
+>>>> +irqfd_cleanup_init(struct kvm *kvm)
+>>>> +{
+>>>> +	int ret =3D 0;
+>>>> +
+>>>> +	mutex_lock(&irqfd_cleanup.lock);
+>>>> +
+>>>> +	/*
+>>>> +	 * Check the current init state from within the lock so that we
+>>>> +	 * sync all users to the thread creation.
+>>>> +	 */
+>>>> +	if (kvm->irqfds.init)
+>>>> +		goto out;
+>>>> +
+>>>> +	if (!irqfd_cleanup.refs) {
+>>>> +		struct workqueue_struct *wq;
+>>>> +
+>>>> +		wq =3D create_singlethread_workqueue("kvm-irqfd-cleanup");
+>>>> +		if (!wq) {
+>>>> +			ret =3D -ENOMEM;
+>>>> +			goto out;
+>>>> +		}
+>>>> +
+>>>> +		irqfd_cleanup.wq =3D wq;
+>>>> +	}
+>>>> +
+>>>> +	irqfd_cleanup.refs++;
+>>>> +	kvm->irqfds.init =3D true;
+>>>> +
+>>>> +out:
+>>>> +	mutex_unlock(&irqfd_cleanup.lock);
+>>>> +
+>>>> +	return ret;
+>>>> +}
+>>>> +
+>>>> +static void
+>>>> +irqfd_cleanup_release(struct kvm *kvm)
+>>>> +{
+>>>> +	if (!kvm->irqfds.init)
+>>>> +		return;
+>>>>    =20
+>>>>        =20
+>>> init is checked outside the lock here.
+>>> Why?
+>>>  =20
+>>>      =20
+>> Guest is shutting down via vmfd->f_ops->release() and is already
+>> guaranteed to be single-threaded, so proper locking is not really
+>> important.  Probably should document that, though ;)
+>>    =20
+>
+> Is this an impirtant optimization? Simple locking is better..
+>  =20
 
-Thanks again,
-Jarek P.
+Its not "important" from a performance perspective or anything like
+that.  Its just that locking here is inappropriate.  The init value is
+per-vm and we only need to guard it going from false->true in the assign
+path to cover the unlikely case that more than one threads tries to
+assign an irqfd at the same time.  The shutdown path has no such
+requirement since the VM has already implicitly ceased to exist and can
+therefore not possibly assign another irqfd.  Therefore, locking here,
+while harmless in every dimension, is simply gratuitous.  I would rather
+just document it, personally: i.e. I think overlocking is just sloppy.=20
+Otherwise we should be documenting that the lock isn't really needed, etc=
+=2E
+
+For the record, I would have rather just used my originally proposed
+slow-work thread instead of all this ;)
+
+-Greg
+
+>  =20
+>>>> +
+>>>> +	mutex_lock(&irqfd_cleanup.lock);
+>>>> +
+>>>> +	if (!(--irqfd_cleanup.refs))
+>>>> +		destroy_workqueue(irqfd_cleanup.wq);
+>>>> +
+>>>> +	mutex_unlock(&irqfd_cleanup.lock);
+>>>> +
+>>>> +	kvm->irqfds.init =3D false;
+>>>>    =20
+>>>>        =20
+>>> ... and cleaned outside the lock as well.
+>>>
+>>>  =20
+>>>      =20
+>> Ditto
+>>
+>>    =20
+>>>> +}
+>>>> +
+>>>>  static int
+>>>>  kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
+>>>>  {
+>>>> @@ -170,6 +235,10 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int g=
+si)
+>>>>  	int ret;
+>>>>  	unsigned int events;
+>>>> =20
+>>>> +	ret =3D irqfd_cleanup_init(kvm);
+>>>> +	if (ret < 0)
+>>>> +		return ret;
+>>>> +
+>>>>  	irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
+>>>>  	if (!irqfd)
+>>>>  		return -ENOMEM;
+>>>> @@ -268,7 +337,7 @@ kvm_irqfd_deassign(struct kvm *kvm, int fd, int =
+gsi)
+>>>>  	 * so that we guarantee there will not be any more interrupts on t=
+his
+>>>>  	 * gsi once this deassign function returns.
+>>>>  	 */
+>>>> -	flush_workqueue(irqfd_cleanup_wq);
+>>>> +	flush_workqueue(irqfd_cleanup.wq);
+>>>> =20
+>>>>  	return 0;
+>>>>  }
+>>>> @@ -302,28 +371,7 @@ kvm_irqfd_release(struct kvm *kvm)
+>>>>  	 * Block until we know all outstanding shutdown jobs have complete=
+d
+>>>>  	 * since we do not take a kvm* reference.
+>>>>  	 */
+>>>> -	flush_workqueue(irqfd_cleanup_wq);
+>>>> -
+>>>> -}
+>>>> -
+>>>> -/*
+>>>> - * create a host-wide workqueue for issuing deferred shutdown reque=
+sts
+>>>> - * aggregated from all vm* instances. We need our own isolated sing=
+le-thread
+>>>> - * queue to prevent deadlock against flushing the normal work-queue=
+=2E
+>>>> - */
+>>>> -static int __init irqfd_module_init(void)
+>>>> -{
+>>>> -	irqfd_cleanup_wq =3D create_singlethread_workqueue("kvm-irqfd-clea=
+nup");
+>>>> -	if (!irqfd_cleanup_wq)
+>>>> -		return -ENOMEM;
+>>>> -
+>>>> -	return 0;
+>>>> -}
+>>>> +	flush_workqueue(irqfd_cleanup.wq);
+>>>> +	irqfd_cleanup_release(kvm);
+>>>> =20
+>>>> -static void __exit irqfd_module_exit(void)
+>>>> -{
+>>>> -	destroy_workqueue(irqfd_cleanup_wq);
+>>>>  }
+>>>> -
+>>>> -module_init(irqfd_module_init);
+>>>> -module_exit(irqfd_module_exit);
+>>>>    =20
+>>>>        =20
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
+l" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>  =20
+>>>      =20
+>>    =20
+>
+>
+>  =20
+
+
+
+--------------enig4534F80F3EEEC52661E832DA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpSJy4ACgkQlOSOBdgZUxlOiACeIOWI2WQPL8ZLI9FDzp1hqN72
+kNQAn1HOSYeykMqPx0EmzY6PERyfsu6G
+=2kyJ
+-----END PGP SIGNATURE-----
+
+--------------enig4534F80F3EEEC52661E832DA--
