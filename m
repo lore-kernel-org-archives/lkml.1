@@ -1,119 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbZGFQOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbZGFQPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753663AbZGFQOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 12:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZGFQOJ
+	id S1753700AbZGFQPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 12:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZGFQPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 12:14:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44929 "EHLO mx2.redhat.com"
+	Mon, 6 Jul 2009 12:15:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44959 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751894AbZGFQOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 12:14:08 -0400
-Date: Mon, 6 Jul 2009 19:13:31 +0300
+	id S1751143AbZGFQPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 12:15:21 -0400
+Date: Mon, 6 Jul 2009 19:14:44 +0300
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Gregory Haskins <ghaskins@novell.com>
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v9 0/5] irqfd fixes and enhancements
-Message-ID: <20090706161331.GB12399@redhat.com>
-References: <20090702153454.20186.99191.stgit@dev.haskins.net> <4A4CD729.6050300@redhat.com> <4A50723E.6030305@redhat.com> <4A521082.40209@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org
+Subject: Re: [KVM PATCH v9 5/5] KVM: create irqfd-cleanup-wq on demand
+Message-ID: <20090706161444.GC12399@redhat.com>
+References: <20090702153454.20186.99191.stgit@dev.haskins.net> <20090702153821.20186.9344.stgit@dev.haskins.net> <20090706155850.GA12399@redhat.com> <4A522050.7030200@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A521082.40209@novell.com>
+In-Reply-To: <4A522050.7030200@novell.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 10:56:02AM -0400, Gregory Haskins wrote:
-> Avi Kivity wrote:
-> > On 07/02/2009 06:50 PM, Avi Kivity wrote:
-> >> On 07/02/2009 06:37 PM, Gregory Haskins wrote:
-> >>> (Applies to kvm.git/master:1f9050fd)
-> >>>
-> >>> The following is the latest attempt to fix the races in
-> >>> irqfd/eventfd, as
-> >>> well as restore DEASSIGN support.  For more details, please read the
-> >>> patch
-> >>> headers.
-> >>>
-> >>> As always, this series has been tested against the kvm-eventfd unit
-> >>> test
-> >>> and everything appears to be functioning properly. You can download
-> >>> this
-> >>> test here:
+On Mon, Jul 06, 2009 at 12:03:28PM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Thu, Jul 02, 2009 at 11:38:22AM -0400, Gregory Haskins wrote:
+> >   
+> >> We currently create this wq on module_init, which may be wasteful if the
+> >> host never creates a guest that uses irqfd.  This patch changes the
+> >> algorithm so that the workqueue is only created when at least one guest
+> >> is using irqfd.  The queue is cleaned up when the last guest using irqfd
+> >> is shutdown.
 > >>
-> >> Applied, thanks.
+> >> To keep things simple, we only check whether the guest has tried to create
+> >> an irqfd, not whether there are actually irqfds active.
 > >>
+> >> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> >> ---
+> >>
+> >>  include/linux/kvm_host.h |    1 
+> >>  virt/kvm/eventfd.c       |  100 ++++++++++++++++++++++++++++++++++------------
+> >>  2 files changed, 75 insertions(+), 26 deletions(-)
+> >>
+> >> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> >> index 8e04a34..cd1a0f3 100644
+> >> --- a/include/linux/kvm_host.h
+> >> +++ b/include/linux/kvm_host.h
+> >> @@ -149,6 +149,7 @@ struct kvm {
+> >>  	struct {
+> >>  		spinlock_t        lock;
+> >>  		struct list_head  items;
+> >> +		bool              init;
+> >>  	} irqfds;
+> >>  #endif
+> >>  	struct kvm_vm_stat stat;
+> >> diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+> >> index 4092b8d..fcc3469 100644
+> >> --- a/virt/kvm/eventfd.c
+> >> +++ b/virt/kvm/eventfd.c
+> >> @@ -49,7 +49,16 @@ struct _irqfd {
+> >>  	struct work_struct        shutdown;
+> >>  };
+> >>  
+> >> -static struct workqueue_struct *irqfd_cleanup_wq;
+> >> +struct _irqfd_cleanup {
+> >> +	struct mutex             lock;
+> >> +	int                      refs;
+> >> +	struct workqueue_struct *wq;
+> >> +};
+> >> +
+> >> +static struct _irqfd_cleanup irqfd_cleanup = {
+> >> +	.lock = __MUTEX_INITIALIZER(irqfd_cleanup.lock),
+> >> +	.refs = 0,
+> >> +};
+> >>  
+> >>  static void
+> >>  irqfd_inject(struct work_struct *work)
+> >> @@ -110,7 +119,7 @@ irqfd_deactivate(struct _irqfd *irqfd)
+> >>  
+> >>  	list_del_init(&irqfd->list);
+> >>  
+> >> -	queue_work(irqfd_cleanup_wq, &irqfd->shutdown);
+> >> +	queue_work(irqfd_cleanup.wq, &irqfd->shutdown);
+> >>  }
+> >>  
+> >>  /*
+> >> @@ -161,6 +170,62 @@ irqfd_ptable_queue_proc(struct file *file, wait_queue_head_t *wqh,
+> >>  	add_wait_queue(wqh, &irqfd->wait);
+> >>  }
+> >>  
+> >> +/*
+> >> + * create a host-wide workqueue for issuing deferred shutdown requests
+> >> + * aggregated from all vm* instances. We need our own isolated single-thread
+> >> + * queue to prevent deadlock against flushing the normal work-queue.
+> >> + */
+> >> +static int
+> >> +irqfd_cleanup_init(struct kvm *kvm)
+> >> +{
+> >> +	int ret = 0;
+> >> +
+> >> +	mutex_lock(&irqfd_cleanup.lock);
+> >> +
+> >> +	/*
+> >> +	 * Check the current init state from within the lock so that we
+> >> +	 * sync all users to the thread creation.
+> >> +	 */
+> >> +	if (kvm->irqfds.init)
+> >> +		goto out;
+> >> +
+> >> +	if (!irqfd_cleanup.refs) {
+> >> +		struct workqueue_struct *wq;
+> >> +
+> >> +		wq = create_singlethread_workqueue("kvm-irqfd-cleanup");
+> >> +		if (!wq) {
+> >> +			ret = -ENOMEM;
+> >> +			goto out;
+> >> +		}
+> >> +
+> >> +		irqfd_cleanup.wq = wq;
+> >> +	}
+> >> +
+> >> +	irqfd_cleanup.refs++;
+> >> +	kvm->irqfds.init = true;
+> >> +
+> >> +out:
+> >> +	mutex_unlock(&irqfd_cleanup.lock);
+> >> +
+> >> +	return ret;
+> >> +}
+> >> +
+> >> +static void
+> >> +irqfd_cleanup_release(struct kvm *kvm)
+> >> +{
+> >> +	if (!kvm->irqfds.init)
+> >> +		return;
+> >>     
 > >
-> > ... and unapplied.  There's a refcounting mismatch in irqfd_cleanup: a
-> > reference is taken for each irqfd, but dropped for each guest.  This
-> > causes an oops if a guest with no irqfds is created and destroyed:
+> > init is checked outside the lock here.
+> > Why?
+> >   
 > 
-> I was able to reproduce this issue.  The problem turned out to be that I
-> inadvertently always did a flush_workqueue(), even if the work-queue was
-> never initialized.   
+> Guest is shutting down via vmfd->f_ops->release() and is already
+> guaranteed to be single-threaded, so proper locking is not really
+> important.  Probably should document that, though ;)
+
+Is this an impirtant optimization? Simple locking is better..
+
+> >> +
+> >> +	mutex_lock(&irqfd_cleanup.lock);
+> >> +
+> >> +	if (!(--irqfd_cleanup.refs))
+> >> +		destroy_workqueue(irqfd_cleanup.wq);
+> >> +
+> >> +	mutex_unlock(&irqfd_cleanup.lock);
+> >> +
+> >> +	kvm->irqfds.init = false;
+> >>     
+> >
+> > ... and cleaned outside the lock as well.
+> >
+> >   
+> Ditto
 > 
-> The following interdiff applied to the reverted patch has been confirmed
-> to fix the issue:
-
-Could you document the init boolean and its locking rules?
-The best place to put it would be where the field is declared btw.
-Is it true that init === list_empty(&kvm->irqfds.items)?
-If yes maybe we don't need this field at all.
-
-
-> -------------------
+> >> +}
+> >> +
+> >>  static int
+> >>  kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
+> >>  {
+> >> @@ -170,6 +235,10 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
+> >>  	int ret;
+> >>  	unsigned int events;
+> >>  
+> >> +	ret = irqfd_cleanup_init(kvm);
+> >> +	if (ret < 0)
+> >> +		return ret;
+> >> +
+> >>  	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
+> >>  	if (!irqfd)
+> >>  		return -ENOMEM;
+> >> @@ -268,7 +337,7 @@ kvm_irqfd_deassign(struct kvm *kvm, int fd, int gsi)
+> >>  	 * so that we guarantee there will not be any more interrupts on this
+> >>  	 * gsi once this deassign function returns.
+> >>  	 */
+> >> -	flush_workqueue(irqfd_cleanup_wq);
+> >> +	flush_workqueue(irqfd_cleanup.wq);
+> >>  
+> >>  	return 0;
+> >>  }
+> >> @@ -302,28 +371,7 @@ kvm_irqfd_release(struct kvm *kvm)
+> >>  	 * Block until we know all outstanding shutdown jobs have completed
+> >>  	 * since we do not take a kvm* reference.
+> >>  	 */
+> >> -	flush_workqueue(irqfd_cleanup_wq);
+> >> -
+> >> -}
+> >> -
+> >> -/*
+> >> - * create a host-wide workqueue for issuing deferred shutdown requests
+> >> - * aggregated from all vm* instances. We need our own isolated single-thread
+> >> - * queue to prevent deadlock against flushing the normal work-queue.
+> >> - */
+> >> -static int __init irqfd_module_init(void)
+> >> -{
+> >> -	irqfd_cleanup_wq = create_singlethread_workqueue("kvm-irqfd-cleanup");
+> >> -	if (!irqfd_cleanup_wq)
+> >> -		return -ENOMEM;
+> >> -
+> >> -	return 0;
+> >> -}
+> >> +	flush_workqueue(irqfd_cleanup.wq);
+> >> +	irqfd_cleanup_release(kvm);
+> >>  
+> >> -static void __exit irqfd_module_exit(void)
+> >> -{
+> >> -	destroy_workqueue(irqfd_cleanup_wq);
+> >>  }
+> >> -
+> >> -module_init(irqfd_module_init);
+> >> -module_exit(irqfd_module_exit);
+> >>     
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >   
 > 
-> diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-> index fcc3469..52b0e04 100644
-> --- a/virt/kvm/eventfd.c
-> +++ b/virt/kvm/eventfd.c
-> @@ -318,6 +318,9 @@ kvm_irqfd_deassign(struct kvm *kvm, int fd, int gsi)
->         struct _irqfd *irqfd, *tmp;
->         struct eventfd_ctx *eventfd;
->  
-> +       if (!kvm->irqfds.init)
-> +               return -ENOENT;
-> +
->         eventfd = eventfd_ctx_fdget(fd);
->         if (IS_ERR(eventfd))
->                 return PTR_ERR(eventfd);
-
-wouldn't it be cleaner to error out in the for each loop if we don't
-find an entry to deactivate?  Might be helpful for apps to get an error
-if they didn't deassign anything.
-
-> @@ -360,6 +363,9 @@ kvm_irqfd_release(struct kvm *kvm)
->  {
->         struct _irqfd *irqfd, *tmp;
->  
-> +       if (!kvm->irqfds.init)
-> +               return;
-> +
-
-So here, I recall some old comment that flush below was
-needed even if list is empty. Is this no longer true?
-If not it might be cleaner to only flush if list is not empty.
-
-
->         spin_lock_irq(&kvm->irqfds.lock);
->  
->         list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds.items, list)
-> 
-> ---------------------
-> 
-> You can pick up this fix folded into the original v9:5/5 patch here:
-> 
-> git pull
-> git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git
-> for-avi
-> 
-> Sorry for the sloppy patch in v9. :(  Will strive to do better next time.
-> 
-> Regards,
-> -Greg
 > 
 
 
