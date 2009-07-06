@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZGFIZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbZGFI0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757889AbZGFIZX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757605AbZGFIZA
+	id S1757978AbZGFI0m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbZGFI0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:25:00 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:42903 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757930AbZGFIY7 convert rfc822-to-8bit (ORCPT
+	Mon, 6 Jul 2009 04:26:34 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:55098 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753406AbZGFI0d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:24:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=S4a60MJw71xG0JdCXcfSd8BBiWJHSuZBzKV51jNdpKFa5r4LyfEUHtxY7ubOSQrygb
-         kYUJJCgAAMWdgr2XCBf/HO5X5LvBnde0ZPyw/5QO+U40684I/peUOpkMSPMAW48mmuvW
-         Taln+v0sHaE94a4HT+4rsww2tY/Vpl6o1toSg=
+	Mon, 6 Jul 2009 04:26:33 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 2/5] sparc: use asm-generic/dma-mapping-common.h
+Date: Mon, 6 Jul 2009 10:26:28 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.30-9-generic; KDE/4.2.95; x86_64; ; )
+Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, reif@earthlink.net
+References: <1246860820-20629-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1246860820-20629-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1246860820-20629-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-In-Reply-To: <4A51B204.4090501@petalogix.com>
-References: <1245850289-6673-1-git-send-email-vapier@gentoo.org> 
-	<200906241724.30947.arnd@arndb.de> <8bd0f97a0906241243k1d4a6d25x3216e940b356d2ca@mail.gmail.com> 
-	<200906251255.06984.arnd@arndb.de> <4A51B204.4090501@petalogix.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 6 Jul 2009 04:24:42 -0400
-Message-ID: <8bd0f97a0907060124t7a2641b8k8fe28f78f70fd3cf@mail.gmail.com>
-Subject: Re: [PATCH] add checksum selftest
-To: michal.simek@petalogix.com
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907061026.28878.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX192dS9mKdNdjEWCH2VSs/NXUj9LcDEyNZLtmQl
+ RIiTCpklySRjX61cBH1QhyL/xotp4a2XWFssW4BVcW8o4tiJel
+ UJq8FN3zWx1XaQyOKS7EgY2nKH/EJZ1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 6, 2009 at 04:12, Michal Simek wrote:
-> Arnd Bergmann wrote:
->> On Wednesday 24 June 2009, Mike Frysinger wrote:
->>> ok, i can see that for the result, but how do i handle the functions
->>> that also take a __wsum ?  do i just always pass them 0 to avoid
->>> implementation issues ?
->>
->> No, any __wsum you pass in there should be fine, because that one
->> gets folded in in the end.
->
-> Mike do you have any updated patch? I would like to check it on
-> Microblaze too.
+On Monday 06 July 2009, FUJITA Tomonori wrote:
+> +static inline struct dma_map_ops *get_dma_ops(struct device *dev)
+> +{
+> +       return dma_ops;
+> +}
+> +
+> +#define flush_write_buffers()
+> +
+> +#include <asm-generic/dma-mapping-common.h>
 
-the latest code i have is here:
-http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=shortlog;h=asm-generic
+I still think the flush_write_buffers() x86-ism should not be required
+to use dma-mapping-common.h and only be used in arch/x86/kernel/pci-nommu.c
+so you don't have to add dummy definitions to all architectures.
 
-but i havent finished integrating the tests and i think they currently
-fail on Blackfin due to it
--mike
+See http://lkml.org/lkml/2009/6/30/134
+
+Otherwise, your series looks good!
+
+	Arnd <><
