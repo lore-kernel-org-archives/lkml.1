@@ -1,60 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbZGFIF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbZGFIGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbZGFIF7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZGFIFp
+	id S1756519AbZGFIGQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZGFIGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:05:45 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:59459 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752511AbZGFIFo (ORCPT
+	Mon, 6 Jul 2009 04:06:04 -0400
+Received: from mga10.intel.com ([192.55.52.92]:3796 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756645AbZGFIF7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:05:44 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: michal.simek@petalogix.com
-Subject: Re: mmap syscall problem
-Date: Mon, 6 Jul 2009 10:05:35 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30-9-generic; KDE/4.2.95; x86_64; ; )
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>,
-       John Williams <john.williams@petalogix.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Grant Likely <grant.likely@secretlab.ca>, subrata@linux.vnet.ibm.com
-References: <4A4DFB77.1080700@petalogix.com> <200907031702.52612.arnd@arndb.de> <4A519A70.50801@petalogix.com>
-In-Reply-To: <4A519A70.50801@petalogix.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907061005.36094.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX190eZNf4rh6AUI6S609CS7KvCmLXBNrXloTDvq
- 794jyc5Ohi3qFWH/viWDx8EIRUtiZXLulh3X+Z26SR8ld6FXtE
- +tTVH0IY5gRT/I3xA5Etg==
+	Mon, 6 Jul 2009 04:05:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,355,1243839600"; 
+   d="scan'208";a="472244362"
+Subject: [BUG] Deadlock between cpufreq kondemand and process cpuspeed
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Pallipadi@vger.kernel.org, Venkatesh <venkatesh.pallipadi@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
+       Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 06 Jul 2009 16:06:23 +0800
+Message-Id: <1246867583.2560.526.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 July 2009, Michal Simek wrote:
-> > Does this happen on microblaze-mmu or microblaze-nommu, or both?
-> > The mmap code for the two is very different.
-> >   
-> For MMU code.
+When I run a series of testing against 2.6.31-rc2 on my Tulsa x8664 machine,
+kernel reports a block issue. Below is the log.
 
-Could this be a cache-aliasing problem? If your cache is 'virtually-indexed'
-(most architectures are 'physically-indexed'), the kernel may have written
-into different parts of the D-cache than what the user space is reading
-from. If you have a write-through cache, that can explain why you only
-see the stale data at the beginning of the page -- the cache controller
-is still busy writing back the data when you start reading it from
-DRAM through the cache alias.
 
-If this is your problem, then you need to implement flush_dcache_page()
-and other functions that maintain cache consistency. See
-Documentation/cachetlb.txt and http://www.linuxjournal.com/article/7105
+kondemand/3   D ffffffff81029ff9     0  1474      2 0x00000000
+ ffff88027ccb8650 0000000000000046 0000000000000000 0000000000000000
+ ffff88027ed51310 ffff88027ccb88e0 00000000ffff0b68 0000000000000000
+ 0000000000000000 ffffffff81029b34 0000000000000000 0000000100000000
+Call Trace:
+ [<ffffffff81029b34>] ? clear_buddies+0x15/0x23
+ [<ffffffff8130734c>] ? do_dbs_timer+0x0/0x272
+ [<ffffffff813cfa94>] ? __down_write_nested+0x79/0x93
+ [<ffffffff81305ab7>] ? lock_policy_rwsem_write+0x3e/0x6a
+ [<ffffffff813073a9>] ? do_dbs_timer+0x5d/0x272
+ [<ffffffff8130734c>] ? do_dbs_timer+0x0/0x272
+ [<ffffffff81049c77>] ? worker_thread+0x15b/0x1f5
+ [<ffffffff8104cd0a>] ? autoremove_wake_function+0x0/0x2e
+ [<ffffffff81049b1c>] ? worker_thread+0x0/0x1f5
+ [<ffffffff8104cbfd>] ? kthread+0x84/0x8f
+ [<ffffffff81048178>] ? __call_usermodehelper+0x0/0x66
+ [<ffffffff8100bcfa>] ? child_rip+0xa/0x20
+ [<ffffffff8104cb79>] ? kthread+0x0/0x8f
+ [<ffffffff8100bcf0>] ? child_rip+0x0/0x20
+INFO: task cpuspeed:4445 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+cpuspeed      D ffffffff81029ff9     0  4445   4370 0x00000000
+ ffff88027ceff910 0000000000000086 0000000000000000 000280da00000010
+ ffff88027eea3850 ffff88027ceffba0 00000000ffff0b49 00000000280c3300
+ 0000000000000005 ffffffff8102f3b8 0000000000000000 0000000100000000
+Call Trace:
+ [<ffffffff8102f3b8>] ? find_busiest_group+0x1e6/0x831
+ [<ffffffff813ce952>] ? schedule_timeout+0x23/0x161
+ [<ffffffff8107ebbc>] ? get_page_from_freelist+0x414/0x58b
+ [<ffffffff8118d7f8>] ? number+0x118/0x204
+ [<ffffffff813ce804>] ? wait_for_common+0xb8/0x11e
+ [<ffffffff81031ebe>] ? default_wake_function+0x0/0x9
+ [<ffffffff8102ba4d>] ? __wake_up+0x30/0x44
+ [<ffffffff810491de>] ? __cancel_work_timer+0x107/0x160
+ [<ffffffff8118d9d2>] ? vsscanf+0xee/0x657
+ [<ffffffff81048e80>] ? wq_barrier_func+0x0/0x9
+ [<ffffffff813077ef>] ? cpufreq_governor_dbs+0x231/0x29d
+ [<ffffffff8118cc23>] ? __up_read+0x13/0x8a
+ [<ffffffff81304f0c>] ? __cpufreq_governor+0x98/0xcf
+ [<ffffffff813050af>] ? __cpufreq_set_policy+0x16c/0x1fb
+ [<ffffffff81305638>] ? store_scaling_governor+0x170/0x1b9
+ [<ffffffff81305bdf>] ? handle_update+0x0/0x28
+ [<ffffffff813062b5>] ? store+0x4d/0x6c
+ [<ffffffff810ec748>] ? sysfs_write_file+0xd2/0x110
+ [<ffffffff810a84ce>] ? vfs_write+0xad/0x149
+ [<ffffffff810a8a16>] ? sys_write+0x45/0x6e
+ [<ffffffff8100ad6b>] ? system_call_fastpath+0x16/0x1b
 
-	Arnd <><
+
+As a matter of fact, it's triggerred by "/bin/sh /etc/init.d/cpuspeed stop".
+
+Consider below call chain of process cpuspeed:
+store (get lock by lock_policy_rwsem_write) =>
+	﻿store_scaling_governor =>
+		﻿__cpufreq_set_policy =>
+			﻿__cpufreq_governor =>
+				﻿cpufreq_governor_dbs =>
+					dbs_timer_exit =>
+						cancel_delayed_work_sync =>
+							wait_on_cpu_work
+go to sleep.
+
+While thread kondemand is trying to execute the work at do_dbs_timer and
+sleep at lock_policy_rwsem_write, because ﻿cpuspeed got the lock and is
+sleeping now.
+
+The race is cpuspeed get the lock firstly, and kondemand sleeps on the lock
+when trying to process the work. But cpuspeed waits for the work completion.
+
+It seems b14893a62c73af0eca414cfed505b8c09efc613c causes it.
+
+yanmin
+
+
