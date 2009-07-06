@@ -1,108 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZGFRW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbZGFRWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbZGFRW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 13:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZGFRWS
+	id S1753679AbZGFRWs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 13:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZGFRWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 13:22:18 -0400
-Received: from mga02.intel.com ([134.134.136.20]:56610 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751490AbZGFRWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 13:22:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,357,1243839600"; 
-   d="scan'208";a="530521850"
-Subject: Re: cpufreq cleanups - .30 vs .31
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Thomas Renninger <trenn@suse.de>
-Cc: Dave Jones <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <200907061318.20839.trenn@suse.de>
-References: <200907061318.20839.trenn@suse.de>
-Content-Type: text/plain
-Date: Mon, 06 Jul 2009 10:20:25 -0700
-Message-Id: <1246900825.11545.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Jul 2009 13:22:38 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56698 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752757AbZGFRWi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 13:22:38 -0400
+Date: Mon, 6 Jul 2009 13:22:41 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [rfc][patch 1/3] fs: new truncate sequence
+Message-ID: <20090706172241.GA26042@infradead.org>
+References: <20090706165438.GQ2714@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090706165438.GQ2714@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-06 at 04:18 -0700, Thomas Renninger wrote:
-> Hi Dave,
-> 
-> this is about Venki's and Mathieu's recently sent cleanups.
-> I'd like to summarize this to help finding a solution:
-> 
-> IMO Venki's approach (making .governor() always be called with
-> rwsem held) is the cleaner one and this should be the way to
-> go for .31 and future. This better separates locking responsibilities
-> between cpufreq core and governors and brings back "design" into this.
-> 
-> One could argue that for .30 Mathieu's is better, because less
-> intrusive. It's up to Dave in the end, but:
-> [patch 2.6.30 1/4] remove rwsem lock from CPUFREQ_GOV_STOP call (second call 
-> site)
-> should not be the way to go for .31 and I'd vote for Venki's
-> approach concerning locking .governor() against multiple calls (done by
-> rwsem) and governor() vs do_dbs_timer calls (governor's job with a governor
-> specific sem).
-> 
-> So if not find too intrusive, I'd say:
-> Venkatesh's whole series of:
-> [patch 0/4] Take care of cpufreq lockdep issues (take 2)
-> should be seen in .31.
-> 
-> Depending on how intrusive this is seen, Venki's first patch:
-> [patch 1/4] cpufreq: Eliminate the recent lockdep warnings in cpufreq
-> should then go to .30 (after still waiting a bit?)
-> or Mathieu's approach (I'd vote for Venki's to be consistent for .30 and .31).
-> 
-> The one patch from Mathieu:
-> [patch 2.6.30 2/4] CPUFREQ: fix (utter) cpufreq_add_dev mess
-> is a separate, general cleanup which should show up in .31.
-> 
-> 
-> 
-> I still have two patch specific questions:
-> about Mathieu's (it's a minor issue in the error path):
-> [patch 2.6.30 2/4] CPUFREQ: fix (utter) cpufreq_add_dev mess
-> 
-> +                       if (lock_policy_rwsem_write(cpu) < 0) {
-> +                               /* Should not go through policy unlock path */
-> +                               if (cpufreq_driver->exit)
-> +                                       cpufreq_driver->exit(policy);
-> +                               ret = -EBUSY;
-> +                               cpufreq_cpu_put(managed_policy);
-> Shouldn't:
->  cpufreq_cpu_put(managed_policy);
-> be called before:
->  cpufreq_driver->exit(policy);
-> Just in case the driver itself wants to grab the policy of the
-> managed cpu?
-> 
-> 
-> about Venki's:
-> [patch 3/4] cpufreq: Cleanup locking in ondemand governor
-> Isn't it possible to use only one mutex(timer_mutex) to protect do_dbs_timer 
-> against governor start, stop, limit?
-> Then dbs_mutex would only be used to protect against concurrent sysfs access
-> and can be thrown away as soon as ondemand only provides global sysfs files,
-> not per cpu ones.
-> 
+On Mon, Jul 06, 2009 at 06:54:38PM +0200, Nick Piggin wrote:
+> +int inode_truncate_ok(struct inode *inode, loff_t offset)
+> +{
+> +	if (inode->i_size < offset) {
+> +		unsigned long limit;
+> +
+> +		limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
+> +		if (limit != RLIM_INFINITY && offset > limit)
+> +			goto out_sig;
+> +		if (offset > inode->i_sb->s_maxbytes)
+> +			goto out_big;
+> +	} else {
+> +		/*
+> +		 * truncation of in-use swapfiles is disallowed - it would
+> +		 * cause subsequent swapout to scribble on the now-freed
+> +		 * blocks.
+> +		 */
+> +		if (IS_SWAPFILE(inode))
+> +			return -ETXTBSY;
+> +	}
+> +
+> +	return 0;
+> +out_sig:
+> +	send_sig(SIGXFSZ, current, 0);
+> +out_big:
+> +	return -EFBIG;
+> +}
+> +EXPORT_SYMBOL(inode_truncate_ok);
 
-dbs_mutex (or some other global lock) is also needed at the places where
-dbs_enable is changed and used. Yes having dbs_mutex exclusively for
-dbs_tuners makes code cleaner. I would say, making ondemand providing
-global sysfs/debugfs files is a better thing to do sooner.
+This one needs a good kernel doc comment I think.
 
-Thanks,
-Venki
+>  int inode_setattr(struct inode * inode, struct iattr * attr)
+>  {
+>  	unsigned int ia_valid = attr->ia_valid;
+>  
+> -	if (ia_valid & ATTR_SIZE &&
+> -	    attr->ia_size != i_size_read(inode)) {
+> -		int error = vmtruncate(inode, attr->ia_size);
+> -		if (error)
+> -			return error;
+> +	if (ia_valid & ATTR_SIZE) {
+> +		loff_t offset = attr->ia_size;
+> +
+> +		if (offset != inode->i_size) {
+> +			int error;
+> +
+> +			if (inode->i_op->ftruncate) {
+> +				struct file *filp = NULL;
+> +				int open = 0;
+> +
+> +				if (ia_valid & ATTR_FILE)
+> +					filp = attr->ia_file;
+> +				if (ia_valid & ATTR_OPEN)
+> +					open = 1;
+> +				error = inode->i_op->ftruncate(filp, open,
+> +							inode, offset);
+> +			} else
 
+This is layered quite horribly.  The new truncate method should be
+called from notify_change. not inode_setattr which is the default
+implementation for ->setattr.
+
+ftruncate as a name for a method also used for truncate without a file
+is also not so good naming.  I'd also pass down the dentry as some thing
+like cifs want this (requires calling it from notify_change instead of
+inode_setattr, too), and turn the open boolean into a flags value.
+
+Also passing file as the first argument when it's optional is a quite
+ugly calling convention, the fundamental object we operate on is the
+dentry.
+
+> + * truncate_pagecache - unmap mappings "freed" by truncate() syscall
+> + * @inode: inode
+> + * @old: old file offset
+> + * @new: new file offset
+> + *
+> + * inode's new i_size must already be written before truncate_pagecache
+> + * is called.
+> + */
+> +void truncate_pagecache(struct inode * inode, loff_t old, loff_t new)
+> +{
+> +	VM_BUG_ON(inode->i_size != new);
+> +
+> +	if (new < old) {
+> +		struct address_space *mapping = inode->i_mapping;
+> +
+> +#ifdef CONFIG_MMU
+> +		/*
+> +		 * unmap_mapping_range is called twice, first simply for
+> +		 * efficiency so that truncate_inode_pages does fewer
+> +		 * single-page unmaps.  However after this first call, and
+> +		 * before truncate_inode_pages finishes, it is possible for
+> +		 * private pages to be COWed, which remain after
+> +		 * truncate_inode_pages finishes, hence the second
+> +		 * unmap_mapping_range call must be made for correctness.
+> +		 */
+> +		unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+> +		truncate_inode_pages(mapping, new);
+> +		unmap_mapping_range(mapping, new + PAGE_SIZE - 1, 0, 1);
+> +#else
+> +		truncate_inode_pages(mapping, new);
+> +#endif
+> +	}
+> +}
+> +EXPORT_SYMBOL(truncate_pagecache);
+
+unmap_mapping_range is a noop stub for !CONFIG_MMU so we can just use
+the mmu version unconditionally.
+
+> +int truncate_blocks(struct inode *inode, loff_t offset)
+> +{
+> +	if (inode->i_op->ftruncate) /* these guys handle it themselves */
+> +		return 0;
+> +
+> +	return vmtruncate(inode, offset);
+> +}
+> +EXPORT_SYMBOL(truncate_blocks);
+
+Even if this one is temporary it probably needs a small comment
+explaining it
+
+> @@ -1992,9 +1992,12 @@ int block_write_begin(struct file *file,
+>  			 * prepare_write() may have instantiated a few blocks
+>  			 * outside i_size.  Trim these off again. Don't need
+>  			 * i_size_read because we hold i_mutex.
+> +			 *
+> +			 * Filesystems which define ->ftruncate must handle
+> +			 * this themselves.
+>  			 */
+>  			if (pos + len > inode->i_size)
+> -				vmtruncate(inode, inode->i_size);
+> +				truncate_blocks(inode, inode->i_size);
+
+How would they do that?
+
+>  	if (pos + len > inode->i_size)
+> -		vmtruncate(inode, inode->i_size);
+> +		truncate_blocks(inode, inode->i_size);
+
+Same here.
+
+>  		if (end > isize && dio_lock_type == DIO_LOCKING)
+> -			vmtruncate(inode, isize);
+> +			truncate_blocks(inode, isize);
+>  	}
