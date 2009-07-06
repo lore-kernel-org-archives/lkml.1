@@ -1,68 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbZGFBNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbZGFBNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753193AbZGFBNA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 21:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbZGFBMu
+	id S1757392AbZGFBNY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 21:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbZGFBNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 21:12:50 -0400
-Received: from mail-vw0-f202.google.com ([209.85.212.202]:44032 "EHLO
-	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756939AbZGFBMj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 21:12:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OvtJxiYVOzTYv6RjkCBsEzvmypJTMLQ8aJS3+SECz3WB3npCl2brwdtyhI3HMmN56e
-         4PsHgeaCS8IpAUtitZYI/09xnUsE2WmbRVBIsUeedGRgAZoyOX7DL33uwDN41oBMBqiJ
-         NlwLdJL6qSooqRCs3GH7dIquUlEJKCKLjk/Zo=
+	Sun, 5 Jul 2009 21:13:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:40505 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757130AbZGFBNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 21:13:10 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Siarhei Liakh <sliakh.lkml@gmail.com>
+Subject: Re: [PATCH v3] RO/NX protection for loadable kernel modules
+Date: Mon, 6 Jul 2009 10:43:09 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>
+References: <817ecb6f0907051623l46ad93e9uc24d8d61669c938e@mail.gmail.com>
+In-Reply-To: <817ecb6f0907051623l46ad93e9uc24d8d61669c938e@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <4A4DDD54.9030206@free.fr>
-References: <20090703015554.GB5880@cr0.nay.redhat.com>
-	 <20090703051917.GE5880@cr0.nay.redhat.com>
-	 <412e6f7f0907022242r52ad981fyd51c2a55f41ab228@mail.gmail.com>
-	 <20090703071504.GG5880@cr0.nay.redhat.com>
-	 <412e6f7f0907030040v6133badat7058186a01d78f44@mail.gmail.com>
-	 <20090703081655.GH5880@cr0.nay.redhat.com>
-	 <412e6f7f0907030127u3d6806dfo9168600e7c71b241@mail.gmail.com>
-	 <20090703094229.GI5880@cr0.nay.redhat.com>
-	 <412e6f7f0907030259m5556ee2fobbb58d377bce4d17@mail.gmail.com>
-	 <4A4DDD54.9030206@free.fr>
-Date: Mon, 6 Jul 2009 09:12:42 +0800
-Message-ID: <412e6f7f0907051812q4b3d7bcfkff73c75da14a9cf4@mail.gmail.com>
-Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
-From: Changli Gao <xiaosuo@gmail.com>
-To: Albert ARIBAUD <albert.aribaud@free.fr>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907061043.11793.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 3, 2009 at 6:28 PM, Albert ARIBAUD<albert.aribaud@free.fr> wrote:
-> Changli Gao a écrit :
->
->> Yea, in many cases, max fd number must be enlarged. More fds means
->> more memory. Although memory is cheaper today, we have to do our best
->> to save money.
->
-> Sorry for interrupting, but I don't see how pipe could return a single fd,
-> considering there are two (partly) independent ends, each being read (resp.
-> written) in their own time, and an fd has only one "current read/write
-> position" IIUC.
->
-> If the proposal is to have two independent positions (one for reads and one
-> for writes) for a single fd, then I am not sure the gain in the number of
-> fds used is worth the loss in the increased size of the fd structure.
->
-> Am I missing something?
-pipe doesn't support llseek.
+On Mon, 6 Jul 2009 08:53:56 am Siarhei Liakh wrote:
+> This patch is a logical extension of the protection provided by
+> CONFIG_DEBUG_RODATA to LKMs.
 
+Hi Siarhei,
 
--- 
-Regards，
-Changli Gao(xiaosuo@gmail.com)
+   Concept looks good, but needs a bit more de-macroing.
+
+> +/* Modules' sections will be aligned on page boundaries
+> + * to ensure complete separation of code and data */
+> +#ifdef CONFIG_DEBUG_RODATA
+> +#define ALIGN_MODULE_SECTION(SECTION, ALIGNMENT) \
+> +	do { SECTION = ALIGN(SECTION, ALIGNMENT); } while (0)
+> +#else
+> +#define ALIGN_MODULE_SECTION(SECTION, ALIGNMENT) do { ; } while (0)
+> +#endif
+> +
+> +/* Given a virtual address returns 1 if the address is page-aligned,
+> + * 0 otherwise */
+> +#define PAGE_ALIGNED(ADDR) (((unsigned long) ADDR & \
+> +				((1UL << PAGE_SHIFT) - 1UL)) ? \
+> +					(0) : (1))
+> +
+> +/* Given a virtual address returns a virtual page number
+> + * that contains that address */
+> +#define PAGE_NUMBER(ADDR) (((unsigned long) ADDR) >> PAGE_SHIFT)
+> +
+> +/* Given BASE and SIZE this macro calculates the number of pages the
+> + * memory regions occupies */
+> +#define NUMBER_OF_PAGES(BASE, SIZE) ((SIZE > 0) ?	\
+> +		(PAGE_NUMBER(BASE + SIZE - 1) -		\
+> +			 PAGE_NUMBER(BASE) + 1)		\
+> +		: (0UL))
+> +
+> +/* This macro catches a section group with SEC_ID and records it's
+> + * size into SEC_SIZE, aligning it (as well as SIZE) on page boundary
+> + * if necessary */
+> +#define CATCH_MODULE_SECTION(SEC_GROUP, SEC_ID, SEC_SIZE, SIZE)	\
+> +	do {							\
+> +		if (SEC_GROUP == SEC_ID) {			\
+> +			/* align section size to a page */	\
+> +			ALIGN_MODULE_SECTION(SIZE, PAGE_SIZE);	\
+> +			/* set new module section size */	\
+> +			SEC_SIZE = SIZE;			\
+> +		}						\
+> +	} while (0)
+
+This is far clearer open-coded.  As a switch statement:
+
+	switch (m) {
+	case 0: /* executable */
+		mod->core_text_size = debug_align(mod->core_text_size);
+		mod->core_size = mod->core_text_size;
+		break;
+	case 1: /* RO data (executable code + RO data) */
+		mod->core_ro_size = debug_align(mod->core_ro_size);
+		mod->core_size = mod->core_ro_size;
+		break;
+	case 3: /* whole module (executable + RO data + RW data + small alloc) */
+		mod->core_size = debug_align(mod->core_size);
+		break;
+	}
+
+Later, we can create a nice struct to hold the section parts and merge the 
+layout code between init and core loops.
+
+> +/* Generic memory allocation for modules, since
+> + * module_alloc() is platform-specific */
+> +#define generic_module_alloc(size) module_alloc(size)
+> +
+> +/* Free memory returned from generic_module_alloc, since
+> + * module_free() is platform-specific */
+> +void generic_module_free(struct module *mod, void *module_region)
+
+I don't like the gratuitous unused generic_module_alloc, nor the 
+generic_module_free name.   Probably best to implement unset_section_ro_nx() 
+and call it explicitly in the three places needed: two in free_module and one 
+in sys_init_module.
+
+> +/* LKM RO/NX protection: protect module's text/ro-data
+> + * from modification and any data from execution.
+> + * Siarhei Liakh, Xuxian Jiang  */
+> +static void set_section_ro_nx(unsigned long base,
+> +			unsigned long text_size,
+> +			unsigned long ro_size,
+> +			unsigned long total_size)
+
+A void * first arg would make the callers not need to cast: does it make the 
+implementation messier?  (Remember, gcc lets you do arithmetic on void * 
+pointers).
+
+Thanks!
+Rusty.
