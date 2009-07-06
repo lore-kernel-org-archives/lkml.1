@@ -1,99 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZGFOn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbZGFOpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbZGFOn5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 10:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZGFOnu
+	id S1755628AbZGFOpY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 10:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZGFOpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 10:43:50 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:41760 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753349AbZGFOnt (ORCPT
+	Mon, 6 Jul 2009 10:45:10 -0400
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:46227 "EHLO
+	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbZGFOpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 10:43:49 -0400
-Message-ID: <4A520DA6.2040107@petalogix.com>
-Date: Mon, 06 Jul 2009 16:43:50 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Mon, 6 Jul 2009 10:45:09 -0400
+X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Jul 2009 10:45:08 EDT
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KMD6XT-01-FDR-01
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: <hpa@zytor.com>
+CC: <x86@kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [x86, msr]: remove code duplication
+Date: Mon, 6 Jul 2009 16:29:52 +0200
+Message-ID: <1246890592-12256-1-git-send-email-borislav.petkov@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 06 Jul 2009 14:29:57.0529 (UTC) FILETIME=[3CA39890:01C9FE46]
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Paul Mundt <lethal@linux-sh.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>,
-       John Williams <john.williams@petalogix.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Grant Likely <grant.likely@secretlab.ca>, subrata@linux.vnet.ibm.com
-Subject: Re: mmap syscall problem
-References: <4A4DFB77.1080700@petalogix.com> <20090706121455.GA16908@linux-sh.org> <4A51F3F3.6040501@petalogix.com> <200907061616.12220.arnd@arndb.de>
-In-Reply-To: <200907061616.12220.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Monday 06 July 2009, Michal Simek wrote:
->   
->>> Not necessarily, even on platforms that manage aliases in hardware
->>> mappings that violate the aliasing constraints can still result in
->>> undefined behaviour, this really depends more on your cache controller
->>> and MMU than anything else. I notice that microblaze sets SHMLBA to
->>> PAGE_SIZE, you may want to see if this test still breaks after bumping it
->>> up to something like PAGE_SIZE * 4.
->>>   
->>>       
->> Yes, test still break - behavior is the same. I don't have accurate
->> information about MMU unit
->> but I will ask a question about. We are able to turn off cache
->> controller directly in HW.
->>     
->
-> There may still be a problem with data being queued in some write
-> buffers that don't get flushed before reading back from another
-> address.
->
-> What happens in a simple user space program that mmaps the same
-> page to two addresses? Something like
->
-> #include <sys/mman.h>
-> #include <fcntl.h>
-> int main(void)
-> {
-> 	int fd = open("existing-4k-file", O_RDWR);
-> 	char *p1 = mmap(0, 4096, PROT_READ | PROT_WRITE,
-> 				MAP_SHARED, fd, 0);
-> 	char *p2 = mmap(p1 + 4096, 4096, PROT_READ | PROT_WRITE,
-> 				MAP_SHARED | MAP_FIXED, fd, 0);
->
-> 	*p1 = 0xaa; *p2 = 0x55;
->   
-I closed fd too.
-    close(fd);
-> 	return *p1; /* returns 0xaa if broken, 0x55 if correct */
-> }
->   
-# ls -la existing-4k-file
--rw-rw-r--    1 monstr   monstr       4096 Jul  6  2009 existing-4k-file
+Since rdmsr_on_cpus and wrmsr_on_cpus are almost identical, make them
+call into a common __rwmsr_on_cpus helper passing a function pointer arg
+to the actual MSR operation.
 
-# ./test-arnd
-# echo $?
-85
-# dd if=existing-4k-file of=/dev/console count=1 2>/dev/null
-U#
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+---
+ arch/x86/lib/msr.c |   48 ++++++++++++++++++------------------------------
+ 1 files changed, 18 insertions(+), 30 deletions(-)
 
-in file is first char U (0x55) which is IMO correct.
-
-Michal
-
-
-
-> 	Arnd <><
->   
-
-
+diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
+index 1440b9c..20b6df5 100644
+--- a/arch/x86/lib/msr.c
++++ b/arch/x86/lib/msr.c
+@@ -71,14 +71,9 @@ int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+ }
+ EXPORT_SYMBOL(wrmsr_on_cpu);
+ 
+-/* rdmsr on a bunch of CPUs
+- *
+- * @mask:       which CPUs
+- * @msr_no:     which MSR
+- * @msrs:       array of MSR values
+- *
+- */
+-void rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
++static inline void __rwmsr_on_cpus(const cpumask_t *mask, u32 msr_no,
++				   struct msr *msrs,
++				   void (*msr_func) (void *info))
+ {
+ 	struct msr_info rv;
+ 	int this_cpu;
+@@ -95,11 +90,22 @@ void rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
+ 	 * smp_call_function_many has been fixed to not skip it.
+ 	 */
+ 	this_cpu = raw_smp_processor_id();
+-	smp_call_function_single(this_cpu, __rdmsr_on_cpu, &rv, 1);
+-
+-	smp_call_function_many(mask, __rdmsr_on_cpu, &rv, 1);
++	smp_call_function_single(this_cpu, msr_func, &rv, 1);
++	smp_call_function_many(mask, msr_func, &rv, 1);
+ 	preempt_enable();
+ }
++
++/* rdmsr on a bunch of CPUs
++ *
++ * @mask:       which CPUs
++ * @msr_no:     which MSR
++ * @msrs:       array of MSR values
++ *
++ */
++void rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
++{
++	__rwmsr_on_cpus(mask, msr_no, msrs, __rdmsr_on_cpu);
++}
+ EXPORT_SYMBOL(rdmsr_on_cpus);
+ 
+ /*
+@@ -112,25 +118,7 @@ EXPORT_SYMBOL(rdmsr_on_cpus);
+  */
+ void wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
+ {
+-	struct msr_info rv;
+-	int this_cpu;
+-
+-	memset(&rv, 0, sizeof(rv));
+-
+-	rv.off    = cpumask_first(mask);
+-	rv.msrs   = msrs;
+-	rv.msr_no = msr_no;
+-
+-	preempt_disable();
+-	/*
+-	 * FIXME: handle the CPU we're executing on separately for now until
+-	 * smp_call_function_many has been fixed to not skip it.
+-	 */
+-	this_cpu = raw_smp_processor_id();
+-	smp_call_function_single(this_cpu, __wrmsr_on_cpu, &rv, 1);
+-
+-	smp_call_function_many(mask, __wrmsr_on_cpu, &rv, 1);
+-	preempt_enable();
++	__rwmsr_on_cpus(mask, msr_no, msrs, __wrmsr_on_cpu);
+ }
+ EXPORT_SYMBOL(wrmsr_on_cpus);
+ 
 -- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+1.6.3.3
+
 
