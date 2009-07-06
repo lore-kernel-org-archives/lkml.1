@@ -1,176 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZGFIbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757619AbZGFIbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbZGFIbg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZGFIb1
+	id S1757619AbZGFIbu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbZGFIbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:31:27 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:36504 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752721AbZGFIb0 (ORCPT
+	Mon, 6 Jul 2009 04:31:41 -0400
+Received: from smtp.fireflyuk.net ([78.156.72.235]:1537 "EHLO
+	fireflyinternet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753226AbZGFIbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:31:26 -0400
-Date: Mon, 6 Jul 2009 16:31:19 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Michael Guntsche <mike@it-loops.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: Re: BUG: scheduling while atomic
-Message-ID: <20090706083119.GA17782@gondor.apana.org.au>
-References: <23AED400-6DA5-462F-94F0-BEE34AC08A7A@it-loops.com> <20090627140643.7140f6a9@lxorguk.ukuu.org.uk> <33C7D336-F062-47B3-9033-D3DC465F793C@it-loops.com> <20090706074333.GA17276@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090706074333.GA17276@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 6 Jul 2009 04:31:40 -0400
+From: Chris Wilson <chris@chris-wilson.co.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Chris Wilson <chris@chris-wilson.co.uk>,
+       Ben Gamari <bgamari.foss@gmail.com>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] perf tool: Add a trace point event parser.
+Date: Mon,  6 Jul 2009 09:31:34 +0100
+Message-Id: <1246869094-21237-2-git-send-email-chris@chris-wilson.co.uk>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1246869094-21237-1-git-send-email-chris@chris-wilson.co.uk>
+References: <1246869094-21237-1-git-send-email-chris@chris-wilson.co.uk>
+X-Originating-IP: 78.156.66.37
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 03:43:33PM +0800, Herbert Xu wrote:
-> 
-> I think the first backtrace is bogus, this is where the real
-> problem is.  So what see here is that on xmit from the network,
-> PPP will call pty_write from BH context which eventually leads
-> to tty_throttle and the sleep.
+Accept events of the form tp=i915/i915_wait and convert those to the
+ftrace event id by expanding the short name to
+'/sys/kernel/debug/tracing/events/i915/i915_wait/id'. (Substituting the
+real debugfs mount path as appropriate.)
 
-Here's the stupidest possible fix for this, changing the mutex
-to a spin lock.  We should also revert the other commit that
-tried to fix this, a6540f731d506d9e82444cf0020e716613d4c46c as
-those unthrottles are really needed (the pty driver is always
-in the throttled state, so that's why there are no explicit calls
-to throttle).
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+---
+ tools/perf/util/parse-events.c |  133 +++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 131 insertions(+), 2 deletions(-)
 
-tty: Use spin lock instead of mutex for throttling
-
-Commit 38db89799bdf11625a831c5af33938dcb11908b6 (tty: throttling
-race fix) added a mutex to the throttle/unthrottle paths.  This
-broke PPP because the PPP ldisc calls both throttle and unthrottle
-from softirq contexts.
-
-Since any tty device that's been used together with PPP has clearly
-coped with throttling and unthrottling in softirq contexts, we can
-turn the mutex into a spin lock.
-
-The added protection of termios consistency does not appear to be
-needed as it stands.  When it is needed, we'll have to redo the
-locking, or change the throttle/unthrottle implementation that
-needs it.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index a3afa0c..3ee1968 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -2727,6 +2727,7 @@ void initialize_tty_struct(struct tty_struct *tty,
- 	mutex_init(&tty->echo_lock);
- 	spin_lock_init(&tty->read_lock);
- 	spin_lock_init(&tty->ctrl_lock);
-+	spin_lock_init(&tty->throttle_lock);
- 	INIT_LIST_HEAD(&tty->tty_files);
- 	INIT_WORK(&tty->SAK_work, do_SAK_work);
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 5184959..36078a6 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -1,11 +1,12 @@
+-
+-#include "../perf.h"
+ #include "util.h"
++#include "../perf.h"
+ #include "parse-options.h"
+ #include "parse-events.h"
+ #include "exec_cmd.h"
+ #include "string.h"
  
-diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
-index b24f6c6..3b70a4e 100644
---- a/drivers/char/tty_ioctl.c
-+++ b/drivers/char/tty_ioctl.c
-@@ -22,6 +22,7 @@
- #include <linux/bitops.h>
- #include <linux/mutex.h>
- #include <linux/smp_lock.h>
-+#include <linux/spinlock.h>
++#include <sys/mount.h>
++
+ extern char *strcasestr(const char *haystack, const char *needle);
  
- #include <asm/io.h>
- #include <asm/uaccess.h>
-@@ -97,19 +98,18 @@ EXPORT_SYMBOL(tty_driver_flush_buffer);
-  *	@tty: terminal
-  *
-  *	Indicate that a tty should stop transmitting data down the stack.
-- *	Takes the termios mutex to protect against parallel throttle/unthrottle
-- *	and also to ensure the driver can consistently reference its own
-- *	termios data at this point when implementing software flow control.
-+ *	Takes the throttle lock to protect against parallel throttle and
-+ *	unthrottle.
-  */
- 
- void tty_throttle(struct tty_struct *tty)
- {
--	mutex_lock(&tty->termios_mutex);
-+	spin_lock_bh(&tty->throttle_lock);
- 	/* check TTY_THROTTLED first so it indicates our state */
- 	if (!test_and_set_bit(TTY_THROTTLED, &tty->flags) &&
- 	    tty->ops->throttle)
- 		tty->ops->throttle(tty);
--	mutex_unlock(&tty->termios_mutex);
-+	spin_unlock_bh(&tty->throttle_lock);
+ int					nr_counters;
+@@ -339,6 +340,133 @@ parse_numeric_event(const char **strp, struct perf_counter_attr *attr)
+ 	return 0;
  }
- EXPORT_SYMBOL(tty_throttle);
  
-@@ -118,9 +118,8 @@ EXPORT_SYMBOL(tty_throttle);
-  *	@tty: terminal
-  *
-  *	Indicate that a tty may continue transmitting data down the stack.
-- *	Takes the termios mutex to protect against parallel throttle/unthrottle
-- *	and also to ensure the driver can consistently reference its own
-- *	termios data at this point when implementing software flow control.
-+ *	Takes the throttle lock to protect against parallel throttle and
-+ *	unthrottle.
-  *
-  *	Drivers should however remember that the stack can issue a throttle,
-  *	then change flow control method, then unthrottle.
-@@ -128,11 +127,11 @@ EXPORT_SYMBOL(tty_throttle);
- 
- void tty_unthrottle(struct tty_struct *tty)
++/* mini /proc/mounts parser: searching for "^blah /mount/point debugfs" */
++static const char *
++debug_mntpt (void)
++{
++	static char mntpt[4096];
++	FILE *file;
++	size_t line_len;
++	char *line;
++
++	if (mntpt[0])
++		return mntpt;
++
++	file = fopen("/proc/mounts", "r");
++	if (file == NULL)
++		return NULL;
++
++	while (getline(&line, &line_len, file) >= 0) {
++		char *start, *end;
++
++		if (strstr(line, " debugfs ") == NULL)
++			continue;
++
++		start = strchr(line, ' ') + 1;
++		end = strchr(start + 1, ' ');
++		if(end - start > 4095)
++			goto err_file;
++		memcpy(mntpt, start, end-start);
++		break;
++	}
++	free(line);
++	fclose(file);
++
++	if (mntpt[0] == '\0') {
++		if (mount("none", "/sys/kernel/debug", "debugfs", 0, NULL))
++			return NULL;
++
++		strcpy(mntpt, "/sys/kernel/debug");
++	}
++
++	return mntpt;
++
++err_file:
++	free(line);
++	fclose(file);
++	return NULL;
++}
++
++static int
++safe_strcat(char **strp, int *rem, const char *src, int len)
++{
++	if (len < 0)
++		len = strlen(src);
++	if (len >= *rem)
++		return 0;
++
++	memcpy(*strp, src, len);
++	*strp += len;
++	*rem -= len;
++	**strp = '\0';
++
++	return 1;
++}
++
++static int
++parse_tracepoint_event(const char **strp, struct perf_counter_attr *attr)
++{
++	const char *str = *strp;
++	const char *mntpt;
++	char buf[4096], *bufp;
++	int rem;
++	int fd;
++	int ret;
++	char *comma;
++
++	if (strncmp(str, "tp=", 3))
++	    return 0;
++
++	str += 3;
++
++	/* Expand the tracepoint event to:
++	 *   /sys/kernel/debug/tracing/events/<tracepoint>/id
++	 * and then read that file to determine the ftrace event id to
++	 * pass to perf_counters. Substituting the real debugfs mount path
++	 * as appropriate.
++	 */
++
++	mntpt = debug_mntpt();
++	if (mntpt == NULL)
++		return 0;
++
++	bufp = buf, rem = sizeof(buf);
++	if (!safe_strcat(&bufp, &rem, mntpt, -1))
++		return 0;
++	if (!safe_strcat(&bufp, &rem, "/tracing/events/", -1))
++		return 0;
++
++	comma = strchr(str, ',');
++	if (comma) {
++		if (!safe_strcat(&bufp, &rem, str, comma - str))
++			return 0;
++		*strp = comma;
++	} else {
++		if (!safe_strcat(&bufp, &rem, str, -1))
++			return 0;
++		*strp = str + strlen (str);
++	}
++	if (!safe_strcat(&bufp, &rem, "/id", -1))
++		return 0;
++
++	fd = open(buf, O_RDONLY);
++	if (fd == 0)
++		return 0;
++
++	/* We expect to read a string of "integer\n". */
++	ret = read(fd, buf, sizeof(buf));
++	close(fd);
++	if (ret == -1 || ret == sizeof(buf))
++		return 0;
++
++	buf[ret] = '\0';
++
++	attr->config = strtoul(buf, &bufp, 0);
++	attr->type = PERF_TYPE_TRACEPOINT;
++
++	return bufp == buf + ret-1;
++}
++
+ static int
+ parse_event_modifier(const char **strp, struct perf_counter_attr *attr)
  {
--	mutex_lock(&tty->termios_mutex);
-+	spin_lock_bh(&tty->throttle_lock);
- 	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags) &&
- 	    tty->ops->unthrottle)
- 		tty->ops->unthrottle(tty);
--	mutex_unlock(&tty->termios_mutex);
-+	spin_unlock_bh(&tty->throttle_lock);
- }
- EXPORT_SYMBOL(tty_unthrottle);
+@@ -377,6 +505,7 @@ static int parse_event_symbols(const char **str, struct perf_counter_attr *attr)
+ 	if (!(parse_raw_event(str, attr) ||
+ 	      parse_numeric_event(str, attr) ||
+ 	      parse_symbolic_event(str, attr) ||
++	      parse_tracepoint_event(str, attr) ||
+ 	      parse_generic_hw_event(str, attr)))
+ 		return 0;
  
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index 1488d8c..1dc2d6b 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -233,6 +233,7 @@ struct tty_struct {
- 
- 	struct mutex termios_mutex;
- 	spinlock_t ctrl_lock;
-+	spinlock_t throttle_lock;
- 	/* Termios values are protected by the termios mutex */
- 	struct ktermios *termios, *termios_locked;
- 	struct termiox *termiox;	/* May be NULL for unsupported */
-diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
-index 3566129..c068940 100644
---- a/include/linux/tty_driver.h
-+++ b/include/linux/tty_driver.h
-@@ -128,7 +128,7 @@
-  * 	signal that no more characters should be sent to the tty.
-  *
-  *	Optional: Always invoke via tty_throttle(), called under the
-- *	termios lock.
-+ *	throttle lock.
-  * 
-  * void (*unthrottle)(struct tty_struct * tty);
-  *
-@@ -137,7 +137,7 @@
-  * 	overrunning the input buffers of the line disciplines.
-  * 
-  *	Optional: Always invoke via tty_unthrottle(), called under the
-- *	termios lock.
-+ *	throttle lock.
-  *
-  * void (*stop)(struct tty_struct *tty);
-  *
-
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.6.3.3
+
