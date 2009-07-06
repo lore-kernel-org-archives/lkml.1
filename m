@@ -1,73 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbZGFVIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZGFVMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753655AbZGFVIv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 17:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZGFVIm
+	id S1754194AbZGFVMS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 17:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZGFVMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 17:08:42 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:39765 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751855AbZGFVIm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 17:08:42 -0400
-Date: Mon, 6 Jul 2009 23:08:44 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Jamie Lokier <jamie@shareable.org>
-cc: tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <20090706205844.GE13638@shareable.org>
-Message-ID: <alpine.LSU.2.00.0907062304310.31166@fbirervta.pbzchgretzou.qr>
-References: <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr> <19021.26102.80885.330380@samba.org> <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr> <19021.31291.642416.956966@samba.org> <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr>
- <19021.63615.450348.192109@samba.org> <alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr> <19025.63119.656216.431469@samba.org> <alpine.LSU.2.00.0907061932120.20434@fbirervta.pbzchgretzou.qr> <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
- <20090706205844.GE13638@shareable.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 6 Jul 2009 17:12:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42501 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752409AbZGFVMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 17:12:06 -0400
+Date: Mon, 6 Jul 2009 17:11:53 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, a.p.zijlstra@chello.nl,
+       rostedt@goodmis.org, fweisbec@gmail.com
+Message-Id: <cover.1246912068.git.jbaron@redhat.com>
+Subject: [PATCH 0/2] perf_counter: add tracepoint support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Monday 2009-07-06 22:58, Jamie Lokier wrote:
->> On Monday 2009-07-06 20:55, Jan Engelhardt wrote:
->> >>How did things go with your mp3 players?
->> >[...]
->> >As it stands, my two devices always want a valid 8.3 name.
->> 
->> On or about June 26, James Bottomley exchanged these words to Andrew Tridgell:
->> >So the patch has been tested with Vista, Windows 7 and Windows XP
->> 
->> [Test with Windows 98, and 16-bit GDI programs under XP]
->> [3] http://picpaste.de/w98dualnames.png
->> [4] http://picpaste.de/xpwith16bit.png
->> (pics kept for 7 days from now)
->
->Summary of pics, for posterity:
->[3] shows an [...] Question: In Windows 98, is it just the MS-DOS box
->which cannot see some of the filenames, or is the normal file explorer
->affected too?
+hi,
 
-[3] shows an MS-DOS window on a Win98 desktop, having just run the
-"dir" command. In the background is a Win98 explorer window, for
-comparison with the dir command.
-Neither of the two ways of listing the contents of a directory show
-any filenames for <illegal 8.3, long name present> entries as produced
-by tridge's vfat patches.
+The following two patches build on Peter's initial tracepoint perf counter work.
+The first patches enables the kernel side, and the second patch adds support to
+the 'perf' tool itself. The debugfs filesystem needs to be mounted to make this
+work and it is searched in the default location '/sys/kernel/debug'. We can
+add an optional parameter to search for it elsewhere if need be.
 
->[4] shows a old-looking Windows application, presumably 16-bit running
->    on XP, with a File Selection box listing the a:\ drive.  Four
->    files are shown on the a:\ drive in a selection box, but the first
->    of them is completely blank.
+Below, I show the output of 'perf list', and 'perf stat' for a tbench run.
 
-As the filename and the intro text had said..
+thanks,
 
-[4] 16-bit program (Windows 3.x era) running on XP (but probably also
-happens earlier). File dialog shows blank line where an entry has an
-illegal 8.3 name; also as a result of the vfat aptches.
+-Jason
+
+
+> perf list
+
+List of pre-defined events (to be used in -e):
+
+  cpu-cycles OR cycles                     [Hardware event]
+  instructions                             [Hardware event]
+  cache-references                         [Hardware event]
+  cache-misses                             [Hardware event]
+  branch-instructions OR branches          [Hardware event]
+  branch-misses                            [Hardware event]
+  bus-cycles                               [Hardware event]
+
+  cpu-clock                                [Software event]
+  task-clock                               [Software event]
+  page-faults OR faults                    [Software event]
+  minor-faults                             [Software event]
+  major-faults                             [Software event]
+  context-switches OR cs                   [Software event]
+  cpu-migrations OR migrations             [Software event]
+
+  L1-d$-loads                              [Hardware cache event]
+  L1-d$-load-misses                        [Hardware cache event]
+  L1-d$-stores                             [Hardware cache event]
+  L1-d$-store-misses                       [Hardware cache event]
+  L1-d$-prefetches                         [Hardware cache event]
+  L1-d$-prefetch-misses                    [Hardware cache event]
+  L1-i$-loads                              [Hardware cache event]
+  L1-i$-load-misses                        [Hardware cache event]
+  L1-i$-prefetches                         [Hardware cache event]
+  L1-i$-prefetch-misses                    [Hardware cache event]
+  LLC-loads                                [Hardware cache event]
+  LLC-load-misses                          [Hardware cache event]
+  LLC-stores                               [Hardware cache event]
+  LLC-store-misses                         [Hardware cache event]
+  LLC-prefetches                           [Hardware cache event]
+  LLC-prefetch-misses                      [Hardware cache event]
+  dTLB-loads                               [Hardware cache event]
+  dTLB-load-misses                         [Hardware cache event]
+  dTLB-stores                              [Hardware cache event]
+  dTLB-store-misses                        [Hardware cache event]
+  dTLB-prefetches                          [Hardware cache event]
+  dTLB-prefetch-misses                     [Hardware cache event]
+  iTLB-loads                               [Hardware cache event]
+  iTLB-load-misses                         [Hardware cache event]
+  branch-loads                             [Hardware cache event]
+  branch-load-misses                       [Hardware cache event]
+
+  rNNN                                     [raw hardware event descriptor]
+
+  skb:kfree_skb                                [Tracepoint event]
+  block:block_rq_abort                           [Tracepoint event]
+  block:block_rq_insert                          [Tracepoint event]
+  block:block_rq_issue                           [Tracepoint event]
+  block:block_rq_requeue                         [Tracepoint event]
+  block:block_rq_complete                        [Tracepoint event]
+  block:block_bio_bounce                         [Tracepoint event]
+  block:block_bio_complete                       [Tracepoint event]
+  block:block_bio_backmerge                      [Tracepoint event]
+  block:block_bio_frontmerge                     [Tracepoint event]
+  block:block_bio_queue                          [Tracepoint event]
+  block:block_getrq                              [Tracepoint event]
+  block:block_sleeprq                            [Tracepoint event]
+  block:block_plug                               [Tracepoint event]
+  block:block_unplug_timer                       [Tracepoint event]
+  block:block_unplug_io                          [Tracepoint event]
+  block:block_split                              [Tracepoint event]
+  block:block_remap                              [Tracepoint event]
+  kmem:kmalloc                                  [Tracepoint event]
+  kmem:kmem_cache_alloc                         [Tracepoint event]
+  kmem:kmalloc_node                             [Tracepoint event]
+  kmem:kmem_cache_alloc_node                    [Tracepoint event]
+  kmem:kfree                                    [Tracepoint event]
+  kmem:kmem_cache_free                          [Tracepoint event]
+  ftrace:kmem_free                                [Tracepoint event]
+  ftrace:kmem_alloc                               [Tracepoint event]
+  ftrace:power                                    [Tracepoint event]
+  ftrace:hw_branch                                [Tracepoint event]
+  ftrace:branch                                   [Tracepoint event]
+  ftrace:print                                    [Tracepoint event]
+  ftrace:bprint                                   [Tracepoint event]
+  ftrace:user_stack                               [Tracepoint event]
+  ftrace:kernel_stack                             [Tracepoint event]
+  ftrace:special                                  [Tracepoint event]
+  ftrace:context_switch                           [Tracepoint event]
+  ftrace:wakeup                                   [Tracepoint event]
+  ftrace:funcgraph_exit                           [Tracepoint event]
+  ftrace:funcgraph_entry                          [Tracepoint event]
+  ftrace:function                                 [Tracepoint event]
+  workqueue:workqueue_insertion                      [Tracepoint event]
+  workqueue:workqueue_execution                      [Tracepoint event]
+  workqueue:workqueue_creation                       [Tracepoint event]
+  workqueue:workqueue_destruction                    [Tracepoint event]
+  irq:irq_handler_entry                        [Tracepoint event]
+  irq:irq_handler_exit                         [Tracepoint event]
+  irq:softirq_entry                            [Tracepoint event]
+  irq:softirq_exit                             [Tracepoint event]
+  sched:sched_kthread_stop                       [Tracepoint event]
+  sched:sched_kthread_stop_ret                   [Tracepoint event]
+  sched:sched_wait_task                          [Tracepoint event]
+  sched:sched_wakeup                             [Tracepoint event]
+  sched:sched_wakeup_new                         [Tracepoint event]
+  sched:sched_switch                             [Tracepoint event]
+  sched:sched_migrate_task                       [Tracepoint event]
+  sched:sched_process_free                       [Tracepoint event]
+  sched:sched_process_exit                       [Tracepoint event]
+  sched:sched_process_wait                       [Tracepoint event]
+  sched:sched_process_fork                       [Tracepoint event]
+  sched:sched_signal_send                        [Tracepoint event]
+
+
+>  perf stat  -a -e sched:sched_switch -e sched:sched_wakeup -e irq:irq_handler_entry tbench 4
+
+ Performance counter stats for 'tbench 4':
+
+      194658693  sched:sched_switch      
+       97479295  sched:sched_wakeup      
+           9122  irq:irq_handler_entry   
+
+  720.171439729  seconds time elapsed
+
+  
+
+  -add kernel tracepoint support
+  -add support for tracepoints to the perf tool
+
+ init/Kconfig                   |    2 +-
+ kernel/perf_counter.c          |    6 +-
+ tools/perf/util/parse-events.c |  195 +++++++++++++++++++++++++++++++++++++++-
+ tools/perf/util/util.h         |    2 +
+ 4 files changed, 200 insertions(+), 5 deletions(-)
+
