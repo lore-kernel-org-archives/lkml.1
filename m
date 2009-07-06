@@ -1,65 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbZGFI2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZGFIbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbZGFI2d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbZGFI2Y
+	id S1755211AbZGFIbg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbZGFIb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:28:24 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58435 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbZGFI2Y (ORCPT
+	Mon, 6 Jul 2009 04:31:27 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:36504 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752721AbZGFIb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:28:24 -0400
-Date: Mon, 6 Jul 2009 10:28:27 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
-       Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices
-Message-ID: <20090706082827.GA26142@atrey.karlin.mff.cuni.cz>
-References: <200906140023.36147.rjw@sisk.pl> <200906150057.32424.rjw@sisk.pl> <20090624150400.GG1784@ucw.cz> <200906272352.42022.rjw@sisk.pl>
+	Mon, 6 Jul 2009 04:31:26 -0400
+Date: Mon, 6 Jul 2009 16:31:19 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Michael Guntsche <mike@it-loops.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: BUG: scheduling while atomic
+Message-ID: <20090706083119.GA17782@gondor.apana.org.au>
+References: <23AED400-6DA5-462F-94F0-BEE34AC08A7A@it-loops.com> <20090627140643.7140f6a9@lxorguk.ukuu.org.uk> <33C7D336-F062-47B3-9033-D3DC465F793C@it-loops.com> <20090706074333.GA17276@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906272352.42022.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090706074333.GA17276@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wednesday 24 June 2009, Pavel Machek wrote:
-> > Hi!
-> > 
-> > 
-> > > +2. Run-time PM Helper Functions and Device Fields
-> > > +
-> > > +The following helper functions are defined in drivers/base/power/runtime.c
-> > > +and include/linux/pm_runtime.h:
-> > > +
-> > > +* void pm_runtime_init(struct device *dev);
-> > > +* void pm_runtime_enable(struct device *dev);
-> > > +* void pm_runtime_disable(struct device *dev);
-> > > +* int pm_runtime_suspend(struct device *dev);
-> > > +* void pm_request_suspend(struct device *dev, unsigned long delay);
-> > > +* int pm_runtime_resume(struct device *dev);
-> > > +* void pm_request_resume(struct device *dev);
-> > > +* void pm_cancel_runtime_suspend(struct device *dev);
-> > > +* void pm_cancel_runtime_resume(struct device *dev);
-> > > +* void pm_suspend_check_children(struct device *dev, bool enable);
-> > 
-> > Those *s look confusingly like pointers. Remove them?
+On Mon, Jul 06, 2009 at 03:43:33PM +0800, Herbert Xu wrote:
 > 
-> From the doc?  OK, I can use another character. :-)
+> I think the first backtrace is bogus, this is where the real
+> problem is.  So what see here is that on xmit from the network,
+> PPP will call pty_write from BH context which eventually leads
+> to tty_throttle and the sleep.
 
-Yes. I suggest # :-)
+Here's the stupidest possible fix for this, changing the mutex
+to a spin lock.  We should also revert the other commit that
+tried to fix this, a6540f731d506d9e82444cf0020e716613d4c46c as
+those unthrottles are really needed (the pty driver is always
+in the throttled state, so that's why there are no explicit calls
+to throttle).
 
-> 
-> Best,
-> Rafael
+tty: Use spin lock instead of mutex for throttling
 
+Commit 38db89799bdf11625a831c5af33938dcb11908b6 (tty: throttling
+race fix) added a mutex to the throttle/unthrottle paths.  This
+broke PPP because the PPP ldisc calls both throttle and unthrottle
+from softirq contexts.
+
+Since any tty device that's been used together with PPP has clearly
+coped with throttling and unthrottling in softirq contexts, we can
+turn the mutex into a spin lock.
+
+The added protection of termios consistency does not appear to be
+needed as it stands.  When it is needed, we'll have to redo the
+locking, or change the throttle/unthrottle implementation that
+needs it.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index a3afa0c..3ee1968 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -2727,6 +2727,7 @@ void initialize_tty_struct(struct tty_struct *tty,
+ 	mutex_init(&tty->echo_lock);
+ 	spin_lock_init(&tty->read_lock);
+ 	spin_lock_init(&tty->ctrl_lock);
++	spin_lock_init(&tty->throttle_lock);
+ 	INIT_LIST_HEAD(&tty->tty_files);
+ 	INIT_WORK(&tty->SAK_work, do_SAK_work);
+ 
+diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+index b24f6c6..3b70a4e 100644
+--- a/drivers/char/tty_ioctl.c
++++ b/drivers/char/tty_ioctl.c
+@@ -22,6 +22,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mutex.h>
+ #include <linux/smp_lock.h>
++#include <linux/spinlock.h>
+ 
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+@@ -97,19 +98,18 @@ EXPORT_SYMBOL(tty_driver_flush_buffer);
+  *	@tty: terminal
+  *
+  *	Indicate that a tty should stop transmitting data down the stack.
+- *	Takes the termios mutex to protect against parallel throttle/unthrottle
+- *	and also to ensure the driver can consistently reference its own
+- *	termios data at this point when implementing software flow control.
++ *	Takes the throttle lock to protect against parallel throttle and
++ *	unthrottle.
+  */
+ 
+ void tty_throttle(struct tty_struct *tty)
+ {
+-	mutex_lock(&tty->termios_mutex);
++	spin_lock_bh(&tty->throttle_lock);
+ 	/* check TTY_THROTTLED first so it indicates our state */
+ 	if (!test_and_set_bit(TTY_THROTTLED, &tty->flags) &&
+ 	    tty->ops->throttle)
+ 		tty->ops->throttle(tty);
+-	mutex_unlock(&tty->termios_mutex);
++	spin_unlock_bh(&tty->throttle_lock);
+ }
+ EXPORT_SYMBOL(tty_throttle);
+ 
+@@ -118,9 +118,8 @@ EXPORT_SYMBOL(tty_throttle);
+  *	@tty: terminal
+  *
+  *	Indicate that a tty may continue transmitting data down the stack.
+- *	Takes the termios mutex to protect against parallel throttle/unthrottle
+- *	and also to ensure the driver can consistently reference its own
+- *	termios data at this point when implementing software flow control.
++ *	Takes the throttle lock to protect against parallel throttle and
++ *	unthrottle.
+  *
+  *	Drivers should however remember that the stack can issue a throttle,
+  *	then change flow control method, then unthrottle.
+@@ -128,11 +127,11 @@ EXPORT_SYMBOL(tty_throttle);
+ 
+ void tty_unthrottle(struct tty_struct *tty)
+ {
+-	mutex_lock(&tty->termios_mutex);
++	spin_lock_bh(&tty->throttle_lock);
+ 	if (test_and_clear_bit(TTY_THROTTLED, &tty->flags) &&
+ 	    tty->ops->unthrottle)
+ 		tty->ops->unthrottle(tty);
+-	mutex_unlock(&tty->termios_mutex);
++	spin_unlock_bh(&tty->throttle_lock);
+ }
+ EXPORT_SYMBOL(tty_unthrottle);
+ 
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 1488d8c..1dc2d6b 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -233,6 +233,7 @@ struct tty_struct {
+ 
+ 	struct mutex termios_mutex;
+ 	spinlock_t ctrl_lock;
++	spinlock_t throttle_lock;
+ 	/* Termios values are protected by the termios mutex */
+ 	struct ktermios *termios, *termios_locked;
+ 	struct termiox *termiox;	/* May be NULL for unsupported */
+diff --git a/include/linux/tty_driver.h b/include/linux/tty_driver.h
+index 3566129..c068940 100644
+--- a/include/linux/tty_driver.h
++++ b/include/linux/tty_driver.h
+@@ -128,7 +128,7 @@
+  * 	signal that no more characters should be sent to the tty.
+  *
+  *	Optional: Always invoke via tty_throttle(), called under the
+- *	termios lock.
++ *	throttle lock.
+  * 
+  * void (*unthrottle)(struct tty_struct * tty);
+  *
+@@ -137,7 +137,7 @@
+  * 	overrunning the input buffers of the line disciplines.
+  * 
+  *	Optional: Always invoke via tty_unthrottle(), called under the
+- *	termios lock.
++ *	throttle lock.
+  *
+  * void (*stop)(struct tty_struct *tty);
+  *
+
+Cheers,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
