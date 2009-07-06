@@ -1,108 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZGFTZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbZGFT3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbZGFTZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 15:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZGFTZt
+	id S1754442AbZGFT3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 15:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbZGFT3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 15:25:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43352 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753062AbZGFTZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 15:25:48 -0400
-Message-ID: <4A525042.5030702@redhat.com>
-Date: Mon, 06 Jul 2009 15:28:02 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 6 Jul 2009 15:29:05 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:46440 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084AbZGFT3E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 15:29:04 -0400
+From: Christian Lamparter <chunkeey@web.de>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] p54: Fix regression in 2.6.31-rcX since commit a1091aa - sleeping function called from invalid context
+Date: Mon, 6 Jul 2009 21:19:25 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc1-wl; KDE/4.2.4; x86_64; ; )
+Cc: Larry.Finger@lwfinger.net, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <4a524b55.wIWqgs5uHs2CpdJy%Larry.Finger@lwfinger.net> <20090706.121429.36217952.davem@davemloft.net>
+In-Reply-To: <20090706.121429.36217952.davem@davemloft.net>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Christoph Hellwig <hch@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH -tip -v10 5/7] x86: add pt_regs register and stack access
- APIs
-References: <20090701010838.32547.62843.stgit@localhost.localdomain>	<20090701010911.32547.1313.stgit@localhost.localdomain> <871votop6a.fsf@basil.nowhere.org>
-In-Reply-To: <871votop6a.fsf@basil.nowhere.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907062119.25642.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX18QOUiLhQteDwHwsH3D6jWMDMrQWBA84nOmlWgq
+	IjDPklc5sUu1UVo6dPwy5mIhC8XfguZHQseKOdFLdin8IzG87F
+	+pXHEF/tY=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Masami Hiramatsu <mhiramat@redhat.com> writes:
+On Monday 06 July 2009 21:14:29 David Miller wrote:
+> From: Larry Finger <Larry.Finger@lwfinger.net>
+> Date: Mon, 06 Jul 2009 14:07:01 -0500
 > 
->> Add following APIs for accessing registers and stack entries from pt_regs.
+> > Beginning with commit a1091aae19b1d9c85d91c86915a611387f67a26b entitled
+> > "p54: Use SKB list handling helpers instead of by-hand code.", the following
+> > appears in my logs whenever I try to use my p54usb wireless device:
+> > 
+> > BUG: sleeping function called from invalid context at arch/x86/mm/fault.c:1085
 > 
-> You forgot to state who calls these functions/why are they added?
-> Who only has strings for registers?
-
-Oh, yes. This patch is needed for kprobes based event tracer on ftrace.
-Some other debugging tools might be able to use it.
-
-> I can see the point of having a function for nth argument though,
-> that's useful.
+> Thanks for tracking this down Larry.  I'll have a closer look.
 > 
->> +static inline unsigned long regs_get_argument_nth(struct pt_regs *regs,
->> +						  unsigned n)
->> +{
->> +	if (n < NR_REGPARMS) {
->> +		switch (n) {
->> +		case 0:
->> +			return regs->ax;
->> +		case 1:
->> +			return regs->dx;
->> +		case 2:
->> +			return regs->cx;
-> 
-> 
-> [....]
-> 
-> That could be done shorter with a offsetof table.
-> 
->> +	if (n < NR_REGPARMS) {
->> +		switch (n) {
->> +		case 0:
->> +			return regs->di;
->> +		case 1:
->> +			return regs->si;
->> +		case 2:
->> +			return regs->dx;
->> +		case 3:
->> +			return regs->cx;
->> +		case 4:
->> +			return regs->r8;
->> +		case 5:
->> +			return regs->r9;
-> 
-> and that too.
+> If I can't figure it out quickly I'll just simply revert.
+hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+[2.6.31] p54: band-aid to restore driver functionality
+http://patchwork.ozlabs.org/patch/28918/
 
-I'm not so sure about your idea.
-Would you mean below code?
+in case someone missed it.
 
-int offs_table[NR_REGPARMS] = {
-	[0] = offsetof(struct pt_regs, di),
-	...
-};
-if (n < NR_REGPARMS)
-	return *((unsigned long *)regs + offs_table[n]);
-
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Regards,
+	Chr
