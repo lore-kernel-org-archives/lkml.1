@@ -1,199 +1,416 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbZGFBm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbZGFCAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757449AbZGFBm5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 21:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbZGFBmu
+	id S1757180AbZGFCAM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 22:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZGFB77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 21:42:50 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:40004 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753645AbZGFBmu (ORCPT
+	Sun, 5 Jul 2009 21:59:59 -0400
+Received: from mail-ew0-f211.google.com ([209.85.219.211]:42057 "EHLO
+	mail-ew0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752126AbZGFB76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 21:42:50 -0400
+	Sun, 5 Jul 2009 21:59:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=CeQQDsVN4ZS68UEq6thk+VbHIhcb+n7wWbGzd92oyy2kIsLjanvJEGv7nafwcUIRNE
-         rpQR4hpSqP1SFYS1pxN9Y6BvGxwOS2uzR5rRoSFpFIjaOac9jfdkT5MohCaS9OtOmgLl
-         NWCCS5bDvuNusW4MlVRDhKcXzbS/ed+NRJtwA=
-Date: Mon, 6 Jul 2009 09:44:53 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.31-rc2] hitting lockdep limits...
-Message-ID: <20090706014453.GA6045@cr0.nay.redhat.com>
-References: <6278d2220907051119n7f27fff5u2b19a404a7544e82@mail.gmail.com>
+        b=ZvuwRDgbfsSpegx3I3bXrsV6ByNWl/O/vvdL5fjd3ucNhPl1ySIKvMadmOmKqPG5vM
+         a0Oe3lFJYeG6FT+5UjmYnTMHEyIfbpfVHM+5x0sNeLgf3FF39AaalLzWmikUdEYHleH4
+         hiqUK0g0YLa3ATr0oluyE1ScyomCEVGY8ml2U=
+Date: Mon, 6 Jul 2009 03:59:57 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH -tip -v10 6/7] tracing: ftrace dynamic
+	ftrace_event_call support
+Message-ID: <20090706015955.GC20897@nowhere>
+References: <20090701010838.32547.62843.stgit@localhost.localdomain> <20090701010917.32547.17150.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6278d2220907051119n7f27fff5u2b19a404a7544e82@mail.gmail.com>
+In-Reply-To: <20090701010917.32547.17150.stgit@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 07:19:34PM +0100, Daniel J Blueman wrote:
->Running 2.6.31-rc2, lockdep hits it's 2^18 stack trace limit [1],
->giving a warning [2]. It's clear the stacktrace here has no connection
->to the root problem.
->
->Nothing jumps out of the lockdep /proc files for what's eating up the
->limit - what's best to check for?
+On Tue, Jun 30, 2009 at 09:09:17PM -0400, Masami Hiramatsu wrote:
+> Add dynamic ftrace_event_call support to ftrace. Trace engines can adds new
+> ftrace_event_call to ftrace on the fly. Each operator functions of the call
+> takes a ftrace_event_call data structure as an argument, because these
+> functions may be shared among several ftrace_event_calls.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Tom Zanussi <tzanussi@gmail.com>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
 
 
-Hello,
 
-Joao reported the same problem some days ago, I think Peter
-will think about this.
+Looks good too.
 
->
->Thanks,
->  Daniel
->
->--- [1]
->
-># cat lockdep_stats
-> lock-classes:                         2034 [max: 8191]
-> direct dependencies:                  8142 [max: 16384]
-> indirect dependencies:               41755
-> all direct dependencies:            886855
-> dependency chains:                    7094 [max: 32768]
-> dependency chain hlocks:             18066 [max: 163840]
-> in-hardirq chains:                    1477
-> in-softirq chains:                     617
-> in-process chains:                    4221
-> stack-trace entries:                262144 [max: 262144]
-> combined max dependencies:      3856391688
-> hardirq-safe locks:                   1063
-> hardirq-unsafe locks:                  407
-> softirq-safe locks:                   1088
-> softirq-unsafe locks:                  366
-> irq-safe locks:                       1096
-> irq-unsafe locks:                      407
-> hardirq-read-safe locks:                 0
-> hardirq-read-unsafe locks:              47
-> softirq-read-safe locks:                 0
-> softirq-read-unsafe locks:              47
-> irq-read-safe locks:                     0
-> irq-read-unsafe locks:                  47
-> uncategorized locks:                   107
-> unused locks:                            0
-> max locking depth:                       9
-> max recursion depth:                     9
-> chain lookup misses:                  7094
-> chain lookup hits:                 5316747
-> cyclic checks:                       59293
-> cyclic-check recursions:             39761
-> find-mask forwards checks:           16333
-> find-mask forwards recursions:        5897
-> find-mask backwards checks:         305195
-> find-mask backwards recursions:     363516
-> hardirq on events:                 6449896
-> hardirq off events:                6449901
-> redundant hardirq ons:                   0
-> redundant hardirq offs:            6903417
-> softirq on events:                   22975
-> softirq off events:                  23003
-> redundant softirq ons:                   0
-> redundant softirq offs:                  0
-> debug_locks:                             0
->
->--- [2]
->
->BUG: MAX_STACK_TRACE_ENTRIES too low!
->
->turning off the locking correctness validator.
->
->Pid: 2677, comm: rpc.statd Not tainted 2.6.31-rc2-272c #1
->
->Call Trace:
->
-> [<ffffffff8101ad9f>] ? save_stack_trace+0x2f/0x50
->
-> [<ffffffff8109c4be>] save_trace+0xbe/0xd0
->
-> [<ffffffff8109c528>] add_lock_to_list+0x58/0xf0
->
-> [<ffffffff81114d6b>] ? get_page_from_freelist+0x4db/0xa70
->
-> [<ffffffff810a0870>] __lock_acquire+0xe40/0x1250
->
-> [<ffffffff810a0d9e>] lock_acquire+0x11e/0x170
->
-> [<ffffffff81114d6b>] ? get_page_from_freelist+0x4db/0xa70
->
-> [<ffffffff81695110>] _spin_lock_irqsave+0x60/0xa0
->
-> [<ffffffff81114d6b>] ? get_page_from_freelist+0x4db/0xa70
->
-> [<ffffffff81114d6b>] get_page_from_freelist+0x4db/0xa70
->
-> [<ffffffff8111556b>] __alloc_pages_nodemask+0x26b/0x880
->
-> [<ffffffff81143bec>] alloc_pages_current+0x8c/0xe0
->
-> [<ffffffff8114a922>] new_slab+0x382/0x390
->
-> [<ffffffff8114c2d3>] __slab_alloc+0x203/0x6d0
->
-> [<ffffffff815a7dce>] ? neigh_create+0x7e/0x690
->
-> [<ffffffff815a7dce>] ? neigh_create+0x7e/0x690
->
-> [<ffffffff8114d119>] kmem_cache_alloc+0x269/0x280
->
-> [<ffffffff81071c69>] ? local_bh_enable_ip+0x119/0x1e0
->
-> [<ffffffff815a7dce>] neigh_create+0x7e/0x690
->
-> [<ffffffff81694cee>] ? _read_unlock_bh+0x3e/0x50
->
-> [<ffffffff815a5a69>] ? neigh_lookup+0x179/0x190
->
-> [<ffffffff81608dca>] arp_bind_neighbour+0xca/0xd0
->
-> [<ffffffff815d9451>] rt_intern_hash+0x141/0x570
->
-> [<ffffffff8109efbd>] ? trace_hardirqs_on+0xd/0x10
->
-> [<ffffffff815dbcb7>] __ip_route_output_key+0x6b7/0xbc0
->
-> [<ffffffff816990a2>] ? sub_preempt_count+0x142/0x150
->
-> [<ffffffff815dc1e1>] ip_route_output_flow+0x21/0x70
->
-> [<ffffffff816077e4>] udp_sendmsg+0x7c4/0x940
->
-> [<ffffffff81322642>] ? debug_smp_processor_id+0x42/0x120
->
-> [<ffffffff8160fb6a>] inet_sendmsg+0x4a/0x90
->
-> [<ffffffff81587da4>] sock_sendmsg+0xe4/0x110
->
-> [<ffffffff81086ea0>] ? autoremove_wake_function+0x0/0x40
->
-> [<ffffffff8109fd08>] ? __lock_acquire+0x2d8/0x1250
->
-> [<ffffffff810cd041>] ? audit_sockaddr+0x51/0x110
->
-> [<ffffffff8158852c>] ? move_addr_to_kernel+0x5c/0x60
->
-> [<ffffffff81588c0f>] sys_sendto+0x11f/0x190
->
-> [<ffffffff8100d039>] ? retint_swapgs+0x13/0x1b
->
-> [<ffffffff8109ef4d>] ? trace_hardirqs_on_caller+0x17d/0x1e0
->
-> [<ffffffff81694a9e>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->
-> [<ffffffff8100c4f2>] system_call_fastpath+0x16/0x1b
->
->-- 
->Daniel J Blueman
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+
+
+> ---
+> 
+>  include/linux/ftrace_event.h |   13 +++++---
+>  include/trace/ftrace.h       |   22 +++++++------
+>  kernel/trace/trace_events.c  |   70 ++++++++++++++++++++++++++++++++----------
+>  kernel/trace/trace_export.c  |   27 ++++++++--------
+>  4 files changed, 85 insertions(+), 47 deletions(-)
+> 
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index 5c093ff..f7733b6 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -108,12 +108,13 @@ struct ftrace_event_call {
+>  	struct dentry		*dir;
+>  	struct trace_event	*event;
+>  	int			enabled;
+> -	int			(*regfunc)(void);
+> -	void			(*unregfunc)(void);
+> +	int			(*regfunc)(struct ftrace_event_call *);
+> +	void			(*unregfunc)(struct ftrace_event_call *);
+>  	int			id;
+> -	int			(*raw_init)(void);
+> -	int			(*show_format)(struct trace_seq *s);
+> -	int			(*define_fields)(void);
+> +	int			(*raw_init)(struct ftrace_event_call *);
+> +	int			(*show_format)(struct ftrace_event_call *,
+> +					       struct trace_seq *);
+> +	int			(*define_fields)(struct ftrace_event_call *);
+>  	struct list_head	fields;
+>  	int			filter_active;
+>  	void			*filter;
+> @@ -138,6 +139,8 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+>  
+>  extern int trace_define_field(struct ftrace_event_call *call, char *type,
+>  			      char *name, int offset, int size, int is_signed);
+> +extern int trace_add_event_call(struct ftrace_event_call *call);
+> +extern void trace_remove_event_call(struct ftrace_event_call *call);
+>  
+>  #define is_signed_type(type)	(((type)(-1)) < 0)
+>  
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index 1867553..d696580 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -147,7 +147,8 @@
+>  #undef TRACE_EVENT
+>  #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+>  static int								\
+> -ftrace_format_##call(struct trace_seq *s)				\
+> +ftrace_format_##call(struct ftrace_event_call *event_call,		\
+> +		     struct trace_seq *s)				\
+>  {									\
+>  	struct ftrace_raw_##call field __attribute__((unused));		\
+>  	int ret = 0;							\
+> @@ -289,10 +290,9 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+>  #undef TRACE_EVENT
+>  #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+>  int									\
+> -ftrace_define_fields_##call(void)					\
+> +ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+>  {									\
+>  	struct ftrace_raw_##call field;					\
+> -	struct ftrace_event_call *event_call = &event_##call;		\
+>  	int ret;							\
+>  									\
+>  	__common_field(int, type, 1);					\
+> @@ -355,7 +355,7 @@ static inline int ftrace_get_offsets_##call(				\
+>   *	event_trace_printk(_RET_IP_, "<call>: " <fmt>);
+>   * }
+>   *
+> - * static int ftrace_reg_event_<call>(void)
+> + * static int ftrace_reg_event_<call>(struct ftrace_event_call *unused)
+>   * {
+>   *	int ret;
+>   *
+> @@ -366,7 +366,7 @@ static inline int ftrace_get_offsets_##call(				\
+>   *	return ret;
+>   * }
+>   *
+> - * static void ftrace_unreg_event_<call>(void)
+> + * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+>   * {
+>   *	unregister_trace_<call>(ftrace_event_<call>);
+>   * }
+> @@ -399,7 +399,7 @@ static inline int ftrace_get_offsets_##call(				\
+>   *	trace_current_buffer_unlock_commit(event, irq_flags, pc);
+>   * }
+>   *
+> - * static int ftrace_raw_reg_event_<call>(void)
+> + * static int ftrace_raw_reg_event_<call>(struct ftrace_event_call *unused)
+>   * {
+>   *	int ret;
+>   *
+> @@ -410,7 +410,7 @@ static inline int ftrace_get_offsets_##call(				\
+>   *	return ret;
+>   * }
+>   *
+> - * static void ftrace_unreg_event_<call>(void)
+> + * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+>   * {
+>   *	unregister_trace_<call>(ftrace_raw_event_<call>);
+>   * }
+> @@ -419,7 +419,7 @@ static inline int ftrace_get_offsets_##call(				\
+>   *	.trace			= ftrace_raw_output_<call>, <-- stage 2
+>   * };
+>   *
+> - * static int ftrace_raw_init_event_<call>(void)
+> + * static int ftrace_raw_init_event_<call>(struct ftrace_event_call *unused)
+>   * {
+>   *	int id;
+>   *
+> @@ -537,7 +537,7 @@ static void ftrace_raw_event_##call(proto)				\
+>  		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+>  }									\
+>  									\
+> -static int ftrace_raw_reg_event_##call(void)				\
+> +static int ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)\
+>  {									\
+>  	int ret;							\
+>  									\
+> @@ -548,7 +548,7 @@ static int ftrace_raw_reg_event_##call(void)				\
+>  	return ret;							\
+>  }									\
+>  									\
+> -static void ftrace_raw_unreg_event_##call(void)				\
+> +static void ftrace_raw_unreg_event_##call(struct ftrace_event_call *unused)\
+>  {									\
+>  	unregister_trace_##call(ftrace_raw_event_##call);		\
+>  }									\
+> @@ -557,7 +557,7 @@ static struct trace_event ftrace_event_type_##call = {			\
+>  	.trace			= ftrace_raw_output_##call,		\
+>  };									\
+>  									\
+> -static int ftrace_raw_init_event_##call(void)				\
+> +static int ftrace_raw_init_event_##call(struct ftrace_event_call *unused)\
+>  {									\
+>  	int id;								\
+>  									\
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index 53c8fd3..94ff41e 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -60,9 +60,7 @@ err:
+>  }
+>  EXPORT_SYMBOL_GPL(trace_define_field);
+>  
+> -#ifdef CONFIG_MODULES
+> -
+> -static void trace_destroy_fields(struct ftrace_event_call *call)
+> +void trace_destroy_fields(struct ftrace_event_call *call)
+>  {
+>  	struct ftrace_event_field *field, *next;
+>  
+> @@ -74,8 +72,6 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
+>  	}
+>  }
+>  
+> -#endif /* CONFIG_MODULES */
+> -
+>  static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+>  					int enable)
+>  {
+> @@ -84,14 +80,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+>  		if (call->enabled) {
+>  			call->enabled = 0;
+>  			tracing_stop_cmdline_record();
+> -			call->unregfunc();
+> +			call->unregfunc(call);
+>  		}
+>  		break;
+>  	case 1:
+>  		if (!call->enabled) {
+>  			call->enabled = 1;
+>  			tracing_start_cmdline_record();
+> -			call->regfunc();
+> +			call->regfunc(call);
+>  		}
+>  		break;
+>  	}
+> @@ -574,7 +570,7 @@ event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
+>  	trace_seq_printf(s, "format:\n");
+>  	trace_write_header(s);
+>  
+> -	r = call->show_format(s);
+> +	r = call->show_format(call, s);
+>  	if (!r) {
+>  		/*
+>  		 * ug!  The format output is bigger than a PAGE!!
+> @@ -921,7 +917,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+>  		d_events = event_subsystem_dir(call->system, d_events);
+>  
+>  	if (call->raw_init) {
+> -		ret = call->raw_init();
+> +		ret = call->raw_init(call);
+>  		if (ret < 0) {
+>  			pr_warning("Could not initialize trace point"
+>  				   " events/%s\n", call->name);
+> @@ -945,7 +941,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+>  					  id);
+>  
+>  	if (call->define_fields) {
+> -		ret = call->define_fields();
+> +		ret = call->define_fields(call);
+>  		if (ret < 0) {
+>  			pr_warning("Could not initialize trace point"
+>  				   " events/%s\n", call->name);
+> @@ -965,6 +961,52 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+>  	return 0;
+>  }
+>  
+> +static int __trace_add_event_call(struct ftrace_event_call *call)
+> +{
+> +	struct dentry *d_events;
+> +
+> +	if (!call->name)
+> +		return -EINVAL;
+> +
+> +	d_events = event_trace_events_dir();
+> +	if (!d_events)
+> +		return -ENOENT;
+> +
+> +	list_add(&call->list, &ftrace_events);
+> +	return event_create_dir(call, d_events, &ftrace_event_id_fops,
+> +				&ftrace_enable_fops, &ftrace_event_filter_fops,
+> +				&ftrace_event_format_fops);
+> +}
+> +
+> +/* Add an additional event_call dynamically */
+> +int trace_add_event_call(struct ftrace_event_call *call)
+> +{
+> +	int ret;
+> +	mutex_lock(&event_mutex);
+> +	ret = __trace_add_event_call(call);
+> +	mutex_unlock(&event_mutex);
+> +	return ret;
+> +}
+> +
+> +static void __trace_remove_event_call(struct ftrace_event_call *call)
+> +{
+> +	ftrace_event_enable_disable(call, 0);
+> +	if (call->event)
+> +		__unregister_ftrace_event(call->event);
+> +	debugfs_remove_recursive(call->dir);
+> +	list_del(&call->list);
+> +	trace_destroy_fields(call);
+> +	destroy_preds(call);
+> +}
+> +
+> +/* Remove an event_call */
+> +void trace_remove_event_call(struct ftrace_event_call *call)
+> +{
+> +	mutex_lock(&event_mutex);
+> +	__trace_remove_event_call(call);
+> +	mutex_unlock(&event_mutex);
+> +}
+> +
+>  #define for_each_event(event, start, end)			\
+>  	for (event = start;					\
+>  	     (unsigned long)event < (unsigned long)end;		\
+> @@ -1070,13 +1112,7 @@ static void trace_module_remove_events(struct module *mod)
+>  	list_for_each_entry_safe(call, p, &ftrace_events, list) {
+>  		if (call->mod == mod) {
+>  			found = true;
+> -			ftrace_event_enable_disable(call, 0);
+> -			if (call->event)
+> -				__unregister_ftrace_event(call->event);
+> -			debugfs_remove_recursive(call->dir);
+> -			list_del(&call->list);
+> -			trace_destroy_fields(call);
+> -			destroy_preds(call);
+> +			__trace_remove_event_call(call);
+>  		}
+>  	}
+>  
+> diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+> index d06cf89..7cee79d 100644
+> --- a/kernel/trace/trace_export.c
+> +++ b/kernel/trace/trace_export.c
+> @@ -60,7 +60,7 @@ extern void __bad_type_size(void);
+>  #undef TRACE_EVENT_FORMAT
+>  #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+>  static int								\
+> -ftrace_format_##call(struct trace_seq *s)				\
+> +ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+>  {									\
+>  	struct args field;						\
+>  	int ret;							\
+> @@ -76,7 +76,7 @@ ftrace_format_##call(struct trace_seq *s)				\
+>  #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+>  				    tpfmt)				\
+>  static int								\
+> -ftrace_format_##call(struct trace_seq *s)				\
+> +ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+>  {									\
+>  	struct args field;						\
+>  	int ret;							\
+> @@ -115,10 +115,16 @@ ftrace_format_##call(struct trace_seq *s)				\
+>  #define TRACE_FIELD_SPECIAL(type_item, item, len, cmd)	\
+>  	cmd;
+>  
+> +static int ftrace_raw_init_event(struct ftrace_event_call *event_call)
+> +{
+> +	INIT_LIST_HEAD(&event_call->fields);
+> +	init_preds(event_call);
+> +	return 0;
+> +}
+> +
+>  #undef TRACE_EVENT_FORMAT
+>  #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+> -int ftrace_define_fields_##call(void);					\
+> -static int ftrace_raw_init_event_##call(void);				\
+> +int ftrace_define_fields_##call(struct ftrace_event_call *c);		\
+>  									\
+>  struct ftrace_event_call __used						\
+>  __attribute__((__aligned__(4)))						\
+> @@ -126,16 +132,10 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+>  	.name			= #call,				\
+>  	.id			= proto,				\
+>  	.system			= __stringify(TRACE_SYSTEM),		\
+> -	.raw_init		= ftrace_raw_init_event_##call,		\
+> +	.raw_init		= ftrace_raw_init_event,		\
+>  	.show_format		= ftrace_format_##call,			\
+>  	.define_fields		= ftrace_define_fields_##call,		\
+> -};									\
+> -static int ftrace_raw_init_event_##call(void)				\
+> -{									\
+> -	INIT_LIST_HEAD(&event_##call.fields);				\
+> -	init_preds(&event_##call);					\
+> -	return 0;							\
+> -}									\
+> +};
+>  
+>  #undef TRACE_EVENT_FORMAT_NOFILTER
+>  #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+> @@ -182,9 +182,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+>  #undef TRACE_EVENT_FORMAT
+>  #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+>  int									\
+> -ftrace_define_fields_##call(void)					\
+> +ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+>  {									\
+> -	struct ftrace_event_call *event_call = &event_##call;		\
+>  	struct args field;						\
+>  	int ret;							\
+>  									\
+> 
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America), Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+
