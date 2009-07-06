@@ -1,92 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbZGFUNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbZGFUYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754975AbZGFUNS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 16:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZGFUNI
+	id S1753982AbZGFUYA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 16:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZGFUXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 16:13:08 -0400
-Received: from www.tglx.de ([62.245.132.106]:45997 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726AbZGFUNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 16:13:07 -0400
-Date: Mon, 6 Jul 2009 22:12:46 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 2/3] ftrace: add tracepoint for hrtimer
-In-Reply-To: <4A51C6AE.5020204@cn.fujitsu.com>
-Message-ID: <alpine.LFD.2.00.0907062209190.19480@localhost.localdomain>
-References: <4A51C5C2.20802@cn.fujitsu.com> <4A51C6AE.5020204@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 6 Jul 2009 16:23:49 -0400
+Received: from mail-qy0-f193.google.com ([209.85.221.193]:64896 "EHLO
+	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbZGFUXt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 16:23:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=yC3r0/hMTFyo/XwISQHGAYZoYLa8aPvCW6YS6Lt7cMI1TDVRUxw4t7w4vRrpmpMWxv
+         IJZVgW4yUx5Qp+abJKgIciDN7OZQEGbn2XBs/H8uylL4hw6cgaqWRVeDEY2UBRNbQ2VD
+         aIIwHdcLZhhQeftJ3eMITLrAF5IKLIQ8zvAQg=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1246910740.4643.10.camel@Joe-Laptop.home>
+References: <4A4C3410.8080704@kernel.org> <alpine.LFD.2.01.0907012119370.3380@localhost.localdomain> 
+	<1246513356.28915.62.camel@Joe-Laptop.home> <alpine.LFD.2.01.0907021020200.4830@localhost.localdomain> 
+	<1246556320.28915.92.camel@Joe-Laptop.home> <alpine.LFD.2.01.0907021043160.4830@localhost.localdomain> 
+	<1246910740.4643.10.camel@Joe-Laptop.home>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 6 Jul 2009 16:23:31 -0400
+Message-ID: <8bd0f97a0907061323j3480fa61sa7f44d71819a076d@mail.gmail.com>
+Subject: Re: [PATCH] Remove multiple KERN_ prefixes from printk formats
+To: Joe Perches <joe@perches.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009, Xiao Guangrong wrote:
-> +TRACE_EVENT(hrtimer_expire,
-> +
-> +	TP_PROTO(struct hrtimer *timer, s64 now),
-> +
-> +	TP_ARGS(timer, now),
-> +
-> +	TP_STRUCT__entry(
-> +		__field( void *,	timer		)
-> +		__field( void *,	function	)
+On Mon, Jul 6, 2009 at 16:05, Joe Perches wrote:
+> commit 5fd29d6ccbc98884569d6f3105aeca70858b3e0f changed
+> printk semantics.  printk lines with multiple KERN_<level>
+> prefixes are no longer emitted as before the patch.
+>
+> <level> is now included in the output on each additional use.
+>
+> Remove all uses of multiple KERN_<level>s in formats.
 
-  Again, function is not necessary here.
+thanks, i had started this in the Blackfin code a little, but your
+patch includes what i did and more, so the Blackfin stuff should be
+mostly fine (pending comments below).
 
-> +		__field( s64,		now		)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->timer		= timer;
-> +		__entry->function	= timer->function;
-> +		__entry->now		= now;
-> +	),
-> +
-> +	TP_printk("timer=%p func=%pf now=%llu", __entry->timer, __entry->function,
-> +		 (unsigned long long)__entry->now)
-> +);
-> +
-> +TRACE_EVENT(hrtimer_cancel,
-> +
-> +	TP_PROTO(struct hrtimer *timer),
-> +	TP_ARGS(timer),
-> +	TP_STRUCT__entry(
-> +		__field( void *,	timer		)
-> +		__field( void *,	function	)
+> --- a/arch/blackfin/kernel/traps.c
+> +++ b/arch/blackfin/kernel/traps.c
+> @@ -212,7 +212,7 @@ asmlinkage void double_fault_c(struct pt_regs *fp)
+>        console_verbose();
+>        oops_in_progress = 1;
+>  #ifdef CONFIG_DEBUG_VERBOSE
+> -       printk(KERN_EMERG "\n" KERN_EMERG "Double Fault\n");
+> +       printk(KERN_EMERG "Double Fault\n");
 
-  Ditto.
+dropped a newline.  we've largely made sure the newlines and such were
+as we want in the output ... in this case, it is not a matter of
+adding a newline where one did not exist before
 
-> +static inline void debug_and_trace_hrtimer_expire(struct hrtimer *timer,
-> +                                                  s64 now)
+> -                       verbose_printk(KERN_NOTICE "\n" KERN_NOTICE "Kernel Stack\n");
+> +                       verbose_printk(KERN_NOTICE "Kernel Stack\n");
 
-  Technically not necessary.
+and here
 
->  
-> +			debug_and_trace_hrtimer_expire(timer, basenow.tv64);
->  			__run_hrtimer(timer);
+> -               verbose_printk(KERN_NOTICE "\n" KERN_NOTICE
+> -                    "No Valid process in current context\n");
+> +               verbose_printk(KERN_NOTICE
+> +                              "No Valid process in current context\n");
 
-  Here I'd like to see a callback_done entry as well, so we can check
-  for long lasting callbacks.
+and here
 
->  		}
->  		spin_unlock(&cpu_base->lock);
-> @@ -1436,6 +1463,7 @@ void hrtimer_run_queues(void)
->  					hrtimer_get_expires_tv64(timer))
->  				break;
->  
-> +			debug_and_trace_hrtimer_expire(timer, base->softirq_time.tv64);
->  			__run_hrtimer(timer);
+> -       verbose_printk(KERN_NOTICE "\n" KERN_NOTICE "SEQUENCER STATUS:\t\t%s\n", print_tainted());
+> +       verbose_printk(KERN_NOTICE "\nSEQUENCER STATUS:\t\t%s\n",
+> +                      print_tainted());
 
-  Ditto.
+and here
 
-Thanks,
+> -       verbose_printk(KERN_NOTICE "\n" KERN_NOTICE "PROCESSOR STATE:\n");
+> +       verbose_printk(KERN_NOTICE "PROCESSOR STATE:\n");
 
-	tglx
+and here
+-mike
