@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbZGFFue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZGFGBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756251AbZGFFue (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 01:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZGFFu0
+	id S1756774AbZGFGBu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 02:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbZGFGBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 01:50:26 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:25677 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750945AbZGFFuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 01:50:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=u27z1/Ak8rRXe/vsc1deNVCk4cCuirhVyBvOA7bBX2vYRGtMDI1mWHU8Fd149Eqgtc
-         duy7v3zl3st570QKs9j/BlV99xR95dbXT6pSi/aOufW+Rt34z4HK5dhcqwcJzYKoPiNN
-         BNdwTRt5Qp0o/KEHfiKDvX3iwzHleYQim0Cz8=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.01.0907051735030.3210@localhost.localdomain>
-References: <E1MLa4R-00054S-94@pomaz-ex.szeredi.hu> <2547.1246393535@redhat.com> 
-	<E1MLruc-0007O1-Sp@pomaz-ex.szeredi.hu> <a36005b50907051235h17f559c6w1937998c7eec0b0@mail.gmail.com> 
-	<alpine.LFD.2.01.0907051735030.3210@localhost.localdomain>
-From: Ulrich Drepper <drepper@gmail.com>
-Date: Sun, 5 Jul 2009 22:50:08 -0700
-Message-ID: <a36005b50907052250n7a73a19r3ce674f08a402703@mail.gmail.com>
-Subject: Re: [RFC PATCH] vfs: new open(2) flag to open filesystem node
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, dhowells@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hch@infradead.org, viro@zeniv.linux.org.uk, adilger@sun.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Jul 2009 02:01:41 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36855 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750945AbZGFGBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 02:01:41 -0400
+Date: Mon, 6 Jul 2009 16:01:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Gleb Natapov <gleb@redhat.com>
+Cc: Avi Kivity <avi@redhat.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: kvm tree build warning
+Message-Id: <20090706160137.77be6c1c.sfr@canb.auug.org.au>
+In-Reply-To: <20090706052855.GL881@redhat.com>
+References: <20090706113752.8dec663a.sfr@canb.auug.org.au>
+	<20090706052855.GL881@redhat.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__6_Jul_2009_16_01_37_+1000_.y25pBB2Q=J3o2KZ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 5, 2009 at 17:40, Linus
-Torvalds<torvalds@linux-foundation.org> wrote:
-> O_SEARCH is only meaningful for directories. For anything else, it's not
-> at all POSIX - it's expressly defined to be "undefined".
+--Signature=_Mon__6_Jul_2009_16_01_37_+1000_.y25pBB2Q=J3o2KZ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-And this is why there is the differentiation with O_EXEC.  Yes, i
-didn't mention it in the last email.  But I mentioned it when it came
-up the first time.
+Hi Gleb,
 
-I don't say this is indeed what is wanted/needed here.  But there are
-IMO some similarities and I think implementing O_SEARCH and O_EXEC is
-desirable.  If it means completely different implementations from te
-proposed O_NODE, so be it.  But my gut tells me there is some overlay.
+On Mon, 6 Jul 2009 08:28:55 +0300 Gleb Natapov <gleb@redhat.com> wrote:
+>
+> Yes sorry. I see that Sheng Yang already posted the fix.
+
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__6_Jul_2009_16_01_37_+1000_.y25pBB2Q=J3o2KZ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpRk0EACgkQjjKRsyhoI8zZwACgn8jz5cQ30Z7zqBCalS46rdV4
+THsAnRUvqN1g7lofpUgGqqzbddJgAUag
+=92/f
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__6_Jul_2009_16_01_37_+1000_.y25pBB2Q=J3o2KZ--
