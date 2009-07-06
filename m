@@ -1,49 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbZGFLlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbZGFLm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbZGFLlX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 07:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZGFLlQ
+	id S1754601AbZGFLm4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 07:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbZGFLms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 07:41:16 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56367 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752629AbZGFLlQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 07:41:16 -0400
-To: tj@kernel.org
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       npiggin@suse.de
-In-reply-to: <4A4F3998.5020805@kernel.org> (message from Tejun Heo on Sat, 04
-	Jul 2009 20:14:32 +0900)
-Subject: Re: [PATCH 4/4] FUSE: implement direct mmap
-References: <1245317073-24000-1-git-send-email-tj@kernel.org> <1245317073-24000-5-git-send-email-tj@kernel.org> <E1MJPmn-0001Q6-Fj@pomaz-ex.szeredi.hu> <4A48EEDC.807@kernel.org> <E1MMMgq-0002R2-FO@pomaz-ex.szeredi.hu> <4A4F3998.5020805@kernel.org>
-Message-Id: <E1MNmZM-0001ZB-GR@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 06 Jul 2009 13:41:12 +0200
+	Mon, 6 Jul 2009 07:42:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35670 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753208AbZGFLmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 07:42:47 -0400
+Date: Mon, 6 Jul 2009 07:45:58 -0400
+From: Josef Bacik <josef@redhat.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Jeff Mahoney <jeffm@suse.com>,
+       Yan Zheng <zheng.yan@oracle.com>, Josef Bacik <jbacik@redhat.com>,
+       Arjan <arjan@infradead.org>, Chris Mason <chris.mason@oracle.com>,
+       tao.ma@oracle.com, akpm@linux-foundation.org,
+       linux-btrfs@vger.kernel.org, Sven Wegener <sven.wegener@stealer.net>
+Subject: Re: [Patch v3] btrfs: use file_remove_suid() after i_mutex is held
+Message-ID: <20090706114558.GA19798@dhcp231-156.rdu.redhat.com>
+References: <20090706091747.6656.91812.sendpatchset@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090706091747.6656.91812.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 04 Jul 2009, Tejun Heo wrote:
-> > Afaics sound drivers now map the dma memory with remap_pfn_range().
-> > Similary we could allocate a chunk of non-swapabble kernel memory on
-> > request from the userspace server and map its pages using this trick
-> > to both the server's and the client's address space.
-> > 
-> > This is still sort of OSSP specific, I don't see clearly how it could
-> > be made more generic.
+On Mon, Jul 06, 2009 at 05:15:33AM -0400, Amerigo Wang wrote:
 > 
-> Using non-swappable memory would be fine for most device emulations
-> but mapping large amount of pages would be problematic.  Hmmm... this
-> is difficult.  It's a compromise among flexibility, scalability and
-> code complexity.
+> V2 -> V3:
+> set 'err' to -ENOMEM when kmalloc() fails. Thanks to Tao.
+> 
+> V1 -> V2:
+> Move kmalloc() before mutex_lock(), suggested by Arjan.
+> 
+> file_remove_suid() should be called with i_mutex held,
+> file_update_time() too. So move them after mutex_lock().
+> 
+> Plus, check the return value of kmalloc().
+> 
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> Cc: Arjan <arjan@infradead.org>
+> Cc: Chris Mason <chris.mason@oracle.com>
+> Cc: Yan Zheng <zheng.yan@oracle.com>
+> Cc: Sven Wegener <sven.wegener@stealer.net>
+> Cc: Josef Bacik <jbacik@redhat.com>
+> Cc: Jeff Mahoney <jeffm@suse.com>
+> Cc: Tao Ma <tao.ma@oracle.com>
+> 
+> ---
+> diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
+> index 7c3cd24..e7b0d81 100644
+> --- a/fs/btrfs/file.c
+> +++ b/fs/btrfs/file.c
+> @@ -944,14 +944,19 @@ static ssize_t btrfs_file_write(struct file *file, const char __user *buf,
+>  	if (count == 0)
+>  		goto out_nolock;
+>  
+> +	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
+> +	if (!pages) {
+> +		err = -ENOMEM;
+> +		goto out_nolock;
+> +	}
+> +
+> +	mutex_lock(&inode->i_mutex);
+> +
+>  	err = file_remove_suid(file);
+>  	if (err)
+> -		goto out_nolock;
+> +		goto out;
+>  	file_update_time(file);
+>  
+> -	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
+> -
+> -	mutex_lock(&inode->i_mutex);
+>  	BTRFS_I(inode)->sequence++;
+>  	first_index = pos >> PAGE_CACHE_SHIFT;
+>  	last_index = (pos + count) >> PAGE_CACHE_SHIFT;
 
-What's the difficulty?
-
-Allocating pages, giving them an ID and mapping them into various page
-tables seems simple in contrast to trying to make a tmpfs file be a
-fuse file at the same time, which the VM is really not prepared for.
+Acked-by: Josef Bacik <jbacik@redhat.com>
 
 Thanks,
-Miklos
+
+Josef
