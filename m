@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbZGFTeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbZGFTer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbZGFTeK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 15:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZGFTd6
+	id S1754487AbZGFTer (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 15:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZGFTei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 15:33:58 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:41140 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753062AbZGFTd4 (ORCPT
+	Mon, 6 Jul 2009 15:34:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49325
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753184AbZGFTeh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 15:33:56 -0400
-Date: Mon, 6 Jul 2009 20:33:31 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: David Newall <davidn@davidnewall.com>
-Cc: tridge@samba.org, Jan Engelhardt <jengelh@medozas.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-Message-ID: <20090706193331.GA13638@shareable.org>
-References: <19021.23231.213863.726785@samba.org> <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr> <19021.26102.80885.330380@samba.org> <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr> <19021.31291.642416.956966@samba.org> <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr> <19021.63615.450348.192109@samba.org> <alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr> <19025.63119.656216.431469@samba.org> <4A5223B6.1010102@davidnewall.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5223B6.1010102@davidnewall.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 6 Jul 2009 15:34:37 -0400
+Date: Mon, 06 Jul 2009 12:34:41 -0700 (PDT)
+Message-Id: <20090706.123441.246532764.davem@davemloft.net>
+To: chunkeey@web.de
+Cc: Larry.Finger@lwfinger.net, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] p54: Fix regression in 2.6.31-rcX since commit a1091aa
+ - sleeping function called from invalid context
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200907062119.25642.chunkeey@web.de>
+References: <4a524b55.wIWqgs5uHs2CpdJy%Larry.Finger@lwfinger.net>
+	<20090706.121429.36217952.davem@davemloft.net>
+	<200907062119.25642.chunkeey@web.de>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> tridge@samba.org wrote:
-> > Hi Jan,
-> >
-> >  >  * "cp dscf4160.jpg dscF3011.jpg" does not work - i.e. cam ignores the
-> >  >    file without error.
-> >  >    Reason for that is that dscF3011 has an illegal 8.3 name
-> >
-> > yep, that's expected. I suggested a possible way of handling this to
-> > Hirofumi-san (ie. change the case of the name), but he prefers to keep
-> > things simple for now.
-> >   
+From: Christian Lamparter <chunkeey@web.de>
+Date: Mon, 6 Jul 2009 21:19:25 +0200
+
+> On Monday 06 July 2009 21:14:29 David Miller wrote:
+>> If I can't figure it out quickly I'll just simply revert.
+> hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+> [2.6.31] p54: band-aid to restore driver functionality
+> http://patchwork.ozlabs.org/patch/28918/
 > 
-> Expected or not, it's a serious bug. If it doesn't canonify the
-> filename, it should return an error. Lying by returning success is
-> horridly wrong. And I might just suggest that as people are now
-> accustomed to typing mixed-case filenames, it's a bug that's likely to
-> occur more frequently than it might at first seem.
+> in case someone missed it.
 
-It's no different from writing a long name, though, is it?
+It is so much cleaner to not do multiple things in one patch.
 
-"cp dscf4160.jpg dscf3011.jpeg" would also be ignored by the
-camera, because there is no corresponding 8.3 file name.
+It's also better to completely revert the SKB list handling
+changes first, then add whatever other fixes you want make
+on top.
 
-It's a bit clearer when mounted with shortname=winnt or
-shortname=mixed, because then I'd expect files created by the camera
-to show as upper case in Linux, and it would be obvious that you might
-have to create new files for the camera that look the same as the camera's.
+Partial revert really makes no sense here and is only asking
+for even more potential regressions.
 
-The current Linux default shows 8.3 short-name files in lower case
-(i.e. pure FAT shows as lower case), but files created in Linux with
-8.3 lower case names create a long name.  Which is bound to cause some
-confusion.
-
-I agree with tridge, shortname=winnt makes sense when dualnames are off.
-
-Unfortunately it doesn't preserve case when creating in Linux and
-reading in Windows 95/98/ME and devices with a similar implementation.
-
-For that reason, shortname=mixed is better when dualnames are on.
-
--- Jamie
+So, like I said, I'm reverting this wholesale unless I can figure
+out a fix quickly.
