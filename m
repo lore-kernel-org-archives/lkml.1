@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbZGFIvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757854AbZGFJAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757770AbZGFIvm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZGFIv0
+	id S1757854AbZGFJAU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 05:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZGFJAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:51:26 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:43048 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757100AbZGFIvZ (ORCPT
+	Mon, 6 Jul 2009 05:00:07 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:47831 "EHLO d1.icnet.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753318AbZGFJAG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:51:25 -0400
-Message-ID: <4A51BB0B.8000409@petalogix.com>
-Date: Mon, 06 Jul 2009 10:51:23 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Mon, 6 Jul 2009 05:00:06 -0400
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+To: "Pandita, Vikram" <vikram.pandita@ti.com>
+Subject: Re: [PATCH v2] OMAP1: AMS_DELTA: add modem support
+Date: Mon, 6 Jul 2009 10:59:22 +0200
+User-Agent: KMail/1.9.10
+Cc: Jonathan McDowell <noodles@earth.li>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Tony Lindgren <tony@atomide.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200907051601.49194.jkrzyszt@tis.icnet.pl> <FCCFB4CDC6E5564B9182F639FC35608702F5568724@dbde02.ent.ti.com>
+In-Reply-To: <FCCFB4CDC6E5564B9182F639FC35608702F5568724@dbde02.ent.ti.com>
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add checksum selftest
-References: <1245850289-6673-1-git-send-email-vapier@gentoo.org> 	<200906241724.30947.arnd@arndb.de> <8bd0f97a0906241243k1d4a6d25x3216e940b356d2ca@mail.gmail.com> 	<200906251255.06984.arnd@arndb.de> <4A51B204.4090501@petalogix.com> <8bd0f97a0907060124t7a2641b8k8fe28f78f70fd3cf@mail.gmail.com>
-In-Reply-To: <8bd0f97a0907060124t7a2641b8k8fe28f78f70fd3cf@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200907061059.24378.jkrzyszt@tis.icnet.pl>
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> On Mon, Jul 6, 2009 at 04:12, Michal Simek wrote:
->   
->> Arnd Bergmann wrote:
->>     
->>> On Wednesday 24 June 2009, Mike Frysinger wrote:
->>>       
->>>> ok, i can see that for the result, but how do i handle the functions
->>>> that also take a __wsum ?  do i just always pass them 0 to avoid
->>>> implementation issues ?
->>>>         
->>> No, any __wsum you pass in there should be fine, because that one
->>> gets folded in in the end.
->>>       
->> Mike do you have any updated patch? I would like to check it on
->> Microblaze too.
->>     
+Monday 06 July 2009 06:49:34 Pandita, Vikram napisał(a):
+> Janusz/Alan
 >
-> the latest code i have is here:
-> http://git.kernel.org/?p=linux/kernel/git/vapier/blackfin.git;a=shortlog;h=asm-generic
->   
-ok. Thanks.
+> >-----Original Message-----
+> >From: linux-omap-owner@vger.kernel.org
+> > [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Janusz Krzysztofik
+>
+> +static int __init ams_delta_modem_init(void)
+>
+> >+{
+> >+	omap_cfg_reg(M14_1510_GPIO2);
+> >+	ams_delta_modem_ports[0].irq = gpio_to_irq(2);
+> >+	set_irq_type(gpio_to_irq(2), IRQ_TYPE_EDGE_RISING);
+>
+> There is a recent change on specifying irqflags as example:
+> http://patchwork.kernel.org/patch/31888/
+>
+> There is a dependency for Alan Cox to push this patch first though:
+> http://patchwork.kernel.org/patch/31884/
+>
+> Reference:
+> http://lkml.indiana.edu/hypermail/linux/kernel/0906.2/02827.html
 
-> but i havent finished integrating the tests and i think they currently
-> fail on Blackfin due to it
->   
-On Microblaze all tests failed too.
+I can change and resubmit as v3, then Tony will choose which one applies, OK?
 
-Michal
-
-> -mike
->   
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
-
+Janusz
