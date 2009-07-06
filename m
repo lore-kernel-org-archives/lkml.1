@@ -1,51 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbZGFUIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZGFUJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbZGFUIw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 16:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZGFUIk
+	id S1755214AbZGFUJY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 16:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZGFUJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 16:08:40 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34918
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754146AbZGFUIj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 16:08:39 -0400
-Date: Mon, 06 Jul 2009 13:08:41 -0700 (PDT)
-Message-Id: <20090706.130841.109675901.davem@davemloft.net>
-To: m.kozlowski@tuxland.pl
-Cc: herbert@gondor.apana.org.au, netdev@vger.kernel.org,
-       abacabadabacaba@gmail.com, maxk@qualcomm.com, linux-net@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: tun/tap crashes if open() /dev/net/tun and then
- poll() it.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090706074835.3fe641f0@mako-desktop>
-References: <20090706001114.2d4517be@mako-desktop>
-	<20090706011230.GC15156@gondor.apana.org.au>
-	<20090706074835.3fe641f0@mako-desktop>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Jul 2009 16:09:16 -0400
+Received: from www.tglx.de ([62.245.132.106]:51580 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753855AbZGFUJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 16:09:16 -0400
+Date: Mon, 6 Jul 2009 22:08:52 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/3] ftrace: add tracepoint for timer
+In-Reply-To: <4A51C653.4040401@cn.fujitsu.com>
+Message-ID: <alpine.LFD.2.00.0907062140010.19480@localhost.localdomain>
+References: <4A51C5C2.20802@cn.fujitsu.com> <4A51C653.4040401@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Date: Mon, 6 Jul 2009 07:48:35 +0200
+On Mon, 6 Jul 2009, Xiao Guangrong wrote:
+> Changelog v1->v2:
+> 1: Add jiffies info into timer
+> 2: Combine debugobjects and trace as Thomas's suggestion
 
-> Fix NULL pointer dereference in tun_chr_pool() introduced by
-> commit 33dccbb050bbe35b88ca8cf1228dcf3e4d4b3554 and triggered
-> by this code:
-> 
-> 	int fd;
-> 	struct pollfd pfd;
-> 	fd = open("/dev/net/tun", O_RDWR);
-> 	pfd.fd = fd;
-> 	pfd.events = POLLIN | POLLOUT;
-> 	poll(&pfd, 1, 0);
-> 
-> Reported-by: Eugene Kapun <abacabadabacaba@gmail.com>
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+I like it that way. Some minor nitpicks below.
+ 
+> +TRACE_EVENT(timer_expire,
+> +
+> +	TP_PROTO(struct timer_list *timer),
+> +
+> +	TP_ARGS(timer),
+> +
+> +	TP_STRUCT__entry(
+> +		__field( void *,	timer		)
+> +		__field( void *,	function	)
 
-Applied, thanks!
+  Do we really need the function here? It does not change between
+  start and expiry.
+
+> +TRACE_EVENT(timer_cancel,
+> +
+> +	TP_PROTO(struct timer_list *timer),
+> +
+> +	TP_ARGS(timer),
+> +
+> +	TP_STRUCT__entry(
+> +		__field( void *,	timer		)
+> +		__field( void *,	function	)
+
+  Ditto.
+
+> +
+> +static inline void debug_and_trace_timer_expire(struct timer_list *timer)
+
+  Technically not really necessary. The debug code does not care about
+  it.
+
+>  			timer = list_first_entry(head, struct timer_list,entry);
+> +			debug_and_trace_timer_expire(timer);
+>  			fn = timer->function;
+>  			data = timer->data;
+>  
+
+Can you please add the tracepoint which was suggested by Anton (IIRC)
+which allows us to measure the execution time of the callback function
+? There is no need to dereference timer in the expiry tracepoint, we
+just store the pointer. So we can safely move the tracepoints just
+around the function call.
+
+   trace_timer_expire(timer);
+   fn(data);
+   trace_timer_callback_done(timer);
+
+Or whatever fancy name you come up with.
+
+Thanks,
+
+	tglx
