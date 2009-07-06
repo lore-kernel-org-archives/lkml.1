@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757978AbZGFI0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbZGFI2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757978AbZGFI0m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbZGFI0e
+	id S1757918AbZGFI2d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbZGFI2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:26:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:55098 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753406AbZGFI0d (ORCPT
+	Mon, 6 Jul 2009 04:28:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58435 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752603AbZGFI2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:26:33 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 2/5] sparc: use asm-generic/dma-mapping-common.h
-Date: Mon, 6 Jul 2009 10:26:28 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30-9-generic; KDE/4.2.95; x86_64; ; )
-Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, reif@earthlink.net
-References: <1246860820-20629-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1246860820-20629-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1246860820-20629-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 6 Jul 2009 04:28:24 -0400
+Date: Mon, 6 Jul 2009 10:28:27 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
+       Magnus Damm <damm@igel.co.jp>, linux-pm@lists.linux-foundation.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices
+Message-ID: <20090706082827.GA26142@atrey.karlin.mff.cuni.cz>
+References: <200906140023.36147.rjw@sisk.pl> <200906150057.32424.rjw@sisk.pl> <20090624150400.GG1784@ucw.cz> <200906272352.42022.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907061026.28878.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX192dS9mKdNdjEWCH2VSs/NXUj9LcDEyNZLtmQl
- RIiTCpklySRjX61cBH1QhyL/xotp4a2XWFssW4BVcW8o4tiJel
- UJq8FN3zWx1XaQyOKS7EgY2nKH/EJZ1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906272352.42022.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 July 2009, FUJITA Tomonori wrote:
-> +static inline struct dma_map_ops *get_dma_ops(struct device *dev)
-> +{
-> +       return dma_ops;
-> +}
-> +
-> +#define flush_write_buffers()
-> +
-> +#include <asm-generic/dma-mapping-common.h>
+> On Wednesday 24 June 2009, Pavel Machek wrote:
+> > Hi!
+> > 
+> > 
+> > > +2. Run-time PM Helper Functions and Device Fields
+> > > +
+> > > +The following helper functions are defined in drivers/base/power/runtime.c
+> > > +and include/linux/pm_runtime.h:
+> > > +
+> > > +* void pm_runtime_init(struct device *dev);
+> > > +* void pm_runtime_enable(struct device *dev);
+> > > +* void pm_runtime_disable(struct device *dev);
+> > > +* int pm_runtime_suspend(struct device *dev);
+> > > +* void pm_request_suspend(struct device *dev, unsigned long delay);
+> > > +* int pm_runtime_resume(struct device *dev);
+> > > +* void pm_request_resume(struct device *dev);
+> > > +* void pm_cancel_runtime_suspend(struct device *dev);
+> > > +* void pm_cancel_runtime_resume(struct device *dev);
+> > > +* void pm_suspend_check_children(struct device *dev, bool enable);
+> > 
+> > Those *s look confusingly like pointers. Remove them?
+> 
+> From the doc?  OK, I can use another character. :-)
 
-I still think the flush_write_buffers() x86-ism should not be required
-to use dma-mapping-common.h and only be used in arch/x86/kernel/pci-nommu.c
-so you don't have to add dummy definitions to all architectures.
+Yes. I suggest # :-)
 
-See http://lkml.org/lkml/2009/6/30/134
+> 
+> Best,
+> Rafael
 
-Otherwise, your series looks good!
-
-	Arnd <><
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
