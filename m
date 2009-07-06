@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZGFJ2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbZGFJhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbZGFJ2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 05:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZGFJ2Q
+	id S1752735AbZGFJhM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 05:37:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZGFJhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 05:28:16 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39418 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753935AbZGFJ2P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 05:28:15 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Jeff Arnold <jbarnold@ksplice.com>
-Subject: Re: Ksplice updates for Ubuntu 9.04 Jaunty
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       tabbott@ksplice.com, wdaher@ksplice.com, andersk@ksplice.com,
-       nelhage@ksplice.com, price@ksplice.com, geofft@ksplice.com
-In-Reply-To: <alpine.DEB.1.10.0907022047000.26615@vinegar-pot.mit.edu>
-References: <20090703084359.08E3.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0907022047000.26615@vinegar-pot.mit.edu>
-Message-Id: <20090706182806.0C57.A69D9226@jp.fujitsu.com>
+	Mon, 6 Jul 2009 05:37:01 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57671 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750873AbZGFJhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 05:37:00 -0400
+Message-ID: <4A51C5C2.20802@cn.fujitsu.com>
+Date: Mon, 06 Jul 2009 17:37:06 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 0/3] ftrace: add tracepoint for timer event
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon,  6 Jul 2009 18:28:16 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 3 Jul 2009, KOSAKI Motohiro wrote:
-> 
-> > Afaik, Solaris and some other Unix like OS have similar rebootless
-> > security update mechanism.
-> 
-> No system other than Ksplice makes it practical to convert kernel patches 
-> into hot updates while writing little to no new code.
-> 
-> People have manually been making limited changes to running binaries for 
-> years, but making it practical to go from kernel patches to hot updates is 
-> new.
+Hi,
 
-Yeah, I agree it can dramatically reduce maintainance cost :)
+We can monitor timer's lifecycle and behaviors by these tracepoint. 
 
+Following tracepoints are introduced as ingo's suggestion in
+	http://marc.info/?l=linux-kernel&m=123791899529128&w=2
 
+for timer:
+trace_timer_init()
+trace_timer_start()
+trace_timer_expire()
+trace_timer_cancel()
+
+for hrtimer:
+trace_hrtimer_init()
+trace_hrtimer_start()
+trace_hrtimer_expire()
+trace_hrtimer_cancel()
+
+for itimer:
+itimer_state
+itimer_expire()
+
+Changlog from latest patchset:
+Add itimer's patch to monitor itimer's lifecycle and behaviors
