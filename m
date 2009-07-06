@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbZGFBMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193AbZGFBNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344AbZGFBMq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 21:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZGFBMf
+	id S1753193AbZGFBNA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 21:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbZGFBMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 21:12:35 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:58628 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750926AbZGFBMe (ORCPT
+	Sun, 5 Jul 2009 21:12:50 -0400
+Received: from mail-vw0-f202.google.com ([209.85.212.202]:44032 "EHLO
+	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756939AbZGFBMj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 21:12:34 -0400
-Date: Mon, 6 Jul 2009 09:12:30 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Cc: Eugene Kapun <abacabadabacaba@gmail.com>, maxk@qualcomm.com,
-       linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: tun/tap crashes if open() /dev/net/tun and then
-	poll() it.
-Message-ID: <20090706011230.GC15156@gondor.apana.org.au>
-References: <4A4F1480.70203@gmail.com> <20090706001114.2d4517be@mako-desktop>
+	Sun, 5 Jul 2009 21:12:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OvtJxiYVOzTYv6RjkCBsEzvmypJTMLQ8aJS3+SECz3WB3npCl2brwdtyhI3HMmN56e
+         4PsHgeaCS8IpAUtitZYI/09xnUsE2WmbRVBIsUeedGRgAZoyOX7DL33uwDN41oBMBqiJ
+         NlwLdJL6qSooqRCs3GH7dIquUlEJKCKLjk/Zo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090706001114.2d4517be@mako-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A4DDD54.9030206@free.fr>
+References: <20090703015554.GB5880@cr0.nay.redhat.com>
+	 <20090703051917.GE5880@cr0.nay.redhat.com>
+	 <412e6f7f0907022242r52ad981fyd51c2a55f41ab228@mail.gmail.com>
+	 <20090703071504.GG5880@cr0.nay.redhat.com>
+	 <412e6f7f0907030040v6133badat7058186a01d78f44@mail.gmail.com>
+	 <20090703081655.GH5880@cr0.nay.redhat.com>
+	 <412e6f7f0907030127u3d6806dfo9168600e7c71b241@mail.gmail.com>
+	 <20090703094229.GI5880@cr0.nay.redhat.com>
+	 <412e6f7f0907030259m5556ee2fobbb58d377bce4d17@mail.gmail.com>
+	 <4A4DDD54.9030206@free.fr>
+Date: Mon, 6 Jul 2009 09:12:42 +0800
+Message-ID: <412e6f7f0907051812q4b3d7bcfkff73c75da14a9cf4@mail.gmail.com>
+Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
+From: Changli Gao <xiaosuo@gmail.com>
+To: Albert ARIBAUD <albert.aribaud@free.fr>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 12:11:14AM +0200, Mariusz Kozlowski wrote:
+On Fri, Jul 3, 2009 at 6:28 PM, Albert ARIBAUD<albert.aribaud@free.fr> wrote:
+> Changli Gao a écrit :
 >
-> 	Can you try this patch?
-> 
-> diff --git a/drivers/net/tun.c b/drivers/net/tun.c
-> index 11a0ba4..c599327 100644
-> --- a/drivers/net/tun.c
-> +++ b/drivers/net/tun.c
-> @@ -486,12 +486,14 @@ static unsigned int tun_chr_poll(struct file *file, poll_table * wait)
->  {
->  	struct tun_file *tfile = file->private_data;
->  	struct tun_struct *tun = __tun_get(tfile);
-> -	struct sock *sk = tun->sk;
-> +	struct sock *sk;
->  	unsigned int mask = 0;
->  
->  	if (!tun)
->  		return POLLERR;
->  
-> +	sk = tun->sk;
-> +
->  	DBG(KERN_INFO "%s: tun_chr_poll\n", tun->dev->name);
->  
->  	poll_wait(file, &tun->socket.wait, wait);
+>> Yea, in many cases, max fd number must be enlarged. More fds means
+>> more memory. Although memory is cheaper today, we have to do our best
+>> to save money.
+>
+> Sorry for interrupting, but I don't see how pipe could return a single fd,
+> considering there are two (partly) independent ends, each being read (resp.
+> written) in their own time, and an fd has only one "current read/write
+> position" IIUC.
+>
+> If the proposal is to have two independent positions (one for reads and one
+> for writes) for a single fd, then I am not sure the gain in the number of
+> fds used is worth the loss in the increased size of the fd structure.
+>
+> Am I missing something?
+pipe doesn't support llseek.
 
-Good catch.  Can you please resend with a sign-off?
 
-Thanks,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Regards，
+Changli Gao(xiaosuo@gmail.com)
