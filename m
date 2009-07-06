@@ -1,215 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZGFRAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZGFRDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753590AbZGFRAZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 13:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZGFRAN
+	id S1754010AbZGFRDe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 13:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZGFRDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 13:00:13 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:22593 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751139AbZGFRAL (ORCPT
+	Mon, 6 Jul 2009 13:03:25 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:26577
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751890AbZGFRDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 13:00:11 -0400
-Message-ID: <4A522D9A.1090006@hp.com>
-Date: Mon, 06 Jul 2009 10:00:10 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Mon, 6 Jul 2009 13:03:24 -0400
+Message-ID: <4A522E57.7060101@panasas.com>
+Date: Mon, 06 Jul 2009 20:03:19 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Jeff Garzik <jeff@garzik.org>, andi@firstfloor.org, arjan@infradead.org,
-       matthew@wil.cx, jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       douglas.w.styner@intel.com, chinang.ma@intel.com,
-       terry.o.prickett@intel.com, matthew.r.wilcox@intel.com,
-       Eric.Moore@lsi.com, DL-MPTFusionLinux@lsi.com, netdev@vger.kernel.org
-Subject: Re: >10% performance degradation since 2.6.18
-References: <20090705040137.GA7747@gondor.apana.org.au>
-In-Reply-To: <20090705040137.GA7747@gondor.apana.org.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jeff Garzik <jeff@garzik.org>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       open-osd mailing-list <osd-dev@open-osd.org>
+Subject: Re: [osd-dev] [GIT PULL] exofs/osd tree for 2.6.31
+References: <4A3F45D5.4020600@panasas.com> <4A41F458.2050409@panasas.com>
+In-Reply-To: <4A41F458.2050409@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Jul 2009 17:03:22.0285 (UTC) FILETIME=[AB19E5D0:01C9FE5B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> Jeff Garzik <jeff@garzik.org> wrote:
+Sorry for nagging.
+Is this going to be merged in 2.6.31 or wait for 2.6.32?
+Anything we can do to help it not fall between the cracks next time?
+
+Benny
+
+On Jun. 24, 2009, 12:39 +0300, Boaz Harrosh <bharrosh@panasas.com> wrote:
+> On 06/22/2009 11:50 AM, Boaz Harrosh wrote:
+>> Linus
+>>
+>> Please pull the following exofs/OSD changes from the git repository at:
+>>
+>>   git://git.open-osd.org/linux-open-osd.git for-linus
+>>
+>> These are a few fixes/cleanups and mainly a new block-device driver
+>> from Jeff Garzik, that can export an OSD object to block-based users
+>> like filesystems.
+>>
+>> Boaz Harrosh (5):
+>>       exofs: Fix bio leak in error handling path (sync read)
+>>       exofs: Remove IBM copyrights
+>>       exofs: Avoid using file_fsync()
+>>       MAINTAINERS: Add osd maintained files (F:)
+>>       osdblk: Adjust queue limits to lower device's limits
+>>
+>> Jeff Garzik (1):
+>>       osdblk: a Linux block device for OSD objects
+>>
+>>  MAINTAINERS            |    5 +-
+>>  drivers/block/Kconfig  |   16 ++
+>>  drivers/block/Makefile |    1 +
+>>  drivers/block/osdblk.c |  670 ++++++++++++++++++++++++++++++++++++++++++++++++
+>>  fs/exofs/common.h      |    4 +-
+>>  fs/exofs/dir.c         |    4 +-
+>>  fs/exofs/exofs.h       |    7 +-
+>>  fs/exofs/file.c        |   21 +-
+>>  fs/exofs/inode.c       |    7 +-
+>>  fs/exofs/namei.c       |    4 +-
+>>  fs/exofs/osd.c         |    4 +-
+>>  fs/exofs/super.c       |    6 +-
+>>  fs/exofs/symlink.c     |    4 +-
+>>  13 files changed, 719 insertions(+), 34 deletions(-)
+>>  create mode 100644 drivers/block/osdblk.c
+>>
+>> [These patches can be viewed on the web here:
+>>  http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=refs/heads/for-linus
+>> ]
+>>
+>> Thanks
+>> Boaz
 > 
->>What's the best setup for power usage?
->>What's the best setup for performance?
->>Are they the same?
+> Hi Linus, Jeff
 > 
+> while testing osdblk I have found some bugs and squashed below patch into
+> the original osdblk driver.
 > 
-> Yes.
+> Linus please see that you have bc47df0 it might take a few minutes to update 
 > 
+> Boaz
+> ---
+> Subject: [SQUASHME] osdblk: Assorted bug fixes 
 > 
->>Is it most optimal to have the interrupt for socket $X occur on the same 
->>CPU as where the app is running?
+> I have squashed the below fixes to the original osdblk driver.
+> It should run much better now
 > 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> ---
 > 
-> Yes.
-
-Well...  Yes, if the goal is lowest service demand/latency, but not always if 
-the goal is to have highest throughput.  For example, basic netperf TCP_RR 
-between a pair of systems with NIC interrupts pinned to CPU0 for my convenience :)
-
-Pin netperf/netserver to CPU0 as well:
-sbs133b15:~ # netperf -H sbs133b16 -t TCP_RR -T 0 -c -C
-TCP REQUEST/RESPONSE TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 
-sbs133b16.west (10.208.1.50) port 0 AF_INET : first burst 0 : cpu bind
-Local /Remote
-Socket Size   Request Resp.  Elapsed Trans.   CPU    CPU    S.dem   S.dem
-Send   Recv   Size    Size   Time    Rate     local  remote local   remote
-bytes  bytes  bytes   bytes  secs.   per sec  % S    % S    us/Tr   us/Tr
-
-16384  87380  1       1      10.00   16396.22  0.39   0.55   3.846   5.364
-16384  87380
-
-Now pin it to the peer thread in that same core:
-
-sbs133b15:~ # netperf -H sbs133b16 -t TCP_RR -T 8 -c -C
-TCP REQUEST/RESPONSE TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 
-sbs133b16.west (10.208.1.50) port 0 AF_INET : first burst 0 : cpu bind
-Local /Remote
-Socket Size   Request Resp.  Elapsed Trans.   CPU    CPU    S.dem   S.dem
-Send   Recv   Size    Size   Time    Rate     local  remote local   remote
-bytes  bytes  bytes   bytes  secs.   per sec  % S    % S    us/Tr   us/Tr
-
-16384  87380  1       1      10.00   14078.23  0.67   0.87   7.604   9.863
-16384  87380
-
-Now pin it to another core in that same processor:
-
-sbs133b15:~ # netperf -H sbs133b16 -t TCP_RR -T 2 -c -C
-TCP REQUEST/RESPONSE TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to 
-sbs133b16.west (10.208.1.50) port 0 AF_INET : first burst 0 : cpu bind
-Local /Remote
-Socket Size   Request Resp.  Elapsed Trans.   CPU    CPU    S.dem   S.dem
-Send   Recv   Size    Size   Time    Rate     local  remote local   remote
-bytes  bytes  bytes   bytes  secs.   per sec  % S    % S    us/Tr   us/Tr
-
-16384  87380  1       1      10.00   14649.57  1.76   0.64   19.213  7.036
-16384  87380
-
-Certainly seems to support "run on the same core as interrupts." Now though lets 
-look at bulk throughput:
-
-sbs133b15:~ # netperf -H sbs133b16 -T 0 -c -C
-TCP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to sbs133b16.west 
-(10.208.1.50) port 0 AF_INET : cpu bind
-Recv   Send    Send                          Utilization       Service Demand
-Socket Socket  Message  Elapsed              Send     Recv     Send    Recv
-Size   Size    Size     Time     Throughput  local    remote   local   remote
-bytes  bytes   bytes    secs.    10^6bits/s  % S      % S      us/KB   us/KB
-
-  87380  16384  16384    10.00      9384.11   3.39     2.19     0.474   0.306
-
-In this case, I'm running on Nehalems (two quad-cores with threads enabled) so I 
-have enough "oomph" to hit link-rate on a classic throughput test so all these 
-next two will show is the CPU hit and some of the run to run variablity:
-
-sbs133b15:~ # for t in 8 2; do netperf -P 0 -H sbs133b16 -T $t -c -C -B "bind to 
-core $t"; done
-  87380  16384  16384    10.00      9383.67   4.23     5.21     0.591   0.728 
-bind to core 8
-  87380  16384  16384    10.00      9383.12   3.03     5.35     0.423   0.747 
-bind to core 2
-
-So apart from the thing on the top of my head what is my point?  Let's look at a 
-less conventional but still important case - bulk small packet throughput. 
-First, find the limit for a single connection when bound to the interrupt core:
-
-sbs133b15:~ # for b in 0 4 16 64 128 256; do netperf -P 0 -t TCP_RR -T 0 -H 
-sbs133b16 -c -C -B "$b added simultaneous trans" -- -D -b $b; done
-16384  87380  1       1      10.00   16336.52  0.69   0.91   6.715   8.944  0 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   61324.84  2.23   2.27   5.825   5.910  4 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   152221.78  2.81   3.49   2.956   3.664  16 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   291247.72  4.86   5.07   2.670   2.788  64 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   292257.59  3.99   5.91   2.183   3.236  128 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   291734.00  5.55   5.32   3.043   2.920  256 
-added simultaneous trans
-16384  87380
-
-Now, when bound to the peer thread:
-sbs133b15:~ # for b in 0 4 16 64 128 256; do netperf -P 0 -t TCP_RR -T 8 -H 
-sbs133b16 -c -C -B "$b added simultaneous trans" -- -D -b $b; done
-16384  87380  1       1      10.00   14367.40  0.78   1.75   8.652   19.477 0 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   54820.22  2.73   4.78   7.956   13.948 4 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   159305.92  4.61   6.84   4.627   6.874  16 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   260227.55  6.26   8.36   3.851   5.140  64 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   256336.50  6.23   8.00   3.891   4.993  128 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   250543.92  6.24   6.29   3.985   4.014  256 
-added simultaneous trans
-16384  87380
-
-Things still don't look good for running on another CPU, but wait :)  Bind to 
-another core in the same processor:
-
-sbs133b15:~ # for b in 0 4 16 64 128 256; do netperf -P 0 -t TCP_RR -T 2 -H 
-sbs133b16 -c -C -B "$b added simultaneous trans" -- -D -b $b; done
-16384  87380  1       1      10.00   14697.98  0.89   1.53   9.689   16.700 0 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   58201.08  2.11   4.21   5.804   11.585 4 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   158999.50  3.87   6.20   3.899   6.240  16 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   379243.72  6.24   9.04   2.634   3.815  64 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   384823.34  6.15   9.50   2.556   3.949  128 
-added simultaneous trans
-16384  87380
-16384  87380  1       1      10.00   375001.50  6.07   9.63   2.588   4.109  256 
-added simultaneous trans
-16384  87380
-
-When the CPU does not have enough "oomph" for link-rate 10G, then what we see 
-above with the aggregate TCP_RR holds true for a plain TCP_STREAM test as well - 
-getting the second core involved, while indeed increasing CPU util, also 
-provides the additional cycles required to get higher thoughput.  So what is 
-optimal depends on what one wishes to optimize.
-
+> diff --git a/drivers/block/osdblk.c b/drivers/block/osdblk.c
+> index b07e154..13c1aee 100644
+> --- a/drivers/block/osdblk.c
+> +++ b/drivers/block/osdblk.c
+> @@ -71,6 +71,19 @@
+>  #define DRV_NAME "osdblk"
+>  #define PFX DRV_NAME ": "
+>  
+> +/* #define _OSDBLK_DEBUG */
+> +#ifdef _OSDBLK_DEBUG
+> +#define OSDBLK_DEBUG(fmt, a...) \
+> +	printk(KERN_NOTICE "osdblk @%s:%d: " fmt, __func__, __LINE__, ##a)
+> +#else
+> +#define OSDBLK_DEBUG(fmt, a...) \
+> +	do { if (0) printk(fmt, ##a); } while (0)
+> +#endif
+> +
+> +MODULE_AUTHOR("Jeff Garzik <jeff@garzik.org>");
+> +MODULE_DESCRIPTION("block device inside an OSD object osdblk.ko");
+> +MODULE_LICENSE("GPL");
+> +
+>  struct osdblk_device;
+>  
+>  enum {
+> @@ -109,7 +122,7 @@ struct osdblk_device {
+>  };
+>  
+>  static struct class *class_osdblk;		/* /sys/class/osdblk */
+> -static struct mutex ctl_mutex;	/* Serialize open/close/setup/teardown */
+> +static DEFINE_MUTEX(ctl_mutex);	/* Serialize open/close/setup/teardown */
+>  static LIST_HEAD(osdblkdev_list);
+>  
+>  static struct block_device_operations osdblk_bd_ops = {
+> @@ -223,8 +236,10 @@ static void osdblk_osd_complete(struct osd_request *or, void *private)
+>  	struct osd_sense_info osi;
+>  	int ret = osd_req_decode_sense(or, &osi);
+>  
+> -	if (ret)
+> +	if (ret) {
+>  		ret = -EIO;
+> +		OSDBLK_DEBUG("osdblk_osd_complete with err=%d\n", ret);
+> +	}
+>  
+>  	/* complete OSD request */
+>  	osd_end_request(or);
+> @@ -250,13 +265,15 @@ static struct bio *bio_chain_clone(struct bio *old_chain, gfp_t gfpmask)
+>  	struct bio *tmp, *new_chain = NULL, *tail = NULL;
+>  
+>  	while (old_chain) {
+> -		tmp = bio_kmalloc(gfpmask, old_chain->bi_vcnt);
+> +		tmp = bio_kmalloc(gfpmask, old_chain->bi_max_vecs);
+>  		if (!tmp)
+>  			goto err_out;
+>  
+>  		__bio_clone(tmp, old_chain);
+> +		tmp->bi_bdev = NULL;
+>  		gfpmask &= ~__GFP_WAIT;
+>  		tmp->bi_next = NULL;
+> +
+>  		if (!new_chain)
+>  			new_chain = tail = tmp;
+>  		else {
+> @@ -270,6 +287,7 @@ static struct bio *bio_chain_clone(struct bio *old_chain, gfp_t gfpmask)
+>  	return new_chain;
+>  
+>  err_out:
+> +	OSDBLK_DEBUG("bio_chain_clone with err\n");
+>  	bio_chain_put(new_chain);
+>  	return NULL;
+>  }
+> @@ -277,13 +295,14 @@ err_out:
+>  static void osdblk_rq_fn(struct request_queue *q)
+>  {
+>  	struct osdblk_device *osdev = q->queuedata;
+> -	struct request *rq;
+> -	struct osdblk_request *orq;
+> -	struct osd_request *or;
+> -	struct bio *bio;
+> -	int do_write, do_flush;
+>  
+>  	while (1) {
+> +		struct request *rq;
+> +		struct osdblk_request *orq;
+> +		struct osd_request *or;
+> +		struct bio *bio;
+> +		bool do_write, do_flush;
+> +
+>  		/* peek at request from block layer */
+>  		rq = blk_fetch_request(q);
+>  		if (!rq)
+> @@ -317,6 +336,7 @@ static void osdblk_rq_fn(struct request_queue *q)
+>  		or = osd_start_request(osdev->osd, GFP_ATOMIC);
+>  		if (!or) {
+>  			bio_chain_put(bio);
+> +			OSDBLK_DEBUG("osd_start_request with err\n");
+>  			break;
+>  		}
+>  
+> @@ -336,12 +356,19 @@ static void osdblk_rq_fn(struct request_queue *q)
+>  			osd_req_read(or, &osdev->obj, blk_rq_pos(rq) * 512ULL,
+>  				     bio, blk_rq_bytes(rq));
+>  
+> +		OSDBLK_DEBUG("%s 0x%x bytes at 0x%llx\n",
+> +			do_flush ? "flush" : do_write ?
+> +				"write" : "read", blk_rq_bytes(rq),
+> +			blk_rq_pos(rq) * 512ULL);
+> +
+>  		/* begin OSD command execution */
+>  		if (osd_async_op(or, osdblk_osd_complete, orq,
+>  				 osdev->obj_cred)) {
+>  			osd_end_request(or);
+>  			blk_requeue_request(q, rq);
+>  			bio_chain_put(bio);
+> +			OSDBLK_DEBUG("osd_execute_request_async with err\n");
+> +			break;
+>  		}
+>  
+>  		/* remove the special 'flush' marker, now that the command
+> @@ -390,7 +417,7 @@ static int osdblk_init_disk(struct osdblk_device *osdev)
+>  	if (!disk)
+>  		return -ENOMEM;
+>  
+> -	sprintf(disk->disk_name, DRV_NAME "/%d", osdev->id);
+> +	sprintf(disk->disk_name, DRV_NAME "%d", osdev->id);
+>  	disk->major = osdev->major;
+>  	disk->first_minor = 0;
+>  	disk->fops = &osdblk_bd_ops;
+> @@ -428,9 +455,12 @@ static int osdblk_init_disk(struct osdblk_device *osdev)
+>  	osdev->q = q;
+>  
+>  	/* finally, announce the disk to the world */
+> -	set_capacity(disk, obj_size);
+> +	set_capacity(disk, obj_size / 512ULL);
+>  	add_disk(disk);
+>  
+> +	printk(KERN_INFO "%s: Added of size 0x%llx\n",
+> +		disk->disk_name, (unsigned long long)obj_size);
+> +
+>  	return 0;
+>  }
+>  
+> @@ -544,7 +574,7 @@ static ssize_t class_osdblk_add(struct class *c, const char *buf, size_t count)
+>  	if (rc)
+>  		goto err_out_blkdev;
+>  
+> -	return 0;
+> +	return count;
+>  
+>  err_out_blkdev:
+>  	unregister_blkdev(osdev->major, osdev->name);
+> @@ -557,6 +587,7 @@ err_out_slot:
+>  
+>  	kfree(osdev);
+>  err_out_mod:
+> +	OSDBLK_DEBUG("Error adding device %s\n", buf);
+>  	module_put(THIS_MODULE);
+>  	return rc;
+>  }
+> @@ -604,7 +635,7 @@ static ssize_t class_osdblk_remove(struct class *c, const char *buf,
+>  	/* release module ref */
+>  	module_put(THIS_MODULE);
+>  
+> -	return 0;
+> +	return count;
+>  }
+>  
+>  static struct class_attribute class_osdblk_attrs[] = {
+> diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
+> index 7a117c1..da0e35f 100644
+> --- a/drivers/scsi/osd/osd_initiator.c
+> +++ b/drivers/scsi/osd/osd_initiator.c
+> @@ -441,7 +441,7 @@ void osd_end_request(struct osd_request *or)
+>  {
+>  	struct request *rq = or->request;
+>  	/* IMPORTANT: make sure this agrees with osd_execute_request_async */
+> -	bool is_async = (or->request->end_io_data == or);
+> +	bool is_async = (rq->end_io_data == or);
+>  
+>  	_osd_free_seg(or, &or->set_attr);
+>  	_osd_free_seg(or, &or->enc_get_attr);
 > 
->>If yes, how to best handle when the scheduler moves app to another CPU?
->>Should we reprogram the NIC hardware flow steering mechanism at that point?
-> 
-> 
-> Not really.  For now the best thing to do is to pin everything
-> down and not move at all, because we can't afford to move.
-> 
-> The only way for moving to work is if we had the ability to get
-> the sockets to follow the processes.  That means, we must have
-> one RX queue per socket.
-
-Well, or assign sockets to per-core RX queues and be able to move them around. 
-If it weren't for all the smarts in the NICs getting in the way :), we'd 
-probably do the "lookup where the socket was last accessed and run there" thing 
-somewhere in the inbound path a la TOPS.
-
-rick jones
-
-> 
-> Cheers,
-
+> _______________________________________________
+> osd-dev mailing list
+> osd-dev@open-osd.org
+> http://mailman.open-osd.org/mailman/listinfo/osd-dev
