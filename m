@@ -1,91 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZGFMyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbZGFMzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbZGFMyT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 08:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZGFMyL
+	id S1755001AbZGFMzh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 08:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZGFMza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 08:54:11 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:51970 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752476AbZGFMyK (ORCPT
+	Mon, 6 Jul 2009 08:55:30 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:56810 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753387AbZGFMz3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 08:54:10 -0400
-Message-ID: <4A51F3F3.6040501@petalogix.com>
-Date: Mon, 06 Jul 2009 14:54:11 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Mon, 6 Jul 2009 08:55:29 -0400
+From: "Gadiyar, Anand" <gadiyar@ti.com>
+To: "trivial@kernel.org" <trivial@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 6 Jul 2009 18:22:30 +0530
+Subject: [PATCH] Trivial: Fix typo "for for" in multiple files
+Thread-Topic: [PATCH] Trivial: Fix typo "for for" in multiple files
+Thread-Index: Acn+OJ9MnjRCo32QQNOFhyNaIEtQIQ==
+Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB0305C11157@dbde02.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>,
-       Michal Simek <michal.simek@petalogix.com>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>,
-       John Williams <john.williams@petalogix.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Grant Likely <grant.likely@secretlab.ca>, subrata@linux.vnet.ibm.com
-Subject: Re: mmap syscall problem
-References: <4A4DFB77.1080700@petalogix.com> <200907031702.52612.arnd@arndb.de> <4A519A70.50801@petalogix.com> <200907061005.36094.arnd@arndb.de> <4A51E8EA.1050009@petalogix.com> <20090706121455.GA16908@linux-sh.org>
-In-Reply-To: <20090706121455.GA16908@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Mon, Jul 06, 2009 at 02:07:06PM +0200, Michal Simek wrote:
->   
->> Arnd Bergmann wrote:
->>     
->>> On Monday 06 July 2009, Michal Simek wrote:
->>>   
->>>       
->>>>> Does this happen on microblaze-mmu or microblaze-nommu, or both?
->>>>> The mmap code for the two is very different.
->>>>>   
->>>>>       
->>>>>           
->>>> For MMU code.
->>>>     
->>>>         
->>> Could this be a cache-aliasing problem? If your cache is 'virtually-indexed'
->>> (most architectures are 'physically-indexed'), the kernel may have written
->>> into different parts of the D-cache than what the user space is reading
->>> from. If you have a write-through cache, that can explain why you only
->>> see the stale data at the beginning of the page -- the cache controller
->>> is still busy writing back the data when you start reading it from
->>> DRAM through the cache alias.
->>>   
->>>       
->> I don't think so because we run that test on Microblaze without caches
->> and test failed too.
->> I think that this is sufficient test to tell that the problem is not
->> relate with caches.
->>
->>     
-> Not necessarily, even on platforms that manage aliases in hardware
-> mappings that violate the aliasing constraints can still result in
-> undefined behaviour, this really depends more on your cache controller
-> and MMU than anything else. I notice that microblaze sets SHMLBA to
-> PAGE_SIZE, you may want to see if this test still breaks after bumping it
-> up to something like PAGE_SIZE * 4.
->   
-Yes, test still break - behavior is the same. I don't have accurate
-information about MMU unit
-but I will ask a question about. We are able to turn off cache
-controller directly in HW.
-> This is unfortunately one of the areas where what POSIX says is possible
-> and what hardware can support are at odds (you can look through
-> arch/sh/mm/mmap.c for a better idea).
->   
+From: Anand Gadiyar <gadiyar@ti.com>
 
-Thanks,
-Michal
+Trivial: Fix typo "for for" in multiple files.
 
+Signed-off-by: Anand Gadiyar <gadiyar@ti.com>
+---
+After submitting a patch [1] for two instances of this in EHCI code,
+I decided to grep the rest of the kernel as well and came up with this.
 
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+Let me know if you want me to re-submit with both patches folded
+together.
 
+[1] <http://patchwork.kernel.org/patch/34236/>
+
+ Documentation/filesystems/nfsroot.txt            |    2 +-
+ Documentation/powerpc/booting-without-of.txt     |    2 +-
+ arch/blackfin/mach-bf538/include/mach/defBF539.h |    2 +-
+ arch/mips/include/asm/ioctl.h                    |    2 +-
+ arch/powerpc/kernel/udbg_16550.c                 |    2 +-
+ arch/powerpc/platforms/powermac/udbg_scc.c       |    2 +-
+ drivers/edac/edac_core.h                         |    2 +-
+ drivers/infiniband/hw/ipath/ipath_iba6110.c      |    2 +-
+ drivers/isdn/i4l/isdn_common.c                   |    4 ++--
+ drivers/media/Kconfig                            |    2 +-
+ drivers/net/bnx2x_reg.h                          |    2 +-
+ fs/xfs/xfs_fs.h                                  |    2 +-
+ include/linux/raid/md_k.h                        |    2 +-
+ include/linux/usb.h                              |    2 +-
+ 14 files changed, 15 insertions(+), 15 deletions(-)
+
+Index: linux-omap-2.6/Documentation/filesystems/nfsroot.txt
+===================================================================
+--- linux-omap-2.6.orig/Documentation/filesystems/nfsroot.txt
++++ linux-omap-2.6/Documentation/filesystems/nfsroot.txt
+@@ -105,7 +105,7 @@ ip=<client-ip>:<server-ip>:<gw-ip>:<netm
+ 		the client address and this parameter is NOT empty only
+ 		replies from the specified server are accepted.
+ 
+-		Only required for for NFS root. That is autoconfiguration
++		Only required for NFS root. That is autoconfiguration
+ 		will not be triggered if it is missing and NFS root is not
+ 		in operation.
+ 
+Index: linux-omap-2.6/Documentation/powerpc/booting-without-of.txt
+===================================================================
+--- linux-omap-2.6.orig/Documentation/powerpc/booting-without-of.txt
++++ linux-omap-2.6/Documentation/powerpc/booting-without-of.txt
+@@ -1931,7 +1931,7 @@ prefixed with the string "marvell,", for
+       devices.  This field represents the number of cells needed to
+       represent the address of the memory-mapped registers of devices
+       within the system controller chip.
+-    - #size-cells : Size representation for for the memory-mapped
++    - #size-cells : Size representation for the memory-mapped
+       registers within the system controller chip.
+     - #interrupt-cells : Defines the width of cells used to represent
+       interrupts.
+Index: linux-omap-2.6/arch/blackfin/mach-bf538/include/mach/defBF539.h
+===================================================================
+--- linux-omap-2.6.orig/arch/blackfin/mach-bf538/include/mach/defBF539.h
++++ linux-omap-2.6/arch/blackfin/mach-bf538/include/mach/defBF539.h
+@@ -2269,7 +2269,7 @@
+ #define	AMBEN_B0_B1	0x0004	/* Enable Asynchronous Memory Banks 0 &	1 only */
+ #define	AMBEN_B0_B1_B2	0x0006	/* Enable Asynchronous Memory Banks 0, 1, and 2 */
+ #define	AMBEN_ALL	0x0008	/* Enable Asynchronous Memory Banks (all) 0, 1,	2, and 3 */
+-#define	CDPRIO		0x0100	/* DMA has priority over core for for external accesses */
++#define	CDPRIO		0x0100	/* DMA has priority over core for external accesses */
+ 
+ /* EBIU_AMGCTL Bit Positions */
+ #define	AMCKEN_P		0x0000	/* Enable CLKOUT */
+Index: linux-omap-2.6/arch/mips/include/asm/ioctl.h
+===================================================================
+--- linux-omap-2.6.orig/arch/mips/include/asm/ioctl.h
++++ linux-omap-2.6/arch/mips/include/asm/ioctl.h
+@@ -18,7 +18,7 @@
+  * the process. I'd like to clean it up for the i386 as well, but
+  * it's so painful recognizing both the new and the old numbers..
+  *
+- * The same applies for for the MIPS ABI; in fact even the macros
++ * The same applies for the MIPS ABI; in fact even the macros
+  * from Linux/Alpha fit almost perfectly.
+  */
+ 
+Index: linux-omap-2.6/arch/powerpc/kernel/udbg_16550.c
+===================================================================
+--- linux-omap-2.6.orig/arch/powerpc/kernel/udbg_16550.c
++++ linux-omap-2.6/arch/powerpc/kernel/udbg_16550.c
+@@ -1,5 +1,5 @@
+ /*
+- * udbg for for NS16550 compatable serial ports
++ * udbg for NS16550 compatable serial ports
+  *
+  * Copyright (C) 2001-2005 PPC 64 Team, IBM Corp
+  *
+Index: linux-omap-2.6/arch/powerpc/platforms/powermac/udbg_scc.c
+===================================================================
+--- linux-omap-2.6.orig/arch/powerpc/platforms/powermac/udbg_scc.c
++++ linux-omap-2.6/arch/powerpc/platforms/powermac/udbg_scc.c
+@@ -1,5 +1,5 @@
+ /*
+- * udbg for for zilog scc ports as found on Apple PowerMacs
++ * udbg for zilog scc ports as found on Apple PowerMacs
+  *
+  * Copyright (C) 2001-2005 PPC 64 Team, IBM Corp
+  *
+Index: linux-omap-2.6/drivers/edac/edac_core.h
+===================================================================
+--- linux-omap-2.6.orig/drivers/edac/edac_core.h
++++ linux-omap-2.6/drivers/edac/edac_core.h
+@@ -268,7 +268,7 @@ enum scrub_type {
+  *			is irrespective of the memory devices being mounted
+  *			on both sides of the memory stick.
+  *
+- * Socket set:		All of the memory sticks that are required for for
++ * Socket set:		All of the memory sticks that are required for
+  *			a single memory access or all of the memory sticks
+  *			spanned by a chip-select row.  A single socket set
+  *			has two chip-select rows and if double-sided sticks
+Index: linux-omap-2.6/drivers/infiniband/hw/ipath/ipath_iba6110.c
+===================================================================
+--- linux-omap-2.6.orig/drivers/infiniband/hw/ipath/ipath_iba6110.c
++++ linux-omap-2.6/drivers/infiniband/hw/ipath/ipath_iba6110.c
+@@ -809,7 +809,7 @@ static int ipath_setup_ht_reset(struct i
+  * errors.  We only bother to do this at load time, because it's OK if
+  * it happened before we were loaded (first time after boot/reset),
+  * but any time after that, it's fatal anyway.  Also need to not check
+- * for for upper byte errors if we are in 8 bit mode, so figure out
++ * for upper byte errors if we are in 8 bit mode, so figure out
+  * our width.  For now, at least, also complain if it's 8 bit.
+  */
+ static void slave_or_pri_blk(struct ipath_devdata *dd, struct pci_dev *pdev,
+Index: linux-omap-2.6/drivers/isdn/i4l/isdn_common.c
+===================================================================
+--- linux-omap-2.6.orig/drivers/isdn/i4l/isdn_common.c
++++ linux-omap-2.6/drivers/isdn/i4l/isdn_common.c
+@@ -761,7 +761,7 @@ isdn_getnum(char **p)
+  * Be aware that this is not an atomic operation when sleep != 0, even though 
+  * interrupts are turned off! Well, like that we are currently only called
+  * on behalf of a read system call on raw device files (which are documented
+- * to be dangerous and for for debugging purpose only). The inode semaphore
++ * to be dangerous and for debugging purpose only). The inode semaphore
+  * takes care that this is not called for the same minor device number while
+  * we are sleeping, but access is not serialized against simultaneous read()
+  * from the corresponding ttyI device. Can other ugly events, like changes
+@@ -873,7 +873,7 @@ isdn_readbchan(int di, int channel, u_ch
+  * Be aware that this is not an atomic operation when sleep != 0, even though
+  * interrupts are turned off! Well, like that we are currently only called
+  * on behalf of a read system call on raw device files (which are documented
+- * to be dangerous and for for debugging purpose only). The inode semaphore
++ * to be dangerous and for debugging purpose only). The inode semaphore
+  * takes care that this is not called for the same minor device number while
+  * we are sleeping, but access is not serialized against simultaneous read()
+  * from the corresponding ttyI device. Can other ugly events, like changes
+Index: linux-omap-2.6/drivers/media/Kconfig
+===================================================================
+--- linux-omap-2.6.orig/drivers/media/Kconfig
++++ linux-omap-2.6/drivers/media/Kconfig
+@@ -117,7 +117,7 @@ source "drivers/media/dvb/Kconfig"
+ config DAB
+ 	boolean "DAB adapters"
+ 	---help---
+-	  Allow selecting support for for Digital Audio Broadcasting (DAB)
++	  Allow selecting support for Digital Audio Broadcasting (DAB)
+ 	  Receiver adapters.
+ 
+ if DAB
+Index: linux-omap-2.6/drivers/net/bnx2x_reg.h
+===================================================================
+--- linux-omap-2.6.orig/drivers/net/bnx2x_reg.h
++++ linux-omap-2.6/drivers/net/bnx2x_reg.h
+@@ -3653,7 +3653,7 @@
+    The fields are:[4:0] - tail pointer; [10:5] - Link List size; 15:11] -
+    header pointer. */
+ #define TCM_REG_XX_TABLE					 0x50240
+-/* [RW 4] Load value for for cfc ac credit cnt. */
++/* [RW 4] Load value for cfc ac credit cnt. */
+ #define TM_REG_CFC_AC_CRDCNT_VAL				 0x164208
+ /* [RW 4] Load value for cfc cld credit cnt. */
+ #define TM_REG_CFC_CLD_CRDCNT_VAL				 0x164210
+Index: linux-omap-2.6/fs/xfs/xfs_fs.h
+===================================================================
+--- linux-omap-2.6.orig/fs/xfs/xfs_fs.h
++++ linux-omap-2.6/fs/xfs/xfs_fs.h
+@@ -117,7 +117,7 @@ struct getbmapx {
+ #define BMV_IF_VALID	\
+ 	(BMV_IF_ATTRFORK|BMV_IF_NO_DMAPI_READ|BMV_IF_PREALLOC|BMV_IF_DELALLOC)
+ 
+-/*	bmv_oflags values - returned for for each non-header segment */
++/*	bmv_oflags values - returned for each non-header segment */
+ #define BMV_OF_PREALLOC		0x1	/* segment = unwritten pre-allocation */
+ #define BMV_OF_DELALLOC		0x2	/* segment = delayed allocation */
+ #define BMV_OF_LAST		0x4	/* segment is the last in the file */
+Index: linux-omap-2.6/include/linux/raid/md_k.h
+===================================================================
+--- linux-omap-2.6.orig/include/linux/raid/md_k.h
++++ linux-omap-2.6/include/linux/raid/md_k.h
+@@ -201,7 +201,7 @@ struct mddev_s
+ 	 * INTR:     resync needs to be aborted for some reason
+ 	 * DONE:     thread is done and is waiting to be reaped
+ 	 * REQUEST:  user-space has requested a sync (used with SYNC)
+-	 * CHECK:    user-space request for for check-only, no repair
++	 * CHECK:    user-space request for check-only, no repair
+ 	 * RESHAPE:  A reshape is happening
+ 	 *
+ 	 * If neither SYNC or RESHAPE are set, then it is a recovery.
+Index: linux-omap-2.6/include/linux/usb.h
+===================================================================
+--- linux-omap-2.6.orig/include/linux/usb.h
++++ linux-omap-2.6/include/linux/usb.h
+@@ -1225,7 +1225,7 @@ typedef void (*usb_complete_t)(struct ur
+  * @start_frame: Returns the initial frame for isochronous transfers.
+  * @number_of_packets: Lists the number of ISO transfer buffers.
+  * @interval: Specifies the polling interval for interrupt or isochronous
+- *	transfers.  The units are frames (milliseconds) for for full and low
++ *	transfers.  The units are frames (milliseconds) for full and low
+  *	speed devices, and microframes (1/8 millisecond) for highspeed ones.
+  * @error_count: Returns the number of ISO transfers that reported errors.
+  * @context: For use in completion functions.  This normally points to
