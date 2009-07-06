@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbZGFR0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbZGFR2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754101AbZGFR0w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 13:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZGFR0n
+	id S1753496AbZGFR2k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 13:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZGFR2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 13:26:43 -0400
-Received: from mail.anarazel.de ([217.115.131.40]:56020 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753091AbZGFR0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 13:26:42 -0400
-From: Andres Freund <andres@anarazel.de>
-To: Joao Correia <joaomiguelcorreia@gmail.com>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused by netem)
-Date: Mon, 6 Jul 2009 19:26:43 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc1-andres-00457-g396ca83-dirty; KDE/4.2.95; x86_64; ; )
-Cc: Jarek Poplawski <jarkao2@gmail.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200907031326.21822.andres@anarazel.de> <20090706163106.GA4559@ami.dom.local> <a5d9929e0907061023g4306d80ewfc8907653b949005@mail.gmail.com>
-In-Reply-To: <a5d9929e0907061023g4306d80ewfc8907653b949005@mail.gmail.com>
+	Mon, 6 Jul 2009 13:28:31 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:57703 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752777AbZGFR2a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 13:28:30 -0400
+Message-ID: <4A523438.6030506@davidnewall.com>
+Date: Tue, 07 Jul 2009 02:58:24 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Pavel Machek <pavel@ucw.cz>
+CC: Jeff Arnold <jbarnold@ksplice.com>, linux-kernel@vger.kernel.org,
+       tabbott@ksplice.com, wdaher@ksplice.com, andersk@ksplice.com,
+       nelhage@ksplice.com, price@ksplice.com, geofft@ksplice.com
+Subject: Re: Ksplice updates for Ubuntu 9.04 Jaunty
+References: <alpine.DEB.1.10.0906250451210.22588@vinegar-pot.mit.edu> <20090630063152.GC1351@ucw.cz> <alpine.DEB.1.10.0907010909250.26501@vinegar-pot.mit.edu> <20090702213823.GB1485@ucw.cz> <alpine.DEB.1.10.0907021740140.8890@vinegar-pot.mit.edu> <20090705184710.GB17910@elf.ucw.cz>
+In-Reply-To: <20090705184710.GB17910@elf.ucw.cz>
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907061926.43625.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 July 2009 19:23:18 Joao Correia wrote:
-> Hello
+Pavel Machek wrote:
+> I did not say "unimportant patches". I said simple patches.
 >
-> Since i already had the kernel compiled and ready to boot when i read
-> this, i gave it a go anyway :-).
->
-> I can reproduce the freeze with those 4 patches applied, so i can
-> confirm that its, at least, related to, or exposed by, those patches.
-> There must be something else too, or its just too much fuzziness, but
-> the freeze takes a bit more time (approximately five minutes, give or
-> take) compared to the instant freeze before, but its there with the
-> patches, and without them, no freeze.
->
-> I assume there isnt a "safe" way to get them out of current .31-rc's,
-> right?
-`echo 0 > /proc/sys/kernel/timer_migration` should mitigate the problem.
+> Lets say something adds field to task_struct. Can you handle that?
+>   
 
-Andres
+By co-incidence, a similar discussion took place on another mailing list
+last week, and the answer was that yes, Ksplice can handle it.  From my
+reading of the Ksplice paper (http://www.ksplice.com/paper), I think a
+shadow structure is created to hold the new field.  Code that accesses
+the new field, which ipso facto is part of the patch, is modified to use
+the shadow structure; the rest of the kernel remains unaltered.
