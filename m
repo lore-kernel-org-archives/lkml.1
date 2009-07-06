@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbZGFUCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZGFUEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbZGFUCQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 16:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZGFUCA
+	id S1754752AbZGFUEt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 16:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZGFUEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 16:02:00 -0400
-Received: from smtp.df.ru ([195.42.160.16]:38019 "EHLO smtp.df.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751044AbZGFUCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 16:02:00 -0400
-Date: Tue, 7 Jul 2009 00:03:11 +0400
-From: Alexey Vlasov <renton@renton.name>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: devpts mounts too slowly
-Message-ID: <20090706200311.GB7484@beaver.vrungel.ru>
-References: <20090603142801.GC21646@beaver.vrungel.ru> <4A26EB18.6060907@zytor.com> <20090609161945.811cc01f.akpm@linux-foundation.org> <2c0942db0906091630l1cc79647h8689e9e929ed1bba@mail.gmail.com> <4A2EF833.6080300@zytor.com> <20090706195252.GA7484@beaver.vrungel.ru>
+	Mon, 6 Jul 2009 16:04:40 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:47145 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752164AbZGFUEj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 16:04:39 -0400
+Date: Mon, 6 Jul 2009 21:04:31 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: tridge@samba.org
+Cc: Jan Engelhardt <jengelh@medozas.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+Message-ID: <20090706200431.GC13638@shareable.org>
+References: <alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr> <19021.19842.663727.146474@samba.org> <87hbxu60qm.fsf@devron.myhome.or.jp> <19021.23231.213863.726785@samba.org> <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr> <19021.26102.80885.330380@samba.org> <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr> <19021.31291.642416.956966@samba.org> <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr> <19021.63615.450348.192109@samba.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090706195252.GA7484@beaver.vrungel.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <19021.63615.450348.192109@samba.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 11:52:52PM +0400, Alexey Vlasov wrote:
-> On Tue, Jun 09, 2009 at 05:02:59PM -0700, H. Peter Anvin wrote:
+tridge@samba.org wrote:
+> When CONFIG_VFAT_FS_DUALNAMES is not set and a 8.3 name is created,
+> force the use of the shortname=winnt option to allow for lowercase or
+> uppercase prefix and extensions without using a long name.
 > 
-> > A quick script seems to confirm that the time starts creeping up as the
-> > number of mount points increase; on my Core i7 system the 10000th mount
-> > takes around 50 ms whereas the early instances are submillisecond, and
-> > the increase *seems* to be O(n log n) or thereabouts -- slightly
-> > superlinear but not a good fit for a power law.
-> 
-> I have prepared a new machine for testing, and I don't see any slowdown
-> by mounting devpts.
-> Total mounts on it:
-> # wc -l /proc/mounts
-> 153481 /proc/mounts
-> # fgrep -c devpts /proc/mounts
-> 10231
-> 
-> On my other servers there're slowdown already by this number of:
-> # wc -l /proc/mounts
-> 49889 /proc/mounts
-> # fgrep -c devpts /proc/mounts
-> 3323
+> +	unsigned opts_shortname = opts->shortname;
+> +
+> +#ifndef CONFIG_VFAT_FS_DUALNAMES
+> +	opts_shortname = VFAT_SFN_CREATE_WINNT;
+> +#endif
 
-One more notice, box with slowdowns:
-...
-geteuid()                               = 0
-getcwd("/home/staff/r_renton"..., 4095) = 21
-readlink("/home/staff/r_renton/none", 0x7ffffa32aa00, 4096) = -1 ENOENT
-(No such file or directory)
-rt_sigprocmask(SIG_BLOCK, ~[TRAP SEGV RTMIN RT_1], NULL, 8) = 0
-mount("none", "/home/www/server_7e014b11/dev/pts",
-"devpts", MS_MGC_VAL, NULL) = 0
-getcwd("/home/staff/r_renton"..., 4095) = 21
-...
+I'd prefer if it changes the shortname= default instead.
 
-And this on the new one, about 100k mounting points and no
-slowdowns at all.
-...
-getuid()                                = 0
-geteuid()                               = 0
-rt_sigprocmask(SIG_BLOCK, ~[TRAP SEGV RTMIN RT_1], NULL, 8) = 0
-mount("none", "/home/www/server_56d48c7d/dev/pts", "devpts",
-MS_MGC_VAL, NULL) = 0
-readlink("/home", 0x7fff79a82e10, 4096) = -1 EINVAL (Invalid argument)
-...
+When mounting explicitly with shortname=mixed, this patch changes it
+to shortname=winnt, which breaks compatibility when creating files on
+Linux and reading on Windows 95/98/ME and devices with equivalent FAT
+implementation.
 
--- 
-BRGDS. Alexey Vlasov.
+I think it's ok to break that compatibility if dualnames is off,
+because that's unfortunately the best available compromise.
+
+But if shortname=mixed is explicitly requested, it can mean (and does
+in some cases I've seen) that there's a reason long names are required
+for lower-case 8.3 names.
+
+-- Jamie
