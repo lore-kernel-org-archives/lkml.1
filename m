@@ -1,285 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZGFRDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbZGFRQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbZGFRDe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 13:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZGFRDZ
+	id S1752858AbZGFRQy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 13:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbZGFRQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 13:03:25 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:26577
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751890AbZGFRDY (ORCPT
+	Mon, 6 Jul 2009 13:16:43 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34638 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751171AbZGFRQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 13:03:24 -0400
-Message-ID: <4A522E57.7060101@panasas.com>
-Date: Mon, 06 Jul 2009 20:03:19 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeff Garzik <jeff@garzik.org>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd mailing-list <osd-dev@open-osd.org>
-Subject: Re: [osd-dev] [GIT PULL] exofs/osd tree for 2.6.31
-References: <4A3F45D5.4020600@panasas.com> <4A41F458.2050409@panasas.com>
-In-Reply-To: <4A41F458.2050409@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 6 Jul 2009 13:16:42 -0400
+Date: Mon, 6 Jul 2009 18:17:36 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+       Michael Guntsche <mike@it-loops.com>, linux-kernel@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: BUG: scheduling while atomic
+Message-ID: <20090706181736.766b3e7c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090706163239.3f557b45@lxorguk.ukuu.org.uk>
+References: <23AED400-6DA5-462F-94F0-BEE34AC08A7A@it-loops.com>
+	<20090627140643.7140f6a9@lxorguk.ukuu.org.uk>
+	<33C7D336-F062-47B3-9033-D3DC465F793C@it-loops.com>
+	<20090706074333.GA17276@gondor.apana.org.au>
+	<20090706083119.GA17782@gondor.apana.org.au>
+	<20090706163239.3f557b45@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Jul 2009 17:03:22.0285 (UTC) FILETIME=[AB19E5D0:01C9FE5B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for nagging.
-Is this going to be merged in 2.6.31 or wait for 2.6.32?
-Anything we can do to help it not fall between the cracks next time?
+This is the more drastic way of doing it. I had hoped to put this off but
+in fact it cleans stuff up enormously. This has had only basic testing
+but the underlying idea is to simply remove all the pty special casing
+that causes messes in the first place.
 
-Benny
+pty: Rework the pty layer to use the normal buffering logic
 
-On Jun. 24, 2009, 12:39 +0300, Boaz Harrosh <bharrosh@panasas.com> wrote:
-> On 06/22/2009 11:50 AM, Boaz Harrosh wrote:
->> Linus
->>
->> Please pull the following exofs/OSD changes from the git repository at:
->>
->>   git://git.open-osd.org/linux-open-osd.git for-linus
->>
->> These are a few fixes/cleanups and mainly a new block-device driver
->> from Jeff Garzik, that can export an OSD object to block-based users
->> like filesystems.
->>
->> Boaz Harrosh (5):
->>       exofs: Fix bio leak in error handling path (sync read)
->>       exofs: Remove IBM copyrights
->>       exofs: Avoid using file_fsync()
->>       MAINTAINERS: Add osd maintained files (F:)
->>       osdblk: Adjust queue limits to lower device's limits
->>
->> Jeff Garzik (1):
->>       osdblk: a Linux block device for OSD objects
->>
->>  MAINTAINERS            |    5 +-
->>  drivers/block/Kconfig  |   16 ++
->>  drivers/block/Makefile |    1 +
->>  drivers/block/osdblk.c |  670 ++++++++++++++++++++++++++++++++++++++++++++++++
->>  fs/exofs/common.h      |    4 +-
->>  fs/exofs/dir.c         |    4 +-
->>  fs/exofs/exofs.h       |    7 +-
->>  fs/exofs/file.c        |   21 +-
->>  fs/exofs/inode.c       |    7 +-
->>  fs/exofs/namei.c       |    4 +-
->>  fs/exofs/osd.c         |    4 +-
->>  fs/exofs/super.c       |    6 +-
->>  fs/exofs/symlink.c     |    4 +-
->>  13 files changed, 719 insertions(+), 34 deletions(-)
->>  create mode 100644 drivers/block/osdblk.c
->>
->> [These patches can be viewed on the web here:
->>  http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=refs/heads/for-linus
->> ]
->>
->> Thanks
->> Boaz
-> 
-> Hi Linus, Jeff
-> 
-> while testing osdblk I have found some bugs and squashed below patch into
-> the original osdblk driver.
-> 
-> Linus please see that you have bc47df0 it might take a few minutes to update 
-> 
-> Boaz
-> ---
-> Subject: [SQUASHME] osdblk: Assorted bug fixes 
-> 
-> I have squashed the below fixes to the original osdblk driver.
-> It should run much better now
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> ---
-> 
-> diff --git a/drivers/block/osdblk.c b/drivers/block/osdblk.c
-> index b07e154..13c1aee 100644
-> --- a/drivers/block/osdblk.c
-> +++ b/drivers/block/osdblk.c
-> @@ -71,6 +71,19 @@
->  #define DRV_NAME "osdblk"
->  #define PFX DRV_NAME ": "
->  
-> +/* #define _OSDBLK_DEBUG */
-> +#ifdef _OSDBLK_DEBUG
-> +#define OSDBLK_DEBUG(fmt, a...) \
-> +	printk(KERN_NOTICE "osdblk @%s:%d: " fmt, __func__, __LINE__, ##a)
-> +#else
-> +#define OSDBLK_DEBUG(fmt, a...) \
-> +	do { if (0) printk(fmt, ##a); } while (0)
-> +#endif
-> +
-> +MODULE_AUTHOR("Jeff Garzik <jeff@garzik.org>");
-> +MODULE_DESCRIPTION("block device inside an OSD object osdblk.ko");
-> +MODULE_LICENSE("GPL");
-> +
->  struct osdblk_device;
->  
->  enum {
-> @@ -109,7 +122,7 @@ struct osdblk_device {
->  };
->  
->  static struct class *class_osdblk;		/* /sys/class/osdblk */
-> -static struct mutex ctl_mutex;	/* Serialize open/close/setup/teardown */
-> +static DEFINE_MUTEX(ctl_mutex);	/* Serialize open/close/setup/teardown */
->  static LIST_HEAD(osdblkdev_list);
->  
->  static struct block_device_operations osdblk_bd_ops = {
-> @@ -223,8 +236,10 @@ static void osdblk_osd_complete(struct osd_request *or, void *private)
->  	struct osd_sense_info osi;
->  	int ret = osd_req_decode_sense(or, &osi);
->  
-> -	if (ret)
-> +	if (ret) {
->  		ret = -EIO;
-> +		OSDBLK_DEBUG("osdblk_osd_complete with err=%d\n", ret);
-> +	}
->  
->  	/* complete OSD request */
->  	osd_end_request(or);
-> @@ -250,13 +265,15 @@ static struct bio *bio_chain_clone(struct bio *old_chain, gfp_t gfpmask)
->  	struct bio *tmp, *new_chain = NULL, *tail = NULL;
->  
->  	while (old_chain) {
-> -		tmp = bio_kmalloc(gfpmask, old_chain->bi_vcnt);
-> +		tmp = bio_kmalloc(gfpmask, old_chain->bi_max_vecs);
->  		if (!tmp)
->  			goto err_out;
->  
->  		__bio_clone(tmp, old_chain);
-> +		tmp->bi_bdev = NULL;
->  		gfpmask &= ~__GFP_WAIT;
->  		tmp->bi_next = NULL;
-> +
->  		if (!new_chain)
->  			new_chain = tail = tmp;
->  		else {
-> @@ -270,6 +287,7 @@ static struct bio *bio_chain_clone(struct bio *old_chain, gfp_t gfpmask)
->  	return new_chain;
->  
->  err_out:
-> +	OSDBLK_DEBUG("bio_chain_clone with err\n");
->  	bio_chain_put(new_chain);
->  	return NULL;
->  }
-> @@ -277,13 +295,14 @@ err_out:
->  static void osdblk_rq_fn(struct request_queue *q)
->  {
->  	struct osdblk_device *osdev = q->queuedata;
-> -	struct request *rq;
-> -	struct osdblk_request *orq;
-> -	struct osd_request *or;
-> -	struct bio *bio;
-> -	int do_write, do_flush;
->  
->  	while (1) {
-> +		struct request *rq;
-> +		struct osdblk_request *orq;
-> +		struct osd_request *or;
-> +		struct bio *bio;
-> +		bool do_write, do_flush;
-> +
->  		/* peek at request from block layer */
->  		rq = blk_fetch_request(q);
->  		if (!rq)
-> @@ -317,6 +336,7 @@ static void osdblk_rq_fn(struct request_queue *q)
->  		or = osd_start_request(osdev->osd, GFP_ATOMIC);
->  		if (!or) {
->  			bio_chain_put(bio);
-> +			OSDBLK_DEBUG("osd_start_request with err\n");
->  			break;
->  		}
->  
-> @@ -336,12 +356,19 @@ static void osdblk_rq_fn(struct request_queue *q)
->  			osd_req_read(or, &osdev->obj, blk_rq_pos(rq) * 512ULL,
->  				     bio, blk_rq_bytes(rq));
->  
-> +		OSDBLK_DEBUG("%s 0x%x bytes at 0x%llx\n",
-> +			do_flush ? "flush" : do_write ?
-> +				"write" : "read", blk_rq_bytes(rq),
-> +			blk_rq_pos(rq) * 512ULL);
-> +
->  		/* begin OSD command execution */
->  		if (osd_async_op(or, osdblk_osd_complete, orq,
->  				 osdev->obj_cred)) {
->  			osd_end_request(or);
->  			blk_requeue_request(q, rq);
->  			bio_chain_put(bio);
-> +			OSDBLK_DEBUG("osd_execute_request_async with err\n");
-> +			break;
->  		}
->  
->  		/* remove the special 'flush' marker, now that the command
-> @@ -390,7 +417,7 @@ static int osdblk_init_disk(struct osdblk_device *osdev)
->  	if (!disk)
->  		return -ENOMEM;
->  
-> -	sprintf(disk->disk_name, DRV_NAME "/%d", osdev->id);
-> +	sprintf(disk->disk_name, DRV_NAME "%d", osdev->id);
->  	disk->major = osdev->major;
->  	disk->first_minor = 0;
->  	disk->fops = &osdblk_bd_ops;
-> @@ -428,9 +455,12 @@ static int osdblk_init_disk(struct osdblk_device *osdev)
->  	osdev->q = q;
->  
->  	/* finally, announce the disk to the world */
-> -	set_capacity(disk, obj_size);
-> +	set_capacity(disk, obj_size / 512ULL);
->  	add_disk(disk);
->  
-> +	printk(KERN_INFO "%s: Added of size 0x%llx\n",
-> +		disk->disk_name, (unsigned long long)obj_size);
-> +
->  	return 0;
->  }
->  
-> @@ -544,7 +574,7 @@ static ssize_t class_osdblk_add(struct class *c, const char *buf, size_t count)
->  	if (rc)
->  		goto err_out_blkdev;
->  
-> -	return 0;
-> +	return count;
->  
->  err_out_blkdev:
->  	unregister_blkdev(osdev->major, osdev->name);
-> @@ -557,6 +587,7 @@ err_out_slot:
->  
->  	kfree(osdev);
->  err_out_mod:
-> +	OSDBLK_DEBUG("Error adding device %s\n", buf);
->  	module_put(THIS_MODULE);
->  	return rc;
->  }
-> @@ -604,7 +635,7 @@ static ssize_t class_osdblk_remove(struct class *c, const char *buf,
->  	/* release module ref */
->  	module_put(THIS_MODULE);
->  
-> -	return 0;
-> +	return count;
->  }
->  
->  static struct class_attribute class_osdblk_attrs[] = {
-> diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
-> index 7a117c1..da0e35f 100644
-> --- a/drivers/scsi/osd/osd_initiator.c
-> +++ b/drivers/scsi/osd/osd_initiator.c
-> @@ -441,7 +441,7 @@ void osd_end_request(struct osd_request *or)
->  {
->  	struct request *rq = or->request;
->  	/* IMPORTANT: make sure this agrees with osd_execute_request_async */
-> -	bool is_async = (or->request->end_io_data == or);
-> +	bool is_async = (rq->end_io_data == or);
->  
->  	_osd_free_seg(or, &or->set_attr);
->  	_osd_free_seg(or, &or->enc_get_attr);
-> 
-> _______________________________________________
-> osd-dev mailing list
-> osd-dev@open-osd.org
-> http://mailman.open-osd.org/mailman/listinfo/osd-dev
+From: Alan Cox <alan@linux.intel.com>
+
+This fixes the ppp problems and various other issues with call locking
+caused by one side of a pty called in one locking context trying to match
+another with differing rules on the other side. We also get a big slack
+space to work with that means we can bury the flow control deadlock case
+for any conceivable real world situation.
+
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
+
+ drivers/char/pty.c |  156 ++++++++++++++++++++--------------------------------
+ 1 files changed, 60 insertions(+), 96 deletions(-)
+
+
+diff --git a/drivers/char/pty.c b/drivers/char/pty.c
+index daebe1b..5448320 100644
+--- a/drivers/char/pty.c
++++ b/drivers/char/pty.c
+@@ -75,114 +75,88 @@ static void pty_close(struct tty_struct *tty, struct file *filp)
+  */
+ static void pty_unthrottle(struct tty_struct *tty)
+ {
+-	struct tty_struct *o_tty = tty->link;
+-
+-	if (!o_tty)
+-		return;
+-
+-	tty_wakeup(o_tty);
++	tty_wakeup(tty->link);
+ 	set_bit(TTY_THROTTLED, &tty->flags);
+ }
+ 
+-/*
+- * WSH 05/24/97: modified to
+- *   (1) use space in tty->flip instead of a shared temp buffer
+- *	 The flip buffers aren't being used for a pty, so there's lots
+- *	 of space available.  The buffer is protected by a per-pty
+- *	 semaphore that should almost never come under contention.
+- *   (2) avoid redundant copying for cases where count >> receive_room
+- * N.B. Calls from user space may now return an error code instead of
+- * a count.
++/**
++ *	pty_space	-	report space left for writing
++ *	@to: tty we are writing into
+  *
+- * FIXME: Our pty_write method is called with our ldisc lock held but
+- * not our partners. We can't just wait on the other one blindly without
+- * risking deadlocks. At some point when everything has settled down we need
+- * to look into making pty_write at least able to sleep over an ldisc change.
++ *	The tty buffers allow 64K but we sneak a peak and clip at 8K this
++ *	allows a lot of overspill room for echo and other fun messes to
++ *	be handled properly
++ */
++
++static int pty_space(struct tty_struct *to)
++{
++	int n = 8192 - to->buf.memory_used;
++	if (n < 0)
++		return 0;
++	return n;
++}
++
++/**
++ *	pty_write		-	write to a pty
++ *	@tty: the tty we write from
++ *	@buf: kernel buffer of data
++ *	@count: bytes to write
+  *
+- * The return on no ldisc is a bit counter intuitive but the logic works
+- * like this. During an ldisc change the other end will flush its buffers. We
+- * thus return the full length which is identical to the case where we had
+- * proper locking and happened to queue the bytes just before the flush during
+- * the ldisc change.
++ *	Our "hardware" write method. Data is coming from the ldisc which
++ *	may be in a non sleeping state. We simply throw this at the other
++ *	end of the link as if we were an IRQ handler receiving stuff for
++ *	the other side of the pty/tty pair.
+  */
++
+ static int pty_write(struct tty_struct *tty, const unsigned char *buf,
+ 								int count)
+ {
+ 	struct tty_struct *to = tty->link;
+-	struct tty_ldisc *ld;
+-	int c = count;
+-
+-	if (!to || tty->stopped)
++	int c;
++	
++	if (tty->stopped)
+ 		return 0;
+-	ld = tty_ldisc_ref(to);
+-
+-	if (ld) {
+-		c = to->receive_room;
+-		if (c > count)
+-			c = count;
+-		ld->ops->receive_buf(to, buf, NULL, c);
+-		tty_ldisc_deref(ld);
++	
++	/* This isn't locked but our 8K is quite sloppy so no
++	   big deal */
++
++	c = pty_space(to);
++	if (c > count)
++		c = count;
++	if (c > 0) {
++		/* Stuff the data into the input queue of the other end */
++		c = tty_insert_flip_string(to, buf, c);
++		/* And shovel */
++		tty_flip_buffer_push(to);
++		tty_wakeup(tty);
+ 	}
+ 	return c;
+ }
+ 
++/**
++ *	pty_write_room	-	write space
++ *	@tty: tty we are writing from
++ *
++ *	Report how many bytes the ldisc can send into the queue for
++ *	the other device.
++ */
++
+ static int pty_write_room(struct tty_struct *tty)
+ {
+-	struct tty_struct *to = tty->link;
+-
+-	if (!to || tty->stopped)
+-		return 0;
+-
+-	return to->receive_room;
++	return pty_space(tty->link);
+ }
+ 
+-/*
+- *	WSH 05/24/97:  Modified for asymmetric MASTER/SLAVE behavior
+- *	The chars_in_buffer() value is used by the ldisc select() function
+- *	to hold off writing when chars_in_buffer > WAKEUP_CHARS (== 256).
+- *	The pty driver chars_in_buffer() Master/Slave must behave differently:
+- *
+- *      The Master side needs to allow typed-ahead commands to accumulate
+- *      while being canonicalized, so we report "our buffer" as empty until
+- *	some threshold is reached, and then report the count. (Any count >
+- *	WAKEUP_CHARS is regarded by select() as "full".)  To avoid deadlock
+- *	the count returned must be 0 if no canonical data is available to be
+- *	read. (The N_TTY ldisc.chars_in_buffer now knows this.)
++/**
++ *	pty_chars_in_buffer	-	characters currently in our tx queue
++ *	@tty: our tty
+  *
+- *	The Slave side passes all characters in raw mode to the Master side's
+- *	buffer where they can be read immediately, so in this case we can
+- *	return the true count in the buffer.
++ *	Report how much we have in the transmit queue. As everything is
++ *	instantly at the other end this is easy to implement.
+  */
++
+ static int pty_chars_in_buffer(struct tty_struct *tty)
+ {
+-	struct tty_struct *to = tty->link;
+-	struct tty_ldisc *ld;
+-	int count = 0;
+-
+-	/* We should get the line discipline lock for "tty->link" */
+-	if (!to)
+-		return 0;
+-	/* We cannot take a sleeping reference here without deadlocking with
+-	   an ldisc change - but it doesn't really matter */
+-	ld = tty_ldisc_ref(to);
+-	if (ld == NULL)
+-		return 0;
+-
+-	/* The ldisc must report 0 if no characters available to be read */
+-	if (ld->ops->chars_in_buffer)
+-		count = ld->ops->chars_in_buffer(to);
+-
+-	tty_ldisc_deref(ld);
+-
+-	if (tty->driver->subtype == PTY_TYPE_SLAVE)
+-		return count;
+-
+-	/* Master side driver ... if the other side's read buffer is less than
+-	 * half full, return 0 to allow writers to proceed; otherwise return
+-	 * the count.  This leaves a comfortable margin to avoid overflow,
+-	 * and still allows half a buffer's worth of typed-ahead commands.
+-	 */
+-	return (count < N_TTY_BUF_SIZE/2) ? 0 : count;
++	return 0;
+ }
+ 
+ /* Set the lock flag on a pty */
+@@ -202,20 +176,10 @@ static void pty_flush_buffer(struct tty_struct *tty)
+ {
+ 	struct tty_struct *to = tty->link;
+ 	unsigned long flags;
+-	struct tty_ldisc *ld;
+ 
+ 	if (!to)
+ 		return;
+-	ld = tty_ldisc_ref(to);
+-
+-	/* The other end is changing discipline */
+-	if (!ld)
+-		return;
+-
+-	if (ld->ops->flush_buffer)
+-		to->ldisc->ops->flush_buffer(to);
+-	tty_ldisc_deref(ld);
+-
++	/* tty_buffer_flush(to); FIXME */
+ 	if (to->packet) {
+ 		spin_lock_irqsave(&tty->ctrl_lock, flags);
+ 		tty->ctrl_status |= TIOCPKT_FLUSHWRITE;
