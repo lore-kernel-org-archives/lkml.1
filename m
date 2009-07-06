@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbZGFBUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbZGFBiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757512AbZGFBUo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 21:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZGFBUd
+	id S1756962AbZGFBiJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 21:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbZGFBh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 21:20:33 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:32887 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751709AbZGFBUd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 21:20:33 -0400
-Date: Mon, 6 Jul 2009 09:19:39 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: andi@firstfloor.org, arjan@infradead.org, matthew@wil.cx,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       douglas.w.styner@intel.com, chinang.ma@intel.com,
-       terry.o.prickett@intel.com, matthew.r.wilcox@intel.com,
-       Eric.Moore@lsi.com, DL-MPTFusionLinux@lsi.com, netdev@vger.kernel.org
-Subject: Re: >10% performance degradation since 2.6.18
-Message-ID: <20090706011939.GD15156@gondor.apana.org.au>
-References: <20090705040137.GA7747@gondor.apana.org.au> <4A5110B9.4030904@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5110B9.4030904@garzik.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 5 Jul 2009 21:37:56 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41759 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751487AbZGFBhz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 21:37:55 -0400
+Date: Mon, 6 Jul 2009 11:37:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Avi Kivity <avi@qumranet.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Gleb Natapov <gleb@redhat.com>
+Subject: linux-next: kvm tree build warning
+Message-Id: <20090706113752.8dec663a.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__6_Jul_2009_11_37_52_+1000_M6aF7iBb1J_Ttld3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 04:44:41PM -0400, Jeff Garzik wrote:
->
-> Efficient power usage means scaling _down_ when activity decreases.  A  
-> blind "distribute network activity across all CPUs" policy does not  
-> appear to be responsive to that type of situation.
+--Signature=_Mon__6_Jul_2009_11_37_52_+1000_M6aF7iBb1J_Ttld3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I didn't suggest distributing network activity across all CPUs.
-It should be distributed across all active CPUs.
+Hi Avi,
 
-> Consider two competing CPU hogs:  a kernel with tons of netfilter tables  
-> and rules, plus an application that uses a lot of CPU.
->
-> Can you not reach a threshold where it makes more sense to split kernel  
-> and userland work onto different CPUs?
+Today's linux-next build (x86_64_allmodconfig) produced this warning:
 
-In that case the best split would be split the application into
-different threads which can then move onto different CPUs.  Doing
-what you said above will probably work assuming the CPUs share
-cache, otherwise it will suck.
+arch/x86/kvm/lapic.c: In function 'apic_mmio_write':
+arch/x86/kvm/lapic.c:834: warning: 'return' with no value, in function retu=
+rning non-void
 
-> That seems to presume it is impossible to reprogram the NIC RX queue  
-> selection rules?
->
-> If you can add a new 'flow' to a NIC hardware RX queue, surely you can  
-> imagine a remove + add operation for a migrated 'flow'...  and thus, at  
-> least on the NIC hardware level, flows can follow processes.
+Introduced by commit 55b23c7377c9f9f0b4a4b90950f0e18b26ac45e8 ("KVM:
+x2apic interface to lapic").
 
-Right, that would work as long as you can add a rule for each socket
-you cared about.  Though it's interesting to know whether the number
-of rules can keep up with the number of sockets that we usually
-encounter on busy servers.
-
+--=20
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__6_Jul_2009_11_37_52_+1000_M6aF7iBb1J_Ttld3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpRVXAACgkQjjKRsyhoI8z8jACbB5HcAse27/bvsy5NVEDgKTxx
+TegAnRKlrD5UeXxF+5p8ieXr4/0QDY0v
+=hgBe
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__6_Jul_2009_11_37_52_+1000_M6aF7iBb1J_Ttld3--
