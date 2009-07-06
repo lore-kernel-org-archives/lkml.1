@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757159AbZGFGPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbZGFGQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757159AbZGFGPx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 02:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbZGFGOy
+	id S1756942AbZGFGQM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 02:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755212AbZGFGOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 02:14:54 -0400
-Received: from sh.osrg.net ([192.16.179.4]:37834 "EHLO sh.osrg.net"
+	Mon, 6 Jul 2009 02:14:55 -0400
+Received: from sh.osrg.net ([192.16.179.4]:37833 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756307AbZGFGOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756264AbZGFGOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 6 Jul 2009 02:14:45 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: davem@davemloft.net
 Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
        reif@earthlink.net, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH 1/5] sparc: use dma_map_ops struct
-Date: Mon,  6 Jul 2009 15:13:36 +0900
-Message-Id: <1246860820-20629-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 2/5] sparc: use asm-generic/dma-mapping-common.h
+Date: Mon,  6 Jul 2009 15:13:37 +0900
+Message-Id: <1246860820-20629-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1246860820-20629-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1246860820-20629-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
@@ -26,273 +26,199 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- arch/sparc/include/asm/dma-mapping.h |   43 +++++----------------------------
- arch/sparc/kernel/dma.c              |   16 ++++++++----
- arch/sparc/kernel/iommu.c            |   16 ++++++++----
- arch/sparc/kernel/pci_sun4v.c        |   14 +++++++----
- 4 files changed, 36 insertions(+), 53 deletions(-)
+ arch/sparc/Kconfig                   |    1 +
+ arch/sparc/include/asm/dma-mapping.h |  104 +++------------------------------
+ arch/sparc/kernel/dma.c              |    4 +-
+ arch/sparc/kernel/iommu.c            |    4 +-
+ arch/sparc/kernel/pci_sun4v.c        |    2 +-
+ 5 files changed, 16 insertions(+), 99 deletions(-)
 
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 3f8b6a9..5f2df99 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -25,6 +25,7 @@ config SPARC
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select RTC_CLASS
+ 	select RTC_DRV_M48T59
++	select HAVE_DMA_ATTRS
+ 
+ config SPARC32
+ 	def_bool !64BIT
 diff --git a/arch/sparc/include/asm/dma-mapping.h b/arch/sparc/include/asm/dma-mapping.h
-index 204e4bf..893f3ec 100644
+index 893f3ec..1a2ec4c 100644
 --- a/arch/sparc/include/asm/dma-mapping.h
 +++ b/arch/sparc/include/asm/dma-mapping.h
-@@ -13,36 +13,7 @@ extern int dma_set_mask(struct device *dev, u64 dma_mask);
+@@ -13,7 +13,16 @@ extern int dma_set_mask(struct device *dev, u64 dma_mask);
  #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
  #define dma_is_consistent(d, h)	(1)
  
--struct dma_ops {
--	void *(*alloc_coherent)(struct device *dev, size_t size,
--				dma_addr_t *dma_handle, gfp_t flag);
--	void (*free_coherent)(struct device *dev, size_t size,
--			      void *cpu_addr, dma_addr_t dma_handle);
--	dma_addr_t (*map_page)(struct device *dev, struct page *page,
--			       unsigned long offset, size_t size,
--			       enum dma_data_direction direction);
--	void (*unmap_page)(struct device *dev, dma_addr_t dma_addr,
--			   size_t size,
--			   enum dma_data_direction direction);
--	int (*map_sg)(struct device *dev, struct scatterlist *sg, int nents,
--		      enum dma_data_direction direction);
--	void (*unmap_sg)(struct device *dev, struct scatterlist *sg,
--			 int nhwentries,
--			 enum dma_data_direction direction);
--	void (*sync_single_for_cpu)(struct device *dev,
--				    dma_addr_t dma_handle, size_t size,
--				    enum dma_data_direction direction);
--	void (*sync_single_for_device)(struct device *dev,
--				       dma_addr_t dma_handle, size_t size,
--				       enum dma_data_direction direction);
--	void (*sync_sg_for_cpu)(struct device *dev, struct scatterlist *sg,
--				int nelems,
--				enum dma_data_direction direction);
--	void (*sync_sg_for_device)(struct device *dev,
--				   struct scatterlist *sg, int nents,
--				   enum dma_data_direction dir);
--};
--extern const struct dma_ops *dma_ops;
-+extern const struct dma_map_ops *dma_ops;
+-extern const struct dma_map_ops *dma_ops;
++extern struct dma_map_ops *dma_ops;
++
++static inline struct dma_map_ops *get_dma_ops(struct device *dev)
++{
++	return dma_ops;
++}
++
++#define flush_write_buffers()
++
++#include <asm-generic/dma-mapping-common.h>
  
  static inline void *dma_alloc_coherent(struct device *dev, size_t size,
  				       dma_addr_t *dma_handle, gfp_t flag)
-@@ -62,40 +33,40 @@ static inline dma_addr_t dma_map_single(struct device *dev, void *cpu_addr,
- {
- 	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
- 				 (unsigned long)cpu_addr & ~PAGE_MASK, size,
--				 direction);
-+				 direction, NULL);
+@@ -27,99 +36,6 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
+ 	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
  }
  
- static inline void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
- 				    size_t size,
- 				    enum dma_data_direction direction)
+-static inline dma_addr_t dma_map_single(struct device *dev, void *cpu_addr,
+-					size_t size,
+-					enum dma_data_direction direction)
+-{
+-	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
+-				 (unsigned long)cpu_addr & ~PAGE_MASK, size,
+-				 direction, NULL);
+-}
+-
+-static inline void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
+-				    size_t size,
+-				    enum dma_data_direction direction)
+-{
+-	dma_ops->unmap_page(dev, dma_addr, size, direction, NULL);
+-}
+-
+-static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
+-				      unsigned long offset, size_t size,
+-				      enum dma_data_direction direction)
+-{
+-	return dma_ops->map_page(dev, page, offset, size, direction, NULL);
+-}
+-
+-static inline void dma_unmap_page(struct device *dev, dma_addr_t dma_address,
+-				  size_t size,
+-				  enum dma_data_direction direction)
+-{
+-	dma_ops->unmap_page(dev, dma_address, size, direction, NULL);
+-}
+-
+-static inline int dma_map_sg(struct device *dev, struct scatterlist *sg,
+-			     int nents, enum dma_data_direction direction)
+-{
+-	return dma_ops->map_sg(dev, sg, nents, direction, NULL);
+-}
+-
+-static inline void dma_unmap_sg(struct device *dev, struct scatterlist *sg,
+-				int nents, enum dma_data_direction direction)
+-{
+-	dma_ops->unmap_sg(dev, sg, nents, direction, NULL);
+-}
+-
+-static inline void dma_sync_single_for_cpu(struct device *dev,
+-					   dma_addr_t dma_handle, size_t size,
+-					   enum dma_data_direction direction)
+-{
+-	dma_ops->sync_single_for_cpu(dev, dma_handle, size, direction);
+-}
+-
+-static inline void dma_sync_single_for_device(struct device *dev,
+-					      dma_addr_t dma_handle,
+-					      size_t size,
+-					      enum dma_data_direction direction)
+-{
+-	if (dma_ops->sync_single_for_device)
+-		dma_ops->sync_single_for_device(dev, dma_handle, size,
+-						direction);
+-}
+-
+-static inline void dma_sync_sg_for_cpu(struct device *dev,
+-				       struct scatterlist *sg, int nelems,
+-				       enum dma_data_direction direction)
+-{
+-	dma_ops->sync_sg_for_cpu(dev, sg, nelems, direction);
+-}
+-
+-static inline void dma_sync_sg_for_device(struct device *dev,
+-					  struct scatterlist *sg, int nelems,
+-					  enum dma_data_direction direction)
+-{
+-	if (dma_ops->sync_sg_for_device)
+-		dma_ops->sync_sg_for_device(dev, sg, nelems, direction);
+-}
+-
+-static inline void dma_sync_single_range_for_cpu(struct device *dev,
+-						 dma_addr_t dma_handle,
+-						 unsigned long offset,
+-						 size_t size,
+-						 enum dma_data_direction dir)
+-{
+-	dma_sync_single_for_cpu(dev, dma_handle+offset, size, dir);
+-}
+-
+-static inline void dma_sync_single_range_for_device(struct device *dev,
+-						    dma_addr_t dma_handle,
+-						    unsigned long offset,
+-						    size_t size,
+-						    enum dma_data_direction dir)
+-{
+-	dma_sync_single_for_device(dev, dma_handle+offset, size, dir);
+-}
+-
+-
+ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
  {
--	dma_ops->unmap_page(dev, dma_addr, size, direction);
-+	dma_ops->unmap_page(dev, dma_addr, size, direction, NULL);
- }
- 
- static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
- 				      unsigned long offset, size_t size,
- 				      enum dma_data_direction direction)
- {
--	return dma_ops->map_page(dev, page, offset, size, direction);
-+	return dma_ops->map_page(dev, page, offset, size, direction, NULL);
- }
- 
- static inline void dma_unmap_page(struct device *dev, dma_addr_t dma_address,
- 				  size_t size,
- 				  enum dma_data_direction direction)
- {
--	dma_ops->unmap_page(dev, dma_address, size, direction);
-+	dma_ops->unmap_page(dev, dma_address, size, direction, NULL);
- }
- 
- static inline int dma_map_sg(struct device *dev, struct scatterlist *sg,
- 			     int nents, enum dma_data_direction direction)
- {
--	return dma_ops->map_sg(dev, sg, nents, direction);
-+	return dma_ops->map_sg(dev, sg, nents, direction, NULL);
- }
- 
- static inline void dma_unmap_sg(struct device *dev, struct scatterlist *sg,
- 				int nents, enum dma_data_direction direction)
- {
--	dma_ops->unmap_sg(dev, sg, nents, direction);
-+	dma_ops->unmap_sg(dev, sg, nents, direction, NULL);
- }
- 
- static inline void dma_sync_single_for_cpu(struct device *dev,
+ 	return (dma_addr == DMA_ERROR_CODE);
 diff --git a/arch/sparc/kernel/dma.c b/arch/sparc/kernel/dma.c
-index 524c32f..473a3fc 100644
+index 473a3fc..15820a9 100644
 --- a/arch/sparc/kernel/dma.c
 +++ b/arch/sparc/kernel/dma.c
-@@ -60,7 +60,8 @@ static void dma32_free_coherent(struct device *dev, size_t size,
- 
- static dma_addr_t dma32_map_page(struct device *dev, struct page *page,
- 				 unsigned long offset, size_t size,
--				 enum dma_data_direction direction)
-+				 enum dma_data_direction direction,
-+				 struct dma_attrs *attrs)
- {
- #ifdef CONFIG_PCI
- 	if (dev->bus == &pci_bus_type)
-@@ -72,7 +73,8 @@ static dma_addr_t dma32_map_page(struct device *dev, struct page *page,
- }
- 
- static void dma32_unmap_page(struct device *dev, dma_addr_t dma_address,
--			     size_t size, enum dma_data_direction direction)
-+			     size_t size, enum dma_data_direction direction,
-+			     struct dma_attrs *attrs)
- {
- #ifdef CONFIG_PCI
- 	if (dev->bus == &pci_bus_type) {
-@@ -85,7 +87,8 @@ static void dma32_unmap_page(struct device *dev, dma_addr_t dma_address,
- }
- 
- static int dma32_map_sg(struct device *dev, struct scatterlist *sg,
--			int nents, enum dma_data_direction direction)
-+			int nents, enum dma_data_direction direction,
-+			struct dma_attrs *attrs)
- {
- #ifdef CONFIG_PCI
- 	if (dev->bus == &pci_bus_type)
-@@ -95,7 +98,8 @@ static int dma32_map_sg(struct device *dev, struct scatterlist *sg,
- }
- 
- void dma32_unmap_sg(struct device *dev, struct scatterlist *sg,
--		    int nents, enum dma_data_direction direction)
-+		    int nents, enum dma_data_direction direction,
-+		    struct dma_attrs *attrs)
- {
- #ifdef CONFIG_PCI
- 	if (dev->bus == &pci_bus_type) {
-@@ -161,7 +165,7 @@ static void dma32_sync_sg_for_device(struct device *dev,
+@@ -165,7 +165,7 @@ static void dma32_sync_sg_for_device(struct device *dev,
  	BUG();
  }
  
--static const struct dma_ops dma32_dma_ops = {
-+static const struct dma_map_ops dma32_dma_ops = {
+-static const struct dma_map_ops dma32_dma_ops = {
++static struct dma_map_ops dma32_dma_ops = {
  	.alloc_coherent		= dma32_alloc_coherent,
  	.free_coherent		= dma32_free_coherent,
  	.map_page		= dma32_map_page,
-@@ -174,5 +178,5 @@ static const struct dma_ops dma32_dma_ops = {
+@@ -178,5 +178,5 @@ static const struct dma_map_ops dma32_dma_ops = {
  	.sync_sg_for_device	= dma32_sync_sg_for_device,
  };
  
--const struct dma_ops *dma_ops = &dma32_dma_ops;
-+const struct dma_map_ops *dma_ops = &dma32_dma_ops;
+-const struct dma_map_ops *dma_ops = &dma32_dma_ops;
++struct dma_map_ops *dma_ops = &dma32_dma_ops;
  EXPORT_SYMBOL(dma_ops);
 diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
-index 0aeaefe..a9f0ad9 100644
+index a9f0ad9..74b289c 100644
 --- a/arch/sparc/kernel/iommu.c
 +++ b/arch/sparc/kernel/iommu.c
-@@ -353,7 +353,8 @@ static void dma_4u_free_coherent(struct device *dev, size_t size,
- 
- static dma_addr_t dma_4u_map_page(struct device *dev, struct page *page,
- 				  unsigned long offset, size_t sz,
--				  enum dma_data_direction direction)
-+				  enum dma_data_direction direction,
-+				  struct dma_attrs *attrs)
- {
- 	struct iommu *iommu;
- 	struct strbuf *strbuf;
-@@ -474,7 +475,8 @@ do_flush_sync:
- }
- 
- static void dma_4u_unmap_page(struct device *dev, dma_addr_t bus_addr,
--			      size_t sz, enum dma_data_direction direction)
-+			      size_t sz, enum dma_data_direction direction,
-+			      struct dma_attrs *attrs)
- {
- 	struct iommu *iommu;
- 	struct strbuf *strbuf;
-@@ -520,7 +522,8 @@ static void dma_4u_unmap_page(struct device *dev, dma_addr_t bus_addr,
- }
- 
- static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
--			 int nelems, enum dma_data_direction direction)
-+			 int nelems, enum dma_data_direction direction,
-+			 struct dma_attrs *attrs)
- {
- 	struct scatterlist *s, *outs, *segstart;
- 	unsigned long flags, handle, prot, ctx;
-@@ -691,7 +694,8 @@ static unsigned long fetch_sg_ctx(struct iommu *iommu, struct scatterlist *sg)
- }
- 
- static void dma_4u_unmap_sg(struct device *dev, struct scatterlist *sglist,
--			    int nelems, enum dma_data_direction direction)
-+			    int nelems, enum dma_data_direction direction,
-+			    struct dma_attrs *attrs)
- {
- 	unsigned long flags, ctx;
- 	struct scatterlist *sg;
-@@ -822,7 +826,7 @@ static void dma_4u_sync_sg_for_cpu(struct device *dev,
+@@ -826,7 +826,7 @@ static void dma_4u_sync_sg_for_cpu(struct device *dev,
  	spin_unlock_irqrestore(&iommu->lock, flags);
  }
  
--static const struct dma_ops sun4u_dma_ops = {
-+static const struct dma_map_ops sun4u_dma_ops = {
+-static const struct dma_map_ops sun4u_dma_ops = {
++static struct dma_map_ops sun4u_dma_ops = {
  	.alloc_coherent		= dma_4u_alloc_coherent,
  	.free_coherent		= dma_4u_free_coherent,
  	.map_page		= dma_4u_map_page,
-@@ -833,7 +837,7 @@ static const struct dma_ops sun4u_dma_ops = {
+@@ -837,7 +837,7 @@ static const struct dma_map_ops sun4u_dma_ops = {
  	.sync_sg_for_cpu	= dma_4u_sync_sg_for_cpu,
  };
  
--const struct dma_ops *dma_ops = &sun4u_dma_ops;
-+const struct dma_map_ops *dma_ops = &sun4u_dma_ops;
+-const struct dma_map_ops *dma_ops = &sun4u_dma_ops;
++struct dma_map_ops *dma_ops = &sun4u_dma_ops;
  EXPORT_SYMBOL(dma_ops);
  
  int dma_supported(struct device *dev, u64 device_mask)
 diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
-index 2485eaa..c4f7dce 100644
+index c4f7dce..ee800f9 100644
 --- a/arch/sparc/kernel/pci_sun4v.c
 +++ b/arch/sparc/kernel/pci_sun4v.c
-@@ -232,7 +232,8 @@ static void dma_4v_free_coherent(struct device *dev, size_t size, void *cpu,
- 
- static dma_addr_t dma_4v_map_page(struct device *dev, struct page *page,
- 				  unsigned long offset, size_t sz,
--				  enum dma_data_direction direction)
-+				  enum dma_data_direction direction,
-+				  struct dma_attrs *attrs)
- {
- 	struct iommu *iommu;
- 	unsigned long flags, npages, oaddr;
-@@ -296,7 +297,8 @@ iommu_map_fail:
- }
- 
- static void dma_4v_unmap_page(struct device *dev, dma_addr_t bus_addr,
--			      size_t sz, enum dma_data_direction direction)
-+			      size_t sz, enum dma_data_direction direction,
-+			      struct dma_attrs *attrs)
- {
- 	struct pci_pbm_info *pbm;
- 	struct iommu *iommu;
-@@ -336,7 +338,8 @@ static void dma_4v_unmap_page(struct device *dev, dma_addr_t bus_addr,
- }
- 
- static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
--			 int nelems, enum dma_data_direction direction)
-+			 int nelems, enum dma_data_direction direction,
-+			 struct dma_attrs *attrs)
- {
- 	struct scatterlist *s, *outs, *segstart;
- 	unsigned long flags, handle, prot;
-@@ -478,7 +481,8 @@ iommu_map_failed:
- }
- 
- static void dma_4v_unmap_sg(struct device *dev, struct scatterlist *sglist,
--			    int nelems, enum dma_data_direction direction)
-+			    int nelems, enum dma_data_direction direction,
-+			    struct dma_attrs *attrs)
- {
- 	struct pci_pbm_info *pbm;
- 	struct scatterlist *sg;
-@@ -535,7 +539,7 @@ static void dma_4v_sync_sg_for_cpu(struct device *dev,
+@@ -539,7 +539,7 @@ static void dma_4v_sync_sg_for_cpu(struct device *dev,
  	/* Nothing to do... */
  }
  
--static const struct dma_ops sun4v_dma_ops = {
-+static const struct dma_map_ops sun4v_dma_ops = {
+-static const struct dma_map_ops sun4v_dma_ops = {
++static struct dma_map_ops sun4v_dma_ops = {
  	.alloc_coherent			= dma_4v_alloc_coherent,
  	.free_coherent			= dma_4v_free_coherent,
  	.map_page			= dma_4v_map_page,
