@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbZGFIcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZGFIij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076AbZGFIcA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbZGFIbm
+	id S1756775AbZGFIij (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZGFIi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:31:42 -0400
-Received: from smtp.fireflyuk.net ([78.156.72.235]:1536 "EHLO
-	fireflyinternet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753384AbZGFIbk (ORCPT
+	Mon, 6 Jul 2009 04:38:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57145 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753095AbZGFIi1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:31:40 -0400
-From: Chris Wilson <chris@chris-wilson.co.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Chris Wilson <chris@chris-wilson.co.uk>,
-       Ben Gamari <bgamari.foss@gmail.com>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] perfcounters: Fix build for tracepoint profiling
-Date: Mon,  6 Jul 2009 09:31:33 +0100
-Message-Id: <1246869094-21237-1-git-send-email-chris@chris-wilson.co.uk>
-X-Mailer: git-send-email 1.6.3.3
-X-Originating-IP: 78.156.66.37
+	Mon, 6 Jul 2009 04:38:27 -0400
+Date: Mon, 6 Jul 2009 10:38:27 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Jeff Garzik <jeff@garzik.org>,
+       andi@firstfloor.org, arjan@infradead.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, douglas.w.styner@intel.com,
+       chinang.ma@intel.com, terry.o.prickett@intel.com,
+       matthew.r.wilcox@intel.com, netdev@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: >10% performance degradation since 2.6.18
+Message-ID: <20090706083827.GA28145@one.firstfloor.org>
+References: <4A4F1EA0.3070501@garzik.org> <20090705040137.GA7747@gondor.apana.org.au> <20090705130926.GS5480@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090705130926.GS5480@parisc-linux.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
----
- init/Kconfig          |    2 +-
- kernel/perf_counter.c |   10 +++-------
- 2 files changed, 4 insertions(+), 8 deletions(-)
+On Sun, Jul 05, 2009 at 07:09:26AM -0600, Matthew Wilcox wrote:
+> On Sun, Jul 05, 2009 at 12:01:37PM +0800, Herbert Xu wrote:
+> > > If yes, how to best handle when the scheduler moves app to another CPU?
+> > > Should we reprogram the NIC hardware flow steering mechanism at that point?
+> > 
+> > Not really.  For now the best thing to do is to pin everything
+> > down and not move at all, because we can't afford to move.
+> > 
+> > The only way for moving to work is if we had the ability to get
+> > the sockets to follow the processes.  That means, we must have
+> > one RX queue per socket.
+> 
+> Maybe not one RX queue per socket -- sockets belonging to the same
+> thread could share the same RX queue.  I'm fairly ignorant of the way
+> networking works these days; is it possible to dynamically reassign a
+> socket between RX queues, so we'd only need one RX queue per CPU?
 
-diff --git a/init/Kconfig b/init/Kconfig
-index 0e8784e..13473ac 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -955,7 +955,7 @@ config PERF_COUNTERS
- 
- config EVENT_PROFILE
- 	bool "Tracepoint profile sources"
--	depends on PERF_COUNTERS && EVENT_TRACER
-+	depends on PERF_COUNTERS && EVENT_TRACING
- 	default y
- 
- endmenu
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index d55a50d..c6c38fb 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -3671,7 +3671,7 @@ static const struct pmu perf_ops_task_clock = {
- void perf_tpcounter_event(int event_id)
- {
- 	struct perf_sample_data data = {
--		.regs = get_irq_regs();
-+		.regs = get_irq_regs(),
- 		.addr = 0,
- 	};
- 
-@@ -3687,16 +3687,12 @@ extern void ftrace_profile_disable(int);
- 
- static void tp_perf_counter_destroy(struct perf_counter *counter)
- {
--	ftrace_profile_disable(perf_event_id(&counter->attr));
-+	ftrace_profile_disable(counter->attr.config);
- }
- 
- static const struct pmu *tp_perf_counter_init(struct perf_counter *counter)
- {
--	int event_id = perf_event_id(&counter->attr);
--	int ret;
--
--	ret = ftrace_profile_enable(event_id);
--	if (ret)
-+	if (ftrace_profile_enable(counter->attr.config))
- 		return NULL;
- 
- 	counter->destroy = tp_perf_counter_destroy;
+That is how it is supposed to work (ignoring some special setups 
+with QoS) in theory.
+
+a You have per CPU RX queues (or if the NIC has less than CPUs, then on a 
+  subset of CPUs)
+b The NIC uses a hash function on the stream (= socket) to map an 
+  incoming packet to a specific RX queue.
+c The interrupt handler is supposed to be bound on a specific CPU.
+d The CPU then does wakeups and the scheduler biases the process/thread
+  using the sockets towards the CPU that always does the wakeups.
+
+Ideally then the process/thread doing the socket IO should be on 
+the receiving CPU.  It doesn't always work out like this in practice, 
+but it should.
+
+(c) seems to be the part that is broken right now.
+
+-Andi
+
 -- 
-1.6.3.3
-
+ak@linux.intel.com -- Speaking for myself only.
