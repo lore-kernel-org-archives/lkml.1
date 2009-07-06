@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbZGFVgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbZGFVhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671AbZGFVgi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 17:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbZGFVgT
+	id S1755013AbZGFVhB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 17:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbZGFVgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 17:36:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49653
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754351AbZGFVgS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 17:36:18 -0400
-Date: Mon, 06 Jul 2009 14:36:24 -0700 (PDT)
-Message-Id: <20090706.143624.182421767.davem@davemloft.net>
-To: Larry.Finger@lwfinger.net
-Cc: chunkeey@web.de, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] p54: Fix regression in 2.6.31-rcX since commit a1091aa
- - sleeping function called from invalid context
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A5261AE.1010500@lwfinger.net>
-References: <4A5253F1.50504@lwfinger.net>
-	<20090706.125011.56653570.davem@davemloft.net>
-	<4A5261AE.1010500@lwfinger.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 6 Jul 2009 17:36:52 -0400
+Received: from vpn.pathscale.com ([198.186.3.75]:40479 "EHLO mx.mv.qlogic.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754073AbZGFVgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 17:36:52 -0400
+Date: Mon, 06 Jul 2009 14:36:55 -0700
+From: john.gregor@qlogic.com (John A. Gregor)
+To: hpa@zytor.com
+Subject: Re: [PATCH] x86_64/__iowrite32_copy: don't use string move for PIO
+ writes
+Cc: ralph.campbell@qlogic.com, linux-kernel@vger.kernel.org,
+       johng@diamond.mv.qlogic.com
+Message-ID: <4a526e77.IPiyTZWRWfll2+00%john.gregor@qlogic.com>
+References: <1246907224-22758-1-git-send-email-john.gregor@qlogic.com>
+ <4A526CE6.30200@zytor.com>
+In-Reply-To: <4A526CE6.30200@zytor.com>
+User-Agent: Heirloom mailx 12.4 7/29/08
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Date: Mon, 06 Jul 2009 15:42:22 -0500
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-> This patch fixes my USB device.
+> John Gregor wrote:
+> > From: John Gregor <johng@diamond.mv.qlogic.com>
+> > 
+> > Some processors can write the same word more than once if the movs
+> > instruction is used. This version uses normal memory move instructions
+> > and gets the same performance since the speed is limited by PCIe and
+> > write combining.
+> > 
+>
+> Which processors do that *when addressing I/O memory*?
 
-Thanks for testing.
+Nehalem.
 
-> Please push to Linus.
-
-Will do.
+-John Gregor
