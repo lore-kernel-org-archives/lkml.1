@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZGFUEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbZGFUGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZGFUEt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 16:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZGFUEk
+	id S1754800AbZGFUGn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 16:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZGFUGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 16:04:40 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:47145 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752164AbZGFUEj (ORCPT
+	Mon, 6 Jul 2009 16:06:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54354 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753727AbZGFUGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 16:04:39 -0400
-Date: Mon, 6 Jul 2009 21:04:31 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: tridge@samba.org
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-Message-ID: <20090706200431.GC13638@shareable.org>
-References: <alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr> <19021.19842.663727.146474@samba.org> <87hbxu60qm.fsf@devron.myhome.or.jp> <19021.23231.213863.726785@samba.org> <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr> <19021.26102.80885.330380@samba.org> <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr> <19021.31291.642416.956966@samba.org> <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr> <19021.63615.450348.192109@samba.org>
+	Mon, 6 Jul 2009 16:06:33 -0400
+Date: Mon, 6 Jul 2009 22:06:34 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Roland McGrath <roland@redhat.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH -tip -v10 5/7] x86: add pt_regs register and stack
+	access APIs
+Message-ID: <20090706200634.GA1380@basil.fritz.box>
+References: <20090701010838.32547.62843.stgit@localhost.localdomain> <20090701010911.32547.1313.stgit@localhost.localdomain> <871votop6a.fsf@basil.nowhere.org> <4A525042.5030702@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19021.63615.450348.192109@samba.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4A525042.5030702@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tridge@samba.org wrote:
-> When CONFIG_VFAT_FS_DUALNAMES is not set and a 8.3 name is created,
-> force the use of the shortname=winnt option to allow for lowercase or
-> uppercase prefix and extensions without using a long name.
+On Mon, Jul 06, 2009 at 03:28:02PM -0400, Masami Hiramatsu wrote:
+> I'm not so sure about your idea.
+> Would you mean below code?
 > 
-> +	unsigned opts_shortname = opts->shortname;
-> +
-> +#ifndef CONFIG_VFAT_FS_DUALNAMES
-> +	opts_shortname = VFAT_SFN_CREATE_WINNT;
-> +#endif
+> int offs_table[NR_REGPARMS] = {
 
-I'd prefer if it changes the shortname= default instead.
+not REGPARMS of course
 
-When mounting explicitly with shortname=mixed, this patch changes it
-to shortname=winnt, which breaks compatibility when creating files on
-Linux and reading on Windows 95/98/ME and devices with equivalent FAT
-implementation.
+> 	[0] = offsetof(struct pt_regs, di),
+> 	...
+> };
+> if (n < NR_REGPARMS)
+> 	return *((unsigned long *)regs + offs_table[n]);
 
-I think it's ok to break that compatibility if dualnames is off,
-because that's unfortunately the best available compromise.
+Yes.
 
-But if shortname=mixed is explicitly requested, it can mean (and does
-in some cases I've seen) that there's a reason long names are required
-for lower-case 8.3 names.
+-Andi
 
--- Jamie
+-- 
+ak@linux.intel.com -- Speaking for myself only.
