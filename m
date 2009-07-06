@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZGFIij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbZGFIkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZGFIij (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZGFIi2
+	id S1757560AbZGFIkp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZGFIki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:38:28 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57145 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753095AbZGFIi1 (ORCPT
+	Mon, 6 Jul 2009 04:40:38 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:54146 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753569AbZGFIkh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:38:27 -0400
-Date: Mon, 6 Jul 2009 10:38:27 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Jeff Garzik <jeff@garzik.org>,
-       andi@firstfloor.org, arjan@infradead.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, douglas.w.styner@intel.com,
-       chinang.ma@intel.com, terry.o.prickett@intel.com,
-       matthew.r.wilcox@intel.com, netdev@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: Re: >10% performance degradation since 2.6.18
-Message-ID: <20090706083827.GA28145@one.firstfloor.org>
-References: <4A4F1EA0.3070501@garzik.org> <20090705040137.GA7747@gondor.apana.org.au> <20090705130926.GS5480@parisc-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Jul 2009 04:40:37 -0400
+Date: Mon, 6 Jul 2009 10:35:51 +0200
+From: Nico Schottelius <nico-linux-20090706@schottelius.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Nico Schottelius <nico-linux-20090706@schottelius.org>
+Subject: 2.6.31-r2: Xorg: Black screen
+Message-ID: <20090706083551.GA6422@ikn.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-linux-20090706@schottelius.org>,
+	LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
 Content-Disposition: inline
-In-Reply-To: <20090705130926.GS5480@parisc-linux.org>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://www.nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.30-rc7 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 07:09:26AM -0600, Matthew Wilcox wrote:
-> On Sun, Jul 05, 2009 at 12:01:37PM +0800, Herbert Xu wrote:
-> > > If yes, how to best handle when the scheduler moves app to another CPU?
-> > > Should we reprogram the NIC hardware flow steering mechanism at that point?
-> > 
-> > Not really.  For now the best thing to do is to pin everything
-> > down and not move at all, because we can't afford to move.
-> > 
-> > The only way for moving to work is if we had the ability to get
-> > the sockets to follow the processes.  That means, we must have
-> > one RX queue per socket.
-> 
-> Maybe not one RX queue per socket -- sockets belonging to the same
-> thread could share the same RX queue.  I'm fairly ignorant of the way
-> networking works these days; is it possible to dynamically reassign a
-> socket between RX queues, so we'd only need one RX queue per CPU?
 
-That is how it is supposed to work (ignoring some special setups 
-with QoS) in theory.
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-a You have per CPU RX queues (or if the NIC has less than CPUs, then on a 
-  subset of CPUs)
-b The NIC uses a hash function on the stream (= socket) to map an 
-  incoming packet to a specific RX queue.
-c The interrupt handler is supposed to be bound on a specific CPU.
-d The CPU then does wakeups and the scheduler biases the process/thread
-  using the sockets towards the CPU that always does the wakeups.
+Hello!
 
-Ideally then the process/thread doing the socket IO should be on 
-the receiving CPU.  It doesn't always work out like this in practice, 
-but it should.
+Compared to the other normal brightness problems, with
+2.6.31-r2 xorg starts, but there is no image displayed
+(neither on internal nor external monitor).
 
-(c) seems to be the part that is broken right now.
+Switching back to console does not change the status,
+though hitting ctrlaltdel reboots the system (i.e. still
+up and running fine).
 
--Andi
+It works with 2.6.30-rc7 (besides sometimes the brightness
+is broken there).
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Sincerly,
+
+Nico
+
+--=20
+Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--vtzGhvizbBRQ85DL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpRt2YACgkQuL75KpiFGIzLqgCeMDZ57stKu7CceHnACKUOS4zQ
+YiQAoL02TMIjfq6rJXUvqhljFSjft0z4
+=SmDF
+-----END PGP SIGNATURE-----
+
+--vtzGhvizbBRQ85DL--
