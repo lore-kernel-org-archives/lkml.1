@@ -1,61 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbZGFFGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZGFFKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbZGFFGy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 01:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZGFFGo
+	id S1753234AbZGFFKp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 01:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZGFFKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 01:06:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58986 "EHLO smtps.tip.net.au"
+	Mon, 6 Jul 2009 01:10:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33881 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbZGFFGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 01:06:44 -0400
-Date: Mon, 6 Jul 2009 15:06:34 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: linux-next: manual merge of the percpu tree with the tip tree
-Message-Id: <20090706150634.04255209.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1750722AbZGFFKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 01:10:34 -0400
+Date: Mon, 6 Jul 2009 01:02:30 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: esandeen@redhat.com, eteo@redhat.com, eparis@redhat.com,
+       Amerigo Wang <amwang@redhat.com>, akpm@linux-foundation.org,
+       stable@kernel.org, viro@zeniv.linux.org.uk
+Message-Id: <20090706050445.6268.91.sendpatchset@localhost.localdomain>
+Subject: [Patch v2] allow file truncations when both suid and write permissions set
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-Today's linux-next merge of the percpu tree got a conflict in
-arch/x86/kernel/cpu/perf_counter.c between commit
-0406ca6d8e849d9dd027c8cb6791448e81411aef ("perf_counter: Ignore the nmi
-call frames in the x86-64 backtraces") from the tip tree and commit
-245b2e70eabd797932adb263a65da0bab3711753 ("percpu: clean up percpu
-variable definitions") from the percpu tree.
+V1 -> V2:
+Introduce dentry_remove_suid(), and use it in do_truncate().
+Thanks to Eric Paris.
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --cc arch/x86/kernel/cpu/perf_counter.c
-index 36c3dc7,13bd6d6..0000000
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@@ -1559,9 -1559,8 +1559,9 @@@ void callchain_store(struct perf_callch
-  		entry->ip[entry->nr++] = ip;
-  }
-  
-- static DEFINE_PER_CPU(struct perf_callchain_entry, irq_entry);
-- static DEFINE_PER_CPU(struct perf_callchain_entry, nmi_entry);
-+ static DEFINE_PER_CPU(struct perf_callchain_entry, pmc_irq_entry);
-+ static DEFINE_PER_CPU(struct perf_callchain_entry, pmc_nmi_entry);
- +static DEFINE_PER_CPU(int, in_nmi_frame);
-  
-  
-  static void
+When suid is set and the non-owner user has write permission,
+any writing into this file should be allowed and suid should be
+removed after that.
+
+However, current kernel only allows writing without truncations,
+when we do truncations on that file, we get EPERM. This is a bug.
+
+Steps to reproduce this bug:
+
+% ls -l rootdir/file1
+-rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+% echo h > rootdir/file1
+zsh: operation not permitted: rootdir/file1
+% ls -l rootdir/file1
+-rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+% echo h >> rootdir/file1
+% ls -l rootdir/file1
+-rwxrwxrwx 1 root root 5 Jun 25 16:34 rootdir/file1
+
+This patch fixes it.
+
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: stable@kernel.org
+Cc: Eric Sandeen <esandeen@redhat.com>
+Cc: Eric Paris <eparis@redhat.com>
+Cc: Eugene Teo <eteo@redhat.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+
+---
+diff --git a/fs/open.c b/fs/open.c
+index dd98e80..ed5cd45 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -213,11 +213,15 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
+ 		newattrs.ia_valid |= ATTR_FILE;
+ 	}
+ 
++	mutex_lock(&dentry->d_inode->i_mutex);
+ 	/* Remove suid/sgid on truncate too */
+-	newattrs.ia_valid |= should_remove_suid(dentry);
++	err = dentry_remove_suid(dentry);
++	if (err)
++		goto unlock;
+ 
+-	mutex_lock(&dentry->d_inode->i_mutex);
+ 	err = notify_change(dentry, &newattrs);
++
++ unlock:
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+ 	return err;
+ }
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 0872372..8baf558 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2166,6 +2166,7 @@ extern void destroy_inode(struct inode *);
+ extern struct inode *new_inode(struct super_block *);
+ extern int should_remove_suid(struct dentry *);
+ extern int file_remove_suid(struct file *);
++extern int dentry_remove_suid(struct dentry *);
+ 
+ extern void __insert_inode_hash(struct inode *, unsigned long hashval);
+ extern void remove_inode_hash(struct inode *);
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 2239671..b07f7d0 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1839,9 +1839,11 @@ static int __remove_suid(struct dentry *dentry, int kill)
+ 	return notify_change(dentry, &newattrs);
+ }
+ 
+-int file_remove_suid(struct file *file)
++/*
++ * Note: you need to hold i_mutex before call this.
++ */
++int dentry_remove_suid(struct dentry *dentry)
+ {
+-	struct dentry *dentry = file->f_path.dentry;
+ 	int killsuid = should_remove_suid(dentry);
+ 	int killpriv = security_inode_need_killpriv(dentry);
+ 	int error = 0;
+@@ -1855,6 +1857,12 @@ int file_remove_suid(struct file *file)
+ 
+ 	return error;
+ }
++
++int file_remove_suid(struct file *file)
++{
++	struct dentry *dentry = file->f_path.dentry;
++	return dentry_remove_suid(dentry);
++}
+ EXPORT_SYMBOL(file_remove_suid);
+ 
+ static size_t __iovec_copy_from_user_inatomic(char *vaddr,
