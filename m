@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbZGFF3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZGFFa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752920AbZGFF3q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 01:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbZGFF3i
+	id S1754562AbZGFFa3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 01:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZGFFaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 01:29:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33395 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751065AbZGFF3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 01:29:37 -0400
-Date: Mon, 6 Jul 2009 01:29:14 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jeff Mahoney <jeffm@suse.com>, Yan Zheng <zheng.yan@oracle.com>,
-       Josef Bacik <jbacik@redhat.com>, Chris Mason <chris.mason@oracle.com>,
-       Amerigo Wang <amwang@redhat.com>, akpm@linux-foundation.org,
-       linux-btrfs@vger.kernel.org, Sven Wegener <sven.wegener@stealer.net>
-Message-Id: <20090706053128.6318.16410.sendpatchset@localhost.localdomain>
-Subject: [Patch] btrfs: use file_remove_suid() after i_mutex is held
+	Mon, 6 Jul 2009 01:30:20 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:1294 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbZGFFaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 01:30:19 -0400
+X-IronPort-AV: E=Sophos;i="4.42,355,1243828800"; 
+   d="scan'208";a="1113655"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: [PATCH 2/2] usb_serial: only allow sysrq on a console port
+Date: Mon, 6 Jul 2009 01:33:41 -0400
+User-Agent: KMail/1.9.5
+CC: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, greg@kroah.com,
+       "Jason Wessel" <jason.wessel@windriver.com>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <1243622057-17671-1-git-send-email-jason.wessel@windriver.com> <200907060038.18323.rgetz@blackfin.uclinux.org> <8bd0f97a0907052156m44483903i9b2f35428d1bbe62@mail.gmail.com>
+In-Reply-To: <8bd0f97a0907052156m44483903i9b2f35428d1bbe62@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-ID: <200907060133.41756.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 06 Jul 2009 05:30:22.0235 (UTC) FILETIME=[DB75C6B0:01C9FDFA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon 6 Jul 2009 00:56, Mike Frysinger pondered:
+> On Mon, Jul 6, 2009 at 00:38, Robin Getz wrote:
+> > It appears that the usb serial doesn't handle breaks like serial_core
+> > does. (I  don't see any support for SAK in usb_serial either?)
+> >
+> > Maybe _that_ is the real problem that Jason is trying to work around???
+> 
+> perhaps, but what Jason proposed originally sounds pretty sane.
 
-file_remove_suid() should be called with i_mutex held,
-file_update_time() too. So move them after mutex_lock().
+Which is why Greg added it to the USB tree, and it is in 2.6.31-rc2 :)
 
-Plus, check the return value of kmalloc().
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=568d422e9cf52b7b26d2e026ae1617971f62b560
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
+> if i 
+> enable sysrq support on my desktop, i dont want some development board
+> being able to send a sysrq request back over my serial port and
+> rebooting my desktop.
 
----
-diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
-index 7c3cd24..cd36301 100644
---- a/fs/btrfs/file.c
-+++ b/fs/btrfs/file.c
-@@ -944,14 +944,17 @@ static ssize_t btrfs_file_write(struct file *file, const char __user *buf,
- 	if (count == 0)
- 		goto out_nolock;
- 
-+	mutex_lock(&inode->i_mutex);
-+
- 	err = file_remove_suid(file);
- 	if (err)
--		goto out_nolock;
-+		goto out;
- 	file_update_time(file);
- 
- 	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
-+	if (!pages)
-+		goto out;
- 
--	mutex_lock(&inode->i_mutex);
- 	BTRFS_I(inode)->sequence++;
- 	first_index = pos >> PAGE_CACHE_SHIFT;
- 	last_index = (pos + count) >> PAGE_CACHE_SHIFT;
+Fixing something in the wrong place -- while noble -- is still wrong :)
+
+However -- with the way that usb serial is structured - I didn't see a better 
+place right now either.
+
+The point being that is would be nice to make usb serial look more like other 
+serial devices - so they can share mode code - and things like this (that 
+have been in serial_core.h since -pre-git history (2005) wouldn't just be 
+getting added to the usb serial infrastructure now)...
+
+
+
