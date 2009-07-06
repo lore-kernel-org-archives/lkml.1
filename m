@@ -1,52 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbZGFRxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZGFR5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbZGFRxB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 13:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZGFRwy
+	id S1753505AbZGFR5U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 13:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbZGFR5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 13:52:54 -0400
-Received: from outbound-mail-139.bluehost.com ([67.222.39.29]:43963 "HELO
-	outbound-mail-139.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751401AbZGFRwy (ORCPT
+	Mon, 6 Jul 2009 13:57:08 -0400
+Received: from mga02.intel.com ([134.134.136.20]:58998 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750897AbZGFR5H convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 13:52:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=d4s5Sr8OqCEur/Tm2VQGKOOGasQyatQMItJDxEM6Cpn3R24VC32PqCSL740WK+mK2prKXLBc/SqUHt2ITRpTp7rHv1bxKI358sq3niXlqK325OjyWriWNBzlYqjrGPTh;
-Date: Mon, 6 Jul 2009 10:52:49 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Nico Schottelius <nico-linux-20090706@schottelius.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31-r2: Xorg: Black screen
-Message-ID: <20090706105249.307e4a6b@jbarnes-g45>
-In-Reply-To: <20090706083551.GA6422@ikn.schottelius.org>
-References: <20090706083551.GA6422@ikn.schottelius.org>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.17.2; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 6 Jul 2009 13:57:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,357,1243839600"; 
+   d="scan'208";a="427929654"
+From: "Ma, Chinang" <chinang.ma@intel.com>
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Rick Jones <rick.jones2@hp.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+       Jeff Garzik <jeff@garzik.org>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       "Prickett, Terry O" <terry.o.prickett@intel.com>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Date: Mon, 6 Jul 2009 10:57:09 -0700
+Subject: RE: >10% performance degradation since 2.6.18
+Thread-Topic: >10% performance degradation since 2.6.18
+Thread-Index: Acn+YRgKsf0Rg6WFT+STbc2FHU1eOgAAE7SQ
+Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E800357E11BC8@azsmsx501.amr.corp.intel.com>
+References: <20090705040137.GA7747@gondor.apana.org.au>
+ <4A522D9A.1090006@hp.com>
+ <BC02C49EEB98354DBA7F5DD76F2A9E800357D5A0C5@azsmsx501.amr.corp.intel.com>
+ <20090706174203.GV5480@parisc-linux.org>
+In-Reply-To: <20090706174203.GV5480@parisc-linux.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009 10:35:51 +0200
-Nico Schottelius <nico-linux-20090706@schottelius.org> wrote:
 
-> Hello!
-> 
-> Compared to the other normal brightness problems, with
-> 2.6.31-r2 xorg starts, but there is no image displayed
-> (neither on internal nor external monitor).
-> 
-> Switching back to console does not change the status,
-> though hitting ctrlaltdel reboots the system (i.e. still
-> up and running fine).
-> 
-> It works with 2.6.30-rc7 (besides sometimes the brightness
-> is broken there).
 
-Can you bisect?
+>-----Original Message-----
+>From: Matthew Wilcox [mailto:matthew@wil.cx]
+>Sent: Monday, July 06, 2009 10:42 AM
+>To: Ma, Chinang
+>Cc: Rick Jones; Herbert Xu; Jeff Garzik; andi@firstfloor.org;
+>arjan@infradead.org; jens.axboe@oracle.com; linux-kernel@vger.kernel.org;
+>Styner, Douglas W; Prickett, Terry O; Wilcox, Matthew R;
+>netdev@vger.kernel.org; Brandeburg, Jesse
+>Subject: Re: >10% performance degradation since 2.6.18
+>
+>On Mon, Jul 06, 2009 at 10:36:11AM -0700, Ma, Chinang wrote:
+>> For OLTP workload we are not pushing much network throughput. Lower
+>network latency is more important for OLTP performance. For the original
+>Nehalem 2 sockets OLTP result in this mail thread, we bound the two NIC
+>interrupts to cpu1 and cpu9 (one NIC per sockets). Database processes are
+>divided into two groups and pinned to socket and each processe only
+>received request from the NIC it bound to. This binding scheme gave us >1%
+>performance boost pre-Nehalem date. We also see positive impact on this NHM
+>system.
+>
+>So you've tried spreading the four RX and TX interrupts for each card
+>out over, say, CPUs 1, 3, 5, 7 for eth1 and then 9, 11, 13, 15 for eth0,
+>and it produces worse performance than having all four tied to CPUs 1
+>and 9?  Interesting.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+I was comparing 2 NIC on 2 sockets to 2 NIC on the same socket. I have not tried spreading out the interrupt for a NIC to cpus in the same sockets. Is there good reason for trying this?
+
+ 
+>
+>Can you try changing IGB_MAX_RX_QUEUES (in drivers/net/igb/igb.h, about
+>line 60) to 1, and seeing if performance improves that way?
+>
+
+I suppose this should wait until we find out whether spread out NIC interrupt in socket helps or not.
+
+>--
+>Matthew Wilcox				Intel Open Source Technology Centre
+>"Bill, look, we understand that you're interested in selling us this
+>operating system, but compare it to ours.  We can't possibly take such
+>a retrograde step."
