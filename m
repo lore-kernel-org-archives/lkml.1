@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbZGFQbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbZGFQba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbZGFQbN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 12:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZGFQa6
+	id S1753957AbZGFQba (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 12:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZGFQbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 12:30:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50045 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751709AbZGFQa5 (ORCPT
+	Mon, 6 Jul 2009 12:31:12 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:35950 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753233AbZGFQbL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 12:30:57 -0400
-Date: Mon, 6 Jul 2009 09:29:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-cc: wuzhangjin@gmail.com, Paul Mundt <lethal@linux-sh.org>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
-       zhangfx <zhangfx@lemote.com>
-Subject: Re: [BUG] drivers/video/sis: deadlock introduced by "fbdev: add
- mutex for fb_mmap locking"
-In-Reply-To: <20090706165036.d21bfaaa.krzysztof.h1@poczta.fm>
-Message-ID: <alpine.LFD.2.01.0907060927561.3210@localhost.localdomain>
-References: <1246785112.14240.34.camel@falcon> <alpine.LFD.2.01.0907050715490.3210@localhost.localdomain> <20090705145203.GA8326@linux-sh.org> <alpine.LFD.2.01.0907050756280.3210@localhost.localdomain> <20090705150134.GB8326@linux-sh.org>
- <alpine.LFD.2.01.0907050816110.3210@localhost.localdomain> <20090705152557.GA10588@linux-sh.org> <20090705181808.93be24a9.krzysztof.h1@poczta.fm> <1246842791.29532.2.camel@falcon> <20090706165036.d21bfaaa.krzysztof.h1@poczta.fm>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 6 Jul 2009 12:31:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=R2jhwqDiHHFO6mo1tRTCHfliY4kaLj4M5a7bid1ThaPT+ppmBWC3gHprTjtOV5ZnXe
+         WEVd2ULbu9Smn6BV2Rk4NQo4P4+Uhhs38LWoJT7HZLYPaaEIiG10OtS8enVh86ZkoiWo
+         pWvnGBTS2zX2vi9QZZ0uVB6Uzn/lNG5rrg+3g=
+Date: Mon, 6 Jul 2009 18:31:06 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Andres Freund <andres@anarazel.de>
+Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
+	possibly?caused by netem)
+Message-ID: <20090706163106.GA4559@ami.dom.local>
+References: <200907031326.21822.andres@anarazel.de> <a5d9929e0907052153x2db851bcj26f1433c716c8a90@mail.gmail.com> <20090706141916.GA3477@ami.dom.local> <200907061813.29379.andres@anarazel.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907061813.29379.andres@anarazel.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jul 06, 2009 at 06:13:29PM +0200, Andres Freund wrote:
+...
+> > > Btw, I ran netem with delay for more than 48h on around 80mbit... That
+> > > does  not exclude such a rarely triggered race, but makes it a bit more
+> > > unlikely. (With migration thats around 3sec or so)
+...
+> Sorry once more.
 
+Andres, the bisection + the above - you did 'the whole lotta work' and
+you shouldn't be sorry at all! ;-)
 
-On Mon, 6 Jul 2009, Krzysztof Helt wrote:
-> 
-> Who should I send this patch to be included as a 2.6.31 regression fix?
-
-Just send the patches to me. I've got the patch, but no changelog, and so 
-I'd like to see them again, with changelogs and the proper "Acked-by:" or 
-"Tested-by" lines etc.
-
-		Linus
+Thanks again,
+Jarek P.
