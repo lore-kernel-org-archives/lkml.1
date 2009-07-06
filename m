@@ -1,123 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZGFFKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZGFFVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234AbZGFFKp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 01:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZGFFKe
+	id S1754809AbZGFFVL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 01:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZGFFVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 01:10:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33881 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbZGFFKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 01:10:34 -0400
-Date: Mon, 6 Jul 2009 01:02:30 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: esandeen@redhat.com, eteo@redhat.com, eparis@redhat.com,
-       Amerigo Wang <amwang@redhat.com>, akpm@linux-foundation.org,
-       stable@kernel.org, viro@zeniv.linux.org.uk
-Message-Id: <20090706050445.6268.91.sendpatchset@localhost.localdomain>
-Subject: [Patch v2] allow file truncations when both suid and write permissions set
+	Mon, 6 Jul 2009 01:21:01 -0400
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:60360 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbZGFFVA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 01:21:00 -0400
+Date: Mon, 06 Jul 2009 14:20:58 +0900 (JST)
+Message-Id: <20090706.142058.56800444.mitake@dcl.info.waseda.ac.jp>
+To: fweisbec@gmail.com
+Cc: mingo@elte.hu, acme@redhat.com, a.p.zijlstra@chello.nl,
+       andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
+ how many spinlocks to schedstat
+From: mitake@dcl.info.waseda.ac.jp
+In-Reply-To: <20090701154450.GC5097@nowhere>
+References: <20090701110620.GB15958@elte.hu>
+	<20090701.215304.864843820974206197.mitake@dcl.info.waseda.ac.jp>
+	<20090701154450.GC5097@nowhere>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n665MVXx009392
 
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+Date: Wed, 1 Jul 2009 17:44:51 +0200
 
-V1 -> V2:
-Introduce dentry_remove_suid(), and use it in do_truncate().
-Thanks to Eric Paris.
+> On Wed, Jul 01, 2009 at 09:53:04PM +0900, Hitoshi Mitake wrote:
+> > From: Ingo Molnar <mingo@elte.hu>
+> > Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+> > Date: Wed, 1 Jul 2009 13:06:20 +0200
+> > 
+> > > 
+> > > * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+> > > 
+> > > > From: Ingo Molnar <mingo@elte.hu>
+> > > > Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+> > > > Date: Wed, 1 Jul 2009 11:07:49 +0200
+> > > > 
+> > > > > 
+> > > > > * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+> > > > > 
+> > > > > > From: Andi Kleen <andi@firstfloor.org>
+> > > > > > Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+> > > > > > Date: Wed, 01 Jul 2009 09:38:04 +0200
+> > > > > > 
+> > > > > > > Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> writes:
+> > > > > > > 
+> > > > > > > > Hi,
+> > > > > > > >
+> > > > > > > > I wrote a test patch which add information of counts processes acquired how many spinlocks to schedstat.
+> > > > > > > > After applied this patch, /proc/<PID>/sched will change like this,
+> > > > > > > 
+> > > > > > > The problem is that spinlocks are very common and schedstats is 
+> > > > > > > enabled commonly in production kernels. You would need to 
+> > > > > > > demonstrate that such a change doesn't have significant 
+> > > > > > > performance impact. For me it looks like it has.
+> > > > > > 
+> > > > > > I agree with your opinion about performance impact.
+> > > > > > I thought this will make no problem,
+> > > > > > because schedstat is categorized as "Kernel hacking" section.
+> > > > > > But according to you, many production kernels enable it
+> > > > > > so my patch will make widespread performance degradation.
+> > > > > > I didn't know that, sorry.
+> > > > > 
+> > > > > His arguments are bogus: both lockstat and perfcounters are optional 
+> > > > > (and default off), and the sw counter can be made near zero cost 
+> > > > > even if both perfcounters and lockstat is enabled. Also, sw counters 
+> > > > > are generally per CPU, etc. so not a performance issue.
+> > > > > 
+> > > > > The only (small) overhead will be when the lock-acquire sw counter 
+> > > > > is actively enabled because you run 'perf stat -e lock-acquire' - 
+> > > > > but that is expected and inherent in pretty much any kind of 
+> > > > > instrumentation.
+> > > > > 
+> > > > > The feature you are working on has the chance to be a very useful 
+> > > > > and popular piece of instrumentation. Being able to tell the lock 
+> > > > > acquire stats on a per task, per workload, per CPU or system-wide 
+> > > > > basis is a unique capability no other tool can offer right now.
+> > > > > 
+> > > > > Andi is often trolling perfcounters related (and other) threads, 
+> > > > > please dont let yourself be deterred by that and feel free to ignore 
+> > > > > him.
+> > > > OK, at least it is truth that
+> > > > counter in perfcounters makes only valid overhead.
+> > > > 
+> > > > And I have a question,
+> > > > I tried to build perf, but I got a build error,
+> > > > 
+> > > > util/symbol.c: In function ‚Äòdso__load_sym‚Äô:
+> > > > util/symbol.c:466: error: ‚ÄòELF_C_READ_MMAP‚Äô undeclared (first use in this function)
+> > > > util/symbol.c:466: error: (Each undeclared identifier is reported only once
+> > > > util/symbol.c:466: error: for each function it appears in.)
+> > > > 
+> > > > I used this libelf,
+> > > > http://www.mr511.de/software/english.html
+> > > > but constant ELF_C_READ_MMAP is not provided...
+> > > > 
+> > > > which "libelf" should I use?
+> > > > It seems that there are some libelf implementations.
+> > > 
+> > > I use the elfutils-libelf* packages:
+> > > 
+> > >  elfutils-libelf-devel-static-0.141-1.fc10.i386
+> > >  elfutils-0.141-1.fc10.i386
+> > >  elfutils-libelf-0.141-1.fc10.i386
+> > >  elfutils-libs-0.141-1.fc10.i386
+> > >  elfutils-libelf-devel-0.141-1.fc10.i386
+> > > 
+> > > do they work fine or you?
+> > 
+> > I'm a Debian user, so I build this library from source
+> > 
+> > https://fedorahosted.org/releases/e/l/elfutils/elfutils-0.141.tar.bz2
+> > 
+> > And I succeed to build perf, thanks!
+> 
+> 
+> You could also just
+> 
+> apt-get install libelf-dev
+> 
+> 
+Thanks. I could install libelf with your way.
 
+And sorry for my late response.
+Because adding counting spin lock to perfcounters is more difficult
+than I excepted...
 
-When suid is set and the non-owner user has write permission,
-any writing into this file should be allowed and suid should be
-removed after that.
+When the process watched by perf tries to lock a spinlock
+this will be the nest of spinlock,
+because perfcounters subsystem also uses spinlock.
 
-However, current kernel only allows writing without truncations,
-when we do truncations on that file, we get EPERM. This is a bug.
+Is there any way to avoid the nest of lock?
+I want any advice...
 
-Steps to reproduce this bug:
+This is the temporal patch I wrote,
 
-% ls -l rootdir/file1
--rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
-% echo h > rootdir/file1
-zsh: operation not permitted: rootdir/file1
-% ls -l rootdir/file1
--rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
-% echo h >> rootdir/file1
-% ls -l rootdir/file1
--rwxrwxrwx 1 root root 5 Jun 25 16:34 rootdir/file1
-
-This patch fixes it.
-
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: stable@kernel.org
-Cc: Eric Sandeen <esandeen@redhat.com>
-Cc: Eric Paris <eparis@redhat.com>
-Cc: Eugene Teo <eteo@redhat.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-
----
-diff --git a/fs/open.c b/fs/open.c
-index dd98e80..ed5cd45 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -213,11 +213,15 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
- 		newattrs.ia_valid |= ATTR_FILE;
- 	}
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 5e970c7..f65a473 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -102,6 +102,7 @@ enum perf_sw_ids {
+ 	PERF_COUNT_SW_CPU_MIGRATIONS		= 4,
+ 	PERF_COUNT_SW_PAGE_FAULTS_MIN		= 5,
+ 	PERF_COUNT_SW_PAGE_FAULTS_MAJ		= 6,
++	PERF_COUNT_SW_LOCK_ACQUIRES		= 7,
  
-+	mutex_lock(&dentry->d_inode->i_mutex);
- 	/* Remove suid/sgid on truncate too */
--	newattrs.ia_valid |= should_remove_suid(dentry);
-+	err = dentry_remove_suid(dentry);
-+	if (err)
-+		goto unlock;
+ 	PERF_COUNT_SW_MAX,			/* non-ABI */
+ };
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index d55a50d..0261f9f 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -3754,6 +3754,7 @@ static const struct pmu *sw_perf_counter_init(struct perf_counter *counter)
+ 	case PERF_COUNT_SW_PAGE_FAULTS_MAJ:
+ 	case PERF_COUNT_SW_CONTEXT_SWITCHES:
+ 	case PERF_COUNT_SW_CPU_MIGRATIONS:
++	case PERF_COUNT_SW_LOCK_ACQUIRES:
+ 		if (!counter->parent) {
+ 			atomic_inc(&perf_swcounter_enabled[event]);
+ 			counter->destroy = sw_perf_counter_destroy;
+diff --git a/kernel/spinlock.c b/kernel/spinlock.c
+index 7932653..394fc2d 100644
+--- a/kernel/spinlock.c
++++ b/kernel/spinlock.c
+@@ -20,6 +20,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/debug_locks.h>
+ #include <linux/module.h>
++#include <linux/perf_counter.h>
  
--	mutex_lock(&dentry->d_inode->i_mutex);
- 	err = notify_change(dentry, &newattrs);
-+
-+ unlock:
- 	mutex_unlock(&dentry->d_inode->i_mutex);
- 	return err;
- }
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 0872372..8baf558 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -2166,6 +2166,7 @@ extern void destroy_inode(struct inode *);
- extern struct inode *new_inode(struct super_block *);
- extern int should_remove_suid(struct dentry *);
- extern int file_remove_suid(struct file *);
-+extern int dentry_remove_suid(struct dentry *);
- 
- extern void __insert_inode_hash(struct inode *, unsigned long hashval);
- extern void remove_inode_hash(struct inode *);
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 2239671..b07f7d0 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1839,9 +1839,11 @@ static int __remove_suid(struct dentry *dentry, int kill)
- 	return notify_change(dentry, &newattrs);
- }
- 
--int file_remove_suid(struct file *file)
-+/*
-+ * Note: you need to hold i_mutex before call this.
-+ */
-+int dentry_remove_suid(struct dentry *dentry)
+ int __lockfunc _spin_trylock(spinlock_t *lock)
  {
--	struct dentry *dentry = file->f_path.dentry;
- 	int killsuid = should_remove_suid(dentry);
- 	int killpriv = security_inode_need_killpriv(dentry);
- 	int error = 0;
-@@ -1855,6 +1857,12 @@ int file_remove_suid(struct file *file)
- 
- 	return error;
- }
+@@ -181,6 +182,9 @@ void __lockfunc _spin_lock(spinlock_t *lock)
+ 	preempt_disable();
+ 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
++	perf_swcounter_event(PERF_COUNT_SW_LOCK_ACQUIRES,
++			     1, 1, NULL, 0);
 +
-+int file_remove_suid(struct file *file)
-+{
-+	struct dentry *dentry = file->f_path.dentry;
-+	return dentry_remove_suid(dentry);
-+}
- EXPORT_SYMBOL(file_remove_suid);
+ }
  
- static size_t __iovec_copy_from_user_inatomic(char *vaddr,
+ EXPORT_SYMBOL(_spin_lock);
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 2e03524..87511c0 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -52,6 +52,7 @@ static struct perf_counter_attr default_attrs[] = {
+   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CONTEXT_SWITCHES},
+   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CPU_MIGRATIONS	},
+   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_PAGE_FAULTS	},
++  { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_LOCK_ACQUIRES	},
+ 
+   { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_CPU_CYCLES	},
+   { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_INSTRUCTIONS	},
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 4d042f1..0cd4985 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -38,6 +38,7 @@ static struct event_symbol event_symbols[] = {
+   { CSW(PAGE_FAULTS_MAJ),	"major-faults",		""		},
+   { CSW(CONTEXT_SWITCHES),	"context-switches",	"cs"		},
+   { CSW(CPU_MIGRATIONS),	"cpu-migrations",	"migrations"	},
++  { CSW(LOCK_ACQUIRES),         "lock-acquires",	"lock"	},
+ };
+ 
+ #define __PERF_COUNTER_FIELD(config, name) \
+@@ -66,6 +67,7 @@ static char *sw_event_names[] = {
+ 	"CPU-migrations",
+ 	"minor-faults",
+ 	"major-faults",
++	"lock-acquires",
+ };
+ 
+ #define MAX_ALIASES 8
+
+
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
