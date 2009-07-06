@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbZGFJIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbZGFJKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757609AbZGFJIS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 05:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbZGFJID
+	id S1757983AbZGFJKl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 05:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbZGFJKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 05:08:03 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40304 "EHLO mx1.suse.de"
+	Mon, 6 Jul 2009 05:10:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53322 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752330AbZGFJIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 05:08:02 -0400
-Date: Mon, 6 Jul 2009 11:08:04 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 02/11] vfs: Add better VFS support for page_mkwrite when blocksize < pagesize
-Message-ID: <20090706090804.GM2714@wotan.suse.de>
-References: <1245088797-29533-1-git-send-email-jack@suse.cz> <1245088797-29533-3-git-send-email-jack@suse.cz> <20090625161753.GB30755@wotan.suse.de> <20090625174754.GA21957@infradead.org> <20090626084225.GA12201@wotan.suse.de> <20090630173716.GA3150@infradead.org> <20090702072225.GC2714@wotan.suse.de> <20090704151801.GA19682@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090704151801.GA19682@infradead.org>
-User-Agent: Mutt/1.5.9i
+	id S1752709AbZGFJKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 05:10:32 -0400
+Message-ID: <4A51BFEE.9050200@redhat.com>
+Date: Mon, 06 Jul 2009 17:12:14 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+MIME-Version: 1.0
+To: Tao Ma <tao.ma@oracle.com>
+CC: linux-kernel@vger.kernel.org, Jeff Mahoney <jeffm@suse.com>,
+       Yan Zheng <zheng.yan@oracle.com>, Josef Bacik <jbacik@redhat.com>,
+       Arjan <arjan@infradead.org>, Chris Mason <chris.mason@oracle.com>,
+       akpm@linux-foundation.org, linux-btrfs@vger.kernel.org,
+       Sven Wegener <sven.wegener@stealer.net>
+Subject: Re: [Patch v2] btrfs: use file_remove_suid() after i_mutex is held
+References: <20090706072043.6555.13669.sendpatchset@localhost.localdomain> <4A51AAFB.1000601@oracle.com>
+In-Reply-To: <4A51AAFB.1000601@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 04, 2009 at 11:18:01AM -0400, Christoph Hellwig wrote:
-> On Thu, Jul 02, 2009 at 09:22:25AM +0200, Nick Piggin wrote:
-> > I guess truncate can be considered special because it operates on
-> > data not only metadata.
-> > 
-> > Looks like ->setsize would need a flag for ATTR_OPEN too? Any others?
-> > I'll do a bit of an audit when I get around to it...
-> 
-> In the end ATTR_SIZE should not be passed to ->setattr anymore, and
-> ->setsize should become mandatory.  For the transition I would recommend
-> calling ->setsize if present else fall back to the current way.  That
-> way we can migreate one filesystem per patch to the new scheme.
-> 
-> I would suggest giving the flags to ->setsize their own namespace with
-> two flags so far SETSIZE_FTRUNCATE (need to update the file size and
-> have a file struct available) and SETSIZE_OPEN for the ATTR_OPEN case.
-> 
-> That beeing said I reallye hate the conditiona file argument for
-> ftrunctate (currently hidden inside struct iattr), maybe we're better
-> off having am optional int (*ftruncate)(struct file *) method for those
-> filesystems that need it, with a fallback to ->setsize.
+Tao Ma wrote:
+> Hi Amerigo,
+>
+> Amerigo Wang wrote:
+>> V1 -> V2:
+>> Move kmalloc() before mutex_lock(), suggested by Arjan.
+>>
+>> file_remove_suid() should be called with i_mutex held,
+>> file_update_time() too. So move them after mutex_lock().
+>>
+>> Plus, check the return value of kmalloc().
+>>
+>> Signed-off-by: WANG Cong <amwang@redhat.com>
+>> Cc: Arjan <arjan@infradead.org>
+>> Cc: Chris Mason <chris.mason@oracle.com>
+>> Cc: Yan Zheng <zheng.yan@oracle.com>
+>> Cc: Sven Wegener <sven.wegener@stealer.net>
+>> Cc: Josef Bacik <jbacik@redhat.com>
+>> Cc: Jeff Mahoney <jeffm@suse.com>
+>>
+>> ---
+>> diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
+>> index 7c3cd24..09ef5d6 100644
+>> --- a/fs/btrfs/file.c
+>> +++ b/fs/btrfs/file.c
+>> @@ -944,14 +944,17 @@ static ssize_t btrfs_file_write(struct file 
+>> *file, const char __user *buf,
+>>      if (count == 0)
+>>          goto out_nolock;
+>>  
+>> +    pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
+>> +    if (!pages)
+>> +        goto out_nolock;
+> I guess you need to set err to -ENOMEM here so that the caller knows 
+> what's wrong. With your patch, this function just return 0(since 
+> num_written and err are both 0) with no error, and I guess it is worse 
+> than kernel BUG out when the NULL pages is used later.
 
-OK, hmm, but I wonder -- most of the time do_truncate will need to
-call notify_change anyway, so I wonder if avoiding the double
-indirection saves us anything? (It requires 2 indirect calls either
-way). And if we call ->setsize from ->setattr, then a filesystem
-which implements its own ->setattr could avoid one of those indirect
-calls. Not so if do_truncate has to call ->setattr then ->setsize.
+Agree. Thanks, I will update it.
 
-We definitely could call the method ->ftruncate, however (regardless
-of where we call it from). In fact, we could just have a single new
-->ftruncate where struct file * argument is NULL if not called via
-an open file. This should also solve the namimg issue without
-renaming the old method (having both ->truncate and ->ftruncate
-could be slightly confusing at a glance, but we will remove
-->truncate ASAP).
-
-Anyway, let me finish the first draft and post my series and we
-can go over it further.
-
-
-> And yeah, maybe ->setsize might better be left as ->truncate, but if
-> we want a nicely bisectable migration we'd have to rename the old
-> truncate to e.g. ->old_truncate before.  That's probably worth having
-> the better naming in the end.
-
-It is definitely better to not break things as my first patch has
-done. I think it should not be too hard to have intermediate steps.
-
-Thanks,
-Nick
