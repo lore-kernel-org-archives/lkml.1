@@ -1,169 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZGFVMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZGFVM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbZGFVMS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 17:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZGFVMH
+	id S1754313AbZGFVM3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 17:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZGFVMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 17:12:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42501 "EHLO mx2.redhat.com"
+	Mon, 6 Jul 2009 17:12:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42507 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752409AbZGFVMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 17:12:06 -0400
-Date: Mon, 6 Jul 2009 17:11:53 -0400
+	id S1753664AbZGFVML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 17:12:11 -0400
+Date: Mon, 6 Jul 2009 17:12:02 -0400
 From: Jason Baron <jbaron@redhat.com>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, a.p.zijlstra@chello.nl,
        rostedt@goodmis.org, fweisbec@gmail.com
-Message-Id: <cover.1246912068.git.jbaron@redhat.com>
-Subject: [PATCH 0/2] perf_counter: add tracepoint support
+Message-Id: <0d7326e18b9860fbf8fb2739f90a23eb9262e24b.1246912068.git.jbaron@redhat.com>
+In-Reply-To: <cover.1246912068.git.jbaron@redhat.com>
+References: <cover.1246912068.git.jbaron@redhat.com>
+Subject: [PATCH 2/2] perf_counter: add support to the 'perf' tool for tracepoints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-hi,
-
-The following two patches build on Peter's initial tracepoint perf counter work.
-The first patches enables the kernel side, and the second patch adds support to
-the 'perf' tool itself. The debugfs filesystem needs to be mounted to make this
-work and it is searched in the default location '/sys/kernel/debug'. We can
-add an optional parameter to search for it elsewhere if need be.
-
-Below, I show the output of 'perf list', and 'perf stat' for a tbench run.
-
-thanks,
-
--Jason
+Add support to 'perf list' and 'perf stat' for kernel tracepoints. The
+implementation creates a 'for_each_subsystem' and 'for_each_event' for
+easy iteration over the tracepoints. The debugfs filesystem must be mounted
+at '/sys/kernel/debug'. We can add an optional search path in the future.
 
 
-> perf list
+Signed-off-by: Jason Baron <jbaron@redhat.com>
 
-List of pre-defined events (to be used in -e):
-
-  cpu-cycles OR cycles                     [Hardware event]
-  instructions                             [Hardware event]
-  cache-references                         [Hardware event]
-  cache-misses                             [Hardware event]
-  branch-instructions OR branches          [Hardware event]
-  branch-misses                            [Hardware event]
-  bus-cycles                               [Hardware event]
-
-  cpu-clock                                [Software event]
-  task-clock                               [Software event]
-  page-faults OR faults                    [Software event]
-  minor-faults                             [Software event]
-  major-faults                             [Software event]
-  context-switches OR cs                   [Software event]
-  cpu-migrations OR migrations             [Software event]
-
-  L1-d$-loads                              [Hardware cache event]
-  L1-d$-load-misses                        [Hardware cache event]
-  L1-d$-stores                             [Hardware cache event]
-  L1-d$-store-misses                       [Hardware cache event]
-  L1-d$-prefetches                         [Hardware cache event]
-  L1-d$-prefetch-misses                    [Hardware cache event]
-  L1-i$-loads                              [Hardware cache event]
-  L1-i$-load-misses                        [Hardware cache event]
-  L1-i$-prefetches                         [Hardware cache event]
-  L1-i$-prefetch-misses                    [Hardware cache event]
-  LLC-loads                                [Hardware cache event]
-  LLC-load-misses                          [Hardware cache event]
-  LLC-stores                               [Hardware cache event]
-  LLC-store-misses                         [Hardware cache event]
-  LLC-prefetches                           [Hardware cache event]
-  LLC-prefetch-misses                      [Hardware cache event]
-  dTLB-loads                               [Hardware cache event]
-  dTLB-load-misses                         [Hardware cache event]
-  dTLB-stores                              [Hardware cache event]
-  dTLB-store-misses                        [Hardware cache event]
-  dTLB-prefetches                          [Hardware cache event]
-  dTLB-prefetch-misses                     [Hardware cache event]
-  iTLB-loads                               [Hardware cache event]
-  iTLB-load-misses                         [Hardware cache event]
-  branch-loads                             [Hardware cache event]
-  branch-load-misses                       [Hardware cache event]
-
-  rNNN                                     [raw hardware event descriptor]
-
-  skb:kfree_skb                                [Tracepoint event]
-  block:block_rq_abort                           [Tracepoint event]
-  block:block_rq_insert                          [Tracepoint event]
-  block:block_rq_issue                           [Tracepoint event]
-  block:block_rq_requeue                         [Tracepoint event]
-  block:block_rq_complete                        [Tracepoint event]
-  block:block_bio_bounce                         [Tracepoint event]
-  block:block_bio_complete                       [Tracepoint event]
-  block:block_bio_backmerge                      [Tracepoint event]
-  block:block_bio_frontmerge                     [Tracepoint event]
-  block:block_bio_queue                          [Tracepoint event]
-  block:block_getrq                              [Tracepoint event]
-  block:block_sleeprq                            [Tracepoint event]
-  block:block_plug                               [Tracepoint event]
-  block:block_unplug_timer                       [Tracepoint event]
-  block:block_unplug_io                          [Tracepoint event]
-  block:block_split                              [Tracepoint event]
-  block:block_remap                              [Tracepoint event]
-  kmem:kmalloc                                  [Tracepoint event]
-  kmem:kmem_cache_alloc                         [Tracepoint event]
-  kmem:kmalloc_node                             [Tracepoint event]
-  kmem:kmem_cache_alloc_node                    [Tracepoint event]
-  kmem:kfree                                    [Tracepoint event]
-  kmem:kmem_cache_free                          [Tracepoint event]
-  ftrace:kmem_free                                [Tracepoint event]
-  ftrace:kmem_alloc                               [Tracepoint event]
-  ftrace:power                                    [Tracepoint event]
-  ftrace:hw_branch                                [Tracepoint event]
-  ftrace:branch                                   [Tracepoint event]
-  ftrace:print                                    [Tracepoint event]
-  ftrace:bprint                                   [Tracepoint event]
-  ftrace:user_stack                               [Tracepoint event]
-  ftrace:kernel_stack                             [Tracepoint event]
-  ftrace:special                                  [Tracepoint event]
-  ftrace:context_switch                           [Tracepoint event]
-  ftrace:wakeup                                   [Tracepoint event]
-  ftrace:funcgraph_exit                           [Tracepoint event]
-  ftrace:funcgraph_entry                          [Tracepoint event]
-  ftrace:function                                 [Tracepoint event]
-  workqueue:workqueue_insertion                      [Tracepoint event]
-  workqueue:workqueue_execution                      [Tracepoint event]
-  workqueue:workqueue_creation                       [Tracepoint event]
-  workqueue:workqueue_destruction                    [Tracepoint event]
-  irq:irq_handler_entry                        [Tracepoint event]
-  irq:irq_handler_exit                         [Tracepoint event]
-  irq:softirq_entry                            [Tracepoint event]
-  irq:softirq_exit                             [Tracepoint event]
-  sched:sched_kthread_stop                       [Tracepoint event]
-  sched:sched_kthread_stop_ret                   [Tracepoint event]
-  sched:sched_wait_task                          [Tracepoint event]
-  sched:sched_wakeup                             [Tracepoint event]
-  sched:sched_wakeup_new                         [Tracepoint event]
-  sched:sched_switch                             [Tracepoint event]
-  sched:sched_migrate_task                       [Tracepoint event]
-  sched:sched_process_free                       [Tracepoint event]
-  sched:sched_process_exit                       [Tracepoint event]
-  sched:sched_process_wait                       [Tracepoint event]
-  sched:sched_process_fork                       [Tracepoint event]
-  sched:sched_signal_send                        [Tracepoint event]
-
-
->  perf stat  -a -e sched:sched_switch -e sched:sched_wakeup -e irq:irq_handler_entry tbench 4
-
- Performance counter stats for 'tbench 4':
-
-      194658693  sched:sched_switch      
-       97479295  sched:sched_wakeup      
-           9122  irq:irq_handler_entry   
-
-  720.171439729  seconds time elapsed
-
-  
-
-  -add kernel tracepoint support
-  -add support for tracepoints to the perf tool
-
- init/Kconfig                   |    2 +-
- kernel/perf_counter.c          |    6 +-
+---
  tools/perf/util/parse-events.c |  195 +++++++++++++++++++++++++++++++++++++++-
  tools/perf/util/util.h         |    2 +
- 4 files changed, 200 insertions(+), 5 deletions(-)
+ 2 files changed, 196 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 5184959..d454eac 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -12,6 +12,8 @@ int					nr_counters;
+ 
+ struct perf_counter_attr		attrs[MAX_COUNTERS];
+ 
++static char default_debugfs_path[] = "/sys/kernel/debug/tracing/events";
++
+ struct event_symbol {
+ 	u8	type;
+ 	u64	config;
+@@ -110,6 +112,86 @@ static unsigned long hw_cache_stat[C(MAX)] = {
+  [C(BPU)]	= (CACHE_READ),
+ };
+ 
++#define for_each_subsystem(sys_dir, sys_dirent, sys_next, file, st)	       \
++	while (!readdir_r(sys_dir, &sys_dirent, &sys_next) && sys_next)	       \
++	if (sprintf(file, "%s/%s", default_debugfs_path, sys_dirent.d_name) && \
++	   (stat(file, &st) == 0) && (S_ISDIR(st.st_mode)) &&		       \
++	   (strcmp(sys_dirent.d_name, ".") != 0) &&			       \
++	   (strcmp(sys_dirent.d_name, "..") != 0))
++
++#define for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next, file, st)    \
++	while (!readdir_r(evt_dir, &evt_dirent, &evt_next) && evt_next)        \
++	if (sprintf(file, "%s/%s/%s", default_debugfs_path, sys_dirent.d_name, \
++			evt_dirent.d_name) && 				       \
++	   (stat(file, &st) == 0) && (S_ISDIR(st.st_mode)) &&		       \
++	   (strcmp(evt_dirent.d_name, ".") != 0) && 			       \
++	   (strcmp(evt_dirent.d_name, "..") != 0))
++
++#define MAX_PATH_LENGTH (strlen(default_debugfs_path) + 3 + \
++			(3 * (strlen(sys_dirent.d_name))) + 1)
++#define MAX_EVENT_LENGTH 30
++
++static int valid_debugfs_mount(void)
++{
++	struct statfs st_fs;
++
++	if (statfs(default_debugfs_path, &st_fs) < 0)
++		return -ENOENT;
++	else if (st_fs.f_type != (long) DEBUGFS_MAGIC)
++		return -ENOENT;
++	return 0;
++}
++
++static char *tracepoint_id_to_name(u64 config)
++{
++	static char tracepoint_name[2 * MAX_EVENT_LENGTH];
++	DIR *sys_dir, *evt_dir;
++	struct dirent *sys_next, *evt_next, sys_dirent, evt_dirent;
++	struct stat st;
++	char id_buf[4];
++	int fd;
++	long long id;
++	char evt_path[MAX_PATH_LENGTH];
++
++	if (valid_debugfs_mount())
++		return "unkown";
++
++	sys_dir = opendir(default_debugfs_path);
++	if (!sys_dir)
++		goto cleanup;
++	for_each_subsystem(sys_dir, sys_dirent, sys_next, evt_path, st) {
++		evt_dir = opendir(evt_path);
++		if (!evt_dir)
++			goto cleanup;
++		for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next,
++								evt_path, st) {
++			sprintf(evt_path, "%s/%s/%s/id", default_debugfs_path,
++				sys_dirent.d_name, evt_dirent.d_name);
++			fd = open(evt_path, O_RDONLY);
++			if (fd < 0)
++				continue;
++			if (read(fd, id_buf, sizeof(id_buf)) < 0) {
++				close(fd);
++				continue;
++			}
++			close(fd);
++			id = atoll(id_buf);
++			if ((u64)id == config) {
++				closedir(evt_dir);
++				closedir(sys_dir);
++				snprintf(tracepoint_name, 2 * MAX_EVENT_LENGTH,
++					"%s:%s", sys_dirent.d_name,
++					evt_dirent.d_name);
++				return tracepoint_name;
++			}
++		}
++		closedir(evt_dir);
++	}
++cleanup:
++	closedir(sys_dir);
++	return "unkown";
++}
++
+ static int is_cache_op_valid(u8 cache_type, u8 cache_op)
+ {
+ 	if (hw_cache_stat[cache_type] & COP(cache_op))
+@@ -177,6 +259,9 @@ char *event_name(int counter)
+ 			return sw_event_names[config];
+ 		return "unknown-software";
+ 
++	case PERF_TYPE_TRACEPOINT:
++		return tracepoint_id_to_name(config);
++
+ 	default:
+ 		break;
+ 	}
+@@ -265,6 +350,78 @@ parse_generic_hw_event(const char **str, struct perf_counter_attr *attr)
+ 	return 1;
+ }
+ 
++static int parse_tracepoint_event(const char **strp,
++				    struct perf_counter_attr *attr)
++{
++	const char *evt_name;
++	char sys_name[MAX_EVENT_LENGTH];
++	DIR *sys_dir, *evt_dir;
++	struct dirent *sys_next, *evt_next, sys_dirent, evt_dirent;
++	struct stat st;
++	char id_buf[4];
++	int fd;
++	unsigned int sys_length, evt_length;
++	u64 id;
++	char evt_path[MAX_PATH_LENGTH];
++
++	if (valid_debugfs_mount())
++		return 0;
++
++	evt_name = strchr(*strp, ':');
++	if (evt_name) {
++		sys_length = evt_name - *strp;
++		if (sys_length >= MAX_EVENT_LENGTH)
++			return 0;
++		strncpy(sys_name, *strp, sys_length);
++		sys_name[sys_length] = '\0';
++		evt_name = evt_name + 1;
++		evt_length = strlen(evt_name);
++		if (evt_length >= MAX_EVENT_LENGTH)
++			return 0;
++	} else
++		return 0;
++
++	sys_dir = opendir(default_debugfs_path);
++	if (!sys_dir)
++		goto cleanup;
++	for_each_subsystem(sys_dir, sys_dirent, sys_next, evt_path, st) {
++		if (strcmp(sys_dirent.d_name, sys_name) == 0) {
++			evt_dir = opendir(evt_path);
++			if (!evt_dir)
++				goto cleanup;
++			for_each_event(sys_dirent, evt_dir, evt_dirent,
++						       evt_next, evt_path, st) {
++				if (strcmp(evt_dirent.d_name, evt_name) == 0) {
++					sprintf(evt_path, "%s/%s/%s/id",
++						default_debugfs_path,
++						sys_dirent.d_name,
++						evt_dirent.d_name);
++					fd = open(evt_path, O_RDONLY);
++					if (fd < 0)
++						continue;
++					if (read(fd, id_buf,
++						 sizeof(id_buf)) < 0) {
++						close(fd);
++						continue;
++					}
++					close(fd);
++					id = atoll(id_buf);
++					attr->config = id;
++					attr->type = PERF_TYPE_TRACEPOINT;
++					closedir(evt_dir);
++					closedir(sys_dir);
++					*strp = evt_name + evt_length;
++					return 1;
++				}
++			}
++			closedir(evt_dir);
++		}
++	}
++cleanup:
++	closedir(sys_dir);
++	return 0;
++}
++
+ static int check_events(const char *str, unsigned int i)
+ {
+ 	int n;
+@@ -374,7 +531,8 @@ parse_event_modifier(const char **strp, struct perf_counter_attr *attr)
+  */
+ static int parse_event_symbols(const char **str, struct perf_counter_attr *attr)
+ {
+-	if (!(parse_raw_event(str, attr) ||
++	if (!(parse_tracepoint_event(str, attr) ||
++	      parse_raw_event(str, attr) ||
+ 	      parse_numeric_event(str, attr) ||
+ 	      parse_symbolic_event(str, attr) ||
+ 	      parse_generic_hw_event(str, attr)))
+@@ -423,6 +581,39 @@ static const char * const event_type_descriptors[] = {
+ };
+ 
+ /*
++ * Print the events from <debugfs_mount_point>/tracing/events
++ */
++
++static void print_tracepoint_events(void)
++{
++	DIR *sys_dir, *evt_dir;
++	struct dirent *sys_next, *evt_next, sys_dirent, evt_dirent;
++	struct stat st;
++	char evt_path[MAX_PATH_LENGTH];
++
++	if (valid_debugfs_mount())
++		return;
++
++	sys_dir = opendir(default_debugfs_path);
++	if (!sys_dir)
++		goto cleanup;
++	for_each_subsystem(sys_dir, sys_dirent, sys_next, evt_path, st) {
++		evt_dir = opendir(evt_path);
++		if (!evt_dir)
++			goto cleanup;
++		for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next,
++								evt_path, st) {
++			fprintf(stderr, "  %s:%-40s [%s]\n", sys_dirent.d_name,
++				evt_dirent.d_name,
++				event_type_descriptors[PERF_TYPE_TRACEPOINT+1]);
++		}
++		closedir(evt_dir);
++	}
++cleanup:
++	closedir(sys_dir);
++}
++
++/*
+  * Print the help text for the event symbols:
+  */
+ void print_events(void)
+@@ -472,5 +663,7 @@ void print_events(void)
+ 		"rNNN");
+ 	fprintf(stderr, "\n");
+ 
++	print_tracepoint_events();
++
+ 	exit(129);
+ }
+diff --git a/tools/perf/util/util.h b/tools/perf/util/util.h
+index b4be607..68fe157 100644
+--- a/tools/perf/util/util.h
++++ b/tools/perf/util/util.h
+@@ -50,6 +50,7 @@
+ #include <unistd.h>
+ #include <stdio.h>
+ #include <sys/stat.h>
++#include <sys/statfs.h>
+ #include <fcntl.h>
+ #include <stddef.h>
+ #include <stdlib.h>
+@@ -80,6 +81,7 @@
+ #include <netdb.h>
+ #include <pwd.h>
+ #include <inttypes.h>
++#include "../../../include/linux/magic.h"
+ 
+ #ifndef NO_ICONV
+ #include <iconv.h>
+-- 
+1.6.0.6
 
