@@ -1,110 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbZGFIGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757651AbZGFIJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756519AbZGFIGQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZGFIGE
+	id S1757651AbZGFIJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZGFIJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:06:04 -0400
-Received: from mga10.intel.com ([192.55.52.92]:3796 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756645AbZGFIF7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:05:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,355,1243839600"; 
-   d="scan'208";a="472244362"
-Subject: [BUG] Deadlock between cpufreq kondemand and process cpuspeed
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Pallipadi@vger.kernel.org, Venkatesh <venkatesh.pallipadi@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
-       Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 06 Jul 2009 16:06:23 +0800
-Message-Id: <1246867583.2560.526.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Mon, 6 Jul 2009 04:09:14 -0400
+Received: from ishtar.tlinx.org ([64.81.245.74]:51033 "EHLO Ishtar.tlinx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752026AbZGFIJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 04:09:13 -0400
+Message-ID: <4A51B127.8080807@tlinx.org>
+Date: Mon, 06 Jul 2009 01:09:11 -0700
+From: Linda Walsh <lkml@tlinx.org>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: pipe(2), read/write, maximums and behavior.
+X-Stationery: 0.4.9
+Content-Type: multipart/mixed;
+ boundary="------------090704070705030503000705"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When I run a series of testing against 2.6.31-rc2 on my Tulsa x8664 machine,
-kernel reports a block issue. Below is the log.
+This is a multi-part message in MIME format.
+--------------090704070705030503000705
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+I've seen a few shells claim to limit pipe sizes to 8 512Byte buffers.
+Don't know where they get this value or how they think it applies, but
+it certainly doesn't seem to apply in linux.   However, I'm not
+sure what limits do apply compared to available memory. 
+
+I suppose, starting off, one might look at at a maximum of
+(Physical+Swap-resident-non-swappable mem)/2 as a top limit.
+
+A test machine I have has 8GB physical memory with a bit over 4GB
+of swap space making for about 12GB of memory.
+
+If total memory was to go toward my proglet that splits into a master
+writer and slave pipe reader, they'd have to split memory to have
+matching buffer read/write sizes. I'd "expect", (I think) at least
+a 2GB write/read to work, and possibly a 4GB write/read to work
+with alot of swap activity -- that's assuming there are no other
+restraints in dividing 12GB of address space.
+
+As it turns out -- the program dies at 2GB (the 1GB write/read works)
+but when the program tries a 2GB write & read it refuses the full write
+and the child gets less than 2GB.
+
+The master gets back that it wrote 2097148KB, though it tried to
+write 2097152KB (and the child receives the 2GB-4K buffer upon read).
+
+This is on a x86_64 machine, and unsigned long values are 8-bytes
+wide and being used with the read and write calls for lengths.
+
+Shouldn't a 2GB read/write work?  At most, together the master
+and slave would have only used 4GB for each to have a 2GB buffer.
+
+How would one determine the maximum size for 1 huge read or write 
+through the pipe (from the pipe system call)?
+
+On 2GHz multi-core machines, I get about 512MB/s throughput.
+
+I attached the source file so anyone can see my methodology.
+
+you have to include "-lrt" on the gcc command line as it uses
+clock_gettime to estimate the time for the write call (the read
+call always comes back with values too small to be reasonable, so
+I don't bother printing them.
 
 
-kondemand/3   D ffffffff81029ff9     0  1474      2 0x00000000
- ffff88027ccb8650 0000000000000046 0000000000000000 0000000000000000
- ffff88027ed51310 ffff88027ccb88e0 00000000ffff0b68 0000000000000000
- 0000000000000000 ffffffff81029b34 0000000000000000 0000000100000000
-Call Trace:
- [<ffffffff81029b34>] ? clear_buddies+0x15/0x23
- [<ffffffff8130734c>] ? do_dbs_timer+0x0/0x272
- [<ffffffff813cfa94>] ? __down_write_nested+0x79/0x93
- [<ffffffff81305ab7>] ? lock_policy_rwsem_write+0x3e/0x6a
- [<ffffffff813073a9>] ? do_dbs_timer+0x5d/0x272
- [<ffffffff8130734c>] ? do_dbs_timer+0x0/0x272
- [<ffffffff81049c77>] ? worker_thread+0x15b/0x1f5
- [<ffffffff8104cd0a>] ? autoremove_wake_function+0x0/0x2e
- [<ffffffff81049b1c>] ? worker_thread+0x0/0x1f5
- [<ffffffff8104cbfd>] ? kthread+0x84/0x8f
- [<ffffffff81048178>] ? __call_usermodehelper+0x0/0x66
- [<ffffffff8100bcfa>] ? child_rip+0xa/0x20
- [<ffffffff8104cb79>] ? kthread+0x0/0x8f
- [<ffffffff8100bcf0>] ? child_rip+0x0/0x20
-INFO: task cpuspeed:4445 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-cpuspeed      D ffffffff81029ff9     0  4445   4370 0x00000000
- ffff88027ceff910 0000000000000086 0000000000000000 000280da00000010
- ffff88027eea3850 ffff88027ceffba0 00000000ffff0b49 00000000280c3300
- 0000000000000005 ffffffff8102f3b8 0000000000000000 0000000100000000
-Call Trace:
- [<ffffffff8102f3b8>] ? find_busiest_group+0x1e6/0x831
- [<ffffffff813ce952>] ? schedule_timeout+0x23/0x161
- [<ffffffff8107ebbc>] ? get_page_from_freelist+0x414/0x58b
- [<ffffffff8118d7f8>] ? number+0x118/0x204
- [<ffffffff813ce804>] ? wait_for_common+0xb8/0x11e
- [<ffffffff81031ebe>] ? default_wake_function+0x0/0x9
- [<ffffffff8102ba4d>] ? __wake_up+0x30/0x44
- [<ffffffff810491de>] ? __cancel_work_timer+0x107/0x160
- [<ffffffff8118d9d2>] ? vsscanf+0xee/0x657
- [<ffffffff81048e80>] ? wq_barrier_func+0x0/0x9
- [<ffffffff813077ef>] ? cpufreq_governor_dbs+0x231/0x29d
- [<ffffffff8118cc23>] ? __up_read+0x13/0x8a
- [<ffffffff81304f0c>] ? __cpufreq_governor+0x98/0xcf
- [<ffffffff813050af>] ? __cpufreq_set_policy+0x16c/0x1fb
- [<ffffffff81305638>] ? store_scaling_governor+0x170/0x1b9
- [<ffffffff81305bdf>] ? handle_update+0x0/0x28
- [<ffffffff813062b5>] ? store+0x4d/0x6c
- [<ffffffff810ec748>] ? sysfs_write_file+0xd2/0x110
- [<ffffffff810a84ce>] ? vfs_write+0xad/0x149
- [<ffffffff810a8a16>] ? sys_write+0x45/0x6e
- [<ffffffff8100ad6b>] ? system_call_fastpath+0x16/0x1b
 
 
-As a matter of fact, it's triggerred by "/bin/sh /etc/init.d/cpuspeed stop".
+--------------090704070705030503000705
+Content-Type: text/plain;
+ name="piptst.c"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline;
+ filename="piptst.c"
 
-Consider below call chain of process cpuspeed:
-store (get lock by lock_policy_rwsem_write) =>
-	﻿store_scaling_governor =>
-		﻿__cpufreq_set_policy =>
-			﻿__cpufreq_governor =>
-				﻿cpufreq_governor_dbs =>
-					dbs_timer_exit =>
-						cancel_delayed_work_sync =>
-							wait_on_cpu_work
-go to sleep.
+#define __USE_LARGEFILE64 1
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <strings.h>
+#include <time.h>
 
-While thread kondemand is trying to execute the work at do_dbs_timer and
-sleep at lock_policy_rwsem_write, because ﻿cpuspeed got the lock and is
-sleeping now.
+#define PAR_WAIT_TO_HUP 3
+int pipefd[2];
+int controlfd[2];
+int pid;
 
-The race is cpuspeed get the lock firstly, and kondemand sleeps on the lock
-when trying to process the work. But cpuspeed waits for the work completion.
+void getout(int stat, char * msg) {
+	char errmsg[128];
+	char *id;
+	id=(pid>0)?"parent":" child";
+	snprintf(errmsg, sizeof(errmsg), "%s: %s", id, msg);
+	perror(errmsg);
+	if (pid>0) {
+		close(pipefd[1]);
+		close(controlfd[0]);
+		sleep(PAR_WAIT_TO_HUP);
+		kill(pid, 1);	/* SIGHUP */
+	} else {
+		close(pipefd[0]);
+		close(controlfd[1]);
+	}
+	exit(stat);
+}
 
-It seems b14893a62c73af0eca414cfed505b8c09efc613c causes it.
 
-yanmin
+void sighandler() {
+	char errmsg[128];
+	char *id;
+	id=(pid>0)?"parent":" child";
+	snprintf(errmsg, sizeof(errmsg), "%s: %s", id, 
+			"SIGPIPE: We are talking, but nobody's listening!\n");
+	getout(8, "pipe write");
+	
+}
+
+typedef struct timespec * timeval;
 
 
+timeval get_elapsed(timeval elapsed, timeval start, timeval end) {
+	int borrow=0;
+	double result;
+	if (start->tv_nsec >end->tv_nsec) {
+		end->tv_nsec += 1000*1000*1000;
+		borrow=1;
+	}
+	elapsed->tv_nsec = end->tv_nsec - start->tv_nsec;
+	if (borrow) --end->tv_sec;
+	elapsed->tv_sec = end->tv_sec - start->tv_sec;
+	return elapsed; 
+}
+
+
+char * ht (char *buff, int bufflen, timeval tv) {
+
+	bzero(buff, bufflen);
+
+	/* if time sex and nsecs both equal 0 return zero */
+
+	if (tv->tv_sec==0 && tv->tv_nsec==0) {
+		snprintf(buff, bufflen, "0.0 seconds");
+		return buff;
+	}
+
+	/* if < 1 sec, display fraction in nano, micro or milli- seconds */
+
+	if (tv->tv_sec==0 && tv->tv_nsec!=0) {
+		char * unit;
+		int nanos=tv->tv_nsec;
+		if (nanos<1000) {
+			unit="ns";
+		} else if (nanos < 1000000 && nanos>=1000) {
+			nanos/=1000;
+			unit="µs";
+		} else {
+			nanos/=1000000;
+			unit="ms";
+		}
+		snprintf(buff, bufflen, "%d%s", nanos, unit);
+	} else if (tv->tv_sec > 0) {
+		double t = ((double) tv->tv_sec) + ((double) tv->tv_nsec)/(double)1000000000.0;
+		snprintf(buff, bufflen, "%-5.3lf seconds", t);
+	}
+	
+	return buff;
+}
+
+typedef const char * String;
+
+static const String suffixes [] = {"B", "KB", "MB", "GB", "TB"};
+static const int num_suffixes = sizeof(suffixes)/sizeof(String);
+
+char * h (char *buff, int bufflen, unsigned long nb) {
+	int si=0;
+	int index_of_last_suffix = num_suffixes-1;
+
+	bzero(buff, bufflen);	
+	
+	for (si=0; si<index_of_last_suffix && nb>1023 && (nb % 1024)==0; ++si) {
+		nb >>= 10;
+	}
+	snprintf(buff, bufflen, "%d%s", nb, suffixes[si]);
+	return buff;
+}
+
+child_pipe_reader() {
+	unsigned long buffsize;	/* units of 1K */
+	unsigned long bytes_read;
+	char * cbuff;
+	/* child reader */
+	close(pipefd[1]);
+	close(controlfd[0]);
+	while (1) {
+		char lbuff[20];
+		char fbuff[20];
+		struct timespec start, end, elapsed;
+		double secs;
+		bytes_read=read(pipefd[0], &buffsize, sizeof(buffsize));
+		if (bytes_read <0 ) {
+			getout(14, "reading size of buffer from parent");
+		}
+		if (bytes_read != sizeof(buffsize)) {
+			getout(15, "wrong number of bytes read for sizeof(buffsize)");
+		}
+		cbuff = malloc(buffsize*1024);
+		if ((long int) cbuff <0) {
+			getout(13, "child malloc");
+		}
+		printf(" child: reading %s from parent\n", 
+				h(lbuff, sizeof(lbuff), buffsize*1024));
+		if (clock_gettime(CLOCK_REALTIME, &start)<0) {
+			perror(" child: clock_gettime start");
+			exit(18);
+		}
+		bytes_read=read(pipefd[0], cbuff, buffsize*1024);
+		if (clock_gettime(CLOCK_REALTIME, &end)<0) {
+			perror(" child: clock_gettime end");
+			exit(19);
+		}
+		get_elapsed(&elapsed, &start, &end);
+		free(cbuff);
+		if (bytes_read <0 ) {
+			getout(16, "reading from parent");
+		}
+		if (bytes_read != buffsize*1024) {
+			char errmsg[128];
+			char lbuff1[20];
+			char lbuff2[20];
+
+			snprintf(errmsg, sizeof(errmsg),
+				"read of %s only returned %s. Exiting\n",
+				h(lbuff1, sizeof(lbuff1), buffsize*1024),
+				h(lbuff2, sizeof(lbuff2), bytes_read)
+				);
+			getout(17, errmsg);
+		}
+		printf(" child: successfully read %s from parent\n", 
+				h(lbuff, sizeof(lbuff), buffsize*1024));
+		write(controlfd[1], &bytes_read, sizeof(bytes_read) );
+	}
+}
+
+parent_pipe_writer() {
+	unsigned long buffsize=1;	/* units of 1K */
+	unsigned long bytes_written;
+	char * pbuff;
+	close(pipefd[0]);
+	close(controlfd[1]);
+	/* parent writer */
+	while (1) {
+		char lbuff[20];
+		char fbuff[20];
+		int child_read_bytes;
+		struct timespec start, end, elapsed;
+		double secs;
+		/* first try to allocate buffer to write from */
+		pbuff = malloc(buffsize*1024);
+		if ((long int) pbuff <0) {		/* die if can't alloc */
+			getout(3, "malloc");
+		}
+		/* write size of buffer to child */
+		bytes_written=write(pipefd[1], &buffsize, sizeof(buffsize));
+		if (bytes_written <0 ) {
+			free(pbuff);
+			getout(4, "writing size of buffer to child");
+		}
+		if (bytes_written != sizeof(buffsize)) {	/* would be bad if 
+													   couldn't write size */
+			free(pbuff);
+			getout(5, 
+				"wrong number of bytes written for sizeof(buffsize)");
+		}
+		printf("parent: writing %s to child\n", 
+				h(lbuff, sizeof(lbuff), buffsize*1024));
+		if (clock_gettime(CLOCK_REALTIME, &start)<0) {
+			perror("parent: clock_gettime start");
+			exit(9);
+		}
+		bytes_written=write(pipefd[1], pbuff, buffsize*1024);
+		if (clock_gettime(CLOCK_REALTIME, &end)<0) {
+			perror("parent: clock_gettime end");
+			exit(10);
+		}
+		get_elapsed(&elapsed, &start, &end);
+		free(pbuff);
+		if (bytes_written <0 ) {
+			getout(6, "writing buff to child");
+		}
+		if (bytes_written != buffsize*1024) {
+			char errmsg[128];
+			char lbuff1[20],lbuff2[20];
+			snprintf(errmsg, sizeof(errmsg),
+					"write of %s only wrote %s. Exiting\n",
+					h(lbuff1, sizeof(lbuff1), buffsize*1024), 
+					h(lbuff2, sizeof(lbuff2), bytes_written)
+					);
+			getout(7, errmsg);
+		}
+		printf("parent: successfullly wrote %s to child in %s\n", 
+				h(lbuff, sizeof(lbuff), buffsize*1024), 
+				ht(fbuff, sizeof(fbuff), &elapsed));
+		buffsize <<=1;
+		read(controlfd[0], &child_read_bytes, sizeof(child_read_bytes));
+	}
+}
+
+
+main ()
+{
+
+	/* only 1 instance of parent writer and child reader in this
+	 * test case, so only 1 pair of pipe descriptors */
+	
+	
+	if (pipe(pipefd)<0) {
+		perror("pipefd pipe");
+		exit(1);
+	}
+
+	if (pipe(controlfd)<0) {
+		perror("controlfd pipe");
+		exit(1);
+	}
+	
+	signal(SIGPIPE, sighandler);
+
+
+	pid=fork();
+	if (pid<0) {
+		perror("fork");
+		exit(2);
+	}
+	/* no lvalue as neither sub should return */
+	pid ? parent_pipe_writer(): child_pipe_reader();
+	perror("FATAL: unexpected return from proc");
+	exit(-1);
+}
+
+
+/* vim:ts=4:sw=4
+ */
+
+--------------090704070705030503000705--
