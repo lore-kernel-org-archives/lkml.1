@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbZGFMZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZGFM0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754770AbZGFMZy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 08:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZGFMZq
+	id S1756057AbZGFM0b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 08:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZGFM0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 08:25:46 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:35003 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbZGFMZp convert rfc822-to-8bit (ORCPT
+	Mon, 6 Jul 2009 08:26:23 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43764 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753076AbZGFM0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 08:25:45 -0400
-From: "Gadiyar, Anand" <gadiyar@ti.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "trivial@kernel.org" <trivial@kernel.org>
-CC: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
-Date: Mon, 6 Jul 2009 17:52:54 +0530
-Subject: [PATCH] Trivial: Fix typo "for for"
-Thread-Topic: [PATCH] Trivial: Fix typo "for for"
-Thread-Index: Acn+NHzCXhIsXstmTt+FsV/u+2L2wg==
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB0305C11131@dbde02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
+	Mon, 6 Jul 2009 08:26:23 -0400
+Subject: Re: IOMMU and graphics cards
+From: David Woodhouse <dwmw2@infradead.org>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: David Miller <davem@davemloft.net>, airlied@linux.ie,
+       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+       iommu@lists.linux-foundation.org, mingo@redhat.com,
+       Zhenyu Wang <zhenyu.z.wang@intel.com>
+In-Reply-To: <20090508093526.GB13708@8bytes.org>
+References: <20090507164742V.fujita.tomonori@lab.ntt.co.jp>
+	 <20090507100114.GF4059@amd.com>
+	 <1241691721.3531.73.camel@macbook.infradead.org>
+	 <20090507.113632.210373283.davem@davemloft.net>
+	 <20090508093526.GB13708@8bytes.org>
+Content-Type: text/plain
+Date: Mon, 06 Jul 2009 13:26:17 +0100
+Message-Id: <1246883177.2615.33.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Anand Gadiyar <gadiyar@ti.com>
+On Fri, 2009-05-08 at 11:35 +0200, Joerg Roedel wrote:
+> The other way to achieve consistency is to remove the workaround from
+> VT-d code which significantly increases the chance to get the broken
+> stuff fixed. David?
 
-Trivial: Fix typo "for for"
+It's gone from 2.6.31-rc2, but even the in-tree drivers break, so I
+think we have to put it back for 2.6.31 (I've sent Linus the pull
+request already). 
 
-Signed-off-by: Anand Gadiyar <gadiyar@ti.com>
----
- drivers/usb/host/ehci-pci.c |    2 +-
- drivers/usb/host/ehci.h     |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+I do intend to remove it again for 2.6.32 though, and I filed 
+http://bugzilla.kernel.org/show_bug.cgi?id=13721
 
-Index: linux-omap-2.6/drivers/usb/host/ehci-pci.c
-===================================================================
---- linux-omap-2.6.orig/drivers/usb/host/ehci-pci.c
-+++ linux-omap-2.6/drivers/usb/host/ehci-pci.c
-@@ -242,7 +242,7 @@ static int ehci_pci_setup(struct usb_hcd
- 	 * System suspend currently expects to be able to suspend the entire
- 	 * device tree, device-at-a-time.  If we failed selective suspend
- 	 * reports, system suspend would fail; so the root hub code must claim
--	 * success.  That's lying to usbcore, and it matters for for runtime
-+	 * success.  That's lying to usbcore, and it matters for runtime
- 	 * PM scenarios with selective suspend and remote wakeup...
- 	 */
- 	if (ehci->no_selective_suspend && device_can_wakeup(&pdev->dev))
-Index: linux-omap-2.6/drivers/usb/host/ehci.h
-===================================================================
---- linux-omap-2.6.orig/drivers/usb/host/ehci.h
-+++ linux-omap-2.6/drivers/usb/host/ehci.h
-@@ -37,7 +37,7 @@ typedef __u16 __bitwise __hc16;
- #define __hc16	__le16
- #endif
- 
--/* statistics can be kept for for tuning/monitoring */
-+/* statistics can be kept for tuning/monitoring */
- struct ehci_stats {
- 	/* irq usage */
- 	unsigned long		normal;
+For now it's got a clearer description ("Workaround broken graphics
+drivers") and defaults to 'n'.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
