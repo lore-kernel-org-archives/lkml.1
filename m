@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbZGFOQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbZGFOTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755653AbZGFOQc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 10:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZGFOQY
+	id S1754958AbZGFOTI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 10:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbZGFOS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 10:16:24 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:51692 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753714AbZGFOQY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 10:16:24 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: michal.simek@petalogix.com
-Subject: Re: mmap syscall problem
-Date: Mon, 6 Jul 2009 16:16:11 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30-9-generic; KDE/4.2.95; x86_64; ; )
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>,
-       John Williams <john.williams@petalogix.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Grant Likely <grant.likely@secretlab.ca>, subrata@linux.vnet.ibm.com
-References: <4A4DFB77.1080700@petalogix.com> <20090706121455.GA16908@linux-sh.org> <4A51F3F3.6040501@petalogix.com>
-In-Reply-To: <4A51F3F3.6040501@petalogix.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 6 Jul 2009 10:18:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34717 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753061AbZGFOS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 10:18:56 -0400
+Date: Mon, 6 Jul 2009 10:16:50 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 09/25] io-controller: Common hierarchical fair queuing
+	code in elevaotor layer
+Message-ID: <20090706141650.GD8279@redhat.com>
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-10-git-send-email-vgoyal@redhat.com> <4A51657B.7000008@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907061616.12220.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19T9sstvn5SpBZn7Kleq7KLF9I8uoygHYoecKO
- R1c2nZ18cn7Gy8FEgWDm/pn/9Klw+1NOh31M1Mdyo7L4+Ongn0
- 8v9SRhHYWFCoUixsQ7gUA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A51657B.7000008@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 July 2009, Michal Simek wrote:
+On Mon, Jul 06, 2009 at 10:46:19AM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> ...
+> > +static struct io_group *
+> > +io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
+> > +{
+> > +	struct io_cgroup *iocg;
+> > +	struct io_group *iog, *leaf = NULL, *prev = NULL;
+> > +	gfp_t flags = GFP_ATOMIC |  __GFP_ZERO;
+> > +
+> > +	for (; cgroup != NULL; cgroup = cgroup->parent) {
+> > +		iocg = cgroup_to_io_cgroup(cgroup);
+> > +
+> > +		iog = io_cgroup_lookup_group(iocg, key);
+> > +		if (iog != NULL) {
+> > +			/*
+> > +			 * All the cgroups in the path from there to the
+> > +			 * root must have a io_group for efqd, so we don't
+> > +			 * need any more allocations.
+> > +			 */
+> > +			break;
+> > +		}
+> > +
+> > +		iog = kzalloc_node(sizeof(*iog), flags, q->node);
+> > +		if (!iog)
+> > +			goto cleanup;
+> > +
+> > +		iog->iocg_id = css_id(&iocg->css);
 > 
-> > Not necessarily, even on platforms that manage aliases in hardware
-> > mappings that violate the aliasing constraints can still result in
-> > undefined behaviour, this really depends more on your cache controller
-> > and MMU than anything else. I notice that microblaze sets SHMLBA to
-> > PAGE_SIZE, you may want to see if this test still breaks after bumping it
-> > up to something like PAGE_SIZE * 4.
-> >   
-> Yes, test still break - behavior is the same. I don't have accurate
-> information about MMU unit
-> but I will ask a question about. We are able to turn off cache
-> controller directly in HW.
+>   Hi Vivek,
+> 
+>   IMHO, The io_cgroup id is nothing more than keeping track the corresponding iocg.
+>   So why not just store iocg pointer in io_group and just get rid of this complexity.
+>   I'd like to post a patch to do this change, what's your opinion?
+> 
 
-There may still be a problem with data being queued in some write
-buffers that don't get flushed before reading back from another
-address.
+Hi Gui,
 
-What happens in a simple user space program that mmaps the same
-page to two addresses? Something like
+You can try that but I suspect that there not much to be gained in
+terms of number of lines of code or code complexity. Do try it out though
+and we can then have a look at the patch.
 
-#include <sys/mman.h>
-#include <fcntl.h>
-int main(void)
-{
-	int fd = open("existing-4k-file", O_RDWR);
-	char *p1 = mmap(0, 4096, PROT_READ | PROT_WRITE,
-				MAP_SHARED, fd, 0);
-	char *p2 = mmap(p1 + 4096, 4096, PROT_READ | PROT_WRITE,
-				MAP_SHARED | MAP_FIXED, fd, 0);
-
-	*p1 = 0xaa; *p2 = 0x55;
-
-	return *p1; /* returns 0xaa if broken, 0x55 if correct */
-}
-
-	Arnd <><
+Thanks
+Vivek
