@@ -1,56 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZGFM0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZGFM3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbZGFM0b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 08:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZGFM0X
+	id S1756057AbZGFM3q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 08:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZGFM3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 08:26:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43764 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbZGFM0X (ORCPT
+	Mon, 6 Jul 2009 08:29:38 -0400
+Received: from ey-out-1920.google.com ([74.125.78.144]:28480 "EHLO
+	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbZGFM3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 08:26:23 -0400
-Subject: Re: IOMMU and graphics cards
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Roedel <joro@8bytes.org>
-Cc: David Miller <davem@davemloft.net>, airlied@linux.ie,
-       linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-       iommu@lists.linux-foundation.org, mingo@redhat.com,
-       Zhenyu Wang <zhenyu.z.wang@intel.com>
-In-Reply-To: <20090508093526.GB13708@8bytes.org>
-References: <20090507164742V.fujita.tomonori@lab.ntt.co.jp>
-	 <20090507100114.GF4059@amd.com>
-	 <1241691721.3531.73.camel@macbook.infradead.org>
-	 <20090507.113632.210373283.davem@davemloft.net>
-	 <20090508093526.GB13708@8bytes.org>
-Content-Type: text/plain
-Date: Mon, 06 Jul 2009 13:26:17 +0100
-Message-Id: <1246883177.2615.33.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+	Mon, 6 Jul 2009 08:29:37 -0400
+Message-ID: <4A51EE30.709@monstr.eu>
+Date: Mon, 06 Jul 2009 14:29:36 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] arch/microblaze fixes for 2.6.31-rc3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-08 at 11:35 +0200, Joerg Roedel wrote:
-> The other way to achieve consistency is to remove the workaround from
-> VT-d code which significantly increases the chance to get the broken
-> stuff fixed. David?
+Hi Linus,
 
-It's gone from 2.6.31-rc2, but even the in-tree drivers break, so I
-think we have to put it back for 2.6.31 (I've sent Linus the pull
-request already). 
+please pull the following changes.
 
-I do intend to remove it again for 2.6.32 though, and I filed 
-http://bugzilla.kernel.org/show_bug.cgi?id=13721
+Thanks,
+Michal
 
-For now it's got a clearer description ("Workaround broken graphics
-drivers") and defaults to 'n'.
+
+The following changes since commit 8e4a718ff38d8539938ec3421935904c27e00c39:
+  Linus Torvalds (1):
+        Linux 2.6.31-rc2
+
+are available in the git repository at:
+
+  git://git.monstr.eu/linux-2.6-microblaze.git fixes-for-linus
+
+Arnd Bergmann (3):
+      microblaze: fall back on generic header files for the ABI
+      microblaze: clean up signal handling
+      microblaze: use generic syscalls.h
+
+Michal Simek (2):
+      microblaze: Wire up new syscalls
+      microblaze: Fix cast warning for init.c
+
+Remis Lima Baima (2):
+      microblaze: use the generic lib/checksum.c
+      microblaze: convert all simple headers to use asm-generic
+
+ arch/microblaze/Kconfig                      |    3 +
+ arch/microblaze/include/asm/atomic.h         |  101 +-------------
+ arch/microblaze/include/asm/bitops.h         |   26 ----
+ arch/microblaze/include/asm/bug.h            |   14 --
+ arch/microblaze/include/asm/bugs.h           |   18 +--
+ arch/microblaze/include/asm/checksum.h       |   70 +---------
+ arch/microblaze/include/asm/fb.h             |    1 +
+ arch/microblaze/include/asm/hardirq.h        |   14 +--
+ arch/microblaze/include/asm/ioctls.h         |   92 +------------
+ arch/microblaze/include/asm/ipcbuf.h         |   37 +-----
+ arch/microblaze/include/asm/irq.h            |    6 +-
+ arch/microblaze/include/asm/mman.h           |   24 ---
+ arch/microblaze/include/asm/mmu.h            |    7 +-
+ arch/microblaze/include/asm/mmu_context.h    |    2 +-
+ arch/microblaze/include/asm/mmu_context_no.h |   23 ---
+ arch/microblaze/include/asm/module.h         |   10 +-
+ arch/microblaze/include/asm/msgbuf.h         |   32 +----
+ arch/microblaze/include/asm/param.h          |   31 +----
+ arch/microblaze/include/asm/parport.h        |    1 +
+ arch/microblaze/include/asm/pci.h            |    2 +-
+ arch/microblaze/include/asm/posix_types.h    |   68 +---------
+ arch/microblaze/include/asm/scatterlist.h    |   29 +----
+ arch/microblaze/include/asm/sembuf.h         |   35 +-----
+ arch/microblaze/include/asm/serial.h         |   15 +--
+ arch/microblaze/include/asm/shmbuf.h         |   43 +------
+ arch/microblaze/include/asm/shmparam.h       |    7 +-
+ arch/microblaze/include/asm/siginfo.h        |   14 --
+ arch/microblaze/include/asm/signal.h         |  166 +---------------------
+ arch/microblaze/include/asm/socket.h         |   70 +---------
+ arch/microblaze/include/asm/sockios.h        |   24 +---
+ arch/microblaze/include/asm/stat.h           |   69 +---------
+ arch/microblaze/include/asm/swab.h           |    9 +-
+ arch/microblaze/include/asm/syscalls.h       |   46 +------
+ arch/microblaze/include/asm/system.h         |    3 +
+ arch/microblaze/include/asm/termbits.h       |  204 +-------------------------
+ arch/microblaze/include/asm/termios.h        |   89 +-----------
+ arch/microblaze/include/asm/timex.h          |    6 +-
+ arch/microblaze/include/asm/types.h          |   39 +-----
+ arch/microblaze/include/asm/ucontext.h       |   23 +---
+ arch/microblaze/include/asm/unistd.h         |    6 +-
+ arch/microblaze/include/asm/vga.h            |    2 +-
+ arch/microblaze/kernel/entry-nommu.S         |   20 +--
+ arch/microblaze/kernel/entry.S               |   34 +----
+ arch/microblaze/kernel/signal.c              |  174 +++++-----------------
+ arch/microblaze/kernel/sys_microblaze.c      |   20 ++--
+ arch/microblaze/kernel/syscall_table.S       |   14 +-
+ arch/microblaze/lib/Makefile                 |    2 +-
+ arch/microblaze/lib/checksum.c               |  172 ----------------------
+ arch/microblaze/mm/init.c                    |    6 +-
+ 49 files changed, 120 insertions(+), 1803 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/fb.h
+ delete mode 100644 arch/microblaze/include/asm/mmu_context_no.h
+ create mode 100644 arch/microblaze/include/asm/parport.h
+ delete mode 100644 arch/microblaze/lib/checksum.c
+
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
