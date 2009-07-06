@@ -1,83 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZGFGOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbZGFGPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbZGFGOn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 02:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbZGFGOe
+	id S1754852AbZGFGPG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 02:15:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbZGFGOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 02:14:34 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50966 "EHLO smtps.tip.net.au"
+	Mon, 6 Jul 2009 02:14:49 -0400
+Received: from sh.osrg.net ([192.16.179.4]:37832 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752172AbZGFGOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 02:14:33 -0400
-Date: Mon, 6 Jul 2009 16:14:32 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: <sfi-devel@simplefirmware.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: sfi tree build failure
-Message-Id: <20090706161432.111a42ee.sfr@canb.auug.org.au>
-In-Reply-To: <20090630171937.75f64662.sfr@canb.auug.org.au>
-References: <20090630171937.75f64662.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__6_Jul_2009_16_14_32_+1000_inBaQoQjiAGzsfXh"
+	id S1756247AbZGFGOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 02:14:44 -0400
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: davem@davemloft.net
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       reif@earthlink.net, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 4/5] sparc: replace sbus_map_single and sbus_unmap_single with sbus_map_page and sbus_unmap_page
+Date: Mon,  6 Jul 2009 15:13:39 +0900
+Message-Id: <1246860820-20629-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1246860820-20629-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1246860820-20629-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 06 Jul 2009 15:14:43 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__6_Jul_2009_16_14_32_+1000_inBaQoQjiAGzsfXh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is a preparation for using asm-generic/pci-dma-compat.h; SPARC32
+has two dma_map_ops structures for pci and sbus (removing
+arch/sparc/kernel/dma.c, PCI and SBUS DMA accessor).
 
-Hi all,
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/sparc/kernel/dma.c    |    5 ++---
+ arch/sparc/kernel/dma.h    |    6 +++---
+ arch/sparc/kernel/ioport.c |    7 +++++--
+ 3 files changed, 10 insertions(+), 8 deletions(-)
 
-On Tue, 30 Jun 2009 17:19:37 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
->=20
-> In file included from include/acpi/platform/acenv.h:141,
->                  from include/acpi/acpi.h:56,
->                  from include/linux/acpi.h:38,
->                  from init/main.c:27:
-> include/acpi/platform/aclinux.h:64:22: error: asm/acpi.h: No such file or=
- directory
-> In file included from include/acpi/platform/aclinux.h:130,
->                  from include/acpi/platform/acenv.h:141,
->                  from include/acpi/acpi.h:56,
->                  from include/linux/acpi.h:38,
->                  from init/main.c:27:
-> include/acpi/actypes.h:130: error: expected '=3D', ',', ';', 'asm' or '__=
-attribute__' before 'UINT64'
-> include/acpi/actypes.h:131: error: expected '=3D', ',', ';', 'asm' or '__=
-attribute__' before 'INT64'
-> include/acpi/actypes.h:910: error: expected ')' before '*' token
-> include/acpi/actypes.h:913: error: expected ')' before '*' token
->=20
-> and it went downhill from there :-(
->=20
-> I have dropped the sfi tree for today.
+diff --git a/arch/sparc/kernel/dma.c b/arch/sparc/kernel/dma.c
+index 15820a9..a5d50da 100644
+--- a/arch/sparc/kernel/dma.c
++++ b/arch/sparc/kernel/dma.c
+@@ -68,8 +68,7 @@ static dma_addr_t dma32_map_page(struct device *dev, struct page *page,
+ 		return pci_map_page(to_pci_dev(dev), page, offset,
+ 				    size, (int)direction);
+ #endif
+-	return sbus_map_single(dev, page_address(page) + offset,
+-			       size, (int)direction);
++	return sbus_map_page(dev, page, offset, size, (int)direction);
+ }
+ 
+ static void dma32_unmap_page(struct device *dev, dma_addr_t dma_address,
+@@ -83,7 +82,7 @@ static void dma32_unmap_page(struct device *dev, dma_addr_t dma_address,
+ 		return;
+ 	}
+ #endif
+-	sbus_unmap_single(dev, dma_address, size, (int)direction);
++	sbus_unmap_page(dev, dma_address, size, (int)direction);
+ }
+ 
+ static int dma32_map_sg(struct device *dev, struct scatterlist *sg,
+diff --git a/arch/sparc/kernel/dma.h b/arch/sparc/kernel/dma.h
+index f8d8951..680351e 100644
+--- a/arch/sparc/kernel/dma.h
++++ b/arch/sparc/kernel/dma.h
+@@ -1,8 +1,8 @@
+ void *sbus_alloc_consistent(struct device *dev, long len, u32 *dma_addrp);
+ void sbus_free_consistent(struct device *dev, long n, void *p, u32 ba);
+-dma_addr_t sbus_map_single(struct device *dev, void *va,
+-			   size_t len, int direction);
+-void sbus_unmap_single(struct device *dev, dma_addr_t ba,
++dma_addr_t sbus_map_page(struct device *dev, struct page *page,
++			 unsigned long offset, size_t len, int direction);
++void sbus_unmap_page(struct device *dev, dma_addr_t ba,
+ 		       size_t n, int direction);
+ int sbus_map_sg(struct device *dev, struct scatterlist *sg,
+ 		int n, int direction);
+diff --git a/arch/sparc/kernel/ioport.c b/arch/sparc/kernel/ioport.c
+index 87ea0d0..39ff1e0 100644
+--- a/arch/sparc/kernel/ioport.c
++++ b/arch/sparc/kernel/ioport.c
+@@ -337,8 +337,11 @@ void sbus_free_consistent(struct device *dev, long n, void *p, u32 ba)
+  * CPU view of this memory may be inconsistent with
+  * a device view and explicit flushing is necessary.
+  */
+-dma_addr_t sbus_map_single(struct device *dev, void *va, size_t len, int direction)
++dma_addr_t sbus_map_page(struct device *dev, struct page *page,
++			 unsigned long offset, size_t len, int direction)
+ {
++	void *va = page_address(page) + offset;
++
+ 	/* XXX why are some lengths signed, others unsigned? */
+ 	if (len <= 0) {
+ 		return 0;
+@@ -350,7 +353,7 @@ dma_addr_t sbus_map_single(struct device *dev, void *va, size_t len, int directi
+ 	return mmu_get_scsi_one(dev, va, len);
+ }
+ 
+-void sbus_unmap_single(struct device *dev, dma_addr_t ba, size_t n, int direction)
++void sbus_unmap_page(struct device *dev, dma_addr_t ba, size_t n, int direction)
+ {
+ 	mmu_release_scsi_one(dev, ba, n);
+ }
+-- 
+1.6.0.6
 
-And the sfi tree has still not made it into linux-next as the above error
-still exists.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__6_Jul_2009_16_14_32_+1000_inBaQoQjiAGzsfXh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpRlkgACgkQjjKRsyhoI8yPaACfSPMlwYN4Fsn/sGr5EOmhw5sv
-PRoAn0UQ2RRGOGsNOvtCZYCPhvhXT96O
-=tZXG
------END PGP SIGNATURE-----
-
---Signature=_Mon__6_Jul_2009_16_14_32_+1000_inBaQoQjiAGzsfXh--
