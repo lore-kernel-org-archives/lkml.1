@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbZGFLT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbZGFLUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757863AbZGFLT3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 07:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZGFLTV
+	id S1755321AbZGFLUJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 07:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZGFLT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 07:19:21 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34821 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754103AbZGFLTU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 07:19:20 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Products GmbH
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [patch 1/4] cpufreq: Eliminate the recent lockdep warnings in cpufreq
-Date: Mon, 6 Jul 2009 13:19:20 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.23-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Dave Jones <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-References: <20090703000829.735976000@intel.com> <200907031341.19141.trenn@suse.de> <7E82351C108FA840AB1866AC776AEC4669BFF050@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC4669BFF050@orsmsx505.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907061319.22660.trenn@suse.de>
+	Mon, 6 Jul 2009 07:19:59 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:50439 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754103AbZGFLT6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 07:19:58 -0400
+From: Amit Kucheria <amit.kucheria@canonical.com>
+To: List Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: dpotts@arkhamtechnology.com, craig@microtron.org.uk, gregkh@suse.de
+Subject: [PATCH] USB: Serial: Add support for Arkham Technology adapters
+Date: Mon,  6 Jul 2009 14:19:59 +0300
+Message-Id: <1246879199-12304-1-git-send-email-amit.kucheria@canonical.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 July 2009 16:28:43 Pallipadi, Venkatesh wrote:
-> 
-...
-> >I still do not see the need of "dbs_mutex protects data in 
-> >dbs_tuners_ins
-> >from concurrent changes", though. If someone enlightens me, that would
-> >be appreciated.
-> 
-> OK. Consider these two happening in parallel.
-> echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/ondemand/ignore_nice
-> echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/ondemand/ignore_nice
-Hm, I just consider parallel configuration, especially with different
-values as a userspace bug anyway.
+As reported by David Potts from Arkham Technology, the current driver
+works with their hardware on addition of the device ids.
 
-> As they are coming from different cpu, rwsem wont protect us and 
-> without the dbs_mutex, end state after this can will be unpredictable.
-> prev_cpu_idle and prev_cpu_nice can end up with wrong values where
-> only one of them is set etc. That will affect the ondemand algorithm.
-For one sample in this case.
-But I see that it should be made 100%
-bulletproof and even userspace is doing wrong things already you want to
-have a defined state. A separate mutex, uncoupled from .governor() would make 
-things easier, but I wait until it's clear what cleanups are going into which 
-kernel and will suggest another cleanup to only allow
-global dbs_tuners on top for .31 or further future.
+Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+---
+ drivers/usb/serial/cp210x.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Thanks,
+diff --git a/drivers/usb/serial/cp210x.c b/drivers/usb/serial/cp210x.c
+index 2b9eeda..e9a40b8 100644
+--- a/drivers/usb/serial/cp210x.c
++++ b/drivers/usb/serial/cp210x.c
+@@ -67,6 +67,8 @@ static struct usb_device_id id_table [] = {
+ 	{ USB_DEVICE(0x10AB, 0x10C5) }, /* Siemens MC60 Cable */
+ 	{ USB_DEVICE(0x10B5, 0xAC70) }, /* Nokia CA-42 USB */
+ 	{ USB_DEVICE(0x10C4, 0x0F91) }, /* Vstabi */
++	{ USB_DEVICE(0x10C4, 0x1101) }, /* Arkham Technology DS101 Bus Monitor */
++	{ USB_DEVICE(0x10C4, 0x1601) }, /* Arkham Technology DS101 Adapter */
+ 	{ USB_DEVICE(0x10C4, 0x800A) }, /* SPORTident BSM7-D-USB main station */
+ 	{ USB_DEVICE(0x10C4, 0x803B) }, /* Pololu USB-serial converter */
+ 	{ USB_DEVICE(0x10C4, 0x8053) }, /* Enfora EDG1228 */
+-- 
+1.6.3.3
 
-    Thomas
