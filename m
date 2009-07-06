@@ -1,127 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbZGFBNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbZGFBNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392AbZGFBNY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 21:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757139AbZGFBNM
+	id S1757485AbZGFBNg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 21:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757302AbZGFBN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 21:13:12 -0400
-Received: from ozlabs.org ([203.10.76.45]:40505 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757130AbZGFBNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 21:13:10 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Siarhei Liakh <sliakh.lkml@gmail.com>
-Subject: Re: [PATCH v3] RO/NX protection for loadable kernel modules
-Date: Mon, 6 Jul 2009 10:43:09 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-References: <817ecb6f0907051623l46ad93e9uc24d8d61669c938e@mail.gmail.com>
-In-Reply-To: <817ecb6f0907051623l46ad93e9uc24d8d61669c938e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Sun, 5 Jul 2009 21:13:26 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:13988 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757285AbZGFBNY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 21:13:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=MwM8vLWZaz+7Uiz16LjC9LWHsyFi44vZ2uaIUoZMe7uq/Z8aX+JeoMdL5gZqiSBEZf
+         DPHRoTkde16gActDTq3VnDIldTozvniU7T9B0v6kNk3cZR91uY/oKHyXY8CUtJfRglQu
+         /NNhJjLbfqfCJ7L83GHBEKM1gxspdWUBGGb1A=
+Subject: Re: [BUG] drivers/video/sis: deadlock introduced by "fbdev: add
+ mutex for fb_mmap locking"
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
+       zhangfx <zhangfx@lemote.com>
+In-Reply-To: <20090705181808.93be24a9.krzysztof.h1@poczta.fm>
+References: <1246785112.14240.34.camel@falcon>
+	 <alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
+	 <20090705145203.GA8326@linux-sh.org>
+	 <alpine.LFD.2.01.0907050756280.3210@localhost.localdomain>
+	 <20090705150134.GB8326@linux-sh.org>
+	 <alpine.LFD.2.01.0907050816110.3210@localhost.localdomain>
+	 <20090705152557.GA10588@linux-sh.org>
+	 <20090705181808.93be24a9.krzysztof.h1@poczta.fm>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Mon, 06 Jul 2009 09:13:11 +0800
+Message-Id: <1246842791.29532.2.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907061043.11793.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009 08:53:56 am Siarhei Liakh wrote:
-> This patch is a logical extension of the protection provided by
-> CONFIG_DEBUG_RODATA to LKMs.
+Hi,
 
-Hi Siarhei,
+On Sun, 2009-07-05 at 18:18 +0200, Krzysztof Helt wrote:
+> On Mon, 6 Jul 2009 00:25:57 +0900
+> Paul Mundt <lethal@linux-sh.org> wrote:
+> 
+> > On Sun, Jul 05, 2009 at 08:19:40AM -0700, Linus Torvalds wrote:
+> > > 
+> > > 
+> > > On Mon, 6 Jul 2009, Paul Mundt wrote:
+> > > > >
+> > > > > Why not "lock" as well?
+> > > > 
+> > > > I had that initially, but matroxfb will break if we do that, and
+> > > > presently nothing cares about trying to take ->lock that early on.
+> > > 
+> > > I really would rather have consistency than some odd rules like that.
+> > > 
+> > > In particular - if matroxfb is different and needs its own lock 
+> > > initialization because it doesn't use the common allocation routine, then 
+> > > please make _that_ consistent too. Rather than have it special-case just 
+> > > one lock that it needs to initialize separately, make it clear that since 
+> > > it does its own allocations it needs to initialize _everything_ 
+> > > separately.
+> > > 
+> > Ok, here is an updated version with an updated matroxfb and the sm501fb
+> > change reverted.
+> > 
+> > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> > 
+> > ---
+> > 
+> 
+> This is incorrect way to fix this as some drivers do not use the framebuffer_alloc() 
+> at all. They use global (for a file) fb_info structure. I have done some cleanups to
+> the fbdev layer before the 2.6.31 and there should no drivers which uses kmalloc or
+> kzalloc to allocate the fb_info (your patch would break these drivers too).
+> 
+> A root of the whole mm_lock issue is that the fb_mmap() BKL protected two fb_info
+> fields which were never protected when set. I changed this by add the mm_lock 
+> around these fields but only in drivers which modified this fields AFTER call
+> to the register_framebuffer(). Some drivers set these fields using the same
+> function before and after the register_framebuffer(). I strongly believe that
+> setting these fields before the register_framebuffer() is wrong or redundant for
+> these drivers. See my fix for the sisfb driver below. 
+> 
+> I have tested the patch below. Wu Zhangjin, can you also confirm that this 
+> works for you (without your patch)?
+> 
 
-   Concept looks good, but needs a bit more de-macroing.
+This patch also works for me, thanks!
 
-> +/* Modules' sections will be aligned on page boundaries
-> + * to ensure complete separation of code and data */
-> +#ifdef CONFIG_DEBUG_RODATA
-> +#define ALIGN_MODULE_SECTION(SECTION, ALIGNMENT) \
-> +	do { SECTION = ALIGN(SECTION, ALIGNMENT); } while (0)
-> +#else
-> +#define ALIGN_MODULE_SECTION(SECTION, ALIGNMENT) do { ; } while (0)
-> +#endif
-> +
-> +/* Given a virtual address returns 1 if the address is page-aligned,
-> + * 0 otherwise */
-> +#define PAGE_ALIGNED(ADDR) (((unsigned long) ADDR & \
-> +				((1UL << PAGE_SHIFT) - 1UL)) ? \
-> +					(0) : (1))
-> +
-> +/* Given a virtual address returns a virtual page number
-> + * that contains that address */
-> +#define PAGE_NUMBER(ADDR) (((unsigned long) ADDR) >> PAGE_SHIFT)
-> +
-> +/* Given BASE and SIZE this macro calculates the number of pages the
-> + * memory regions occupies */
-> +#define NUMBER_OF_PAGES(BASE, SIZE) ((SIZE > 0) ?	\
-> +		(PAGE_NUMBER(BASE + SIZE - 1) -		\
-> +			 PAGE_NUMBER(BASE) + 1)		\
-> +		: (0UL))
-> +
-> +/* This macro catches a section group with SEC_ID and records it's
-> + * size into SEC_SIZE, aligning it (as well as SIZE) on page boundary
-> + * if necessary */
-> +#define CATCH_MODULE_SECTION(SEC_GROUP, SEC_ID, SEC_SIZE, SIZE)	\
-> +	do {							\
-> +		if (SEC_GROUP == SEC_ID) {			\
-> +			/* align section size to a page */	\
-> +			ALIGN_MODULE_SECTION(SIZE, PAGE_SIZE);	\
-> +			/* set new module section size */	\
-> +			SEC_SIZE = SIZE;			\
-> +		}						\
-> +	} while (0)
+Regards,
+Wu Zhangjin
 
-This is far clearer open-coded.  As a switch statement:
+> I will look into the matroxfb and sm501fb drivers now. The same problem is
+> already fixed for the mx3fb driver and the patch is sent to Andrew Morton.
+> 
+> Regards,
+> Krzysztof
+> 
+> 
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> Remove redundant call to the sisfb_get_fix() before sis frambuffer is registered.
+> 
+> This fixes a problem with uninitialized the fb_info->mm_lock mutex.
+> 
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> ---
+> 
+> diff -urp linux-ref/drivers/video/sis/sis_main.c linux-next/drivers/video/sis/sis_main.c
+> --- linux-ref/drivers/video/sis/sis_main.c	2009-07-01 18:07:05.000000000 +0200
+> +++ linux-next/drivers/video/sis/sis_main.c	2009-07-05 17:20:33.000000000 +0200
+> @@ -6367,7 +6367,6 @@ error_3:	vfree(ivideo->bios_abase);
+>  		sis_fb_info->fix = ivideo->sisfb_fix;
+>  		sis_fb_info->screen_base = ivideo->video_vbase + ivideo->video_offset;
+>  		sis_fb_info->fbops = &sisfb_ops;
+> -		sisfb_get_fix(&sis_fb_info->fix, -1, sis_fb_info);
+>  		sis_fb_info->pseudo_palette = ivideo->pseudo_palette;
+>  
+>  		fb_alloc_cmap(&sis_fb_info->cmap, 256 , 0);
+> 
+> 
+> 
+> ----------------------------------------------------------------------
+> Najlepsze OC i AC tylko w Ergo Hestia
+> http://link.interia.pl/f222
+> 
 
-	switch (m) {
-	case 0: /* executable */
-		mod->core_text_size = debug_align(mod->core_text_size);
-		mod->core_size = mod->core_text_size;
-		break;
-	case 1: /* RO data (executable code + RO data) */
-		mod->core_ro_size = debug_align(mod->core_ro_size);
-		mod->core_size = mod->core_ro_size;
-		break;
-	case 3: /* whole module (executable + RO data + RW data + small alloc) */
-		mod->core_size = debug_align(mod->core_size);
-		break;
-	}
-
-Later, we can create a nice struct to hold the section parts and merge the 
-layout code between init and core loops.
-
-> +/* Generic memory allocation for modules, since
-> + * module_alloc() is platform-specific */
-> +#define generic_module_alloc(size) module_alloc(size)
-> +
-> +/* Free memory returned from generic_module_alloc, since
-> + * module_free() is platform-specific */
-> +void generic_module_free(struct module *mod, void *module_region)
-
-I don't like the gratuitous unused generic_module_alloc, nor the 
-generic_module_free name.   Probably best to implement unset_section_ro_nx() 
-and call it explicitly in the three places needed: two in free_module and one 
-in sys_init_module.
-
-> +/* LKM RO/NX protection: protect module's text/ro-data
-> + * from modification and any data from execution.
-> + * Siarhei Liakh, Xuxian Jiang  */
-> +static void set_section_ro_nx(unsigned long base,
-> +			unsigned long text_size,
-> +			unsigned long ro_size,
-> +			unsigned long total_size)
-
-A void * first arg would make the callers not need to cast: does it make the 
-implementation messier?  (Remember, gcc lets you do arithmetic on void * 
-pointers).
-
-Thanks!
-Rusty.
