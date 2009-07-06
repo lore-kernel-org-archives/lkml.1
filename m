@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbZGFG4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZGFHTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754800AbZGFG4q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 02:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZGFG4i
+	id S1753619AbZGFHTM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 03:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbZGFHS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 02:56:38 -0400
-Received: from gra-lx1.iram.es ([150.214.224.41]:49349 "EHLO gra-lx1.iram.es"
+	Mon, 6 Jul 2009 03:18:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54798 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752432AbZGFG4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 02:56:38 -0400
-Date: Mon, 6 Jul 2009 08:56:27 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Brad Boyer <flar@allandria.com>, gcc-help@gcc.gnu.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kernel mailz <kernelmailz@googlemail.com>
-Subject: Re: Inline assembly queries [2]
-Message-ID: <20090706065627.GA12499@iram.es>
-References: <abe8a1fd0907022344k2eb9874ejdbda3209a7cadf40@mail.gmail.com> <20090703174031.GA12410@cynthia.pants.nu> <m23a9deb87.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m23a9deb87.fsf@igel.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752906AbZGFHS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 03:18:56 -0400
+Date: Mon, 6 Jul 2009 03:18:29 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jeff Mahoney <jeffm@suse.com>, Yan Zheng <zheng.yan@oracle.com>,
+       Josef Bacik <jbacik@redhat.com>, Arjan <arjan@infradead.org>,
+       Chris Mason <chris.mason@oracle.com>, Amerigo Wang <amwang@redhat.com>,
+       akpm@linux-foundation.org, linux-btrfs@vger.kernel.org,
+       Sven Wegener <sven.wegener@stealer.net>
+Message-Id: <20090706072043.6555.13669.sendpatchset@localhost.localdomain>
+Subject: [Patch v2] btrfs: use file_remove_suid() after i_mutex is held
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 10:57:12PM +0200, Andreas Schwab wrote:
-> Brad Boyer <flar@allandria.com> writes:
-> 
-> > On Fri, Jul 03, 2009 at 12:14:41PM +0530, kernel mailz wrote:
-> >> b. using m or Z  with a memory address. I tried replacing m/Z but no change
-> >> Is there some guideline ?
-> >> gcc documentation says Z is obsolete. Is m/Z replaceable ?
-> >
-> > No idea. I don't remember ever seeing 'Z' used in anything. Maybe somebody
-> > else remembers what it used to mean.
-> 
-> The 'Z' constraint is required for a memory operand for insns that don't
-> have an update form (which would be selected by the %U modifier).  
 
-Hmmm, I believed that it was for instructions that only have an indexed
-form (all Altivec, byte reverse, and l?arx/st?cx for atomic operations).
+V1 -> V2:
+Move kmalloc() before mutex_lock(), suggested by Arjan.
 
-Of course none of these instructions have an update form, but they don't
-have an offset encoded in the instruction either.
+file_remove_suid() should be called with i_mutex held,
+file_update_time() too. So move them after mutex_lock().
 
-	Gabriel
+Plus, check the return value of kmalloc().
+
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Arjan <arjan@infradead.org>
+Cc: Chris Mason <chris.mason@oracle.com>
+Cc: Yan Zheng <zheng.yan@oracle.com>
+Cc: Sven Wegener <sven.wegener@stealer.net>
+Cc: Josef Bacik <jbacik@redhat.com>
+Cc: Jeff Mahoney <jeffm@suse.com>
+
+---
+diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
+index 7c3cd24..09ef5d6 100644
+--- a/fs/btrfs/file.c
++++ b/fs/btrfs/file.c
+@@ -944,14 +944,17 @@ static ssize_t btrfs_file_write(struct file *file, const char __user *buf,
+ 	if (count == 0)
+ 		goto out_nolock;
+ 
++	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
++	if (!pages)
++		goto out_nolock;
++
++	mutex_lock(&inode->i_mutex);
++
+ 	err = file_remove_suid(file);
+ 	if (err)
+-		goto out_nolock;
++		goto out;
+ 	file_update_time(file);
+ 
+-	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
+-
+-	mutex_lock(&inode->i_mutex);
+ 	BTRFS_I(inode)->sequence++;
+ 	first_index = pos >> PAGE_CACHE_SHIFT;
+ 	last_index = (pos + count) >> PAGE_CACHE_SHIFT;
