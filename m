@@ -1,98 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbZGFOlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZGFOn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbZGFOlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 10:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZGFOlE
+	id S1753872AbZGFOn5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 10:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZGFOnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 10:41:04 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:40840 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753479AbZGFOlD (ORCPT
+	Mon, 6 Jul 2009 10:43:50 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:41760 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753349AbZGFOnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 10:41:03 -0400
-Date: Mon, 6 Jul 2009 16:50:36 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: wuzhangjin@gmail.com
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
-       zhangfx <zhangfx@lemote.com>
-Subject: Re: [BUG] drivers/video/sis: deadlock introduced by
- "fbdev: add mutex for fb_mmap locking"
-Message-Id: <20090706165036.d21bfaaa.krzysztof.h1@poczta.fm>
-In-Reply-To: <1246842791.29532.2.camel@falcon>
-References: <1246785112.14240.34.camel@falcon>
-	<alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
-	<20090705145203.GA8326@linux-sh.org>
-	<alpine.LFD.2.01.0907050756280.3210@localhost.localdomain>
-	<20090705150134.GB8326@linux-sh.org>
-	<alpine.LFD.2.01.0907050816110.3210@localhost.localdomain>
-	<20090705152557.GA10588@linux-sh.org>
-	<20090705181808.93be24a9.krzysztof.h1@poczta.fm>
-	<1246842791.29532.2.camel@falcon>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Jul 2009 10:43:49 -0400
+Message-ID: <4A520DA6.2040107@petalogix.com>
+Date: Mon, 06 Jul 2009 16:43:50 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Paul Mundt <lethal@linux-sh.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       LTP <ltp-list@lists.sourceforge.net>,
+       John Williams <john.williams@petalogix.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Grant Likely <grant.likely@secretlab.ca>, subrata@linux.vnet.ibm.com
+Subject: Re: mmap syscall problem
+References: <4A4DFB77.1080700@petalogix.com> <20090706121455.GA16908@linux-sh.org> <4A51F3F3.6040501@petalogix.com> <200907061616.12220.arnd@arndb.de>
+In-Reply-To: <200907061616.12220.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-EMID: 3ae2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 06 Jul 2009 09:13:11 +0800
-Wu Zhangjin <wuzhangjin@gmail.com> wrote:
+Arnd Bergmann wrote:
+> On Monday 06 July 2009, Michal Simek wrote:
+>   
+>>> Not necessarily, even on platforms that manage aliases in hardware
+>>> mappings that violate the aliasing constraints can still result in
+>>> undefined behaviour, this really depends more on your cache controller
+>>> and MMU than anything else. I notice that microblaze sets SHMLBA to
+>>> PAGE_SIZE, you may want to see if this test still breaks after bumping it
+>>> up to something like PAGE_SIZE * 4.
+>>>   
+>>>       
+>> Yes, test still break - behavior is the same. I don't have accurate
+>> information about MMU unit
+>> but I will ask a question about. We are able to turn off cache
+>> controller directly in HW.
+>>     
+>
+> There may still be a problem with data being queued in some write
+> buffers that don't get flushed before reading back from another
+> address.
+>
+> What happens in a simple user space program that mmaps the same
+> page to two addresses? Something like
+>
+> #include <sys/mman.h>
+> #include <fcntl.h>
+> int main(void)
+> {
+> 	int fd = open("existing-4k-file", O_RDWR);
+> 	char *p1 = mmap(0, 4096, PROT_READ | PROT_WRITE,
+> 				MAP_SHARED, fd, 0);
+> 	char *p2 = mmap(p1 + 4096, 4096, PROT_READ | PROT_WRITE,
+> 				MAP_SHARED | MAP_FIXED, fd, 0);
+>
+> 	*p1 = 0xaa; *p2 = 0x55;
+>   
+I closed fd too.
+    close(fd);
+> 	return *p1; /* returns 0xaa if broken, 0x55 if correct */
+> }
+>   
+# ls -la existing-4k-file
+-rw-rw-r--    1 monstr   monstr       4096 Jul  6  2009 existing-4k-file
 
-> Hi,
-> 
-> 
-> This patch also works for me, thanks!
-> 
-> Regards,
-> Wu Zhangjin
-> 
+# ./test-arnd
+# echo $?
+85
+# dd if=existing-4k-file of=/dev/console count=1 2>/dev/null
+U#
 
-Who should I send this patch to be included as a 2.6.31 regression fix?
+in file is first char U (0x55) which is IMO correct.
 
-Regards,
-Krzysztof
+Michal
 
-> > 
-> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > 
-> > Remove redundant call to the sisfb_get_fix() before sis frambuffer is registered.
-> > 
-> > This fixes a problem with uninitialized the fb_info->mm_lock mutex.
-> > 
-> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-> > ---
-> > 
-> > diff -urp linux-ref/drivers/video/sis/sis_main.c linux-next/drivers/video/sis/sis_main.c
-> > --- linux-ref/drivers/video/sis/sis_main.c	2009-07-01 18:07:05.000000000 +0200
-> > +++ linux-next/drivers/video/sis/sis_main.c	2009-07-05 17:20:33.000000000 +0200
-> > @@ -6367,7 +6367,6 @@ error_3:	vfree(ivideo->bios_abase);
-> >  		sis_fb_info->fix = ivideo->sisfb_fix;
-> >  		sis_fb_info->screen_base = ivideo->video_vbase + ivideo->video_offset;
-> >  		sis_fb_info->fbops = &sisfb_ops;
-> > -		sisfb_get_fix(&sis_fb_info->fix, -1, sis_fb_info);
-> >  		sis_fb_info->pseudo_palette = ivideo->pseudo_palette;
-> >  
-> >  		fb_alloc_cmap(&sis_fb_info->cmap, 256 , 0);
-> > 
-> > 
-> > 
-> > ----------------------------------------------------------------------
-> > Najlepsze OC i AC tylko w Ergo Hestia
-> > http://link.interia.pl/f222
-> > 
-> 
-> 
 
-----------------------------------------------------------------------
-Najlepsze OC i AC tylko w Ergo Hestia
-http://link.interia.pl/f222
+
+> 	Arnd <><
+>   
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
 
