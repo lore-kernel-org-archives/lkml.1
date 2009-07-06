@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852AbZGFFrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbZGFFsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755852AbZGFFrj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 01:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZGFFrb
+	id S1756525AbZGFFsp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 01:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbZGFFsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 01:47:31 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35317 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752905AbZGFFra (ORCPT
+	Mon, 6 Jul 2009 01:48:35 -0400
+Received: from orion.ambsoft.pl ([212.109.144.130]:53997 "EHLO
+	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbZGFFse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 01:47:30 -0400
-Date: Sun, 5 Jul 2009 22:48:23 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Jeff Mahoney <jeffm@suse.com>,
-       Yan Zheng <zheng.yan@oracle.com>, Josef Bacik <jbacik@redhat.com>,
-       Chris Mason <chris.mason@oracle.com>, Amerigo Wang <amwang@redhat.com>,
-       akpm@linux-foundation.org, linux-btrfs@vger.kernel.org,
-       Sven Wegener <sven.wegener@stealer.net>
-Subject: Re: [Patch] btrfs: use file_remove_suid() after i_mutex is held
-Message-ID: <20090705224823.5679075f@infradead.org>
-In-Reply-To: <20090706053128.6318.16410.sendpatchset@localhost.localdomain>
-References: <20090706053128.6318.16410.sendpatchset@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Mon, 6 Jul 2009 01:48:34 -0400
+Date: Mon, 6 Jul 2009 07:48:35 +0200
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Eugene Kapun <abacabadabacaba@gmail.com>, maxk@qualcomm.com,
+       linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: tun/tap crashes if open() /dev/net/tun and then poll()
+ it.
+Message-ID: <20090706074835.3fe641f0@mako-desktop>
+In-Reply-To: <20090706011230.GC15156@gondor.apana.org.au>
+References: <4A4F1480.70203@gmail.com>
+	<20090706001114.2d4517be@mako-desktop>
+	<20090706011230.GC15156@gondor.apana.org.au>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009 01:29:14 -0400
-Amerigo Wang <amwang@redhat.com> wrote:
+On Mon, 6 Jul 2009 09:12:30 +0800
+Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-> 
-> file_remove_suid() should be called with i_mutex held,
-> file_update_time() too. So move them after mutex_lock().
-> 
-> Plus, check the return value of kmalloc().
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> 
-> ---
-> diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
-> index 7c3cd24..cd36301 100644
-> --- a/fs/btrfs/file.c
-> +++ b/fs/btrfs/file.c
-> @@ -944,14 +944,17 @@ static ssize_t btrfs_file_write(struct file
-> *file, const char __user *buf, if (count == 0)
->  		goto out_nolock;
->  
-> +	mutex_lock(&inode->i_mutex);
-> +
->  	err = file_remove_suid(file);
->  	if (err)
-> -		goto out_nolock;
-> +		goto out;
->  	file_update_time(file);
->  
->  	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
-> +	if (!pages)
-> +		goto out;
->  
-Hi,
+> On Mon, Jul 06, 2009 at 12:11:14AM +0200, Mariusz Kozlowski wrote:
+> >
+> > 	Can you try this patch?
+... 
+> Good catch.  Can you please resend with a sign-off?
 
-I don't think you can keep this at GFP_KERNEL once you hold i_mutex....
-very likely this needs to now turn into GFP_NOFS!
+Sure. Just wanted to wait for confirmation from Eugene.
 
+Fix NULL pointer dereference in tun_chr_pool() introduced by
+commit 33dccbb050bbe35b88ca8cf1228dcf3e4d4b3554 and triggered
+by this code:
 
+	int fd;
+	struct pollfd pfd;
+	fd = open("/dev/net/tun", O_RDWR);
+	pfd.fd = fd;
+	pfd.events = POLLIN | POLLOUT;
+	poll(&pfd, 1, 0);
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Reported-by: Eugene Kapun <abacabadabacaba@gmail.com>
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+
+diff --git a/drivers/net/tun.c b/drivers/net/tun.c
+index a1b0697..bcbb25e 100644
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -482,12 +482,14 @@ static unsigned int tun_chr_poll(struct file *file, poll_table * wait)
+ {
+ 	struct tun_file *tfile = file->private_data;
+ 	struct tun_struct *tun = __tun_get(tfile);
+-	struct sock *sk = tun->sk;
++	struct sock *sk;
+ 	unsigned int mask = 0;
+ 
+ 	if (!tun)
+ 		return POLLERR;
+ 
++	sk = tun->sk;
++
+ 	DBG(KERN_INFO "%s: tun_chr_poll\n", tun->dev->name);
+ 
+ 	poll_wait(file, &tfile->read_wait, wait);
+
