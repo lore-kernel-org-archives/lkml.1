@@ -1,42 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756319AbZGFCfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbZGFCrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756319AbZGFCfX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Jul 2009 22:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbZGFCfM
+	id S1756678AbZGFCrF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Jul 2009 22:47:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbZGFCqx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Jul 2009 22:35:12 -0400
-Received: from thunk.org ([69.25.196.29]:35476 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753987AbZGFCfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Jul 2009 22:35:11 -0400
-Date: Sun, 5 Jul 2009 22:34:31 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 57/62] fs/ext4/mballoc.c: Remove unnecessary semicolons
-Message-ID: <20090706023431.GF6706@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-	trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-	Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org
-References: <cover.1246173664.git.joe@perches.com> <d45c565b20589fe7884926b5174ef730de1c9442.1246173683.git.joe@perches.com>
+	Sun, 5 Jul 2009 22:46:53 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57787 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753829AbZGFCqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Jul 2009 22:46:53 -0400
+Message-ID: <4A51657B.7000008@cn.fujitsu.com>
+Date: Mon, 06 Jul 2009 10:46:19 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d45c565b20589fe7884926b5174ef730de1c9442.1246173683.git.joe@perches.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 09/25] io-controller: Common hierarchical fair queuing
+ code in elevaotor layer
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-10-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1246564917-19603-10-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 28, 2009 at 09:27:02AM -0700, Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
+Vivek Goyal wrote:
+...
+> +static struct io_group *
+> +io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
+> +{
+> +	struct io_cgroup *iocg;
+> +	struct io_group *iog, *leaf = NULL, *prev = NULL;
+> +	gfp_t flags = GFP_ATOMIC |  __GFP_ZERO;
+> +
+> +	for (; cgroup != NULL; cgroup = cgroup->parent) {
+> +		iocg = cgroup_to_io_cgroup(cgroup);
+> +
+> +		iog = io_cgroup_lookup_group(iocg, key);
+> +		if (iog != NULL) {
+> +			/*
+> +			 * All the cgroups in the path from there to the
+> +			 * root must have a io_group for efqd, so we don't
+> +			 * need any more allocations.
+> +			 */
+> +			break;
+> +		}
+> +
+> +		iog = kzalloc_node(sizeof(*iog), flags, q->node);
+> +		if (!iog)
+> +			goto cleanup;
+> +
+> +		iog->iocg_id = css_id(&iocg->css);
 
-Thanks, added to the ext4 patch queue.
+  Hi Vivek,
 
-					- Ted
+  IMHO, The io_cgroup id is nothing more than keeping track the corresponding iocg.
+  So why not just store iocg pointer in io_group and just get rid of this complexity.
+  I'd like to post a patch to do this change, what's your opinion?
+
+-- 
+Regards
+Gui Jianfeng
+
