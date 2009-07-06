@@ -1,89 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZGFOBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZGFOHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbZGFOBM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 10:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZGFOA6
+	id S1755831AbZGFOHt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 10:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbZGFOHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 10:00:58 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:58542 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753966AbZGFOA5 (ORCPT
+	Mon, 6 Jul 2009 10:07:41 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:49261 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbZGFOHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 10:00:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=B7+z1D4F30EALKFdNK/zXv6kcZqv5Su3bSy36+b5rsCv7cizqRSApLKF5cFtJ/hD/K
-         q/eH8q9fwfBkNXK7779VuojIPy5wcNEIEZTY6aMT7EZuEtyFQRCUesBnUF4PHCsQnrjC
-         fUYi7i+PtDnXQYsk4uXI3zU6f0ASrFPM6W7mc=
-Subject: Re: [PATCH v4 03/16] [loongson] early_printk: add new implmentation
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Jason Wessel <jason.wessel@windriver.com>, Yan Hua <yanh@lemote.com>,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Zhang Fuxin <zhangfx@lemote.com>,
-       loongson-dev <loongson-dev@googlegroups.com>,
-       Liu Junliang <liujl@lemote.com>, Erwan Lerale <erwan@thiscow.com>,
-       Arnaud Patard <apatard@mandriva.com>
-In-Reply-To: <20090706104321.GC11727@linux-mips.org>
-References: <cover.1246546684.git.wuzhangjin@gmail.com>
-	 <9e23b4150f183c0817f2abbb95525279c2006a83.1246546684.git.wuzhangjin@gmail.com>
-	 <20090706104321.GC11727@linux-mips.org>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Mon, 06 Jul 2009 21:57:13 +0800
-Message-Id: <1246888633.30387.9.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Jul 2009 10:07:40 -0400
+Message-ID: <4A52051A.60407@gmail.com>
+Date: Mon, 06 Jul 2009 16:07:22 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH] optimized ktime_get[_ts] for GENERIC_TIME=y
+References: <20090706154933.5a1f8990@skybase>
+In-Reply-To: <20090706154933.5a1f8990@skybase>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 06 Jul 2009 16:07:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-06 at 11:43 +0100, Ralf Baechle wrote:
-> On Thu, Jul 02, 2009 at 11:20:20PM +0800, Wu Zhangjin wrote:
+Martin Schwidefsky a écrit :
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> > +#include <asm/mips-boards/bonito64.h>
-> > +
-> > +#define UART_BASE (BONITO_PCIIO_BASE + 0x3f8)
-> > +
-> > +#define PORT(base, offset) (u8 *)(base + offset)
-> > +
-> > +static inline unsigned int serial_in(phys_addr_t base, int offset)
-> > +{
-> > +	return readb(PORT(base, offset));
-> > +}
-> > +
-> > +static inline void serial_out(phys_addr_t base, int offset, int value)
-> > +{
-> > +	writeb(value, PORT(base, offset));
+> The generic ktime_get function defined in kernel/hrtimer.c is suboptimial
+> for GENERIC_TIME=y:
 > 
-> Why not inb(0x3f8, + offset) rsp. outb()?
+>  0)               |  ktime_get() {
+>  0)               |    ktime_get_ts() {
+>  0)               |      getnstimeofday() {
+>  0)               |        read_tod_clock() {
+>  0)   0.601 us    |        }
+>  0)   1.938 us    |      }
+>  0)               |      set_normalized_timespec() {
+>  0)   0.602 us    |      }
+>  0)   4.375 us    |    }
+>  0)   5.523 us    |  }
 > 
-
-because yeeloong laptop use the serial port of cpu, which have different
-base address: 0x1ff000000 + 0x3f8, to share the same source code between
-yeeloong, fuloong2f(0x1fd00000 + 0x2f8) and fuloong2e(0x1fd00000 +
-0x3f8), I use PORT(base, offset) here and use readb/writeb instead of
-inb/outb. so, here is only a preparation for future yeeloong2f support.
-
-> > +}
-> > +
-> > +void prom_putchar(char c)
-> > +{
-> > +	phys_addr_t uart_base =
-> > +		(phys_addr_t) ioremap_nocache(UART_BASE, 8);
+> Overall there are two read_seqbegin/read_seqretry loops and a lot of
+> unnecessary struct timespec calculations. ktime_get returns a nano second
+> value which is the sum of xtime, wall_to_monotonic and the nano second
+> delta from the clock source.
 > 
-> ioremap_nocache returns a virtual address, not a physical address, so
-> this type should probably be unsigned char *.
+> ktime_get can be optimized for GENERIC_TIME=y. The new version only calls
+> clocksource_read:
 > 
+>  0)               |  ktime_get() {
+>  0)               |    read_tod_clock() {
+>  0)   0.610 us    |    }
+>  0)   1.977 us    |  }
+> 
+> It uses a single read_seqbegin/readseqretry loop and just adds everthing
+> to a nano second value.
+> 
+> ktime_get_ts is optimized in a similar fashion.
+> 
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: john stultz <johnstul@us.ibm.com>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+>  kernel/hrtimer.c          |    4 ++
+>  kernel/time/timekeeping.c |   63 ++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 67 insertions(+)
+> 
+> 
+> diff -urpN linux-2.5/kernel/hrtimer.c linux-2.5-patched/kernel/hrtimer.c
+> --- linux-2.5/kernel/hrtimer.c	2009-07-03 10:46:07.000000000 +0200
+> +++ linux-2.5-patched/kernel/hrtimer.c	2009-07-03 10:46:23.000000000 +0200
+> @@ -46,6 +46,7 @@
+>  
+>  #include <asm/uaccess.h>
+>  
+> +#ifndef CONFIG_GENERIC_TIME
+>  /**
+>   * ktime_get - get the monotonic time in ktime_t format
+>   *
+> @@ -60,6 +61,7 @@ ktime_t ktime_get(void)
+>  	return timespec_to_ktime(now);
+>  }
+>  EXPORT_SYMBOL_GPL(ktime_get);
+> +#endif
+>  
+>  /**
+>   * ktime_get_real - get the real (wall-) time in ktime_t format
+> @@ -104,6 +106,7 @@ DEFINE_PER_CPU(struct hrtimer_cpu_base, 
+>  	}
+>  };
+>  
+> +#ifndef CONFIG_GENERIC_TIME
+>  /**
+>   * ktime_get_ts - get the monotonic clock in timespec format
+>   * @ts:		pointer to timespec variable
+> @@ -128,6 +131,7 @@ void ktime_get_ts(struct timespec *ts)
+>  				ts->tv_nsec + tomono.tv_nsec);
+>  }
+>  EXPORT_SYMBOL_GPL(ktime_get_ts);
+> +#endif
+>  
+>  /*
+>   * Get the coarse grained time at the softirq based on xtime and
+> diff -urpN linux-2.5/kernel/time/timekeeping.c linux-2.5-patched/kernel/time/timekeeping.c
+> --- linux-2.5/kernel/time/timekeeping.c	2009-07-03 10:46:07.000000000 +0200
+> +++ linux-2.5-patched/kernel/time/timekeeping.c	2009-07-03 10:46:23.000000000 +0200
+> @@ -118,6 +118,69 @@ void getnstimeofday(struct timespec *ts)
+>  
+>  EXPORT_SYMBOL(getnstimeofday);
+>  
+> +ktime_t ktime_get(void)
+> +{
+> +	cycle_t cycle_now, cycle_delta;
+> +	struct timespec time;
+> +	unsigned long seq;
+> +	s64 nsecs;
+> +
+> +	do {
+> +		seq = read_seqbegin(&xtime_lock);
 
-okay, I will change it.
+minor nit : read_seqbegin() returns an "unsigned int", not an "unsigned long"
 
-Thanks!
-Wu Zhangjin
-
+But apparently, most callers store the value into an unsigned long... oh well...
