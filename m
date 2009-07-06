@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbZGFJQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbZGFJUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755257AbZGFJQS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 05:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbZGFJQF
+	id S1753118AbZGFJUO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 05:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZGFJUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 05:16:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57071 "EHLO mx2.redhat.com"
+	Mon, 6 Jul 2009 05:20:03 -0400
+Received: from relay.atmel.no ([80.232.32.139]:58395 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752709AbZGFJQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 05:16:03 -0400
-Date: Mon, 6 Jul 2009 05:15:33 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jeff Mahoney <jeffm@suse.com>, Yan Zheng <zheng.yan@oracle.com>,
-       Josef Bacik <jbacik@redhat.com>, Arjan <arjan@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>, tao.ma@oracle.com,
-       Amerigo Wang <amwang@redhat.com>, akpm@linux-foundation.org,
-       linux-btrfs@vger.kernel.org, Sven Wegener <sven.wegener@stealer.net>
-Message-Id: <20090706091747.6656.91812.sendpatchset@localhost.localdomain>
-Subject: [Patch v3] btrfs: use file_remove_suid() after i_mutex is held
+	id S1750703AbZGFJUC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 05:20:02 -0400
+Date: Mon, 6 Jul 2009 11:19:54 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, kernel@avr32linux.org,
+       patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
+       nicolas.ferre@atmel.com
+Subject: Re: [PATCH] avr32: add two new at91 to cpu.h definition
+Message-ID: <20090706111954.723badb9@hskinnemoen-d830>
+In-Reply-To: <1246875312-6824-1-git-send-email-nicolas.ferre@atmel.com>
+References: <1246875312-6824-1-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Nicolas Ferre wrote:
+> Somme common drivers will need those at91 cpu_is_xxx() definitions. As
+> at91sam9g10 and at91sam9g45 are on the way to linus' tree, here is the patch
+> that adds those chips to cpu.h in AVR32 architecture.
+> 
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-V2 -> V3:
-set 'err' to -ENOMEM when kmalloc() fails. Thanks to Tao.
+Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 
-V1 -> V2:
-Move kmalloc() before mutex_lock(), suggested by Arjan.
+> ---
+> Inclusion in linux-2.6-arm.git/devel:
+> 
+> at91sam9g10: b784b7c03723891876c9053c589150a4062f9455
+> at91sam9g45: fddcc0ae58edefeb7ac1e460411d7dfbe8ebdacc
 
-file_remove_suid() should be called with i_mutex held,
-file_update_time() too. So move them after mutex_lock().
+Do you want me to take this patch, or is it better if it goes in along
+the rest through the ARM tree?
 
-Plus, check the return value of kmalloc().
-
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Arjan <arjan@infradead.org>
-Cc: Chris Mason <chris.mason@oracle.com>
-Cc: Yan Zheng <zheng.yan@oracle.com>
-Cc: Sven Wegener <sven.wegener@stealer.net>
-Cc: Josef Bacik <jbacik@redhat.com>
-Cc: Jeff Mahoney <jeffm@suse.com>
-Cc: Tao Ma <tao.ma@oracle.com>
-
----
-diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
-index 7c3cd24..e7b0d81 100644
---- a/fs/btrfs/file.c
-+++ b/fs/btrfs/file.c
-@@ -944,14 +944,19 @@ static ssize_t btrfs_file_write(struct file *file, const char __user *buf,
- 	if (count == 0)
- 		goto out_nolock;
- 
-+	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
-+	if (!pages) {
-+		err = -ENOMEM;
-+		goto out_nolock;
-+	}
-+
-+	mutex_lock(&inode->i_mutex);
-+
- 	err = file_remove_suid(file);
- 	if (err)
--		goto out_nolock;
-+		goto out;
- 	file_update_time(file);
- 
--	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
--
--	mutex_lock(&inode->i_mutex);
- 	BTRFS_I(inode)->sequence++;
- 	first_index = pos >> PAGE_CACHE_SHIFT;
- 	last_index = (pos + count) >> PAGE_CACHE_SHIFT;
+Haavard
