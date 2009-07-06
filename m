@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbZGFWas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbZGFWef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754163AbZGFWas (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 18:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbZGFWal
+	id S1755238AbZGFWef (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 18:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753745AbZGFWe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 18:30:41 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:37312 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753213AbZGFWak (ORCPT
+	Mon, 6 Jul 2009 18:34:29 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:50921 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753213AbZGFWe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 18:30:40 -0400
+	Mon, 6 Jul 2009 18:34:27 -0400
+X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Jul 2009 18:34:27 EDT
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type:content-transfer-encoding;
-        b=wbYfw0bKqAxB7nQUSBh5BmD4OD/P6E9WGMB6rMwbPE/HfvvNRf/Y9FnIPOOKXXaGQY
-         x5Gzzx0X049zFPgAQ2oqHf6wkt8YoTmiZZT5NDIdgrZgXubUtvsidgWySyZZz8aYIX3z
-         405rhb3gPXPe3x90kj6c8ZjvQBonz9uVj4Gak=
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=OZRINKPzXEEWUlkB94/cH6rx3ZnHvIMx9DrTNd5D+kVjyAGbgJJhvqkXKecsDiOxQV
+         2rka/cdntd2+7sWX4f2KDt+DBGnmhpeNAPoR0fo1LyBfLBTRsHpH2pncqSMf4MiU36KW
+         VsW44YVlpwuDZH0T78HeIMLOvKTnM3k0icy8I=
+Date: Tue, 7 Jul 2009 00:26:51 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-usb@vger.kernel.org, dbrownell@users.sourceforge.net
+Subject: 2.6.31-rc2 warning in drivers/usb/host/ehci-hcd.c
+Message-ID: <20090706222651.GA6709@Pilar.aei.mpg.de>
 MIME-Version: 1.0
-Date: Mon, 6 Jul 2009 23:30:41 +0100
-X-Google-Sender-Auth: f4f4bb58e874b1d8
-Message-ID: <b0943d9e0907061530u2d375fe5x91f92cfee3166c91@mail.gmail.com>
-Subject: Possible memory leak in fs/sysfs/bin.c
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I was looking at the 'dmesg' output for 2.6.31-rc2 and noticed
+this warning
 
-I get about 28 (after 1 hour uptime) kmemleak reports like the one below:
+------------[ cut here ]------------
+WARNING: at drivers/usb/host/ehci-hcd.c:1048 ehci_endpoint_reset+0xfc/0x140 [ehci_hcd]()
+Hardware name: VGN-FZ240E
+clear_halt for a busy endpoint
+Modules linked in: usbhid nvram dvb_usb_dib0700 dib7000p dib7000m dvb_usb dib3000mc dibx000_common dib0070 option usb_storage usbserial uvc                                  video snd_hda_codec_idt snd_hda_intel snd_hda_codec snd_hwdep snd_pcm iwlagn ehci_hcd sky2 snd_timer uhci_hcd i2c_i801 evdev snd_page_alloc                                   sg sr_mod ata_piix ahci libata sd_mod scsi_mod
+Pid: 5043, comm: comgt Not tainted 2.6.31-rc2 #109
+Call Trace:
+ [<ffffffffa00d2b6c>] ? ehci_endpoint_reset+0xfc/0x140 [ehci_hcd]
+ [<ffffffff8103f2b8>] warn_slowpath_common+0x78/0xd0
+ [<ffffffff8103f394>] warn_slowpath_fmt+0x64/0x70
+ [<ffffffff81264bd5>] ? usb_free_urb+0x15/0x20
+ [<ffffffff812660d7>] ? usb_start_wait_urb+0x97/0xe0
+ [<ffffffffa00d2b6c>] ehci_endpoint_reset+0xfc/0x140 [ehci_hcd]
+ [<ffffffff81261fed>] usb_hcd_reset_endpoint+0x1d/0x70
+ [<ffffffff812653f2>] usb_reset_endpoint+0x22/0x40
+ [<ffffffff81266556>] usb_clear_halt+0x66/0x80
+ [<ffffffffa0199d1c>] option_open+0xcc/0x180 [option]
+ [<ffffffffa0177986>] serial_open+0x176/0x240 [usbserial]
+ [<ffffffff811bd81a>] tty_open+0x1fa/0x530
+ [<ffffffff810ac755>] chrdev_open+0xf5/0x1a0
+ [<ffffffff810ac660>] ? chrdev_open+0x0/0x1a0
+ [<ffffffff810a77c5>] __dentry_open+0xd5/0x2f0
+ [<ffffffff810a7ae7>] nameidata_to_filp+0x57/0x70
+ [<ffffffff810b68ba>] do_filp_open+0x71a/0xb10
+ [<ffffffff810c06ea>] ? alloc_fd+0x4a/0x140
+ [<ffffffff810a75df>] do_sys_open+0x7f/0x140
+ [<ffffffff810a76cb>] sys_open+0x1b/0x20
+ [<ffffffff8100bdab>] system_call_fastpath+0x16/0x1b
+---[ end trace f21382a71ff3302a ]---
 
-unreferenced object 0xc24ab090 (size 4096):
-  comm "cat", pid 2930, jiffies 4294902918
-  backtrace:
-    [<c01e0c3a>] create_object+0xfa/0x250
-    [<c01e1e7d>] kmemleak_alloc+0x5d/0x70
-    [<c01dbc2d>] __kmalloc_track_caller+0x10d/0x1e0
-    [<c01bf5e4>] memdup_user+0x24/0x70
-    [<c02394d9>] write+0xb9/0x1b0
-    [<c01e480c>] vfs_write+0x9c/0x190
-    [<c01e49bd>] sys_write+0x3d/0x70
-    [<c010300c>] sysenter_do_call+0x12/0x38
-    [<ffffffff>] 0xffffffff
 
-This is the write() function in the file mention in subject. It looks
-to me like commit 1c8542c7bb replaced kmalloc() with memdup_user() but
-also dropped the kfree(temp). The memdup_user() function allocates
-memory but that's never freed in write().
-
-Maybe something like this:
-
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index 9345806..bde6602 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -164,6 +164,7 @@ static ssize_t write(struct file *file, const char
-__user *userbuf,
- 	mutex_lock(&bb->mutex);
-
- 	memcpy(bb->buffer, temp, count);
-+	kfree(temp);
-
- 	count = flush_write(dentry, bb->buffer, offs, count);
- 	mutex_unlock(&bb->mutex);
-
--- 
-Catalin
+However I can still use a USB pendrive and everything seems to be fine.
