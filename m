@@ -1,142 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZGFOj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbZGFOlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbZGFOj7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 10:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZGFOjv
+	id S1757189AbZGFOlS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 10:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZGFOlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 10:39:51 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37774 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753420AbZGFOjv (ORCPT
+	Mon, 6 Jul 2009 10:41:04 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:40840 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753479AbZGFOlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 10:39:51 -0400
-Date: Mon, 6 Jul 2009 15:40:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31-rc tty layer instabilities
-Message-ID: <20090706154054.7755e07b@lxorguk.ukuu.org.uk>
-In-Reply-To: <200907061343.n66DhDbC004009@pilspetsen.it.uu.se>
-References: <200907061343.n66DhDbC004009@pilspetsen.it.uu.se>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Mon, 6 Jul 2009 10:41:03 -0400
+Date: Mon, 6 Jul 2009 16:50:36 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: wuzhangjin@gmail.com
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ralf Baechle <ralf@linux-mips.org>, ???? <yanh@lemote.com>,
+       zhangfx <zhangfx@lemote.com>
+Subject: Re: [BUG] drivers/video/sis: deadlock introduced by
+ "fbdev: add mutex for fb_mmap locking"
+Message-Id: <20090706165036.d21bfaaa.krzysztof.h1@poczta.fm>
+In-Reply-To: <1246842791.29532.2.camel@falcon>
+References: <1246785112.14240.34.camel@falcon>
+	<alpine.LFD.2.01.0907050715490.3210@localhost.localdomain>
+	<20090705145203.GA8326@linux-sh.org>
+	<alpine.LFD.2.01.0907050756280.3210@localhost.localdomain>
+	<20090705150134.GB8326@linux-sh.org>
+	<alpine.LFD.2.01.0907050816110.3210@localhost.localdomain>
+	<20090705152557.GA10588@linux-sh.org>
+	<20090705181808.93be24a9.krzysztof.h1@poczta.fm>
+	<1246842791.29532.2.camel@falcon>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-EMID: 3ae2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> With 2.6.31-rc1 I saw warnings like the following:
+On Mon, 06 Jul 2009 09:13:11 +0800
+Wu Zhangjin <wuzhangjin@gmail.com> wrote:
 
-Somehow you got a closed ldisc being closed again which means the hangup
-raced some other event.
+> Hi,
+> 
+> 
+> This patch also works for me, thanks!
+> 
+> Regards,
+> Wu Zhangjin
+> 
 
-> With 2.6.31-rc2 I instead see oopses:
+Who should I send this patch to be included as a 2.6.31 regression fix?
 
-I put in a NULL assignment to force any offenders to explode.
+Regards,
+Krzysztof
 
-We've executed tty_ldisc_release on the port meaning we already took the
-path through tty_release_dev() which is called when the final close() of
-the tty occurs.
+> > 
+> > From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > 
+> > Remove redundant call to the sisfb_get_fix() before sis frambuffer is registered.
+> > 
+> > This fixes a problem with uninitialized the fb_info->mm_lock mutex.
+> > 
+> > Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> > ---
+> > 
+> > diff -urp linux-ref/drivers/video/sis/sis_main.c linux-next/drivers/video/sis/sis_main.c
+> > --- linux-ref/drivers/video/sis/sis_main.c	2009-07-01 18:07:05.000000000 +0200
+> > +++ linux-next/drivers/video/sis/sis_main.c	2009-07-05 17:20:33.000000000 +0200
+> > @@ -6367,7 +6367,6 @@ error_3:	vfree(ivideo->bios_abase);
+> >  		sis_fb_info->fix = ivideo->sisfb_fix;
+> >  		sis_fb_info->screen_base = ivideo->video_vbase + ivideo->video_offset;
+> >  		sis_fb_info->fbops = &sisfb_ops;
+> > -		sisfb_get_fix(&sis_fb_info->fix, -1, sis_fb_info);
+> >  		sis_fb_info->pseudo_palette = ivideo->pseudo_palette;
+> >  
+> >  		fb_alloc_cmap(&sis_fb_info->cmap, 256 , 0);
+> > 
+> > 
+> > 
+> > ----------------------------------------------------------------------
+> > Najlepsze OC i AC tylko w Ergo Hestia
+> > http://link.interia.pl/f222
+> > 
+> 
+> 
 
-After this we've come via disassociate_ctty into a hangup (caused by us
-being the controlling tty owner who exits).
+----------------------------------------------------------------------
+Najlepsze OC i AC tylko w Ergo Hestia
+http://link.interia.pl/f222
 
-> Jul  6 15:23:49 brewer kernel:  [<c0232c1c>] ? tty_ldisc_hangup+0xdc/0x1d0
-> Jul  6 15:23:49 brewer kernel:  [<c022bbb5>] ? do_tty_hangup+0xc5/0x340
-> Jul  6 15:23:49 brewer kernel:  [<c022c19f>] ? disassociate_ctty+0x3f/0x1d0
-
-At this point we hold a kref to the tty still but the tty->ldisc is dead
-
-In the normal case we would be fine as we kill off any pending hangup
-processing in the close down. In this case we are not because the hangup
-process was initiated after the last close
-
-> This happens perhaps once every 5 or so reboots. I haven't yet seen
-> any specific usage pattern that might be the trigger.
-
-I suspect its simply a matter of timing randomness.
-
-Does this help:
-
-tty: defer ldisc kill
-
-From: Alan Cox <alan@linux.intel.com>
-
-A hangup event can commence after the tty close path completes. In that
-situation we will crash as we freed the ldisc object. Instead free the ldisc
-when the last kref is dropped.
-
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
-
- drivers/char/tty_ldisc.c |   37 +++++++++++++++++++++++++++----------
- 1 files changed, 27 insertions(+), 10 deletions(-)
-
-
-diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-index 913aa8d..97b3365 100644
---- a/drivers/char/tty_ldisc.c
-+++ b/drivers/char/tty_ldisc.c
-@@ -768,8 +768,16 @@ void tty_ldisc_hangup(struct tty_struct *tty)
- 	 * removed the irqlock.
- 	 */
- 	ld = tty_ldisc_ref(tty);
-+	/* We may have no line discipline at this point. If we have no
-+	   ldisc then either the ldisc is changing in which case the set_ldisc
-+	   will continue after our hangup, see the HUPPED flag and exit, or
-+	   we have a hangup on a device that is not open - eg a console going
-+	   away on exit. In that case ld will be NULL and we mut leave it
-+	   alone. In the case where we hold the ld handle we know the tty
-+	   cannot progress to closed state until we call tty_ldisc_deref,
-+	   and that protects us from closure under the hangup */
-+
- 	if (ld != NULL) {
--		/* We may have no line discipline at this point */
- 		if (ld->ops->flush_buffer)
- 			ld->ops->flush_buffer(tty);
- 		tty_driver_flush_buffer(tty);
-@@ -778,7 +786,6 @@ void tty_ldisc_hangup(struct tty_struct *tty)
- 			ld->ops->write_wakeup(tty);
- 		if (ld->ops->hangup)
- 			ld->ops->hangup(tty);
--		tty_ldisc_deref(ld);
- 	}
- 	/*
- 	 * FIXME: Once we trust the LDISC code better we can wait here for
-@@ -794,17 +801,27 @@ void tty_ldisc_hangup(struct tty_struct *tty)
- 		/* Avoid racing set_ldisc */
- 		mutex_lock(&tty->ldisc_mutex);
- 		/* Switch back to N_TTY */
--		tty_ldisc_halt(tty);
--		tty_ldisc_wait_idle(tty);
--		tty_ldisc_reinit(tty);
--		/* At this point we have a closed ldisc and we want to
--		   reopen it. We could defer this to the next open but
--		   it means auditing a lot of other paths so this is a FIXME */
--		WARN_ON(tty_ldisc_open(tty, tty->ldisc));
--		tty_ldisc_enable(tty);
-+		if (ld) {
-+			/* Only rework the ldisc if we have one enabled */
-+			tty_ldisc_halt(tty);
-+			tty_ldisc_wait_idle(tty);
-+			tty_ldisc_reinit(tty);
-+			/* At this point we have a closed ldisc and we want to
-+			   reopen it. We could defer this to the next open but
-+			   it means auditing a lot of other paths so this is a
-+			   FIXME */
-+			WARN_ON(tty_ldisc_open(tty, tty->ldisc));
-+			tty_ldisc_enable(tty);
-+		}
- 		mutex_unlock(&tty->ldisc_mutex);
-+		/* Our ldisc ref protects this if live. Need to review
-+		   the case of hangup v open further */
- 		tty_reset_termios(tty);
- 	}
-+	if (ld)
-+		tty_ldisc_deref(ld);
-+	/* At this point any pending close/open that is blocked in
-+	   tty_ldisc_wait_idle will be able to continue */
- }
- 
- /**
