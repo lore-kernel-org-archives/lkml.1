@@ -1,64 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZGFOv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbZGFO4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbZGFOv7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 10:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZGFOvu
+	id S1755623AbZGFO4c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 10:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbZGFO4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 10:51:50 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:53964 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753349AbZGFOvs (ORCPT
+	Mon, 6 Jul 2009 10:56:24 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:33338 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754145AbZGFO4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 10:51:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=VqMLzffD5/sESGi9ca3d27KDlLPwbqU2hUT1ojLpNXUXnj2iACkAG2IYM+NJG69Pq/
-         YWlhOA5KLhhzJsW6gbpn0jXvyK670vclK6Kc6jUssZBQtlsnQg514F+U2oalrlS8NGj2
-         6CX9z0hg9bA2ovKm6Sl6AZGupoJ5+WVecIb/Q=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: wuzhangjin@gmail.com
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-Date: Mon, 6 Jul 2009 16:57:59 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc2-next-20090706-03300-ga0c36f0; KDE/4.2.4; i686; ; )
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Etienne Basset <etienne.basset@numericable.fr>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-ide@vger.kernel.org
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <200907031508.47891.bzolnier@gmail.com> <1246635096.16890.6.camel@falcon>
-In-Reply-To: <1246635096.16890.6.camel@falcon>
+	Mon, 6 Jul 2009 10:56:23 -0400
+Message-ID: <4A521082.40209@novell.com>
+Date: Mon, 06 Jul 2009 10:56:02 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200907061658.00936.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mst@redhat.com,
+       davidel@xmailserver.org
+Subject: Re: [KVM PATCH v9 0/5] irqfd fixes and enhancements
+References: <20090702153454.20186.99191.stgit@dev.haskins.net> <4A4CD729.6050300@redhat.com> <4A50723E.6030305@redhat.com>
+In-Reply-To: <4A50723E.6030305@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig0E7207E462280C681F871BD9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 July 2009 17:31:36 Wu Zhangjin wrote:
-> Hi,
-> 
-> > OK, I see another gotcha added by recent changes, we need to explicitly
-> > initialize rq_in_flight variables now.  Revised patch below..
-> > 
-> 
-> Sorry, STD also not work. if apply this patch, the same problem as not
-> apply it, it stopped at:
-> 
-> ...
-> PM: Crete hibernation image:
-> PM: Need to copy ... pages
-> PM: Hibernation image created ...
-> 
-> I think it's better to revert this commit:
->  a1317f714af7aed60ddc182d0122477cbe36ee9b ("ide: improve handling of
-> Power Management requests")
- 
-I completely agree and I've already requested this a week ago
-(this commit was not meant for going straight to -rc tree anyway).
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig0E7207E462280C681F871BD9
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Avi Kivity wrote:
+> On 07/02/2009 06:50 PM, Avi Kivity wrote:
+>> On 07/02/2009 06:37 PM, Gregory Haskins wrote:
+>>> (Applies to kvm.git/master:1f9050fd)
+>>>
+>>> The following is the latest attempt to fix the races in
+>>> irqfd/eventfd, as
+>>> well as restore DEASSIGN support.  For more details, please read the
+>>> patch
+>>> headers.
+>>>
+>>> As always, this series has been tested against the kvm-eventfd unit
+>>> test
+>>> and everything appears to be functioning properly. You can download
+>>> this
+>>> test here:
+>>
+>> Applied, thanks.
+>>
+>
+> ... and unapplied.  There's a refcounting mismatch in irqfd_cleanup: a
+> reference is taken for each irqfd, but dropped for each guest.  This
+> causes an oops if a guest with no irqfds is created and destroyed:
+
+I was able to reproduce this issue.  The problem turned out to be that I
+inadvertently always did a flush_workqueue(), even if the work-queue was
+never initialized.  =20
+
+The following interdiff applied to the reverted patch has been confirmed
+to fix the issue:
+
+-------------------
+
+diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+index fcc3469..52b0e04 100644
+--- a/virt/kvm/eventfd.c
++++ b/virt/kvm/eventfd.c
+@@ -318,6 +318,9 @@ kvm_irqfd_deassign(struct kvm *kvm, int fd, int gsi)
+        struct _irqfd *irqfd, *tmp;
+        struct eventfd_ctx *eventfd;
+=20
++       if (!kvm->irqfds.init)
++               return -ENOENT;
++
+        eventfd =3D eventfd_ctx_fdget(fd);
+        if (IS_ERR(eventfd))
+                return PTR_ERR(eventfd);
+@@ -360,6 +363,9 @@ kvm_irqfd_release(struct kvm *kvm)
+ {
+        struct _irqfd *irqfd, *tmp;
+=20
++       if (!kvm->irqfds.init)
++               return;
++
+        spin_lock_irq(&kvm->irqfds.lock);
+=20
+        list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds.items, list)
+
+---------------------
+
+You can pick up this fix folded into the original v9:5/5 patch here:
+
+git pull
+git://git.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.gi=
+t
+for-avi
+
+Sorry for the sloppy patch in v9. :(  Will strive to do better next time.=
+
+
+Regards,
+-Greg
+
+
+--------------enig0E7207E462280C681F871BD9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpSEIYACgkQlOSOBdgZUxkyewCfU7ogOaoTPN6x5hY9khDoCYIL
+ab8An0jfnsyz2DIYOv+KBpueXS+iedyq
+=gO+N
+-----END PGP SIGNATURE-----
+
+--------------enig0E7207E462280C681F871BD9--
