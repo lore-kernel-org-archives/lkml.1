@@ -1,73 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbZGFNMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbZGFNNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411AbZGFNMX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 09:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbZGFNMQ
+	id S1754526AbZGFNNT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 09:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbZGFNNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 09:12:16 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:35031 "EHLO
-	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752808AbZGFNMP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 09:12:15 -0400
-X-SpamScore: -20
-X-BigFish: VPS-20(zz1432R98dN936eM1805M1878kzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KMD3BV-04-73Z-01
-Date: Mon, 6 Jul 2009 15:11:56 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: David Woodhouse <dwmw2@infradead.org>
-CC: Joerg Roedel <joro@8bytes.org>, Zhenyu Wang <zhenyu.z.wang@intel.com>,
-       airlied@linux.ie, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, iommu@lists.linux-foundation.org,
-       mingo@redhat.com, David Miller <davem@davemloft.net>
-Subject: Re: IOMMU and graphics cards
-Message-ID: <20090706131156.GL5380@amd.com>
-References: <20090507164742V.fujita.tomonori@lab.ntt.co.jp>
- <20090507100114.GF4059@amd.com>
- <1241691721.3531.73.camel@macbook.infradead.org>
- <20090507.113632.210373283.davem@davemloft.net>
- <20090508093526.GB13708@8bytes.org>
- <1246883177.2615.33.camel@macbook.infradead.org>
+	Mon, 6 Jul 2009 09:13:11 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:37559 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753236AbZGFNNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 09:13:10 -0400
+Date: Mon, 6 Jul 2009 15:13:13 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr, fweisbec@gmail.com,
+       Alan.Brunelle@hp.com
+Subject: Re: [PATCH 02/10] writeback: switch to per-bdi threads for
+	flushing  data
+Message-ID: <20090706131313.GR23611@kernel.dk>
+References: <1245926523-21959-1-git-send-email-jens.axboe@oracle.com> <1245926523-21959-3-git-send-email-jens.axboe@oracle.com> <4A51F443.8070402@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246883177.2615.33.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 06 Jul 2009 13:11:57.0424 (UTC) FILETIME=[57143F00:01C9FE3B]
+In-Reply-To: <4A51F443.8070402@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 01:26:17PM +0100, David Woodhouse wrote:
-> On Fri, 2009-05-08 at 11:35 +0200, Joerg Roedel wrote:
-> > The other way to achieve consistency is to remove the workaround from
-> > VT-d code which significantly increases the chance to get the broken
-> > stuff fixed. David?
-> 
-> It's gone from 2.6.31-rc2, but even the in-tree drivers break, so I
-> think we have to put it back for 2.6.31 (I've sent Linus the pull
-> request already). 
-> 
-> I do intend to remove it again for 2.6.32 though, and I filed 
-> http://bugzilla.kernel.org/show_bug.cgi?id=13721
-> 
-> For now it's got a clearer description ("Workaround broken graphics
-> drivers") and defaults to 'n'.
+On Mon, Jul 06 2009, Artem Bityutskiy wrote:
+> Jens Axboe wrote:
+>> +/*
+>> + * kupdated() used to do this. We cannot do it from the bdi_forker_task()
+>> + * or we risk deadlocking on ->s_umount. The longer term solution would be
+>> + * to implement sync_supers_bdi() or similar and simply do it from the
+>> + * bdi writeback tasks individually.
+>> + */
+>> +static int bdi_sync_supers(void *unused)
+>> +{
+>> +	set_user_nice(current, 0);
+>> +
+>> +	while (!kthread_should_stop()) {
+>> +		set_current_state(TASK_INTERRUPTIBLE);
+>> +		schedule();
+>> +
+>> +		/*
+>> +		 * Do this periodically, like kupdated() did before.
+>> +		 */
+>> +		sync_supers();
+>> +	}
+>> +
+>> +	return 0;
+>
+> ATM we have one timer for both data and super-block synchronization.
+> With per-bdi write-back we have:
+>
+> 1. one timer for super blocks
+> 2. many per-bdi timers for data (schedule_timeout() is essentially
+>   using timers).
 
-Ok, cool, that sounds good. Which in-kernel DRM drivers break with IOMMU
-for you? I'll may probably add a similar temporary workaround for AMD
-IOMMU too...
+That is correct. Note that these exit when they have been idle for a
+while, for embedded and such you could make it more aggressive by
+exiting quicker. The sync_supers should be directly fixable by your
+sb_dirty() stuff.
 
-	Joerg
+So I don't think it's a huge change from what we currently have.
+
+> This is not nice, because each timer is an additional source of
+> power-savings killers. I mean, it is more power management (PM)
+> friendly to have less timers and disturb CPU less, make CPU wake
+> up from retention less frequently.
+>
+> I do not challange the per-bdi idea at all, but is it possible to
+> think about a more PM-friendly desing and have one source of
+> periodic write-back, not many. I mean, could there be one timer
+> which periodically syncs supers and wakes up the BDI write-back
+> tasks?
+
+You could replace the schedule_timeout() by a schedule(), and instead
+have a single timer running that would scan the bdi_list and issue the
+kupdated() timed writeback that is the reason it uses schedule_timeout()
+now. Explicitly issued work will manually wake up the per-bdi thread(s).
+That single timer could easily handle waking up bdi_sync_supers() as
+well.
 
 -- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+Jens Axboe
 
