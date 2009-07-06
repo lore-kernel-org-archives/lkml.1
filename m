@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbZGFGTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbZGFGXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757295AbZGFGTN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 02:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZGFGS7
+	id S1755148AbZGFGXd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 02:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZGFGXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 02:18:59 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51438 "EHLO smtps.tip.net.au"
+	Mon, 6 Jul 2009 02:23:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38622 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752730AbZGFGS6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 02:18:58 -0400
-Date: Mon, 6 Jul 2009 16:18:59 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: acpi tree build failure
-Message-Id: <20090706161859.2d644aa7.sfr@canb.auug.org.au>
-In-Reply-To: <20090630131645.68c81f0b.sfr@canb.auug.org.au>
-References: <20090630131645.68c81f0b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__6_Jul_2009_16_18_59_+1000_zA0YY4bR8akT9gd4"
+	id S1752554AbZGFGXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 02:23:24 -0400
+Message-ID: <4A5198A0.6030904@redhat.com>
+Date: Mon, 06 Jul 2009 14:24:32 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, Jeff Mahoney <jeffm@suse.com>,
+       Yan Zheng <zheng.yan@oracle.com>, Josef Bacik <jbacik@redhat.com>,
+       Chris Mason <chris.mason@oracle.com>, akpm@linux-foundation.org,
+       linux-btrfs@vger.kernel.org, Sven Wegener <sven.wegener@stealer.net>
+Subject: Re: [Patch] btrfs: use file_remove_suid() after i_mutex is held
+References: <20090706053128.6318.16410.sendpatchset@localhost.localdomain> <20090705224823.5679075f@infradead.org>
+In-Reply-To: <20090705224823.5679075f@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__6_Jul_2009_16_18_59_+1000_zA0YY4bR8akT9gd4
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Len,
-
-On Tue, 30 Jun 2009 13:16:45 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
+Arjan van de Ven wrote:
+> On Mon, 6 Jul 2009 01:29:14 -0400
+> Amerigo Wang <amwang@redhat.com> wrote:
 >
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
->=20
->   GEN     /scratch/sfr/powerpc_ppc64_defconfig/Makefile
-> drivers/platform/x86/Kconfig:353:error: found recursive dependency: EEEPC=
-_LAPTOP -> HOTPLUG_PCI -> EEEPC_LAPTOP
->=20
-> Caused by commit 6af05c22969dce2776375953131b56e9f4282848 ("eeepc-laptop:
-> Register as a pci-hotplug device") interacting with commit
-> 44b3615b8cb3b016a49eb7ef4236e77a77793cec ("eeepc-laptop: Fix build
-> failure with HOTPLUG_PCI && !SYSFS") from Linus' tree.  Commit 6af05c2
-> from the acpi tree is the same as commit
-> 2b121bc262fa03c94e653b2d44356c2f86c1bcdc in Linus' tree that 44b3615b is
-> fixing, so I have reverted the drivers/platform/x86/Kconfig part of
-> 6af05c2 for today.
+>   
+>> file_remove_suid() should be called with i_mutex held,
+>> file_update_time() too. So move them after mutex_lock().
+>>
+>> Plus, check the return value of kmalloc().
+>>
+>> Signed-off-by: WANG Cong <amwang@redhat.com>
+>>
+>> ---
+>> diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
+>> index 7c3cd24..cd36301 100644
+>> --- a/fs/btrfs/file.c
+>> +++ b/fs/btrfs/file.c
+>> @@ -944,14 +944,17 @@ static ssize_t btrfs_file_write(struct file
+>> *file, const char __user *buf, if (count == 0)
+>>  		goto out_nolock;
+>>  
+>> +	mutex_lock(&inode->i_mutex);
+>> +
+>>  	err = file_remove_suid(file);
+>>  	if (err)
+>> -		goto out_nolock;
+>> +		goto out;
+>>  	file_update_time(file);
+>>  
+>>  	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
+>> +	if (!pages)
+>> +		goto out;
+>>  
+>>     
+> Hi,
+>
+> I don't think you can keep this at GFP_KERNEL once you hold i_mutex....
+> very likely this needs to now turn into GFP_NOFS!
+>   
 
-This is still happening ...
+Good point!
+Hmm,  GFP_KERNEL adds __GFP_FS while GFP_NOFS not...
+Just moving that kmalloc() up, before mutex_lock(), I think, can solve
+this.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I will update this patch now...
 
---Signature=_Mon__6_Jul_2009_16_18_59_+1000_zA0YY4bR8akT9gd4
-Content-Type: application/pgp-signature
+Thanks!
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpRl1MACgkQjjKRsyhoI8xXVACeJxX9pVoLKKtj8NB+WVIGWurn
-8Q0AoLW7s2j4NjoLy8bRNNOKn5iBWhlO
-=FCkz
------END PGP SIGNATURE-----
-
---Signature=_Mon__6_Jul_2009_16_18_59_+1000_zA0YY4bR8akT9gd4--
