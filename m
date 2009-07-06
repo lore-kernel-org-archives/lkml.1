@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZGFEfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZGFEun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbZGFEfJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 00:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZGFEe5
+	id S1754626AbZGFEun (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 00:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750703AbZGFEud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 00:34:57 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:29585 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426AbZGFEe4 (ORCPT
+	Mon, 6 Jul 2009 00:50:33 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:44470 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695AbZGFEuc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 00:34:56 -0400
-X-IronPort-AV: E=Sophos;i="4.42,354,1243828800"; 
-   d="scan'208";a="1112435"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 2/2] usb_serial: only allow sysrq on a console port
-Date: Mon, 6 Jul 2009 00:38:18 -0400
-User-Agent: KMail/1.9.5
-CC: greg@kroah.com, "Jason Wessel" <jason.wessel@windriver.com>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <1243622057-17671-1-git-send-email-jason.wessel@windriver.com> <200907051254.41964.rgetz@blackfin.uclinux.org> <20090705191751.6bbf594c@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090705191751.6bbf594c@lxorguk.ukuu.org.uk>
+	Mon, 6 Jul 2009 00:50:32 -0400
+From: "Pandita, Vikram" <vikram.pandita@ti.com>
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
+       Jonathan McDowell <noodles@earth.li>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Tony Lindgren <tony@atomide.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 6 Jul 2009 10:19:34 +0530
+Subject: RE: [PATCH v2] OMAP1: AMS_DELTA: add modem support
+Thread-Topic: [PATCH v2] OMAP1: AMS_DELTA: add modem support
+Thread-Index: Acn9eZuhHfMxrk4ISCGVoFSdsfF5bwAesm9Q
+Message-ID: <FCCFB4CDC6E5564B9182F639FC35608702F5568724@dbde02.ent.ti.com>
+References: <200907051601.49194.jkrzyszt@tis.icnet.pl>
+In-Reply-To: <200907051601.49194.jkrzyszt@tis.icnet.pl>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200907060038.18323.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 06 Jul 2009 04:34:59.0099 (UTC) FILETIME=[1EB776B0:01C9FDF3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 5 Jul 2009 14:17, Alan Cox pondered:
-> > If Jason's patch is necessary () - should this be fixed up for
-> > standard UARTs too?
-> 
-> I think so yes, although I'd not realised it wasn't protected currently
-> ?
+Janusz/Alan 
 
-Hmm - try as I may - I can't get this to fail - so it must be protected 
-somewhere....
+>-----Original Message-----
+>From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Janusz
+>Krzysztofik
+>
++static int __init ams_delta_modem_init(void)
+>+{
+>+	omap_cfg_reg(M14_1510_GPIO2);
+>+	ams_delta_modem_ports[0].irq = gpio_to_irq(2);
+>+	set_irq_type(gpio_to_irq(2), IRQ_TYPE_EDGE_RISING);
 
-Ahh---
+There is a recent change on specifying irqflags as example:
+http://patchwork.kernel.org/patch/31888/
 
-It is in include/linux/serial_core.h:uart_handle_break() - never checked the 
-header for the magic before I bugged you... sorry about that...
+There is a dependency for Alan Cox to push this patch first though:
+http://patchwork.kernel.org/patch/31884/
 
-> > The above patch would sync the (seemlying duplicated) code between
-> > drivers/usb/serial/generic.c and include/linux/serial_core.h
-> 
-> There is a lot of near duplicate code like this. That is one reason for
-> adding struct tty_port. In theory both could be collapsed into
-> 
-> 	int tty_port_handle_sysrq(struct tty_port *port, unsigned int ch)
-> 	{
-> 	}
-> 
-> at this point as both USB and serial layer UARTs now have a port object.
-> That would just need port->sysrq collapsing into the tty_port.
-> port->console sort of already is.
-
-It appears that the usb serial doesn't handle breaks like serial_core does. (I 
-don't see any support for SAK in usb_serial either?)
-
-Maybe _that_ is the real problem that Jason is trying to work around???
+Reference:
+http://lkml.indiana.edu/hypermail/linux/kernel/0906.2/02827.html
 
 
-> > drivers/usb/serial/generic.c
-> > int usb_serial_handle_sysrq_char(struct usb_serial_port *port,
-> unsigned int ch)
-> > {
-> >         if (port->sysrq && port->console) {
-> >                 if (ch && time_before(jiffies, port->sysrq)) {
-> >                         handle_sysrq(ch,
-> tty_port_tty_get(&port->port));
-> >                         port->sysrq = 0;
-> >                         return 1;
-> 
-> That also looks wrong - tty_port_tty_get takes a tty kref. I will check
-> that Monday and look at collapsing these int one as you note.
+>+
+>+	ams_delta_latch2_write(
+>+		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC,
+>+		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC);
+>+
+>+	return platform_device_register(&ams_delta_modem_device);
+>+}
+>+arch_initcall(ams_delta_modem_init);
+>+
+> static void __init ams_delta_map_io(void)
+> {
+> 	omap1_map_common_io();
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
