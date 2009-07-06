@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbZGFIkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZGFIpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757560AbZGFIkp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 04:40:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZGFIki
+	id S1756658AbZGFIpp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 04:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbZGFIpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 04:40:38 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:54146 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753569AbZGFIkh (ORCPT
+	Mon, 6 Jul 2009 04:45:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41869 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752332AbZGFIpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 04:40:37 -0400
-Date: Mon, 6 Jul 2009 10:35:51 +0200
-From: Nico Schottelius <nico-linux-20090706@schottelius.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Nico Schottelius <nico-linux-20090706@schottelius.org>
-Subject: 2.6.31-r2: Xorg: Black screen
-Message-ID: <20090706083551.GA6422@ikn.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090706@schottelius.org>,
-	LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
+	Mon, 6 Jul 2009 04:45:34 -0400
+Date: Mon, 6 Jul 2009 10:45:37 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, andi@firstfloor.org,
+       arjan@infradead.org, matthew@wil.cx, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, douglas.w.styner@intel.com,
+       chinang.ma@intel.com, terry.o.prickett@intel.com,
+       matthew.r.wilcox@intel.com, Eric.Moore@lsi.com,
+       DL-MPTFusionLinux@lsi.com, netdev@vger.kernel.org
+Subject: Re: >10% performance degradation since 2.6.18
+Message-ID: <20090706084537.GB28145@one.firstfloor.org>
+References: <20090705040137.GA7747@gondor.apana.org.au> <4A5110B9.4030904@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://www.nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.30-rc7 x86_64)
+In-Reply-To: <4A5110B9.4030904@garzik.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> That seems to presume it is impossible to reprogram the NIC RX queue 
+> selection rules?
+> 
+> If you can add a new 'flow' to a NIC hardware RX queue, surely you can 
+> imagine a remove + add operation for a migrated 'flow'...  and thus, at 
+> least on the NIC hardware level, flows can follow processes.
 
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The standard on modern NIC hardware is stateless hashing: as in you
+don't program in flows, but the hardware just uses a fixed hash
+to map the header to a rx queue. You can't really significantly influence
+the hash on a per flow basis there (in theory you could chose
+specific local port numbers, but you can't do that for the remote
+ports or for well known sockets)
 
-Hello!
+There are a few highend NICs that optionally support arbitary flow matching,
+but it typically only supports a very limited number of flows
+(so you need some fallback anyways) and of course it would
+be costly to reprogram the NIC on every socket state change.
 
-Compared to the other normal brightness problems, with
-2.6.31-r2 xorg starts, but there is no image displayed
-(neither on internal nor external monitor).
-
-Switching back to console does not change the status,
-though hitting ctrlaltdel reboots the system (i.e. still
-up and running fine).
-
-It works with 2.6.30-rc7 (besides sometimes the brightness
-is broken there).
-
-Sincerly,
-
-Nico
-
---=20
-Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---vtzGhvizbBRQ85DL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpRt2YACgkQuL75KpiFGIzLqgCeMDZ57stKu7CceHnACKUOS4zQ
-YiQAoL02TMIjfq6rJXUvqhljFSjft0z4
-=SmDF
------END PGP SIGNATURE-----
-
---vtzGhvizbBRQ85DL--
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
