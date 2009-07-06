@@ -1,56 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZGFUmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbZGFU7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbZGFUmy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 16:42:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbZGFUmq
+	id S1753963AbZGFU7J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 16:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZGFU66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 16:42:46 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:40031 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbZGFUmp (ORCPT
+	Mon, 6 Jul 2009 16:58:58 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:42701 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751322AbZGFU65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 16:42:45 -0400
-Date: Mon, 6 Jul 2009 22:42:48 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: tridge@samba.org
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Mon, 6 Jul 2009 16:58:57 -0400
+Date: Mon, 6 Jul 2009 21:58:44 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
        john.lanza@linux.com,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel@vger.kernel.org,
        Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
+       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
 Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <19026.24032.83454.892631@samba.org>
-Message-ID: <alpine.LSU.2.00.0907062237030.27775@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu> <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
- <alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr> <19021.19842.663727.146474@samba.org> <87hbxu60qm.fsf@devron.myhome.or.jp> <19021.23231.213863.726785@samba.org> <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
- <19021.26102.80885.330380@samba.org> <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr> <19021.31291.642416.956966@samba.org> <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr> <19021.63615.450348.192109@samba.org>
- <alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr> <19025.63119.656216.431469@samba.org> <alpine.LSU.2.00.0907061932120.20434@fbirervta.pbzchgretzou.qr> <19026.24032.83454.892631@samba.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+Message-ID: <20090706205844.GE13638@shareable.org>
+References: <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr> <19021.26102.80885.330380@samba.org> <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr> <19021.31291.642416.956966@samba.org> <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr> <19021.63615.450348.192109@samba.org> <alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr> <19025.63119.656216.431469@samba.org> <alpine.LSU.2.00.0907061932120.20434@fbirervta.pbzchgretzou.qr> <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Monday 2009-07-06 22:26, tridge@samba.org wrote:
+Jan Engelhardt wrote:
+> 
+> On Monday 2009-07-06 20:55, Jan Engelhardt wrote:
+> >>How did things go with your mp3 players?
+> >[...]
+> >As it stands, my two devices always want a valid 8.3 name.
+> 
+> On or about June 26, James Bottomley exchanged these words to Andrew Tridgell:
+> >So the patch has been tested with Vista, Windows 7 and Windows XP
+> 
+> 
+> Vista, 7... nothing special.
+> 
+> So let me fill in.
+> 
+> Windows 98 can't make anything of the stunted vfat entries either[3],
+> and there's blanks for 16-bit programs[4]. They too, it seems, always
+> want an 8.3 entry in any case.
+> It does not crash, but neither of these results is usable.
 >
-> > Whenever a long name is created and an 8.3 name is omitted (or rather, 
-> > an invalid one is generated), files are displayed in the browser but 
-> > fail to enqueue/play.
->
->Can you confirm whether without my patch, if you put a file on the
->device that has a long name like ThisIsALongName.mp3 that the correct
->long name is displayed in the browser on the device?
+> This dualnames patch just won't fly in practice.
+> 
+> 
+> [3] http://picpaste.de/w98dualnames.png
+> [4] http://picpaste.de/xpwith16bit.png
+> (pics kept for 7 days from now)
 
-Without the two of your patches everything Works As Expected™.
+Summary of pics, for posterity:
 
-(With yours, the file is displayed - as in "existence" -, with longname,
-but does not play.)
+[3] shows an MS-DOS window on a Windows 98 desktop, listing the A:
+    drive:
 
->If so then it would have to be a long name capable device, and in that
->case I'll have to see if I can buy one on eBay so I can have a play :-)
+      Microsoft(R) Windows 98
+         (C)Copyright Microsoft Corp 1981-1998.
+
+      A:\>Dir
+
+       Datantrager in Laufwerk A: hat keine Bezeichnung
+       Seriennummer des Datentragers: 4A52-570A
+       Verzeichnis von A:\
+
+      SHORT    TXT            12  06.07.09  21:57 SHORT.TXT
+                              12  06.07.09  21:57 
+                              12  06.07.09  21:57 
+               3 Datai(en)                    36 Bytes
+               0 Verzeichnis(se)       1.456.128 Bytes frei
+
+      A:\>
+
+Question: In Windows 98, is it just the MS-DOS box which cannot see
+some of the filenames, or is the normal file explorer affected too?
+
+[4] shows a old-looking Windows application, presumably 16-bit running
+    on XP, with a File Selection box listing the a:\ drive.  Four
+    files are shown on the a:\ drive in a selection box, but the first
+    of them is completely blank.
+
+In Windows XP, it suggests to me that the Windows API function
+GetShortPathName() returns the 8.3 file name entry.  Call it an
+educated guess, and I'll guess the same applies in Server 2003, Vista,
+Server 2008 and Windows 7.
+
+All those Windows versions also have GetLongPathName() which does the
+reverse transformation.  Presumably that also expects the 8.3 entry to
+exist.
+
+The fact these were added in Windows 2000 implies they're not an
+ancient thing from the Windows 95 era, but specifically used by
+applications since Windows 2000.
+
+-- Jamie
