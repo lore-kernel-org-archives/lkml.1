@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZGFNTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZGFN1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbZGFNTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 09:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbZGFNTE
+	id S1755421AbZGFN1n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 09:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZGFN1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 09:19:04 -0400
-Received: from mail.samba.org ([66.70.73.150]:58879 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753109AbZGFNTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 09:19:04 -0400
+	Mon, 6 Jul 2009 09:27:34 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:51555 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753245AbZGFN1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 09:27:33 -0400
+Message-ID: <4A51FB84.3020400@gmail.com>
+Date: Mon, 06 Jul 2009 16:26:28 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19025.63119.656216.431469@samba.org>
-Date: Mon, 6 Jul 2009 23:05:19 +1000
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<200907012019.53932.rusty@rustcorp.com.au>
-	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
-	<20090701140503.GA21185@mit.edu>
-	<alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
-	<alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
-	<19021.19842.663727.146474@samba.org>
-	<87hbxu60qm.fsf@devron.myhome.or.jp>
-	<19021.23231.213863.726785@samba.org>
-	<alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
-	<19021.26102.80885.330380@samba.org>
-	<alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr>
-	<19021.31291.642416.956966@samba.org>
-	<alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr>
-	<19021.63615.450348.192109@samba.org>
-	<alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr, fweisbec@gmail.com,
+       Alan.Brunelle@hp.com
+Subject: Re: [PATCH 02/10] writeback: switch to per-bdi threads for flushing
+  data
+References: <1245926523-21959-1-git-send-email-jens.axboe@oracle.com> <1245926523-21959-3-git-send-email-jens.axboe@oracle.com> <4A51F443.8070402@gmail.com> <20090706131313.GR23611@kernel.dk>
+In-Reply-To: <20090706131313.GR23611@kernel.dk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 06 Jul 2009 13:26:31.0484 (UTC) FILETIME=[600F37C0:01C9FE3D]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
+Jens Axboe wrote:
+>> ATM we have one timer for both data and super-block synchronization.
+>> With per-bdi write-back we have:
+>>
+>> 1. one timer for super blocks
+>> 2. many per-bdi timers for data (schedule_timeout() is essentially
+>>   using timers).
+> 
+> That is correct. Note that these exit when they have been idle for a
+> while, for embedded and such you could make it more aggressive by
+> exiting quicker. The sync_supers should be directly fixable by your
+> sb_dirty() stuff.
+> 
+> So I don't think it's a huge change from what we currently have.
+> 
+>> This is not nice, because each timer is an additional source of
+>> power-savings killers. I mean, it is more power management (PM)
+>> friendly to have less timers and disturb CPU less, make CPU wake
+>> up from retention less frequently.
+>>
+>> I do not challange the per-bdi idea at all, but is it possible to
+>> think about a more PM-friendly desing and have one source of
+>> periodic write-back, not many. I mean, could there be one timer
+>> which periodically syncs supers and wakes up the BDI write-back
+>> tasks?
+> 
+> You could replace the schedule_timeout() by a schedule(), and instead
+> have a single timer running that would scan the bdi_list and issue the
+> kupdated() timed writeback that is the reason it uses schedule_timeout()
+> now. Explicitly issued work will manually wake up the per-bdi thread(s).
+> That single timer could easily handle waking up bdi_sync_supers() as
+> well.
 
- > With this extra patch:
- > 
- >  * "cp dscf4160.jpg dscf3010.jpg" works
+Right. May be the way you decomposed stuff will actually make it easier
+to to optimize periodic write-back and teach it not to wake up if
+there is no dirt.
 
-good
+And we could as well use rang hrtimers to optimize events grouping.
+I'll keep looking at this.
 
- >  * "cp dscf4160.jpg dscF3011.jpg" does not work - i.e. cam ignores the
- >    file without error.
- >    Reason for that is that dscF3011 has an illegal 8.3 name
-
-yep, that's expected. I suggested a possible way of handling this to
-Hirofumi-san (ie. change the case of the name), but he prefers to keep
-things simple for now.
-
-It is probably not unreasonable to say that you should not be using
-mixed case names when you are putting files onto a device that doesn't
-understand mixed case. The reason it worked before my patch is that
-the kernel forced the case of the 8.3 name, and only retained the
-mixed case for the long name.
-
-How did things go with your mp3 players?
-
-Cheers, Tridge
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
