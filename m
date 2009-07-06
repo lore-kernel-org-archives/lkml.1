@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbZGFHoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbZGFHru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757478AbZGFHoo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 03:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbZGFHof
+	id S1753984AbZGFHru (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 03:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZGFHrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 03:44:35 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:41786 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753365AbZGFHoe (ORCPT
+	Mon, 6 Jul 2009 03:47:43 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:34287 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751638AbZGFHrn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 03:44:34 -0400
-Message-ID: <4A51AAFB.1000601@oracle.com>
-Date: Mon, 06 Jul 2009 15:42:51 +0800
-From: Tao Ma <tao.ma@oracle.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Mon, 6 Jul 2009 03:47:43 -0400
+Date: Mon, 6 Jul 2009 09:47:46 +0200
+From: Nico Schottelius <nico-linux-20090706@schottelius.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Brightness broken: linux-2.6
+	7c5371c403abb29f01bc6cff6c5096abdf2dc524
+Message-ID: <20090706074746.GB9488@ikn.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-linux-20090706@schottelius.org>,
+	LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Amerigo Wang <amwang@redhat.com>
-CC: linux-kernel@vger.kernel.org, Jeff Mahoney <jeffm@suse.com>,
-       Yan Zheng <zheng.yan@oracle.com>, Josef Bacik <jbacik@redhat.com>,
-       Arjan <arjan@infradead.org>, Chris Mason <chris.mason@oracle.com>,
-       akpm@linux-foundation.org, linux-btrfs@vger.kernel.org,
-       Sven Wegener <sven.wegener@stealer.net>
-Subject: Re: [Patch v2] btrfs: use file_remove_suid() after i_mutex is held
-References: <20090706072043.6555.13669.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090706072043.6555.13669.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.4A51AB02.00B4:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
+Content-Disposition: inline
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://www.nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.30-rc7 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amerigo,
 
-Amerigo Wang wrote:
-> V1 -> V2:
-> Move kmalloc() before mutex_lock(), suggested by Arjan.
-> 
-> file_remove_suid() should be called with i_mutex held,
-> file_update_time() too. So move them after mutex_lock().
-> 
-> Plus, check the return value of kmalloc().
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Arjan <arjan@infradead.org>
-> Cc: Chris Mason <chris.mason@oracle.com>
-> Cc: Yan Zheng <zheng.yan@oracle.com>
-> Cc: Sven Wegener <sven.wegener@stealer.net>
-> Cc: Josef Bacik <jbacik@redhat.com>
-> Cc: Jeff Mahoney <jeffm@suse.com>
-> 
-> ---
-> diff --git a/fs/btrfs/file.c b/fs/btrfs/file.c
-> index 7c3cd24..09ef5d6 100644
-> --- a/fs/btrfs/file.c
-> +++ b/fs/btrfs/file.c
-> @@ -944,14 +944,17 @@ static ssize_t btrfs_file_write(struct file *file, const char __user *buf,
->  	if (count == 0)
->  		goto out_nolock;
->  
-> +	pages = kmalloc(nrptrs * sizeof(struct page *), GFP_KERNEL);
-> +	if (!pages)
-> +		goto out_nolock;
-I guess you need to set err to -ENOMEM here so that the caller knows 
-what's wrong. With your patch, this function just return 0(since 
-num_written and err are both 0) with no error, and I guess it is worse 
-than kernel BUG out when the NULL pages is used later.
+--XOIedfhf+7KOe/yw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
-Tao
+Hello!
+
+I tested some 2.6.31-rc1-* versions from git and also realised that sometim=
+es
+the brightness is broken in 2.6.30-rc7, too.
+
+Running Lenovo X200 (Intel GM45), X.Org X Server 1.4.2
+=2E
+
+Sincerly,
+
+Nico
+
+--=20
+Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--XOIedfhf+7KOe/yw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpRrCIACgkQuL75KpiFGIyu2wCgwoHSl1wI8X3mcrLMLmSSrzlf
+OMUAoMBsV35+RCzM1JFvtAZpnXoGlJ93
+=K9Yn
+-----END PGP SIGNATURE-----
+
+--XOIedfhf+7KOe/yw--
