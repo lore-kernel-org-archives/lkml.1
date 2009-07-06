@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZGFPok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994AbZGFPz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755203AbZGFPok (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 11:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbZGFPnn
+	id S1752994AbZGFPz5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 11:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbZGFPzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 11:43:43 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47851 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754792AbZGFPnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 11:43:42 -0400
-Date: Mon, 6 Jul 2009 17:43:45 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-       jack@suse.cz, yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk,
-       damien.wyart@free.fr, fweisbec@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: [PATCH 05/10] writeback: support > 1 flusher thread per bdi
-Message-ID: <20090706154345.GT23611@kernel.dk>
-References: <1245926523-21959-1-git-send-email-jens.axboe@oracle.com> <1245926523-21959-6-git-send-email-jens.axboe@oracle.com> <4A51FE33.3070702@gmail.com> <20090706134930.GA4987@shareable.org> <4A520608.7070707@gmail.com>
+	Mon, 6 Jul 2009 11:55:49 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:63995 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750726AbZGFPzs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 11:55:48 -0400
+Date: Mon, 6 Jul 2009 11:55:40 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@vinegar-pot.mit.edu
+To: Jan Beulich <JBeulich@novell.com>
+cc: Rusty Russell <rusty@rustcorp.com.au>, tony.luck@intel.com,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Tim Abbott <tabbott@mit.edu>, sam@ravnborg.org,
+       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] also discard .*init sections after module	
+ initialization
+In-Reply-To: <4A4B2683020000780000862F@vpn.id2.novell.com>
+Message-ID: <alpine.DEB.1.10.0907011454050.18560@vinegar-pot.mit.edu>
+References: <4A4A19C60200007800008353@vpn.id2.novell.com> <200907011452.26720.rusty@rustcorp.com.au> <4A4B2683020000780000862F@vpn.id2.novell.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A520608.7070707@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06 2009, Artem Bityutskiy wrote:
-> Jamie Lokier wrote:
->> Artem Bityutskiy wrote:
->>> Jens Axboe wrote:
->>>> +static void bdi_queue_work(struct backing_dev_info *bdi, struct bdi_work
->>>> *work)
->>>> +{
->>>> +	if (work) {
->>>> +		work->seen = bdi->wb_mask;
->>>> +		BUG_ON(!work->seen);
->>>> +		atomic_set(&work->pending, bdi->wb_cnt);
->>>> +		BUG_ON(!bdi->wb_cnt);
->>>> +
->>>> +		/*
->>>> +		 * Make sure stores are seen before it appears on the list
->>>> +		 */
->>>> +		smp_mb();
->>>> +
->>>> +		spin_lock(&bdi->wb_lock);
->>>> +		list_add_tail_rcu(&work->list, &bdi->work_list);
->>>> +		spin_unlock(&bdi->wb_lock);
->>>> +	}
->>> Doesn't spin_lock() include an implicit memory barrier?
->>> After &bdi->wb_lock is acquired, it is guaranteed that all
->>> memory operations are finished.
->>
->> I'm pretty sure spin_lock() is an "acquire" barrier, which just guarantees
->> loads/stores after the spin_lock() are done after taking the lock.
->>
->> It doesn't guarantee anything about loads/stores before the spin_lock().
->
-> Right, but comment says memops should be flushed before the
-> list is changed.
+On Wed, 1 Jul 2009, Jan Beulich wrote:
 
-The comment says that the _above_ stores should be seen before it
-appears on the list, it doesn't say anything about the list itself. What
-matters is that the ->seen/pending must be fully visible before it
-appears on the list. A spin_lock() doesn't guarentee that, and the bdi
-thread could even see the work before the spin_unlock() is started.
+> >>> Rusty Russell <rusty@rustcorp.com.au> 01.07.09 07:22 >>>
+> >On Tue, 30 Jun 2009 09:27:26 pm Jan Beulich wrote:
+> >> Just like .init, these sections are supposed to be unneeded after init,
+> >> and modpost warns about improper section references anyway.
+> >
+> >Tim Abbot had a section renaming patch, for -ffunction-sections.  Can we kill 
+> >two birds with one stone and have a unique string for init sections, and 
+> >another for exit sections?
+> 
+> Not sure, would need to see what that patch does first. And then, the patch
+> here doesn't do any renaming.
 
--- 
-Jens Axboe
+We don't need to rename the .{dev,cpu,mem}init.* sections for 
+-ffunction-sections -fdata-sections; the only things that need to be 
+renamed for that are sections with names that start with ".text.", 
+".data.", ".bss.", and ".rodata." since those are the section names 
+generated by -ffunction-sections -fdata-sections.  So I think that this 
+change is orthogonal to my efforts.
+
+> >> Likewise
+> >> for .*exit which, other than .exit, aren't needed for the module unload
+> >> path.
+> >
+> >Currently true, but I can't see that being true in general.
+> 
+> Why? .*exit sections deal with device/memory/CPU hot remove, which is
+> orthogonal to module unload.
+
+For the core kernel, the .devinit sections are currently being squashed 
+into either the .data section or the .init.data section depending on 
+whether hotplug is enabled using the vmlinux linker scripts.  Can we use 
+the same approach for modules (i.e. have a module linker script that does 
+this)?  It seems that would avoid having two duplicate mechanisms for 
+doing the same thing, one in the module loader and one in the core 
+kernel's linker scripts.
+
+	-Tim Abbott
+
 
