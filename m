@@ -1,117 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758897AbZGGV30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758732AbZGGV3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758897AbZGGV30 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 17:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbZGGV3R
+	id S1758732AbZGGV3h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 17:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbZGGV3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 17:29:17 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:58071 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756052AbZGGV3Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 17:29:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=QtpMfqI5gzX4aCoTn37qbO6j8SB0huxpznv3K0F1MKsjjTp6nyXvxpsCFEjrG3Gcaq
-         Uq1vwY4aduZOLIlcA6e+qWWrYOSWtcQWeTHDNMrD2IHzZuB2XUxV42uzymDWcZmESgob
-         /60nUk4jpcNrCJgWpNlQFhB4VA769vMc8fmHg=
-Date: Tue, 7 Jul 2009 23:29:12 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/8] ksym_tracer: Rewrite ksym_trace_filter_read()
-Message-ID: <20090707212910.GB7412@nowhere>
-References: <4A52E291.1020408@cn.fujitsu.com> <4A52E2B4.6030706@cn.fujitsu.com>
+	Tue, 7 Jul 2009 17:29:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58543 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758733AbZGGV3T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 17:29:19 -0400
+Message-ID: <4A53BEAD.7030404@redhat.com>
+Date: Tue, 07 Jul 2009 17:31:25 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A52E2B4.6030706@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>, Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH -tip -v10 7/7] tracing: add kprobe-based event tracer
+References: <20090701010838.32547.62843.stgit@localhost.localdomain> <20090701010923.32547.74203.stgit@localhost.localdomain> <20090707073103.GA6173@nowhere> <4A53A830.3000305@redhat.com> <20090707202008.GE6184@nowhere> <4A53B338.4060803@redhat.com> <20090707205851.GF6184@nowhere>
+In-Reply-To: <20090707205851.GF6184@nowhere>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 01:52:52PM +0800, Li Zefan wrote:
-> Reading ksym_trace_filter gave me some arbitrary characters,
-> when it should show nothing. It's because buf is not initialized
-> when there's no filter.
+Frederic Weisbecker wrote:
+> On Tue, Jul 07, 2009 at 04:42:32PM -0400, Masami Hiramatsu wrote:
+>> Frederic Weisbecker wrote:
+>>> On Tue, Jul 07, 2009 at 03:55:28PM -0400, Masami Hiramatsu wrote:
+>>>> Frederic Weisbecker wrote:
+>>>>>> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+>>>>>> index 206cb7d..65945eb 100644
+>>>>>> --- a/kernel/trace/trace.h
+>>>>>> +++ b/kernel/trace/trace.h
+>>>>>> @@ -45,6 +45,8 @@ enum trace_type {
+>>>>>>  	TRACE_POWER,
+>>>>>>  	TRACE_BLK,
+>>>>>>  	TRACE_KSYM,
+>>>>>> +	TRACE_KPROBE,
+>>>>>> +	TRACE_KRETPROBE,
+>>>>>>  
+>>>>>>  	__TRACE_LAST_TYPE,
+>>>>>>  };
+>>>>>> @@ -227,6 +229,22 @@ struct trace_ksym {
+>>>>>>  	char			ksym_name[KSYM_NAME_LEN];
+>>>>>>  	char			p_name[TASK_COMM_LEN];
+>>>>>>  };
+>>>>>> +#define TRACE_KPROBE_ARGS 6
+>>>>>> +
+>>>>>> +struct kprobe_trace_entry {
+>>>>>> +	struct trace_entry	ent;
+>>>>>> +	unsigned long		ip;
+>>>>>> +	int			nargs;
+>>>>>> +	unsigned long		args[TRACE_KPROBE_ARGS];
+>>>>>
+>>>>> I see that you actually make use of arg as a dynamic sizeable
+>>>>> array.
+>>>>> For clarity, args[TRACE_KPROBE_ARGS] could be args[0].
+>>>>>
+>>>>> It's just a neat and wouldn't affect the code nor the data
+>>>>> but would be clearer for readers of that code.
+>>>> Hmm. In that case, I think we'll need a new macro for field
+>>>> definition, like TRACE_FIELD_ZERO(type, item).
+>>>
+>>>
+>>> You mean that for trace_define_field() to describe fields of events?
+>>> Actually the fields should be defined dynamically depending on how
+>>> is built the kprobe event (which arguments are requested, how many,
+>>> etc..).
+>> Yeah, if you specified a probe point with its event name, the tracer
+>> will make a corresponding event dynamically. There are also anonymous
+>> probes which don't have corresponding events. For those anonymous
+>> probes, I need to define two generic event types(kprobe and kretprobe).
+>>
+>> Thank you,
 > 
-> Also reduce stack usage by about 512 bytes.
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/trace/trace_ksym.c |   29 ++++++++++++++++++-----------
->  1 files changed, 18 insertions(+), 11 deletions(-)
+> Ok. Btw, why do you need to define those two anonymous events?
+> Actually your event types are always dynamically created.
+> Those you defined through TRACE_FORMAT_EVENT are only "ghost events",
+> they only stand there as a abstract pattern, right?
 > 
-> diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
-> index 085ff05..b6710d3 100644
-> --- a/kernel/trace/trace_ksym.c
-> +++ b/kernel/trace/trace_ksym.c
-> @@ -35,7 +35,6 @@
->  #define KSYM_TRACER_MAX HBP_NUM
->  
->  #define KSYM_TRACER_OP_LEN 3 /* rw- */
-> -#define KSYM_FILTER_ENTRY_LEN (KSYM_NAME_LEN + KSYM_TRACER_OP_LEN + 1)
->  
->  struct trace_ksym {
->  	struct hw_breakpoint	*ksym_hbp;
-> @@ -230,25 +229,33 @@ static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
->  {
->  	struct trace_ksym *entry;
->  	struct hlist_node *node;
-> -	char buf[KSYM_FILTER_ENTRY_LEN * KSYM_TRACER_MAX];
-> -	ssize_t ret, cnt = 0;
-> +	struct trace_seq *s;
 
+Not always created.
 
-Hehe, this trace_seq type is very convenient :)
+Below command will create an event "event1";
+p probe_point:event1 a1 a2 a3 ... > /debug/tracing/kprobe_events
 
+But next command doesn't create.
+p probe_point a1 a2 a3 ... > /debug/tracing/kprobe_events
 
-> +	ssize_t cnt = 0;
-> +	int ret;
-> +
-> +	s = kmalloc(sizeof(*s), GFP_KERNEL);
-> +	if (!s)
-> +		return -ENOMEM;
-> +	trace_seq_init(s);
->  
->  	mutex_lock(&ksym_tracer_mutex);
->  
->  	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
-> -		cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt, "%s:",
-> -				entry->ksym_hbp->info.name);
-> +		ret = trace_seq_printf(s, "%s:", entry->ksym_hbp->info.name);
->  		if (entry->ksym_hbp->info.type == HW_BREAKPOINT_WRITE)
-> -			cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt,
-> -								"-w-\n");
-> +			ret = trace_seq_puts(s, "-w-\n");
->  		else if (entry->ksym_hbp->info.type == HW_BREAKPOINT_RW)
-> -			cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt,
-> -								"rw-\n");
-> +			ret = trace_seq_puts(s, "rw-\n");
-> +		WARN_ON_ONCE(!ret);
->  	}
-> -	ret = simple_read_from_buffer(ubuf, count, ppos, buf, strlen(buf));
-> +
-> +	cnt = simple_read_from_buffer(ubuf, count, ppos, s->buffer, s->len);
-> +
->  	mutex_unlock(&ksym_tracer_mutex);
->  
-> -	return ret;
-> +	kfree(s);
-> +
-> +	return cnt;
->  }
->  
->  static ssize_t ksym_trace_filter_write(struct file *file,
+This just inserts a kprobe to probe_point. the advantage of this
+"simple" command is that you never be annoyed by making different
+name for new events :-)
 
+Thank you,
 
-Looks good too.
+-- 
+Masami Hiramatsu
 
-Ack.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
