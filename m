@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbZGGEFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZGGENx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753231AbZGGEFL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 00:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZGGEFA
+	id S1753711AbZGGENx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 00:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbZGGENp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 00:05:00 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:52749 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbZGGEE7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 00:04:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=v79n7BUWlyp+wY+AVL6Ofq9jgTSN6hYS34QJsssgsyiu9HBgFxiIbHYOCfFxu2+cNw
-         H/hTHKVVg5lKoOToCWnY3uyK/g9om6O5ac7rzC7wqxayjnWWuopa0EHTbdKN4X8uf18u
-         ZqjY2WpURg8503RIgUkzBEMsTpqCjLWcxuQqo=
-Date: Tue, 7 Jul 2009 13:04:50 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "David Howells" <dhowells@redhat.com>,
-       "MinChan Kim" <minchan.kim@gmail.com>,
-       "Wu Fengguang" <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>
-Subject: Re: [Bug #13665] commit 69c854817566 causes OOMs
-Message-Id: <20090707130450.cb14f7b9.minchan.kim@barrios-desktop>
-In-Reply-To: <dWkuWjWDsSB.A.U7E.g0oUKB@chimera>
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
-	<dWkuWjWDsSB.A.U7E.g0oUKB@chimera>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Tue, 7 Jul 2009 00:13:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56168 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbZGGENo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 00:13:44 -0400
+Date: Tue, 7 Jul 2009 14:13:25 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: sfi-devel@simplefirmware.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: sfi tree build failure
+Message-Id: <20090707141325.35b93b3a.sfr@canb.auug.org.au>
+In-Reply-To: <alpine.LFD.2.00.0907062348130.32467@localhost.localdomain>
+References: <20090630171937.75f64662.sfr@canb.auug.org.au>
+	<20090706161432.111a42ee.sfr@canb.auug.org.au>
+	<alpine.LFD.2.00.0907062348130.32467@localhost.localdomain>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__7_Jul_2009_14_13_25_+1000_BXO3UBWHQlGSR_oZ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  7 Jul 2009 02:01:03 +0200 (CEST)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+--Signature=_Tue__7_Jul_2009_14_13_25_+1000_BXO3UBWHQlGSR_oZ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
-> 
+Hi Len,
 
-It should be listed.
+On Tue, 07 Jul 2009 00:01:13 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
+>
+> I screwed up in my hack attempt to support CONFIG_SFI=3Dy && CONFIG_ACPI=
+=3Dn.
 
-I think it is caused by forking process bomb by msgctl11 on LTP. 
-We can refer old discussion(http://osdir.com/ml/linux-kernel/2009-07/msg00926.html)
+Yeah, I figured something like that.
 
-I think this issue can be solved by 
-dynamic reclaim throttling patch which is making by Rik.
+> Let me know if you have any trouble with the latest SFI test tree.
 
-After he merges it, Let's test again. 
+I have refetched the sfi tree (as I had not merged it yet today).
 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13665
-> Subject		: commit 69c854817566 causes OOMs
-> Submitter	: David Howells <dhowells@redhat.com>
-> Date		: 2009-06-27 08:12 (10 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69c854817566db82c362797b4a6521d0b00fe1d8
-> References	: http://lkml.org/lkml/2009/6/27/28
-> Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
-> Patch		: http://patchwork.kernel.org/patch/32740/
-> 
-> 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__7_Jul_2009_14_13_25_+1000_BXO3UBWHQlGSR_oZ
+Content-Type: application/pgp-signature
 
--- 
-Kind regards,
-Minchan Kim
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpSy2UACgkQjjKRsyhoI8wERwCfdR73JASnx1bwpysjY71qcP3z
+q6cAoL0DkVUNTnGhY+13Ca3Hon1bwNnw
+=R4fh
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__7_Jul_2009_14_13_25_+1000_BXO3UBWHQlGSR_oZ--
