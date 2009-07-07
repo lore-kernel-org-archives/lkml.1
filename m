@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbZGGPgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbZGGPgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758209AbZGGPgY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbZGGPgQ
+	id S1755642AbZGGPgf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbZGGPg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:36:16 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60182 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754162AbZGGPgP (ORCPT
+	Tue, 7 Jul 2009 11:36:26 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:49839 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756849AbZGGPgZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:36:15 -0400
-Subject: RE: IOMMU and graphics cards
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Duran, Leo" <leo.duran@amd.com>
-Cc: Dave Airlie <airlied@gmail.com>, Dave Airlie <airlied@linux.ie>,
-       Zhenyu Wang <zhenyu.z.wang@intel.com>, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, eric@anholt.net,
-       iommu@lists.linux-foundation.org, mingo@redhat.com,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <6453C3CB8E2B3646B0D020C11261327303FA5894@sausexmb4.amd.com>
-References: <20090507164742V.fujita.tomonori@lab.ntt.co.jp>
-	 <20090507100114.GF4059@amd.com>
-	 <1241691721.3531.73.camel@macbook.infradead.org>
-	 <20090507.113632.210373283.davem@davemloft.net>
-	 <20090508093526.GB13708@8bytes.org>
-	 <1246883177.2615.33.camel@macbook.infradead.org>
-	 <20090706131156.GL5380@amd.com>
-	 <1246889932.2615.81.camel@macbook.infradead.org>
-	 <alpine.DEB.2.00.0907062232350.5769@skynet.skynet.ie>
-	 <0DDD3FAD-969A-421B-A36A-77AB645E8BCA@gmail.com>
-	 <6453C3CB8E2B3646B0D020C11261327303FA5888@sausexmb4.amd.com>
-	 <6453C3CB8E2B3646B0D020C11261327303FA5894@sausexmb4.amd.com>
-Content-Type: text/plain
-Date: Tue, 07 Jul 2009 16:36:03 +0100
-Message-Id: <1246980963.3863.2.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 7 Jul 2009 11:36:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Cib2o+N2woojbam3O60iQ8ADngS+cDMtOt8yd2xHDhFouPXN3MjociI3cCBTQOnzg8
+         y65t1YQwK8lH/Xvl44/gl9KWOHAZ2zUiBk+VDZh72OixqMIJ8+UTgTCO0lX/2qLnKvBD
+         kgTL+QFVQBwMVVy/6wdFvRc6YKQksfvSrqXp8=
+MIME-Version: 1.0
+In-Reply-To: <1246980592.9777.0.camel@twins>
+References: <a5d9929e0907070825q41de40eeo5e337a4885615909@mail.gmail.com> 
+	<1246980592.9777.0.camel@twins>
+From: Joao Correia <joaomiguelcorreia@gmail.com>
+Date: Tue, 7 Jul 2009 16:36:03 +0100
+Message-ID: <a5d9929e0907070836s1d75d874p65323b1b62eb63c3@mail.gmail.com>
+Subject: Re: [PATCH 2/3] Increase lockdep limits: MAX_LOCK_DEPTH
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-07 at 10:33 -0500, Duran, Leo wrote:
-> Here's the spec for the AND IOMMU (with braces):
-> <http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs
-> /34434.pdf>
+Im running into this in places as diverse as modprobe, swapper, udevd
+and ip6tables-restore. It doesnt happen always on the same one, and
+the stack traces dont point to an (apparent) common point, hence me
+flagging this as a limit that is just being triggered due to increased
+lockdep usage.
 
-It wasn't the lack of braces that was the problem -- it was the presence
-of a spurious newline in the middle.
+Joao Correia
 
-Here's a nickel, kid -- get yourself a proper mail program. One that can
-cope with the 1980s invention known as WYSIWYG, perhaps?
 
-http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/34434.pdf
 
--- 
-dwmw2
-
+On Tue, Jul 7, 2009 at 4:29 PM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+> On Tue, 2009-07-07 at 16:25 +0100, Joao Correia wrote:
+>> (Applies to current Linus tree, as of 2.6.31-rc2)
+>>
+>> As a result of increasing MAX_STACK_TRACE_ENTRIES on the previous
+>> patch, another limit surfaced as being hit too soon.
+>> This patch increases MAX_LOCK_DEPTH, being hit by false positives, and
+>> turning off the locking correctness validator.
+>>
+>> The new value is arbitrary, but I believe the old one was too. Given
+>> the amount of changes happening with regards to the usage of lockdep,
+>> the previous limit is just too low and keeping it that way would
+>> defeat the purpose of lockdep.
+>>
+>>
+>> Signed-off-by: Joao Correia <joaomiguelcorreia@gmail.com>
+>
+> NAK, find the site that triggers this and fix it. holding more than 48
+> locks at any one time is silly.
+>
+>> ---
+>>  include/linux/sched.h |    2 +-
+>>  1 files changes, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/include/linux/sched.h b/include/linux/sched.h
+>> index 0085d75..304231b 100644
+>> --- a/include/linux/sched.h
+>> +++ b/include/linux/sched.h
+>> @@ -1367,7 +1367,7 @@ struct task_struct {
+>>         int softirq_context;
+>>  #endif
+>>  #ifdef CONFIG_LOCKDEP
+>> -# define MAX_LOCK_DEPTH 48UL
+>> +# define MAX_LOCK_DEPTH 96UL
+>>         u64 curr_chain_key;
+>>         int lockdep_depth;
+>>         unsigned int lockdep_recursion;
+>> ---
+>
+>
