@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbZGGPsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbZGGPui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758503AbZGGPsZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbZGGPsO
+	id S1757319AbZGGPui (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZGGPu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:48:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56772 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758170AbZGGPsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:48:11 -0400
-Date: Tue, 7 Jul 2009 17:48:09 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
-Message-ID: <20090707154809.GH2714@wotan.suse.de>
-References: <20090707144423.GC2714@wotan.suse.de> <20090707144823.GE2714@wotan.suse.de> <20090707145820.GA9976@infradead.org> <20090707150257.GG2714@wotan.suse.de> <20090707150758.GA18075@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090707150758.GA18075@infradead.org>
-User-Agent: Mutt/1.5.9i
+	Tue, 7 Jul 2009 11:50:27 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:34899 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754533AbZGGPu0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 11:50:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=SnL5+J6GFYwcwqiAEZG3Q3R0beDwnUhIiklFtBsGau9TVLRaOY5PmUfjJlXpVcTCnU
+         tULkRxx/c3GVu41ZVKCoKiLJndmLHFvwghOtuZuyQ1kiznjEKLY1+vGXhFs5H6I1lPF0
+         zf11WiRbj0RCbISV1mIUu4SGzRdEngoeCsJSY=
+MIME-Version: 1.0
+In-Reply-To: <1246981444.9777.11.camel@twins>
+References: <a5d9929e0907070825j1dda6584t93196e2730dedc5c@mail.gmail.com> 
+	<1246980836.9777.5.camel@twins> <a5d9929e0907070838q7ed3306du3bb7880e47d7207b@mail.gmail.com> 
+	<1246981444.9777.11.camel@twins>
+From: Joao Correia <joaomiguelcorreia@gmail.com>
+Date: Tue, 7 Jul 2009 16:50:04 +0100
+Message-ID: <a5d9929e0907070850v72cd4da4y1cbbb10fddebd575@mail.gmail.com>
+Subject: Re: [PATCH 1/3] Increase lockdep limits: MAX_STACK_TRACE_ENTRIES
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 11:07:58AM -0400, Christoph Hellwig wrote:
-> On Tue, Jul 07, 2009 at 05:02:57PM +0200, Nick Piggin wrote:
-> > That's kind of why I liked it in inode_setattr better.
-> > 
-> > But if the filesystem defines its own ->setattr, then it could simply
-> > not define a ->setsize and do the right thing in setattr. So this
-> > calling convention seems not too bad.
-> 
-> Or the filesystem could just call into it's own setattr method
-> internally.  For that we'd switch back to passing the iattr to
-> ->setsize.  For a filesystem that doesn't do anything special for
-> ATTR_SIZE ->setsize could point to the same function as ->setattr.
-> 
-> For filesystem where's it's really different they could be separate or
-> share helpers.
+On Tue, Jul 7, 2009 at 4:44 PM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+> On Tue, 2009-07-07 at 16:38 +0100, Joao Correia wrote:
+>> On Tue, Jul 7, 2009 at 4:33 PM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+>> > On Tue, 2009-07-07 at 16:25 +0100, Joao Correia wrote:
+>> >> (Applies to current Linus tree, as of 2.6.31-rc2)
+>> >>
+>> >> As it stands now, the limit is too low and is being hit by false
+>> >> positives. Increasing its value will allow for more room to work with.
+>> >>
+>> >> This was suggested by Ingo Molnar
+>> >> (http://article.gmane.org/gmane.linux.kernel/852005) but never
+>> >> submitted as a patch, to the best of my knowledge.
+>> >
+>> > Right, we found a bug in the dma-debug code that generated tons of
+>> > classes where only 1 was needed, which in turn generated tons of chains
+>> > and stack entries.
+>> >
+>> > But that got merged, but you're seeing more of this?
+>
+>> Yes. Anything 2.6.31 forward triggers this immediatly during init
+>> process, at random places.
+>
+> Not on my machines it doesn't.. so I suspect its something weird in
+> your .config or maybe due to some hardware you have that I don't that
+> triggers different drivers or somesuch.
+>
+>
+>
 
-OK, so what do you suggest? If the filesystem defines
-->setsize then do not pass ATTR_SIZE changes into setattr?
-But then do you also not pass in ATTR_TIME cchanges to setattr
-iff they  are together with ATTR_SIZE change? It sees also like
-quite a difficult calling convention.
+I am not the only one reporting this, and it happens, for example,
+with a stock .config from a Fedora 11 install.
 
+It may, of course, be a funny driver interaction yes, but other than
+stripping the box piece by piece, how would one go about debugging
+this otherwise?
+
+Joao Correia
