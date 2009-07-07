@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbZGGQNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbZGGQNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757930AbZGGQNm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZGGQNf
+	id S1758261AbZGGQNx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 12:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756532AbZGGQNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:13:35 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:64406 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbZGGQNe (ORCPT
+	Tue, 7 Jul 2009 12:13:39 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:46665 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757800AbZGGQNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 12:13:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=lhxXdn2Nr8Alxl9vjhi/eZVzFGX+OuzNRzsJM4IhEdIosGO6iP0r+yjx+71MEFO8UV
-         27h9mdeq/ok3Ob9nImjabgqjf5+wjgTa6x/gTW+125wqCLJvZv/gqqlJUFuUxp6jqZ8E
-         HHwQHeiXW7hwgNITNvQSWarSrxB2Nye22Gnn4=
-Subject: [PATCH] vmalloc.c: fix double error checking
-From: "Figo.zhang" <figo1802@gmail.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Tejun Heo <tj@kernel.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 00:13:21 +0800
-Message-Id: <1246983201.2597.13.camel@myhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Jul 2009 12:13:38 -0400
+Date: Tue, 7 Jul 2009 12:13:25 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, earl_chew@agilent.com, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, oleg@redhat.com
+Subject: Re: [PATCH 0/3] exec: Make do_coredump more robust and safer when
+	using pipes in core_pattern (v8)
+Message-ID: <20090707161325.GC28326@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090703104447.GA19371@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703104447.GA19371@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-it is no need for double error checking.
+Reposting unchanged with oleg cc'd for him to ack
 
-Signed-off-by: Figo.zhang <figo1802@gmail.com>
---- 
-mm/vmalloc.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
-
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index f8189a4..56b2469 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -159,20 +159,15 @@ static int vmap_page_range_noflush(unsigned long start, unsigned long end,
- 	pgd_t *pgd;
- 	unsigned long next;
- 	unsigned long addr = start;
--	int err = 0;
- 	int nr = 0;
- 
- 	BUG_ON(addr >= end);
- 	pgd = pgd_offset_k(addr);
- 	do {
- 		next = pgd_addr_end(addr, end);
--		err = vmap_pud_range(pgd, addr, next, prot, pages, &nr);
--		if (err)
--			break;
-+		if (vmap_pud_range(pgd, addr, next, prot, pages, &nr))
-+			return -ENOMEM;
- 	} while (pgd++, addr = next, addr != end);
--
--	if (unlikely(err))
--		return err;
- 	return nr;
- }
- 
-
-
+On Fri, Jul 03, 2009 at 06:44:47AM -0400, Neil Horman wrote:
+> 
+> Patch V8, converting fatal_signal_pending to signal_pending
+> 
+> 
+> This patcset provides improvements to the core_pattern infrastructure:
+> 
+> 1) Make detection of recurseive core dumps more robust and accurate
+> 
+> 2) Provide a sysctl to limit the number of parallel coredumps in flight when
+> using pipes
+> 
+> 3) Allows for the kernel to wait for the completion of user space core dump
+> processing
+> 
+> Neil
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
