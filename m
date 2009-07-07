@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760488AbZGGA22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbZGGA2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760488AbZGGA22 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 20:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbZGGAMV
+	id S1760394AbZGGA2G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 20:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbZGGAL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 20:12:21 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:54532 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757980AbZGGAMU (ORCPT
+	Mon, 6 Jul 2009 20:11:56 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:33585 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757997AbZGGALz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 20:12:20 -0400
-Subject: Re: [Bug #13306] hibernate slow on _second_ run
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <bXZeuxPQAWE.A.ZFB.BCpUKB@chimera>
-References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera>
-	 <bXZeuxPQAWE.A.ZFB.BCpUKB@chimera>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-QZ+6/HFm97PAdglWR1hD"
-Date: Tue, 07 Jul 2009 02:12:18 +0200
-Message-Id: <1246925538.4652.8.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Mon, 6 Jul 2009 20:11:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=WRvqXJWxei1rFWU6Ph1QXOTFocl8RltHJ1FebcHqV2e3P43TarrqejVGdMS8Xdngb3
+         jNYtaMe4hQboVX1cAFVHdRcNefxQtK1aI0T0XMPjGwX4cuz8bbPCtGdX9KBoTF1o3WXJ
+         N3QHayL+q5Oumc//f+Q0bTlb5FXZnvx4HgS50=
+Message-ID: <4A52931D.5070109@gmail.com>
+Date: Mon, 06 Jul 2009 18:13:17 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Christof Warlich <christof@warlich.name>
+CC: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
+Subject: Re: "EXT3-fs error" after resume from s2ram
+References: <4A4771FD.1020207@warlich.name> <4A480859.5010206@gmail.com> <4A48C799.2010102@warlich.name> <4A495C2D.1040706@gmail.com> <4A49A49C.10104@warlich.name> <4A4C42E2.6030305@gmail.com> <4A51C929.5010909@warlich.name>
+In-Reply-To: <4A51C929.5010909@warlich.name>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(ccing linux-ide)
 
---=-QZ+6/HFm97PAdglWR1hD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On 07/06/2009 03:51 AM, Christof Warlich wrote:
+> Robert Hancock schrieb:
+>> There should definitely be some libata messages from the
+>> suspend/resume process, they might not end up in that file though. You
+>> might want to try changing the console loglevel before suspend so that
+>> all kernel messages get displayed..
+>
+> Ok, I got the suspend / resume process logged quite complete now, it
+> took me some time though to save the data due to the inaccessibility of
+> the root filesystem after resume. But (a modified version of) netcat
+> finally was my friend :-).
+>
+> So below you'll find all messages from "kern.*" between the point when
+> calling "s2ram -f -p" up to the point when the system is back. The
+> requested libata messages are included. Please let me know if any
+> additional data would help.
+> Jul 6 09:15:40 fossie kernel: [ 314.072707] WARNING: at
+> /home/kernel-ppa/mainline/build/kernel/smp.c:289
+> smp_call_function_single+0xa9/0x100()
+> Jul 6 09:15:40 fossie kernel: [ 314.072707] WARNING: at
+> /home/kernel-ppa/mainline/build/kernel/smp.c:289
+> smp_call_function_single+0xa9/0x100()
 
-On Tue, 2009-07-07 at 02:00 +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
->=20
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
->=20
->=20
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13306
-> Subject		: hibernate slow on _second_ run
-> Submitter	: Johannes Berg <johannes@sipsolutions.net>
-> Date		: 2009-05-14 09:34 (54 days old)
+This WARN should likely be looked at by someone, but it doesn't seem to 
+be the main culprit.
 
-Still exists in 31-rc2.
+> Jul 6 09:15:41 fossie kernel: [ 316.648468] ata1.00: ACPI cmd
+> ef/03:0c:00:00:00:a0 filtered out
+> Jul 6 09:15:41 fossie kernel: [ 316.648468] ata1.00: ACPI cmd
+> ef/03:0c:00:00:00:a0 filtered out
+> Jul 6 09:15:41 fossie kernel: [ 316.648480] ata1.00: ACPI cmd
+> ef/03:45:00:00:00:a0 filtered out
+> Jul 6 09:15:41 fossie kernel: [ 316.648480] ata1.00: ACPI cmd
+> ef/03:45:00:00:00:a0 filtered out
+> Jul 6 09:15:41 fossie kernel: [ 316.659047] ata1.00: n_sectors mismatch
+> 268435456 != 312581808
+> Jul 6 09:15:41 fossie kernel: [ 316.659047] ata1.00: n_sectors mismatch
+> 268435456 != 312581808
+> Jul 6 09:15:41 fossie kernel: [ 316.659054] ata1.00: revalidation failed
+> (errno=-19)
 
-johannes
+This is why the hard disk failed to resume, somehow the drive shows a 
+capacity of 149GB after resume but only 128GB before. What's the actual 
+capacity of the drive? I suspect the drive has a host protected area on 
+it, and somehow the HPA isn't showing up after we resume.
 
---=-QZ+6/HFm97PAdglWR1hD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKUpLfAAoJEODzc/N7+QmaQAMQAJmrOAFym4WJh94e78RC844c
-rU6anQDsMICG4/VydYGPN3JgxK201K+ebXBZqUi235cWtz/wkv38VVwUqxnMua3b
-RUokgJtGu3UxUprsuFkT5KZR89AcfMAZz0J6fD9aitJAe8oIanTpbVYplhTt3kKg
-v8cwrZxxdkHJdCTUlPi/qgqeCCEyhqIcWiuNwL9+o4E+sPBERC0y62N9Hck9uR4+
-B1IZsnsMsc05EQpCjSmdBSqL38sed3wNXrr+0roWFzuhowxVPIdGGrFYc1jj76jw
-9C9s1nD0GSYq+xbebkQ5zReYtzGKupnqF3TI4Zj2A0TXLf4mTX9waOe1Z9Kpdi4p
-j4Ff/TTLcftB5g5NGXN7wOyItJodg6FVx3Ja9hWkAKgLQoxTF3jnE7NluEmQpiAq
-bOnmX+4+H+McC3h1B9tpPxqsePK952uZTzQHFu0H2JRJMPA4LYcjfH5dhEZ0TBVj
-suH7pmnhd70iiV8rAi7rR5Y2cbKXXD2W+r53h4BPCJg82sQYH8EQ+948tohmpsEX
-ZW/Utn88hnaxuvApD3RbakpnZhZJAlrThl11ggFpX8Gw2cg0P+qrV5vsbIyn8SBZ
-QeaXh2h5xY4Yi0BF6ugCrs6b1z2rC87WO9xmU204tCS2pJK1FATxWUexee7/Adzf
-rOLfxtuDiTHyEEYpljt7
-=ETDA
------END PGP SIGNATURE-----
-
---=-QZ+6/HFm97PAdglWR1hD--
-
+Can you post the dmesg log from normal bootup?
