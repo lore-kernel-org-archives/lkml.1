@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbZGGISV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbZGGIX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634AbZGGISV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 04:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZGGISL
+	id S1755901AbZGGIX5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 04:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbZGGIXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 04:18:11 -0400
-Received: from mail-vw0-f202.google.com ([209.85.212.202]:61386 "EHLO
-	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbZGGISJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 04:18:09 -0400
+	Tue, 7 Jul 2009 04:23:43 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52978 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753689AbZGGIXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 04:23:41 -0400
+Message-ID: <4A53060C.5010605@cn.fujitsu.com>
+Date: Tue, 07 Jul 2009 16:23:40 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-In-Reply-To: <87r5wt6lsg.wl%peter@chubb.wattle.id.au>
-References: <87r5wt6lsg.wl%peter@chubb.wattle.id.au>
-Date: Tue, 7 Jul 2009 05:18:10 -0300
-Message-ID: <430c4fa50907070118k6a053333pdf81ba8c016e2d23@mail.gmail.com>
-Subject: Re: [PATCH] fix resume from suspend when CONFIG_CC_STACKPROTECTOR
-From: Sergio Luis <sergio@larces.uece.br>
-To: Peter Chubb <peter.chubb@nicta.com.au>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] trace_workqueue: add refcnt to struct	cpu_workqueue_stats
+References: <4A51B16F.6010608@cn.fujitsu.com> <4A52E627.10507@cn.fujitsu.com> <20090707080755.GC6173@nowhere>
+In-Reply-To: <20090707080755.GC6173@nowhere>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Frederic Weisbecker wrote:
+> On Tue, Jul 07, 2009 at 02:07:35PM +0800, Li Zefan wrote:
+>>> The stat entries can be freed when the stat file is being read.
+>>> The worse is, the ptr can be freed immediately after it's returned
+>>> from workqueue_stat_start/next().
+>>>
+>>> Add a refcnt to struct cpu_workqueue_stats to avoid use-after-free.
+>>>
+>>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>>> ---
+>> ...
+>>> @@ -175,11 +184,14 @@ static void *workqueue_stat_next(void *prev, int idx)
+>>>  				return NULL;
+>>>  		} while (!(ret = workqueue_stat_start_cpu(cpu)));
+>>>  		return ret;
+>>> +	} else {
+>>> +		ret = list_entry(prev_cws->list.next,
+>>> +				 struct cpu_workqueue_stats, list);
+>> I just realized accessing prev_cws->list.next can be invalid!
+>>
+>> We can fix it by using list_del_init() to delete cws->list in
+>> probe_workqueue_destruction(), but then if the race happened,
+>> the next time stat_next() is called, NULL will be returned.
+>> I guess this is Ok, since the race is rare.
+> 
+> 
+> If you ensure the kref_get/put are under the
+> workqueue_cpu_stat(cpu)->lock, it should be fine, right?
+> 
 
-On Tue, Jul 7, 2009 at 3:37 AM, Peter Chubb<peter.chubb@nicta.com.au> wrote:
->
-> Patch 08687aec71bc9134fe336e561f6did877bacf74fc0a (x86: unify
-> power/cpu_(32|64).c)  renamed cpu_32.c to cpu.c, but did not update
-> the special compilation flags for the file for the new name.
->
-> This patch fixes the compilation flags, and therefore fixes resume
-> from suspend on my Acer Aspire One.
->
+Unfortunately no.
 
-yeah, I missed it, sorry for that. Thanks for catching it. CC'ing
-Rafael and Ingo, as they will know the best way to push the fix.
+It's safe to dereference prev_cws, but not safe to retreive
+prevw_cws->list.next.
 
-> Signed-off-by: Peter Chubb <peterc@nicta.com.au>
-> ---
->  arch/x86/power/Makefile |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> Index: linux-2.6/arch/x86/power/Makefile
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/power/Makefile      2009-07-07 13:39:54.000000000 +1000
-> +++ linux-2.6/arch/x86/power/Makefile   2009-07-07 13:40:14.000000000 +1000
-> @@ -1,7 +1,7 @@
->  # __restore_processor_state() restores %gs after S3 resume and so should not
->  # itself be stack-protected
->  nostackp := $(call cc-option, -fno-stack-protector)
-> -CFLAGS_cpu_$(BITS).o   := $(nostackp)
-> +CFLAGS_cpu.o   := $(nostackp)
->
->  obj-$(CONFIG_PM_SLEEP)         += cpu.o
->  obj-$(CONFIG_HIBERNATION)      += hibernate_$(BITS).o hibernate_asm_$(BITS).o
->
-> --
-> Dr Peter Chubb                                  peter DOT chubb AT nicta.com.au
-> http://www.ertos.nicta.com.au               ERTOS within National ICT Australia
-> All things shall perish from under the sky/Music alone shall live, never to die
->
+Suppose: head->n1->n2
 
-Sergio.
+T1                      T2
+---------------         -------------------
+stat_start()
+  -> return n1
+                        list_del(n1)
+                          -> n1->list->next = LIST_POISON1;
+stat_next()
+  -> prev = n1
+    -> list_entry(prev->list.next) !!!
+
+You see why it's not safe..
+
+>  
+>> (I never like the design of trace_stat..Fortunately we'll
+>> probably switch to perfcounter for this kind of statistics
+>> reporting)
+> 
+> 
+> I don't like its design either. I wrote it specifically for
+> the branch tracer and didn't think about free-able events :-/
+> 
+
+Yeah, for free-able events it's buggy to use trace_stat.
+Similar bug exists in ksym_tracer.
+
+Another way to fix it is not use trace_stat but use seq_file
+directly. They don't need to be sorted anyway.
+
+
