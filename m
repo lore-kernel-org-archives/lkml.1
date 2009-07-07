@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbZGGPvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbZGGPxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758256AbZGGPvt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbZGGPvm
+	id S1758318AbZGGPxe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbZGGPx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:51:42 -0400
-Received: from viefep22-int.chello.at ([62.179.121.42]:31619 "EHLO
-	viefep22-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755607AbZGGPvl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:51:41 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <eric.dumazet@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com,
-       davidel@xmailserver.org
-In-Reply-To: <20090707154440.GA15605@redhat.com>
-References: <4A4DCD54.1080908@gmail.com> <20090703092438.GE3902@elte.hu>
-	 <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com>
-	 <20090703102530.GD32128@elte.hu>
-	 <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com>
-	 <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com>
-	 <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com>
-	 <20090707140135.GA5506@Krystal> <20090707143416.GB11704@redhat.com>
-	 <20090707150406.GC7124@Krystal>  <20090707154440.GA15605@redhat.com>
-Content-Type: text/plain
-Date: Tue, 07 Jul 2009 17:50:15 +0200
-Message-Id: <1246981815.9777.12.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Jul 2009 11:53:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52146 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754676AbZGGPx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 11:53:26 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1246975428.3613.10.camel@ht.satnam>
+References: <1246975428.3613.10.camel@ht.satnam>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: dhowells@redhat.com, trivial <trivial@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Tony Luck <tony.luck@intel.com>,
+       benh@kernel.crashing.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       mchehab@infradead.org, jbarnes@virtuousgeek.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Greg Ungerer <gerg@snapgear.com>, Greg KH <greg@kroah.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Ingo Molnar <mingo@elte.hu>, tytso@mit.edu, sct@redhat.com,
+       Gadiyar Anand <gadiyar@ti.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] [PATCH 0/22] trivial fixes typo "foo foo"
+Date: Tue, 07 Jul 2009 16:44:00 +0100
+Message-ID: <16756.1246981440@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-07 at 17:44 +0200, Oleg Nesterov wrote:
-> On 07/07, Mathieu Desnoyers wrote:
-> >
-> > Actually, thinking about it more, to appropriately support x86, as well
-> > as powerpc, arm and mips, we would need something like:
-> >
-> > read_lock_smp_mb()
-> >
-> > Which would be a read_lock with an included memory barrier.
-> 
-> Then we need read_lock_irq_smp_mb, read_lock_irqsave__smp_mb, write_lock_xxx,
-> otherwise it is not clear why only read_lock() has _smp_mb() version.
-> 
-> The same for spin_lock_xxx...
+Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-At which time the smp_mb__{before,after}_{un,}lock become attractive
-again.
+> Jaswinder Singh Rajput (22):
+>       trivial: fix typo "has has" in multiple files
+>       trivial: fix typo "on on" in multiple files
+>       trivial: fix typo "that that" in multiple files
 
+NAK.  You can't just mechanically reduce the above pairs of words to a single
+instance unconditionally.
+
+"has has" should perhaps be "has had" in some cases.
+
+In "on on", the first preposition may be part of a compound verb (eg: "to go
+on").
+
+In "that that", the second "that" may be specifying the object in relation to
+a previous part of the text.
+
+David
