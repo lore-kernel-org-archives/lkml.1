@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbZGGQ60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbZGGRBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbZGGQ60 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZGGQ6T
+	id S1757813AbZGGRBi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 13:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZGGRBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:58:19 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:45436 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753318AbZGGQ6S (ORCPT
+	Tue, 7 Jul 2009 13:01:31 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:58907 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753572AbZGGRBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 12:58:18 -0400
-Date: Tue, 7 Jul 2009 19:07:57 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       daniel@caiaq.de, a.p.zijlstra@chello.nl, rjw@sisk.pl, stable@kernel.org
-Subject: i810fb: fix regression with uninitalized fb_info->mm_lock mutex
-Message-Id: <20090707190757.5c9bed6e.krzysztof.h1@poczta.fm>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+	Tue, 7 Jul 2009 13:01:30 -0400
+Date: Tue, 7 Jul 2009 19:01:25 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Ming Lei <tom.leiming@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Possible memory leak in request_firmware()
+Message-ID: <20090707190125.61920d00@gondolin>
+In-Reply-To: <1246979820.9451.71.camel@pc1117.cambridge.arm.com>
+References: <1246979820.9451.71.camel@pc1117.cambridge.arm.com>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-EMID: 34c0b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Tue, 07 Jul 2009 16:17:00 +0100,
+Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-Remove redundant call to the encode_fix() before i810 frambuffer is registered.
+> The patch below may fix the problem but it's only later tonight that I
+> can test it and confirm:
 
-This fixes a problem with uninitialized the fb_info->mm_lock mutex introduced 
-by the commit 537a1bf059f " fbdev: add mutex for fb_mmap locking"
+Your patch looks fine to me (didn't test it either), just one minor nit:
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> 
+> 
+> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+> index ddeb819..12e6e64 100644
+> --- a/drivers/base/firmware_class.c
+> +++ b/drivers/base/firmware_class.c
+> @@ -357,7 +357,7 @@ static void fw_dev_release(struct device *dev)
+>  	kfree(fw_priv->pages);
+>  	kfree(fw_priv->fw_id);
+>  	kfree(fw_priv);
+> -	put_device(dev);
+> +	kfree(dev);
+> 
+>  	module_put(THIS_MODULE);
+>  }
+> @@ -407,14 +407,13 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
+>  	retval = device_register(f_dev);
+>  	if (retval) {
+>  		dev_err(device, "%s: device_register failed\n", __func__);
+> +		kfree(fw_priv->fw_id);
 
----
+fw_priv->fw_id will be freed in the release function, so you don't need
+to free it here.
 
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 7196067..5743ea2 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -2060,8 +2060,7 @@ static int __devinit i810fb_init_pci (struct pci_dev *dev,
- 
- 	fb_var_to_videomode(&mode, &info->var);
- 	fb_add_videomode(&mode, &info->modelist);
--	encode_fix(&info->fix, info); 
--	 	    
-+
- 	i810fb_init_ringbuffer(info);
- 	err = register_framebuffer(info);
- 
-
-
-----------------------------------------------------------------------
-Najlepsze OC i AC tylko w Ergo Hestia
-http://link.interia.pl/f222
-
+>  		put_device(f_dev);
+> -		goto error_kfree_fw_id;
+> +		return retval;
+>  	}
+>  	*dev_p = f_dev;
+>  	return 0;
+> 
+> -error_kfree_fw_id:
+> -	kfree(fw_priv->fw_id);
+>  error_kfree:
+>  	kfree(f_dev);
+>  	kfree(fw_priv);
+> 
+> 
