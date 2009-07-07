@@ -1,47 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbZGGN7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbZGGOCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbZGGN7x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbZGGN7o
+	id S1757687AbZGGOCv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 10:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbZGGOCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:59:44 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44317 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756392AbZGGN7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:59:43 -0400
-Message-ID: <4A535496.1070801@garzik.org>
-Date: Tue, 07 Jul 2009 09:58:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 7 Jul 2009 10:02:41 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:41921 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755203AbZGGOCj convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 10:02:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtkEAL/xUkpMQWU3/2dsb2JhbACBUcxIhBMFgTo
+Date: Tue, 7 Jul 2009 10:01:35 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
+       davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090707140135.GA5506@Krystal>
+References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com> <20090703092438.GE3902@elte.hu> <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com> <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com>
 MIME-Version: 1.0
-To: Benny Halevy <bhalevy@panasas.com>
-CC: Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd mailing-list <osd-dev@open-osd.org>
-Subject: Re: [osd-dev] [GIT PULL] exofs/osd tree for 2.6.31
-References: <4A3F45D5.4020600@panasas.com> <4A41F458.2050409@panasas.com> <4A522E57.7060101@panasas.com>
-In-Reply-To: <4A522E57.7060101@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:54:01 up 129 days, 10:20,  4 users,  load average: 0.92, 0.78,
+	0.79
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benny Halevy wrote:
-> Sorry for nagging.
-> Is this going to be merged in 2.6.31 or wait for 2.6.32?
-> Anything we can do to help it not fall between the cracks next time?
+* Jiri Olsa (jolsa@redhat.com) wrote:
+> On Tue, Jul 07, 2009 at 12:18:16PM +0200, Jiri Olsa wrote:
+> > On Fri, Jul 03, 2009 at 01:18:48PM +0200, Jiri Olsa wrote:
+> > > On Fri, Jul 03, 2009 at 12:25:30PM +0200, Ingo Molnar wrote:
+> > > > 
+> > > > * Jiri Olsa <jolsa@redhat.com> wrote:
+> > > > 
+> > > > > On Fri, Jul 03, 2009 at 11:24:38AM +0200, Ingo Molnar wrote:
+> > > > > > 
+> > > > > > * Eric Dumazet <eric.dumazet@gmail.com> wrote:
+> > > > > > 
+> > > > > > > Ingo Molnar a écrit :
+> > > > > > > > * Jiri Olsa <jolsa@redhat.com> wrote:
+> > > > > > > > 
+> > > > > > > >> +++ b/arch/x86/include/asm/spinlock.h
+> > > > > > > >> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+> > > > > > > >>  #define _raw_read_relax(lock)	cpu_relax()
+> > > > > > > >>  #define _raw_write_relax(lock)	cpu_relax()
+> > > > > > > >>  
+> > > > > > > >> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> > > > > > > >> +#define smp_mb__after_lock() do { } while (0)
+> > > > > > > > 
+> > > > > > > > Two small stylistic comments, please make this an inline function:
+> > > > > > > > 
+> > > > > > > > static inline void smp_mb__after_lock(void) { }
+> > > > > > > > #define smp_mb__after_lock
+> > > > > > > > 
+> > > > > > > > (untested)
+> > > > > > > > 
+> > > > > > > >> +/* The lock does not imply full memory barrier. */
+> > > > > > > >> +#ifndef smp_mb__after_lock
+> > > > > > > >> +#define smp_mb__after_lock() smp_mb()
+> > > > > > > >> +#endif
+> > > > > > > > 
+> > > > > > > > ditto.
+> > > > > > > > 
+> > > > > > > > 	Ingo
+> > > > > > > 
+> > > > > > > This was following existing implementations of various smp_mb__??? helpers :
+> > > > > > > 
+> > > > > > > # grep -4 smp_mb__before_clear_bit include/asm-generic/bitops.h
+> > > > > > > 
+> > > > > > > /*
+> > > > > > >  * clear_bit may not imply a memory barrier
+> > > > > > >  */
+> > > > > > > #ifndef smp_mb__before_clear_bit
+> > > > > > > #define smp_mb__before_clear_bit()      smp_mb()
+> > > > > > > #define smp_mb__after_clear_bit()       smp_mb()
+> > > > > > > #endif
+> > > > > > 
+> > > > > > Did i mention that those should be fixed too? :-)
+> > > > > > 
+> > > > > > 	Ingo
+> > > > > 
+> > > > > ok, could I include it in the 2/2 or you prefer separate patch?
+> > > > 
+> > > > depends on whether it will regress ;-)
+> > > > 
+> > > > If it regresses, it's better to have it separate. If it wont, it can 
+> > > > be included. If unsure, default to the more conservative option.
+> > > > 
+> > > > 	Ingo
+> > > 
+> > > 
+> > > how about this.. 
+> > > and similar change for smp_mb__before_clear_bit in a separate patch
+> > > 
+> > > 
+> > > diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+> > > index b7e5db8..4e77853 100644
+> > > --- a/arch/x86/include/asm/spinlock.h
+> > > +++ b/arch/x86/include/asm/spinlock.h
+> > > @@ -302,4 +302,8 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+> > >  #define _raw_read_relax(lock)	cpu_relax()
+> > >  #define _raw_write_relax(lock)	cpu_relax()
+> > >  
+> > > +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> > > +static inline void smp_mb__after_lock(void) { }
+> > > +#define ARCH_HAS_SMP_MB_AFTER_LOCK
+> > > +
+> > >  #endif /* _ASM_X86_SPINLOCK_H */
+> > > diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+> > > index 252b245..4be57ab 100644
+> > > --- a/include/linux/spinlock.h
+> > > +++ b/include/linux/spinlock.h
+> > > @@ -132,6 +132,11 @@ do {								\
+> > >  #endif /*__raw_spin_is_contended*/
+> > >  #endif
+> > >  
+> > > +/* The lock does not imply full memory barrier. */
+> > > +#ifndef ARCH_HAS_SMP_MB_AFTER_LOCK
+> > > +static inline void smp_mb__after_lock(void) { smp_mb(); }
+> > > +#endif
+> > > +
+> > >  /**
+> > >   * spin_unlock_wait - wait until the spinlock gets unlocked
+> > >   * @lock: the spinlock in question.
+> > > diff --git a/include/net/sock.h b/include/net/sock.h
+> > > index 4eb8409..98afcd9 100644
+> > > --- a/include/net/sock.h
+> > > +++ b/include/net/sock.h
+> > > @@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
+> > >   * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
+> > >   * could then endup calling schedule and sleep forever if there are no more
+> > >   * data on the socket.
+> > > + *
+> > > + * The sk_has_helper is always called right after a call to read_lock, so we
+> > > + * can use smp_mb__after_lock barrier.
+> > >   */
+> > >  static inline int sk_has_sleeper(struct sock *sk)
+> > >  {
+> > > @@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
+> > >  	 *
+> > >  	 * This memory barrier is paired in the sock_poll_wait.
+> > >  	 */
+> > > -	smp_mb();
+> > > +	smp_mb__after_lock();
+> > >  	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
+> > >  }
+> > >  
+> > 
+> > any feedback on this? 
+> > I'd send v6 if this way is acceptable..
+> > 
+> > thanks,
+> > jirka
+> 
+> also I checked the smp_mb__before_clear_bit/smp_mb__after_clear_bit and
+> it is used quite extensivelly.
+> 
+> I'd prefer to send it in a separate patch, so we can move on with the 
+> changes I've sent so far..
+> 
 
-I guess Boaz just needs to resubmit the push to Linus?
+As with any optimization (and this is one that adds a semantic that will
+just grow the memory barrier/locking rule complexity), it should come
+with performance benchmarks showing real-life improvements.
 
-His reply was probably not as clear as a regenerated pull request.
+Otherwise I'd recommend sticking to smp_mb() if this execution path is
+not that critical, or to move to RCU if it's _that_ critical.
 
-	Jeff
+A valid argument would be if the data structures protected are so
+complex that RCU is out of question but still the few cycles saved by
+removing a memory barrier are really significant. And even then, the
+proper solution would be more something like a
+__read_lock()+smp_mb+smp_mb+__read_unlock(), so we get the performance
+improvements on architectures other than x86 as well.
 
+So in all cases, I don't think the smp_mb__after_lock() is the
+appropriate solution.
 
+Mathieu
 
+> regards,
+> jirka
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
