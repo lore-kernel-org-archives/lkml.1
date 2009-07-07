@@ -1,86 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbZGGPgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbZGGPiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755642AbZGGPgf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbZGGPg0
+	id S1757982AbZGGPiI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbZGGPhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:36:26 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:49839 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756849AbZGGPgZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:36:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Cib2o+N2woojbam3O60iQ8ADngS+cDMtOt8yd2xHDhFouPXN3MjociI3cCBTQOnzg8
-         y65t1YQwK8lH/Xvl44/gl9KWOHAZ2zUiBk+VDZh72OixqMIJ8+UTgTCO0lX/2qLnKvBD
-         kgTL+QFVQBwMVVy/6wdFvRc6YKQksfvSrqXp8=
-MIME-Version: 1.0
-In-Reply-To: <1246980592.9777.0.camel@twins>
-References: <a5d9929e0907070825q41de40eeo5e337a4885615909@mail.gmail.com> 
-	<1246980592.9777.0.camel@twins>
-From: Joao Correia <joaomiguelcorreia@gmail.com>
-Date: Tue, 7 Jul 2009 16:36:03 +0100
-Message-ID: <a5d9929e0907070836s1d75d874p65323b1b62eb63c3@mail.gmail.com>
-Subject: Re: [PATCH 2/3] Increase lockdep limits: MAX_LOCK_DEPTH
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 7 Jul 2009 11:37:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50345 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755207AbZGGPhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 11:37:54 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1246976375.3613.30.camel@ht.satnam>
+References: <1246976375.3613.30.camel@ht.satnam> <1246975428.3613.10.camel@ht.satnam>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: dhowells@redhat.com, trivial <trivial@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 13/22] trivial: fix typo "on on" in multiple files
+Date: Tue, 07 Jul 2009 16:29:40 +0100
+Message-ID: <16605.1246980580@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Im running into this in places as diverse as modprobe, swapper, udevd
-and ip6tables-restore. It doesnt happen always on the same one, and
-the stack traces dont point to an (apparent) common point, hence me
-flagging this as a limit that is just being triggered due to increased
-lockdep usage.
+Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-Joao Correia
+> - * The type of reading going on on this chip
+> + * The type of reading going on this chip
 
+Nak.  I think "going on" is a compound verb here, so "going on on this chip"
+is very probably correct.
 
-
-On Tue, Jul 7, 2009 at 4:29 PM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
-> On Tue, 2009-07-07 at 16:25 +0100, Joao Correia wrote:
->> (Applies to current Linus tree, as of 2.6.31-rc2)
->>
->> As a result of increasing MAX_STACK_TRACE_ENTRIES on the previous
->> patch, another limit surfaced as being hit too soon.
->> This patch increases MAX_LOCK_DEPTH, being hit by false positives, and
->> turning off the locking correctness validator.
->>
->> The new value is arbitrary, but I believe the old one was too. Given
->> the amount of changes happening with regards to the usage of lockdep,
->> the previous limit is just too low and keeping it that way would
->> defeat the purpose of lockdep.
->>
->>
->> Signed-off-by: Joao Correia <joaomiguelcorreia@gmail.com>
->
-> NAK, find the site that triggers this and fix it. holding more than 48
-> locks at any one time is silly.
->
->> ---
->>  include/linux/sched.h |    2 +-
->>  1 files changes, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/include/linux/sched.h b/include/linux/sched.h
->> index 0085d75..304231b 100644
->> --- a/include/linux/sched.h
->> +++ b/include/linux/sched.h
->> @@ -1367,7 +1367,7 @@ struct task_struct {
->>         int softirq_context;
->>  #endif
->>  #ifdef CONFIG_LOCKDEP
->> -# define MAX_LOCK_DEPTH 48UL
->> +# define MAX_LOCK_DEPTH 96UL
->>         u64 curr_chain_key;
->>         int lockdep_depth;
->>         unsigned int lockdep_recursion;
->> ---
->
->
+David
