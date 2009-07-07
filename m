@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbZGGAHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZGGAHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576AbZGGAHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 20:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZGGAGz
+	id S1756244AbZGGAHf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 20:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbZGGAHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 20:06:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35730 "EHLO hera.kernel.org"
+	Mon, 6 Jul 2009 20:07:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58038 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752470AbZGGAGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 20:06:54 -0400
-Message-ID: <4A529180.7090104@kernel.org>
-Date: Mon, 06 Jul 2009 17:06:24 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	id S1754084AbZGGAHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 20:07:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Justin Madru <jdm64@gawab.com>
+Subject: Re: 2.6.30-rc1: touchpad disabled on hibernation
+Date: Tue, 7 Jul 2009 02:05:46 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       alexs <alex.shi@intel.com>
-Subject: Re: [Bug #13690] nodes_clear cause hugepage unusable on non-NUMA
- machine
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <dWkuWjWDsSB.A.VeE.Z0oUKB@chimera>
-In-Reply-To: <dWkuWjWDsSB.A.VeE.Z0oUKB@chimera>
-Content-Type: text/plain; charset=UTF-8
+       linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+References: <4A438BA7.9010800@tuffmail.co.uk> <200907070040.14796.rjw@sisk.pl> <4A528EE5.5090901@gawab.com>
+In-Reply-To: <4A528EE5.5090901@gawab.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907070205.48165.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13690
-> Subject		: nodes_clear cause hugepage unusable on non-NUMA machine
-> Submitter	: alexs <alex.shi@intel.com>
-> Date		: 2009-07-02 01:22 (5 days old)
-> 
+On Tuesday 07 July 2009, Justin Madru wrote:
+> Rafael J. Wysocki wrote:
+> > On Thursday 25 June 2009, Alan Jenkins wrote:
+> >   
+> >> Maciej Rutecki wrote:
+> >>     
+> >>> 2009/6/25 Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
+> >>>   
+> >>>       
+> >>>> The synaptics touchpad on my EeePC 701 dies on hibernation.  2.6.30 was
+> >>>> fine, and it doesn't happen on suspend to ram either.  There are no
+> >>>> obvious error messages, but maybe this boot message is relevant:
+> >>>>
+> >>>> Platform driver 'i8042' needs updating, please use dev_pm_ops
+> >>>>
+> >>>>     
+> >>>>         
+> >>> Similar on s2disk, HP/Compaq notebook. Try reload psmouse module. I
+> >>> reported it, but nobody answer.
+> >>>   
+> >>>       
+> >> That works, thanks.
+> >>     
+> >
+> > Alan, Maciej, can you both try the patch at
+> > http://patchwork.kernel.org/patch/34075/, please?
+> >
+> > Rafael
+> >
+> >   
+> I've been having the same issue (laptop touchpad not working after resume).
+> Your patch seams to fix the problem. I no longer have to reload the 
+> psmouse module after resume.
 
+Thanks for testing.
 
-http://lkml.org/lkml/2009/7/2/326
-
-YH
+Best,
+Rafael
