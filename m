@@ -1,120 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbZGGQTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbZGGQUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbZGGQTz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbZGGQTq
+	id S1757931AbZGGQUM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 12:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757669AbZGGQT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:19:46 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:54839 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753648AbZGGQTp (ORCPT
+	Tue, 7 Jul 2009 12:19:59 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:38357 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758984AbZGGQT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 12:19:45 -0400
-Date: Tue, 7 Jul 2009 12:19:33 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, earl_chew@agilent.com, alan@lxorguk.ukuu.org.uk,
-       andi@firstfloor.org, oleg@redhat.com
-Subject: Re: [PATCH 3/3] exec: Allow do_coredump to wait for user space
-	pipe readers to complete (v8)
-Message-ID: <20090707161933.GF28326@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090703104447.GA19371@hmsreliant.think-freely.org> <20090703105233.GD19371@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090703105233.GD19371@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-Score: -1.4 (-)
+	Tue, 7 Jul 2009 12:19:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hYSxpoTz/pLw5ekEXi5s1rW1Dq/Mhd9LdtBCsLmZVFpmSiZN6R335GUaQ8w8+HmUb/
+         xFc3IbqlbE9Zx+lBULR2tNsfaWhjfuxNmVY7WKGqX263CPCdyPm1csgmSEE7aFdl+/on
+         MoQha0wd1niPNy/fHcZ/iSeSSvxycGkLv6tWU=
+Subject: Re: [PATCH] vmalloc.c: fix vmap_page_range() return
+From: "Figo.zhang" <figo1802@gmail.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1246960849.2581.29.camel@myhost>
+References: <1246960849.2581.29.camel@myhost>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 00:19:49 +0800
+Message-Id: <1246983589.2597.16.camel@myhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reposting for Oleg to Ack
+On Tue, 2009-07-07 at 18:00 +0800, Figo.zhang wrote:
+> vmap_page_range() would never return a positive number.
 
-On Fri, Jul 03, 2009 at 06:52:33AM -0400, Neil Horman wrote:
-> core_pattern: Allow core_pattern pipes to wait for user space to complete
+hmm, it is my mistake. vmap_pud_range() will return the succeed mapped
+page number.
+
+Best,
+Figo.zhang
+
+
 > 
-> One of the things that user space processes like to do is look at metadata for a
-> crashing process in their /proc/<pid> directory.  this is racy however, since
-> do_coredump in the kernel doesn't wait for the user space process to complete
-> before it reaps the crashing process.  This patch corrects that.  Allowing the
-> kernel to wait for the user space process to complete before cleaning up the
-> crashing process.  This is a bit tricky to do for a few reasons:
+> Signed-off-by: Figo.zhang <figo1802@gmail.com>
+> --- 
+> mm/vmalloc.c |    4 ----
+>  1 files changed, 0 insertions(+), 4 deletions(-)
 > 
-> 1) The user space process isn't our child, so we can't sys_wait4 on it
-> 2) We need to close the pipe before waiting for the user process to complete,
-> since the user process may rely on an EOF condition
-> 
-> I've discussed several solutions with Oleg Nesterov off-list about this, and
-> this is the one we've come up with. We add ourselves as a pipe reader (to
-> prevent premature cleanup of the pipe_inode_info), and remove ourselves as a
-> writer (to provide an EOF condition to the writer in user space), then we
-> iterate until the user space process exits (which we detect by pipe->readers ==
-> 1, hence the > 1 check in the loop).  When we exit the loop, we restore the
-> proper reader/writer values, then we return and let filp_close in do_coredump
-> clean up the pipe data properly.
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> Reported-by: Earl Chew <earl_chew@agilent.com>
-> 
-> 
->  exec.c |   26 ++++++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
-> 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index 93ab6eb..6b3579e 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -55,6 +55,7 @@
->  #include <linux/kmod.h>
->  #include <linux/fsnotify.h>
->  #include <linux/fs_struct.h>
-> +#include <linux/pipe_fs_i.h>
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index f8189a4..bbd312d 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -1109,10 +1109,6 @@ int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page ***pages)
+>  	int err;
 >  
->  #include <asm/uaccess.h>
->  #include <asm/mmu_context.h>
-> @@ -1711,6 +1712,29 @@ int get_dumpable(struct mm_struct *mm)
->  	return (ret >= 2) ? 2 : ret;
+>  	err = vmap_page_range(addr, end, prot, *pages);
+> -	if (err > 0) {
+> -		*pages += err;
+> -		err = 0;
+> -	}
+>  
+>  	return err;
 >  }
->  
-> +static void wait_for_dump_helpers(struct file *file)
-> +{
-> +	struct pipe_inode_info *pipe;
-> + 
-> +	pipe = file->f_path.dentry->d_inode->i_pipe;
-> + 
-> +	pipe_lock(pipe);
-> +	pipe->readers++;
-> +	pipe->writers--;
-> +
-> +	while ((pipe->readers > 1) && (!signal_pending(current))) {
-> +		wake_up_interruptible_sync(&pipe->wait);
-> +		kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
-> +		pipe_wait(pipe);
-> +	}
-> + 
-> +	pipe->readers--;
-> +	pipe->writers++;
-> +	pipe_unlock(pipe);
-> + 
-> +}
-> + 
-> +
->  void do_coredump(long signr, int exit_code, struct pt_regs *regs)
->  {
->  	struct core_state core_state;
-> @@ -1862,6 +1886,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
->  		current->signal->group_exit_code |= 0x80;
->  
->  close_fail:
-> +	if (ispipe && core_pipe_limit)
-> +		wait_for_dump_helpers(file);
->  	filp_close(file, NULL);
->  fail_dropcount:
->  	if (dump_count)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 > 
+
