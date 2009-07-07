@@ -1,205 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbZGGVYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZGGVZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758152AbZGGVYy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 17:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbZGGVYm
+	id S1758473AbZGGVZi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 17:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZGGVZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 17:24:42 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:37942 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755287AbZGGVYl (ORCPT
+	Tue, 7 Jul 2009 17:25:30 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:33701 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755169AbZGGVZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 17:24:41 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Null Pointer BUG in uhci_hcd
-Date: Tue, 7 Jul 2009 16:24:34 -0500
-User-Agent: KMail/1.9.9
-Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0907071559410.8221-100000@iolanthe.rowland.org> <200907071552.09196.lkml@morethan.org>
-In-Reply-To: <200907071552.09196.lkml@morethan.org>
+	Tue, 7 Jul 2009 17:25:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NCM5oisbBi2ITMEB4BvW5vhBsmkYV1PLkXyANoZfo2kZl2e7X7IIilW717EkG1KEB7
+         khKrkas4EiHFmSZX1xFbfsXWu+VRqQXG2feKTAhsbDY3iS7HJmvmY16vuAaWmcfWyWfT
+         LCA+X4BekRHFZX0nSi0PK2j7XgGARV7K7JhfQ=
+Date: Tue, 7 Jul 2009 23:25:23 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/8] ksym_tracer: Extract trace entry from struct
+	trace_ksym
+Message-ID: <20090707212520.GA7412@nowhere>
+References: <4A52E291.1020408@cn.fujitsu.com> <4A52E2A4.4050007@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907071624.37176.lkml@morethan.org>
+In-Reply-To: <4A52E2A4.4050007@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue July 7 2009, Michael S. Zick wrote:
-> On Tue July 7 2009, Alan Stern wrote:
-> > On Tue, 7 Jul 2009, Michael S. Zick wrote:
-> > 
-> > > Will add that to my list - -
-> > > I need to do that to find/fix that error path message flood loop in ehci anyway.
-> > 
-> > What EHCI message flood?
-> > 
+On Tue, Jul 07, 2009 at 01:52:36PM +0800, Li Zefan wrote:
+> struct trace_ksym is used as an entry in hbp list, and is also
+> used as trace_entry stored in ring buffer.
 > 
-
-Here is an example of the message paths taken - I have another 27Mbytes of the same
-if this snippet isn't enough.
-
-Jun 30 10:25:48 cb01 kernel: usb 1-1: new high speed USB device using ehci_hcd and a
-ddress 5
-Jun 30 10:25:48 cb01 kernel: usb 1-1: New USB device found, idVendor=0930, idProduct
-=6545
-Jun 30 10:25:48 cb01 kernel: usb 1-1: New USB device strings: Mfr=1, Product=2, Seri
-alNumber=3
-Jun 30 10:25:48 cb01 kernel: usb 1-1: Product: USB Flash Memory
-Jun 30 10:25:48 cb01 kernel: usb 1-1: Manufacturer:
-Jun 30 10:25:48 cb01 kernel: usb 1-1: SerialNumber: 5B8204000008
-Jun 30 10:25:48 cb01 kernel: usb 1-1: configuration #1 chosen from 1 choice
-Jun 30 10:25:48 cb01 kernel: scsi3 : SCSI emulation for USB Mass Storage devices
-Jun 30 10:25:48 cb01 kernel: usb-storage: device found at 5
-Jun 30 10:25:48 cb01 kernel: usb-storage: waiting for device to settle before scanni
-ng
-Jun 30 10:25:50 cb01 kernel: usb 1-1: USB disconnect, address 5
-Jun 30 10:38:00 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:02 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:02 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:02 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:04 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:04 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:04 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:06 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:06 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:06 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:08 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:08 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:08 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:10 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:10 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:10 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:12 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:12 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:12 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:14 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:14 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:14 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:16 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:16 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:16 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-
-Jun 30 10:38:16 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:18 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:18 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:18 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:20 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:20 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:20 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:22 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:22 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:22 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:24 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:24 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:24 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:26 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:26 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:26 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:28 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:28 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:28 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:30 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:30 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:30 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:31 cb01 kernel: sd 2:0:0:0: Device offlined - not ready after error recovery
-Jun 30 10:38:32 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:32 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:32 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:34 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:34 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: over-current change on port 1
-Jun 30 10:38:34 cb01 kernel: ehci_hcd 0000:00:10.4: port 1 resume error -19
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: over-current change on port 2
-Jun 30 10:38:34 cb01 kernel: ehci_hcd 0000:00:10.4: port 2 resume error -19
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 2 disabled
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: over-current change on port 3
-Jun 30 10:38:34 cb01 kernel: ehci_hcd 0000:00:10.4: port 3 resume error -19
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 3 disabled
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: over-current change on port 4
-Jun 30 10:38:34 cb01 kernel: ehci_hcd 0000:00:10.4: port 4 resume error -19
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 4 disabled
-Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: over-current change on port 5
-Jun 30 10:38:35 cb01 kernel: ehci_hcd 0000:00:10.4: port 6 resume error -19
-Jun 30 10:38:35 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:35 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:36 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:36 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: over-current change on port 1
-Jun 30 10:38:37 cb01 kernel: ehci_hcd 0000:00:10.4: port 1 resume error -19
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: over-current change on port 2
-Jun 30 10:38:37 cb01 kernel: ehci_hcd 0000:00:10.4: port 2 resume error -19
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 2 disabled
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: over-current change on port 3
-Jun 30 10:38:37 cb01 kernel: ehci_hcd 0000:00:10.4: port 3 resume error -19
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 3 disabled
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: over-current change on port 4
-Jun 30 10:38:37 cb01 kernel: ehci_hcd 0000:00:10.4: port 4 resume error -19
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:37 cb01 kernel: ehci_hcd 0000:00:10.4: port 5 resume error -19
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: over-current change on port 6
-Jun 30 10:38:37 cb01 kernel: usb 1-6: USB disconnect, address 4
-Jun 30 10:38:37 cb01 kernel: ehci_hcd 0000:00:10.4: port 6 resume error -19
-Jun 30 10:38:37 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:37 cb01 kernel: hub 2-0:1.0: over-current change on port 1
-Jun 30 10:38:39 cb01 kernel: __ratelimit: 2 callbacks suppressed
-Jun 30 10:38:39 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
-Jun 30 10:38:39 cb01 kernel: hub 2-0:1.0: over-current change on port 2
-Jun 30 10:38:39 cb01 kernel: hub 1-0:1.0: over-current change on port 1
-Jun 30 10:38:39 cb01 kernel: ehci_hcd 0000:00:10.4: port 1 resume error -19
-Jun 30 10:38:39 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
-Jun 30 10:38:39 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 1 disabled
+> This is not necessary and is a waste of memory in ring buffer.
+> 
+> There is also a bug that dereferencing field->ksym_hbp in
+> ksym_trace_output() can be invalid.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/trace/trace.h      |   13 ++++---------
+>  kernel/trace/trace_ksym.c |   26 ++++++++++++++++++--------
+>  2 files changed, 22 insertions(+), 17 deletions(-)
+> 
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 61b4e94..6868902 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -215,17 +215,12 @@ struct syscall_trace_exit {
+>  #define KSYM_SELFTEST_ENTRY "ksym_selftest_dummy"
+>  extern int process_new_ksym_entry(char *ksymname, int op, unsigned long addr);
+>  
+> -struct trace_ksym {
+> +struct ksym_trace_entry {
+>  	struct trace_entry	ent;
+> -	struct hw_breakpoint	*ksym_hbp;
+> -	unsigned long		ksym_addr;
+>  	unsigned long		ip;
+> -#ifdef CONFIG_PROFILE_KSYM_TRACER
+> -	unsigned long		counter;
+> -#endif
+> -	struct hlist_node	ksym_hlist;
+> +	unsigned char		type;
+>  	char			ksym_name[KSYM_NAME_LEN];
+> -	char			p_name[TASK_COMM_LEN];
+> +	char			cmd[TASK_COMM_LEN];
+>  };
+>  
+>  /*
+> @@ -343,7 +338,7 @@ extern void __ftrace_bad_type(void);
+>  			  TRACE_SYSCALL_ENTER);				\
+>  		IF_ASSIGN(var, ent, struct syscall_trace_exit,		\
+>  			  TRACE_SYSCALL_EXIT);				\
+> -		IF_ASSIGN(var, ent, struct trace_ksym, TRACE_KSYM);	\
+> +		IF_ASSIGN(var, ent, struct ksym_trace_entry, TRACE_KSYM);\
+>  		__ftrace_bad_type();					\
+>  	} while (0)
+>  
+> diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
+> index eef97e7..085ff05 100644
+> --- a/kernel/trace/trace_ksym.c
+> +++ b/kernel/trace/trace_ksym.c
+> @@ -37,6 +37,15 @@
+>  #define KSYM_TRACER_OP_LEN 3 /* rw- */
+>  #define KSYM_FILTER_ENTRY_LEN (KSYM_NAME_LEN + KSYM_TRACER_OP_LEN + 1)
+>  
+> +struct trace_ksym {
+> +	struct hw_breakpoint	*ksym_hbp;
+> +	unsigned long		ksym_addr;
+> +#ifdef CONFIG_PROFILE_KSYM_TRACER
+> +	unsigned long		counter;
+> +#endif
+> +	struct hlist_node	ksym_hlist;
+> +};
+> +
+>  static struct trace_array *ksym_trace_array;
+>  
+>  static unsigned int ksym_filter_entry_count;
+> @@ -71,7 +80,7 @@ void ksym_hbp_handler(struct hw_breakpoint *hbp, struct pt_regs *regs)
+>  {
+>  	struct ring_buffer_event *event;
+>  	struct trace_array *tr;
+> -	struct trace_ksym *entry;
+> +	struct ksym_trace_entry *entry;
+>  	int pc;
+>  
+>  	if (!ksym_tracing_enabled)
+> @@ -85,11 +94,12 @@ void ksym_hbp_handler(struct hw_breakpoint *hbp, struct pt_regs *regs)
+>  	if (!event)
+>  		return;
+>  
+> -	entry = ring_buffer_event_data(event);
+> +	entry		= ring_buffer_event_data(event);
+> +	entry->ip	= instruction_pointer(regs);
+> +	entry->type	= hbp->info.type;
+>  	strlcpy(entry->ksym_name, hbp->info.name, KSYM_SYMBOL_LEN);
+> -	entry->ksym_hbp = hbp;
+> -	entry->ip = instruction_pointer(regs);
+> -	strlcpy(entry->p_name, current->comm, TASK_COMM_LEN);
+> +	strlcpy(entry->cmd, current->comm, TASK_COMM_LEN);
 
 
-> Give me a chance to test what you have already put on my plate.
->
+Ah, I did not realized that the cmdline was that roughly saved.
+It would be more ring-buffer-friendly to use tracing_record_cmdline.
 
-Mike
-> It isn't very interesting - when the driver shuts down a hub
-> for "problems found" (I can't be more specific at the moment)
-> It will try to immediately after resume the hub;
-> Which leads to it taking the hub out of service;
-> Which leads to it trying to resume the hub;
-> etc. etc. etc.
-> That message flood in the error recovery path.
-> 
-> Set: ignore_oc=1 on the command line and that will stop the flood
-> at the first message - but only because it hard-locks the kernel with irq's disabled.
-> 
-> On this machine, the "over current" sense is a false indication -
-> something is not within the expected range.
-> 
-> Thank goodness, no one has asked me to get this kernel certified
-> for life-support use (not possible, the VIA silicon isn't certified either).  ;)
-> 
-> Mike
-> > Alan Stern
-> > 
-> > 
-> > 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
 
+
+> +
+>  #ifdef CONFIG_PROFILE_KSYM_TRACER
+>  	ksym_collect_stats(hbp->info.address);
+>  #endif /* CONFIG_PROFILE_KSYM_TRACER */
+> @@ -380,7 +390,7 @@ static enum print_line_t ksym_trace_output(struct trace_iterator *iter)
+>  {
+>  	struct trace_entry *entry = iter->ent;
+>  	struct trace_seq *s = &iter->seq;
+> -	struct trace_ksym *field;
+> +	struct ksym_trace_entry *field;
+>  	char str[KSYM_SYMBOL_LEN];
+>  	int ret;
+>  
+> @@ -389,12 +399,12 @@ static enum print_line_t ksym_trace_output(struct trace_iterator *iter)
+>  
+>  	trace_assign_type(field, entry);
+>  
+> -	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ", field->p_name,
+> +	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ", field->cmd,
+>  				entry->pid, iter->cpu, field->ksym_name);
+>  	if (!ret)
+>  		return TRACE_TYPE_PARTIAL_LINE;
+>  
+> -	switch (field->ksym_hbp->info.type) {
+> +	switch (field->type) {
+>  	case HW_BREAKPOINT_WRITE:
+>  		ret = trace_seq_printf(s, " W  ");
+>  		break;
+
+
+Thanks!
+
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+Prasad, any objection?
 
