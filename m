@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZGGIoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZGGIss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbZGGIoi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 04:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZGGIob
+	id S1756691AbZGGIss (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 04:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZGGIsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 04:44:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43270 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbZGGIoa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 04:44:30 -0400
-To: rjw@sisk.pl, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jkosina@suse.cz
-Subject: [regression] 2.6.30 leaking keys on console switch
-From: Andi Kleen <andi@firstfloor.org>
-Date: Tue, 07 Jul 2009 10:44:32 +0200
-Message-ID: <87eiss7uhb.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 7 Jul 2009 04:48:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50593 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754258AbZGGIsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 04:48:39 -0400
+Date: Tue, 7 Jul 2009 10:48:41 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [rfc][patch 1/3] fs: new truncate sequence
+Message-ID: <20090707084841.GY2714@wotan.suse.de>
+References: <20090706165438.GQ2714@wotan.suse.de> <20090706172241.GA26042@infradead.org> <20090706174700.GT2714@wotan.suse.de> <1246951751.8143.104.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246951751.8143.104.camel@twins>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 07, 2009 at 09:29:11AM +0200, Peter Zijlstra wrote:
+> On Mon, 2009-07-06 at 19:47 +0200, Nick Piggin wrote:
+> > All good points. I don't know what name to use though -- your idea
+> > of renaming ->truncate then reusing it is nice but people will cry
+> > about breaking external modules. I'll call it ->setsize and defer
+> > having to think about it for now.
+> 
+> Changing the function signature should get them a compiler warning,
+> aside from that I don't think we should really consider their feelings
+> anyway ;-)
 
-One new issue I see in 2.6.30 (I think I saw it in some rc*s) too is
-that console switch often leaks the Fkey of the console switch into the 
-target console.
+Well I don't much, but some people do. Anyway I think ->setsize is
+actually quite a good name on 2nd thoughts ;)
 
-The symptome is that e.g. firefox if it was active and you're switching
-into X displays its help screen (F1 = help). It happens on non X 
-consoles too, but of course the symptoms are different here.
-
-That's a regression against 2.6.29; I don't remember it in .29
-
-Haven't investigated code.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
