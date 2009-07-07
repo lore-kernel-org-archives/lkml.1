@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZGGXyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbZGGXzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758473AbZGGXyZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 19:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757080AbZGGXyR
+	id S1758133AbZGGXzT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 19:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757496AbZGGXzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 19:54:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:18956 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756666AbZGGXyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 19:54:16 -0400
+	Tue, 7 Jul 2009 19:55:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33898 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756198AbZGGXzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 19:55:03 -0400
+Date: Wed, 8 Jul 2009 01:51:49 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Jiri Olsa <jolsa@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com,
+       davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090707235149.GA10268@redhat.com>
+References: <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com> <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com> <20090707140135.GA5506@Krystal> <20090707143416.GB11704@redhat.com> <20090707150406.GC7124@Krystal> <20090707154440.GA15605@redhat.com> <1246981815.9777.12.camel@twins> <20090707194533.GB13858@Krystal> <4A53CFDC.6080005@gmail.com> <20090707232811.GC19217@Krystal>
 MIME-Version: 1.0
-In-Reply-To: <200907072336.14767.florian@openwrt.org>
-References: <200907072336.14767.florian@openwrt.org>
-Date: Wed, 8 Jul 2009 01:54:14 +0200
-Message-ID: <154e089b0907071654o46145717h17ac558aa4d524e0@mail.gmail.com>
-Subject: Re: [PATCH] vlynq: remove duplicated #include
-From: Hannes Eder <hannes@hanneseder.net>
-To: Florian Fainelli <florian@openwrt.org>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090707232811.GC19217@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 7, 2009 at 23:36, Florian Fainelli<florian@openwrt.org> wrote:
-> Remove duplicated #include('s) in drivers/vlynq/vlynq.c
+On 07/07, Mathieu Desnoyers wrote:
+>
+> * Eric Dumazet (eric.dumazet@gmail.com) wrote:
+> >
+> > What would be __read_lock() ? I cant see how it could *not* use lock prefix
+> > actually and or being cheaper...
+> >
+>
+> (I'll use read_lock_noacquire() instead of __read_lock() because
+> __read_lock() is already used for low-level primitives and will produce
+> name clashes. But I recognise that noacquire is just an ugly name.)
+>
+> Here, a __read_lock_noacquire _must_ be followed by a
+> smp__mb_after_lock(), and a __read_unlock_norelease() _must_ be
+> preceded by a smp__mb_before_unlock().
 
-The following little script catches more of these issues, though it
-might be a bit fragile:
+Your point was, smp_mb__after_lock() adds more complexity to the
+barriers/locking rules.
 
-#!/bin/bash
-find . -name "*.c" | \
-while read file; do
-    dblinc=$(grep "^#include <" $file | sort | uniq -c | grep -v "^      1 ")
-    [ "$dblinc" != "" ] && echo $file: $dblinc
-done
+Do you really think __read_lock_noacquire() makes this all more
+simple/understandable? And again, we need __read_lock_irq_noaquire/etc.
 
-when ran from the linux-2.6 src tree, the output is something like
-(lines starting with '#' are my annotations):
+Personally, I disagree. In fact, I do not understand when/why
+_noacquire can be used, but this is another story.
 
-./mm/slab.c: 3 #include <linux/kmalloc_sizes.h>
-# this is a false positive
-./mm/slqb.c: 2 #include <linux/seq_file.h>
-# I did not look a this one
-./mm/shmem.c: 2 #include <linux/vfs.h>
-# this is a hit
-# the rest (about 50 hits) skipped
+Let's look from the different angle. The first patch from Jiri fixes
+the bug. Yes, it is not clear if this is possible to trigger this
+bug in practice, but still nobody disagrees the bug does exist.
+The second patch fixes the added pessimization.
 
-Do you want to investigate this issues?
+So, if you do not agree with these patches, perhaps you can send
+fixes on top of these changes?
 
-Cheers,
-Hannes
+
+
+Sadly, I already removed the previous emails so I can't add my
+acked-by to Jiri's patches. I didn't do this before because I
+thought I am in no position to ack these changes. But looking
+at this discussion, I'd like to vote for both these patches
+anyway ;)
+
+Oleg.
+
