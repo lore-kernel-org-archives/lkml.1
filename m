@@ -1,96 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbZGGIX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZGGIYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901AbZGGIX5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 04:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbZGGIXn
+	id S1756745AbZGGIYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 04:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbZGGIXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 04:23:43 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52978 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753689AbZGGIXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 04:23:41 -0400
-Message-ID: <4A53060C.5010605@cn.fujitsu.com>
-Date: Tue, 07 Jul 2009 16:23:40 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 7 Jul 2009 04:23:53 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:56290 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756440AbZGGIXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 04:23:50 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: liqin.chen@sunplusct.com, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] signals: declare sys_rt_tgsigqueueinfo in syscalls.h
+Date: Tue, 7 Jul 2009 10:23:43 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.30-9-generic; KDE/4.2.95; x86_64; ; )
+References: <OF7F45750A.C485B285-ON482575EC.000B875E-482575EC.000C4628@sunplusct.com>
+In-Reply-To: <OF7F45750A.C485B285-ON482575EC.000B875E-482575EC.000C4628@sunplusct.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] trace_workqueue: add refcnt to struct	cpu_workqueue_stats
-References: <4A51B16F.6010608@cn.fujitsu.com> <4A52E627.10507@cn.fujitsu.com> <20090707080755.GC6173@nowhere>
-In-Reply-To: <20090707080755.GC6173@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <200907071023.44008.arnd@arndb.de>
+Cc: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       liqin.chen@sunplusct.com,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+o6/KBEIl6P1h8TwAxwNqXIhI/5mgvPp0HWg9
+ j0/n8vonNsoMnKCaZFNNl9PCQQqF29MbSj7Onvkqn4Scu1kHtR
+ BZuk5TyiH+B8+oOh4IJvA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Tue, Jul 07, 2009 at 02:07:35PM +0800, Li Zefan wrote:
->>> The stat entries can be freed when the stat file is being read.
->>> The worse is, the ptr can be freed immediately after it's returned
->>> from workqueue_stat_start/next().
->>>
->>> Add a refcnt to struct cpu_workqueue_stats to avoid use-after-free.
->>>
->>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->>> ---
->> ...
->>> @@ -175,11 +184,14 @@ static void *workqueue_stat_next(void *prev, int idx)
->>>  				return NULL;
->>>  		} while (!(ret = workqueue_stat_start_cpu(cpu)));
->>>  		return ret;
->>> +	} else {
->>> +		ret = list_entry(prev_cws->list.next,
->>> +				 struct cpu_workqueue_stats, list);
->> I just realized accessing prev_cws->list.next can be invalid!
->>
->> We can fix it by using list_del_init() to delete cws->list in
->> probe_workqueue_destruction(), but then if the race happened,
->> the next time stat_next() is called, NULL will be returned.
->> I guess this is Ok, since the race is rare.
-> 
-> 
-> If you ensure the kref_get/put are under the
-> workqueue_cpu_stat(cpu)->lock, it should be fine, right?
-> 
+sys_rt_tgsigqueueinfo needs to be declared in linux/syscalls.h so that
+architectures defining the system call table in C can reference it.
 
-Unfortunately no.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-It's safe to dereference prev_cws, but not safe to retreive
-prevw_cws->list.next.
+---
+On Tuesday 07 July 2009, liqin.chen@sunplusct.com wrote:
+> In file included from 
+> /home/score/work-linux/work-kernel/mainline/linux-2.6.git.new2/arch/score/include/asm/unistd.h:6,
+>                  from arch/score/kernel/sys_call_table.c:11:
+> include/asm-generic/unistd.h:622: error: 'sys_rt_tgsigqueueinfo' 
+> undeclared here (not in a f
 
-Suppose: head->n1->n2
-
-T1                      T2
----------------         -------------------
-stat_start()
-  -> return n1
-                        list_del(n1)
-                          -> n1->list->next = LIST_POISON1;
-stat_next()
-  -> prev = n1
-    -> list_entry(prev->list.next) !!!
-
-You see why it's not safe..
-
->  
->> (I never like the design of trace_stat..Fortunately we'll
->> probably switch to perfcounter for this kind of statistics
->> reporting)
-> 
-> 
-> I don't like its design either. I wrote it specifically for
-> the branch tracer and didn't think about free-able events :-/
-> 
-
-Yeah, for free-able events it's buggy to use trace_stat.
-Similar bug exists in ksym_tracer.
-
-Another way to fix it is not use trace_stat but use seq_file
-directly. They don't need to be sorted anyway.
-
-
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index fa4242c..34182de 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -321,6 +321,8 @@ asmlinkage long sys_rt_sigtimedwait(const sigset_t __user *uthese,
+ 				siginfo_t __user *uinfo,
+ 				const struct timespec __user *uts,
+ 				size_t sigsetsize);
++asmlinkage long sys_rt_tgsigqueueinfo(pid_t tgid, pid_t  pid, int sig,
++		siginfo_t __user *uinfo);
+ asmlinkage long sys_kill(int pid, int sig);
+ asmlinkage long sys_tgkill(int tgid, int pid, int sig);
+ asmlinkage long sys_tkill(int pid, int sig);
