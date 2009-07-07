@@ -1,120 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbZGGPM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZGGPRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbZGGPM5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZGGPMs
+	id S1755898AbZGGPRR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZGGPRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:12:48 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:47144 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754292AbZGGPMr convert rfc822-to-8bit (ORCPT
+	Tue, 7 Jul 2009 11:17:08 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:56242 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751605AbZGGPRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:12:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=iPWsVB1eBgnCuZiQIbC7mDfRkhGI5yqGQ+q8+4G/EtbXiqs1p8dHMb0r0RYWxdHR7+
-         QMdAT/KjkWzzQs1ckER056f5y2v0Hw66/3NsCXf19/FXor5vANKTbeNxwqomcxammWCv
-         Dev7hoBlFjvsHCsTbLQmCAFrGW5BoDD2e8Ki0=
-MIME-Version: 1.0
-In-Reply-To: <200907060252.12755.rjw@sisk.pl>
-References: <200907060252.12755.rjw@sisk.pl>
-Date: Wed, 8 Jul 2009 00:12:43 +0900
-Message-ID: <aec7e5c30907070812n7b418c9bobf64a5259cb6c58d@mail.gmail.com>
-Subject: Re: [RFC][PATCH] PM: Introduce core framework for run-time PM of I/O 
-	devices (rev. 8)
-From: Magnus Damm <magnus.damm@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 7 Jul 2009 11:17:07 -0400
+Subject: Possible memory leak in request_firmware()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>, Ming Lei <tom.leiming@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 07 Jul 2009 16:17:00 +0100
+Message-Id: <1246979820.9451.71.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Jul 2009 15:17:01.0105 (UTC) FILETIME=[FA08DA10:01C9FF15]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael,
+Hi,
 
-On Mon, Jul 6, 2009 at 9:52 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> Hi,
->
-> There's a rev. 8 of the run-time PM framework patch.
->
-> Highlights:
-> * I did my best to follow the design we've recently discussed.
-> * pm_runtime_[get|put]() and the sync versions call
->  pm_[request|runtime]_[resume|idle](), because I don't see much point
->  manipulating the usage counter alone.
-> * pm_runtime_disable() carries out a (synchronous) wake-up if there's a
->  resume request pending.
->
-> Comments welcome.
+I get a couple kmemleak reports like below which I think happen on the
+failure path (-ENOENT) of a request_firmware() call:
 
-I've now jumped from v5 to v8 and I feel that the code is getting
-cleaner and cleaner. Very nice.
+unreferenced object 0xc355fdb0 (size 256):
+  comm "NetworkManager", pid 2606, jiffies 4294902882
+  backtrace:
+    [<c01e0c3a>] create_object+0xfa/0x250
+    [<c01e1e7d>] kmemleak_alloc+0x5d/0x70
+    [<c01dac1b>] kmem_cache_alloc+0x14b/0x190
+    [<c03a0c4c>] _request_firmware+0x11c/0x530
+    [<c03a1102>] request_firmware+0x12/0x20
+    [<f95f6591>] iwl_mac_start+0xa1/0x850 [iwlagn]
+    [<f8fb08c1>] ieee80211_open+0x2e1/0x860 [mac80211]
+    [<c048459a>] dev_open+0xba/0x100
+    [<c0483ab9>] dev_change_flags+0x139/0x1d0
+    [<c048d392>] do_setlink+0x282/0x410
+    [<c048ea81>] rtnl_setlink+0xf1/0x130
+    [<c048e285>] rtnetlink_rcv_msg+0x165/0x200
+    [<c049fac6>] netlink_rcv_skb+0x76/0xa0
+    [<c048e10e>] rtnetlink_rcv+0x1e/0x30
+    [<c049f7fb>] netlink_unicast+0x23b/0x250
+    [<c04a02db>] netlink_sendmsg+0x1db/0x2d0
 
-My intention was to post a SuperH prototype last week, but I got side
-tracked with other stuff. And today I ran into some problems related
-to probe() that I'd like to ask about right away. At this point I've
-got a few device drivers converted and some simple bus
-runtime_suspend()/runtime_resume() code that stop and start clocks.
+The f_dev in _request_firmware() is allocated via the fw_setup_device()
+and fw_register_device() calls and its class set to firmware_class (the
+class release function is fw_dev_release).
 
-Issue 1:
-------------
-Device drivers which do not perform any hardware access in probe()
-work fine. During software setup in probe() the runtime pm code is
-initialized with the following:
+Commit 6acf70f078ca replaced the kfree(dev) in fw_dev_release() with a
+put_device() call but my understanding is that the release function is
+called via put_device -> kobject_put -> kref_put -> koject_release etc.
+and it should call kfree since it's the last to see this device
+structure alive.
 
-+	pm_suspend_ignore_children(&dev->dev, true);
-+	pm_runtime_set_suspended(&dev->dev);
-+	pm_runtime_enable(&dev->dev);
+Because of that, the _request_firmware() function on its -ENOENT error
+path only calls device_unregister(f_dev) which would eventually call
+fw_dev_release() but there is no kfree (the subsequent put_device call
+would just make the kref negative).
 
-Before accessing hardware I perform:
-+	pm_runtime_resume(pd->dev);
+The patch below may fix the problem but it's only later tonight that I
+can test it and confirm:
 
-When done with the hardware I do:
-+	pm_runtime_suspend(pd->dev);
 
-Not so complicated. Am I supposed to initialize something else as well?
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index ddeb819..12e6e64 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -357,7 +357,7 @@ static void fw_dev_release(struct device *dev)
+ 	kfree(fw_priv->pages);
+ 	kfree(fw_priv->fw_id);
+ 	kfree(fw_priv);
+-	put_device(dev);
++	kfree(dev);
+ 
+ 	module_put(THIS_MODULE);
+ }
+@@ -407,14 +407,13 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
+ 	retval = device_register(f_dev);
+ 	if (retval) {
+ 		dev_err(device, "%s: device_register failed\n", __func__);
++		kfree(fw_priv->fw_id);
+ 		put_device(f_dev);
+-		goto error_kfree_fw_id;
++		return retval;
+ 	}
+ 	*dev_p = f_dev;
+ 	return 0;
+ 
+-error_kfree_fw_id:
+-	kfree(fw_priv->fw_id);
+ error_kfree:
+ 	kfree(f_dev);
+ 	kfree(fw_priv);
 
-All good with the code above, but there seem to be some issue with how
-usage_count is counted up and down and when runtime_disabled is set:
 
-1. pm_runtime_init(): usage_count = 1, runtime_disabled = true
-2. driver_probe_device(): pm_runtime_get_sync()
-3. pm_runtime_get_sync(): usage_count = 2
-4. device driver probe(): pm_runtime_enable()
-5. pm_runtime_enable(): usage_count = 1
-6. driver_probe_device(): pm_runtime_put()
-7. pm_runtime_put(): usage_count = 0
+-- 
+Catalin
 
-I expect runtime_disabled = false in 7. Modifying the get/put calls to
-do enable/disable may work around the issue, but that's probably not
-what you guys want.
-
-Issue 2:
-------------
-I cannot get any bus ->runtime_resume() callbacks from probe(). This
-also seems related to usage_count and pm_runtime_get_sync() in
-driver_probe_device(). Basically, from probe(), calling
-pm_runtime_resume() after pm_runtime_set_suspended() results in error
-and not in a ->runtime_resume() callback. Some device drives access
-hardware in probe(), so the ->runtime_resume() callback is needed at
-that point to turn on clocks before the hardware can be accessed.
-
-Random thought:
--------------------------
-The runtime_pm_get() and runtime_pm_put() look very nice. I assume
-that inteface is supposed to be used by bus code. I wonder if it would
-be cleaner to use a similar counter based interface from the driver
-instead of the pm_runtime_idle()/suspend()/resume()...
-
-Let me know what you think!
-
-Cheers,
-
-/ magnus
