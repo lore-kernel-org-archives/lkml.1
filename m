@@ -1,59 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758724AbZGGVbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbZGGVfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758724AbZGGVbR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 17:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757875AbZGGVbH
+	id S1758869AbZGGVfF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 17:35:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbZGGVey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 17:31:07 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45736 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757723AbZGGVbG (ORCPT
+	Tue, 7 Jul 2009 17:34:54 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:64713 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755086AbZGGVex (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 17:31:06 -0400
-Subject: Re: Possible memory leak via inotify_add_watch
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1246983847.2866.118.camel@dhcp235-23.rdu.redhat.com>
-References: <b0943d9e0907061503r7a89a4e2lb5bc76b89e3e8ca6@mail.gmail.com>
-	 <1246932571.2866.90.camel@dhcp235-23.rdu.redhat.com>
-	 <1246971833.9451.39.camel@pc1117.cambridge.arm.com>
-	 <1246983847.2866.118.camel@dhcp235-23.rdu.redhat.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 07 Jul 2009 22:30:43 +0100
-Message-Id: <1247002243.5710.3.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Jul 2009 21:30:44.0818 (UTC) FILETIME=[2F9BEB20:01C9FF4A]
+	Tue, 7 Jul 2009 17:34:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YsB77Gt63i7AP/eq0Wm0iTnor4zomtc2lVTBCYpgvcLsFYfRTW2sQ09lftPyeIZdo7
+         TFHC5R4w0wJVll7HJvnczx3u8R0GvH0qfaJkwimXI5dOlx3UksBabHT7rPeL6nXQ7GkB
+         jCS802j3X/u0ilv4XGoYJ19uOkhYLVaDxkwno=
+Date: Tue, 7 Jul 2009 23:34:48 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>, Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH -tip -v10 7/7] tracing: add kprobe-based event tracer
+Message-ID: <20090707213447.GC7412@nowhere>
+References: <20090701010838.32547.62843.stgit@localhost.localdomain> <20090701010923.32547.74203.stgit@localhost.localdomain> <20090707073103.GA6173@nowhere> <4A53A830.3000305@redhat.com> <20090707202008.GE6184@nowhere> <4A53B338.4060803@redhat.com> <20090707205851.GF6184@nowhere> <4A53BEAD.7030404@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A53BEAD.7030404@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-07 at 12:24 -0400, Eric Paris wrote:
-> On Tue, 2009-07-07 at 14:03 +0100, Catalin Marinas wrote:
-> > On Mon, 2009-07-06 at 22:09 -0400, Eric Paris wrote:
-> > > On Mon, 2009-07-06 at 23:03 +0100, Catalin Marinas wrote:
-> > > > Hi Eric,
-> > > > 
-> > > > I'm getting a few kmemleak reports like the one below (it may as well
-> > > > be just a false positive). All of these allocations happened during
-> > > > udevd.
-> > > 
-> > > Any chance you could give this a shot and see if it fixes it up for you?
+On Tue, Jul 07, 2009 at 05:31:25PM -0400, Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+> > On Tue, Jul 07, 2009 at 04:42:32PM -0400, Masami Hiramatsu wrote:
+> >> Frederic Weisbecker wrote:
+> >>> On Tue, Jul 07, 2009 at 03:55:28PM -0400, Masami Hiramatsu wrote:
+> >>>> Frederic Weisbecker wrote:
+> >>>>>> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> >>>>>> index 206cb7d..65945eb 100644
+> >>>>>> --- a/kernel/trace/trace.h
+> >>>>>> +++ b/kernel/trace/trace.h
+> >>>>>> @@ -45,6 +45,8 @@ enum trace_type {
+> >>>>>>  	TRACE_POWER,
+> >>>>>>  	TRACE_BLK,
+> >>>>>>  	TRACE_KSYM,
+> >>>>>> +	TRACE_KPROBE,
+> >>>>>> +	TRACE_KRETPROBE,
+> >>>>>>  
+> >>>>>>  	__TRACE_LAST_TYPE,
+> >>>>>>  };
+> >>>>>> @@ -227,6 +229,22 @@ struct trace_ksym {
+> >>>>>>  	char			ksym_name[KSYM_NAME_LEN];
+> >>>>>>  	char			p_name[TASK_COMM_LEN];
+> >>>>>>  };
+> >>>>>> +#define TRACE_KPROBE_ARGS 6
+> >>>>>> +
+> >>>>>> +struct kprobe_trace_entry {
+> >>>>>> +	struct trace_entry	ent;
+> >>>>>> +	unsigned long		ip;
+> >>>>>> +	int			nargs;
+> >>>>>> +	unsigned long		args[TRACE_KPROBE_ARGS];
+> >>>>>
+> >>>>> I see that you actually make use of arg as a dynamic sizeable
+> >>>>> array.
+> >>>>> For clarity, args[TRACE_KPROBE_ARGS] could be args[0].
+> >>>>>
+> >>>>> It's just a neat and wouldn't affect the code nor the data
+> >>>>> but would be clearer for readers of that code.
+> >>>> Hmm. In that case, I think we'll need a new macro for field
+> >>>> definition, like TRACE_FIELD_ZERO(type, item).
+> >>>
+> >>>
+> >>> You mean that for trace_define_field() to describe fields of events?
+> >>> Actually the fields should be defined dynamically depending on how
+> >>> is built the kprobe event (which arguments are requested, how many,
+> >>> etc..).
+> >> Yeah, if you specified a probe point with its event name, the tracer
+> >> will make a corresponding event dynamically. There are also anonymous
+> >> probes which don't have corresponding events. For those anonymous
+> >> probes, I need to define two generic event types(kprobe and kretprobe).
+> >>
+> >> Thank you,
 > > 
-> > I'll give it a try tonight as it only shows on my home machine. But it
-> > doesn't apply cleanly on 2.6.31-rc2, there is a big hunk in
-> > inotify_update_watch() which fails to apply. Are there other additional
-> > patches needed?
+> > 
+> > Ok. Btw, why do you need to define those two anonymous events?
+> > Actually your event types are always dynamically created.
+> > Those you defined through TRACE_FORMAT_EVENT are only "ghost events",
+> > they only stand there as a abstract pattern, right?
+> > 
 > 
-> http://git.infradead.org/users/eparis/notify.git?a=shortlog;h=refs/heads/for-linus
+> Not always created.
 > 
-> Has 3 patches on top.  I believe only #2 is needed for the memory leak.
+> Below command will create an event "event1";
+> p probe_point:event1 a1 a2 a3 ... > /debug/tracing/kprobe_events
+> 
+> But next command doesn't create.
+> p probe_point a1 a2 a3 ... > /debug/tracing/kprobe_events
 
-I only tested #2 and the leak disappears indeed.
 
--- 
-Catalin
+Aah, ok.
+
+
+> This just inserts a kprobe to probe_point. the advantage of this
+> "simple" command is that you never be annoyed by making different
+> name for new events :-)
+
+
+Indeed.
+But speaking about that, may be you could dynamically create a name
+following this simple model: func+offset
+Unless we can set several kprobes on the exact same address?
 
