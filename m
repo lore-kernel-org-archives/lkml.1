@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbZGGDDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbZGGDSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbZGGDDW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 23:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZGGDDO
+	id S1754888AbZGGDSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 23:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbZGGDSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 23:03:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35078 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754717AbZGGDDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 23:03:14 -0400
-Message-ID: <4A52BAD2.6010702@redhat.com>
-Date: Mon, 06 Jul 2009 23:02:42 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH 4/5] add isolate pages vmstat
-References: <20090707090120.1e71a060.minchan.kim@barrios-desktop>	<20090707090509.0C60.A69D9226@jp.fujitsu.com>	<20090707101855.0C63.A69D9226@jp.fujitsu.com> <20090707104806.6706ac4a.minchan.kim@barrios-desktop>
-In-Reply-To: <20090707104806.6706ac4a.minchan.kim@barrios-desktop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Jul 2009 23:18:24 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:11077 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754230AbZGGDSX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 23:18:23 -0400
+Date: Mon, 06 Jul 2009 23:17:29 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: acpi tree build failure
+In-reply-to: <20090630131645.68c81f0b.sfr@canb.auug.org.au>
+Message-id: <alpine.LFD.2.00.0907062315570.32467@localhost.localdomain>
+References: <20090630131645.68c81f0b.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minchan Kim wrote:
-> It looks good to me. 
-> Thanks for your effort. I added my review sign. :)
+On Tue, 30 Jun 2009, Stephen Rothwell wrote:
+
+> Hi Len,
 > 
-> Let remain one side note. 
-> This accounting feature results from direct reclaim bomb. 
-> If we prevent direct reclaim bomb, I think this feature can be removed. 
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 > 
-> As I know, Rik or Wu is making patch for throttling direct reclaim. 
+>   GEN     /scratch/sfr/powerpc_ppc64_defconfig/Makefile
+> drivers/platform/x86/Kconfig:353:error: found recursive dependency: EEEPC_LAPTOP -> HOTPLUG_PCI -> EEEPC_LAPTOP
+> 
+> Caused by commit 6af05c22969dce2776375953131b56e9f4282848 ("eeepc-laptop:
+> Register as a pci-hotplug device") interacting with commit
+> 44b3615b8cb3b016a49eb7ef4236e77a77793cec ("eeepc-laptop: Fix build
+> failure with HOTPLUG_PCI && !SYSFS") from Linus' tree.  Commit 6af05c2
+> from the acpi tree is the same as commit
+> 2b121bc262fa03c94e653b2d44356c2f86c1bcdc in Linus' tree that 44b3615b is
+> fixing, so I have reverted the drivers/platform/x86/Kconfig part of
+> 6af05c2 for today.
 
-My plan is to build the patch on top of these patches,
-so I'm waiting for them to settle :)
+Sorry I broke your build, Stephen.
 
-Acked-by: Rik van Riel <riel@redhat.com>
+This was an obsolete patch in the acpi-test tree.
+it should be better now.   Thanks for working around it.
 
--- 
-All rights reversed.
+Len Brown, Intel Open Source Technology Center
+
