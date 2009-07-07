@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbZGGPYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZGGPZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756830AbZGGPYc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbZGGPYB
+	id S1756922AbZGGPZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbZGGPZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:24:01 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:32833 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756337AbZGGPYA (ORCPT
+	Tue, 7 Jul 2009 11:25:22 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:39120 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752977AbZGGPZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:24:00 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Null Pointer BUG in uhci_hcd
-Date: Tue, 7 Jul 2009 10:23:21 -0500
-User-Agent: KMail/1.9.9
-Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0907071105561.4175-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0907071105561.4175-100000@iolanthe.rowland.org>
+	Tue, 7 Jul 2009 11:25:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=T0nhASdFD2i142KVVH2WQpwFKufV3b0uY/Ior1rTmbvliigEqsYWBp8eeF5faomnUc
+         GFM5uzKZKQDXSTTOvZCgvgwdAc19rIO9JbZkWEI/OJweJb7dDvjNAm+kDbz9q7/L91zr
+         GPdtufHv+VrTwIZM8Z6NlFVfzyAus2jI0KNYY=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+From: Joao Correia <joaomiguelcorreia@gmail.com>
+Date: Tue, 7 Jul 2009 16:24:58 +0100
+Message-ID: <a5d9929e0907070824o5cc31256jd2d1391b31c29702@mail.gmail.com>
+Subject: [PATCH 0/3] Increase lockdep limits
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, a.p.zijlstra@chello.nl
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907071023.24243.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue July 7 2009, Alan Stern wrote:
-> On Tue, 7 Jul 2009, Oliver Neukum wrote:
-> 
-> > Am Dienstag, 7. Juli 2009 11:13:01 schrieb Jiri Kosina:
-> > > [ adding linux-usb to CC ]
-> > >
-> > > On Sun, 5 Jul 2009, Michael S. Zick wrote:
-> > > > Anyone with suggestions about this one?
-> > 
-> > Looks like we should test for presence before we switch off
-> > autosuspend for khubd. Please test this diagnostic patch if this is
-> > repeatable.
-> 
-> That patch won't fix the problem.  This issue is not that hdev is NULL; 
-> the problem is that the hub driver isn't bound to hdev and as a result, 
-> the hdev_to_hub routine fails.
-> 
-> This patch may work better.
-> 
+Hello
 
-Got it.
-Anything that gives me something other than a dead machine
-with a glowing power-on light is forward progress.
+These patches apply on top of Linus current tree (as of 2.6.31-rc2).
 
-Will give this patch a try today and report back.
+They increase the limits on lockdep usage that have been reported as
+being hit repeatedly, and in most (all?) those reported cases, as
+false positives. Increasing those values will allow for lockdep to
+work as intended, rather than being turned off too early.
 
-At the moment am running the machine without either USB driver loaded.
-Just to see if they are contributing to the problems.
+They can be applied separately, but if you apply them in order, you
+increase all the limits reported as false positive so far, and in the
+order in which they are hit.
 
-Mike
-> Alan Stern
-> 
-> 
-> Index: usb-2.6/drivers/usb/core/hub.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/usb/core/hub.c
-> +++ usb-2.6/drivers/usb/core/hub.c
-> @@ -163,8 +163,10 @@ static inline char *portspeed(int portst
->  }
->  
->  /* Note that hdev or one of its children must be locked! */
-> -static inline struct usb_hub *hdev_to_hub(struct usb_device *hdev)
-> +static struct usb_hub *hdev_to_hub(struct usb_device *hdev)
->  {
-> +	if (!hdev || !hdev->actconfig)
-> +		return NULL;
->  	return usb_get_intfdata(hdev->actconfig->interface[0]);
->  }
->  
-> @@ -385,8 +387,10 @@ static void kick_khubd(struct usb_hub *h
->  
->  void usb_kick_khubd(struct usb_device *hdev)
->  {
-> -	/* FIXME: What if hdev isn't bound to the hub driver? */
-> -	kick_khubd(hdev_to_hub(hdev));
-> +	struct usb_hub *hub = hdev_to_hub(hdev);
-> +
-> +	if (hub)
-> +		kick_khubd(hub);
->  }
->  
->  
-> 
-> 
-> 
+As to the actual changes, its only value-by-value changes, no logic changes.
 
+It has the It-works-for-me stamp.
 
+include/linux/sched.h |    2 +-
+ kernel/lockdep_internals.h |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+(First patches i submit, please hold on the pitchforks and flaming tar)
+
+Thank you very much for your time,
+Joao Correia
