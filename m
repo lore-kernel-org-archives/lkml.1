@@ -1,107 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZGGBjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbZGGBk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbZGGBjw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 21:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZGGBjo
+	id S1755275AbZGGBk7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 21:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZGGBku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 21:39:44 -0400
-Received: from sg2ehsobe005.messaging.microsoft.com ([207.46.51.79]:53346 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752957AbZGGBjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 21:39:44 -0400
-X-SpamScore: -19
-X-BigFish: VPS-19(z34a4jz1432R98dN1805Mzz1202hzzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <4A52A74D.8000005@am.sony.com>
-Date: Mon, 6 Jul 2009 18:39:25 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 6 Jul 2009 21:40:50 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59051 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754093AbZGGBku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 21:40:50 -0400
+Message-ID: <4A52A77E.8050203@cn.fujitsu.com>
+Date: Tue, 07 Jul 2009 09:40:14 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux kernel <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/2] ftrace: Add duration filtering to function graph
- tracer
-References: <4A528769.5020200@am.sony.com> <alpine.DEB.2.00.0907062017510.8813@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0907062017510.8813@gandalf.stny.rr.com>
-Content-Type: text/plain; charset="UTF-8"
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: [PATCH] io-controller: Get rid of css id from io cgroup
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-10-git-send-email-vgoyal@redhat.com> <4A51657B.7000008@cn.fujitsu.com> <20090706141650.GD8279@redhat.com>
+In-Reply-To: <20090706141650.GD8279@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Jul 2009 01:39:25.0857 (UTC) FILETIME=[C2D40910:01C9FEA3]
-X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Mon, 6 Jul 2009, Tim Bird wrote:
-> 
->> Add duration filtering to the function graph tracer.
->>
->> The duration filter value is set in the 'tracing_thresh'
->> pseudo-file.  Values are in microseconds (as is customary
->> for that file).
->>
->> This adds ring_buffer_peek_previous(), used to help
->> remove the function entry event from the trace log,
->> where this is possible.
->>
->> To use:
->>  $ cd <debugfs tracing directory>
->>  $ echo 100 >tracing_thresh
->>  $ echo function_graph >current_tracer
->>  $ cat trace
-> 
-> I see what you are trying to do, but this can be really dangerous. 
-> Remember, the ring buffer is now lockless. This could probably cause some 
-> problems with various races.
+Get rid of css id from io cgroup since it's nothing
+more than keeping track of iocg. An alternative is
+caching iocg pointer in io group, just remove the
+complexity.
 
-That's something I'm worried about.
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ block/elevator-fq.c |   36 ++++++++++++------------------------
+ block/elevator-fq.h |    2 +-
+ 2 files changed, 13 insertions(+), 25 deletions(-)
 
-Note that this patch only uses ring_buffer_peek_previous (which doesn't
-alter anything in the log), and ring_buffer_event_discard(), which should
-be atomic on "blotting out" the entry.  Obviously, a change of page
-contents between the two would make things interesting, but since
-this is in the committed area of a page, that seems really unlikely.
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 7c83d1e..f499b54 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -191,25 +191,19 @@ static inline struct io_group *iog_parent(struct io_group *iog)
+ #ifdef CONFIG_DEBUG_GROUP_IOSCHED
+ static void io_group_path(struct io_group *iog, char *buf, int buflen)
+ {
+-	unsigned short id = iog->iocg_id;
+-	struct cgroup_subsys_state *css;
++	struct io_cgroup *iocg;
++	int ret;
+ 
+ 	rcu_read_lock();
+ 
+-	if (!id)
++	iocg = iog->iocg;
++	if (!iocg)
+ 		goto out;
+ 
+-	css = css_lookup(&io_subsys, id);
+-	if (!css)
+-		goto out;
+-
+-	if (!css_tryget(css))
++	ret = cgroup_path(iocg->css.cgroup, buf, buflen);
++	if (ret)
+ 		goto out;
+ 
+-	cgroup_path(css->cgroup, buf, buflen);
+-
+-	css_put(css);
+-
+ 	rcu_read_unlock();
+ 	return;
+ out:
+@@ -1847,7 +1841,6 @@ struct cgroup_subsys io_subsys = {
+ 	.destroy = iocg_destroy,
+ 	.populate = iocg_populate,
+ 	.subsys_id = io_subsys_id,
+-	.use_id = 1,
+ };
+ 
+ static inline unsigned int iog_weight(struct io_group *iog)
+@@ -1890,7 +1883,7 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
+ 		if (!iog)
+ 			goto cleanup;
+ 
+-		iog->iocg_id = css_id(&iocg->css);
++		iog->iocg = iocg;
+ 
+ 		sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
+ 		iog->dev = MKDEV(major, minor);
+@@ -2201,7 +2194,7 @@ static struct io_group *io_alloc_root_group(struct request_queue *q,
+ 	spin_lock_irq(&iocg->lock);
+ 	rcu_assign_pointer(iog->key, key);
+ 	hlist_add_head_rcu(&iog->group_node, &iocg->group_data);
+-	iog->iocg_id = css_id(&iocg->css);
++	iog->iocg = iocg;
+ 	spin_unlock_irq(&iocg->lock);
+ 
+ #ifdef CONFIG_DEBUG_GROUP_IOSCHED
+@@ -2397,7 +2390,7 @@ remove_entry:
+ 			  group_node);
+ 	efqd = rcu_dereference(iog->key);
+ 	hlist_del_rcu(&iog->group_node);
+-	iog->iocg_id = 0;
++	iog->iocg = NULL;
+ 	spin_unlock_irqrestore(&iocg->lock, flags);
+ 
+ 	spin_lock_irqsave(efqd->queue->queue_lock, flags);
+@@ -2411,7 +2404,6 @@ done:
+ 		kfree(pn);
+ 	}
+ 
+-	free_css_id(&io_subsys, &iocg->css);
+ 	rcu_read_unlock();
+ 	BUG_ON(!hlist_empty(&iocg->group_data));
+ 	kfree(iocg);
+@@ -2427,20 +2419,16 @@ static void io_group_check_and_destroy(struct elv_fq_data *efqd,
+ {
+ 	struct io_cgroup *iocg;
+ 	unsigned long flags;
+-	struct cgroup_subsys_state *css;
+ 
+ 	rcu_read_lock();
+ 
+-	css = css_lookup(&io_subsys, iog->iocg_id);
+-
+-	if (!css)
++	iocg = iog->iocg;
++	if (!iocg)
+ 		goto out;
+ 
+-	iocg = container_of(css, struct io_cgroup, css);
+-
+ 	spin_lock_irqsave(&iocg->lock, flags);
+ 
+-	if (iog->iocg_id) {
++	if (iog->iocg) {
+ 		hlist_del_rcu(&iog->group_node);
+ 		__io_destroy_group(efqd, iog);
+ 	}
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index f089a55..75fee82 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -251,7 +251,7 @@ struct io_group {
+ 	unsigned int busy_rt_queues;
+ 
+ 	int deleting;
+-	unsigned short iocg_id;
++	struct io_cgroup *iocg;
+ 
+ 	/* The device MKDEV(major, minor), this group has been created for */
+ 	dev_t	dev;
+-- 
+1.5.4.rc3 
 
-However, the truly dangerous stuff is in updating the commit pointer.
-(ring_buffer_rewind_tail in patch 2/2).
-
-As near as I can tell, that should be safe when a reader is not
-going at the same time as a writer.  In my use cases, I don't let
-readers and writers go at the same time (that is, the trace is always
-stopped when I'm dumping it.)  I'm not sure if this is an acceptable
-condition to put on use of this feature or not, but it it was found
-to guarantee safeness, it could be enforced via the user interface.
-
-> If you want a duration field in the function graph tracer, perhaps only do 
-> the recording on the exit side. That may be tricky since you would also 
-> need to keep the stack order as well.
-
-This might work.
-
-For a single process, I have calling order in ret_stack.  I also have calltime,
-which should be granular enough to disentangle the call starts for functions
-from different processes.  It might need a post-trace reprocessor to fix up
-the results, though.
-
-> Perhaps implement an auxiliary ring buffer?
-This is a possibility.  Are you thinking of something like double-buffering
-the events?
-
-Another thing I thought of was to not commit the entry event until function
-exit.  I'm not sure the ring buffer supports having an entry outstanding for
-long periods of time, though. This would, I believe, hold readers at the entries for
-the last 'completed' functions, which might solve reader/writer races.
-
-I should add, that although this stuff looks dangerous, it's working pretty
-well for me here.  As a debug tool, I could tolerate the occasional hang.
-I'm not seeing any so far, but to be honest I haven't really pounded hard
-on it yet.
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
 
