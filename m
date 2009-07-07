@@ -1,105 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbZGGPHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZGGPIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbZGGPHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZGGPHK
+	id S1755555AbZGGPIO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbZGGPIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:07:10 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:60290 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752977AbZGGPHI (ORCPT
+	Tue, 7 Jul 2009 11:08:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40450 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754070AbZGGPH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:07:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtkEAM//UkpMQWU3/2dsb2JhbACBUc0ehBMFgTo
-Date: Tue, 7 Jul 2009 11:04:06 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com,
-       davidel@xmailserver.org
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090707150406.GC7124@Krystal>
-References: <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com> <20090703092438.GE3902@elte.hu> <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com> <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com> <20090707140135.GA5506@Krystal> <20090707143416.GB11704@redhat.com>
-Mime-Version: 1.0
+	Tue, 7 Jul 2009 11:07:59 -0400
+Date: Tue, 7 Jul 2009 11:07:58 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
+Message-ID: <20090707150758.GA18075@infradead.org>
+References: <20090707144423.GC2714@wotan.suse.de> <20090707144823.GE2714@wotan.suse.de> <20090707145820.GA9976@infradead.org> <20090707150257.GG2714@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090707143416.GB11704@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:57:19 up 129 days, 11:23,  3 users,  load average: 0.27, 0.74,
-	0.99
+In-Reply-To: <20090707150257.GG2714@wotan.suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Oleg Nesterov (oleg@redhat.com) wrote:
-> On 07/07, Mathieu Desnoyers wrote:
-> >
-> > As with any optimization (and this is one that adds a semantic that will
-> > just grow the memory barrier/locking rule complexity), it should come
-> > with performance benchmarks showing real-life improvements.
+On Tue, Jul 07, 2009 at 05:02:57PM +0200, Nick Piggin wrote:
+> That's kind of why I liked it in inode_setattr better.
 > 
-> Well, the same applies to smp_mb__xxx_atomic_yyy or smp_mb__before_clear_bit.
-> 
-> Imho the new helper is not worse, and it could be also used by
-> try_to_wake_up(), __pollwake(), insert_work() at least.
+> But if the filesystem defines its own ->setattr, then it could simply
+> not define a ->setsize and do the right thing in setattr. So this
+> calling convention seems not too bad.
 
-It's basically related to Amdahl law. If the smp_mb is a small portion
-of the overall read_lock cost, then it may not be worth it to remove it.
-At the contrary, if the mb is a big portion of set/clear bit, then it's
-worth it. We also have to consider the frequency at which these
-operations are done to figure out the overall performance impact.
-Also, locks imply cache-line bouncing, which are typically costly.
-clear/set bit does not imply this as much. So the tradeoffs are very
-different there.
+Or the filesystem could just call into it's own setattr method
+internally.  For that we'd switch back to passing the iattr to
+->setsize.  For a filesystem that doesn't do anything special for
+ATTR_SIZE ->setsize could point to the same function as ->setattr.
 
-So it's not as simple as "we do this for set/clear bit, we should
-therefore do this for locks".
+For filesystem where's it's really different they could be separate or
+share helpers.
 
-> 
-> > Otherwise I'd recommend sticking to smp_mb() if this execution path is
-> > not that critical, or to move to RCU if it's _that_ critical.
-> >
-> > A valid argument would be if the data structures protected are so
-> > complex that RCU is out of question but still the few cycles saved by
-> > removing a memory barrier are really significant.
-> 
-> Not sure I understand how RCU can help,
-> 
-
-Changing a read_lock to a rcu_read_lock would save the whole atomic
-cache-line bouncing operation on that fast path. But it may imply data
-structure redesign. So it is more for future development than current
-kernel releases.
-
-> > And even then, the
-> > proper solution would be more something like a
-> > __read_lock()+smp_mb+smp_mb+__read_unlock(), so we get the performance
-> > improvements on architectures other than x86 as well.
-> 
-> Hmm. could you explain what you mean?
-> 
-
-Actually, thinking about it more, to appropriately support x86, as well
-as powerpc, arm and mips, we would need something like:
-
-read_lock_smp_mb()
-
-Which would be a read_lock with an included memory barrier.
-
-Mathieu
-
-
-> Oleg.
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
