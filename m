@@ -1,59 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbZGGM7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbZGGNAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757269AbZGGM7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 08:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbZGGM7D
+	id S1757082AbZGGNAT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbZGGNAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 08:59:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41770 "EHLO mx2.redhat.com"
+	Tue, 7 Jul 2009 09:00:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41831 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754044AbZGGM7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 08:59:01 -0400
-Date: Tue, 7 Jul 2009 15:58:23 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [KVM PATCH v9 2/2] KVM: add iosignalfd support
-Message-ID: <20090707125823.GA7578@redhat.com>
-References: <20090706202742.14222.65548.stgit@dev.haskins.net> <20090706203321.14222.67866.stgit@dev.haskins.net> <20090707112024.GA3647@redhat.com> <4A533C4C.7020202@novell.com> <20090707124810.GD3647@redhat.com> <4A5345E9.6050502@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5345E9.6050502@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1752650AbZGGNAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 09:00:07 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <s5h8wj1argh.wl%tiwai@suse.de>
+References: <s5h8wj1argh.wl%tiwai@suse.de> <alpine.DEB.2.01.0906211926080.6439@bogon> <6950.1245661098@redhat.com> <s5hvdmos4i8.wl%tiwai@suse.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: dhowells@redhat.com,
+       Linux filesystem caching discussion list 
+	<linux-cachefs@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Linux-cachefs] CacheFiles: Readpage failed on backing file
+Date: Tue, 07 Jul 2009 14:00:06 +0100
+Message-ID: <14931.1246971606@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 03:56:09PM +0300, Avi Kivity wrote:
-> On 07/07/2009 03:48 PM, Michael S. Tsirkin wrote:
->>>>> +
->>>>> +		__kvm_io_bus_unregister_dev(bus,&p->dev);
->>>>> +		iosignalfd_release(p);
->>>>>
->>>>>          
->>>> a single deassign removed multiple irqfds? Looks ugly.
->>>>
->>>>        
->>> Avi requested this general concept.
->>>      
->>
->> Really? Avi, could you explain? I would think each
->> assign needs to be matched with 1 deassign. No?
->>    
->
-> Doesn't it follow naturally?
+Takashi Iwai <tiwai@suse.de> wrote:
 
-Yes.
+> The bug is still present on 2.6.31-rc2.
 
-> How can a single deassign remove multiple  
-> fds (unless all were registered with exactly the same arguments)?
-> Maybe we should instead detect that the duplicate iosignaldfds are  
-> registered.
->
-> Note that we do need to allow the same fd to be multiple times, but not  
-> with exactly the same address/match etc.
+Yeah...  Sorry about that, I ran into another bug that was interfering with my
+ability to test stuff, and so had to run that one down first...  And then
+there was yet another bug - you know how it goes.
 
--- 
-MST
+David
