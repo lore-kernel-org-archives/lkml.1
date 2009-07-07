@@ -1,105 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbZGGIBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbZGGICS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbZGGIBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 04:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZGGIBN
+	id S1756655AbZGGICS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 04:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbZGGIB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 04:01:13 -0400
-Received: from lucidpixels.com ([75.144.35.66]:40257 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754594AbZGGIBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 04:01:12 -0400
-Date: Tue, 7 Jul 2009 04:01:15 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: David Rientjes <rientjes@google.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #13648] nfsd: page allocation failure
-In-Reply-To: <alpine.DEB.2.00.0907062046060.29086@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.0907070400370.26479@p34.internal.lan>
-References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera> <bXZeuxPQAWE.A.BkG.-_oUKB@chimera> <alpine.DEB.2.00.0907062046060.29086@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 7 Jul 2009 04:01:59 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:44914 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754828AbZGGIB6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 04:01:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YiUVlR/sA5XuogH4QP/dnICM86mTpP57As7PgjZiS3odf3yHtDBp1BP2syQlPhFfHp
+         S0p2VkfMi89ALzNzZ0MprhJ/hD3528ghbifxjBonD6GUcg8FwgUguRM+uM2L4h5tD274
+         ZWMxSq2gBukr6nbAms318PXSrVf+gpZz9Izqc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <20090707074243.GA6995@n2100.arm.linux.org.uk>
+References: <63386a3d0905112337p2d426481o5f9bf9b9489cc57e@mail.gmail.com>
+	 <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
+	 <1243151839.26820.642.camel@twins>
+	 <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
+	 <1243256510.26820.679.camel@twins>
+	 <63386a3d0906010046k3b86d70av3e290fc26c2934f5@mail.gmail.com>
+	 <1243933212.23657.5726.camel@twins>
+	 <20090707074243.GA6995@n2100.arm.linux.org.uk>
+Date: Tue, 7 Jul 2009 10:01:58 +0200
+Message-ID: <63386a3d0907070101g51026139rb40635a26a4826a7@mail.gmail.com>
+Subject: Re: [PATCH] U300 sched_clock implementation
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Paul Mundt <lethal@linux-sh.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Tim Bird <tim.bird@am.sony.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adding in Paul M since it was his patch that was supposed to fix up a
+generic solution...
 
-
-On Mon, 6 Jul 2009, David Rientjes wrote:
-
-> On Tue, 7 Jul 2009, Rafael J. Wysocki wrote:
->
->> This message has been generated automatically as a part of a report
->> of regressions introduced between 2.6.29 and 2.6.30.
+2009/7/7 Russell King - ARM Linux <linux@arm.linux.org.uk>:
+> On Tue, Jun 02, 2009 at 11:00:12AM +0200, Peter Zijlstra wrote:
+>> On Mon, 2009-06-01 at 09:46 +0200, Linus Walleij wrote:
+>> > 2009/5/25 Peter Zijlstra <peterz@infradead.org>:
+>> > > On Mon, 2009-05-25 at 14:13 +0200, Linus Walleij wrote:
+>> > >> 2009/5/24 Peter Zijlstra <peterz@infradead.org>:
+>> > >>
+>> > >> > On Sat, 2009-05-23 at 23:46 +0200, Linus Walleij wrote:
+>> > >> >
+>> > >> >> This overrides the global sched_clock() symbol in the Linux
+>> > >> >> scheduler with a local implementation which takes advantage of
+>> > >> >> the timesource in U300 giving a scheduling resolution of 1us. The
+>> > >> >> solution is the same as found in the OMAP2 core code.
+>> > >> >
+>> > >> > We assume sched_clock() to return time in ns (e-9) resolution.
+>> > >>
+>> > >> Yep okay and in this case:
+>> > >>
+>> > >> >> +       ret = (unsigned long long) u300_get_cycles();
+>> > >> >> +       ret = (ret * clocksource_u300_1mhz.mult_orig) >>
+>> > >> >> +               clocksource_u300_1mhz.shift;
+>> > >> >> +       return ret;
+>> > >>
+>> > >> (mult_orig >> shift) == 1000
+>> > >
+>> > > Ah, ok -- missed that little detail ;-)
+>> > >
+>> > >> So for each cycle in cyclecount register we return 1000 * cycles
+>> > >> i.e 1000ns.
+>> > >>
+>> > >> If it looks nicer we can of course simply:
+>> > >> return (unsigned long long) u300_get_cycles * 1000;
+>> > >>
+>> > >> But the question here is whether this resolution is enough for
+>> > >> sched_clock() or if it is irrelevant to override sched_clock()
+>> > >> if it cannot schedule with better precision than 1000 ns.
+>> > >
+>> > > No anything better than jiffies is good, 1us certainly is worth the
+>> > > trouble.
+>> >
+>> > Can I interpret this as Acked-by: Peter Zijlstra <peterz@infradead.org> ?
 >>
->> The following bug entry is on the current list of known regressions
->> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
->> be listed and let me know (either way).
->>
->>
->> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13648
->> Subject		: nfsd: page allocation failure
->> Submitter	: Justin Piszcz <jpiszcz@lucidpixels.com>
->> Date		: 2009-06-22 12:08 (15 days old)
->> References	: http://lkml.org/lkml/2009/6/22/309
->>
+>> I think its best if we continue with the patch Paul Mundt has been
+>> proposing.
 >
-> Here's the last page allocation failure in the bug report:
+> [added Tim Bird to CC]
 >
-> [415964.311165] nfsd: page allocation failure. order:0, mode:0x20
-> [415964.311168] Pid: 2680, comm: nfsd Not tainted 2.6.30 #2
-> [415964.311170] Call Trace:
-> [415964.311171]  <IRQ>  [<ffffffff802849ed>] ? __alloc_pages_internal+0x3dd/0x4e0
-> [415964.311179]  [<ffffffff802a6c77>] ? cache_alloc_refill+0x2d7/0x570
-> [415964.311182]  [<ffffffff802a707d>] ? kmem_cache_alloc+0x8d/0xa0
-> [415964.311185]  [<ffffffff805a6109>] ? __alloc_skb+0x49/0x160
-> [415964.311188]  [<ffffffff805ea846>] ? tcp_send_ack+0x26/0x120
-> [415964.311191]  [<ffffffff805e867d>] ? tcp_rcv_established+0x7bd/0x940
-> [415964.311193]  [<ffffffff805efb1d>] ? tcp_v4_do_rcv+0xdd/0x210
-> [415964.311195]  [<ffffffff805f02d6>] ? tcp_v4_rcv+0x686/0x750
-> ...
-> [415964.311319] Active_anon:154810 active_file:131162 inactive_anon:33447
-> [415964.311320]  inactive_file:690987 unevictable:0 dirty:112116 writeback:0 unstable:0
-> [415964.311321]  free:8662 slab:965366 mapped:9316 pagetables:4618 bounce:0
-> [415964.311325] DMA free:9692kB min:16kB low:20kB high:24kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB present:8668kB pages_scanned:0 all_unreclaimable? yes
-> [415964.311328] lowmem_reserve[]: 0 3246 7980 7980
-> [415964.311333] DMA32 free:21312kB min:6656kB low:8320kB high:9984kB active_anon:118464kB inactive_anon:23908kB active_file:174708kB inactive_file:1206812kB unevictable:0kB present:3324312kB pages_scanned:0 all_unreclaimable? no
-> [415964.311336] lowmem_reserve[]: 0 0 4734 4734
-> [415964.311341] Normal free:3644kB min:9708kB low:12132kB high:14560kB active_anon:500776kB inactive_anon:109880kB active_file:349940kB inactive_file:1557136kB unevictable:0kB present:4848000kB pages_scanned:0 all_unreclaimable? no
-> [415964.311344] lowmem_reserve[]: 0 0 0 0
-> ...
+> So what do we do?  There's apparantly been zero movement on this for
+> over a month, and Tim Bird is reposting his patch adding __notrace
+> to ARMs existing sched_clock implementations.
 >
-> There's simply no memory available in ZONE_NORMAL to satisfy the atomic
-> allocation; you've been able to allocate beyond the 9708K minimum
-> watermark because it's GFP_ATOMIC (and then only to 3641K because of
-> ALLOC_HIGH and ALLOC_HARDER).
+> Given that it seems the generic approach has died a death, I suggest we
+> merge Linus' U300 patch, and get Tim to redo his patch to take account
+> of that, and apply both.
 >
-> 112116 pages, or 438M of memory, is dirty.
+> Then, if the generic approach eventually happens, everything can then be
+> fixed up.
 >
-> [415964.311369] 827035 total pagecache pages
-> [415964.311371] 4728 pages in swap cache
-> [415964.311373] Swap cache stats: add 12746, delete 8018, find 16878/17480
-> [415964.311374] Free swap  = 16756356kB
-> [415964.311375] Total swap = 16787768kB
-> [415964.312141] 2277376 pages RAM
-> [415964.312141] 252254 pages reserved
-> [415964.312141] 546309 pages shared
-> [415964.312141] 1520221 pages non-shared
+> Alternatively, if there is movement on the generic approach...
 >
-> And since you have an 8G machine, that value is only about half of the
-> default dirty_background_ratio setting of 10 to start pdflush from writing
-> it out.
->
-> What is suspect is almost half of your system's memory is consumed by
-> slab.  Have you been able to collect slabtop -o when these failures happen
-> to determine whether this is a duplicate of
-> http://bugzilla.kernel.org/show_bug.cgi?id=13518 ?
+> Discuss.
 >
 
-As of yet, the problem has not recurred, when it does, will pull slabtop 
--o output.
+I would really like to see Pauls work finalized, it looked very promising,
+and I think there was actually a rough consensus about his last patch.
+But I guess that will be in the 2.6.32 merge window earliest?
 
-Justin.
+Yours,
+Linus Walleij
