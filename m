@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbZGGQd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZGGQhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759389AbZGGQd6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758520AbZGGQdl
+	id S1758317AbZGGQhr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 12:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbZGGQhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:33:41 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:37927 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758851AbZGGQdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 12:33:40 -0400
-Date: Tue, 7 Jul 2009 09:33:36 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       trivial <trivial@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 16/22] trivial: fix typo "that that" in multiple files
-Message-ID: <20090707163336.GE6692@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1246976551.3613.33.camel@ht.satnam> <1246975428.3613.10.camel@ht.satnam> <16660.1246981034@redhat.com>
+	Tue, 7 Jul 2009 12:37:40 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:46114 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753445AbZGGQhj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 12:37:39 -0400
+Date: Tue, 7 Jul 2009 12:37:34 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 3/5] Show kernel stack usage to /proc/meminfo and OOM
+ log
+In-Reply-To: <20090705182409.08FC.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0907071234070.5124@gentwo.org>
+References: <20090705181400.08F1.A69D9226@jp.fujitsu.com> <20090705182409.08FC.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <16660.1246981034@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 04:37:14PM +0100, David Howells wrote:
-> Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > -	three states, we know that that CPU has exited any previous RCU
-> > +	three states, we know that CPU has exited any previous RCU
-> 
-> That's probably wrong.  Look at it as "we know that _that_ CPU".
-> 
-> > -likely that that process will submit another request soon, and that
-> > +likely that process will submit another request soon, and that
-> 
-> Ditto.  Most people would actually say two 'that' words here, and the emphasis
-> goes on the second one.
+On Sun, 5 Jul 2009, KOSAKI Motohiro wrote:
 
-Would it be possible to reword as for the RCU example?  The "that that"
-can read awkwardly even for native English (or, for that matter, American)
-speakers, even though it sounds quite natural in spoken English.
+> Subject: [PATCH] Show kernel stack usage to /proc/meminfo and OOM log
+>
+> if the system have a lot of thread, kernel stack consume unignorable large size
+> memory. IOW, it make a lot of unaccountable memory.
+> Tons unaccountable memory bring to harder analyse memory related trouble.
+>
+> Then, kernel stack account is useful.
 
-	"likely that this process will submit another request soon, and that"
+The amount of memory allocated to kernel stacks can become significant and
+cause OOM conditions. However, we do not display the amount of memory
+consumed by stacks.'
 
-							Thanx, Paul
+Add code to display the amount of memory used for stacks in /proc/meminfo.
 
-> > -caches are expected to be coherent, there's no guarantee that that coherency
-> > +caches are expected to be coherent, there's no guarantee that coherency
-> 
-> NAK.  This is correct before.  This doesn't make any sense with the second
-> 'that' removed.
-> 
-> > -        1), and 3 means that that the strategy is always enabled.
-> > +        1), and 3 means that the strategy is always enabled.
-> 
-> This is probably correct.  The second 'that' or the 'the' is wrong because both
-> the second 'that' and the 'the' are trying to specify the strategy.
-> 
-> > -Here we see that that we had a latency of 12 microsecs (which is
-> > +Here we see that we had a latency of 12 microsecs (which is
-> 
-> Correct.
-> 
-> > ...
-> 
-> Various of the remainder are incorrect.
-> 
-> David
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Reviewed-by: <cl@linux-foundation.org>
+
+(It may be useful to also include the stack sizes in the per zone
+information displayed when an OOM occurs).
