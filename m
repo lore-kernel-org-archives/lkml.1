@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbZGGCto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbZGGDDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085AbZGGCto (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 22:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbZGGCte
+	id S1755878AbZGGDDW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 23:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZGGDDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 22:49:34 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:35667
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754134AbZGGCte (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 22:49:34 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #13668] Can't boot 2.6.30 powerpc kernel under qemu.
-Date: Mon, 6 Jul 2009 21:49:34 -0500
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Jeremy Kerr" <jk@ozlabs.org>
-References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera> <bXZeuxPQAWE.A.RDG.3_oUKB@chimera>
-In-Reply-To: <bXZeuxPQAWE.A.RDG.3_oUKB@chimera>
+	Mon, 6 Jul 2009 23:03:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35078 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754717AbZGGDDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 23:03:14 -0400
+Message-ID: <4A52BAD2.6010702@redhat.com>
+Date: Mon, 06 Jul 2009 23:02:42 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Minchan Kim <minchan.kim@gmail.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH 4/5] add isolate pages vmstat
+References: <20090707090120.1e71a060.minchan.kim@barrios-desktop>	<20090707090509.0C60.A69D9226@jp.fujitsu.com>	<20090707101855.0C63.A69D9226@jp.fujitsu.com> <20090707104806.6706ac4a.minchan.kim@barrios-desktop>
+In-Reply-To: <20090707104806.6706ac4a.minchan.kim@barrios-desktop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907062149.35062.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 July 2009 19:01:05 Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13668
-> Subject		: Can't boot 2.6.30 powerpc kernel under qemu.
-> Submitter	: Rob Landley <rob@landley.net>
-> Date		: 2009-06-27 18:08 (10 days old)
-> References	: http://lkml.org/lkml/2009/6/27/159
+Minchan Kim wrote:
+> It looks good to me. 
+> Thanks for your effort. I added my review sign. :)
+> 
+> Let remain one side note. 
+> This accounting feature results from direct reclaim bomb. 
+> If we prevent direct reclaim bomb, I think this feature can be removed. 
+> 
+> As I know, Rik or Wu is making patch for throttling direct reclaim. 
 
-Resolved, it just required a configuration change.
+My plan is to build the patch on top of these patches,
+so I'm waiting for them to settle :)
 
-Rob
+Acked-by: Rik van Riel <riel@redhat.com>
+
 -- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+All rights reversed.
