@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbZGGUYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbZGGUZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758758AbZGGUYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 16:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbZGGUY3
+	id S1758765AbZGGUZZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 16:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbZGGUZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 16:24:29 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:45320 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758290AbZGGUY2 (ORCPT
+	Tue, 7 Jul 2009 16:25:13 -0400
+Received: from easi.embeddedalley.com ([71.6.201.124]:57697 "HELO
+	easi.embeddedalley.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754946AbZGGUZM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 16:24:28 -0400
-Date: Tue, 7 Jul 2009 22:34:13 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, rjw@sisk.pl, stable@kernel.org
-Subject: matroxfb: fix regression with uninitalized fb_info->mm_lock mutex
- (second head)
-Message-Id: <20090707223413.d56c6a7f.krzysztof.h1@poczta.fm>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: cec0b138
+	Tue, 7 Jul 2009 16:25:12 -0400
+From: Vladislav Buzov <vbuzov@embeddedalley.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Containers Mailing List 
+	<containers@lists.linux-foundation.org>,
+       Dan Malek <dan@embeddedalley.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [PATCH 0/1] Memory usage limit notification addition to memcg
+Date: Tue,  7 Jul 2009 13:25:09 -0700
+Message-Id: <1246998310-16764-1-git-send-email-vbuzov@embeddedalley.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1239660512-25468-1-git-send-email-dan@embeddedalley.com>
+References: <1239660512-25468-1-git-send-email-dan@embeddedalley.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+Hello all,
 
-Remove redundant locking by the mm_lock mutex before a second head of matrox 
-framebuffer is registered.
+The following patch introduces memory usage limit notification capability to
+the Memory Controller cgroup. It is a reworked version of a patch sent by Dan
+Malek in April 2009.
 
-This fixes a problem with uninitialized the fb_info->mm_lock mutex introduced 
-by the commit 537a1bf059f " fbdev: add mutex for fb_mmap locking"
+The major difference between this and original patches is a modified method of
+notification threshold setting. The original patch implemented threshold as a
+percentage of the memory controller limit. During following discussion it's
+been decided to change percentage to an absolute number representing the
+minimal amount of memory that should be available below the limit. The
+following patch implements this method along with various clean-ups and style
+changes.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-
----
-
-diff --git a/drivers/video/matrox/matroxfb_crtc2.c b/drivers/video/matrox/matroxfb_crtc2.c
-index 909e10a..6caa369 100644
---- a/drivers/video/matrox/matroxfb_crtc2.c
-+++ b/drivers/video/matrox/matroxfb_crtc2.c
-@@ -289,16 +289,18 @@ static int matroxfb_dh_release(struct fb_info* info, int user) {
- #undef m2info
- }
- 
-+/*
-+ * This function is called before the register_framebuffer so
-+ * no locking is needed.
-+ */
- static void matroxfb_dh_init_fix(struct matroxfb_dh_fb_info *m2info)
- {
- 	struct fb_fix_screeninfo *fix = &m2info->fbcon.fix;
- 
- 	strcpy(fix->id, "MATROX DH");
- 
--	mutex_lock(&m2info->fbcon.mm_lock);
- 	fix->smem_start = m2info->video.base;
- 	fix->smem_len = m2info->video.len_usable;
--	mutex_unlock(&m2info->fbcon.mm_lock);
- 	fix->ypanstep = 1;
- 	fix->ywrapstep = 0;
- 	fix->xpanstep = 8;	/* TBD */
-
-----------------------------------------------------------------------
-Sprawdz promocje ubezpieczen komunikacyjnych w Ergo  Hestia
-http://link.interia.pl/f222c
-
+Thanks,
+Vlad.
