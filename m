@@ -1,48 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbZGGQOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758717AbZGGQPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758376AbZGGQOi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758478AbZGGQOS
+	id S1758717AbZGGQPf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 12:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756934AbZGGQPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:14:18 -0400
-Received: from mail.marco.de ([217.6.149.82]:45554 "HELO mail.marco.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755467AbZGGQOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 12:14:17 -0400
-X-Greylist: delayed 451 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Jul 2009 12:14:16 EDT
-Message-ID: <4A53728B.9020703@marco.de>
-Date: Tue, 07 Jul 2009 18:06:35 +0200
-From: Matthias Pfaller <leo@marco.de>
-Organization: marco Systemanalyse und Entwicklung GmbH
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
-MIME-Version: 1.0
+	Tue, 7 Jul 2009 12:15:25 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:40962 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756421AbZGGQPY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 12:15:24 -0400
+Date: Tue, 7 Jul 2009 12:15:15 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
 To: linux-kernel@vger.kernel.org
-Subject: Bug in dmi_get_year (causing apic not getting enabled)
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Cc: akpm@linux-foundation.org, earl_chew@agilent.com, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, oleg@redhat.com
+Subject: Re: [PATCH 2/3] exec: let do_coredump limit the number of
+	concurrent dumps to pipes (v8)
+Message-ID: <20090707161515.GE28326@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090703104447.GA19371@hmsreliant.think-freely.org> <20090703105129.GC19371@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703105129.GC19371@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Reposting with Oleg Cc'd so he can ACK it
 
-dmi_get_year extracts the year with:
-
-	simple_strtoul(s, NULL, 0);
-
-for biosdates in 2008 and 2009 this will return 0 because 8 and 9 are no 
-valid octal digits. This will e.g. result in the apic not getting enabled.
-Changing this to
-
-	simple_strtoul(s, NULL, 10);
-
-should fix the problem.
-
-regards, Matthias Pfaller
--- 
-Matthias Pfaller                          Software Entwicklung
-marco Systemanalyse und Entwicklung GmbH  Tel   +49 8131 5161 41
-Hans-Böckler-Str. 2, D 85221 Dachau       Fax   +49 8131 5161 66
-http://www.marco.de/                      Email leo@marco.de
-Geschäftsführer Martin Reuter             HRB 171775 Amtsgericht München
+On Fri, Jul 03, 2009 at 06:51:29AM -0400, Neil Horman wrote:
+> core_pattern: Introduce core pipe limiting sysctl
+> 
+> Since we can dump cores to pipe, rather than directly to the filesystem, we
+> create a condition in which a user can create a very high load on the system
+> simply by running bad applications.  If the pipe reader specified in
+> core_pattern is poorly written, we can have lots of ourstandig resources and
+> processes in the system.  This sysctl introduces an ability to limit that
+> resource consumption.  core_pipe_limit defines how many in-flight dumps may be
+> run in parallel, dumps beyond this value are skipped and a note is made in the
+> kernel log.  A special value of 0 in core_pipe_limit denotes unlimited core
+> dumps may be handled (this is the default value).
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> Reported-by: Earl Chew <earl_chew@agilent.com>
+> 
+> 
+>  Documentation/sysctl/kernel.txt |   22 ++++++++++++++++++++++
+>  fs/exec.c                       |   21 +++++++++++++++++----
+>  kernel/sysctl.c                 |    9 +++++++++
+>  3 files changed, 48 insertions(+), 4 deletions(-)
+> 
+> diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
+> index 322a00b..bb226ba 100644
+> --- a/Documentation/sysctl/kernel.txt
+> +++ b/Documentation/sysctl/kernel.txt
+> @@ -21,6 +21,7 @@ show up in /proc/sys/kernel:
+>  - acct
+>  - auto_msgmni
+>  - core_pattern
+> +- core_pipe_limit
+>  - core_uses_pid
+>  - ctrl-alt-del
+>  - dentry-state
+> @@ -119,6 +120,27 @@ core_pattern is used to specify a core dumpfile pattern name.
+>  
+>  ==============================================================
+>  
+> +core_pipe_limit:
+> +
+> +This sysctl is only applicable when core_pattern is configured to pipe core
+> +files to user space helper a (when the first character of core_pattern is a '|',
+> +see above).  When collecting cores via a pipe to an application, it is
+> +occasionally usefull for the collecting application to gather data about the
+> +crashing process from its /proc/pid directory.  In order to do this safely, the
+> +kernel must wait for the collecting process to exit, so as not to remove the
+> +crashing processes proc files prematurely.  This in turn creates the possibility
+> +that a misbehaving userspace collecting process can block the reaping of a
+> +crashed process simply by never exiting.  This sysctl defends against that.  It
+> +defines how many concurrent crashing processes may be piped to user space
+> +applications in parallel.  If this value is exceeded, then those crashing
+> +processes above that value are noted via the kernel log and their cores are
+> +skipped.  0 is a special value, indicating that unlimited processes may be
+> +captured in parallel, but that no waiting will take place (i.e. the collecting
+> +process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
+> +to 0.
+> +
+> +==============================================================
+> +
+>  core_uses_pid:
+>  
+>  The default coredump filename is "core".  By setting
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 9defd20..93ab6eb 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -63,6 +63,7 @@
+>  
+>  int core_uses_pid;
+>  char core_pattern[CORENAME_MAX_SIZE] = "core";
+> +unsigned int core_pipe_limit;
+>  int suid_dumpable = 0;
+>  
+>  /* The maximal length of core_pattern is also specified in sysctl.c */
+> @@ -1726,7 +1727,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
+>  	char **helper_argv = NULL;
+>  	int helper_argc = 0;
+> -	char *delimit;
+> +	int dump_count = 0;
+> +	static atomic_t core_dump_count = ATOMIC_INIT(0);
+>  
+>  	audit_core_dumps(signr);
+>  
+> @@ -1798,21 +1800,29 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  			goto fail_unlock;
+>  		}
+>  
+> +		dump_count = atomic_inc_return(&core_dump_count);
+> +		if (core_pipe_limit && (core_pipe_limit < dump_count)) {
+> +			printk(KERN_WARNING "Pid %d(%s) over core_pipe_limit\n",
+> +			       task_tgid_vnr(current), current->comm);
+> +			printk(KERN_WARNING "Skipping core dump\n");
+> +			goto fail_dropcount;
+> +		}
+> +
+>  		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
+>  		if (!helper_argv) {
+>  			printk(KERN_WARNING "%s failed to allocate memory\n",
+>  			       __func__);
+> -			goto fail_unlock;
+> +			goto fail_dropcount;
+>  		}
+>  
+>  		core_limit = RLIM_INFINITY;
+>  
+>  		/* SIGPIPE can happen, but it's just never processed */
+> - 		if (call_usermodehelper_pipe(corename+1, helper_argv, NULL,
+> + 		if (call_usermodehelper_pipe(helper_argv[0], helper_argv, NULL,
+>  				&file)) {
+>   			printk(KERN_INFO "Core dump to %s pipe failed\n",
+>  			       corename);
+> - 			goto fail_unlock;
+> + 			goto fail_dropcount;
+>   		}
+>  	} else {
+>  		if (core_limit < binfmt->min_coredump)
+> @@ -1853,6 +1863,9 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  
+>  close_fail:
+>  	filp_close(file, NULL);
+> +fail_dropcount:
+> +	if (dump_count)
+> +		atomic_dec(&core_dump_count);
+>  fail_unlock:
+>  	if (helper_argv)
+>  		argv_free(helper_argv);
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 62e4ff9..681052f 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -77,6 +77,7 @@ extern int max_threads;
+>  extern int core_uses_pid;
+>  extern int suid_dumpable;
+>  extern char core_pattern[];
+> +extern unsigned int core_pipe_limit;
+>  extern int pid_max;
+>  extern int min_free_kbytes;
+>  extern int pid_max_min, pid_max_max;
+> @@ -407,6 +408,14 @@ static struct ctl_table kern_table[] = {
+>  		.proc_handler	= &proc_dostring,
+>  		.strategy	= &sysctl_string,
+>  	},
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname	= "core_pipe_limit",
+> +		.data		= &core_pipe_limit,
+> +		.maxlen		= sizeof(unsigned int),
+> +		.mode		= 0644,
+> +		.proc_handler	= &proc_dointvec,
+> +	},
+>  #ifdef CONFIG_PROC_SYSCTL
+>  	{
+>  		.procname	= "tainted",
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
