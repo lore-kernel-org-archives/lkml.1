@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757475AbZGGPjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbZGGPja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757475AbZGGPjT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbZGGPjG
+	id S1758595AbZGGPja (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758338AbZGGPjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:39:06 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:48131 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755627AbZGGPjF (ORCPT
+	Tue, 7 Jul 2009 11:39:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40454 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758445AbZGGPjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:39:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :content-type:content-transfer-encoding;
-        b=oCit2Xcpv8TDwgoKgC9iv1Uer3+M7ect1UuGUpFx+U9yjvK0XjRtCrP9Inag1C1WBx
-         9PO32MVKf8W2gl6hDza/d22w0VGB5fXWbIgorrk3YhmukqYsTDYwUbfb3wiVjQdf/Zwu
-         70dUVpOKYLfx7KDKzghxnAQVi7snUwtxaJAX4=
+	Tue, 7 Jul 2009 11:39:13 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 0/2] Series short description
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Tue, 07 Jul 2009 16:39:16 +0100
+Message-ID: <20090707153625.3642.70750.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <a5d9929e0907070838q7ed3306du3bb7880e47d7207b@mail.gmail.com>
-References: <a5d9929e0907070825j1dda6584t93196e2730dedc5c@mail.gmail.com> 
-	<1246980836.9777.5.camel@twins> <a5d9929e0907070838q7ed3306du3bb7880e47d7207b@mail.gmail.com>
-From: Joao Correia <joaomiguelcorreia@gmail.com>
-Date: Tue, 7 Jul 2009 16:38:41 +0100
-Message-ID: <a5d9929e0907070838m7cf45976p2ab1885c0c5ea756@mail.gmail.com>
-Subject: Fwd: [PATCH 1/3] Increase lockdep limits: MAX_STACK_TRACE_ENTRIES
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(clumsy fingers part 2, forwarding to the list)
+Next couple of fixes. The pty one is a bit more dramatic than I wanted for
+an -rc release but it actually fixes the problem and at this point seems lower
+risk than trying to botch up the existing code temporarily.
+
+Having applied thar you can also then revert
+a6540f731d506d9e82444cf0020e716613d4c46c
+
+There are some USB patches to follow to fix various messes caused by sysrq
+changes (serious performance regression and a kref leak) but I want those in
+-next for a few days first.
+
+---
+
+Alan Cox (2):
+      tty: maintainers data was edited wrongly by someone
+      pty: Rework the pty layer to use the normal buffering logic
 
 
----------- Forwarded message ----------
-From: Joao Correia <joaomiguelcorreia@gmail.com>
-Date: Tue, Jul 7, 2009 at 4:38 PM
-Subject: Re: [PATCH 1/3] Increase lockdep limits: MAX_STACK_TRACE_ENTRIES
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+ MAINTAINERS        |   10 ++-
+ drivers/char/pty.c |  156 ++++++++++++++++++++--------------------------------
+ 2 files changed, 65 insertions(+), 101 deletions(-)
 
+-- 
+My telephone support is a table
 
-Yes. Anything 2.6.31 forward triggers this immediatly during init
-process, at random places.
-
-Joao Correia
-
-On Tue, Jul 7, 2009 at 4:33 PM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
-> On Tue, 2009-07-07 at 16:25 +0100, Joao Correia wrote:
->> (Applies to current Linus tree, as of 2.6.31-rc2)
->>
->> As it stands now, the limit is too low and is being hit by false
->> positives. Increasing its value will allow for more room to work with.
->>
->> This was suggested by Ingo Molnar
->> (http://article.gmane.org/gmane.linux.kernel/852005) but never
->> submitted as a patch, to the best of my knowledge.
->
-> Right, we found a bug in the dma-debug code that generated tons of
-> classes where only 1 was needed, which in turn generated tons of chains
-> and stack entries.
->
-> But that got merged, but you're seeing more of this?
->
->
