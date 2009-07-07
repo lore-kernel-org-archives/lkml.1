@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbZGGWKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbZGGWQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758590AbZGGWKi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 18:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbZGGWKO
+	id S1757338AbZGGWQB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 18:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbZGGWPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 18:10:14 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:48126 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754021AbZGGWKL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 18:10:11 -0400
-Subject: Re: [RFC PATCH 2/3] kmemleak: Add callbacks to the bootmem
-	allocator
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090707165350.GA2782@cmpxchg.org>
-References: <20090706104654.16051.44029.stgit@pc1117.cambridge.arm.com>
-	 <20090706105155.16051.59597.stgit@pc1117.cambridge.arm.com>
-	 <1246950530.24285.7.camel@penberg-laptop>
-	 <20090707165350.GA2782@cmpxchg.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 07 Jul 2009 23:09:46 +0100
-Message-Id: <1247004586.5710.16.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Jul 2009 22:09:48.0429 (UTC) FILETIME=[A48293D0:01C9FF4F]
+	Tue, 7 Jul 2009 18:15:53 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39164 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756551AbZGGWPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 18:15:52 -0400
+Date: Wed, 8 Jul 2009 00:15:45 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: David Howells <dhowells@redhat.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Tony Luck <tony.luck@intel.com>,
+       benh@kernel.crashing.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       mchehab@infradead.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Greg Ungerer <gerg@snapgear.com>, Greg KH <greg@kroah.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Ingo Molnar <mingo@elte.hu>, tytso@mit.edu, sct@redhat.com,
+       Gadiyar Anand <gadiyar@ti.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] [PATCH 0/22] trivial fixes typo "foo foo"
+In-Reply-To: <20090707091148.7bdfcdd3@jbarnes-g45>
+Message-ID: <alpine.LNX.2.00.0907080012350.4994@wotan.suse.de>
+References: <1246975428.3613.10.camel@ht.satnam> <16756.1246981440@redhat.com> <20090707091148.7bdfcdd3@jbarnes-g45>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-07 at 18:53 +0200, Johannes Weiner wrote:
-> On Tue, Jul 07, 2009 at 10:08:50AM +0300, Pekka Enberg wrote:
-> > On Mon, 2009-07-06 at 11:51 +0100, Catalin Marinas wrote:
-> > > @@ -597,7 +601,9 @@ restart:
-> > >  void * __init __alloc_bootmem_nopanic(unsigned long size, unsigned long align,
-> > >  					unsigned long goal)
-> > >  {
-> > > -	return ___alloc_bootmem_nopanic(size, align, goal, 0);
-> > > +	void *ptr =  ___alloc_bootmem_nopanic(size, align, goal, 0);
-> > > +	kmemleak_alloc(ptr, size, 1, GFP_KERNEL);
-> > > +	return ptr;
-> 
-> You may get an object from kzalloc() here, I don't think you want to
-> track that (again), right?
+On Tue, 7 Jul 2009, Jesse Barnes wrote:
 
-You are write, I missed the alloc_arch_preferred_bootmem() function
-which may call kzalloc().
+> What's more, these types of patchsets don't actually improve things in 
+> any real way.  
 
-> Pekka already worked out all the central places to catch 'slab already
-> available' allocations, they can probably help you place the hooks.
-
-It seems that alloc_bootmem_core() is central to all the bootmem
-allocations. Is it OK to place the kmemleak_alloc hook only in this
-function?
-
-diff --git a/mm/bootmem.c b/mm/bootmem.c
-index 5a649a0..74cbb34 100644
---- a/mm/bootmem.c
-+++ b/mm/bootmem.c
-@@ -520,6 +520,7 @@ find_block:
- 		region = phys_to_virt(PFN_PHYS(bdata->node_min_pfn) +
- 				start_off);
- 		memset(region, 0, size);
-+		kmemleak_alloc(region, size, 1, 0);
- 		return region;
- 	}
- 
-
-> > > +	kmemleak_alloc(ptr, size, 1, GFP_KERNEL);
-> 
-> These GFP_KERNEL startled me.  We know for sure that this code runs in
-> earlylog mode only and gfp is unused, right?  Can you perhaps just
-> pass 0 for gfp instead?
-
-Yes, indeed.
-
-Thanks for your comments.
+Just submitting this to trivial@kernel.org should be appropriate and 
+acceptable. But CCing 20 people + LKML on this trvially trivial stuff is 
+really overboard.
 
 -- 
-Catalin
-
+Jiri Kosina
+SUSE Labs
