@@ -1,108 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbZGGNYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZGGNa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757573AbZGGNYR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbZGGNYD
+	id S1757589AbZGGNa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZGGNaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:24:03 -0400
-Received: from mga03.intel.com ([143.182.124.21]:16388 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755297AbZGGNYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:24:02 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,362,1243839600"; 
-   d="scan'208";a="162308208"
-Date: Tue, 7 Jul 2009 21:23:51 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [RFC PATCH 1/2] vmscan don't isolate too many pages
-Message-ID: <20090707132351.GA6075@localhost>
-References: <20090707182947.0C6D.A69D9226@jp.fujitsu.com> <20090707184034.0C70.A69D9226@jp.fujitsu.com>
+	Tue, 7 Jul 2009 09:30:14 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53986 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753175AbZGGNaN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 09:30:13 -0400
+Message-ID: <4A534DD0.7090606@novell.com>
+Date: Tue, 07 Jul 2009 09:29:52 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090707184034.0C70.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Howells <dhowells@redhat.com>
+CC: linux-kernel@vger.kernel.org, mst@redhat.com, swhiteho@redhat.com
+Subject: Re: [PATCH v4] slow-work: add (module*)work->ops->owner to fix races
+ with module clients
+References: <20090629191653.14240.44995.stgit@dev.haskins.net> <15258.1246972893@redhat.com>
+In-Reply-To: <15258.1246972893@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigEB8E3B2C78092FE886DD7728"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 05:47:13PM +0800, KOSAKI Motohiro wrote:
-> Subject: [PATCH] vmscan don't isolate too many pages
-> 
-> If the system have plenty threads or processes, concurrent reclaim can
-> isolate very much pages.
-> 
-> And if other processes isolate _all_ pages on lru, the reclaimer can't find
-> any reclaimable page and it makes accidental OOM.
-> 
-> The solusion is, we should restrict maximum number of isolated pages.
-> (this patch use inactive_page/2)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigEB8E3B2C78092FE886DD7728
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Now I think this is a better solution than per-cpu throttling :)
-Will test it tomorrow.
+David Howells wrote:
+> Gregory Haskins <ghaskins@novell.com> wrote:
+>
+>  =20
+>> +	struct module *owner =3D work->ops->owner;
+>> +
+>> +	work->ops->put_ref(work);
+>> +	module_put(owner);
+>>    =20
+>
+> Hmmm...  There needs to be an smp_mb() between the read of the module o=
+wner
+> and the call to put_ref(), lest the CPU reorder things...  However, if
+> put_ref(), say, calls atomic_dec_and_test(), then inserting one here wo=
+uld be
+> superfluous.
+>
+> I think documenting this will be enough - perhaps something like:
+>
+>  (*) Release a reference on an item:
+>
+> 	void (*put_ref)(struct slow_work *work);
+>
+>      This allows the thread pool to unpin an item by releasing the refe=
+rence on
+>      it.  The thread pool will not touch the item again once this has b=
+een
+>      called.
+>
+>      This function must interpolate a general SMP memory barrier before=
+ freeing
+>      or re-using the work struct as the caller may have read the module=
 
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+>      pointer.  Implying a barrier with something like atomic_dec_and_te=
+st() is
+>      sufficient.
+>
+> Do you agree?
+>
+> David
+>  =20
+Hi David,
+  I agree, and think that looks good.  If you want to just fold that
+into the patch or something, feel free.  Conversely, if you would like
+me to submit a new patch, let me know.
 
-> 
-> FAQ
-> -------
-> Q: Why do you compared zone accumulate pages, not individual zone pages?
-> A: If we check individual zone, #-of-reclaimer is restricted by smallest zone.
->    it mean decreasing the performance of the system having small dma zone.
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/page_alloc.c |   27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
-> 
-> Index: b/mm/page_alloc.c
-> ===================================================================
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1721,6 +1721,28 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
->  	return alloc_flags;
->  }
->  
-> +static bool too_many_isolated(struct zonelist *zonelist,
-> +			      enum zone_type high_zoneidx, nodemask_t *nodemask)
-> +{
-> +	unsigned long nr_inactive = 0;
-> +	unsigned long nr_isolated = 0;
-> +	struct zoneref *z;
-> +	struct zone *zone;
-> +
-> +	for_each_zone_zonelist_nodemask(zone, z, zonelist,
-> +					high_zoneidx, nodemask) {
-> +		if (!populated_zone(zone))
-> +			continue;
-> +
-> +		nr_inactive += zone_page_state(zone, NR_INACTIVE_ANON);
-> +		nr_inactive += zone_page_state(zone, NR_INACTIVE_FILE);
-> +		nr_isolated += zone_page_state(zone, NR_ISOLATED_ANON);
-> +		nr_isolated += zone_page_state(zone, NR_ISOLATED_FILE);
-> +	}
-> +
-> +	return nr_isolated > nr_inactive;
-> +}
-> +
->  static inline struct page *
->  __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
->  	struct zonelist *zonelist, enum zone_type high_zoneidx,
-> @@ -1789,6 +1811,11 @@ rebalance:
->  	if (p->flags & PF_MEMALLOC)
->  		goto nopage;
->  
-> +	if (too_many_isolated(gfp_mask, zonelist, high_zoneidx, nodemask)) {
-> +		schedule_timeout_uninterruptible(HZ/10);
-> +		goto restart;
-> +	}
-> +
->  	/* Try direct reclaim and then allocating */
->  	page = __alloc_pages_direct_reclaim(gfp_mask, order,
->  					zonelist, high_zoneidx,
-> 
+Regards,
+-Greg
+
+
+--------------enigEB8E3B2C78092FE886DD7728
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpTTdYACgkQlOSOBdgZUxn2lACdHulWmVJJ0FpvJR021lqkV6Fd
+euYAmwQAeoulzMvnlkHRnO3sg2DHq+e6
+=/HhC
+-----END PGP SIGNATURE-----
+
+--------------enigEB8E3B2C78092FE886DD7728--
