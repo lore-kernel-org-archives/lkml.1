@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbZGGDSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZGGDcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754888AbZGGDSc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 23:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbZGGDSY
+	id S1756383AbZGGDcA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 23:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZGGDbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 23:18:24 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:11077 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754230AbZGGDSX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 23:18:23 -0400
-Date: Mon, 06 Jul 2009 23:17:29 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: acpi tree build failure
-In-reply-to: <20090630131645.68c81f0b.sfr@canb.auug.org.au>
-Message-id: <alpine.LFD.2.00.0907062315570.32467@localhost.localdomain>
-References: <20090630131645.68c81f0b.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 6 Jul 2009 23:31:51 -0400
+Received: from mga01.intel.com ([192.55.52.88]:53212 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753641AbZGGDbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 23:31:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,360,1243839600"; 
+   d="scan'208";a="705541978"
+Subject: Re: [RFC 7/7] crypto: Add PCLMULQDQ accelerated GHASH
+ implementation
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20090621135121.GA3153@gondor.apana.org.au>
+References: <20090621135121.GA3153@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Tue, 07 Jul 2009 11:31:52 +0800
+Message-Id: <1246937512.5282.99.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009, Stephen Rothwell wrote:
+Hi, Herbert,
 
-> Hi Len,
+On Sun, 2009-06-21 at 21:51 +0800, Herbert Xu wrote:
+> Huang Ying <ying.huang@intel.com> wrote:
+> > PCLMULQDQ is used to accelerate the most time-consuming part of GHASH,
+> > carry-less multiplication. More information about PCLMULQDQ can be
+> > found at:
+> > 
+> > http://software.intel.com/en-us/articles/carry-less-multiplication-and-its-usage-for-computing-the-gcm-mode/
+> > 
+> > Because PCLMULQDQ changes XMM state, its usage must be enclosed with
+> > kernel_fpu_begin/end, which can be used only in process context, the
+> > acceleration is implemented as crypto_ahash. That is, request in soft
+> > IRQ context will be deferred to the cryptd kernel thread.
+> > 
+> > Signed-off-by: Huang Ying <ying.huang@intel.com>
 > 
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> All good.
 > 
->   GEN     /scratch/sfr/powerpc_ppc64_defconfig/Makefile
-> drivers/platform/x86/Kconfig:353:error: found recursive dependency: EEEPC_LAPTOP -> HOTPLUG_PCI -> EEEPC_LAPTOP
-> 
-> Caused by commit 6af05c22969dce2776375953131b56e9f4282848 ("eeepc-laptop:
-> Register as a pci-hotplug device") interacting with commit
-> 44b3615b8cb3b016a49eb7ef4236e77a77793cec ("eeepc-laptop: Fix build
-> failure with HOTPLUG_PCI && !SYSFS") from Linus' tree.  Commit 6af05c2
-> from the acpi tree is the same as commit
-> 2b121bc262fa03c94e653b2d44356c2f86c1bcdc in Linus' tree that 44b3615b is
-> fixing, so I have reverted the drivers/platform/x86/Kconfig part of
-> 6af05c2 for today.
+> So once we fully convert everything to shash, this series can
+> go in with the minor changes mentioned in this thread.
 
-Sorry I broke your build, Stephen.
+What's your plan to convert everything to shash? For 2.6.32? How about
+the progress? What can I do to help?
 
-This was an obsolete patch in the acpi-test tree.
-it should be better now.   Thanks for working around it.
+Best Regards,
+Huang Ying
 
-Len Brown, Intel Open Source Technology Center
 
