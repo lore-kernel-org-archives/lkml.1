@@ -1,48 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbZGGXYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZGGX21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757577AbZGGXYs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 19:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZGGXYk
+	id S1757686AbZGGX21 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 19:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbZGGX2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 19:24:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46609 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753331AbZGGXYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 19:24:39 -0400
-Date: Wed, 8 Jul 2009 01:24:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vince Weaver <vince@deater.net>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] perf_counter: Add p6 PMU
-Message-ID: <20090707232433.GA31234@elte.hu>
-References: <Pine.LNX.4.64.0907071559200.30742@pianoman.cluster.toy>
+	Tue, 7 Jul 2009 19:28:16 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:36829 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755195AbZGGX2P convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 19:28:15 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAFd3U0pMQWU3/2dsb2JhbACBUc4/hAcFgTo
+Date: Tue, 7 Jul 2009 19:28:11 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Oleg Nesterov <oleg@redhat.com>,
+       Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090707232811.GC19217@Krystal>
+References: <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com> <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com> <20090707140135.GA5506@Krystal> <20090707143416.GB11704@redhat.com> <20090707150406.GC7124@Krystal> <20090707154440.GA15605@redhat.com> <1246981815.9777.12.camel@twins> <20090707194533.GB13858@Krystal> <4A53CFDC.6080005@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907071559200.30742@pianoman.cluster.toy>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4A53CFDC.6080005@gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 19:01:34 up 129 days, 19:27,  3 users,  load average: 0.05, 0.18,
+	0.15
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Eric Dumazet (eric.dumazet@gmail.com) wrote:
+> Mathieu Desnoyers a écrit :
+> > * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> >> On Tue, 2009-07-07 at 17:44 +0200, Oleg Nesterov wrote:
+> >>> On 07/07, Mathieu Desnoyers wrote:
+> >>>> Actually, thinking about it more, to appropriately support x86, as well
+> >>>> as powerpc, arm and mips, we would need something like:
+> >>>>
+> >>>> read_lock_smp_mb()
+> >>>>
+> >>>> Which would be a read_lock with an included memory barrier.
+> >>> Then we need read_lock_irq_smp_mb, read_lock_irqsave__smp_mb, write_lock_xxx,
+> >>> otherwise it is not clear why only read_lock() has _smp_mb() version.
+> >>>
+> >>> The same for spin_lock_xxx...
+> >> At which time the smp_mb__{before,after}_{un,}lock become attractive
+> >> again.
+> >>
+> > 
+> > Then having a new __read_lock() (without acquire semantic) which would
+> > be required to be followed by a smp__mb_after_lock() would make sense. I
+> > think this would fit all of x86, powerpc, arm, mips without having to
+> > create tons of new primitives. Only "simpler" ones that clearly separate
+> > locking from memory barriers.
+> > 
+> 
+> Hmm... On x86, read_lock() is :
+> 
+> 	lock subl $0x1,(%eax)
+> 	jns   .Lok
+> 	call	__read_lock_failed
+> .Lok:	ret
+> 
+> 
+> What would be __read_lock() ? I cant see how it could *not* use lock prefix
+> actually and or being cheaper...
+> 
 
-* Vince Weaver <vince@deater.net> wrote:
+(I'll use read_lock_noacquire() instead of __read_lock() because
+__read_lock() is already used for low-level primitives and will produce
+name clashes. But I recognise that noacquire is just an ugly name.)
 
-> OK, so I lied, I found time to throw together a p6 PMU 
-> patch. I've tested it on a Pentium III and it seems to be 
-> working.
+Here, a __read_lock_noacquire _must_ be followed by a
+smp__mb_after_lock(), and a __read_unlock_norelease() _must_ be
+preceded by a smp__mb_before_unlock().
 
-Cool!! I've got some P3 box around somewhere so can try 
-this in a few days.
+x86 :
 
-The patch looks really clean and simple.
+#define __read_lock_noacquire	read_lock
+/* Assumes all __*_lock_noacquire primitives act as a full smp_mb() */
+#define smp__mb_after_lock()
 
-	Ingo
+/* Assumes all __*_unlock_norelease primitives act as a full smp_mb() */
+#define smp__mb_before_unlock()
+#define __read_unlock_norelease	read_unlock
+
+it's that easy :-)
+
+
+however, on powerpc, we have to stop and think about it a bit more:
+
+quoting http://www.linuxjournal.com/article/8212
+
+"lwsync, or lightweight sync, orders loads with respect to subsequent
+loads and stores, and it also orders stores. However, it does not order
+stores with respect to subsequent loads. Interestingly enough, the
+lwsync instruction enforces the same ordering as does the zSeries and,
+coincidentally, the SPARC TSO."
+
+static inline long __read_trylock_noacquire(raw_rwlock_t *rw)
+{
+        long tmp;
+
+        __asm__ __volatile__(
+"1:     lwarx           %0,0,%1\n"
+        __DO_SIGN_EXTEND
+"       addic.          %0,%0,1\n\
+        ble-            2f\n"
+        PPC405_ERR77(0,%1)
+"       stwcx.          %0,0,%1\n\
+        bne-            1b\n\
+        /* isync\n\ Removed the isync because following smp_mb (sync
+         * instruction) includes a core synchronizing barrier. */
+2:"     : "=&r" (tmp)
+        : "r" (&rw->lock)
+        : "cr0", "xer", "memory");
+
+        return tmp;
+}
+
+#define smp__mb_after_lock()	smp_mb()
+
+
+#define smp__mb_before_unlock()	smp_mb()
+
+static inline void __raw_read_unlock_norelease(raw_rwlock_t *rw)
+{
+        long tmp;
+
+        __asm__ __volatile__(
+        "# read_unlock\n\t"
+        /* LWSYNC_ON_SMP -------- can be removed, replace by prior
+         * smp_mb() */
+"1:     lwarx           %0,0,%1\n\
+        addic           %0,%0,-1\n"
+        PPC405_ERR77(0,%1)
+"       stwcx.          %0,0,%1\n\
+        bne-            1b"
+        : "=&r"(tmp)
+        : "r"(&rw->lock)
+        : "cr0", "xer", "memory");
+}
+
+I assume here that lwarx/stwcx pairs for different addresses cannot be
+reordered with other pairs. If they can, then we already have a problem
+with the current powerpc read lock implementation.
+
+I just wrote this as an example to show how this could become a
+performance improvement on architectures different than x86. The code
+proposed above comes without warranty and should be tested with care. :)
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
