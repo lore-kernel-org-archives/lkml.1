@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbZGGVNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbZGGVPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758363AbZGGVNe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 17:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZGGVN0
+	id S1758591AbZGGVPl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 17:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbZGGVPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 17:13:26 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:45387 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753508AbZGGVNZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 17:13:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xr0q3goSqKn1ZXoQXopwnbg2O52hUwJiSviKFB39DWFndoOxj153DKz+GRJrn9faB2
-         +1Ksm/rJe5fYrkfDGFvPrcMVBxGxDt49tmGFV31IzxQYctvfjKGFgOeftntIY//S2ic1
-         bd6JcxFteFmLoUhZ/Zw/tIcucDW8AV7Jygr7c=
+	Tue, 7 Jul 2009 17:15:34 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36331 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755128AbZGGVPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 17:15:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] fix resume from suspend when CONFIG_CC_STACKPROTECTOR
+Date: Tue, 7 Jul 2009 23:15:48 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Sergio Luis <sergio@larces.uece.br>, Ingo Molnar <mingo@elte.hu>,
+       Peter Chubb <peter.chubb@nicta.com.au>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <87r5wt6lsg.wl%peter@chubb.wattle.id.au> <200907071330.36649.rjw@sisk.pl> <alpine.LFD.2.00.0907071407240.19480@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0907071407240.19480@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <200907070040.14796.rjw@sisk.pl>
-References: <4A438BA7.9010800@tuffmail.co.uk>
-	 <8db1092f0906251016l5ac85bfdpbac841b939cfac2a@mail.gmail.com>
-	 <4A43B1FC.7060609@tuffmail.co.uk> <200907070040.14796.rjw@sisk.pl>
-Date: Tue, 7 Jul 2009 23:13:22 +0200
-Message-ID: <8db1092f0907071413s564571f2jc7a5922211535079@mail.gmail.com>
-Subject: Re: 2.6.30-rc1: touchpad disabled on hibernation
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907072315.49393.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/7 Rafael J. Wysocki <rjw@sisk.pl>:
+On Tuesday 07 July 2009, Thomas Gleixner wrote:
+> On Tue, 7 Jul 2009, Rafael J. Wysocki wrote:
+> 
+> > On Tuesday 07 July 2009, Sergio Luis wrote:
+> > > Hi,
+> > > 
+> > > On Tue, Jul 7, 2009 at 3:37 AM, Peter Chubb<peter.chubb@nicta.com.au> wrote:
+> > > >
+> > > > Patch 08687aec71bc9134fe336e561f6did877bacf74fc0a (x86: unify
+> > > > power/cpu_(32|64).c)  renamed cpu_32.c to cpu.c, but did not update
+> > > > the special compilation flags for the file for the new name.
+> > > >
+> > > > This patch fixes the compilation flags, and therefore fixes resume
+> > > > from suspend on my Acer Aspire One.
+> > > >
+> > > 
+> > > yeah, I missed it, sorry for that. Thanks for catching it. CC'ing
+> > > Rafael and Ingo, as they will know the best way to push the fix.
+> > 
+> > Thanks!
+> > 
+> > Ingo, do you want me to handle it?
+> 
+> Yes, please. (Ingo is AFK this week)
 
-> Alan, Maciej, can you both try the patch at
-> http://patchwork.kernel.org/patch/34075/, please?
->
+I'll do that, then.
 
-Sorry for delay.
-
-Patch solves problem. Thanks.
-
-
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Thanks,
+Rafael
