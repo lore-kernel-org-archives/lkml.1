@@ -1,72 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZGGLGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZGGLHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbZGGLGY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 07:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbZGGLGO
+	id S1755973AbZGGLHe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 07:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbZGGLH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 07:06:14 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:63055 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754194AbZGGLGN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 07:06:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Lml62cBcc3MzGIXSv6Rr1ms7t1h+dBKHwPmGgWGJTHnitQeTzXz7/w5ob9iazCLLFR
-         BZPLONIIYbVPkteBIQzbzIOuLGJwW4zajHVPphZCcPBlo7Og9wPuRQg+QOjLF9D6ZMkl
-         SkvN03lkSwvgiJLMrhYB3/nVOg1UVVy0ZvBAY=
+	Tue, 7 Jul 2009 07:07:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:32829 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753108AbZGGLH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 07:07:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Rob Landley <rob@landley.net>
+Subject: Re: [Bug #13668] Can't boot 2.6.30 powerpc kernel under qemu.
+Date: Tue, 7 Jul 2009 13:08:07 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Jeremy Kerr" <jk@ozlabs.org>
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera> <bXZeuxPQAWE.A.RDG.3_oUKB@chimera> <200907062149.35062.rob@landley.net>
+In-Reply-To: <200907062149.35062.rob@landley.net>
 MIME-Version: 1.0
-In-Reply-To: <a5d9929e0907070403n698c9eb9p53a5bb07bafcc169@mail.gmail.com>
-References: <200907031326.21822.andres@anarazel.de> <20090707065014.GA3296@ami.dom.local> 
-	<a5d9929e0907070340y63280508t92e6c7e4ce464994@mail.gmail.com> 
-	<200907071247.16977.andres@anarazel.de> <a5d9929e0907070403n698c9eb9p53a5bb07bafcc169@mail.gmail.com>
-From: Joao Correia <joaomiguelcorreia@gmail.com>
-Date: Tue, 7 Jul 2009 12:05:55 +0100
-Message-ID: <a5d9929e0907070405p63698ec7t5b5fad394533e4a7@mail.gmail.com>
-Subject: Fwd: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( 
-	possibly?caused by netem)
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907071308.08380.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC'ing the list and other listeners, that were left out in the previous email.
+On Tuesday 07 July 2009, Rob Landley wrote:
+> On Monday 06 July 2009 19:01:05 Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.29 and 2.6.30.
+> >
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13668
+> > Subject		: Can't boot 2.6.30 powerpc kernel under qemu.
+> > Submitter	: Rob Landley <rob@landley.net>
+> > Date		: 2009-06-27 18:08 (10 days old)
+> > References	: http://lkml.org/lkml/2009/6/27/159
+> 
+> Resolved, it just required a configuration change.
 
-Joao Correia
+Thanks, closed.
 
-
----------- Forwarded message ----------
-From: Joao Correia <joaomiguelcorreia@gmail.com>
-Date: Tue, Jul 7, 2009 at 12:03 PM
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
-possibly?caused by netem)
-To: Andres Freund <andres@anarazel.de>
-
-
-I dont see the problem with the patch from Jarek. (sorry for not being
-clear about this).
-
-With vanilla 31-rc2 it is still there.
-
-Joao Correia
-
-On Tue, Jul 7, 2009 at 11:47 AM, Andres Freund<andres@anarazel.de> wrote:
-> On Tuesday 07 July 2009 12:40:16 Joao Correia wrote:
->> I am now running 2.6.31-rc2 for a couple of hours, no freeze.
->>
->> Let me know what/if i can help with tracking down the original source
->> of the problem.
-> You dont see the problem anymore with the `echo 0 >
-> /proc/sys/kernel/timer_migration`  change (or equivalently with the patch from
-> Jarek) or has the problem vanished completely?
->
-> Andres
->
+Best,
+Rafael
