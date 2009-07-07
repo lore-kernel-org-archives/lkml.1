@@ -1,107 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZGGPRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZGGPTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbZGGPRR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZGGPRI
+	id S1755865AbZGGPTV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbZGGPTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:17:08 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:56242 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751605AbZGGPRH (ORCPT
+	Tue, 7 Jul 2009 11:19:12 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:35504 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753231AbZGGPTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:17:07 -0400
-Subject: Possible memory leak in request_firmware()
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Ming Lei <tom.leiming@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 07 Jul 2009 16:17:00 +0100
-Message-Id: <1246979820.9451.71.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 7 Jul 2009 11:19:11 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Jul 2009 15:17:01.0105 (UTC) FILETIME=[FA08DA10:01C9FF15]
+Message-ID: <19027.26456.343392.704453@stoffel.org>
+Date: Tue, 7 Jul 2009 11:18:48 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: John Stoffel <john@stoffel.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jens Axboe <Jens.Axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] Make SCSI SG v4 driver enabled by default now since udev
+ depends on it.
+In-Reply-To: <4A53644E.2090205@panasas.com>
+References: <1246978255-19407-1-git-send-email-john@stoffel.org>
+	<4A53644E.2090205@panasas.com>
+X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>>>>> "Boaz" == Boaz Harrosh <bharrosh@panasas.com> writes:
 
-I get a couple kmemleak reports like below which I think happen on the
-failure path (-ENOENT) of a request_firmware() call:
+Boaz> On 07/07/2009 05:50 PM, John Stoffel wrote:
+>> Signed-off-by: John Stoffel <john@stoffel.org>
+>> ---
+>> block/Kconfig |    6 +++---
+>> 1 files changed, 3 insertions(+), 3 deletions(-)
+>> 
+>> diff --git a/block/Kconfig b/block/Kconfig
+>> index e7d1278..22bf6eb 100644
+>> --- a/block/Kconfig
+>> +++ b/block/Kconfig
+>> @@ -46,8 +46,8 @@ config LBD
+>> 
+>> config BLK_DEV_BSG
+>> bool "Block layer SG support v4 (EXPERIMENTAL)"
 
-unreferenced object 0xc355fdb0 (size 256):
-  comm "NetworkManager", pid 2606, jiffies 4294902882
-  backtrace:
-    [<c01e0c3a>] create_object+0xfa/0x250
-    [<c01e1e7d>] kmemleak_alloc+0x5d/0x70
-    [<c01dac1b>] kmem_cache_alloc+0x14b/0x190
-    [<c03a0c4c>] _request_firmware+0x11c/0x530
-    [<c03a1102>] request_firmware+0x12/0x20
-    [<f95f6591>] iwl_mac_start+0xa1/0x850 [iwlagn]
-    [<f8fb08c1>] ieee80211_open+0x2e1/0x860 [mac80211]
-    [<c048459a>] dev_open+0xba/0x100
-    [<c0483ab9>] dev_change_flags+0x139/0x1d0
-    [<c048d392>] do_setlink+0x282/0x410
-    [<c048ea81>] rtnl_setlink+0xf1/0x130
-    [<c048e285>] rtnetlink_rcv_msg+0x165/0x200
-    [<c049fac6>] netlink_rcv_skb+0x76/0xa0
-    [<c048e10e>] rtnetlink_rcv+0x1e/0x30
-    [<c049f7fb>] netlink_unicast+0x23b/0x250
-    [<c04a02db>] netlink_sendmsg+0x1db/0x2d0
+Boaz> Please also remove the (EXPERIMENTAL) from the prompt as well
 
-The f_dev in _request_firmware() is allocated via the fw_setup_device()
-and fw_register_device() calls and its class set to firmware_class (the
-class release function is fw_dev_release).
+Duh... sorry for this oversight.  I'll respin the patch ASAP.
 
-Commit 6acf70f078ca replaced the kfree(dev) in fw_dev_release() with a
-put_device() call but my understanding is that the release function is
-called via put_device -> kobject_put -> kref_put -> koject_release etc.
-and it should call kfree since it's the last to see this device
-structure alive.
+>> -	depends on EXPERIMENTAL
+>> -	---help---
+>> +	default y
+>> +	help
+>> Saying Y here will enable generic SG (SCSI generic) v4 support
+>> for any block device.
+>> 
+>> @@ -57,7 +57,7 @@ config BLK_DEV_BSG
+>> protocols (e.g. Task Management Functions and SMP in Serial
+>> Attached SCSI).
+>> 
+>> -	  If unsure, say N.
+>> +	  If unsure, say Y.
+>> 
+>> config BLK_DEV_INTEGRITY
+>> bool "Block layer data integrity support"
 
-Because of that, the _request_firmware() function on its -ENOENT error
-path only calls device_unregister(f_dev) which would eventually call
-fw_dev_release() but there is no kfree (the subsequent put_device call
-would just make the kref negative).
+Boaz> Thanks I needed that too.
 
-The patch below may fix the problem but it's only later tonight that I
-can test it and confirm:
+Boaz> BTW distro(s) have been shipping with it on for ages
 
+I ran into this since I was trying to get Udev to properly find and
+name my tape drives, and it wasn't until I finally figured out that
+BSG wasn't enabled on any of my systems that I got around to getting
+it working properly.
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index ddeb819..12e6e64 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -357,7 +357,7 @@ static void fw_dev_release(struct device *dev)
- 	kfree(fw_priv->pages);
- 	kfree(fw_priv->fw_id);
- 	kfree(fw_priv);
--	put_device(dev);
-+	kfree(dev);
- 
- 	module_put(THIS_MODULE);
- }
-@@ -407,14 +407,13 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
- 	retval = device_register(f_dev);
- 	if (retval) {
- 		dev_err(device, "%s: device_register failed\n", __func__);
-+		kfree(fw_priv->fw_id);
- 		put_device(f_dev);
--		goto error_kfree_fw_id;
-+		return retval;
- 	}
- 	*dev_p = f_dev;
- 	return 0;
- 
--error_kfree_fw_id:
--	kfree(fw_priv->fw_id);
- error_kfree:
- 	kfree(f_dev);
- 	kfree(fw_priv);
+I've also put in a patch to the UDEV people to mention that this
+should be turned on to make Udev work properly.
 
-
--- 
-Catalin
-
+John
