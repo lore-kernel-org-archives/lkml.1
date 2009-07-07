@@ -1,41 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756931AbZGGI3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbZGGIhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756931AbZGGI3c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 04:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754792AbZGGI3Y
+	id S1757183AbZGGIhu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 04:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbZGGIhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 04:29:24 -0400
-Received: from viefep19-int.chello.at ([62.179.121.39]:33884 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754318AbZGGI3Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 04:29:24 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 2/2] perf_counter: add support to the 'perf' tool for
- tracepoints
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Jason Baron <jbaron@redhat.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
-       rostedt@goodmis.org, fweisbec@gmail.com
-In-Reply-To: <0d7326e18b9860fbf8fb2739f90a23eb9262e24b.1246912068.git.jbaron@redhat.com>
-References: <cover.1246912068.git.jbaron@redhat.com>
-	 <0d7326e18b9860fbf8fb2739f90a23eb9262e24b.1246912068.git.jbaron@redhat.com>
-Content-Type: text/plain
-Date: Tue, 07 Jul 2009 10:29:20 +0200
-Message-Id: <1246955360.8143.113.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Jul 2009 04:37:40 -0400
+Received: from smtp.df.ru ([195.42.160.16]:55955 "EHLO smtp.df.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753194AbZGGIhk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 04:37:40 -0400
+Date: Tue, 7 Jul 2009 12:38:53 +0400
+From: Alexey Vlasov <renton@renton.name>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: devpts mounts too slowly
+Message-ID: <20090707083853.GC7484@beaver.vrungel.ru>
+References: <20090603142801.GC21646@beaver.vrungel.ru> <4A26EB18.6060907@zytor.com> <20090609161945.811cc01f.akpm@linux-foundation.org> <2c0942db0906091630l1cc79647h8689e9e929ed1bba@mail.gmail.com> <4A2EF833.6080300@zytor.com> <20090706195252.GA7484@beaver.vrungel.ru> <4A526AEF.3070407@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <4A526AEF.3070407@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-06 at 17:12 -0400, Jason Baron wrote:
-> Add support to 'perf list' and 'perf stat' for kernel tracepoints. The
-> implementation creates a 'for_each_subsystem' and 'for_each_event' for
-> easy iteration over the tracepoints. The debugfs filesystem must be mounted
-> at '/sys/kernel/debug'. We can add an optional search path in the future.
+On Mon, Jul 06, 2009 at 02:21:51PM -0700, H. Peter Anvin wrote:
+>
+> Do you have /selinux mounted on one of them?
 
-I don't have a single machine that has that mount point.
+I don't use SELinux anywhere.
 
-
+-- 
+BRGDS. Alexey Vlasov.
