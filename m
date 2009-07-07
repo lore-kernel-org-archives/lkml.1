@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZGGCb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbZGGCh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755903AbZGGCb3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 22:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZGGCbV
+	id S1755904AbZGGCh6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 22:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZGGCht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 22:31:21 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:58655 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753731AbZGGCbV (ORCPT
+	Mon, 6 Jul 2009 22:37:49 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:31156 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753027AbZGGChs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 22:31:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=CMnjGQvsFEcp/0zW9NmqkNtbP+kpNDDAKRZwJSuHUVNuByacjE95e7/SAwSKQvmMh7
-         61gEc5MCLDfPd122k7gq3RyCOKRSUd6ctOHorP0Roc28jJS3+jNyDPzVi9uuSlZyoGiu
-         Yt3GHYKdQxAgKO1vnrQqno7o3mLLYWnslAfIw=
-Date: Tue, 7 Jul 2009 11:31:13 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 4/5] add isolate pages vmstat
-Message-Id: <20090707113113.84cf1347.minchan.kim@barrios-desktop>
-In-Reply-To: <20090707111030.0C69.A69D9226@jp.fujitsu.com>
-References: <20090707101855.0C63.A69D9226@jp.fujitsu.com>
-	<20090707104806.6706ac4a.minchan.kim@barrios-desktop>
-	<20090707111030.0C69.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Jul 2009 22:37:48 -0400
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Jul 2009 22:37:48 EDT
+X-SpamScore: -29
+X-BigFish: VPS-29(z34a4jz1432R98dN1447R1805Mzz1202hzzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4A52B155.2080000@am.sony.com>
+Date: Mon, 6 Jul 2009 19:22:13 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux kernel <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/2] ftrace: Add duration filtering to function graph
+ tracer
+References: <4A528769.5020200@am.sony.com> <alpine.DEB.2.00.0907062017510.8813@gandalf.stny.rr.com> <4A52A74D.8000005@am.sony.com> <alpine.DEB.2.00.0907062212370.8813@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0907062212370.8813@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Jul 2009 02:22:14.0326 (UTC) FILETIME=[BDC14D60:01C9FEA9]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  7 Jul 2009 11:12:33 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> > It looks good to me. 
-> > Thanks for your effort. I added my review sign. :)
-> > 
-> > Let remain one side note. 
-> > This accounting feature results from direct reclaim bomb. 
-> > If we prevent direct reclaim bomb, I think this feature can be removed. 
+Steven Rostedt wrote:
+> On Mon, 6 Jul 2009, Tim Bird wrote:
+>> Another thing I thought of was to not commit the entry event until function
+>> exit.  I'm not sure the ring buffer supports having an entry outstanding for
+>> long periods of time, though. This would, I believe, hold readers at the entries for
+>> the last 'completed' functions, which might solve reader/writer races.
 > 
-> Hmmm. I disagree.
-> isolated pages can become more than >1GB on server systems.
-> Who want >1GB unaccountable memory?
+> Heh, I doubt that would be acceptable. The problem is that between reserve 
+> and commit, we disable preemption. Thus every function (even the scheduler 
+> itself) would have preemption disabled ;-)
 
-I am okay if it happens without reclaim bomb on server system which 
-have a lot of memory as you said.  
+Doh!  I think I saw that, but only had a vague recollection of it.
+Yeah, that would be a problem ;-)
 
--- 
-Kind regards,
-Minchan Kim
+I'll give the issues some more thought, and see if I can come
+up with something.
+
+Thanks for the feedback.
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
+
