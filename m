@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbZGGQVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759370AbZGGQV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbZGGQVI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759232AbZGGQUt
+	id S1759370AbZGGQV1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 12:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759254AbZGGQVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:20:49 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:19730 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759265AbZGGQUs convert rfc822-to-8bit (ORCPT
+	Tue, 7 Jul 2009 12:21:15 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:39212 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757669AbZGGQVN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 12:20:48 -0400
+	Tue, 7 Jul 2009 12:21:13 -0400
 MIME-Version: 1.0
-Message-ID: <e6d4c2a1-65f1-4488-8ea7-e1ee0fe35a1d@default>
-Date: Tue, 7 Jul 2009 09:18:36 -0700 (PDT)
+Message-ID: <e5a93cf7-c24c-4bfe-bc4c-c24eb8e0290d@default>
+Date: Tue, 7 Jul 2009 09:18:18 -0700 (PDT)
 From: Dan Magenheimer <dan.magenheimer@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
@@ -23,7 +23,7 @@ Cc: npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
        sunil.mushran@oracle.com, Avi Kivity <avi@redhat.com>,
        Schwidefsky <schwidefsky@de.ibm.com>, chris.mason@oracle.com,
        Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [RFC PATCH 4/4] (Take 2): tmem: Build Xen interface under tmem layer
+Subject: [RFC PATCH 1/4] (Take 2): tmem: Core API between kernel and tmem
 X-Priority: 3
 X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
  9.0.0.6627]
@@ -31,241 +31,387 @@ Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 8BIT
 X-Source-IP: abhmt006.oracle.com [141.146.116.15]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4A537589.0201:SCFSTAT5015188,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090207.4A537577.0216:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tmem [PATCH 4/4] (Take 2): Build Xen interface under tmem layer.
+Tmem [PATCH 1/4] (Take 2): Core API between kernel and tmem
 
-Interface kernel tmem API to a Xen hypercall implementation of tmem
-that conforms to the published Transcendent Memory API.
+Declares tmem_ops accessors and initializes them to be no-ops
+(returning -ENOSYS).  By itself, this API is useless; it requires
+a layer such as precache and/or preswap (or similar) on top to
+make use of the API and a layer below to declare non-no-op tmem
+accessors that interface to a tmem implementation (e.g. Xen hypercalls).
+(Many thanks to Jeremy Fitzhardinge for suggesting this approach.)
 
 Signed-off-by: Dan Magenheimer <dan.magenheimer@oracle.com>
 
 
- arch/x86/include/asm/xen/hypercall.h     |    8 +
- drivers/xen/Makefile                     |    1 
- drivers/xen/tmem.c                       |   97 +++++++++++++++++++++
- include/xen/interface/tmem.h             |   43 +++++++++
- include/xen/interface/xen.h              |   22 ++++
- 5 files changed, 171 insertions(+)
+ Documentation/transcendent-memory.txt    |  175 +++++++++++++++++++++
+ include/linux/tmem.h                     |   88 ++++++++++
+ mm/Kconfig                               |   10 +
+ mm/Makefile                              |    1 
+ mm/tmem.c                                |   62 +++++++
+ 5 files changed, 336 insertions(+)
 
---- linux-2.6.30/arch/x86/include/asm/xen/hypercall.h	2009-06-09 21:05:27.000000000 -0600
-+++ linux-2.6.30-tmem/arch/x86/include/asm/xen/hypercall.h	2009-06-19 13:49:04.000000000 -0600
-@@ -45,6 +45,7 @@
- #include <xen/interface/xen.h>
- #include <xen/interface/sched.h>
- #include <xen/interface/physdev.h>
-+#include <xen/interface/tmem.h>
- 
- /*
-  * The hypercall asms have to meet several constraints:
-@@ -417,6 +418,13 @@ HYPERVISOR_nmi_op(unsigned long op, unsi
- 	return _hypercall2(int, nmi_op, op, arg);
- }
- 
-+static inline int
-+HYPERVISOR_tmem_op(
-+	struct tmem_op *op)
-+{
-+	return _hypercall1(int, tmem_op, op);
-+}
-+
- static inline void
- MULTI_fpu_taskswitch(struct multicall_entry *mcl, int set)
- {
---- linux-2.6.30/drivers/xen/Makefile	2009-06-09 21:05:27.000000000 -0600
-+++ linux-2.6.30-tmem/drivers/xen/Makefile	2009-06-19 09:33:59.000000000 -0600
-@@ -3,5 +3,6 @@ obj-y	+= xenbus/
- 
- obj-$(CONFIG_HOTPLUG_CPU)	+= cpu_hotplug.o
- obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
-+obj-$(CONFIG_TMEM)		+= tmem.o
- obj-$(CONFIG_XEN_BALLOON)	+= balloon.o
- obj-$(CONFIG_XENFS)		+= xenfs/
-\ No newline at end of file
---- linux-2.6.30/include/xen/interface/tmem.h	1969-12-31 17:00:00.000000000 -0700
-+++ linux-2.6.30-tmem/include/xen/interface/tmem.h	2009-06-19 11:21:24.000000000 -0600
-@@ -0,0 +1,43 @@
+--- linux-2.6.30/include/linux/tmem.h	1969-12-31 17:00:00.000000000 -0700
++++ linux-2.6.30-tmem/include/linux/tmem.h	2009-06-23 14:37:24.000000000 -0600
+@@ -0,0 +1,88 @@
 +/*
-+ * include/xen/interface/tmem.h
++ * linux/tmem.h
 + *
-+ * Interface to Xen implementation of transcendent memory
++ * Interface to transcendent memory
 + *
-+ * Copyright (C) 2009 Dan Magenheimer, Oracle Corp.
++ * Copyright (C) 2008,2009 Dan Magenheimer, Oracle Corp.
 + */
 +
-+#include <xen/interface/xen.h>
++#include <linux/errno.h>
 +
-+#define TMEM_CONTROL               0
-+#define TMEM_NEW_POOL              1
-+#define TMEM_DESTROY_POOL          2
-+#define TMEM_NEW_PAGE              3
-+#define TMEM_PUT_PAGE              4
-+#define TMEM_GET_PAGE              5
-+#define TMEM_FLUSH_PAGE            6
-+#define TMEM_FLUSH_OBJECT          7
-+#define TMEM_READ                  8
-+#define TMEM_WRITE                 9
-+#define TMEM_XCHG                 10
++struct tmem_pool_uuid {
++	u64 uuid_lo;
++	u64 uuid_hi;
++};
 +
-+/* Subops for HYPERVISOR_tmem_op(TMEM_CONTROL) */
-+#define TMEMC_THAW                 0
-+#define TMEMC_FREEZE               1
-+#define TMEMC_FLUSH                2
-+#define TMEMC_DESTROY              3
-+#define TMEMC_LIST                 4
-+#define TMEMC_SET_WEIGHT           5
-+#define TMEMC_SET_CAP              6
-+#define TMEMC_SET_COMPRESS         7
++#define TMEM_POOL_PRIVATE_UUID	{ 0, 0 }
 +
-+/* Bits for HYPERVISOR_tmem_op(TMEM_NEW_POOL) */
++struct tmem_ops {
++	int (*new_pool)(struct tmem_pool_uuid uuid, u32 flags);
++	int (*put_page)(u32 pool_id, u64 object, u32 index, unsigned long gmfn);
++	int (*get_page)(u32 pool_id, u64 object, u32 index, unsigned long gmfn);
++	int (*flush_page)(u32 pool_id, u64 object, u32 index);
++	int (*flush_object)(u32 pool_id, u64 object);
++	int (*destroy_pool)(u32 pool_id);
++};
++
++extern struct tmem_ops *tmem_ops;
++extern void tmem_set_ops(struct tmem_ops *ops);
++
++/* flags for tmem_ops.new_pool */
 +#define TMEM_POOL_PERSIST          1
 +#define TMEM_POOL_SHARED           2
-+#define TMEM_POOL_PAGESIZE_SHIFT   4
-+#define TMEM_POOL_PAGESIZE_MASK  0xf
-+#define TMEM_POOL_VERSION_SHIFT   24
-+#define TMEM_POOL_VERSION_MASK  0xff
 +
-+/* Special errno values */
-+#define EFROZEN                 1000
-+#define EEMPTY                  1001
---- linux-2.6.30/include/xen/interface/xen.h	2009-06-09 21:05:27.000000000 -0600
-+++ linux-2.6.30-tmem/include/xen/interface/xen.h	2009-07-06 15:47:24.000000000 -0600
-@@ -58,6 +58,7 @@
- #define __HYPERVISOR_event_channel_op     32
- #define __HYPERVISOR_physdev_op           33
- #define __HYPERVISOR_hvm_op               34
-+#define __HYPERVISOR_tmem_op              38
- 
- /* Architecture-specific hypercall definitions. */
- #define __HYPERVISOR_arch_0               48
-@@ -461,6 +462,27 @@ typedef uint8_t xen_domain_handle_t[16];
- #define __mk_unsigned_long(x) x ## UL
- #define mk_unsigned_long(x) __mk_unsigned_long(x)
- 
-+struct tmem_op {
-+	uint32_t cmd;
-+	int32_t pool_id;
-+	union {
-+		struct {  /* for cmd == TMEM_NEW_POOL */
-+			uint64_t uuid[2];
-+			uint32_t flags;
-+		} new;
-+		struct {
-+			uint64_t object;
-+			uint32_t index;
-+			uint32_t tmem_offset;
-+			uint32_t pfn_offset;
-+			uint32_t len;
-+			GUEST_HANDLE(void) gmfn; /* guest machine page frame */
-+		} gen;
-+	} u;
-+};
-+typedef struct tmem_op tmem_op_t;
-+DEFINE_GUEST_HANDLE_STRUCT(tmem_op_t);
++static inline int tmem_new_pool(struct tmem_pool_uuid uuid, u32 flags)
++{
++	int ret = -ENOSYS;
++#ifdef CONFIG_TMEM
++	ret = (*tmem_ops->new_pool)(uuid, flags);
++#endif
++	return ret;
++}
 +
- #else /* __ASSEMBLY__ */
- 
- /* In assembly code we cannot use C numeric constant suffixes. */
---- linux-2.6.30/drivers/xen/tmem.c	1969-12-31 17:00:00.000000000 -0700
-+++ linux-2.6.30-tmem/drivers/xen/tmem.c	2009-06-23 19:30:06.000000000 -0600
-@@ -0,0 +1,97 @@
++static inline int tmem_put_page(u32 pool_id, u64 object, u32 index,
++	unsigned long gmfn)
++{
++	int ret = -ENOSYS;
++#ifdef CONFIG_TMEM
++	ret = (*tmem_ops->put_page)(pool_id, object, index, gmfn);
++#endif
++	return ret;
++}
++
++static inline int tmem_get_page(u32 pool_id, u64 object, u32 index,
++	unsigned long gmfn)
++{
++	int ret = -ENOSYS;
++#ifdef CONFIG_TMEM
++	ret = (*tmem_ops->get_page)(pool_id, object, index, gmfn);
++#endif
++	return ret;
++}
++
++static inline int tmem_flush_page(u32 pool_id, u64 object, u32 index)
++{
++	int ret = -ENOSYS;
++#ifdef CONFIG_TMEM
++	ret = (*tmem_ops->flush_page)(pool_id, object, index);
++#endif
++	return ret;
++}
++
++static inline int tmem_flush_object(u32 pool_id, u64 object)
++{
++	int ret = -ENOSYS;
++#ifdef CONFIG_TMEM
++	ret = (*tmem_ops->flush_object)(pool_id, object);
++#endif
++	return ret;
++}
++
++static inline int tmem_destroy_pool(u32 pool_id)
++{
++	int ret = -ENOSYS;
++#ifdef CONFIG_TMEM
++	ret = (*tmem_ops->destroy_pool)(pool_id);
++#endif
++	return ret;
++}
+--- linux-2.6.30/mm/tmem.c	1969-12-31 17:00:00.000000000 -0700
++++ linux-2.6.30-tmem/mm/tmem.c	2009-06-24 09:54:05.000000000 -0600
+@@ -0,0 +1,62 @@
 +/*
-+ * Xen implementation for transcendent memory (tmem)
++ * Default implementation for transcendent memory (tmem)
 + *
-+ * Dan Magenheimer <dan.magenheimer@oracle.com> 2009
++ * Copyright (C) 2008, 2009 Dan Magenheimer, Oracle Corp.
 + */
 +
-+#include <linux/kernel.h>
 +#include <linux/types.h>
-+#include <linux/errno.h>
 +#include <linux/init.h>
++#include <linux/errno.h>
 +#include <linux/tmem.h>
-+#include <xen/interface/xen.h>
-+#include <xen/interface/tmem.h>
-+#include <asm/xen/hypercall.h>
-+#include <asm/xen/page.h>
++#include <linux/bug.h>
 +
-+static inline int xen_tmem_op(u32 tmem_cmd, u32 tmem_pool, u64 object,
-+	u32 index, unsigned long gmfn, u32 tmem_offset, u32 pfn_offset, u32 len)
++static int default_tmem_new_pool(struct tmem_pool_uuid uuid, u32 flags)
 +{
-+	struct tmem_op op;
-+	int rc = 0;
-+
-+	op.cmd = tmem_cmd;
-+	op.pool_id = tmem_pool;
-+	op.u.gen.object = object;
-+	op.u.gen.index = index;
-+	op.u.gen.tmem_offset = tmem_offset;
-+	op.u.gen.pfn_offset = pfn_offset;
-+	op.u.gen.len = len;
-+	set_xen_guest_handle(op.u.gen.gmfn, (void *)gmfn);
-+	rc = HYPERVISOR_tmem_op(&op);
-+	return rc;
++	return -ENOSYS;
 +}
 +
-+static int xen_tmem_new_pool(struct tmem_pool_uuid uuid, u32 flags)
++static int default_tmem_put_page(u32 pool_id, u64 object, u32 index,
++	unsigned long gmfn)
 +{
-+	struct tmem_op op;
-+	int rc = 0;
-+
-+	flags |= (PAGE_SHIFT - 12) << TMEM_POOL_PAGESIZE_SHIFT;
-+	op.cmd = TMEM_NEW_POOL;
-+	op.u.new.uuid[0] = uuid.uuid_lo;
-+	op.u.new.uuid[1] = uuid.uuid_hi;
-+	op.u.new.flags = flags;
-+	rc = HYPERVISOR_tmem_op(&op);
-+	return rc;
++	return -ENOSYS;
 +}
 +
-+static int xen_tmem_put_page(u32 pool_id, u64 object, u32 index,
-+	unsigned long pfn)
++static int default_tmem_get_page(u32 pool_id, u64 object, u32 index,
++	unsigned long gmfn)
 +{
-+	unsigned long gmfn = pfn_to_mfn(pfn);
-+
-+	return xen_tmem_op(TMEM_PUT_PAGE, pool_id, object, index,
-+		gmfn, 0, 0, 0);
++	return -ENOSYS;
 +}
 +
-+static int xen_tmem_get_page(u32 pool_id, u64 object, u32 index,
-+	unsigned long pfn)
++static int default_tmem_flush_page(u32 pool_id, u64 object, u32 index)
 +{
-+	unsigned long gmfn = pfn_to_mfn(pfn);
-+
-+	return xen_tmem_op(TMEM_GET_PAGE, pool_id, object, index,
-+		gmfn, 0, 0, 0);
++	return -ENOSYS;
 +}
 +
-+static int xen_tmem_flush_page(u32 pool_id, u64 object, u32 index)
++static int default_tmem_flush_object(u32 pool_id, u64 object)
 +{
-+	return xen_tmem_op(TMEM_FLUSH_PAGE, pool_id, object, index,
-+		0, 0, 0, 0);
++	return -ENOSYS;
 +}
 +
-+static int xen_tmem_flush_object(u32 pool_id, u64 object)
++static int default_tmem_destroy_pool(u32 pool_id)
 +{
-+	return xen_tmem_op(TMEM_FLUSH_OBJECT, pool_id, object, 0, 0, 0, 0, 0);
++	return -ENOSYS;
 +}
 +
-+static int xen_tmem_destroy_pool(u32 pool_id)
-+{
-+	return xen_tmem_op(TMEM_DESTROY_POOL, pool_id, 0, 0, 0, 0, 0, 0);
-+}
-+
-+static struct tmem_ops xen_tmem_ops = {
-+	.new_pool = xen_tmem_new_pool,
-+	.put_page = xen_tmem_put_page,
-+	.get_page = xen_tmem_get_page,
-+	.flush_page = xen_tmem_flush_page,
-+	.flush_object = xen_tmem_flush_object,
-+	.destroy_pool = xen_tmem_destroy_pool
++static struct tmem_ops default_tmem_ops = {
++	.new_pool = default_tmem_new_pool,
++	.put_page = default_tmem_put_page,
++	.get_page = default_tmem_get_page,
++	.flush_page = default_tmem_flush_page,
++	.flush_object = default_tmem_flush_object,
++	.destroy_pool = default_tmem_destroy_pool
 +};
 +
-+static int __init xen_tmem_init(void)
++struct tmem_ops *tmem_ops = &default_tmem_ops;
++
++void __init tmem_set_ops(struct tmem_ops *ops)
 +{
-+	tmem_set_ops(&xen_tmem_ops);
-+	return 0;
++	/* should only ever be set once */
++	WARN_ON(tmem_ops != &default_tmem_ops);
++
++	tmem_ops = ops;
 +}
-+core_initcall(xen_tmem_init);
+--- linux-2.6.30/mm/Kconfig	2009-06-09 21:05:27.000000000 -0600
++++ linux-2.6.30-tmem-tmem/mm/Kconfig	2009-07-06 16:36:31.000000000 -0600
+@@ -253,3 +253,13 @@ config NOMMU_INITIAL_TRIM_EXCESS
+ 	  of 1 says that all excess pages should be trimmed.
+ 
+ 	  See Documentation/nommu-mmap.txt for more information.
++
++#
++# support for transcendent memory
++#
++config TMEM
++	bool "Transcendent memory support"
++	help
++	  In a virtualized environment, allows unused and underutilized
++	  system physical memory to be made accessible through a narrow
++	  well-defined page-copy-based API.
+--- linux-2.6.30/mm/Makefile	2009-06-09 21:05:27.000000000 -0600
++++ linux-2.6.30-tmem-tmem/mm/Makefile	2009-07-06 16:36:52.000000000 -0600
+@@ -16,6 +16,7 @@ obj-y			:= bootmem.o filemap.o mempool.o
+ obj-$(CONFIG_PROC_PAGE_MONITOR) += pagewalk.o
+ obj-$(CONFIG_BOUNCE)	+= bounce.o
+ obj-$(CONFIG_SWAP)	+= page_io.o swap_state.o swapfile.o thrash.o
++obj-$(CONFIG_TMEM)	+= tmem.o
+ obj-$(CONFIG_HAS_DMA)	+= dmapool.o
+ obj-$(CONFIG_HUGETLBFS)	+= hugetlb.o
+ obj-$(CONFIG_NUMA) 	+= mempolicy.o
+--- linux-2.6.30/Documentation/transcendent-memory.txt	1969-12-31 17:00:00.000000000 -0700
++++ linux-2.6.30-tmem/Documentation/transcendent-memory.txt	2009-07-07 10:03:18.000000000 -0600
+@@ -0,0 +1,175 @@
++Normal memory is directly addressable by the kernel, of a known
++normally-fixed size, synchronously accessible, and persistent (though
++not across a reboot).
++
++What if there was a class of memory that is of unknown and dynamically
++variable size, is addressable only indirectly by the kernel, can be
++configured either as persistent or as "ephemeral" (meaning it will be
++around for awhile, but might disappear without warning), and is still
++fast enough to be synchronously accessible?
++
++We call this latter class "transcendent memory" and it provides an
++interesting opportunity to more efficiently utilize RAM in a virtualized
++environment.  However this "memory but not really memory" may also have
++applications in NON-virtualized environments, such as hotplug-memory
++deletion, SSDs, and page cache compression.  Others have suggested ideas
++such as allowing use of highmem memory without a highmem kernel, or use
++of spare video memory.
++
++Transcendent memory, or "tmem" for short, provides a well-defined API to
++access this unusual class of memory.  (A summary of the API is provided
++below.)  The basic operations are page-copy-based and use a flexible
++object-oriented addressing mechanism.  Tmem assumes that some "privileged
++entity" is capable of executing tmem requests and storing pages of data;
++this entity is currently a hypervisor and operations are performed via
++hypercalls, but the entity could be a kernel policy, or perhaps a
++"memory node" in a cluster of blades connected by a high-speed
++interconnect such as hypertransport or QPI.
++
++Since tmem is not directly accessible and because page copying is done
++to/from physical pageframes, it more suitable for in-kernel memory needs
++than for userland applications.  However, there may be yet undiscovered
++userland possibilities.
++
++With the tmem concept outlined vaguely and its broader potential hinted,
++we will overview two existing examples of how tmem can be used by the
++kernel.
++
++"Precache" can be thought of as a page-granularity victim cache for clean
++pages that the kernel's pageframe replacement algorithm (PFRA) would like
++to keep around, but can't since there isn't enough memory.   So when the
++PFRA "evicts" a page, it first puts it into the precache via a call to
++tmem.  And any time a filesystem reads a page from disk, it first attempts
++to get the page from precache.  If it's there, a disk access is eliminated.
++If not, the filesystem just goes to the disk like normal.  Precache is
++"ephemeral" so whether a page is kept in precache (between the "put" and
++the "get") is dependent on a number of factors that are invisible to
++the kernel.
++
++"Preswap" IS persistent, but for various reasons may not always be
++available for use, again due to factors that may not be visible to the
++kernel (but, briefly, if the kernel is being "good" and has shared its
++resources nicely, then it will be able to use preswap, else it will not).
++Once a page is put, a get on the page will always succeed.  So when the
++kernel finds itself in a situation where it needs to swap out a page, it
++first attempts to use preswap.  If the put works, a disk write and
++(usually) a disk read are avoided.  If it doesn't, the page is written
++to swap as usual.  Unlike precache, whether a page is stored in preswap
++vs swap is recorded in kernel data structures, so when a page needs to
++be fetched, the kernel does a get if it is in preswap and reads from
++swap if it is not in preswap.
++
++Both precache and preswap may be optionally compressed, trading off 2x
++space reduction vs 10x performance for access.  Precache also has a
++sharing feature, which allows different nodes in a "virtual cluster"
++to share a local page cache.
++
++Tmem has some similarity to IBM's Collaborative Memory Management, but
++creates more of a partnership between the kernel and the "privileged
++entity" and is not very invasive.  Tmem may be applicable for KVM and
++containers; there is some disagreement on the extent of its value.
++Tmem is highly complementary to ballooning (aka page granularity hot
++plug) and memory deduplication (aka transparent content-based page
++sharing) but still has value when neither are present.
++
++Performance is difficult to quantify because some benchmarks respond
++very favorably to increases in memory and tmem may do quite well on
++those, depending on how much tmem is available which may vary widely
++and dynamically, depending on conditions completely outside of the
++system being measured.  Ideas on how best to provide useful metrics
++would be appreciated.
++
++Tmem is now supported in Xen's unstable tree (targeted for the Xen 3.5
++release) and in Xen's Linux 2.6.18-xen source tree.  Again, Xen is not
++necessarily a requirement, but currently provides the only existing
++implementation of tmem.
++
++Lots more information about tmem can be found at:
++http://oss.oracle.com/projects/tmem and there will be
++a talk about it on the first day of Linux Symposium in July 2009.
++Tmem is the result of a group effort, including Dan Magenheimer,
++Chris Mason, Dave McCracken, Kurt Hackel and Zhigang Wang, with helpful
++input from Jeremy Fitzhardinge, Keir Fraser, Ian Pratt, Sunil Mushran,
++Joel Becker, and Jan Beulich.
++
++THE TRANSCENDENT MEMORY API
++
++Transcendent memory is made up of a set of pools.  Each pool is made
++up of a set of objects.  And each object contains a set of pages.
++The combination of a 32-bit pool id, a 64-bit object id, and a 32-bit
++page id, uniquely identify a page of tmem data, and this tuple is called
++a "handle." Commonly, the three parts of a handle are used to address
++a filesystem, a file within that filesystem, and a page within that file;
++however an OS can use any values as long as they uniquely identify
++a page of data.
++
++When a tmem pool is created, it is given certain attributes: It can
++be private or shared, and it can be persistent or ephemeral.  Each
++combination of these attributes provides a different set of useful
++functionality and also defines a slightly different set of semantics
++for the various operations on the pool.  Other pool attributes include
++the size of the page and a version number.
++
++Once a pool is created, operations are performed on the pool.  Pages
++are copied between the OS and tmem and are addressed using a handle.
++Pages and/or objects may also be flushed from the pool.  When all
++operations are completed, a pool can be destroyed.
++
++The specific tmem functions are called in Linux through a set of 
++accessor functions:
++
++int (*new_pool)(struct tmem_pool_uuid uuid, u32 flags);
++int (*destroy_pool)(u32 pool_id);
++int (*put_page)(u32 pool_id, u64 object, u32 index, unsigned long pfn);
++int (*get_page)(u32 pool_id, u64 object, u32 index, unsigned long pfn);
++int (*flush_page)(u32 pool_id, u64 object, u32 index);
++int (*flush_object)(u32 pool_id, u64 object);
++
++The new_pool accessor creates a new pool and returns a pool id
++which is a non-negative 32-bit integer.  If the flags parameter
++specifies that the pool is to be shared, the uuid is a 128-bit "shared
++secret" else it is ignored.  The destroy_pool accessor destroys the pool.
++(Note: shared pools are not supported until security implications
++are better understood.)
++
++The put_page accessor copies a page of data from the specified pageframe
++and associates it with the specified handle.
++
++The get_page accessor looks up a page of data in tmem associated with
++the specified handle and, if found, copies it to the specified pageframe.
++
++The flush_page accessor ensures that subsequent gets of a page with
++the specified handle will fail.  The flush_object accessor ensures
++that subsequent gets of any page matching the pool id and object
++will fail.
++
++There are many subtle but critical behaviors for get_page and put_page:
++- Any put_page (with one notable exception) may be rejected and the client
++  must be prepared to deal with that failure.  A put_page copies, NOT moves,
++  data; that is the data exists in both places.  Linux is responsible for
++  destroying or overwriting its own copy, or alternately managing any
++  coherency between the copies.
++- Every page successfully put to a persistent pool must be found by a
++  subsequent get_page that specifies the same handle.  A page successfully
++  put to an ephemeral pool has an indeterminate lifetime and even an
++  immediately subsequent get_page may fail.
++- A get_page to a private pool is destructive, that is it behaves as if
++  the get_page were atomically followed by a flush_page.  A get_page
++  to a shared pool is non-destructive.  A flush_page behaves just like
++  a get_page to a private pool except the data is thrown away.
++- Put-put-get coherency is guaranteed.  For example, after the sequence:
++        put_page(ABC,D1);
++        put_page(ABC,D2);
++        get_page(ABC,E)
++  E may never contain the data from D1.  However, even for a persistent
++  pool, the get_page may fail if the second put_page indicates failure.
++- Get-get coherency is guaranteed.  For example, in the sequence:
++        put_page(ABC,D);
++        get_page(ABC,E1);
++        get_page(ABC,E2)
++  if the first get_page fails, the second must also fail.
++- A tmem implementation provides no serialization guarantees (e.g. to
++  an SMP Linux).  So if different Linux threads are putting and flushing
++  the same page, the results are indeterminate.
++  guaranteed and must be synchronized by Linux.
++
