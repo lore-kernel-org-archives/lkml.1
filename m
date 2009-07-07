@@ -1,71 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZGGBz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbZGGCJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755965AbZGGBz2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 21:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbZGGBzT
+	id S1756125AbZGGCJy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 22:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZGGCJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 21:55:19 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:44733 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752194AbZGGBzS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 21:55:18 -0400
-Date: Mon, 6 Jul 2009 21:55:22 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-cc: linux-kernel@vger.kernel.org, <linux-usb@vger.kernel.org>,
-       <dbrownell@users.sourceforge.net>
-Subject: Re: 2.6.31-rc2 warning in drivers/usb/host/ehci-hcd.c
-In-Reply-To: <20090706222651.GA6709@Pilar.aei.mpg.de>
-Message-ID: <Pine.LNX.4.44L0.0907062152110.21717-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 6 Jul 2009 22:09:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59190 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753162AbZGGCJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 22:09:46 -0400
+Subject: Re: Possible memory leak via inotify_add_watch
+From: Eric Paris <eparis@redhat.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <b0943d9e0907061503r7a89a4e2lb5bc76b89e3e8ca6@mail.gmail.com>
+References: <b0943d9e0907061503r7a89a4e2lb5bc76b89e3e8ca6@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 06 Jul 2009 22:09:31 -0400
+Message-Id: <1246932571.2866.90.camel@dhcp235-23.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Jul 2009, Carlos R. Mafra wrote:
-
-> I was looking at the 'dmesg' output for 2.6.31-rc2 and noticed
-> this warning
+On Mon, 2009-07-06 at 23:03 +0100, Catalin Marinas wrote:
+> Hi Eric,
 > 
-> ------------[ cut here ]------------
-> WARNING: at drivers/usb/host/ehci-hcd.c:1048 ehci_endpoint_reset+0xfc/0x140 [ehci_hcd]()
-> Hardware name: VGN-FZ240E
-> clear_halt for a busy endpoint
-> Modules linked in: usbhid nvram dvb_usb_dib0700 dib7000p dib7000m dvb_usb dib3000mc dibx000_common dib0070 option usb_storage usbserial uvc                                  video snd_hda_codec_idt snd_hda_intel snd_hda_codec snd_hwdep snd_pcm iwlagn ehci_hcd sky2 snd_timer uhci_hcd i2c_i801 evdev snd_page_alloc                                   sg sr_mod ata_piix ahci libata sd_mod scsi_mod
-> Pid: 5043, comm: comgt Not tainted 2.6.31-rc2 #109
-> Call Trace:
->  [<ffffffffa00d2b6c>] ? ehci_endpoint_reset+0xfc/0x140 [ehci_hcd]
->  [<ffffffff8103f2b8>] warn_slowpath_common+0x78/0xd0
->  [<ffffffff8103f394>] warn_slowpath_fmt+0x64/0x70
->  [<ffffffff81264bd5>] ? usb_free_urb+0x15/0x20
->  [<ffffffff812660d7>] ? usb_start_wait_urb+0x97/0xe0
->  [<ffffffffa00d2b6c>] ehci_endpoint_reset+0xfc/0x140 [ehci_hcd]
->  [<ffffffff81261fed>] usb_hcd_reset_endpoint+0x1d/0x70
->  [<ffffffff812653f2>] usb_reset_endpoint+0x22/0x40
->  [<ffffffff81266556>] usb_clear_halt+0x66/0x80
->  [<ffffffffa0199d1c>] option_open+0xcc/0x180 [option]
->  [<ffffffffa0177986>] serial_open+0x176/0x240 [usbserial]
->  [<ffffffff811bd81a>] tty_open+0x1fa/0x530
->  [<ffffffff810ac755>] chrdev_open+0xf5/0x1a0
->  [<ffffffff810ac660>] ? chrdev_open+0x0/0x1a0
->  [<ffffffff810a77c5>] __dentry_open+0xd5/0x2f0
->  [<ffffffff810a7ae7>] nameidata_to_filp+0x57/0x70
->  [<ffffffff810b68ba>] do_filp_open+0x71a/0xb10
->  [<ffffffff810c06ea>] ? alloc_fd+0x4a/0x140
->  [<ffffffff810a75df>] do_sys_open+0x7f/0x140
->  [<ffffffff810a76cb>] sys_open+0x1b/0x20
->  [<ffffffff8100bdab>] system_call_fastpath+0x16/0x1b
-> ---[ end trace f21382a71ff3302a ]---
-> 
-> 
-> However I can still use a USB pendrive and everything seems to be fine.
+> I'm getting a few kmemleak reports like the one below (it may as well
+> be just a false positive). All of these allocations happened during
+> udevd.
 
-This is definitely a bug in the option driver.  If you remove the call 
-to usb_clear_halt() in drivers/usb/serial/option.c:option_open(), does 
-the warning go away and does everything continue to work okay?
+Any chance you could give this a shot and see if it fixes it up for you?
 
-Alan Stern
+-Eric
+
+commit 27d13f5ef42fc4c976eae8318c860ea88c2076aa
+Author: Eric Paris <eparis@redhat.com>
+Date:   Mon Jul 6 22:07:19 2009 -0400
+
+    inotify: do not leak inode marks on inotify_rm_watch
+    
+    inotify had a ref cnt problem and inode marks were being leaked when they
+    were destroyed using inotify_rm_watch.
+    
+    Signed-off-by: Eric Paris <eparis@redhat.com>
+
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index 2808e30..3ba2e1a 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -365,6 +365,17 @@ static int inotify_find_inode(const char __user *dirname, struct path *path, uns
+ 	return error;
+ }
+ 
++static void inotify_remove_from_idr(struct fsnotify_group *group,
++				    struct inotify_inode_mark_entry *ientry)
++{
++	struct idr *idr;
++
++	spin_lock(&group->inotify_data.idr_lock);
++	idr = &group->inotify_data.idr;
++	idr_remove(idr, ientry->wd);
++	spin_unlock(&group->inotify_data.idr_lock);
++	ientry->wd = -1;
++}
+ /*
+  * Send IN_IGNORED for this wd, remove this wd from the idr, and drop the
+  * internal reference help on the mark because it is in the idr.
+@@ -375,7 +386,6 @@ void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
+ 	struct inotify_inode_mark_entry *ientry;
+ 	struct inotify_event_private_data *event_priv;
+ 	struct fsnotify_event_private_data *fsn_event_priv;
+-	struct idr *idr;
+ 
+ 	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
+ 
+@@ -397,10 +407,7 @@ void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
+ skip_send_ignore:
+ 
+ 	/* remove this entry from the idr */
+-	spin_lock(&group->inotify_data.idr_lock);
+-	idr = &group->inotify_data.idr;
+-	idr_remove(idr, ientry->wd);
+-	spin_unlock(&group->inotify_data.idr_lock);
++	inotify_remove_from_idr(group, ientry);
+ 
+ 	/* removed from idr, drop that reference */
+ 	fsnotify_put_mark(entry);
+@@ -422,6 +429,7 @@ static int inotify_update_watch(struct fsnotify_group *group, struct inode *inod
+ {
+ 	struct fsnotify_mark_entry *entry = NULL;
+ 	struct inotify_inode_mark_entry *ientry;
++	struct inotify_inode_mark_entry *tmp_ientry;
+ 	int ret = 0;
+ 	int add = (arg & IN_MASK_ADD);
+ 	__u32 mask;
+@@ -432,54 +440,65 @@ static int inotify_update_watch(struct fsnotify_group *group, struct inode *inod
+ 	if (unlikely(!mask))
+ 		return -EINVAL;
+ 
+-	ientry = kmem_cache_alloc(inotify_inode_mark_cachep, GFP_KERNEL);
+-	if (unlikely(!ientry))
++	tmp_ientry = kmem_cache_alloc(inotify_inode_mark_cachep, GFP_KERNEL);
++	if (unlikely(!tmp_ientry))
+ 		return -ENOMEM;
+ 	/* we set the mask at the end after attaching it */
+-	fsnotify_init_mark(&ientry->fsn_entry, inotify_free_mark);
+-	ientry->wd = 0;
++	fsnotify_init_mark(&tmp_ientry->fsn_entry, inotify_free_mark);
++	tmp_ientry->wd = -1;
+ 
+ find_entry:
+ 	spin_lock(&inode->i_lock);
+ 	entry = fsnotify_find_mark_entry(group, inode);
+ 	spin_unlock(&inode->i_lock);
+ 	if (entry) {
+-		kmem_cache_free(inotify_inode_mark_cachep, ientry);
+ 		ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
+ 	} else {
+-		if (atomic_read(&group->inotify_data.user->inotify_watches) >= inotify_max_user_watches) {
+-			ret = -ENOSPC;
+-			goto out_err;
+-		}
+-
+-		ret = fsnotify_add_mark(&ientry->fsn_entry, group, inode, 0);
+-		if (ret == -EEXIST)
+-			goto find_entry;
+-		else if (ret)
++		ret = -ENOSPC;
++		if (atomic_read(&group->inotify_data.user->inotify_watches) >= inotify_max_user_watches)
+ 			goto out_err;
+-
+-		entry = &ientry->fsn_entry;
+ retry:
+ 		ret = -ENOMEM;
+ 		if (unlikely(!idr_pre_get(&group->inotify_data.idr, GFP_KERNEL)))
+ 			goto out_err;
+ 
+ 		spin_lock(&group->inotify_data.idr_lock);
+-		/* if entry is added to the idr we keep the reference obtained
+-		 * through fsnotify_mark_add.  remember to drop this reference
+-		 * when entry is removed from idr */
+-		ret = idr_get_new_above(&group->inotify_data.idr, entry,
+-					++group->inotify_data.last_wd,
+-					&ientry->wd);
++		ret = idr_get_new_above(&group->inotify_data.idr, &tmp_ientry->fsn_entry,
++					group->inotify_data.last_wd,
++					&tmp_ientry->wd);
++
+ 		spin_unlock(&group->inotify_data.idr_lock);
+ 		if (ret) {
+ 			if (ret == -EAGAIN)
+ 				goto retry;
+ 			goto out_err;
+ 		}
++
++		ret = fsnotify_add_mark(&tmp_ientry->fsn_entry, group, inode, 0);
++		if (ret) {
++			inotify_remove_from_idr(group, tmp_ientry);
++			if (ret == -EEXIST)
++				goto find_entry;
++			goto out_err;
++		}
++
++		/* tmp_ientry has been added to the inode, so we are all set up.
++		 * now we just need to make sure tmp_ientry doesn't get freed and
++		 * we need to set up entry and ientry so the generic code can
++		 * do its thing. */
++		ientry = tmp_ientry;
++		entry = &ientry->fsn_entry;
++		tmp_ientry = NULL;
+ 		atomic_inc(&group->inotify_data.user->inotify_watches);
++
++		group->inotify_data.last_wd = ientry->wd;
++
++		/* since this mark is on the idr, we should hold a reference */
++		fsnotify_get_mark(entry);
+ 	}
+ 
++	ret = ientry->wd;
++
+ 	spin_lock(&entry->lock);
+ 
+ 	old_mask = entry->mask;
+@@ -510,14 +529,18 @@ retry:
+ 			fsnotify_recalc_group_mask(group);
+ 	}
+ 
+-	return ientry->wd;
+-
++	/* this either matches fsnotify_find_mark_entry, or init_mark_entry
++	 * depending on which path we took... */
++	fsnotify_put_mark(entry);
+ out_err:
+-	/* see this isn't supposed to happen, just kill the watch */
+-	if (entry) {
+-		fsnotify_destroy_mark_by_entry(entry);
+-		fsnotify_put_mark(entry);
++	/* could be an error, could be that we found an existing mark */
++	if (tmp_ientry) {
++		/* on the idr but didn't make it on the inode */
++		if (tmp_ientry->wd != -1)
++			inotify_remove_from_idr(group, tmp_ientry);
++		kmem_cache_free(inotify_inode_mark_cachep, tmp_ientry);
+ 	}
++
+ 	return ret;
+ }
+ 
+
 
