@@ -1,66 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZGGU5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbZGGU7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbZGGU5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 16:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbZGGU5n
+	id S1757338AbZGGU7M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 16:59:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbZGGU65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 16:57:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35833 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbZGGU5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 16:57:43 -0400
-Subject: Re: fanotify: the fscking all notification system
-From: Eric Paris <eparis@redhat.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org, malware-list@dmesg.printk.net
-In-Reply-To: <63598.1246995702@turing-police.cc.vt.edu>
-References: <1246306125.754.300.camel@dhcp235-23.rdu.redhat.com>
-	 <22424.1246368155@turing-police.cc.vt.edu>
-	 <1246382797.22562.16.camel@dhcp235-23.rdu.redhat.com>
-	 <63598.1246995702@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Tue, 07 Jul 2009 16:57:11 -0400
-Message-Id: <1247000231.2866.130.camel@dhcp235-23.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Jul 2009 16:58:57 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:57744 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754021AbZGGU64 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 16:58:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=p3v2f0Zcx+9QU7ex03hDsH7/cfW4Q5KdLGx2aN5CO8hj/yDZ4+5TWd9mWLsMEdqC0E
+         1PaSoy8NZXHwJIyzBnccJGBX3H5D2utbGkyZiOuGCdOzsZTQE3E9hPvEopAv3tvxEIx9
+         A+wtV13QTN0T/h2pX3I3tcIFN8RqAc7UbPtWU=
+Date: Tue, 7 Jul 2009 22:58:51 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>, Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH -tip -v10 7/7] tracing: add kprobe-based event tracer
+Message-ID: <20090707205851.GF6184@nowhere>
+References: <20090701010838.32547.62843.stgit@localhost.localdomain> <20090701010923.32547.74203.stgit@localhost.localdomain> <20090707073103.GA6173@nowhere> <4A53A830.3000305@redhat.com> <20090707202008.GE6184@nowhere> <4A53B338.4060803@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A53B338.4060803@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-07 at 15:41 -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 30 Jun 2009 13:26:37 EDT, Eric Paris said:
-
-> > 1) the fd the fanotify listener gets is O_RDONLY.  I think I'll add an
-> > "f_flags" option which if 0 defaults to O_RDONLY|O_LARGEFILE like we
-> > have today but which you could use to indicate O_RDWR or O_WRONLY.  We
-> > currently give O_RDONLY since you can't request O_WR* on files/libraries
-> > mapped exec, so this won't work for executables.....
+On Tue, Jul 07, 2009 at 04:42:32PM -0400, Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+> > On Tue, Jul 07, 2009 at 03:55:28PM -0400, Masami Hiramatsu wrote:
+> >> Frederic Weisbecker wrote:
+> >>>> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> >>>> index 206cb7d..65945eb 100644
+> >>>> --- a/kernel/trace/trace.h
+> >>>> +++ b/kernel/trace/trace.h
+> >>>> @@ -45,6 +45,8 @@ enum trace_type {
+> >>>>  	TRACE_POWER,
+> >>>>  	TRACE_BLK,
+> >>>>  	TRACE_KSYM,
+> >>>> +	TRACE_KPROBE,
+> >>>> +	TRACE_KRETPROBE,
+> >>>>  
+> >>>>  	__TRACE_LAST_TYPE,
+> >>>>  };
+> >>>> @@ -227,6 +229,22 @@ struct trace_ksym {
+> >>>>  	char			ksym_name[KSYM_NAME_LEN];
+> >>>>  	char			p_name[TASK_COMM_LEN];
+> >>>>  };
+> >>>> +#define TRACE_KPROBE_ARGS 6
+> >>>> +
+> >>>> +struct kprobe_trace_entry {
+> >>>> +	struct trace_entry	ent;
+> >>>> +	unsigned long		ip;
+> >>>> +	int			nargs;
+> >>>> +	unsigned long		args[TRACE_KPROBE_ARGS];
+> >>>
+> >>>
+> >>> I see that you actually make use of arg as a dynamic sizeable
+> >>> array.
+> >>> For clarity, args[TRACE_KPROBE_ARGS] could be args[0].
+> >>>
+> >>> It's just a neat and wouldn't affect the code nor the data
+> >>> but would be clearer for readers of that code.
+> >> Hmm. In that case, I think we'll need a new macro for field
+> >> definition, like TRACE_FIELD_ZERO(type, item).
+> > 
+> > 
+> > 
+> > You mean that for trace_define_field() to describe fields of events?
+> > Actually the fields should be defined dynamically depending on how
+> > is built the kprobe event (which arguments are requested, how many,
+> > etc..).
 > 
-> Having only O_RDONLY is a show-stopper, because then we can't replace the file
-> contents before continuing.  For many places, the executables and shared
-> libraries aren't the problem, so "You can't HSM an executable" as a
-> semi-permanent restriction isn't too bad.
-
-My current devel work allows you to set to open flags.  So an HSM would
-use O_RDWR|O_LARGEFILE whereas a file scanner/indexer which cares about
-executables/libraries would use O_RDONLY|O_LARGEFILE.
-
-> > 2) Right now you have 5 seconds to answer an fanotify permissions
-> > request, if you don't get it in 5 seconds you are done and the original
-> > process gets an allow.  But I have a half finished patch which would
-> > allow you to delay them infinitely.  As long as you keep them delayed
-> > you can modify the file they are about to access however you like.
+> Yeah, if you specified a probe point with its event name, the tracer
+> will make a corresponding event dynamically. There are also anonymous
+> probes which don't have corresponding events. For those anonymous
+> probes, I need to define two generic event types(kprobe and kretprobe).
 > 
-> That would work fine.
+> Thank you,
 
-I've added the ability to delay indefinitely.  Maybe your tape
-robot/intern is slow/busy.  I'll point you to code when I want you to
-see it   :)
 
-> Yes, it's sounding like it. If that's in mainstream, then I can deploy an HSM
-> without needing kernel hackery like most do currently.
-
-I'm trying to be useful!
-
--Eric
+Ok. Btw, why do you need to define those two anonymous events?
+Actually your event types are always dynamically created.
+Those you defined through TRACE_FORMAT_EVENT are only "ghost events",
+they only stand there as a abstract pattern, right?
 
