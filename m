@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbZGGOX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756895AbZGGOYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757442AbZGGOX3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 10:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZGGOXU
+	id S1756895AbZGGOYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 10:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbZGGOYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 10:23:20 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:61563 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754468AbZGGOXT convert rfc822-to-8bit (ORCPT
+	Tue, 7 Jul 2009 10:24:36 -0400
+Received: from mga01.intel.com ([192.55.52.88]:63284 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755761AbZGGOYf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 10:23:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=vMZjsBrZ9KOD3e7lNMKwBVMVrdRqGdRGxllu3YsdHF6tP22TUniaZeRqz4OcJRq7b/
-         lef+435KPX2us95dY4t3H3aBn3CFYc2viwTpaCGFcocJALZkY6Lqq5rOkaURSMoCEWdG
-         NON5il77v1w2L3qHteNlH3g3mWFpZ9oHb4HTA=
-MIME-Version: 1.0
-In-Reply-To: <2375c9f90907070705p1ae6ebe4x61bda34dd072c1c@mail.gmail.com>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <5Hhc7UkUKEO.A.5zE.DjASKB@chimera> 
-	<a5d9929e0907011336g31599a29hca3c204f1b53b775@mail.gmail.com> 
-	<2375c9f90907070705p1ae6ebe4x61bda34dd072c1c@mail.gmail.com>
-From: Joao Correia <joaomiguelcorreia@gmail.com>
-Date: Tue, 7 Jul 2009 15:22:57 +0100
-Message-ID: <a5d9929e0907070722j563cf485j720274e776f736e4@mail.gmail.com>
-Subject: Re: [Bug #13660] Crashes during boot on 2.6.30 / 2.6.31-rc, random 
-	programs
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 7 Jul 2009 10:24:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,363,1243839600"; 
+   d="scan'208";a="705669893"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+CC: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "avictor.za@gmail.com" <avictor.za@gmail.com>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "haavard.skinnemoen@atmel.com" <haavard.skinnemoen@atmel.com>,
+       "patrice.vilchez@atmel.com" <patrice.vilchez@atmel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 7 Jul 2009 15:24:34 +0100
+Subject: RE: [PATCH] dmaengine: dmatest: add a maximum number of test
+ iterations
+Thread-Topic: [PATCH] dmaengine: dmatest: add a maximum number of test
+ iterations
+Thread-Index: Acn7+t2G9a+GzPzbRTG/48VanIX+FQDEz8nw
+Message-ID: <129600E5E5FB004392DDC3FB599660D7AF5BB021@irsmsx504.ger.corp.intel.com>
+References: <448c4e65b62b87188ff0beb21133b60435b1f6bd.1246641180.git.nicolas.ferre@atmel.com>
+In-Reply-To: <448c4e65b62b87188ff0beb21133b60435b1f6bd.1246641180.git.nicolas.ferre@atmel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Already testing the changes, just to see if something else breaks.
+Nicolas Ferre wrote:
+> The dmatest usually waits for the killing of its kthreads to stop
+> running tests.  This patch adds a parameter that sets a maximum
+> number of test iterations.
+> 
+> This feature is quite interesting for debugging when you set a lot of
+> traces in your dmaengine controller driver.
+> 
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-Any special notes on the patch (a basic guideline info on patches
-would be great, just so i dont mess it up)? Never submited one before.
-
-Joao Correia
-
-On Tue, Jul 7, 2009 at 3:05 PM, Américo Wang<xiyou.wangcong@gmail.com> wrote:
-> On Thu, Jul 2, 2009 at 4:36 AM, Joao Correia<joaomiguelcorreia@gmail.com> wrote:
->> No formal patch has been sent yet, that i am aware of. I have made
->> some changes following suggestion by Americo Wang advise, to the
->> following:
->>
->> (patch by Ingo)
->>
->> diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
->> index 699a2ac..031f4c6 100644
->> --- a/kernel/lockdep_internals.h
->> +++ b/kernel/lockdep_internals.h
->> @@ -65,7 +65,7 @@ enum {
->>  * Stack-trace: tightly packed array of stack backtrace
->>  * addresses. Protected by the hash_lock.
->>  */
->> -#define MAX_STACK_TRACE_ENTRIES        262144UL
->> +#define MAX_STACK_TRACE_ENTRIES        1048576UL
->>
->>  extern struct list_head all_lock_classes;
->>  extern struct lock_chain lock_chains[];
->>
->> and afterwards, a new bug popped up, solved by changing
->>
->> include/linux/sched.h
->>
->> # define MAX_LOCK_DEPTH 48UL
->>
->> to
->>
->> # define MAX_LOCK_DEPTH 96UL
->>
->>
->> I have now found a third limit bug, related to MAX_LOCKDEP_CHAINS,
->> which was hidden so far, which im trying to raise and replicate. This
->> is being discussed in detail in another message exchange on the lkml,
->> between me and Americo.
->
-> How about changing MAX_LOCKDEP_CHAINS_BITS to 16?
->
-> kernel/lockdep_internals.h:59:#define MAX_LOCKDEP_CHAINS_BITS   15
->
-> And can you make a complete patch and send it to lkml with Peter and me
-> Cc'ed?
->
-> Thank you!
->
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
