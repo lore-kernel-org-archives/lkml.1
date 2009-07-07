@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbZGGNVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZGGNWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757621AbZGGNVo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbZGGNVg
+	id S1757547AbZGGNWW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbZGGNWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:21:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46510 "EHLO mx2.redhat.com"
+	Tue, 7 Jul 2009 09:22:12 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:38886 "EHLO smtp.anarazel.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753936AbZGGNVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:21:36 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090629191653.14240.44995.stgit@dev.haskins.net>
-References: <20090629191653.14240.44995.stgit@dev.haskins.net>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, mst@redhat.com,
-       swhiteho@redhat.com
-Subject: Re: [PATCH v4] slow-work: add (module*)work->ops->owner to fix races with module clients
-Date: Tue, 07 Jul 2009 14:21:33 +0100
-Message-ID: <15258.1246972893@redhat.com>
+	id S1753304AbZGGNWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 09:22:11 -0400
+From: Andres Freund <andres@anarazel.de>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused by netem)
+Date: Tue, 7 Jul 2009 15:22:06 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc2-andres-00151-gf3060b0; KDE/4.2.95; x86_64; ; )
+Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200907031326.21822.andres@anarazel.de> <a5d9929e0907070340y63280508t92e6c7e4ce464994@mail.gmail.com> <20090707131803.GA6520@ami.dom.local>
+In-Reply-To: <20090707131803.GA6520@ami.dom.local>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907071522.06812.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins <ghaskins@novell.com> wrote:
+On Tuesday 07 July 2009 15:18:03 Jarek Poplawski wrote:
+> On Tue, Jul 07, 2009 at 11:40:16AM +0100, Joao Correia wrote:
+> > I am now running 2.6.31-rc2 for a couple of hours, no freeze.
+> > Let me know what/if i can help with tracking down the original source
+> > of the problem.
+> OK, so we know it's only about timers. Here is another tiny patch
+> (the previous one should be removed), which could tell (with oops) if
+> there's something while migrating. Anyway, the bug should be back :-(
+How do we know this? It still could be a race uncovered by timer migration, 
+right?
 
-> +	struct module *owner = work->ops->owner;
-> +
-> +	work->ops->put_ref(work);
-> +	module_put(owner);
+Andres
 
-Hmmm...  There needs to be an smp_mb() between the read of the module owner
-and the call to put_ref(), lest the CPU reorder things...  However, if
-put_ref(), say, calls atomic_dec_and_test(), then inserting one here would be
-superfluous.
-
-I think documenting this will be enough - perhaps something like:
-
- (*) Release a reference on an item:
-
-	void (*put_ref)(struct slow_work *work);
-
-     This allows the thread pool to unpin an item by releasing the reference on
-     it.  The thread pool will not touch the item again once this has been
-     called.
-
-     This function must interpolate a general SMP memory barrier before freeing
-     or re-using the work struct as the caller may have read the module
-     pointer.  Implying a barrier with something like atomic_dec_and_test() is
-     sufficient.
-
-Do you agree?
-
-David
+PS: You forgot the patch ;-)
