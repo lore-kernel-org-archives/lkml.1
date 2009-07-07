@@ -1,62 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757783AbZGGNev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbZGGNkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757783AbZGGNev (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbZGGNen
+	id S1755816AbZGGNkc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754229AbZGGNkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:34:43 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:33885 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756276AbZGGNem (ORCPT
+	Tue, 7 Jul 2009 09:40:24 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:49939 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753017AbZGGNkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:34:42 -0400
-Date: Tue, 7 Jul 2009 19:04:39 +0530
-From: "M. Mohan Kumar" <mohan@in.ibm.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, ankita@in.ibm.com
-Subject: [PATCH] Use do_IRQ in lkdtm
-Message-ID: <20090707133439.GB28829@in.ibm.com>
-Reply-To: mohan@in.ibm.com
+	Tue, 7 Jul 2009 09:40:23 -0400
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org
+Subject: Re: [RFC PATCH 1/3] kmemleak: Allow partial freeing of memory blocks
+References: <20090706104654.16051.44029.stgit@pc1117.cambridge.arm.com>
+	<20090706105149.16051.99106.stgit@pc1117.cambridge.arm.com>
+	<1246950733.24285.10.camel@penberg-laptop>
+	<tnxtz1ovq8p.fsf@pc1117.cambridge.arm.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Tue, 07 Jul 2009 14:39:20 +0100
+In-Reply-To: <tnxtz1ovq8p.fsf@pc1117.cambridge.arm.com> (Catalin Marinas's message of "Tue\, 07 Jul 2009 09\:42\:14 +0100")
+Message-ID: <tnxiqi4vchj.fsf@pc1117.cambridge.arm.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-OriginalArrivalTime: 07 Jul 2009 13:39:22.0618 (UTC) FILETIME=[561AADA0:01C9FF08]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Catalin Marinas <catalin.marinas@arm.com> wrote:
+> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>> On Mon, 2009-07-06 at 11:51 +0100, Catalin Marinas wrote:
+>>> @@ -552,8 +558,29 @@ static void delete_object(unsigned long ptr)
+>>>  	 */
+>>>  	spin_lock_irqsave(&object->lock, flags);
+>>>  	object->flags &= ~OBJECT_ALLOCATED;
+>>> +	start = object->pointer;
+>>> +	end = object->pointer + object->size;
+>>> +	min_count = object->min_count;
+>>>  	spin_unlock_irqrestore(&object->lock, flags);
+>>>  	put_object(object);
+>>> +
+>>> +	if (!size)
+>>> +		return;
+>>> +
+>>> +	/*
+>>> +	 * Partial freeing. Just create one or two objects that may result
+>>> +	 * from the memory block split.
+>>> +	 */
+>>> +	if (in_atomic())
+>>> +		gfp_flags = GFP_ATOMIC;
+>>> +	else
+>>> +		gfp_flags = GFP_KERNEL;
+>>
+>> Are you sure we can do this? There's a big fat comment on top of
+>> in_atomic() that suggest this is not safe.
+[...]
+> That's the free_bootmem case where Linux can only partially free a
+> block previously allocated with alloc_bootmem (that's why I haven't
+> tracked this from the beginning). So if it only frees some part in the
+> middle of a block, I would have to create two separate
+> kmemleak_objects (well, I can reuse one but I preferred fewer
+> modifications as this is not on a fast path anyway).
+>
+> In the tests I did, free_bootmem is called before the slab allocator
+> is initialised and therefore before kmemleak is initialised, which
+> means that the requests are just logged and the kmemleak_* functions
+> are called later from the kmemleak_init() function. All allocations
+> via this function are fine to only use GFP_KERNEL.
 
-I already posted this patch to Linus two weeks back. But this patch was
-not merged with the recent rc releases, So I am sending it to you.
+Here's an updated patch:
 
 
+kmemleak: Allow partial freeing of memory blocks
 
-[PATCH] Use do_IRQ in lkdtm
+From: Catalin Marinas <catalin.marinas@arm.com>
 
-Current lkdtm code puts a probe on __do_IRQ for some of the kdump test
-cases. Since __do_IRQ is deprecated, change lkdtm code to use do_IRQ
-function.
+Functions like free_bootmem() are allowed to free only part of a memory
+block. This patch adds support for this via the kmemleak_free_part()
+callback which removes the original object and creates one or two
+additional objects as a result of the memory block split.
 
-Signed-off-by: M. Mohan Kumar <mohan@in.ibm.com>
-Cc: Ankita Garg <ankita@in.ibm.com>
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- drivers/misc/lkdtm.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/linux/kmemleak.h |    4 ++++
+ mm/kmemleak.c            |   52 ++++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 51 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/misc/lkdtm.c b/drivers/misc/lkdtm.c
-index 1bfe5d1..3648b23 100644
---- a/drivers/misc/lkdtm.c
-+++ b/drivers/misc/lkdtm.c
-@@ -283,7 +283,7 @@ static int __init lkdtm_module_init(void)
+diff --git a/include/linux/kmemleak.h b/include/linux/kmemleak.h
+index 7796aed..6a63807 100644
+--- a/include/linux/kmemleak.h
++++ b/include/linux/kmemleak.h
+@@ -27,6 +27,7 @@ extern void kmemleak_init(void);
+ extern void kmemleak_alloc(const void *ptr, size_t size, int min_count,
+ 			   gfp_t gfp);
+ extern void kmemleak_free(const void *ptr);
++extern void kmemleak_free_part(const void *ptr, size_t size);
+ extern void kmemleak_padding(const void *ptr, unsigned long offset,
+ 			     size_t size);
+ extern void kmemleak_not_leak(const void *ptr);
+@@ -71,6 +72,9 @@ static inline void kmemleak_alloc_recursive(const void *ptr, size_t size,
+ static inline void kmemleak_free(const void *ptr)
+ {
+ }
++static inline void kmemleak_free_part(const void *ptr, size_t size)
++{
++}
+ static inline void kmemleak_free_recursive(const void *ptr, unsigned long flags)
+ {
+ }
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 5f7d8ae..8614255 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -210,6 +210,7 @@ static DEFINE_MUTEX(scan_mutex);
+ enum {
+ 	KMEMLEAK_ALLOC,
+ 	KMEMLEAK_FREE,
++	KMEMLEAK_FREE_PART,
+ 	KMEMLEAK_NOT_LEAK,
+ 	KMEMLEAK_IGNORE,
+ 	KMEMLEAK_SCAN_AREA,
+@@ -522,15 +523,19 @@ out:
  
- 	switch (cpoint) {
- 	case INT_HARDWARE_ENTRY:
--		lkdtm.kp.symbol_name = "__do_IRQ";
-+		lkdtm.kp.symbol_name = "do_IRQ";
- 		lkdtm.entry = (kprobe_opcode_t*) jp_do_irq;
- 		break;
- 	case INT_HW_IRQ_EN:
--- 
-1.6.2.2
+ /*
+  * Remove the metadata (struct kmemleak_object) for a memory block from the
+- * object_list and object_tree_root and decrement its use_count.
++ * object_list and object_tree_root and decrement its use_count. If the memory
++ * block is partially freed (size > 0), the function may create additional
++ * metadata for the remaining parts of the block.
+  */
+-static void delete_object(unsigned long ptr)
++static void delete_object(unsigned long ptr, size_t size)
+ {
+ 	unsigned long flags;
+ 	struct kmemleak_object *object;
++	unsigned long start, end;
++	unsigned int min_count;
+ 
+ 	write_lock_irqsave(&kmemleak_lock, flags);
+-	object = lookup_object(ptr, 0);
++	object = lookup_object(ptr, 1);
+ 	if (!object) {
+ #ifdef DEBUG
+ 		kmemleak_warn("Freeing unknown object at 0x%08lx\n",
+@@ -552,8 +557,27 @@ static void delete_object(unsigned long ptr)
+ 	 */
+ 	spin_lock_irqsave(&object->lock, flags);
+ 	object->flags &= ~OBJECT_ALLOCATED;
++	start = object->pointer;
++	end = object->pointer + object->size;
++	min_count = object->min_count;
+ 	spin_unlock_irqrestore(&object->lock, flags);
+ 	put_object(object);
++
++	if (!size)
++		return;
++
++	/*
++	 * Partial freeing. Just create one or two objects that may result
++	 * from the memory block split. Note that partial freeing is only done
++	 * by free_bootmem() and this happens before kmemleak_init() is
++	 * called. The path below is only executed during early log recording
++	 * in kmemleak_init(), so GFP_KERNEL is enough.
++	 */
++	if (ptr > start)
++		create_object(start, ptr - start, min_count, GFP_KERNEL);
++	if (ptr + size < end)
++		create_object(ptr + size, end - ptr - size, min_count,
++			      GFP_KERNEL);
+ }
+ 
+ /*
+@@ -720,13 +744,28 @@ void kmemleak_free(const void *ptr)
+ 	pr_debug("%s(0x%p)\n", __func__, ptr);
+ 
+ 	if (atomic_read(&kmemleak_enabled) && ptr && !IS_ERR(ptr))
+-		delete_object((unsigned long)ptr);
++		delete_object((unsigned long)ptr, 0);
+ 	else if (atomic_read(&kmemleak_early_log))
+ 		log_early(KMEMLEAK_FREE, ptr, 0, 0, 0, 0);
+ }
+ EXPORT_SYMBOL_GPL(kmemleak_free);
+ 
+ /*
++ * Partial memory freeing function callback. This function is usually called
++ * from bootmem allocator when (part of) a memory block is freed.
++ */
++void kmemleak_free_part(const void *ptr, size_t size)
++{
++	pr_debug("%s(0x%p)\n", __func__, ptr);
++
++	if (atomic_read(&kmemleak_enabled) && ptr && !IS_ERR(ptr))
++		delete_object((unsigned long)ptr, size);
++	else if (atomic_read(&kmemleak_early_log))
++		log_early(KMEMLEAK_FREE_PART, ptr, size, 0, 0, 0);
++}
++EXPORT_SYMBOL_GPL(kmemleak_free_part);
++
++/*
+  * Mark an already allocated memory block as a false positive. This will cause
+  * the block to no longer be reported as leak and always be scanned.
+  */
+@@ -1345,7 +1384,7 @@ static int kmemleak_cleanup_thread(void *arg)
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(object, &object_list, object_list)
+-		delete_object(object->pointer);
++		delete_object(object->pointer, 0);
+ 	rcu_read_unlock();
+ 	mutex_unlock(&scan_mutex);
+ 
+@@ -1440,6 +1479,9 @@ void __init kmemleak_init(void)
+ 		case KMEMLEAK_FREE:
+ 			kmemleak_free(log->ptr);
+ 			break;
++		case KMEMLEAK_FREE_PART:
++			kmemleak_free_part(log->ptr, log->size);
++			break;
+ 		case KMEMLEAK_NOT_LEAK:
+ 			kmemleak_not_leak(log->ptr);
+ 			break;
 
+
+-- 
+Catalin
