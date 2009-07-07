@@ -1,37 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbZGGPiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbZGGPiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757982AbZGGPiI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:38:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbZGGPhz
+	id S1758380AbZGGPiY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbZGGPh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:37:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50345 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755207AbZGGPhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 11:37:56 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:35761 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755203AbZGGPhy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 7 Jul 2009 11:37:54 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1246976375.3613.30.camel@ht.satnam>
-References: <1246976375.3613.30.camel@ht.satnam> <1246975428.3613.10.camel@ht.satnam>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: dhowells@redhat.com, trivial <trivial@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 13/22] trivial: fix typo "on on" in multiple files
-Date: Tue, 07 Jul 2009 16:29:40 +0100
-Message-ID: <16605.1246980580@redhat.com>
+From: John Stoffel <john@stoffel.org>
+To: linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, John Stoffel <john@stoffel.org>
+Subject: [PATCH 5/5] Make SCSI SG v4 driver enabled by default and remove EXPERIMENTAL dependency, since udev depends on BSG.
+Date: Tue,  7 Jul 2009 11:37:49 -0400
+Message-Id: <1246981069-21106-1-git-send-email-john@stoffel.org>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+Signed-off-by: John Stoffel <john@stoffel.org>
+---
+ block/Kconfig |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
 
-> - * The type of reading going on on this chip
-> + * The type of reading going on this chip
+diff --git a/block/Kconfig b/block/Kconfig
+index e7d1278..55bbefc 100644
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -45,9 +45,9 @@ config LBD
+ 	  If unsure, say N.
+ 
+ config BLK_DEV_BSG
+-	bool "Block layer SG support v4 (EXPERIMENTAL)"
+-	depends on EXPERIMENTAL
+-	---help---
++	bool "Block layer SG support v4"
++	default y
++	help
+ 	  Saying Y here will enable generic SG (SCSI generic) v4 support
+ 	  for any block device.
+ 
+@@ -57,7 +57,10 @@ config BLK_DEV_BSG
+ 	  protocols (e.g. Task Management Functions and SMP in Serial
+ 	  Attached SCSI).
+ 
+-	  If unsure, say N.
++	  This option is required by recent UDEV versions to properly 
++	  access device serial numbers, etc.
++
++	  If unsure, say Y.
+ 
+ config BLK_DEV_INTEGRITY
+ 	bool "Block layer data integrity support"
+-- 
+1.6.3.3
 
-Nak.  I think "going on" is a compound verb here, so "going on on this chip"
-is very probably correct.
-
-David
