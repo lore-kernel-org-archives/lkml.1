@@ -1,197 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbZGGAbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbZGGAbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760752AbZGGAbb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 20:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759509AbZGGAWP
+	id S1757957AbZGGAbQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 20:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758263AbZGGAVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 20:22:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63155 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759515AbZGGAWO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 20:22:14 -0400
-Date: Mon, 6 Jul 2009 20:22:14 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Tim Bird <tim.bird@am.sony.com>
-cc: linux kernel <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] ftrace: Add duration filtering to function graph
- tracer
-In-Reply-To: <4A528769.5020200@am.sony.com>
-Message-ID: <alpine.DEB.2.00.0907062017510.8813@gandalf.stny.rr.com>
-References: <4A528769.5020200@am.sony.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 6 Jul 2009 20:21:23 -0400
+Received: from mail.samba.org ([66.70.73.150]:53470 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759413AbZGGAVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 20:21:21 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19026.38137.63807.427511@samba.org>
+Date: Tue, 7 Jul 2009 10:21:13 +1000
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Theodore Tso <tytso@mit.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+In-Reply-To: <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<200907012019.53932.rusty@rustcorp.com.au>
+	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	<20090701140503.GA21185@mit.edu>
+	<alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
+	<alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
+	<19021.19842.663727.146474@samba.org>
+	<87hbxu60qm.fsf@devron.myhome.or.jp>
+	<19021.23231.213863.726785@samba.org>
+	<alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
+	<19021.26102.80885.330380@samba.org>
+	<alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr>
+	<19021.31291.642416.956966@samba.org>
+	<alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr>
+	<19021.63615.450348.192109@samba.org>
+	<alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr>
+	<19025.63119.656216.431469@samba.org>
+	<alpine.LSU.2.00.0907061932120.20434@fbirervta.pbzchgretzou.qr>
+	<alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jan,
 
-On Mon, 6 Jul 2009, Tim Bird wrote:
+ > Windows 98 can't make anything of the stunted vfat entries either[3],
+ > and there's blanks for 16-bit programs[4]. They too, it seems, always
+ > want an 8.3 entry in any case.
+ > It does not crash, but neither of these results is usable.
 
-> Add duration filtering to the function graph tracer.
-> 
-> The duration filter value is set in the 'tracing_thresh'
-> pseudo-file.  Values are in microseconds (as is customary
-> for that file).
-> 
-> This adds ring_buffer_peek_previous(), used to help
-> remove the function entry event from the trace log,
-> where this is possible.
-> 
-> To use:
->  $ cd <debugfs tracing directory>
->  $ echo 100 >tracing_thresh
->  $ echo function_graph >current_tracer
->  $ cat trace
+Interesting! Thanks for the testing.
 
-I see what you are trying to do, but this can be really dangerous. 
-Remember, the ring buffer is now lockless. This could probably cause some 
-problems with various races.
+I didn't have a win98 test image, but I've scrounged up a copy of the
+install disks now from an old MSDN subscription, and I've built a
+win98 virtual machine. I stopped testing Win9X against Samba a long
+time ago (along with OS/2) so I didn't have the right setup to hand.
 
-If you want a duration field in the function graph tracer, perhaps only do 
-the recording on the exit side. That may be tricky since you would also 
-need to keep the stack order as well.
+I've now done some experiments, and I have reproduced the problem you
+saw. I've also experimented with changing the
+vfat_build_dummy_83_buffer() to try some other combinations. I've
+found that with a simple memset(msdos_name, ' ', 11) that Win98 works
+pretty well:
 
-Perhaps implement an auxiliary ring buffer?
+  http://picpaste.com/Win98-longnames.png
 
--- Steve
+It does show one error though. In the DOS box directory listing on the
+left notice that it shows both a long name and a short name for the
+files, with the long name being a truncated form of the short
+name. The normal commands like xcopy, notepad etc all seem to work
+fine though, so practical compatibility seems pretty good.
 
+The problem with that simple memset() approach with spaces is that it
+would cause more crashes with WinXP. It does show that there might be
+some other combination that works with both though. I'll play a bit
+more and see what I can find.
 
-> 
-> Signed-off-by: Tim Bird <tim.bird@am.sony.com>
-> ---
->  include/linux/ring_buffer.h |    3 ++
->  kernel/trace/ring_buffer.c  |   33 ++++++++++++++++++++++++++++++
->  kernel/trace/trace.c        |   47 ++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 83 insertions(+)
-> 
-> --- a/include/linux/ring_buffer.h
-> +++ b/include/linux/ring_buffer.h
-> @@ -136,6 +136,9 @@ int ring_buffer_write(struct ring_buffer
->  struct ring_buffer_event *
->  ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts);
->  struct ring_buffer_event *
-> +ring_buffer_peek_previous(struct ring_buffer *buffer,
-> +			  struct ring_buffer_event *event, int length);
-> +struct ring_buffer_event *
->  ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts);
-> 
->  struct ring_buffer_iter *
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -2523,6 +2523,39 @@ ring_buffer_peek(struct ring_buffer *buf
->  }
-> 
->  /**
-> + * ring_buffer_peek_previous - peek at the previous event in the ring buffer
-> + * @buffer: The ring buffer to read
-> + * @length: The presumed length of the previous event
-> + *
-> + * This will return the previous data event in the buffer, unless
-> + * we are at the beginning of the buffer.
-> + */
-> +struct ring_buffer_event *
-> +ring_buffer_peek_previous(struct ring_buffer *buffer,
-> +		struct ring_buffer_event *event, int length)
-> +{
-> +	int cpu;
-> +	struct ring_buffer_per_cpu *cpu_buffer;
-> +	struct ring_buffer_event *prev_event;
-> +
-> +	cpu = raw_smp_processor_id();
-> +	cpu_buffer = buffer->buffers[cpu];
-> +
-> +	prev_event = (void *)event - length - RB_EVNT_HDR_SIZE;
-> +
-> +	/* abort if event type != DATA */
-> +	if (prev_event->type_len > RINGBUF_TYPE_DATA_TYPE_LEN_MAX)
-> +		return 0;
-> +
-> +	/* abort if prev_event < buffer start */
-> +	if ((void *)prev_event < (void *)cpu_buffer->commit_page)
-> +		return 0;
-> +
-> +	return prev_event;
-> +}
-> +
-> +
-> +/**
->   * ring_buffer_iter_peek - peek at the next event to be read
->   * @iter: The ring buffer iterator
->   * @ts: The timestamp counter of this event.
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -971,6 +971,38 @@ static int __trace_graph_entry(struct tr
->  	return 1;
->  }
-> 
-> +/* Try to remove the function entry event for the current (return) event from
-> + * the ringbuffer.  Note that the current event has already been discarded.
-> + * Rewinding the write position of the buffer to overwrite the entry event
-> + * can only be done if the entry event immediately precedes the return
-> + * event in the trace buffer.
-> + *
-> + * This should be true about 99% of the time.
-> + *
-> + * This is an operation fraught with peril.
-> + *
-> + * The reason for doing this is to save space in the trace buffer when a
-> + * tracing_thresh filter is used.
-> + */
-> +static void trace_buffer_discard_func_entry(struct ring_buffer_event *cur_event,
-> +	struct ftrace_graph_ret_entry *cur_entry)
-> +{
-> +	struct ring_buffer_event *prev_event;
-> +	struct ftrace_graph_ent_entry *prev_entry;
-> +	unsigned long func;
-> +
-> +	func = cur_entry->ret.func;
-> +	prev_event = ring_buffer_peek_previous(global_trace.buffer, cur_event,
-> +			sizeof(*prev_entry));
-> +	if (!prev_event)
-> +		return;
-> +
-> +	prev_entry = ring_buffer_event_data(prev_event);
-> +	if (func == prev_entry->graph_ent.func) {
-> +		ring_buffer_event_discard(prev_event);
-> +	}
-> +}
-> +
->  static void __trace_graph_return(struct trace_array *tr,
->  				struct ftrace_graph_ret *trace,
->  				unsigned long flags,
-> @@ -979,6 +1011,7 @@ static void __trace_graph_return(struct
->  	struct ftrace_event_call *call = &event_funcgraph_exit;
->  	struct ring_buffer_event *event;
->  	struct ftrace_graph_ret_entry *entry;
-> +	unsigned long long duration;
-> 
->  	if (unlikely(local_read(&__get_cpu_var(ftrace_cpu_disabled))))
->  		return;
-> @@ -989,6 +1022,20 @@ static void __trace_graph_return(struct
->  		return;
->  	entry	= ring_buffer_event_data(event);
->  	entry->ret				= *trace;
-> +
-> +	/* do some special handling for duration filtering */
-> +	if (tracing_thresh) {
-> +		duration = trace->rettime - trace->calltime;
-> +		if (duration < tracing_thresh) {
-> +			/* abort this item (func exit event) */
-> +			ring_buffer_discard_commit(global_trace.buffer, event);
-> +
-> +			/* try to remove entry event from ring buffer also */
-> +			trace_buffer_discard_func_entry(event, entry);
-> +			return;
-> +		}
-> +	}
-> +
->  	if (!filter_current_check_discard(call, entry, event))
->  		ring_buffer_unlock_commit(global_trace.buffer, event);
->  }
-> 
-> 
+ > This dualnames patch just won't fly in practice.
+
+well, "won't fly" depends on your POV I guess. Unless we're hoping
+that all the Microsoft lawyers take early retirement, I think we do
+need to have some strategy to avoiding more companies having the same
+problems that TomTom had. 
+
+Would it be worth it to lose VFAT compatibility with a dead OS like
+Win9X?  Quite possibly it would be for a pretty large number of
+vendors.
+
+What we need to explore now is the limits of compatibility that we can
+reach. Your testing has really helped with that! I'm trying to track
+down a Tekmax or 'IOneIt' mp3 player but no luck on eBay yet - I don't
+suppose anyone on this list will sell me one? Are they sold in Germany
+somewhere Jan?
+
+Cheers, Tridge
