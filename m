@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759151AbZGGQtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbZGGQuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759151AbZGGQtr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbZGGQtk
+	id S1757017AbZGGQuU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 12:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbZGGQuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:49:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56270 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753942AbZGGQtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 12:49:39 -0400
-Subject: Re: [PATCH 16/22] trivial: fix typo "that that" in multiple files
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: trivial <trivial@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090707163053.GD6692@linux.vnet.ibm.com>
-References: <1246975428.3613.10.camel@ht.satnam>
-	 <1246976551.3613.33.camel@ht.satnam>
-	 <20090707163053.GD6692@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 07 Jul 2009 22:19:12 +0530
-Message-Id: <1246985352.3613.53.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Jul 2009 12:50:08 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:59083 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755100AbZGGQuH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 12:50:07 -0400
+Date: Tue, 7 Jul 2009 12:49:56 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Minchan Kim <minchan.kim@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 4/5] add isolate pages vmstat
+In-Reply-To: <20090707101855.0C63.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0907071248560.5124@gentwo.org>
+References: <20090707090120.1e71a060.minchan.kim@barrios-desktop> <20090707090509.0C60.A69D9226@jp.fujitsu.com> <20090707101855.0C63.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Paul,
+On Tue, 7 Jul 2009, KOSAKI Motohiro wrote:
 
-On Tue, 2009-07-07 at 09:30 -0700, Paul E. McKenney wrote:
-> On Tue, Jul 07, 2009 at 07:52:31PM +0530, Jaswinder Singh Rajput wrote:
+> +++ b/include/linux/mmzone.h
+> @@ -100,6 +100,8 @@ enum zone_stat_item {
+>  	NR_BOUNCE,
+>  	NR_VMSCAN_WRITE,
+>  	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
+> +	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
+> +	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
 
-> As David Howells noted, this is not correct.  To fix the admittedly
-> awkward phrasing, how about the following?
-> 
-> 	Just as with spinlocks, RCU readers are not permitted to block,
-> 	switch to user-mode execution, or enter the idle loop.	Therefore,
-> 	as soon as a given CPU is seen passing through any of these
-> 	three states, we know that this CPU has exited any previous RCU
-> 	read-side critical sections.  So, if we remove an item from a
-> 	linked list, and then wait until all CPUs have switched context,
-> 	executed in user mode, or executed in the idle loop, we can
-> 
+LRU counters are rarer in use then the counters used for dirty pages etc.
 
-I already dropped this and some more patches as per David's suggestion.
-
-Please check new pull request, and let me know if you found some more
-issues :
-
-[GIT PULL] V2 trivial fixes typo "foo foo"
-
-Thanks,
---
-JSR
+Could you move the counters for reclaim into a separate cacheline?
 
