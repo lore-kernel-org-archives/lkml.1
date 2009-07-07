@@ -1,32 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZGGKMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZGGKSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZGGKMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 06:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZGGKLx
+	id S1755287AbZGGKSv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 06:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbZGGKSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 06:11:53 -0400
-Received: from tomts27.bellnexxia.net ([209.226.175.101]:48604 "EHLO
-	tomts27-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752505AbZGGKLw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 06:11:52 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApMDAL+1UkrR4q+G/2dsb2JhbACBMZZotTKCNhoHgSYF
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [139.142.211.83]
-From: <knilltrailer@bellnet.ca>
-Reply-To: pwhite@9.cn
-To: info@bellnet.ca
-Subject: Prize Claims
-Date: Tue, 7 Jul 2009 6:11:55 -0400
+	Tue, 7 Jul 2009 06:18:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55410 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751358AbZGGKSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 06:18:38 -0400
+Date: Tue, 7 Jul 2009 12:18:16 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com>
+References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com> <20090703092438.GE3902@elte.hu> <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090707101155.WSFB273.tomts27-srv.bellnexxia.net@toip52-bus.srvr.bell.ca>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Congratulations, 5,000,000 pounds winner. Verify this mail by sending your name,add,age,to agentoffices1@btinternet.com
+On Fri, Jul 03, 2009 at 01:18:48PM +0200, Jiri Olsa wrote:
+> On Fri, Jul 03, 2009 at 12:25:30PM +0200, Ingo Molnar wrote:
+> > 
+> > * Jiri Olsa <jolsa@redhat.com> wrote:
+> > 
+> > > On Fri, Jul 03, 2009 at 11:24:38AM +0200, Ingo Molnar wrote:
+> > > > 
+> > > > * Eric Dumazet <eric.dumazet@gmail.com> wrote:
+> > > > 
+> > > > > Ingo Molnar a écrit :
+> > > > > > * Jiri Olsa <jolsa@redhat.com> wrote:
+> > > > > > 
+> > > > > >> +++ b/arch/x86/include/asm/spinlock.h
+> > > > > >> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+> > > > > >>  #define _raw_read_relax(lock)	cpu_relax()
+> > > > > >>  #define _raw_write_relax(lock)	cpu_relax()
+> > > > > >>  
+> > > > > >> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> > > > > >> +#define smp_mb__after_lock() do { } while (0)
+> > > > > > 
+> > > > > > Two small stylistic comments, please make this an inline function:
+> > > > > > 
+> > > > > > static inline void smp_mb__after_lock(void) { }
+> > > > > > #define smp_mb__after_lock
+> > > > > > 
+> > > > > > (untested)
+> > > > > > 
+> > > > > >> +/* The lock does not imply full memory barrier. */
+> > > > > >> +#ifndef smp_mb__after_lock
+> > > > > >> +#define smp_mb__after_lock() smp_mb()
+> > > > > >> +#endif
+> > > > > > 
+> > > > > > ditto.
+> > > > > > 
+> > > > > > 	Ingo
+> > > > > 
+> > > > > This was following existing implementations of various smp_mb__??? helpers :
+> > > > > 
+> > > > > # grep -4 smp_mb__before_clear_bit include/asm-generic/bitops.h
+> > > > > 
+> > > > > /*
+> > > > >  * clear_bit may not imply a memory barrier
+> > > > >  */
+> > > > > #ifndef smp_mb__before_clear_bit
+> > > > > #define smp_mb__before_clear_bit()      smp_mb()
+> > > > > #define smp_mb__after_clear_bit()       smp_mb()
+> > > > > #endif
+> > > > 
+> > > > Did i mention that those should be fixed too? :-)
+> > > > 
+> > > > 	Ingo
+> > > 
+> > > ok, could I include it in the 2/2 or you prefer separate patch?
+> > 
+> > depends on whether it will regress ;-)
+> > 
+> > If it regresses, it's better to have it separate. If it wont, it can 
+> > be included. If unsure, default to the more conservative option.
+> > 
+> > 	Ingo
+> 
+> 
+> how about this.. 
+> and similar change for smp_mb__before_clear_bit in a separate patch
+> 
+> 
+> diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+> index b7e5db8..4e77853 100644
+> --- a/arch/x86/include/asm/spinlock.h
+> +++ b/arch/x86/include/asm/spinlock.h
+> @@ -302,4 +302,8 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+>  #define _raw_read_relax(lock)	cpu_relax()
+>  #define _raw_write_relax(lock)	cpu_relax()
+>  
+> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> +static inline void smp_mb__after_lock(void) { }
+> +#define ARCH_HAS_SMP_MB_AFTER_LOCK
+> +
+>  #endif /* _ASM_X86_SPINLOCK_H */
+> diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+> index 252b245..4be57ab 100644
+> --- a/include/linux/spinlock.h
+> +++ b/include/linux/spinlock.h
+> @@ -132,6 +132,11 @@ do {								\
+>  #endif /*__raw_spin_is_contended*/
+>  #endif
+>  
+> +/* The lock does not imply full memory barrier. */
+> +#ifndef ARCH_HAS_SMP_MB_AFTER_LOCK
+> +static inline void smp_mb__after_lock(void) { smp_mb(); }
+> +#endif
+> +
+>  /**
+>   * spin_unlock_wait - wait until the spinlock gets unlocked
+>   * @lock: the spinlock in question.
+> diff --git a/include/net/sock.h b/include/net/sock.h
+> index 4eb8409..98afcd9 100644
+> --- a/include/net/sock.h
+> +++ b/include/net/sock.h
+> @@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
+>   * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
+>   * could then endup calling schedule and sleep forever if there are no more
+>   * data on the socket.
+> + *
+> + * The sk_has_helper is always called right after a call to read_lock, so we
+> + * can use smp_mb__after_lock barrier.
+>   */
+>  static inline int sk_has_sleeper(struct sock *sk)
+>  {
+> @@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
+>  	 *
+>  	 * This memory barrier is paired in the sock_poll_wait.
+>  	 */
+> -	smp_mb();
+> +	smp_mb__after_lock();
+>  	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
+>  }
+>  
 
+any feedback on this? 
+I'd send v6 if this way is acceptable..
 
+thanks,
+jirka
