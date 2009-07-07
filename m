@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbZGGKD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbZGGKHC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbZGGKD3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 06:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZGGKDV
+	id S1754943AbZGGKHC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 06:07:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZGGKGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 06:03:21 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:53199 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753980AbZGGKDU convert rfc822-to-8bit (ORCPT
+	Tue, 7 Jul 2009 06:06:54 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:35782 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753616AbZGGKGx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 06:03:20 -0400
-From: "Gadiyar, Anand" <gadiyar@ti.com>
-To: Jiri Kosina <jkosina@suse.cz>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 7 Jul 2009 15:33:12 +0530
-Subject: RE: [PATCH] Trivial: Fix typo "for for" in multiple files
-Thread-Topic: [PATCH] Trivial: Fix typo "for for" in multiple files
-Thread-Index: Acn+2Y/W7XDcdmJyQ4ud8YexWw3b9wAECpSQ
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB0305C11466@dbde02.ent.ti.com>
-In-Reply-To: <alpine.LNX.2.00.0907071003150.4994@wotan.suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 7 Jul 2009 06:06:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=RhrgnB1HZyka+FfyIThMN/28EEFWwFAGqQEvmkyvO1NhvTqnpwCXfuLxPc12rZeybh
+         fHztNyplb2TqHyzTTWdDjW1yT+arsf9WUZr8QEyT+g8QuHlpHVjLspNRgemZhHMN/IrM
+         KoQj4lnixyI250PRINW3UaDJr28Se7a1a6n1M=
+Date: Tue, 7 Jul 2009 12:06:51 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Chris Wright" <chrisw@sous-sol.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [Bug #13362] rt2x00: slow wifi with correct basic rate bitmap
+Message-ID: <20090707120651.063e1b1a@varda>
+In-Reply-To: <bXZeuxPQAWE.A.Nd.YBpUKB@chimera>
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera>
+	<bXZeuxPQAWE.A.Nd.YBpUKB@chimera>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Jul 2009, Jiri Kosina wrote: 
-> On Mon, 6 Jul 2009, Gadiyar, Anand wrote:
+El Tue,  7 Jul 2009 02:00:38 +0200 (CEST)
+"Rafael J. Wysocki" <rjw@sisk.pl> escribió:
+
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
 > 
-> > From: Anand Gadiyar <gadiyar@ti.com>
-> > 
-> > Trivial: Fix typo "for for" in multiple files.
-> > 
-> > Signed-off-by: Anand Gadiyar <gadiyar@ti.com>
-> > ---
-> > After submitting a patch [1] for two instances of this in EHCI code,
-> > I decided to grep the rest of the kernel as well and came up with this.
-> > 
-> > Let me know if you want me to re-submit with both patches folded
-> > together.
-> 
-> Yes, I will prefer that, I would otherwise merge the patches together 
-> anyway, thanks.
-> 
-> While at it, could you please also respin your patch on top of current 
-> Linus' tree, it doesn't apply cleanly in the form you have submitted.
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
 > 
 
-Oops, sorry. I was on an old kernel tree.
+ It should be still listed 2.6.30.1 does not fix it. still not tried
+2.6.31-rc* though.
 
-Regenerated against current mainline git, and folded both the patches.
-I have submitted a fresh patch for this, so please discard patch 1. And
-another one for a similar typo "to to".
-
-Thanks,
-Anand
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13362
+> Subject		: rt2x00: slow wifi with correct basic rate bitmap
+> Submitter	: Alejandro Riveira <ariveira@gmail.com>
+> Date		: 2009-05-22 13:32 (46 days old)
+> 
+> 
