@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbZGGN5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbZGGN60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757897AbZGGN5a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757618AbZGGN5T
+	id S1757940AbZGGN60 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZGGN6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:57:19 -0400
-Received: from mga14.intel.com ([143.182.124.37]:48132 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757812AbZGGN5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:57:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,362,1243839600"; 
-   d="scan'208";a="162317443"
-Date: Tue, 7 Jul 2009 21:56:56 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
-Message-ID: <20090707135656.GB9444@localhost>
-References: <20090705211739.091D.A69D9226@jp.fujitsu.com> <20090705130200.GA6585@localhost> <20090707102106.0C66.A69D9226@jp.fujitsu.com>
+	Tue, 7 Jul 2009 09:58:16 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:45852 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754791AbZGGN6P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 09:58:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=V24v7UZHH9wkVKwQpaSMzDAr+o0MDmOmQSdAUJL/tlbvRHs2wpXBSKyavHDAhR5yq8
+         qObJ9TUmmIOfAZIbyIl90xqj4qgo9vvAV+Fb/dllR5gtM/dJmytIzQDE6ifBWIAedxW4
+         zZM/Ffb1Rdzj/4NIkGpRlm8QEntDY6gSER68E=
+Date: Tue, 7 Jul 2009 15:57:42 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Andres Freund <andres@anarazel.de>
+Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
+	possibly?caused by netem)
+Message-ID: <20090707135742.GB6798@ami.dom.local>
+References: <200907031326.21822.andres@anarazel.de> <200907071522.06812.andres@anarazel.de> <20090707132937.GA6798@ami.dom.local> <200907071534.07619.andres@anarazel.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090707102106.0C66.A69D9226@jp.fujitsu.com>
+In-Reply-To: <200907071534.07619.andres@anarazel.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 09:22:48AM +0800, KOSAKI Motohiro wrote:
-> > On Sun, Jul 05, 2009 at 08:21:20PM +0800, KOSAKI Motohiro wrote:
-> > > > On Sun, Jul 05, 2009 at 05:26:18PM +0800, KOSAKI Motohiro wrote:
+On Tue, Jul 07, 2009 at 03:34:07PM +0200, Andres Freund wrote:
+...
+> Testing wether its triggerable inside a vm might be interesting...
 
-> @@ -2118,9 +2118,9 @@ void show_free_areas(void)
->  	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
->  		" inactive_file:%lu unevictable:%lu\n"
->  		" isolated_anon:%lu isolated_file:%lu\n"
-> -		" dirty:%lu writeback:%lu buffer:%lu unstable:%lu\n"
-> +		" dirty:%lu writeback:%lu buffer:%lu shmem:%lu\n"
+Probably similarly to testing without this patch or even less. Maybe
+I should've warned you but this type of bugs in -rc with possible
+memory or stack overwrites might be fatal for your data (at least).
 
-btw, nfs unstable pages are related to writeback pages, so it may be
-better to put "unstable" right after "writeback" (as it was)?
-
-Thanks,
-Fengguang
-
-
->  		" free:%lu slab_reclaimable:%lu slab_unreclaimable:%lu\n"
-> -		" mapped:%lu pagetables:%lu bounce:%lu\n",
-> +		" mapped:%lu pagetables:%lu unstable:%lu bounce:%lu\n",
->  		global_page_state(NR_ACTIVE_ANON),
->  		global_page_state(NR_ACTIVE_FILE),
->  		global_page_state(NR_INACTIVE_ANON),
-> @@ -2131,12 +2131,13 @@ void show_free_areas(void)
->  		global_page_state(NR_FILE_DIRTY),
->  		global_page_state(NR_WRITEBACK),
->  		nr_blockdev_pages(),
-> -		global_page_state(NR_UNSTABLE_NFS),
-> +		global_page_state(NR_SHMEM),
->  		global_page_state(NR_FREE_PAGES),
->  		global_page_state(NR_SLAB_RECLAIMABLE),
->  		global_page_state(NR_SLAB_UNRECLAIMABLE),
->  		global_page_state(NR_FILE_MAPPED),
->  		global_page_state(NR_PAGETABLE),
-> +		global_page_state(NR_UNSTABLE_NFS),
->  		global_page_state(NR_BOUNCE));
-
+Jarek P.
