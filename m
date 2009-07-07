@@ -1,84 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760394AbZGGA2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760517AbZGGA2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760394AbZGGA2G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 20:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbZGGAL4
+	id S1760517AbZGGA2n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 20:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758790AbZGGASR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 20:11:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:33585 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757997AbZGGALz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 20:11:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=WRvqXJWxei1rFWU6Ph1QXOTFocl8RltHJ1FebcHqV2e3P43TarrqejVGdMS8Xdngb3
-         jNYtaMe4hQboVX1cAFVHdRcNefxQtK1aI0T0XMPjGwX4cuz8bbPCtGdX9KBoTF1o3WXJ
-         N3QHayL+q5Oumc//f+Q0bTlb5FXZnvx4HgS50=
-Message-ID: <4A52931D.5070109@gmail.com>
-Date: Mon, 06 Jul 2009 18:13:17 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 6 Jul 2009 20:18:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33379 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754132AbZGGASP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 20:18:15 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [RFC PATCH -tip v3 0/7] kprobes: Kprobes jump optimization support
+To: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Mon, 06 Jul 2009 20:20:51 -0400
+Message-ID: <20090707002051.10694.53741.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Christof Warlich <christof@warlich.name>
-CC: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
-Subject: Re: "EXT3-fs error" after resume from s2ram
-References: <4A4771FD.1020207@warlich.name> <4A480859.5010206@gmail.com> <4A48C799.2010102@warlich.name> <4A495C2D.1040706@gmail.com> <4A49A49C.10104@warlich.name> <4A4C42E2.6030305@gmail.com> <4A51C929.5010909@warlich.name>
-In-Reply-To: <4A51C929.5010909@warlich.name>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(ccing linux-ide)
+Hi,
 
-On 07/06/2009 03:51 AM, Christof Warlich wrote:
-> Robert Hancock schrieb:
->> There should definitely be some libata messages from the
->> suspend/resume process, they might not end up in that file though. You
->> might want to try changing the console loglevel before suspend so that
->> all kernel messages get displayed..
->
-> Ok, I got the suspend / resume process logged quite complete now, it
-> took me some time though to save the data due to the inaccessibility of
-> the root filesystem after resume. But (a modified version of) netcat
-> finally was my friend :-).
->
-> So below you'll find all messages from "kern.*" between the point when
-> calling "s2ram -f -p" up to the point when the system is back. The
-> requested libata messages are included. Please let me know if any
-> additional data would help.
-> Jul 6 09:15:40 fossie kernel: [ 314.072707] WARNING: at
-> /home/kernel-ppa/mainline/build/kernel/smp.c:289
-> smp_call_function_single+0xa9/0x100()
-> Jul 6 09:15:40 fossie kernel: [ 314.072707] WARNING: at
-> /home/kernel-ppa/mainline/build/kernel/smp.c:289
-> smp_call_function_single+0xa9/0x100()
+Here are the patchset of the kprobes jump optimization v3
+(a.k.a. Djprobe). This version includes some bugfixes and
+sysctl interface for disabling optimization runtime.
 
-This WARN should likely be looked at by someone, but it doesn't seem to 
-be the main culprit.
+I fixed an important bug about reentering probes which will
+cause unexpected kernel panic if a probe is hit when another
+probe handler is running.
 
-> Jul 6 09:15:41 fossie kernel: [ 316.648468] ata1.00: ACPI cmd
-> ef/03:0c:00:00:00:a0 filtered out
-> Jul 6 09:15:41 fossie kernel: [ 316.648468] ata1.00: ACPI cmd
-> ef/03:0c:00:00:00:a0 filtered out
-> Jul 6 09:15:41 fossie kernel: [ 316.648480] ata1.00: ACPI cmd
-> ef/03:45:00:00:00:a0 filtered out
-> Jul 6 09:15:41 fossie kernel: [ 316.648480] ata1.00: ACPI cmd
-> ef/03:45:00:00:00:a0 filtered out
-> Jul 6 09:15:41 fossie kernel: [ 316.659047] ata1.00: n_sectors mismatch
-> 268435456 != 312581808
-> Jul 6 09:15:41 fossie kernel: [ 316.659047] ata1.00: n_sectors mismatch
-> 268435456 != 312581808
-> Jul 6 09:15:41 fossie kernel: [ 316.659054] ata1.00: revalidation failed
-> (errno=-19)
+As far as I can see, the gcc's crossjumping unifies equivalent
+code inside function and doesn't generate jumps which jump into
+the middle of other functions. So I decided to drop disabling
+crossjumping patch from this series.
 
-This is why the hard disk failed to resume, somehow the drive shows a 
-capacity of 149GB after resume but only 128GB before. What's the actual 
-capacity of the drive? I suspect the drive has a host protected area on 
-it, and somehow the HPA isn't showing up after we resume.
+These patches can be applied on -tip tree + x86 instruction
+decoder which I sent before. This is another example of x86
+instruction decoder.
 
-Can you post the dmesg log from normal bootup?
+
+Jump Optimized Kprobes
+======================
+o Concept
+ Kprobes uses the int3 breakpoint instruction on x86 for instrumenting
+probes into running kernel. Jump optimization allows kprobes to replace
+breakpoint with a jump instruction for reducing probing overhead drastically.
+
+o Performance
+ An optimized kprobe 5 times faster than a kprobe.
+
+ Optimizing probes gains its performance. Usually, a kprobe hit takes
+0.5 to 1.0 microseconds to process. On the other hand, a jump optimized
+probe hit takes less than 0.1 microseconds (actual number depends on the
+processor). Here is a sample overheads.
+
+Intel(R) Xeon(R) CPU E5410  @ 2.33GHz (without debugging options)
+
+                     x86-32  x86-64
+kprobe:              0.68us  0.91us
+kprobe+booster:	     0.27us  0.40us
+kprobe+optimized:    0.06us  0.06us
+
+kretprobe :          0.95us  1.21us
+kretprobe+booster:   0.53us  0.71us
+kretprobe+optimized: 0.30us  0.35us
+
+(booster skips single-stepping)
+
+ Note that jump optimization also consumes more memory, but not so much.
+It just uses ~200 bytes, so, even if you use ~10,000 probes, it just 
+consumes a few MB.
+
+
+o Usage
+ Set CONFIG_OPTPROBES=y when building a kernel, then all *probes will be
+optimized if possible.
+
+ Kprobes decodes probed function and checks whether the target instructions
+can be optimized(replaced with a jump) safely. If it can't be, Kprobes just
+doesn't optimize it.
+
+
+o Optimization
+  Before preparing optimization, Kprobes inserts original(user-defined)
+ kprobe on the specified address. So, even if the kprobe is not
+ possible to be optimized, it just uses a normal kprobe.
+
+ - Safety check
+  First, Kprobes gets the address of probed function and checks whether the
+ optimized region, which will be replaced by a jump instruction, does NOT
+ straddle the function boundary, because if the optimized region reaches the
+ next function, its caller causes unexpected results.
+  Next, Kprobes decodes whole body of probed function and checks there is
+ NO indirect jump, NO instruction which will cause exception by checking
+ exception_tables (this will jump to fixup code and fixup code jumps into
+ same function body) and NO near jump which jumps into the optimized region
+ (except the 1st byte of jump), because if some jump instruction jumps
+ into the middle of another instruction, it causes unexpected results too.
+  Kprobes also measures the length of instructions which will be replaced
+ by a jump instruction, because a jump instruction is longer than 1 byte,
+ it may replaces multiple instructions, and it checks whether those
+ instructions can be executed out-of-line.
+
+ - Preparing detour code
+  Then, Kprobes prepares "detour" buffer, which contains exception emulating
+ code (push/pop registers, call handler), copied instructions(Kprobes copies
+ instructions which will be replaced by a jump, to the detour buffer), and
+ a jump which jumps back to the original execution path.
+
+ - Pre-optimization
+  After preparing detour code, Kprobes enqueues the kprobe to optimizing list
+ and kicks kprobe-optimizer workqueue to optimize it. To wait other optimized
+ probes, kprobe-optimizer will delay to work.
+  When the optimized-kprobe is hit before optimization, its handler
+ changes IP(instruction pointer) to copied code and exits. So, the
+ instructions which were copied to detour buffer are executed on the detour
+ buffer.
+
+ - Optimization
+  Kprobe-optimizer doesn't start instruction-replacing soon, it waits
+ synchronize_sched for safety, because some processors are possible to be
+ interrupted on the instructions which will be replaced by a jump instruction.
+ As you know, synchronize_sched() can ensure that all interruptions which were
+ executed when synchronize_sched() was called are done, only if
+ CONFIG_PREEMPT=n. So, this version supports only the kernel with
+ CONFIG_PREEMPT=n.(*)
+  After that, kprobe-optimizer replaces the 4 bytes right after int3 breakpoint
+ with relative-jump destination, and synchronize caches on all processors. Next,
+ it replaces int3 with relative-jump opcode, and synchronize caches again.
+
+ - Unoptimization
+  When unregistering, disabling kprobe or being blocked by other kprobe,
+ an optimized-kprobe will be unoptimized. Before kprobe-optimizer runs,
+ the kprobe just be dequeued from the optimized list. When the optimization
+ has been done, it replaces a jump with int3 breakpoint and original code.
+  First it puts int3 at the first byte of the jump, synchronize caches
+ on all processors, and replaces the 4 bytes right after int3 with the
+ original code.
+
+(*)This optimization-safety checking may be replaced with stop-machine method
+ which ksplice is done for supporting CONFIG_PREEMPT=y kernel.
+
+
+Thank you,
+
+---
+
+Masami Hiramatsu (7):
+      kprobes: Add documents of jump optimization
+      kprobes: x86: Support kprobes jump optimization on x86
+      kprobes: x86: Cleanup save/restore registers
+      kprobes: x86: Boost probes when reentering
+      kprobes: Jump optimization sysctl interface
+      kprobes: Introduce kprobes jump optimization
+      kprobes: Introduce generic insn_slot framework
+
+
+ Documentation/kprobes.txt      |  192 ++++++++++++-
+ arch/Kconfig                   |   13 +
+ arch/x86/Kconfig               |    1 
+ arch/x86/include/asm/kprobes.h |   31 ++
+ arch/x86/kernel/kprobes.c      |  589 +++++++++++++++++++++++++++++++++-------
+ include/linux/kprobes.h        |   45 +++
+ kernel/kprobes.c               |  571 +++++++++++++++++++++++++++++++++------
+ kernel/sysctl.c                |   13 +
+ 8 files changed, 1252 insertions(+), 203 deletions(-)
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
