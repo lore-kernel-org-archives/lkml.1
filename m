@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZGGTqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbZGGTvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbZGGTqE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 15:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZGGTpw
+	id S1755871AbZGGTvV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 15:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZGGTvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 15:45:52 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:58956 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754912AbZGGTpv (ORCPT
+	Tue, 7 Jul 2009 15:51:12 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:53321 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752125AbZGGTvL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 15:45:51 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEABY/U0pMQWU3/2dsb2JhbACBUc89hAcFgTo
-Date: Tue, 7 Jul 2009 15:45:33 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Oleg Nesterov <oleg@redhat.com>, Jiri Olsa <jolsa@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Eric Dumazet <eric.dumazet@gmail.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, davidel@xmailserver.org
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090707194533.GB13858@Krystal>
-References: <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com> <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com> <20090707140135.GA5506@Krystal> <20090707143416.GB11704@redhat.com> <20090707150406.GC7124@Krystal> <20090707154440.GA15605@redhat.com> <1246981815.9777.12.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 7 Jul 2009 15:51:11 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Null Pointer BUG in uhci_hcd
+Date: Tue, 7 Jul 2009 14:51:04 -0500
+User-Agent: KMail/1.9.9
+Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <Pine.LNX.4.44L0.0907071513380.8221-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0907071513380.8221-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1246981815.9777.12.camel@twins>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:42:43 up 129 days, 16:08,  5 users,  load average: 1.32, 1.42,
-	1.21
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907071451.08164.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
-> On Tue, 2009-07-07 at 17:44 +0200, Oleg Nesterov wrote:
-> > On 07/07, Mathieu Desnoyers wrote:
-> > >
-> > > Actually, thinking about it more, to appropriately support x86, as well
-> > > as powerpc, arm and mips, we would need something like:
-> > >
-> > > read_lock_smp_mb()
-> > >
-> > > Which would be a read_lock with an included memory barrier.
-> > 
-> > Then we need read_lock_irq_smp_mb, read_lock_irqsave__smp_mb, write_lock_xxx,
-> > otherwise it is not clear why only read_lock() has _smp_mb() version.
-> > 
-> > The same for spin_lock_xxx...
+On Tue July 7 2009, Alan Stern wrote:
+> On Tue, 7 Jul 2009, Michael S. Zick wrote:
 > 
-> At which time the smp_mb__{before,after}_{un,}lock become attractive
-> again.
+> > On Tue July 7 2009, Alan Stern wrote:
+> > > On Tue, 7 Jul 2009, Michael S. Zick wrote:
+> > > 
+> > > > > It looks like there's a serious problem in your UHCI hardware.  
+> > > > > According to the log you posted, it's not working at all.
+> > > > > 
+> > > > 
+> > > > I am using the x86-generic drivers - -
+> > > 
+> > > Not a problem with the drivers, a problem in the hardware.
+> > > 
+> > 
+> > Or hardware that works as the manufacturer intended, but differently
+> > than expected.  Same difference as "broken" when compared to "standard".
+> 
+> No, hardware that doesn't work at all.  As in "all reads return
+> 0xffffffff" -- that's just a guess but something like it would account
+> for what you saw.
+> 
+> For more information enable CONFIG_USB_DEBUG and CONFIG_DEBUG_FS, then 
+> see what's sitting in the usb/uhci/* files in debugfs.
 > 
 
-Then having a new __read_lock() (without acquire semantic) which would
-be required to be followed by a smp__mb_after_lock() would make sense. I
-think this would fit all of x86, powerpc, arm, mips without having to
-create tons of new primitives. Only "simpler" ones that clearly separate
-locking from memory barriers.
+Will add that to my list - -
+I need to do that to find/fix that error path message flood loop in ehci anyway.
 
-Mathieu
+Mike
+> > Let me see if I can find it again;
+> > 1106:3038 translates to: PCI_DEVICE_ID_VIA_82C586_2
+> > 1106:3104 translates to: PCI_DEVICE_ID_VIA_8235_USB_2
+> > 
+> > The first appears in (this device is the UHCI hub in the CX700 chipset):
+> > arch/powerpc/platforms/85xx/mpc85xx_cds.c:              case PCI_DEVICE_ID_VIA_82C586_2:
+> > arch/mips/pci/fixup-lm2e.c:DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C586_2,
+> > include/linux/pci_ids.h:#define PCI_DEVICE_ID_VIA_82C586_2      0x3038
+> 
+> Those are simple interrupt routing fixups.  Not related.
+> 
+> > The second appears in:
+> > include/linux/pci_ids.h:#define PCI_DEVICE_ID_VIA_8235_USB_2    0x3104
+> > <Hmm... Dead?  Not used?  Never used?  Source padding?>
+> 
+> Probably never used.
+> 
+> Alan Stern
+> 
+> 
+> 
 
 
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
