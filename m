@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZGGL0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbZGGL1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZGGL0b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 07:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbZGGL0Y
+	id S1756843AbZGGL1O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 07:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZGGL1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 07:26:24 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:58087 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754404AbZGGL0X (ORCPT
+	Tue, 7 Jul 2009 07:27:01 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:60077 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754213AbZGGL1A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 07:26:23 -0400
-Message-ID: <4A5330DB.2030505@novell.com>
-Date: Tue, 07 Jul 2009 07:26:19 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v9 5/5] KVM: create irqfd-cleanup-wq on demand
-References: <20090702153454.20186.99191.stgit@dev.haskins.net> <20090702153821.20186.9344.stgit@dev.haskins.net> <20090706155850.GA12399@redhat.com> <4A522050.7030200@novell.com> <20090706161444.GC12399@redhat.com> <4A52272A.2060101@novell.com> <20090706165045.GF12399@redhat.com> <4A524243.9020100@novell.com> <4A52DA60.8040200@redhat.com>
-In-Reply-To: <4A52DA60.8040200@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig7EDE01378CB46E5946B1BF1B"
+	Tue, 7 Jul 2009 07:27:00 -0400
+Subject: Re: [Bug #13306] hibernate slow on _second_ run
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <200907071258.33579.rjw@sisk.pl>
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera>
+	 <bXZeuxPQAWE.A.ZFB.BCpUKB@chimera> <1246925538.4652.8.camel@johannes.local>
+	 <200907071258.33579.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-CYAa0MFFR9EgW8FJ+MNw"
+Date: Tue, 07 Jul 2009 13:27:01 +0200
+Message-Id: <1246966021.4755.4.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig7EDE01378CB46E5946B1BF1B
-Content-Type: text/plain; charset=ISO-8859-1
+
+--=-CYAa0MFFR9EgW8FJ+MNw
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Avi Kivity wrote:
-> On 07/06/2009 09:28 PM, Gregory Haskins wrote:
->> Michael S. Tsirkin wrote:
->>  =20
->>> On Mon, Jul 06, 2009 at 12:32:42PM -0400, Gregory Haskins wrote:
->>>
->>>    =20
->>>> For the record, I would have rather just used my originally proposed=
+On Tue, 2009-07-07 at 12:58 +0200, Rafael J. Wysocki wrote:
 
->>>> slow-work thread instead of all this ;)
->>>>
->>>>       =20
->>> Or just keep the idle thread around, it's not a big deal.
->>>
->>>
->>>     =20
->>
->> If everyone is fine with that, lets do that then.  It's certainly the
->> simplest solution to just drop this patch.
->>
->> Avi?
->>
->>   =20
->
-> Sure.  If someone complains we can address it then.
->
-Ok, sounds good.
+> Thanks for the update.
+>=20
+> Last time I remember you managed to collect some ftrace output from the f=
+ailing
+> case, but they didn't reveal anything directly.
+>=20
+> We know, however, that is [suspend|resume]_device_irqs() in
+> driver/base/power/main.c are disabled, the issue doesn't show up.
+>=20
+> Is that correct?
 
-Thanks guys.
--Greg
+I'm not sure -- did we verify that somehow? I was running with some
+trial patch from you for a long time but it had no apparent effect.
 
+johannes
 
---------------enig7EDE01378CB46E5946B1BF1B
+--=-CYAa0MFFR9EgW8FJ+MNw
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iEYEARECAAYFAkpTMN8ACgkQlOSOBdgZUxmdyACgi6eFtTVVHfmg5FT0XqZX7ovQ
-5XsAn3ukOvtxcNH5DHpx4LdAJCJ15dG1
-=yTfh
+iQIcBAABAgAGBQJKUzEBAAoJEODzc/N7+Qma/SsP/1poqPzQzwXnYDtr0VMfqnq6
+3OPwbCe5VPzYpuaIurqQrcDAteE+yuNmxZqk5G1zmdhO9YP1gtmtjYINYQEmCOv/
+hLfvgwVRKPseXSZ7aIr08eA4yg/l2UvB/hjOIrVXTEX3ynW5f9ieYmz+C+ElHyZl
+cZQZUF8nnH6BjHtpXobO5oL+N/DK2DE5SpSKX/Mxc6EKQ5zcqDPC/gL6IjT1Sr+g
+gxdgvS6isaza8IqCF7cEYzdz32+FflFDAn4gzSYiU68Rr+ehyMrKku2h7PvEll4y
+CK3tAecXGvUB1RRCk1hi7EqQU0r2/NxGlw3TZan33d6p/nPq7wyrggOehHAnwTxS
+0b1qMD10XQp0W5nc3sXpcxIZysto25XL8FXaqscXoYJI+0CBGDDZ+gLoMyy6SKJB
+vBqI7oPiOyvZLJaFB1Z4JyNZyuMZUVv7jWxaJv2bSvClFVrvxPBiA9UURm5fzWTu
+6RnezzcN0VRWPqS7NquIrVK9RAcEa/AGY3W+JXiCS0b6/asVFlcUQ+iPsjpLF45q
+9wxZ0pdliCx/ybyQs9FSLCSM8Owz6mL2witDr1VZIiuLdP/IqsamyE6WI1gTY3K3
+HKKTBPVbsiGIad6HLqAU+FUkIwbkx40pt6eScvuzr649IUojbUFgRI/okCFenRnD
+0pti8GQ5NYIfmvYVo4OW
+=Mq+N
 -----END PGP SIGNATURE-----
 
---------------enig7EDE01378CB46E5946B1BF1B--
+--=-CYAa0MFFR9EgW8FJ+MNw--
+
