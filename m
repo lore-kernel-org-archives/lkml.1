@@ -1,86 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbZGGO6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbZGGPBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758764AbZGGO6b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 10:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758450AbZGGO6W
+	id S1758786AbZGGPBt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757606AbZGGPBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 10:58:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58029 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757984AbZGGO6V (ORCPT
+	Tue, 7 Jul 2009 11:01:42 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:4536 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757381AbZGGPBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 10:58:21 -0400
-Date: Tue, 7 Jul 2009 10:58:20 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
-Message-ID: <20090707145820.GA9976@infradead.org>
-References: <20090707144423.GC2714@wotan.suse.de> <20090707144823.GE2714@wotan.suse.de>
+	Tue, 7 Jul 2009 11:01:41 -0400
+X-Greylist: delayed 903 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Jul 2009 11:01:41 EDT
+X-SpamScore: 7
+X-BigFish: VPS7(zzzz1202hzzz32i87h41i42k43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KMF2CK-02-55G-01
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Robert Richter <robert.richter@amd.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: [PATCH] x86/oprofile: rename kernel parameter for architectural perfmon to arch_perfmon
+Date: Tue, 7 Jul 2009 16:43:29 +0200
+Message-ID: <1246977809-8253-1-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.6.3.1
+X-OriginalArrivalTime: 07 Jul 2009 14:45:59.0189 (UTC) FILETIME=[A43F0450:01C9FF11]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090707144823.GE2714@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 04:48:23PM +0200, Nick Piggin wrote:
-> Don't know whether it is a good idea to move i_alloc_sem into implementation.
-> Maybe it is better to leave it in the caller in this patchset?
+The short name of the achitecture is 'arch_perfmon'. This patch
+changes the kernel parameter to use this name.
 
-Generally moving locks without changing prototypes can be a very subtle
-way to break things.  A good option is to move the locking in a separate
-patch set in a patch series or at least release if it's otherwise to
-complicated.
+Cc: Andi Kleen <andi@firstfloor.org>
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+---
+ Documentation/kernel-parameters.txt |    4 ++--
+ arch/x86/oprofile/nmi_int.c         |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-> +int simple_setsize(struct dentry *dentry, loff_t newsize,
-> +			unsigned flags, struct file *file)
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index d08759a..fd64b54 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1720,8 +1720,8 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	oprofile.cpu_type=	Force an oprofile cpu type
+ 			This might be useful if you have an older oprofile
+ 			userland or if you want common events.
+-			Format: { archperfmon }
+-			archperfmon: [X86] Force use of architectural
++			Format: { arch_perfmon }
++			arch_perfmon: [X86] Force use of architectural
+ 				perfmon on Intel CPUs instead of the
+ 				CPU specific event set.
+ 
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index b07dd8d..89b9a5c 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -390,7 +390,7 @@ static int __init p4_init(char **cpu_type)
+ static int force_arch_perfmon;
+ static int force_cpu_type(const char *str, struct kernel_param *kp)
+ {
+-	if (!strcmp(str, "archperfmon")) {
++	if (!strcmp(str, "arch_perfmon")) {
+ 		force_arch_perfmon = 1;
+ 		printk(KERN_INFO "oprofile: forcing architectural perfmon\n");
+ 	}
+-- 
+1.6.3.1
 
-This one could probably also use kerneldoc comment.
-
-> +{
-> +	struct inode *inode = dentry->d_inode;
-> +	loff_t oldsize;
-> +	int error;
-> +
-> +	error = inode_newsize_ok(inode, newsize);
-> +	if (error)
-> +		return error;
-> +
-> +	oldsize = inode->i_size;
-> +	i_size_write(inode, newsize);
-> +	truncate_pagecache(inode, oldsize, newsize);
-> +
-> +	return error;
-> +}
-
-> +	if (ia_valid & ATTR_SIZE) {
-> +		if (inode->i_op && inode->i_op->setsize) {
-
-inode->i_op is mandatory these days.
-
-> +			unsigned int flags = 0;
-> +			struct file *file = NULL;
-> +
-> +			if (ia_valid & ATTR_FILE) {
-> +				flags |= SETSIZE_FILE;
-> +				file = attr->ia_file;
-> +			}
-> +			if (ia_valid & ATTR_OPEN)
-> +				flags |= SETSIZE_OPEN;
-> +			error = inode->i_op->setsize(dentry, attr->ia_size,
-> +							flags, file);
-> +			if (error)
-> +				return error;
-
-So you still pass down to ->setattr if ->setsize succeeded?  That's a
-very confusing calling convention.  It also means we first do the
-truncation and any following time/mode updates are in a separate
-transaction which is a no-go.
 
