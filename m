@@ -1,45 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbZGGLZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZGGL0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbZGGLZz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 07:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbZGGLZr
+	id S1756039AbZGGL0b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 07:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbZGGL0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 07:25:47 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:56667 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753862AbZGGLZq (ORCPT
+	Tue, 7 Jul 2009 07:26:24 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:58087 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754404AbZGGL0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 07:25:46 -0400
-Date: Tue, 7 Jul 2009 12:25:29 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, tridge@samba.org,
-       Pavel Machek <pavel@ucw.cz>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090707112529.GD5690@shareable.org>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <19019.16217.291678.588673@samba.org> <4A4B4D1D.8070308@panasas.com> <1246463087.3894.51.camel@mulgrave.site> <20090706204127.GD13638@shareable.org> <4A531D52.6040508@panasas.com>
+	Tue, 7 Jul 2009 07:26:23 -0400
+Message-ID: <4A5330DB.2030505@novell.com>
+Date: Tue, 07 Jul 2009 07:26:19 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A531D52.6040508@panasas.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Avi Kivity <avi@redhat.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v9 5/5] KVM: create irqfd-cleanup-wq on demand
+References: <20090702153454.20186.99191.stgit@dev.haskins.net> <20090702153821.20186.9344.stgit@dev.haskins.net> <20090706155850.GA12399@redhat.com> <4A522050.7030200@novell.com> <20090706161444.GC12399@redhat.com> <4A52272A.2060101@novell.com> <20090706165045.GF12399@redhat.com> <4A524243.9020100@novell.com> <4A52DA60.8040200@redhat.com>
+In-Reply-To: <4A52DA60.8040200@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig7EDE01378CB46E5946B1BF1B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> I wish the lawyers people would come forward, as promised,,and explain what
-> are the constraints on the short_name, given a long_name is present.
-> I'm still waiting for that private mail in my e-box. If the names do not
-> correspond at all but are both valid, why is that a problem?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig7EDE01378CB46E5946B1BF1B
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-To be fair Tridge said there is a reason.
+Avi Kivity wrote:
+> On 07/06/2009 09:28 PM, Gregory Haskins wrote:
+>> Michael S. Tsirkin wrote:
+>>  =20
+>>> On Mon, Jul 06, 2009 at 12:32:42PM -0400, Gregory Haskins wrote:
+>>>
+>>>    =20
+>>>> For the record, I would have rather just used my originally proposed=
 
-The only problem is we don't know what it is...
+>>>> slow-work thread instead of all this ;)
+>>>>
+>>>>       =20
+>>> Or just keep the idle thread around, it's not a big deal.
+>>>
+>>>
+>>>     =20
+>>
+>> If everyone is fine with that, lets do that then.  It's certainly the
+>> simplest solution to just drop this patch.
+>>
+>> Avi?
+>>
+>>   =20
+>
+> Sure.  If someone complains we can address it then.
+>
+Ok, sounds good.
 
--- Jamie
+Thanks guys.
+-Greg
+
+
+--------------enig7EDE01378CB46E5946B1BF1B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpTMN8ACgkQlOSOBdgZUxmdyACgi6eFtTVVHfmg5FT0XqZX7ovQ
+5XsAn3ukOvtxcNH5DHpx4LdAJCJ15dG1
+=yTfh
+-----END PGP SIGNATURE-----
+
+--------------enig7EDE01378CB46E5946B1BF1B--
