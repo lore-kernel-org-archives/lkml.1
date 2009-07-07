@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbZGGDp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbZGGDta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbZGGDp5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 23:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbZGGDps
+	id S1755531AbZGGDta (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 23:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbZGGDtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 23:45:48 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:60192 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754856AbZGGDpr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 23:45:47 -0400
-Date: Tue, 7 Jul 2009 11:45:48 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [RFC 7/7] crypto: Add PCLMULQDQ accelerated GHASH
-	implementation
-Message-ID: <20090707034548.GA28075@gondor.apana.org.au>
-References: <20090621135121.GA3153@gondor.apana.org.au> <1246937512.5282.99.camel@yhuang-dev.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246937512.5282.99.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 6 Jul 2009 23:49:22 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53786 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754800AbZGGDtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 23:49:22 -0400
+Date: Tue, 7 Jul 2009 13:49:08 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: linux-next: block tree build failure
+Message-Id: <20090707134908.e81b1556.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 11:31:52AM +0800, Huang Ying wrote:
->
-> What's your plan to convert everything to shash? For 2.6.32? How about
-> the progress? What can I do to help?
+Hi Jens,
 
-I've been busy with networking :)
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-I'll try to get onto hmac today or tomorrow.  But if you could
-spend some time on the remaining DIGEST algorithms that would
-very much be appreciated.
+fs/sync.c: In function 'sys_sync':
+fs/sync.c:121: error: implicit declaration of function 'wakeup_pdflush'
 
-Thanks,
+Caused by commit 1728603e84b339be5d5abd392ed3ec5936253863 ("writeback:
+switch to per-bdi threads for flushing data") from the block tree
+interacting with commit 3beab0b42413e83a7907db7176b54c840fc75a81
+("sys_sync(): fix 16% performance regression in ffsb create_4k test")
+from Linus' tree.
+
+I added the following patch as part of the block tree merge for today.  I
+have no idea if it is correct.
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 7 Jul 2009 13:34:26 +1000
+Subject: [PATCH] block: pdflush fixup
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ fs/sync.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/sync.c b/fs/sync.c
+index 3422ba6..bf03fc7 100644
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -118,7 +118,7 @@ restart:
+  */
+ SYSCALL_DEFINE0(sync)
+ {
+-	wakeup_pdflush(0);
++	wakeup_flusher_threads(0);
+ 	sync_filesystems(0);
+ 	sync_filesystems(1);
+ 	if (unlikely(laptop_mode))
+-- 
+1.6.3.3
+
