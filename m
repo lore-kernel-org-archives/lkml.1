@@ -1,45 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbZGGRgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756936AbZGGRkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756427AbZGGRgc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 13:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZGGRgZ
+	id S1756936AbZGGRkG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 13:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbZGGRj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 13:36:25 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47879 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752693AbZGGRgY (ORCPT
+	Tue, 7 Jul 2009 13:39:56 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:56965 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754397AbZGGRjz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 13:36:24 -0400
-Date: Tue, 7 Jul 2009 18:36:05 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Ming Lei <tom.leiming@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Joerg Roedel <joerg.roedel@amd.com>, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH][RFC] asm-generic:remove calling flush_write_buffers()
-	in dma_sync_*_for_cpu
-Message-ID: <20090707173605.GB18504@n2100.arm.linux.org.uk>
-References: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com> <20090707074821.GB6995@n2100.arm.linux.org.uk> <d82e647a0907070643i198b9188q80203ab0408b4df8@mail.gmail.com> <200907071606.48933.arnd@arndb.de>
+	Tue, 7 Jul 2009 13:39:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UgFGPqFk4097eM+VN4KP2ATQISWuOxPBf9fVeAhEZ91XuQFUtzljZrBY9egP+Qcpk4
+         4oBpf+KEFAr93APY2af28LfQyL/jBS9zzk3xeyRAzpiKoS4R4Xdu1Q/S0HqVHFhR5Mv8
+         +3C6aVcl0nahRA8bk1aiRRDoasAph3bWuFV+4=
+Date: Tue, 7 Jul 2009 19:39:50 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/3] ftrace: add tracepoint for timer
+Message-ID: <20090707173948.GC6184@nowhere>
+References: <4A51C5C2.20802@cn.fujitsu.com> <4A51C653.4040401@cn.fujitsu.com> <alpine.LFD.2.00.0907062140010.19480@localhost.localdomain> <4A531532.4010803@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200907071606.48933.arnd@arndb.de>
+In-Reply-To: <4A531532.4010803@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 04:06:48PM +0200, Arnd Bergmann wrote:
-> Note that actually you need to do writeback+invalidate in DMA_TO_DEVICE
+On Tue, Jul 07, 2009 at 05:28:18PM +0800, Xiao Guangrong wrote:
+> 
+> 
+> Thomas Gleixner wrote:
+> > On Mon, 6 Jul 2009, Xiao Guangrong wrote:
+> >> Changelog v1->v2:
+> >> 1: Add jiffies info into timer
+> >> 2: Combine debugobjects and trace as Thomas's suggestion
+> > 
+> > I like it that way. Some minor nitpicks below.
+> >  
+> >> +TRACE_EVENT(timer_expire,
+> >> +
+> >> +	TP_PROTO(struct timer_list *timer),
+> >> +
+> >> +	TP_ARGS(timer),
+> >> +
+> >> +	TP_STRUCT__entry(
+> >> +		__field( void *,	timer		)
+> >> +		__field( void *,	function	)
+> > 
+> >   Do we really need the function here? It does not change between
+> >   start and expiry.
+> > 
+> 
+> Yeah, I'll fix.
+> 
+> >> +TRACE_EVENT(timer_cancel,
+> >> +
+> >> +	TP_PROTO(struct timer_list *timer),
+> >> +
+> >> +	TP_ARGS(timer),
+> >> +
+> >> +	TP_STRUCT__entry(
+> >> +		__field( void *,	timer		)
+> >> +		__field( void *,	function	)
+> > 
+> >   Ditto.
+> > 
+> 
+> Will fix.
+> 
+> >> +
+> >> +static inline void debug_and_trace_timer_expire(struct timer_list *timer)
+> > 
+> >   Technically not really necessary. The debug code does not care about
+> >   it.
+> > 
+> 
+> Will fix.
+> 
+> >>  			timer = list_first_entry(head, struct timer_list,entry);
+> >> +			debug_and_trace_timer_expire(timer);
+> >>  			fn = timer->function;
+> >>  			data = timer->data;
+> >>  
+> > 
+> > Can you please add the tracepoint which was suggested by Anton (IIRC)
+> > which allows us to measure the execution time of the callback function
+> > ? There is no need to dereference timer in the expiry tracepoint, we
+> > just store the pointer. So we can safely move the tracepoints just
+> > around the function call.
+> > 
+> >    trace_timer_expire(timer);
+> >    fn(data);
+> >    trace_timer_callback_done(timer);
+> > 
+> > Or whatever fancy name you come up with.
+> > 
+> 
+> OK, I'll fix it base on your suggestion.
+>  
+> trace_timer_expire/trace_timer_callback_done are already in Frederic' tree
+> but with different name, see below URL:
+>  	http://marc.info/?l=linux-kernel&m=124331396919301&w=2
+>  
+> I'll modify those tracepoint's name to match ours.
+>  
+> Thank you very much!
+>  
+> Xiao
 
-Rubbish.  DMA _to_ the device just needs any data held in the cache to
-be pushed out into the hardware RAM.  There's absolutely no point in
-invalidating it - that's a complete waste of time.
 
-> and at least an invalidate in DMA_FROM_DEVICE during dma_map_*.
-> For the unmap, I don't think you ever need to invalidate the cache.
+If you wish so, I can gather your patches with the one of Anton Blanchard
+and send a pull request once it's acked.
 
-As I've already explained, you do if you have speculative prefetching
-which can bring in data into the cache from _any_ memory location at
-_any_ time.  We _are_ going to have to do this, no questions asked.
+Thanks,
+Frederic.
+
