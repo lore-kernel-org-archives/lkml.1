@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756285AbZGGRTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbZGGRYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756285AbZGGRTD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 13:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197AbZGGRSz
+	id S1756611AbZGGRYQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 13:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZGGRYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 13:18:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39321 "EHLO mx2.redhat.com"
+	Tue, 7 Jul 2009 13:24:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51775 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755083AbZGGRSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 13:18:54 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090707163336.GE6692@linux.vnet.ibm.com>
-References: <20090707163336.GE6692@linux.vnet.ibm.com> <1246976551.3613.33.camel@ht.satnam> <1246975428.3613.10.camel@ht.satnam> <16660.1246981034@redhat.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: dhowells@redhat.com, Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       trivial <trivial@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 16/22] trivial: fix typo "that that" in multiple files
-Date: Tue, 07 Jul 2009 18:17:57 +0100
-Message-ID: <19787.1246987077@redhat.com>
+	id S1753174AbZGGRYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 13:24:00 -0400
+Message-ID: <4A5384A4.7060108@redhat.com>
+Date: Tue, 07 Jul 2009 13:23:48 -0400
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH 4/5] add isolate pages vmstat
+References: <20090707090120.1e71a060.minchan.kim@barrios-desktop> <20090707090509.0C60.A69D9226@jp.fujitsu.com> <20090707101855.0C63.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0907071248560.5124@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0907071248560.5124@gentwo.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Lameter wrote:
+> On Tue, 7 Jul 2009, KOSAKI Motohiro wrote:
+> 
+>> +++ b/include/linux/mmzone.h
+>> @@ -100,6 +100,8 @@ enum zone_stat_item {
+>>  	NR_BOUNCE,
+>>  	NR_VMSCAN_WRITE,
+>>  	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
+>> +	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
+>> +	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
+> 
+> LRU counters are rarer in use then the counters used for dirty pages etc.
+> 
+> Could you move the counters for reclaim into a separate cacheline?
 
-Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> The "that that" can read awkwardly even for native English (or, for that
-> matter, American) speakers, even though it sounds quite natural in spoken
-> English.
-
-I think it sounds quite natural when you say it because you say them
-differently - or at least I do.  The first 'that' is a conjunction, and the
-second a determinative.  Possibly the determinative should be in italics, but
-that's hard to do in plain text.
-
-> Would it be possible to reword as for the RCU example?
-> ...
-> 	"likely that this process will submit another request soon, and that"
-
-This is actually the as-iosched.txt example.
-
-To use the RCU example:
-
-	Therefore, as soon as a CPU is seen passing through any of these
-	three states, we know that that CPU has exited any previous RCU
-	read-side critical sections.
-
-I think that in this example, "a CPU" should be paired with the "that"
-determinative because you're not talking about the CPU you've got in your hand
-per se, but a random CPU over there.
-
-If you instead said "this CPU", being more specific, I think that's when you'd
-use the "this" determinative:
-
-	Therefore, as soon as this CPU is seen passing through any of these
-	three states, we know that this CPU has exited any previous RCU
-	read-side critical sections.
-
-Of course, I'm not a qualified linguist - I know enough to make stuff up and
-hopefully make it sound plausible.
-
-David
+I don't get the point of that - these counters are
+per-cpu anyway, so why would they need to be in a
+separate cacheline?
