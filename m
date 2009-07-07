@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbZGGXtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZGGXyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758360AbZGGXtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 19:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbZGGXtP
+	id S1758473AbZGGXyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 19:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757080AbZGGXyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 19:49:15 -0400
-Received: from eddie.linux-mips.org ([78.24.191.182]:57676 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756869AbZGGXtP (ORCPT
+	Tue, 7 Jul 2009 19:54:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:18956 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756666AbZGGXyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 19:49:15 -0400
-Date: Wed, 8 Jul 2009 00:49:11 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Cyrill Gorcunov <gorcunov@openvz.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC -tip] x86,apic -- reduce disable_apic usage
-In-Reply-To: <4A50E323.6060109@zytor.com>
-Message-ID: <alpine.LFD.2.00.0907080023470.13862@eddie.linux-mips.org>
-References: <20090705162044.GC4791@lenovo> <alpine.LFD.2.00.0907051737100.13862@eddie.linux-mips.org> <4A50E323.6060109@zytor.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 7 Jul 2009 19:54:16 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <200907072336.14767.florian@openwrt.org>
+References: <200907072336.14767.florian@openwrt.org>
+Date: Wed, 8 Jul 2009 01:54:14 +0200
+Message-ID: <154e089b0907071654o46145717h17ac558aa4d524e0@mail.gmail.com>
+Subject: Re: [PATCH] vlynq: remove duplicated #include
+From: Hannes Eder <hannes@hanneseder.net>
+To: Florian Fainelli <florian@openwrt.org>
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Jul 2009, H. Peter Anvin wrote:
+On Tue, Jul 7, 2009 at 23:36, Florian Fainelli<florian@openwrt.org> wrote:
+> Remove duplicated #include('s) in drivers/vlynq/vlynq.c
 
-> >  How do you set cpu_has_apic for systems with discrete local APICs?  The 
-> > CPUID flag is not set in this case.
-> > 
-> 
-> Well, should it be?  We do set flags when they're appropriate to us, and
-> if the semantics are such as that is inappropriate we can set a custom bit.
+The following little script catches more of these issues, though it
+might be a bit fragile:
 
- Hmm, that might simplify things here and there and the less special cases 
-in code -- and thus effort needed -- for the discrete APIC, the better.  
-I think there is no reason why it couldn't be done -- all the places which 
-need version-specific APIC features have to check the LVR register anyway.  
-And the availability of the APICBASE MSR has to be validated separately 
-too as it comes with P6+ only.
+#!/bin/bash
+find . -name "*.c" | \
+while read file; do
+    dblinc=$(grep "^#include <" $file | sort | uniq -c | grep -v "^      1 ")
+    [ "$dblinc" != "" ] && echo $file: $dblinc
+done
 
- The only place which could care I believe is code to set X86_FEATURE_11AP 
--- this should obviously be disabled for the discrete APIC as it is now, 
-as the chip does not suffer from the erratum and the workaround is costly 
-performance-wise.  That piece of code would have to be checked -- I don't 
-know what the order of setting of these bits would be and thus if one 
-could affect the other.  The dependency would better be well documented 
-then too -- my observation is the knowledge about the APIC subsystem among 
-people typically only covers a narrow subset of implementations.
+when ran from the linux-2.6 src tree, the output is something like
+(lines starting with '#' are my annotations):
 
-  Maciej
+./mm/slab.c: 3 #include <linux/kmalloc_sizes.h>
+# this is a false positive
+./mm/slqb.c: 2 #include <linux/seq_file.h>
+# I did not look a this one
+./mm/shmem.c: 2 #include <linux/vfs.h>
+# this is a hit
+# the rest (about 50 hits) skipped
+
+Do you want to investigate this issues?
+
+Cheers,
+Hannes
