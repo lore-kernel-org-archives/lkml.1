@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZGGT0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbZGGT0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbZGGT0F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 15:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZGGTZv
+	id S1756554AbZGGT0y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 15:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbZGGT0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 15:25:51 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:56866 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753865AbZGGTZu (ORCPT
+	Tue, 7 Jul 2009 15:26:46 -0400
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:65297 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751793AbZGGT0p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 15:25:50 -0400
+	Tue, 7 Jul 2009 15:26:45 -0400
+X-Greylist: delayed 800 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Jul 2009 15:26:45 EDT
 From: Frans Pop <elendil@planet.nl>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc2: Reported regressions from 2.6.30
-Date: Tue, 7 Jul 2009 21:25:45 +0200
+Subject: Re: [Bug #13389] Warning 'Invalid throttling state, reset' gets displayed when it should not be
+Date: Tue, 7 Jul 2009 21:19:57 +0200
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, bunk@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, kernel-testers@vger.kernel.org,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
-In-reply-To: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>, rui.zhang@intel.com
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera> <bXZeuxPQAWE.A.BN.NBpUKB@chimera>
+In-Reply-To: <bXZeuxPQAWE.A.BN.NBpUKB@chimera>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200907072125.47762.elendil@planet.nl>
-X-OriginalArrivalTime: 07 Jul 2009 19:25:48.0240 (UTC) FILETIME=[BB4CE500:01C9FF38]
+Message-Id: <200907072119.59171.elendil@planet.nl>
+X-OriginalArrivalTime: 07 Jul 2009 19:19:59.0389 (UTC) FILETIME=[EB5E74D0:01C9FF37]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If you know of any other unresolved regressions from 2.6.30, please let
-> me know either and I'll add them to the list.
+On Tuesday 07 July 2009, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13389
+> Subject	: Warning 'Invalid throttling state, reset' gets displayed when
+>		  it should not be 
+> Submitter	: Frans Pop <elendil@planet.nl> 
+> Date		: 2009-05-26 15:24 (42 days old)
+> Handled-By	: Frans Pop <elendil@planet.nl>
+> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=21671
+> 		  http://bugzilla.kernel.org/attachment.cgi?id=21672
 
-Please add: http://lkml.org/lkml/2009/6/29/88
-
-Reinette Chatre is handling the bug and posted a patch in 
-http://lkml.org/lkml/2009/6/30/224
-
-Thanks,
-FJP
+I still have not received any reaction from the ACPI maintainers to the 
+bug or the proposed patches.
