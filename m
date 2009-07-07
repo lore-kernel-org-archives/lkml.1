@@ -1,65 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbZGGOfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbZGGOg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758577AbZGGOfu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 10:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758348AbZGGOei
+	id S1758796AbZGGOg6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 10:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758304AbZGGOfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 10:34:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42697 "EHLO hera.kernel.org"
+	Tue, 7 Jul 2009 10:35:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44112 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758309AbZGGOeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 10:34:37 -0400
-Subject: [PATCH 9/22] trivial: fix typo "could could" in multiple files
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: trivial <trivial@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1246975428.3613.10.camel@ht.satnam>
-References: <1246975428.3613.10.camel@ht.satnam>
-Content-Type: text/plain
-Date: Tue, 07 Jul 2009 19:45:22 +0530
-Message-Id: <1246976122.3613.25.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1758022AbZGGOfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 10:35:21 -0400
+Date: Tue, 7 Jul 2009 16:34:50 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Eric Dumazet <eric.dumazet@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
+       davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090707143450.GC6619@jolsa.lab.eng.brq.redhat.com>
+References: <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com> <20090703092438.GE3902@elte.hu> <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com> <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com> <20090707140135.GA5506@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090707140135.GA5506@Krystal>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replaced "could could" with "could" in multiple files
+On Tue, Jul 07, 2009 at 10:01:35AM -0400, Mathieu Desnoyers wrote:
+> * Jiri Olsa (jolsa@redhat.com) wrote:
+> > On Tue, Jul 07, 2009 at 12:18:16PM +0200, Jiri Olsa wrote:
+> > > On Fri, Jul 03, 2009 at 01:18:48PM +0200, Jiri Olsa wrote:
+> > > > On Fri, Jul 03, 2009 at 12:25:30PM +0200, Ingo Molnar wrote:
+> > > > > 
+> > > > > * Jiri Olsa <jolsa@redhat.com> wrote:
+> > > > > 
+> > > > > > On Fri, Jul 03, 2009 at 11:24:38AM +0200, Ingo Molnar wrote:
+> > > > > > > 
+> > > > > > > * Eric Dumazet <eric.dumazet@gmail.com> wrote:
+> > > > > > > 
+> > > > > > > > Ingo Molnar a écrit :
+> > > > > > > > > * Jiri Olsa <jolsa@redhat.com> wrote:
+> > > > > > > > > 
+> > > > > > > > >> +++ b/arch/x86/include/asm/spinlock.h
+> > > > > > > > >> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+> > > > > > > > >>  #define _raw_read_relax(lock)	cpu_relax()
+> > > > > > > > >>  #define _raw_write_relax(lock)	cpu_relax()
+> > > > > > > > >>  
+> > > > > > > > >> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> > > > > > > > >> +#define smp_mb__after_lock() do { } while (0)
+> > > > > > > > > 
+> > > > > > > > > Two small stylistic comments, please make this an inline function:
+> > > > > > > > > 
+> > > > > > > > > static inline void smp_mb__after_lock(void) { }
+> > > > > > > > > #define smp_mb__after_lock
+> > > > > > > > > 
+> > > > > > > > > (untested)
+> > > > > > > > > 
+> > > > > > > > >> +/* The lock does not imply full memory barrier. */
+> > > > > > > > >> +#ifndef smp_mb__after_lock
+> > > > > > > > >> +#define smp_mb__after_lock() smp_mb()
+> > > > > > > > >> +#endif
+> > > > > > > > > 
+> > > > > > > > > ditto.
+> > > > > > > > > 
+> > > > > > > > > 	Ingo
+> > > > > > > > 
+> > > > > > > > This was following existing implementations of various smp_mb__??? helpers :
+> > > > > > > > 
+> > > > > > > > # grep -4 smp_mb__before_clear_bit include/asm-generic/bitops.h
+> > > > > > > > 
+> > > > > > > > /*
+> > > > > > > >  * clear_bit may not imply a memory barrier
+> > > > > > > >  */
+> > > > > > > > #ifndef smp_mb__before_clear_bit
+> > > > > > > > #define smp_mb__before_clear_bit()      smp_mb()
+> > > > > > > > #define smp_mb__after_clear_bit()       smp_mb()
+> > > > > > > > #endif
+> > > > > > > 
+> > > > > > > Did i mention that those should be fixed too? :-)
+> > > > > > > 
+> > > > > > > 	Ingo
+> > > > > > 
+> > > > > > ok, could I include it in the 2/2 or you prefer separate patch?
+> > > > > 
+> > > > > depends on whether it will regress ;-)
+> > > > > 
+> > > > > If it regresses, it's better to have it separate. If it wont, it can 
+> > > > > be included. If unsure, default to the more conservative option.
+> > > > > 
+> > > > > 	Ingo
+> > > > 
+> > > > 
+> > > > how about this.. 
+> > > > and similar change for smp_mb__before_clear_bit in a separate patch
+> > > > 
+> > > > 
+> > > > diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+> > > > index b7e5db8..4e77853 100644
+> > > > --- a/arch/x86/include/asm/spinlock.h
+> > > > +++ b/arch/x86/include/asm/spinlock.h
+> > > > @@ -302,4 +302,8 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+> > > >  #define _raw_read_relax(lock)	cpu_relax()
+> > > >  #define _raw_write_relax(lock)	cpu_relax()
+> > > >  
+> > > > +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> > > > +static inline void smp_mb__after_lock(void) { }
+> > > > +#define ARCH_HAS_SMP_MB_AFTER_LOCK
+> > > > +
+> > > >  #endif /* _ASM_X86_SPINLOCK_H */
+> > > > diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+> > > > index 252b245..4be57ab 100644
+> > > > --- a/include/linux/spinlock.h
+> > > > +++ b/include/linux/spinlock.h
+> > > > @@ -132,6 +132,11 @@ do {								\
+> > > >  #endif /*__raw_spin_is_contended*/
+> > > >  #endif
+> > > >  
+> > > > +/* The lock does not imply full memory barrier. */
+> > > > +#ifndef ARCH_HAS_SMP_MB_AFTER_LOCK
+> > > > +static inline void smp_mb__after_lock(void) { smp_mb(); }
+> > > > +#endif
+> > > > +
+> > > >  /**
+> > > >   * spin_unlock_wait - wait until the spinlock gets unlocked
+> > > >   * @lock: the spinlock in question.
+> > > > diff --git a/include/net/sock.h b/include/net/sock.h
+> > > > index 4eb8409..98afcd9 100644
+> > > > --- a/include/net/sock.h
+> > > > +++ b/include/net/sock.h
+> > > > @@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
+> > > >   * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
+> > > >   * could then endup calling schedule and sleep forever if there are no more
+> > > >   * data on the socket.
+> > > > + *
+> > > > + * The sk_has_helper is always called right after a call to read_lock, so we
+> > > > + * can use smp_mb__after_lock barrier.
+> > > >   */
+> > > >  static inline int sk_has_sleeper(struct sock *sk)
+> > > >  {
+> > > > @@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
+> > > >  	 *
+> > > >  	 * This memory barrier is paired in the sock_poll_wait.
+> > > >  	 */
+> > > > -	smp_mb();
+> > > > +	smp_mb__after_lock();
+> > > >  	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
+> > > >  }
+> > > >  
+> > > 
+> > > any feedback on this? 
+> > > I'd send v6 if this way is acceptable..
+> > > 
+> > > thanks,
+> > > jirka
+> > 
+> > also I checked the smp_mb__before_clear_bit/smp_mb__after_clear_bit and
+> > it is used quite extensivelly.
+> > 
+> > I'd prefer to send it in a separate patch, so we can move on with the 
+> > changes I've sent so far..
+> > 
+> 
+> As with any optimization (and this is one that adds a semantic that will
+> just grow the memory barrier/locking rule complexity), it should come
+> with performance benchmarks showing real-life improvements.
+> 
+> Otherwise I'd recommend sticking to smp_mb() if this execution path is
+> not that critical, or to move to RCU if it's _that_ critical.
+> 
+> A valid argument would be if the data structures protected are so
+> complex that RCU is out of question but still the few cycles saved by
+> removing a memory barrier are really significant. And even then, the
+> proper solution would be more something like a
+> __read_lock()+smp_mb+smp_mb+__read_unlock(), so we get the performance
+> improvements on architectures other than x86 as well.
+> 
+> So in all cases, I don't think the smp_mb__after_lock() is the
+> appropriate solution.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- net/rds/ib_cm.c |    2 +-
- net/rds/iw_cm.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+well, I'm not that familiar with RCU, but I dont mind to omit the smp_mb__after_lock 
+change as long as the first one (1/2) stays :)
 
-diff --git a/net/rds/ib_cm.c b/net/rds/ib_cm.c
-index f8e40e1..42268a9 100644
---- a/net/rds/ib_cm.c
-+++ b/net/rds/ib_cm.c
-@@ -354,7 +354,7 @@ static u32 rds_ib_protocol_compatible(const struct rds_ib_connect_private *dp)
- 	 * original size. The only way to tell the difference is by looking at
- 	 * the contents, which are initialized to zero.
- 	 * If the protocol version fields aren't set, this is a connection attempt
--	 * from an older version. This could could be 3.0 or 2.0 - we can't tell.
-+	 * from an older version. This could be 3.0 or 2.0 - we can't tell.
- 	 * We really should have changed this for OFED 1.3 :-( */
- 	if (dp->dp_protocol_major == 0)
- 		return RDS_PROTOCOL_3_0;
-diff --git a/net/rds/iw_cm.c b/net/rds/iw_cm.c
-index a416b0d..784558e 100644
---- a/net/rds/iw_cm.c
-+++ b/net/rds/iw_cm.c
-@@ -352,7 +352,7 @@ static u32 rds_iw_protocol_compatible(const struct rds_iw_connect_private *dp)
- 	 * original size. The only way to tell the difference is by looking at
- 	 * the contents, which are initialized to zero.
- 	 * If the protocol version fields aren't set, this is a connection attempt
--	 * from an older version. This could could be 3.0 or 2.0 - we can't tell.
-+	 * from an older version. This could be 3.0 or 2.0 - we can't tell.
- 	 * We really should have changed this for OFED 1.3 :-( */
- 	if (dp->dp_protocol_major == 0)
- 		return RDS_PROTOCOL_3_0;
--- 
-1.6.0.6
+how about others, any ideas?
 
-
-
+thanks,
+jirka
+> 
+> Mathieu
+> 
+> > regards,
+> > jirka
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
