@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZGGS7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbZGGTGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbZGGS7p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 14:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZGGS7i
+	id S1755106AbZGGTGx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 15:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbZGGTGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 14:59:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36519 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754175AbZGGS7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 14:59:37 -0400
-Message-ID: <4A539B11.5020803@redhat.com>
-Date: Tue, 07 Jul 2009 14:59:29 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 7 Jul 2009 15:06:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56713 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754268AbZGGTGp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 15:06:45 -0400
+Date: Tue, 7 Jul 2009 15:06:43 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Paul Smith <paul@mad-scientist.net>
+Cc: Linux XFS <linux-xfs@oss.sgi.com>, christoph hellwig <hch@ifradead.org>,
+       david chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.27.25] assfail in xfs_attr_quiesce() during umount
+Message-ID: <20090707190643.GA32467@infradead.org>
+References: <MAIL10OSN4RHlLx5ERz0002f238@mail1.netezza.com>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [RFC PATCH 1/2] vmscan don't isolate too many pages
-References: <20090707182947.0C6D.A69D9226@jp.fujitsu.com> <20090707184034.0C70.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20090707184034.0C70.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <MAIL10OSN4RHlLx5ERz0002f238@mail1.netezza.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
+On Tue, Jul 07, 2009 at 02:42:16PM -0400, Paul Smith wrote:
+> According to the thread for the former, it was intended to be resolved
+> by "proper per-vfsmount write count in 2.6.25 as part of the per-mount
+> r/o patches" (C.Hellwig)
+> 
+> Did those fixes indeed go into 2.6.25 (or 2.6.27 or below)?  Was there
+> something else that needed to be done for XFS to be able take advantage
+> of that enhancement?
 
-> FAQ
-> -------
-> Q: Why do you compared zone accumulate pages, not individual zone pages?
-> A: If we check individual zone, #-of-reclaimer is restricted by smallest zone.
->    it mean decreasing the performance of the system having small dma zone.
+We haven't fixed the VFS issues yet.  In some later kernel we just
+changed the assert to a warn on for now until the issue is sorted out.
 
-That is a clever solution!  I was playing around a bit with
-doing it on a per-zone basis.  Your idea is much nicer.
+> And, is the patch posted by DavidC here:
+> http://marc.info/?l=linux-kernel&m=120106649923499&w=2
 
-However, I can see one potential problem with your patch:
+It looks somehwat dangerous for me.  For now I would just comment
+out the assert or change it to a WARN_ON as in the newer kernels.
 
-+		nr_inactive += zone_page_state(zone, NR_INACTIVE_ANON);
-+		nr_inactive += zone_page_state(zone, NR_INACTIVE_FILE);
-+		nr_isolated += zone_page_state(zone, NR_ISOLATED_ANON);
-+		nr_isolated += zone_page_state(zone, NR_ISOLATED_FILE);
-+	}
-+
-+	return nr_isolated > nr_inactive;
+I've recently started looking at that area in the VFS again and I'll
+hopefully make progress on a solution that sets MS_RDONLY at the
+correct time.
 
-What if we ran out of swap space, or are not scanning the
-anon list at all for some reason?
-
-It is possible that there are no inactive_file pages left,
-with all file pages already isolated, and your function
-still letting reclaimers through.
-
-This means you could still get a spurious OOM.
-
-I guess I should mail out my (ugly) approach, so we can
-compare the two :)
