@@ -1,136 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbZGGBqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZGGBsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755129AbZGGBqj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 21:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZGGBq0
+	id S1755903AbZGGBsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 21:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbZGGBsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 21:46:26 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60418 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753348AbZGGBqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 21:46:24 -0400
-From: Neil Brown <neilb@suse.de>
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-Date: Tue, 7 Jul 2009 11:47:06 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Jul 2009 21:48:13 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:49078 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752781AbZGGBsM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 21:48:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=f/ZO2St6QTgFjJZAmHC3aJqlDnbObdYmN1UAu2SkT9GrJyeX6zYqKJxZe0ewYvDn6P
+         i+7mP2+oAbdmiBIgJTH7WsVR6/D0KhLtr5FwL2Cic/D4COW4iv697cMRo3oN6YZSorm9
+         ImZCqf/9DQwoTJgzVOIeT1gdAAvipD/khgW+U=
+Date: Tue, 7 Jul 2009 10:48:06 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 4/5] add isolate pages vmstat
+Message-Id: <20090707104806.6706ac4a.minchan.kim@barrios-desktop>
+In-Reply-To: <20090707101855.0C63.A69D9226@jp.fujitsu.com>
+References: <20090707090120.1e71a060.minchan.kim@barrios-desktop>
+	<20090707090509.0C60.A69D9226@jp.fujitsu.com>
+	<20090707101855.0C63.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <19026.43290.340555.774690@notabene.brown>
-Cc: "Mike Snitzer" <snitzer@redhat.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Alasdair G Kergon" <agk@redhat.com>, jens.axboe@oracle.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       "device-mapper development" <dm-devel@redhat.com>
-Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out  of the 'queue' sysfs directory.
-In-Reply-To: message from Martin K. Petersen on Friday June 26
-References: <19010.62951.886231.96622@notabene.brown>
-	<yq11vp8spxo.fsf@sermon.lab.mkp.net>
-	<125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name>
-	<yq1k530qkm7.fsf@sermon.lab.mkp.net>
-	<19012.47077.328965.919868@notabene.brown>
-	<yq1ws6znja4.fsf@sermon.lab.mkp.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday June 26, martin.petersen@oracle.com wrote:
-> >>>>> "Neil" == Neil Brown <neilb@suse.de> writes:
-> 
-> Neil> Providing the fields are clearly and unambiguously documented so
-> Neil> that it I can use the documentation to verify the implementation
-> Neil> (in md at least), I will be satisfied.
-> 
-> The current sysfs documentation says:
-> 
-> /sys/block/<disk>/queue/minimum_io_size:
-> [...] For RAID arrays it is often the stripe chunk size.
-> 
-> /sys/block/<disk>/queue/optimal_io_size:
-> [...] For RAID devices it is usually the stripe width or the internal
-> block size.
-> 
-> The latter should be "internal track size".  But in the context of MD I
-> think those two definitions are crystal clear.
+It looks good to me. 
+Thanks for your effort. I added my review sign. :)
 
-They might be "clear" but I'm not convinced that they are "correct".
+Let remain one side note. 
+This accounting feature results from direct reclaim bomb. 
+If we prevent direct reclaim bomb, I think this feature can be removed. 
 
+As I know, Rik or Wu is making patch for throttling direct reclaim. 
+
+On Tue,  7 Jul 2009 10:19:53 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+> > > > Index: b/mm/vmscan.c
+> > > > ===================================================================
+> > > > --- a/mm/vmscan.c
+> > > > +++ b/mm/vmscan.c
+> > > > @@ -1082,6 +1082,7 @@ static unsigned long shrink_inactive_lis
+> > > >  						-count[LRU_ACTIVE_ANON]);
+> > > >  		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
+> > > >  						-count[LRU_INACTIVE_ANON]);
+> > > > +		__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, nr_taken);
+> > > 
+> > > Lumpy can reclaim file + anon anywhere.  
+> > > How about using count[NR_LRU_LISTS]?
+> > 
+> > Ah yes, good catch.
+> 
+> Fixed.
+> 
+> Subject: [PATCH] add isolate pages vmstat
+> 
+> If the system have plenty threads or processes, concurrent reclaim can
+> isolate very much pages.
+> Unfortunately, current /proc/meminfo and OOM log can't show it.
+> 
+> This patch provide the way of showing this information.
 > 
 > 
-> As far as making the application of these values more obvious I propose
-> the following:
+> reproduce way
+> -----------------------
+> % ./hackbench 140 process 1000
+>    => couse OOM
 > 
-> What:		/sys/block/<disk>/queue/minimum_io_size
-> Date:		April 2009
-> Contact:	Martin K. Petersen <martin.petersen@oracle.com>
-> Description:
-> 		Storage devices may report a granularity or minimum I/O
-> 		size which is the device's preferred unit of I/O.
-> 		Requests smaller than this may incur a significant
-> 		performance penalty.
-> 
-> 		For disk drives this value corresponds to the physical
-> 		block size. For RAID devices it is usually the stripe
-> 		chunk size.
-
-These two paragraphs are contradictory.  There is no sense in which a
-RAID chunk size is a preferred minimum I/O size.
-
-To some degree it is actually a 'maximum' preferred size for random
-IO.  If you do random IO is blocks larger than the chunk size then you
-risk causing more 'head contention' (at least with RAID0 - with RAID5
-the tradeoff is more complex).
-
-If you are talking about "alignment", then yes - the chunk size is an
-appropriate size to align on.  But so are the block size and the
-stripe size and none is, in general, any better than any other.
-
-
-Also, you say "may" report.  If a device does not report, what happens
-to this file.  Is it not present, or empty, or contain a special
-"undefined" value?
-I think the answer is that "512" is reported.  It might be good to
-explicitly document that.
-
-
-> 
-> 		A properly aligned multiple of minimum_io_size is the
-> 		preferred request size for workloads where a high number
-> 		of I/O operations is desired.
+> Active_anon:146 active_file:41 inactive_anon:0
+>  inactive_file:0 unevictable:0
+>  isolated_anon:49245 isolated_file:113
+>  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  dirty:0 writeback:0 buffer:49 unstable:0
+>  free:184 slab_reclaimable:276 slab_unreclaimable:5492
+>  mapped:87 pagetables:28239 bounce:0
 > 
 > 
-> What:		/sys/block/<disk>/queue/optimal_io_size
-> Date:		April 2009
-> Contact:	Martin K. Petersen <martin.petersen@oracle.com>
-> Description:
-> 		Storage devices may report an optimal transfer length or
-> 		streaming I/O size which is the device's preferred unit
-> 		of sustained I/O.  This value is a multiple of the
-> 		device's minimum_io_size.
-> 
-> 		optimal_io_size is rarely reported for disk drives. For
-> 		RAID devices it is usually the stripe width or the
-> 		internal track size.
-> 
-> 		A properly aligned multiple of optimal_io_size is the
-> 		preferred request size for workloads where sustained
-> 		throughput is desired.
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-In this case, if a device does not report an optimal size, the file
-contains "0" - correct?  Should that be explicit?
-
-I'd really like to see an example of how you expect filesystems to use
-this.
-I can well imagine the VM or elevator using this to assemble IO
-requests in to properly aligned requests.  But I cannot imagine how
-e.g mkfs would use it.
-Or am I misunderstanding and this is for programs that use O_DIRECT on
-the block device so they can optimise their request stream?
-
-Thanks,
-NeilBrown
+-- 
+Kind regards,
+Minchan Kim
