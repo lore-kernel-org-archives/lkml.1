@@ -1,150 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbZGGAyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754396AbZGGBFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbZGGAyf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 20:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZGGAy0
+	id S1754396AbZGGBFd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 21:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbZGGBFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 20:54:26 -0400
-Received: from eta-ori.net ([91.121.142.51]:56870 "EHLO orion.eta-ori.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbZGGAyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 20:54:25 -0400
-Message-ID: <4A529CBA.4030408@impulze.org>
-Date: Tue, 07 Jul 2009 02:54:18 +0200
-From: Daniel Mierswa <impulze@impulze.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090628)
+	Mon, 6 Jul 2009 21:05:24 -0400
+Received: from fmailhost06.isp.att.net ([204.127.217.106]:61726 "EHLO
+	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753707AbZGGBFY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 21:05:24 -0400
+X-Originating-IP: [65.28.94.183]
+Message-ID: <4A529F60.7010509@lwfinger.net>
+Date: Mon, 06 Jul 2009 20:05:36 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Re: Parsing kernel parameters and escaping "
-References: <4A50B09B.9030901@impulze.org> <4A5282B4.8070302@impulze.org>
-In-Reply-To: <4A5282B4.8070302@impulze.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig95F587BEAF105C8C51141FBF"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera> <bXZeuxPQAWE.A.Y2.2BpUKB@chimera>
+In-Reply-To: <bXZeuxPQAWE.A.Y2.2BpUKB@chimera>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig95F587BEAF105C8C51141FBF
-Content-Type: multipart/mixed;
- boundary="------------010400060007040909020808"
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13319
+> Subject		: Page allocation failures with b43 and p54usb
+> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> Date		: 2009-04-29 21:01 (69 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124103897101088&w=4
+> 		  http://lkml.org/lkml/2009/6/7/136
+> Handled-By	: Johannes Berg <johannes@sipsolutions.net>
 
-This is a multi-part message in MIME format.
---------------010400060007040909020808
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+I have not seen the fix yet, but one is being prepared. I think the
+bug can be closed.
 
-Second version of the patch, I accidently forgot to take care of out of
-bounds checking when reaching the end of the kernel parameter line.
+Larry
 
---=20
-Mierswa, Daniel
-
-If you still don't like it, that's ok: that's why I'm boss. I simply
-know better than you do.
-               --- Linus Torvalds, comp.os.linux.advocacy, 1996/07/22
-
---------------010400060007040909020808
-Content-Type: text/plain;
- name="kernel.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="kernel.patch"
-
-RnJvbSBmZTNiZjAwYTBmYzJkYjk0MWZlZjQxYzQ0ZmM2ZDllZWZhZDRkMDM3IE1vbiBTZXAg
-MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBEYW5pZWwgTWllcnN3YSA8aW1wdWx6ZUBpbXB1bHpl
-Lm9yZz4KRGF0ZTogVHVlLCA3IEp1bCAyMDA5IDAwOjU0OjM4ICswMjAwClN1YmplY3Q6IFtQ
-QVRDSF0gQXR0ZW1wdCB0byBoYW5kbGUgcXVvdGVzIGluIGtlcm5lbCBwYXJhbWV0ZXJzCgpU
-aGVyZSB3YXMgYSBsaW1pdGF0aW9uIGZvciBrZXJuZWwgcGFyYW1ldGVycyB3aXRoIHJlZ2Fy
-ZHMgdG8gcXVvdGluZy4gSXQKd2Fzbid0IHBvc3NpYmxlIHRvIGVzY2FwZSBxdW90ZXMgb3Ig
-dXNlIHF1b3RlcyB0byBmb3JtIHNwYWNlLWZpbGxlZAp2YWx1ZXMgX2luc2lkZV8gcGFyYW1l
-dGVycy4gVGhpcyBwYXRjaCBhdHRlbXB0cyB0byBtYWtlIHRoYXQgcG9zc2libGUsCmtlcm5l
-bCBwYXJhbWV0ZXJzIGFyZSBub3cgcGFyc2VkIGFzIGZvbGxvd3M6CicicGFyYW09IHZhbHVl
-IicgW3BhcmFtPSB2YWx1ZV1bXQoncGFyYW09IiB2YWx1ZSAiIiBjb21iaW5hdGlvbiAiJyBb
-cGFyYW1dWyB2YWx1ZSAgY29tYmluYXRpb24gXQoncGFyYW09IiBcIiB0ZXN0IicgW3BhcmFt
-XVsgIiB0ZXN0XQonInBhcmFtIj1hbm90aGVyJyBbcGFyYW1dW2Fub3RoZXJdCi0tLQoga2Vy
-bmVsL3BhcmFtcy5jIHwgIDE0NiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKystLS0tLS0tLS0tLS0tLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDEwNCBpbnNlcnRpb25z
-KCspLCA0MiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9rZXJuZWwvcGFyYW1zLmMgYi9r
-ZXJuZWwvcGFyYW1zLmMKaW5kZXggZGUyNzNlYy4uNzNkZThmNSAxMDA2NDQKLS0tIGEva2Vy
-bmVsL3BhcmFtcy5jCisrKyBiL2tlcm5lbC9wYXJhbXMuYwpAQCAtNzUsNTggKzc1LDEyMCBA
-QCBzdGF0aWMgaW50IHBhcnNlX29uZShjaGFyICpwYXJhbSwKIAlyZXR1cm4gLUVOT0VOVDsK
-IH0KIAotLyogWW91IGNhbiB1c2UgIiBhcm91bmQgc3BhY2VzLCBidXQgY2FuJ3QgZXNjYXBl
-ICIuICovCi0vKiBIeXBoZW5zIGFuZCB1bmRlcnNjb3JlcyBlcXVpdmFsZW50IGluIHBhcmFt
-ZXRlciBuYW1lcy4gKi8KLXN0YXRpYyBjaGFyICpuZXh0X2FyZyhjaGFyICphcmdzLCBjaGFy
-ICoqcGFyYW0sIGNoYXIgKip2YWwpCisvKiBoYW5kbGUgcXVvdGVzIGluIHRva2VucyAocGFy
-YW1ldGVyIGFuZCB2YWx1ZXMpCisgKiAnIiBmb28gYmFyICInID0+ICcgZm9vIGJhciAnCisg
-KiAnIiBmb28gXCIgIicgID0+ICcgZm9vICIgJworICovCitzdGF0aWMgdm9pZCBhZGRfdG9r
-ZW4oY2hhciAqKiB0b2tlbiwgY2hhciAqIGFyZ3MpCiB7Ci0JdW5zaWduZWQgaW50IGksIGVx
-dWFscyA9IDA7Ci0JaW50IGluX3F1b3RlID0gMCwgcXVvdGVkID0gMDsKLQljaGFyICpuZXh0
-OworCWNoYXIgKiBpdGVyYXRvciwgKiBsYXN0X3F1b3RlOworCWludCBpbl9xdW90ZXM7CiAK
-LQlpZiAoKmFyZ3MgPT0gJyInKSB7Ci0JCWFyZ3MrKzsKLQkJaW5fcXVvdGUgPSAxOwotCQlx
-dW90ZWQgPSAxOworCWluX3F1b3RlcyA9IDA7CisJbGFzdF9xdW90ZSA9IE5VTEw7CisKKwlm
-b3IgKGl0ZXJhdG9yID0gYXJnczsgKml0ZXJhdG9yOyBpdGVyYXRvcisrKSB7CisJCWlmICgq
-aXRlcmF0b3IgPT0gJ1xcJyAmJiAqKGl0ZXJhdG9yICsgMSkgPT0gJyInKSB7CisJCQljaGFy
-ICogbW92ZXI7CisKKwkJCS8qIG1vdmUgYWxsIGNoYXJhY3RlcnMgYmFjayAqLworCQkJZm9y
-IChtb3ZlciA9IGl0ZXJhdG9yOyAqbW92ZXI7IG1vdmVyKyspIHsKKwkJCQkqbW92ZXIgPSAq
-KG1vdmVyICsgMSk7CisJCQl9CisKKwkJCWNvbnRpbnVlOworCQl9CisKKwkJaWYgKCppdGVy
-YXRvciAhPSAnIicpIHsKKwkJCWNvbnRpbnVlOworCQl9CisKKwkJaWYgKGluX3F1b3Rlcykg
-eworCQkJY2hhciAqIG1vdmVyOworCisJCQkvKiBtb3ZlIHdob2xlIHN0cmluZyBiYWNrIHVu
-dGlsIGN1cnJlbnQgIiBpcyByZWFjaGVkICovCisJCQlmb3IgKG1vdmVyID0gbGFzdF9xdW90
-ZTsgbW92ZXIgIT0gaXRlcmF0b3IgLSAxOyBtb3ZlcisrKSB7CisJCQkJKm1vdmVyID0gKiht
-b3ZlciArIDEpOworCQkJfQorCisJCQkvKiBpZ25vcmUgdGhlIGN1cnJlbnQgIiBhbmQgbW92
-ZSB0aGUgcmVzdCBvZiB0aGUgc3RyaW5nIGJhY2sgKi8KKwkJCXdoaWxlICgqbW92ZXIpIHsK
-KwkJCQkqbW92ZXIgPSAqKG1vdmVyICsgMik7CisJCQkJbW92ZXIrKzsKKwkJCX0KKworCQkJ
-LyogaWdub3JlZCAyIHF1b3RlcywgZGVjcmVhc2UgdGhlIGl0ZXJhdG9yICovCisJCQlpdGVy
-YXRvciAtPSAyOworCQkJbGFzdF9xdW90ZSA9IE5VTEw7CisJCX0gZWxzZSB7CisJCQlsYXN0
-X3F1b3RlID0gaXRlcmF0b3I7CisJCX0KKworCQlpbl9xdW90ZXMgPSAhaW5fcXVvdGVzOwog
-CX0KIAotCWZvciAoaSA9IDA7IGFyZ3NbaV07IGkrKykgewotCQlpZiAoYXJnc1tpXSA9PSAn
-ICcgJiYgIWluX3F1b3RlKQorCSp0b2tlbiA9IGFyZ3M7Cit9CisKK3N0YXRpYyBjaGFyICog
-bmV4dF9hcmcoY2hhciAqIGFyZ3MsIGNoYXIgKiogcGFyYW0sIGNoYXIgKiogdmFsKQorewor
-CWNoYXIgKiB0b2tlbiwgKiBuZXh0OworCWludCBpbl9xdW90ZXMsIGlzX2VzY2FwZWQ7CisK
-KwkqcGFyYW0gPSAqdmFsID0gbmV4dCA9IE5VTEw7CisJaW5fcXVvdGVzID0gaXNfZXNjYXBl
-ZCA9IDA7CisKKwkvKiB0b2tlbml6ZXIgKi8KKwlmb3IgKHRva2VuID0gYXJnczsgKnRva2Vu
-OyB0b2tlbisrKSB7CisJCS8qIHBhcmFtZXRlciBvciB2YWx1ZSBpcyBmaW5pc2hlZCAqLwor
-CQlpZiAoIWluX3F1b3RlcyAmJiAqdG9rZW4gPT0gJyAnKSB7CisJCQkqdG9rZW4gPSAnXDAn
-OworCisJCQkvKiB0aGVyZSdyZSBzdGlsbCBjaGFyYWN0ZXJzIGluIHRoZSBwYXJhbWV0ZXIg
-bGluZSAqLworCQkJbmV4dCA9IHRva2VuICsgMTsKKworCQkJLyogcmVtb3ZlIHRyYWlsaW5n
-IHdoaXRlc3BhY2UgKi8KKwkJCXdoaWxlICgqbmV4dCA9PSAnICcpIHsKKwkJCQluZXh0Kys7
-CisJCQl9CisKIAkJCWJyZWFrOwotCQlpZiAoZXF1YWxzID09IDApIHsKLQkJCWlmIChhcmdz
-W2ldID09ICc9JykKLQkJCQllcXVhbHMgPSBpOwogCQl9Ci0JCWlmIChhcmdzW2ldID09ICci
-JykKLQkJCWluX3F1b3RlID0gIWluX3F1b3RlOwotCX0KIAotCSpwYXJhbSA9IGFyZ3M7Ci0J
-aWYgKCFlcXVhbHMpCi0JCSp2YWwgPSBOVUxMOwotCWVsc2UgewotCQlhcmdzW2VxdWFsc10g
-PSAnXDAnOwotCQkqdmFsID0gYXJncyArIGVxdWFscyArIDE7Ci0KLQkJLyogRG9uJ3QgaW5j
-bHVkZSBxdW90ZXMgaW4gdmFsdWUuICovCi0JCWlmICgqKnZhbCA9PSAnIicpIHsKLQkJCSgq
-dmFsKSsrOwotCQkJaWYgKGFyZ3NbaS0xXSA9PSAnIicpCi0JCQkJYXJnc1tpLTFdID0gJ1ww
-JzsKKwkJLyogcGFyYW1ldGVyL3ZhbHVlIHNwbGl0ICovCisJCWlmICghaW5fcXVvdGVzICYm
-ICp0b2tlbiA9PSAnPScgJiYgISpwYXJhbSkgeworCQkJKnRva2VuID0gJ1wwJzsKKwkJCWFk
-ZF90b2tlbihwYXJhbSwgYXJncyk7CisJCQlhcmdzID0gdG9rZW4gKyAxOworCQkJY29udGlu
-dWU7CiAJCX0KLQkJaWYgKHF1b3RlZCAmJiBhcmdzW2ktMV0gPT0gJyInKQotCQkJYXJnc1tp
-LTFdID0gJ1wwJzsKKworCQlpZiAoIWlzX2VzY2FwZWQgJiYgKnRva2VuID09ICdcXCcpIHsK
-KwkJCWlzX2VzY2FwZWQgPSAxOworCQkJY29udGludWU7CisJCX0KKworCQlpZiAoKnRva2Vu
-ID09ICciJyAmJiAhaXNfZXNjYXBlZCkgeworCQkJaW5fcXVvdGVzID0gIWluX3F1b3RlczsK
-KwkJfQorCisJCS8qIGFsd2F5cyByZXNldCBlc2NhcGUgdmFsdWUsIG9ubHkgIiBuZWVkcyBp
-dCAqLworCQlpc19lc2NhcGVkID0gMDsKIAl9CiAKLQlpZiAoYXJnc1tpXSkgewotCQlhcmdz
-W2ldID0gJ1wwJzsKLQkJbmV4dCA9IGFyZ3MgKyBpICsgMTsKLQl9IGVsc2UKLQkJbmV4dCA9
-IGFyZ3MgKyBpOworCWlmICghKnBhcmFtKSB7CisJCWFkZF90b2tlbihwYXJhbSwgYXJncyk7
-CisJfSBlbHNlIHsKKwkJYWRkX3Rva2VuKHZhbCwgYXJncyk7CisJfQorCisJLyogdGhlcmUn
-cmUgcGFyYW1ldGVycyBsZWZ0IGluIHRoZSBjb21tYW5kIGxpbmUgKi8KKwlpZiAobmV4dCkg
-eworCQlyZXR1cm4gbmV4dDsKKwl9CiAKLQkvKiBDaGV3IHVwIHRyYWlsaW5nIHNwYWNlcy4g
-Ki8KLQl3aGlsZSAoKm5leHQgPT0gJyAnKQotCQluZXh0Kys7Ci0JcmV0dXJuIG5leHQ7CisJ
-LyogZW5kIG9mIHRoZSBsaW5lICovCisJcmV0dXJuIHRva2VuOwogfQogCiAvKiBBcmdzIGxv
-b2tzIGxpa2UgImZvbz1iYXIsYmFyMiBiYXo9ZnV6IHdpeiIuICovCi0tIAoxLjYuMy4zCgo=
---------------010400060007040909020808--
-
---------------enig95F587BEAF105C8C51141FBF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-
-iEYEARECAAYFAkpSnL8ACgkQm9l44K3zL5edeACggVDguX685LTS31IVPuLPO1c1
-1h8An15WfwAymay/7X7owa/PKpUjZ834
-=1exF
------END PGP SIGNATURE-----
-
---------------enig95F587BEAF105C8C51141FBF--
