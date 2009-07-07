@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbZGGNU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbZGGNUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757507AbZGGNU1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZGGNUR
+	id S1757597AbZGGNUu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbZGGNUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:20:17 -0400
-Received: from mail-pz0-f193.google.com ([209.85.222.193]:61589 "EHLO
-	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755515AbZGGNUO (ORCPT
+	Tue, 7 Jul 2009 09:20:42 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:60221 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755085AbZGGNUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:20:14 -0400
+	Tue, 7 Jul 2009 09:20:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TcMrkv8bRTwYD7MfCD7d8xBrHZQyxNpe/4LYXvkWuCJBWPm0gdikSK/CVz1QKFYsN+
-         Sqe+7ZYeh+TDIQ/BRDdBK/t9Cwn5vx6MypD0ZjtF5SjPjakZrFBqDktkNneb1LvO8Kml
-         vmxkdjSa25JY7bOndWanquoIEoxIXW450XItU=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MDfn1zRF8QGGPq0GgacAmKtXxzRUgdsEd4MgOchs4MRDVansVNHp+mmrKVnfq/vJCu
+         N//iZzswhLpBi+gKG9yZ0sfltEOuAUuIvhXYkXeHEaZSVilhOfRntFcbL1aGFS6kVW8m
+         IQFrlSogz7mF52/Ea+5JuA2GT4T0NTryFlKBc=
+Date: Tue, 7 Jul 2009 15:20:25 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Joao Correia <joaomiguelcorreia@gmail.com>
+Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Andres Freund <andres@anarazel.de>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
+	possibly?caused by netem)
+Message-ID: <20090707132025.GB6520@ami.dom.local>
+References: <200907031326.21822.andres@anarazel.de> <20090706163106.GA4559@ami.dom.local> <a5d9929e0907061023g4306d80ewfc8907653b949005@mail.gmail.com> <200907061926.43625.andres@anarazel.de> <20090707065014.GA3296@ami.dom.local> <a5d9929e0907070340y63280508t92e6c7e4ce464994@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090707184714.0C73.A69D9226@jp.fujitsu.com>
-References: <20090707182947.0C6D.A69D9226@jp.fujitsu.com>
-	 <20090707184714.0C73.A69D9226@jp.fujitsu.com>
-Date: Tue, 7 Jul 2009 22:20:13 +0900
-Message-ID: <28c262360907070620n3e22801egd4493c149a263ecd@mail.gmail.com>
-Subject: Re: [RFC PATCH 2/2] Don't continue reclaim if the system have plenty 
-	free memory
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a5d9929e0907070340y63280508t92e6c7e4ce464994@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n67DKTXx004655
 
-Hi, Kosaki.
-On Tue, Jul 7, 2009 at 6:48 PM, KOSAKIMotohiro<kosaki.motohiro@jp.fujitsu.com> wrote:> Subject: [PATCH] Don't continue reclaim if the system have plenty free memory>> On concurrent reclaim situation, if one reclaimer makes OOM, maybe other> reclaimer can stop reclaim because OOM killer makes enough free memory.>> But current kernel doesn't have its logic. Then, we can face following accidental> 2nd OOM scenario.>> 1. System memory is used by only one big process.> 2. memory shortage occur and concurrent reclaim start.> 3. One reclaimer makes OOM and OOM killer kill above big process.> 4. Almost reclaimable page will be freed.> 5. Another reclaimer can't find any reclaimable page because those pages are>   already freed.> 6. Then, system makes accidental and unnecessary 2nd OOM killer.>
-Did you see the this situation ?Why I ask is that we have already a routine for preventing parallelOOM killing in __alloc_pages_may_oom.
-Couldn't it protect your scenario ?If it can't, Could you explain the scenario in more detail ?
-I think first we try to modify old routine with efficient.
->> Plus, nowaday datacenter system have badboy process monitoring system and> it kill too much memory consumption process.> But it don't stop other reclaimer and it makes accidental 2nd OOM by the> same reason.>>> This patch have one good side effect. it increase reclaim depended benchmark> performance.>> e.g.> =====> % ./hackbench 140 process 100>> before:>        Time: 93.361> after:>        Time: 28.799>>>> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>> --->  fs/buffer.c          |    2 +->  include/linux/swap.h |    3 ++->  mm/page_alloc.c      |    3 ++->  mm/vmscan.c          |   29 ++++++++++++++++++++++++++++->  4 files changed, 33 insertions(+), 4 deletions(-)>> Index: b/mm/vmscan.c> ===================================================================> --- a/mm/vmscan.c> +++ b/mm/vmscan.c> @@ -87,6 +87,9 @@ struct scan_control {>         */>        nodemask_t      *nodemask;>> +       /* Caller's preferred zone. */> +       struct zone     *preferred_zone;> +>        /* Pluggable isolate pages callback */>        unsigned long (*isolate_pages)(unsigned long nr, struct list_head *dst,>                        unsigned long *scanned, int order, int mode,> @@ -1535,6 +1538,10 @@ static void shrink_zone(int priority, st>        unsigned long nr_reclaimed = sc->nr_reclaimed;>        unsigned long swap_cluster_max = sc->swap_cluster_max;>        int noswap = 0;> +       int classzone_idx = 0;> +> +       if (sc->preferred_zone)> +               classzone_idx = zone_idx(sc->preferred_zone);>>        /* If we have no swap space, do not bother scanning anon pages. */>        if (!sc->may_swap || (nr_swap_pages <= 0)) {> @@ -1583,6 +1590,20 @@ static void shrink_zone(int priority, st>                if (nr_reclaimed > swap_cluster_max &&>                        priority < DEF_PRIORITY && !current_is_kswapd())>                        break;> +> +               /*> +                * Now, we have plenty free memory.> +                * Perhaps, big processes exited or they killed by OOM killer.> +                * To continue reclaim doesn't make any sense.> +                */> +               if (zone_page_state(zone, NR_FREE_PAGES) >> +                   zone_lru_pages(zone) &&> +                   zone_watermark_ok(zone, sc->order, high_wmark_pages(zone),> +                                     classzone_idx, 0)) {> +                       /* fake result for reclaim stop */> +                       nr_reclaimed += swap_cluster_max;> +                       break;> +               }>        }>>        sc->nr_reclaimed = nr_reclaimed;> @@ -1767,7 +1788,8 @@ out:>  }>>  unsigned long try_to_free_pages(struct zonelist *zonelist, int order,> -                               gfp_t gfp_mask, nodemask_t *nodemask)> +                               gfp_t gfp_mask, nodemask_t *nodemask,> +                               struct zone *preferred_zone)>  {>        struct scan_control sc = {>                .gfp_mask = gfp_mask,> @@ -1780,6 +1802,7 @@ unsigned long try_to_free_pages(struct z>                .mem_cgroup = NULL,>                .isolate_pages = isolate_pages_global,>                .nodemask = nodemask,> +               .preferred_zone = preferred_zone,>        };>>        return do_try_to_free_pages(zonelist, &sc);> @@ -1808,6 +1831,10 @@ unsigned long try_to_free_mem_cgroup_pag>        sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |>                        (GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);>        zonelist = NODE_DATA(numa_node_id())->node_zonelists;> +       first_zones_zonelist(zonelist,> +                            gfp_zone(sc.gfp_mask), NULL,> +                            &sc.preferred_zone);> +>        return do_try_to_free_pages(zonelist, &sc);>  }>  #endif> Index: b/fs/buffer.c> ===================================================================> --- a/fs/buffer.c> +++ b/fs/buffer.c> @@ -290,7 +290,7 @@ static void free_more_memory(void)>                                                &zone);>                if (zone)>                        try_to_free_pages(node_zonelist(nid, GFP_NOFS), 0,> -                                               GFP_NOFS, NULL);> +                                         GFP_NOFS, NULL, zone);>        }>  }>> Index: b/include/linux/swap.h> ===================================================================> --- a/include/linux/swap.h> +++ b/include/linux/swap.h> @@ -213,7 +213,8 @@ static inline void lru_cache_add_active_>>  /* linux/mm/vmscan.c */>  extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,> -                                       gfp_t gfp_mask, nodemask_t *mask);> +                                      gfp_t gfp_mask, nodemask_t *mask,> +                                      struct zone *preferred_zone);>  extern unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem,>                                                  gfp_t gfp_mask, bool noswap,>                                                  unsigned int swappiness);> Index: b/mm/page_alloc.c> ===================================================================> --- a/mm/page_alloc.c> +++ b/mm/page_alloc.c> @@ -1629,7 +1629,8 @@ __alloc_pages_direct_reclaim(gfp_t gfp_m>        reclaim_state.reclaimed_slab = 0;>        p->reclaim_state = &reclaim_state;>> -       *did_some_progress = try_to_free_pages(zonelist, order, gfp_mask, nodemask);> +       *did_some_progress = try_to_free_pages(zonelist, order, gfp_mask,> +                                              nodemask, preferred_zone);>>        p->reclaim_state = NULL;>        lockdep_clear_current_reclaim_state();>>>
+Sorry, here is this tiny patch!
 
+On Tue, Jul 07, 2009 at 11:40:16AM +0100, Joao Correia wrote:
+> I am now running 2.6.31-rc2 for a couple of hours, no freeze.
+> 
+> Let me know what/if i can help with tracking down the original source
+> of the problem.
 
--- Kind regards,Minchan Kim���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+OK, so we know it's only about timers. Here is another tiny patch
+(the previous one should be removed), which could tell (with oops) if
+there's something while migrating. Anyway, the bug should be back :-(
+
+Thanks,
+Jarek P.
+---
+
+ kernel/timer.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 0b36b9e..61ba855 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -658,6 +658,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
+ 			spin_unlock(&base->lock);
+ 			base = new_base;
+ 			spin_lock(&base->lock);
++			BUG_ON(tbase_get_base(timer->base));
+ 			timer_set_base(timer, base);
+ 		}
+ 	}
