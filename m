@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbZGGOqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758114AbZGGOsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbZGGOqT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 10:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbZGGOqE
+	id S1758114AbZGGOsf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 10:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757565AbZGGOs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 10:46:04 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54371 "EHLO mx2.suse.de"
+	Tue, 7 Jul 2009 10:48:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:54449 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757425AbZGGOqC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 10:46:02 -0400
-Date: Tue, 7 Jul 2009 16:46:00 +0200
+	id S1757491AbZGGOsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 10:48:25 -0400
+Date: Tue, 7 Jul 2009 16:48:23 +0200
 From: Nick Piggin <npiggin@suse.de>
 To: linux-fsdevel@vger.kernel.org
 Cc: Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
        LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: [rfc][patch 2/4] fs: use new truncate helpers
-Message-ID: <20090707144600.GD2714@wotan.suse.de>
+Subject: [rfc][patch 3/4] fs: new truncate sequence
+Message-ID: <20090707144823.GE2714@wotan.suse.de>
 References: <20090707144423.GC2714@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,290 +26,265 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Don't know whether it is a good idea to move i_alloc_sem into implementation.
+Maybe it is better to leave it in the caller in this patchset?
+--
 
-Update some fs code to make use of new helper functions introduced
-in the previous patch. Should be no significant change in behaviour
-(except CIFS now calls send_sig under i_lock, via inode_newsize_ok).
+Introduce a new truncate calling sequence into fs/mm subsystems. Rather than
+setattr > vmtruncate > truncate, add a new inode operation ->setsize, called
+from notify_change when called with ATTR_SIZE. The filesystem will be
+responsible for updating i_size and truncating pagecache. ->setattr will
+still be called with ATTR_SIZE.
+
+Generic code which previously called vmtruncate (in order to truncate blocks
+that may have been instantiated past i_size) no longer calls vmtruncate in the
+case that the inode has an ->setsize attribute. In that case it is the
+responsibility of the caller to trim off blocks appropriately in case of
+error.
+
+Big problem with the previous calling sequence: the filesystem is not called
+until i_size has already changed.  This means it is not allowed to fail the
+call, and also it does not know what the previous i_size was. Also, generic
+code calling vmtruncate to truncate allocated blocks in case of error had
+no good way to return a meaningful error (or, for example, atomically handle
+block deallocation).
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 ---
- fs/buffer.c           |   10 +--------
- fs/cifs/inode.c       |   51 ++++++++-----------------------------------------
- fs/fuse/dir.c         |   14 +++----------
- fs/fuse/fuse_i.h      |    2 -
- fs/fuse/inode.c       |   11 ----------
- fs/nfs/inode.c        |   52 +++++++++++---------------------------------------
- fs/ramfs/file-nommu.c |   18 ++++-------------
- 7 files changed, 33 insertions(+), 125 deletions(-)
+ Documentation/filesystems/Locking |    2 ++
+ Documentation/filesystems/vfs.txt |    9 ++++++++-
+ fs/attr.c                         |   22 +++++++++++++++++++---
+ fs/buffer.c                       |   11 ++++++++---
+ fs/configfs/inode.c               |    1 +
+ fs/direct-io.c                    |    7 ++++---
+ fs/libfs.c                        |   19 +++++++++++++++++++
+ fs/ramfs/file-mmu.c               |    1 +
+ include/linux/fs.h                |    9 +++++++++
+ 9 files changed, 71 insertions(+), 10 deletions(-)
 
+Index: linux-2.6/fs/libfs.c
+===================================================================
+--- linux-2.6.orig/fs/libfs.c
++++ linux-2.6/fs/libfs.c
+@@ -329,6 +329,24 @@ int simple_rename(struct inode *old_dir,
+ 	return 0;
+ }
+ 
++int simple_setsize(struct dentry *dentry, loff_t newsize,
++			unsigned flags, struct file *file)
++{
++	struct inode *inode = dentry->d_inode;
++	loff_t oldsize;
++	int error;
++
++	error = inode_newsize_ok(inode, newsize);
++	if (error)
++		return error;
++
++	oldsize = inode->i_size;
++	i_size_write(inode, newsize);
++	truncate_pagecache(inode, oldsize, newsize);
++
++	return error;
++}
++
+ int simple_readpage(struct file *file, struct page *page)
+ {
+ 	clear_highpage(page);
+@@ -840,6 +858,7 @@ EXPORT_SYMBOL(generic_read_dir);
+ EXPORT_SYMBOL(get_sb_pseudo);
+ EXPORT_SYMBOL(simple_write_begin);
+ EXPORT_SYMBOL(simple_write_end);
++EXPORT_SYMBOL(simple_setsize);
+ EXPORT_SYMBOL(simple_dir_inode_operations);
+ EXPORT_SYMBOL(simple_dir_operations);
+ EXPORT_SYMBOL(simple_empty);
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
+@@ -431,6 +431,12 @@ typedef void (dio_iodone_t)(struct kiocb
+ #define ATTR_TIMES_SET	(1 << 16)
+ 
+ /*
++ * Setsize flags.
++ */
++#define SETSIZE_FILE	(1 << 0) /* Trucating via an open file (eg ftruncate) */
++#define SETSIZE_OPEN	(1 << 1) /* Truncating from open(O_TRUNC) */
++
++/*
+  * This is the Inode Attributes structure, used for notify_change().  It
+  * uses the above definitions as flags, to know which values have changed.
+  * Also, in this manner, a Filesystem can look at only the values it cares
+@@ -1527,6 +1533,7 @@ struct inode_operations {
+ 	void * (*follow_link) (struct dentry *, struct nameidata *);
+ 	void (*put_link) (struct dentry *, struct nameidata *, void *);
+ 	void (*truncate) (struct inode *);
++	int (*setsize) (struct dentry *, loff_t, unsigned, struct file *);
+ 	int (*permission) (struct inode *, int);
+ 	int (*setattr) (struct dentry *, struct iattr *);
+ 	int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *);
+@@ -2332,6 +2339,8 @@ extern int simple_link(struct dentry *,
+ extern int simple_unlink(struct inode *, struct dentry *);
+ extern int simple_rmdir(struct inode *, struct dentry *);
+ extern int simple_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
++extern int simple_setsize(struct dentry *dentry, loff_t newsize,
++			unsigned flags, struct file *file);
+ extern int simple_sync_file(struct file *, struct dentry *, int);
+ extern int simple_empty(struct dentry *);
+ extern int simple_readpage(struct file *file, struct page *page);
 Index: linux-2.6/fs/buffer.c
 ===================================================================
 --- linux-2.6.orig/fs/buffer.c
 +++ linux-2.6/fs/buffer.c
-@@ -2225,16 +2225,10 @@ int generic_cont_expand_simple(struct in
- 	struct address_space *mapping = inode->i_mapping;
- 	struct page *page;
- 	void *fsdata;
--	unsigned long limit;
- 	int err;
- 
--	err = -EFBIG;
--        limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
--	if (limit != RLIM_INFINITY && size > (loff_t)limit) {
--		send_sig(SIGXFSZ, current, 0);
--		goto out;
--	}
--	if (size > inode->i_sb->s_maxbytes)
-+	err = inode_newsize_ok(inode, size);
-+	if (err)
- 		goto out;
- 
- 	err = pagecache_write_begin(NULL, mapping, size, 0,
-Index: linux-2.6/fs/cifs/inode.c
-===================================================================
---- linux-2.6.orig/fs/cifs/inode.c
-+++ linux-2.6/fs/cifs/inode.c
-@@ -1645,57 +1645,24 @@ static int cifs_truncate_page(struct add
- 
- static int cifs_vmtruncate(struct inode *inode, loff_t offset)
- {
--	struct address_space *mapping = inode->i_mapping;
--	unsigned long limit;
-+	loff_t oldsize;
-+	int err;
- 
- 	spin_lock(&inode->i_lock);
--	if (inode->i_size < offset)
--		goto do_expand;
--	/*
--	 * truncation of in-use swapfiles is disallowed - it would cause
--	 * subsequent swapout to scribble on the now-freed blocks.
--	 */
--	if (IS_SWAPFILE(inode)) {
-+	err = inode_newsize_ok(inode, offset);
-+	if (err) {
- 		spin_unlock(&inode->i_lock);
--		goto out_busy;
-+		goto out;
- 	}
--	i_size_write(inode, offset);
--	spin_unlock(&inode->i_lock);
--	/*
--	 * unmap_mapping_range is called twice, first simply for efficiency
--	 * so that truncate_inode_pages does fewer single-page unmaps. However
--	 * after this first call, and before truncate_inode_pages finishes,
--	 * it is possible for private pages to be COWed, which remain after
--	 * truncate_inode_pages finishes, hence the second unmap_mapping_range
--	 * call must be made for correctness.
--	 */
--	unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
--	truncate_inode_pages(mapping, offset);
--	unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
--	goto out_truncate;
- 
--do_expand:
--	limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
--	if (limit != RLIM_INFINITY && offset > limit) {
--		spin_unlock(&inode->i_lock);
--		goto out_sig;
--	}
--	if (offset > inode->i_sb->s_maxbytes) {
--		spin_unlock(&inode->i_lock);
--		goto out_big;
--	}
-+	oldsize = inode->i_size;
- 	i_size_write(inode, offset);
- 	spin_unlock(&inode->i_lock);
--out_truncate:
-+	truncate_pagecache(inode, oldsize, offset);
- 	if (inode->i_op->truncate)
- 		inode->i_op->truncate(inode);
--	return 0;
--out_sig:
--	send_sig(SIGXFSZ, current, 0);
--out_big:
--	return -EFBIG;
--out_busy:
--	return -ETXTBSY;
-+out:
-+	return err;
- }
- 
- static int
-Index: linux-2.6/fs/fuse/dir.c
-===================================================================
---- linux-2.6.orig/fs/fuse/dir.c
-+++ linux-2.6/fs/fuse/dir.c
-@@ -1225,14 +1225,9 @@ static int fuse_do_setattr(struct dentry
- 		return 0;
- 
- 	if (attr->ia_valid & ATTR_SIZE) {
--		unsigned long limit;
--		if (IS_SWAPFILE(inode))
--			return -ETXTBSY;
--		limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
--		if (limit != RLIM_INFINITY && attr->ia_size > (loff_t) limit) {
--			send_sig(SIGXFSZ, current, 0);
--			return -EFBIG;
--		}
-+		err = inode_newsize_ok(inode, attr->ia_size);
-+		if (err)
-+			return err;
- 		is_truncate = true;
+@@ -1992,9 +1992,13 @@ int block_write_begin(struct file *file,
+ 			 * prepare_write() may have instantiated a few blocks
+ 			 * outside i_size.  Trim these off again. Don't need
+ 			 * i_size_read because we hold i_mutex.
++			 *
++			 * Filesystems which define ->setsize must handle
++			 * this themselves.
+ 			 */
+ 			if (pos + len > inode->i_size)
+-				vmtruncate(inode, inode->i_size);
++				if (!inode->i_op->setsize)
++					vmtruncate(inode, inode->i_size);
+ 		}
  	}
  
-@@ -1299,8 +1294,7 @@ static int fuse_do_setattr(struct dentry
- 	 * FUSE_NOWRITE, otherwise fuse_launder_page() would deadlock.
- 	 */
- 	if (S_ISREG(inode->i_mode) && oldsize != outarg.attr.size) {
--		if (outarg.attr.size < oldsize)
--			fuse_truncate(inode->i_mapping, outarg.attr.size);
-+		truncate_pagecache(inode, oldsize, outarg.attr.size);
- 		invalidate_inode_pages2(inode->i_mapping);
- 	}
+@@ -2371,7 +2375,7 @@ int block_commit_write(struct page *page
+  *
+  * We are not allowed to take the i_mutex here so we have to play games to
+  * protect against truncate races as the page could now be beyond EOF.  Because
+- * vmtruncate() writes the inode size before removing pages, once we have the
++ * truncate writes the inode size before removing pages, once we have the
+  * page lock we can determine safely if the page is beyond EOF. If it is not
+  * beyond EOF, then the page is guaranteed safe against truncation until we
+  * unlock the page.
+@@ -2595,7 +2599,8 @@ out_release:
+ 	*pagep = NULL;
  
-Index: linux-2.6/fs/nfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/nfs/inode.c
-+++ linux-2.6/fs/nfs/inode.c
-@@ -427,49 +427,21 @@ nfs_setattr(struct dentry *dentry, struc
-  */
- static int nfs_vmtruncate(struct inode * inode, loff_t offset)
- {
--	if (i_size_read(inode) < offset) {
--		unsigned long limit;
-+	loff_t oldsize;
-+	int err;
+ 	if (pos + len > inode->i_size)
+-		vmtruncate(inode, inode->i_size);
++		if (!inode->i_op->setsize)
++			vmtruncate(inode, inode->i_size);
  
--		limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
--		if (limit != RLIM_INFINITY && offset > limit)
--			goto out_sig;
--		if (offset > inode->i_sb->s_maxbytes)
--			goto out_big;
--		spin_lock(&inode->i_lock);
--		i_size_write(inode, offset);
--		spin_unlock(&inode->i_lock);
--	} else {
--		struct address_space *mapping = inode->i_mapping;
-+	err = inode_newsize_ok(inode, offset);
-+	if (err)
-+		goto out;
- 
--		/*
--		 * truncation of in-use swapfiles is disallowed - it would
--		 * cause subsequent swapout to scribble on the now-freed
--		 * blocks.
--		 */
--		if (IS_SWAPFILE(inode))
--			return -ETXTBSY;
--		spin_lock(&inode->i_lock);
--		i_size_write(inode, offset);
--		spin_unlock(&inode->i_lock);
-+	spin_lock(&inode->i_lock);
-+	oldsize = inode->i_size;
-+	i_size_write(inode, offset);
-+	spin_unlock(&inode->i_lock);
- 
--		/*
--		 * unmap_mapping_range is called twice, first simply for
--		 * efficiency so that truncate_inode_pages does fewer
--		 * single-page unmaps.  However after this first call, and
--		 * before truncate_inode_pages finishes, it is possible for
--		 * private pages to be COWed, which remain after
--		 * truncate_inode_pages finishes, hence the second
--		 * unmap_mapping_range call must be made for correctness.
--		 */
--		unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
--		truncate_inode_pages(mapping, offset);
--		unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
--	}
--	return 0;
--out_sig:
--	send_sig(SIGXFSZ, current, 0);
--out_big:
--	return -EFBIG;
-+	truncate_pagecache(inode, oldsize, offset);
-+out:
-+	return err;
- }
- 
- /**
-Index: linux-2.6/fs/ramfs/file-nommu.c
-===================================================================
---- linux-2.6.orig/fs/ramfs/file-nommu.c
-+++ linux-2.6/fs/ramfs/file-nommu.c
-@@ -68,14 +68,11 @@ int ramfs_nommu_expand_for_mapping(struc
- 	/* make various checks */
- 	order = get_order(newsize);
- 	if (unlikely(order >= MAX_ORDER))
--		goto too_big;
-+		return -EFBIG;
- 
--	limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
--	if (limit != RLIM_INFINITY && newsize > limit)
--		goto fsize_exceeded;
--
--	if (newsize > inode->i_sb->s_maxbytes)
--		goto too_big;
-+	ret = inode_newsize_ok(inode, newsize);
-+	if (ret)
-+		return ret;
- 
- 	i_size_write(inode, newsize);
- 
-@@ -117,12 +114,7 @@ int ramfs_nommu_expand_for_mapping(struc
- 
- 	return 0;
- 
-- fsize_exceeded:
--	send_sig(SIGXFSZ, current, 0);
-- too_big:
--	return -EFBIG;
--
-- add_error:
-+add_error:
- 	while (loop < npages)
- 		__free_page(pages + loop++);
  	return ret;
-Index: linux-2.6/fs/fuse/fuse_i.h
-===================================================================
---- linux-2.6.orig/fs/fuse/fuse_i.h
-+++ linux-2.6/fs/fuse/fuse_i.h
-@@ -588,8 +588,6 @@ void fuse_change_attributes(struct inode
- void fuse_change_attributes_common(struct inode *inode, struct fuse_attr *attr,
- 				   u64 attr_valid);
- 
--void fuse_truncate(struct address_space *mapping, loff_t offset);
--
- /**
-  * Initialize the client device
-  */
-Index: linux-2.6/fs/fuse/inode.c
-===================================================================
---- linux-2.6.orig/fs/fuse/inode.c
-+++ linux-2.6/fs/fuse/inode.c
-@@ -115,14 +115,6 @@ static int fuse_remount_fs(struct super_
- 	return 0;
  }
+Index: linux-2.6/fs/direct-io.c
+===================================================================
+--- linux-2.6.orig/fs/direct-io.c
++++ linux-2.6/fs/direct-io.c
+@@ -1210,14 +1210,15 @@ __blockdev_direct_IO(int rw, struct kioc
+ 	/*
+ 	 * In case of error extending write may have instantiated a few
+ 	 * blocks outside i_size. Trim these off again for DIO_LOCKING.
+-	 * NOTE: DIO_NO_LOCK/DIO_OWN_LOCK callers have to handle this by
+-	 * it's own meaner.
++	 * NOTE: DIO_NO_LOCK/DIO_OWN_LOCK callers have to handle this in
++	 * their own manner.
+ 	 */
+ 	if (unlikely(retval < 0 && (rw & WRITE))) {
+ 		loff_t isize = i_size_read(inode);
  
--void fuse_truncate(struct address_space *mapping, loff_t offset)
--{
--	/* See vmtruncate() */
--	unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
--	truncate_inode_pages(mapping, offset);
--	unmap_mapping_range(mapping, offset + PAGE_SIZE - 1, 0, 1);
--}
--
- void fuse_change_attributes_common(struct inode *inode, struct fuse_attr *attr,
- 				   u64 attr_valid)
- {
-@@ -180,8 +172,7 @@ void fuse_change_attributes(struct inode
- 	spin_unlock(&fc->lock);
- 
- 	if (S_ISREG(inode->i_mode) && oldsize != attr->size) {
--		if (attr->size < oldsize)
--			fuse_truncate(inode->i_mapping, attr->size);
-+		truncate_pagecache(inode, oldsize, attr->size);
- 		invalidate_inode_pages2(inode->i_mapping);
+ 		if (end > isize && dio_lock_type == DIO_LOCKING)
+-			vmtruncate(inode, isize);
++			if (!inode->i_op->setsize)
++				vmtruncate(inode, isize);
  	}
- }
+ 
+ 	if (rw == READ && dio_lock_type == DIO_LOCKING)
+Index: linux-2.6/Documentation/filesystems/Locking
+===================================================================
+--- linux-2.6.orig/Documentation/filesystems/Locking
++++ linux-2.6/Documentation/filesystems/Locking
+@@ -45,6 +45,7 @@ ata *);
+ 	int (*follow_link) (struct dentry *, struct nameidata *);
+ 	void (*truncate) (struct inode *);
+ 	int (*permission) (struct inode *, int, struct nameidata *);
++	int (*setsize) (struct dentry *, loff_t, unsigned, struct file *);
+ 	int (*setattr) (struct dentry *, struct iattr *);
+ 	int (*getattr) (struct vfsmount *, struct dentry *, struct kstat *);
+ 	int (*setxattr) (struct dentry *, const char *,const void *,size_t,int);
+@@ -67,6 +68,7 @@ rename:		yes (all)	(see below)
+ readlink:	no
+ follow_link:	no
+ truncate:	yes		(see below)
++setsize:	yes
+ setattr:	yes
+ permission:	no
+ getattr:	no
+Index: linux-2.6/fs/attr.c
+===================================================================
+--- linux-2.6.orig/fs/attr.c
++++ linux-2.6/fs/attr.c
+@@ -206,8 +206,24 @@ int notify_change(struct dentry * dentry
+ 	if (error)
+ 		return error;
+ 
+-	if (ia_valid & ATTR_SIZE)
+-		down_write(&dentry->d_inode->i_alloc_sem);
++	if (ia_valid & ATTR_SIZE) {
++		if (inode->i_op && inode->i_op->setsize) {
++			unsigned int flags = 0;
++			struct file *file = NULL;
++
++			if (ia_valid & ATTR_FILE) {
++				flags |= SETSIZE_FILE;
++				file = attr->ia_file;
++			}
++			if (ia_valid & ATTR_OPEN)
++				flags |= SETSIZE_OPEN;
++			error = inode->i_op->setsize(dentry, attr->ia_size,
++							flags, file);
++			if (error)
++				return error;
++		} else
++			down_write(&dentry->d_inode->i_alloc_sem);
++	}
+ 
+ 	if (inode->i_op && inode->i_op->setattr) {
+ 		error = inode->i_op->setattr(dentry, attr);
+@@ -223,7 +239,7 @@ int notify_change(struct dentry * dentry
+ 		}
+ 	}
+ 
+-	if (ia_valid & ATTR_SIZE)
++	if (ia_valid & ATTR_SIZE && !(inode->i_op && inode->i_op->setsize))
+ 		up_write(&dentry->d_inode->i_alloc_sem);
+ 
+ 	if (!error)
+Index: linux-2.6/Documentation/filesystems/vfs.txt
+===================================================================
+--- linux-2.6.orig/Documentation/filesystems/vfs.txt
++++ linux-2.6/Documentation/filesystems/vfs.txt
+@@ -326,6 +326,7 @@ struct inode_operations {
+         void (*put_link) (struct dentry *, struct nameidata *, void *);
+ 	void (*truncate) (struct inode *);
+ 	int (*permission) (struct inode *, int, struct nameidata *);
++	int (*setsize) (struct dentry *, loff_t, unsigned, struct file *);
+ 	int (*setattr) (struct dentry *, struct iattr *);
+ 	int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *);
+ 	int (*setxattr) (struct dentry *, const char *,const void *,size_t,int);
+@@ -401,7 +402,8 @@ otherwise noted.
+   	started might not be in the page cache at the end of the
+   	walk).
+ 
+-  truncate: called by the VFS to change the size of a file.  The
++  truncate: Deprecated. This will not be called if ->setsize is defined.
++	Called by the VFS to change the size of a file.  The
+  	i_size field of the inode is set to the desired size by the
+  	VFS before this method is called.  This method is called by
+  	the truncate(2) system call and related functionality.
+@@ -409,6 +411,11 @@ otherwise noted.
+   permission: called by the VFS to check for access rights on a POSIX-like
+   	filesystem.
+ 
++  setsize: Supersedes truncate. Called by the VFS to change the size of a file.
++	It is the responsibility of the implementation to check size is OK
++	(eg. using inode_newsize_ok()), update i_size, and trim pagecache
++	(eg. using truncate_pagecache()).
++
+   setattr: called by the VFS to set attributes for a file. This method
+   	is called by chmod(2) and related system calls.
+ 
