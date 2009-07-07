@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbZGGJR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbZGGJSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbZGGJR2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 05:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbZGGJRU
+	id S1755839AbZGGJSm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 05:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbZGGJSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 05:17:20 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41371 "EHLO mx2.suse.de"
+	Tue, 7 Jul 2009 05:18:35 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:54037 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753274AbZGGJRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 05:17:19 -0400
-Date: Tue, 7 Jul 2009 11:17:22 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [rfc][patch 3/3] fs: convert ext2,tmpfs to new truncate
-Message-ID: <20090707091722.GZ2714@wotan.suse.de>
-References: <20090706165438.GQ2714@wotan.suse.de> <20090706165629.GS2714@wotan.suse.de> <20090706172838.GC26042@infradead.org>
-Mime-Version: 1.0
+	id S1753732AbZGGJSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 05:18:34 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090706172838.GC26042@infradead.org>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+Message-ID: <19027.4815.420637.375450@pilspetsen.it.uu.se>
+Date: Tue, 7 Jul 2009 11:18:07 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Grant Grundler" <grundler@parisc-linux.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Matthew Wilcox" <matthew@wil.cx>,
+       "Mikael Pettersson" <mikpe@it.uu.se>
+Subject: Re: [Bug #13673] HIGHMEM64G causes hang in PCI init on 32-bit x86
+In-Reply-To: <dWkuWjWDsSB.A.HoE.b0oUKB@chimera>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
+	<dWkuWjWDsSB.A.HoE.b0oUKB@chimera>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 01:28:38PM -0400, Christoph Hellwig wrote:
-> On Mon, Jul 06, 2009 at 06:56:29PM +0200, Nick Piggin wrote:
-> > 
-> > Convert filemap_xip.c, buffer.c, and some filesystems to the new truncate
-> > convention. Converting generic helpers is using some ugly code (testing
-> > for i_op->ftruncate) to distinguish new and old callers... better
-> > alternative might be just define a new function for these guys.
+Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> Splitting generic preparations, ext2 and shmem into separate patch would
-> be a tad cleaner I think.
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13673
+> Subject		: HIGHMEM64G causes hang in PCI init on 32-bit x86
+> Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+> Date		: 2009-06-26 15:59 (11 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linu=
+> x-2.6.git;a=3Dcommit;h=3D95ee14e4379c5e19c0897c872350570402014742
+> References	: http://marc.info/?l=3Dlinux-pci&m=3D124615181602643&w=3D4
+> Handled-By	: H. Peter Anvin <hpa@zytor.com>
 
-I actually reworked this so callers of those functions should do the
-i_size update and truncate_pagecache (which gives more flexibility
-anyway). And so no further changes required there.
-
+Fixed in 2.6.31-rc2.
