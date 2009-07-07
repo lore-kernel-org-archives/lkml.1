@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZGGPTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZGGPX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZGGPTV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbZGGPTM
+	id S1756277AbZGGPX7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbZGGPXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:19:12 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:35504 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753231AbZGGPTL (ORCPT
+	Tue, 7 Jul 2009 11:23:49 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:52972 "EHLO
+	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753892AbZGGPXs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:19:11 -0400
+	Tue, 7 Jul 2009 11:23:48 -0400
+X-SpamScore: -15
+X-BigFish: VPS-15(zz14c3M98dN936eMzz1202hzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KMF434-02-7YX-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19027.26456.343392.704453@stoffel.org>
-Date: Tue, 7 Jul 2009 11:18:48 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: John Stoffel <john@stoffel.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <Jens.Axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH] Make SCSI SG v4 driver enabled by default now since udev
- depends on it.
-In-Reply-To: <4A53644E.2090205@panasas.com>
-References: <1246978255-19407-1-git-send-email-john@stoffel.org>
-	<4A53644E.2090205@panasas.com>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: IOMMU and graphics cards
+Date: Tue, 7 Jul 2009 10:24:46 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C11261327303FA5888@sausexmb4.amd.com>
+In-Reply-To: <0DDD3FAD-969A-421B-A36A-77AB645E8BCA@gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: IOMMU and graphics cards
+Thread-Index: Acn/FLG/PAUo6NcDSbK16YE1twsX2QAAIofQ
+References: <20090507164742V.fujita.tomonori@lab.ntt.co.jp><20090507100114.GF4059@amd.com><1241691721.3531.73.camel@macbook.infradead.org><20090507.113632.210373283.davem@davemloft.net><20090508093526.GB13708@8bytes.org><1246883177.2615.33.camel@macbook.infradead.org><20090706131156.GL5380@amd.com><1246889932.2615.81.camel@macbook.infradead.org><alpine.DEB.2.00.0907062232350.5769@skynet.skynet.ie> <0DDD3FAD-969A-421B-A36A-77AB645E8BCA@gmail.com>
+From: "Duran, Leo" <leo.duran@amd.com>
+To: "Dave Airlie" <airlied@gmail.com>, "Dave Airlie" <airlied@linux.ie>
+CC: "Zhenyu Wang" <zhenyu.z.wang@intel.com>, <linux-kernel@vger.kernel.org>,
+       <fujita.tomonori@lab.ntt.co.jp>, <eric@anholt.net>,
+       <iommu@lists.linux-foundation.org>, <mingo@redhat.com>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "David Miller" <davem@davemloft.net>
+X-OriginalArrivalTime: 07 Jul 2009 15:23:34.0923 (UTC) FILETIME=[E4C4B5B0:01C9FF16]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Boaz" == Boaz Harrosh <bharrosh@panasas.com> writes:
 
-Boaz> On 07/07/2009 05:50 PM, John Stoffel wrote:
->> Signed-off-by: John Stoffel <john@stoffel.org>
->> ---
->> block/Kconfig |    6 +++---
->> 1 files changed, 3 insertions(+), 3 deletions(-)
->> 
->> diff --git a/block/Kconfig b/block/Kconfig
->> index e7d1278..22bf6eb 100644
->> --- a/block/Kconfig
->> +++ b/block/Kconfig
->> @@ -46,8 +46,8 @@ config LBD
->> 
->> config BLK_DEV_BSG
->> bool "Block layer SG support v4 (EXPERIMENTAL)"
+On 07/07/2009, at 10:08 CST, Dave Airlie <airlied@linux.ie> wrote:
+> Could you also enumerate any limitations of the IOMMUs
+> on the amount of memory they can remap per device if any.
 
-Boaz> Please also remove the (EXPERIMENTAL) from the prompt as well
+Here's the spec for the AND IOMMU:
+http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/
+34434.pdf
 
-Duh... sorry for this oversight.  I'll respin the patch ASAP.
+Below is a cut-paste of "Table 3: Device Table Entry Field Definitions".
+As an example, paging mode 4 supports a 48-bit virtual address space
+(well beyond 4GB's). In terms of physical address space, "Figure 7: I/O
+Page Translation Entry (PTE)" shows supports for up-to a 52-bit page
+address.
 
->> -	depends on EXPERIMENTAL
->> -	---help---
->> +	default y
->> +	help
->> Saying Y here will enable generic SG (SCSI generic) v4 support
->> for any block device.
->> 
->> @@ -57,7 +57,7 @@ config BLK_DEV_BSG
->> protocols (e.g. Task Management Functions and SMP in Serial
->> Attached SCSI).
->> 
->> -	  If unsure, say N.
->> +	  If unsure, say Y.
->> 
->> config BLK_DEV_INTEGRITY
->> bool "Block layer data integrity support"
+Leo.
 
-Boaz> Thanks I needed that too.
 
-Boaz> BTW distro(s) have been shipping with it on for ages
+11:9 Mode: paging mode. Specify how the IOMMU performs page translation
+on behalf of the device. If
+page translation is enabled, the mode specifies the depth of the
+device's I/O page tables (1 to 6
+levels).
 
-I ran into this since I was trying to get Udev to properly find and
-name my tape drives, and it wasn't until I finally figured out that
-BSG wasn't enabled on any of my systems that I got around to getting
-it working properly.
+000b Translation disabled (Access controlled by IR and IW bits)
+001b 1 Level Page Table (provides a 21-bit device virtual address space)
+010b 2 Level Page Table (provides a 30-bit device virtual address space)
+011b 3 Level Page Table (provides a 39-bit device virtual address space)
+100b 4 Level Page Table (provides a 48-bit device virtual address space)
+101b 5 Level Page Table (provides a 57-bit device virtual address space)
+110b 6 Level Page Table (provides a 64-bit device virtual address space)
+111b Reserved
+Note: the page table root pointer is ignored when Mode=000b and when
+Mode=111b.
+Note: Mode=111b is reported as an error when V=1 and TV=1.
 
-I've also put in a patch to the UDEV people to mention that this
-should be turned on to make Udev work properly.
-
-John
