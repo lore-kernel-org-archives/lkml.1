@@ -1,168 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbZGGACy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755281AbZGGADY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756825AbZGGACy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 20:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbZGGABb
+	id S1755281AbZGGADY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 20:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbZGGADP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 20:01:31 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:54172 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756087AbZGGAB3 (ORCPT
+	Mon, 6 Jul 2009 20:03:15 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45086 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754751AbZGGADO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 20:01:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=KnC7ZhgtGh9uXg7Vc9Fq1M1rKcQE98ZzVy9QDznSsYYs0+/iXmo3lKHPSREexSAXKM
-         o846XvlJmVt1hmFuYWABsOToDAi88J/dyU2SHIVcj3tXX1mnGuPHAc1Mrc1Bt09XY3yL
-         1+YVsvUHgt89WaAOgXGdNexdN6zFC4tQvQWyc=
-Date: Tue, 7 Jul 2009 09:01:20 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 4/5] add isolate pages vmstat
-Message-Id: <20090707090120.1e71a060.minchan.kim@barrios-desktop>
-In-Reply-To: <20090706204412.0C5D.A69D9226@jp.fujitsu.com>
-References: <28c262360907050751t1fccbf4t4ace572b4e003a13@mail.gmail.com>
-	<20090706182750.0C54.A69D9226@jp.fujitsu.com>
-	<20090706204412.0C5D.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Jul 2009 20:03:14 -0400
+Message-ID: <4A5290C5.5040905@zytor.com>
+Date: Mon, 06 Jul 2009 17:03:17 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: "John A. Gregor" <john.gregor@qlogic.com>
+CC: ralph.campbell@qlogic.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64/__iowrite32_copy: don't use string move for PIO
+ writes
+References: <1246907224-22758-1-git-send-email-john.gregor@qlogic.com> <4A526CE6.30200@zytor.com> <4a526e77.IPiyTZWRWfll2+00%john.gregor@qlogic.com> <4A527EE4.1080102@zytor.com> <4a528c40.zpEvWzPTM5aCPBai%john.gregor@qlogic.com>
+In-Reply-To: <4a528c40.zpEvWzPTM5aCPBai%john.gregor@qlogic.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-> ============ CUT HERE ===============
-> Subject: [PATCH] add isolate pages vmstat
+John A. Gregor wrote:
 > 
-> If the system have plenty threads or processes, concurrent reclaim can
-> isolate very much pages.
-> Unfortunately, current /proc/meminfo and OOM log can't show it.
+>> It's probably also worth nothing that with this change, there probably
+>> is little point in writing this in assembly at all.  This is especially
+>> so since your implementation is buggy: by definition, __iowrite32_copy()
+>> does the I/O operations 32 bits at a time, but you are using 64-bit
+>> operations.
 > 
-> This patch provide the way of showing this information.
-> 
-> 
-> reproduce way
-> -----------------------
-> % ./hackbench 140 process 1000
->    => couse OOM
-> 
-> Active_anon:146 active_file:41 inactive_anon:0
->  inactive_file:0 unevictable:0
->  isolated_anon:49245 isolated_file:113
->  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->  dirty:0 writeback:0 buffer:49 unstable:0
->  free:184 slab_reclaimable:276 slab_unreclaimable:5492
->  mapped:87 pagetables:28239 bounce:0
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  drivers/base/node.c    |    4 ++++
->  fs/proc/meminfo.c      |    4 ++++
->  include/linux/mmzone.h |    2 ++
->  mm/page_alloc.c        |   10 ++++++++--
->  mm/vmscan.c            |    5 +++++
->  mm/vmstat.c            |    3 ++-
->  6 files changed, 25 insertions(+), 3 deletions(-)
-> 
-> Index: b/fs/proc/meminfo.c
-> ===================================================================
-> --- a/fs/proc/meminfo.c
-> +++ b/fs/proc/meminfo.c
-> @@ -65,6 +65,8 @@ static int meminfo_proc_show(struct seq_
->  		"Active(file):   %8lu kB\n"
->  		"Inactive(file): %8lu kB\n"
->  		"Unevictable:    %8lu kB\n"
-> +		"Isolated(anon): %8lu kB\n"
-> +		"Isolated(file): %8lu kB\n"
->  		"Mlocked:        %8lu kB\n"
->  #ifdef CONFIG_HIGHMEM
->  		"HighTotal:      %8lu kB\n"
-> @@ -109,6 +111,8 @@ static int meminfo_proc_show(struct seq_
->  		K(pages[LRU_ACTIVE_FILE]),
->  		K(pages[LRU_INACTIVE_FILE]),
->  		K(pages[LRU_UNEVICTABLE]),
-> +		K(global_page_state(NR_ISOLATED_ANON)),
-> +		K(global_page_state(NR_ISOLATED_FILE)),
->  		K(global_page_state(NR_MLOCK)),
->  #ifdef CONFIG_HIGHMEM
->  		K(i.totalhigh),
-> Index: b/include/linux/mmzone.h
-> ===================================================================
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -100,6 +100,8 @@ enum zone_stat_item {
->  	NR_BOUNCE,
->  	NR_VMSCAN_WRITE,
->  	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
-> +	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
-> +	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
->  #ifdef CONFIG_NUMA
->  	NUMA_HIT,		/* allocated in intended node */
->  	NUMA_MISS,		/* allocated in non intended node */
-> Index: b/mm/page_alloc.c
-> ===================================================================
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2116,8 +2116,8 @@ void show_free_areas(void)
->  	}
->  
->  	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
-> -		" inactive_file:%lu"
-> -		" unevictable:%lu"
-> +		" inactive_file:%lu unevictable:%lu\n"
-> +		" isolated_anon:%lu isolated_file:%lu\n"
->  		" dirty:%lu writeback:%lu buffer:%lu unstable:%lu\n"
->  		" free:%lu slab_reclaimable:%lu slab_unreclaimable:%lu\n"
->  		" mapped:%lu pagetables:%lu bounce:%lu\n",
-> @@ -2126,6 +2126,8 @@ void show_free_areas(void)
->  		global_page_state(NR_INACTIVE_ANON),
->  		global_page_state(NR_INACTIVE_FILE),
->  		global_page_state(NR_UNEVICTABLE),
-> +		global_page_state(NR_ISOLATED_ANON),
-> +		global_page_state(NR_ISOLATED_FILE),
->  		global_page_state(NR_FILE_DIRTY),
->  		global_page_state(NR_WRITEBACK),
->  		nr_blockdev_pages(),
-> @@ -2151,6 +2153,8 @@ void show_free_areas(void)
->  			" active_file:%lukB"
->  			" inactive_file:%lukB"
->  			" unevictable:%lukB"
-> +			" isolated(anon):%lukB"
-> +			" isolated(file):%lukB"
->  			" present:%lukB"
->  			" mlocked:%lukB"
->  			" dirty:%lukB"
-> @@ -2176,6 +2180,8 @@ void show_free_areas(void)
->  			K(zone_page_state(zone, NR_ACTIVE_FILE)),
->  			K(zone_page_state(zone, NR_INACTIVE_FILE)),
->  			K(zone_page_state(zone, NR_UNEVICTABLE)),
-> +			K(zone_page_state(zone, NR_ISOLATED_ANON)),
-> +			K(zone_page_state(zone, NR_ISOLATED_FILE)),
->  			K(zone->present_pages),
->  			K(zone_page_state(zone, NR_MLOCK)),
->  			K(zone_page_state(zone, NR_FILE_DIRTY)),
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1082,6 +1082,7 @@ static unsigned long shrink_inactive_lis
->  						-count[LRU_ACTIVE_ANON]);
->  		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
->  						-count[LRU_INACTIVE_ANON]);
-> +		__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, nr_taken);
+> The point of the routine is to make sure that transfers are *at least*
+> 32-bit aligned and *at least* multiples of 32-bits in length.  64-bit
+> transfers meet those conditions.
 
-Lumpy can reclaim file + anon anywhere.  
-How about using count[NR_LRU_LISTS]?
--- 
-Kind regards,
-Minchan Kim
+No.  That may be what *you* want, but that's not what the function is
+documented or specified to do.
+
+/**
+ * __iowrite32_copy - copy data to MMIO space, in 32-bit units
+ * @to: destination, in MMIO space (must be 32-bit aligned)
+ * @from: source (must be 32-bit aligned)
+ * @count: number of 32-bit quantities to copy
+ *
+ * Copy data from kernel space to MMIO space, in units of 32 bits at a
+ * time.  Order of access is not guaranteed, nor is a memory barrier
+ * performed afterwards.
+ */
+
+That is the generic version and the documented ABI, which the x86
+version must mimic.  This is not the function to use if you don't care
+about access size, which you better not if you're accessing WC memory.
+
+> Another, less clearly stated, condition (which is imposed by the adapter
+> the code was written for(*)) is that we can't take multiple writes
+> to the same memory location (i.e. the number of dwords written to the
+> adapter's buffer must == the number of dwords in the transfer).  It is
+> this condition that rep mov doesn't always respect.  It appears that
+> (possibly due to the processor taking an interrupt) the rep mov can
+> "back up" and redo part of the transfer.  We've gotten PCIe analyzer
+> traces that confirm this behavior.
+  [...]
+> See above, 8-byte alignment and transfers (being a subset of 4-byte
+> alignments) are fine.  Since we are writing into a WC space, we don't
+> have control over how many dwords get stuck together in a transfer
+> anyway.
+
+If you're doing this to WC memory, I believe your driver (or hardware)
+is broken.  WC does not guarantee this condition to the best of my
+knowledge, although I haven't found anything that explicitly states that
+WC memory has to be idempotent (it is documented, though, that it can
+collapse stores to the same address, so it might have been considered a
+resulting issue.)
+
+Anyway, I'm fine simply removing the x86 assembly version of this
+routine and simply using the generic routine.  The checkin should
+reference the observed behavior (which I would also suggest escalating
+via your Intel FAEs if you can; I can try to investigate internally as
+well.)  If you want 64-bit transfers, you should use __iowrite64_copy();
+if you want completely private behavior you should use your own routine
+(and just write it in C) rather than changing the documented behavior of
+an existing routine from one that might be useful for other drivers
+(although currently aren't used as far as I can tell) to one which is
+guaranteed not to be.
+
+	-hpa
+
+
+	-hpa
