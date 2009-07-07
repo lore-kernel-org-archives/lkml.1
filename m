@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZGGNS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbZGGNSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbZGGNS1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbZGGNSP
+	id S1757487AbZGGNSi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbZGGNSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:18:15 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:47580 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754056AbZGGNSO (ORCPT
+	Tue, 7 Jul 2009 09:18:18 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:47293 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbZGGNSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:18:14 -0400
-Message-ID: <4A534B01.4020007@novell.com>
-Date: Tue, 07 Jul 2009 09:17:53 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Tue, 7 Jul 2009 09:18:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Xn2Xay5mGQcm412no/TC447u7aXMsSPzHum+flxxKSKzqht2sWq6004pff56np2rNn
+         LF8ruiNUBrsDv9gKutDZFUV7+1Bp7FGNV/JjPUhxi0UFiP9eE+i2JDmq681rnFJD9pT6
+         IkQHKjGExkPhxTuXKbVbpZfXzAifXPezN9qrY=
+Date: Tue, 7 Jul 2009 15:18:03 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Joao Correia <joaomiguelcorreia@gmail.com>
+Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Andres Freund <andres@anarazel.de>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
+	possibly?caused by netem)
+Message-ID: <20090707131803.GA6520@ami.dom.local>
+References: <200907031326.21822.andres@anarazel.de> <20090706163106.GA4559@ami.dom.local> <a5d9929e0907061023g4306d80ewfc8907653b949005@mail.gmail.com> <200907061926.43625.andres@anarazel.de> <20090707065014.GA3296@ami.dom.local> <a5d9929e0907070340y63280508t92e6c7e4ce464994@mail.gmail.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: [KVM PATCH v9 2/2] KVM: add iosignalfd support
-References: <20090706202742.14222.65548.stgit@dev.haskins.net> <20090706203321.14222.67866.stgit@dev.haskins.net> <20090707112024.GA3647@redhat.com> <4A53372E.6090509@redhat.com>
-In-Reply-To: <4A53372E.6090509@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE4BA011FB69B4CAF01779DD4"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a5d9929e0907070340y63280508t92e6c7e4ce464994@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE4BA011FB69B4CAF01779DD4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jul 07, 2009 at 11:40:16AM +0100, Joao Correia wrote:
+> I am now running 2.6.31-rc2 for a couple of hours, no freeze.
+> 
+> Let me know what/if i can help with tracking down the original source
+> of the problem.
 
-Avi Kivity wrote:
-> (adding Davide, there's a small comment for you in the middle, search
-> for eventfd)
->
-> On 07/07/2009 02:20 PM, Michael S. Tsirkin wrote:
->>
->>> @@ -307,6 +307,19 @@ struct kvm_guest_debug {
->>>       struct kvm_guest_debug_arch arch;
->>>   };
->>>
->>> +#define KVM_IOSIGNALFD_FLAG_TRIGGER   (1<<  0) /* trigger is valid *=
-/
->>>     =20
->>
->> can we rename trigger ->  value?
->>   =20
->
-> Or maybe data_match?
+OK, so we know it's only about timers. Here is another tiny patch
+(the previous one should be removed), which could tell (with oops) if
+there's something while migrating. Anyway, the bug should be back :-(
 
-Yeah, at the least I should be consistent with trigger/match
->
-> Speaking of renames, how about IOSIGNALFD -> IOEVENTFD?  I have some
-> vague uneasiness seeing signals all the time.
-
-Sure, that works for me.
-
--Greg
-
-
-
---------------enigE4BA011FB69B4CAF01779DD4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpTSwEACgkQlOSOBdgZUxlp3ACePpRde9UldP8O8UAbINhqPS8K
-87gAnRQFzOWitX/5BJusAAlcMRFUFE6+
-=Egme
------END PGP SIGNATURE-----
-
---------------enigE4BA011FB69B4CAF01779DD4--
+Thanks,
+Jarek P.
