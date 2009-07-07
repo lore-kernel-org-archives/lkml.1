@@ -1,145 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZGGJNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbZGGJNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbZGGJNS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 05:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZGGJNF
+	id S1756545AbZGGJNy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 05:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbZGGJNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 05:13:05 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41246 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753585AbZGGJNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 05:13:02 -0400
-Date: Tue, 7 Jul 2009 11:13:01 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: "Michael S. Zick" <lkml@morethan.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: Null Pointer BUG in uhci_hcd
-In-Reply-To: <200907051720.45819.lkml@morethan.org>
-Message-ID: <alpine.LRH.2.00.0907071111210.27150@twin.jikos.cz>
-References: <200907051720.45819.lkml@morethan.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Tue, 7 Jul 2009 05:13:45 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49288 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753945AbZGGJNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 05:13:44 -0400
+X-Authenticated: #1512929
+X-Provags-ID: V01U2FsdGVkX1/0Tw90/Fb0Y9RFgxNkkNk0Z1712FlsEXXGoAIbhI
+	PwxJB/FB5OWThf
+Message-ID: <4A5311C7.1020507@warlich.name>
+Date: Tue, 07 Jul 2009 11:13:43 +0200
+From: Christof Warlich <christof@warlich.name>
+Organization: Warlich Consulting
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
+Subject: Re: "EXT3-fs error" after resume from s2ram
+References: <4A4771FD.1020207@warlich.name> <4A480859.5010206@gmail.com> <4A48C799.2010102@warlich.name> <4A495C2D.1040706@gmail.com> <4A49A49C.10104@warlich.name> <4A4C42E2.6030305@gmail.com> <4A51C929.5010909@warlich.name> <4A52931D.5070109@gmail.com> <4A52F39A.1030704@warlich.name>
+In-Reply-To: <4A52F39A.1030704@warlich.name>
+Content-Type: multipart/mixed;
+ boundary="------------070100090902010000080602"
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6899999999999999
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------070100090902010000080602
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-[ adding linux-usb to CC ]
+Christof Warlich schrieb:
+> Do you think I can fix the issue and circumvent the BIOS by passing 
+> the real geomerty of the drive as kernel boot parameters? This may 
+> also have the nice side effect that I could utilize the full capacity 
+> of the drive. I'll definitly do some experiments in this direction and 
+> let you know immediately if I succeed. Please let me know if this may 
+> be a waste of time or if you know an appropriate fix.
+I retried with the boot parameter hda=16383,16,63 according to the 
+values that I got from fdisk, but without success. Anyway, I would have 
+expected that the kernel may have had a way to set the LBA48 geometry 
+instead of CHS, but it looks like I'm on the wrong track here...
 
-On Sun, 5 Jul 2009, Michael S. Zick wrote:
+--------------070100090902010000080602
+Content-Type: text/x-vcard; charset=utf-8;
+ name="christof.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="christof.vcf"
 
-> Anyone with suggestions about this one?
-> 
-> root@cb01:~# dmesg
-> uhci_hcd: USB Universal Host Controller Interface driver
-> uhci_hcd 0000:00:10.0: PCI INT A -> Link[LNKA] -> GSI 10 (level, low) -> IRQ 10
-> uhci_hcd 0000:00:10.0: UHCI Host Controller
-> uhci_hcd 0000:00:10.0: new USB bus registered, assigned bus number 1
-> uhci_hcd 0000:00:10.0: irq 10, io base 0x00004400
-> usb usb1: New USB device found, idVendor=1d6b, idProduct=0001
-> usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-> usb usb1: Product: UHCI Host Controller
-> usb usb1: Manufacturer: Linux 2.6.30-ce1200v-09185 uhci_hcd
-> usb usb1: SerialNumber: 0000:00:10.0
-> usb usb1: configuration #1 chosen from 1 choice
-> hub 1-0:1.0: USB hub found
-> hub 1-0:1.0: 2 ports detected
-> uhci_hcd 0000:00:10.1: PCI INT B -> Link[LNKB] -> GSI 11 (level, low) -> IRQ 11
-> uhci_hcd 0000:00:10.1: UHCI Host Controller
-> uhci_hcd 0000:00:10.1: new USB bus registered, assigned bus number 2
-> uhci_hcd 0000:00:10.1: HCRESET not completed yet!
-> uhci_hcd 0000:00:10.1: irq 11, io base 0x00004420
-> usb usb2: New USB device found, idVendor=1d6b, idProduct=0001
-> usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-> usb usb2: Product: UHCI Host Controller
-> usb usb2: Manufacturer: Linux 2.6.30-ce1200v-09185 uhci_hcd
-> usb usb2: SerialNumber: 0000:00:10.1
-> usb usb2: configuration #1 chosen from 1 choice
-> hub 2-0:1.0: USB hub found
-> hub 2-0:1.0: 0 ports detected
-> uhci_hcd 0000:00:10.2: PCI INT C -> Link[LNKC] -> GSI 10 (level, low) -> IRQ 10
-> uhci_hcd 0000:00:10.2: UHCI Host Controller
-> uhci_hcd 0000:00:10.2: new USB bus registered, assigned bus number 3
-> uhci_hcd 0000:00:10.2: HCRESET not completed yet!
-> uhci_hcd 0000:00:10.2: irq 10, io base 0x00004440
-> usb usb3: New USB device found, idVendor=1d6b, idProduct=0001
-> usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
-> usb usb3: Product: UHCI Host Controller
-> usb usb3: Manufacturer: Linux 2.6.30-ce1200v-09185 uhci_hcd
-> usb usb3: SerialNumber: 0000:00:10.2
-> uhci_hcd 0000:00:10.2: host system error, PCI problems?
-> uhci_hcd 0000:00:10.2: host controller process error, something bad happened!
-> uhci_hcd 0000:00:10.2: host controller halted, very bad!
-> uhci_hcd 0000:00:10.2: HCRESET not completed yet!
-> uhci_hcd 0000:00:10.2: HC died; cleaning up
-> uhci_hcd 0000:00:10.1: host system error, PCI problems?
-> uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
-> uhci_hcd 0000:00:10.1: host controller halted, very bad!
-> uhci_hcd 0000:00:10.1: HCRESET not completed yet!
-> uhci_hcd 0000:00:10.1: HC died; cleaning up
-> usb usb3: configuration #1 chosen from 1 choice
-> usb usb3: can't set config #1, error -108
-> uhci_hcd 0000:00:10.2: HC died; cleaning up
-> BUG: unable to handle kernel NULL pointer dereference at 00000050
-> IP: [<c03ae8b1>] usb_kick_khubd+0x21/0x40
-> *pde = 00000000
-> Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-> last sysfs file: /sys/devices/pci0000:00/0000:00:10.0/usb1/bmAttributes
-> Modules linked in: uhci_hcd(+) joydev i2c_viapro rtl8187 [last unloaded: ehci_hcd]
-> 
-> Pid: 3562, comm: modprobe Tainted: G        W  (2.6.30-ce1200v-09185 #5) Everex gBook Series
-> EIP: 0060:[<c03ae8b1>] EFLAGS: 00010046 CPU: 0
-> EIP is at usb_kick_khubd+0x21/0x40
-> EAX: 00000000 EBX: 00000282 ECX: d90db39b EDX: 00000000
-> ESI: d9e15000 EDI: 00000000 EBP: d9e15000 ESP: d0749d60
->  DS: 007b ES: 007b FS: 0000 GS: 00e0 SS: 0068
-> Process modprobe (pid: 3562, ti=d0748000 task=d9e1e370 task.ti=d0748000)
-> Stack:
->  d90db39b c03b071c c06b0840 dc7e31a2 db473bf0 d90db39b 00000000 00004440
->  c03b1515 c06b08ec dc7e31a2 db473bf0 0000000a c0694a4c 00004440 00000000
->  00000080 0000000a c048c054 d0749dbf d63fe800 db473bf0 db49f85c d90db39b
-> Call Trace:
->  [<c03b071c>] ? usb_hc_died+0x8c/0xb0
->  [<c03b1515>] ? usb_add_hcd+0x595/0x600
->  [<c048c054>] ? pcibios_set_master+0x34/0xd0
->  [<c03bf485>] ? usb_hcd_pci_probe+0x1c5/0x2d0
->  [<c01f728a>] ? sysfs_do_create_link+0xca/0x150
->  [<c02a283a>] ? local_pci_probe+0x1a/0x40
->  [<c02a39ca>] ? pci_device_probe+0x7a/0xa0
->  [<c034653c>] ? driver_probe_device+0x8c/0x170
->  [<c02a2aea>] ? pci_match_device+0xca/0x110
->  [<c03466ab>] ? __driver_attach+0x8b/0xa0
->  [<c0346620>] ? __driver_attach+0x0/0xa0
->  [<c0345988>] ? bus_for_each_dev+0x48/0x80
->  [<c02a2860>] ? pci_device_shutdown+0x0/0x40
->  [<c0346372>] ? driver_attach+0x22/0x40
->  [<c0346620>] ? __driver_attach+0x0/0xa0
->  [<c034615b>] ? bus_add_driver+0x1db/0x250
->  [<c02a2860>] ? pci_device_shutdown+0x0/0x40
->  [<c0346b14>] ? driver_register+0x64/0x130
->  [<dc7d5000>] ? uhci_hcd_init+0x0/0xe1 [uhci_hcd]
->  [<c02a3cb2>] ? __pci_register_driver+0x42/0xc0
->  [<dc7d5000>] ? uhci_hcd_init+0x0/0xe1 [uhci_hcd]
->  [<dc7d508f>] ? uhci_hcd_init+0x8f/0xe1 [uhci_hcd]
->  [<c010112e>] ? do_one_initcall+0x3e/0x1a0
->  [<c015ba72>] ? sys_init_module+0xb2/0x1f0
->  [<c010313b>] ? sysenter_do_call+0x12/0x26
-> Code: 74 26 00 8d bc 27 00 00 00 00 83 ec 04 65 8b 15 14 00 00 00 89 14 24 31 d2 8b 14 24 65 33 15 14 00 00 00 75 12 8b 80 20 01 00 00 <8b> 40 50 8b 40 64 59 e9 a3 d7 ff ff e8 2e ba d7 ff 8d b4 26 00
-> EIP: [<c03ae8b1>] usb_kick_khubd+0x21/0x40 SS:ESP 0068:d0749d60
-> CR2: 0000000000000050
-> ---[ end trace 15ef77c17c582a97 ]---
-> note: modprobe[3562] exited with preempt_count 1
-> root@cb01:~# 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+begin:vcard
+fn:Christof Warlich
+n:Warlich;Christof
+org:Warlich Consulting
+adr:;;Am Haselhang 7;Hilpoltstein;Bayern;91161;Deutschland
+email;internet:christof@warlich.name
+tel;work:09174/492914
+tel;home:09174/492914
+x-mozilla-html:TRUE
+url:www.warlich.name
+version:2.1
+end:vcard
 
--- 
-Jiri Kosina
-SUSE Labs
 
+--------------070100090902010000080602--
