@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbZGGMko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757081AbZGGMsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbZGGMko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 08:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbZGGMkh
+	id S1757081AbZGGMsL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 08:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZGGMsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 08:40:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39436 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755109AbZGGMkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 08:40:36 -0400
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Brad Boyer <flar@allandria.com>, gcc-help@gcc.gnu.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kernel mailz <kernelmailz@googlemail.com>
-Subject: Re: Inline assembly queries [2]
-References: <abe8a1fd0907022344k2eb9874ejdbda3209a7cadf40@mail.gmail.com>
-	<20090703174031.GA12410@cynthia.pants.nu> <m23a9deb87.fsf@igel.home>
-	<20090706065627.GA12499@iram.es>
-X-Yow: The entire CHINESE WOMEN'S VOLLEYBALL TEAM all share ONE personality --
- and have since BIRTH!!
-Date: Tue, 07 Jul 2009 14:40:02 +0200
-In-Reply-To: <20090706065627.GA12499@iram.es> (Gabriel Paubert's message of
-	"Mon, 6 Jul 2009 08:56:27 +0200")
-Message-ID: <m37hykis4d.fsf@hase.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.95 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 7 Jul 2009 08:48:05 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:46337 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755073AbZGGMsE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 08:48:04 -0400
+Subject: Re: kmemleak not tainted
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20090707115128.GA3238@localdomain.by>
+References: <20090707115128.GA3238@localdomain.by>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 07 Jul 2009 13:47:39 +0100
+Message-Id: <1246970859.9451.34.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Jul 2009 12:47:40.0875 (UTC) FILETIME=[1D5241B0:01C9FF01]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel Paubert <paubert@iram.es> writes:
+On Tue, 2009-07-07 at 14:51 +0300, Sergey Senozhatsky wrote:
+> kernel: [ 1917.133154] INFO: RCU detected CPU 0 stall (t=485140/3000 jiffies)
 
-> On Fri, Jul 03, 2009 at 10:57:12PM +0200, Andreas Schwab wrote:
->> The 'Z' constraint is required for a memory operand for insns that don't
->> have an update form (which would be selected by the %U modifier).  
->
-> Hmmm, I believed that it was for instructions that only have an indexed
-> form (all Altivec, byte reverse, and l?arx/st?cx for atomic operations).
->
-> Of course none of these instructions have an update form, but they don't
-> have an offset encoded in the instruction either.
+That's the relevant message. With CONFIG_RCU_CPU_STALL_DETECTOR you may
+get these messages.
 
-Yes, you are right.  IIRC there are either all u/x/ux forms or only the
-x form.
+> static struct kmemleak_object *find_and_get_object(unsigned long ptr, int alias)
+> {
+> 	unsigned long flags;
+> 	struct kmemleak_object *object = NULL;
+> 
+> 	rcu_read_lock();
+> 	read_lock_irqsave(&kmemleak_lock, flags);
+> 	if (ptr >= min_addr && ptr < max_addr)
+> 		object = lookup_object(ptr, alias);
+> >>	read_unlock_irqrestore(&kmemleak_lock, flags);
+> 
+> 	/* check whether the object is still available */
+> 	if (object && !get_object(object))
+> 		object = NULL;
+> 	rcu_read_unlock();
+> 
+> 	return object;
+> }
 
-Andreas.
+It just happened here because that's where the interrupts were enabled
+and the timer routine invoked. The rcu-locked region above should be
+pretty short (just a tree look-up).
+
+What I think happens is that the kmemleak thread runs for several
+seconds for scanning the memory and there may not be any context
+switches. I have a patch to add more cond_resched() calls throughout the
+kmemleak_scan() function which I hope will get merged. I don't get any
+of these messages with CONFIG_PREEMPT enabled.
 
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Catalin
+
