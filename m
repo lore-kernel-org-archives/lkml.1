@@ -1,80 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbZGGApY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbZGGAyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbZGGApY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 20:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZGGApM
+	id S1754056AbZGGAyf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 20:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZGGAy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 20:45:12 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:48972 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbZGGApL (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 20:45:11 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: michal.simek@petalogix.com, Paul Mundt <lethal@linux-sh.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>,
-       John Williams <john.williams@petalogix.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Grant Likely <grant.likely@secretlab.ca>, subrata@linux.vnet.ibm.com
-Subject: Re: mmap syscall problem
-In-Reply-To: Your message of "Mon, 06 Jul 2009 16:16:11 +0200."
-             <200907061616.12220.arnd@arndb.de>
-From: Valdis.Kletnieks@vt.edu
-References: <4A4DFB77.1080700@petalogix.com> <20090706121455.GA16908@linux-sh.org> <4A51F3F3.6040501@petalogix.com>
-            <200907061616.12220.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1246927497_3046P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 06 Jul 2009 20:44:57 -0400
-Message-ID: <105602.1246927497@turing-police.cc.vt.edu>
+	Mon, 6 Jul 2009 20:54:26 -0400
+Received: from eta-ori.net ([91.121.142.51]:56870 "EHLO orion.eta-ori.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752234AbZGGAyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 20:54:25 -0400
+Message-ID: <4A529CBA.4030408@impulze.org>
+Date: Tue, 07 Jul 2009 02:54:18 +0200
+From: Daniel Mierswa <impulze@impulze.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090628)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Re: Parsing kernel parameters and escaping "
+References: <4A50B09B.9030901@impulze.org> <4A5282B4.8070302@impulze.org>
+In-Reply-To: <4A5282B4.8070302@impulze.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig95F587BEAF105C8C51141FBF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1246927497_3046P
-Content-Type: text/plain; charset=us-ascii
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig95F587BEAF105C8C51141FBF
+Content-Type: multipart/mixed;
+ boundary="------------010400060007040909020808"
 
-On Mon, 06 Jul 2009 16:16:11 +0200, Arnd Bergmann said:
+This is a multi-part message in MIME format.
+--------------010400060007040909020808
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> What happens in a simple user space program that mmaps the same
-> page to two addresses? Something like
-> 
-> #include <sys/mman.h>
-> #include <fcntl.h>
-> int main(void)
-> {
-> 	int fd = open("existing-4k-file", O_RDWR);
-> 	char *p1 = mmap(0, 4096, PROT_READ | PROT_WRITE,
-> 				MAP_SHARED, fd, 0);
-> 	char *p2 = mmap(p1 + 4096, 4096, PROT_READ | PROT_WRITE,
-> 				MAP_SHARED | MAP_FIXED, fd, 0);
-> 
-> 	*p1 = 0xaa; *p2 = 0x55;
-> 
-> 	return *p1; /* returns 0xaa if broken, 0x55 if correct */
-> }
+Second version of the patch, I accidently forgot to take care of out of
+bounds checking when reaching the end of the kernel parameter line.
 
-Strictly speaking, doesn't that need a barrier of some sort between the two
-assignments?  I mean, how is gcc supposed to intuit that p1 and p2 alias
-each other and it needs to reload *p1 before returning that value?
+--=20
+Mierswa, Daniel
 
-(And in more complicated code, I could even see the compiler re-ordering those
-two assignments, so the in-file value is different as well as the return; value)
+If you still don't like it, that's ok: that's why I'm boss. I simply
+know better than you do.
+               --- Linus Torvalds, comp.os.linux.advocacy, 1996/07/22
 
+--------------010400060007040909020808
+Content-Type: text/plain;
+ name="kernel.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="kernel.patch"
 
---==_Exmh_1246927497_3046P
-Content-Type: application/pgp-signature
+RnJvbSBmZTNiZjAwYTBmYzJkYjk0MWZlZjQxYzQ0ZmM2ZDllZWZhZDRkMDM3IE1vbiBTZXAg
+MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBEYW5pZWwgTWllcnN3YSA8aW1wdWx6ZUBpbXB1bHpl
+Lm9yZz4KRGF0ZTogVHVlLCA3IEp1bCAyMDA5IDAwOjU0OjM4ICswMjAwClN1YmplY3Q6IFtQ
+QVRDSF0gQXR0ZW1wdCB0byBoYW5kbGUgcXVvdGVzIGluIGtlcm5lbCBwYXJhbWV0ZXJzCgpU
+aGVyZSB3YXMgYSBsaW1pdGF0aW9uIGZvciBrZXJuZWwgcGFyYW1ldGVycyB3aXRoIHJlZ2Fy
+ZHMgdG8gcXVvdGluZy4gSXQKd2Fzbid0IHBvc3NpYmxlIHRvIGVzY2FwZSBxdW90ZXMgb3Ig
+dXNlIHF1b3RlcyB0byBmb3JtIHNwYWNlLWZpbGxlZAp2YWx1ZXMgX2luc2lkZV8gcGFyYW1l
+dGVycy4gVGhpcyBwYXRjaCBhdHRlbXB0cyB0byBtYWtlIHRoYXQgcG9zc2libGUsCmtlcm5l
+bCBwYXJhbWV0ZXJzIGFyZSBub3cgcGFyc2VkIGFzIGZvbGxvd3M6CicicGFyYW09IHZhbHVl
+IicgW3BhcmFtPSB2YWx1ZV1bXQoncGFyYW09IiB2YWx1ZSAiIiBjb21iaW5hdGlvbiAiJyBb
+cGFyYW1dWyB2YWx1ZSAgY29tYmluYXRpb24gXQoncGFyYW09IiBcIiB0ZXN0IicgW3BhcmFt
+XVsgIiB0ZXN0XQonInBhcmFtIj1hbm90aGVyJyBbcGFyYW1dW2Fub3RoZXJdCi0tLQoga2Vy
+bmVsL3BhcmFtcy5jIHwgIDE0NiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKystLS0tLS0tLS0tLS0tLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDEwNCBpbnNlcnRpb25z
+KCspLCA0MiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9rZXJuZWwvcGFyYW1zLmMgYi9r
+ZXJuZWwvcGFyYW1zLmMKaW5kZXggZGUyNzNlYy4uNzNkZThmNSAxMDA2NDQKLS0tIGEva2Vy
+bmVsL3BhcmFtcy5jCisrKyBiL2tlcm5lbC9wYXJhbXMuYwpAQCAtNzUsNTggKzc1LDEyMCBA
+QCBzdGF0aWMgaW50IHBhcnNlX29uZShjaGFyICpwYXJhbSwKIAlyZXR1cm4gLUVOT0VOVDsK
+IH0KIAotLyogWW91IGNhbiB1c2UgIiBhcm91bmQgc3BhY2VzLCBidXQgY2FuJ3QgZXNjYXBl
+ICIuICovCi0vKiBIeXBoZW5zIGFuZCB1bmRlcnNjb3JlcyBlcXVpdmFsZW50IGluIHBhcmFt
+ZXRlciBuYW1lcy4gKi8KLXN0YXRpYyBjaGFyICpuZXh0X2FyZyhjaGFyICphcmdzLCBjaGFy
+ICoqcGFyYW0sIGNoYXIgKip2YWwpCisvKiBoYW5kbGUgcXVvdGVzIGluIHRva2VucyAocGFy
+YW1ldGVyIGFuZCB2YWx1ZXMpCisgKiAnIiBmb28gYmFyICInID0+ICcgZm9vIGJhciAnCisg
+KiAnIiBmb28gXCIgIicgID0+ICcgZm9vICIgJworICovCitzdGF0aWMgdm9pZCBhZGRfdG9r
+ZW4oY2hhciAqKiB0b2tlbiwgY2hhciAqIGFyZ3MpCiB7Ci0JdW5zaWduZWQgaW50IGksIGVx
+dWFscyA9IDA7Ci0JaW50IGluX3F1b3RlID0gMCwgcXVvdGVkID0gMDsKLQljaGFyICpuZXh0
+OworCWNoYXIgKiBpdGVyYXRvciwgKiBsYXN0X3F1b3RlOworCWludCBpbl9xdW90ZXM7CiAK
+LQlpZiAoKmFyZ3MgPT0gJyInKSB7Ci0JCWFyZ3MrKzsKLQkJaW5fcXVvdGUgPSAxOwotCQlx
+dW90ZWQgPSAxOworCWluX3F1b3RlcyA9IDA7CisJbGFzdF9xdW90ZSA9IE5VTEw7CisKKwlm
+b3IgKGl0ZXJhdG9yID0gYXJnczsgKml0ZXJhdG9yOyBpdGVyYXRvcisrKSB7CisJCWlmICgq
+aXRlcmF0b3IgPT0gJ1xcJyAmJiAqKGl0ZXJhdG9yICsgMSkgPT0gJyInKSB7CisJCQljaGFy
+ICogbW92ZXI7CisKKwkJCS8qIG1vdmUgYWxsIGNoYXJhY3RlcnMgYmFjayAqLworCQkJZm9y
+IChtb3ZlciA9IGl0ZXJhdG9yOyAqbW92ZXI7IG1vdmVyKyspIHsKKwkJCQkqbW92ZXIgPSAq
+KG1vdmVyICsgMSk7CisJCQl9CisKKwkJCWNvbnRpbnVlOworCQl9CisKKwkJaWYgKCppdGVy
+YXRvciAhPSAnIicpIHsKKwkJCWNvbnRpbnVlOworCQl9CisKKwkJaWYgKGluX3F1b3Rlcykg
+eworCQkJY2hhciAqIG1vdmVyOworCisJCQkvKiBtb3ZlIHdob2xlIHN0cmluZyBiYWNrIHVu
+dGlsIGN1cnJlbnQgIiBpcyByZWFjaGVkICovCisJCQlmb3IgKG1vdmVyID0gbGFzdF9xdW90
+ZTsgbW92ZXIgIT0gaXRlcmF0b3IgLSAxOyBtb3ZlcisrKSB7CisJCQkJKm1vdmVyID0gKiht
+b3ZlciArIDEpOworCQkJfQorCisJCQkvKiBpZ25vcmUgdGhlIGN1cnJlbnQgIiBhbmQgbW92
+ZSB0aGUgcmVzdCBvZiB0aGUgc3RyaW5nIGJhY2sgKi8KKwkJCXdoaWxlICgqbW92ZXIpIHsK
+KwkJCQkqbW92ZXIgPSAqKG1vdmVyICsgMik7CisJCQkJbW92ZXIrKzsKKwkJCX0KKworCQkJ
+LyogaWdub3JlZCAyIHF1b3RlcywgZGVjcmVhc2UgdGhlIGl0ZXJhdG9yICovCisJCQlpdGVy
+YXRvciAtPSAyOworCQkJbGFzdF9xdW90ZSA9IE5VTEw7CisJCX0gZWxzZSB7CisJCQlsYXN0
+X3F1b3RlID0gaXRlcmF0b3I7CisJCX0KKworCQlpbl9xdW90ZXMgPSAhaW5fcXVvdGVzOwog
+CX0KIAotCWZvciAoaSA9IDA7IGFyZ3NbaV07IGkrKykgewotCQlpZiAoYXJnc1tpXSA9PSAn
+ICcgJiYgIWluX3F1b3RlKQorCSp0b2tlbiA9IGFyZ3M7Cit9CisKK3N0YXRpYyBjaGFyICog
+bmV4dF9hcmcoY2hhciAqIGFyZ3MsIGNoYXIgKiogcGFyYW0sIGNoYXIgKiogdmFsKQorewor
+CWNoYXIgKiB0b2tlbiwgKiBuZXh0OworCWludCBpbl9xdW90ZXMsIGlzX2VzY2FwZWQ7CisK
+KwkqcGFyYW0gPSAqdmFsID0gbmV4dCA9IE5VTEw7CisJaW5fcXVvdGVzID0gaXNfZXNjYXBl
+ZCA9IDA7CisKKwkvKiB0b2tlbml6ZXIgKi8KKwlmb3IgKHRva2VuID0gYXJnczsgKnRva2Vu
+OyB0b2tlbisrKSB7CisJCS8qIHBhcmFtZXRlciBvciB2YWx1ZSBpcyBmaW5pc2hlZCAqLwor
+CQlpZiAoIWluX3F1b3RlcyAmJiAqdG9rZW4gPT0gJyAnKSB7CisJCQkqdG9rZW4gPSAnXDAn
+OworCisJCQkvKiB0aGVyZSdyZSBzdGlsbCBjaGFyYWN0ZXJzIGluIHRoZSBwYXJhbWV0ZXIg
+bGluZSAqLworCQkJbmV4dCA9IHRva2VuICsgMTsKKworCQkJLyogcmVtb3ZlIHRyYWlsaW5n
+IHdoaXRlc3BhY2UgKi8KKwkJCXdoaWxlICgqbmV4dCA9PSAnICcpIHsKKwkJCQluZXh0Kys7
+CisJCQl9CisKIAkJCWJyZWFrOwotCQlpZiAoZXF1YWxzID09IDApIHsKLQkJCWlmIChhcmdz
+W2ldID09ICc9JykKLQkJCQllcXVhbHMgPSBpOwogCQl9Ci0JCWlmIChhcmdzW2ldID09ICci
+JykKLQkJCWluX3F1b3RlID0gIWluX3F1b3RlOwotCX0KIAotCSpwYXJhbSA9IGFyZ3M7Ci0J
+aWYgKCFlcXVhbHMpCi0JCSp2YWwgPSBOVUxMOwotCWVsc2UgewotCQlhcmdzW2VxdWFsc10g
+PSAnXDAnOwotCQkqdmFsID0gYXJncyArIGVxdWFscyArIDE7Ci0KLQkJLyogRG9uJ3QgaW5j
+bHVkZSBxdW90ZXMgaW4gdmFsdWUuICovCi0JCWlmICgqKnZhbCA9PSAnIicpIHsKLQkJCSgq
+dmFsKSsrOwotCQkJaWYgKGFyZ3NbaS0xXSA9PSAnIicpCi0JCQkJYXJnc1tpLTFdID0gJ1ww
+JzsKKwkJLyogcGFyYW1ldGVyL3ZhbHVlIHNwbGl0ICovCisJCWlmICghaW5fcXVvdGVzICYm
+ICp0b2tlbiA9PSAnPScgJiYgISpwYXJhbSkgeworCQkJKnRva2VuID0gJ1wwJzsKKwkJCWFk
+ZF90b2tlbihwYXJhbSwgYXJncyk7CisJCQlhcmdzID0gdG9rZW4gKyAxOworCQkJY29udGlu
+dWU7CiAJCX0KLQkJaWYgKHF1b3RlZCAmJiBhcmdzW2ktMV0gPT0gJyInKQotCQkJYXJnc1tp
+LTFdID0gJ1wwJzsKKworCQlpZiAoIWlzX2VzY2FwZWQgJiYgKnRva2VuID09ICdcXCcpIHsK
+KwkJCWlzX2VzY2FwZWQgPSAxOworCQkJY29udGludWU7CisJCX0KKworCQlpZiAoKnRva2Vu
+ID09ICciJyAmJiAhaXNfZXNjYXBlZCkgeworCQkJaW5fcXVvdGVzID0gIWluX3F1b3RlczsK
+KwkJfQorCisJCS8qIGFsd2F5cyByZXNldCBlc2NhcGUgdmFsdWUsIG9ubHkgIiBuZWVkcyBp
+dCAqLworCQlpc19lc2NhcGVkID0gMDsKIAl9CiAKLQlpZiAoYXJnc1tpXSkgewotCQlhcmdz
+W2ldID0gJ1wwJzsKLQkJbmV4dCA9IGFyZ3MgKyBpICsgMTsKLQl9IGVsc2UKLQkJbmV4dCA9
+IGFyZ3MgKyBpOworCWlmICghKnBhcmFtKSB7CisJCWFkZF90b2tlbihwYXJhbSwgYXJncyk7
+CisJfSBlbHNlIHsKKwkJYWRkX3Rva2VuKHZhbCwgYXJncyk7CisJfQorCisJLyogdGhlcmUn
+cmUgcGFyYW1ldGVycyBsZWZ0IGluIHRoZSBjb21tYW5kIGxpbmUgKi8KKwlpZiAobmV4dCkg
+eworCQlyZXR1cm4gbmV4dDsKKwl9CiAKLQkvKiBDaGV3IHVwIHRyYWlsaW5nIHNwYWNlcy4g
+Ki8KLQl3aGlsZSAoKm5leHQgPT0gJyAnKQotCQluZXh0Kys7Ci0JcmV0dXJuIG5leHQ7CisJ
+LyogZW5kIG9mIHRoZSBsaW5lICovCisJcmV0dXJuIHRva2VuOwogfQogCiAvKiBBcmdzIGxv
+b2tzIGxpa2UgImZvbz1iYXIsYmFyMiBiYXo9ZnV6IHdpeiIuICovCi0tIAoxLjYuMy4zCgo=
+--------------010400060007040909020808--
+
+--------------enig95F587BEAF105C8C51141FBF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Version: GnuPG v2.0.12 (GNU/Linux)
 
-iD8DBQFKUpqJcC3lWbTT17ARAvPDAJ4g0SupREDNuIl1wjEqFIcy5X6NaQCfQr7f
-0kk4F9TjsIAuVNY2rd6J1rk=
-=O+9H
+iEYEARECAAYFAkpSnL8ACgkQm9l44K3zL5edeACggVDguX685LTS31IVPuLPO1c1
+1h8An15WfwAymay/7X7owa/PKpUjZ834
+=1exF
 -----END PGP SIGNATURE-----
 
---==_Exmh_1246927497_3046P--
+--------------enig95F587BEAF105C8C51141FBF--
