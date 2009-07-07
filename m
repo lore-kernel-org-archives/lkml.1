@@ -1,99 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbZGGU7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbZGGVCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbZGGU7M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 16:59:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbZGGU65
+	id S1758524AbZGGVCs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 17:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbZGGVCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 16:58:57 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:57744 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754021AbZGGU64 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 16:58:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=p3v2f0Zcx+9QU7ex03hDsH7/cfW4Q5KdLGx2aN5CO8hj/yDZ4+5TWd9mWLsMEdqC0E
-         1PaSoy8NZXHwJIyzBnccJGBX3H5D2utbGkyZiOuGCdOzsZTQE3E9hPvEopAv3tvxEIx9
-         A+wtV13QTN0T/h2pX3I3tcIFN8RqAc7UbPtWU=
-Date: Tue, 7 Jul 2009 22:58:51 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH -tip -v10 7/7] tracing: add kprobe-based event tracer
-Message-ID: <20090707205851.GF6184@nowhere>
-References: <20090701010838.32547.62843.stgit@localhost.localdomain> <20090701010923.32547.74203.stgit@localhost.localdomain> <20090707073103.GA6173@nowhere> <4A53A830.3000305@redhat.com> <20090707202008.GE6184@nowhere> <4A53B338.4060803@redhat.com>
+	Tue, 7 Jul 2009 17:02:40 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:36681 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755453AbZGGVCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 17:02:40 -0400
+Message-ID: <4A53B7DB.5050105@acm.org>
+Date: Tue, 07 Jul 2009 15:02:19 -0600
+From: Zan Lynx <zlynx@acm.org>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A53B338.4060803@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Newall <davidn@davidnewall.com>
+CC: Changli Gao <xiaosuo@gmail.com>, Denys Vlasenko <vda.linux@googlemail.com>,
+       Albert ARIBAUD <albert.aribaud@free.fr>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
+References: <20090703015554.GB5880@cr0.nay.redhat.com>	 <412e6f7f0907030259m5556ee2fobbb58d377bce4d17@mail.gmail.com>	 <4A4DDD54.9030206@free.fr>	 <200907070643.56394.vda.linux@googlemail.com> <412e6f7f0907070045o6a17fb10x557108ffde0da11@mail.gmail.com> <4A53B202.9080505@davidnewall.com>
+In-Reply-To: <4A53B202.9080505@davidnewall.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Envelope-From: zlynx@acm.org
+X-Spam-Id: 20090707/1MOHnx-0003F5-V5-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 04:42:32PM -0400, Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
-> > On Tue, Jul 07, 2009 at 03:55:28PM -0400, Masami Hiramatsu wrote:
-> >> Frederic Weisbecker wrote:
-> >>>> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> >>>> index 206cb7d..65945eb 100644
-> >>>> --- a/kernel/trace/trace.h
-> >>>> +++ b/kernel/trace/trace.h
-> >>>> @@ -45,6 +45,8 @@ enum trace_type {
-> >>>>  	TRACE_POWER,
-> >>>>  	TRACE_BLK,
-> >>>>  	TRACE_KSYM,
-> >>>> +	TRACE_KPROBE,
-> >>>> +	TRACE_KRETPROBE,
-> >>>>  
-> >>>>  	__TRACE_LAST_TYPE,
-> >>>>  };
-> >>>> @@ -227,6 +229,22 @@ struct trace_ksym {
-> >>>>  	char			ksym_name[KSYM_NAME_LEN];
-> >>>>  	char			p_name[TASK_COMM_LEN];
-> >>>>  };
-> >>>> +#define TRACE_KPROBE_ARGS 6
-> >>>> +
-> >>>> +struct kprobe_trace_entry {
-> >>>> +	struct trace_entry	ent;
-> >>>> +	unsigned long		ip;
-> >>>> +	int			nargs;
-> >>>> +	unsigned long		args[TRACE_KPROBE_ARGS];
-> >>>
-> >>>
-> >>> I see that you actually make use of arg as a dynamic sizeable
-> >>> array.
-> >>> For clarity, args[TRACE_KPROBE_ARGS] could be args[0].
-> >>>
-> >>> It's just a neat and wouldn't affect the code nor the data
-> >>> but would be clearer for readers of that code.
-> >> Hmm. In that case, I think we'll need a new macro for field
-> >> definition, like TRACE_FIELD_ZERO(type, item).
-> > 
-> > 
-> > 
-> > You mean that for trace_define_field() to describe fields of events?
-> > Actually the fields should be defined dynamically depending on how
-> > is built the kprobe event (which arguments are requested, how many,
-> > etc..).
+David Newall wrote:
+> Changli Gao wrote:
+>>  mkfifo(name);
+>>  open(name, O_RDWR);
+>>  unlink(name);
+>>
+>> Is it a trick?
 > 
-> Yeah, if you specified a probe point with its event name, the tracer
-> will make a corresponding event dynamically. There are also anonymous
-> probes which don't have corresponding events. For those anonymous
-> probes, I need to define two generic event types(kprobe and kretprobe).
-> 
-> Thank you,
+> This does beg the question, why is it necessary to "extend" pipe() in
+> this way?
 
+Well, to me it sounds like the goal of the proposal is for very high 
+load, high performance socket servers so efficiency matters.
 
-Ok. Btw, why do you need to define those two anonymous events?
-Actually your event types are always dynamically created.
-Those you defined through TRACE_FORMAT_EVENT are only "ghost events",
-they only stand there as a abstract pattern, right?
+The above is more than 3 times as expensive as one pipe(). Each syscall 
+is thousands of machine cycles in overhead. In addition to that all 
+three are VFS operations which as I recall are even more expensive than 
+other syscalls.
 
+But perhaps mkfifo(NULL) should be the syscall chosen to extend since 
+its parameters are much like open() already, and it seems to work in the 
+above sequence to create a one-FD FIFO already.
+
+Or instead of, or in addition to a NULL name argument, its mode argument 
+could be used as a flags argument to specify an anonymous fifo creation 
+with FD return.
+-- 
+Zan Lynx
+zlynx@acm.org
+
+"Knowledge is Power.  Power Corrupts.  Study Hard.  Be Evil."
