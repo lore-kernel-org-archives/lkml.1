@@ -1,76 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbZGGVu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbZGGV7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbZGGVu7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 17:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbZGGVuw
+	id S1758150AbZGGV7A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 17:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZGGV6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 17:50:52 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:46533 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754976AbZGGVuv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 17:50:51 -0400
-Subject: Re: Possible memory leak in request_firmware()
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Ming Lei <tom.leiming@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090707190125.61920d00@gondolin>
-References: <1246979820.9451.71.camel@pc1117.cambridge.arm.com>
-	 <20090707190125.61920d00@gondolin>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 07 Jul 2009 22:50:45 +0100
-Message-Id: <1247003445.5710.7.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 7 Jul 2009 17:58:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38594 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752868AbZGGV6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 17:58:49 -0400
+Message-ID: <4A53C59A.3060706@redhat.com>
+Date: Tue, 07 Jul 2009 18:00:58 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>, Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH -tip -v10 7/7] tracing: add kprobe-based event tracer
+References: <20090701010838.32547.62843.stgit@localhost.localdomain> <20090701010923.32547.74203.stgit@localhost.localdomain> <20090707073103.GA6173@nowhere> <4A53A830.3000305@redhat.com> <20090707202008.GE6184@nowhere> <4A53B338.4060803@redhat.com> <20090707205851.GF6184@nowhere> <4A53BEAD.7030404@redhat.com> <20090707213447.GC7412@nowhere> <4A53C144.20807@redhat.com>
+In-Reply-To: <4A53C144.20807@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Jul 2009 21:50:46.0975 (UTC) FILETIME=[FC2684F0:01C9FF4C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-07 at 19:01 +0200, Cornelia Huck wrote:
-> On Tue, 07 Jul 2009 16:17:00 +0100,
-> Catalin Marinas <catalin.marinas@arm.com> wrote:
+Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+>> On Tue, Jul 07, 2009 at 05:31:25PM -0400, Masami Hiramatsu wrote:
+>>> Frederic Weisbecker wrote:
+>>>> On Tue, Jul 07, 2009 at 04:42:32PM -0400, Masami Hiramatsu wrote:
+>>>>> Frederic Weisbecker wrote:
+>>>>>> On Tue, Jul 07, 2009 at 03:55:28PM -0400, Masami Hiramatsu wrote:
+>>>>>>> Frederic Weisbecker wrote:
+>>>>>>>>> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+>>>>>>>>> index 206cb7d..65945eb 100644
+>>>>>>>>> --- a/kernel/trace/trace.h
+>>>>>>>>> +++ b/kernel/trace/trace.h
+>>>>>>>>> @@ -45,6 +45,8 @@ enum trace_type {
+>>>>>>>>>  	TRACE_POWER,
+>>>>>>>>>  	TRACE_BLK,
+>>>>>>>>>  	TRACE_KSYM,
+>>>>>>>>> +	TRACE_KPROBE,
+>>>>>>>>> +	TRACE_KRETPROBE,
+>>>>>>>>>  
+>>>>>>>>>  	__TRACE_LAST_TYPE,
+>>>>>>>>>  };
+>>>>>>>>> @@ -227,6 +229,22 @@ struct trace_ksym {
+>>>>>>>>>  	char			ksym_name[KSYM_NAME_LEN];
+>>>>>>>>>  	char			p_name[TASK_COMM_LEN];
+>>>>>>>>>  };
+>>>>>>>>> +#define TRACE_KPROBE_ARGS 6
+>>>>>>>>> +
+>>>>>>>>> +struct kprobe_trace_entry {
+>>>>>>>>> +	struct trace_entry	ent;
+>>>>>>>>> +	unsigned long		ip;
+>>>>>>>>> +	int			nargs;
+>>>>>>>>> +	unsigned long		args[TRACE_KPROBE_ARGS];
+>>>>>>>> I see that you actually make use of arg as a dynamic sizeable
+>>>>>>>> array.
+>>>>>>>> For clarity, args[TRACE_KPROBE_ARGS] could be args[0].
+>>>>>>>>
+>>>>>>>> It's just a neat and wouldn't affect the code nor the data
+>>>>>>>> but would be clearer for readers of that code.
+>>>>>>> Hmm. In that case, I think we'll need a new macro for field
+>>>>>>> definition, like TRACE_FIELD_ZERO(type, item).
+>>>>>> You mean that for trace_define_field() to describe fields of events?
+>>>>>> Actually the fields should be defined dynamically depending on how
+>>>>>> is built the kprobe event (which arguments are requested, how many,
+>>>>>> etc..).
+>>>>> Yeah, if you specified a probe point with its event name, the tracer
+>>>>> will make a corresponding event dynamically. There are also anonymous
+>>>>> probes which don't have corresponding events. For those anonymous
+>>>>> probes, I need to define two generic event types(kprobe and kretprobe).
+>>>>>
+>>>>> Thank you,
+>>>> Ok. Btw, why do you need to define those two anonymous events?
+>>>> Actually your event types are always dynamically created.
+>>>> Those you defined through TRACE_FORMAT_EVENT are only "ghost events",
+>>>> they only stand there as a abstract pattern, right?
+>>>>
+>>> Not always created.
+>>>
+>>> Below command will create an event "event1";
+>>> p probe_point:event1 a1 a2 a3 ... > /debug/tracing/kprobe_events
+>>>
+>>> But next command doesn't create.
+>>> p probe_point a1 a2 a3 ... > /debug/tracing/kprobe_events
+>>
+>> Aah, ok.
+>>
+>>
+>>> This just inserts a kprobe to probe_point. the advantage of this
+>>> "simple" command is that you never be annoyed by making different
+>>> name for new events :-)
+>>
+>> Indeed.
+>> But speaking about that, may be you could dynamically create a name
+>> following this simple model: func+offset
+
+hmm, and we have two probe types, p(robe) and r(et probe).
+so, event name should be type@func+offset or type@address.
+
+>> Unless we can set several kprobes on the exact same address?
 > 
-> > The patch below may fix the problem but it's only later tonight that I
-> > can test it and confirm:
-> 
-> Your patch looks fine to me (didn't test it either), just one minor nit:
+> Actually, we can...
+> I thought that someone might want to insert events in the same
+> address for retrieving more than 6 arguments.
 
-I tested it and it solves this leak.
+Anyway, I can improve the interface according to user's voice.
+If you have good idea, I'm happy to hear that:-)
 
-> > @@ -407,14 +407,13 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
-> >  	retval = device_register(f_dev);
-> >  	if (retval) {
-> >  		dev_err(device, "%s: device_register failed\n", __func__);
-> > +		kfree(fw_priv->fw_id);
-> 
-> fw_priv->fw_id will be freed in the release function, so you don't need
-> to free it here.
-
-OK, thanks.
-
-There is one more leak in this area which I couldn't figure out where it
-should be freed:
-
-unreferenced object 0xc353e530 (size 512):
-  comm "cat", pid 3130, jiffies 4294903232
-  backtrace:
-    [<c01e6f6a>] create_object+0xfa/0x250
-    [<c01e753d>] kmemleak_alloc+0x5d/0x70
-    [<c01e223d>] __kmalloc+0x10d/0x210
-    [<c03b2d2f>] firmware_data_write+0x1df/0x270
-    [<c024163a>] write+0x13a/0x1b0
-    [<c01eae1c>] vfs_write+0x9c/0x190
-    [<c01eafcd>] sys_write+0x3d/0x70
-    [<c010319c>] sysenter_do_call+0x12/0x38
-    [<ffffffff>] 0xffffffff
-
-Any idea? It looks like this is the kmalloc() in fw_realloc_buffer()
-(inlined in firmware_data_write).
+Thank you,
 
 -- 
-Catalin
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
