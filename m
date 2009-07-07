@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZGGENx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbZGGEXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711AbZGGENx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 00:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbZGGENp
+	id S1756053AbZGGEXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 00:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbZGGEXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 00:13:45 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56168 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750794AbZGGENo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 00:13:44 -0400
-Date: Tue, 7 Jul 2009 14:13:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: sfi-devel@simplefirmware.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: sfi tree build failure
-Message-Id: <20090707141325.35b93b3a.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LFD.2.00.0907062348130.32467@localhost.localdomain>
-References: <20090630171937.75f64662.sfr@canb.auug.org.au>
-	<20090706161432.111a42ee.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0907062348130.32467@localhost.localdomain>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__7_Jul_2009_14_13_25_+1000_BXO3UBWHQlGSR_oZ"
+	Tue, 7 Jul 2009 00:23:12 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:10418 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbZGGEXL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 00:23:11 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=U1PBUxLtciu80z+AL58IJ7X5aWw3VvJ/NKLyeA958XLgGwKbbNbbt93qLA0PNvp3z
+	MYjb3DY7UnYGYireOOvKQ==
+Date: Mon, 6 Jul 2009 21:23:03 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Thomas Meyer <thomas@m3y3r.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
+ __alloc_pages_nodemask
+In-Reply-To: <dWkuWjWDsSB.A.iyE.f0oUKB@chimera>
+Message-ID: <alpine.DEB.2.00.0907062101330.31794@chino.kir.corp.google.com>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <dWkuWjWDsSB.A.iyE.f0oUKB@chimera>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__7_Jul_2009_14_13_25_+1000_BXO3UBWHQlGSR_oZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 7 Jul 2009, Rafael J. Wysocki wrote:
 
-Hi Len,
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13666
+> Subject		: WARNING: at mm/page_alloc.c:1743 __alloc_pages_nodemask
+> Submitter	: Thomas Meyer <thomas@m3y3r.de>
+> Date		: 2009-06-27 16:15 (10 days old)
+> References	: http://lkml.org/lkml/2009/6/27/75
+> 
 
-On Tue, 07 Jul 2009 00:01:13 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
->
-> I screwed up in my hack attempt to support CONFIG_SFI=3Dy && CONFIG_ACPI=
-=3Dn.
+This should be suppressed with the patchset proposed by Mel on linux-mm:
 
-Yeah, I figured something like that.
+	http://marc.info/?l=linux-mm&m=124568542405734
+	http://marc.info/?l=linux-mm&m=124568542605738
+	http://marc.info/?l=linux-mm&m=124568542905750
+	http://marc.info/?l=linux-mm&m=124568543305755
 
-> Let me know if you have any trouble with the latest SFI test tree.
-
-I have refetched the sfi tree (as I had not merged it yet today).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__7_Jul_2009_14_13_25_+1000_BXO3UBWHQlGSR_oZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpSy2UACgkQjjKRsyhoI8wERwCfdR73JASnx1bwpysjY71qcP3z
-q6cAoL0DkVUNTnGhY+13Ca3Hon1bwNnw
-=R4fh
------END PGP SIGNATURE-----
-
---Signature=_Tue__7_Jul_2009_14_13_25_+1000_BXO3UBWHQlGSR_oZ--
+It doesn't appear that these are in linux-next, however.
