@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZGGHlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbZGGHl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755405AbZGGHlQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 03:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbZGGHlA
+	id S1756597AbZGGHl2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 03:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbZGGHlC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 03:41:00 -0400
-Received: from ey-out-1920.google.com ([74.125.78.145]:5584 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752904AbZGGHlA (ORCPT
+	Tue, 7 Jul 2009 03:41:02 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:55005 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753191AbZGGHlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 7 Jul 2009 03:41:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bSAkOJQ7mgqAmcEv+/n6Rrz7yH8GsjSQn+jTTXkZR+RhsRWH1AdZd8ZQTlxWvxcKNg
-         Bvp5/Zfs/hfb24IrJgEB7o+ok00/mqUO8WpGcAmONUTYoqJCLhx5FYH3yf2GhIFpL1nm
-         FP8uiwX0NjdLl2YHdWWyBjaAa+jbazfpRK1j0=
-Date: Tue, 7 Jul 2009 09:40:58 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 1/2] perfcounter: Ignore the nmi call frames in the
-	x86-64 backtraces
-Message-ID: <20090707074057.GB6173@nowhere>
-References: <1246474930-6088-1-git-send-email-fweisbec@gmail.com> <1246882668.8143.10.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246882668.8143.10.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Tue, 7 Jul 2009 09:40:18 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH] optimized ktime_get[_ts] for GENERIC_TIME=y
+Message-ID: <20090707094018.08406c49@skybase>
+In-Reply-To: <alpine.LFD.2.00.0907062215380.19480@localhost.localdomain>
+References: <20090706154933.5a1f8990@skybase>
+	<alpine.LFD.2.00.0907062215380.19480@localhost.localdomain>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 02:17:48PM +0200, Peter Zijlstra wrote:
-> On Wed, 2009-07-01 at 21:02 +0200, Frederic Weisbecker wrote:
-> 
-> > +int x86_is_stack_id(int id, char *name)
+On Mon, 6 Jul 2009 22:31:39 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> On Mon, 6 Jul 2009, Martin Schwidefsky wrote:
+> > +ktime_t ktime_get(void)
 > > +{
-> > +	return x86_stack_ids[id - 1] == name;
-> > +}
+> > +	cycle_t cycle_now, cycle_delta;
+> > +	struct timespec time;
+> > +	unsigned long seq;
+> > +	s64 nsecs;
+> > +
+> > +	do {
+> > +		seq = read_seqbegin(&xtime_lock);
+> > +		time.tv_sec = xtime.tv_sec + wall_to_monotonic.tv_sec;
+> > +		time.tv_nsec = xtime.tv_nsec + wall_to_monotonic.tv_nsec;
 > 
-> OK, this bit would need a bit of a comment explaining why this works, as
-> I don't think the C language guarantees de-duplication of constant
-> strings.
+> That's actually a violation of the timespec semantics. tv_nsec can end
+> up greater than (10^9 - 1). Please use separate sec and nsec variables.
+
+Well the tv_sec/tv_nsec fields of a timespec are long values. But its
+no problem to switch to local variables.
+
+>   	        secs = xtime.tv_sec + wall_to_monotonic.tv_sec;
+>   	     	nsecs = xtime.tv_nsec + wall_to_monotonic.tv_nsec;
 > 
-> Therefore the above only works correctly if its passed a pointer from
-> the x86_stack_ids[] array -- as it indeed is, since the string passed is
-> obtained through the below method:
+> > +		/* read clocksource: */
+> > +		cycle_now = clocksource_read(clock);
+> > +
+> > +		/* calculate the delta since the last update_wall_time: */
+> > +		cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
+> > +
+> > +		/* convert to nanoseconds: */
+> > +		nsecs = cyc2ns(clock, cycle_delta);
+> 
+> So that needs to be changed to:
+> 
+> 		nsecs += cyc2ns(clock, cycle_delta);
 
+Ok.
 
-Right, that need some comments, I will do that with x86-32 support at the same
-time.
+> > +
+> > +	} while (read_seqretry(&xtime_lock, seq));
+> > +	nsecs += time.tv_sec * 1000000000ULL + time.tv_nsec;
+> > +	return (ktime_t) { .tv64 = nsecs };
+> 
+> This will break all 32bit architectures which do not have
+> CONFIG_KTIME_SCALAR set.
 
-Thanks.
-
-
+Yep, that is a bug.
  
-> > +static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
-> > +					unsigned *usedp, char **idp)
-> > +{
-> >  	unsigned k;
-> >  
-> >  	/*
-> > @@ -61,7 +68,7 @@ static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
-> >  			if (*usedp & (1U << k))
-> >  				break;
-> >  			*usedp |= 1U << k;
-> > -			*idp = ids[k];
-> > +			*idp = x86_stack_ids[k];
-> >  			return (unsigned long *)end;
-> >  		}
-> >  		/*
+> With the above changes applied:
 > 
+>   return ktime_add_ns(ktime_set(secs, 0), nsecs);
 > 
+> will do the trick. Might need some comments though :)
+
+Ok, will update the patch. Thanks for the review.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
