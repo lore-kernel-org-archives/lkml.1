@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbZGGUdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbZGGUfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376AbZGGUdR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 16:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbZGGUdG
+	id S1758292AbZGGUfP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 16:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbZGGUfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 16:33:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56640 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753982AbZGGUdF (ORCPT
+	Tue, 7 Jul 2009 16:35:03 -0400
+Received: from viefep13-int.chello.at ([62.179.121.33]:59850 "EHLO
+	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755041AbZGGUfC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 16:33:05 -0400
-Date: Tue, 7 Jul 2009 13:30:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-cc: Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, rjw@sisk.pl, stable@kernel.org
-Subject: Re: matroxfb: fix regression with uninitalized fb_info->mm_lock
- mutex (second head)
-In-Reply-To: <20090707223413.d56c6a7f.krzysztof.h1@poczta.fm>
-Message-ID: <alpine.LFD.2.01.0907071327370.3210@localhost.localdomain>
-References: <20090707223413.d56c6a7f.krzysztof.h1@poczta.fm>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 7 Jul 2009 16:35:02 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [patch] perf_counter: Add p6 PMU
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Vince Weaver <vince@deater.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0907071559200.30742@pianoman.cluster.toy>
+References: <Pine.LNX.4.64.0907071559200.30742@pianoman.cluster.toy>
+Content-Type: text/plain
+Date: Tue, 07 Jul 2009 22:34:55 +0200
+Message-Id: <1246998895.9777.18.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 7 Jul 2009, Krzysztof Helt wrote:
+On Tue, 2009-07-07 at 16:06 -0400, Vince Weaver wrote:
+> OK, so I lied, I found time to throw together a p6 PMU patch.
+> I've tested it on a Pentium III and it seems to be working.
 > 
-> Remove redundant locking by the mm_lock mutex before a second head of matrox 
-> framebuffer is registered.
+> I'm sure the patch still needs a lot of work.  I'm not sure how to 
+> implement p6_pmu_enable_all().  There is no support for the various 
+> cache-related counters.
+> 
+> The code is based on the info in the Intel Software Developer's Manual Vol 
+> 3B, with some comments and code taken from the relevant perfmon2 patches.
+> 
+> There's a lot of overlap between the p6, intel, and amd methods.  Not sure 
+> if it would be wise to merge up some of the common code.
+> 
+> I do have Pentium Pro, PII, and PIII hardware to test this on.  I also 
+> have a Yonah-based laptop, but it might have architectural perfmon version 
+> 1 despite being a p6-related core.
+> 
+> Let's hope this version of pine I am using doesn't do something stupid to 
+> the whitespace in the patch.
 
-Why do you write misleading commentary like this.
+Awesome, I'll try it on my pentium-3 mobile tomorrow.
 
-> +/*
-> + * This function is called before the register_framebuffer so
-> + * no locking is needed.
-> + */
+Thanks!
 
-Or this?
-
-It's not about "needed". The locking is not only not needed, it would be 
-BUGGY.
-
-And it's not "redundant". That implies that it's done somewhere else. It's 
-more than "not needed" - it would be actively buggy to lock things there.
-
-I really don't like how you're approaching this. You're ignoring the real 
-issues I ask you, you're writing misleading comments and commit messages, 
-and the end result is fragile code. I still don't understand why you 
-insist on initializing those things late, which is the primary problem 
-here.
-
-		Linus
