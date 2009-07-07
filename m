@@ -1,111 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZGGTmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZGGTqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbZGGTmb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 15:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbZGGTmY
+	id S1756031AbZGGTqE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 15:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZGGTpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 15:42:24 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:43008 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754049AbZGGTmY (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 15:42:24 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, malware-list@dmesg.printk.net
-Subject: Re: fanotify: the fscking all notification system
-In-Reply-To: Your message of "Tue, 30 Jun 2009 13:26:37 EDT."
-             <1246382797.22562.16.camel@dhcp235-23.rdu.redhat.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1246306125.754.300.camel@dhcp235-23.rdu.redhat.com> <22424.1246368155@turing-police.cc.vt.edu>
-            <1246382797.22562.16.camel@dhcp235-23.rdu.redhat.com>
+	Tue, 7 Jul 2009 15:45:52 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:58956 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754912AbZGGTpv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 15:45:51 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEABY/U0pMQWU3/2dsb2JhbACBUc89hAcFgTo
+Date: Tue, 7 Jul 2009 15:45:33 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Oleg Nesterov <oleg@redhat.com>, Jiri Olsa <jolsa@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Eric Dumazet <eric.dumazet@gmail.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090707194533.GB13858@Krystal>
+References: <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com> <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com> <20090707140135.GA5506@Krystal> <20090707143416.GB11704@redhat.com> <20090707150406.GC7124@Krystal> <20090707154440.GA15605@redhat.com> <1246981815.9777.12.camel@twins>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1246995702_3905P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Tue, 07 Jul 2009 15:41:42 -0400
-Message-ID: <63598.1246995702@turing-police.cc.vt.edu>
+Content-Disposition: inline
+In-Reply-To: <1246981815.9777.12.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:42:43 up 129 days, 16:08,  5 users,  load average: 1.32, 1.42,
+	1.21
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1246995702_3905P
-Content-Type: text/plain; charset=us-ascii
-
-On Tue, 30 Jun 2009 13:26:37 EDT, Eric Paris said:
-
-(Sorry for the late reply...)
-
-> Yes.  Although it going to take just a tiny bit of work from me and you
-> are limited in how to use it.
+* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> On Tue, 2009-07-07 at 17:44 +0200, Oleg Nesterov wrote:
+> > On 07/07, Mathieu Desnoyers wrote:
+> > >
+> > > Actually, thinking about it more, to appropriately support x86, as well
+> > > as powerpc, arm and mips, we would need something like:
+> > >
+> > > read_lock_smp_mb()
+> > >
+> > > Which would be a read_lock with an included memory barrier.
+> > 
+> > Then we need read_lock_irq_smp_mb, read_lock_irqsave__smp_mb, write_lock_xxx,
+> > otherwise it is not clear why only read_lock() has _smp_mb() version.
+> > 
+> > The same for spin_lock_xxx...
 > 
-> You'll need to request FAN_OPEN_PERM on the file in question.  When the
-> file is opened you will need to bring in all the data and write all that
-> data into the file.  There is no mechanism to only bring in a piece of a
-> file since you have no way of knowing what exactly the requesting
-> process is requesting.   So it's a whole file or nothing type of deal.
-
-That's OK - most current HSM implementations work that way already - if they
-archive a file, they write out a little stub that basically says "The data is
-on tape 948324, file 3342", and on access, the entire file is retrieved.
-
-The only problem is that when we finally return control to the user program,
-we need to have wiped out that stub and replaced it with the user's data.
-
-> Current problems:
+> At which time the smp_mb__{before,after}_{un,}lock become attractive
+> again.
 > 
-> 1) the fd the fanotify listener gets is O_RDONLY.  I think I'll add an
-> "f_flags" option which if 0 defaults to O_RDONLY|O_LARGEFILE like we
-> have today but which you could use to indicate O_RDWR or O_WRONLY.  We
-> currently give O_RDONLY since you can't request O_WR* on files/libraries
-> mapped exec, so this won't work for executables.....
 
-Having only O_RDONLY is a show-stopper, because then we can't replace the file
-contents before continuing.  For many places, the executables and shared
-libraries aren't the problem, so "You can't HSM an executable" as a
-semi-permanent restriction isn't too bad.
+Then having a new __read_lock() (without acquire semantic) which would
+be required to be followed by a smp__mb_after_lock() would make sense. I
+think this would fit all of x86, powerpc, arm, mips without having to
+create tons of new primitives. Only "simpler" ones that clearly separate
+locking from memory barriers.
 
-It's the terabytes of data files that are usually the issue - everything from
-4-year-old Word documents to video (actual use case - a transportation safety
-group here is instrumenting several hundred tractor-trailers with a dozen
-cameras that are all rolling at all times the engine is on. That's a lot of
-archival video).  An HSM would want O_RDWR for those - RD so it can check and
-see if there's a archival stub present, and then WR to restore the file with.
-
-> 2) Right now you have 5 seconds to answer an fanotify permissions
-> request, if you don't get it in 5 seconds you are done and the original
-> process gets an allow.  But I have a half finished patch which would
-> allow you to delay them infinitely.  As long as you keep them delayed
-> you can modify the file they are about to access however you like.
-
-That would work fine.
-
-> You can not rename over the fd you are given, you have to actually copy
-> the data into that fd, since the inode behind the fd you got from
-> fanotify is the same inode the original process is going to get access
-> to after your listener sends an allow.
-
-That's an acceptable restriction as well.
-
-> This sound good to you?  I don't know your details, but I believe that
-> fanotify directed mode with access permissions is going to be almost
-> exactly what you want....
-
-Yes, it's sounding like it. If that's in mainstream, then I can deploy an HSM
-without needing kernel hackery like most do currently.
+Mathieu
 
 
 
---==_Exmh_1246995702_3905P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKU6T2cC3lWbTT17ARAnvEAKDjcN03taaw+Ls1EJuTkA2cCKAb4gCgsbCe
-72pWOCE6gausPvfeOLibMmY=
-=aRqc
------END PGP SIGNATURE-----
-
---==_Exmh_1246995702_3905P--
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
