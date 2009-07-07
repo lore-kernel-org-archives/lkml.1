@@ -1,53 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbZGGOcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbZGGOc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757491AbZGGOcB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 10:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZGGObw
+	id S1757511AbZGGOc6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 10:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756836AbZGGOcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 10:31:52 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:39785 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756606AbZGGObw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 10:31:52 -0400
-Date: Tue, 7 Jul 2009 16:31:50 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: linux-next: block tree build failure
-Message-ID: <20090707143150.GF23611@kernel.dk>
-References: <20090707134908.e81b1556.sfr@canb.auug.org.au> <20090707063846.GY23611@kernel.dk> <20090707135706.GB4997@infradead.org>
+	Tue, 7 Jul 2009 10:32:51 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:37996 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756618AbZGGOcu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 10:32:50 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: Null Pointer BUG in uhci_hcd
+Date: Tue, 7 Jul 2009 09:32:44 -0500
+User-Agent: KMail/1.9.9
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+References: <200907051720.45819.lkml@morethan.org> <alpine.LRH.2.00.0907071111210.27150@twin.jikos.cz> <200907071608.11050.oliver@neukum.org>
+In-Reply-To: <200907071608.11050.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090707135706.GB4997@infradead.org>
+Message-Id: <200907070932.47441.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07 2009, Christoph Hellwig wrote:
-> On Tue, Jul 07, 2009 at 08:38:46AM +0200, Jens Axboe wrote:
-> > >  SYSCALL_DEFINE0(sync)
-> > >  {
-> > > -	wakeup_pdflush(0);
-> > > +	wakeup_flusher_threads(0);
-> > >  	sync_filesystems(0);
-> > >  	sync_filesystems(1);
-> > >  	if (unlikely(laptop_mode))
-> > 
-> > That is correct! I have just now updated for-next as well, so your next
-> > pull should lose this fixup.
+On Tue July 7 2009, Oliver Neukum wrote:
+> Am Dienstag, 7. Juli 2009 11:13:01 schrieb Jiri Kosina:
+> > [ adding linux-usb to CC ]
+> >
+> > On Sun, 5 Jul 2009, Michael S. Zick wrote:
+> > > Anyone with suggestions about this one?
 > 
-> It's not correct at all.  We'll how have various flusher threads doing
-> async syncs, just to wait for them again synchronously.  The right thing
-> to do here is to queue up the data integrity sync to per-bdi threads and
-> execute those in parallel.
+> Looks like we should test for presence before we switch off
+> autosuspend for khubd. Please test this diagnostic patch if this is
+> repeatable.
+> 
 
-Sorry, I didn't judge the validity of the original patch, merely that
-the wakeup_pdflush() -> wakeup_flusher_threads() is the correct patch in
-the context of the per-bdi flushing.
+Super!  Will give it a try in todays build/testing and get back.
 
--- 
-Jens Axboe
+Note: If I understand the directions with this debug_vmalloc option,
+this dump was caused by reference to a vmalloc'd page that had since
+been freed.  I have a copy of the dmesg at boot and the /sys/kernel/debug
+list of PTE entries - - if that would help to know what cr2=0..50 was
+pointing at.
+
+Mike
+> 	Regards
+> 		Oliver
+> 
+> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+> index 2af3b4f..c5b3929 100644
+> --- a/drivers/usb/core/hub.c
+> +++ b/drivers/usb/core/hub.c
+> @@ -371,11 +371,16 @@ static void kick_khubd(struct usb_hub *hub)
+>  {
+>  	unsigned long	flags;
+>  
+> -	/* Suppress autosuspend until khubd runs */
+> -	to_usb_interface(hub->intfdev)->pm_usage_cnt = 1;
+> +	if (!hub) {
+> +		BUG();
+> +		return;
+> +	}
+>  
+>  	spin_lock_irqsave(&hub_event_lock, flags);
+>  	if (!hub->disconnected && list_empty(&hub->event_list)) {
+> +		/* Suppress autosuspend until khubd runs */
+> +		to_usb_interface(hub->intfdev)->pm_usage_cnt = 1;
+> +
+>  		list_add_tail(&hub->event_list, &hub_event_list);
+>  		wake_up(&khubd_wait);
+>  	}
+> @@ -384,6 +389,11 @@ static void kick_khubd(struct usb_hub *hub)
+>  
+>  void usb_kick_khubd(struct usb_device *hdev)
+>  {
+> +	if (!hdev) {
+> +		BUG();
+> +		return;
+> +	}
+> +
+>  	/* FIXME: What if hdev isn't bound to the hub driver? */
+>  	kick_khubd(hdev_to_hub(hdev));
+>  }
+> 
+> 
+> 
+
 
