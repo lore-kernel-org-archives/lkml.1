@@ -1,57 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbZGGSCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbZGGSY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756427AbZGGSCn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 14:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbZGGSCf
+	id S1756787AbZGGSY1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 14:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZGGSYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 14:02:35 -0400
-Received: from smtp2.tech.numericable.fr ([82.216.111.38]:40124 "EHLO
-	smtp2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755203AbZGGSCf (ORCPT
+	Tue, 7 Jul 2009 14:24:19 -0400
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:4743 "EHLO
+	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754629AbZGGSYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 14:02:35 -0400
-Message-ID: <4A538DB8.4070202@numericable.fr>
-Date: Tue, 07 Jul 2009 20:02:32 +0200
-From: Etienne Basset <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Tue, 7 Jul 2009 14:24:19 -0400
+Message-ID: <4A5392CB.9090306@xs4all.nl>
+Date: Tue, 07 Jul 2009 20:24:11 +0200
+From: Rambaldi <rambaldi@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090628)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera> <bXZeuxPQAWE.A.IMG.4_oUKB@chimera>
-In-Reply-To: <bXZeuxPQAWE.A.IMG.4_oUKB@chimera>
-Content-Type: text/plain; charset=UTF-8
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: kernel BUG at arch/x86/xen/multicalls.c:204!
+References: <4A20F23D.4080504@xs4all.nl> <4A21CE1C.1090204@goop.org> <4A222E7C.3030504@xs4all.nl>
+In-Reply-To: <4A222E7C.3030504@xs4all.nl>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13663
-> Subject		: suspend to ram regression (IDE related)
-> Submitter	: Etienne Basset <etienne.basset@numericable.fr>
-> Date		: 2009-06-26 17:40 (11 days old)
-> References	: http://lkml.org/lkml/2009/6/26/242
-> 		  http://lkml.org/lkml/2009/6/29/126
-> Handled-By	: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Patch		: http://patchwork.kernel.org/patch/32719/
-> 
-> 
-> 
-hello,
 
-current git is OK, patch is not yet in 2.6.30-stable
+Rambaldi wrote:
+> Jeremy Fitzhardinge wrote:
+>> Rambaldi wrote:
+>>> Hi,
+>>>
+>>> while booting the 2.6.29-gentoo-r5 kernel as xen domU guest I got the
+>>> following kernel BUG.
+>>>
+>>> I have not tried a vanilla 2.6.29 kernel, but can if requested,
+>>> .config is also available on reguest.
+>>>   
+>> That would be useful, particularly if you enable the various debugging
+>> options:
+>> CONFIG_DEBUG_KERNEL
+>> CONFIG_FRAME_POINTER
+>>
+>> It's not clear to me what's failing.  Are there any messages on the Xen
+>> concole (xm dmesg)?
+>>
+>>    J
+>>
+> Hi Jeremy,
+> 
+> thanks for looking at it.
+> 
+> I tried with a vanilla 2.6.29.4 kernel. I added CONFIG_FRAME_POINTER. CONFIG_DEBUG_KERNEL was already set.
+> I got the same result as with the gentoo kernel and in both cases not a single line in the xen console.
+> 
+> Any other options or kernels I can try?
+> 
+> tia
+> 
+> R
+> 
 
-regards
-Etienne
+Hi Again,
+
+it has been a while, but I finally found the setting that caused this issue.
+by removing:
+	Configure Maximum number of SMP Processors and NUMA Nodes
+
+I can boot my sytem again without the kernel BUG.
+
+hope this helps
+
+regards.
+
+R.
+
+
+
+
+
+
+
