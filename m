@@ -1,36 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbZGGIhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbZGGImg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757183AbZGGIhu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 04:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbZGGIhk
+	id S1756591AbZGGImg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 04:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZGGIm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 04:37:40 -0400
-Received: from smtp.df.ru ([195.42.160.16]:55955 "EHLO smtp.df.ru"
+	Tue, 7 Jul 2009 04:42:28 -0400
+Received: from sh.osrg.net ([192.16.179.4]:44255 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753194AbZGGIhk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 04:37:40 -0400
-Date: Tue, 7 Jul 2009 12:38:53 +0400
-From: Alexey Vlasov <renton@renton.name>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: devpts mounts too slowly
-Message-ID: <20090707083853.GC7484@beaver.vrungel.ru>
-References: <20090603142801.GC21646@beaver.vrungel.ru> <4A26EB18.6060907@zytor.com> <20090609161945.811cc01f.akpm@linux-foundation.org> <2c0942db0906091630l1cc79647h8689e9e929ed1bba@mail.gmail.com> <4A2EF833.6080300@zytor.com> <20090706195252.GA7484@beaver.vrungel.ru> <4A526AEF.3070407@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <4A526AEF.3070407@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751956AbZGGIm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 04:42:27 -0400
+Date: Tue, 7 Jul 2009 17:42:26 +0900
+To: tony.luck@intel.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] IA64: fix CONFIG_DMA_API_DEBUG support
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090707171456H.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 07 Jul 2009 17:42:27 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 02:21:51PM -0700, H. Peter Anvin wrote:
->
-> Do you have /selinux mounted on one of them?
+The commit 9916219579d078c80377dd3988c2cc213536d868 was supposed to
+add CONFIG_DMA_API_DEBUG support to IA64 however I forgot to add
+dma_debug_init().
 
-I don't use SELinux anywhere.
+Signed-off-by: fujita <fujita@tulip.osrg.net>
+---
+ arch/ia64/kernel/dma-mapping.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
+diff --git a/arch/ia64/kernel/dma-mapping.c b/arch/ia64/kernel/dma-mapping.c
+index 086a2ae..b45e155 100644
+--- a/arch/ia64/kernel/dma-mapping.c
++++ b/arch/ia64/kernel/dma-mapping.c
+@@ -6,6 +6,14 @@ int iommu_detected __read_mostly;
+ struct dma_map_ops *dma_ops;
+ EXPORT_SYMBOL(dma_ops);
+ 
++#define PREALLOC_DMA_DEBUG_ENTRIES (1 << 16)
++
++static int __init dma_init(void)
++{
++	dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
++}
++fs_initcall(dma_init);
++
+ struct dma_map_ops *dma_get_ops(struct device *dev)
+ {
+ 	return dma_ops;
 -- 
-BRGDS. Alexey Vlasov.
+1.5.6.5
+
