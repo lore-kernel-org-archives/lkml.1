@@ -1,70 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZGGHMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZGGHMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbZGGHMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 03:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZGGHMM
+	id S1755888AbZGGHMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 03:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZGGHMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 03:12:12 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43391 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbZGGHML (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 03:12:11 -0400
-Subject: Re: [RFC PATCH 1/3] kmemleak: Allow partial freeing of memory
- blocks
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org
-In-Reply-To: <20090706105149.16051.99106.stgit@pc1117.cambridge.arm.com>
-References: <20090706104654.16051.44029.stgit@pc1117.cambridge.arm.com>
-	 <20090706105149.16051.99106.stgit@pc1117.cambridge.arm.com>
-Date: Tue, 07 Jul 2009 10:12:13 +0300
-Message-Id: <1246950733.24285.10.camel@penberg-laptop>
+	Tue, 7 Jul 2009 03:12:15 -0400
+Received: from relay.atmel.no ([80.232.32.139]:61867 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755223AbZGGHMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 03:12:14 -0400
+Date: Tue, 7 Jul 2009 09:12:05 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: dan.j.williams@intel.com, maciej.sosnowski@intel.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, patrice.vilchez@atmel.com,
+       linux-kernel@vger.kernel.org, nicolas.ferre@atmel.com
+Subject: Re: [PATCH] dmaengine: dmatest: correct thread_count while using
+ multiple thread per channel
+Message-ID: <20090707091205.271359c8@hskinnemoen-d830>
+In-Reply-To: <1246897184-16833-1-git-send-email-nicolas.ferre@atmel.com>
+References: <1246897184-16833-1-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-06 at 11:51 +0100, Catalin Marinas wrote:
-> @@ -552,8 +558,29 @@ static void delete_object(unsigned long ptr)
->  	 */
->  	spin_lock_irqsave(&object->lock, flags);
->  	object->flags &= ~OBJECT_ALLOCATED;
-> +	start = object->pointer;
-> +	end = object->pointer + object->size;
-> +	min_count = object->min_count;
->  	spin_unlock_irqrestore(&object->lock, flags);
->  	put_object(object);
-> +
-> +	if (!size)
-> +		return;
-> +
-> +	/*
-> +	 * Partial freeing. Just create one or two objects that may result
-> +	 * from the memory block split.
-> +	 */
-> +	if (in_atomic())
-> +		gfp_flags = GFP_ATOMIC;
-> +	else
-> +		gfp_flags = GFP_KERNEL;
+Nicolas Ferre wrote:
+> It seems that thread_count is not properly calculated in dmatest.
+> In fact the thread count number that is returned from dmatest_add_threads() is
+> not correctly added to the thread_count and thus not properly printed.
+> 
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-Are you sure we can do this? There's a big fat comment on top of
-in_atomic() that suggest this is not safe. Why do we need to create the
-object here anyway and not in the _alloc_ paths where gfp flags are
-explicitly passed?
-
-> +
-> +	if (ptr > start)
-> +		create_object(start, ptr - start, min_count, gfp_flags);
-> +	if (ptr + size < end)
-> +		create_object(ptr + size, end - ptr - size, min_count,
-> +			      gfp_flags);
->  }
->  
->  /*
-
-
+Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
