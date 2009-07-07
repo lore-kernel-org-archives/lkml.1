@@ -1,148 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbZGGWHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbZGGWIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757003AbZGGWHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 18:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbZGGWHb
+	id S1757580AbZGGWIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 18:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755695AbZGGWID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 18:07:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36526 "EHLO ogre.sisk.pl"
+	Tue, 7 Jul 2009 18:08:03 -0400
+Received: from mail.tmr.com ([64.65.253.246]:59056 "EHLO partygirl.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754392AbZGGWHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 18:07:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [RFC][PATCH] PM: Introduce core framework for run-time PM of I/O devices (rev. 8)
-Date: Wed, 8 Jul 2009 00:07:37 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-References: <200907060252.12755.rjw@sisk.pl> <aec7e5c30907070812n7b418c9bobf64a5259cb6c58d@mail.gmail.com>
-In-Reply-To: <aec7e5c30907070812n7b418c9bobf64a5259cb6c58d@mail.gmail.com>
+	id S1755072AbZGGWIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 18:08:00 -0400
+Message-ID: <4A53C6FD.3010603@tmr.com>
+Date: Tue, 07 Jul 2009 18:06:53 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 pango-text SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Neil Brown <neilb@suse.de>
+CC: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Mike Snitzer <snitzer@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, jens.axboe@oracle.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>
+Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out
+  of the 'queue' sysfs directory.
+References: <19010.62951.886231.96622@notabene.brown>	<yq11vp8spxo.fsf@sermon.lab.mkp.net>	<125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name>	<yq1k530qkm7.fsf@sermon.lab.mkp.net>	<19012.47077.328965.919868@notabene.brown>	<yq1ws6znja4.fsf@sermon.lab.mkp.net> <19026.43290.340555.774690@notabene.brown>
+In-Reply-To: <19026.43290.340555.774690@notabene.brown>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907080007.38595.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 July 2009, Magnus Damm wrote:
-> Hi Rafael,
-> 
-> On Mon, Jul 6, 2009 at 9:52 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > Hi,
-> >
-> > There's a rev. 8 of the run-time PM framework patch.
-> >
-> > Highlights:
-> > * I did my best to follow the design we've recently discussed.
-> > * pm_runtime_[get|put]() and the sync versions call
-> >  pm_[request|runtime]_[resume|idle](), because I don't see much point
-> >  manipulating the usage counter alone.
-> > * pm_runtime_disable() carries out a (synchronous) wake-up if there's a
-> >  resume request pending.
-> >
-> > Comments welcome.
-> 
-> I've now jumped from v5 to v8 and I feel that the code is getting
-> cleaner and cleaner. Very nice.
+Neil Brown wrote:
+> On Friday June 26, martin.petersen@oracle.com wrote:
+>   
+>> As far as making the application of these values more obvious I propose
+>> the following:
+>>
+>> What:		/sys/block/<disk>/queue/minimum_io_size
+>> Date:		April 2009
+>> Contact:	Martin K. Petersen <martin.petersen@oracle.com>
+>> Description:
+>> 		Storage devices may report a granularity or minimum I/O
+>> 		size which is the device's preferred unit of I/O.
+>> 		Requests smaller than this may incur a significant
+>> 		performance penalty.
+>>
+>> 		For disk drives this value corresponds to the physical
+>> 		block size. For RAID devices it is usually the stripe
+>> 		chunk size.
+>>     
+>
+> These two paragraphs are contradictory.  There is no sense in which a
+> RAID chunk size is a preferred minimum I/O size.
+>
+> To some degree it is actually a 'maximum' preferred size for random
+> IO.  If you do random IO is blocks larger than the chunk size then you
+> risk causing more 'head contention' (at least with RAID0 - with RAID5
+> the tradeoff is more complex).
+>
+>   
+Actually this is allocation unit, and the array can be assumed to be a 
+series of sets of contiguous bytes of this size. Given LBA addressing, 
+array members which are not simple whole devices, etc, this doesn't 
+(can't) promise much for the physical layout. And any read which resides 
+entirely within a chunk would not have a performance penalty, although 
+write might, if it were not a multiple of the sector size of the array 
+member(s) involved.
 
-That's mostly thanks to Alan.
+> If you are talking about "alignment", then yes - the chunk size is an
+> appropriate size to align on.  But so are the block size and the
+> stripe size and none is, in general, any better than any other.
+>
+>   
+I would assume that a chunk, aligned on a chunk boundary, would be 
+allocated in a contiguous series of bytes on the underlying array 
+member. And that any i/o not aligned on a chunk boundary would be more 
+likely to access multiple array members.
 
-> My intention was to post a SuperH prototype last week, but I got side
-> tracked with other stuff. And today I ran into some problems related
-> to probe() that I'd like to ask about right away. At this point I've
-> got a few device drivers converted and some simple bus
-> runtime_suspend()/runtime_resume() code that stop and start clocks.
-> 
-> Issue 1:
-> ------------
-> Device drivers which do not perform any hardware access in probe()
-> work fine. During software setup in probe() the runtime pm code is
-> initialized with the following:
-> 
-> +	pm_suspend_ignore_children(&dev->dev, true);
-> +	pm_runtime_set_suspended(&dev->dev);
-> +	pm_runtime_enable(&dev->dev);
-> 
-> Before accessing hardware I perform:
-> +	pm_runtime_resume(pd->dev);
-> 
-> When done with the hardware I do:
-> +	pm_runtime_suspend(pd->dev);
-> 
-> Not so complicated. Am I supposed to initialize something else as well?
-> 
-> All good with the code above, but there seem to be some issue with how
-> usage_count is counted up and down and when runtime_disabled is set:
-> 
-> 1. pm_runtime_init(): usage_count = 1, runtime_disabled = true
-> 2. driver_probe_device(): pm_runtime_get_sync()
-> 3. pm_runtime_get_sync(): usage_count = 2
-> 4. device driver probe(): pm_runtime_enable()
-> 5. pm_runtime_enable(): usage_count = 1
-> 6. driver_probe_device(): pm_runtime_put()
-> 7. pm_runtime_put(): usage_count = 0
-> 
-> I expect runtime_disabled = false in 7. Modifying the get/put calls to
-> do enable/disable may work around the issue, but that's probably not
-> what you guys want.
+Feel free to clarify my assumptions.
 
-Sure, that's my mistake.  I should have used a separate counter for
-disable/enable, but I thought usage_counter would be sufficient.  Will fix.
+> Also, you say "may" report.  If a device does not report, what happens
+> to this file.  Is it not present, or empty, or contain a special
+> "undefined" value?
+> I think the answer is that "512" is reported.  It might be good to
+> explicitly document that.
+>   
+> I'd really like to see an example of how you expect filesystems to use
+> this.
+> I can well imagine the VM or elevator using this to assemble IO
+> requests in to properly aligned requests.  But I cannot imagine how
+> e.g mkfs would use it.
+> Or am I misunderstanding and this is for programs that use O_DIRECT on
+> the block device so they can optimise their request stream?
+>   
 
-> Issue 2:
-> ------------
-> I cannot get any bus ->runtime_resume() callbacks from probe(). This
-> also seems related to usage_count and pm_runtime_get_sync() in
-> driver_probe_device(). Basically, from probe(), calling
-> pm_runtime_resume() after pm_runtime_set_suspended() results in error
-> and not in a ->runtime_resume() callback. Some device drives access
-> hardware in probe(), so the ->runtime_resume() callback is needed at
-> that point to turn on clocks before the hardware can be accessed.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  Obscure bug of 2004: BASH BUFFER OVERFLOW - if bash is being run by a
+normal user and is setuid root, with the "vi" line edit mode selected,
+and the character set is "big5," an off-by-one error occurs during
+wildcard (glob) expansion.
 
-I think the problem is that pm_runtime_get_sync() in driver_probe_device()
-calls ->runtime_resume(), so the device is active from the core's point of
-view when you call pm_runtime_resume() from probe().
-
-Hmm.  OK, perhaps we should just increment usage_count in
-driver_device_probe() to prevent suspends from happening at that time, without
-calling ->runtime_resume() so that the driver can do it by itself.  I'll do
-that in the next version.
-
-> Random thought:
-> -------------------------
-> The runtime_pm_get() and runtime_pm_put() look very nice. I assume
-> that inteface is supposed to be used by bus code. I wonder if it would
-> be cleaner to use a similar counter based interface from the driver
-> instead of the pm_runtime_idle()/suspend()/resume()...
-> 
-> Let me know what you think!
-
-In fact I thought drivers could also use pm_runtime_[get|put]() and the 'sync'
-versions.  At least, I don't see why not at the moment (well, I'm a bit tired
-right now ...).
-
-However, I'm now thinking it should work like this:
-
-* pm_runtime_get() increments usage_count and if it was zero before the
-  incrementation, it calls pm_request_resume() (pm_runtime_resume() is called
-  by the 'sync' version).
-
-* pm_runtime_put() decrements usage_count and if it's zero after the
-  decrementation, it calls pm_request_idle() (pm_runtime_idle() is called by
-  the 'sync' version).
-
-* The 'suspend' callbacks won't succeed for usage_count > 0.
-
-This way we would avoid calling the 'suspend' and 'idle' functions each time
-unnecessarily, but then usage_count would have to be modified under the
-spinlock only.
-
-Best,
-Rafael
