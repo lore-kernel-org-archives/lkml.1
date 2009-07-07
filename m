@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbZGGA3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbZGGA2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758338AbZGGA3J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 20:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757469AbZGGASc
+	id S1760610AbZGGA2y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 20:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758882AbZGGASY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 20:18:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33405 "EHLO mx2.redhat.com"
+	Mon, 6 Jul 2009 20:18:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33391 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758921AbZGGAS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 20:18:29 -0400
+	id S1757379AbZGGASW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 20:18:22 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RFC PATCH -tip v3 2/7] kprobes: Introduce kprobes jump optimization
+Subject: [RFC PATCH -tip v3 1/7] kprobes: Introduce generic insn_slot framework
 To: Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -25,8 +25,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
        Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>
-Date: Mon, 06 Jul 2009 20:21:04 -0400
-Message-ID: <20090707002103.10694.64910.stgit@localhost.localdomain>
+Date: Mon, 06 Jul 2009 20:20:57 -0400
+Message-ID: <20090707002057.10694.25342.stgit@localhost.localdomain>
 In-Reply-To: <20090707002051.10694.53741.stgit@localhost.localdomain>
 References: <20090707002051.10694.53741.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -37,16 +37,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce kprobes jump optimization arch-independent parts.
-Kprobes uses breakpoint instruction for interrupting execution flow, on
-some architectures, it can be replaced by a jump instruction and
-interruption emulation code. This gains kprobs' performance drastically.
+Make insn_slot framework support various size slots.
+Current insn_slot just supports one-size instruction buffer slot. However,
+kprobes jump optimization needs larger size buffers.
 
 Changes from v2:
- - Set CONFIG_OPTPROBES=y by default.
- - Remove CONFIG_DISABLE_CROSSJUMP
- - Change detour logic for supporting reentered probes
-   (remove detour_optimized_kprobe())
+ - Use an empty array for a variable array.
+ - Use WARN_ON(1) when finding a trivial bug, instead of BUG().
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -62,704 +59,215 @@ Cc: Tim Abbott <tabbott@ksplice.com>
 Cc: Andi Kleen <andi@firstfloor.org>
 ---
 
- arch/Kconfig            |   13 ++
- include/linux/kprobes.h |   36 ++++
- kernel/kprobes.c        |  390 +++++++++++++++++++++++++++++++++++++++++------
- 3 files changed, 393 insertions(+), 46 deletions(-)
+ kernel/kprobes.c |  102 +++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 63 insertions(+), 39 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index c72f18f..e830933 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -44,6 +44,17 @@ config KPROBES
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
- 
-+config OPTPROBES
-+	bool "Kprobes jump optimization support (EXPERIMENTAL)"
-+	default y
-+	depends on KPROBES
-+	depends on !PREEMPT
-+	depends on HAVE_OPTPROBES
-+	select KALLSYMS_ALL
-+	help
-+	  This option will allow kprobes to optimize breakpoint to
-+	  a jump for reducing its overhead.
-+
- config HAVE_EFFICIENT_UNALIGNED_ACCESS
- 	bool
- 	help
-@@ -79,6 +90,8 @@ config HAVE_KPROBES
- config HAVE_KRETPROBES
- 	bool
- 
-+config HAVE_OPTPROBES
-+	bool
- #
- # An arch should select this if it provides all these things:
- #
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index bcd9c07..6f75014 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -122,6 +122,11 @@ struct kprobe {
- /* Kprobe status flags */
- #define KPROBE_FLAG_GONE	1 /* breakpoint has already gone */
- #define KPROBE_FLAG_DISABLED	2 /* probe is temporarily disabled */
-+#define KPROBE_FLAG_OPTIMIZED	4 /*
-+				   * probe is really optimized.
-+				   * NOTE:
-+				   * this flag is only for optimized_kprobe.
-+				   */
- 
- /* Has this kprobe gone ? */
- static inline int kprobe_gone(struct kprobe *p)
-@@ -134,6 +139,12 @@ static inline int kprobe_disabled(struct kprobe *p)
- {
- 	return p->flags & (KPROBE_FLAG_DISABLED | KPROBE_FLAG_GONE);
- }
-+
-+/* Is this kprobe really running optimized path ? */
-+static inline int kprobe_optimized(struct kprobe *p)
-+{
-+	return p->flags & KPROBE_FLAG_OPTIMIZED;
-+}
- /*
-  * Special probe type that uses setjmp-longjmp type tricks to resume
-  * execution at a specified entry with a matching prototype corresponding
-@@ -249,6 +260,31 @@ extern kprobe_opcode_t *get_insn_slot(void);
- extern void free_insn_slot(kprobe_opcode_t *slot, int dirty);
- extern void kprobes_inc_nmissed_count(struct kprobe *p);
- 
-+#ifdef CONFIG_OPTPROBES
-+/*
-+ * Internal structure for direct jump optimized probe
-+ */
-+struct optimized_kprobe {
-+	struct kprobe kp;
-+	struct list_head list;	/* list for optimizing queue */
-+	struct arch_optimized_insn optinsn;
-+};
-+
-+/* Architecture dependent functions for direct jump optimization */
-+extern int arch_prepared_optinsn(struct arch_optimized_insn *optinsn);
-+extern int arch_check_optimized_kprobe(struct optimized_kprobe *op);
-+extern int arch_prepare_optimized_kprobe(struct optimized_kprobe *op);
-+extern void arch_remove_optimized_kprobe(struct optimized_kprobe *op);
-+extern int  arch_optimize_kprobe(struct optimized_kprobe *op);
-+extern void arch_unoptimize_kprobe(struct optimized_kprobe *op);
-+extern kprobe_opcode_t *get_optinsn_slot(void);
-+extern void free_optinsn_slot(kprobe_opcode_t *slot, int dirty);
-+extern int arch_within_optimized_kprobe(struct optimized_kprobe *op,
-+					unsigned long addr);
-+
-+extern void opt_pre_handler(struct kprobe *p, struct pt_regs *regs);
-+#endif /* CONFIG_OPTPROBES */
-+
- /* Get the kprobe at this addr (if any) - called with preemption disabled */
- struct kprobe *get_kprobe(void *addr);
- void kretprobe_hash_lock(struct task_struct *tsk,
 diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 0162c3c..0cbb607 100644
+index 6fe9dc6..0162c3c 100644
 --- a/kernel/kprobes.c
 +++ b/kernel/kprobes.c
-@@ -298,6 +298,31 @@ void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
- 	__free_insn_slot(&kprobe_insn_slots, slot, dirty);
- 	mutex_unlock(&kprobe_insn_mutex);
- }
-+#ifdef CONFIG_OPTPROBES
-+/* For optimized_kprobe buffer */
-+static DEFINE_MUTEX(kprobe_optinsn_mutex); /* Protects kprobe_optinsn_slots */
-+static struct kprobe_insn_cache kprobe_optinsn_slots = {
-+	.pages = LIST_HEAD_INIT(kprobe_optinsn_slots.pages),
-+	/* .insn_size is initialized later */
+@@ -100,26 +100,42 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
+  * stepping on the instruction on a vmalloced/kmalloced/data page
+  * is a recipe for disaster
+  */
+-#define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
+-
+ struct kprobe_insn_page {
+ 	struct list_head list;
+ 	kprobe_opcode_t *insns;		/* Page of instruction slots */
+-	char slot_used[INSNS_PER_PAGE];
+ 	int nused;
+ 	int ngarbage;
++	char slot_used[];
+ };
+ 
++#define KPROBE_INSN_PAGE_SIZE(slots)			\
++	(offsetof(struct kprobe_insn_page, slot_used) +	\
++	 (sizeof(char) * (slots)))
++
++struct kprobe_insn_cache {
++	struct list_head pages;	/* list of kprobe_insn_page */
++	size_t insn_size;	/* size of instruction slot */
++	int nr_garbage;
++};
++
++static int slots_per_page(struct kprobe_insn_cache *c)
++{
++	return PAGE_SIZE/(c->insn_size * sizeof(kprobe_opcode_t));
++}
++
+ enum kprobe_slot_state {
+ 	SLOT_CLEAN = 0,
+ 	SLOT_DIRTY = 1,
+ 	SLOT_USED = 2,
+ };
+ 
+-static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_pages */
+-static LIST_HEAD(kprobe_insn_pages);
+-static int kprobe_garbage_slots;
+-static int collect_garbage_slots(void);
++static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_slots */
++static struct kprobe_insn_cache kprobe_insn_slots = {
++	.pages = LIST_HEAD_INIT(kprobe_insn_slots.pages),
++	.insn_size = MAX_INSN_SIZE,
 +	.nr_garbage = 0,
 +};
-+/* Get a slot for optimized_kprobe buffer */
-+kprobe_opcode_t __kprobes *get_optinsn_slot(void)
-+{
-+	kprobe_opcode_t *ret = NULL;
-+	mutex_lock(&kprobe_optinsn_mutex);
-+	ret = __get_insn_slot(&kprobe_optinsn_slots);
-+	mutex_unlock(&kprobe_optinsn_mutex);
-+	return ret;
-+}
-+
-+void __kprobes free_optinsn_slot(kprobe_opcode_t * slot, int dirty)
-+{
-+	mutex_lock(&kprobe_optinsn_mutex);
-+	__free_insn_slot(&kprobe_optinsn_slots, slot, dirty);
-+	mutex_unlock(&kprobe_optinsn_mutex);
-+}
-+#endif
- #endif
++static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c);
  
- /* We have preemption disabled.. so it is safe to use __ versions */
-@@ -331,11 +356,256 @@ struct kprobe __kprobes *get_kprobe(void *addr)
- 	return NULL;
- }
- 
-+static int __kprobes aggr_pre_handler(struct kprobe *p, struct pt_regs *regs);
-+
-+/* Return true if the kprobe is an aggregator */
-+static inline int kprobe_aggrprobe(struct kprobe *p)
-+{
-+	return p->pre_handler == aggr_pre_handler;
-+}
-+
-+/*
-+ * Keep all fields in the kprobe consistent
-+ */
-+static inline void copy_kprobe(struct kprobe *old_p, struct kprobe *p)
-+{
-+	memcpy(&p->opcode, &old_p->opcode, sizeof(kprobe_opcode_t));
-+	memcpy(&p->ainsn, &old_p->ainsn, sizeof(struct arch_specific_insn));
-+}
-+
-+#ifdef CONFIG_OPTPROBES
-+/*
-+ * Call all pre_handler on the list, but ignores its return value.
-+ * This must be called from arch-dep optimized caller.
-+ */
-+void __kprobes opt_pre_handler(struct kprobe *p, struct pt_regs *regs)
-+{
-+	struct kprobe *kp;
-+
-+	list_for_each_entry_rcu(kp, &p->list, list) {
-+		if (kp->pre_handler && likely(!kprobe_disabled(kp))) {
-+			set_kprobe_instance(kp);
-+			kp->pre_handler(kp, regs);
-+		}
-+		reset_kprobe_instance();
-+	}
-+}
-+
-+/* Return true(!0) if the kprobe is ready for optimization. */
-+static inline int kprobe_optready(struct kprobe *p)
-+{
-+	struct optimized_kprobe *op;
-+	if (kprobe_aggrprobe(p)) {
-+		op = container_of(p, struct optimized_kprobe, kp);
-+		return arch_prepared_optinsn(&op->optinsn);
-+	}
-+	return 0;
-+}
-+
-+/* Return an optimized kprobe which replaces instructions including addr. */
-+struct kprobe *__kprobes get_optimized_kprobe(unsigned long addr)
-+{
-+	int i;
-+	struct kprobe *p = NULL;
-+	struct optimized_kprobe *op;
-+	for (i = 0; !p && i < MAX_OPTIMIZED_LENGTH; i++)
-+		p = get_kprobe((void *)(addr - i));
-+
-+	if (p && kprobe_optready(p)) {
-+		op = container_of(p, struct optimized_kprobe, kp);
-+		if (arch_within_optimized_kprobe(op, addr))
-+			return p;
-+	}
-+	return NULL;
-+}
-+
-+/* Optimization staging list, protected by kprobe_mutex */
-+static LIST_HEAD(optimizing_list);
-+
-+static void kprobe_optimizer(struct work_struct *work);
-+static DECLARE_DELAYED_WORK(optimizing_work, kprobe_optimizer);
-+#define OPTIMIZE_DELAY 5
-+
-+/* Kprobe jump optimizer */
-+static __kprobes void kprobe_optimizer(struct work_struct *work)
-+{
-+	struct optimized_kprobe *op, *tmp;
-+
-+	/* Lock modules while optimizing kprobes */
-+	mutex_lock(&module_mutex);
-+	mutex_lock(&kprobe_mutex);
-+	if (kprobes_all_disarmed)
-+		goto end;
-+
-+	/* Wait quiesence period for ensuring all interrupts are done */
-+	synchronize_sched();
-+
-+	mutex_lock(&text_mutex);
-+	list_for_each_entry_safe(op, tmp, &optimizing_list, list) {
-+		WARN_ON(kprobe_disabled(&op->kp));
-+		if (arch_optimize_kprobe(op) < 0)
-+			op->kp.flags &= ~KPROBE_FLAG_OPTIMIZED;
-+		list_del_init(&op->list);
-+	}
-+	mutex_unlock(&text_mutex);
-+end:
-+	mutex_unlock(&kprobe_mutex);
-+	mutex_unlock(&module_mutex);
-+}
-+
-+/* Optimize kprobe if p is ready to be optimized */
-+static __kprobes void optimize_kprobe(struct kprobe *p)
-+{
-+	struct optimized_kprobe *op;
-+	/* Check if the kprobe is disabled or not ready for optimization. */
-+	if (!kprobe_optready(p) ||
-+	    (kprobe_disabled(p) || kprobes_all_disarmed))
-+		return;
-+
-+	/* Both of break_handler and post_handler are not supported. */
-+	if (p->break_handler || p->post_handler)
-+		return;
-+
-+	op = container_of(p, struct optimized_kprobe, kp);
-+
-+	/* Check there is no other kprobes at the optimized instructions */
-+	if (arch_check_optimized_kprobe(op) < 0)
-+		return;
-+
-+	/* Check if it is already optimized. */
-+	if (op->kp.flags & KPROBE_FLAG_OPTIMIZED)
-+		return;
-+
-+	op->kp.flags |= KPROBE_FLAG_OPTIMIZED;
-+	list_add(&op->list, &optimizing_list);
-+	if (!delayed_work_pending(&optimizing_work))
-+		schedule_delayed_work(&optimizing_work, OPTIMIZE_DELAY);
-+}
-+
-+/* Unoptimize a kprobe if p is optimized */
-+static __kprobes void unoptimize_kprobe(struct kprobe *p)
-+{
-+	struct optimized_kprobe *op;
-+	if ((p->flags & KPROBE_FLAG_OPTIMIZED) && kprobe_aggrprobe(p)) {
-+		op = container_of(p, struct optimized_kprobe, kp);
-+		if (!list_empty(&op->list))
-+			/* Dequeue from the optimization queue */
-+			list_del_init(&op->list);
-+		else
-+			/* Replace jump with break */
-+			arch_unoptimize_kprobe(op);
-+		op->kp.flags &= ~KPROBE_FLAG_OPTIMIZED;
-+	}
-+}
-+
-+/* Remove optimized instructions */
-+static void __kprobes kill_optimized_kprobe(struct kprobe *p)
-+{
-+	struct optimized_kprobe *op;
-+	op = container_of(p, struct optimized_kprobe, kp);
-+	if (!list_empty(&op->list)) {
-+		/* Dequeue from the optimization queue */
-+		list_del_init(&op->list);
-+		op->kp.flags &= ~KPROBE_FLAG_OPTIMIZED;
-+	}
-+	/* Don't unoptimize, because the target code will be freed. */
-+	arch_remove_optimized_kprobe(op);
-+}
-+
-+/* Try to prepare optimized instructions */
-+static __kprobes void prepare_optimized_kprobe(struct kprobe *p)
-+{
-+	struct optimized_kprobe *op;
-+	op = container_of(p, struct optimized_kprobe, kp);
-+	arch_prepare_optimized_kprobe(op);
-+}
-+
-+/* Free optimized instructions and optimized_kprobe */
-+static __kprobes void free_aggr_kprobe(struct kprobe *p)
-+{
-+	struct optimized_kprobe *op;
-+	op = container_of(p, struct optimized_kprobe, kp);
-+	arch_remove_optimized_kprobe(op);
-+	kfree(op);
-+}
-+
-+/* Allocate new optimized_kprobe and try to prepare optimized instructions */
-+static __kprobes struct kprobe *alloc_aggr_kprobe(struct kprobe *p)
-+{
-+	struct optimized_kprobe *op;
-+
-+	op = kzalloc(sizeof(struct optimized_kprobe), GFP_KERNEL);
-+	if (!op)
-+		return NULL;
-+
-+	INIT_LIST_HEAD(&op->list);
-+	op->kp.addr = p->addr;
-+	arch_prepare_optimized_kprobe(op);
-+	return &op->kp;
-+}
-+
-+static void __kprobes init_aggr_kprobe(struct kprobe *ap, struct kprobe *p);
-+
-+/*
-+ * Prepare an optimized_kprobe and optimize it
-+ * NOTE: p must be a normal registered kprobe
-+ */
-+static __kprobes void try_to_optimize_kprobe(struct kprobe *p)
-+{
-+	struct kprobe *ap;
-+	struct optimized_kprobe *op;
-+
-+	ap = alloc_aggr_kprobe(p);
-+	if (!ap)
-+		return;
-+
-+	op = container_of(ap, struct optimized_kprobe, kp);
-+	if (!arch_prepared_optinsn(&op->optinsn)) {
-+		/* If failed to setup optimizing, fallback to kprobe */
-+		free_aggr_kprobe(ap);
-+		return;
-+	}
-+
-+	init_aggr_kprobe(ap, p);
-+	optimize_kprobe(ap);
-+	return;
-+}
-+#else /* !CONFIG_OPTPROBES */
-+#define get_optimized_kprobe(addr)		(NULL)
-+#define optimize_kprobe(p)			do {} while (0)
-+#define unoptimize_kprobe(p)			do {} while (0)
-+#define kill_optimized_kprobe(p)		do {} while (0)
-+#define prepare_optimized_kprobe(p)		do {} while (0)
-+#define try_to_optimize_kprobe(p)		do {} while (0)
-+
-+static __kprobes void free_aggr_kprobe(struct kprobe *p)
-+{
-+	kfree(p);
-+}
-+
-+static __kprobes struct kprobe *alloc_aggr_kprobe(struct kprobe *p)
-+{
-+	return kzalloc(sizeof(struct kprobe), GFP_KERNEL);
-+}
-+#endif /* CONFIG_OPTPROBES */
-+
-+static void __kprobes __arm_kprobe(struct kprobe *kp)
-+{
-+	arch_arm_kprobe(kp);
-+	optimize_kprobe(kp);	/* Try to re-optimize */
-+}
-+
-+static void __kprobes __disarm_kprobe(struct kprobe *kp)
-+{
-+	unoptimize_kprobe(kp);	/* Try to unoptimize */
-+	arch_disarm_kprobe(kp);
-+}
-+
- /* Arm a kprobe with text_mutex */
- static void __kprobes arm_kprobe(struct kprobe *kp)
+ static int __kprobes check_safety(void)
  {
- 	mutex_lock(&text_mutex);
--	arch_arm_kprobe(kp);
-+	__arm_kprobe(kp);
- 	mutex_unlock(&text_mutex);
- }
- 
-@@ -343,7 +613,7 @@ static void __kprobes arm_kprobe(struct kprobe *kp)
- static void __kprobes disarm_kprobe(struct kprobe *kp)
- {
- 	mutex_lock(&text_mutex);
--	arch_disarm_kprobe(kp);
-+	__disarm_kprobe(kp);
- 	mutex_unlock(&text_mutex);
- }
- 
-@@ -413,7 +683,7 @@ static int __kprobes aggr_break_handler(struct kprobe *p, struct pt_regs *regs)
- void __kprobes kprobes_inc_nmissed_count(struct kprobe *p)
- {
- 	struct kprobe *kp;
--	if (p->pre_handler != aggr_pre_handler) {
-+	if (!kprobe_aggrprobe(p)) {
- 		p->nmissed++;
- 	} else {
- 		list_for_each_entry_rcu(kp, &p->list, list)
-@@ -537,21 +807,16 @@ static void __kprobes cleanup_rp_inst(struct kretprobe *rp)
- }
- 
- /*
-- * Keep all fields in the kprobe consistent
-- */
--static inline void copy_kprobe(struct kprobe *old_p, struct kprobe *p)
--{
--	memcpy(&p->opcode, &old_p->opcode, sizeof(kprobe_opcode_t));
--	memcpy(&p->ainsn, &old_p->ainsn, sizeof(struct arch_specific_insn));
--}
--
--/*
- * Add the new probe to ap->list. Fail if this is the
- * second jprobe at the address - two jprobes can't coexist
- */
- static int __kprobes add_new_kprobe(struct kprobe *ap, struct kprobe *p)
- {
- 	BUG_ON(kprobe_gone(ap) || kprobe_gone(p));
-+
-+	if (p->break_handler || p->post_handler)
-+		unoptimize_kprobe(ap);	/* Fall back to normal kprobe */
-+
- 	if (p->break_handler) {
- 		if (ap->break_handler)
- 			return -EEXIST;
-@@ -566,7 +831,7 @@ static int __kprobes add_new_kprobe(struct kprobe *ap, struct kprobe *p)
- 		ap->flags &= ~KPROBE_FLAG_DISABLED;
- 		if (!kprobes_all_disarmed)
- 			/* Arm the breakpoint again. */
--			arm_kprobe(ap);
-+			__arm_kprobe(ap);
- 	}
- 	return 0;
- }
-@@ -575,12 +840,13 @@ static int __kprobes add_new_kprobe(struct kprobe *ap, struct kprobe *p)
-  * Fill in the required fields of the "manager kprobe". Replace the
-  * earlier kprobe in the hlist with the manager kprobe
+@@ -149,32 +165,33 @@ loop_end:
+  * __get_insn_slot() - Find a slot on an executable page for an instruction.
+  * We allocate an executable page if there's no room on existing ones.
   */
--static inline void add_aggr_kprobe(struct kprobe *ap, struct kprobe *p)
-+static void __kprobes init_aggr_kprobe(struct kprobe *ap, struct kprobe *p)
+-static kprobe_opcode_t __kprobes *__get_insn_slot(void)
++static kprobe_opcode_t __kprobes *__get_insn_slot(struct kprobe_insn_cache *c)
  {
-+	/* Copy p's insn slot to ap */
- 	copy_kprobe(p, ap);
- 	flush_insn_slot(ap);
- 	ap->addr = p->addr;
--	ap->flags = p->flags;
-+	ap->flags = p->flags & ~KPROBE_FLAG_OPTIMIZED;
- 	ap->pre_handler = aggr_pre_handler;
- 	ap->fault_handler = aggr_fault_handler;
- 	/* We don't care the kprobe which has gone. */
-@@ -590,8 +856,9 @@ static inline void add_aggr_kprobe(struct kprobe *ap, struct kprobe *p)
- 		ap->break_handler = aggr_break_handler;
+ 	struct kprobe_insn_page *kip;
  
- 	INIT_LIST_HEAD(&ap->list);
--	list_add_rcu(&p->list, &ap->list);
-+	INIT_HLIST_NODE(&ap->hlist);
+  retry:
+-	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+-		if (kip->nused < INSNS_PER_PAGE) {
++	list_for_each_entry(kip, &c->pages, list) {
++		if (kip->nused < slots_per_page(c)) {
+ 			int i;
+-			for (i = 0; i < INSNS_PER_PAGE; i++) {
++			for (i = 0; i < slots_per_page(c); i++) {
+ 				if (kip->slot_used[i] == SLOT_CLEAN) {
+ 					kip->slot_used[i] = SLOT_USED;
+ 					kip->nused++;
+-					return kip->insns + (i * MAX_INSN_SIZE);
++					return kip->insns + (i * c->insn_size);
+ 				}
+ 			}
+-			/* Surprise!  No unused slots.  Fix kip->nused. */
+-			kip->nused = INSNS_PER_PAGE;
++			/* kip->nused is broken. Fix it. */
++			kip->nused = slots_per_page(c);
++			WARN_ON(1);
+ 		}
+ 	}
  
-+	list_add_rcu(&p->list, &ap->list);
- 	hlist_replace_rcu(&p->hlist, &ap->hlist);
+ 	/* If there are any garbage slots, collect it and try again. */
+-	if (kprobe_garbage_slots && collect_garbage_slots() == 0) {
++	if (c->nr_garbage && collect_garbage_slots(c) == 0)
+ 		goto retry;
+-	}
+-	/* All out of space.  Need to allocate a new page. Use slot 0. */
+-	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
++
++	/* All out of space.  Need to allocate a new page. */
++	kip = kmalloc(KPROBE_INSN_PAGE_SIZE(slots_per_page(c)), GFP_KERNEL);
+ 	if (!kip)
+ 		return NULL;
+ 
+@@ -189,19 +206,20 @@ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
+ 		return NULL;
+ 	}
+ 	INIT_LIST_HEAD(&kip->list);
+-	list_add(&kip->list, &kprobe_insn_pages);
+-	memset(kip->slot_used, SLOT_CLEAN, INSNS_PER_PAGE);
++	memset(kip->slot_used, SLOT_CLEAN, slots_per_page(c));
+ 	kip->slot_used[0] = SLOT_USED;
+ 	kip->nused = 1;
+ 	kip->ngarbage = 0;
++	list_add(&kip->list, &c->pages);
+ 	return kip->insns;
  }
  
-@@ -605,12 +872,12 @@ static int __kprobes register_aggr_kprobe(struct kprobe *old_p,
- 	int ret = 0;
- 	struct kprobe *ap = old_p;
- 
--	if (old_p->pre_handler != aggr_pre_handler) {
--		/* If old_p is not an aggr_probe, create new aggr_kprobe. */
--		ap = kzalloc(sizeof(struct kprobe), GFP_KERNEL);
-+	if (!kprobe_aggrprobe(old_p)) {
-+		/* If old_p is not an aggr_kprobe, create new aggr_kprobe. */
-+		ap = alloc_aggr_kprobe(old_p);
- 		if (!ap)
- 			return -ENOMEM;
--		add_aggr_kprobe(ap, old_p);
-+		init_aggr_kprobe(ap, old_p);
- 	}
- 
- 	if (kprobe_gone(ap)) {
-@@ -629,6 +896,9 @@ static int __kprobes register_aggr_kprobe(struct kprobe *old_p,
- 			 */
- 			return ret;
- 
-+		/* Prepare optimized instructions if possible. */
-+		prepare_optimized_kprobe(ap);
 +
- 		/*
- 		 * Clear gone flag to prevent allocating new slot again, and
- 		 * set disabled flag because it is not armed yet.
-@@ -637,6 +907,7 @@ static int __kprobes register_aggr_kprobe(struct kprobe *old_p,
- 			    | KPROBE_FLAG_DISABLED;
- 	}
- 
-+	/* Copy ap's insn slot to p */
- 	copy_kprobe(ap, p);
- 	return add_new_kprobe(ap, p);
+ kprobe_opcode_t __kprobes *get_insn_slot(void)
+ {
+-	kprobe_opcode_t *ret;
++	kprobe_opcode_t *ret = NULL;
+ 	mutex_lock(&kprobe_insn_mutex);
+-	ret = __get_insn_slot();
++	ret = __get_insn_slot(&kprobe_insn_slots);
+ 	mutex_unlock(&kprobe_insn_mutex);
+ 	return ret;
  }
-@@ -748,16 +1019,23 @@ int __kprobes register_kprobe(struct kprobe *p)
- 	p->nmissed = 0;
- 	INIT_LIST_HEAD(&p->list);
- 	mutex_lock(&kprobe_mutex);
-+	mutex_lock(&text_mutex);
-+
- 	old_p = get_kprobe(p->addr);
- 	if (old_p) {
-+		/* Since this may unoptimize old_p, locking text_mutex. */
- 		ret = register_aggr_kprobe(old_p, p);
- 		goto out;
- 	}
- 
--	mutex_lock(&text_mutex);
-+	/* Check collision with other optimized kprobes */
-+	old_p = get_optimized_kprobe((unsigned long)p->addr);
-+	if (unlikely(old_p))
-+		unoptimize_kprobe(old_p); /* Fallback to unoptimized kprobe */
-+
- 	ret = arch_prepare_kprobe(p);
- 	if (ret)
--		goto out_unlock_text;
-+		goto out;
- 
- 	INIT_HLIST_NODE(&p->hlist);
- 	hlist_add_head_rcu(&p->hlist,
-@@ -766,9 +1044,11 @@ int __kprobes register_kprobe(struct kprobe *p)
- 	if (!kprobes_all_disarmed && !kprobe_disabled(p))
- 		arch_arm_kprobe(p);
- 
--out_unlock_text:
--	mutex_unlock(&text_mutex);
-+	/* Try to optimize kprobe */
-+	try_to_optimize_kprobe(p);
-+
- out:
-+	mutex_unlock(&text_mutex);
- 	mutex_unlock(&kprobe_mutex);
- 
- 	if (probed_mod)
-@@ -810,7 +1090,7 @@ static int __kprobes __unregister_kprobe_top(struct kprobe *p)
- 		return -EINVAL;
- 
- 	if (old_p == p ||
--	    (old_p->pre_handler == aggr_pre_handler &&
-+	    (kprobe_aggrprobe(old_p) &&
- 	     list_is_singular(&old_p->list))) {
- 		/*
- 		 * Only probe on the hash list. Disarm only if kprobes are
-@@ -818,8 +1098,13 @@ static int __kprobes __unregister_kprobe_top(struct kprobe *p)
- 		 * already have been removed. We save on flushing icache.
+@@ -218,7 +236,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
+ 		 * so as not to have to set it up again the
+ 		 * next time somebody inserts a probe.
  		 */
- 		if (!kprobes_all_disarmed && !kprobe_disabled(old_p))
--			disarm_kprobe(p);
-+			disarm_kprobe(old_p);
- 		hlist_del_rcu(&old_p->hlist);
-+
-+		/* If another kprobe was blocked, optimize it. */
-+		old_p = get_optimized_kprobe((unsigned long)p->addr);
-+		if (unlikely(old_p))
-+			optimize_kprobe(old_p);
- 	} else {
- 		if (p->break_handler && !kprobe_gone(p))
- 			old_p->break_handler = NULL;
-@@ -834,8 +1119,13 @@ noclean:
- 		list_del_rcu(&p->list);
- 		if (!kprobe_disabled(old_p)) {
- 			try_to_disable_aggr_kprobe(old_p);
--			if (!kprobes_all_disarmed && kprobe_disabled(old_p))
--				disarm_kprobe(old_p);
-+			if (!kprobes_all_disarmed) {
-+				if (kprobe_disabled(old_p))
-+					disarm_kprobe(old_p);
-+				else
-+					/* Try to optimize this probe again */
-+					optimize_kprobe(old_p);
-+			}
- 		}
- 	}
+-		if (!list_is_singular(&kprobe_insn_pages)) {
++		if (!list_is_singular(&kip->list)) {
+ 			list_del(&kip->list);
+ 			module_free(NULL, kip->insns);
+ 			kfree(kip);
+@@ -228,7 +246,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
  	return 0;
-@@ -852,7 +1142,7 @@ static void __kprobes __unregister_kprobe_bottom(struct kprobe *p)
- 		old_p = list_entry(p->list.next, struct kprobe, list);
- 		list_del(&p->list);
- 		arch_remove_kprobe(old_p);
--		kfree(old_p);
-+		free_aggr_kprobe(old_p);
- 	}
  }
  
-@@ -1148,7 +1438,7 @@ static void __kprobes kill_kprobe(struct kprobe *p)
- 	struct kprobe *kp;
- 
- 	p->flags |= KPROBE_FLAG_GONE;
--	if (p->pre_handler == aggr_pre_handler) {
-+	if (kprobe_aggrprobe(p)) {
- 		/*
- 		 * If this is an aggr_kprobe, we have to list all the
- 		 * chained probes and mark them GONE.
-@@ -1157,6 +1447,7 @@ static void __kprobes kill_kprobe(struct kprobe *p)
- 			kp->flags |= KPROBE_FLAG_GONE;
- 		p->post_handler = NULL;
- 		p->break_handler = NULL;
-+		kill_optimized_kprobe(p);
- 	}
- 	/*
- 	 * Here, we can remove insn_slot safely, because no thread calls
-@@ -1259,6 +1550,11 @@ static int __init init_kprobes(void)
- 		}
- 	}
- 
-+#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
-+	/* Init kprobe_optinsn_slots */
-+	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
-+#endif
-+
- 	/* By default, kprobes are armed */
- 	kprobes_all_disarmed = false;
- 
-@@ -1277,7 +1573,7 @@ static int __init init_kprobes(void)
- 
- #ifdef CONFIG_DEBUG_FS
- static void __kprobes report_probe(struct seq_file *pi, struct kprobe *p,
--		const char *sym, int offset,char *modname)
-+		const char *sym, int offset, char *modname, struct kprobe *pp)
+-static int __kprobes collect_garbage_slots(void)
++static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c)
  {
- 	char *kprobe_type;
+ 	struct kprobe_insn_page *kip, *next;
  
-@@ -1287,19 +1583,21 @@ static void __kprobes report_probe(struct seq_file *pi, struct kprobe *p,
- 		kprobe_type = "j";
- 	else
- 		kprobe_type = "k";
-+
- 	if (sym)
--		seq_printf(pi, "%p  %s  %s+0x%x  %s %s%s\n",
-+		seq_printf(pi, "%p  %s  %s+0x%x  %s ",
- 			p->addr, kprobe_type, sym, offset,
--			(modname ? modname : " "),
--			(kprobe_gone(p) ? "[GONE]" : ""),
--			((kprobe_disabled(p) && !kprobe_gone(p)) ?
--			 "[DISABLED]" : ""));
-+			(modname ? modname : " "));
- 	else
--		seq_printf(pi, "%p  %s  %p %s%s\n",
--			p->addr, kprobe_type, p->addr,
--			(kprobe_gone(p) ? "[GONE]" : ""),
--			((kprobe_disabled(p) && !kprobe_gone(p)) ?
--			 "[DISABLED]" : ""));
-+		seq_printf(pi, "%p  %s  %p ",
-+			p->addr, kprobe_type, p->addr);
-+
-+	if (!pp)
-+		pp = p;
-+	seq_printf(pi, "%s%s%s\n",
-+		(kprobe_gone(p) ? "[GONE]" : ""),
-+		((kprobe_disabled(p) && !kprobe_gone(p)) ?  "[DISABLED]" : ""),
-+		(kprobe_optimized(pp) ? "[OPTIMIZED]" : ""));
- }
+@@ -236,42 +254,48 @@ static int __kprobes collect_garbage_slots(void)
+ 	if (check_safety())
+ 		return -EAGAIN;
  
- static void __kprobes *kprobe_seq_start(struct seq_file *f, loff_t *pos)
-@@ -1335,11 +1633,11 @@ static int __kprobes show_kprobe_addr(struct seq_file *pi, void *v)
- 	hlist_for_each_entry_rcu(p, node, head, hlist) {
- 		sym = kallsyms_lookup((unsigned long)p->addr, NULL,
- 					&offset, &modname, namebuf);
--		if (p->pre_handler == aggr_pre_handler) {
-+		if (kprobe_aggrprobe(p)) {
- 			list_for_each_entry_rcu(kp, &p->list, list)
--				report_probe(pi, kp, sym, offset, modname);
-+				report_probe(pi, kp, sym, offset, modname, p);
- 		} else
--			report_probe(pi, p, sym, offset, modname);
-+			report_probe(pi, p, sym, offset, modname, NULL);
- 	}
- 	preempt_enable();
- 	return 0;
-@@ -1447,7 +1745,7 @@ static void __kprobes arm_all_kprobes(void)
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist)
- 			if (!kprobe_disabled(p))
--				arch_arm_kprobe(p);
-+				__arm_kprobe(p);
- 	}
- 	mutex_unlock(&text_mutex);
- 
-@@ -1479,7 +1777,7 @@ static void __kprobes disarm_all_kprobes(void)
- 		head = &kprobe_table[i];
- 		hlist_for_each_entry_rcu(p, node, head, hlist) {
- 			if (!arch_trampoline_kprobe(p) && !kprobe_disabled(p))
--				arch_disarm_kprobe(p);
-+				__disarm_kprobe(p);
+-	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
++	list_for_each_entry_safe(kip, next, &c->pages, list) {
+ 		int i;
+ 		if (kip->ngarbage == 0)
+ 			continue;
+ 		kip->ngarbage = 0;	/* we will collect all garbages */
+-		for (i = 0; i < INSNS_PER_PAGE; i++) {
++		for (i = 0; i < slots_per_page(c); i++) {
+ 			if (kip->slot_used[i] == SLOT_DIRTY &&
+ 			    collect_one_slot(kip, i))
+ 				break;
  		}
  	}
+-	kprobe_garbage_slots = 0;
++	c->nr_garbage = 0;
+ 	return 0;
+ }
  
+-void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
++static void __kprobes __free_insn_slot(struct kprobe_insn_cache *c,
++				       kprobe_opcode_t *slot, int dirty)
+ {
+ 	struct kprobe_insn_page *kip;
+ 
+-	mutex_lock(&kprobe_insn_mutex);
+-	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+-		if (kip->insns <= slot &&
+-		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+-			int i = (slot - kip->insns) / MAX_INSN_SIZE;
++	list_for_each_entry(kip, &c->pages, list) {
++		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
++		if (idx >= 0 && idx < slots_per_page(c)) {
++			WARN_ON(kip->slot_used[idx] != SLOT_USED);
+ 			if (dirty) {
+-				kip->slot_used[i] = SLOT_DIRTY;
++				kip->slot_used[idx] = SLOT_DIRTY;
+ 				kip->ngarbage++;
++				if (++c->nr_garbage > slots_per_page(c))
++					collect_garbage_slots(c);
+ 			} else
+-				collect_one_slot(kip, i);
+-			break;
++				collect_one_slot(kip, idx);
++			return;
+ 		}
+ 	}
++	/* Could not free this slot. */
++	WARN_ON(1);
++}
+ 
+-	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
+-		collect_garbage_slots();
+-
++void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
++{
++	mutex_lock(&kprobe_insn_mutex);
++	__free_insn_slot(&kprobe_insn_slots, slot, dirty);
+ 	mutex_unlock(&kprobe_insn_mutex);
+ }
+ #endif
 
 
 -- 
