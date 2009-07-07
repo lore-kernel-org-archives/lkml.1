@@ -1,161 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759084AbZGGQce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbZGGQcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759084AbZGGQce (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZGGQcZ
+	id S1759217AbZGGQcq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 12:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757589AbZGGQc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:32:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46279 "EHLO hera.kernel.org"
+	Tue, 7 Jul 2009 12:32:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58374 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755792AbZGGQcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 12:32:24 -0400
-Subject: [GIT PULL] V2 trivial fixes typo "foo foo"
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: trivial <trivial@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Tony Luck <tony.luck@intel.com>,
-       benh@kernel.crashing.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       mchehab@infradead.org, jbarnes@virtuousgeek.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Greg Ungerer <gerg@snapgear.com>, Greg KH <greg@kroah.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       David Howells <dhowells@redhat.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Ingo Molnar <mingo@elte.hu>, tytso@mit.edu, sct@redhat.com,
-       Gadiyar Anand <gadiyar@ti.com>, LKML <linux-kernel@vger.kernel.org>,
-       Joe Perches <joe@perches.com>
-In-Reply-To: <1246975428.3613.10.camel@ht.satnam>
-References: <1246975428.3613.10.camel@ht.satnam>
-Content-Type: text/plain
-Date: Tue, 07 Jul 2009 22:00:09 +0530
-Message-Id: <1246984209.3613.46.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1754669AbZGGQcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 12:32:25 -0400
+Date: Tue, 7 Jul 2009 12:32:23 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: MAX_STACK_TRACE_ENTRIES too low (2.6.31-rc2)
+Message-ID: <20090707163223.GA24481@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To stay on the safe side skipping following patches from V1 which can
-raise confusions and objections:
+I see this every time I boot.
 
-      trivial: fix typo "and and" in multiple files 
-      trivial: fix typo "are are" in multiple files
-      trivial: fix typo "has has" in multiple files
-      trivial: fix typo "on on" in multiple files
-      trivial: fix typo "that that" in multiple files
-      trivial: fix typo "this this" in multiple files
+	Dave
 
-
-The following changes since commit faf80d62e44dc627efb741f48db50c1858d1667c:
-  Linus Torvalds (1):
-        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6.git master
-
-Jaswinder Singh Rajput (16):
-      trivial: fix typo "a a" in multiple files
-      trivial: fix typo "as as" in multiple files
-      trivial: fix typo "be be" in multiple files
-      trivial: fix typo "bit bit" in multiple files
-      trivial: fix typo "by by" in multiple files
-      trivial: fix typo "can can"
-      trivial: fix typo "could could" in multiple files
-      trivial: fix typo "from from" in multiple files
-      trivial: fix typo "lock lock"
-      trivial: fix typo "should should" in multiple files
-      trivial: fix typo "test test"
-      trivial: fix typo "too too"
-      trivial: fix typo "was was" in multiple files
-      trivial: fix typo "we we" in multiple files
-      trivial: fix typo "with with" in multiple files
-      trivial: fix typo "you you"
-
- Documentation/DocBook/uio-howto.tmpl               |    2 +-
- Documentation/fb/viafb.txt                         |    2 +-
- Documentation/filesystems/caching/operations.txt   |    2 +-
- Documentation/scsi/advansys.txt                    |    2 +-
- Documentation/sysfs-rules.txt                      |    2 +-
- arch/frv/kernel/sleep.S                            |    2 +-
- arch/ia64/include/asm/sn/pda.h                     |    2 +-
- arch/microblaze/kernel/signal.c                    |    2 +-
- arch/mips/cavium-octeon/setup.c                    |    2 +-
- arch/mips/include/asm/octeon/octeon.h              |    2 +-
- arch/sparc/kernel/head_64.S                        |    2 +-
- arch/x86/include/asm/xen/hypercall.h               |    2 +-
- arch/x86/math-emu/reg_u_sub.S                      |    2 +-
- crypto/testmgr.h                                   |   10 +++++-----
- drivers/char/amiserial.c                           |    2 +-
- drivers/char/xilinx_hwicap/xilinx_hwicap.c         |    2 +-
- drivers/media/dvb/ttpci/av7110.c                   |    2 +-
- drivers/media/video/hdpvr/hdpvr-video.c            |    2 +-
- drivers/media/video/ov511.c                        |    2 +-
- drivers/media/video/ovcamchip/ov7x10.c             |    2 +-
- drivers/media/video/pvrusb2/pvrusb2-hdw.c          |    2 +-
- drivers/mtd/ubi/vmt.c                              |    4 ++--
- drivers/net/fs_enet/fs_enet.h                      |    2 +-
- drivers/net/ixgbe/ixgbe_82598.c                    |    2 +-
- drivers/net/ixgbe/ixgbe_82599.c                    |    2 +-
- drivers/net/ixgbe/ixgbe_common.c                   |    2 +-
- drivers/net/s2io.c                                 |    2 +-
- drivers/net/skfp/fplustm.c                         |    2 +-
- drivers/net/sky2.c                                 |    2 +-
- drivers/net/wireless/libertas/scan.c               |    2 +-
- drivers/parisc/ccio-dma.c                          |    2 +-
- drivers/pci/hotplug/ibmphp.h                       |    2 +-
- drivers/rtc/rtc-m41t80.c                           |    2 +-
- drivers/scsi/libfc/fc_fcp.c                        |    2 +-
- drivers/scsi/lpfc/lpfc_debugfs.c                   |    2 +-
- drivers/scsi/sym53c8xx_2/sym_hipd.c                |    2 +-
- drivers/scsi/sym53c8xx_2/sym_hipd.h                |    2 +-
- drivers/staging/android/binder.c                   |    2 +-
- drivers/staging/frontier/alphatrack.c              |    2 +-
- drivers/staging/frontier/tranzport.c               |    2 +-
- .../staging/rtl8192su/ieee80211/rtl819x_HTProc.c   |    2 +-
- drivers/staging/rtl8192su/r8192S_phy.c             |    2 +-
- drivers/staging/rtl8192su/r819xU_phy.c             |    2 +-
- drivers/staging/wlan-ng/prism2sta.c                |    2 +-
- drivers/usb/atm/ueagle-atm.c                       |    2 +-
- drivers/video/aty/mach64_cursor.c                  |    2 +-
- drivers/video/riva/fbdev.c                         |    2 +-
- drivers/watchdog/eurotechwdt.c                     |    2 +-
- drivers/watchdog/pc87413_wdt.c                     |    2 +-
- drivers/watchdog/w83977f_wdt.c                     |    2 +-
- drivers/watchdog/wdt.c                             |    2 +-
- drivers/watchdog/wdt977.c                          |    2 +-
- drivers/watchdog/wdt_pci.c                         |    2 +-
- fs/cifs/inode.c                                    |    2 +-
- fs/exec.c                                          |    2 +-
- fs/jbd/journal.c                                   |    2 +-
- fs/jbd2/journal.c                                  |    2 +-
- fs/ocfs2/cluster/quorum.c                          |    2 +-
- fs/squashfs/cache.c                                |    2 +-
- fs/ubifs/misc.h                                    |    2 +-
- fs/ufs/super.c                                     |    2 +-
- fs/xfs/xfs_trans_ail.c                             |    2 +-
- include/linux/exportfs.h                           |    2 +-
- include/linux/ipv6.h                               |    2 +-
- include/linux/mtd/pfow.h                           |    2 +-
- include/linux/usb/gadget.h                         |    2 +-
- include/linux/wimax/debug.h                        |    2 +-
- include/sound/soc-dai.h                            |    2 +-
- kernel/perf_counter.c                              |    2 +-
- net/atm/lec.c                                      |    2 +-
- net/dccp/ipv4.c                                    |    2 +-
- net/ipv4/netfilter/nf_nat_pptp.c                   |    2 +-
- net/netfilter/nf_conntrack_pptp.c                  |    2 +-
- net/rds/ib_cm.c                                    |    2 +-
- net/rds/iw_cm.c                                    |    2 +-
- net/sctp/sm_make_chunk.c                           |    2 +-
- net/sunrpc/svcsock.c                               |    2 +-
- scripts/Kbuild.include                             |    2 +-
- scripts/namespace.pl                               |    2 +-
- sound/isa/cs423x/cs4236_lib.c                      |    2 +-
- sound/isa/es18xx.c                                 |    2 +-
- 81 files changed, 86 insertions(+), 86 deletions(-)
-
+BUG: MAX_STACK_TRACE_ENTRIES too low!
+turning off the locking correctness validator.
+Pid: 0, comm: swapper Not tainted 2.6.31-0.42.rc2.fc12.i686.PAE #1
+Call Trace:
+ [<c08277f3>] ? printk+0x22/0x37
+ [<c04759b3>] save_trace+0x89/0xa3
+ [<c0476410>] mark_lock+0xaf/0x1f6
+ [<c0476c36>] ? check_usage_forwards+0x0/0x61
+ [<c047755e>] __lock_acquire+0x301/0xb08
+ [<c060bcc3>] ? get_hash_bucket+0x3a/0x55
+ [<c0477e1c>] lock_acquire+0xb7/0xeb
+ [<c060bcc3>] ? get_hash_bucket+0x3a/0x55
+ [<c060bcc3>] ? get_hash_bucket+0x3a/0x55
+ [<c082a537>] _spin_lock_irqsave+0x45/0x89
+ [<c060bcc3>] ? get_hash_bucket+0x3a/0x55
+ [<c060bcc3>] get_hash_bucket+0x3a/0x55
+ [<c060d07d>] add_dma_entry+0x1f/0x4f
+ [<c060d2fd>] debug_dma_map_sg+0xd0/0x136
+ [<c06de03d>] ata_qc_issue+0x223/0x2c1
+ [<c06e4be9>] __ata_scsi_queuecmd+0x16a/0x1c8
+ [<c06c25a6>] ? scsi_done+0x0/0x32
+ [<c06e4653>] ? ata_scsi_rw_xlat+0x0/0x20a
+ [<c06e4d00>] ata_scsi_queuecmd+0x55/0x95
+ [<c06c25a6>] ? scsi_done+0x0/0x32
+ [<c06c284f>] scsi_dispatch_cmd+0x187/0x208
+ [<c06c8641>] scsi_request_fn+0x33a/0x47d
+ [<c05e8cb6>] __blk_run_queue+0x49/0x85
+ [<c05e8db9>] blk_run_queue+0x2e/0x51
+ [<c06c7b30>] scsi_run_queue+0x28d/0x32b
+ [<c06c89b1>] scsi_next_command+0x3b/0x59
+ [<c06c9415>] scsi_io_completion+0x1de/0x3c1
+ [<c04768be>] ? trace_hardirqs_on+0x19/0x2c
+ [<c06c912e>] ? scsi_device_unbusy+0x97/0xaf
+ [<c06c258d>] scsi_finish_command+0xde/0xf7
+ [<c06c9722>] scsi_softirq_done+0xf9/0x112
+ [<c05eed28>] blk_done_softirq+0x74/0x93
+ [<c0452508>] __do_softirq+0xc8/0x192
+ [<c045261b>] do_softirq+0x49/0x7f
+ [<c045276f>] irq_exit+0x48/0x8c
+ [<c040c751>] do_IRQ+0x92/0xb7
+ [<c040b035>] common_interrupt+0x35/0x3c
+ [<c06704a9>] ? acpi_idle_enter_simple+0x11d/0x161
+ [<c06701d2>] acpi_idle_enter_bm+0xd2/0x28c
+ [<c076229a>] ? menu_select+0x48/0xc2
+ [<c07613c3>] cpuidle_idle_call+0x73/0xbc
+ [<c0409983>] cpu_idle+0xac/0xcd
+ [<c0813ec2>] rest_init+0x66/0x79
+ [<c0a86af8>] start_kernel+0x370/0x388
+ [<c0a86090>] i386_start_kernel+0x7f/0x98
 
