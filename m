@@ -1,93 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbZGGFP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZGGFRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbZGGFP2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 01:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbZGGFPR
+	id S1753711AbZGGFRT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 01:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbZGGFRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 01:15:17 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:53491 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750838AbZGGFPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 01:15:17 -0400
-Date: Tue, 7 Jul 2009 07:15:11 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: linux-kernel@vger.kernel.org, Vipin Bhandari <vipin.bhandari@ti.com>,
-       davinci-linux-open-source@linux.davincidsp.com
-Subject: Re: [PATCH v5] DaVinci: MMC: MMC/SD controller driver for DaVinci
- family.
-Message-ID: <20090707071511.51865306@mjolnir.ossman.eu>
-In-Reply-To: <871votjtfz.fsf@deeprootsystems.com>
-References: <1245757600-1073-1-git-send-email-vipin.bhandari@ti.com>
-	<871votjtfz.fsf@deeprootsystems.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-22748-1246943717-0001-2"
+	Tue, 7 Jul 2009 01:17:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53067 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbZGGFRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 01:17:06 -0400
+Message-ID: <4A52DA60.8040200@redhat.com>
+Date: Tue, 07 Jul 2009 08:17:20 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v9 5/5] KVM: create irqfd-cleanup-wq on demand
+References: <20090702153454.20186.99191.stgit@dev.haskins.net> <20090702153821.20186.9344.stgit@dev.haskins.net> <20090706155850.GA12399@redhat.com> <4A522050.7030200@novell.com> <20090706161444.GC12399@redhat.com> <4A52272A.2060101@novell.com> <20090706165045.GF12399@redhat.com> <4A524243.9020100@novell.com>
+In-Reply-To: <4A524243.9020100@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On 07/06/2009 09:28 PM, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+>    
+>> On Mon, Jul 06, 2009 at 12:32:42PM -0400, Gregory Haskins wrote:
+>>
+>>      
+>>> For the record, I would have rather just used my originally proposed
+>>> slow-work thread instead of all this ;)
+>>>
+>>>        
+>> Or just keep the idle thread around, it's not a big deal.
+>>
+>>
+>>      
+>
+> If everyone is fine with that, lets do that then.  It's certainly the
+> simplest solution to just drop this patch.
+>
+> Avi?
+>
+>    
 
---=_freyr.ossman.eu-22748-1246943717-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Sure.  If someone complains we can address it then.
 
-On Mon, 06 Jul 2009 16:13:52 -0700
-Kevin Hilman <khilman@deeprootsystems.com> wrote:
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-> Pierre,
->=20
-> Vipin Bhandari <vipin.bhandari@ti.com> writes:
->=20
-> > This patch adds support for MMC/SD controller driver for all DaVinci fa=
-mily
-> > SoC. This patch supports davinci family SoC's DM6446, DM355, DM365 and
-> > DA830/OMAPL137.
-> >
-> > The patch has been tested on DM355 EVM.
-> >
-> > The MMCSD controller specifications for DM355 can be found at
-> > http://focus.ti.com/general/docs/litabsmultiplefilelist.tsp?literatureN=
-umber=3Dspruee2c
-> >
-> > Signed-off-by: Vipin Bhandari <vipin.bhandari@ti.com>
-> > Signed-off-by: Purshotam Kumar <purushotam@ti.com>
-> > Acked-by: David Brownell <dbrownell@users.sourceforge.net>
->=20
-> I don't yet see this driver upstream (at least not in linux-next.)
-> Do you have this queued someplace? =20
->=20
-> There is one other DaVinci MMC update needed after this patch due to
-> some EDMA API changes in the DaVinci core which are queued for 2.6.32,
-> so if this is queued for .31 it can go as is.  If it is queued for .32,
-> the patch below should be folded in.
->    =20
-
-I haven't had time to look over this version yet, but the plan is to
-push it for .31.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-22748-1246943717-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkpS2eMACgkQ7b8eESbyJLiUVQCgtsvbpUAavjFp974c0KkN+0bj
-KbQAniMpYubglfSA4NLfBdReBc+sfeQ0
-=fKAt
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-22748-1246943717-0001-2--
