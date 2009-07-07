@@ -1,189 +1,305 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbZGGQmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759092AbZGGQmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758581AbZGGQmc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbZGGQli
+	id S1759092AbZGGQmU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 12:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbZGGQlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:41:38 -0400
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:40554
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755106AbZGGQlf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 7 Jul 2009 12:41:35 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:51840 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755225AbZGGQld (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 12:41:33 -0400
 X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KMF7OW-03-MPL-01
+X-BigFish: VPS3(zzzz1202hzzz32i43j67h)
+X-Spam-TCS-SCL: 6:0
+X-WSS-ID: 0KMF7OS-04-HX9-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <marcelo@kvack.org>
 CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 4/6] kvm/mmu: make page walker aware of mapping levels
-Date: Tue, 7 Jul 2009 18:41:05 +0200
-Message-ID: <1246984867-15952-5-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 3/6] kvm/mmu: make direct mapping paths aware of mapping levels
+Date: Tue, 7 Jul 2009 18:41:04 +0200
+Message-ID: <1246984867-15952-4-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1246984867-15952-1-git-send-email-joerg.roedel@amd.com>
 References: <1246984867-15952-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 07 Jul 2009 16:41:16.0428 (UTC) FILETIME=[BF3DECC0:01C9FF21]
+X-OriginalArrivalTime: 07 Jul 2009 16:41:16.0162 (UTC) FILETIME=[BF155620:01C9FF21]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The page walker may be used with nested paging too when accessing mmio
-areas.  Make it support the additional page-level too.
-
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/mmu.c         |   13 +++++++++++
- arch/x86/kvm/paging_tmpl.h |   52 +++++++++++++++++++++++--------------------
- 2 files changed, 41 insertions(+), 24 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    2 +-
+ arch/x86/kvm/mmu.c              |   74 ++++++++++++++++++++++----------------
+ arch/x86/kvm/paging_tmpl.h      |    6 ++--
+ 3 files changed, 47 insertions(+), 35 deletions(-)
 
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 30b625d..1fa1ff0 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -315,7 +315,7 @@ struct kvm_vcpu_arch {
+ 	struct {
+ 		gfn_t gfn;	/* presumed gfn during guest pte update */
+ 		pfn_t pfn;	/* pfn corresponding to that gfn */
+-		int largepage;
++		int level;
+ 		unsigned long mmu_seq;
+ 	} update_pte;
+ 
 diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index d42185a..ddee679 100644
+index 7de9f41..d42185a 100644
 --- a/arch/x86/kvm/mmu.c
 +++ b/arch/x86/kvm/mmu.c
-@@ -108,6 +108,9 @@ module_param(oos_shadow, bool, 0644);
- 
- #define PT32_LEVEL_MASK(level) \
- 		(((1ULL << PT32_LEVEL_BITS) - 1) << PT32_LEVEL_SHIFT(level))
-+#define PT32_LVL_OFFSET_MASK(level) \
-+	(PT32_BASE_ADDR_MASK & ((1ULL << (PAGE_SHIFT + (((level) - 1) \
-+						* PT32_LEVEL_BITS))) - 1))
- 
- #define PT32_INDEX(address, level)\
- 	(((address) >> PT32_LEVEL_SHIFT(level)) & ((1 << PT32_LEVEL_BITS) - 1))
-@@ -116,10 +119,19 @@ module_param(oos_shadow, bool, 0644);
- #define PT64_BASE_ADDR_MASK (((1ULL << 52) - 1) & ~(u64)(PAGE_SIZE-1))
- #define PT64_DIR_BASE_ADDR_MASK \
- 	(PT64_BASE_ADDR_MASK & ~((1ULL << (PAGE_SHIFT + PT64_LEVEL_BITS)) - 1))
-+#define PT64_LVL_ADDR_MASK(level) \
-+	(PT64_BASE_ADDR_MASK & ~((1ULL << (PAGE_SHIFT + (((level) - 1) \
-+						* PT64_LEVEL_BITS))) - 1))
-+#define PT64_LVL_OFFSET_MASK(level) \
-+	(PT64_BASE_ADDR_MASK & ((1ULL << (PAGE_SHIFT + (((level) - 1) \
-+						* PT64_LEVEL_BITS))) - 1))
- 
- #define PT32_BASE_ADDR_MASK PAGE_MASK
- #define PT32_DIR_BASE_ADDR_MASK \
- 	(PAGE_MASK & ~((1ULL << (PAGE_SHIFT + PT32_LEVEL_BITS)) - 1))
-+#define PT32_LVL_ADDR_MASK(level) \
-+	(PAGE_MASK & ~((1ULL << (PAGE_SHIFT + (((level) - 1) \
-+					    * PT32_LEVEL_BITS))) - 1))
- 
- #define PT64_PERM_MASK (PT_PRESENT_MASK | PT_WRITABLE_MASK | PT_USER_MASK \
- 			| PT64_NX_MASK)
-@@ -130,6 +142,7 @@ module_param(oos_shadow, bool, 0644);
- #define PFERR_RSVD_MASK (1U << 3)
- #define PFERR_FETCH_MASK (1U << 4)
- 
-+#define PT_PDPE_LEVEL 3
- #define PT_DIRECTORY_LEVEL 2
- #define PT_PAGE_TABLE_LEVEL 1
- 
-diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-index b167f0d..578276e 100644
---- a/arch/x86/kvm/paging_tmpl.h
-+++ b/arch/x86/kvm/paging_tmpl.h
-@@ -27,7 +27,8 @@
- 	#define guest_walker guest_walker64
- 	#define FNAME(name) paging##64_##name
- 	#define PT_BASE_ADDR_MASK PT64_BASE_ADDR_MASK
--	#define PT_DIR_BASE_ADDR_MASK PT64_DIR_BASE_ADDR_MASK
-+	#define PT_LVL_ADDR_MASK(lvl) PT64_LVL_ADDR_MASK(lvl)
-+	#define PT_LVL_OFFSET_MASK(lvl) PT64_LVL_OFFSET_MASK(lvl)
- 	#define PT_INDEX(addr, level) PT64_INDEX(addr, level)
- 	#define PT_LEVEL_MASK(level) PT64_LEVEL_MASK(level)
- 	#define PT_LEVEL_BITS PT64_LEVEL_BITS
-@@ -43,7 +44,8 @@
- 	#define guest_walker guest_walker32
- 	#define FNAME(name) paging##32_##name
- 	#define PT_BASE_ADDR_MASK PT32_BASE_ADDR_MASK
--	#define PT_DIR_BASE_ADDR_MASK PT32_DIR_BASE_ADDR_MASK
-+	#define PT_LVL_ADDR_MASK(lvl) PT32_LVL_ADDR_MASK(lvl)
-+	#define PT_LVL_OFFSET_MASK(lvl) PT32_LVL_OFFSET_MASK(lvl)
- 	#define PT_INDEX(addr, level) PT32_INDEX(addr, level)
- 	#define PT_LEVEL_MASK(level) PT32_LEVEL_MASK(level)
- 	#define PT_LEVEL_BITS PT32_LEVEL_BITS
-@@ -53,8 +55,8 @@
- 	#error Invalid PTTYPE value
- #endif
- 
--#define gpte_to_gfn FNAME(gpte_to_gfn)
--#define gpte_to_gfn_pde FNAME(gpte_to_gfn_pde)
-+#define gpte_to_gfn_lvl FNAME(gpte_to_gfn_lvl)
-+#define gpte_to_gfn(pte) gpte_to_gfn_lvl((pte), PT_PAGE_TABLE_LEVEL)
- 
- /*
-  * The guest_walker structure emulates the behavior of the hardware page
-@@ -71,14 +73,9 @@ struct guest_walker {
- 	u32 error_code;
- };
- 
--static gfn_t gpte_to_gfn(pt_element_t gpte)
-+static gfn_t gpte_to_gfn_lvl(pt_element_t gpte, int lvl)
+@@ -257,7 +257,7 @@ static int is_last_spte(u64 pte, int level)
  {
--	return (gpte & PT_BASE_ADDR_MASK) >> PAGE_SHIFT;
--}
--
--static gfn_t gpte_to_gfn_pde(pt_element_t gpte)
--{
--	return (gpte & PT_DIR_BASE_ADDR_MASK) >> PAGE_SHIFT;
-+	return (gpte & PT_LVL_ADDR_MASK(lvl)) >> PAGE_SHIFT;
+ 	if (level == PT_PAGE_TABLE_LEVEL)
+ 		return 1;
+-	if (level == PT_DIRECTORY_LEVEL && is_large_pte(pte))
++	if (is_large_pte(pte))
+ 		return 1;
+ 	return 0;
+ }
+@@ -746,7 +746,7 @@ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp)
+ static int kvm_handle_hva(struct kvm *kvm, unsigned long hva,
+ 			  int (*handler)(struct kvm *kvm, unsigned long *rmapp))
+ {
+-	int i;
++	int i, j;
+ 	int retval = 0;
+ 
+ 	/*
+@@ -765,11 +765,15 @@ static int kvm_handle_hva(struct kvm *kvm, unsigned long hva,
+ 		end = start + (memslot->npages << PAGE_SHIFT);
+ 		if (hva >= start && hva < end) {
+ 			gfn_t gfn_offset = (hva - start) >> PAGE_SHIFT;
+-			int idx = gfn_offset /
+-			          KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL);
++
+ 			retval |= handler(kvm, &memslot->rmap[gfn_offset]);
+-			retval |= handler(kvm,
+-					&memslot->lpage_info[0][idx].rmap_pde);
++
++			for (j = 0; j < KVM_NR_PAGE_SIZES - 1; ++j) {
++				int idx = gfn_offset;
++				idx /= KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL + j);
++				retval |= handler(kvm,
++					&memslot->lpage_info[j][idx].rmap_pde);
++			}
+ 		}
+ 	}
+ 
+@@ -1713,7 +1717,7 @@ static int mmu_need_write_protect(struct kvm_vcpu *vcpu, gfn_t gfn,
+ 
+ static int set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+ 		    unsigned pte_access, int user_fault,
+-		    int write_fault, int dirty, int largepage,
++		    int write_fault, int dirty, int level,
+ 		    gfn_t gfn, pfn_t pfn, bool speculative,
+ 		    bool can_unsync)
+ {
+@@ -1736,7 +1740,7 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+ 		spte |= shadow_nx_mask;
+ 	if (pte_access & ACC_USER_MASK)
+ 		spte |= shadow_user_mask;
+-	if (largepage)
++	if (level > PT_PAGE_TABLE_LEVEL)
+ 		spte |= PT_PAGE_SIZE_MASK;
+ 	if (tdp_enabled)
+ 		spte |= kvm_x86_ops->get_mt_mask(vcpu, gfn,
+@@ -1747,7 +1751,8 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+ 	if ((pte_access & ACC_WRITE_MASK)
+ 	    || (write_fault && !is_write_protection(vcpu) && !user_fault)) {
+ 
+-		if (largepage && has_wrprotected_page(vcpu->kvm, gfn, 1)) {
++		if (level > PT_PAGE_TABLE_LEVEL &&
++		    has_wrprotected_page(vcpu->kvm, gfn, level)) {
+ 			ret = 1;
+ 			spte = shadow_trap_nonpresent_pte;
+ 			goto set_pte;
+@@ -1785,7 +1790,7 @@ set_pte:
+ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+ 			 unsigned pt_access, unsigned pte_access,
+ 			 int user_fault, int write_fault, int dirty,
+-			 int *ptwrite, int largepage, gfn_t gfn,
++			 int *ptwrite, int level, gfn_t gfn,
+ 			 pfn_t pfn, bool speculative)
+ {
+ 	int was_rmapped = 0;
+@@ -1801,7 +1806,8 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+ 		 * If we overwrite a PTE page pointer with a 2MB PMD, unlink
+ 		 * the parent of the now unreachable PTE.
+ 		 */
+-		if (largepage && !is_large_pte(*sptep)) {
++		if (level > PT_PAGE_TABLE_LEVEL &&
++		    !is_large_pte(*sptep)) {
+ 			struct kvm_mmu_page *child;
+ 			u64 pte = *sptep;
+ 
+@@ -1814,8 +1820,9 @@ static void mmu_set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+ 		} else
+ 			was_rmapped = 1;
+ 	}
++
+ 	if (set_spte(vcpu, sptep, pte_access, user_fault, write_fault,
+-		      dirty, largepage, gfn, pfn, speculative, true)) {
++		      dirty, level, gfn, pfn, speculative, true)) {
+ 		if (write_fault)
+ 			*ptwrite = 1;
+ 		kvm_x86_ops->tlb_flush(vcpu);
+@@ -1851,7 +1858,7 @@ static void nonpaging_new_cr3(struct kvm_vcpu *vcpu)
  }
  
- static bool FNAME(cmpxchg_gpte)(struct kvm *kvm,
-@@ -189,18 +186,24 @@ walk:
+ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t v, int write,
+-			int largepage, gfn_t gfn, pfn_t pfn)
++			int level, gfn_t gfn, pfn_t pfn)
+ {
+ 	struct kvm_shadow_walk_iterator iterator;
+ 	struct kvm_mmu_page *sp;
+@@ -1859,11 +1866,10 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t v, int write,
+ 	gfn_t pseudo_gfn;
  
- 		walker->ptes[walker->level - 1] = pte;
- 
--		if (walker->level == PT_PAGE_TABLE_LEVEL) {
--			walker->gfn = gpte_to_gfn(pte);
--			break;
--		}
--
--		if (walker->level == PT_DIRECTORY_LEVEL
--		    && (pte & PT_PAGE_SIZE_MASK)
--		    && (PTTYPE == 64 || is_pse(vcpu))) {
--			walker->gfn = gpte_to_gfn_pde(pte);
--			walker->gfn += PT_INDEX(addr, PT_PAGE_TABLE_LEVEL);
--			if (PTTYPE == 32 && is_cpuid_PSE36())
-+		if ((walker->level == PT_PAGE_TABLE_LEVEL) ||
-+		    ((walker->level == PT_DIRECTORY_LEVEL) &&
-+				(pte & PT_PAGE_SIZE_MASK)  &&
-+				(PTTYPE == 64 || is_pse(vcpu))) ||
-+		    ((walker->level == PT_PDPE_LEVEL) &&
-+				(pte & PT_PAGE_SIZE_MASK)  &&
-+				is_long_mode(vcpu))) {
-+			int lvl = walker->level;
-+
-+			walker->gfn = gpte_to_gfn_lvl(pte, lvl);
-+			walker->gfn += (addr & PT_LVL_OFFSET_MASK(lvl))
-+					>> PAGE_SHIFT;
-+
-+			if (PTTYPE == 32 &&
-+			    walker->level == PT_DIRECTORY_LEVEL &&
-+			    is_cpuid_PSE36())
- 				walker->gfn += pse36_gfn_delta(pte);
-+
+ 	for_each_shadow_entry(vcpu, (u64)gfn << PAGE_SHIFT, iterator) {
+-		if (iterator.level == PT_PAGE_TABLE_LEVEL
+-		    || (largepage && iterator.level == PT_DIRECTORY_LEVEL)) {
++		if (iterator.level == level) {
+ 			mmu_set_spte(vcpu, iterator.sptep, ACC_ALL, ACC_ALL,
+ 				     0, write, 1, &pt_write,
+-				     largepage, gfn, pfn, false);
++				     level, gfn, pfn, false);
+ 			++vcpu->stat.pf_fixed;
  			break;
  		}
+@@ -1891,14 +1897,20 @@ static int __direct_map(struct kvm_vcpu *vcpu, gpa_t v, int write,
+ static int nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, int write, gfn_t gfn)
+ {
+ 	int r;
+-	int largepage = 0;
++	int level;
+ 	pfn_t pfn;
+ 	unsigned long mmu_seq;
  
-@@ -609,9 +612,10 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
- #undef PT_BASE_ADDR_MASK
- #undef PT_INDEX
- #undef PT_LEVEL_MASK
--#undef PT_DIR_BASE_ADDR_MASK
-+#undef PT_LVL_ADDR_MASK
-+#undef PT_LVL_OFFSET_MASK
- #undef PT_LEVEL_BITS
- #undef PT_MAX_FULL_LEVELS
- #undef gpte_to_gfn
--#undef gpte_to_gfn_pde
-+#undef gpte_to_gfn_lvl
- #undef CMPXCHG
+-	if (mapping_level(vcpu, gfn) == PT_DIRECTORY_LEVEL) {
+-		gfn &= ~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1);
+-		largepage = 1;
+-	}
++	level = mapping_level(vcpu, gfn);
++
++	/*
++	 * This path builds a PAE pagetable - so we can map 2mb pages at
++	 * maximum. Therefore check if the level is larger than that.
++	 */
++	if (level > PT_DIRECTORY_LEVEL)
++		level = PT_DIRECTORY_LEVEL;
++
++	gfn &= ~(KVM_PAGES_PER_HPAGE(level) - 1);
+ 
+ 	mmu_seq = vcpu->kvm->mmu_notifier_seq;
+ 	smp_rmb();
+@@ -1914,7 +1926,7 @@ static int nonpaging_map(struct kvm_vcpu *vcpu, gva_t v, int write, gfn_t gfn)
+ 	if (mmu_notifier_retry(vcpu, mmu_seq))
+ 		goto out_unlock;
+ 	kvm_mmu_free_some_pages(vcpu);
+-	r = __direct_map(vcpu, v, write, largepage, gfn, pfn);
++	r = __direct_map(vcpu, v, write, level, gfn, pfn);
+ 	spin_unlock(&vcpu->kvm->mmu_lock);
+ 
+ 
+@@ -2090,7 +2102,7 @@ static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa,
+ {
+ 	pfn_t pfn;
+ 	int r;
+-	int largepage = 0;
++	int level;
+ 	gfn_t gfn = gpa >> PAGE_SHIFT;
+ 	unsigned long mmu_seq;
+ 
+@@ -2101,10 +2113,10 @@ static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa,
+ 	if (r)
+ 		return r;
+ 
+-	if (mapping_level(vcpu, gfn) == PT_DIRECTORY_LEVEL) {
+-		gfn &= ~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1);
+-		largepage = 1;
+-	}
++	level = mapping_level(vcpu, gfn);
++
++	gfn &= ~(KVM_PAGES_PER_HPAGE(level) - 1);
++
+ 	mmu_seq = vcpu->kvm->mmu_notifier_seq;
+ 	smp_rmb();
+ 	pfn = gfn_to_pfn(vcpu->kvm, gfn);
+@@ -2117,7 +2129,7 @@ static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa,
+ 		goto out_unlock;
+ 	kvm_mmu_free_some_pages(vcpu);
+ 	r = __direct_map(vcpu, gpa, error_code & PFERR_WRITE_MASK,
+-			 largepage, gfn, pfn);
++			 level, gfn, pfn);
+ 	spin_unlock(&vcpu->kvm->mmu_lock);
+ 
+ 	return r;
+@@ -2424,7 +2436,7 @@ static void mmu_pte_write_new_pte(struct kvm_vcpu *vcpu,
+ 				  const void *new)
+ {
+ 	if (sp->role.level != PT_PAGE_TABLE_LEVEL) {
+-		if (!vcpu->arch.update_pte.largepage ||
++		if (vcpu->arch.update_pte.level == PT_PAGE_TABLE_LEVEL ||
+ 		    sp->role.glevels == PT32_ROOT_LEVEL) {
+ 			++vcpu->kvm->stat.mmu_pde_zapped;
+ 			return;
+@@ -2474,7 +2486,7 @@ static void mmu_guess_page_from_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
+ 	u64 gpte = 0;
+ 	pfn_t pfn;
+ 
+-	vcpu->arch.update_pte.largepage = 0;
++	vcpu->arch.update_pte.level = PT_PAGE_TABLE_LEVEL;
+ 
+ 	if (bytes != 4 && bytes != 8)
+ 		return;
+@@ -2506,7 +2518,7 @@ static void mmu_guess_page_from_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
+ 	if (is_large_pte(gpte) &&
+ 	    (mapping_level(vcpu, gfn) == PT_DIRECTORY_LEVEL)) {
+ 		gfn &= ~(KVM_PAGES_PER_HPAGE(PT_DIRECTORY_LEVEL) - 1);
+-		vcpu->arch.update_pte.largepage = 1;
++		vcpu->arch.update_pte.level = PT_DIRECTORY_LEVEL;
+ 	}
+ 	vcpu->arch.update_pte.mmu_seq = vcpu->kvm->mmu_notifier_seq;
+ 	smp_rmb();
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 44f0346..b167f0d 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -253,7 +253,7 @@ static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
+ 	pt_element_t gpte;
+ 	unsigned pte_access;
+ 	pfn_t pfn;
+-	int largepage = vcpu->arch.update_pte.largepage;
++	int level = vcpu->arch.update_pte.level;
+ 
+ 	gpte = *(const pt_element_t *)pte;
+ 	if (~gpte & (PT_PRESENT_MASK | PT_ACCESSED_MASK)) {
+@@ -272,7 +272,7 @@ static void FNAME(update_pte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *page,
+ 		return;
+ 	kvm_get_pfn(pfn);
+ 	mmu_set_spte(vcpu, spte, page->role.access, pte_access, 0, 0,
+-		     gpte & PT_DIRTY_MASK, NULL, largepage,
++		     gpte & PT_DIRTY_MASK, NULL, level,
+ 		     gpte_to_gfn(gpte), pfn, true);
+ }
+ 
+@@ -306,7 +306,7 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 				     gw->pte_access & access,
+ 				     user_fault, write_fault,
+ 				     gw->ptes[gw->level-1] & PT_DIRTY_MASK,
+-				     ptwrite, largepage,
++				     ptwrite, level,
+ 				     gw->gfn, pfn, false);
+ 			break;
+ 		}
 -- 
 1.6.3.3
 
