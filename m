@@ -1,47 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZGGPIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbZGGPKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbZGGPIO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:08:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbZGGPIA
+	id S1755128AbZGGPKn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZGGPKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:08:00 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40450 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754070AbZGGPH7 (ORCPT
+	Tue, 7 Jul 2009 11:10:35 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:37641 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753811AbZGGPKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:07:59 -0400
-Date: Tue, 7 Jul 2009 11:07:58 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
-Message-ID: <20090707150758.GA18075@infradead.org>
-References: <20090707144423.GC2714@wotan.suse.de> <20090707144823.GE2714@wotan.suse.de> <20090707145820.GA9976@infradead.org> <20090707150257.GG2714@wotan.suse.de>
+	Tue, 7 Jul 2009 11:10:34 -0400
+Date: Tue, 7 Jul 2009 11:10:33 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Jiri Kosina <jkosina@suse.cz>, "Michael S. Zick" <lkml@morethan.org>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: Null Pointer BUG in uhci_hcd
+In-Reply-To: <200907071608.11050.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0907071105561.4175-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090707150257.GG2714@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 05:02:57PM +0200, Nick Piggin wrote:
-> That's kind of why I liked it in inode_setattr better.
+On Tue, 7 Jul 2009, Oliver Neukum wrote:
+
+> Am Dienstag, 7. Juli 2009 11:13:01 schrieb Jiri Kosina:
+> > [ adding linux-usb to CC ]
+> >
+> > On Sun, 5 Jul 2009, Michael S. Zick wrote:
+> > > Anyone with suggestions about this one?
 > 
-> But if the filesystem defines its own ->setattr, then it could simply
-> not define a ->setsize and do the right thing in setattr. So this
-> calling convention seems not too bad.
+> Looks like we should test for presence before we switch off
+> autosuspend for khubd. Please test this diagnostic patch if this is
+> repeatable.
 
-Or the filesystem could just call into it's own setattr method
-internally.  For that we'd switch back to passing the iattr to
-->setsize.  For a filesystem that doesn't do anything special for
-ATTR_SIZE ->setsize could point to the same function as ->setattr.
+That patch won't fix the problem.  This issue is not that hdev is NULL; 
+the problem is that the hub driver isn't bound to hdev and as a result, 
+the hdev_to_hub routine fails.
 
-For filesystem where's it's really different they could be separate or
-share helpers.
+This patch may work better.
+
+Alan Stern
+
+
+Index: usb-2.6/drivers/usb/core/hub.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/core/hub.c
++++ usb-2.6/drivers/usb/core/hub.c
+@@ -163,8 +163,10 @@ static inline char *portspeed(int portst
+ }
+ 
+ /* Note that hdev or one of its children must be locked! */
+-static inline struct usb_hub *hdev_to_hub(struct usb_device *hdev)
++static struct usb_hub *hdev_to_hub(struct usb_device *hdev)
+ {
++	if (!hdev || !hdev->actconfig)
++		return NULL;
+ 	return usb_get_intfdata(hdev->actconfig->interface[0]);
+ }
+ 
+@@ -385,8 +387,10 @@ static void kick_khubd(struct usb_hub *h
+ 
+ void usb_kick_khubd(struct usb_device *hdev)
+ {
+-	/* FIXME: What if hdev isn't bound to the hub driver? */
+-	kick_khubd(hdev_to_hub(hdev));
++	struct usb_hub *hub = hdev_to_hub(hdev);
++
++	if (hub)
++		kick_khubd(hub);
+ }
+ 
+ 
 
