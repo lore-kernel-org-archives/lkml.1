@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZGGKrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbZGGKtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbZGGKrn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 06:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZGGKrc
+	id S1755300AbZGGKtW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 06:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZGGKtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 06:47:32 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:38695 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755360AbZGGKr0 (ORCPT
+	Tue, 7 Jul 2009 06:49:13 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49660 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbZGGKtM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 06:47:26 -0400
-Subject: [PATCH] Initialise the struct fb_info mutexes in clcdfb_register()
-To: Russell King <rmk+kernel@arm.linux.org.uk>
-From: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
-Date: Tue, 07 Jul 2009 11:47:23 +0100
-Message-ID: <20090707104723.4019.40616.stgit@pc1117.cambridge.arm.com>
-User-Agent: StGit/0.14.3.387.geb0c.dirty
+	Tue, 7 Jul 2009 06:49:12 -0400
+Date: Tue, 7 Jul 2009 06:49:14 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] [1/2] Optimization for touch_atime
+Message-ID: <20090707104914.GA23619@infradead.org>
+References: <20090706924.495556466@firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Jul 2009 10:47:23.0873 (UTC) FILETIME=[4FA72510:01C9FEF0]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090706924.495556466@firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 4148df9b0 moved the fb_info.lock and fb_info.mm_lock mutex
-initialisation from register_framebuffer() to framebuffer_alloc().
-However, the AMBA CLCD driver wraps the struct fb_info in the clcd_fb
-structure, the latter being allocated with kzalloc.
+On Mon, Jul 06, 2009 at 09:24:46PM +0200, Andi Kleen wrote:
+> 
+> Some benchmark testing shows touch_atime to be high up in profile
+> logs for IO intensive workloads. Most likely that's due to the lock
+> in mnt_want_write().  Unfortunately touch_atime first takes the lock,
+> and then does all the other tests that could avoid atime updates (like
+> noatime or relatime).
+> 
+> Do it the other way round -- first try to avoid the update and only
+> then if that didn't succeed take the lock. That works because none of
+> the atime avoidance tests rely on locking.
+> 
+> This also eliminates a goto.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Paul Mundt <lethal@linux-sh.org>
----
- drivers/video/amba-clcd.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
-index fb8163d..d5848aa 100644
---- a/drivers/video/amba-clcd.c
-+++ b/drivers/video/amba-clcd.c
-@@ -360,6 +360,9 @@ static int clcdfb_register(struct clcd_fb *fb)
- 		goto free_clk;
- 	}
- 
-+	mutex_init(&fb->fb.lock);
-+	mutex_init(&fb->fb.mm_lock);
-+
- 	fb->fb.fbops		= &clcdfb_ops;
- 	fb->fb.flags		= FBINFO_FLAG_DEFAULT;
- 	fb->fb.pseudo_palette	= fb->cmap;
-
+Looks good to me.
