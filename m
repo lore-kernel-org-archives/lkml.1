@@ -1,130 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbZGGV7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbZGGWFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758150AbZGGV7A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 17:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZGGV6u
+	id S1757725AbZGGWFy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 18:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbZGGWFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 17:58:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38594 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752868AbZGGV6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 17:58:49 -0400
-Message-ID: <4A53C59A.3060706@redhat.com>
-Date: Tue, 07 Jul 2009 18:00:58 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 7 Jul 2009 18:05:44 -0400
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:46102 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbZGGWFn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 18:05:43 -0400
+X-Greylist: delayed 528 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Jul 2009 18:05:42 EDT
+From: Martin Steigerwald <Martin@lichtvoll.de>
+To: tridge@samba.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+Date: Tue, 7 Jul 2009 23:56:39 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.29.6-tp42-toi-3.0.1-00977-gf7efeea; KDE/4.2.4; i686; ; )
+Cc: Jan Engelhardt <jengelh@medozas.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
+References: <19013.8005.541836.436991@samba.org> <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr> <19026.38137.63807.427511@samba.org> (sfid-20090707_090057_861375_E170999A)
+In-Reply-To: <19026.38137.63807.427511@samba.org>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH -tip -v10 7/7] tracing: add kprobe-based event tracer
-References: <20090701010838.32547.62843.stgit@localhost.localdomain> <20090701010923.32547.74203.stgit@localhost.localdomain> <20090707073103.GA6173@nowhere> <4A53A830.3000305@redhat.com> <20090707202008.GE6184@nowhere> <4A53B338.4060803@redhat.com> <20090707205851.GF6184@nowhere> <4A53BEAD.7030404@redhat.com> <20090707213447.GC7412@nowhere> <4A53C144.20807@redhat.com>
-In-Reply-To: <4A53C144.20807@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed;
+  boundary="nextPart1321891.0WTB64DvcK";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907072356.51553.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
->> On Tue, Jul 07, 2009 at 05:31:25PM -0400, Masami Hiramatsu wrote:
->>> Frederic Weisbecker wrote:
->>>> On Tue, Jul 07, 2009 at 04:42:32PM -0400, Masami Hiramatsu wrote:
->>>>> Frederic Weisbecker wrote:
->>>>>> On Tue, Jul 07, 2009 at 03:55:28PM -0400, Masami Hiramatsu wrote:
->>>>>>> Frederic Weisbecker wrote:
->>>>>>>>> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
->>>>>>>>> index 206cb7d..65945eb 100644
->>>>>>>>> --- a/kernel/trace/trace.h
->>>>>>>>> +++ b/kernel/trace/trace.h
->>>>>>>>> @@ -45,6 +45,8 @@ enum trace_type {
->>>>>>>>>  	TRACE_POWER,
->>>>>>>>>  	TRACE_BLK,
->>>>>>>>>  	TRACE_KSYM,
->>>>>>>>> +	TRACE_KPROBE,
->>>>>>>>> +	TRACE_KRETPROBE,
->>>>>>>>>  
->>>>>>>>>  	__TRACE_LAST_TYPE,
->>>>>>>>>  };
->>>>>>>>> @@ -227,6 +229,22 @@ struct trace_ksym {
->>>>>>>>>  	char			ksym_name[KSYM_NAME_LEN];
->>>>>>>>>  	char			p_name[TASK_COMM_LEN];
->>>>>>>>>  };
->>>>>>>>> +#define TRACE_KPROBE_ARGS 6
->>>>>>>>> +
->>>>>>>>> +struct kprobe_trace_entry {
->>>>>>>>> +	struct trace_entry	ent;
->>>>>>>>> +	unsigned long		ip;
->>>>>>>>> +	int			nargs;
->>>>>>>>> +	unsigned long		args[TRACE_KPROBE_ARGS];
->>>>>>>> I see that you actually make use of arg as a dynamic sizeable
->>>>>>>> array.
->>>>>>>> For clarity, args[TRACE_KPROBE_ARGS] could be args[0].
->>>>>>>>
->>>>>>>> It's just a neat and wouldn't affect the code nor the data
->>>>>>>> but would be clearer for readers of that code.
->>>>>>> Hmm. In that case, I think we'll need a new macro for field
->>>>>>> definition, like TRACE_FIELD_ZERO(type, item).
->>>>>> You mean that for trace_define_field() to describe fields of events?
->>>>>> Actually the fields should be defined dynamically depending on how
->>>>>> is built the kprobe event (which arguments are requested, how many,
->>>>>> etc..).
->>>>> Yeah, if you specified a probe point with its event name, the tracer
->>>>> will make a corresponding event dynamically. There are also anonymous
->>>>> probes which don't have corresponding events. For those anonymous
->>>>> probes, I need to define two generic event types(kprobe and kretprobe).
->>>>>
->>>>> Thank you,
->>>> Ok. Btw, why do you need to define those two anonymous events?
->>>> Actually your event types are always dynamically created.
->>>> Those you defined through TRACE_FORMAT_EVENT are only "ghost events",
->>>> they only stand there as a abstract pattern, right?
->>>>
->>> Not always created.
->>>
->>> Below command will create an event "event1";
->>> p probe_point:event1 a1 a2 a3 ... > /debug/tracing/kprobe_events
->>>
->>> But next command doesn't create.
->>> p probe_point a1 a2 a3 ... > /debug/tracing/kprobe_events
->>
->> Aah, ok.
->>
->>
->>> This just inserts a kprobe to probe_point. the advantage of this
->>> "simple" command is that you never be annoyed by making different
->>> name for new events :-)
->>
->> Indeed.
->> But speaking about that, may be you could dynamically create a name
->> following this simple model: func+offset
+--nextPart1321891.0WTB64DvcK
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-hmm, and we have two probe types, p(robe) and r(et probe).
-so, event name should be type@func+offset or type@address.
+Am Dienstag 07 Juli 2009 schrieb tridge@samba.org:
+> I've now done some experiments, and I have reproduced the problem you
+> saw. I've also experimented with changing the
+> vfat_build_dummy_83_buffer() to try some other combinations. I've
+> found that with a simple memset(msdos_name, ' ', 11) that Win98 works
+> pretty well:
+>
+>   http://picpaste.com/Win98-longnames.png
+>
+> It does show one error though. In the DOS box directory listing on the
+> left notice that it shows both a long name and a short name for the
+> files, with the long name being a truncated form of the short
+> name. The normal commands like xcopy, notepad etc all seem to work
+> fine though, so practical compatibility seems pretty good.
+>
+> The problem with that simple memset() approach with spaces is that it
+> would cause more crashes with WinXP. It does show that there might be
+> some other combination that works with both though. I'll play a bit
+> more and see what I can find.
+>
+>  > This dualnames patch just won't fly in practice.
+>
+> well, "won't fly" depends on your POV I guess. Unless we're hoping
+> that all the Microsoft lawyers take early retirement, I think we do
+> need to have some strategy to avoiding more companies having the same
+> problems that TomTom had.
 
->> Unless we can set several kprobes on the exact same address?
-> 
-> Actually, we can...
-> I thought that someone might want to insert events in the same
-> address for retrieving more than 6 arguments.
+=46ollowing this thread I get more and more the impression that this patch=
+=20
+is playing roulette regarding compatibility with countless devices which=20
+use fat/vfat, with different Windows versions and with countless Windows=20
+applications including but not limited to low level filesystem check,=20
+repair and cloning tools. And I start to get the impression that it=20
+becomes unmanageably complex to make a clear assessment on compatibility=20
+in all those circumstances. Thus I can't figure how a realistic assessment=
+=20
+on the impact of this patch could be made.
 
-Anyway, I can improve the interface according to user's voice.
-If you have good idea, I'm happy to hear that:-)
+Have low level filesystem check, repair and cloning tools been checked=20
+against the patch at all?
 
-Thank you,
+I think the patch actively *corrupts* perfectly fine shortname FAT=20
+filesystems and at least for certain use scenarios even those with long=20
+name support.
 
--- 
-Masami Hiramatsu
+Thus I would certainly not enable it unless forced too - already just for=20
+*technical* reasons. I probably would even default to compile my own=20
+kernel when I find that the distribution of my choice (Debian) would enable=
+=20
+it.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+Politically spoken I think the patch tries to workaround a problem that=20
+better is fixed properly and causes a precedence for other politically,=20
+juristically motivated patches. If the Linux kernel would be changed to=20
+avoid any software patent issues I am not sure whether it would even be=20
+able to boot anymore. As such I think the patch should not be part of=20
+vanilla kernels.
 
-e-mail: mhiramat@redhat.com
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
 
+--nextPart1321891.0WTB64DvcK
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpTxJgACgkQmRvqrKWZhMfsmQCdHxCG8ybEb62lnReuxu7ygNOX
++NoAmwR39iMrvQHXT1lmFTEvBF/KvqH0
+=VSfI
+-----END PGP SIGNATURE-----
+
+--nextPart1321891.0WTB64DvcK--
