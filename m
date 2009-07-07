@@ -1,261 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758600AbZGGQTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbZGGQTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758600AbZGGQTe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 12:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZGGQT0
+	id S1759065AbZGGQTz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 12:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbZGGQTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 12:19:26 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:36369 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754154AbZGGQTZ convert rfc822-to-8bit (ORCPT
+	Tue, 7 Jul 2009 12:19:46 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:54839 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753648AbZGGQTp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 12:19:25 -0400
-MIME-Version: 1.0
-Message-ID: <482d25af-01eb-4c2a-9b1d-bdaf4020ce88@default>
-Date: Tue, 7 Jul 2009 09:17:11 -0700 (PDT)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
+	Tue, 7 Jul 2009 12:19:45 -0400
+Date: Tue, 7 Jul 2009 12:19:33 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
 To: linux-kernel@vger.kernel.org
-Cc: npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
-       xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
-       alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org, kurt.hackel@oracle.com,
-       Rusty Russell <rusty@rustcorp.com.au>, Rik van Riel <riel@redhat.com>,
-       dave.mccracken@oracle.com, Marcelo Tosatti <mtosatti@redhat.com>,
-       sunil.mushran@oracle.com, Avi Kivity <avi@redhat.com>,
-       Schwidefsky <schwidefsky@de.ibm.com>, chris.mason@oracle.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
- 9.0.0.6627]
+Cc: akpm@linux-foundation.org, earl_chew@agilent.com, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, oleg@redhat.com
+Subject: Re: [PATCH 3/3] exec: Allow do_coredump to wait for user space
+	pipe readers to complete (v8)
+Message-ID: <20090707161933.GF28326@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090703104447.GA19371@hmsreliant.think-freely.org> <20090703105233.GD19371@hmsreliant.think-freely.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: abhmt006.oracle.com [141.146.116.15]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.4A537535.0144:SCFSTAT5015188,ss=1,fgs=0
+Content-Disposition: inline
+In-Reply-To: <20090703105233.GD19371@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tmem [PATCH 0/4] (Take 2): Transcendent memory
-Transcendent memory - Take 2
-Changes since take 1:
-1) Patches can be applied serially; function names in diff (Rik van Riel)
-2) Descriptions and diffstats for individual patches (Rik van Riel)
-3) Restructure of tmem_ops to be more Linux-like (Jeremy Fitzhardinge)
-4) Drop shared pools until security implications are understood (Pavel
-   Machek and Jeremy Fitzhardinge)
-5) Documentation/transcendent-memory.txt added including API description
-   (see also below for API description).
+Reposting for Oleg to Ack
 
-Signed-off-by: Dan Magenheimer <dan.magenheimer@oracle.com>
-
-Normal memory is directly addressable by the kernel, of a known
-normally-fixed size, synchronously accessible, and persistent (though
-not across a reboot).
-
-What if there was a class of memory that is of unknown and dynamically
-variable size, is addressable only indirectly by the kernel, can be
-configured either as persistent or as "ephemeral" (meaning it will be
-around for awhile, but might disappear without warning), and is still
-fast enough to be synchronously accessible?
-
-We call this latter class "transcendent memory" and it provides an
-interesting opportunity to more efficiently utilize RAM in a virtualized
-environment.  However this "memory but not really memory" may also have
-applications in NON-virtualized environments, such as hotplug-memory
-deletion, SSDs, and page cache compression.  Others have suggested ideas
-such as allowing use of highmem memory without a highmem kernel, or use
-of spare video memory.
-
-Transcendent memory, or "tmem" for short, provides a well-defined API to
-access this unusual class of memory.  (A summary of the API is provided
-below.)  The basic operations are page-copy-based and use a flexible
-object-oriented addressing mechanism.  Tmem assumes that some "privileged
-entity" is capable of executing tmem requests and storing pages of data;
-this entity is currently a hypervisor and operations are performed via
-hypercalls, but the entity could be a kernel policy, or perhaps a
-"memory node" in a cluster of blades connected by a high-speed
-interconnect such as hypertransport or QPI.
-
-Since tmem is not directly accessible and because page copying is done
-to/from physical pageframes, it more suitable for in-kernel memory needs
-than for userland applications.  However, there may be yet undiscovered
-userland possibilities.
-
-With the tmem concept outlined vaguely and its broader potential hinted,
-we will overview two existing examples of how tmem can be used by the
-kernel.
-
-"Precache" can be thought of as a page-granularity victim cache for clean
-pages that the kernel's pageframe replacement algorithm (PFRA) would like
-to keep around, but can't since there isn't enough memory.   So when the
-PFRA "evicts" a page, it first puts it into the precache via a call to
-tmem.  And any time a filesystem reads a page from disk, it first attempts
-to get the page from precache.  If it's there, a disk access is eliminated.
-If not, the filesystem just goes to the disk like normal.  Precache is
-"ephemeral" so whether a page is kept in precache (between the "put" and
-the "get") is dependent on a number of factors that are invisible to
-the kernel.
-
-"Preswap" IS persistent, but for various reasons may not always be
-available for use, again due to factors that may not be visible to the
-kernel (but, briefly, if the kernel is being "good" and has shared its
-resources nicely, then it will be able to use preswap, else it will not).
-Once a page is put, a get on the page will always succeed.  So when the
-kernel finds itself in a situation where it needs to swap out a page, it
-first attempts to use preswap.  If the put works, a disk write and
-(usually) a disk read are avoided.  If it doesn't, the page is written
-to swap as usual.  Unlike precache, whether a page is stored in preswap
-vs swap is recorded in kernel data structures, so when a page needs to
-be fetched, the kernel does a get if it is in preswap and reads from
-swap if it is not in preswap.
-
-Both precache and preswap may be optionally compressed, trading off 2x
-space reduction vs 10x performance for access.  Precache also has a
-sharing feature, which allows different nodes in a "virtual cluster"
-to share a local page cache.
-
-Tmem has some similarity to IBM's Collaborative Memory Management, but
-creates more of a partnership between the kernel and the "privileged
-entity" and is not very invasive.  Tmem may be applicable for KVM and
-containers; there is some disagreement on the extent of its value.
-Tmem is highly complementary to ballooning (aka page granularity hot
-plug) and memory deduplication (aka transparent content-based page
-sharing) but still has value when neither are present.
-
-Performance is difficult to quantify because some benchmarks respond
-very favorably to increases in memory and tmem may do quite well on
-those, depending on how much tmem is available which may vary widely
-and dynamically, depending on conditions completely outside of the
-system being measured.  Ideas on how best to provide useful metrics
-would be appreciated.
-
-Tmem is now supported in Xen's unstable tree (targeted for the Xen 3.5
-release) and in Xen's Linux 2.6.18-xen source tree.  Again, Xen is not
-necessarily a requirement, but currently provides the only existing
-implementation of tmem.
-
-Lots more information about tmem can be found at:
-http://oss.oracle.com/projects/tmem and there will be
-a talk about it on the first day of Linux Symposium in July 2009.
-Tmem is the result of a group effort, including Dan Magenheimer,
-Chris Mason, Dave McCracken, Kurt Hackel and Zhigang Wang, with helpful
-input from Jeremy Fitzhardinge, Keir Fraser, Ian Pratt, Sunil Mushran,
-Joel Becker, and Jan Beulich.
-
-THE TRANSCENDENT MEMORY API
-
-Transcendent memory is made up of a set of pools.  Each pool is made
-up of a set of objects.  And each object contains a set of pages.
-The combination of a 32-bit pool id, a 64-bit object id, and a 32-bit
-page id, uniquely identify a page of tmem data, and this tuple is called
-a "handle." Commonly, the three parts of a handle are used to address
-a filesystem, a file within that filesystem, and a page within that file;
-however an OS can use any values as long as they uniquely identify
-a page of data.
-
-When a tmem pool is created, it is given certain attributes: It can
-be private or shared, and it can be persistent or ephemeral.  Each
-combination of these attributes provides a different set of useful
-functionality and also defines a slightly different set of semantics
-for the various operations on the pool.  Other pool attributes include
-the size of the page and a version number.
-
-Once a pool is created, operations are performed on the pool.  Pages
-are copied between the OS and tmem and are addressed using a handle.
-Pages and/or objects may also be flushed from the pool.  When all
-operations are completed, a pool can be destroyed.
-
-The specific tmem functions are called in Linux through a set of 
-accessor functions:
-
-int (*new_pool)(struct tmem_pool_uuid uuid, u32 flags);
-int (*destroy_pool)(u32 pool_id);
-int (*put_page)(u32 pool_id, u64 object, u32 index, unsigned long pfn);
-int (*get_page)(u32 pool_id, u64 object, u32 index, unsigned long pfn);
-int (*flush_page)(u32 pool_id, u64 object, u32 index);
-int (*flush_object)(u32 pool_id, u64 object);
-
-The new_pool accessor creates a new pool and returns a pool id
-which is a non-negative 32-bit integer.  If the flags parameter
-specifies that the pool is to be shared, the uuid is a 128-bit "shared
-secret" else it is ignored.  The destroy_pool accessor destroys the pool.
-(Note: shared pools are not supported until security implications
-are better understood.)
-
-The put_page accessor copies a page of data from the specified pageframe
-and associates it with the specified handle.
-
-The get_page accessor looks up a page of data in tmem associated with
-the specified handle and, if found, copies it to the specified pageframe.
-
-The flush_page accessor ensures that subsequent gets of a page with
-the specified handle will fail.  The flush_object accessor ensures
-that subsequent gets of any page matching the pool id and object
-will fail.
-
-There are many subtle but critical behaviors for get_page and put_page:
-- Any put_page (with one notable exception) may be rejected and the client
-  must be prepared to deal with that failure.  A put_page copies, NOT moves,
-  data; that is the data exists in both places.  Linux is responsible for
-  destroying or overwriting its own copy, or alternately managing any
-  coherency between the copies.
-- Every page successfully put to a persistent pool must be found by a
-  subsequent get_page that specifies the same handle.  A page successfully
-  put to an ephemeral pool has an indeterminate lifetime and even an
-  immediately subsequent get_page may fail.
-- A get_page to a private pool is destructive, that is it behaves as if
-  the get_page were atomically followed by a flush_page.  A get_page
-  to a shared pool is non-destructive.  A flush_page behaves just like
-  a get_page to a private pool except the data is thrown away.
-- Put-put-get coherency is guaranteed.  For example, after the sequence:
-        put_page(ABC,D1);
-        put_page(ABC,D2);
-        get_page(ABC,E)
-  E may never contain the data from D1.  However, even for a persistent
-  pool, the get_page may fail if the second put_page indicates failure.
-- Get-get coherency is guaranteed.  For example, in the sequence:
-        put_page(ABC,D);
-        get_page(ABC,E1);
-        get_page(ABC,E2)
-  if the first get_page fails, the second must also fail.
-- A tmem implementation provides no serialization guarantees (e.g. to
-  an SMP Linux).  So if different Linux threads are putting and flushing
-  the same page, the results are indeterminate.
-  guaranteed and must be synchronized by Linux.
-
-Changed core kernel files:
- fs/buffer.c                              |    5 +
- fs/ext3/super.c                          |    2 
- fs/mpage.c                               |    8 ++
- fs/super.c                               |    5 +
- include/linux/fs.h                       |    7 ++
- include/linux/swap.h                     |   57 +++++++++++++++++++++
- include/linux/sysctl.h                   |    1 
- kernel/sysctl.c                          |   12 ++++
- mm/Kconfig                               |   26 +++++++++
- mm/Makefile                              |    3 +
- mm/filemap.c                             |   11 ++++
- mm/page_io.c                             |   12 ++++
- mm/swapfile.c                            |   46 ++++++++++++++--
- mm/truncate.c                            |   10 +++
- 14 files changed, 199 insertions(+), 6 deletions(-)
-
-Newly added core kernel files:
- Documentation/transcendent-memory.txt    |  175 +++++++++++++
- include/linux/tmem.h                     |   88 ++++++
- mm/precache.c                            |  134 ++++++++++
- mm/preswap.c                             |  273 +++++++++++++++++++++
- 4 files changed, 670 insertions(+)
-
-Changed xen-specific files:
- arch/x86/include/asm/xen/hypercall.h     |    8 +++
- drivers/xen/Makefile                     |    1 
- include/xen/interface/tmem.h             |   43 +++++++++++++++++++++
- include/xen/interface/xen.h              |   22 ++++++++++
- 4 files changed, 74 insertions(+)
-
-Newly added xen-specific files:
- drivers/xen/tmem.c                       |   97 +++++++++++++++++++++
- include/xen/interface/tmem.h             |   43 +++++++++
- 2 files changed, 140 insertions(+)
+On Fri, Jul 03, 2009 at 06:52:33AM -0400, Neil Horman wrote:
+> core_pattern: Allow core_pattern pipes to wait for user space to complete
+> 
+> One of the things that user space processes like to do is look at metadata for a
+> crashing process in their /proc/<pid> directory.  this is racy however, since
+> do_coredump in the kernel doesn't wait for the user space process to complete
+> before it reaps the crashing process.  This patch corrects that.  Allowing the
+> kernel to wait for the user space process to complete before cleaning up the
+> crashing process.  This is a bit tricky to do for a few reasons:
+> 
+> 1) The user space process isn't our child, so we can't sys_wait4 on it
+> 2) We need to close the pipe before waiting for the user process to complete,
+> since the user process may rely on an EOF condition
+> 
+> I've discussed several solutions with Oleg Nesterov off-list about this, and
+> this is the one we've come up with. We add ourselves as a pipe reader (to
+> prevent premature cleanup of the pipe_inode_info), and remove ourselves as a
+> writer (to provide an EOF condition to the writer in user space), then we
+> iterate until the user space process exits (which we detect by pipe->readers ==
+> 1, hence the > 1 check in the loop).  When we exit the loop, we restore the
+> proper reader/writer values, then we return and let filp_close in do_coredump
+> clean up the pipe data properly.
+> 
+> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> Reported-by: Earl Chew <earl_chew@agilent.com>
+> 
+> 
+>  exec.c |   26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+> 
+> diff --git a/fs/exec.c b/fs/exec.c
+> index 93ab6eb..6b3579e 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -55,6 +55,7 @@
+>  #include <linux/kmod.h>
+>  #include <linux/fsnotify.h>
+>  #include <linux/fs_struct.h>
+> +#include <linux/pipe_fs_i.h>
+>  
+>  #include <asm/uaccess.h>
+>  #include <asm/mmu_context.h>
+> @@ -1711,6 +1712,29 @@ int get_dumpable(struct mm_struct *mm)
+>  	return (ret >= 2) ? 2 : ret;
+>  }
+>  
+> +static void wait_for_dump_helpers(struct file *file)
+> +{
+> +	struct pipe_inode_info *pipe;
+> + 
+> +	pipe = file->f_path.dentry->d_inode->i_pipe;
+> + 
+> +	pipe_lock(pipe);
+> +	pipe->readers++;
+> +	pipe->writers--;
+> +
+> +	while ((pipe->readers > 1) && (!signal_pending(current))) {
+> +		wake_up_interruptible_sync(&pipe->wait);
+> +		kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
+> +		pipe_wait(pipe);
+> +	}
+> + 
+> +	pipe->readers--;
+> +	pipe->writers++;
+> +	pipe_unlock(pipe);
+> + 
+> +}
+> + 
+> +
+>  void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  {
+>  	struct core_state core_state;
+> @@ -1862,6 +1886,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  		current->signal->group_exit_code |= 0x80;
+>  
+>  close_fail:
+> +	if (ispipe && core_pipe_limit)
+> +		wait_for_dump_helpers(file);
+>  	filp_close(file, NULL);
+>  fail_dropcount:
+>  	if (dump_count)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
