@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZGGNa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZGGNaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbZGGNa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZGGNaO
+	id S1755568AbZGGNaq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756895AbZGGNaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:30:14 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:53986 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753175AbZGGNaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:30:13 -0400
-Message-ID: <4A534DD0.7090606@novell.com>
-Date: Tue, 07 Jul 2009 09:29:52 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: linux-kernel@vger.kernel.org, mst@redhat.com, swhiteho@redhat.com
-Subject: Re: [PATCH v4] slow-work: add (module*)work->ops->owner to fix races
- with module clients
-References: <20090629191653.14240.44995.stgit@dev.haskins.net> <15258.1246972893@redhat.com>
-In-Reply-To: <15258.1246972893@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigEB8E3B2C78092FE886DD7728"
+	Tue, 7 Jul 2009 09:30:21 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50724 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755828AbZGGNaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 09:30:16 -0400
+Date: Tue, 7 Jul 2009 15:30:14 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [rfc][patch 3/3] fs: convert ext2,tmpfs to new truncate
+Message-ID: <20090707133014.GA2714@wotan.suse.de>
+References: <20090706165438.GQ2714@wotan.suse.de> <20090706165629.GS2714@wotan.suse.de> <4A533559.90303@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A533559.90303@panasas.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigEB8E3B2C78092FE886DD7728
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jul 07, 2009 at 02:45:29PM +0300, Boaz Harrosh wrote:
+> On 07/06/2009 07:56 PM, Nick Piggin wrote:
+> > Convert filemap_xip.c, buffer.c, and some filesystems to the new truncate
+> > convention. Converting generic helpers is using some ugly code (testing
+> > for i_op->ftruncate) to distinguish new and old callers... better
+> > alternative might be just define a new function for these guys.
+> > @@ -770,13 +793,22 @@ ext2_nobh_write_begin(struct file *file,
+> >  		loff_t pos, unsigned len, unsigned flags,
+> >  		struct page **pagep, void **fsdata)
+> >  {
+> > +	int ret;
+> > +
+> >  	/*
+> >  	 * Dir-in-pagecache still uses ext2_write_begin. Would have to rework
+> >  	 * directory handling code to pass around offsets rather than struct
+> >  	 * pages in order to make this work easily.
+> >  	 */
+> > -	return nobh_write_begin(file, mapping, pos, len, flags, pagep, fsdata,
+> > +	ret = nobh_write_begin(file, mapping, pos, len, flags, pagep, fsdata,
+> >  							ext2_get_block);
+> > +	if (ret < 0) {
+> > +		loff_t isize;
+> > +		isize = i_size_read(inode);
+> 
+> Unlike the other places you use i_size_read() here, please explain what is the
+> locking rules for this?
+> 
+> Did your patchset change things in this regard?
 
-David Howells wrote:
-> Gregory Haskins <ghaskins@novell.com> wrote:
->
->  =20
->> +	struct module *owner =3D work->ops->owner;
->> +
->> +	work->ops->put_ref(work);
->> +	module_put(owner);
->>    =20
->
-> Hmmm...  There needs to be an smp_mb() between the read of the module o=
-wner
-> and the call to put_ref(), lest the CPU reorder things...  However, if
-> put_ref(), say, calls atomic_dec_and_test(), then inserting one here wo=
-uld be
-> superfluous.
->
-> I think documenting this will be enough - perhaps something like:
->
->  (*) Release a reference on an item:
->
-> 	void (*put_ref)(struct slow_work *work);
->
->      This allows the thread pool to unpin an item by releasing the refe=
-rence on
->      it.  The thread pool will not touch the item again once this has b=
-een
->      called.
->
->      This function must interpolate a general SMP memory barrier before=
- freeing
->      or re-using the work struct as the caller may have read the module=
-
->      pointer.  Implying a barrier with something like atomic_dec_and_te=
-st() is
->      sufficient.
->
-> Do you agree?
->
-> David
->  =20
-Hi David,
-  I agree, and think that looks good.  If you want to just fold that
-into the patch or something, feel free.  Conversely, if you would like
-me to submit a new patch, let me know.
-
-Regards,
--Greg
+i_mutex should protect i_size. I was doing a bit of cutting and pasting
+so it probably isn't perfect. I'll double check.
 
 
---------------enigEB8E3B2C78092FE886DD7728
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpTTdYACgkQlOSOBdgZUxn2lACdHulWmVJJ0FpvJR021lqkV6Fd
-euYAmwQAeoulzMvnlkHRnO3sg2DHq+e6
-=/HhC
------END PGP SIGNATURE-----
-
---------------enigEB8E3B2C78092FE886DD7728--
