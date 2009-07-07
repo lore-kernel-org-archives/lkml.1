@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbZGGUJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbZGGULF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758664AbZGGUJW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 16:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbZGGUJP
+	id S1758641AbZGGULF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 16:11:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756658AbZGGUKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 16:09:15 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:35012 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756928AbZGGUJO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 16:09:14 -0400
+	Tue, 7 Jul 2009 16:10:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36012 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751793AbZGGUKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 16:10:54 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>, Len Brown <lenb@kernel.org>
+Subject: Re: [Bug #13389] Warning 'Invalid throttling state, reset' gets displayed when it should not be
+Date: Tue, 7 Jul 2009 22:11:08 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       rui.zhang@intel.com
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera> <bXZeuxPQAWE.A.BN.NBpUKB@chimera> <200907072119.59171.elendil@planet.nl>
+In-Reply-To: <200907072119.59171.elendil@planet.nl>
 MIME-Version: 1.0
-Message-ID: <8422d908-c9e9-4497-82b7-a8532a66fd22@default>
-Date: Tue, 7 Jul 2009 13:07:44 -0700 (PDT)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, akpm@osdl.org,
-       jeremy@goop.org, xen-devel@lists.xensource.com,
-       tmem-devel@oss.oracle.com, alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org,
-       kurt.hackel@oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
-       dave.mccracken@oracle.com, Marcelo Tosatti <mtosatti@redhat.com>,
-       sunil.mushran@oracle.com, Avi Kivity <avi@redhat.com>,
-       Schwidefsky <schwidefsky@de.ibm.com>, chris.mason@oracle.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: RE: [RFC PATCH 1/4] (Take 2): tmem: Core API between kernel and tmem
-In-Reply-To: <4A538A34.7060101@redhat.com>
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
- 9.0.0.6627]
-Content-Type: text/plain; charset=Windows-1252
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: abhmt006.oracle.com [141.146.116.15]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.4A53AB3D.0266:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907072211.08609.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Rik van Riel [mailto:riel@redhat.com]
-> Subject: Re: [RFC PATCH 1/4] (Take 2): tmem: Core API between 
+On Tuesday 07 July 2009, Frans Pop wrote:
+> On Tuesday 07 July 2009, Rafael J. Wysocki wrote:
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> > be listed and let me know (either way).
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13389
+> > Subject	: Warning 'Invalid throttling state, reset' gets displayed when
+> >		  it should not be 
+> > Submitter	: Frans Pop <elendil@planet.nl> 
+> > Date		: 2009-05-26 15:24 (42 days old)
+> > Handled-By	: Frans Pop <elendil@planet.nl>
+> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=21671
+> > 		  http://bugzilla.kernel.org/attachment.cgi?id=21672
 > 
-> Dan Magenheimer wrote:
-> > Tmem [PATCH 1/4] (Take 2): Core API between kernel and tmem
-> 
-> I like the cleanup of your patch series.
+> I still have not received any reaction from the ACPI maintainers to the 
+> bug or the proposed patches.
 
-Thanks much, but credit goes to Jeremy for suggesting this
-very clean tmem_ops interface.
- 
-> However, what remains is a fair bit of code.
+Sorry for that.
 
-Yes, though much of the LOC is for clean layering and
-readability.  (Nearly half of the patch is now comments.)
+Len, what do you think of the patches listed above?
 
-> It would be good to have performance numbers before
-> deciding whether or not to merge all this code.
-
-On one benchmark that I will be presenting at Linux Symposium
-(8 dual-VCPU guests with 384MB of initial memory and doing
-self-ballooning to constrain memory, each guest compiling
-Linux continually; quad-core-dual-thread Nehalem processor
-with 4GB physical RAM) I am seeing savings of ~300 IO/sec
-at an approximate cost of 0.1%-0.2% of one CPU.  But
-I admit much more benchmarking needs to be done.
-
-Thanks,
-Dan
-
+Rafael
