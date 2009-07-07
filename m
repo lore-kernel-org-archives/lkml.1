@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbZGGN60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbZGGN7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbZGGN60 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZGGN6Q
+	id S1757895AbZGGN7x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbZGGN7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:58:16 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:45852 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754791AbZGGN6P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:58:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=V24v7UZHH9wkVKwQpaSMzDAr+o0MDmOmQSdAUJL/tlbvRHs2wpXBSKyavHDAhR5yq8
-         qObJ9TUmmIOfAZIbyIl90xqj4qgo9vvAV+Fb/dllR5gtM/dJmytIzQDE6ifBWIAedxW4
-         zZM/Ffb1Rdzj/4NIkGpRlm8QEntDY6gSER68E=
-Date: Tue, 7 Jul 2009 15:57:42 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Andres Freund <andres@anarazel.de>
-Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
-	possibly?caused by netem)
-Message-ID: <20090707135742.GB6798@ami.dom.local>
-References: <200907031326.21822.andres@anarazel.de> <200907071522.06812.andres@anarazel.de> <20090707132937.GA6798@ami.dom.local> <200907071534.07619.andres@anarazel.de>
+	Tue, 7 Jul 2009 09:59:44 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44317 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756392AbZGGN7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 09:59:43 -0400
+Message-ID: <4A535496.1070801@garzik.org>
+Date: Tue, 07 Jul 2009 09:58:46 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907071534.07619.andres@anarazel.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Benny Halevy <bhalevy@panasas.com>
+CC: Boaz Harrosh <bharrosh@panasas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       open-osd mailing-list <osd-dev@open-osd.org>
+Subject: Re: [osd-dev] [GIT PULL] exofs/osd tree for 2.6.31
+References: <4A3F45D5.4020600@panasas.com> <4A41F458.2050409@panasas.com> <4A522E57.7060101@panasas.com>
+In-Reply-To: <4A522E57.7060101@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 03:34:07PM +0200, Andres Freund wrote:
-...
-> Testing wether its triggerable inside a vm might be interesting...
+Benny Halevy wrote:
+> Sorry for nagging.
+> Is this going to be merged in 2.6.31 or wait for 2.6.32?
+> Anything we can do to help it not fall between the cracks next time?
 
-Probably similarly to testing without this patch or even less. Maybe
-I should've warned you but this type of bugs in -rc with possible
-memory or stack overwrites might be fatal for your data (at least).
+I guess Boaz just needs to resubmit the push to Linus?
 
-Jarek P.
+His reply was probably not as clear as a regenerated pull request.
+
+	Jeff
+
+
+
