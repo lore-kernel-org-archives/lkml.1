@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbZGGOvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758437AbZGGOxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbZGGOvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 10:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758820AbZGGOvI
+	id S1758437AbZGGOxX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 10:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZGGOxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 10:51:08 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:35083 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758220AbZGGOvH (ORCPT
+	Tue, 7 Jul 2009 10:53:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47423 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754524AbZGGOxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 10:51:07 -0400
-From: John Stoffel <john@stoffel.org>
-To: linux-scsi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, John Stoffel <john@stoffel.org>
-Subject: [PATCH] Make SCSI SG v4 driver enabled by default now since udev depends on it.
-Date: Tue,  7 Jul 2009 10:50:55 -0400
-Message-Id: <1246978255-19407-1-git-send-email-john@stoffel.org>
-X-Mailer: git-send-email 1.6.3.3
+	Tue, 7 Jul 2009 10:53:14 -0400
+Date: Tue, 7 Jul 2009 10:53:13 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [rfc][patch 2/4] fs: use new truncate helpers
+Message-ID: <20090707145313.GB3762@infradead.org>
+References: <20090707144423.GC2714@wotan.suse.de> <20090707144600.GD2714@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090707144600.GD2714@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: John Stoffel <john@stoffel.org>
----
- block/Kconfig |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+On Tue, Jul 07, 2009 at 04:46:00PM +0200, Nick Piggin wrote:
+> 
+> Update some fs code to make use of new helper functions introduced
+> in the previous patch. Should be no significant change in behaviour
+> (except CIFS now calls send_sig under i_lock, via inode_newsize_ok).
 
-diff --git a/block/Kconfig b/block/Kconfig
-index e7d1278..22bf6eb 100644
---- a/block/Kconfig
-+++ b/block/Kconfig
-@@ -46,8 +46,8 @@ config LBD
- 
- config BLK_DEV_BSG
- 	bool "Block layer SG support v4 (EXPERIMENTAL)"
--	depends on EXPERIMENTAL
--	---help---
-+	default y
-+	help
- 	  Saying Y here will enable generic SG (SCSI generic) v4 support
- 	  for any block device.
- 
-@@ -57,7 +57,7 @@ config BLK_DEV_BSG
- 	  protocols (e.g. Task Management Functions and SMP in Serial
- 	  Attached SCSI).
- 
--	  If unsure, say N.
-+	  If unsure, say Y.
- 
- config BLK_DEV_INTEGRITY
- 	bool "Block layer data integrity support"
--- 
-1.6.3.3
+Looks good to me,
 
+
+Reviewed-by: Christoph Hellwig <hch@lst.de>
