@@ -1,71 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbZGGPGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbZGGPHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbZGGPGF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 11:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZGGPFy
+	id S1755346AbZGGPHW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 11:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZGGPHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 11:05:54 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:1248
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752977AbZGGPFx (ORCPT
+	Tue, 7 Jul 2009 11:07:10 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:60290 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752977AbZGGPHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 11:05:53 -0400
-Message-ID: <4A53644E.2090205@panasas.com>
-Date: Tue, 07 Jul 2009 18:05:50 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: John Stoffel <john@stoffel.org>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <Jens.Axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH] Make SCSI SG v4 driver enabled by default now since udev
- depends on it.
-References: <1246978255-19407-1-git-send-email-john@stoffel.org>
-In-Reply-To: <1246978255-19407-1-git-send-email-john@stoffel.org>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 7 Jul 2009 11:07:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtkEAM//UkpMQWU3/2dsb2JhbACBUc0ehBMFgTo
+Date: Tue, 7 Jul 2009 11:04:06 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com,
+       davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090707150406.GC7124@Krystal>
+References: <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com> <20090703092438.GE3902@elte.hu> <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com> <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com> <20090707140135.GA5506@Krystal> <20090707143416.GB11704@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Jul 2009 15:05:53.0036 (UTC) FILETIME=[6BD59CC0:01C9FF14]
+Content-Disposition: inline
+In-Reply-To: <20090707143416.GB11704@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:57:19 up 129 days, 11:23,  3 users,  load average: 0.27, 0.74,
+	0.99
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/07/2009 05:50 PM, John Stoffel wrote:
-> Signed-off-by: John Stoffel <john@stoffel.org>
-> ---
->  block/Kconfig |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+* Oleg Nesterov (oleg@redhat.com) wrote:
+> On 07/07, Mathieu Desnoyers wrote:
+> >
+> > As with any optimization (and this is one that adds a semantic that will
+> > just grow the memory barrier/locking rule complexity), it should come
+> > with performance benchmarks showing real-life improvements.
 > 
-> diff --git a/block/Kconfig b/block/Kconfig
-> index e7d1278..22bf6eb 100644
-> --- a/block/Kconfig
-> +++ b/block/Kconfig
-> @@ -46,8 +46,8 @@ config LBD
->  
->  config BLK_DEV_BSG
->  	bool "Block layer SG support v4 (EXPERIMENTAL)"
+> Well, the same applies to smp_mb__xxx_atomic_yyy or smp_mb__before_clear_bit.
+> 
+> Imho the new helper is not worse, and it could be also used by
+> try_to_wake_up(), __pollwake(), insert_work() at least.
 
-Please also remove the (EXPERIMENTAL) from the prompt as well
+It's basically related to Amdahl law. If the smp_mb is a small portion
+of the overall read_lock cost, then it may not be worth it to remove it.
+At the contrary, if the mb is a big portion of set/clear bit, then it's
+worth it. We also have to consider the frequency at which these
+operations are done to figure out the overall performance impact.
+Also, locks imply cache-line bouncing, which are typically costly.
+clear/set bit does not imply this as much. So the tradeoffs are very
+different there.
 
-> -	depends on EXPERIMENTAL
-> -	---help---
-> +	default y
-> +	help
->  	  Saying Y here will enable generic SG (SCSI generic) v4 support
->  	  for any block device.
->  
-> @@ -57,7 +57,7 @@ config BLK_DEV_BSG
->  	  protocols (e.g. Task Management Functions and SMP in Serial
->  	  Attached SCSI).
->  
-> -	  If unsure, say N.
-> +	  If unsure, say Y.
->  
->  config BLK_DEV_INTEGRITY
->  	bool "Block layer data integrity support"
+So it's not as simple as "we do this for set/clear bit, we should
+therefore do this for locks".
 
-Thanks I needed that too.
+> 
+> > Otherwise I'd recommend sticking to smp_mb() if this execution path is
+> > not that critical, or to move to RCU if it's _that_ critical.
+> >
+> > A valid argument would be if the data structures protected are so
+> > complex that RCU is out of question but still the few cycles saved by
+> > removing a memory barrier are really significant.
+> 
+> Not sure I understand how RCU can help,
+> 
 
-BTW distro(s) have been shipping with it on for ages
+Changing a read_lock to a rcu_read_lock would save the whole atomic
+cache-line bouncing operation on that fast path. But it may imply data
+structure redesign. So it is more for future development than current
+kernel releases.
 
-Boaz
+> > And even then, the
+> > proper solution would be more something like a
+> > __read_lock()+smp_mb+smp_mb+__read_unlock(), so we get the performance
+> > improvements on architectures other than x86 as well.
+> 
+> Hmm. could you explain what you mean?
+> 
+
+Actually, thinking about it more, to appropriately support x86, as well
+as powerpc, arm and mips, we would need something like:
+
+read_lock_smp_mb()
+
+Which would be a read_lock with an included memory barrier.
+
+Mathieu
+
+
+> Oleg.
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
