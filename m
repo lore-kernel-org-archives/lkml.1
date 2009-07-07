@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbZGGBwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbZGGByY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755778AbZGGBwP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Jul 2009 21:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZGGBwA
+	id S1755938AbZGGByY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Jul 2009 21:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZGGByR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Jul 2009 21:52:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34828 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbZGGBv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Jul 2009 21:51:59 -0400
-Date: Mon, 6 Jul 2009 21:51:15 -0400
-From: Dave Jones <davej@redhat.com>
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: cpufreq cleanups - .30 vs .31
-Message-ID: <20090707015115.GB5310@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Thomas Renninger <trenn@suse.de>, linux-kernel@vger.kernel.org,
-	cpufreq@vger.kernel.org, kernel-testers@vger.kernel.org,
-	Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Dave Young <hidave.darkstar@gmail.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-References: <200907061318.20839.trenn@suse.de>
+	Mon, 6 Jul 2009 21:54:17 -0400
+Received: from mail-pz0-f193.google.com ([209.85.222.193]:36910 "EHLO
+	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753664AbZGGByQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Jul 2009 21:54:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=f58bdGr7PRXvfRTuGx4dpPts93NLfemSaxFQi3bgAA1nsM6nOypmlxq6D6ko4ffdQe
+         cLmUhBWnkh2ZUgqP/d7dVFgugEOGHAnmoIl8hmqD+Kd9yo4sPicgOB3GwTYQCt1rpUa0
+         ObsMYmClErG6oBpg2wO5oQ4zcfg49Phx7fzEY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907061318.20839.trenn@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <200906301538.44684.arnd@arndb.de>
+References: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com>
+	 <200906301448.55064.arnd@arndb.de>
+	 <20090630140945.0784e174@lxorguk.ukuu.org.uk>
+	 <200906301538.44684.arnd@arndb.de>
+Date: Tue, 7 Jul 2009 09:54:20 +0800
+Message-ID: <d82e647a0907061854l7d862191w1a9aa667eca7abb5@mail.gmail.com>
+Subject: Re: [PATCH][RFC] asm-generic:remove calling flush_write_buffers() in 
+	dma_sync_*_for_cpu
+From: Ming Lei <tom.leiming@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Joerg Roedel <joerg.roedel@amd.com>,
+       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Russell King <rmk@arm.linux.org.uk>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 01:18:18PM +0200, Thomas Renninger wrote:
+2009/6/30 Arnd Bergmann <arnd@arndb.de>:
+> On Tuesday 30 June 2009, Alan Cox wrote:
+> Well, not even that. dma-mapping-common.h only makes sense on architectures
+> that have multiple dma-mapping implementations (parisc, mips, arm, powerpc,
 
- > So if not find too intrusive, I'd say:
- > Venkatesh's whole series of:
- > [patch 0/4] Take care of cpufreq lockdep issues (take 2)
- > should be seen in .31.
- >  ...
- > The one patch from Mathieu:
- > [patch 2.6.30 2/4] CPUFREQ: fix (utter) cpufreq_add_dev mess
- > is a separate, general cleanup which should show up in .31.
+It seems that there is only one dma-mmaping implementation on ARM, doesn't it?
+Is it necessary that using dma-mapping-common.h on ARM?
 
-I came to the same conclusion after reading the thread, and looking
-over the patches.  I merged the above, and sent Linus a pull request
-a few minutes ago.
+> sparc, ia64 and x86, possibly alpha). All others including frv only need a
+> nommu case anyway and would not use dma-mapping-common.h but could be
+> changed to use something like the dma-mapping-linear.h I worked on recently.
 
-Thanks Mathieu and Venki for chasing this down.
 
-	Dave
+
+
+-- 
+Lei Ming
