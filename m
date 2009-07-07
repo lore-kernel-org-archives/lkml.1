@@ -1,44 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757086AbZGGGNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbZGGGVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757086AbZGGGNT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 02:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbZGGGNJ
+	id S1755613AbZGGGVV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 02:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZGGGVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 02:13:09 -0400
-Received: from a.mx.secunet.com ([213.68.205.161]:35899 "EHLO a.mx.secunet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbZGGGNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 02:13:08 -0400
-X-Greylist: delayed 933 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Jul 2009 02:13:08 EDT
-Date: Tue, 7 Jul 2009 08:15:48 +0200
-From: Steffen Klassert <steffen.klassert@secunet.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Huang Ying <ying.huang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [RFC 7/7] crypto: Add PCLMULQDQ accelerated GHASH
-	implementation
-Message-ID: <20090707061548.GB20288@secunet.com>
-References: <20090621135121.GA3153@gondor.apana.org.au> <1246937512.5282.99.camel@yhuang-dev.sh.intel.com> <20090707034548.GA28075@gondor.apana.org.au> <20090707040232.GA28257@gondor.apana.org.au> <20090707040341.GA28303@gondor.apana.org.au> <20090707060015.GA20288@secunet.com> <20090707060003.GA28886@gondor.apana.org.au>
+	Tue, 7 Jul 2009 02:21:08 -0400
+Received: from mail00a.mail.t-online.hu ([84.2.40.5]:54678 "EHLO
+	mail00a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbZGGGVH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 02:21:07 -0400
+Message-ID: <4A52E897.8000607@freemail.hu>
+Date: Tue, 07 Jul 2009 08:17:59 +0200
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090707060003.GA28886@gondor.apana.org.au>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 07 Jul 2009 06:13:11.0116 (UTC) FILETIME=[010BA8C0:01C9FECA]
+To: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Jean-Francois Moine <moinejf@free.fr>, linux-media@vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] v4l2: modify the webcam video standard handling
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail00a.mail.t-online.hu 32710; Body=4 Fuz1=4
+	Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 02:00:03PM +0800, Herbert Xu wrote:
-> 
-> Sure, maybe I could take some of your code as is.  My plan for
-> hmac is to first convert it to shash, then convert the users to
-> ahash, and finally convert hmac itself to ahash.
-> 
-> This way we don't have to convert all the users and hmac in one
-> go.
-> 
+From: Márton Németh <nm127@freemail.hu>
 
-I see. authenc is already converted, yesterday I started to look into
-ah4/ah6 ipsec. I'll post my hmac version to linux-crypto.
+Change the handling of the case when vdev->tvnorms == 0.
+
+>From V4L2 API specification, rev. 0.24 [1]:
+> Special rules apply to USB cameras where the notion of video
+> standards makes little sense. More generally any capture device,
+> output devices accordingly, which is
+>
+> * incapable of capturing fields or frames at the nominal rate
+>   of the video standard, or
+> * where timestamps refer to the instant the field or frame was
+>   received by the driver, not the capture time, or
+> * where sequence numbers refer to the frames received by the
+>   driver, not the captured frames.
+>
+> Here the driver shall set the std field of struct v4l2_input
+> and struct v4l2_output to zero, the VIDIOC_G_STD, VIDIOC_S_STD,
+> VIDIOC_QUERYSTD and VIDIOC_ENUMSTD ioctls shall return the
+> EINVAL error code.
+
+The changeset was tested together with v4l-test 0.16 [2] with
+gspca_sunplus driver together with Trust 610 LCD POWERC@M ZOOM.
+
+References:
+[1] V4L2 API specification, revision 0.24
+    http://v4l2spec.bytesex.org/spec/x448.htm
+
+[2] v4l-test: Test environment for Video For Linux Two API
+    http://v4l-test.sourceforge.net/
+
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+diff -upr linux-2.6.31-rc1.orig/drivers/media/video/v4l2-dev.c linux-2.6.31-rc1/drivers/media/video/v4l2-dev.c
+--- linux-2.6.31-rc1.orig/drivers/media/video/v4l2-dev.c	2009-06-25 01:25:37.000000000 +0200
++++ linux-2.6.31-rc1/drivers/media/video/v4l2-dev.c	2009-07-06 07:48:13.000000000 +0200
+@@ -397,6 +397,11 @@ int video_register_device_index(struct v
+ 	if (!vdev->release)
+ 		return -EINVAL;
+
++	/* if no video standards are supported then no need to get and set
++	   them: they will never be called */
++	WARN_ON(!vdev->tvnorms && vdev->ioctl_ops->vidioc_g_std);
++	WARN_ON(!vdev->tvnorms && vdev->ioctl_ops->vidioc_s_std);
++
+ 	/* Part 1: check device type */
+ 	switch (type) {
+ 	case VFL_TYPE_GRABBER:
+diff -upr linux-2.6.31-rc1.orig/drivers/media/video/v4l2-ioctl.c linux-2.6.31-rc1/drivers/media/video/v4l2-ioctl.c
+--- linux-2.6.31-rc1.orig/drivers/media/video/v4l2-ioctl.c	2009-06-25 01:25:37.000000000 +0200
++++ linux-2.6.31-rc1/drivers/media/video/v4l2-ioctl.c	2009-07-06 07:41:23.000000000 +0200
+@@ -1077,12 +1077,15 @@ static long __video_do_ioctl(struct file
+ 	{
+ 		v4l2_std_id *id = arg;
+
+-		ret = 0;
+-		/* Calls the specific handler */
+-		if (ops->vidioc_g_std)
+-			ret = ops->vidioc_g_std(file, fh, id);
+-		else
+-			*id = vfd->current_norm;
++		/* Check if any standard is supported */
++		if (vfd->tvnorms) {
++			ret = 0;
++			/* Calls the specific handler */
++			if (ops->vidioc_g_std)
++				ret = ops->vidioc_g_std(file, fh, id);
++			else
++				*id = vfd->current_norm;
++		}
+
+ 		if (!ret)
+ 			dbgarg(cmd, "std=0x%08Lx\n", (long long unsigned)*id);
+@@ -1095,7 +1098,7 @@ static long __video_do_ioctl(struct file
+ 		dbgarg(cmd, "std=%08Lx\n", (long long unsigned)*id);
+
+ 		norm = (*id) & vfd->tvnorms;
+-		if (vfd->tvnorms && !norm)	/* Check if std is supported */
++		if (!norm)	/* Check if std is supported */
+ 			break;
+
+ 		/* Calls the specific handler */
