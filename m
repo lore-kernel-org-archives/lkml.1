@@ -1,167 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbZGGNq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbZGGNvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757148AbZGGNq7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 09:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757546AbZGGNqk
+	id S1757427AbZGGNvq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 09:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbZGGNvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 09:46:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41297 "EHLO mx2.redhat.com"
+	Tue, 7 Jul 2009 09:51:39 -0400
+Received: from mga03.intel.com ([143.182.124.21]:17612 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756774AbZGGNqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 09:46:38 -0400
-Date: Tue, 7 Jul 2009 15:46:01 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com>
-References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com> <20090703092438.GE3902@elte.hu> <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com>
+	id S1755261AbZGGNvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 09:51:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,362,1243839600"; 
+   d="scan'208";a="162315947"
+Date: Tue, 7 Jul 2009 21:51:26 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 4/5] add isolate pages vmstat
+Message-ID: <20090707135125.GA9444@localhost>
+References: <20090707090120.1e71a060.minchan.kim@barrios-desktop> <20090707090509.0C60.A69D9226@jp.fujitsu.com> <20090707101855.0C63.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090707101855.0C63.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 12:18:16PM +0200, Jiri Olsa wrote:
-> On Fri, Jul 03, 2009 at 01:18:48PM +0200, Jiri Olsa wrote:
-> > On Fri, Jul 03, 2009 at 12:25:30PM +0200, Ingo Molnar wrote:
+On Tue, Jul 07, 2009 at 09:19:53AM +0800, KOSAKI Motohiro wrote:
+> > > > Index: b/mm/vmscan.c
+> > > > ===================================================================
+> > > > --- a/mm/vmscan.c
+> > > > +++ b/mm/vmscan.c
+> > > > @@ -1082,6 +1082,7 @@ static unsigned long shrink_inactive_lis
+> > > >  						-count[LRU_ACTIVE_ANON]);
+> > > >  		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
+> > > >  						-count[LRU_INACTIVE_ANON]);
+> > > > +		__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, nr_taken);
 > > > 
-> > > * Jiri Olsa <jolsa@redhat.com> wrote:
-> > > 
-> > > > On Fri, Jul 03, 2009 at 11:24:38AM +0200, Ingo Molnar wrote:
-> > > > > 
-> > > > > * Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> > > > > 
-> > > > > > Ingo Molnar a écrit :
-> > > > > > > * Jiri Olsa <jolsa@redhat.com> wrote:
-> > > > > > > 
-> > > > > > >> +++ b/arch/x86/include/asm/spinlock.h
-> > > > > > >> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
-> > > > > > >>  #define _raw_read_relax(lock)	cpu_relax()
-> > > > > > >>  #define _raw_write_relax(lock)	cpu_relax()
-> > > > > > >>  
-> > > > > > >> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-> > > > > > >> +#define smp_mb__after_lock() do { } while (0)
-> > > > > > > 
-> > > > > > > Two small stylistic comments, please make this an inline function:
-> > > > > > > 
-> > > > > > > static inline void smp_mb__after_lock(void) { }
-> > > > > > > #define smp_mb__after_lock
-> > > > > > > 
-> > > > > > > (untested)
-> > > > > > > 
-> > > > > > >> +/* The lock does not imply full memory barrier. */
-> > > > > > >> +#ifndef smp_mb__after_lock
-> > > > > > >> +#define smp_mb__after_lock() smp_mb()
-> > > > > > >> +#endif
-> > > > > > > 
-> > > > > > > ditto.
-> > > > > > > 
-> > > > > > > 	Ingo
-> > > > > > 
-> > > > > > This was following existing implementations of various smp_mb__??? helpers :
-> > > > > > 
-> > > > > > # grep -4 smp_mb__before_clear_bit include/asm-generic/bitops.h
-> > > > > > 
-> > > > > > /*
-> > > > > >  * clear_bit may not imply a memory barrier
-> > > > > >  */
-> > > > > > #ifndef smp_mb__before_clear_bit
-> > > > > > #define smp_mb__before_clear_bit()      smp_mb()
-> > > > > > #define smp_mb__after_clear_bit()       smp_mb()
-> > > > > > #endif
-> > > > > 
-> > > > > Did i mention that those should be fixed too? :-)
-> > > > > 
-> > > > > 	Ingo
-> > > > 
-> > > > ok, could I include it in the 2/2 or you prefer separate patch?
-> > > 
-> > > depends on whether it will regress ;-)
-> > > 
-> > > If it regresses, it's better to have it separate. If it wont, it can 
-> > > be included. If unsure, default to the more conservative option.
-> > > 
-> > > 	Ingo
+> > > Lumpy can reclaim file + anon anywhere.  
+> > > How about using count[NR_LRU_LISTS]?
 > > 
-> > 
-> > how about this.. 
-> > and similar change for smp_mb__before_clear_bit in a separate patch
-> > 
-> > 
-> > diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-> > index b7e5db8..4e77853 100644
-> > --- a/arch/x86/include/asm/spinlock.h
-> > +++ b/arch/x86/include/asm/spinlock.h
-> > @@ -302,4 +302,8 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
-> >  #define _raw_read_relax(lock)	cpu_relax()
-> >  #define _raw_write_relax(lock)	cpu_relax()
-> >  
-> > +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-> > +static inline void smp_mb__after_lock(void) { }
-> > +#define ARCH_HAS_SMP_MB_AFTER_LOCK
-> > +
-> >  #endif /* _ASM_X86_SPINLOCK_H */
-> > diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-> > index 252b245..4be57ab 100644
-> > --- a/include/linux/spinlock.h
-> > +++ b/include/linux/spinlock.h
-> > @@ -132,6 +132,11 @@ do {								\
-> >  #endif /*__raw_spin_is_contended*/
-> >  #endif
-> >  
-> > +/* The lock does not imply full memory barrier. */
-> > +#ifndef ARCH_HAS_SMP_MB_AFTER_LOCK
-> > +static inline void smp_mb__after_lock(void) { smp_mb(); }
-> > +#endif
-> > +
-> >  /**
-> >   * spin_unlock_wait - wait until the spinlock gets unlocked
-> >   * @lock: the spinlock in question.
-> > diff --git a/include/net/sock.h b/include/net/sock.h
-> > index 4eb8409..98afcd9 100644
-> > --- a/include/net/sock.h
-> > +++ b/include/net/sock.h
-> > @@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
-> >   * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
-> >   * could then endup calling schedule and sleep forever if there are no more
-> >   * data on the socket.
-> > + *
-> > + * The sk_has_helper is always called right after a call to read_lock, so we
-> > + * can use smp_mb__after_lock barrier.
-> >   */
-> >  static inline int sk_has_sleeper(struct sock *sk)
-> >  {
-> > @@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
-> >  	 *
-> >  	 * This memory barrier is paired in the sock_poll_wait.
-> >  	 */
-> > -	smp_mb();
-> > +	smp_mb__after_lock();
-> >  	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
-> >  }
-> >  
+> > Ah yes, good catch.
 > 
-> any feedback on this? 
-> I'd send v6 if this way is acceptable..
+> Fixed.
 > 
-> thanks,
-> jirka
+> Subject: [PATCH] add isolate pages vmstat
+> 
+> If the system have plenty threads or processes, concurrent reclaim can
+> isolate very much pages.
+> Unfortunately, current /proc/meminfo and OOM log can't show it.
+> 
+> This patch provide the way of showing this information.
 
-also I checked the smp_mb__before_clear_bit/smp_mb__after_clear_bit and
-it is used quite extensivelly.
+Acked-by: Wu Fengguang <fengguang.wu@intel.com>
 
-I'd prefer to send it in a separate patch, so we can move on with the 
-changes I've sent so far..
+>  	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
+> -		" inactive_file:%lu"
+> -		" unevictable:%lu"
+> +		" inactive_file:%lu unevictable:%lu\n"
+> +		" isolated_anon:%lu isolated_file:%lu\n"
 
-regards,
-jirka
+How about 
+        active_anon inactive_anon isolated_anon
+        active_file inactive_file isolated_file
+?
+
+Thanks,
+Fengguang
