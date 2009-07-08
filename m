@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbZGHUHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759135AbZGHUIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167AbZGHUHw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 16:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbZGHUHp
+	id S1759135AbZGHUIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 16:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbZGHUIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 16:07:45 -0400
+	Wed, 8 Jul 2009 16:08:12 -0400
 Received: from mail-fx0-f218.google.com ([209.85.220.218]:46649 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755829AbZGHUHo (ORCPT
+	with ESMTP id S1754869AbZGHUIL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 16:07:44 -0400
+	Wed, 8 Jul 2009 16:08:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Lh7FviCD/jjWjWPaB0BEWCtehGCKtbBe91reddygP5emQxdCMS+nJG6LusmiAMPR3M
-         JVVGyq+6LqMXvuAVsM4JfBzhwl3XK+MiSCHIJ724iVneemnv8zc7xQf+UB8UgcRch0W2
-         3YTh9FPcIfWIrIiSeov10ULMBmkjMm6mgMZ08=
-Date: Thu, 9 Jul 2009 00:07:41 +0400
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip] x86,apic -- don't forget to disconnect BSP discrete
-	apic
-Message-ID: <20090708200741.GI5301@lenovo>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=V8p05fNDl0h4UecwhwvKwx4RW+5KfQjE3p4FRBAVB49MexSWeb1lgf9my84Q5aCFQa
+         okPQ+KvIrkIiE5X/4bCZFS/4OYLcotl6XvEz3OKgoTSjNOdEaot/sK0pxyLAyjUYeSgP
+         Wk8b2ma/+8RT5wqueBMcRRpq613/pzU+k/bnA=
+Message-ID: <4A54FC6B.7000003@gmail.com>
+Date: Wed, 08 Jul 2009 22:07:07 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] staging/rt3070: add support for Linksys WUSB54GC-EU v3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In case of discrete APIC cpu_has_apic could be not set.
-This leads to disconnect_bsp_APIC is not called where
-it should.
+According to FCC (*1) and *2 there's really RT2070L inside, but according
+to *2 RT3070 and RT2070 are compatible.
 
-Tested-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+*1 https://fjallfoss.fcc.gov/oetcf/eas/reports/ViewExhibitReport.cfm?mode=Exhibits&RequestTimeout=500&calledFromFrame=N&application_id=327783&fcc_id=%27Q87-WUSB54GCV3%27
+(look for "Internal Photos")
+*2 http://rt2x00.serialmonkey.com/phpBB/viewtopic.php?f=5&t=5245
+
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 ---
+ drivers/staging/rt2870/rt2870.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Please review.
-
- arch/x86/kernel/apic/io_apic.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-@@ -2002,7 +2002,7 @@ void disable_IO_APIC(void)
- 	/*
- 	 * Use virtual wire A mode when interrupt remapping is enabled.
- 	 */
--	if (cpu_has_apic)
-+	if (cpu_has_apic || smp_found_config)
- 		disconnect_bsp_APIC(!intr_remapping_enabled &&
- 				ioapic_i8259.pin != -1);
+diff --git a/drivers/staging/rt2870/rt2870.h b/drivers/staging/rt2870/rt2870.h
+index 5e5b3f2..9679ccb 100644
+--- a/drivers/staging/rt2870/rt2870.h
++++ b/drivers/staging/rt2870/rt2870.h
+@@ -215,6 +215,7 @@
+ 	{USB_DEVICE(0x0789,0x0163)}, /* Logitec 2870 */		\
+ 	{USB_DEVICE(0x0789,0x0164)}, /* Logitec 2870 */		\
+ 	{USB_DEVICE(0x1EDA,0x2310)}, /* AirTies 3070 */		\
++	{USB_DEVICE(0x1737,0x0077)}, /* Linksys WUSB54GC-EU v3 */	\
+ 	{ }/* Terminating entry */                      \
  }
+ #endif
+-- 
+1.6.3.3
+
