@@ -1,188 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbZGHTBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbZGHTNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756513AbZGHTBe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 15:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZGHTBZ
+	id S1757505AbZGHTNP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 15:13:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbZGHTNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 15:01:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41919 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754302AbZGHTBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 15:01:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [RFC][PATCH] PM: Introduce core framework for run-time PM of I/O devices (rev. 8)
-Date: Wed, 8 Jul 2009 21:01:28 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-References: <200907060252.12755.rjw@sisk.pl> <200907080007.38595.rjw@sisk.pl> <aec7e5c30907072245i63b632f4r9a2b7ae0d819b446@mail.gmail.com>
-In-Reply-To: <aec7e5c30907072245i63b632f4r9a2b7ae0d819b446@mail.gmail.com>
+	Wed, 8 Jul 2009 15:13:09 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:37009 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754282AbZGHTNH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 15:13:07 -0400
+Date: Wed, 8 Jul 2009 15:12:38 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, rjw@sisk.pl, jack@suse.cz
+Subject: Re: [PATCH] Fix congestion_wait() sync/async vs read/write
+	confusion
+Message-ID: <20090708191238.GE18008@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+	rjw@sisk.pl, jack@suse.cz
+References: <20090708184703.GW23611@kernel.dk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907082101.29387.rjw@sisk.pl>
+In-Reply-To: <20090708184703.GW23611@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.4A54EFA9.003E:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 July 2009, Magnus Damm wrote:
-> On Wed, Jul 8, 2009 at 7:07 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > On Tuesday 07 July 2009, Magnus Damm wrote:
-> >> On Mon, Jul 6, 2009 at 9:52 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> >> > Hi,
-> >> >
-> >> > There's a rev. 8 of the run-time PM framework patch.
+On Wed, Jul 08, 2009 at 08:47:03PM +0200, Jens Axboe wrote:
+> Hi,
 > 
-> >> All good with the code above, but there seem to be some issue with how
-> >> usage_count is counted up and down and when runtime_disabled is set:
-> >>
-> >> 1. pm_runtime_init(): usage_count = 1, runtime_disabled = true
-> >> 2. driver_probe_device(): pm_runtime_get_sync()
-> >> 3. pm_runtime_get_sync(): usage_count = 2
-> >> 4. device driver probe(): pm_runtime_enable()
-> >> 5. pm_runtime_enable(): usage_count = 1
-> >> 6. driver_probe_device(): pm_runtime_put()
-> >> 7. pm_runtime_put(): usage_count = 0
-> >>
-> >> I expect runtime_disabled = false in 7. Modifying the get/put calls to
-> >> do enable/disable may work around the issue, but that's probably not
-> >> what you guys want.
-> >
-> > Sure, that's my mistake.  I should have used a separate counter for
-> > disable/enable, but I thought usage_counter would be sufficient.  Will fix.
+> This one isn't great, we currently have broken congestion wait logic in
+> the kernel. 2.6.30 is impacted as well, so this patch should go to
+> stable too once it's in -git. I'll let this one simmer until tomorrow,
+> then ask Linus to pull it. The offending commit breaking this is
+> 1faa16d22877f4839bd433547d770c676d1d964c.
 > 
-> Thank you. No problem.
-> 
-> >> Issue 2:
-> >> ------------
-> >> I cannot get any bus ->runtime_resume() callbacks from probe(). This
-> >> also seems related to usage_count and pm_runtime_get_sync() in
-> >> driver_probe_device(). Basically, from probe(), calling
-> >> pm_runtime_resume() after pm_runtime_set_suspended() results in error
-> >> and not in a ->runtime_resume() callback. Some device drives access
-> >> hardware in probe(), so the ->runtime_resume() callback is needed at
-> >> that point to turn on clocks before the hardware can be accessed.
-> >
-> > I think the problem is that pm_runtime_get_sync() in driver_probe_device()
-> > calls ->runtime_resume(), so the device is active from the core's point of
-> > view when you call pm_runtime_resume() from probe().
-> >
-> > Hmm.  OK, perhaps we should just increment usage_count in
-> > driver_device_probe() to prevent suspends from happening at that time, without
-> > calling ->runtime_resume() so that the driver can do it by itself.  I'll do
-> > that in the next version.
-> 
-> Sounds good.
-> 
-> >> Random thought:
-> >> -------------------------
-> >> The runtime_pm_get() and runtime_pm_put() look very nice. I assume
-> >> that inteface is supposed to be used by bus code. I wonder if it would
-> >> be cleaner to use a similar counter based interface from the driver
-> >> instead of the pm_runtime_idle()/suspend()/resume()...
-> >>
-> >> Let me know what you think!
-> >
-> > In fact I thought drivers could also use pm_runtime_[get|put]() and the 'sync'
-> > versions.  At least, I don't see why not at the moment (well, I'm a bit tired
-> > right now ...).
-> 
-> I think that's a nicer interface, but I must figure out how to use
-> ->runtime_idle before I can switch to that...
-> 
-> > However, I'm now thinking it should work like this:
-> >
-> > * pm_runtime_get() increments usage_count and if it was zero before the
-> >  incrementation, it calls pm_request_resume() (pm_runtime_resume() is called
-> >  by the 'sync' version).
-> >
-> > * pm_runtime_put() decrements usage_count and if it's zero after the
-> >  decrementation, it calls pm_request_idle() (pm_runtime_idle() is called by
-> >  the 'sync' version).
-> >
-> > * The 'suspend' callbacks won't succeed for usage_count > 0.
-> >
-> > This way we would avoid calling the 'suspend' and 'idle' functions each time
-> > unnecessarily, but then usage_count would have to be modified under the
-> > spinlock only.
-> 
-> If all usage_count users are moved under the spinlock then there would
-> be no need for atomic operations, right?
-> 
-> This get()/put() interface is interesting.
-> 
-> So I'd like to tie in two levels of power management in our runtime PM
-> implementation. The most simple level is clock stopping, and I can do
-> that using the bus callbacks ->runtime_suspend() and
-> ->runtime_resume() with v8. The driver runtime callbacks are never
-> invoked for clock stopping.
-> 
-> On top of the clock stopping I'd like to turn off power to the domain.
-> So if all clocks are stopped to the devices within a domain, then I'd
-> like to call the per-device ->runtime_suspend() callbacks provided by
-> the drivers.
->
-> I wonder how to fit these two levels of power management into the
-> runtime PM in a nice way. My first attempts simply made use of
-> pm_runtime_resume() and pm_runtime_suspend(), but I'd like to move to
-> get()/put() if possible. But for that to work I need to implement
-> ->runtime_idle() in my bus code, and I wonder if the current runtime
-> PM idle behaviour is a good fit.
-> 
-> Below is how I'd like to make use of the runtime PM code. I'm not sure
-> if it's compatible with your view. =)
-> 
-> Drivers call pm_runtime_get_sync() and pm_runtime_put() before and
-> after using the hardware. The runtime PM code invokes the bus
-> ->runtime_idle() callback ASAP (of course depending on put() or
-> put_sync(), but no timer). The bus->runtime_idle() callback stops the
-> clock and decreases the power domain usage count. If the power domain
-> is unused, then the pm_schedule_suspend() is called for each of the
-> devices in the power domain. This in turn will invoke the
-> ->runtime_suspend() callback which starts the clock, calls the driver
-> ->runtime_suspend() and stops the clock again. When all devices are
-> runtime suspended the power domain is turned off.
-> 
-> I can't get the above to work with v8 though. This is because after
-> the clock is stopped with ->runtime_idle() the runtime_status of the
-> device is still RPM_ACTIVE, so when pm_runtime_get_sync() gets called
-> the ->runtime_resume() never gets invoked and the clock is never
-> started...
-> 
-> So I don't know if you think the ->runtime_idle usage above is a good
-> plan. I guess no, it's probably quite different from the USB case. I
-> can of course always skip using ->runtime_idle() and just use
-> suspend()/resume().
-> 
-> Any thoughts?
+> Meanwhile, it could potentially cause buffered writeout slowdowns in the
+> kernel. Perhaps the 2.6.30 regression in that area is caused by this?
+> Would be interesting if the submitter could test. I can't find the list,
+> CC'ing Rafael.
 
-I think you'd need a separate bus type callback for that, call it
-->runtime_deepen() for now, which could be executed for a _suspended_
-(from the core's point of view) device and the role of which would be to put
-the (already suspended) device into a deeper low power state.
+Even if this does slow down some workloads, the bug is not in using the
+correct flag ;) So, I'd ack this one.
 
-Something like this might also be used for PCI and it's worth discussing IMO.
+Jan Kara was able to reproduce the tiobench 2.6.30 regression, so I've
+cc'd him and kept the patch below.
 
-So, if we had such a callback, your scenario would be the following.
+-chris
 
-Drivers call pm_runtime_get_sync() and pm_runtime_put() before and
-after using the hardware. The runtime PM code invokes the bus
-->runtime_idle() callback that in turn calls pm_runtime_suspend() or
-pm_schedule_suspend() and the ->runtime_suspend() executed as a result
-stops the clock and decreases the power domain usage count.  If the
-domain usage count happens to be zero, pm_runtime_deepen() or
-pm_schedule_deepen() is called for each device in the power domain.
-Consequently, the bus type's ->runtime_deepen() is invoked and that can
-call the device's ->runtime_suspend(), for example.  If there's
-pm_runtime_get_sync() any time when this is happening, it will cancel the
-pending requests and run ->runtime_resume().
+diff --git a/arch/x86/lib/usercopy_32.c b/arch/x86/lib/usercopy_32.c
+index 7c8ca91..1f118d4 100644
+--- a/arch/x86/lib/usercopy_32.c
++++ b/arch/x86/lib/usercopy_32.c
+@@ -751,7 +751,7 @@ survive:
+ 
+ 			if (retval == -ENOMEM && is_global_init(current)) {
+ 				up_read(&current->mm->mmap_sem);
+-				congestion_wait(WRITE, HZ/50);
++				congestion_wait(BLK_RW_ASYNC, HZ/50);
+ 				goto survive;
+ 			}
+ 
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index 83650e0..f7ebe74 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -2595,7 +2595,7 @@ static int pkt_make_request(struct request_queue *q, struct bio *bio)
+ 		set_bdi_congested(&q->backing_dev_info, WRITE);
+ 		do {
+ 			spin_unlock(&pd->lock);
+-			congestion_wait(WRITE, HZ);
++			congestion_wait(BLK_RW_ASYNC, HZ);
+ 			spin_lock(&pd->lock);
+ 		} while(pd->bio_queue_size > pd->write_congestion_off);
+ 	}
+diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
+index 9933eb8..529e2ba 100644
+--- a/drivers/md/dm-crypt.c
++++ b/drivers/md/dm-crypt.c
+@@ -776,7 +776,7 @@ static void kcryptd_crypt_write_convert(struct dm_crypt_io *io)
+ 		 * But don't wait if split was due to the io size restriction
+ 		 */
+ 		if (unlikely(out_of_pages))
+-			congestion_wait(WRITE, HZ/100);
++			congestion_wait(BLK_RW_ASYNC, HZ/100);
+ 
+ 		/*
+ 		 * With async crypto it is unsafe to share the crypto context
+diff --git a/fs/fat/file.c b/fs/fat/file.c
+index b28ea64..f042b96 100644
+--- a/fs/fat/file.c
++++ b/fs/fat/file.c
+@@ -134,7 +134,7 @@ static int fat_file_release(struct inode *inode, struct file *filp)
+ 	if ((filp->f_mode & FMODE_WRITE) &&
+ 	     MSDOS_SB(inode->i_sb)->options.flush) {
+ 		fat_flush_inodes(inode->i_sb, inode, NULL);
+-		congestion_wait(WRITE, HZ/10);
++		congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 	}
+ 	return 0;
+ }
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index 77f5bb7..9062220 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -997,7 +997,7 @@ static int reiserfs_async_progress_wait(struct super_block *s)
+ 	DEFINE_WAIT(wait);
+ 	struct reiserfs_journal *j = SB_JOURNAL(s);
+ 	if (atomic_read(&j->j_async_throttle))
+-		congestion_wait(WRITE, HZ / 10);
++		congestion_wait(BLK_RW_ASYNC, HZ / 10);
+ 	return 0;
+ }
+ 
+diff --git a/fs/xfs/linux-2.6/kmem.c b/fs/xfs/linux-2.6/kmem.c
+index 1cd3b55..2d3f90a 100644
+--- a/fs/xfs/linux-2.6/kmem.c
++++ b/fs/xfs/linux-2.6/kmem.c
+@@ -53,7 +53,7 @@ kmem_alloc(size_t size, unsigned int __nocast flags)
+ 			printk(KERN_ERR "XFS: possible memory allocation "
+ 					"deadlock in %s (mode:0x%x)\n",
+ 					__func__, lflags);
+-		congestion_wait(WRITE, HZ/50);
++		congestion_wait(BLK_RW_ASYNC, HZ/50);
+ 	} while (1);
+ }
+ 
+@@ -130,7 +130,7 @@ kmem_zone_alloc(kmem_zone_t *zone, unsigned int __nocast flags)
+ 			printk(KERN_ERR "XFS: possible memory allocation "
+ 					"deadlock in %s (mode:0x%x)\n",
+ 					__func__, lflags);
+-		congestion_wait(WRITE, HZ/50);
++		congestion_wait(BLK_RW_ASYNC, HZ/50);
+ 	} while (1);
+ }
+ 
+diff --git a/fs/xfs/linux-2.6/xfs_buf.c b/fs/xfs/linux-2.6/xfs_buf.c
+index 1418b91..0c93c7e 100644
+--- a/fs/xfs/linux-2.6/xfs_buf.c
++++ b/fs/xfs/linux-2.6/xfs_buf.c
+@@ -412,7 +412,7 @@ _xfs_buf_lookup_pages(
+ 
+ 			XFS_STATS_INC(xb_page_retries);
+ 			xfsbufd_wakeup(0, gfp_mask);
+-			congestion_wait(WRITE, HZ/50);
++			congestion_wait(BLK_RW_ASYNC, HZ/50);
+ 			goto retry;
+ 		}
+ 
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 493b468..c86edd2 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -283,7 +283,6 @@ static wait_queue_head_t congestion_wqh[2] = {
+ 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[1])
+ 	};
+ 
+-
+ void clear_bdi_congested(struct backing_dev_info *bdi, int sync)
+ {
+ 	enum bdi_state bit;
+@@ -308,18 +307,18 @@ EXPORT_SYMBOL(set_bdi_congested);
+ 
+ /**
+  * congestion_wait - wait for a backing_dev to become uncongested
+- * @rw: READ or WRITE
++ * @sync: SYNC or ASYNC IO
+  * @timeout: timeout in jiffies
+  *
+  * Waits for up to @timeout jiffies for a backing_dev (any backing_dev) to exit
+  * write congestion.  If no backing_devs are congested then just wait for the
+  * next write to be completed.
+  */
+-long congestion_wait(int rw, long timeout)
++long congestion_wait(int sync, long timeout)
+ {
+ 	long ret;
+ 	DEFINE_WAIT(wait);
+-	wait_queue_head_t *wqh = &congestion_wqh[rw];
++	wait_queue_head_t *wqh = &congestion_wqh[sync];
+ 
+ 	prepare_to_wait(wqh, &wait, TASK_UNINTERRUPTIBLE);
+ 	ret = io_schedule_timeout(timeout);
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index e2fa20d..e717964 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1973,7 +1973,7 @@ try_to_free:
+ 		if (!progress) {
+ 			nr_retries--;
+ 			/* maybe some writeback is necessary */
+-			congestion_wait(WRITE, HZ/10);
++			congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 		}
+ 
+ 	}
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 7687879..81627eb 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -575,7 +575,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 		if (pages_written >= write_chunk)
+ 			break;		/* We've done our duty */
+ 
+-		congestion_wait(WRITE, HZ/10);
++		congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 	}
+ 
+ 	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+@@ -669,7 +669,7 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+                 if (global_page_state(NR_UNSTABLE_NFS) +
+ 			global_page_state(NR_WRITEBACK) <= dirty_thresh)
+                         	break;
+-                congestion_wait(WRITE, HZ/10);
++                congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 
+ 		/*
+ 		 * The caller might hold locks which can prevent IO completion
+@@ -715,7 +715,7 @@ static void background_writeout(unsigned long _min_pages)
+ 		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
+ 			/* Wrote less than expected */
+ 			if (wbc.encountered_congestion || wbc.more_io)
+-				congestion_wait(WRITE, HZ/10);
++				congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 			else
+ 				break;
+ 		}
+@@ -787,7 +787,7 @@ static void wb_kupdate(unsigned long arg)
+ 		writeback_inodes(&wbc);
+ 		if (wbc.nr_to_write > 0) {
+ 			if (wbc.encountered_congestion || wbc.more_io)
+-				congestion_wait(WRITE, HZ/10);
++				congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 			else
+ 				break;	/* All the old data is written */
+ 		}
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index e0f2cdf..2862bcf 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1666,7 +1666,7 @@ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
+ 			preferred_zone, migratetype);
+ 
+ 		if (!page && gfp_mask & __GFP_NOFAIL)
+-			congestion_wait(WRITE, HZ/50);
++			congestion_wait(BLK_RW_ASYNC, HZ/50);
+ 	} while (!page && (gfp_mask & __GFP_NOFAIL));
+ 
+ 	return page;
+@@ -1831,7 +1831,7 @@ rebalance:
+ 	pages_reclaimed += did_some_progress;
+ 	if (should_alloc_retry(gfp_mask, order, pages_reclaimed)) {
+ 		/* Wait for some write requests to complete then retry */
+-		congestion_wait(WRITE, HZ/50);
++		congestion_wait(BLK_RW_ASYNC, HZ/50);
+ 		goto rebalance;
+ 	}
+ 
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 5415526..dea7abd 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1104,7 +1104,7 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
+ 		 */
+ 		if (nr_freed < nr_taken && !current_is_kswapd() &&
+ 		    lumpy_reclaim) {
+-			congestion_wait(WRITE, HZ/10);
++			congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 
+ 			/*
+ 			 * The attempt at page out may have made some
+@@ -1721,7 +1721,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
+ 
+ 		/* Take a nap, wait for some writeback to complete */
+ 		if (sc->nr_scanned && priority < DEF_PRIORITY - 2)
+-			congestion_wait(WRITE, HZ/10);
++			congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 	}
+ 	/* top priority shrink_zones still had more to do? don't OOM, then */
+ 	if (!sc->all_unreclaimable && scanning_global_lru(sc))
+@@ -1960,7 +1960,7 @@ loop_again:
+ 		 * another pass across the zones.
+ 		 */
+ 		if (total_scanned && priority < DEF_PRIORITY - 2)
+-			congestion_wait(WRITE, HZ/10);
++			congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 
+ 		/*
+ 		 * We do this so kswapd doesn't build up large priorities for
+@@ -2233,7 +2233,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+ 				goto out;
+ 
+ 			if (sc.nr_scanned && prio < DEF_PRIORITY - 2)
+-				congestion_wait(WRITE, HZ / 10);
++				congestion_wait(BLK_RW_ASYNC, HZ / 10);
+ 		}
+ 	}
+ 
 
-Does it make sense?
+-- 
+Jens Axboe
 
-Rafael
