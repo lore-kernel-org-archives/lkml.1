@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbZGYVCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZGYVCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752790AbZGYVCe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 17:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZGYVCd
+	id S1752845AbZGYVCq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 17:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbZGYVCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 17:02:33 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:57610 "EHLO
+	Sat, 25 Jul 2009 17:02:45 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:57700 "EHLO
 	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752414AbZGYVCa (ORCPT
+	with ESMTP id S1752800AbZGYVCl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 17:02:30 -0400
-Message-Id: <cb3824bade2549d7ad059d5802da43312540fdee.1248546896.git.keil@b1-systems.de>
+	Sat, 25 Jul 2009 17:02:41 -0400
+Message-Id: <6bd4bcd3cd8affc09eaee7efbc037f65f4a71501.1248546896.git.keil@b1-systems.de>
 In-Reply-To: <cover.1248546896.git.keil@b1-systems.de>
 References: <cover.1248546896.git.keil@b1-systems.de>
-Date: Wed, 8 Jul 2009 14:21:12 +0200
-Subject: [PATCH 01/13] ISDN: Make isdnhdlc usable for other ISDN drivers
+Date: Wed, 8 Jul 2009 19:11:09 +0200
+Subject: [PATCH 02/13] ISDN: Clean up isdnhdlc code
 From: Karsten Keil <keil@b1-systems.de>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
@@ -25,333 +25,316 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-isdnhdlc is useful for other ISDN drivers as well.
-Move the include file to a central location and the source
-to the central isdn location.
+Clean up isdnhdlc to meet current code standard.
+Remove hint to already removed bit reversal table.
 
 Signed-off-by: Karsten Keil <keil@b1-systems.de>
 ---
- drivers/isdn/Kconfig          |    6 +-
- drivers/isdn/hisax/Kconfig    |    6 +-
- drivers/isdn/hisax/Makefile   |    4 -
- drivers/isdn/hisax/isdnhdlc.c |  603 -----------------------------------------
- drivers/isdn/hisax/isdnhdlc.h |   70 -----
- drivers/isdn/hisax/st5481.h   |    2 +-
- drivers/isdn/i4l/Kconfig      |   11 +
- drivers/isdn/i4l/Makefile     |    1 +
- drivers/isdn/i4l/isdnhdlc.c   |  603 +++++++++++++++++++++++++++++++++++++++++
- include/linux/isdn/hdlc.h     |   70 +++++
- 10 files changed, 689 insertions(+), 687 deletions(-)
- delete mode 100644 drivers/isdn/hisax/isdnhdlc.c
- delete mode 100644 drivers/isdn/hisax/isdnhdlc.h
- create mode 100644 drivers/isdn/i4l/isdnhdlc.c
- create mode 100644 include/linux/isdn/hdlc.h
+ drivers/isdn/i4l/isdnhdlc.c |  366 +++++++++++++++++++++++--------------------
+ include/linux/isdn/hdlc.h   |   68 +++++----
+ 2 files changed, 231 insertions(+), 203 deletions(-)
 
-diff --git a/drivers/isdn/Kconfig b/drivers/isdn/Kconfig
-index 02bdca6..022a194 100644
---- a/drivers/isdn/Kconfig
-+++ b/drivers/isdn/Kconfig
-@@ -21,8 +21,6 @@ menuconfig ISDN
- 
- if ISDN
- 
--source "drivers/isdn/mISDN/Kconfig"
--
- menuconfig ISDN_I4L
- 	tristate "Old ISDN4Linux (deprecated)"
- 	---help---
-@@ -41,9 +39,9 @@ menuconfig ISDN_I4L
- 	  It is still available, though, for use with adapters that are not
- 	  supported by the new CAPI subsystem yet.
- 
--if ISDN_I4L
-+source "drivers/isdn/mISDN/Kconfig"
-+
- source "drivers/isdn/i4l/Kconfig"
--endif
- 
- menuconfig ISDN_CAPI
- 	tristate "CAPI 2.0 subsystem"
-diff --git a/drivers/isdn/hisax/Kconfig b/drivers/isdn/hisax/Kconfig
-index 7832d8b..3464ebc 100644
---- a/drivers/isdn/hisax/Kconfig
-+++ b/drivers/isdn/hisax/Kconfig
-@@ -391,6 +391,7 @@ comment "HiSax sub driver modules"
- config HISAX_ST5481
- 	tristate "ST5481 USB ISDN modem (EXPERIMENTAL)"
- 	depends on USB && EXPERIMENTAL
-+	select ISDN_HDLC
- 	select CRC_CCITT
- 	select BITREVERSE
- 	help
-@@ -418,11 +419,6 @@ config HISAX_FRITZ_PCIPNP
- 	  (the latter also needs you to select "ISA Plug and Play support"
- 	  from the menu "Plug and Play configuration")
- 
--config HISAX_HDLC
--	bool
--	depends on HISAX_ST5481
--	default y
--
- config HISAX_AVM_A1_PCMCIA
- 	bool
- 	depends on HISAX_AVM_A1_CS
-diff --git a/drivers/isdn/hisax/Makefile b/drivers/isdn/hisax/Makefile
-index c7a3794..ab638b0 100644
---- a/drivers/isdn/hisax/Makefile
-+++ b/drivers/isdn/hisax/Makefile
-@@ -16,10 +16,6 @@ obj-$(CONFIG_HISAX_HFCUSB)		+= hfc_usb.o
- obj-$(CONFIG_HISAX_HFC4S8S)		+= hfc4s8s_l1.o
- obj-$(CONFIG_HISAX_FRITZ_PCIPNP)        += hisax_isac.o hisax_fcpcipnp.o
- 
--ifdef CONFIG_HISAX_HDLC
--obj-$(CONFIG_ISDN_DRV_HISAX)		+= isdnhdlc.o
--endif
--
- # Multipart objects.
- 
- hisax_st5481-y 				:= st5481_init.o st5481_usb.o st5481_d.o \
-diff --git a/drivers/isdn/hisax/isdnhdlc.c b/drivers/isdn/hisax/isdnhdlc.c
-deleted file mode 100644
-index c69a77a..0000000
---- a/drivers/isdn/hisax/isdnhdlc.c
-+++ /dev/null
-@@ -1,603 +0,0 @@
--/*
-- * isdnhdlc.c  --  General purpose ISDN HDLC decoder.
-- *
+diff --git a/drivers/isdn/i4l/isdnhdlc.c b/drivers/isdn/i4l/isdnhdlc.c
+index 44ec741..b80e55a 100644
+--- a/drivers/isdn/i4l/isdnhdlc.c
++++ b/drivers/isdn/i4l/isdnhdlc.c
+@@ -1,23 +1,24 @@
+ /*
+  * isdnhdlc.c  --  General purpose ISDN HDLC decoder.
+  *
 - *Copyright (C) 2002	Wolfgang Mües      <wolfgang@iksw-muees.de>
 - *		2001 	Frode Isaksen      <fisaksen@bewan.com>
 - *              2001 	Kai Germaschewski  <kai.germaschewski@gmx.de>
-- *
++ * Copyright (C)
++ *	2002	Wolfgang Mües		<wolfgang@iksw-muees.de>
++ *	2001	Frode Isaksen		<fisaksen@bewan.com>
++ *	2001	Kai Germaschewski	<kai.germaschewski@gmx.de>
+  *
 - *      This program is free software; you can redistribute it and/or modify
 - *      it under the terms of the GNU General Public License as published by
 - *      the Free Software Foundation; either version 2 of the License, or
 - *      (at your option) any later version.
-- *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
+  *
 - *      This program is distributed in the hope that it will be useful,
 - *      but WITHOUT ANY WARRANTY; without even the implied warranty of
 - *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 - *      GNU General Public License for more details.
-- *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
+  *
 - *      You should have received a copy of the GNU General Public License
 - *      along with this program; if not, write to the Free Software
 - *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-- */
--
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/crc-ccitt.h>
--#include "isdnhdlc.h"
--
--/*-------------------------------------------------------------------*/
--
--MODULE_AUTHOR("Wolfgang Mües <wolfgang@iksw-muees.de>, "
--	      "Frode Isaksen <fisaksen@bewan.com>, "
--	      "Kai Germaschewski <kai.germaschewski@gmx.de>");
--MODULE_DESCRIPTION("General purpose ISDN HDLC decoder");
--MODULE_LICENSE("GPL");
--
--/*-------------------------------------------------------------------*/
--
--enum {
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ 
+ #include <linux/module.h>
+@@ -36,20 +37,20 @@ MODULE_LICENSE("GPL");
+ /*-------------------------------------------------------------------*/
+ 
+ enum {
 -	HDLC_FAST_IDLE,HDLC_GET_FLAG_B0,HDLC_GETFLAG_B1A6,HDLC_GETFLAG_B7,
 -	HDLC_GET_DATA,HDLC_FAST_FLAG
--};
--
--enum {
++	HDLC_FAST_IDLE, HDLC_GET_FLAG_B0, HDLC_GETFLAG_B1A6, HDLC_GETFLAG_B7,
++	HDLC_GET_DATA, HDLC_FAST_FLAG
+ };
+ 
+ enum {
 -	HDLC_SEND_DATA,HDLC_SEND_CRC1,HDLC_SEND_FAST_FLAG,
 -	HDLC_SEND_FIRST_FLAG,HDLC_SEND_CRC2,HDLC_SEND_CLOSING_FLAG,
 -	HDLC_SEND_IDLE1,HDLC_SEND_FAST_IDLE,HDLC_SENDFLAG_B0,
 -	HDLC_SENDFLAG_B1A6,HDLC_SENDFLAG_B7,STOPPED
--};
--
++	HDLC_SEND_DATA, HDLC_SEND_CRC1, HDLC_SEND_FAST_FLAG,
++	HDLC_SEND_FIRST_FLAG, HDLC_SEND_CRC2, HDLC_SEND_CLOSING_FLAG,
++	HDLC_SEND_IDLE1, HDLC_SEND_FAST_IDLE, HDLC_SENDFLAG_B0,
++	HDLC_SENDFLAG_B1A6, HDLC_SENDFLAG_B7, STOPPED
+ };
+ 
 -void isdnhdlc_rcv_init (struct isdnhdlc_vars *hdlc, int do_adapt56)
--{
++void isdnhdlc_rcv_init(struct isdnhdlc_vars *hdlc, int do_adapt56)
+ {
 -   	hdlc->bit_shift = 0;
--	hdlc->hdlc_bits1 = 0;
--	hdlc->data_bits = 0;
--	hdlc->ffbit_shift = 0;
--	hdlc->data_received = 0;
--	hdlc->state = HDLC_GET_DATA;
--	hdlc->do_adapt56 = do_adapt56;
--	hdlc->dchannel = 0;
--	hdlc->crc = 0;
--	hdlc->cbin = 0;
--	hdlc->shift_reg = 0;
--	hdlc->ffvalue = 0;
--	hdlc->dstpos = 0;
--}
--
++	hdlc->bit_shift = 0;
+ 	hdlc->hdlc_bits1 = 0;
+ 	hdlc->data_bits = 0;
+ 	hdlc->ffbit_shift = 0;
+@@ -63,10 +64,12 @@ void isdnhdlc_rcv_init (struct isdnhdlc_vars *hdlc, int do_adapt56)
+ 	hdlc->ffvalue = 0;
+ 	hdlc->dstpos = 0;
+ }
++EXPORT_SYMBOL(isdnhdlc_out_init);
+ 
 -void isdnhdlc_out_init (struct isdnhdlc_vars *hdlc, int is_d_channel, int do_adapt56)
--{
++void isdnhdlc_out_init(struct isdnhdlc_vars *hdlc, int is_d_channel,
++	int do_adapt56)
+ {
 -   	hdlc->bit_shift = 0;
--	hdlc->hdlc_bits1 = 0;
--	hdlc->data_bits = 0;
--	hdlc->ffbit_shift = 0;
--	hdlc->data_received = 0;
--	hdlc->do_closing = 0;
--	hdlc->ffvalue = 0;
--	if (is_d_channel) {
--		hdlc->dchannel = 1;
--		hdlc->state = HDLC_SEND_FIRST_FLAG;
--	} else {
--		hdlc->dchannel = 0;
--		hdlc->state = HDLC_SEND_FAST_FLAG;
--		hdlc->ffvalue = 0x7e;
--	}
--	hdlc->cbin = 0x7e;
--	hdlc->bit_shift = 0;
++	hdlc->bit_shift = 0;
+ 	hdlc->hdlc_bits1 = 0;
+ 	hdlc->data_bits = 0;
+ 	hdlc->ffbit_shift = 0;
+@@ -83,7 +86,7 @@ void isdnhdlc_out_init (struct isdnhdlc_vars *hdlc, int is_d_channel, int do_ada
+ 	}
+ 	hdlc->cbin = 0x7e;
+ 	hdlc->bit_shift = 0;
 -	if(do_adapt56){
--		hdlc->do_adapt56 = 1;
--		hdlc->data_bits = 0;
--		hdlc->state = HDLC_SENDFLAG_B0;
--	} else {
--		hdlc->do_adapt56 = 0;
--		hdlc->data_bits = 8;
--	}
--	hdlc->shift_reg = 0;
--}
--
--/*
--  isdnhdlc_decode - decodes HDLC frames from a transparent bit stream.
--
--  The source buffer is scanned for valid HDLC frames looking for
--  flags (01111110) to indicate the start of a frame. If the start of
--  the frame is found, the bit stuffing is removed (0 after 5 1's).
--  When a new flag is found, the complete frame has been received
--  and the CRC is checked.
--  If a valid frame is found, the function returns the frame length
--  excluding the CRC with the bit HDLC_END_OF_FRAME set.
--  If the beginning of a valid frame is found, the function returns
--  the length.
--  If a framing error is found (too many 1s and not a flag) the function
--  returns the length with the bit HDLC_FRAMING_ERROR set.
--  If a CRC error is found the function returns the length with the
--  bit HDLC_CRC_ERROR set.
--  If the frame length exceeds the destination buffer size, the function
--  returns the length with the bit HDLC_LENGTH_ERROR set.
--
--  src - source buffer
--  slen - source buffer length
--  count - number of bytes removed (decoded) from the source buffer
--  dst _ destination buffer
--  dsize - destination buffer size
--  returns - number of decoded bytes in the destination buffer and status
--  flag.
-- */
++	if (do_adapt56) {
+ 		hdlc->do_adapt56 = 1;
+ 		hdlc->data_bits = 0;
+ 		hdlc->state = HDLC_SENDFLAG_B0;
+@@ -93,6 +96,25 @@ void isdnhdlc_out_init (struct isdnhdlc_vars *hdlc, int is_d_channel, int do_ada
+ 	}
+ 	hdlc->shift_reg = 0;
+ }
++EXPORT_SYMBOL(isdnhdlc_rcv_init);
++
++static int
++check_frame(struct isdnhdlc_vars *hdlc)
++{
++	int status;
++
++	if (hdlc->dstpos < 2) 	/* too small - framing error */
++		status = -HDLC_FRAMING_ERROR;
++	else if (hdlc->crc != 0xf0b8)	/* crc error */
++		status = -HDLC_CRC_ERROR;
++	else {
++		/* remove CRC */
++		hdlc->dstpos -= 2;
++		/* good frame */
++		status = hdlc->dstpos;
++	}
++	return status;
++}
+ 
+ /*
+   isdnhdlc_decode - decodes HDLC frames from a transparent bit stream.
+@@ -121,40 +143,63 @@ void isdnhdlc_out_init (struct isdnhdlc_vars *hdlc, int is_d_channel, int do_ada
+   returns - number of decoded bytes in the destination buffer and status
+   flag.
+  */
 -int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src,
 -		     int slen, int *count, unsigned char *dst, int dsize)
--{
++int isdnhdlc_decode(struct isdnhdlc_vars *hdlc, const u8 *src, int slen,
++	int *count, u8 *dst, int dsize)
+ {
 -	int status=0;
--
++	int status = 0;
+ 
 -	static const unsigned char fast_flag[]={
 -		0x00,0x00,0x00,0x20,0x30,0x38,0x3c,0x3e,0x3f
--	};
--
++	static const unsigned char fast_flag[] = {
++		0x00, 0x00, 0x00, 0x20, 0x30, 0x38, 0x3c, 0x3e, 0x3f
+ 	};
+ 
 -	static const unsigned char fast_flag_value[]={
 -		0x00,0x7e,0xfc,0xf9,0xf3,0xe7,0xcf,0x9f,0x3f
--	};
--
++	static const unsigned char fast_flag_value[] = {
++		0x00, 0x7e, 0xfc, 0xf9, 0xf3, 0xe7, 0xcf, 0x9f, 0x3f
+ 	};
+ 
 -	static const unsigned char fast_abort[]={
 -		0x00,0x00,0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe,0xff
--	};
--
--	*count = slen;
--
++	static const unsigned char fast_abort[] = {
++		0x00, 0x00, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe, 0xff
+ 	};
+ 
++#define handle_fast_flag(h) \
++	do {\
++		if (h->cbin == fast_flag[h->bit_shift]) {\
++			h->ffvalue = fast_flag_value[h->bit_shift];\
++			h->state = HDLC_FAST_FLAG;\
++			h->ffbit_shift = h->bit_shift;\
++			h->bit_shift = 1;\
++		} else {\
++			h->state = HDLC_GET_DATA;\
++			h->data_received = 0;\
++		} \
++	} while (0)
++
++#define handle_abort(h) \
++	do {\
++		h->shift_reg = fast_abort[h->ffbit_shift - 1];\
++		h->hdlc_bits1 = h->ffbit_shift - 2;\
++		if (h->hdlc_bits1 < 0)\
++			h->hdlc_bits1 = 0;\
++		h->data_bits = h->ffbit_shift - 1;\
++		h->state = HDLC_GET_DATA;\
++		h->data_received = 0;\
++	} while (0)
++
+ 	*count = slen;
+ 
 -	while(slen > 0){
 -		if(hdlc->bit_shift==0){
--			hdlc->cbin = *src++;
--			slen--;
--			hdlc->bit_shift = 8;
++	while (slen > 0) {
++		if (hdlc->bit_shift == 0) {
+ 			hdlc->cbin = *src++;
+ 			slen--;
+ 			hdlc->bit_shift = 8;
 -			if(hdlc->do_adapt56){
 -				hdlc->bit_shift --;
 -			}
--		}
--
++			if (hdlc->do_adapt56)
++				hdlc->bit_shift--;
+ 		}
+ 
 -		switch(hdlc->state){
--		case STOPPED:
--			return 0;
--		case HDLC_FAST_IDLE:
++		switch (hdlc->state) {
+ 		case STOPPED:
+ 			return 0;
+ 		case HDLC_FAST_IDLE:
 -			if(hdlc->cbin == 0xff){
--				hdlc->bit_shift = 0;
--				break;
--			}
--			hdlc->state = HDLC_GET_FLAG_B0;
--			hdlc->hdlc_bits1 = 0;
--			hdlc->bit_shift = 8;
--			break;
--		case HDLC_GET_FLAG_B0:
++			if (hdlc->cbin == 0xff) {
+ 				hdlc->bit_shift = 0;
+ 				break;
+ 			}
+@@ -163,32 +208,30 @@ int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 			hdlc->bit_shift = 8;
+ 			break;
+ 		case HDLC_GET_FLAG_B0:
 -			if(!(hdlc->cbin & 0x80)) {
--				hdlc->state = HDLC_GETFLAG_B1A6;
--				hdlc->hdlc_bits1 = 0;
--			} else {
++			if (!(hdlc->cbin & 0x80)) {
+ 				hdlc->state = HDLC_GETFLAG_B1A6;
+ 				hdlc->hdlc_bits1 = 0;
+ 			} else {
 -				if(!hdlc->do_adapt56){
 -					if(++hdlc->hdlc_bits1 >=8 ) if(hdlc->bit_shift==1)
--						hdlc->state = HDLC_FAST_IDLE;
++				if ((!hdlc->do_adapt56) &&
++				    (++hdlc->hdlc_bits1 >= 8) &&
++				    (hdlc->bit_shift == 1))
+ 						hdlc->state = HDLC_FAST_IDLE;
 -				}
--			}
+ 			}
 -			hdlc->cbin<<=1;
 -			hdlc->bit_shift --;
--			break;
--		case HDLC_GETFLAG_B1A6:
++			hdlc->cbin <<= 1;
++			hdlc->bit_shift--;
+ 			break;
+ 		case HDLC_GETFLAG_B1A6:
 -			if(hdlc->cbin & 0x80){
--				hdlc->hdlc_bits1++;
++			if (hdlc->cbin & 0x80) {
+ 				hdlc->hdlc_bits1++;
 -				if(hdlc->hdlc_bits1==6){
--					hdlc->state = HDLC_GETFLAG_B7;
++				if (hdlc->hdlc_bits1 == 6)
+ 					hdlc->state = HDLC_GETFLAG_B7;
 -				}
 -			} else {
--				hdlc->hdlc_bits1 = 0;
++			} else
+ 				hdlc->hdlc_bits1 = 0;
 -			}
 -			hdlc->cbin<<=1;
 -			hdlc->bit_shift --;
--			break;
--		case HDLC_GETFLAG_B7:
++			hdlc->cbin <<= 1;
++			hdlc->bit_shift--;
+ 			break;
+ 		case HDLC_GETFLAG_B7:
 -			if(hdlc->cbin & 0x80) {
--				hdlc->state = HDLC_GET_FLAG_B0;
--			} else {
--				hdlc->state = HDLC_GET_DATA;
--				hdlc->crc = 0xffff;
--				hdlc->shift_reg = 0;
--				hdlc->hdlc_bits1 = 0;
--				hdlc->data_bits = 0;
--				hdlc->data_received = 0;
--			}
++			if (hdlc->cbin & 0x80) {
+ 				hdlc->state = HDLC_GET_FLAG_B0;
+ 			} else {
+ 				hdlc->state = HDLC_GET_DATA;
+@@ -198,74 +241,55 @@ int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 				hdlc->data_bits = 0;
+ 				hdlc->data_received = 0;
+ 			}
 -			hdlc->cbin<<=1;
 -			hdlc->bit_shift --;
--			break;
--		case HDLC_GET_DATA:
++			hdlc->cbin <<= 1;
++			hdlc->bit_shift--;
+ 			break;
+ 		case HDLC_GET_DATA:
 -			if(hdlc->cbin & 0x80){
--				hdlc->hdlc_bits1++;
++			if (hdlc->cbin & 0x80) {
+ 				hdlc->hdlc_bits1++;
 -				switch(hdlc->hdlc_bits1){
--				case 6:
--					break;
--				case 7:
++				switch (hdlc->hdlc_bits1) {
+ 				case 6:
+ 					break;
+ 				case 7:
 -					if(hdlc->data_received) {
 -						// bad frame
--						status = -HDLC_FRAMING_ERROR;
++					if (hdlc->data_received)
++						/* bad frame */
+ 						status = -HDLC_FRAMING_ERROR;
 -					}
 -					if(!hdlc->do_adapt56){
 -						if(hdlc->cbin==fast_abort[hdlc->bit_shift+1]){
 -							hdlc->state = HDLC_FAST_IDLE;
 -							hdlc->bit_shift=1;
--							break;
--						}
++					if (!hdlc->do_adapt56) {
++						if (hdlc->cbin == fast_abort
++						    [hdlc->bit_shift + 1]) {
++							hdlc->state =
++								HDLC_FAST_IDLE;
++							hdlc->bit_shift = 1;
+ 							break;
+ 						}
 -					} else {
--						hdlc->state = HDLC_GET_FLAG_B0;
++					} else
+ 						hdlc->state = HDLC_GET_FLAG_B0;
 -					}
--					break;
--				default:
+ 					break;
+ 				default:
 -					hdlc->shift_reg>>=1;
--					hdlc->shift_reg |= 0x80;
--					hdlc->data_bits++;
--					break;
--				}
--			} else {
++					hdlc->shift_reg >>= 1;
+ 					hdlc->shift_reg |= 0x80;
+ 					hdlc->data_bits++;
+ 					break;
+ 				}
+ 			} else {
 -				switch(hdlc->hdlc_bits1){
--				case 5:
--					break;
--				case 6:
++				switch (hdlc->hdlc_bits1) {
+ 				case 5:
+ 					break;
+ 				case 6:
 -					if(hdlc->data_received){
 -						if (hdlc->dstpos < 2) {
 -							status = -HDLC_FRAMING_ERROR;
@@ -365,9 +348,11 @@ index c69a77a..0000000
 -							status = hdlc->dstpos;
 -						}
 -					}
--					hdlc->crc = 0xffff;
--					hdlc->shift_reg = 0;
--					hdlc->data_bits = 0;
++					if (hdlc->data_received)
++						status = check_frame(hdlc);
+ 					hdlc->crc = 0xffff;
+ 					hdlc->shift_reg = 0;
+ 					hdlc->data_bits = 0;
 -					if(!hdlc->do_adapt56){
 -						if(hdlc->cbin==fast_flag[hdlc->bit_shift]){
 -							hdlc->ffvalue = fast_flag_value[hdlc->bit_shift];
@@ -379,52 +364,61 @@ index c69a77a..0000000
 -							hdlc->data_received = 0;
 -						}
 -					} else {
--						hdlc->state = HDLC_GET_DATA;
--						hdlc->data_received = 0;
--					}
--					break;
--				default:
++					if (!hdlc->do_adapt56)
++						handle_fast_flag(hdlc);
++					else {
+ 						hdlc->state = HDLC_GET_DATA;
+ 						hdlc->data_received = 0;
+ 					}
+ 					break;
+ 				default:
 -					hdlc->shift_reg>>=1;
--					hdlc->data_bits++;
--					break;
--				}
--				hdlc->hdlc_bits1 = 0;
--			}
--			if (status) {
--				hdlc->dstpos = 0;
--				*count -= slen;
--				hdlc->cbin <<= 1;
--				hdlc->bit_shift--;
--				return status;
--			}
++					hdlc->shift_reg >>= 1;
+ 					hdlc->data_bits++;
+ 					break;
+ 				}
+@@ -278,16 +302,17 @@ int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 				hdlc->bit_shift--;
+ 				return status;
+ 			}
 -			if(hdlc->data_bits==8){
--				hdlc->data_bits = 0;
--				hdlc->data_received = 1;
++			if (hdlc->data_bits == 8) {
+ 				hdlc->data_bits = 0;
+ 				hdlc->data_received = 1;
 -				hdlc->crc = crc_ccitt_byte(hdlc->crc, hdlc->shift_reg);
--
++				hdlc->crc = crc_ccitt_byte(hdlc->crc,
++						hdlc->shift_reg);
+ 
 -				// good byte received
 -				if (hdlc->dstpos < dsize) {
--					dst[hdlc->dstpos++] = hdlc->shift_reg;
++				/* good byte received */
++				if (hdlc->dstpos < dsize)
+ 					dst[hdlc->dstpos++] = hdlc->shift_reg;
 -				} else {
 -					// frame too long
--					status = -HDLC_LENGTH_ERROR;
--					hdlc->dstpos = 0;
--				}
--			}
--			hdlc->cbin <<= 1;
--			hdlc->bit_shift--;
--			break;
--		case HDLC_FAST_FLAG:
++				else {
++					/* frame too long */
+ 					status = -HDLC_LENGTH_ERROR;
+ 					hdlc->dstpos = 0;
+ 				}
+@@ -296,24 +321,18 @@ int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 			hdlc->bit_shift--;
+ 			break;
+ 		case HDLC_FAST_FLAG:
 -			if(hdlc->cbin==hdlc->ffvalue){
--				hdlc->bit_shift = 0;
--				break;
--			} else {
++			if (hdlc->cbin == hdlc->ffvalue) {
+ 				hdlc->bit_shift = 0;
+ 				break;
+ 			} else {
 -				if(hdlc->cbin == 0xff){
--					hdlc->state = HDLC_FAST_IDLE;
++				if (hdlc->cbin == 0xff) {
+ 					hdlc->state = HDLC_FAST_IDLE;
 -					hdlc->bit_shift=0;
 -				} else if(hdlc->ffbit_shift==8){
--					hdlc->state = HDLC_GETFLAG_B7;
--					break;
++					hdlc->bit_shift = 0;
++				} else if (hdlc->ffbit_shift == 8) {
+ 					hdlc->state = HDLC_GETFLAG_B7;
+ 					break;
 -				} else {
 -					hdlc->shift_reg = fast_abort[hdlc->ffbit_shift-1];
 -					hdlc->hdlc_bits1 = hdlc->ffbit_shift-2;
@@ -433,1105 +427,418 @@ index c69a77a..0000000
 -					hdlc->state = HDLC_GET_DATA;
 -					hdlc->data_received = 0;
 -				}
--			}
--			break;
--		default:
--			break;
--		}
--	}
--	*count -= slen;
--	return 0;
--}
++				} else
++					handle_abort(hdlc);
+ 			}
+ 			break;
+ 		default:
+@@ -323,7 +342,7 @@ int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 	*count -= slen;
+ 	return 0;
+ }
 -
--/*
--  isdnhdlc_encode - encodes HDLC frames to a transparent bit stream.
--
--  The bit stream starts with a beginning flag (01111110). After
--  that each byte is added to the bit stream with bit stuffing added
--  (0 after 5 1's).
--  When the last byte has been removed from the source buffer, the
--  CRC (2 bytes is added) and the frame terminates with the ending flag.
--  For the dchannel, the idle character (all 1's) is also added at the end.
--  If this function is called with empty source buffer (slen=0), flags or
--  idle character will be generated.
--
--  src - source buffer
--  slen - source buffer length
--  count - number of bytes removed (encoded) from source buffer
--  dst _ destination buffer
--  dsize - destination buffer size
--  returns - number of encoded bytes in the destination buffer
--*/
++EXPORT_SYMBOL(isdnhdlc_decode);
+ /*
+   isdnhdlc_encode - encodes HDLC frames to a transparent bit stream.
+ 
+@@ -343,12 +362,11 @@ int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src,
+   dsize - destination buffer size
+   returns - number of encoded bytes in the destination buffer
+ */
 -int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
 -		unsigned short slen, int *count,
 -		unsigned char *dst, int dsize)
--{
--	static const unsigned char xfast_flag_value[] = {
++int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
++	int *count, u8 *dst, int dsize)
+ {
+ 	static const unsigned char xfast_flag_value[] = {
 -		0x7e,0x3f,0x9f,0xcf,0xe7,0xf3,0xf9,0xfc,0x7e
--	};
--
--	int len = 0;
--
--	*count = slen;
--
--	while (dsize > 0) {
++		0x7e, 0x3f, 0x9f, 0xcf, 0xe7, 0xf3, 0xf9, 0xfc, 0x7e
+ 	};
+ 
+ 	int len = 0;
+@@ -356,31 +374,34 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 	*count = slen;
+ 
+ 	while (dsize > 0) {
 -		if(hdlc->bit_shift==0){
 -			if(slen && !hdlc->do_closing){
--				hdlc->shift_reg = *src++;
--				slen--;
--				if (slen == 0)
++		if (hdlc->bit_shift == 0) {
++			if (slen && !hdlc->do_closing) {
+ 				hdlc->shift_reg = *src++;
+ 				slen--;
+ 				if (slen == 0)
 -					hdlc->do_closing = 1;  /* closing sequence, CRC + flag(s) */
--				hdlc->bit_shift = 8;
--			} else {
++					/* closing sequence, CRC + flag(s) */
++					hdlc->do_closing = 1;
+ 				hdlc->bit_shift = 8;
+ 			} else {
 -				if(hdlc->state == HDLC_SEND_DATA){
 -					if(hdlc->data_received){
--						hdlc->state = HDLC_SEND_CRC1;
--						hdlc->crc ^= 0xffff;
--						hdlc->bit_shift = 8;
++				if (hdlc->state == HDLC_SEND_DATA) {
++					if (hdlc->data_received) {
+ 						hdlc->state = HDLC_SEND_CRC1;
+ 						hdlc->crc ^= 0xffff;
+ 						hdlc->bit_shift = 8;
 -						hdlc->shift_reg = hdlc->crc & 0xff;
 -					} else if(!hdlc->do_adapt56){
 -						hdlc->state = HDLC_SEND_FAST_FLAG;
 -					} else {
 -						hdlc->state = HDLC_SENDFLAG_B0;
 -					}
--				}
--
--			}
--		}
--
++						hdlc->shift_reg =
++							hdlc->crc & 0xff;
++					} else if (!hdlc->do_adapt56)
++						hdlc->state =
++							HDLC_SEND_FAST_FLAG;
++					else
++						hdlc->state =
++							HDLC_SENDFLAG_B0;
+ 				}
+ 
+ 			}
+ 		}
+ 
 -		switch(hdlc->state){
--		case STOPPED:
--			while (dsize--)
--				*dst++ = 0xff;
--
--			return dsize;
--		case HDLC_SEND_FAST_FLAG:
--			hdlc->do_closing = 0;
++		switch (hdlc->state) {
+ 		case STOPPED:
+ 			while (dsize--)
+ 				*dst++ = 0xff;
+@@ -388,14 +409,15 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 			return dsize;
+ 		case HDLC_SEND_FAST_FLAG:
+ 			hdlc->do_closing = 0;
 -			if(slen == 0){
--				*dst++ = hdlc->ffvalue;
--				len++;
--				dsize--;
--				break;
--			}
++			if (slen == 0) {
+ 				*dst++ = hdlc->ffvalue;
+ 				len++;
+ 				dsize--;
+ 				break;
+ 			}
 -			if(hdlc->bit_shift==8){
 -				hdlc->cbin = hdlc->ffvalue>>(8-hdlc->data_bits);
--				hdlc->state = HDLC_SEND_DATA;
--				hdlc->crc = 0xffff;
--				hdlc->hdlc_bits1 = 0;
--				hdlc->data_received = 1;
--			}
--			break;
--		case HDLC_SENDFLAG_B0:
--			hdlc->do_closing = 0;
--			hdlc->cbin <<= 1;
--			hdlc->data_bits++;
--			hdlc->hdlc_bits1 = 0;
--			hdlc->state = HDLC_SENDFLAG_B1A6;
--			break;
--		case HDLC_SENDFLAG_B1A6:
--			hdlc->cbin <<= 1;
--			hdlc->data_bits++;
--			hdlc->cbin++;
++			if (hdlc->bit_shift == 8) {
++				hdlc->cbin = hdlc->ffvalue >>
++					(8 - hdlc->data_bits);
+ 				hdlc->state = HDLC_SEND_DATA;
+ 				hdlc->crc = 0xffff;
+ 				hdlc->hdlc_bits1 = 0;
+@@ -413,17 +435,17 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 			hdlc->cbin <<= 1;
+ 			hdlc->data_bits++;
+ 			hdlc->cbin++;
 -			if(++hdlc->hdlc_bits1 == 6)
--				hdlc->state = HDLC_SENDFLAG_B7;
--			break;
--		case HDLC_SENDFLAG_B7:
--			hdlc->cbin <<= 1;
--			hdlc->data_bits++;
++			if (++hdlc->hdlc_bits1 == 6)
+ 				hdlc->state = HDLC_SENDFLAG_B7;
+ 			break;
+ 		case HDLC_SENDFLAG_B7:
+ 			hdlc->cbin <<= 1;
+ 			hdlc->data_bits++;
 -			if(slen == 0){
--				hdlc->state = HDLC_SENDFLAG_B0;
--				break;
--			}
++			if (slen == 0) {
+ 				hdlc->state = HDLC_SENDFLAG_B0;
+ 				break;
+ 			}
 -			if(hdlc->bit_shift==8){
--				hdlc->state = HDLC_SEND_DATA;
--				hdlc->crc = 0xffff;
--				hdlc->hdlc_bits1 = 0;
--				hdlc->data_received = 1;
--			}
--			break;
--		case HDLC_SEND_FIRST_FLAG:
--			hdlc->data_received = 1;
++			if (hdlc->bit_shift == 8) {
+ 				hdlc->state = HDLC_SEND_DATA;
+ 				hdlc->crc = 0xffff;
+ 				hdlc->hdlc_bits1 = 0;
+@@ -432,7 +454,7 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 			break;
+ 		case HDLC_SEND_FIRST_FLAG:
+ 			hdlc->data_received = 1;
 -			if(hdlc->data_bits==8){
--				hdlc->state = HDLC_SEND_DATA;
--				hdlc->crc = 0xffff;
--				hdlc->hdlc_bits1 = 0;
--				break;
--			}
--			hdlc->cbin <<= 1;
--			hdlc->data_bits++;
++			if (hdlc->data_bits == 8) {
+ 				hdlc->state = HDLC_SEND_DATA;
+ 				hdlc->crc = 0xffff;
+ 				hdlc->hdlc_bits1 = 0;
+@@ -440,11 +462,11 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 			}
+ 			hdlc->cbin <<= 1;
+ 			hdlc->data_bits++;
 -			if(hdlc->shift_reg & 0x01)
--				hdlc->cbin++;
--			hdlc->shift_reg >>= 1;
--			hdlc->bit_shift--;
++			if (hdlc->shift_reg & 0x01)
+ 				hdlc->cbin++;
+ 			hdlc->shift_reg >>= 1;
+ 			hdlc->bit_shift--;
 -			if(hdlc->bit_shift==0){
--				hdlc->state = HDLC_SEND_DATA;
--				hdlc->crc = 0xffff;
--				hdlc->hdlc_bits1 = 0;
--			}
--			break;
--		case HDLC_SEND_DATA:
--			hdlc->cbin <<= 1;
--			hdlc->data_bits++;
++			if (hdlc->bit_shift == 0) {
+ 				hdlc->state = HDLC_SEND_DATA;
+ 				hdlc->crc = 0xffff;
+ 				hdlc->hdlc_bits1 = 0;
+@@ -453,14 +475,14 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 		case HDLC_SEND_DATA:
+ 			hdlc->cbin <<= 1;
+ 			hdlc->data_bits++;
 -			if(hdlc->hdlc_bits1 == 5){
--				hdlc->hdlc_bits1 = 0;
--				break;
--			}
++			if (hdlc->hdlc_bits1 == 5) {
+ 				hdlc->hdlc_bits1 = 0;
+ 				break;
+ 			}
 -			if(hdlc->bit_shift==8){
 -				hdlc->crc = crc_ccitt_byte(hdlc->crc, hdlc->shift_reg);
 -			}
 -			if(hdlc->shift_reg & 0x01){
--				hdlc->hdlc_bits1++;
--				hdlc->cbin++;
--				hdlc->shift_reg >>= 1;
--				hdlc->bit_shift--;
--			} else {
--				hdlc->hdlc_bits1 = 0;
--				hdlc->shift_reg >>= 1;
--				hdlc->bit_shift--;
--			}
--			break;
--		case HDLC_SEND_CRC1:
--			hdlc->cbin <<= 1;
--			hdlc->data_bits++;
++			if (hdlc->bit_shift == 8)
++				hdlc->crc = crc_ccitt_byte(hdlc->crc,
++					hdlc->shift_reg);
++			if (hdlc->shift_reg & 0x01) {
+ 				hdlc->hdlc_bits1++;
+ 				hdlc->cbin++;
+ 				hdlc->shift_reg >>= 1;
+@@ -474,11 +496,11 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 		case HDLC_SEND_CRC1:
+ 			hdlc->cbin <<= 1;
+ 			hdlc->data_bits++;
 -			if(hdlc->hdlc_bits1 == 5){
--				hdlc->hdlc_bits1 = 0;
--				break;
--			}
++			if (hdlc->hdlc_bits1 == 5) {
+ 				hdlc->hdlc_bits1 = 0;
+ 				break;
+ 			}
 -			if(hdlc->shift_reg & 0x01){
--				hdlc->hdlc_bits1++;
--				hdlc->cbin++;
--				hdlc->shift_reg >>= 1;
--				hdlc->bit_shift--;
--			} else {
--				hdlc->hdlc_bits1 = 0;
--				hdlc->shift_reg >>= 1;
--				hdlc->bit_shift--;
--			}
++			if (hdlc->shift_reg & 0x01) {
+ 				hdlc->hdlc_bits1++;
+ 				hdlc->cbin++;
+ 				hdlc->shift_reg >>= 1;
+@@ -488,7 +510,7 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 				hdlc->shift_reg >>= 1;
+ 				hdlc->bit_shift--;
+ 			}
 -			if(hdlc->bit_shift==0){
--				hdlc->shift_reg = (hdlc->crc >> 8);
--				hdlc->state = HDLC_SEND_CRC2;
--				hdlc->bit_shift = 8;
--			}
--			break;
--		case HDLC_SEND_CRC2:
--			hdlc->cbin <<= 1;
--			hdlc->data_bits++;
++			if (hdlc->bit_shift == 0) {
+ 				hdlc->shift_reg = (hdlc->crc >> 8);
+ 				hdlc->state = HDLC_SEND_CRC2;
+ 				hdlc->bit_shift = 8;
+@@ -497,11 +519,11 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 		case HDLC_SEND_CRC2:
+ 			hdlc->cbin <<= 1;
+ 			hdlc->data_bits++;
 -			if(hdlc->hdlc_bits1 == 5){
--				hdlc->hdlc_bits1 = 0;
--				break;
--			}
++			if (hdlc->hdlc_bits1 == 5) {
+ 				hdlc->hdlc_bits1 = 0;
+ 				break;
+ 			}
 -			if(hdlc->shift_reg & 0x01){
--				hdlc->hdlc_bits1++;
--				hdlc->cbin++;
--				hdlc->shift_reg >>= 1;
--				hdlc->bit_shift--;
--			} else {
--				hdlc->hdlc_bits1 = 0;
--				hdlc->shift_reg >>= 1;
--				hdlc->bit_shift--;
--			}
++			if (hdlc->shift_reg & 0x01) {
+ 				hdlc->hdlc_bits1++;
+ 				hdlc->cbin++;
+ 				hdlc->shift_reg >>= 1;
+@@ -511,7 +533,7 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 				hdlc->shift_reg >>= 1;
+ 				hdlc->bit_shift--;
+ 			}
 -			if(hdlc->bit_shift==0){
--				hdlc->shift_reg = 0x7e;
--				hdlc->state = HDLC_SEND_CLOSING_FLAG;
--				hdlc->bit_shift = 8;
--			}
--			break;
--		case HDLC_SEND_CLOSING_FLAG:
--			hdlc->cbin <<= 1;
--			hdlc->data_bits++;
++			if (hdlc->bit_shift == 0) {
+ 				hdlc->shift_reg = 0x7e;
+ 				hdlc->state = HDLC_SEND_CLOSING_FLAG;
+ 				hdlc->bit_shift = 8;
+@@ -520,33 +542,36 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 		case HDLC_SEND_CLOSING_FLAG:
+ 			hdlc->cbin <<= 1;
+ 			hdlc->data_bits++;
 -			if(hdlc->hdlc_bits1 == 5){
--				hdlc->hdlc_bits1 = 0;
--				break;
--			}
++			if (hdlc->hdlc_bits1 == 5) {
+ 				hdlc->hdlc_bits1 = 0;
+ 				break;
+ 			}
 -			if(hdlc->shift_reg & 0x01){
--				hdlc->cbin++;
++			if (hdlc->shift_reg & 0x01)
+ 				hdlc->cbin++;
 -			}
--			hdlc->shift_reg >>= 1;
--			hdlc->bit_shift--;
+ 			hdlc->shift_reg >>= 1;
+ 			hdlc->bit_shift--;
 -			if(hdlc->bit_shift==0){
 -				hdlc->ffvalue = xfast_flag_value[hdlc->data_bits];
 -				if(hdlc->dchannel){
--					hdlc->ffvalue = 0x7e;
--					hdlc->state = HDLC_SEND_IDLE1;
--					hdlc->bit_shift = 8-hdlc->data_bits;
++			if (hdlc->bit_shift == 0) {
++				hdlc->ffvalue =
++					xfast_flag_value[hdlc->data_bits];
++				if (hdlc->dchannel) {
+ 					hdlc->ffvalue = 0x7e;
+ 					hdlc->state = HDLC_SEND_IDLE1;
+ 					hdlc->bit_shift = 8-hdlc->data_bits;
 -					if(hdlc->bit_shift==0)
 -						hdlc->state = HDLC_SEND_FAST_IDLE;
--				} else {
++					if (hdlc->bit_shift == 0)
++						hdlc->state =
++							HDLC_SEND_FAST_IDLE;
+ 				} else {
 -					if(!hdlc->do_adapt56){
 -						hdlc->state = HDLC_SEND_FAST_FLAG;
--						hdlc->data_received = 0;
--					} else {
--						hdlc->state = HDLC_SENDFLAG_B0;
--						hdlc->data_received = 0;
--					}
++					if (!hdlc->do_adapt56) {
++						hdlc->state =
++							HDLC_SEND_FAST_FLAG;
+ 						hdlc->data_received = 0;
+ 					} else {
+ 						hdlc->state = HDLC_SENDFLAG_B0;
+ 						hdlc->data_received = 0;
+ 					}
 -					// Finished with this frame, send flags
 -					if (dsize > 1) dsize = 1;
--				}
--			}
--			break;
--		case HDLC_SEND_IDLE1:
--			hdlc->do_closing = 0;
--			hdlc->cbin <<= 1;
--			hdlc->cbin++;
--			hdlc->data_bits++;
--			hdlc->bit_shift--;
++					/* Finished this frame, send flags */
++					if (dsize > 1)
++						dsize = 1;
+ 				}
+ 			}
+ 			break;
+@@ -556,7 +581,7 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 			hdlc->cbin++;
+ 			hdlc->data_bits++;
+ 			hdlc->bit_shift--;
 -			if(hdlc->bit_shift==0){
--				hdlc->state = HDLC_SEND_FAST_IDLE;
--				hdlc->bit_shift = 0;
--			}
--			break;
--		case HDLC_SEND_FAST_IDLE:
--			hdlc->do_closing = 0;
--			hdlc->cbin = 0xff;
--			hdlc->data_bits = 8;
++			if (hdlc->bit_shift == 0) {
+ 				hdlc->state = HDLC_SEND_FAST_IDLE;
+ 				hdlc->bit_shift = 0;
+ 			}
+@@ -565,12 +590,13 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 			hdlc->do_closing = 0;
+ 			hdlc->cbin = 0xff;
+ 			hdlc->data_bits = 8;
 -			if(hdlc->bit_shift == 8){
--				hdlc->cbin = 0x7e;
--				hdlc->state = HDLC_SEND_FIRST_FLAG;
--			} else {
--				*dst++ = hdlc->cbin;
++			if (hdlc->bit_shift == 8) {
+ 				hdlc->cbin = 0x7e;
+ 				hdlc->state = HDLC_SEND_FIRST_FLAG;
+ 			} else {
+ 				*dst++ = hdlc->cbin;
 -				hdlc->bit_shift = hdlc->data_bits = 0;
--				len++;
--				dsize = 0;
--			}
--			break;
--		default:
--			break;
--		}
++				hdlc->bit_shift = 0;
++				hdlc->data_bits = 0;
+ 				len++;
+ 				dsize = 0;
+ 			}
+@@ -578,14 +604,14 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 		default:
+ 			break;
+ 		}
 -		if(hdlc->do_adapt56){
 -			if(hdlc->data_bits==7){
--				hdlc->cbin <<= 1;
--				hdlc->cbin++;
--				hdlc->data_bits++;
--			}
--		}
++		if (hdlc->do_adapt56) {
++			if (hdlc->data_bits == 7) {
+ 				hdlc->cbin <<= 1;
+ 				hdlc->cbin++;
+ 				hdlc->data_bits++;
+ 			}
+ 		}
 -		if(hdlc->data_bits==8){
--			*dst++ = hdlc->cbin;
--			hdlc->data_bits = 0;
--			len++;
--			dsize--;
--		}
--	}
--	*count -= slen;
--
--	return len;
--}
++		if (hdlc->data_bits == 8) {
+ 			*dst++ = hdlc->cbin;
+ 			hdlc->data_bits = 0;
+ 			len++;
+@@ -596,8 +622,4 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
+ 
+ 	return len;
+ }
 -
 -EXPORT_SYMBOL(isdnhdlc_rcv_init);
 -EXPORT_SYMBOL(isdnhdlc_decode);
 -EXPORT_SYMBOL(isdnhdlc_out_init);
--EXPORT_SYMBOL(isdnhdlc_encode);
-diff --git a/drivers/isdn/hisax/isdnhdlc.h b/drivers/isdn/hisax/isdnhdlc.h
-deleted file mode 100644
-index cf0a95a..0000000
---- a/drivers/isdn/hisax/isdnhdlc.h
-+++ /dev/null
-@@ -1,70 +0,0 @@
--/*
+ EXPORT_SYMBOL(isdnhdlc_encode);
+diff --git a/include/linux/isdn/hdlc.h b/include/linux/isdn/hdlc.h
+index cf0a95a..8f3540c 100644
+--- a/include/linux/isdn/hdlc.h
++++ b/include/linux/isdn/hdlc.h
+@@ -1,27 +1,28 @@
+ /*
 - * isdnhdlc.h  --  General purpose ISDN HDLC decoder.
-- *
-- * Implementation of a HDLC decoder/encoder in software.
-- * Neccessary because some ISDN devices don't have HDLC
++ * hdlc.h  --  General purpose ISDN HDLC decoder.
+  *
+  * Implementation of a HDLC decoder/encoder in software.
+  * Neccessary because some ISDN devices don't have HDLC
 - * controllers. Also included: a bit reversal table.
-- *
++ * controllers.
+  *
 - *Copyright (C) 2002    Wolfgang Mües      <wolfgang@iksw-muees.de>
 - *		2001 	Frode Isaksen      <fisaksen@bewan.com>
 - *              2001 	Kai Germaschewski  <kai.germaschewski@gmx.de>
-- *
++ * Copyright (C)
++ *	2002	Wolfgang Mües		<wolfgang@iksw-muees.de>
++ *	2001	Frode Isaksen		<fisaksen@bewan.com>
++ *	2001	Kai Germaschewski	<kai.germaschewski@gmx.de>
+  *
 - *      This program is free software; you can redistribute it and/or modify
 - *      it under the terms of the GNU General Public License as published by
 - *      the Free Software Foundation; either version 2 of the License, or
 - *      (at your option) any later version.
-- *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
+  *
 - *      This program is distributed in the hope that it will be useful,
 - *      but WITHOUT ANY WARRANTY; without even the implied warranty of
 - *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 - *      GNU General Public License for more details.
-- *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
+  *
 - *      You should have received a copy of the GNU General Public License
 - *      along with this program; if not, write to the Free Software
 - *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-- */
--
--#ifndef __ISDNHDLC_H__
--#define __ISDNHDLC_H__
--
--struct isdnhdlc_vars {
--	int bit_shift;
--	int hdlc_bits1;
--	int data_bits;
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+  */
+ 
+ #ifndef __ISDNHDLC_H__
+@@ -31,20 +32,24 @@ struct isdnhdlc_vars {
+ 	int bit_shift;
+ 	int hdlc_bits1;
+ 	int data_bits;
 -	int ffbit_shift; 	// encoding only
--	int state;
--	int dstpos;
--
++	int ffbit_shift;	/* encoding only */
+ 	int state;
+ 	int dstpos;
+ 
 -	unsigned short crc;
--
++	u16 crc;
+ 
 -	unsigned char cbin;
 -	unsigned char shift_reg;
 -	unsigned char ffvalue;
--
++	u8 cbin;
++	u8 shift_reg;
++	u8 ffvalue;
+ 
 -	unsigned int data_received:1; 	// set if transferring data
 -	unsigned int dchannel:1; 	// set if D channel (send idle instead of flags)
 -	unsigned int do_adapt56:1; 	// set if 56K adaptation
 -	unsigned int do_closing:1; 	// set if in closing phase (need to send CRC + flag
--};
--
--
--/*
--  The return value from isdnhdlc_decode is
--  the frame length, 0 if no complete frame was decoded,
--  or a negative error number
--*/
--#define HDLC_FRAMING_ERROR     1
--#define HDLC_CRC_ERROR         2
--#define HDLC_LENGTH_ERROR      3
--
++	/* set if transferring data */
++	u32 data_received:1;
++	/* set if D channel (send idle instead of flags) */
++	u32 dchannel:1;
++	/* set if 56K adaptation */
++	u32 do_adapt56:1;
++	/* set if in closing phase (need to send CRC + flag) */
++	u32 do_closing:1;
+ };
+ 
+ 
+@@ -57,14 +62,15 @@ struct isdnhdlc_vars {
+ #define HDLC_CRC_ERROR         2
+ #define HDLC_LENGTH_ERROR      3
+ 
 -extern void isdnhdlc_rcv_init (struct isdnhdlc_vars *hdlc, int do_adapt56);
--
++extern void	isdnhdlc_rcv_init(struct isdnhdlc_vars *hdlc, int do_adapt56);
+ 
 -extern int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src, int slen,int *count,
 -	                    unsigned char *dst, int dsize);
--
++extern int	isdnhdlc_decode(struct isdnhdlc_vars *hdlc, const u8 *src,
++			int slen, int *count, u8 *dst, int dsize);
+ 
 -extern void isdnhdlc_out_init (struct isdnhdlc_vars *hdlc,int is_d_channel,int do_adapt56);
--
++extern void	isdnhdlc_out_init(struct isdnhdlc_vars *hdlc, int is_d_channel,
++			int do_adapt56);
+ 
 -extern int isdnhdlc_encode (struct isdnhdlc_vars *hdlc,const unsigned char *src,unsigned short slen,int *count,
 -	                    unsigned char *dst,int dsize);
--
--#endif /* __ISDNHDLC_H__ */
-diff --git a/drivers/isdn/hisax/st5481.h b/drivers/isdn/hisax/st5481.h
-index cff7a63..64f78a8 100644
---- a/drivers/isdn/hisax/st5481.h
-+++ b/drivers/isdn/hisax/st5481.h
-@@ -226,7 +226,7 @@ printk(KERN_WARNING "%s:%s: " format "\n" , __FILE__,  __func__ , ## arg)
- #define INFO(format, arg...) \
- printk(KERN_INFO "%s:%s: " format "\n" , __FILE__,  __func__ , ## arg)
++extern int	isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src,
++			u16 slen, int *count, u8 *dst, int dsize);
  
--#include "isdnhdlc.h"
-+#include <linux/isdn/hdlc.h>
- #include "fsm.h"
- #include "hisax_if.h"
- #include <linux/skbuff.h>
-diff --git a/drivers/isdn/i4l/Kconfig b/drivers/isdn/i4l/Kconfig
-index ed3510f..dd744ff 100644
---- a/drivers/isdn/i4l/Kconfig
-+++ b/drivers/isdn/i4l/Kconfig
-@@ -2,6 +2,8 @@
- # Old ISDN4Linux config
- #
- 
-+if ISDN_I4L
-+
- config ISDN_PPP
- 	bool "Support synchronous PPP"
- 	depends on INET
-@@ -135,3 +137,12 @@ source "drivers/isdn/act2000/Kconfig"
- source "drivers/isdn/hysdn/Kconfig"
- 
- endmenu
-+# end ISDN_I4L
-+endif
-+
-+config ISDN_HDLC
-+	tristate 
-+	depends on HISAX_ST5481
-+	select CRC_CCITT
-+	select BITREVERSE
-+
-diff --git a/drivers/isdn/i4l/Makefile b/drivers/isdn/i4l/Makefile
-index 49a06c0..cb9d3bb 100644
---- a/drivers/isdn/i4l/Makefile
-+++ b/drivers/isdn/i4l/Makefile
-@@ -4,6 +4,7 @@
- 
- obj-$(CONFIG_ISDN_I4L)		+= isdn.o
- obj-$(CONFIG_ISDN_PPP_BSDCOMP)	+= isdn_bsdcomp.o
-+obj-$(CONFIG_ISDN_HDLC)		+= isdnhdlc.o
- 
- # Multipart objects.
- 
-diff --git a/drivers/isdn/i4l/isdnhdlc.c b/drivers/isdn/i4l/isdnhdlc.c
-new file mode 100644
-index 0000000..44ec741
---- /dev/null
-+++ b/drivers/isdn/i4l/isdnhdlc.c
-@@ -0,0 +1,603 @@
-+/*
-+ * isdnhdlc.c  --  General purpose ISDN HDLC decoder.
-+ *
-+ *Copyright (C) 2002	Wolfgang Mües      <wolfgang@iksw-muees.de>
-+ *		2001 	Frode Isaksen      <fisaksen@bewan.com>
-+ *              2001 	Kai Germaschewski  <kai.germaschewski@gmx.de>
-+ *
-+ *      This program is free software; you can redistribute it and/or modify
-+ *      it under the terms of the GNU General Public License as published by
-+ *      the Free Software Foundation; either version 2 of the License, or
-+ *      (at your option) any later version.
-+ *
-+ *      This program is distributed in the hope that it will be useful,
-+ *      but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *      GNU General Public License for more details.
-+ *
-+ *      You should have received a copy of the GNU General Public License
-+ *      along with this program; if not, write to the Free Software
-+ *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/crc-ccitt.h>
-+#include <linux/isdn/hdlc.h>
-+
-+/*-------------------------------------------------------------------*/
-+
-+MODULE_AUTHOR("Wolfgang Mües <wolfgang@iksw-muees.de>, "
-+	      "Frode Isaksen <fisaksen@bewan.com>, "
-+	      "Kai Germaschewski <kai.germaschewski@gmx.de>");
-+MODULE_DESCRIPTION("General purpose ISDN HDLC decoder");
-+MODULE_LICENSE("GPL");
-+
-+/*-------------------------------------------------------------------*/
-+
-+enum {
-+	HDLC_FAST_IDLE,HDLC_GET_FLAG_B0,HDLC_GETFLAG_B1A6,HDLC_GETFLAG_B7,
-+	HDLC_GET_DATA,HDLC_FAST_FLAG
-+};
-+
-+enum {
-+	HDLC_SEND_DATA,HDLC_SEND_CRC1,HDLC_SEND_FAST_FLAG,
-+	HDLC_SEND_FIRST_FLAG,HDLC_SEND_CRC2,HDLC_SEND_CLOSING_FLAG,
-+	HDLC_SEND_IDLE1,HDLC_SEND_FAST_IDLE,HDLC_SENDFLAG_B0,
-+	HDLC_SENDFLAG_B1A6,HDLC_SENDFLAG_B7,STOPPED
-+};
-+
-+void isdnhdlc_rcv_init (struct isdnhdlc_vars *hdlc, int do_adapt56)
-+{
-+   	hdlc->bit_shift = 0;
-+	hdlc->hdlc_bits1 = 0;
-+	hdlc->data_bits = 0;
-+	hdlc->ffbit_shift = 0;
-+	hdlc->data_received = 0;
-+	hdlc->state = HDLC_GET_DATA;
-+	hdlc->do_adapt56 = do_adapt56;
-+	hdlc->dchannel = 0;
-+	hdlc->crc = 0;
-+	hdlc->cbin = 0;
-+	hdlc->shift_reg = 0;
-+	hdlc->ffvalue = 0;
-+	hdlc->dstpos = 0;
-+}
-+
-+void isdnhdlc_out_init (struct isdnhdlc_vars *hdlc, int is_d_channel, int do_adapt56)
-+{
-+   	hdlc->bit_shift = 0;
-+	hdlc->hdlc_bits1 = 0;
-+	hdlc->data_bits = 0;
-+	hdlc->ffbit_shift = 0;
-+	hdlc->data_received = 0;
-+	hdlc->do_closing = 0;
-+	hdlc->ffvalue = 0;
-+	if (is_d_channel) {
-+		hdlc->dchannel = 1;
-+		hdlc->state = HDLC_SEND_FIRST_FLAG;
-+	} else {
-+		hdlc->dchannel = 0;
-+		hdlc->state = HDLC_SEND_FAST_FLAG;
-+		hdlc->ffvalue = 0x7e;
-+	}
-+	hdlc->cbin = 0x7e;
-+	hdlc->bit_shift = 0;
-+	if(do_adapt56){
-+		hdlc->do_adapt56 = 1;
-+		hdlc->data_bits = 0;
-+		hdlc->state = HDLC_SENDFLAG_B0;
-+	} else {
-+		hdlc->do_adapt56 = 0;
-+		hdlc->data_bits = 8;
-+	}
-+	hdlc->shift_reg = 0;
-+}
-+
-+/*
-+  isdnhdlc_decode - decodes HDLC frames from a transparent bit stream.
-+
-+  The source buffer is scanned for valid HDLC frames looking for
-+  flags (01111110) to indicate the start of a frame. If the start of
-+  the frame is found, the bit stuffing is removed (0 after 5 1's).
-+  When a new flag is found, the complete frame has been received
-+  and the CRC is checked.
-+  If a valid frame is found, the function returns the frame length
-+  excluding the CRC with the bit HDLC_END_OF_FRAME set.
-+  If the beginning of a valid frame is found, the function returns
-+  the length.
-+  If a framing error is found (too many 1s and not a flag) the function
-+  returns the length with the bit HDLC_FRAMING_ERROR set.
-+  If a CRC error is found the function returns the length with the
-+  bit HDLC_CRC_ERROR set.
-+  If the frame length exceeds the destination buffer size, the function
-+  returns the length with the bit HDLC_LENGTH_ERROR set.
-+
-+  src - source buffer
-+  slen - source buffer length
-+  count - number of bytes removed (decoded) from the source buffer
-+  dst _ destination buffer
-+  dsize - destination buffer size
-+  returns - number of decoded bytes in the destination buffer and status
-+  flag.
-+ */
-+int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src,
-+		     int slen, int *count, unsigned char *dst, int dsize)
-+{
-+	int status=0;
-+
-+	static const unsigned char fast_flag[]={
-+		0x00,0x00,0x00,0x20,0x30,0x38,0x3c,0x3e,0x3f
-+	};
-+
-+	static const unsigned char fast_flag_value[]={
-+		0x00,0x7e,0xfc,0xf9,0xf3,0xe7,0xcf,0x9f,0x3f
-+	};
-+
-+	static const unsigned char fast_abort[]={
-+		0x00,0x00,0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe,0xff
-+	};
-+
-+	*count = slen;
-+
-+	while(slen > 0){
-+		if(hdlc->bit_shift==0){
-+			hdlc->cbin = *src++;
-+			slen--;
-+			hdlc->bit_shift = 8;
-+			if(hdlc->do_adapt56){
-+				hdlc->bit_shift --;
-+			}
-+		}
-+
-+		switch(hdlc->state){
-+		case STOPPED:
-+			return 0;
-+		case HDLC_FAST_IDLE:
-+			if(hdlc->cbin == 0xff){
-+				hdlc->bit_shift = 0;
-+				break;
-+			}
-+			hdlc->state = HDLC_GET_FLAG_B0;
-+			hdlc->hdlc_bits1 = 0;
-+			hdlc->bit_shift = 8;
-+			break;
-+		case HDLC_GET_FLAG_B0:
-+			if(!(hdlc->cbin & 0x80)) {
-+				hdlc->state = HDLC_GETFLAG_B1A6;
-+				hdlc->hdlc_bits1 = 0;
-+			} else {
-+				if(!hdlc->do_adapt56){
-+					if(++hdlc->hdlc_bits1 >=8 ) if(hdlc->bit_shift==1)
-+						hdlc->state = HDLC_FAST_IDLE;
-+				}
-+			}
-+			hdlc->cbin<<=1;
-+			hdlc->bit_shift --;
-+			break;
-+		case HDLC_GETFLAG_B1A6:
-+			if(hdlc->cbin & 0x80){
-+				hdlc->hdlc_bits1++;
-+				if(hdlc->hdlc_bits1==6){
-+					hdlc->state = HDLC_GETFLAG_B7;
-+				}
-+			} else {
-+				hdlc->hdlc_bits1 = 0;
-+			}
-+			hdlc->cbin<<=1;
-+			hdlc->bit_shift --;
-+			break;
-+		case HDLC_GETFLAG_B7:
-+			if(hdlc->cbin & 0x80) {
-+				hdlc->state = HDLC_GET_FLAG_B0;
-+			} else {
-+				hdlc->state = HDLC_GET_DATA;
-+				hdlc->crc = 0xffff;
-+				hdlc->shift_reg = 0;
-+				hdlc->hdlc_bits1 = 0;
-+				hdlc->data_bits = 0;
-+				hdlc->data_received = 0;
-+			}
-+			hdlc->cbin<<=1;
-+			hdlc->bit_shift --;
-+			break;
-+		case HDLC_GET_DATA:
-+			if(hdlc->cbin & 0x80){
-+				hdlc->hdlc_bits1++;
-+				switch(hdlc->hdlc_bits1){
-+				case 6:
-+					break;
-+				case 7:
-+					if(hdlc->data_received) {
-+						// bad frame
-+						status = -HDLC_FRAMING_ERROR;
-+					}
-+					if(!hdlc->do_adapt56){
-+						if(hdlc->cbin==fast_abort[hdlc->bit_shift+1]){
-+							hdlc->state = HDLC_FAST_IDLE;
-+							hdlc->bit_shift=1;
-+							break;
-+						}
-+					} else {
-+						hdlc->state = HDLC_GET_FLAG_B0;
-+					}
-+					break;
-+				default:
-+					hdlc->shift_reg>>=1;
-+					hdlc->shift_reg |= 0x80;
-+					hdlc->data_bits++;
-+					break;
-+				}
-+			} else {
-+				switch(hdlc->hdlc_bits1){
-+				case 5:
-+					break;
-+				case 6:
-+					if(hdlc->data_received){
-+						if (hdlc->dstpos < 2) {
-+							status = -HDLC_FRAMING_ERROR;
-+						} else if (hdlc->crc != 0xf0b8){
-+							// crc error
-+							status = -HDLC_CRC_ERROR;
-+						} else {
-+							// remove CRC
-+							hdlc->dstpos -= 2;
-+							// good frame
-+							status = hdlc->dstpos;
-+						}
-+					}
-+					hdlc->crc = 0xffff;
-+					hdlc->shift_reg = 0;
-+					hdlc->data_bits = 0;
-+					if(!hdlc->do_adapt56){
-+						if(hdlc->cbin==fast_flag[hdlc->bit_shift]){
-+							hdlc->ffvalue = fast_flag_value[hdlc->bit_shift];
-+							hdlc->state = HDLC_FAST_FLAG;
-+							hdlc->ffbit_shift = hdlc->bit_shift;
-+							hdlc->bit_shift = 1;
-+						} else {
-+							hdlc->state = HDLC_GET_DATA;
-+							hdlc->data_received = 0;
-+						}
-+					} else {
-+						hdlc->state = HDLC_GET_DATA;
-+						hdlc->data_received = 0;
-+					}
-+					break;
-+				default:
-+					hdlc->shift_reg>>=1;
-+					hdlc->data_bits++;
-+					break;
-+				}
-+				hdlc->hdlc_bits1 = 0;
-+			}
-+			if (status) {
-+				hdlc->dstpos = 0;
-+				*count -= slen;
-+				hdlc->cbin <<= 1;
-+				hdlc->bit_shift--;
-+				return status;
-+			}
-+			if(hdlc->data_bits==8){
-+				hdlc->data_bits = 0;
-+				hdlc->data_received = 1;
-+				hdlc->crc = crc_ccitt_byte(hdlc->crc, hdlc->shift_reg);
-+
-+				// good byte received
-+				if (hdlc->dstpos < dsize) {
-+					dst[hdlc->dstpos++] = hdlc->shift_reg;
-+				} else {
-+					// frame too long
-+					status = -HDLC_LENGTH_ERROR;
-+					hdlc->dstpos = 0;
-+				}
-+			}
-+			hdlc->cbin <<= 1;
-+			hdlc->bit_shift--;
-+			break;
-+		case HDLC_FAST_FLAG:
-+			if(hdlc->cbin==hdlc->ffvalue){
-+				hdlc->bit_shift = 0;
-+				break;
-+			} else {
-+				if(hdlc->cbin == 0xff){
-+					hdlc->state = HDLC_FAST_IDLE;
-+					hdlc->bit_shift=0;
-+				} else if(hdlc->ffbit_shift==8){
-+					hdlc->state = HDLC_GETFLAG_B7;
-+					break;
-+				} else {
-+					hdlc->shift_reg = fast_abort[hdlc->ffbit_shift-1];
-+					hdlc->hdlc_bits1 = hdlc->ffbit_shift-2;
-+					if(hdlc->hdlc_bits1<0)hdlc->hdlc_bits1 = 0;
-+					hdlc->data_bits = hdlc->ffbit_shift-1;
-+					hdlc->state = HDLC_GET_DATA;
-+					hdlc->data_received = 0;
-+				}
-+			}
-+			break;
-+		default:
-+			break;
-+		}
-+	}
-+	*count -= slen;
-+	return 0;
-+}
-+
-+/*
-+  isdnhdlc_encode - encodes HDLC frames to a transparent bit stream.
-+
-+  The bit stream starts with a beginning flag (01111110). After
-+  that each byte is added to the bit stream with bit stuffing added
-+  (0 after 5 1's).
-+  When the last byte has been removed from the source buffer, the
-+  CRC (2 bytes is added) and the frame terminates with the ending flag.
-+  For the dchannel, the idle character (all 1's) is also added at the end.
-+  If this function is called with empty source buffer (slen=0), flags or
-+  idle character will be generated.
-+
-+  src - source buffer
-+  slen - source buffer length
-+  count - number of bytes removed (encoded) from source buffer
-+  dst _ destination buffer
-+  dsize - destination buffer size
-+  returns - number of encoded bytes in the destination buffer
-+*/
-+int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const unsigned char *src,
-+		unsigned short slen, int *count,
-+		unsigned char *dst, int dsize)
-+{
-+	static const unsigned char xfast_flag_value[] = {
-+		0x7e,0x3f,0x9f,0xcf,0xe7,0xf3,0xf9,0xfc,0x7e
-+	};
-+
-+	int len = 0;
-+
-+	*count = slen;
-+
-+	while (dsize > 0) {
-+		if(hdlc->bit_shift==0){
-+			if(slen && !hdlc->do_closing){
-+				hdlc->shift_reg = *src++;
-+				slen--;
-+				if (slen == 0)
-+					hdlc->do_closing = 1;  /* closing sequence, CRC + flag(s) */
-+				hdlc->bit_shift = 8;
-+			} else {
-+				if(hdlc->state == HDLC_SEND_DATA){
-+					if(hdlc->data_received){
-+						hdlc->state = HDLC_SEND_CRC1;
-+						hdlc->crc ^= 0xffff;
-+						hdlc->bit_shift = 8;
-+						hdlc->shift_reg = hdlc->crc & 0xff;
-+					} else if(!hdlc->do_adapt56){
-+						hdlc->state = HDLC_SEND_FAST_FLAG;
-+					} else {
-+						hdlc->state = HDLC_SENDFLAG_B0;
-+					}
-+				}
-+
-+			}
-+		}
-+
-+		switch(hdlc->state){
-+		case STOPPED:
-+			while (dsize--)
-+				*dst++ = 0xff;
-+
-+			return dsize;
-+		case HDLC_SEND_FAST_FLAG:
-+			hdlc->do_closing = 0;
-+			if(slen == 0){
-+				*dst++ = hdlc->ffvalue;
-+				len++;
-+				dsize--;
-+				break;
-+			}
-+			if(hdlc->bit_shift==8){
-+				hdlc->cbin = hdlc->ffvalue>>(8-hdlc->data_bits);
-+				hdlc->state = HDLC_SEND_DATA;
-+				hdlc->crc = 0xffff;
-+				hdlc->hdlc_bits1 = 0;
-+				hdlc->data_received = 1;
-+			}
-+			break;
-+		case HDLC_SENDFLAG_B0:
-+			hdlc->do_closing = 0;
-+			hdlc->cbin <<= 1;
-+			hdlc->data_bits++;
-+			hdlc->hdlc_bits1 = 0;
-+			hdlc->state = HDLC_SENDFLAG_B1A6;
-+			break;
-+		case HDLC_SENDFLAG_B1A6:
-+			hdlc->cbin <<= 1;
-+			hdlc->data_bits++;
-+			hdlc->cbin++;
-+			if(++hdlc->hdlc_bits1 == 6)
-+				hdlc->state = HDLC_SENDFLAG_B7;
-+			break;
-+		case HDLC_SENDFLAG_B7:
-+			hdlc->cbin <<= 1;
-+			hdlc->data_bits++;
-+			if(slen == 0){
-+				hdlc->state = HDLC_SENDFLAG_B0;
-+				break;
-+			}
-+			if(hdlc->bit_shift==8){
-+				hdlc->state = HDLC_SEND_DATA;
-+				hdlc->crc = 0xffff;
-+				hdlc->hdlc_bits1 = 0;
-+				hdlc->data_received = 1;
-+			}
-+			break;
-+		case HDLC_SEND_FIRST_FLAG:
-+			hdlc->data_received = 1;
-+			if(hdlc->data_bits==8){
-+				hdlc->state = HDLC_SEND_DATA;
-+				hdlc->crc = 0xffff;
-+				hdlc->hdlc_bits1 = 0;
-+				break;
-+			}
-+			hdlc->cbin <<= 1;
-+			hdlc->data_bits++;
-+			if(hdlc->shift_reg & 0x01)
-+				hdlc->cbin++;
-+			hdlc->shift_reg >>= 1;
-+			hdlc->bit_shift--;
-+			if(hdlc->bit_shift==0){
-+				hdlc->state = HDLC_SEND_DATA;
-+				hdlc->crc = 0xffff;
-+				hdlc->hdlc_bits1 = 0;
-+			}
-+			break;
-+		case HDLC_SEND_DATA:
-+			hdlc->cbin <<= 1;
-+			hdlc->data_bits++;
-+			if(hdlc->hdlc_bits1 == 5){
-+				hdlc->hdlc_bits1 = 0;
-+				break;
-+			}
-+			if(hdlc->bit_shift==8){
-+				hdlc->crc = crc_ccitt_byte(hdlc->crc, hdlc->shift_reg);
-+			}
-+			if(hdlc->shift_reg & 0x01){
-+				hdlc->hdlc_bits1++;
-+				hdlc->cbin++;
-+				hdlc->shift_reg >>= 1;
-+				hdlc->bit_shift--;
-+			} else {
-+				hdlc->hdlc_bits1 = 0;
-+				hdlc->shift_reg >>= 1;
-+				hdlc->bit_shift--;
-+			}
-+			break;
-+		case HDLC_SEND_CRC1:
-+			hdlc->cbin <<= 1;
-+			hdlc->data_bits++;
-+			if(hdlc->hdlc_bits1 == 5){
-+				hdlc->hdlc_bits1 = 0;
-+				break;
-+			}
-+			if(hdlc->shift_reg & 0x01){
-+				hdlc->hdlc_bits1++;
-+				hdlc->cbin++;
-+				hdlc->shift_reg >>= 1;
-+				hdlc->bit_shift--;
-+			} else {
-+				hdlc->hdlc_bits1 = 0;
-+				hdlc->shift_reg >>= 1;
-+				hdlc->bit_shift--;
-+			}
-+			if(hdlc->bit_shift==0){
-+				hdlc->shift_reg = (hdlc->crc >> 8);
-+				hdlc->state = HDLC_SEND_CRC2;
-+				hdlc->bit_shift = 8;
-+			}
-+			break;
-+		case HDLC_SEND_CRC2:
-+			hdlc->cbin <<= 1;
-+			hdlc->data_bits++;
-+			if(hdlc->hdlc_bits1 == 5){
-+				hdlc->hdlc_bits1 = 0;
-+				break;
-+			}
-+			if(hdlc->shift_reg & 0x01){
-+				hdlc->hdlc_bits1++;
-+				hdlc->cbin++;
-+				hdlc->shift_reg >>= 1;
-+				hdlc->bit_shift--;
-+			} else {
-+				hdlc->hdlc_bits1 = 0;
-+				hdlc->shift_reg >>= 1;
-+				hdlc->bit_shift--;
-+			}
-+			if(hdlc->bit_shift==0){
-+				hdlc->shift_reg = 0x7e;
-+				hdlc->state = HDLC_SEND_CLOSING_FLAG;
-+				hdlc->bit_shift = 8;
-+			}
-+			break;
-+		case HDLC_SEND_CLOSING_FLAG:
-+			hdlc->cbin <<= 1;
-+			hdlc->data_bits++;
-+			if(hdlc->hdlc_bits1 == 5){
-+				hdlc->hdlc_bits1 = 0;
-+				break;
-+			}
-+			if(hdlc->shift_reg & 0x01){
-+				hdlc->cbin++;
-+			}
-+			hdlc->shift_reg >>= 1;
-+			hdlc->bit_shift--;
-+			if(hdlc->bit_shift==0){
-+				hdlc->ffvalue = xfast_flag_value[hdlc->data_bits];
-+				if(hdlc->dchannel){
-+					hdlc->ffvalue = 0x7e;
-+					hdlc->state = HDLC_SEND_IDLE1;
-+					hdlc->bit_shift = 8-hdlc->data_bits;
-+					if(hdlc->bit_shift==0)
-+						hdlc->state = HDLC_SEND_FAST_IDLE;
-+				} else {
-+					if(!hdlc->do_adapt56){
-+						hdlc->state = HDLC_SEND_FAST_FLAG;
-+						hdlc->data_received = 0;
-+					} else {
-+						hdlc->state = HDLC_SENDFLAG_B0;
-+						hdlc->data_received = 0;
-+					}
-+					// Finished with this frame, send flags
-+					if (dsize > 1) dsize = 1;
-+				}
-+			}
-+			break;
-+		case HDLC_SEND_IDLE1:
-+			hdlc->do_closing = 0;
-+			hdlc->cbin <<= 1;
-+			hdlc->cbin++;
-+			hdlc->data_bits++;
-+			hdlc->bit_shift--;
-+			if(hdlc->bit_shift==0){
-+				hdlc->state = HDLC_SEND_FAST_IDLE;
-+				hdlc->bit_shift = 0;
-+			}
-+			break;
-+		case HDLC_SEND_FAST_IDLE:
-+			hdlc->do_closing = 0;
-+			hdlc->cbin = 0xff;
-+			hdlc->data_bits = 8;
-+			if(hdlc->bit_shift == 8){
-+				hdlc->cbin = 0x7e;
-+				hdlc->state = HDLC_SEND_FIRST_FLAG;
-+			} else {
-+				*dst++ = hdlc->cbin;
-+				hdlc->bit_shift = hdlc->data_bits = 0;
-+				len++;
-+				dsize = 0;
-+			}
-+			break;
-+		default:
-+			break;
-+		}
-+		if(hdlc->do_adapt56){
-+			if(hdlc->data_bits==7){
-+				hdlc->cbin <<= 1;
-+				hdlc->cbin++;
-+				hdlc->data_bits++;
-+			}
-+		}
-+		if(hdlc->data_bits==8){
-+			*dst++ = hdlc->cbin;
-+			hdlc->data_bits = 0;
-+			len++;
-+			dsize--;
-+		}
-+	}
-+	*count -= slen;
-+
-+	return len;
-+}
-+
-+EXPORT_SYMBOL(isdnhdlc_rcv_init);
-+EXPORT_SYMBOL(isdnhdlc_decode);
-+EXPORT_SYMBOL(isdnhdlc_out_init);
-+EXPORT_SYMBOL(isdnhdlc_encode);
-diff --git a/include/linux/isdn/hdlc.h b/include/linux/isdn/hdlc.h
-new file mode 100644
-index 0000000..cf0a95a
---- /dev/null
-+++ b/include/linux/isdn/hdlc.h
-@@ -0,0 +1,70 @@
-+/*
-+ * isdnhdlc.h  --  General purpose ISDN HDLC decoder.
-+ *
-+ * Implementation of a HDLC decoder/encoder in software.
-+ * Neccessary because some ISDN devices don't have HDLC
-+ * controllers. Also included: a bit reversal table.
-+ *
-+ *Copyright (C) 2002    Wolfgang Mües      <wolfgang@iksw-muees.de>
-+ *		2001 	Frode Isaksen      <fisaksen@bewan.com>
-+ *              2001 	Kai Germaschewski  <kai.germaschewski@gmx.de>
-+ *
-+ *      This program is free software; you can redistribute it and/or modify
-+ *      it under the terms of the GNU General Public License as published by
-+ *      the Free Software Foundation; either version 2 of the License, or
-+ *      (at your option) any later version.
-+ *
-+ *      This program is distributed in the hope that it will be useful,
-+ *      but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *      GNU General Public License for more details.
-+ *
-+ *      You should have received a copy of the GNU General Public License
-+ *      along with this program; if not, write to the Free Software
-+ *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#ifndef __ISDNHDLC_H__
-+#define __ISDNHDLC_H__
-+
-+struct isdnhdlc_vars {
-+	int bit_shift;
-+	int hdlc_bits1;
-+	int data_bits;
-+	int ffbit_shift; 	// encoding only
-+	int state;
-+	int dstpos;
-+
-+	unsigned short crc;
-+
-+	unsigned char cbin;
-+	unsigned char shift_reg;
-+	unsigned char ffvalue;
-+
-+	unsigned int data_received:1; 	// set if transferring data
-+	unsigned int dchannel:1; 	// set if D channel (send idle instead of flags)
-+	unsigned int do_adapt56:1; 	// set if 56K adaptation
-+	unsigned int do_closing:1; 	// set if in closing phase (need to send CRC + flag
-+};
-+
-+
-+/*
-+  The return value from isdnhdlc_decode is
-+  the frame length, 0 if no complete frame was decoded,
-+  or a negative error number
-+*/
-+#define HDLC_FRAMING_ERROR     1
-+#define HDLC_CRC_ERROR         2
-+#define HDLC_LENGTH_ERROR      3
-+
-+extern void isdnhdlc_rcv_init (struct isdnhdlc_vars *hdlc, int do_adapt56);
-+
-+extern int isdnhdlc_decode (struct isdnhdlc_vars *hdlc, const unsigned char *src, int slen,int *count,
-+	                    unsigned char *dst, int dsize);
-+
-+extern void isdnhdlc_out_init (struct isdnhdlc_vars *hdlc,int is_d_channel,int do_adapt56);
-+
-+extern int isdnhdlc_encode (struct isdnhdlc_vars *hdlc,const unsigned char *src,unsigned short slen,int *count,
-+	                    unsigned char *dst,int dsize);
-+
-+#endif /* __ISDNHDLC_H__ */
+ #endif /* __ISDNHDLC_H__ */
 -- 
 1.6.0.2
 
