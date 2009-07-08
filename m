@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbZGHT4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbZGHT5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758624AbZGHT4q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 15:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZGHT4j
+	id S1758803AbZGHT5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 15:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbZGHT52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 15:56:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45379 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754115AbZGHT4i (ORCPT
+	Wed, 8 Jul 2009 15:57:28 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:53395 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754539AbZGHT52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 15:56:38 -0400
-Subject: Re: [PATCH 1/3] Increase lockdep limits: MAX_STACK_TRACE_ENTRIES
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Joao Correia <joaomiguelcorreia@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-In-Reply-To: <a5d9929e0907081248q51e1fcfekff4c1b814e512184@mail.gmail.com>
-References: <a5d9929e0907070825j1dda6584t93196e2730dedc5c@mail.gmail.com>
-	 <1246980836.9777.5.camel@twins>
-	 <a5d9929e0907070838q7ed3306du3bb7880e47d7207b@mail.gmail.com>
-	 <1246981444.9777.11.camel@twins>
-	 <a5d9929e0907070850v72cd4da4y1cbbb10fddebd575@mail.gmail.com>
-	 <1246982101.9777.15.camel@twins> <20090708172248.GB2521@redhat.com>
-	 <1247078164.16156.18.camel@laptop>
-	 <a5d9929e0907081248q51e1fcfekff4c1b814e512184@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 21:56:29 +0200
-Message-Id: <1247082989.16156.19.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Jul 2009 15:57:28 -0400
+Date: Wed, 8 Jul 2009 15:57:26 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Michael S. Zick" <lkml@morethan.org>
+cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: Null Pointer BUG in uhci_hcd
+In-Reply-To: <200907081130.07370.lkml@morethan.org>
+Message-ID: <Pine.LNX.4.44L0.0907081555310.22105-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 20:48 +0100, Joao Correia wrote:
-> 
-> 
-> Im in no way pretending to understand all the details on this system,
-> but i do know there has been, as of late, an effort to make the init
-> process do more things at once, ie, load more modules in parallel to
-> speed up the process. Can't that be at least partially responsible for
-> this? Even if its just making some other problem more obvious?
+On Wed, 8 Jul 2009, Michael S. Zick wrote:
 
-Nah, lockdep serializes all that under a single lock ;-)
+> But, then again, we might just get lucky:
+> ehci_hcd 0000:00:10.4: Unlink after no-IRQ?  Controller is probably using the wrong IRQ.
+> usb 1-5: khubd timed out on ep0in len=18/64
 
-module unloading in particular wastes resources from a lockdep pov, so
-as long as that doesn't happen, we're good.
+Like I've been telling you all along, the hardware isn't working.  I 
+suspect it's worse than a simple interrupt-routing mistake.
+
+> > > For more information enable CONFIG_USB_DEBUG and CONFIG_DEBUG_FS, then 
+> > > see what's sitting in the usb/uhci/* files in debugfs.
+> > > 
+> 
+> Anything in particular to look for/at?
+
+Just post the contents of those files.
+
+Alan Stern
 
