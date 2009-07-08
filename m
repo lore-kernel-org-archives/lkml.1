@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbZGHQI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbZGHQJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760208AbZGHQI7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:08:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759435AbZGHQGZ
+	id S1758232AbZGHQJV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759456AbZGHQG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:06:25 -0400
-Received: from fifo99.com ([67.223.236.141]:50615 "EHLO fifo99.com"
+	Wed, 8 Jul 2009 12:06:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53291 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759440AbZGHQGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:06:24 -0400
-Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
-From: Daniel Walker <dwalker@fifo99.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <1247063244.4159.40.camel@mulgrave.site>
-References: <4A4CB4B4.5010307@turknet.net.tr>
-	 <20090702130728.22af524c.akpm@linux-foundation.org>
-	 <8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com>
-	 <1247063244.4159.40.camel@mulgrave.site>
+	id S1759260AbZGHQG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:06:28 -0400
+Subject: [PATCH 40/44] includecheck fix: include/linux, net_dropmon.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: David Miller <davem@davemloft.net>, netdev <netdev@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
+References: <1247063308.4382.12.camel@ht.satnam>
 Content-Type: text/plain
-Date: Wed, 08 Jul 2009 09:06:18 -0700
-Message-Id: <1247069178.5973.6.camel@desktop>
+Date: Wed, 08 Jul 2009 21:24:16 +0530
+Message-Id: <1247068456.4382.104.camel@ht.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 09:27 -0500, James Bottomley wrote:
-> 
-> You might also try this patch from martin petersen:  it will print out
-> the actual command that's causing the problems ... that might give a
-> clue.
-> 
-> James
 
-On the bugzilla entry ,
+fix the following 'make includecheck' warning:
 
-http://bugzilla.kernel.org/show_bug.cgi?id=13727
+  include/linux/net_dropmon.h: linux/types.h is included more than once.
 
-Thomas Meyer indicated it was (possibly) the following commit,
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ include/linux/net_dropmon.h |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-018e0446890661504783f92388ecce7138c1566d
+diff --git a/include/linux/net_dropmon.h b/include/linux/net_dropmon.h
+index 3ceb0cc..2a73946 100644
+--- a/include/linux/net_dropmon.h
++++ b/include/linux/net_dropmon.h
+@@ -3,7 +3,6 @@
+ 
+ #include <linux/types.h>
+ #include <linux/netlink.h>
+-#include <linux/types.h>
+ 
+ struct net_dm_drop_point {
+ 	__u8 pc[8];
+-- 
+1.6.0.6
 
-I added Jens to the CC ..
 
-Daniel
 
