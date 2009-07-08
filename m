@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758513AbZGHDOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbZGHDR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758513AbZGHDOD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 23:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757783AbZGHDNy
+	id S1758924AbZGHDR1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 23:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757292AbZGHDRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 23:13:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57426 "EHLO mx2.redhat.com"
+	Tue, 7 Jul 2009 23:17:19 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60013 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757506AbZGHDNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 23:13:54 -0400
-Message-ID: <4A540EEC.7070609@redhat.com>
-Date: Tue, 07 Jul 2009 23:13:48 -0400
-From: William Cohen <wcohen@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] add block IO documentation to tracepoint docbook
-References: <4A4BBECD.8000908@redhat.com> <20090702100155.GA28662@infradead.org>
-In-Reply-To: <20090702100155.GA28662@infradead.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1756823AbZGHDRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 23:17:19 -0400
+Date: Wed, 8 Jul 2009 13:17:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: linux-next: block tree build failure
+Message-Id: <20090708131713.61d9ea7b.sfr@canb.auug.org.au>
+In-Reply-To: <20090707063846.GY23611@kernel.dk>
+References: <20090707134908.e81b1556.sfr@canb.auug.org.au>
+	<20090707063846.GY23611@kernel.dk>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__8_Jul_2009_13_17_13_+1000_ifansJvVkVi/1a.d"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Wed, Jul 01, 2009 at 03:53:49PM -0400, William Cohen wrote:
->> +/**
->> + * block_rq_abort - Abort Block Operation Request
->> + * @q: queue containing the block operation request
->> + * @rq: block IO operation request
->> + *
->> + * Called immediately after pending block IO operation request @rq in
->> + * queue @q is aborted. The fields in the operation request @rq
->> + * can be examined to determine which device and sectors the pending
->> + * operation would access.
->> + */
->>  TRACE_EVENT(block_rq_abort,
-> 
-> Um, what's the point?  These are not function, but rather trace points.
-> The paramters don't actually get exported in the trace files, but the
-> printk ring buffer format and the format string do.  So please document
-> the formats, and if possible make sure this documentation actually
-> appears in debugfs in the trace subdirectory so people get it very easily.
-> 
+--Signature=_Wed__8_Jul_2009_13_17_13_+1000_ifansJvVkVi/1a.d
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Jens,
 
-There is already documentation for the irq tracepoints (irq_handler_entry,
-irq_handler_exit, softirq_entry, and softirq_exit) in
-include/trace/events/irq.h. This was added around the end of April 2009. Threads
-discussing those patches:
+On Tue, 7 Jul 2009 08:38:46 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> That is correct! I have just now updated for-next as well, so your next
+> pull should lose this fixup.
 
-http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02647.html
-http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02650.html
-http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02648.html
-http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/02651.html
+Except you left the call to wakeup_pdflush(0) in there ...  I will fix
+that up while Christoph's concerns are addressed.
 
-In those previous threads there was no discussion about documenting the printk
-ring buffer. The comments in include/linux/tracepoint.h states that functions
-with those parameters are generated for the tracespoints. ftrace appears to be
-built on top of that mechanism.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-It would be nice to have something that describes the format of ftrace output
-available in debugfs.  However, there are other things that use the tracepoints
-in addition to ftrace and the tracepoint comments are trying to describe what
-exactly those events cause those tracepoints to occur. traces/log are useful,
-but there are cases where people might prefer not to post-process a large log
-file to debug a problem.
+--Signature=_Wed__8_Jul_2009_13_17_13_+1000_ifansJvVkVi/1a.d
+Content-Type: application/pgp-signature
 
--Will
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpUD7kACgkQjjKRsyhoI8xE+QCeIdeXC/aD6XXM/4WTZ2p0GNF3
+BbwAnRz5x+gs2J7nvYNe9xbpjuDnWepL
+=Z/JP
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__8_Jul_2009_13_17_13_+1000_ifansJvVkVi/1a.d--
