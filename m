@@ -1,92 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbZGHRRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbZGHRXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742AbZGHRRw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 13:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbZGHRRo
+	id S1755355AbZGHRXN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 13:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZGHRW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 13:17:44 -0400
-Received: from lazybastard.de ([212.112.238.170]:39865 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753844AbZGHRRn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 13:17:43 -0400
-Date: Wed, 8 Jul 2009 19:17:32 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MAX_STACK_TRACE_ENTRIES too low (2.6.31-rc2)
-Message-ID: <20090708171732.GB1650@logfs.org>
-References: <20090707163223.GA24481@redhat.com>
+	Wed, 8 Jul 2009 13:22:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55920 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754075AbZGHRW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 13:22:59 -0400
+Date: Wed, 8 Jul 2009 13:22:48 -0400
+From: Dave Jones <davej@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Subject: Re: [PATCH 1/3] Increase lockdep limits: MAX_STACK_TRACE_ENTRIES
+Message-ID: <20090708172248.GB2521@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Joao Correia <joaomiguelcorreia@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	=?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+References: <a5d9929e0907070825j1dda6584t93196e2730dedc5c@mail.gmail.com> <1246980836.9777.5.camel@twins> <a5d9929e0907070838q7ed3306du3bb7880e47d7207b@mail.gmail.com> <1246981444.9777.11.camel@twins> <a5d9929e0907070850v72cd4da4y1cbbb10fddebd575@mail.gmail.com> <1246982101.9777.15.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090707163223.GA24481@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1246982101.9777.15.camel@twins>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 July 2009 12:32:23 -0400, Dave Jones wrote:
-> 
-> I see this every time I boot.
+On Tue, Jul 07, 2009 at 05:55:01PM +0200, Peter Zijlstra wrote:
+ > On Tue, 2009-07-07 at 16:50 +0100, Joao Correia wrote:
+ > 
+ > > >> Yes. Anything 2.6.31 forward triggers this immediatly during init
+ > > >> process, at random places.
+ > > >
+ > > > Not on my machines it doesn't.. so I suspect its something weird in
+ > > > your .config or maybe due to some hardware you have that I don't that
+ > > > triggers different drivers or somesuch.
+ > > 
+ > > I am not the only one reporting this, and it happens, for example,
+ > > with a stock .config from a Fedora 11 install.
+ > > 
+ > > It may, of course, be a funny driver interaction yes, but other than
+ > > stripping the box piece by piece, how would one go about debugging
+ > > this otherwise?
+ > 
+ > One thing to do is stare (or share) at the output
+ > of /proc/lockdep_chains and see if there's some particularly large
+ > chains in there, or many of the same name or something.
 
-Same here, with a slightly different backtrace.  Seems to go away
-after quadrupling the value.  Not that I understand any of it.
+I don't see any long chains, just lots of them.
+29065 lines on my box that's hitting MAX_STACK_TRACE_ENTRIES 
 
-BUG: MAX_STACK_TRACE_ENTRIES too low!
-turning off the locking correctness validator.
-Pid: 264, comm: pdflush Not tainted 2.6.31-rc2 #4
-Call Trace:
- [<ffffffff81016c7b>] ? save_stack_trace+0x2f/0x4d
- [<ffffffff8106c8b9>] save_trace+0x93/0x9b
- [<ffffffff8106c940>] add_lock_to_list+0x7f/0xc0
- [<ffffffff810706c9>] __lock_acquire+0x135c/0x16bb
- [<ffffffff8122877e>] ? scsi_setup_fs_cmnd+0xbc/0xc5
- [<ffffffff81227dc2>] ? scsi_request_fn+0x1cd/0x535
- [<ffffffff81070af7>] lock_acquire+0xcf/0xfb
- [<ffffffff81227dc2>] ? scsi_request_fn+0x1cd/0x535
- [<ffffffff813235bf>] _spin_lock+0x36/0x6b
- [<ffffffff81227dc2>] ? scsi_request_fn+0x1cd/0x535
- [<ffffffff81323428>] ? _spin_unlock+0x2b/0x2f
- [<ffffffff81227dc2>] scsi_request_fn+0x1cd/0x535
- [<ffffffff81173a63>] __generic_unplug_device+0x35/0x3a
- [<ffffffff8116deab>] elv_insert+0x24f/0x258
- [<ffffffff8116df53>] __elv_add_request+0x9f/0xa7
- [<ffffffff81174640>] __make_request+0x38c/0x40b
- [<ffffffff81171cb5>] generic_make_request+0x326/0x370
- [<ffffffff8106e3cd>] ? mark_held_locks+0x4d/0x6b
- [<ffffffff81171dca>] submit_bio+0xcb/0xd4
- [<ffffffff8110b87b>] submit_bh+0x106/0x12a
- [<ffffffff8110e54a>] __block_write_full_page+0x1fb/0x2f6
- [<ffffffff8110ce66>] ? end_buffer_async_write+0x0/0x184
- [<ffffffff811109a6>] ? blkdev_get_block+0x0/0x65
- [<ffffffff8110e719>] block_write_full_page_endio+0xd4/0xd8
- [<ffffffff8110e732>] block_write_full_page+0x15/0x17
- [<ffffffff811118c0>] blkdev_writepage+0x18/0x1a
- [<ffffffff810bc6de>] __writepage+0x1a/0x40
- [<ffffffff810bcff0>] write_cache_pages+0x262/0x3a8
- [<ffffffff810bc6c4>] ? __writepage+0x0/0x40
- [<ffffffff810bd15d>] generic_writepages+0x27/0x2d
- [<ffffffff810bd193>] do_writepages+0x30/0x40
- [<ffffffff81106951>] writeback_single_inode+0x189/0x395
- [<ffffffff81107025>] generic_sync_sb_inodes+0x2a6/0x44a
- [<ffffffff810bdfbe>] ? pdflush+0x0/0x239
- [<ffffffff811072f7>] writeback_inodes+0xa2/0xfa
- [<ffffffff810bd30d>] wb_kupdate+0xb3/0x129
- [<ffffffff810be113>] pdflush+0x155/0x239
- [<ffffffff810bd25a>] ? wb_kupdate+0x0/0x129
- [<ffffffff8105dc98>] kthread+0x8d/0x95
- [<ffffffff8100ce8a>] child_rip+0xa/0x20
- [<ffffffff8100c810>] ? restore_args+0x0/0x30
- [<ffffffff8105dc0b>] ? kthread+0x0/0x95
- [<ffffffff8100ce80>] ? child_rip+0x0/0x20
+ > /proc/lockdep_stats might also be interesting, mine reads like:
+ 
+ lock-classes:                         1518 [max: 8191]
+ direct dependencies:                  7142 [max: 16384]
+ indirect dependencies:               97905
+ all direct dependencies:            753706
+ dependency chains:                    6201 [max: 32768]
+ dependency chain hlocks:             16665 [max: 163840]
+ in-hardirq chains:                    1380
+ in-softirq chains:                     589
+ in-process chains:                    4232
+ stack-trace entries:                262144 [max: 262144]
+ combined max dependencies:      3449006070
+ hardirq-safe locks:                   1008
+ hardirq-unsafe locks:                  364
+ softirq-safe locks:                    838
+ softirq-unsafe locks:                  322
+ irq-safe locks:                       1043
+ irq-unsafe locks:                      364
+ hardirq-read-safe locks:                 0
+ hardirq-read-unsafe locks:              48
+ softirq-read-safe locks:                 0
+ softirq-read-unsafe locks:              48
+ irq-read-safe locks:                     0
+ irq-read-unsafe locks:                  48
+ uncategorized locks:                   104
+ unused locks:                            0
+ max locking depth:                       9
+ max recursion depth:                    10
+ debug_locks:                             0
 
 
-Jörn
+	Dave
 
--- 
-Correctness comes second.
-Features come third.
-Performance comes last.
-Maintainability is easily forgotten.
