@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZGHLof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbZGHLrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755639AbZGHLof (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 07:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbZGHLo1
+	id S1754914AbZGHLrR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 07:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZGHLrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 07:44:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39918 "EHLO ogre.sisk.pl"
+	Wed, 8 Jul 2009 07:47:10 -0400
+Received: from cmpxchg.org ([85.214.51.133]:51447 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753604AbZGHLo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 07:44:26 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] PM fixes for 2.6.31
-Date: Wed, 8 Jul 2009 13:44:45 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
-       Peter Chubb <peterc@nicta.com.au>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1752900AbZGHLrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 07:47:09 -0400
+Date: Wed, 8 Jul 2009 13:46:26 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC PATCH 2/3] kmemleak: Add callbacks to the bootmem allocator
+Message-ID: <20090708114626.GA6151@cmpxchg.org>
+References: <20090706104654.16051.44029.stgit@pc1117.cambridge.arm.com> <20090706105155.16051.59597.stgit@pc1117.cambridge.arm.com> <1246950530.24285.7.camel@penberg-laptop> <20090707165350.GA2782@cmpxchg.org> <1247004586.5710.16.camel@pc1117.cambridge.arm.com> <1247035701.15919.35.camel@penberg-laptop> <1247046231.6595.14.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907081344.46581.rjw@sisk.pl>
+In-Reply-To: <1247046231.6595.14.camel@pc1117.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Wed, Jul 08, 2009 at 10:43:51AM +0100, Catalin Marinas wrote:
 
-Please pull power management fixes for 2.6.31 from:
+> kmemleak: Add callbacks to the bootmem allocator
+> 
+> From: Catalin Marinas <catalin.marinas@arm.com>
+> 
+> This patch adds kmemleak_alloc/free callbacks to the bootmem allocator.
+> This would allow scanning of such blocks and help avoiding a whole class
+> of false positives and more kmemleak annotations.
+> 
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
+Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
 
-This will fix a regression introduced by the recent arch/x86/power/cpu_(32|64)
-unification (http://bugzilla.kernel.org/show_bug.cgi?id=13661) and a bug
-in drivers/base/power/main.c causing suspend to fail when it should succeed.
-
- arch/x86/power/Makefile   |    2 +-
- drivers/base/power/main.c |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
-
----------------
-
-Peter Chubb (1):
-      x86: Fix resume from suspend when CONFIG_CC_STACKPROTECTOR
-
-Sebastian Ott (1):
-      PM: Clear -EAGAIN in dpm_prepare
-
+> ---
+>  mm/bootmem.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/bootmem.c b/mm/bootmem.c
+> index d2a9ce9..90f3ed0 100644
+> --- a/mm/bootmem.c
+> +++ b/mm/bootmem.c
+> @@ -335,6 +335,8 @@ void __init free_bootmem_node(pg_data_t *pgdat, unsigned long physaddr,
+>  {
+>  	unsigned long start, end;
+>  
+> +	kmemleak_free_part(__va(physaddr), size);
+> +
+>  	start = PFN_UP(physaddr);
+>  	end = PFN_DOWN(physaddr + size);
+>  
+> @@ -354,6 +356,8 @@ void __init free_bootmem(unsigned long addr, unsigned long size)
+>  {
+>  	unsigned long start, end;
+>  
+> +	kmemleak_free_part(__va(addr), size);
+> +
+>  	start = PFN_UP(addr);
+>  	end = PFN_DOWN(addr + size);
+>  
+> @@ -516,6 +520,7 @@ find_block:
+>  		region = phys_to_virt(PFN_PHYS(bdata->node_min_pfn) +
+>  				start_off);
+>  		memset(region, 0, size);
+> +		kmemleak_alloc(region, size, 1, 0);
+>  		return region;
+>  	}
