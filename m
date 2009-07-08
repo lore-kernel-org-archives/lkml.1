@@ -1,140 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbZGHJAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759441AbZGHJOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758292AbZGHJAu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 05:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbZGHJAn
+	id S1759441AbZGHJOb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 05:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbZGHJOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 05:00:43 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:32864 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756335AbZGHJAl (ORCPT
+	Wed, 8 Jul 2009 05:14:20 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:56762 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752416AbZGHJOU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 05:00:41 -0400
-Date: Wed, 8 Jul 2009 04:58:27 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: should kernel support "rdinit=" parm without initrd support?
-Message-ID: <alpine.LFD.2.00.0907080451160.22155@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 8 Jul 2009 05:14:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=pWYXNg4RnV7wUNZyXgFxZ7hQMcHTsVo3QCLyicX6AAJl51erOt3n2uUSfrnlulKH7l
+         VAS5OcGObpL9PRU4jbde+7zcrtKAuta43MykRUCQ31YRNlw2ya4UPA0pYwc/0yQ9tLI6
+         xcMNhJWah2DPbVDisKPTMcqhPhSSoxGRTrGbo=
+Date: Wed, 8 Jul 2009 11:13:44 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Andres Freund <andres@anarazel.de>
+Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
+	possibly?caused by netem)
+Message-ID: <20090708091344.GD3148@ami.dom.local>
+References: <200907031326.21822.andres@anarazel.de> <200907071811.27570.andres@anarazel.de> <20090708080852.GC3148@ami.dom.local> <200907081029.34527.andres@anarazel.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907081029.34527.andres@anarazel.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 08, 2009 at 10:29:34AM +0200, Andres Freund wrote:
+> On Wednesday 08 July 2009 10:08:52 Jarek Poplawski wrote:
+> > On Tue, Jul 07, 2009 at 06:11:27PM +0200, Andres Freund wrote:
+> > > On Tuesday 07 July 2009 15:57:42 Jarek Poplawski wrote:
+> > > > On Tue, Jul 07, 2009 at 03:34:07PM +0200, Andres Freund wrote:
+> > > > ...
+> > > >
+> > > > > Testing wether its triggerable inside a vm might be interesting...
+> > > >
+> > > > Probably similarly to testing without this patch or even less. Maybe
+> > > > I should've warned you but this type of bugs in -rc with possible
+> > > > memory or stack overwrites might be fatal for your data (at least).
+> > >
+> > > Fortunately all the data on that machine should either be replaceable or
+> > > regularly backuped.
+> > >
+> > > Will test later today if that patch bugs.
+> >
+> > If you didn't start yet, it would be nice to use this, btw:
+> >
+> > CONFIG_HOTPLUG_CPU = N
+> > CONFIG_DEBUG_OBJECTS = Y
+> > CONFIG_DEBUG_OBJECTS_TIMERS = Y
+> So I should test with a single cpu? Or is there a config where HOTPLUG_CPU does 
+> not imply !SMP?
 
-  wasn't sure if this was an LKML or newbies list question, so i
-flipped a coin.  you lost.
+No, my single cpu should be enough ;-) There is something wrong I guess.
+I can see in my menuconfig:
 
-  from init/main.c:
+SMP [=y]
+...
+HOTPLUG [=n]
+...
+HOTPUG_CPU [=y]
+...
+Depends on SMP && HOTPLUG
 
-=====
+So, let it be HOTPLUG_CPU = Y for now...
 
-static int __init init_setup(char *str)
-{
-        unsigned int i;
-
-        execute_command = str;
-        /*
-         * In case LILO is going to boot us with default command line,
-         * it prepends "auto" before the whole cmdline which makes
-         * the shell think it should execute a script with such name.
-         * So we ignore all arguments entered _before_ init=... [MJ]
-         */
-        for (i = 1; i < MAX_INIT_ARGS; i++)
-                argv_init[i] = NULL;
-        return 1;
-}
-__setup("init=", init_setup);
-
-static int __init rdinit_setup(char *str)
-{
-        unsigned int i;
-
-        ramdisk_execute_command = str;
-        /* See "auto" comment in init_setup */
-        for (i = 1; i < MAX_INIT_ARGS; i++)
-                argv_init[i] = NULL;
-        return 1;
-}
-__setup("rdinit=", rdinit_setup);
-
-=====
-
-  so, as i read it (and i might be wrong), "rdinit=" is used to
-override the initial program in *early* userspace, while "init=" is
-typically used to override the initial program in the final root
-filesystem.  is that a fairly accurate way to put it?
-
-  however, if you don't configure initramfs support *at all* (by not
-selecting BLK_DEV_INITRD), notice what happens in init_post():
-
-=====
-
-       if (ramdisk_execute_command) {
-                run_init_process(ramdisk_execute_command);
-                printk(KERN_WARNING "Failed to execute %s\n",
-                                ramdisk_execute_command);
-        }
-
-        /*
-         * We try each of these until one succeeds.
-         *
-         * The Bourne shell can be used instead of init if we are
-         * trying to recover a really broken machine.
-         */
-        if (execute_command) {
-                run_init_process(execute_command);
-                printk(KERN_WARNING "Failed to execute %s.  Attempting "
-                                        "defaults...\n", execute_command);
-        }
-        run_init_process("/sbin/init");
-        run_init_process("/etc/init");
-        run_init_process("/bin/init");
-        run_init_process("/bin/sh");
-
-=====
-
-  even without BLK_DEV_INITRD initramfs support, the code will still
-try to process a "rdinit=" command line parm (possibly overriding a
-simultaneous "init=" parm).  does that make sense?  is there some
-value to still processing "rdinit=" when you have no initramfs
-support?  or would it make more sense to simply preprocess that code
-away thusly:
-
-=====
-
-#ifdef CONFIG_BLK_DEV_INITRD
-        if (ramdisk_execute_command) {
-                run_init_process(ramdisk_execute_command);
-                printk(KERN_WARNING "Failed to execute %s\n",
-                                ramdisk_execute_command);
-        }
-#endif
-
-=====
-
-  or am i misreading this entirely?
-
-rday
---
-
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+Jarek P.
