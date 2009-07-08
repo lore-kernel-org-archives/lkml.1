@@ -1,88 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758876AbZGHU0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758436AbZGHUbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758876AbZGHU0Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 16:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbZGHU0P
+	id S1758436AbZGHUbR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 16:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbZGHUbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 16:26:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60463 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755599AbZGHU0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 16:26:14 -0400
-Date: Wed, 8 Jul 2009 16:26:13 -0400
-From: Valerie Aurora <vaurora@redhat.com>
-To: Josef Bacik <josef@redhat.com>
-Cc: linux-ext4@vger.kernel.org, emcnabb@redhat.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] fix softlockups in ext2/3 when trying to allocate blocks
-Message-ID: <20090708202612.GC16893@shell>
-References: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com>
+	Wed, 8 Jul 2009 16:31:03 -0400
+Received: from straum.hexapodia.org ([64.81.70.185]:29836 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753456AbZGHUbC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 16:31:02 -0400
+Date: Wed, 8 Jul 2009 13:31:01 -0700
+From: Andy Isaacson <adi@hexapodia.org>
+To: Laurent Bigonville <l.bigonville@edpnet.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Sinosun TPM support
+Message-ID: <20090708203101.GB6060@hexapodia.org>
+References: <20090707140718.4337498b@edoras.bigon.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090707140718.4337498b@edoras.bigon.be>
+User-Agent: Mutt/1.4.2.3i
+X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 03:47:39PM -0400, Josef Bacik wrote:
-> This isn't a huge deal, but using a big beefy box with more CPUs than what is
-> sane, you can get a nice flood of softlockup messages when running heavy
-> multi-threaded io tests on ext2/3.  The processors compete for blocks from the
-> allocator, so they will loop quite a bit trying to get their allocation.  This
-> patch simply makes sure that we reschedule if need be.  This made the softlockup
-> messages disappear whereas before they happened almost immediately.  Thanks,
-> 
-> Tested-by: Evan McNabb <emcnabb@redhat.com>
-> Signed-off-by: Josef Bacik <josef@redhat.com>
-> ---
->  fs/ext2/balloc.c |    1 +
->  fs/ext3/balloc.c |    2 ++
->  2 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
-> index 7f8d2e5..17dd55f 100644
-> --- a/fs/ext2/balloc.c
-> +++ b/fs/ext2/balloc.c
-> @@ -1176,6 +1176,7 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
->  			break;				/* succeed */
->  		}
->  		num = *count;
-> +		cond_resched();
->  	}
->  	return ret;
->  }
-> diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
-> index 27967f9..cffc8cd 100644
-> --- a/fs/ext3/balloc.c
-> +++ b/fs/ext3/balloc.c
-> @@ -735,6 +735,7 @@ bitmap_search_next_usable_block(ext3_grpblk_t start, struct buffer_head *bh,
->  	struct journal_head *jh = bh2jh(bh);
->  
->  	while (start < maxblocks) {
-> +		cond_resched();
->  		next = ext3_find_next_zero_bit(bh->b_data, maxblocks, start);
->  		if (next >= maxblocks)
->  			return -1;
+On Tue, Jul 07, 2009 at 02:07:18PM +0200, Laurent Bigonville wrote:
+> Does anyone know if there is any support in the kernel for Sinosun TPM
+> modules as my futur motherboard will have that chip.
 
-I'm curious: Why schedule at the beginning of the while() loop rather
-than at the end?
+If it conforms to the TPM TIS 1.2 specification, it should work with
+tpm_tis.ko.
 
-> @@ -1391,6 +1392,7 @@ ext3_try_to_allocate_with_rsv(struct super_block *sb, handle_t *handle,
->  			break;				/* succeed */
->  		}
->  		num = *count;
-> +		cond_resched();
->  	}
->  out:
->  	if (ret >= 0) {
-> -- 
-> 1.6.2.2
-
-I like this patch in general, but I worry about introducing new
-performance problems in other cases.  Have you guys tested on single
-cpu systems?  Maybe with a file system close to ENOSPC or badly
-fragmented?
-
--VAL
+-andy
