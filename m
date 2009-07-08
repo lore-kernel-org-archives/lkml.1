@@ -1,103 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbZGHV4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757075AbZGHWCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbZGHV4u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 17:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbZGHV4m
+	id S1757075AbZGHWCz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbZGHWCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 17:56:42 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4123 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755126AbZGHV4m (ORCPT
+	Wed, 8 Jul 2009 18:02:47 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:35118 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754625AbZGHWCq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 17:56:42 -0400
-Subject: [PATCH] arch/blackfin/kernel/traps.c: Add visually separating
- newlines to printks
-From: Joe Perches <joe@perches.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <8bd0f97a0907061336p1a6e5113o4407ff28684310a2@mail.gmail.com>
-References: <4A4C3410.8080704@kernel.org>
-	 <alpine.LFD.2.01.0907012119370.3380@localhost.localdomain>
-	 <1246513356.28915.62.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.01.0907021020200.4830@localhost.localdomain>
-	 <1246556320.28915.92.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.01.0907021043160.4830@localhost.localdomain>
-	 <1246910740.4643.10.camel@Joe-Laptop.home>
-	 <8bd0f97a0907061323j3480fa61sa7f44d71819a076d@mail.gmail.com>
-	 <alpine.LFD.2.01.0907061332040.3210@localhost.localdomain>
-	 <8bd0f97a0907061336p1a6e5113o4407ff28684310a2@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 14:55:22 -0700
-Message-Id: <1247090122.25028.21.camel@Joe-Laptop.home>
+	Wed, 8 Jul 2009 18:02:46 -0400
+Date: Wed, 8 Jul 2009 15:02:18 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>, WANG Cong <amwang@redhat.com>
+Subject: [PATCH 1/2] Doc: update Documentation/exception.txt
+Message-Id: <20090708150218.a9894e4d.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.4A55176A.006C:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-06 at 16:36 -0400, Mike Frysinger wrote:
-> On Mon, Jul 6, 2009 at 16:33, Linus Torvalds wrote:
-> > On Mon, 6 Jul 2009, Mike Frysinger wrote:
-> >> >  #ifdef CONFIG_DEBUG_VERBOSE
-> >> > -       printk(KERN_EMERG "\n" KERN_EMERG "Double Fault\n");
-> >> > +       printk(KERN_EMERG "Double Fault\n");
-> >> dropped a newline.  we've largely made sure the newlines and such were
-> >> as we want in the output ... in this case, it is not a matter of
-> >> adding a newline where one did not exist before
-> > Note that the 'printk' itself will add a required newline these days.
-> > If you do want the empty line, it should look like
-> >        printk(KERN_EMERG "\nDouble Fault\n");
-> yes, the newlines here were explicit, not follow up to previous ones
-> missing lines.  i ignored the ones Joe (correctly) dropped due to
-> appending rather than explicit spacing.
+From: Amerigo Wang <amwang@redhat.com>
+Subject: [RESEND Patch 1/2] Doc: update Documentation/exception.txt
 
-Commit ad361c9884e809340f6daca80d56a9e9c871690a dropped some
-arguably useful newlines from printks unnecessarily.
+Update Documentation/exception.txt.
+Remove trailing whitespaces in it.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/exception.txt |  202 +++++++++++++++++-----------------
+ 1 file changed, 101 insertions(+), 101 deletions(-)
 
-diff --git a/arch/blackfin/kernel/traps.c b/arch/blackfin/kernel/traps.c
-index 8a1caf2..598d42f 100644
---- a/arch/blackfin/kernel/traps.c
-+++ b/arch/blackfin/kernel/traps.c
-@@ -212,7 +212,7 @@ asmlinkage void double_fault_c(struct pt_regs *fp)
- 	console_verbose();
- 	oops_in_progress = 1;
- #ifdef CONFIG_DEBUG_VERBOSE
--	printk(KERN_EMERG "Double Fault\n");
-+	printk(KERN_EMERG "\nDouble Fault\n");
- #ifdef CONFIG_DEBUG_DOUBLEFAULT_PRINT
- 	if (((long)fp->seqstat &  SEQSTAT_EXCAUSE) == VEC_UNCOV) {
- 		unsigned int cpu = smp_processor_id();
-@@ -590,7 +590,7 @@ asmlinkage void trap_c(struct pt_regs *fp)
+--- linux-2.6.31-rc1-git8.orig/Documentation/exception.txt
++++ linux-2.6.31-rc1-git8/Documentation/exception.txt
+@@ -1,123 +1,123 @@
+-     Kernel level exception handling in Linux 2.1.8
++     Kernel level exception handling in Linux
+   Commentary by Joerg Pommnitz <joerg@raleigh.ibm.com>
  
- 		if (oops_in_progress) {
- 			/* Dump the current kernel stack */
--			verbose_printk(KERN_NOTICE "Kernel Stack\n");
-+			verbose_printk(KERN_NOTICE "\nKernel Stack\n");
- 			show_stack(current, NULL);
- 			print_modules();
- #ifndef CONFIG_ACCESS_CHECK
-@@ -1009,7 +1009,7 @@ void dump_bfin_process(struct pt_regs *fp)
- 			verbose_printk(KERN_NOTICE "invalid mm\n");
- 	} else
- 		verbose_printk(KERN_NOTICE
--			       "No Valid process in current context\n");
-+			       "\nNo Valid process in current context\n");
- #endif
- }
+-When a process runs in kernel mode, it often has to access user 
+-mode memory whose address has been passed by an untrusted program. 
++When a process runs in kernel mode, it often has to access user
++mode memory whose address has been passed by an untrusted program.
+ To protect itself the kernel has to verify this address.
  
-@@ -1184,7 +1184,7 @@ unlock:
- 		verbose_printk(KERN_NOTICE "ICPLB_FAULT_ADDR: %s\n", buf);
- 	}
+-In older versions of Linux this was done with the 
+-int verify_area(int type, const void * addr, unsigned long size) 
++In older versions of Linux this was done with the
++int verify_area(int type, const void * addr, unsigned long size)
+ function (which has since been replaced by access_ok()).
  
--	verbose_printk(KERN_NOTICE "PROCESSOR STATE:\n");
-+	verbose_printk(KERN_NOTICE "\nPROCESSOR STATE:\n");
- 	verbose_printk(KERN_NOTICE " R0 : %08lx    R1 : %08lx    R2 : %08lx    R3 : %08lx\n",
- 		fp->r0, fp->r1, fp->r2, fp->r3);
- 	verbose_printk(KERN_NOTICE " R4 : %08lx    R5 : %08lx    R6 : %08lx    R7 : %08lx\n",
-
-
+-This function verified that the memory area starting at address 
++This function verified that the memory area starting at address
+ 'addr' and of size 'size' was accessible for the operation specified
+-in type (read or write). To do this, verify_read had to look up the 
+-virtual memory area (vma) that contained the address addr. In the 
+-normal case (correctly working program), this test was successful. 
++in type (read or write). To do this, verify_read had to look up the
++virtual memory area (vma) that contained the address addr. In the
++normal case (correctly working program), this test was successful.
+ It only failed for a few buggy programs. In some kernel profiling
+ tests, this normally unneeded verification used up a considerable
+ amount of time.
+ 
+-To overcome this situation, Linus decided to let the virtual memory 
++To overcome this situation, Linus decided to let the virtual memory
+ hardware present in every Linux-capable CPU handle this test.
+ 
+ How does this work?
+ 
+-Whenever the kernel tries to access an address that is currently not 
+-accessible, the CPU generates a page fault exception and calls the 
+-page fault handler 
++Whenever the kernel tries to access an address that is currently not
++accessible, the CPU generates a page fault exception and calls the
++page fault handler
+ 
+ void do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ 
+-in arch/i386/mm/fault.c. The parameters on the stack are set up by 
+-the low level assembly glue in arch/i386/kernel/entry.S. The parameter
+-regs is a pointer to the saved registers on the stack, error_code 
++in arch/x86/mm/fault.c. The parameters on the stack are set up by
++the low level assembly glue in arch/x86/kernel/entry_32.S. The parameter
++regs is a pointer to the saved registers on the stack, error_code
+ contains a reason code for the exception.
+ 
+-do_page_fault first obtains the unaccessible address from the CPU 
+-control register CR2. If the address is within the virtual address 
+-space of the process, the fault probably occurred, because the page 
+-was not swapped in, write protected or something similar. However, 
+-we are interested in the other case: the address is not valid, there 
+-is no vma that contains this address. In this case, the kernel jumps 
+-to the bad_area label. 
+-
+-There it uses the address of the instruction that caused the exception 
+-(i.e. regs->eip) to find an address where the execution can continue 
+-(fixup). If this search is successful, the fault handler modifies the 
+-return address (again regs->eip) and returns. The execution will 
++do_page_fault first obtains the unaccessible address from the CPU
++control register CR2. If the address is within the virtual address
++space of the process, the fault probably occurred, because the page
++was not swapped in, write protected or something similar. However,
++we are interested in the other case: the address is not valid, there
++is no vma that contains this address. In this case, the kernel jumps
++to the bad_area label.
++
++There it uses the address of the instruction that caused the exception
++(i.e. regs->eip) to find an address where the execution can continue
++(fixup). If this search is successful, the fault handler modifies the
++return address (again regs->eip) and returns. The execution will
+ continue at the address in fixup.
+ 
+ Where does fixup point to?
+ 
+-Since we jump to the contents of fixup, fixup obviously points 
+-to executable code. This code is hidden inside the user access macros. 
+-I have picked the get_user macro defined in include/asm/uaccess.h as an
+-example. The definition is somewhat hard to follow, so let's peek at 
++Since we jump to the contents of fixup, fixup obviously points
++to executable code. This code is hidden inside the user access macros.
++I have picked the get_user macro defined in arch/x86/include/asm/uaccess.h
++as an example. The definition is somewhat hard to follow, so let's peek at
+ the code generated by the preprocessor and the compiler. I selected
+-the get_user call in drivers/char/console.c for a detailed examination.
++the get_user call in drivers/char/sysrq.c for a detailed examination.
+ 
+-The original code in console.c line 1405:
++The original code in sysrq.c line 587:
+         get_user(c, buf);
+ 
+ The preprocessor output (edited to become somewhat readable):
+ 
+ (
+-  {        
+-    long __gu_err = - 14 , __gu_val = 0;        
+-    const __typeof__(*( (  buf ) )) *__gu_addr = ((buf));        
+-    if (((((0 + current_set[0])->tss.segment) == 0x18 )  || 
+-       (((sizeof(*(buf))) <= 0xC0000000UL) && 
+-       ((unsigned long)(__gu_addr ) <= 0xC0000000UL - (sizeof(*(buf)))))))        
++  {
++    long __gu_err = - 14 , __gu_val = 0;
++    const __typeof__(*( (  buf ) )) *__gu_addr = ((buf));
++    if (((((0 + current_set[0])->tss.segment) == 0x18 )  ||
++       (((sizeof(*(buf))) <= 0xC0000000UL) &&
++       ((unsigned long)(__gu_addr ) <= 0xC0000000UL - (sizeof(*(buf)))))))
+       do {
+-        __gu_err  = 0;        
+-        switch ((sizeof(*(buf)))) {        
+-          case 1: 
+-            __asm__ __volatile__(        
+-              "1:      mov" "b" " %2,%" "b" "1\n"        
+-              "2:\n"        
+-              ".section .fixup,\"ax\"\n"        
+-              "3:      movl %3,%0\n"        
+-              "        xor" "b" " %" "b" "1,%" "b" "1\n"        
+-              "        jmp 2b\n"        
+-              ".section __ex_table,\"a\"\n"        
+-              "        .align 4\n"        
+-              "        .long 1b,3b\n"        
++        __gu_err  = 0;
++        switch ((sizeof(*(buf)))) {
++          case 1:
++            __asm__ __volatile__(
++              "1:      mov" "b" " %2,%" "b" "1\n"
++              "2:\n"
++              ".section .fixup,\"ax\"\n"
++              "3:      movl %3,%0\n"
++              "        xor" "b" " %" "b" "1,%" "b" "1\n"
++              "        jmp 2b\n"
++              ".section __ex_table,\"a\"\n"
++              "        .align 4\n"
++              "        .long 1b,3b\n"
+               ".text"        : "=r"(__gu_err), "=q" (__gu_val): "m"((*(struct __large_struct *)
+-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )) ; 
+-              break;        
+-          case 2: 
++                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )) ;
++              break;
++          case 2:
+             __asm__ __volatile__(
+-              "1:      mov" "w" " %2,%" "w" "1\n"        
+-              "2:\n"        
+-              ".section .fixup,\"ax\"\n"        
+-              "3:      movl %3,%0\n"        
+-              "        xor" "w" " %" "w" "1,%" "w" "1\n"        
+-              "        jmp 2b\n"        
+-              ".section __ex_table,\"a\"\n"        
+-              "        .align 4\n"        
+-              "        .long 1b,3b\n"        
++              "1:      mov" "w" " %2,%" "w" "1\n"
++              "2:\n"
++              ".section .fixup,\"ax\"\n"
++              "3:      movl %3,%0\n"
++              "        xor" "w" " %" "w" "1,%" "w" "1\n"
++              "        jmp 2b\n"
++              ".section __ex_table,\"a\"\n"
++              "        .align 4\n"
++              "        .long 1b,3b\n"
+               ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
+-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )); 
+-              break;        
+-          case 4: 
+-            __asm__ __volatile__(        
+-              "1:      mov" "l" " %2,%" "" "1\n"        
+-              "2:\n"        
+-              ".section .fixup,\"ax\"\n"        
+-              "3:      movl %3,%0\n"        
+-              "        xor" "l" " %" "" "1,%" "" "1\n"        
+-              "        jmp 2b\n"        
+-              ".section __ex_table,\"a\"\n"        
+-              "        .align 4\n"        "        .long 1b,3b\n"        
++                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  ));
++              break;
++          case 4:
++            __asm__ __volatile__(
++              "1:      mov" "l" " %2,%" "" "1\n"
++              "2:\n"
++              ".section .fixup,\"ax\"\n"
++              "3:      movl %3,%0\n"
++              "        xor" "l" " %" "" "1,%" "" "1\n"
++              "        jmp 2b\n"
++              ".section __ex_table,\"a\"\n"
++              "        .align 4\n"        "        .long 1b,3b\n"
+               ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
+-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(__gu_err)); 
+-              break;        
+-          default: 
+-            (__gu_val) = __get_user_bad();        
+-        }        
+-      } while (0) ;        
+-    ((c)) = (__typeof__(*((buf))))__gu_val;        
++                            (   __gu_addr   )) ), "i"(- 14 ), "0"(__gu_err));
++              break;
++          default:
++            (__gu_val) = __get_user_bad();
++        }
++      } while (0) ;
++    ((c)) = (__typeof__(*((buf))))__gu_val;
+     __gu_err;
+   }
+ );
+@@ -127,12 +127,12 @@ see what code gcc generates:
+ 
+  >         xorl %edx,%edx
+  >         movl current_set,%eax
+- >         cmpl $24,788(%eax)        
+- >         je .L1424        
++ >         cmpl $24,788(%eax)
++ >         je .L1424
+  >         cmpl $-1073741825,64(%esp)
+- >         ja .L1423                
++ >         ja .L1423
+  > .L1424:
+- >         movl %edx,%eax                        
++ >         movl %edx,%eax
+  >         movl 64(%esp),%ebx
+  > #APP
+  > 1:      movb (%ebx),%dl                /* this is the actual user access */
+@@ -149,17 +149,17 @@ see what code gcc generates:
+  > .L1423:
+  >         movzbl %dl,%esi
+ 
+-The optimizer does a good job and gives us something we can actually 
+-understand. Can we? The actual user access is quite obvious. Thanks 
+-to the unified address space we can just access the address in user 
++The optimizer does a good job and gives us something we can actually
++understand. Can we? The actual user access is quite obvious. Thanks
++to the unified address space we can just access the address in user
+ memory. But what does the .section stuff do?????
+ 
+ To understand this we have to look at the final kernel:
+ 
+  > objdump --section-headers vmlinux
+- > 
++ >
+  > vmlinux:     file format elf32-i386
+- > 
++ >
+  > Sections:
+  > Idx Name          Size      VMA       LMA       File off  Algn
+  >   0 .text         00098f40  c0100000  c0100000  00001000  2**4
+@@ -198,18 +198,18 @@ final kernel executable:
+ 
+ The whole user memory access is reduced to 10 x86 machine instructions.
+ The instructions bracketed in the .section directives are no longer
+-in the normal execution path. They are located in a different section 
++in the normal execution path. They are located in a different section
+ of the executable file:
+ 
+  > objdump --disassemble --section=.fixup vmlinux
+- > 
++ >
+  > c0199ff5 <.fixup+10b5> movl   $0xfffffff2,%eax
+  > c0199ffa <.fixup+10ba> xorb   %dl,%dl
+  > c0199ffc <.fixup+10bc> jmp    c017e7a7 <do_con_write+e3>
+ 
+ And finally:
+  > objdump --full-contents --section=__ex_table vmlinux
+- > 
++ >
+  >  c01aa7c4 93c017c0 e09f19c0 97c017c0 99c017c0  ................
+  >  c01aa7d4 f6c217c0 e99f19c0 a5e717c0 f59f19c0  ................
+  >  c01aa7e4 080a18c0 01a019c0 0a0a18c0 04a019c0  ................
+@@ -235,8 +235,8 @@ sections in the ELF object file. So the 
+ ended up in the .fixup section of the object file and the addresses
+         .long 1b,3b
+ ended up in the __ex_table section of the object file. 1b and 3b
+-are local labels. The local label 1b (1b stands for next label 1 
+-backward) is the address of the instruction that might fault, i.e. 
++are local labels. The local label 1b (1b stands for next label 1
++backward) is the address of the instruction that might fault, i.e.
+ in our case the address of the label 1 is c017e7a5:
+ the original assembly code: > 1:      movb (%ebx),%dl
+ and linked in vmlinux     : > c017e7a5 <do_con_write+e1> movb   (%ebx),%dl
+@@ -254,7 +254,7 @@ The assembly code
+ becomes the value pair
+  >  c01aa7d4 c017c2f6 c0199fe9 c017e7a5 c0199ff5  ................
+                                ^this is ^this is
+-                               1b       3b 
++                               1b       3b
+ c017e7a5,c0199ff5 in the exception table of the kernel.
+ 
+ So, what actually happens if a fault from kernel mode with no suitable
+@@ -266,9 +266,9 @@ vma occurs?
+ 3.) CPU calls do_page_fault
+ 4.) do page fault calls search_exception_table (regs->eip == c017e7a5);
+ 5.) search_exception_table looks up the address c017e7a5 in the
+-    exception table (i.e. the contents of the ELF section __ex_table) 
++    exception table (i.e. the contents of the ELF section __ex_table)
+     and returns the address of the associated fault handle code c0199ff5.
+-6.) do_page_fault modifies its own return address to point to the fault 
++6.) do_page_fault modifies its own return address to point to the fault
+     handle code and returns.
+ 7.) execution continues in the fault handling code.
+ 8.) 8a) EAX becomes -EFAULT (== -14)
