@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbZGHQEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbZGHQDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758759AbZGHQEb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758456AbZGHQD6
+	id S1758519AbZGHQDv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758238AbZGHQD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:03:58 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53160 "EHLO hera.kernel.org"
+	Wed, 8 Jul 2009 12:03:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53128 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758623AbZGHQD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:03:57 -0400
-Subject: [PATCH 26/44] includecheck fix: drivers/parisc, ccio-dma.c
+	id S1758228AbZGHQD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:03:27 -0400
+Subject: [PATCH 21/44] includecheck fix: Documentation, cfag12864b-example.c
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: kyle@mcmartin.ca, deller@gmx.de, linux-parisc@vger.kernel.org,
+To: Miguel Ojeda Sandonis <maxextreme@gmail.com>,
+       Paulo Marques <pmarques@grupopie.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
 References: <1247063308.4382.12.camel@ht.satnam>
 Content-Type: text/plain
-Date: Wed, 08 Jul 2009 20:57:20 +0530
-Message-Id: <1247066840.4382.74.camel@ht.satnam>
+Date: Wed, 08 Jul 2009 20:32:49 +0530
+Message-Id: <1247065369.4382.54.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -28,25 +31,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 fix the following 'make includecheck' warning:
 
-  drivers/parisc/ccio-dma.c: linux/proc_fs.h is included more than once.
+  Documentation/auxdisplay/cfag12864b-example.c: string.h is included more than once.
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- drivers/parisc/ccio-dma.c |    1 -
+ Documentation/auxdisplay/cfag12864b-example.c |    1 -
  1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/parisc/ccio-dma.c b/drivers/parisc/ccio-dma.c
-index 0f0e0b9..a45b0c0 100644
---- a/drivers/parisc/ccio-dma.c
-+++ b/drivers/parisc/ccio-dma.c
-@@ -70,7 +70,6 @@
- #undef CCIO_COLLECT_STATS
- #endif
+diff --git a/Documentation/auxdisplay/cfag12864b-example.c b/Documentation/auxdisplay/cfag12864b-example.c
+index 2caeea5..156bcaa 100644
+--- a/Documentation/auxdisplay/cfag12864b-example.c
++++ b/Documentation/auxdisplay/cfag12864b-example.c
+@@ -194,7 +194,6 @@ void cfag12864b_blit(void)
+  */
  
--#include <linux/proc_fs.h>
- #include <asm/runway.h>		/* for proc_runway_root */
+ #include <stdio.h>
+-#include <string.h>
  
- #ifdef DEBUG_CCIO_INIT
+ #define EXAMPLES	6
+ 
 -- 
 1.6.0.6
 
