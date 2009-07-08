@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbZGHWhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbZGHWif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757564AbZGHWhT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbZGHWhI
+	id S1758864AbZGHWif (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbZGHWi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:37:08 -0400
-Received: from xenotime.net ([72.52.64.118]:34471 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755171AbZGHWhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:37:07 -0400
-Date: Wed, 8 Jul 2009 15:37:03 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: gregkh <greg@kroah.com>, vibi sreenivasan <vibi_sreenivasan@cms.com>
-Subject: [PATCH driver model: fix show/store prototypes in doc.
-Message-Id: <20090708153703.01fef7e0.rdunlap@xenotime.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Wed, 8 Jul 2009 18:38:28 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4178 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754626AbZGHWi1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 18:38:27 -0400
+Subject: Re: good example of a tty driver
+From: Joe Perches <joe@perches.com>
+To: Greg KH <greg@kroah.com>, Eng.Linux@digi.com,
+       "Kilau, Scott" <Scott.Kilau@digi.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Linux-Kernel List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090702183149.GA11720@kroah.com>
+References: <D77CBB49-A340-4282-9ACF-2172D1BB9E43@kernel.crashing.org>
+	 <20090702192744.029620ae@lxorguk.ukuu.org.uk>
+	 <20090702183149.GA11720@kroah.com>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 15:38:07 -0700
+Message-Id: <1247092687.25028.23.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: vibi sreenivasan <vibi_sreenivasan@cms.com>
+On Thu, 2009-07-02 at 11:31 -0700, Greg KH wrote:
+> On Thu, Jul 02, 2009 at 07:27:44PM +0100, Alan Cox wrote:
+> > On Thu, 2 Jul 2009 11:48:09 -0500
+> > Kumar Gala <galak@kernel.crashing.org> wrote:
+> > > Thankfully the have a GPL driver but it was last updated against 2.6.23:
+> > > http://www.connectivity.avocent.com/drivers/esp_serial_hubs/dd64e069.asp
+> > > However I've never worked on any tty drivers so its a bit black magic  
+> > > at this point.  I was hoping that an example would at least get me  
+> > > able to bring the driver up to a point that we can get it into the  
+> > > staging tree.
+> > I would make it build, chuck it in the staging tree and go from there
+> That sounds good to me as well.  Kumar, feel free to send me a patch :)
 
-FIX prototypes for show & store method in struct driver_attribute
+I was playing around the the digi dgap driver which is out of tree.
 
-Signed-off-by: vibi sreenivasan <vibi_sreenivasan@cms.com>
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/driver-model/driver.txt |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Scott, do you or Digi have any objections in putting the dgap driver
+into staging as well?
 
---- linux-2.6.31-rc2-git2.orig/Documentation/driver-model/driver.txt
-+++ linux-2.6.31-rc2-git2/Documentation/driver-model/driver.txt
-@@ -207,8 +207,8 @@ Attributes
- ~~~~~~~~~~
- struct driver_attribute {
-         struct attribute        attr;
--        ssize_t (*show)(struct device_driver *, char * buf, size_t count, loff_t off);
--        ssize_t (*store)(struct device_driver *, const char * buf, size_t count, loff_t off);
-+        ssize_t (*show)(struct device_driver *driver, char *buf);
-+        ssize_t (*store)(struct device_driver *, const char * buf, size_t count);
- };
- 
- Device drivers can export attributes via their sysfs directories. 
