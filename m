@@ -1,51 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZGHQwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZGHQwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbZGHQwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbZGHQwY
+	id S1756996AbZGHQwo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbZGHQwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:52:24 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:23068 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753428AbZGHQwX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:52:23 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: David =?iso-8859-1?q?H=E4rdeman?= <david@hardeman.nu>
-Subject: Re: [PATCH 1/2] ACPI: reintroduce acpi_device_ops .shutdown method
-Date: Wed, 8 Jul 2009 10:52:19 -0600
-User-Agent: KMail/1.9.10
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, linux-input@vger.kernel.org,
-       jbarnes@virtuousgeek.org, "Len Brown" <lenb@kernel.org>
-References: <1246079912-17619-1-git-send-email-david@hardeman.nu> <200906301711.34074.bjorn.helgaas@hp.com> <737c7bd0a2f550d21d45b347d018a1ac.squirrel@www.hardeman.nu>
-In-Reply-To: <737c7bd0a2f550d21d45b347d018a1ac.squirrel@www.hardeman.nu>
+	Wed, 8 Jul 2009 12:52:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57867 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757116AbZGHQwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:52:31 -0400
+Message-ID: <4A54CE4B.9080403@kernel.org>
+Date: Wed, 08 Jul 2009 09:50:19 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200907081052.20142.bjorn.helgaas@hp.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+CC: Christoph Lameter <cl@linux-foundation.org>, alex.shi@intel.com,
+       Mel Gorman <mel@csn.ul.ie>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       yanmin.zhang@intel.com, tim.c.chen@intel.com
+Subject: [PATCH] x86: don't clear nodes_states[N_NORMAL_MEMORY] when numa
+ is not compiled in -v2
+References: <bug-13690-10286@http.bugzilla.kernel.org/>  <20090701183452.8660c8a9.akpm@linux-foundation.org>  <4A4C17FD.3080404@kernel.org> <1246517111.15721.5.camel@alexs-hp> <4A4C74D8.30809@kernel.org> <alpine.DEB.1.10.0907021003450.16359@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0907021003450.16359@gentwo.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 July 2009 02:20:59 am David Härdeman wrote:
-> On Wed, July 1, 2009 01:11, Bjorn Helgaas wrote:
-> > The winbond driver does not use any ACPI-specific functionality, so
-> > it might be simpler to write it as a PNP driver (which would depend
-> > on PNPACPI, of course).
-> 
-> As far as I could tell from a quick look at include/linux/pnp.h, a
-> pnp_driver doesn't seem to have any .shutdown methods either, so I'm not
-> sure how it would help?
 
-PNPACPI parses the device resources for you, so you could get rid
-of the _CRS stuff in your driver.
 
-The only reason PNP and ACPI don't have .shutdown is because nobody
-has needed it yet.  If you need it (and it sounds like you do), I
-think the cleanest thing would be to add it to PNP and turn your
-driver into a PNP driver.
+Alex found:
+for x86_64 machine the specjbb2005 still can not run with hugepage
 
-Bjorn
+only happens when numa is not compiled in
+
+the root cause: node_set_state will not set it back for us in that case
+
+so don't clear that when numa is not select in config
+
+v2: use node_clear_state instead
+
+Reported-and-Tested-by: Alex Shi <alex.shi@intel.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/mm/init_64.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/arch/x86/mm/init_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/init_64.c
++++ linux-2.6/arch/x86/mm/init_64.c
+@@ -598,8 +598,15 @@ void __init paging_init(void)
+ 
+ 	sparse_memory_present_with_active_regions(MAX_NUMNODES);
+ 	sparse_init();
+-	/* clear the default setting with node 0 */
+-	nodes_clear(node_states[N_NORMAL_MEMORY]);
++
++	/*
++	 * clear the default setting with node 0
++	 * note: don't use nodes_clear here, that is really clearing when
++	 *	 numa support is not compiled in, and later node_set_state
++	 *	 will not set it back.
++	 */
++	node_clear_state(0, N_NORMAL_MEMORY);
++
+ 	free_area_init_nodes(max_zone_pfns);
+ }
+ 
+
