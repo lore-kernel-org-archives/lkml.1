@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZGHVQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbZGHVRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbZGHVQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 17:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbZGHVQW
+	id S1757555AbZGHVRK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 17:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbZGHVRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 17:16:22 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56652 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754986AbZGHVQW (ORCPT
+	Wed, 8 Jul 2009 17:17:03 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51565 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755328AbZGHVRD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 17:16:22 -0400
-Date: Wed, 8 Jul 2009 22:13:21 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>,
-       David Howells <dhowells@redhat.com>, benh@kernel.crashing.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       jdike@addtoit.com, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       dbrownell@users.sourceforge.net, Greg KH <greg@kroah.com>,
-       mchehab@infradead.org, jeremy@xensource.com, felixb@sgi.com,
-       lenb@kernel.org, airlied@linux.ie, bcrl@kvack.org,
-       Steven Rostedt <rostedt@goodmis.org>,
+	Wed, 8 Jul 2009 17:17:03 -0400
+Date: Wed, 8 Jul 2009 17:16:59 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/44] includecheck: fix multiple includes
-Message-ID: <20090708211321.GA15928@flint.arm.linux.org.uk>
-References: <1247063308.4382.12.camel@ht.satnam> <1247076059.4382.127.camel@ht.satnam>
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] ring-buffer: make lockless
+In-Reply-To: <20090708210522.GA17430@Krystal>
+Message-ID: <alpine.DEB.2.00.0907081711200.22197@gandalf.stny.rr.com>
+References: <20090708201312.222046866@goodmis.org> <20090708201445.696220393@goodmis.org> <20090708210522.GA17430@Krystal>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247076059.4382.127.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 08, 2009 at 11:30:59PM +0530, Jaswinder Singh Rajput wrote:
-> I am still waiting ACK/NAK for :
+
+On Wed, 8 Jul 2009, Mathieu Desnoyers wrote:
+
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > From: Steven Rostedt <srostedt@redhat.com>
+> > 
+> > This patch converts the ring buffers into a completely lockless
+> > buffer recording system. The read side still takes locks since
+> > we still serialize readers. But the writers are the ones that
+> > must be lockless (those can happen in NMIs).
 > 
->       includecheck fix: arm, misc.c
->       includecheck fix: arm, atomic.h
->       includecheck fix: arm, board-dm355-evm.c
->       includecheck fix: arm, board-dm355-leopard.c
->       includecheck fix: arm, board-dm644x-evm.c
->       includecheck fix: arm, board-dm646x-evm.c
->       includecheck fix: arm, board-sffsdr.c
->       includecheck fix: arm, mach-mx3/devices.c
->       includecheck fix: arm, mach-omap1/mcbsp.c
->       includecheck fix: arm, mach-omap2/mcbsp.c
->       includecheck fix: arm, plat-s3c64xx/pm.c
->       includecheck fix: arm, plat-stmp3xxx/pinmux.c
+> Hi Steven,
+> 
+> Have you started modeling this scheme with Promela as I previously
+> discussed with you ? Paul McKenney did a lot of nice papers on the
+> topic, and given the complexity level of this lockless buffering
+> algorithm, I'd be much more comfortable if it was formally verified. The
+> idea here is to make sure we don't start an endless bug-chasing hunt as
+> trace buffers gets more exposure to various workloads.
 
-You're still waiting because apparantly you never sent this set anywhere
-near any ARM people before.
+I would when I get time. Too many things on my plate at the moment. But 
+I do constantly run my ring-buffer-benchmark module, which highly stresses 
+the buffer. I have not had to fix a bug in it for a long time, and nothing 
+that needed a design change.
 
-For the first two, I'll ack them:
+I'll try it out (or better yet, maybe someone else will) when I get more 
+time.
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+-- Steve
 
-The remainder look sane to me, but you'll have to seek acks from the
-individual platform maintainer(s).
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
