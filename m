@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbZGHQoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755766AbZGHQra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755152AbZGHQoU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZGHQoM
+	id S1755766AbZGHQra (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbZGHQrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:44:12 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:51143 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753525AbZGHQoL (ORCPT
+	Wed, 8 Jul 2009 12:47:21 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45501 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357AbZGHQrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:44:11 -0400
-Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <1247069178.5973.6.camel@desktop>
-References: <4A4CB4B4.5010307@turknet.net.tr>
-	 <20090702130728.22af524c.akpm@linux-foundation.org>
-	 <8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com>
-	 <1247063244.4159.40.camel@mulgrave.site>  <1247069178.5973.6.camel@desktop>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 16:44:05 +0000
-Message-Id: <1247071445.4159.214.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Wed, 8 Jul 2009 12:47:21 -0400
+Message-ID: <4A54CD65.1050902@zytor.com>
+Date: Wed, 08 Jul 2009 09:46:29 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: tridge@samba.org, Rusty Russell <rusty@rustcorp.com.au>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090702214646.GD1485@ucw.cz> <19021.12158.915384.574218@samba.org> <20090702223349.GA30840@elf.ucw.cz> <19021.14217.587592.808935@samba.org> <20090702224446.GD30840@elf.ucw.cz> <19021.18919.560478.630755@samba.org> <20090708092133.GC24385@elf.ucw.cz>
+In-Reply-To: <20090708092133.GC24385@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 09:06 -0700, Daniel Walker wrote:
-> On Wed, 2009-07-08 at 09:27 -0500, James Bottomley wrote:
-> > 
-> > You might also try this patch from martin petersen:  it will print out
-> > the actual command that's causing the problems ... that might give a
-> > clue.
-> > 
-> > James
+Pavel Machek wrote:
 > 
-> On the bugzilla entry ,
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=13727
-> 
-> Thomas Meyer indicated it was (possibly) the following commit,
-> 
-> 018e0446890661504783f92388ecce7138c1566d
-> 
-> I added Jens to the CC ..
+> But ... it was, and there is still possibility of just using position
+> in directory to avoid collisions completely.
 
-So thats:
+I was just going to ask this.  Rather than using a random number, we
+should use something based on the position in the directory, and I
+suspect we should still verify that it is unique (since some FAT
+implementation may garbage-collect the directory thereby moving the offset.)
 
-commit 018e0446890661504783f92388ecce7138c1566d
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Fri Jun 26 16:27:10 2009 +0200
+	-hpa
 
-    block: get rid of queue-private command filter
-
-What this tends to suggest is that the command filter was blocking some
-type of command sent from user space which is causing the problem, and
-now we're letting it through.  Restoring the command filter will work
-around the problem, but the root cause should be finding and fixing
-whatever is issuing the commands in the first place.
-
-James
-
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
