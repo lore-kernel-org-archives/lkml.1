@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759712AbZGHGzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759814AbZGHG6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759712AbZGHGzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 02:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759450AbZGHGzF
+	id S1759814AbZGHG6B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 02:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759450AbZGHG5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 02:55:05 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:36400 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752212AbZGHGzE (ORCPT
+	Wed, 8 Jul 2009 02:57:51 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:2012 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759222AbZGHG5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 02:55:04 -0400
-Subject: Re: [PATCH 5/7] MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-In-Reply-To: <1247035628.5124.11.camel@Joe-Laptop.home>
-References: <cover.1247032324.git.joe@perches.com>
-	 <9c84258bdd3ebecd54e2bc203dbded1382af9c02.1247032324.git.joe@perches.com>
-	 <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com>
-	 <1247035197.5124.9.camel@Joe-Laptop.home>
-	 <1247035481.15919.31.camel@penberg-laptop>
-	 <1247035628.5124.11.camel@Joe-Laptop.home>
-Date: Wed, 08 Jul 2009 09:55:02 +0300
-Message-Id: <1247036102.15919.41.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Wed, 8 Jul 2009 02:57:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=VPKKz3/av7I82MuE40IoN2uaDMpi2T2gmGz5aWAhoc7X6ID4jcKK3KL9JUY4mjwLPl
+         GD+HLrCHbKTx2Ig6FeomRF+iC7W6AtAc9+XNFgD5hK0kqKy/fOA4HIBRjX0g27mMS6tL
+         YalNgRy3R/hdRQd4K3WewbxVRJJaeHxXFXtGk=
+Date: Tue, 7 Jul 2009 23:51:05 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 2/5] drivers/input: Use resource_size
+Message-ID: <20090708065105.GB3309@dtor-d630.eng.vmware.com>
+References: <Pine.LNX.4.64.0907050835530.27464@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0907050835530.27464@ask.diku.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joe,
+On Sun, Jul 05, 2009 at 08:36:22AM +0200, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> Use the function resource_size, which reduces the chance of introducing
+> off-by-one errors in calculating the resource size.
+> 
 
-On Tue, 2009-07-07 at 23:39 -0700, Joe Perches wrote:
-> > > Documentation/SubmittingPatches already states that
-> > > LKML should be CC'd on all patches.
+Applied, thank you Julia.
 
-On Wed, 2009-07-08 at 09:44 +0300, Pekka Enberg wrote:
-> > Maybe it does, but real world doesn't seem to agree with you here.
-
-On Tue, 2009-07-07 at 23:47 -0700, Joe Perches wrote:
-> Well, if scripts/get_maintainer.pl gets used more often,
-> it would.
-
-And kernel hackers could fly if they had wings.
-
-Look, all I care is that people who send patches to subsystems I
-maintain know what to CC. The get_maintainer.pl script is obviously
-really helpful here but the fact is, it's _not_ mandatory to CC LKML for
-all patches. So I worry that people will be confused and no list is CC'd
-because other subsystems that have a separate mailing list have that in
-MAINTAINERS.
-
-But anyway, no need to argue about this, Andrew merged your first patch
-so the second patch makes sense as well.
-
-			Pekka
-
+-- 
+Dmitry
