@@ -1,81 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZGHFAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbZGHFFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbZGHFAo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 01:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZGHFAg
+	id S1757636AbZGHFFe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 01:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZGHFFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 01:00:36 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:62631 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750819AbZGHFAg convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 01:00:36 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Dave Airlie <airlied@gmail.com>
-Subject: Re: [Bug #13667] drm: display arifacts when X.Org is stopped
-Date: Wed, 8 Jul 2009 07:00:32 +0200
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <200907080232.04551.elendil@planet.nl> <21d7e9970907071950n27979df6j44444edd8528a598@mail.gmail.com>
-In-Reply-To: <21d7e9970907071950n27979df6j44444edd8528a598@mail.gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200907080700.33120.elendil@planet.nl>
-X-OriginalArrivalTime: 08 Jul 2009 05:00:34.0020 (UTC) FILETIME=[066D5240:01C9FF89]
+	Wed, 8 Jul 2009 01:05:25 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58531 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750960AbZGHFFZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 01:05:25 -0400
+Date: Tue, 7 Jul 2009 22:06:40 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Siarhei Liakh <sliakh.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH v4] RO/NX protection for loadable kernel modules
+Message-ID: <20090707220640.5352ac94@infradead.org>
+In-Reply-To: <817ecb6f0907071747g1d3455cdy9eb84102c17c5ad0@mail.gmail.com>
+References: <817ecb6f0907051623l46ad93e9uc24d8d61669c938e@mail.gmail.com>
+	<200907061043.11793.rusty@rustcorp.com.au>
+	<817ecb6f0907071747g1d3455cdy9eb84102c17c5ad0@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 July 2009, Dave Airlie wrote:
-> On Wed, Jul 8, 2009 at 10:32 AM, Frans Pop<elendil@planet.nl> wrote:
-> > On Tuesday 07 July 2009, Rafael J. Wysocki wrote:
-> >> The following bug entry is on the current list of known regressions
-> >> from 2.6.30.  Please verify if it still should be listed and let me
-> >> know (either way).
-> >>
-> >> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=13667
-> >> Subject       : drm: display arifacts when X.Org is stopped
-> >> Submitter     : Frans Pop <elendil@planet.nl>
-> >> Date          : 2009-06-27 18:52 (10 days old)
-> >> References    : http://lkml.org/lkml/2009/6/27/105
-> >
-> > Problem is still there with -rc2. Dave said he'd try to reproduce,
-> > but I've not heard back from him yet.
->
-> Don't suppose you have a 32-bit install you could also test with?
+On Tue, 7 Jul 2009 20:47:42 -0400
+Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
 
-You're in luck...
-I also get artifacts, though less severe, with .31-rc2 on my Toshiba 
-Satellite A40 (32-bit kernel) during logout from X.Org. The switch is 
-clean with .30.
+> 
+> The patch have been developed for Linux 2.6.30 by Siarhei Liakh
+> <sliakh.lkml@gmail.com> and Xuxian Jiang <jiang@cs.ncsu.edu>.
+> 
+> ---
+> 
+> Signed-off-by: Siarhei Liakh <sliakh.lkml@gmail.com>
+> Signed-off-by: Xuxian Jiang <jiang@cs.ncsu.edu>
 
-> Hopefully I can reproduce it on my box locally, otherwise its really
-> messy dealing with 2 drivers smashing on the same hw.
+I like it, you can already put
 
-Not sure why you're saying that. I would think VESA fb + X.Org is quite 
-common and also a very valid use case [1]. How else would you get the 
-pretty kernel boot logo? ;-)
+Acked-by: Arjan van de Ven <arjan@linux.intel.com> 
 
-> btw you get any wierd text mode issues without vesafb?
+there if you want. If you're going to make a v5 then I do have another
+suggestion for improvement... (only possible now that the code is very
+clean)
 
-If I boot .31-rc2 without vga=791 I don't get the artifacts. The artifacts 
-also do not appear if I boot with 'nopat'. Checked on both systems.
+> +	/* Set RO for module text and RO-data*/
+> +	if (ro_size > 0) {
+> +		begin_addr = (unsigned long) base;
+> +		end_addr = begin_addr + ro_size;
+> +
+> +		/*skip last page if end address is not page-aligned*/
+> +		if (!IS_ALIGNED(end_addr, PAGE_SIZE))
+> +			end_addr = ALIGN(end_addr - PAGE_SIZE,PAGE_SIZE); 
+> +
+> +		/*Set text RO if there are still pages between begin
+> and end*/
+> +		if (end_addr > begin_addr) {
+> +			pg_count = PFN_DOWN(end_addr - 1) -
+> +					PFN_DOWN(begin_addr) + 1;
+> +			DEBUGP("  RO: 0x%lx %lu\n", begin_addr,
+> pg_count);
+> +			set_memory_ro(begin_addr, pg_count);
+> +		} else {
+> +			DEBUGP("  RO: less than a page, not
+> enforcing.\n");
+> +		}
+> +	} else {
+> +		DEBUGP("  RO: section not present.\n");
+> +	}
 
-Note that I reported a similar issue once before, also reproducible on 
-both systems. In that case it was a bug in PAT which was eventually fixed. 
-See: http://bugzilla.kernel.org/show_bug.cgi?id=10843.
+I *think* this can be done as
 
-Given that 'nopat' helps, you may want to check with Suresh on this one.
+begin_pfn = PFN_UP( (base);
+end_pfn = PFN_DOWN(base + ro_size);
 
-Cheers,
-FJP
+if (end_pfn > begin_pfn)
+	set_memory_ro(begin_pfn >> PAGE_SHIFT, end_pfn - begin_pfn);
 
-[1] I'd even go so far as to feel it should be a standard test case for 
-video driver developers, given that this is the third time it's shown 
-regressions :-) For the third case the bug was in the X.Org i830 driver: 
-http://bugs.freedesktop.org/show_bug.cgi?id=14481.
+(note that I think the +1 you have might be buggy)
+
+if you use PFN_UP/PFN_DOWN like this (rounding the start up, rounding the end down),
+then your entire "fix alignment" is not needed, the PFN rounding will automatically
+take case of this.
+
+similar construct also applies to the NX codepath that follows right after this RO codepath.
