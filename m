@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759570AbZGHGrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbZGHGrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759570AbZGHGrU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 02:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758852AbZGHGrN
+	id S1759536AbZGHGrc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 02:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759122AbZGHGrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 8 Jul 2009 02:47:13 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3086 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758223AbZGHGrM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 02:47:12 -0400
-Subject: Re: [PATCH 5/7] MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
-From: Joe Perches <joe@perches.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-In-Reply-To: <1247035481.15919.31.camel@penberg-laptop>
-References: <cover.1247032324.git.joe@perches.com>
-	 <9c84258bdd3ebecd54e2bc203dbded1382af9c02.1247032324.git.joe@perches.com>
-	 <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com>
-	 <1247035197.5124.9.camel@Joe-Laptop.home>
-	 <1247035481.15919.31.camel@penberg-laptop>
-Content-Type: text/plain
-Date: Tue, 07 Jul 2009 23:47:08 -0700
-Message-Id: <1247035628.5124.11.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Received: from mail.marco.de ([217.6.149.82]:48176 "HELO mail.marco.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758174AbZGHGrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 02:47:13 -0400
+Message-ID: <4A5440BA.6070409@marco.de>
+Date: Wed, 08 Jul 2009 08:46:18 +0200
+From: Matthias Pfaller <leo@marco.de>
+Organization: marco Systemanalyse und Entwicklung GmbH
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] DMI: fix dmi_get_year year parsing
+References: <1246998990-9594-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1246998990-9594-1-git-send-email-jirislaby@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 09:44 +0300, Pekka Enberg wrote:
-> On Tue, 2009-07-07 at 23:39 -0700, Joe Perches wrote:
-> > Documentation/SubmittingPatches already states that
-> > LKML should be CC'd on all patches.
+Jiri Slaby wrote:
+> Don't guess a year number base. Use 10 instead, since year may
+> be 2-digit starting with 0, so that we would end up in base equal
+> to 8.
 > 
-> Maybe it does, but real world doesn't seem to agree with you here.
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Reported-by: Matthias Pfaller <leo@marco.de>
+> ---
+>  drivers/firmware/dmi_scan.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
+> index 6071078..8fe0f6e 100644
+> --- a/drivers/firmware/dmi_scan.c
+> +++ b/drivers/firmware/dmi_scan.c
+> @@ -611,7 +611,7 @@ int dmi_get_year(int field)
+>  		return 0;
+>  
+>  	s += 1;
+> -	year = simple_strtoul(s, NULL, 0);
+> +	year = simple_strtoul(s, NULL, 10);
+>  	if (year && year < 100) {	/* 2-digit year */
+>  		year += 1900;
+>  		if (year < 1996)	/* no dates < spec 1.0 */
 
-Well, if scripts/get_maintainer.pl gets used more often,
-it would.
+I just noticed, that this is not enough, because this will still fail 
+for xxx/xx/00. I suggest the following patch:
 
-cheers, Joe
+--- drivers/firmware/dmi_scan.c.bak     Wed Jul  8 02:42:04 2009
++++ drivers/firmware/dmi_scan.c Wed Jul  8 02:42:17 2009
+@@ -360,12 +360,15 @@
+                 return 0;
 
+         s += 1;
+-       year = simple_strtoul(s, NULL, 0);
+-       if (year && year < 100) {       /* 2-digit year */
+-               year += 1900;
+-               if (year < 1996)        /* no dates < spec 1.0 */
+-                       year += 100;
++       if (s[0] == '0' && s[1] == '0' && s[2] == '\0') {
++               year = 2000;
++       } else {
++               year = simple_strtoul(s, NULL, 10);
++               if (year && year < 100) {       /* 2-digit year */
++                       year += 1900;
++                       if (year < 1996)        /* no dates < spec 1.0 */
++                               year += 100;
++               }
+         }
+-
+         return year;
+  }
+
+-- 
+Matthias Pfaller                          Software Entwicklung
+marco Systemanalyse und Entwicklung GmbH  Tel   +49 8131 5161 41
+Hans-Böckler-Str. 2, D 85221 Dachau       Fax   +49 8131 5161 66
+http://www.marco.de/                      Email leo@marco.de
+Geschäftsführer Martin Reuter             HRB 171775 Amtsgericht München
