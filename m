@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbZGHKgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZGHKhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754584AbZGHKgY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 06:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZGHKgQ
+	id S1754812AbZGHKhY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 06:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZGHKhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 06:36:16 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52324 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbZGHKgQ (ORCPT
+	Wed, 8 Jul 2009 06:37:12 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:56612 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbZGHKhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 06:36:16 -0400
-Date: Sat, 4 Jul 2009 04:46:07 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: David Howells <dhowells@redhat.com>
-Cc: vapier.adi@gmail.com, rgetz@blackfin.uclinux.org, lethal@linux-sh.org,
-       gerg@uclinux.org, uclinux-dist-devel@blackfin.uclinux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FDPIC: Ignore the loader's PT_GNU_STACK when
-	calculating the stack size
-Message-ID: <20090704024606.GE1345@ucw.cz>
-References: <20090701120814.30741.10146.stgit@warthog.procyon.org.uk>
+	Wed, 8 Jul 2009 06:37:10 -0400
+Message-ID: <4A5476D2.7040709@monstr.eu>
+Date: Wed, 08 Jul 2009 12:37:06 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701120814.30741.10146.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Tejun Heo <tj@kernel.org>
+CC: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       microblaze-uclinux@itee.uq.edu.au, Sam Ravnborg <sam@ravnborg.org>,
+       Paul Mundt <lethal@linux-sh.org>, Tony Luck <tony.luck@intel.com>,
+       Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH percpu 1/2] microblaze: include EXIT_TEXT to _stext
+References: <4A546646.70305@kernel.org>
+In-Reply-To: <4A546646.70305@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-07-01 13:08:14, David Howells wrote:
-> Ignore the loader's PT_GNU_STACK when calculating the stack size, and only
-> consider the executable's PT_GNU_STACK, assuming the executable has one.
+Tejun Heo wrote:
+> From: Michal Simek <monstr@monstr.eu>
 > 
-> Currently the behaviour is to take the largest stack size and use that, but
-> that means you can't reduce the stack size in the executable.  The loader's
-> stack size should probably only be used when executing the loader directly.
+> Microblaze wants to throw out EXIT_TEXT during runtime too.  This
+> hasn't caused trouble till now because the linker script didn't
+> discard EXIT_TEXT and it ended up in its default output section.  As
+> discard definition is about to be unified, include EXIT_TEXT into
+> _stext explicitly and while at it replace explicit exitcall definition
+> to EXIT_CALL.
 > 
-> WARNING: This patch is slightly dangerous - it may render a system inoperable
-> if the loader's stack size is larger than that of important executables, and
-> the system relies unknowingly on this increasing the size of the stack.
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> ---
+> Michal, I added the commit messaeg and SOB.  If you don't like it
+> please let me know.
 
-The patch seems wrong to me; loader needs the stack, too, right?
+It is ok. I rechecked it and works.
 
-What about making sure that the loader specifies reasonable stack
-size, instead?
+Thanks,
+Michal
+
+
+> 
+> If there's no further objection, I'll commit this and the next patch
+> to percpu#for-next.
+> 
+> Thanks.
+> 
+>  arch/microblaze/kernel/vmlinux.lds.S |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: work/arch/microblaze/kernel/vmlinux.lds.S
+> ===================================================================
+> --- work.orig/arch/microblaze/kernel/vmlinux.lds.S
+> +++ work/arch/microblaze/kernel/vmlinux.lds.S
+> @@ -23,8 +23,8 @@ SECTIONS {
+>  		_stext = . ;
+>  		*(.text .text.*)
+>  		*(.fixup)
+> -
+> -		*(.exitcall.exit)
+> +               EXIT_TEXT
+> +               EXIT_CALL
+>  		SCHED_TEXT
+>  		LOCK_TEXT
+>  		KPROBES_TEXT
+
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
