@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbZGHOrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759276AbZGHOsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759168AbZGHOrx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 10:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758554AbZGHOrP
+	id S1759276AbZGHOsJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 10:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbZGHOrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 10:47:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52227 "EHLO hera.kernel.org"
+	Wed, 8 Jul 2009 10:47:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52242 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758536AbZGHOrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 10:47:13 -0400
-Subject: [PATCH 9/44] includecheck fix: arm, mach-omap1/mcbsp.c
+	id S1758718AbZGHOrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 10:47:31 -0400
+Subject: [PATCH 11/44] includecheck fix: arm, plat-s3c64xx/pm.c
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>, tony@atomide.com
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
 References: <1247063308.4382.12.camel@ht.satnam>
 Content-Type: text/plain
-Date: Wed, 08 Jul 2009 20:10:02 +0530
-Message-Id: <1247064002.4382.27.camel@ht.satnam>
+Date: Wed, 08 Jul 2009 20:12:07 +0530
+Message-Id: <1247064127.4382.29.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -29,25 +28,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 fix the following 'make includecheck' warning:
 
-  arch/arm/mach-omap1/mcbsp.c: mach/irqs.h is included more than once.
+  arch/arm/plat-s3c64xx/pm.c: plat/regs-gpio.h is included more than once.
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/arm/mach-omap1/mcbsp.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ arch/arm/plat-s3c64xx/pm.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/mcbsp.c b/arch/arm/mach-omap1/mcbsp.c
-index a2d7814..505d98c 100644
---- a/arch/arm/mach-omap1/mcbsp.c
-+++ b/arch/arm/mach-omap1/mcbsp.c
-@@ -19,7 +19,6 @@
+diff --git a/arch/arm/plat-s3c64xx/pm.c b/arch/arm/plat-s3c64xx/pm.c
+index 07a6516..47632fc 100644
+--- a/arch/arm/plat-s3c64xx/pm.c
++++ b/arch/arm/plat-s3c64xx/pm.c
+@@ -117,8 +117,6 @@ void s3c_pm_save_core(void)
+  * this.
+  */
  
- #include <mach/irqs.h>
- #include <mach/dma.h>
--#include <mach/irqs.h>
- #include <mach/mux.h>
- #include <mach/cpu.h>
- #include <mach/mcbsp.h>
+-#include <plat/regs-gpio.h>
+-
+ static void s3c64xx_cpu_suspend(void)
+ {
+ 	unsigned long tmp;
 -- 
 1.6.0.6
 
