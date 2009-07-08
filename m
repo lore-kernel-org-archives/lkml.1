@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbZGHCmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbZGHCue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758431AbZGHCmS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 22:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZGHCmB
+	id S1758932AbZGHCue (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 22:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbZGHCuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 22:42:01 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:51492 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753774AbZGHCmA (ORCPT
+	Tue, 7 Jul 2009 22:50:24 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:37697 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755486AbZGHCuX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 22:42:00 -0400
+	Tue, 7 Jul 2009 22:50:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
-         :mime-version:content-type;
-        b=dL63f6ufutk5O5/3J1IhbH2W150GBMzx95vxEBXwMJczkRwgI1PednPe7I0ID1/ZZN
-         EYPNnWpempMZl9rbseTk9E6FgS75Bj/nDHnICuv8cZS+LCg3SYH8TccXbXRrmJHUADda
-         +JvoNhTEKIeR6EUSvd4o6XmRBdL8w96h/HbD0=
-Date: Tue, 7 Jul 2009 22:41:50 -0400 (EDT)
-From: Parag Warudkar <parag.lkml@gmail.com>
-X-X-Sender: parag@parag-desktop
-To: linux-kernel@vger.kernel.org
-cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       teawater@gmail.com, mingo@elte.hu, tj@kernel.org,
-       xiyou.wangcong@gmail.com
-Subject: [PATCH] elfcore.h : Fix UML build breakage
-Message-ID: <alpine.DEB.2.00.0907072226140.24195@parag-desktop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qrTBa2Qo4GnGSs03eNBg79AZoJVU6x/oqgvizMqAowdvoPniqfrAAmlRQ5+CKfr38o
+         VMAOGb7vEZLg+7xERnEWqmrAsaKfRyAt5/IOtmPLG+zwnY1v2qrKzs73uXvNMfMC1f8Y
+         wqAQIh0S9RvnQ1/ZEQqoemcvNqNQh0s4cHQlc=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-787006916-1247020918=:24195"
+In-Reply-To: <200907080232.04551.elendil@planet.nl>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
+	 <dWkuWjWDsSB.A.6tE.d0oUKB@chimera>
+	 <200907080232.04551.elendil@planet.nl>
+Date: Wed, 8 Jul 2009 12:50:22 +1000
+Message-ID: <21d7e9970907071950n27979df6j44444edd8528a598@mail.gmail.com>
+Subject: Re: [Bug #13667] drm: display arifacts when X.Org is stopped
+From: Dave Airlie <airlied@gmail.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, Jul 8, 2009 at 10:32 AM, Frans Pop<elendil@planet.nl> wrote:
+> On Tuesday 07 July 2009, Rafael J. Wysocki wrote:
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.30.  Please verify if it still should be listed and let me
+>> know (either way).
+>>
+>> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=13667
+>> Subject       : drm: display arifacts when X.Org is stopped
+>> Submitter     : Frans Pop <elendil@planet.nl>
+>> Date          : 2009-06-27 18:52 (10 days old)
+>> References    : http://lkml.org/lkml/2009/6/27/105
+>
+> Problem is still there with -rc2. Dave said he'd try to reproduce, but
+> I've not heard back from him yet.
+>
 
---8323329-787006916-1247020918=:24195
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
-Content-Transfer-Encoding: 8BIT
+I have my 2510p, I just have to get a PSU to run it, at least I hope its just
+the PSU.
 
-Commit a65e7bfcd74e4c0939f235d2bf9f48ddb3a57991 breaks UML build with 
-below error - 
+Don't suppose you have a 32-bit install you could also test with?
 
-In file included from fs/proc/kcore.c:17:
-include/linux/elfcore.h: In function ¡elf_core_copy_task_regs¢:
-include/linux/elfcore.h:129: error: implicit declaration of function 
-¡task_pt_regs¢
+Hopefully I can reproduce it on my box locally, otherwise its really
+messy dealing with 2 drivers smashing on the same hw.
 
-Fix this by restoring the previous behavior of returning 0 for all arches 
-like UML that don't define task_pt_regs.
+btw you get any wierd text mode issues without vesafb?
 
-Signed-off-by: Parag Warudkar <parag.lkml@gmail.com>
-
-diff --git a/include/linux/elfcore.h b/include/linux/elfcore.h
-index 03ec167..28f722e 100644
---- a/include/linux/elfcore.h
-+++ b/include/linux/elfcore.h
-@@ -125,7 +125,7 @@ static inline int elf_core_copy_task_regs(struct task_struct *t, elf_gregset_t*
- #ifdef ELF_CORE_COPY_TASK_REGS
- 	
- 	return ELF_CORE_COPY_TASK_REGS(t, elfregs);
--#else
-+#elif defined task_pt_regs
- 	elf_core_copy_regs(elfregs, task_pt_regs(t));
- #endif
- 	return 0;
-
---8323329-787006916-1247020918=:24195--
+Dave.
