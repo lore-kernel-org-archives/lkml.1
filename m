@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZGHKhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZGHKj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbZGHKhY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 06:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZGHKhM
+	id S1754812AbZGHKj4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 06:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZGHKjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 06:37:12 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:56612 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbZGHKhK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 06:37:10 -0400
-Message-ID: <4A5476D2.7040709@monstr.eu>
-Date: Wed, 08 Jul 2009 12:37:06 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Wed, 8 Jul 2009 06:39:49 -0400
+Received: from deleuze.hcoop.net ([69.90.123.67]:42277 "EHLO deleuze.hcoop.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752619AbZGHKjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 06:39:48 -0400
+From: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
+       Rafael Wysocki <rjw@sisk.pl>
+Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by encrypting page cache
+References: <87hbxx0wcp.fsf@jeremyms.com> <4A4B0125.2090502@crca.org.au>
+	<87d48k2992.fsf@jeremyms.com> <4A4B27D0.8020906@crca.org.au>
+	<20090704024432.GB1345@ucw.cz>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Wed, 08 Jul 2009 03:47:53 -0700
+In-Reply-To: <20090704024432.GB1345@ucw.cz> (Pavel Machek's message of "Sat,
+	04 Jul 2009 04:44:32 +0200")
+Message-ID: <87hbxn78o6.fsf@jeremyms.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.95 (gnu/linux)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       microblaze-uclinux@itee.uq.edu.au, Sam Ravnborg <sam@ravnborg.org>,
-       Paul Mundt <lethal@linux-sh.org>, Tony Luck <tony.luck@intel.com>,
-       Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [PATCH percpu 1/2] microblaze: include EXIT_TEXT to _stext
-References: <4A546646.70305@kernel.org>
-In-Reply-To: <4A546646.70305@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> From: Michal Simek <monstr@monstr.eu>
-> 
-> Microblaze wants to throw out EXIT_TEXT during runtime too.  This
-> hasn't caused trouble till now because the linker script didn't
-> discard EXIT_TEXT and it ended up in its default output section.  As
-> discard definition is about to be unified, include EXIT_TEXT into
-> _stext explicitly and while at it replace explicit exitcall definition
-> to EXIT_CALL.
-> 
-> Signed-off-by: Michal Simek <monstr@monstr.eu>
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> ---
-> Michal, I added the commit messaeg and SOB.  If you don't like it
-> please let me know.
+Pavel Machek <pavel@ucw.cz> writes:
 
-It is ok. I rechecked it and works.
+[snip]
 
-Thanks,
-Michal
+> I believe uswsusp could be used rather easily. Just modify s2disk to
+> encrypt image in ram without writing it out, then decrypt it from ram
+> and resume... it should be interesting hack.
 
-
-> 
-> If there's no further objection, I'll commit this and the next patch
-> to percpu#for-next.
-> 
-> Thanks.
-> 
->  arch/microblaze/kernel/vmlinux.lds.S |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: work/arch/microblaze/kernel/vmlinux.lds.S
-> ===================================================================
-> --- work.orig/arch/microblaze/kernel/vmlinux.lds.S
-> +++ work/arch/microblaze/kernel/vmlinux.lds.S
-> @@ -23,8 +23,8 @@ SECTIONS {
->  		_stext = . ;
->  		*(.text .text.*)
->  		*(.fixup)
-> -
-> -		*(.exitcall.exit)
-> +               EXIT_TEXT
-> +               EXIT_CALL
->  		SCHED_TEXT
->  		LOCK_TEXT
->  		KPROBES_TEXT
-
+As far as I understand, that would be completely useless since the image
+that would be encrypted would just be a copy of what would still remain
+in memory.
 
 -- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+Jeremy Maitin-Shepard
