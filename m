@@ -1,141 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZGHX4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZGHX5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbZGHX4Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 19:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZGHX4Q
+	id S1756271AbZGHX5v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 19:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbZGHX5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 19:56:16 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:49626 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754553AbZGHX4P (ORCPT
+	Wed, 8 Jul 2009 19:57:43 -0400
+Received: from mail-qy0-f193.google.com ([209.85.221.193]:44269 "EHLO
+	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754732AbZGHX5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 19:56:15 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Null Pointer BUG in uhci_hcd
-Date: Wed, 8 Jul 2009 18:56:09 -0500
-User-Agent: KMail/1.9.9
-Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0907081555310.22105-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0907081555310.22105-100000@iolanthe.rowland.org>
+	Wed, 8 Jul 2009 19:57:43 -0400
+Message-ID: <4A553272.5050909@codemonkey.ws>
+Date: Wed, 08 Jul 2009 18:57:38 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
+       xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
+       kurt.hackel@oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, dave.mccracken@oracle.com,
+       linux-mm@kvack.org, chris.mason@oracle.com, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>, alan@lxorguk.ukuu.org.uk,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [Xen-devel] Re: [RFC PATCH 0/4] (Take 2): transcendent memory
+ ("tmem") for Linux
+References: <ac5dec0d-e593-4a82-8c9d-8aa374e8c6ed@default>
+In-Reply-To: <ac5dec0d-e593-4a82-8c9d-8aa374e8c6ed@default>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907081856.12191.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed July 8 2009, Alan Stern wrote:
-> On Wed, 8 Jul 2009, Michael S. Zick wrote:
-> 
-> > But, then again, we might just get lucky:
-> > ehci_hcd 0000:00:10.4: Unlink after no-IRQ?  Controller is probably using the wrong IRQ.
-> > usb 1-5: khubd timed out on ep0in len=18/64
-> 
-> Like I've been telling you all along, the hardware isn't working.  I 
-> suspect it's worse than a simple interrupt-routing mistake.
-> 
-> > > > For more information enable CONFIG_USB_DEBUG and CONFIG_DEBUG_FS, then 
-> > > > see what's sitting in the usb/uhci/* files in debugfs.
-> > > > 
-> > 
-> > Anything in particular to look for/at?
-> 
-> Just post the contents of those files.
+Dan Magenheimer wrote:
+> Hi Anthony --
 >
-Done:
+> Thanks for the comments.
+>
+>   
+>> I have trouble mapping this to a VMM capable of overcommit 
+>> without just coming back to CMM2.
+>>
+>> In CMM2 parlance, ephemeral tmem pools is just normal kernel memory 
+>> marked in the volatile state, no?
+>>     
+>
+> They are similar in concept, but a volatile-marked kernel page
+> is still a kernel page, can be changed by a kernel (or user)
+> store instruction, and counts as part of the memory used
+> by the VM.  An ephemeral tmem page cannot be directly written
+> by a kernel (or user) store,
 
-root@cb01:/sys/kernel/debug/uhci# cat *
-Root-hub state: suspended   FSBR: 0
-HC status
-  usbcmd    =     0048   Maxp32 CF EGSM
-  usbstat   =     0020   HCHalted
-  usbint    =     0002
-  usbfrnum  =   (1)4a8
-  flbaseadd = 19c7f000
-  sof       =       40
-  stat1     =     0480   OverCurrent
-  stat2     =     0480   OverCurrent
-Most recent frame: 52a (298)   Last ISO frame: 52a (298)
-Periodic load table
-        0       0       0       0       0       0       0       0
-        0       0       0       0       0       0       0       0
-        0       0       0       0       0       0       0       0
-        0       0       0       0       0       0       0       0
-Total: 0, #INT: 0, #ISO: 0
-Root-hub state: suspended   FSBR: 0
-HC status
-  usbcmd    =     0048   Maxp32 CF EGSM
-  usbstat   =     0020   HCHalted
-  usbint    =     0002
-  usbfrnum  =   (1)4a0
-  flbaseadd = 19c63000
-  sof       =       40
-  stat1     =     0480   OverCurrent
-  stat2     =     0480   OverCurrent
-Most recent frame: 528 (296)   Last ISO frame: 528 (296)
-Periodic load table
-        0       0       0       0       0       0       0       0
-        0       0       0       0       0       0       0       0
-        0       0       0       0       0       0       0       0
-        0       0       0       0       0       0       0       0
-Total: 0, #INT: 0, #ISO: 0
-Root-hub state: running   FSBR: 0
-HC status
-  usbcmd    =     00c1   Maxp64 CF RS
-  usbstat   =     0000
-  usbint    =     000f
-  usbfrnum  =   (0)c1c
-  flbaseadd = 19c9c000
-  sof       =       40
-  stat1     =     0495   OverCurrent Enabled Connected
-  stat2     =     0495   OverCurrent Enabled Connected
-Most recent frame: 56aee (750)   Last ISO frame: 56aee (750)
-Periodic load table
-        0       0       0       0       0       0       0       0
-        0       0       0       0       0       0       0       0
-        17      0       0       0       0       0       0       0
-        0       0       0       0       0       0       0       0
-Total: 17, #INT: 1, #ISO: 0
+Why does tmem require a special store?
 
-And, at no extra cost:
+A VMM can trap write operations pages can be stored on disk 
+transparently by the VMM if necessary.  I guess that's the bit I'm missing.
 
-root@cb01:/sys/kernel/debug/ehci/0000:00:10.4# cat *
-size = 256
-bus pci, device 0000:00:10.4
-EHCI Host Controller
-EHCI 1.00, hcd state 4
-ownership 01000001 linux
-SMI sts/enable 0xe00f0000
-structural params 0x00103206
-capability params 0x00006872
-status 100f Halt FLR PCD ERR INT
-command 010008 (park)=0 ithresh=1 period=256 HALT
-intrenable 37 IAA FATAL PCD ERR INT
-uframe 14db
-port 1 status 701000 POWER sig=se0
-port 2 status 701000 POWER sig=se0
-port 3 status 701000 POWER sig=se0
-port 4 status 701000 POWER sig=se0
-port 5 status 703802 POWER OWNER sig=j CSC
-port 6 status 703802 POWER OWNER sig=j CSC
-irq normal 0 err 0 reclaim 0 (lost 20)
-complete 0 unlink 20
+>> It seems to me that an architecture built around hinting 
+>> would be more 
+>> robust than having to use separate memory pools for this type 
+>> of memory 
+>> (especially since you are requiring a copy to/from the pool).
+>>     
+>
+> Depends on what you mean by robust, I suppose.  Once you
+> understand the basics of tmem, it is very simple and this
+> is borne out in the low invasiveness of the Linux patch.
+> Simplicity is another form of robustness.
+>   
 
-Mike 
-> Alan Stern
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+The main disadvantage I see is that you need to explicitly convert 
+portions of the kernel to use a data copying API.  That seems like an 
+invasive change to me.  Hinting on the other hand can be done in a 
+less-invasive way.
 
+I'm not really arguing against tmem, just the need to have explicit 
+get/put mechanisms for the transcendent memory areas.
 
+> The copy may be expensive on an older machine, but on newer
+> machines copying a page is relatively inexpensive.
+
+I don't think that's a true statement at all :-)  If you had a workload 
+where data never came into the CPU cache (zero-copy) and now you 
+introduce a copy, even with new system, you're going to see a 
+significant performance hit.
+
+>   On a reasonable
+> multi-VM-kernbench-like benchmark I'll be presenting at Linux
+> Symposium next week, the overhead is on the order of 0.01%
+> for a fairly significant savings in IOs.
+>   
+But how would something like specweb do where you should be doing 
+zero-copy IO from the disk to the network?  This is the area where I 
+would be concerned.  For something like kernbench, you're already 
+bringing the disk data into the CPU cache anyway so I can appreciate 
+that the copy could get lost in the noise.
+
+Regards,
+
+Anthony Liguori
