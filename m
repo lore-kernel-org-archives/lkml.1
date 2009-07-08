@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758519AbZGHQDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbZGHQDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758519AbZGHQDv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758238AbZGHQD2
+	id S1758262AbZGHQDj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbZGHQDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:03:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53128 "EHLO hera.kernel.org"
+	Wed, 8 Jul 2009 12:03:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53117 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758228AbZGHQD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:03:27 -0400
-Subject: [PATCH 21/44] includecheck fix: Documentation, cfag12864b-example.c
+	id S1758124AbZGHQDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:03:15 -0400
+Subject: [PATCH 23/44] includecheck fix: drivers/net, sja1000.c
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Miguel Ojeda Sandonis <maxextreme@gmail.com>,
-       Paulo Marques <pmarques@grupopie.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+To: David Miller <davem@davemloft.net>, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
 In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
 References: <1247063308.4382.12.camel@ht.satnam>
 Content-Type: text/plain
-Date: Wed, 08 Jul 2009 20:32:49 +0530
-Message-Id: <1247065369.4382.54.camel@ht.satnam>
+Date: Wed, 08 Jul 2009 20:42:31 +0530
+Message-Id: <1247065951.4382.58.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -31,24 +29,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 fix the following 'make includecheck' warning:
 
-  Documentation/auxdisplay/cfag12864b-example.c: string.h is included more than once.
+  drivers/net/can/sja1000/sja1000.c: linux/can/dev.h is included more than once.
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- Documentation/auxdisplay/cfag12864b-example.c |    1 -
+ drivers/net/can/sja1000/sja1000.c |    1 -
  1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/auxdisplay/cfag12864b-example.c b/Documentation/auxdisplay/cfag12864b-example.c
-index 2caeea5..156bcaa 100644
---- a/Documentation/auxdisplay/cfag12864b-example.c
-+++ b/Documentation/auxdisplay/cfag12864b-example.c
-@@ -194,7 +194,6 @@ void cfag12864b_blit(void)
-  */
+diff --git a/drivers/net/can/sja1000/sja1000.c b/drivers/net/can/sja1000/sja1000.c
+index 571f133..08ebee7 100644
+--- a/drivers/net/can/sja1000/sja1000.c
++++ b/drivers/net/can/sja1000/sja1000.c
+@@ -63,7 +63,6 @@
+ #include <linux/can.h>
+ #include <linux/can/dev.h>
+ #include <linux/can/error.h>
+-#include <linux/can/dev.h>
  
- #include <stdio.h>
--#include <string.h>
- 
- #define EXAMPLES	6
+ #include "sja1000.h"
  
 -- 
 1.6.0.6
