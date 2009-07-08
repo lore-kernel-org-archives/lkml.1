@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZGHOCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbZGHOEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbZGHOCY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 10:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbZGHOCQ
+	id S1756405AbZGHOEu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 10:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbZGHOEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 10:02:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39834 "EHLO mx2.redhat.com"
+	Wed, 8 Jul 2009 10:04:43 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46973 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756142AbZGHOCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 10:02:16 -0400
-Date: Wed, 8 Jul 2009 10:00:25 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 11/25] io-controller: Export disk time used and nr
-	sectors dipatched through cgroups
-Message-ID: <20090708140025.GC24048@redhat.com>
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-12-git-send-email-vgoyal@redhat.com> <4A54018C.5090804@cn.fujitsu.com>
+	id S1753197AbZGHOEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 10:04:42 -0400
+Date: Wed, 8 Jul 2009 07:04:19 -0700
+From: Greg KH <gregkh@suse.de>
+To: Peter Jones <pjones@redhat.com>
+Cc: Dave Airlie <airlied@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Scott James Remnant <scott@canonical.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Dave Jones <davej@redhat.com>
+Subject: Re: can we move USB_DEVICEFS to non-embedded?
+Message-ID: <20090708140419.GA20418@suse.de>
+References: <b6a2187b0906222211i4509bc4cu39e9123cba61039a@mail.gmail.com>
+ <20090623144221.GA29593@suse.de>
+ <b6a2187b0906230829k308cb875r7362f184bccb1d6d@mail.gmail.com>
+ <20090623153928.GA32604@suse.de>
+ <21d7e9970907080354h6949b27va40fb830f612287@mail.gmail.com>
+ <4A54A4A6.2060100@redhat.com>
+ <4A54A538.3080407@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A54018C.5090804@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A54A538.3080407@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 08, 2009 at 10:16:44AM +0800, Gui Jianfeng wrote:
-[..]
+On Wed, Jul 08, 2009 at 09:55:04AM -0400, Peter Jones wrote:
+> On 07/08/2009 09:52 AM, Peter Jones wrote:
+> > On 07/08/2009 06:54 AM, Dave Airlie wrote:
+> > 
+> >> I'm not quite sure if something in the F11 initrd needs usbfs for
+> >> something (cc'ed Peter)
+> > 
+> > Not a thing.
 > 
-> Hi Vivek,
-> 
-> Let io.disk_*'s outputs conform with io.policy's.
-> 
+> Actually, I take it back.  We do mount usbfs, and we examine
+> /proc/bus/usb/devices as a heuristic to try and determine if
+> all the devices have been enumerated.
 
-Sure. Queued up for next posting.
+How can you ever know if all devices are enumerated as you don't know
+how many devices will be showing up?
 
-Thanks
-Vivek
+> So that could be related to what you're seeing.
 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 7c83d1e..29392e7 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -1631,7 +1631,7 @@ static int io_cgroup_disk_time_read(struct cgroup *cgroup,
->  		 * waiting to be reclaimed upon cgoup deletion.
->  		 */
->  		if (iog->key) {
-> -			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-> +			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
->  					MINOR(iog->dev),
->  					iog->entity.total_service);
->  		}
-> @@ -1661,7 +1661,7 @@ static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
->  		 * waiting to be reclaimed upon cgoup deletion.
->  		 */
->  		if (iog->key) {
-> -			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-> +			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
->  					MINOR(iog->dev),
->  					iog->entity.total_sector_service);
->  		}
-> @@ -1692,7 +1692,7 @@ static int io_cgroup_disk_queue_read(struct cgroup *cgroup,
->  		 * waiting to be reclaimed upon cgoup deletion.
->  		 */
->  		if (iog->key) {
-> -			seq_printf(m, "%u %u %lu %lu\n", MAJOR(iog->dev),
-> +			seq_printf(m, "%u:%u %lu %lu\n", MAJOR(iog->dev),
->  					MINOR(iog->dev), iog->queue,
->  					iog->queue_duration);
->  		}
-> @@ -1722,7 +1722,7 @@ static int io_cgroup_disk_dequeue_read(struct cgroup *cgroup,
->  		 * waiting to be reclaimed upon cgoup deletion.
->  		 */
->  		if (iog->key) {
-> -			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-> +			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
->  					MINOR(iog->dev), iog->dequeue);
->  		}
->  	}
-> -- 
-> 1.5.4.rc3
-> 
+That file is now available in /sys/kernel/debug/usb/devices if you
+really need it.
+
+But I would think that you do not.
+
+thanks,
+
+greg k-h
