@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbZGHAk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbZGHAmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758957AbZGHAk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 20:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbZGHAkS
+	id S1757061AbZGHAmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 20:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZGHAmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 20:40:18 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:38014 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755227AbZGHAkR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 20:40:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XvoZFBJNeVmY+6//wCKK10z82PMX01qrMDibvefehnP1N8Ca6NcmsSHC6T86JBOsqg
-         kcOveyC4zZ+EMrWTk+7e7wdTEuJrfQ45mB7KYkOMC8LXU7M1t1c2DfVfcOmS6RclbEK8
-         IS590//K3s8a4IWmeio4WbTaHddYuPbk+yWqw=
-Subject: Re: [PATCH] vmalloc.c: fix double error checking
-From: "Figo.zhang" <figo1802@gmail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A53E602.6030505@kernel.org>
-References: <1246983201.2597.13.camel@myhost>  <4A53E602.6030505@kernel.org>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 08:40:06 +0800
-Message-Id: <1247013611.2597.22.camel@myhost>
+	Tue, 7 Jul 2009 20:42:09 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53961 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753595AbZGHAmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 20:42:08 -0400
+Date: Wed, 8 Jul 2009 10:41:59 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: linux-next: block tree build failure
+Message-Id: <20090708104159.2de0dc03.sfr@canb.auug.org.au>
+In-Reply-To: <20090707135541.GA4997@infradead.org>
+References: <20090707134908.e81b1556.sfr@canb.auug.org.au>
+	<20090707135541.GA4997@infradead.org>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__8_Jul_2009_10_41_59_+1000_452eLPAbZjCoznON"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 09:19 +0900, Tejun Heo wrote:
-> Figo.zhang wrote:
-> > it is no need for double error checking.
-> > 
-> > Signed-off-by: Figo.zhang <figo1802@gmail.com>
-> > -		err = vmap_pud_range(pgd, addr, next, prot, pages, &nr);
-> > -		if (err)
-> > -			break;
-> > +		if (vmap_pud_range(pgd, addr, next, prot, pages, &nr))
-> > +			return -ENOMEM;
-> 
-> Wouldn't it be better to keep the error return value?
+--Signature=_Wed__8_Jul_2009_10_41_59_+1000_452eLPAbZjCoznON
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-see the vmap_pud_range(), if suceed return 0, if error return "-ENOMEM",
-so it had better use clearly logic if error directly return "-EOMEM",
-avoid double checking.
+Hi Christoph,
 
-Best,
-Figo.zhang
+On Tue, 7 Jul 2009 09:55:42 -0400 Christoph Hellwig <hch@infradead.org> wro=
+te:
+>
+> On Tue, Jul 07, 2009 at 01:49:08PM +1000, Stephen Rothwell wrote:
+> > interacting with commit 3beab0b42413e83a7907db7176b54c840fc75a81
+> > ("sys_sync(): fix 16% performance regression in ffsb create_4k test")
+> > from Linus' tree.
+>=20
+> Where the fuck is that patch coming from?  For one that's a horrible
+> patch subject and second I can't see it anywhere on -fsdevel.  We
+> removed that bdflush wakeup for a reason, and if it causes problems
+> those need to be discussed and fixed properly instead of papering over
+> it.
 
+http://lkml.org/lkml/2009/6/29/52
 
-> 
-> Thanks.
-> 
-> --
-> tejun
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Wed__8_Jul_2009_10_41_59_+1000_452eLPAbZjCoznON
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpT61cACgkQjjKRsyhoI8xuyQCfU4b+/AISAx/Bk0PwS8bXZUpc
+R4gAn2XN92aLmqwA72aRNY0aP+vknL10
+=Tq7l
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__8_Jul_2009_10_41_59_+1000_452eLPAbZjCoznON--
