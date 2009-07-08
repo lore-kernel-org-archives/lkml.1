@@ -1,50 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbZGHVL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZGHVNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbZGHVL7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 17:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbZGHVLx
+	id S1756731AbZGHVNL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 17:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZGHVNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 17:11:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37331 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755206AbZGHVLw (ORCPT
+	Wed, 8 Jul 2009 17:13:05 -0400
+Received: from krypton.spydercomm.com ([69.64.33.54]:41028 "EHLO
+	krypton.spydercomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755599AbZGHVNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 17:11:52 -0400
-Date: Wed, 8 Jul 2009 14:10:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: a.p.zijlstra@chello.nl, oleg@redhat.com, avorontsov@ru.mvista.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC] sched: Remove SYSTEM_RUNNING checks from
- cond_resched*()
-Message-Id: <20090708141024.f8b581c5.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-	<20090708005000.GA12380@redhat.com>
-	<1247034263.9777.24.camel@twins>
-	<alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Jul 2009 17:13:04 -0400
+Message-ID: <4A550BDD.9030602@queuemail.com>
+Date: Wed, 08 Jul 2009 17:13:01 -0400
+From: paul s <mactel-linux.org-users@queuemail.com>
+Reply-To: mactel-linux.org-users@queuemail.com
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: mactel-linux-users <mactel-linux-users@lists.sourceforge.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [Mactel-linux-users] touchpad synaptics pm-suspend
+References: <4A53C580.2040000@queuemail.com> <4A540461.1030204@gmail.com> <4A541D42.8070004@queuemail.com> <4A5424C5.10405@gmail.com> <4A546A87.5070009@queuemail.com> <4A54CC78.9020707@gmail.com>
+In-Reply-To: <4A54CC78.9020707@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 8 Jul 2009 09:12:30 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> That said, I do agree that maybe SYSTEM_RUNNING isn't the right check. 
-> Testing that the scheduler is initialized may be the more correct one. I 
-> think the SYSTEM_RUNNING one just comes from that being used for other 
-> debug issues.
+ > If you can save those messages, and
+ > send them to kernel.org.
 
-Agreed.  system_state is too general.
+i just think it had to do with the disk... i've since upgraded my root 
+partition to ext4 and the boot partition, where the kernel resides, is 
+still ext3 due to grub...
 
-If we specifically want to know whether it is safe to call schedule() then
-let's create a global boolean it_is_safe_to_call_schedule and test that,
-rather than testing something which indirectly and unreliably implies "it
-is safe to call schedule".  If that boolean already exists then no-brainer.
+i just rolled it back when rebuilding the nvidia and broadcomm rpms 
+failed with the kernel... i guess i could of checked to see if the 
+native driver install could build the module...
 
-All that being said, I wonder if the netconsole code should be using
-msleep(1) instead.  Spinning on cond_resched() is a bit rude.  But one
-would have to verify that it is safe to call schedule() at this time, and
-for the netconsole caller, this is dubious.
+no one has replied on the fedora user list either, i just find it had to 
+imagine one person is running F11 on a macbook...
+
+it just stinks that i can't close my laptop lid....
+
+which distro are you rocking? i am partial to rpm based packing...
+
+
+
+
+
+
+
+On 07/08/2009 12:42 PM, Justin P. Mattock wrote:
+> paul s wrote:
+>> does your touchpad work from resume? i know it is not the same model, 
+>> but curious...
+>>
+>> i updated the kernel from rawhide(2.6.31.rc2) and there were just 
+>> crazy system errors, actually even saw a kernelloops warning for the 
+>> first time...
+>>
+>>
+>>
+>> On 07/08/2009 12:47 AM, Justin P. Mattock wrote:
+>>> paul s wrote:
+>>>>
+>>>> i have not, just what is in the repository for the distribution...
+>>>>
+>>>>
+>>>>
+>>>> On 07/07/2009 10:28 PM, Justin P. Mattock wrote:
+>>>>> paul s wrote:
+>>>>>> hi -
+>>>>>>
+>>>>>> when my mbp4,1 comes back from suspend the touchpad is
+>>>>>> frozen|unresponsive|not working. it only seems to be with suspend as
+>>>>>> when it returns from hibernate it is fine...
+>>>>>>
+>>>>>> i am using 2.6.29.5-191.fc11.x86_64 is anyone experiencing this 
+>>>>>> issue...
+>>>>>>
+>>>>>> i have been looking around, played with the fdi and also added a 
+>>>>>> script
+>>>>>> to the /etc/pm/sleep.d to load and unload appletouch to no avail...
+>>>>>>
+>>>>>> cheers
+>>>>>> paul
+>>>>>>
+>>>>>> ------------------------------------------------------------------------------ 
+>>>>>>
+>>>>>> Enter the BlackBerry Developer Challenge
+>>>>>> This is your chance to win up to $100,000 in prizes! For a limited 
+>>>>>> time,
+>>>>>> vendors submitting new applications to BlackBerry App World(TM) 
+>>>>>> will have
+>>>>>> the opportunity to enter the BlackBerry Developer Challenge. See 
+>>>>>> full prize
+>>>>>> details at: http://p.sf.net/sfu/Challenge
+>>>>>> _______________________________________________
+>>>>>> Mactel-linux-users mailing list
+>>>>>> Mactel-linux-users@lists.sourceforge.net
+>>>>>> https://lists.sourceforge.net/lists/listinfo/mactel-linux-users
+>>>>>>
+>>>>> have you tried the latest stable kernel?
+>>>>>
+>>>>> Justin P. Mattock
+>>>>>
+>>>> -- 
+>>>> To unsubscribe from this list: send the line "unsubscribe 
+>>>> linux-kernel" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>
+>>> Not sure for redhat, but if you feel comfortable,
+>>> try just grabbing  a fresh tar.ball from kernel.org,
+>>> or use git to pull the latest from Linus's tree.
+>>> (this way your  up-to-date, and the fix could be already
+>>> in there).
+>>>
+>>> Justin P. Mattock
+>>>
+>>>
+>>
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe 
+>> linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> If you can save those messages, and
+> send them to kernel.org.
+> Honestly I have not tried S2D/S2R
+> on my machine for a while(probably
+> end up with a black screen).
+> 
+> Justin P. Mattock
+> 
