@@ -1,82 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbZGHJft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbZGHJnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759758AbZGHJft (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 05:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbZGHJf3
+	id S1759881AbZGHJnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 05:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758227AbZGHJnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 05:35:29 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36903 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758665AbZGHJf1 (ORCPT
+	Wed, 8 Jul 2009 05:43:08 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45630 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758207AbZGHJnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 05:35:27 -0400
-Date: Wed, 8 Jul 2009 11:35:16 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] accessibility, speakup, speech synthesis & /sys
-Message-ID: <20090708093516.GE24385@elf.ucw.cz>
-References: <20090625220452.GF5540@const.famille.thibault.fr> <20090630063454.GI1351@ucw.cz> <20090701221904.GA4431@const>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090701221904.GA4431@const>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 8 Jul 2009 05:43:07 -0400
+Subject: Re: [RFC PATCH 1/3] kmemleak: Allow partial freeing of memory
+	blocks
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org
+In-Reply-To: <1247035243.15919.28.camel@penberg-laptop>
+References: <20090706104654.16051.44029.stgit@pc1117.cambridge.arm.com>
+	 <20090706105149.16051.99106.stgit@pc1117.cambridge.arm.com>
+	 <1246950733.24285.10.camel@penberg-laptop>
+	 <tnxtz1ovq8p.fsf@pc1117.cambridge.arm.com>
+	 <tnxiqi4vchj.fsf@pc1117.cambridge.arm.com>
+	 <1247035243.15919.28.camel@penberg-laptop>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Wed, 08 Jul 2009 10:42:21 +0100
+Message-Id: <1247046141.6595.12.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Jul 2009 09:42:22.0482 (UTC) FILETIME=[64A7DF20:01C9FFB0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-07-02 00:19:04, Samuel Thibault wrote:
-> Hello,
-> 
-> Pavel Machek, le Tue 30 Jun 2009 08:34:54 +0200, a écrit :
-> > > Then there are the screen reading parameters. I'd tend to think that
-> > > like there are /sys/{block,firmware,fs,power}, there could be a
-> > > /sys/accessibility, or even shorter, /sys/a11y?  Speakup parameters
-> > > could then be in /sys/a11y/speakup?
-> > 
-> > Please keep a11y and similar madness far from kernel.
-> 
-> What do you qualify as "madness" precisely?  Could you explain why you
-> are using such extreme word?
+On Wed, 2009-07-08 at 09:40 +0300, Pekka Enberg wrote:
+> Looks good to me. I think it would be better to have
+> delete_object_full() and delete_object_part(), and extract the common
+> code to __delete_object() or something instead of passing the magic zero
+> from kmemleak_free().
 
-If the word is so long that you have to write number of its letters
-inside... then you are using wrong word.
+Yes, it make sense:
 
-Greg's suggestion seems ok.
 
-> > /sys/speech ? Or even better /sys/class/speech? What is global about
-> > it?
-> 
-> As I said, there is a difference between speech synthesizers, which can
-> easily be considered as devices, and screen readers (here, speakup),
-> which could for instance use different synthesizers, so please don't mix
-> them. Accessibility features, however, is not really a device, but as it
-> was suggested it could go into the vtcon directory.
+kmemleak: Allow partial freeing of memory blocks
 
-Ack.
+From: Catalin Marinas <catalin.marinas@arm.com>
 
-> > BTW... from 486+, cpus are fast enough for speech synthesis. Why not
-> > doing it in software, viewing hw synthetisers as 'flite coprocessors'?
-> 
-> At least because flite is very far from proprietary hardware
-> synthesizers in terms of quality.
+Functions like free_bootmem() are allowed to free only part of a memory
+block. This patch adds support for this via the kmemleak_free_part()
+callback which removes the original object and creates one or two
+additional objects as a result of the memory block split.
 
-Well... but for reading boot messages, it might be adequate, right?
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ include/linux/kmemleak.h |    4 ++
+ mm/kmemleak.c            |   95 +++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 85 insertions(+), 14 deletions(-)
 
-> > What modifications would be needed to make useful a11y w/o additional
-> > hw?
-> 
-> It depends on what you call "useful".  The desktop can already use
-> software speech synthesis.  When / can't be mounted, you're hosed,
-> however, unless you have shipped a full software speech synthesizer in
-> initrd, but even in such case the initrd script could also fail.
+diff --git a/include/linux/kmemleak.h b/include/linux/kmemleak.h
+index 7796aed..6a63807 100644
+--- a/include/linux/kmemleak.h
++++ b/include/linux/kmemleak.h
+@@ -27,6 +27,7 @@ extern void kmemleak_init(void);
+ extern void kmemleak_alloc(const void *ptr, size_t size, int min_count,
+ 			   gfp_t gfp);
+ extern void kmemleak_free(const void *ptr);
++extern void kmemleak_free_part(const void *ptr, size_t size);
+ extern void kmemleak_padding(const void *ptr, unsigned long offset,
+ 			     size_t size);
+ extern void kmemleak_not_leak(const void *ptr);
+@@ -71,6 +72,9 @@ static inline void kmemleak_alloc_recursive(const void *ptr, size_t size,
+ static inline void kmemleak_free(const void *ptr)
+ {
+ }
++static inline void kmemleak_free_part(const void *ptr, size_t size)
++{
++}
+ static inline void kmemleak_free_recursive(const void *ptr, unsigned long flags)
+ {
+ }
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 5f7d8ae..7b4647d 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -210,6 +210,7 @@ static DEFINE_MUTEX(scan_mutex);
+ enum {
+ 	KMEMLEAK_ALLOC,
+ 	KMEMLEAK_FREE,
++	KMEMLEAK_FREE_PART,
+ 	KMEMLEAK_NOT_LEAK,
+ 	KMEMLEAK_IGNORE,
+ 	KMEMLEAK_SCAN_AREA,
+@@ -524,27 +525,17 @@ out:
+  * Remove the metadata (struct kmemleak_object) for a memory block from the
+  * object_list and object_tree_root and decrement its use_count.
+  */
+-static void delete_object(unsigned long ptr)
++static void __delete_object(struct kmemleak_object *object)
+ {
+ 	unsigned long flags;
+-	struct kmemleak_object *object;
+ 
+ 	write_lock_irqsave(&kmemleak_lock, flags);
+-	object = lookup_object(ptr, 0);
+-	if (!object) {
+-#ifdef DEBUG
+-		kmemleak_warn("Freeing unknown object at 0x%08lx\n",
+-			      ptr);
+-#endif
+-		write_unlock_irqrestore(&kmemleak_lock, flags);
+-		return;
+-	}
+ 	prio_tree_remove(&object_tree_root, &object->tree_node);
+ 	list_del_rcu(&object->object_list);
+ 	write_unlock_irqrestore(&kmemleak_lock, flags);
+ 
+ 	WARN_ON(!(object->flags & OBJECT_ALLOCATED));
+-	WARN_ON(atomic_read(&object->use_count) < 1);
++	WARN_ON(atomic_read(&object->use_count) < 2);
+ 
+ 	/*
+ 	 * Locking here also ensures that the corresponding memory block
+@@ -557,6 +548,64 @@ static void delete_object(unsigned long ptr)
+ }
+ 
+ /*
++ * Look up the metadata (struct kmemleak_object) corresponding to ptr and
++ * delete it.
++ */
++static void delete_object_full(unsigned long ptr)
++{
++	struct kmemleak_object *object;
++
++	object = find_and_get_object(ptr, 0);
++	if (!object) {
++#ifdef DEBUG
++		kmemleak_warn("Freeing unknown object at 0x%08lx\n",
++			      ptr);
++#endif
++		return;
++	}
++	__delete_object(object);
++	put_object(object);
++}
++
++/*
++ * Look up the metadata (struct kmemleak_object) corresponding to ptr and
++ * delete it. If the memory block is partially freed, the function may create
++ * additional metadata for the remaining parts of the block.
++ */
++static void delete_object_part(unsigned long ptr, size_t size)
++{
++	struct kmemleak_object *object;
++	unsigned long start, end;
++
++	object = find_and_get_object(ptr, 1);
++	if (!object) {
++#ifdef DEBUG
++		kmemleak_warn("Partially freeing unknown object at 0x%08lx "
++			      "(size %zu)\n", ptr, size);
++#endif
++		return;
++	}
++	__delete_object(object);
++
++	/*
++	 * Create one or two objects that may result from the memory block
++	 * split. Note that partial freeing is only done by free_bootmem() and
++	 * this happens before kmemleak_init() is called. The path below is
++	 * only executed during early log recording in kmemleak_init(), so
++	 * GFP_KERNEL is enough.
++	 */
++	start = object->pointer;
++	end = object->pointer + object->size;
++	if (ptr > start)
++		create_object(start, ptr - start, object->min_count,
++			      GFP_KERNEL);
++	if (ptr + size < end)
++		create_object(ptr + size, end - ptr - size, object->min_count,
++			      GFP_KERNEL);
++
++	put_object(object);
++}
++/*
+  * Make a object permanently as gray-colored so that it can no longer be
+  * reported as a leak. This is used in general to mark a false positive.
+  */
+@@ -720,13 +769,28 @@ void kmemleak_free(const void *ptr)
+ 	pr_debug("%s(0x%p)\n", __func__, ptr);
+ 
+ 	if (atomic_read(&kmemleak_enabled) && ptr && !IS_ERR(ptr))
+-		delete_object((unsigned long)ptr);
++		delete_object_full((unsigned long)ptr);
+ 	else if (atomic_read(&kmemleak_early_log))
+ 		log_early(KMEMLEAK_FREE, ptr, 0, 0, 0, 0);
+ }
+ EXPORT_SYMBOL_GPL(kmemleak_free);
+ 
+ /*
++ * Partial memory freeing function callback. This function is usually called
++ * from bootmem allocator when (part of) a memory block is freed.
++ */
++void kmemleak_free_part(const void *ptr, size_t size)
++{
++	pr_debug("%s(0x%p)\n", __func__, ptr);
++
++	if (atomic_read(&kmemleak_enabled) && ptr && !IS_ERR(ptr))
++		delete_object_part((unsigned long)ptr, size);
++	else if (atomic_read(&kmemleak_early_log))
++		log_early(KMEMLEAK_FREE_PART, ptr, size, 0, 0, 0);
++}
++EXPORT_SYMBOL_GPL(kmemleak_free_part);
++
++/*
+  * Mark an already allocated memory block as a false positive. This will cause
+  * the block to no longer be reported as leak and always be scanned.
+  */
+@@ -1345,7 +1409,7 @@ static int kmemleak_cleanup_thread(void *arg)
+ 
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(object, &object_list, object_list)
+-		delete_object(object->pointer);
++		delete_object_full(object->pointer);
+ 	rcu_read_unlock();
+ 	mutex_unlock(&scan_mutex);
+ 
+@@ -1440,6 +1504,9 @@ void __init kmemleak_init(void)
+ 		case KMEMLEAK_FREE:
+ 			kmemleak_free(log->ptr);
+ 			break;
++		case KMEMLEAK_FREE_PART:
++			kmemleak_free_part(log->ptr, log->size);
++			break;
+ 		case KMEMLEAK_NOT_LEAK:
+ 			kmemleak_not_leak(log->ptr);
+ 			break;
 
-I'd actually prefer soft synthetiser in initrd. You know... "normal"
-consoles (such as vt) do fail sometimes, too.
-									Pavel
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Catalin
+
