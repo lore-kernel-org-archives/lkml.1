@@ -1,242 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZGHPAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbZGHPEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756809AbZGHPAZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 11:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbZGHPAL
+	id S1757483AbZGHPEY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 11:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbZGHPER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 11:00:11 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:30873 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754286AbZGHPAJ convert rfc822-to-8bit (ORCPT
+	Wed, 8 Jul 2009 11:04:17 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:53308 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753508AbZGHPEP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 11:00:09 -0400
-X-SpamScore: -43
-X-BigFish: VPS-43(zz542N1432R98dNef8K1805Ma2dbP9371Pzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KMGXNP-01-6TZ-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
-Date: Wed, 8 Jul 2009 09:59:55 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273036209F0@sausexmb4.amd.com>
-In-Reply-To: <200907081319.57307.sheng@linux.intel.com>
+	Wed, 8 Jul 2009 11:04:15 -0400
+From: Chetan.Loke@Emulex.Com
+To: <daniel.blueman@gmail.com>, <matthew@wil.cx>, <andi@firstfloor.org>,
+       <jens.axboe@oracle.com>, <arjan@infradead.org>
+CC: <linux-kernel@vger.kernel.org>
+Date: Wed, 8 Jul 2009 08:03:48 -0700
+Subject: RE: >10% performance degradation since 2.6.18
+Thread-Topic: >10% performance degradation since 2.6.18
+Thread-Index: Acn/Txi1jIBAeDPUSbWN+LpoBalcEAAiU7TQ
+Message-ID: <412A05BA40734D4887DBC67661F433080CB09178@EXMAIL.ad.emulex.com>
+References: <6278d2220907050400k1359df3av4045d3bba07d2be7@mail.gmail.com>
+	 <412A05BA40734D4887DBC67661F433080CB08E7A@EXMAIL.ad.emulex.com>
+ <6278d2220907071505k23ae1a79l7449becb9b2f4b45@mail.gmail.com>
+In-Reply-To: <6278d2220907071505k23ae1a79l7449becb9b2f4b45@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
-Thread-Index: Acn/i7oBwJEfnIKuSB6kuE4ZdU/MAAAUNTuQ
-References: <200905050909.58583.mark.langsdorf@amd.com> <200905191356.37071.mark.langsdorf@amd.com> <200905201725.18046.mark.langsdorf@amd.com> <200907081319.57307.sheng@linux.intel.com>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Sheng Yang" <sheng@linux.intel.com>
-CC: "Roedel, Joerg" <Joerg.Roedel@amd.com>, <peterz@infradead.org>,
-       "Ingo Molnar" <mingo@elte.hu>, <avi@redhat.com>, <kvm@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 08 Jul 2009 14:59:56.0121 (UTC) FILETIME=[C1827490:01C9FFDC]
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
+X-OriginalArrivalTime: 08 Jul 2009 15:03:51.0463 (UTC) FILETIME=[4DC8CB70:01C9FFDD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The last variant of the scheduler that I tried
-showed worse performance for both the baseline
-case (no pause filter enabled) and the test
-case (pause filter enabled) versus not changing
-the scheduler.
-
-Some other work came up and I haven't have a
-chance to experiment with this for a while.
-
--Mark Langsdorf
-Operating System Research Center
-AMD 
-
 > -----Original Message-----
-> From: Sheng Yang [mailto:sheng@linux.intel.com] 
-> Sent: Wednesday, July 08, 2009 12:20 AM
-> To: Langsdorf, Mark
-> Cc: Roedel, Joerg; peterz@infradead.org; Ingo Molnar; 
-> avi@redhat.com; kvm@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH][KVM][retry 4] Add support for Pause 
-> Filtering to AMD SVM
+> From: Daniel J Blueman [mailto:daniel.blueman@gmail.com] 
+> Sent: Tuesday, July 07, 2009 6:06 PM
+> To: Loke,Chetan; matthew@wil.cx; andi@firstfloor.org; 
+> jens.axboe@oracle.com; Arjan van de Ven
+> Cc: linux-kernel@vger.kernel.org
+> Subject: Re: >10% performance degradation since 2.6.18
 > 
-> On Thursday 21 May 2009 06:25:17 Mark Langsdorf wrote:
-> > This feature creates a new field in the VMCB called Pause
-> > Filter Count.  If Pause Filter Count is greater than 0 and
-> > intercepting PAUSEs is enabled, the processor will increment
-> > an internal counter when a PAUSE instruction occurs instead
-> > of intercepting.  When the internal counter reaches the
-> > Pause Filter Count value, a PAUSE intercept will occur.
+> On Mon, Jul 6, 2009 at 10:58 PM, <Chetan.Loke@emulex.com> wrote:
+> >> -----Original Message-----
+> >> From: linux-kernel-owner@vger.kernel.org
+> >> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Daniel J 
+> >> Blueman
+> >> Sent: Sunday, July 05, 2009 7:01 AM
+> >> To: Matthew Wilcox; Andi Kleen
+> >> Cc: Linux Kernel; Jens Axboe; Arjan van de Ven
+> >> Subject: Re: >10% performance degradation since 2.6.18
+> >>
+> >> On Jul 3, 9:10 pm, Arjan van de Ven <ar...@infradead.org> wrote:
+> >> > On Fri, 3 Jul 2009 21:54:58 +0200
+> >> >
+> >> > Andi Kleen <a...@firstfloor.org> wrote:
+> >> > > > That would seem to be a fruitful avenue of investigation -- 
+> >> > > > whether limiting the cards to a single RX/TX 
+> interrupt would be 
+> >> > > > advantageous, or whether spreading the eight interrupts
+> >> out over
+> >> > > > the CPUs would be advantageous.
+> >> >
+> >> > > The kernel should really do the per cpu binding of MSIs
+> >> by default.
+> >> >
+> >> > ... so that you can't do power management on a per socket basis?
+> >> > hardly a good idea.
+> >> >
+> >> > just need to use a new enough irqbalance and it will 
+> spread out the 
+> >> > interrupts unless your load is low enough to go into low 
+> power mode.
+> >>
+> >> I was finding newer kernels (>~2.6.24) would set the 
+> Redirection Hint 
+> >> bit in the MSI address vector, allowing the processors to 
+> deliver the 
+> >> interrupt to the lowest interrupt priority (eg idle, no powersave) 
+> >> core (http://www.intel.com/Assets/PDF/manual/253668.pdf 
+> pp10-66) and 
+> >> older irqbalance daemons would periodically naively rewrite the 
+> >> bitmask of cores, delivering the interrupt to a static one.
+> >>
+> >> Thus, it may be worth checking if disabling any older irqbalance 
+> >> daemon gives any win.
+> >>
+> >> Perhaps there is value in writing different subsets of 
+> cores to the 
+> >> MSI address vector core bitmask (with the redirection hint 
+> enabled) 
+> >> for different I/O queues on heavy interrupt sources? By 
+> default, it's 
+> >> all cores.
+> >>
 > >
+> > Possible enhancement -
+> >
+> > 1) Drain the responses in the xmit_frame() path. That is, post the 
+> > TX-request() and just before returning see if there are
+> >   any more responses in the RX-queue. This will 
+> minimize(only if the NIC f/w coalesces) interrupt load.
+> >   The n/w core should drain the responses rather than calling the 
+> > drain-routine from the adapter's xmit_frame() handler. This 
+> way there 
+> > won't be any need to
+> >   modify individual xmit_frame handlers.
 > 
-> (dig it from archives...)
-> 
-> Any update for the patch(I mean the scheduler part)? I think 
-> people agreed on 
-> the approach?
-> 
-> -- 
-> regards
-> Yang, Sheng
-> 
-> > This feature can be used to detect contended spinlocks,
-> > especially when the lock holding VCPU is not scheduled.
-> > Rescheduling another VCPU prevents the VCPU seeking the
-> > lock from wasting its quantum by spinning idly.  Perform
-> > the reschedule by increasing the the credited time on
-> > the VCPU.
-> >
-> > Experimental results show that most spinlocks are held
-> > for less than 1000 PAUSE cycles or more than a few
-> > thousand.  Default the Pause Filter Counter to 3000 to
-> > detect the contended spinlocks.
-> >
-> > Processor support for this feature is indicated by a CPUID
-> > bit.
-> >
-> > On a 24 core system running 4 guests each with 16 VCPUs,
-> > this patch improved overall performance of each guest's
-> > 32 job kernbench by approximately 1%.  Further performance
-> > improvement may be possible with a more sophisticated
-> > yield algorithm.
-> >
-> > -Mark Langsdorf
-> > Operating System Research Center
-> > AMD
-> >
-> > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-> > ---
-> >  arch/x86/include/asm/svm.h |    3 ++-
-> >  arch/x86/kvm/svm.c         |   13 +++++++++++++
-> >  include/linux/sched.h      |    7 +++++++
-> >  kernel/sched.c             |   18 ++++++++++++++++++
-> >  4 files changed, 40 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
-> > index 85574b7..1fecb7e 100644
-> > --- a/arch/x86/include/asm/svm.h
-> > +++ b/arch/x86/include/asm/svm.h
-> > @@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) 
-> vmcb_control_area {
-> >  	u16 intercept_dr_write;
-> >  	u32 intercept_exceptions;
-> >  	u64 intercept;
-> > -	u8 reserved_1[44];
-> > +	u8 reserved_1[42];
-> > +	u16 pause_filter_count;
-> >  	u64 iopm_base_pa;
-> >  	u64 msrpm_base_pa;
-> >  	u64 tsc_offset;
-> > diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-> > index ef43a18..dad6c4b 100644
-> > --- a/arch/x86/kvm/svm.c
-> > +++ b/arch/x86/kvm/svm.c
-> > @@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
-> >  #define SVM_FEATURE_NPT  (1 << 0)
-> >  #define SVM_FEATURE_LBRV (1 << 1)
-> >  #define SVM_FEATURE_SVML (1 << 2)
-> > +#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
-> >
-> >  #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
-> >
-> > @@ -575,6 +576,11 @@ static void init_vmcb(struct vcpu_svm *svm)
-> >
-> >  	svm->nested_vmcb = 0;
-> >  	svm->vcpu.arch.hflags = HF_GIF_MASK;
-> > +
-> > +	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
-> > +		control->pause_filter_count = 3000;
-> > +		control->intercept |= (1ULL << INTERCEPT_PAUSE);
-> > +	}
-> >  }
-> >
-> >  static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
-> > @@ -2087,6 +2093,12 @@ static int 
-> interrupt_window_interception(struct
-> > vcpu_svm *svm, return 1;
-> >  }
-> >
-> > +static int pause_interception(struct vcpu_svm *svm, struct kvm_run
-> > *kvm_run) +{
-> > +	sched_delay_yield(1000000);
-> > +	return 1;
-> > +}
-> > +
-> >  static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
-> >  				      struct kvm_run *kvm_run) = {
-> >  	[SVM_EXIT_READ_CR0]           		= 
-> emulate_on_interception,
-> > @@ -2123,6 +2135,7 @@ static int 
-> (*svm_exit_handlers[])(struct vcpu_svm
-> > *svm, [SVM_EXIT_CPUID]			= cpuid_interception,
-> >  	[SVM_EXIT_IRET]                         = iret_interception,
-> >  	[SVM_EXIT_INVD]                         = 
-> emulate_on_interception,
-> > +	[SVM_EXIT_PAUSE]			= pause_interception,
-> >  	[SVM_EXIT_HLT]				= halt_interception,
-> >  	[SVM_EXIT_INVLPG]			= invlpg_interception,
-> >  	[SVM_EXIT_INVLPGA]			= 
-> invalid_op_interception,
-> > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > index b4c38bc..9cde585 100644
-> > --- a/include/linux/sched.h
-> > +++ b/include/linux/sched.h
-> > @@ -2283,6 +2283,9 @@ static inline unsigned int 
-> task_cpu(const struct
-> > task_struct *p) return task_thread_info(p)->cpu;
-> >  }
-> >
-> > +extern void sched_delay_yield(unsigned long ns);
-> > +
-> > +
-> >  extern void set_task_cpu(struct task_struct *p, unsigned int cpu);
-> >
-> >  #else
-> > @@ -2292,6 +2295,10 @@ static inline unsigned int 
-> task_cpu(const struct
-> > task_struct *p) return 0;
-> >  }
-> >
-> > +void sched_delay_yield(struct task_struct *p, unsigned int delay)
-> > +{
-> > +}
-> > +
-> >  static inline void set_task_cpu(struct task_struct *p, 
-> unsigned int cpu)
-> >  {
-> >  }
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index b902e58..3aed2f6 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -1947,6 +1947,24 @@ task_hot(struct task_struct *p, u64 
-> now, struct
-> > sched_domain *sd) return delta < (s64)sysctl_sched_migration_cost;
-> >  }
-> >
-> > +/*
-> > + * Interface for yielding a thread by delaying it for a known
-> > + * interval.  Use at your own risk and not with real-time.
-> > + *
-> > + * Like yield, except for SCHED_OTHER/BATCH, where it will
-> > + * give us @ns time for the 'good' cause.
-> > + */
-> > +void sched_delay_yield(unsigned long ns)
-> > +{
-> > +	struct task_struct *curr = current;
-> > +	if (curr->sched_class == &fair_sched_class) {
-> > +		struct sched_entity *se = &curr->se;
-> > +		__update_curr(cfs_rq_of(se), se, ns);
-> > +		schedule();
-> > +	} else
-> > +		yield();
-> > +}
-> > +EXPORT_SYMBOL_GPL(sched_delay_yield);
-> >
-> >  void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
-> >  {
-> 
-> 
-> 
+> The problem of additional checking on such a hot path, is each
+> (synchronous) read over the PCIe bus takes ~1us, which is the 
+> same order of cost of executing 1000 instructions (and 
+> getting greater with faster processors and deeper serial 
+> buses). 
+
+Totally agree. Non-posted transactions are expensive.
+
+
+> Perhaps it's sufficiently low cost if the NIC's RX 
+> queue status/structure was in main memory (vs registers over PCI).
 > 
 
+Ok, I was under the impression that the RX-pointers are in the host-memory. And 
+so it would be a local mem-read as opposed to a PCI-transaction. So this 
+is obviously a NIC-design(ASIC/fw) decision.Nothing much we can do about it.
+
+> If latency is not favoured over throughput, 
+
+
+> increasing the 
+> packet coalescing watermarks may reduce interrupt rate and 
+> thus some performance loss?
+> 
+> Daniel
+
+Well, coalescing goes hand-in-hand.We can't optimize just the 'driver/OS' stack and not optimize the adapter @ all.
+Lets assume(and this was my assumption) the (partial)RX-structs are in host's memory.
+
+So,
+1) The RX-put ptr is in the host-memory(NIC updates by a posted transaction).
+2) The RX-get ptr is on the NIC(host updates by a posted-transaction.PCIe bridge will coalesce the posted-writes).
+
+3) Under heavy load the TX path is getting beat up really heavy. 
+  3.1) The modified algo will read(now a local-read) the RX-put ptr and drain(after posting the TX-job) the RX-queue.
+  3.2) The host then updates the RX-get ptr on the NIC via a posted-write(don't flush the write,let the bridge coalesce).
+       Coalescing has so far worked for us. So it should work for others.But we can't speak for the chipsets.
+  3.3) This is where the coalescing algo kicks-in on the NIC(adapter) side.
+     3.3.1) The NIC f/w reads(local read) the RX-get ptr and does different things - 
+           3.3.1.1) If the host is making good progress then it should reset the interrupt-timer.
+           3.3.1.2) If the host is not making enough progress(latency-algorithm) then it should fire the interrupt.
+                    This will ensure timely response and lower-latency under bursty loads.
+
+I think some chipsets support a relaxed version of PCI-read. So drivers could use that unless you really want to flush your posted-write.
+
+
+
+Chetan Loke
