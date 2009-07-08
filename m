@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZGHWOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbZGHWOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZGHWOZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZGHWOQ
+	id S1757674AbZGHWOm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbZGHWOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:14:16 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:54442 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752007AbZGHWOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:14:15 -0400
-Date: Wed, 8 Jul 2009 15:14:13 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: tridge@samba.org
-Cc: Pavel Machek <pavel@ucw.cz>, Rusty Russell <rusty@rustcorp.com.au>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090708221413.GH15111@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <200907012019.53932.rusty@rustcorp.com.au> <20090702214646.GD1485@ucw.cz> <19021.12158.915384.574218@samba.org> <20090702223349.GA30840@elf.ucw.cz> <19021.14217.587592.808935@samba.org> <20090702224446.GD30840@elf.ucw.cz> <19021.18919.560478.630755@samba.org> <20090708092133.GC24385@elf.ucw.cz> <20090708142520.GA7817@linux.vnet.ibm.com> <19029.4803.604820.157625@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19029.4803.604820.157625@samba.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 8 Jul 2009 18:14:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49074 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754191AbZGHWOd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 18:14:33 -0400
+Subject: Re: [patch] perf_counter: Add p6 PMU
+From: Peter Zijlstra <peterz@infradead.org>
+To: Vince Weaver <vince@deater.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1247089529.16156.27.camel@laptop>
+References: <Pine.LNX.4.64.0907071559200.30742@pianoman.cluster.toy>
+	 <1247051751.9777.49.camel@twins>
+	 <Pine.LNX.4.64.0907081718450.2715@pianoman.cluster.toy>
+	 <1247089529.16156.27.camel@laptop>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 09 Jul 2009 00:14:24 +0200
+Message-Id: <1247091264.9777.311.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 09, 2009 at 07:42:27AM +1000, tridge@samba.org wrote:
-> Hi Paul,
+On Wed, 2009-07-08 at 23:45 +0200, Peter Zijlstra wrote:
+> On Wed, 2009-07-08 at 17:46 -0400, Vince Weaver wrote:
+> > On Wed, 8 Jul 2009, Peter Zijlstra wrote:
+> > 
+> > >   doesn't sound like the right kind of event.. but then, it doesn't
+> > >   have anything better either.
+> > 
+> > Is there a way to specify "invalid event"?  Just setting it to 0 doesn't 
+> > work, on the Pentium Pro event 0 returns what looks like essentially
+> > random numbers.
 > 
-> These probabilities are way off. They assume that whatever interaction
-> happens in XP has infinite memory. The testing I've done indicates
-> that the memory for this interaction is very small (maybe 3 or 4? it's
-> hard to know precisely).
+> Hmm, bugger. I was assuming writing 0 to the evensel would disable the
+> counter. Apparently that only works for eventsel1, which would mean we
+> cannot run counter1 without counter0. That means we'd need to do a
+> counter swap at times... :/
 
-Good to know!  I will rework assuming that the memory is 4, let me
-know if you learn more.
+Ooh, we can instead use a counter that's specified to not count anything
+for 'disabling' the counter, like event 0x2E with unit mask 0.
 
-> I've also confirmed this with lots of testing. If the probability was
-> 39% for any directory size then I would have found it.
 
-This new information will likely reduce the predicted probability of
-bluescreen by several orders of magnitude for large directories.  Not
-that much effect for small directories, but not a real issue given
-how low the probabilities are to begin with.
-
-> In all my testing I did not once produce a XP crash with the full
-> patch. To produce the XP crash I needed to have a reduced version of
-> the patch with less randomness.
-
-Well, let's see if I can produce a reasonably realistic model.  :-)
-(I knew I should have gotten more sleep last night!!!)
-
-							Thanx, Paul
