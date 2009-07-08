@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZGHQLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760523AbZGHQLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757202AbZGHQLQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760324AbZGHQK4
+	id S1760523AbZGHQLn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758401AbZGHQLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:10:56 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:40882 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760208AbZGHQKy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:10:54 -0400
-Date: Wed, 8 Jul 2009 17:10:52 +0100
-From: Matthew Garrett <mjg@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: ondemand: Introduces stepped frequency
-	increase
-Message-ID: <20090708161052.GA20951@srcf.ucam.org>
-References: <200907081556.34682.czoccolo@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907081556.34682.czoccolo@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Wed, 8 Jul 2009 12:11:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60146 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758356AbZGHQLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:11:32 -0400
+Subject: [PATCH 41/44] includecheck fix: include/linux, rfkill.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
+References: <1247063308.4382.12.camel@ht.satnam>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 21:25:54 +0530
+Message-Id: <1247068554.4382.106.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 08, 2009 at 03:56:33PM +0200, Corrado Zoccolo wrote:
-> The patch introduces a new sysfs tunable cpufreq/ondemand/freq_step,
-> as found in conservative governor, to chose the frequency increase step,
-> expressed as percentage (default = 100 is previous behaviour).
-> 
-> This allows fine tuning powersaving on mobile CPUs, since smaller steps will allow to:
-> * absorb punctual load spikes
-> * stabilize at the needed frequency, without passing for more power consuming states, and
 
-Is this a measured powersaving? The ondemand model is based on the 
-assumption that the idle state is disproportionately lower in power than 
-any running state, and therefore it's more sensible to run flat out for 
-short periods of time than run at half speed for longer. Is this 
-inherently flawed, or is it an artifact of differences in your processor 
-design?
+fix the following 'make includecheck' warning:
 
+  include/linux/rfkill.h: linux/types.h is included more than once.
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ include/linux/rfkill.h |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/rfkill.h b/include/linux/rfkill.h
+index e73e242..2ce2983 100644
+--- a/include/linux/rfkill.h
++++ b/include/linux/rfkill.h
+@@ -99,7 +99,6 @@ enum rfkill_user_states {
+ #undef RFKILL_STATE_UNBLOCKED
+ #undef RFKILL_STATE_HARD_BLOCKED
+ 
+-#include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+ #include <linux/mutex.h>
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.6.0.6
+
+
+
