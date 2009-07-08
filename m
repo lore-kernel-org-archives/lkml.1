@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZGHE6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZGHFAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbZGHE6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 00:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZGHE60
+	id S1753394AbZGHFAo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 01:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZGHFAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 00:58:26 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49664 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750900AbZGHE60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 00:58:26 -0400
-Date: Wed, 8 Jul 2009 14:58:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Artem.Bityutskiy@nokia.com
-Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: ubi tree build warnings
-Message-Id: <20090708145819.3ad0c903.sfr@canb.auug.org.au>
-In-Reply-To: <4A542452.6060703@nokia.com>
-References: <20090708130921.a361f6d2.sfr@canb.auug.org.au>
-	<4A542452.6060703@nokia.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__8_Jul_2009_14_58_19_+1000_4_coQtPNJ9P1qRK8"
+	Wed, 8 Jul 2009 01:00:36 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:62631 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750819AbZGHFAg convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 01:00:36 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Dave Airlie <airlied@gmail.com>
+Subject: Re: [Bug #13667] drm: display arifacts when X.Org is stopped
+Date: Wed, 8 Jul 2009 07:00:32 +0200
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <200907080232.04551.elendil@planet.nl> <21d7e9970907071950n27979df6j44444edd8528a598@mail.gmail.com>
+In-Reply-To: <21d7e9970907071950n27979df6j44444edd8528a598@mail.gmail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200907080700.33120.elendil@planet.nl>
+X-OriginalArrivalTime: 08 Jul 2009 05:00:34.0020 (UTC) FILETIME=[066D5240:01C9FF89]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__8_Jul_2009_14_58_19_+1000_4_coQtPNJ9P1qRK8
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Artem,
-
-On Wed, 08 Jul 2009 07:45:06 +0300 Artem Bityutskiy <Artem.Bityutskiy@nokia=
-.com> wrote:
+On Wednesday 08 July 2009, Dave Airlie wrote:
+> On Wed, Jul 8, 2009 at 10:32 AM, Frans Pop<elendil@planet.nl> wrote:
+> > On Tuesday 07 July 2009, Rafael J. Wysocki wrote:
+> >> The following bug entry is on the current list of known regressions
+> >> from 2.6.30.  Please verify if it still should be listed and let me
+> >> know (either way).
+> >>
+> >> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=13667
+> >> Subject       : drm: display arifacts when X.Org is stopped
+> >> Submitter     : Frans Pop <elendil@planet.nl>
+> >> Date          : 2009-06-27 18:52 (10 days old)
+> >> References    : http://lkml.org/lkml/2009/6/27/105
+> >
+> > Problem is still there with -rc2. Dave said he'd try to reproduce,
+> > but I've not heard back from him yet.
 >
-> Will fix ASAP, thank you! I'm always wondering how you manage
-> to reproduce warnings I do not see.
+> Don't suppose you have a 32-bit install you could also test with?
 
-Probably a different config or compiler (I am using gcc 4.4.0).
+You're in luck...
+I also get artifacts, though less severe, with .31-rc2 on my Toshiba 
+Satellite A40 (32-bit kernel) during logout from X.Org. The switch is 
+clean with .30.
 
---=20
+> Hopefully I can reproduce it on my box locally, otherwise its really
+> messy dealing with 2 drivers smashing on the same hw.
+
+Not sure why you're saying that. I would think VESA fb + X.Org is quite 
+common and also a very valid use case [1]. How else would you get the 
+pretty kernel boot logo? ;-)
+
+> btw you get any wierd text mode issues without vesafb?
+
+If I boot .31-rc2 without vga=791 I don't get the artifacts. The artifacts 
+also do not appear if I boot with 'nopat'. Checked on both systems.
+
+Note that I reported a similar issue once before, also reproducible on 
+both systems. In that case it was a bug in PAT which was eventually fixed. 
+See: http://bugzilla.kernel.org/show_bug.cgi?id=10843.
+
+Given that 'nopat' helps, you may want to check with Suresh on this one.
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+FJP
 
---Signature=_Wed__8_Jul_2009_14_58_19_+1000_4_coQtPNJ9P1qRK8
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpUJ2sACgkQjjKRsyhoI8zCBQCfZRKydeY7X69PEhAC+BEjQgO/
-da0AoLxSPHw3V4+NaJ5EG6Aww96a41g0
-=h2i7
------END PGP SIGNATURE-----
-
---Signature=_Wed__8_Jul_2009_14_58_19_+1000_4_coQtPNJ9P1qRK8--
+[1] I'd even go so far as to feel it should be a standard test case for 
+video driver developers, given that this is the third time it's shown 
+regressions :-) For the third case the bug was in the X.Org i830 driver: 
+http://bugs.freedesktop.org/show_bug.cgi?id=14481.
