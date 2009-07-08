@@ -1,111 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbZGHQJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbZGHQI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759268AbZGHQJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759674AbZGHQGu
+	id S1760208AbZGHQI7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759435AbZGHQGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:06:50 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:37587 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759657AbZGHQGs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:06:48 -0400
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: tridge@samba.org, Martin Steigerwald <Martin@lichtvoll.de>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Pavel Machek <pavel@ucw.cz>, john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-In-Reply-To: <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk>
-References: <19013.8005.541836.436991@samba.org>
-	 <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
-	 <19026.38137.63807.427511@samba.org>
-	 <200907072356.51553.Martin@lichtvoll.de>
-	 <19028.3736.892828.352905@samba.org>
-	 <20090708110451.1092afa7@lxorguk.ukuu.org.uk>
-	 <1247066878.4159.153.camel@mulgrave.site>
-	 <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk>
+	Wed, 8 Jul 2009 12:06:25 -0400
+Received: from fifo99.com ([67.223.236.141]:50615 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759440AbZGHQGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:06:24 -0400
+Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
+From: Daniel Walker <dwalker@fifo99.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <1247063244.4159.40.camel@mulgrave.site>
+References: <4A4CB4B4.5010307@turknet.net.tr>
+	 <20090702130728.22af524c.akpm@linux-foundation.org>
+	 <8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com>
+	 <1247063244.4159.40.camel@mulgrave.site>
 Content-Type: text/plain
-Date: Wed, 08 Jul 2009 16:06:42 +0000
-Message-Id: <1247069202.4159.212.camel@mulgrave.site>
+Date: Wed, 08 Jul 2009 09:06:18 -0700
+Message-Id: <1247069178.5973.6.camel@desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 16:37 +0100, Alan Cox wrote:
-> > > I think we already proved it had no use upstream. Vendors will remove
-> > > the code from their source tree if worried about patents so including it
-> > > in the base tree is really irrelevant. So I find your argument about this
-> > > less than convincing.
-> > 
-> > You have asserted such, but that's not proof.  If your assertion were
-> > valid, vendors would already have removed all the msdos/vfat code, which
-> > they haven't.
+On Wed, 2009-07-08 at 09:27 -0500, James Bottomley wrote:
 > 
-> That represents loss of functionality for loss of risk (a trade off).
-
-Precisely ... that's what this whole thread is about.  Accepting the
-lawyer's argument that this patch eliminates the risk of suit under the
-FAT32 patents, does the loss of functionality it comes with represent an
-adequate reward?
-
->  If
-> they are going to disable stuff then they'll pull the lot (loss of risk
-> for free).
-
-I'd agree with that, the problem is the loss of functionality ... and
-actually, the best outcome for this would be to come up with a true
-light weight filesystem that could replace the rather crap DOS/FAT32 one
-in embedded applications based on fully free source and no patent
-encumbrances and have it adopted as a universal standard for flash/USB
-stick/mmc interchange.
-
-> Remember the GPL requires you provide the *sources* you used
-> to create the binaries, not redacted ones so if you don't want to provide
-> feature X for some reason you need to pull it out of your source tree
-> before you build.
-
-OK, so we disagree on whether providing source code constitutes
-contributory infringement.
-
-> > > 	- do we want to ship the feature because of patent concern
-> > > 	> do not ship
-> > > 	- is it less risk to remove the source from our build tree or
-> > > 	  configure it out
-> > > 	> remove from the tree
-> > > 	- is there a functionality difference to the user between
-> > > 	  removing or unconfiguring it
-> > > 	> No
-> > > 
-> > > At that point nobody managing risk is going to do anything but remove the
-> > > code that worries them. It's additional risk with no return.
-> > 
-> > I think you might be confusing two sources of risk.  The risk of
-> > actually infringing a real patent is what you're covering above.  The
-> > source of risk in this case is the risk of being trolled with an invalid
-> > patent but have to spend millions of dollars to demonstrate such if it
-> > goes to trial.  The patch mitigates the latter risk by making it
-> > demonstrable at a preliminary hearing that the invalid patent doesn't
-> > read upon the kernel implementation.
+> You might also try this patch from martin petersen:  it will print out
+> the actual command that's causing the problems ... that might give a
+> clue.
 > 
-> At that point we get into legal advice I can't comment on in public.
-> However based on previous discussions about source code and other patterns
-> suffice to say I don't agree.
+> James
 
-OK, so rather than get into a what my lawyer says versus what your
-lawyer says argument, can we get back to the technical aspects of this
-and leave the lawyers retained by the vendors to sort out what they
-actually do?
+On the bugzilla entry ,
 
-James
+http://bugzilla.kernel.org/show_bug.cgi?id=13727
 
+Thomas Meyer indicated it was (possibly) the following commit,
+
+018e0446890661504783f92388ecce7138c1566d
+
+I added Jens to the CC ..
+
+Daniel
 
