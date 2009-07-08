@@ -1,71 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbZGHFPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbZGHFTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753686AbZGHFPc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 01:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZGHFPW
+	id S1758598AbZGHFTy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 01:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZGHFTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 01:15:22 -0400
-Received: from mail-pz0-f193.google.com ([209.85.222.193]:48409 "EHLO
-	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbZGHFPV (ORCPT
+	Wed, 8 Jul 2009 01:19:46 -0400
+Received: from mga05.intel.com ([192.55.52.89]:60357 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751200AbZGHFTo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 01:15:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=M6Q60vd+RYDUMxCFgu7FqORQJC/totndUSFRcsHW1TLIJEmydtbuuiUw3kMmhyUQRQ
-         iuYPL0Ye6IKsW0glAi88IbKpvaDoAetd1GCMj52ZXvbKM1q0VsZLWmJuZ8vPeZ3gUaH8
-         5vnrtsWyTo6rKjIn3i4d4Uae/vCN6vuKCE+pg=
-Date: Wed, 8 Jul 2009 13:15:15 +0800
-From: Wu Fengguang <fengguang.wu@gmail.com>
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Minchan Kim <minchan.kim@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: OOM killer in 2.6.31-rc2
-Message-ID: <20090708051515.GA17156@localhost>
-References: <200907061056.00229.gene.heskett@verizon.net> <200907071057.31152.gene.heskett@verizon.net> <20090708021708.GA10481@localhost> <200907072342.07822.gene.heskett@verizon.net>
+	Wed, 8 Jul 2009 01:19:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,366,1243839600"; 
+   d="scan'208";a="705891000"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Subject: Re: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
+Date: Wed, 8 Jul 2009 13:19:55 +0800
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; x86_64; ; )
+Cc: Joerg Roedel <joerg.roedel@amd.com>, peterz@infradead.org,
+       Ingo Molnar <mingo@elte.hu>, avi@redhat.com, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200905050909.58583.mark.langsdorf@amd.com> <200905191356.37071.mark.langsdorf@amd.com> <200905201725.18046.mark.langsdorf@amd.com>
+In-Reply-To: <200905201725.18046.mark.langsdorf@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200907072342.07822.gene.heskett@verizon.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907081319.57307.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 11:42:07PM -0400, Gene Heskett wrote:
-> On Tuesday 07 July 2009, Wu Fengguang wrote:
-> >On Tue, Jul 07, 2009 at 10:57:30PM +0800, Gene Heskett wrote:
-> >> On Tuesday 07 July 2009, Wu Fengguang wrote:
-> >> >On Mon, Jul 06, 2009 at 10:56:00AM -0400, Gene Heskett wrote:
-> >> >> Greetings all;
-> [...]
-> >> >
-> >> >Normal zone is absent in the above lines.
-> >>
-> >> Is this a .config issue?
-> >
-> >At least CONFIG_HIGHMEM64G is not necessary, could try disabling it.
-> 
-> I have in a rebuild of this 2.6.30.1 kernel, but ISTR I enabled that because 
-> it was only using 3G of the 4G of ram in this box, an AMD-64 Phenom, 4 cores, 
-> 4G ram.  But I haven't rebooted to it yet.  Next good excuse.  See below... :)
+On Thursday 21 May 2009 06:25:17 Mark Langsdorf wrote:
+> This feature creates a new field in the VMCB called Pause
+> Filter Count.  If Pause Filter Count is greater than 0 and
+> intercepting PAUSEs is enabled, the processor will increment
+> an internal counter when a PAUSE instruction occurs instead
+> of intercepting.  When the internal counter reaches the
+> Pause Filter Count value, a PAUSE intercept will occur.
+>
 
-I guess you can only use 3G ram because there is a big memory hole.
-Your HighMem zone spanned 951810 pages, 813013 of which is present.
-So it's not quite accurate for the OOM message "951810 pages HighMem"
-to report the spanned pages.
+(dig it from archives...)
 
-Your Normal zone has 221994 present pages, while the OOM message shows
-"slab:206505", which indicates that the OOM is caused by too much
-slab pages(they cannot be allocated from HighMem zone).
+Any update for the patch(I mean the scheduler part)? I think people agreed on 
+the approach?
 
-I guess your near 800MB slab cache is somehow under scanned.
+-- 
+regards
+Yang, Sheng
 
-Thanks,
-Fengguang
+> This feature can be used to detect contended spinlocks,
+> especially when the lock holding VCPU is not scheduled.
+> Rescheduling another VCPU prevents the VCPU seeking the
+> lock from wasting its quantum by spinning idly.  Perform
+> the reschedule by increasing the the credited time on
+> the VCPU.
+>
+> Experimental results show that most spinlocks are held
+> for less than 1000 PAUSE cycles or more than a few
+> thousand.  Default the Pause Filter Counter to 3000 to
+> detect the contended spinlocks.
+>
+> Processor support for this feature is indicated by a CPUID
+> bit.
+>
+> On a 24 core system running 4 guests each with 16 VCPUs,
+> this patch improved overall performance of each guest's
+> 32 job kernbench by approximately 1%.  Further performance
+> improvement may be possible with a more sophisticated
+> yield algorithm.
+>
+> -Mark Langsdorf
+> Operating System Research Center
+> AMD
+>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> ---
+>  arch/x86/include/asm/svm.h |    3 ++-
+>  arch/x86/kvm/svm.c         |   13 +++++++++++++
+>  include/linux/sched.h      |    7 +++++++
+>  kernel/sched.c             |   18 ++++++++++++++++++
+>  4 files changed, 40 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+> index 85574b7..1fecb7e 100644
+> --- a/arch/x86/include/asm/svm.h
+> +++ b/arch/x86/include/asm/svm.h
+> @@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
+>  	u16 intercept_dr_write;
+>  	u32 intercept_exceptions;
+>  	u64 intercept;
+> -	u8 reserved_1[44];
+> +	u8 reserved_1[42];
+> +	u16 pause_filter_count;
+>  	u64 iopm_base_pa;
+>  	u64 msrpm_base_pa;
+>  	u64 tsc_offset;
+> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> index ef43a18..dad6c4b 100644
+> --- a/arch/x86/kvm/svm.c
+> +++ b/arch/x86/kvm/svm.c
+> @@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
+>  #define SVM_FEATURE_NPT  (1 << 0)
+>  #define SVM_FEATURE_LBRV (1 << 1)
+>  #define SVM_FEATURE_SVML (1 << 2)
+> +#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
+>
+>  #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
+>
+> @@ -575,6 +576,11 @@ static void init_vmcb(struct vcpu_svm *svm)
+>
+>  	svm->nested_vmcb = 0;
+>  	svm->vcpu.arch.hflags = HF_GIF_MASK;
+> +
+> +	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
+> +		control->pause_filter_count = 3000;
+> +		control->intercept |= (1ULL << INTERCEPT_PAUSE);
+> +	}
+>  }
+>
+>  static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
+> @@ -2087,6 +2093,12 @@ static int interrupt_window_interception(struct
+> vcpu_svm *svm, return 1;
+>  }
+>
+> +static int pause_interception(struct vcpu_svm *svm, struct kvm_run
+> *kvm_run) +{
+> +	sched_delay_yield(1000000);
+> +	return 1;
+> +}
+> +
+>  static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+>  				      struct kvm_run *kvm_run) = {
+>  	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
+> @@ -2123,6 +2135,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm
+> *svm, [SVM_EXIT_CPUID]			= cpuid_interception,
+>  	[SVM_EXIT_IRET]                         = iret_interception,
+>  	[SVM_EXIT_INVD]                         = emulate_on_interception,
+> +	[SVM_EXIT_PAUSE]			= pause_interception,
+>  	[SVM_EXIT_HLT]				= halt_interception,
+>  	[SVM_EXIT_INVLPG]			= invlpg_interception,
+>  	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index b4c38bc..9cde585 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -2283,6 +2283,9 @@ static inline unsigned int task_cpu(const struct
+> task_struct *p) return task_thread_info(p)->cpu;
+>  }
+>
+> +extern void sched_delay_yield(unsigned long ns);
+> +
+> +
+>  extern void set_task_cpu(struct task_struct *p, unsigned int cpu);
+>
+>  #else
+> @@ -2292,6 +2295,10 @@ static inline unsigned int task_cpu(const struct
+> task_struct *p) return 0;
+>  }
+>
+> +void sched_delay_yield(struct task_struct *p, unsigned int delay)
+> +{
+> +}
+> +
+>  static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
+>  {
+>  }
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index b902e58..3aed2f6 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -1947,6 +1947,24 @@ task_hot(struct task_struct *p, u64 now, struct
+> sched_domain *sd) return delta < (s64)sysctl_sched_migration_cost;
+>  }
+>
+> +/*
+> + * Interface for yielding a thread by delaying it for a known
+> + * interval.  Use at your own risk and not with real-time.
+> + *
+> + * Like yield, except for SCHED_OTHER/BATCH, where it will
+> + * give us @ns time for the 'good' cause.
+> + */
+> +void sched_delay_yield(unsigned long ns)
+> +{
+> +	struct task_struct *curr = current;
+> +	if (curr->sched_class == &fair_sched_class) {
+> +		struct sched_entity *se = &curr->se;
+> +		__update_curr(cfs_rq_of(se), se, ns);
+> +		schedule();
+> +	} else
+> +		yield();
+> +}
+> +EXPORT_SYMBOL_GPL(sched_delay_yield);
+>
+>  void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+>  {
+
+
