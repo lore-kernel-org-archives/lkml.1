@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbZGHWKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbZGHWLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758629AbZGHWKI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbZGHWJ4
+	id S1758623AbZGHWLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbZGHWLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:09:56 -0400
-Received: from exprod6og104.obsmtp.com ([64.18.1.187]:58364 "HELO
-	exprod6og104.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758483AbZGHWJy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:09:54 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 8 Jul 2009 18:11:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36679 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755062AbZGHWLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 18:11:03 -0400
+Date: Thu, 9 Jul 2009 00:10:31 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: netdev@vger.kernel.org
+Cc: eric.dumazet@gmail.com, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, htejun@gmail.com, jarkao2@gmail.com,
+       oleg@redhat.com, davidel@xmailserver.org, davem@davemloft.net
+Subject: [PATCHv7 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090708221031.GD2945@jolsa.redhat.com>
+References: <20090708220717.GB2945@jolsa.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: Problem with /proc/iomem on ARM
-Date: Wed, 8 Jul 2009 18:09:51 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901A689D3@mi8nycmail19.Mi8.com>
-In-Reply-To: <ac3eb2510907011146o25204845i9deb0ebdd114f655@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Problem with /proc/iomem on ARM
-Thread-Index: Acn6fFjScMtTTYugSSGknQ8Ieg+ybAFm9+Gg
-References: <BD79186B4FD85F4B8E60E381CAEE190901A13822@mi8nycmail19.Mi8.com> <ac3eb2510907011055r5d5f06c1k754e52ebae88efab@mail.gmail.com> <BD79186B4FD85F4B8E60E381CAEE190901A1383F@mi8nycmail19.Mi8.com> <ac3eb2510907011112k690e5c38y2a8871dde5db1f13@mail.gmail.com> <BD79186B4FD85F4B8E60E381CAEE190901A13854@mi8nycmail19.Mi8.com> <ac3eb2510907011146o25204845i9deb0ebdd114f655@mail.gmail.com>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 08 Jul 2009 22:09:52.0710 (UTC) FILETIME=[D1798E60:01CA0018]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090708220717.GB2945@jolsa.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n68MAWXx029080
 
-On Wednesday, July 01, 2009 11:47 AM, Kay Sievers wrote:
-> On Wed, Jul 1, 2009 at 20:24, H Hartley Sweeten wrote:
->> On Wednesday, July 01, 2009 11:13 AM, Kay Sievers wrote:
->>>> The serial ports on my system are amba bus devices.
->>>>
->>>>> After all, it seems like this should be fixed in arm somewhere,
->>>>> not to copy and store internal driver core pointers, but use the
->>>>> device itself to retrieve the values.
->>>>
->>>> Maybe the problem is in drivers/amba/bus.c? amba_device_register()
->>>> does:
->>>>
->>>> Â  Â  Â  Â dev->res.name = dev_name(&dev->dev);
->>>
->>> Looks like. If you get the name directly from dev->init_name. Does
->>> that work?
->>>
->>
->> The following patch does fix /proc/iomem for the amba uarts on my
->> system.  Is this the correct approach to fixing the issue?
->
-> Looks fine to work around the issue that statically allocated struct
-> devices can cause. The proper fix would be to convert them to dynamic
-> objects and get rid of .init_name entirely.
+Adding smp_mb__after_lock define to be used as a smp_mb call after
+a lock.
 
-Disregard.
+Making it nop for x86, since {read|write|spin}_lock() on x86 are
+full memory barriers.
 
-Russell King added a patch that fixed the issue.  I just showed up.
+wbr,
+jirka
 
-commit 557dca5f48a45df88a73e69ee0700cfd4e2358c9
-Author: Russell King <rmk@dyn-67.arm.linux.org.uk>
-Date:   Sun Jul 5 22:39:08 2009 +0100
 
-    [ARM] amba: fix amba device resources
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+---
+ arch/x86/include/asm/spinlock.h |    4 ++++
+ include/linux/spinlock.h        |    5 +++++
+ include/net/sock.h              |    5 ++++-
+ 3 files changed, 13 insertions(+), 1 deletions(-)
 
-    AMBA device resources were being reported as:
+diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+index b7e5db8..4e77853 100644
+--- a/arch/x86/include/asm/spinlock.h
++++ b/arch/x86/include/asm/spinlock.h
+@@ -302,4 +302,8 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+ #define _raw_read_relax(lock)	cpu_relax()
+ #define _raw_write_relax(lock)	cpu_relax()
+ 
++/* The {read|write|spin}_lock() on x86 are full memory barriers. */
++static inline void smp_mb__after_lock(void) { }
++#define ARCH_HAS_SMP_MB_AFTER_LOCK
++
+ #endif /* _ASM_X86_SPINLOCK_H */
+diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+index 252b245..4be57ab 100644
+--- a/include/linux/spinlock.h
++++ b/include/linux/spinlock.h
+@@ -132,6 +132,11 @@ do {								\
+ #endif /*__raw_spin_is_contended*/
+ #endif
+ 
++/* The lock does not imply full memory barrier. */
++#ifndef ARCH_HAS_SMP_MB_AFTER_LOCK
++static inline void smp_mb__after_lock(void) { smp_mb(); }
++#endif
++
+ /**
+  * spin_unlock_wait - wait until the spinlock gets unlocked
+  * @lock: the spinlock in question.
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 4eb8409..2c0da92 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
+  * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
+  * could then endup calling schedule and sleep forever if there are no more
+  * data on the socket.
++ *
++ * The sk_has_sleeper is always called right after a call to read_lock, so we
++ * can use smp_mb__after_lock barrier.
+  */
+ static inline int sk_has_sleeper(struct sock *sk)
+ {
+@@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
+ 	 *
+ 	 * This memory barrier is paired in the sock_poll_wait.
+ 	 */
+-	smp_mb();
++	smp_mb__after_lock();
+ 	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
+ }
+ 
+-- 
+1.6.2.5
 
-    10004000-10004fff : <BAD>
-
-    This is because dev_name() was returning NULL prior to device_register.
-    Ensure that the struct device is properly initialized, and the name is
-    set before adding it to the device tree.
-
-    Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-
-Thanks,
-Hartley
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
