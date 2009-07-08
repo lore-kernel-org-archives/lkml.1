@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbZGHSG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZGHSHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbZGHSG2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 14:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZGHSGW
+	id S1756620AbZGHSHk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 14:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZGHSHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 14:06:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46098
+	Wed, 8 Jul 2009 14:07:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46105
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754007AbZGHSGW (ORCPT
+	by vger.kernel.org with ESMTP id S1754760AbZGHSHd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 14:06:22 -0400
-Date: Wed, 08 Jul 2009 11:06:24 -0700 (PDT)
-Message-Id: <20090708.110624.104984745.davem@davemloft.net>
-To: michal.simek@petalogix.com
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, mingo@elte.hu,
-       arnd@arndb.de, lethal@linux-sh.org, ltp-list@lists.sourceforge.net
-Subject: Re: mmap hw behavior
+	Wed, 8 Jul 2009 14:07:33 -0400
+Date: Wed, 08 Jul 2009 11:07:36 -0700 (PDT)
+Message-Id: <20090708.110736.267641562.davem@davemloft.net>
+To: jolsa@redhat.com
+Cc: eric.dumazet@gmail.com, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
+       davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A54DF6F.1010405@petalogix.com>
-References: <4A54D14F.9090101@petalogix.com>
-	<20090708.103520.193697491.davem@davemloft.net>
-	<4A54DF6F.1010405@petalogix.com>
+In-Reply-To: <20090708174748.GB4650@jolsa.lab.eng.brq.redhat.com>
+References: <20090707145710.GB7124@Krystal>
+	<4A536866.1050906@gmail.com>
+	<20090708174748.GB4650@jolsa.lab.eng.brq.redhat.com>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,29 +32,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <michal.simek@petalogix.com>
-Date: Wed, 08 Jul 2009 20:03:27 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+Date: Wed, 8 Jul 2009 19:47:48 +0200
 
-> David Miller wrote:
->> From: Michal Simek <michal.simek@petalogix.com>
->> Date: Wed, 08 Jul 2009 19:03:11 +0200
->>
->>   
->>> When I call mmap for that open file with pointer to calloc place
->>> (first parameter, + length zero) it should be one tlb invalidation
->>> for calloc and new tlb which connect open file.  We check it and we
->>> don't have any tlb invalidation that's why I think that kernel do
->>> different thigs.  Or is it there any copying? Or anything different?
->>>     
->>
->> There is no need to tlb flush the calloc area unless that memory area
->> is actually touched by the user application and thus the page is
->> faulted in.
->>   
-> That calloc area is filled by any value (in that test). Is it mean that
-> for this case when calloc area is touched
-> there must be tlb invalidation + remapping?
+> great, I saw you Signed-off the 1/2 part.. could I leave it,
+> or do I need to resend as a single patch?
 
-Yes, if the calloc area is written to by the application, there
-should be a tlb flush when the mmap() overrides that virtual region
-with a different mapping.
+Could you formally resubmit things, regardless of whether
+they are kept split up or combined?  That will help me
+a lot.  Thanks.
+
+I think things are settled down at this point and we can
+push these patches into the tree.
