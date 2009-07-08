@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbZGHTuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbZGHTzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbZGHTuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 15:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbZGHTud
+	id S1758139AbZGHTzO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 15:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZGHTzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 15:50:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42583 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754850AbZGHTuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 15:50:32 -0400
-Date: Wed, 8 Jul 2009 21:50:04 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: netdev@vger.kernel.org
-Cc: eric.dumazet@gmail.com, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, htejun@gmail.com, jarkao2@gmail.com,
-       oleg@redhat.com, davidel@xmailserver.org, davem@davemloft.net
-Subject: [PATCH 2/2] [PATCHv6 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090708195004.GC3196@jolsa.lab.eng.brq.redhat.com>
-References: <20090708194726.GA3196@jolsa.lab.eng.brq.redhat.com>
+	Wed, 8 Jul 2009 15:55:03 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:53390 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755355AbZGHTzA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 15:55:00 -0400
+Date: Wed, 8 Jul 2009 15:54:57 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Michael S. Zick" <lkml@morethan.org>
+cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: Null Pointer BUG in uhci_hcd
+In-Reply-To: <200907071624.37176.lkml@morethan.org>
+Message-ID: <Pine.LNX.4.44L0.0907081546430.22105-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090708194726.GA3196@jolsa.lab.eng.brq.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding smp_mb__after_lock define to be used as a smp_mb call after
-a lock.
+On Tue, 7 Jul 2009, Michael S. Zick wrote:
 
-Making it nop for x86, since {read|write|spin}_lock() on x86 are
-full memory barriers.
+> Here is an example of the message paths taken - I have another 27Mbytes of the same
+> if this snippet isn't enough.
 
-wbr,
-jirka
+> Jun 30 10:38:00 cb01 kernel: hub 2-0:1.0: over-current change on port 1
+> Jun 30 10:38:02 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
+> Jun 30 10:38:02 cb01 kernel: hub 2-0:1.0: over-current change on port 2
+> Jun 30 10:38:02 cb01 kernel: hub 2-0:1.0: over-current change on port 1
+> Jun 30 10:38:04 cb01 kernel: hub 2-0:1.0: connect-debounce failed, port 1 disabled
+> Jun 30 10:38:04 cb01 kernel: hub 2-0:1.0: over-current change on port 2
 
+This is typical of the errors on bus 2.  ehci-hcd receives
+status-change interrupts because of the over-current-change flag.  The
+hub driver tries to debounce port 1 (presumably because a device is
+connected there) but gives up after two seconds.  Then the cycle
+repeats.
 
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
----
- arch/x86/include/asm/spinlock.h |    4 ++++
- include/linux/spinlock.h        |    5 +++++
- include/net/sock.h              |    5 ++++-
- 3 files changed, 13 insertions(+), 1 deletions(-)
+> Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: over-current change on port 1
+> Jun 30 10:38:34 cb01 kernel: ehci_hcd 0000:00:10.4: port 1 resume error -19
+> Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
+> Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 1 disabled
+> Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: over-current change on port 2
+> Jun 30 10:38:34 cb01 kernel: ehci_hcd 0000:00:10.4: port 2 resume error -19
+> Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: hub_port_status failed (err = -32)
+> Jun 30 10:38:34 cb01 kernel: hub 1-0:1.0: connect-debounce failed, port 2 disabled
 
-diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-index b7e5db8..4e77853 100644
---- a/arch/x86/include/asm/spinlock.h
-+++ b/arch/x86/include/asm/spinlock.h
-@@ -302,4 +302,8 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
- #define _raw_read_relax(lock)	cpu_relax()
- #define _raw_write_relax(lock)	cpu_relax()
- 
-+/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-+static inline void smp_mb__after_lock(void) { }
-+#define ARCH_HAS_SMP_MB_AFTER_LOCK
-+
- #endif /* _ASM_X86_SPINLOCK_H */
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index 252b245..4be57ab 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -132,6 +132,11 @@ do {								\
- #endif /*__raw_spin_is_contended*/
- #endif
- 
-+/* The lock does not imply full memory barrier. */
-+#ifndef ARCH_HAS_SMP_MB_AFTER_LOCK
-+static inline void smp_mb__after_lock(void) { smp_mb(); }
-+#endif
-+
- /**
-  * spin_unlock_wait - wait until the spinlock gets unlocked
-  * @lock: the spinlock in question.
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 4eb8409..2c0da92 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
-  * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
-  * could then endup calling schedule and sleep forever if there are no more
-  * data on the socket.
-+ *
-+ * The sk_has_sleeper is always called right after a call to read_lock, so we
-+ * can use smp_mb__after_lock barrier.
-  */
- static inline int sk_has_sleeper(struct sock *sk)
- {
-@@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
- 	 *
- 	 * This memory barrier is paired in the sock_poll_wait.
- 	 */
--	smp_mb();
-+	smp_mb__after_lock();
- 	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
- }
- 
--- 
-1.6.2.5
+This is typical of the problems on bus 1.  Again we see
+over-current-change flags, and this time there's the "resume error
+-19".  The only reason that code can appear is if a read returns
+0xffffffff, i.e., ~(u32)0.  See handshake() in ehci-hcd.c, and see the
+call to handshake in ehci-hub.c shortly before the line containing
+"resume error".
+
+It's like I said, your hardware really isn't working properly.
+
+Alan Stern
 
