@@ -1,278 +1,362 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbZGHEPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbZGHEQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbZGHEPl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 00:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbZGHEOd
+	id S1759274AbZGHEQK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 00:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbZGHEOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 00:14:33 -0400
-Received: from vms173019pub.verizon.net ([206.46.173.19]:46912 "EHLO
-	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbZGHEOI (ORCPT
+	Wed, 8 Jul 2009 00:14:36 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:58259 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752241AbZGHEOM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 00:14:08 -0400
+	Wed, 8 Jul 2009 00:14:12 -0400
 From: Len Brown <lenb@kernel.org>
 To: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
        linux-acpi@vger.kernel.org
-Subject: [PATCH v2 for 2.6.32] SFI - Simple Firmware Interface support
-Date: Wed, 08 Jul 2009 00:13:46 -0400
-Message-id: <1247026438-20891-1-git-send-email-lenb@kernel.org>
+Cc: Feng Tang <feng.tang@intel.com>, Len Brown <len.brown@intel.com>
+Subject: [PATCH 07/12] SFI: add x86 support
+Date: Wed, 08 Jul 2009 00:13:53 -0400
+Message-id: <4676b1fee4cae65c678754fbdecae626ac161b81.1247025117.git.len.brown@intel.com>
 X-Mailer: git-send-email 1.6.3.3.385.g60647
+In-reply-to: <1247026438-20891-1-git-send-email-lenb@kernel.org>
+References: <1247026438-20891-1-git-send-email-lenb@kernel.org>
+In-reply-to: <8e4a93858bce74ed3080dd607aa471023f1a2737.1247025117.git.len.brown@intel.com>
+References: <8e4a93858bce74ed3080dd607aa471023f1a2737.1247025117.git.len.brown@intel.com>
+X-Patchwork-Hint: ignore
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is version 2 of the SFI patch series for Linux 2.6.32.
-This series is based on 2.6.31-rc2, and is available in git:
+From: Feng Tang <feng.tang@intel.com>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-sfi-2.6.git sfi-test
+arch/x86/kernel/sfi.c serves the dual-purpose of supporting the
+SFI core with arch specific code, as well as a home for the
+arch-specific code that uses SFI.
 
-We've tried to respond to all feedback on the v1 series.
-In particular, thanks to Ingo Molnar and Andi Kleen for their thorough review.
-
-We followed Andi's advice and deleted the data structure
-to track tables, and instead we access all table headers in-place.
-Indeed, this shrunk the memory footprint a bit.
-
-We also now detect and optimize for the common case
-where all SFI tables fit on a single page.
-
-We added some small bits from the upcoming draft of SFI 0.7,
-which should be available on http://simplefirmware.org shortly.
-Of note, we can assert that the SYST shall not cross a 4K boundary.
-
-Thanks,
--Len Brown & Tang-Feng, Intel Open Source Technology Center
-
+Signed-off-by: Feng Tang <feng.tang@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/kernel-parameters.txt |    5 +
- MAINTAINERS                         |   12 +
- arch/x86/Kconfig                    |    4 +-
- arch/x86/include/asm/io_apic.h      |    3 +-
- arch/x86/kernel/Makefile            |    1 +
- arch/x86/kernel/acpi/boot.c         |   22 --
- arch/x86/kernel/apic/io_apic.c      |   28 ++-
- arch/x86/kernel/e820.c              |    5 +
- arch/x86/kernel/setup.c             |    3 +
- arch/x86/kernel/sfi.c               |  284 +++++++++++++++++++++++++
- arch/x86/pci/mmconfig-shared.c      |    5 +-
- drivers/Makefile                    |    1 +
- drivers/acpi/tables.c               |    3 +
- drivers/sfi/Kconfig                 |   16 ++
- drivers/sfi/Makefile                |    3 +
- drivers/sfi/sfi_acpi.c              |  151 ++++++++++++++
- drivers/sfi/sfi_core.c              |  387 +++++++++++++++++++++++++++++++++++
- drivers/sfi/sfi_core.h              |   44 ++++
- include/linux/sfi.h                 |  198 ++++++++++++++++++
- include/linux/sfi_acpi.h            |   60 ++++++
- init/main.c                         |    2 +
- 21 files changed, 1204 insertions(+), 33 deletions(-)
+ arch/x86/kernel/Makefile |    1 +
+ arch/x86/kernel/sfi.c    |  284 ++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/sfi/sfi_core.c   |    2 +-
+ 3 files changed, 286 insertions(+), 1 deletions(-)
  create mode 100644 arch/x86/kernel/sfi.c
- create mode 100644 drivers/sfi/Kconfig
- create mode 100644 drivers/sfi/Makefile
- create mode 100644 drivers/sfi/sfi_acpi.c
- create mode 100644 drivers/sfi/sfi_core.c
- create mode 100644 drivers/sfi/sfi_core.h
- create mode 100644 include/linux/sfi.h
- create mode 100644 include/linux/sfi_acpi.h
 
-commits:
-
-Feng Tang (10):
-      SFI, x86: add CONFIG_SFI
-      SFI: document boot param "sfi=off"
-      SFI: create include/linux/sfi.h
-      SFI: add core support
-      ACPI, x86: remove ACPI dependency on some IO-APIC routines
-      SFI: add x86 support
-      SFI, x86: hook e820() for memory map initialization
-      SFI: Enable SFI to parse ACPI tables
-      SFI, PCI: Hook MMCONFIG
-      SFI: add boot-time initialization hooks
-
-Len Brown (2):
-      SFI: Simple Firmware Interface - new MAINTAINERS entry
-      ACPI: check acpi_disabled in acpi_table_parse()
-
-with this log:
-
-commit 7d8801c4e11f26a68fca70798dc40d5f405b4be2
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 23:34:39 2009 -0400
-
-    SFI: add boot-time initialization hooks
-    
-    There are two SFI boot-time hooks:
-    
-    sfi_init() maps the SYST using early_ioremap() and validates all the tables.
-    
-    sfi_init_late() re-maps SYST with ioremap(), and initializes
-    the ACPI extension, if present.
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 24fe646fcbbd9049850de4ac57cf6a67846b38c4
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 23:30:32 2009 -0400
-
-    SFI, PCI: Hook MMCONFIG
-    
-    First check ACPI, and if that fails, ask SFI to find the MCFG.
-    
-    Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 4e176b0f00143e2dfca4480402d3b27b3a0f835f
-Author: Len Brown <len.brown@intel.com>
-Date:   Tue Jul 7 23:22:58 2009 -0400
-
-    ACPI: check acpi_disabled in acpi_table_parse()
-    
-    Allow consumers of the acpi_table_parse() API
-    to gracefully handle the acpi_disabled=1 case
-    without checking the flag themselves.
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 5ab9dd34acc6209c5b6a3c754075e408e5298a2d
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 23:15:22 2009 -0400
-
-    SFI: Enable SFI to parse ACPI tables
-    
-    Extend SFI to access standard ACPI tables.
-    (eg. the PCI MCFG) using sfi_acpi_table_parse().
-    
-    Note that this is _not_ a hybrid ACPI + SFI mode.
-    The platform boots in either ACPI mode or SFI mode.
-    
-    SFI runs only with acpi_disabled=1, which can be set
-    at build-time via CONFIG_ACPI=n, or at boot time by
-    the failure to find ACPI platform support.
-    
-    So this extension simply allows SFI-platforms to
-    re-use existing standard table formats that happen to
-    be defined to live in ACPI envelopes.
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 5bf6b3c7c08a76ea8dc52e9e07728c2958938952
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 23:11:44 2009 -0400
-
-    SFI, x86: hook e820() for memory map initialization
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 4676b1fee4cae65c678754fbdecae626ac161b81
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 23:09:19 2009 -0400
-
-    SFI: add x86 support
-    
-    arch/x86/kernel/sfi.c serves the dual-purpose of supporting the
-    SFI core with arch specific code, as well as a home for the
-    arch-specific code that uses SFI.
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit bf8ea7cda3ad3f287f1c9164d366a94eae07a4a5
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 23:01:15 2009 -0400
-
-    ACPI, x86: remove ACPI dependency on some IO-APIC routines
-    
-    Both ACPI and SFI x86 systems will use these io_apic routines:
-    
-    uniq_ioapic_id(u8 id);
-    io_apic_get_unique_id(int ioapic, int apic_id);
-    io_apic_get_version(int ioapic);
-    io_apic_get_redir_entries(int ioapic);
-    
-    so move the 1st from acpi/boot.c to io_apic.c,
-    and remove the #ifdef ACPI around the other three.
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 10fb28adc204382cb3b1acc99eabbb369d378a0f
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 22:54:22 2009 -0400
-
-    SFI: add core support
-    
-    drivers/sfi/sfi_core.c contains the generic SFI implementation.
-    It has a private header, sfi_core.h, for its own use and the
-    private use of future files in drivers/sfi/
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 56f1291c60859b65ac62521e7fe4b82e73205ef6
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 22:39:49 2009 -0400
-
-    SFI: create include/linux/sfi.h
-    
-    include/linux/include/sfi.h defines everything that customers
-    of SFI need to know in order to use the SFI suport in the kernel.
-    
-    The primary API is sfi_table_parse(), where a driver or another part
-    of the kernel can supply a handler to parse the named table.
-    
-    sfi.h also includes the currently defined table signatures and table formats.
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 57dac60d76c191e3bd72f186833fac01e4c5f8f1
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 22:33:09 2009 -0400
-
-    SFI: document boot param "sfi=off"
-    
-    "sfi=off" is analogous to "acpi=off"
-    
-    In practice, "sfi=off" isn't likely to be very useful, for
-    1. SFI is used only when ACPI is not available
-    2. Today's SFI systems are not legacy PC-compatible
-    
-    ie. "sfi=off" on an ACPI-platform is a NO-OP,
-    and "sfi=off" on an SFI-platform will likely result in boot failure.
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit d5a8e3203627c313e8fdbf4fa9ac1cb1cdc6706c
-Author: Feng Tang <feng.tang@intel.com>
-Date:   Tue Jul 7 22:30:29 2009 -0400
-
-    SFI, x86: add CONFIG_SFI
-    
-    analogous to ACPI, drivers/sfi/Kconfig is pulled in by arch/x86/Kconfig
-    
-    Signed-off-by: Feng Tang <feng.tang@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
-
-commit 8e4a93858bce74ed3080dd607aa471023f1a2737
-Author: Len Brown <len.brown@intel.com>
-Date:   Tue Jul 7 22:25:46 2009 -0400
-
-    SFI: Simple Firmware Interface - new MAINTAINERS entry
-    
-    CONFIG_SFI=y shall enable the kernel to boot and run optimally
-    on platforms that support the Simple Firmware Interface.
-    
-    Thanks to Jacob Pan for prototyping the initial Linux SFI support,
-    and to Feng Tang for Linux bring-up and debug both in emulation
-    and on Moorestown hardware.
-    
-    See http://simplefirmware.org for more information on SFI.
-    
-    Signed-off-by: Len Brown <len.brown@intel.com>
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 6c327b8..e430123 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -53,6 +53,7 @@ obj-y				+= step.o
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ obj-y				+= cpu/
+ obj-y				+= acpi/
++obj-$(CONFIG_SFI)		+= sfi.o
+ obj-y				+= reboot.o
+ obj-$(CONFIG_MCA)		+= mca_32.o
+ obj-$(CONFIG_X86_MSR)		+= msr.o
+diff --git a/arch/x86/kernel/sfi.c b/arch/x86/kernel/sfi.c
+new file mode 100644
+index 0000000..a96ea0f
+--- /dev/null
++++ b/arch/x86/kernel/sfi.c
+@@ -0,0 +1,284 @@
++/*
++ *  sfi.c - SFI Boot Support (refer acpi/boot.c)
++ *
++ *  Copyright (C) 2008-2009	Intel Corporation
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++
++#define KMSG_COMPONENT "SFI"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
++#include <linux/bootmem.h>
++#include <linux/cpumask.h>
++#include <linux/module.h>
++#include <linux/acpi.h>
++#include <linux/init.h>
++#include <linux/efi.h>
++#include <linux/irq.h>
++#include <linux/sfi.h>
++#include <linux/io.h>
++
++#include <asm/io_apic.h>
++#include <asm/pgtable.h>
++#include <asm/mpspec.h>
++#include <asm/setup.h>
++#include <asm/apic.h>
++#include <asm/e820.h>
++
++#ifdef CONFIG_X86_LOCAL_APIC
++static unsigned long sfi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
++#endif
++
++#ifdef CONFIG_X86_IO_APIC
++static struct mp_ioapic_routing {
++	int	gsi_base;
++	int	gsi_end;
++} mp_ioapic_routing[MAX_IO_APICS];
++#endif
++
++static __init struct sfi_table_simple *sfi_early_find_syst(void)
++{
++	unsigned long i;
++	char *pchar = (char *)SFI_SYST_SEARCH_BEGIN;
++
++	/* SFI spec defines the SYST starts at a 16-byte boundary */
++	for (i = 0; SFI_SYST_SEARCH_BEGIN + i < SFI_SYST_SEARCH_END; i += 16) {
++		if (!strncmp(SFI_SIG_SYST, pchar, SFI_SIGNATURE_SIZE))
++			return (struct sfi_table_simple *)
++					(SFI_SYST_SEARCH_BEGIN + i);
++
++		pchar += 16;
++	}
++	return NULL;
++}
++
++/*
++ * called in a early boot phase before the paging table is created,
++ * setup a mmap table in e820 format
++ */
++int __init sfi_init_memory_map(void)
++{
++	struct sfi_table_simple *syst, *mmapt;
++	struct sfi_mem_entry *mentry;
++	unsigned long long start, end, size;
++	int i, num, type, tbl_cnt;
++	u64 *pentry;
++
++	if (sfi_disabled)
++		return -1;
++
++	/* first search the syst table */
++	syst = sfi_early_find_syst();
++	if (!syst)
++		return -1;
++
++	tbl_cnt = (syst->header.length - sizeof(struct sfi_table_header)) /
++			sizeof(u64);
++	pentry = syst->pentry;
++
++	/* walk through the syst to search the mmap table */
++	mmapt = NULL;
++	for (i = 0; i < tbl_cnt; i++) {
++		if (!strncmp(SFI_SIG_MMAP, (char *)(u32)*pentry, 4)) {
++			mmapt = (struct sfi_table_simple *)(u32)*pentry;
++			break;
++		}
++		pentry++;
++	}
++	if (!mmapt) {
++		pr_warning("could not find a valid memory map table\n");
++		return -1;
++	}
++
++	/* refer copy_e820_memory() */
++	num = SFI_GET_NUM_ENTRIES(mmapt, struct sfi_mem_entry);
++	mentry = (struct sfi_mem_entry *)mmapt->pentry;
++	for (i = 0; i < num; i++) {
++		start = mentry->phy_start;
++		size = mentry->pages << PAGE_SHIFT;
++		end = start + size;
++
++		if (start > end)
++			return -1;
++
++		pr_debug("start = 0x%08x end = 0x%08x type = %d\n",
++			(u32)start, (u32)end, mentry->type);
++
++		/* translate SFI mmap type to E820 map type */
++		switch (mentry->type) {
++		case EFI_CONVENTIONAL_MEMORY:
++			type = E820_RAM;
++			break;
++		case EFI_UNUSABLE_MEMORY:
++			type = E820_UNUSABLE;
++			break;
++		default:
++			type = E820_RESERVED;
++		}
++
++		e820_add_region(start, size, type);
++		mentry++;
++	}
++
++	return 0;
++}
++
++#ifdef CONFIG_X86_LOCAL_APIC
++void __init mp_sfi_register_lapic_address(unsigned long address)
++{
++	mp_lapic_addr = address;
++	set_fixmap_nocache(FIX_APIC_BASE, mp_lapic_addr);
++
++	if (boot_cpu_physical_apicid == -1U)
++		boot_cpu_physical_apicid = read_apic_id();
++
++	pr_debug("Boot CPU = %d\n", boot_cpu_physical_apicid);
++}
++
++/* All CPUs enumerated by SFI must be present and enabled */
++void __cpuinit mp_sfi_register_lapic(u8 id)
++{
++	int boot_cpu = 0;
++
++	if (MAX_APICS - id <= 0) {
++		pr_warning("Processor #%d invalid (max %d)\n",
++			id, MAX_APICS);
++		return;
++	}
++
++	if (id == boot_cpu_physical_apicid)
++		boot_cpu = 1;
++	pr_info("registering lapic[%d]\n", id);
++
++	generic_processor_info(id, GET_APIC_VERSION(apic_read(APIC_LVR)));
++}
++
++static int __init sfi_parse_cpus(struct sfi_table_header *table)
++{
++	struct sfi_table_simple *sb;
++	struct sfi_cpu_table_entry *pentry;
++	int i;
++	int cpu_num;
++
++	sb = (struct sfi_table_simple *)table;
++	cpu_num = SFI_GET_NUM_ENTRIES(sb, struct sfi_cpu_table_entry);
++	pentry = (struct sfi_cpu_table_entry *)sb->pentry;
++
++	for (i = 0; i < cpu_num; i++) {
++		mp_sfi_register_lapic(pentry->apicid);
++		pentry++;
++	}
++
++	smp_found_config = 1;
++	return 0;
++}
++#endif /* CONFIG_X86_LOCAL_APIC */
++
++#ifdef	CONFIG_X86_IO_APIC
++void __init mp_sfi_register_ioapic(u8 id, u32 paddr)
++{
++	int idx = 0;
++	int tmpid;
++	static u32 gsi_base;
++
++	if (nr_ioapics >= MAX_IO_APICS) {
++		pr_err("ERROR: Max # of I/O APICs (%d) exceeded "
++			"(found %d)\n", MAX_IO_APICS, nr_ioapics);
++		panic("Recompile kernel with bigger MAX_IO_APICS!\n");
++	}
++	if (!paddr) {
++		pr_warning("WARNING: Bogus (zero) I/O APIC address"
++			" found in MADT table, skipping!\n");
++		return;
++	}
++
++	idx = nr_ioapics;
++
++	mp_ioapics[idx].type = MP_IOAPIC;
++	mp_ioapics[idx].flags = MPC_APIC_USABLE;
++	mp_ioapics[idx].apicaddr = paddr;
++
++	set_fixmap_nocache(FIX_IO_APIC_BASE_0 + idx, paddr);
++	tmpid = uniq_ioapic_id(id);
++	if (tmpid == -1)
++		return;
++
++	mp_ioapics[idx].apicid = tmpid;
++#ifdef CONFIG_X86_32
++	mp_ioapics[idx].apicver = io_apic_get_version(idx);
++#else
++	mp_ioapics[idx].apicver = 0;
++#endif
++
++	/*
++	 * Build basic GSI lookup table to facilitate gsi->io_apic lookups
++	 * and to prevent reprogramming of IOAPIC pins (PCI GSIs).
++	 */
++	mp_ioapic_routing[idx].gsi_base = gsi_base;
++	mp_ioapic_routing[idx].gsi_end = gsi_base +
++		io_apic_get_redir_entries(idx);
++	gsi_base = mp_ioapic_routing[idx].gsi_end + 1;
++
++	pr_info("IOAPIC[%d]: apic_id %d, version %d, address 0x%x, "
++		"GSI %d-%d\n",
++		idx, mp_ioapics[idx].apicid,
++		mp_ioapics[idx].apicver, (u32)mp_ioapics[idx].apicaddr,
++		mp_ioapic_routing[idx].gsi_base,
++		mp_ioapic_routing[idx].gsi_end);
++
++	nr_ioapics++;
++}
++
++static int __init sfi_parse_ioapic(struct sfi_table_header *table)
++{
++	struct sfi_table_simple *sb;
++	struct sfi_apic_table_entry *pentry;
++	int i, num;
++
++	sb = (struct sfi_table_simple *)table;
++	num = SFI_GET_NUM_ENTRIES(sb, struct sfi_apic_table_entry);
++	pentry = (struct sfi_apic_table_entry *)sb->pentry;
++
++	for (i = 0; i < num; i++) {
++		mp_sfi_register_ioapic(i, pentry->phy_addr);
++		pentry++;
++	}
++
++	WARN(pic_mode, KERN_WARNING
++		"SFI: pic_mod shouldn't be 1 when IOAPIC table is present\n");
++	pic_mode = 0;
++	return 0;
++}
++#endif /* CONFIG_X86_IO_APIC */
++
++/*
++ * sfi_platform_init(): register lapics & io-apics
++ */
++int __init sfi_platform_init(void)
++{
++#ifdef CONFIG_X86_LOCAL_APIC
++	mp_sfi_register_lapic_address(sfi_lapic_addr);
++	sfi_table_parse(SFI_SIG_CPUS, NULL, NULL, 0, sfi_parse_cpus);
++#endif
++#ifdef CONFIG_X86_IO_APIC
++	sfi_table_parse(SFI_SIG_APIC, NULL, NULL, 0, sfi_parse_ioapic);
++#endif
++	return 0;
++}
+diff --git a/drivers/sfi/sfi_core.c b/drivers/sfi/sfi_core.c
+index f9a9849..8939215 100644
+--- a/drivers/sfi/sfi_core.c
++++ b/drivers/sfi/sfi_core.c
+@@ -350,7 +350,7 @@ void __init sfi_init(void)
+ 
+ 	pr_info("Simple Firmware Interface v0.7 http://simplefirmware.org\n");
+ 
+-	if (sfi_find_syst() || sfi_parse_syst())
++	if (sfi_find_syst() || sfi_parse_syst() || sfi_platform_init())
+ 		disable_sfi();
+ 
+ 	return;
+-- 
+1.6.0.6
 
