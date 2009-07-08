@@ -1,75 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZGHM2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbZGHMc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbZGHM2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 08:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZGHM2q
+	id S1756090AbZGHMc4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 08:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZGHMcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 08:28:46 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:57108 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbZGHM2p convert rfc822-to-8bit (ORCPT
+	Wed, 8 Jul 2009 08:32:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36261 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751821AbZGHMcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 08:28:45 -0400
+	Wed, 8 Jul 2009 08:32:47 -0400
+Date: Wed, 8 Jul 2009 08:32:44 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@infradead.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [rfc][patch 4/4] fs: tmpfs, ext2 use new truncate
+Message-ID: <20090708123244.GA22722@infradead.org>
+References: <20090707144423.GC2714@wotan.suse.de> <20090707144918.GF2714@wotan.suse.de> <20090707163829.GB14947@infradead.org> <20090708065327.GM2714@wotan.suse.de> <20090708111420.GB20924@duck.suse.cz> <20090708122250.GP2714@wotan.suse.de>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0907080750100.23552@localhost>
-References: <200907072336.14767.florian@openwrt.org>
-	 <154e089b0907071654o46145717h17ac558aa4d524e0@mail.gmail.com>
-	 <200907080840.44451.florian@openwrt.org>
-	 <alpine.LFD.2.00.0907080750100.23552@localhost>
-Date: Wed, 8 Jul 2009 14:28:43 +0200
-Message-ID: <154e089b0907080528h24b6ccc6qa07bb1fa4db89aa0@mail.gmail.com>
-Subject: Re: [PATCH] vlynq: remove duplicated #include
-From: Hannes Eder <hannes@hanneseder.net>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Florian Fainelli <florian@openwrt.org>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Huang Weiyi <weiyi.huang@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090708122250.GP2714@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 8, 2009 at 13:50, Robert P. J. Day<rpjday@crashcourse.ca> wrote:
-> On Wed, 8 Jul 2009, Florian Fainelli wrote:
->
->> Hi Hannes,
->>
->> Le Wednesday 08 July 2009 01:54:14 Hannes Eder, vous avez écrit :
->> > On Tue, Jul 7, 2009 at 23:36, Florian Fainelli<florian@openwrt.org> wrote:
->> > > Remove duplicated #include('s) in drivers/vlynq/vlynq.c
->> >
->> > The following little script catches more of these issues, though it
->> > might be a bit fragile:
->> >
->> > #!/bin/bash
->> > find . -name "*.c" | \
->> > while read file; do
->> >     dblinc=$(grep "^#include <" $file | sort | uniq -c | grep -v "^      1
->> > ") [ "$dblinc" != "" ] && echo $file: $dblinc
->> > done
->> >
->> > when ran from the linux-2.6 src tree, the output is something like
->> > (lines starting with '#' are my annotations):
->> >
->> > ./mm/slab.c: 3 #include <linux/kmalloc_sizes.h>
->> > # this is a false positive
->> > ./mm/slqb.c: 2 #include <linux/seq_file.h>
->> > # I did not look a this one
->> > ./mm/shmem.c: 2 #include <linux/vfs.h>
->> > # this is a hit
->> > # the rest (about 50 hits) skipped
->> >
->> > Do you want to investigate this issues?
->>
->> I will not, at least not now, but Huang (CC'd) might be interested.
->
->  isn't "make includecheck" supposed to identify duplicated includes?
-> why aren't you using that?
+On Wed, Jul 08, 2009 at 02:22:50PM +0200, Nick Piggin wrote:
+> OK fair enough. But I don't know if all those checks are
+> realy appropriate. For example an IS_APPEND inode should
+> be able to have its blocks trimmed off if a write fails.
 
-Hey man, do not stop me from invent the wheel again, and again, and
-again, ... ;).  You are right "make includecheck" does the trick check
-for duplicated includes, in it does so in a much nicer way.
+It should.  But I think that's a separate issue of what we're trying to
+fix right now.  So let's just do the method reshuffle now and then sort
+out the checks later.
 
-Thanks,
--Hannes
