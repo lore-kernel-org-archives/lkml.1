@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZGHQwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbZGHQ5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbZGHQwo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbZGHQwc
+	id S1755089AbZGHQ5k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZGHQ5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:52:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57867 "EHLO hera.kernel.org"
+	Wed, 8 Jul 2009 12:57:30 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:37916 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757116AbZGHQwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:52:31 -0400
-Message-ID: <4A54CE4B.9080403@kernel.org>
-Date: Wed, 08 Jul 2009 09:50:19 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	id S1752241AbZGHQ5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:57:30 -0400
+Date: Wed, 8 Jul 2009 18:57:28 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Daniel Walker <dwalker@fifo99.com>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: Christoph Lameter <cl@linux-foundation.org>, alex.shi@intel.com,
-       Mel Gorman <mel@csn.ul.ie>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       yanmin.zhang@intel.com, tim.c.chen@intel.com
-Subject: [PATCH] x86: don't clear nodes_states[N_NORMAL_MEMORY] when numa
- is not compiled in -v2
-References: <bug-13690-10286@http.bugzilla.kernel.org/>  <20090701183452.8660c8a9.akpm@linux-foundation.org>  <4A4C17FD.3080404@kernel.org> <1246517111.15721.5.camel@alexs-hp> <4A4C74D8.30809@kernel.org> <alpine.DEB.1.10.0907021003450.16359@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0907021003450.16359@gentwo.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
+Message-ID: <20090708165728.GU23611@kernel.dk>
+References: <4A4CB4B4.5010307@turknet.net.tr> <20090702130728.22af524c.akpm@linux-foundation.org> <8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com> <1247063244.4159.40.camel@mulgrave.site> <1247069178.5973.6.camel@desktop> <1247071445.4159.214.camel@mulgrave.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247071445.4159.214.camel@mulgrave.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 08 2009, James Bottomley wrote:
+> On Wed, 2009-07-08 at 09:06 -0700, Daniel Walker wrote:
+> > On Wed, 2009-07-08 at 09:27 -0500, James Bottomley wrote:
+> > > 
+> > > You might also try this patch from martin petersen:  it will print out
+> > > the actual command that's causing the problems ... that might give a
+> > > clue.
+> > > 
+> > > James
+> > 
+> > On the bugzilla entry ,
+> > 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=13727
+> > 
+> > Thomas Meyer indicated it was (possibly) the following commit,
+> > 
+> > 018e0446890661504783f92388ecce7138c1566d
+> > 
+> > I added Jens to the CC ..
+> 
+> So thats:
+> 
+> commit 018e0446890661504783f92388ecce7138c1566d
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Fri Jun 26 16:27:10 2009 +0200
+> 
+>     block: get rid of queue-private command filter
+> 
+> What this tends to suggest is that the command filter was blocking some
+> type of command sent from user space which is causing the problem, and
+> now we're letting it through.  Restoring the command filter will work
+> around the problem, but the root cause should be finding and fixing
+> whatever is issuing the commands in the first place.
 
+There should be no functional change, since the filters were all the
+same. Perhaps blk_scsi_ioctl_init() isn't being run, a good start would
+be to stick a printk() in there and verify that it's actually being
+executed. I've been tricked by __init before.
 
-Alex found:
-for x86_64 machine the specjbb2005 still can not run with hugepage
-
-only happens when numa is not compiled in
-
-the root cause: node_set_state will not set it back for us in that case
-
-so don't clear that when numa is not select in config
-
-v2: use node_clear_state instead
-
-Reported-and-Tested-by: Alex Shi <alex.shi@intel.com>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/mm/init_64.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_64.c
-+++ linux-2.6/arch/x86/mm/init_64.c
-@@ -598,8 +598,15 @@ void __init paging_init(void)
- 
- 	sparse_memory_present_with_active_regions(MAX_NUMNODES);
- 	sparse_init();
--	/* clear the default setting with node 0 */
--	nodes_clear(node_states[N_NORMAL_MEMORY]);
-+
-+	/*
-+	 * clear the default setting with node 0
-+	 * note: don't use nodes_clear here, that is really clearing when
-+	 *	 numa support is not compiled in, and later node_set_state
-+	 *	 will not set it back.
-+	 */
-+	node_clear_state(0, N_NORMAL_MEMORY);
-+
- 	free_area_init_nodes(max_zone_pfns);
- }
- 
+-- 
+Jens Axboe
 
