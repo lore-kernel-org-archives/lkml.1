@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbZGHESs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbZGHEUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757947AbZGHESs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 00:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbZGHESj
+	id S1753451AbZGHEUf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 00:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750991AbZGHEU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 00:18:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59460 "EHLO smtps.tip.net.au"
+	Wed, 8 Jul 2009 00:20:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60143 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750836AbZGHESi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 00:18:38 -0400
-Date: Wed, 8 Jul 2009 14:18:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: sound tree build warning
-Message-Id: <20090708141825.da103bc8.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+	id S1750919AbZGHEU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 00:20:26 -0400
+Subject: Re: [GIT PULL] [PATCH 0/22] trivial fixes typo "foo foo"
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       David Howells <dhowells@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Tony Luck <tony.luck@intel.com>,
+       benh@kernel.crashing.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       mchehab@infradead.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Greg Ungerer <gerg@snapgear.com>, Greg KH <greg@kroah.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Ingo Molnar <mingo@elte.hu>, tytso@mit.edu, sct@redhat.com,
+       Gadiyar Anand <gadiyar@ti.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LNX.2.00.0907080012350.4994@wotan.suse.de>
+References: <1246975428.3613.10.camel@ht.satnam>
+	 <16756.1246981440@redhat.com> <20090707091148.7bdfcdd3@jbarnes-g45>
+	 <alpine.LNX.2.00.0907080012350.4994@wotan.suse.de>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 09:48:52 +0530
+Message-Id: <1247026732.2437.8.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__8_Jul_2009_14_18_25_+1000_c5zw7AnShgMLk_z8"
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__8_Jul_2009_14_18_25_+1000_c5zw7AnShgMLk_z8
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello Jiri,
 
-Hi Takashi,
+On Wed, 2009-07-08 at 00:15 +0200, Jiri Kosina wrote:
+> On Tue, 7 Jul 2009, Jesse Barnes wrote:
+> 
+> > What's more, these types of patchsets don't actually improve things in 
+> > any real way.  
+> 
+> Just submitting this to trivial@kernel.org should be appropriate and 
+> acceptable. But CCing 20 people + LKML on this trvially trivial stuff is 
+> really overboard.
+> 
 
-Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+I agree, in normal cases sending email to trivial@kernel.org is enough.
+But this was little bit special because it was changing :
 
-sound/pci/hda/patch_via.c: In function 'via_mux_enum_put':
-sound/pci/hda/patch_via.c:395: warning: unused variable 'vendor_id'
-sound/pci/hda/patch_via.c: In function 'get_mux_nids':
-sound/pci/hda/patch_via.c:1337: warning: unused variable 'type'
-sound/pci/hda/patch_via.c:1354: warning: no return statement in function re=
-turning non-void
+ 143 files changed, 159 insertions(+), 159 deletions(-)
 
-Introduced by commit 337b9d02b4873ceac91565272545fb6fd446d939 ("ALSA: hda
-- Fix capture source selection in patch_via.c").
+But I only send header(first) email to those maintainers who are
+responsible for those files.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Please check new pull request, and let me know if you found some more
+issues or facing any problem in pull:
 
---Signature=_Wed__8_Jul_2009_14_18_25_+1000_c5zw7AnShgMLk_z8
-Content-Type: application/pgp-signature
+[GIT PULL] V2 trivial fixes typo "foo foo"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Thanks,
+--
+JSR
 
-iEYEARECAAYFAkpUHhEACgkQjjKRsyhoI8w5IgCfbv9zaS2aS+NJNAfbdr48CYsu
-LjUAoIM3b0ElHKwuIftK9GAyMo/jlYFJ
-=/SQT
------END PGP SIGNATURE-----
-
---Signature=_Wed__8_Jul_2009_14_18_25_+1000_c5zw7AnShgMLk_z8--
