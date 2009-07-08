@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbZGHVtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbZGHVty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756439AbZGHVtf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 17:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754939AbZGHVtZ
+	id S1757615AbZGHVty (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 17:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbZGHVto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 17:49:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43099 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754718AbZGHVtY (ORCPT
+	Wed, 8 Jul 2009 17:49:44 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:65176 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754939AbZGHVtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 17:49:24 -0400
-Date: Wed, 8 Jul 2009 14:47:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: avorontsov@ru.mvista.com
-Cc: torvalds@linux-foundation.org, a.p.zijlstra@chello.nl, oleg@redhat.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH/RFC] sched: Remove SYSTEM_RUNNING checks from
- cond_resched*()
-Message-Id: <20090708144744.5555b88d.akpm@linux-foundation.org>
-In-Reply-To: <20090708213331.GA9346@oksana.dev.rtsoft.ru>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-	<20090708005000.GA12380@redhat.com>
-	<1247034263.9777.24.camel@twins>
-	<alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
-	<20090708141024.f8b581c5.akpm@linux-foundation.org>
-	<20090708213331.GA9346@oksana.dev.rtsoft.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Jul 2009 17:49:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=AAKKrK9R026sBfmnJb4QDQY1FcJIhz7N6wRPIokzQ94YmF2UGBzwzZTST1UXzbL367
+         OhSOTaFL/aK7uizPQjg0epVdtzkA79tAvTAKsnOrHZl9ojzXUkicxoalRfkBPLirutpo
+         +qFl+0iTMRBIqtSV16oHHoUIyGVYDvYZOH+Mc=
+MIME-Version: 1.0
+In-Reply-To: <4A54FB81.30302@gmail.com>
+References: <4A54FB81.30302@gmail.com>
+Date: Wed, 8 Jul 2009 22:49:41 +0100
+Message-ID: <3ace41890907081449m3ad6c4fdt55781848eedaec1e@mail.gmail.com>
+Subject: Re: [PATCH] wireless: fix supported cards for rtl8187
+From: Hin-Tak Leung <hintak.leung@gmail.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Linux wireless <linux-wireless@vger.kernel.org>,
+       Przemyslaw Kulczycki <azrael@autocom.pl>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(belatedly cc'ing netdev)
+On Wed, Jul 8, 2009 at 9:03 PM, Marcin Slusarz<marcin.slusarz@gmail.com> wrote:
+> Different revisions of WUSB54GC-EU use different chipsets -
+> v2 uses rtl8187, but v3 uses Ralink RT3070.
+>
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Przemyslaw Kulczycki <azrael@autocom.pl>
+> Cc: John W. Linville <linville@tuxdriver.com>
+> Cc: Linux wireless <linux-wireless@vger.kernel.org>
+> ---
+>  drivers/net/wireless/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
+> index 5bc00db..7d5902d 100644
+> --- a/drivers/net/wireless/Kconfig
+> +++ b/drivers/net/wireless/Kconfig
+> @@ -431,7 +431,7 @@ config RTL8187
+>          ASUS P5B Deluxe
+>          Toshiba Satellite Pro series of laptops
+>          Asus Wireless Link
+> -         Linksys WUSB54GC-EU
+> +         Linksys WUSB54GC-EU v2
 
-Original diagnosis:
+Is there a v1, and what does it use?
 
-: Using early netconsole and gianfar driver this error pops up:
-: 
-:   netconsole: timeout waiting for carrier
-: 
-: It appears that net/core/netpoll.c:netpoll_setup() is using
-: cond_resched() in a loop waiting for a carrier.
-: 
-: The thing is that cond_resched() is a no-op when system_state !=
-: SYSTEM_RUNNING, and so drivers/net/phy/phy.c's state_queue is never
-: scheduled, therefore link detection doesn't work
-
-> On Thu, 9 Jul 2009 01:33:31 +0400 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> On Wed, Jul 08, 2009 at 02:10:24PM -0700, Andrew Morton wrote:
-> > > On Wed, 8 Jul 2009 09:12:30 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > That said, I do agree that maybe SYSTEM_RUNNING isn't the right check. 
-> > > Testing that the scheduler is initialized may be the more correct one. I 
-> > > think the SYSTEM_RUNNING one just comes from that being used for other 
-> > > debug issues.
-> > 
-> > Agreed.  system_state is too general.
-> > 
-> > If we specifically want to know whether it is safe to call schedule() then
-> > let's create a global boolean it_is_safe_to_call_schedule and test that,
-> > rather than testing something which indirectly and unreliably implies "it
-> > is safe to call schedule".  If that boolean already exists then no-brainer.
-> > 
-> > All that being said, I wonder if the netconsole code should be using
-> > msleep(1) instead.  Spinning on cond_resched() is a bit rude.  But one
-> > would have to verify that it is safe to call schedule() at this time, and
-> > for the netconsole caller, this is dubious.
-> 
-> What do you mean by "verify that it is safe"? If it works,
-> can I assume that it's safe? ;-) It works, fwiw.
-> 
-
-netconsole is supposed to be available as early as possible in boot for
-obvious reasons.  I'd say there's a decent risk now and in the future that
-netconsole will be initialised prior to the scheduler being available.
-
-In fact, if "netconsole: timeout waiting for carrier" newly added to
-netpoll_setup() a depedency on the scheduler being available then perhaps
-that was an incorrect change.
-
+>
+>          Thanks to Realtek for their support!
+>
+> --
+> 1.6.3.3
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
