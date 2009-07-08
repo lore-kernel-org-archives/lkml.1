@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZGHK3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbZGHKce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626AbZGHK3m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 06:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZGHK3f
+	id S1753876AbZGHKce (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 06:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZGHKcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 06:29:35 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:62359 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752958AbZGHK3e (ORCPT
+	Wed, 8 Jul 2009 06:32:24 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:60196 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776AbZGHKcX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 06:29:34 -0400
-Date: Wed, 8 Jul 2009 12:28:52 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+	Wed, 8 Jul 2009 06:32:23 -0400
+Subject: Re: Possible memory leak in net/wireless/scan.c
+From: Johannes Berg <johannes@sipsolutions.net>
 To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Free struct device in fw_dev_release()
-Message-ID: <20090708122852.1cf1b1f4@gondolin>
-In-Reply-To: <20090708101740.27241.64092.stgit@pc1117.cambridge.arm.com>
-References: <20090708101740.27241.64092.stgit@pc1117.cambridge.arm.com>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Cc: linux-wireless@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1247042784.6595.7.camel@pc1117.cambridge.arm.com>
+References: <1246986269.9451.105.camel@pc1117.cambridge.arm.com>
+	 <1247022413.4755.56.camel@johannes.local>
+	 <1247042784.6595.7.camel@pc1117.cambridge.arm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-0edu/znVxt1wtd/oxhKY"
+Date: Wed, 08 Jul 2009 12:24:46 +0200
+Message-Id: <1247048686.4755.57.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Jul 2009 11:17:40 +0100,
-Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-> The f_dev in _request_firmware() is allocated via the fw_setup_device()
-> and fw_register_device() calls and its class set to firmware_class (the
-> class release function is fw_dev_release).
-> 
-> Commit 6acf70f078ca replaced the kfree(dev) in fw_dev_release() with a
-> put_device() call but my understanding is that the release function is
-> called via put_device -> kobject_put -> kref_put -> koject_release etc.
-> and it should call kfree since it's the last to see this device
-> structure alive.
-> 
-> Because of that, the _request_firmware() function on its -ENOENT error
-> path only calls device_unregister(f_dev) which would eventually call
-> fw_dev_release() but there is no kfree (the subsequent put_device call
-> would just make the kref negative).
-> 
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
+--=-0edu/znVxt1wtd/oxhKY
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+On Wed, 2009-07-08 at 09:46 +0100, Catalin Marinas wrote:
 
-> Acked-by: Ming Lei <tom.leiming@gmail.com>
-> ---
->  drivers/base/firmware_class.c |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-> index ddeb819..fc46653 100644
-> --- a/drivers/base/firmware_class.c
-> +++ b/drivers/base/firmware_class.c
-> @@ -357,7 +357,7 @@ static void fw_dev_release(struct device *dev)
->  	kfree(fw_priv->pages);
->  	kfree(fw_priv->fw_id);
->  	kfree(fw_priv);
-> -	put_device(dev);
-> +	kfree(dev);
-> 
->  	module_put(THIS_MODULE);
->  }
-> @@ -408,13 +408,11 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
->  	if (retval) {
->  		dev_err(device, "%s: device_register failed\n", __func__);
->  		put_device(f_dev);
-> -		goto error_kfree_fw_id;
-> +		return retval;
->  	}
->  	*dev_p = f_dev;
->  	return 0;
-> 
-> -error_kfree_fw_id:
-> -	kfree(fw_priv->fw_id);
->  error_kfree:
->  	kfree(f_dev);
->  	kfree(fw_priv);
-> 
+> Anyway, I run it from some ARM embedded systems at ~200MHz and 256MB of
+> RAM to dual core x86 at 2GHz with 3GB of RAM. I also ran it on quemu in
+> the past (but, well, in the embedded world I'm pretty used with
+> emulators taking 10 min to boot the kernel).
+
+:)
+
+> But it can slow things down since it tracks every memory allocation and
+> it needs to look up the pointer in an rb tree.
+
+It was so slow I gave up after a while. But then my real purpose was
+testing something, not waiting for kmemleak, so I guess I just didn't
+wait long enough :)
+
+johannes
+
+--=-0edu/znVxt1wtd/oxhKY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKVHPpAAoJEODzc/N7+QmaA9wQAIsrUvltj4gJpYNYGBCwHv2Q
+pue1BBe7YgiqoWIMvyRFpZQEo9rhrGm7Ynkpw6LqlA71jr43DpZYeVnLggOzP0An
+u28VTtDfFXt4gYEs1XlgTOQBQ6enyudqs1JSxgMFbEmVnK8Ss3FaHb2yiXhu3GDO
+85tR+43Bqdl8zxw9I6NVu3X8lTxT2DOZjWh4bw8ysAUor58wW6RBmkKHS0cr1N8j
+ufBFWwpdV31LizTBB8nlDBx9mMFgQLVAOwHjefvZxncp247fdnAXxbTKyecd6Jkv
+LxFdRD/h2XcEw+RgCuB9uW2dWd9WD7W52fp5toeRoTEwA6+H3Y44caLEpaneWF3N
+vvBFY8XXjuaipAoERKKY2sIog5QyO2EmwQOf5BSH2EP6jRz5RlRZcpg67ehBFc/5
+XIFq3ehGl1Irvk3t/JKgMUvadDStTosgR2SJ1VYI6MnocKmwANUc7TK0DUQKs3LY
+Gh3NjH/D09wsQAmC+tmf1FMkZrQLuLKe1iAQsHPjaZPejnrEDkIN4X1xgT3gVukb
+YHdvq6EWRxGvyD4zuz+NG76NZVU5DiO7jU4HL/+SWxmLwIo3ZnNauyof4iKkl1tn
+FfYx+XpUWPH3psHUEbIaQ1foUOqnOv9HyntSew9jlTHBDMfFoUCJAh+wdpMgwKgI
+lvRwTlPsfh8exgx0iFbz
+=tnro
+-----END PGP SIGNATURE-----
+
+--=-0edu/znVxt1wtd/oxhKY--
+
