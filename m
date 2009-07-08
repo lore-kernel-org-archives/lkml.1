@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZGHK2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZGHK3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbZGHK2Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 06:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbZGHK1q
+	id S1754626AbZGHK3m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 06:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZGHK3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 06:27:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41612 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753089AbZGHK1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 06:27:45 -0400
-From: Paolo Bonzini <pbonzini@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: pbonzini@redhat.com, Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 3/3 v2] xen: wait up to 5 minutes for device connetion
-Date: Wed,  8 Jul 2009 12:27:39 +0200
-Message-Id: <1247048859-31845-3-git-send-email-pbonzini@redhat.com>
-In-Reply-To: <1247048859-31845-2-git-send-email-pbonzini@redhat.com>
-References: <4A5272A6.6090302@citrix.com>
- <1247048859-31845-1-git-send-email-pbonzini@redhat.com>
- <1247048859-31845-2-git-send-email-pbonzini@redhat.com>
+	Wed, 8 Jul 2009 06:29:35 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:62359 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752958AbZGHK3e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 06:29:34 -0400
+Date: Wed, 8 Jul 2009 12:28:52 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Free struct device in fw_dev_release()
+Message-ID: <20090708122852.1cf1b1f4@gondolin>
+In-Reply-To: <20090708101740.27241.64092.stgit@pc1117.cambridge.arm.com>
+References: <20090708101740.27241.64092.stgit@pc1117.cambridge.arm.com>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Increases the device timeout from 10s to 5 minutes, giving the user a
-visual indication during that time in case there are problems.  The patch
-is a backport of changesets 144 and 150 in the Xenbits tree.
+On Wed, 08 Jul 2009 11:17:40 +0100,
+Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
----
-	Changeset 144 introduced this logic but chose to use only 30
-	seconds for the timeout.  Changeset 150 simply bumped the
-	timeout to 5 minutes.  Separating them does not make sense.
+> The f_dev in _request_firmware() is allocated via the fw_setup_device()
+> and fw_register_device() calls and its class set to firmware_class (the
+> class release function is fw_dev_release).
+> 
+> Commit 6acf70f078ca replaced the kfree(dev) in fw_dev_release() with a
+> put_device() call but my understanding is that the release function is
+> called via put_device -> kobject_put -> kref_put -> koject_release etc.
+> and it should call kfree since it's the last to see this device
+> structure alive.
+> 
+> Because of that, the _request_firmware() function on its -ENOENT error
+> path only calls device_unregister(f_dev) which would eventually call
+> fw_dev_release() but there is no kfree (the subsequent put_device call
+> would just make the kref negative).
+> 
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
 
- drivers/xen/xenbus/xenbus_probe.c |   20 ++++++++++++++++----
- 1 files changed, 16 insertions(+), 4 deletions(-)
+Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
-index 3a867a5..4f69159 100644
---- a/drivers/xen/xenbus/xenbus_probe.c
-+++ b/drivers/xen/xenbus/xenbus_probe.c
-@@ -901,7 +901,7 @@ static int print_device_status(struct device *dev, void *data)
- static int ready_to_wait_for_devices;
- 
- /*
-- * On a 10 second timeout, wait for all devices currently configured.  We need
-+ * On a 5-minute timeout, wait for all devices currently configured.  We need
-  * to do this to guarantee that the filesystems and / or network devices
-  * needed for boot are available, before we can allow the boot to proceed.
-  *
-@@ -916,18 +916,30 @@ static int ready_to_wait_for_devices;
-  */
- static void wait_for_devices(struct xenbus_driver *xendrv)
- {
--	unsigned long timeout = jiffies + 10*HZ;
-+	unsigned long start = jiffies;
- 	struct device_driver *drv = xendrv ? &xendrv->driver : NULL;
-+	unsigned int seconds_waited = 0;
- 
- 	if (!ready_to_wait_for_devices || !xen_domain())
- 		return;
- 
- 	while (exists_connecting_device(drv)) {
--		if (time_after(jiffies, timeout))
--			break;
-+		if (time_after(jiffies, start + (seconds_waited+5)*HZ)) {
-+			if (!seconds_waited)
-+				printk(KERN_WARNING "XENBUS: Waiting for "
-+				       "devices to initialise: ");
-+			seconds_waited += 5;
-+			printk("%us...", 300 - seconds_waited);
-+			if (seconds_waited == 300)
-+				break;
-+		}
-+
- 		schedule_timeout_interruptible(HZ/10);
- 	}
- 
-+	if (seconds_waited)
-+		printk("\n");
-+
- 	bus_for_each_dev(&xenbus_frontend.bus, NULL, drv,
- 			 print_device_status);
- }
--- 
-1.6.2.5
-
+> Acked-by: Ming Lei <tom.leiming@gmail.com>
+> ---
+>  drivers/base/firmware_class.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+> index ddeb819..fc46653 100644
+> --- a/drivers/base/firmware_class.c
+> +++ b/drivers/base/firmware_class.c
+> @@ -357,7 +357,7 @@ static void fw_dev_release(struct device *dev)
+>  	kfree(fw_priv->pages);
+>  	kfree(fw_priv->fw_id);
+>  	kfree(fw_priv);
+> -	put_device(dev);
+> +	kfree(dev);
+> 
+>  	module_put(THIS_MODULE);
+>  }
+> @@ -408,13 +408,11 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
+>  	if (retval) {
+>  		dev_err(device, "%s: device_register failed\n", __func__);
+>  		put_device(f_dev);
+> -		goto error_kfree_fw_id;
+> +		return retval;
+>  	}
+>  	*dev_p = f_dev;
+>  	return 0;
+> 
+> -error_kfree_fw_id:
+> -	kfree(fw_priv->fw_id);
+>  error_kfree:
+>  	kfree(f_dev);
+>  	kfree(fw_priv);
+> 
