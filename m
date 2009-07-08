@@ -1,140 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZGHVNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZGHVQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbZGHVNL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 17:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZGHVNF
+	id S1757184AbZGHVQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 17:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbZGHVQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 17:13:05 -0400
-Received: from krypton.spydercomm.com ([69.64.33.54]:41028 "EHLO
-	krypton.spydercomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755599AbZGHVNE (ORCPT
+	Wed, 8 Jul 2009 17:16:22 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56652 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754986AbZGHVQW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 17:13:04 -0400
-Message-ID: <4A550BDD.9030602@queuemail.com>
-Date: Wed, 08 Jul 2009 17:13:01 -0400
-From: paul s <mactel-linux.org-users@queuemail.com>
-Reply-To: mactel-linux.org-users@queuemail.com
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 8 Jul 2009 17:16:22 -0400
+Date: Wed, 8 Jul 2009 22:13:21 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>,
+       David Howells <dhowells@redhat.com>, benh@kernel.crashing.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       jdike@addtoit.com, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       dbrownell@users.sourceforge.net, Greg KH <greg@kroah.com>,
+       mchehab@infradead.org, jeremy@xensource.com, felixb@sgi.com,
+       lenb@kernel.org, airlied@linux.ie, bcrl@kvack.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/44] includecheck: fix multiple includes
+Message-ID: <20090708211321.GA15928@flint.arm.linux.org.uk>
+References: <1247063308.4382.12.camel@ht.satnam> <1247076059.4382.127.camel@ht.satnam>
 MIME-Version: 1.0
-To: mactel-linux-users <mactel-linux-users@lists.sourceforge.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [Mactel-linux-users] touchpad synaptics pm-suspend
-References: <4A53C580.2040000@queuemail.com> <4A540461.1030204@gmail.com> <4A541D42.8070004@queuemail.com> <4A5424C5.10405@gmail.com> <4A546A87.5070009@queuemail.com> <4A54CC78.9020707@gmail.com>
-In-Reply-To: <4A54CC78.9020707@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247076059.4382.127.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > If you can save those messages, and
- > send them to kernel.org.
-
-i just think it had to do with the disk... i've since upgraded my root 
-partition to ext4 and the boot partition, where the kernel resides, is 
-still ext3 due to grub...
-
-i just rolled it back when rebuilding the nvidia and broadcomm rpms 
-failed with the kernel... i guess i could of checked to see if the 
-native driver install could build the module...
-
-no one has replied on the fedora user list either, i just find it had to 
-imagine one person is running F11 on a macbook...
-
-it just stinks that i can't close my laptop lid....
-
-which distro are you rocking? i am partial to rpm based packing...
-
-
-
-
-
-
-
-On 07/08/2009 12:42 PM, Justin P. Mattock wrote:
-> paul s wrote:
->> does your touchpad work from resume? i know it is not the same model, 
->> but curious...
->>
->> i updated the kernel from rawhide(2.6.31.rc2) and there were just 
->> crazy system errors, actually even saw a kernelloops warning for the 
->> first time...
->>
->>
->>
->> On 07/08/2009 12:47 AM, Justin P. Mattock wrote:
->>> paul s wrote:
->>>>
->>>> i have not, just what is in the repository for the distribution...
->>>>
->>>>
->>>>
->>>> On 07/07/2009 10:28 PM, Justin P. Mattock wrote:
->>>>> paul s wrote:
->>>>>> hi -
->>>>>>
->>>>>> when my mbp4,1 comes back from suspend the touchpad is
->>>>>> frozen|unresponsive|not working. it only seems to be with suspend as
->>>>>> when it returns from hibernate it is fine...
->>>>>>
->>>>>> i am using 2.6.29.5-191.fc11.x86_64 is anyone experiencing this 
->>>>>> issue...
->>>>>>
->>>>>> i have been looking around, played with the fdi and also added a 
->>>>>> script
->>>>>> to the /etc/pm/sleep.d to load and unload appletouch to no avail...
->>>>>>
->>>>>> cheers
->>>>>> paul
->>>>>>
->>>>>> ------------------------------------------------------------------------------ 
->>>>>>
->>>>>> Enter the BlackBerry Developer Challenge
->>>>>> This is your chance to win up to $100,000 in prizes! For a limited 
->>>>>> time,
->>>>>> vendors submitting new applications to BlackBerry App World(TM) 
->>>>>> will have
->>>>>> the opportunity to enter the BlackBerry Developer Challenge. See 
->>>>>> full prize
->>>>>> details at: http://p.sf.net/sfu/Challenge
->>>>>> _______________________________________________
->>>>>> Mactel-linux-users mailing list
->>>>>> Mactel-linux-users@lists.sourceforge.net
->>>>>> https://lists.sourceforge.net/lists/listinfo/mactel-linux-users
->>>>>>
->>>>> have you tried the latest stable kernel?
->>>>>
->>>>> Justin P. Mattock
->>>>>
->>>> -- 
->>>> To unsubscribe from this list: send the line "unsubscribe 
->>>> linux-kernel" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>> Please read the FAQ at  http://www.tux.org/lkml/
->>>>
->>> Not sure for redhat, but if you feel comfortable,
->>> try just grabbing  a fresh tar.ball from kernel.org,
->>> or use git to pull the latest from Linus's tree.
->>> (this way your  up-to-date, and the fix could be already
->>> in there).
->>>
->>> Justin P. Mattock
->>>
->>>
->>
->> -- 
->> To unsubscribe from this list: send the line "unsubscribe 
->> linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> If you can save those messages, and
-> send them to kernel.org.
-> Honestly I have not tried S2D/S2R
-> on my machine for a while(probably
-> end up with a black screen).
+On Wed, Jul 08, 2009 at 11:30:59PM +0530, Jaswinder Singh Rajput wrote:
+> I am still waiting ACK/NAK for :
 > 
-> Justin P. Mattock
-> 
+>       includecheck fix: arm, misc.c
+>       includecheck fix: arm, atomic.h
+>       includecheck fix: arm, board-dm355-evm.c
+>       includecheck fix: arm, board-dm355-leopard.c
+>       includecheck fix: arm, board-dm644x-evm.c
+>       includecheck fix: arm, board-dm646x-evm.c
+>       includecheck fix: arm, board-sffsdr.c
+>       includecheck fix: arm, mach-mx3/devices.c
+>       includecheck fix: arm, mach-omap1/mcbsp.c
+>       includecheck fix: arm, mach-omap2/mcbsp.c
+>       includecheck fix: arm, plat-s3c64xx/pm.c
+>       includecheck fix: arm, plat-stmp3xxx/pinmux.c
+
+You're still waiting because apparantly you never sent this set anywhere
+near any ARM people before.
+
+For the first two, I'll ack them:
+
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+
+The remainder look sane to me, but you'll have to seek acks from the
+individual platform maintainer(s).
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
