@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbZGHMSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbZGHMXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755539AbZGHMSv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 08:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbZGHMSn
+	id S1755827AbZGHMXB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 08:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbZGHMWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 08:18:43 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:65434 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753428AbZGHMSm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 08:18:42 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-input@vger.kernel.org
-Subject: [PATCH] pcspkr: switch driver to dev_pm_ops
-Date: Wed, 8 Jul 2009 14:18:36 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Dmitry Torokhov <dtor@mail.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Jul 2009 08:22:52 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58722 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753357AbZGHMWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 08:22:52 -0400
+Date: Wed, 8 Jul 2009 14:22:50 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Jan Kara <jack@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [rfc][patch 4/4] fs: tmpfs, ext2 use new truncate
+Message-ID: <20090708122250.GP2714@wotan.suse.de>
+References: <20090707144423.GC2714@wotan.suse.de> <20090707144918.GF2714@wotan.suse.de> <20090707163829.GB14947@infradead.org> <20090708065327.GM2714@wotan.suse.de> <20090708111420.GB20924@duck.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907081418.37229.elendil@planet.nl>
-X-OriginalArrivalTime: 08 Jul 2009 12:18:37.0627 (UTC) FILETIME=[38AD78B0:01C9FFC6]
+In-Reply-To: <20090708111420.GB20924@duck.suse.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gets rid of the following warning:
-Platform driver 'pcspkr' needs updating - please use dev_pm_ops
+On Wed, Jul 08, 2009 at 01:14:20PM +0200, Jan Kara wrote:
+> On Wed 08-07-09 08:53:27, Nick Piggin wrote:
+> > On Tue, Jul 07, 2009 at 12:38:29PM -0400, Christoph Hellwig wrote:
+> > > We can't move this to the caller easily.  ext2_delete_inode gets
+> > > called for all inodes, but we only want to go on truncating for the
+> > > limited set that passes this check.
+> > 
+> > Hmm, shouldn't they have no ->i_blocks in that case?
+>   Not necessarily. Inode can have extended attributes set and those can
+> be stored in a special block which is accounted in i_blocks.
 
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
----
+OK fair enough. But I don't know if all those checks are
+realy appropriate. For example an IS_APPEND inode should
+be able to have its blocks trimmed off if a write fails.
 
-Looked straightforward enough for me to give it a shot.
-
-diff --git a/drivers/input/misc/pcspkr.c b/drivers/input/misc/pcspkr.c
-index 6d67af5..21cb755 100644
---- a/drivers/input/misc/pcspkr.c
-+++ b/drivers/input/misc/pcspkr.c
-@@ -114,7 +114,7 @@ static int __devexit pcspkr_remove(struct platform_device *dev)
- 	return 0;
- }
- 
--static int pcspkr_suspend(struct platform_device *dev, pm_message_t state)
-+static int pcspkr_suspend(struct device *dev)
- {
- 	pcspkr_event(NULL, EV_SND, SND_BELL, 0);
- 
-@@ -127,14 +127,18 @@ static void pcspkr_shutdown(struct platform_device *dev)
- 	pcspkr_event(NULL, EV_SND, SND_BELL, 0);
- }
- 
-+static struct dev_pm_ops pcspkr_pm_ops = {
-+	.suspend = pcspkr_suspend,
-+};
-+
- static struct platform_driver pcspkr_platform_driver = {
- 	.driver		= {
- 		.name	= "pcspkr",
- 		.owner	= THIS_MODULE,
-+		.pm	= &pcspkr_pm_ops,
- 	},
- 	.probe		= pcspkr_probe,
- 	.remove		= __devexit_p(pcspkr_remove),
--	.suspend	= pcspkr_suspend,
- 	.shutdown	= pcspkr_shutdown,
- };
- 
