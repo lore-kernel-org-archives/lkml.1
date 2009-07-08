@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbZGHMMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZGHMPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753005AbZGHMMm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 08:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753919AbZGHMMe
+	id S1754551AbZGHMPo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 08:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZGHMPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 08:12:34 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:61317 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753637AbZGHMMe (ORCPT
+	Wed, 8 Jul 2009 08:15:37 -0400
+Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:55980 "EHLO
+	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752310AbZGHMPh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 08:12:34 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH/RFC] sched: Remove SYSTEM_RUNNING checks from
- cond_resched*()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: avorontsov@ru.mvista.com
-Cc: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090708120302.GA6341@oksana.dev.rtsoft.ru>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-	 <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
-	 <20090708120302.GA6341@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 14:12:25 +0200
-Message-Id: <1247055145.9777.52.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 8 Jul 2009 08:15:37 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] hp-wmi: switch driver to dev_pm_ops
+Date: Wed, 8 Jul 2009 14:15:33 +0200
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, akpm@linux-foundation.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907081415.34568.elendil@planet.nl>
+X-OriginalArrivalTime: 08 Jul 2009 12:15:35.0305 (UTC) FILETIME=[CC015790:01C9FFC5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 16:03 +0400, Anton Vorontsov wrote:
-> On Wed, Jul 08, 2009 at 08:24:23AM +0200, Peter Zijlstra wrote:
-> > On Wed, 2009-07-08 at 02:50 +0200, Oleg Nesterov wrote:
-> > 
-> > > 	/*
-> > > 	 * It is valid to assume CPU-locality during early bootup:
-> > > 	 */
-> > > 	if (system_state != SYSTEM_RUNNING)
-> > > 		goto out;
-> > > 
-> > > this doesn't look right, smp_init() is called before we set
-> > > SYSTEM_RUNNING.
-> > 
-> > The thing is, there's also ton's of code that might end up calling
-> > cond_resched() and co before the scheduler is fully initialized.
-> 
-> Hm. Speaking of cond_resched*() only, then it should be pretty
-> safe to convert the SYSTEM_RUNNING checks to scheduler_running,
-> no? scheduler_running is set after sched_init().
+Gets rid of the following warning:
+Platform driver 'hp-wmi' needs updating - please use dev_pm_ops
 
-Hmm, that might work, I'd have to audit sched_init_smp() as it seems to
-do way too much...
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+---
 
+I tested that the resume handler still works on my HP 2510p notebook.
 
+diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
+index ca50856..7c4a22b 100644
+--- a/drivers/platform/x86/hp-wmi.c
++++ b/drivers/platform/x86/hp-wmi.c
+@@ -53,7 +53,7 @@ MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");
+ 
+ static int __init hp_wmi_bios_setup(struct platform_device *device);
+ static int __exit hp_wmi_bios_remove(struct platform_device *device);
+-static int hp_wmi_resume_handler(struct platform_device *device);
++static int hp_wmi_resume_handler(struct device *device);
+ 
+ struct bios_args {
+ 	u32 signature;
+@@ -94,14 +94,18 @@ static struct rfkill *wifi_rfkill;
+ static struct rfkill *bluetooth_rfkill;
+ static struct rfkill *wwan_rfkill;
+ 
++static struct dev_pm_ops hp_wmi_pm_ops = {
++	.resume  = hp_wmi_resume_handler,
++};
++
+ static struct platform_driver hp_wmi_driver = {
+ 	.driver = {
+-		   .name = "hp-wmi",
+-		   .owner = THIS_MODULE,
++		.name = "hp-wmi",
++		.owner = THIS_MODULE,
++		.pm = &hp_wmi_pm_ops,
+ 	},
+ 	.probe = hp_wmi_bios_setup,
+ 	.remove = hp_wmi_bios_remove,
+-	.resume = hp_wmi_resume_handler,
+ };
+ 
+ static int hp_wmi_perform_query(int query, int write, int value)
+@@ -512,7 +516,7 @@ static int __exit hp_wmi_bios_remove(struct platform_device *device)
+ 	return 0;
+ }
+ 
+-static int hp_wmi_resume_handler(struct platform_device *device)
++static int hp_wmi_resume_handler(struct device *device)
+ {
+ 	/*
+ 	 * Hardware state may have changed while suspended, so trigger
