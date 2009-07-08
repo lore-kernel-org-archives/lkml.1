@@ -1,86 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZGHO1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757623AbZGHO24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbZGHO1i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 10:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbZGHO1a
+	id S1757623AbZGHO24 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 10:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbZGHO2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 10:27:30 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:36873 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754462AbZGHO13 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 10:27:29 -0400
-Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com>
-References: <4A4CB4B4.5010307@turknet.net.tr>
-	 <20090702130728.22af524c.akpm@linux-foundation.org>
-	 <8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 09:27:24 -0500
-Message-Id: <1247063244.4159.40.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Jul 2009 10:28:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37637 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754310AbZGHO2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 10:28:47 -0400
+Message-ID: <4A54AD1A.1040009@kernel.org>
+Date: Wed, 08 Jul 2009 23:28:42 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Christof Warlich <christof@warlich.name>
+CC: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       ide <linux-ide@vger.kernel.org>
+Subject: Re: "EXT3-fs error" after resume from s2ram
+References: <4A4771FD.1020207@warlich.name> <4A480859.5010206@gmail.com> <4A48C799.2010102@warlich.name> <4A495C2D.1040706@gmail.com> <4A49A49C.10104@warlich.name> <4A4C42E2.6030305@gmail.com> <4A51C929.5010909@warlich.name> <4A52931D.5070109@gmail.com> <4A52F39A.1030704@warlich.name> <4A5311C7.1020507@warlich.name> <4A535973.9090206@gmail.com> <4A5388EA.7030503@warlich.name> <4A53DA88.5080703@gmail.com> <4A543FA5.1090608@warlich.name>
+In-Reply-To: <4A543FA5.1090608@warlich.name>
+Content-Type: multipart/mixed;
+ boundary="------------050408010800040109070601"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Jul 2009 14:28:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 15:09 +0200, Maciej Rutecki wrote:
-> Similar issue on 2 machines. 2.6.31-rc1-git3 works ok. 2.6.31-rc2
-> cannot recognize *any* DVD media with K3b. No messages in dmesg or
-> syslog.
+This is a multi-part message in MIME format.
+--------------050408010800040109070601
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+
+Hello, Christof, Robert.
+
+Christof Warlich wrote:
+> Robert Hancock schrieb:
+>> Hmm, so we tried to disable the HPA and enable the entire disk
+>> capacity, but the drive refused. But it somehow ends up in the HPA
+>> disabled state upon resume. According to the ATA spec, the drive will
+>> refuse SET MAX ADDRESS EXT commands after one has already been
+>> executed upon power-on or reset. That suggests that the BIOS is
+>> applying the HPA on bootup, but not on resume.
+
+Arghhh... this is nasty.  Nasty.
+
+I can't find previous messages.  Can you please post full boot log and
+the output of "lspci -nn"?
+
+>> Is there a BIOS update available for this machine?
+> Updating the BIOS was the first thing I did when I got the machine,
+> maybe two month ago. And only after that update suspend to disk began to
+> work at least.
 > 
-> Unfortunately I can't try bisection, because I don't have more time
-> (work). I try do it at the end of week.
+> What about doing it the other way round: Forcing the kernel to apply the
+> HPA on resume? Whitout knowing if this is possible at all with
+> reasonable effort, it would bring us in sync having the HPA enabled for
+> both bootup and resume, right?
+> The only drawback would be that we stay having only the 128GiB available.
+> 
+> I'd assume that Windows XP may do it this way, as suspend to ram does
+> work there and it also only sees the 128GiB.
 
-Also were there any tools upgrades around this?  The messages:
+AFAIK, wxp doesn't revalidate or doesn't consider device size while
+revalidating disk after resume.  The size check during revalidation is
+safety net which is there because ATA devices sometimes don't have
+meaning identifiers and there are vendor specific configuration
+options which may offset sectors differently and writing to devices in
+such cases can lead to data loss.
 
-> [ 4526.750295] sr 0:0:0:0: [sr0] Result: hostbyte=DID_OK 
-> driverbyte=DRIVER_SENSE
-> [ 4526.750302] sr 0:0:0:0: [sr0] Sense Key : Illegal Request [current]
-> [ 4526.750308] sr 0:0:0:0: [sr0] Add. Sense: Illegal mode for this track
-> [ 4526.750316] end_request: I/O error, dev sr0, sector 0
-> [ 4526.750321] Buffer I/O error on device sr0, logical block 0
+If the bios configured HPA during boot, it should be restoring it on
+resume too.  Maybe those commands have been filtered out.  Eh... no,
+all filtered out commands are transfer mode related.  Dang.
 
-Clearly imply the errors are coming from the device:  The sense code is
-generated by it.  So this means that either the DVD has been put into
-some type of wrong mode or something in sr is sending the wrong command.
+One thing we can do is to make libata remember the native size on
+initial probing and let revalidation consider it.  Yeap, that would
+work.  Can you please test the attached patch and post full log
+including boot and suspend/resume?
 
-You might also try this patch from martin petersen:  it will print out
-the actual command that's causing the problems ... that might give a
-clue.
+Thanks.
 
-James
+-- 
+tejun
 
----
+--------------050408010800040109070601
+Content-Type: text/x-patch;
+ name="revalidate-consider-native.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="revalidate-consider-native.patch"
 
-Subject: [PATCH] SCSI: Print failed commands
-From:	"Martin K. Petersen" <martin.petersen@oracle.com>
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 045a486..4dadef1 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1515,6 +1515,7 @@ static int ata_hpa_resize(struct ata_device *dev)
+ 
+ 		return rc;
+ 	}
++	dev->n_native_sectors = native_sectors;
+ 
+ 	/* nothing to do? */
+ 	if (native_sectors <= sectors || !ata_ignore_hpa) {
+@@ -4089,6 +4090,7 @@ int ata_dev_revalidate(struct ata_device *dev, unsigned int new_class,
+ 		       unsigned int readid_flags)
+ {
+ 	u64 n_sectors = dev->n_sectors;
++	u64 n_native_sectors = dev->n_native_sectors;
+ 	int rc;
+ 
+ 	if (!ata_dev_enabled(dev))
+@@ -4118,16 +4120,29 @@ int ata_dev_revalidate(struct ata_device *dev, unsigned int new_class,
+ 	/* verify n_sectors hasn't changed */
+ 	if (dev->class == ATA_DEV_ATA && n_sectors &&
+ 	    dev->n_sectors != n_sectors) {
+-		ata_dev_printk(dev, KERN_INFO, "n_sectors mismatch "
++		ata_dev_printk(dev, KERN_WARNING, "n_sectors mismatch "
+ 			       "%llu != %llu\n",
+ 			       (unsigned long long)n_sectors,
+ 			       (unsigned long long)dev->n_sectors);
+ 
+-		/* restore original n_sectors */
+-		dev->n_sectors = n_sectors;
+-
+-		rc = -ENODEV;
+-		goto fail;
++		/*
++		 * Something could have caused HPA to be unlocked
++		 * involuntarily.  If n_native_sectors hasn't changed
++		 * and the new size matches it, keep the device.
++		 */
++		if (dev->n_native_sectors == n_native_sectors &&
++		    dev->n_sectors > n_sectors &&
++		    dev->n_sectors == n_native_sectors) {
++			ata_dev_printk(dev, KERN_WARNING,
++				       "new n_sectors matches native, probably "
++				       "late HPA unlock, continuing\n");
++			dev->n_sectors = n_sectors;
++		} else {
++			/* restore original n_sectors */
++			dev->n_sectors = n_sectors;
++			rc = -ENODEV;
++			goto fail;
++		}
+ 	}
+ 
+ 	return 0;
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 3d501db..5fde0a9 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -588,6 +588,7 @@ struct ata_device {
+ #endif
+ 	/* n_sector is CLEAR_BEGIN, read comment above CLEAR_BEGIN */
+ 	u64			n_sectors;	/* size of device, if ATA */
++	u64			n_native_sectors; /* native size, if ATA */
+ 	unsigned int		class;		/* ATA_DEV_xxx */
+ 	unsigned long		unpark_deadline;
+ 
 
-When a request fails we print the sense data but not the actual command
-that failed.  Add a printout of the operation + CDB for failed commands.
-
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-
----
-
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 30f3275..79ea5be 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -896,6 +896,7 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
- 			scsi_print_result(cmd);
- 			if (driver_byte(result) & DRIVER_SENSE)
- 				scsi_print_sense("", cmd);
-+			scsi_print_command(cmd);
- 		}
- 		blk_end_request_all(req, -EIO);
- 		scsi_next_command(cmd);
-
-
-
+--------------050408010800040109070601--
