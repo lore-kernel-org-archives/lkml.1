@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbZGHAxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbZGHAzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758368AbZGHAxi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 20:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZGHAxb
+	id S1758271AbZGHAzt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 20:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755701AbZGHAzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 20:53:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52333 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754298AbZGHAxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 20:53:30 -0400
-Date: Wed, 8 Jul 2009 02:50:00 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC] sched: Remove SYSTEM_RUNNING checks from
-	cond_resched*()
-Message-ID: <20090708005000.GA12380@redhat.com>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
+	Tue, 7 Jul 2009 20:55:42 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64706 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755296AbZGHAzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 20:55:41 -0400
+Message-ID: <4A53EE88.1080003@cn.fujitsu.com>
+Date: Wed, 08 Jul 2009 08:55:36 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/8] ksym_tracer: Extract trace entry from struct	trace_ksym
+References: <4A52E291.1020408@cn.fujitsu.com> <4A52E2A4.4050007@cn.fujitsu.com> <20090707212520.GA7412@nowhere>
+In-Reply-To: <20090707212520.GA7412@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/08, Anton Vorontsov wrote:
->
-> but I'm curious if removing the checks makes sense
-> nowadays.
-...
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -6560,8 +6560,7 @@ static void __cond_resched(void)
->
->  int __sched _cond_resched(void)
->  {
-> -	if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE) &&
-> -					system_state == SYSTEM_RUNNING) {
-> +	if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE)) {
->  		__cond_resched();
->  		return 1;
->  	}
+>> -	entry = ring_buffer_event_data(event);
+>> +	entry		= ring_buffer_event_data(event);
+>> +	entry->ip	= instruction_pointer(regs);
+>> +	entry->type	= hbp->info.type;
+>>  	strlcpy(entry->ksym_name, hbp->info.name, KSYM_SYMBOL_LEN);
+>> -	entry->ksym_hbp = hbp;
+>> -	entry->ip = instruction_pointer(regs);
+>> -	strlcpy(entry->p_name, current->comm, TASK_COMM_LEN);
+>> +	strlcpy(entry->cmd, current->comm, TASK_COMM_LEN);
+> 
+> 
+> Ah, I did not realized that the cmdline was that roughly saved.
+> It would be more ring-buffer-friendly to use tracing_record_cmdline.
+> 
 
-and, with CONFIG_PREEMPT preempt_schedule() does not check system_state,
-so it looks really strange cond_resched() does check SYSTEM_RUNNING.
+Yeah, I'll send an incremental patch later.
 
-
-
-debug_smp_processor_id() looks strange too:
-	
-	/*
-	 * It is valid to assume CPU-locality during early bootup:
-	 */
-	if (system_state != SYSTEM_RUNNING)
-		goto out;
-
-this doesn't look right, smp_init() is called before we set
-SYSTEM_RUNNING.
-
-Hmm, and
-
-	/*
-	 * Kernel threads bound to a single CPU can safely use
-	 * smp_processor_id():
-	 */
-	if (cpumask_equal(&current->cpus_allowed, cpumask_of(this_cpu)))
-		goto out;
-
-perhaps this should use PF_THREAD_BOUND ?
-
-Oleg.
-
+> 
