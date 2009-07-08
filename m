@@ -1,42 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbZGHF5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759982AbZGHF60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759967AbZGHF5x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 01:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759510AbZGHF4Z
+	id S1759982AbZGHF60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 01:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759501AbZGHF6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 01:56:25 -0400
-Received: from stargate.chelsio.com ([67.207.112.58]:16310 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759526AbZGHF4Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 01:56:24 -0400
-Message-ID: <4A54332D.3010102@chelsio.com>
-Date: Tue, 07 Jul 2009 22:48:29 -0700
-From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>, netdev <netdev@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH 0/8 net-next-2.6] cxgb3: driver update
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 8 Jul 2009 01:58:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39427 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751847AbZGHF6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 01:58:17 -0400
+Subject: [PATCH] sound: pci/hda/patch_via.c fix compilation warning
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090708141825.da103bc8.sfr@canb.auug.org.au>
+References: <20090708141825.da103bc8.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 11:27:50 +0530
+Message-Id: <1247032670.4065.1.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Jul 2009 05:50:00.0843 (UTC) FILETIME=[EECA95B0:01C9FF8F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+On Wed, 2009-07-08 at 14:18 +1000, Stephen Rothwell wrote:
+> Hi Takashi,
+> 
+> Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+> 
+> sound/pci/hda/patch_via.c: In function 'via_mux_enum_put':
+> sound/pci/hda/patch_via.c:395: warning: unused variable 'vendor_id'
+> sound/pci/hda/patch_via.c: In function 'get_mux_nids':
+> sound/pci/hda/patch_via.c:1337: warning: unused variable 'type'
+> sound/pci/hda/patch_via.c:1354: warning: no return statement in function returning non-void
+> 
+> Introduced by commit 337b9d02b4873ceac91565272545fb6fd446d939 ("ALSA: hda
+> - Fix capture source selection in patch_via.c").
+> 
 
-I am submitting a series of 8 patches for inclusion in net-next-2.6.
-Here is a brief description of the patch series:
-- Drain the mac Tx fifo when a port goes down
-- Fix the mac high water computation on T3C chips
-- Fix LED settings and first link status report for the AEL2020 phy
-- Minor fixes to the AQ100X phy
-- Toggles Global Tx disable bit on phys when powered down
-- Fix HW initialization for offload connections
-- Fix MAC indexation for the Gen2 adapter
-- use request_firmware() to load the phy EDC programming.
+[PATCH] sound: pci/hda/patch_via.c fix compilation warning
 
-Cheers,
-Divy
+sound/pci/hda/patch_via.c: In function 'via_mux_enum_put':
+sound/pci/hda/patch_via.c:395: warning: unused variable 'vendor_id'
+sound/pci/hda/patch_via.c: In function 'get_mux_nids':
+sound/pci/hda/patch_via.c:1337: warning: unused variable 'type'
+sound/pci/hda/patch_via.c:1354: warning: no return statement in function returning non-void
+
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ sound/pci/hda/patch_via.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/sound/pci/hda/patch_via.c b/sound/pci/hda/patch_via.c
+index 38db459..d05b718 100644
+--- a/sound/pci/hda/patch_via.c
++++ b/sound/pci/hda/patch_via.c
+@@ -392,7 +392,6 @@ static int via_mux_enum_put(struct snd_kcontrol *kcontrol,
+ 	struct hda_codec *codec = snd_kcontrol_chip(kcontrol);
+ 	struct via_spec *spec = codec->spec;
+ 	unsigned int adc_idx = snd_ctl_get_ioffidx(kcontrol, &ucontrol->id);
+-	unsigned int vendor_id = codec->vendor_id;
+ 
+ 	if (!spec->mux_nids[adc_idx])
+ 		return -EINVAL;
+@@ -1330,11 +1329,10 @@ static int via_auto_init(struct hda_codec *codec)
+ 	return 0;
+ }
+ 
+-static int get_mux_nids(struct hda_codec *codec)
++static void get_mux_nids(struct hda_codec *codec)
+ {
+ 	struct via_spec *spec = codec->spec;
+ 	hda_nid_t nid, conn[8];
+-	unsigned int type;
+ 	int i, n;
+ 
+ 	for (i = 0; i < spec->num_adc_nids; i++) {
+-- 
+1.6.0.6
+
+
+
