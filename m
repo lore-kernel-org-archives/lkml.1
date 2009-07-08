@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbZGHD4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbZGHEOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758431AbZGHD4f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 23:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755954AbZGHD41
+	id S1753547AbZGHEOQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 00:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbZGHEOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 23:56:27 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:46977 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755868AbZGHD40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 23:56:26 -0400
-Date: Wed, 8 Jul 2009 09:26:21 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [RFC] IO scheduler based IO controller V6
-Message-ID: <20090708035621.GB3215@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1246564917-19603-1-git-send-email-vgoyal@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 8 Jul 2009 00:14:05 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:35404 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbZGHEOE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 00:14:04 -0400
+From: Len Brown <lenb@kernel.org>
+To: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Cc: Feng Tang <feng.tang@intel.com>, Len Brown <len.brown@intel.com>
+Subject: [PATCH 02/12] SFI, x86: add CONFIG_SFI
+Date: Wed, 08 Jul 2009 00:13:48 -0400
+Message-id: <d5a8e3203627c313e8fdbf4fa9ac1cb1cdc6706c.1247025117.git.len.brown@intel.com>
+X-Mailer: git-send-email 1.6.3.3.385.g60647
+In-reply-to: <1247026438-20891-1-git-send-email-lenb@kernel.org>
+References: <1247026438-20891-1-git-send-email-lenb@kernel.org>
+In-reply-to: <8e4a93858bce74ed3080dd607aa471023f1a2737.1247025117.git.len.brown@intel.com>
+References: <8e4a93858bce74ed3080dd607aa471023f1a2737.1247025117.git.len.brown@intel.com>
+X-Patchwork-Hint: ignore
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vivek Goyal <vgoyal@redhat.com> [2009-07-02 16:01:32]:
+From: Feng Tang <feng.tang@intel.com>
 
-> 
-> Hi All,
-> 
-> Here is the V6 of the IO controller patches generated on top of 2.6.31-rc1.
-> 
-> Previous versions of the patches was posted here.
-> 
-> (V1) http://lkml.org/lkml/2009/3/11/486
-> (V2) http://lkml.org/lkml/2009/5/5/275
-> (V3) http://lkml.org/lkml/2009/5/26/472
-> (V4) http://lkml.org/lkml/2009/6/8/580
-> (V5) http://lkml.org/lkml/2009/6/19/279
-> 
-> This patchset is still work in progress but I want to keep on getting the
-> snapshot of my tree out at regular intervals to get the feedback hence V6.
->
+analogous to ACPI, drivers/sfi/Kconfig is pulled in by arch/x86/Kconfig
 
-Hi, Vivek,
+Signed-off-by: Feng Tang <feng.tang@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ arch/x86/Kconfig    |    2 ++
+ drivers/sfi/Kconfig |   16 ++++++++++++++++
+ 2 files changed, 18 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/sfi/Kconfig
 
-I was able to compile and boot a 2.6.31-rc1 kernel with this patchset.
-I have a request could you fold up all patches and make one
-consolidated patch available somewhere (makes it easier to test), may
-be a git tree?
-
-I did some quick tests with some io benchmarks and found in a simple
-scenario that the scheduler worked as expected, except that it took
-very long. I'll investigate further and revert back.
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index c07f722..8e864c0 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1683,6 +1683,8 @@ source "kernel/power/Kconfig"
  
+ source "drivers/acpi/Kconfig"
+ 
++source "drivers/sfi/Kconfig"
++
+ config X86_APM_BOOT
+ 	bool
+ 	default y
+diff --git a/drivers/sfi/Kconfig b/drivers/sfi/Kconfig
+new file mode 100644
+index 0000000..b217f32
+--- /dev/null
++++ b/drivers/sfi/Kconfig
+@@ -0,0 +1,16 @@
++#
++# SFI Configuration
++#
++
++menuconfig SFI
++	bool "SFI (Simple Firmware Interface) Support"
++	depends on X86
++	default n
++	---help---
++	The Simple Firmware Interface (SFI) provides a lightweight method
++	for platform firmware to pass information to the Operating System
++	via static tables in memory.
++
++	For more information, see http://simplefirmware.org
++
++	Say 'Y' here to enable the kernel to boot on SFI-only platforms.
 -- 
-	Balbir
+1.6.0.6
+
