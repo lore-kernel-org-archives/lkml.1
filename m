@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZGHVcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbZGHVdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454AbZGHVcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 17:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755653AbZGHVcC
+	id S1756608AbZGHVdj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 17:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755653AbZGHVdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 17:32:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58625 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755522AbZGHVcB (ORCPT
+	Wed, 8 Jul 2009 17:33:33 -0400
+Received: from ru.mvista.com ([213.79.90.228]:47966 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755165AbZGHVdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 17:32:01 -0400
-Date: Wed, 8 Jul 2009 14:29:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, narayanan.g@samsung.com,
-       linux-mm@kvack.org, cl@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, stable@kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Performance degradation seen after using one list for hot/cold
- pages.
-Message-Id: <20090708142946.83c40331.akpm@linux-foundation.org>
-In-Reply-To: <20090622100632.GB3981@csn.ul.ie>
-References: <70875432E21A4185AD2E007941B6A792@sisodomain.com>
-	<20090622164147.720683f8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090622100632.GB3981@csn.ul.ie>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Jul 2009 17:33:32 -0400
+Date: Thu, 9 Jul 2009 01:33:31 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, a.p.zijlstra@chello.nl,
+       oleg@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] sched: Remove SYSTEM_RUNNING checks from
+ cond_resched*()
+Message-ID: <20090708213331.GA9346@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
+ <20090708005000.GA12380@redhat.com>
+ <1247034263.9777.24.camel@twins>
+ <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
+ <20090708141024.f8b581c5.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090708141024.f8b581c5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc stable, linux-kernel and linux-scsi)
-
-> On Mon, 22 Jun 2009 11:06:32 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
-> [PATCH] page-allocator: Preserve PFN ordering when __GFP_COLD is set
+On Wed, Jul 08, 2009 at 02:10:24PM -0700, Andrew Morton wrote:
+> > On Wed, 8 Jul 2009 09:12:30 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > That said, I do agree that maybe SYSTEM_RUNNING isn't the right check. 
+> > Testing that the scheduler is initialized may be the more correct one. I 
+> > think the SYSTEM_RUNNING one just comes from that being used for other 
+> > debug issues.
 > 
-> The page allocator tries to preserve contiguous PFN ordering when returning
-> pages such that repeated callers to the allocator have a strong chance of
-> getting physically contiguous pages, particularly when external fragmentation
-> is low. However, of the bulk of the allocations have __GFP_COLD set as
-> they are due to aio_read() for example, then the PFNs are in reverse PFN
-> order. This can cause performance degration when used with IO
-> controllers that could have merged the requests.
+> Agreed.  system_state is too general.
 > 
-> This patch attempts to preserve the contiguous ordering of PFNs for
-> users of __GFP_COLD.
+> If we specifically want to know whether it is safe to call schedule() then
+> let's create a global boolean it_is_safe_to_call_schedule and test that,
+> rather than testing something which indirectly and unreliably implies "it
+> is safe to call schedule".  If that boolean already exists then no-brainer.
+> 
+> All that being said, I wonder if the netconsole code should be using
+> msleep(1) instead.  Spinning on cond_resched() is a bit rude.  But one
+> would have to verify that it is safe to call schedule() at this time, and
+> for the netconsole caller, this is dubious.
 
-Thanks.
+What do you mean by "verify that it is safe"? If it works,
+can I assume that it's safe? ;-) It works, fwiw.
 
-I'll add the rather important text:
+Thanks,
 
-  Fix a post-2.6.24 performance regression caused by
-  3dfa5721f12c3d5a441448086bee156887daa961 ("page-allocator: preserve PFN
-  ordering when __GFP_COLD is set").
-
-This was a pretty major screwup.
-
-This is why changing core MM is so worrisome - there's so much secret and
-subtle history to it, and performance dependencies are unobvious and quite
-indirect and the lag time to discover regressions is long.
-
-Narayanan, are you able to quantify the regression more clearly?  All I
-have is "2 MBps lower" which isn't very useful.  What is this as a
-percentage, and with what sort of disk controller?  Thanks.
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
