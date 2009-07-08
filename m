@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZGHPWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZGHP1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbZGHPWo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 11:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZGHPWg
+	id S1755962AbZGHP1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 11:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbZGHP1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 11:22:36 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:45182 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751231AbZGHPWg (ORCPT
+	Wed, 8 Jul 2009 11:27:13 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:49182 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753821AbZGHP1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 11:22:36 -0400
-Subject: Re: OOM with hackbench against next 0708
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A5499B4.5050007@in.ibm.com>
-References: <20090708173104.d39108bb.sfr@canb.auug.org.au>
-	 <4A5499B4.5050007@in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 08:22:29 -0700
-Message-Id: <1247066549.14309.1029.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Jul 2009 11:27:12 -0400
+Date: Wed, 08 Jul 2009 11:26:48 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: sfi-devel@simplefirmware.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [SFI-devel] linux-next: sfi tree build warning
+In-reply-to: <20090708164400.f2138d79.sfr@canb.auug.org.au>
+Message-id: <alpine.LFD.2.00.0907081123360.9604@localhost.localdomain>
+References: <20090708164400.f2138d79.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 18:35 +0530, Sachin Sant wrote:
-> While executing hackbench against today's next on a 4 way
-> power6 box (9117 MMA), the machine crawled within few seconds
-> with lots of OOM messages. I captured a Crash dump and was
-> able to extract the dmesg log which i have attached here.
-> 
-> This problem started with 0706 next release. 0703 worked fine.
-> 
-> Kernel is compiled with SLQB and 64K page size.
-> 
-> .config attached. Let me know what other information i can
-> provide to find a solution for this problem.
 
-This doesn't look like a kernel bug at all to me.  You're out of memory,
-out of swap, and the thing that got killed was the thing allocating
-memory.  You're also down to 65MB of pagecache, which is awfully low for
-a 6GB machine.  That tells me it's also been effective in reclaiming
-disk cache.
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-There are a couple of possibilities:
-1. hackbench is broken, allocating too much memory and ooming, or it
-   has been misconfigured by a user
-2. hackbench broke because something the kernel is telling it is wrong
-3. The kernel is leaking (or just plain using) some memory more than a
-   few releases ago, and that caused the oom.
+ah good, this means the SFI tree actually made it into linux-next:-)
 
-I'd go back and carefully examine how hackbench is being run and that it
-is consistent.  You should also double-check your finding that the
-several-day-old -next isn't seeing this issue.
+> arch/x86/kernel/sfi.c: In function 'sfi_init_memory_map':
+> arch/x86/kernel/sfi.c:99: warning: cast to pointer from integer of different size
+> arch/x86/kernel/sfi.c:100: warning: cast to pointer from integer of different size
 
--- Dave
+This should go away when you pull the patch below for tomorrow's build.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+
+
+commit 6a099c4dfc3e3fa95e55ea13ce836a6ed98ee689
+Author: Feng Tang <feng.tang@intel.com>
+Date:   Wed Jul 8 17:35:45 2009 +0800
+
+    SFI: fix the compile warning for x86_64
+
 
