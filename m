@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbZGHVEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZGHVFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895AbZGHVEh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 17:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbZGHVEa
+	id S1756048AbZGHVFe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 17:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbZGHVF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 17:04:30 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:50871 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754269AbZGHVE3 (ORCPT
+	Wed, 8 Jul 2009 17:05:26 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:59247 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754551AbZGHVFZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 17:04:29 -0400
-Date: Wed, 8 Jul 2009 23:04:15 +0200
-From: Nico Schottelius <nico-linux-20090706@schottelius.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Nico Schottelius <nico-linux-20090706@schottelius.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31-r2: Xorg: Black screen
-Message-ID: <20090708210415.GB26674@ikn.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090706@schottelius.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20090706083551.GA6422@ikn.schottelius.org> <20090706105249.307e4a6b@jbarnes-g45>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="t0UkRYy7tHLRMCai"
+	Wed, 8 Jul 2009 17:05:25 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjkFAHGiVEpMQWU3/2dsb2JhbACBUdAghAgF
+Date: Wed, 8 Jul 2009 17:05:22 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] ring-buffer: make lockless
+Message-ID: <20090708210522.GA17430@Krystal>
+References: <20090708201312.222046866@goodmis.org> <20090708201445.696220393@goodmis.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090706105249.307e4a6b@jbarnes-g45>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://www.nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.30-rc7 x86_64)
+In-Reply-To: <20090708201445.696220393@goodmis.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:22:28 up 130 days, 16:48,  4 users,  load average: 0.89, 0.98,
+	0.77
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> This patch converts the ring buffers into a completely lockless
+> buffer recording system. The read side still takes locks since
+> we still serialize readers. But the writers are the ones that
+> must be lockless (those can happen in NMIs).
 
---t0UkRYy7tHLRMCai
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Steven,
 
-Jesse Barnes [Mon, Jul 06, 2009 at 10:52:49AM -0700]:
-> On Mon, 6 Jul 2009 10:35:51 +0200
-> Nico Schottelius <nico-linux-20090706@schottelius.org> wrote:
->=20
-> > Hello!
-> >=20
-> > Compared to the other normal brightness problems, with
-> > 2.6.31-r2 xorg starts, but there is no image displayed
-> > (neither on internal nor external monitor).
-> >=20
-> > Switching back to console does not change the status,
-> > though hitting ctrlaltdel reboots the system (i.e. still
-> > up and running fine).
-> >=20
-> > It works with 2.6.30-rc7 (besides sometimes the brightness
-> > is broken there).
->=20
-> Can you bisect?
+Have you started modeling this scheme with Promela as I previously
+discussed with you ? Paul McKenney did a lot of nice papers on the
+topic, and given the complexity level of this lockless buffering
+algorithm, I'd be much more comfortable if it was formally verified. The
+idea here is to make sure we don't start an endless bug-chasing hunt as
+trace buffers gets more exposure to various workloads.
 
-Sorry, currently I'm bound to using that computer for work.
-Maybe I can give it a try next week (holidays).
+Thanks,
 
-Nico
+Mathieu
 
---=20
-Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---t0UkRYy7tHLRMCai
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpVCc8ACgkQuL75KpiFGIyMmACfdWBPXewjrdLg1T4nxUOwYS2H
-23EAnA9+6jNM4gcPe9Gf6XAP96UnhZbc
-=eVNN
------END PGP SIGNATURE-----
-
---t0UkRYy7tHLRMCai--
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
