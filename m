@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759540AbZGHGoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759222AbZGHGov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759540AbZGHGoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 02:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZGHGoL
+	id S1759222AbZGHGov (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 02:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbZGHGon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 02:44:11 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53413 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752301AbZGHGoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 02:44:10 -0400
-Date: Wed, 8 Jul 2009 16:44:00 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: <sfi-devel@simplefirmware.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: sfi tree build warning
-Message-Id: <20090708164400.f2138d79.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+	Wed, 8 Jul 2009 02:44:43 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33331 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753588AbZGHGon (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 02:44:43 -0400
+Subject: Re: [PATCH 5/7] MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+In-Reply-To: <1247035197.5124.9.camel@Joe-Laptop.home>
+References: <cover.1247032324.git.joe@perches.com>
+	 <9c84258bdd3ebecd54e2bc203dbded1382af9c02.1247032324.git.joe@perches.com>
+	 <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com>
+	 <1247035197.5124.9.camel@Joe-Laptop.home>
+Date: Wed, 08 Jul 2009 09:44:41 +0300
+Message-Id: <1247035481.15919.31.camel@penberg-laptop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__8_Jul_2009_16_44_00_+1000_4HGTPhsx7RULjXkl"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__8_Jul_2009_16_44_00_+1000_4HGTPhsx7RULjXkl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Joe,
 
-Hi all,
+On Tue, 2009-07-07 at 23:39 -0700, Joe Perches wrote:
+> > On Wed, Jul 8, 2009 at 8:55 AM, Joe Perches<joe@perches.com> wrote:
+> > > from sections that should not have them.
+> > What is that supposed to mean?
+> 
+> That there should be no sections that have LKML as a
+> list entry other than "everything".
+> 
+> A earlier commit, b5472cddbe2c41fd434592ecf3c5b81a551d5bea,
+> removed all the entries for LKML but "THE REST".
+> These removed entries have been added since that commit.
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+OK, I don't agree, but as Andrew apparently thinks it's a good idea
+because he merged the previous patch, there's no reason not to merge the
+new one.
 
-arch/x86/kernel/sfi.c: In function 'sfi_init_memory_map':
-arch/x86/kernel/sfi.c:99: warning: cast to pointer from integer of differen=
-t size
-arch/x86/kernel/sfi.c:100: warning: cast to pointer from integer of differe=
-nt size
+On Tue, 2009-07-07 at 23:39 -0700, Joe Perches wrote:
+> Documentation/SubmittingPatches already states that
+> LKML should be CC'd on all patches.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Maybe it does, but real world doesn't seem to agree with you here.
 
---Signature=_Wed__8_Jul_2009_16_44_00_+1000_4HGTPhsx7RULjXkl
-Content-Type: application/pgp-signature
+			Pekka
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpUQDAACgkQjjKRsyhoI8x3xgCeJRk2QFKlfx10xmwTwi1M8oJ6
-98MAoJe6cqPo/TkKsX1yv9O4upFPOWNy
-=lSWJ
------END PGP SIGNATURE-----
-
---Signature=_Wed__8_Jul_2009_16_44_00_+1000_4HGTPhsx7RULjXkl--
