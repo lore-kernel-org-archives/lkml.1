@@ -1,60 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758722AbZGHXQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbZGHXdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758722AbZGHXQo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 19:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757758AbZGHXQ1
+	id S1757428AbZGHXdM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 19:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZGHXdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 19:16:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57764 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758204AbZGHXQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 19:16:26 -0400
-Message-ID: <4A55286A.6040202@kernel.org>
-Date: Thu, 09 Jul 2009 08:14:50 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 8 Jul 2009 19:33:00 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:64223 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbZGHXc7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 19:32:59 -0400
+X-IronPort-AV: E=Sophos;i="4.42,370,1243814400"; 
+   d="scan'208";a="340223157"
+From: Roland Dreier <rdreier@cisco.com>
+To: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: lib: Export generic atomic64_t functions
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 08 Jul 2009 16:32:55 -0700
+Message-ID: <ada63e221js.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org, npiggin@suse.de
-Subject: Re: [PATCH 4/4] FUSE: implement direct mmap
-References: <1245317073-24000-1-git-send-email-tj@kernel.org> <1245317073-24000-5-git-send-email-tj@kernel.org> <E1MJPmn-0001Q6-Fj@pomaz-ex.szeredi.hu> <4A48EEDC.807@kernel.org> <E1MMMgq-0002R2-FO@pomaz-ex.szeredi.hu> <4A4F3998.5020805@kernel.org> <E1MNmZM-0001ZB-GR@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1MNmZM-0001ZB-GR@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Jul 2009 23:14:54 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 Jul 2009 23:32:58.0386 (UTC) FILETIME=[6D2B5720:01CA0024]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Miklos.
+The generic atomic64_t implementation in lib/ did not export the
+functions it defined, which means that modules that use atomic64_t
+would not link on platforms (such as 32-bit powerpc).  For example,
+trying to build a kernel with CONFIG_NET_RDS on such a platform would
+fail with:
 
-Miklos Szeredi wrote:
-> On Sat, 04 Jul 2009, Tejun Heo wrote:
->>> Afaics sound drivers now map the dma memory with remap_pfn_range().
->>> Similary we could allocate a chunk of non-swapabble kernel memory on
->>> request from the userspace server and map its pages using this trick
->>> to both the server's and the client's address space.
->>>
->>> This is still sort of OSSP specific, I don't see clearly how it could
->>> be made more generic.
->> Using non-swappable memory would be fine for most device emulations
->> but mapping large amount of pages would be problematic.  Hmmm... this
->> is difficult.  It's a compromise among flexibility, scalability and
->> code complexity.
-> 
-> What's the difficulty?
+    ERROR: "atomic64_read" [net/rds/rds.ko] undefined!
+    ERROR: "atomic64_set" [net/rds/rds.ko] undefined!
 
-The desire to avoid pinning all the mapped pages.  :-)
+Fix this by exporting the atomic64_t functions to modules.  (I export
+the entire API even if it's not all currently used by in-tree modules to
+avoid having to continue fixing this in dribs and drabs)
 
-> Allocating pages, giving them an ID and mapping them into various page
-> tables seems simple in contrast to trying to make a tmpfs file be a
-> fuse file at the same time, which the VM is really not prepared for.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+Didn't see this appear anywhere yet, but I apologize if this duplicates
+something already queued.  I see that the original implementation went
+in through benh's tree but I'm not sure what the appropriate way to
+merge this is, so I'll send it to both benh and akpm.
 
-If pinning all the pages are okay, the above should work fine.
+ lib/atomic64.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-Thanks.
-
--- 
-tejun
+diff --git a/lib/atomic64.c b/lib/atomic64.c
+index c5e7255..8bee16e 100644
+--- a/lib/atomic64.c
++++ b/lib/atomic64.c
+@@ -13,6 +13,7 @@
+ #include <linux/cache.h>
+ #include <linux/spinlock.h>
+ #include <linux/init.h>
++#include <linux/module.h>
+ #include <asm/atomic.h>
+ 
+ /*
+@@ -52,6 +53,7 @@ long long atomic64_read(const atomic64_t *v)
+ 	spin_unlock_irqrestore(lock, flags);
+ 	return val;
+ }
++EXPORT_SYMBOL(atomic64_read);
+ 
+ void atomic64_set(atomic64_t *v, long long i)
+ {
+@@ -62,6 +64,7 @@ void atomic64_set(atomic64_t *v, long long i)
+ 	v->counter = i;
+ 	spin_unlock_irqrestore(lock, flags);
+ }
++EXPORT_SYMBOL(atomic64_set);
+ 
+ void atomic64_add(long long a, atomic64_t *v)
+ {
+@@ -72,6 +75,7 @@ void atomic64_add(long long a, atomic64_t *v)
+ 	v->counter += a;
+ 	spin_unlock_irqrestore(lock, flags);
+ }
++EXPORT_SYMBOL(atomic64_add);
+ 
+ long long atomic64_add_return(long long a, atomic64_t *v)
+ {
+@@ -84,6 +88,7 @@ long long atomic64_add_return(long long a, atomic64_t *v)
+ 	spin_unlock_irqrestore(lock, flags);
+ 	return val;
+ }
++EXPORT_SYMBOL(atomic64_add_return);
+ 
+ void atomic64_sub(long long a, atomic64_t *v)
+ {
+@@ -94,6 +99,7 @@ void atomic64_sub(long long a, atomic64_t *v)
+ 	v->counter -= a;
+ 	spin_unlock_irqrestore(lock, flags);
+ }
++EXPORT_SYMBOL(atomic64_sub);
+ 
+ long long atomic64_sub_return(long long a, atomic64_t *v)
+ {
+@@ -106,6 +112,7 @@ long long atomic64_sub_return(long long a, atomic64_t *v)
+ 	spin_unlock_irqrestore(lock, flags);
+ 	return val;
+ }
++EXPORT_SYMBOL(atomic64_sub_return);
+ 
+ long long atomic64_dec_if_positive(atomic64_t *v)
+ {
+@@ -120,6 +127,7 @@ long long atomic64_dec_if_positive(atomic64_t *v)
+ 	spin_unlock_irqrestore(lock, flags);
+ 	return val;
+ }
++EXPORT_SYMBOL(atomic64_dec_if_positive);
+ 
+ long long atomic64_cmpxchg(atomic64_t *v, long long o, long long n)
+ {
+@@ -134,6 +142,7 @@ long long atomic64_cmpxchg(atomic64_t *v, long long o, long long n)
+ 	spin_unlock_irqrestore(lock, flags);
+ 	return val;
+ }
++EXPORT_SYMBOL(atomic64_cmpxchg);
+ 
+ long long atomic64_xchg(atomic64_t *v, long long new)
+ {
+@@ -147,6 +156,7 @@ long long atomic64_xchg(atomic64_t *v, long long new)
+ 	spin_unlock_irqrestore(lock, flags);
+ 	return val;
+ }
++EXPORT_SYMBOL(atomic64_xchg);
+ 
+ int atomic64_add_unless(atomic64_t *v, long long a, long long u)
+ {
+@@ -162,6 +172,7 @@ int atomic64_add_unless(atomic64_t *v, long long a, long long u)
+ 	spin_unlock_irqrestore(lock, flags);
+ 	return ret;
+ }
++EXPORT_SYMBOL(atomic64_add_unless);
+ 
+ static int init_atomic64_lock(void)
+ {
