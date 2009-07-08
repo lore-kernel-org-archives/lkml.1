@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbZGHEO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759185AbZGHEPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbZGHEO7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 00:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbZGHEO3
+	id S1759185AbZGHEPx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 00:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZGHEOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 00:14:29 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:31772 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbZGHEOF (ORCPT
+	Wed, 8 Jul 2009 00:14:35 -0400
+Received: from vms173019pub.verizon.net ([206.46.173.19]:46912 "EHLO
+	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbZGHEOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 00:14:05 -0400
+	Wed, 8 Jul 2009 00:14:09 -0400
 From: Len Brown <lenb@kernel.org>
 To: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
        linux-acpi@vger.kernel.org
 Cc: Feng Tang <feng.tang@intel.com>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 05/12] SFI: add core support
-Date: Wed, 08 Jul 2009 00:13:51 -0400
-Message-id: <10fb28adc204382cb3b1acc99eabbb369d378a0f.1247025117.git.len.brown@intel.com>
+Subject: [PATCH 09/12] SFI: Enable SFI to parse ACPI tables
+Date: Wed, 08 Jul 2009 00:13:55 -0400
+Message-id: <5ab9dd34acc6209c5b6a3c754075e408e5298a2d.1247025117.git.len.brown@intel.com>
 X-Mailer: git-send-email 1.6.3.3.385.g60647
 In-reply-to: <1247026438-20891-1-git-send-email-lenb@kernel.org>
 References: <1247026438-20891-1-git-send-email-lenb@kernel.org>
@@ -29,48 +29,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Feng Tang <feng.tang@intel.com>
 
-drivers/sfi/sfi_core.c contains the generic SFI implementation.
-It has a private header, sfi_core.h, for its own use and the
-private use of future files in drivers/sfi/
+Extend SFI to access standard ACPI tables.
+(eg. the PCI MCFG) using sfi_acpi_table_parse().
+
+Note that this is _not_ a hybrid ACPI + SFI mode.
+The platform boots in either ACPI mode or SFI mode.
+
+SFI runs only with acpi_disabled=1, which can be set
+at build-time via CONFIG_ACPI=n, or at boot time by
+the failure to find ACPI platform support.
+
+So this extension simply allows SFI-platforms to
+re-use existing standard table formats that happen to
+be defined to live in ACPI envelopes.
 
 Signed-off-by: Feng Tang <feng.tang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/Makefile       |    1 +
- drivers/sfi/Makefile   |    1 +
- drivers/sfi/sfi_core.c |  385 ++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/sfi/sfi_core.h |   44 ++++++
- 4 files changed, 431 insertions(+), 0 deletions(-)
- create mode 100644 drivers/sfi/Makefile
- create mode 100644 drivers/sfi/sfi_core.c
- create mode 100644 drivers/sfi/sfi_core.h
+ drivers/sfi/Makefile     |    2 +
+ drivers/sfi/sfi_acpi.c   |  151 ++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/sfi/sfi_core.c   |    2 +
+ include/linux/sfi_acpi.h |   60 ++++++++++++++++++
+ 4 files changed, 215 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/sfi/sfi_acpi.c
+ create mode 100644 include/linux/sfi_acpi.h
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index bc4205d..ccfa259 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_PARISC)		+= parisc/
- obj-$(CONFIG_RAPIDIO)		+= rapidio/
- obj-y				+= video/
- obj-$(CONFIG_ACPI)		+= acpi/
-+obj-$(CONFIG_SFI)		+= sfi/
- # PnP must come after ACPI since it will eventually need to check if acpi
- # was used and do nothing if so
- obj-$(CONFIG_PNP)		+= pnp/
 diff --git a/drivers/sfi/Makefile b/drivers/sfi/Makefile
-new file mode 100644
-index 0000000..f176470
---- /dev/null
+index f176470..2343732 100644
+--- a/drivers/sfi/Makefile
 +++ b/drivers/sfi/Makefile
-@@ -0,0 +1 @@
-+obj-y	+= sfi_core.o
-diff --git a/drivers/sfi/sfi_core.c b/drivers/sfi/sfi_core.c
+@@ -1 +1,3 @@
++obj-y	+= sfi_acpi.o
+ obj-y	+= sfi_core.o
++
+diff --git a/drivers/sfi/sfi_acpi.c b/drivers/sfi/sfi_acpi.c
 new file mode 100644
-index 0000000..f9a9849
+index 0000000..0cc2332
 --- /dev/null
-+++ b/drivers/sfi/sfi_core.c
-@@ -0,0 +1,385 @@
-+/* sfi_core.c Simple Firmware Interface - core internals */
++++ b/drivers/sfi/sfi_acpi.c
+@@ -0,0 +1,151 @@
++/* sfi_acpi.c Simple Firmware Interface - ACPI extensions */
 +
 +/*
 + * Copyright (C) 2009, Intel Corp.
@@ -112,159 +110,67 @@ index 0000000..f9a9849
 +#define KMSG_COMPONENT "SFI"
 +#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
 +
-+#include <linux/bootmem.h>
 +#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/errno.h>
-+#include <linux/types.h>
-+#include <linux/acpi.h>
-+#include <linux/init.h>
-+#include <linux/irq.h>
-+#include <linux/smp.h>
++#include <acpi/acpi.h>
 +#include <linux/sfi.h>
-+
-+#include <asm/pgtable.h>
 +
 +#include "sfi_core.h"
 +
-+#define ON_SAME_PAGE(addr1, addr2) \
-+	(((unsigned long)(addr1) & PAGE_MASK) == \
-+	((unsigned long)(addr2) & PAGE_MASK))
-+#define TABLE_ON_PAGE(page, table, size) (ON_SAME_PAGE(page, table) && \
-+				ON_SAME_PAGE(page, table + size))
++/*
++ * SFI can access ACPI-defined tables via an optional ACPI XSDT.
++ *
++ * This allows re-use, and avoids re-definition, of standard tables.
++ * For example, the "MCFG" table is defined by PCI, reserved by ACPI,
++ * and is expected to be present many SFI-only systems.
++ */
 +
-+int sfi_disabled __read_mostly;
-+EXPORT_SYMBOL(sfi_disabled);
++static struct acpi_table_xsdt *xsdt_va;
 +
-+static u64 syst_pa __read_mostly;
-+static struct sfi_table_simple *syst_va __read_mostly;
++#define XSDT_GET_NUM_ENTRIES(ptable, entry_type) \
++	((ptable->header.length - sizeof(struct acpi_table_header)) / \
++	(sizeof(entry_type)))
 +
 +/*
-+ * FW creates and saves the SFI tables in memory. When these tables get
-+ * used, they may need to be mapped to virtual address space, and the mapping
-+ * can happen before or after the ioremap() is ready, so a flag is needed
-+ * to indicating this
++ * sfi_acpi_parse_xsdt()
++ *
++ * Parse the ACPI XSDT for later access by sfi_acpi_table_parse().
 + */
-+static u32 sfi_use_ioremap __read_mostly;
-+
-+static void __iomem *sfi_map_memory(u64 phys, u32 size)
++static int __init sfi_acpi_parse_xsdt(struct sfi_table_header *table)
 +{
-+	if (!phys || !size)
-+		return NULL;
++	int tbl_cnt, i;
++	xsdt_va = (struct acpi_table_xsdt *)table;
 +
-+	if (sfi_use_ioremap)
-+		return ioremap(phys, size);
-+	else
-+		return early_ioremap(phys, size);
-+}
++	tbl_cnt = XSDT_GET_NUM_ENTRIES(xsdt_va, u64);
 +
-+static void sfi_unmap_memory(void __iomem *virt, u32 size)
-+{
-+	if (!virt || !size)
-+		return;
-+
-+	if (sfi_use_ioremap)
-+		iounmap(virt);
-+	else
-+		early_iounmap(virt, size);
-+}
-+
-+static void sfi_print_table_header(unsigned long long pa,
-+				struct sfi_table_header *header)
-+{
-+	pr_info("%4.4s %llX, %04X (v%d %6.6s %8.8s)\n",
-+		header->signature, pa,
-+		header->length, header->revision, header->oem_id,
-+		header->oem_table_id);
-+}
-+
-+/*
-+ * sfi_verify_table()
-+ * sanity check table lengh, calculate checksum
-+ */
-+static __init int sfi_verify_table(struct sfi_table_header *table)
-+{
-+
-+	u8 checksum = 0;
-+	u8 *puchar = (u8 *)table;
-+	u32 length = table->length;
-+
-+	/* Sanity check table length against arbitrary 1MB limit */
-+	if (length > 0x100000) {
-+		pr_err("Invalid table length 0x%x\n", length);
-+		return -1;
++	for (i = 0; i < tbl_cnt; i++) {
++		if (sfi_check_table(xsdt_va->table_offset_entry[i])) {
++			disable_sfi();
++			return -1;
++		}
 +	}
 +
-+	while (length--)
-+		checksum += *puchar++;
-+
-+	if (checksum) {
-+		pr_err("Checksum %2.2X should be %2.2X\n",
-+			table->checksum, table->checksum - checksum);
-+		return -1;
-+	}
 +	return 0;
 +}
 +
-+/*
-+ * sfi_map_table()
-+ *
-+ * Return address of mapped table
-+ * Check for common case that we can re-use mapping to SYST,
-+ * which requires syst_pa, syst_va to be initialized.
-+ */
-+struct sfi_table_header *sfi_map_table(u64 pa)
++int __init sfi_acpi_init(void)
 +{
-+	struct sfi_table_header *th;
-+	u32 length;
-+
-+	if (!TABLE_ON_PAGE(syst_pa, pa, sizeof(struct sfi_table_header)))
-+		th = sfi_map_memory(pa, sizeof(struct sfi_table_header));
-+	else
-+		th = (void *)syst_va - (syst_pa - pa);
-+
-+	 /* If table fits on same page as its header, we are done */
-+	if (TABLE_ON_PAGE(th, th, th->length))
-+		return th;
-+
-+	/* entire table does not fit on same page as SYST */
-+	length = th->length;
-+	if (!TABLE_ON_PAGE(syst_pa, pa, sizeof(struct sfi_table_header)))
-+		sfi_unmap_memory(th, sizeof(struct sfi_table_header));
-+
-+	return sfi_map_memory(pa, length);
++	sfi_table_parse(SFI_SIG_XSDT, NULL, NULL, 0, sfi_acpi_parse_xsdt);
++	return 0;
 +}
 +
-+/*
-+ * sfi_unmap_table()
-+ *
-+ * undoes effect of sfi_map_table() by unmapping table
-+ * if it did not completely fit on same page as SYST.
-+ */
-+void sfi_unmap_table(struct sfi_table_header *th)
++static struct acpi_table_header *sfi_acpi_get_table(char *signature,
++			char *oem_id, char *oem_table_id, unsigned int flags)
 +{
-+	if (!TABLE_ON_PAGE(syst_va, th, th->length))
-+		sfi_unmap_memory(th, TABLE_ON_PAGE(th, th, th->length) ?
-+					sizeof(*th) : th->length);
-+}
-+
-+/*
-+ * sfi_get_table()
-+ *
-+ * Search SYST for the specified table.
-+ * return the mapped table
-+ */
-+static struct sfi_table_header *sfi_get_table(char *signature, char *oem_id,
-+		char *oem_table_id, unsigned int flags)
-+{
-+	struct sfi_table_header *th;
++	struct acpi_table_header *th;
 +	u32 tbl_cnt, i;
++	u64 pa;
 +
-+	tbl_cnt = SFI_GET_NUM_ENTRIES(syst_va, u64);
++	tbl_cnt = XSDT_GET_NUM_ENTRIES(xsdt_va, u64);
 +
 +	for (i = 0; i < tbl_cnt; i++) {
-+		th = sfi_map_table(syst_va->pentry[i]);
++		pa = xsdt_va->table_offset_entry[i];
++
++		th = (struct acpi_table_header *)sfi_map_table(pa);
 +		if (!th)
 +			return NULL;
 +
@@ -278,190 +184,61 @@ index 0000000..f9a9849
 +						SFI_OEM_TABLE_ID_SIZE))
 +			goto loop_continue;
 +
-+		return th;	/* success */
++		return th;      /* success */
 +loop_continue:
-+		sfi_unmap_table(th);
++		sfi_unmap_table((struct sfi_table_header *)th);
 +	}
 +
 +	return NULL;
 +}
 +
-+void sfi_put_table(struct sfi_table_header *table)
++static void sfi_acpi_put_table(struct acpi_table_header *table)
 +{
-+	if (!ON_SAME_PAGE(((void *)table + table->length),
-+		(void *)syst_va + syst_va->header.length)
-+		&& !ON_SAME_PAGE(table, syst_va))
-+		sfi_unmap_memory(table, table->length);
++	sfi_put_table((struct sfi_table_header *)table);
 +}
 +
-+/* find table with signature, run handler on it */
-+int sfi_table_parse(char *signature, char *oem_id, char *oem_table_id,
-+			unsigned int flags, sfi_table_handler handler)
++/*
++ * sfi_acpi_table_parse()
++ *
++ * find specified table in XSDT, run handler on it and return its return value
++ */
++int sfi_acpi_table_parse(char *signature, char *oem_id, char *oem_table_id,
++		 unsigned int flags, int(*handler)(struct acpi_table_header *))
 +{
 +	int ret = 0;
-+	struct sfi_table_header *table = NULL;
++	struct acpi_table_header *table = NULL;
 +
-+	if (sfi_disabled || !handler || !signature)
-+		return -EINVAL;
++	if (sfi_disabled)
++		return -1;
 +
-+	table = sfi_get_table(signature, oem_id, oem_table_id, flags);
++	table = sfi_acpi_get_table(signature, oem_id, oem_table_id, flags);
 +	if (!table)
 +		return -EINVAL;
 +
 +	ret = handler(table);
-+	sfi_put_table(table);
++	sfi_acpi_put_table(table);
 +	return ret;
 +}
-+EXPORT_SYMBOL_GPL(sfi_table_parse);
+diff --git a/drivers/sfi/sfi_core.c b/drivers/sfi/sfi_core.c
+index 8939215..f411a02 100644
+--- a/drivers/sfi/sfi_core.c
++++ b/drivers/sfi/sfi_core.c
+@@ -369,6 +369,8 @@ void __init sfi_init_late(void)
+ 	/* use ioremap now after it is ready */
+ 	sfi_use_ioremap = 1;
+ 	syst_va = sfi_map_memory(syst_pa, length);
 +
-+/*
-+ * sfi_check_table(pa)
-+ */
-+int __init sfi_check_table(u64 pa)
-+{
-+	struct sfi_table_header *th;
-+	int ret;
-+
-+	th = sfi_map_table(pa);
-+	if (!th)
-+		return -1;
-+
-+	sfi_print_table_header(pa, th);
-+	ret = sfi_verify_table(th);
-+
-+	sfi_unmap_table(th);
-+
-+	return ret;
-+}
-+
-+/*
-+ * sfi_parse_syst()
-+ * checksum all the tables in SYST and print their headers
-+ *
-+ * success: set syst_va, return 0
-+ */
-+static int __init sfi_parse_syst(void)
-+{
-+	int tbl_cnt, i;
-+
-+	syst_va = sfi_map_memory(syst_pa, sizeof(struct sfi_table_simple));
-+	if (!syst_va)
-+		return -1;
-+
-+	tbl_cnt = SFI_GET_NUM_ENTRIES(syst_va, u64);
-+	for (i = 0; i < tbl_cnt; i++) {
-+		if (sfi_check_table(syst_va->pentry[i]))
-+			return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * The OS finds the System Table by searching 16-byte boundaries between
-+ * physical address 0x000E0000 and 0x000FFFFF. The OS shall search this region
-+ * starting at the low address and shall stop searching when the 1st valid SFI
-+ * System Table is found.
-+ *
-+ * success: set syst_pa, return 0
-+ * fail: return -1
-+ */
-+static __init int sfi_find_syst(void)
-+{
-+	unsigned long offset, len;
-+	void *start;
-+
-+	len = SFI_SYST_SEARCH_END - SFI_SYST_SEARCH_BEGIN;
-+	start = sfi_map_memory(SFI_SYST_SEARCH_BEGIN, len);
-+	if (!start)
-+		return -1;
-+
-+	for (offset = 0; offset < len; offset += 16) {
-+		struct sfi_table_header *syst_hdr;
-+
-+		syst_hdr = start + offset;
-+		if (strncmp(syst_hdr->signature, SFI_SIG_SYST,
-+				SFI_SIGNATURE_SIZE))
-+			continue;
-+
-+		if (syst_hdr->length > PAGE_SIZE)
-+			continue;
-+
-+		sfi_print_table_header(SFI_SYST_SEARCH_BEGIN + offset,
-+					syst_hdr);
-+
-+		if (sfi_verify_table(syst_hdr))
-+			continue;
-+
-+		/*
-+		 * Enforce SFI spec mandate that SYST reside within a page.
-+		 */
-+		if (!ON_SAME_PAGE(syst_pa, syst_pa + syst_hdr->length)) {
-+			pr_debug("SYST 0x%llx + 0x%x crosses page\n",
-+					syst_pa, syst_hdr->length);
-+			continue;
-+		}
-+
-+		/* success */
-+		syst_pa = SFI_SYST_SEARCH_BEGIN + offset;
-+		sfi_unmap_memory(start, len);
-+		return 0;
-+	}
-+
-+	sfi_unmap_memory(start, len);
-+	return -1;
-+}
-+
-+void __init sfi_init(void)
-+{
-+	if (!acpi_disabled)
-+		disable_sfi();
-+
-+	if (sfi_disabled)
-+		return;
-+
-+	pr_info("Simple Firmware Interface v0.7 http://simplefirmware.org\n");
-+
-+	if (sfi_find_syst() || sfi_parse_syst())
-+		disable_sfi();
-+
-+	return;
-+}
-+
-+void __init sfi_init_late(void)
-+{
-+	int length;
-+
-+	if (sfi_disabled)
-+		return;
-+
-+	length = syst_va->header.length;
-+	sfi_unmap_memory(syst_va, sizeof(struct sfi_table_simple));
-+
-+	/* use ioremap now after it is ready */
-+	sfi_use_ioremap = 1;
-+	syst_va = sfi_map_memory(syst_pa, length);
-+}
-+
-+static int __init sfi_parse_cmdline(char *arg)
-+{
-+	if (!arg)
-+		return -EINVAL;
-+
-+	if (!strcmp(arg, "off"))
-+		sfi_disabled = 1;
-+
-+	return 0;
-+}
-+
-+early_param("sfi", sfi_parse_cmdline);
-diff --git a/drivers/sfi/sfi_core.h b/drivers/sfi/sfi_core.h
++	sfi_acpi_init();
+ }
+ 
+ static int __init sfi_parse_cmdline(char *arg)
+diff --git a/include/linux/sfi_acpi.h b/include/linux/sfi_acpi.h
 new file mode 100644
-index 0000000..cb599bf
+index 0000000..d19a00a
 --- /dev/null
-+++ b/drivers/sfi/sfi_core.h
-@@ -0,0 +1,44 @@
-+/* sfi_core.h Simple Firmware Interface, internal header */
++++ b/include/linux/sfi_acpi.h
+@@ -0,0 +1,60 @@
++/* sfi.h Simple Firmware Interface */
 +
 +/*
 + * Copyright (C) 2009, Intel Corp.
@@ -500,11 +277,27 @@ index 0000000..cb599bf
 + * POSSIBILITY OF SUCH DAMAGES.
 + */
 +
-+extern int __init sfi_acpi_init(void);
-+extern int sfi_check_table(u64 paddr);
-+extern void sfi_put_table(struct sfi_table_header *table);
-+extern struct sfi_table_header *sfi_map_table(u64 pa);
-+extern void sfi_unmap_table(struct sfi_table_header *th);
++#ifndef _LINUX_SFI_ACPI_H
++#define _LINUX_SFI_ACPI_H
++
++#ifdef	CONFIG_SFI
++#include <acpi/acpi.h>		/* struct acpi_table_header */
++
++int sfi_acpi_table_parse(char *signature, char *oem_id, char* oem_table_id,
++	uint flag, int (*handler)(struct acpi_table_header *));
++
++#else /* !CONFIG_SFI */
++
++static inline int sfi_acpi_table_parse(char *signature, char *oem_id,
++	char *oem_table_id, unsigned int flags,
++	int (*handler)(struct acpi_table_header *))
++{
++	return -1;
++}
++
++#endif	/* CONFIG_SFI */
++
++#endif	/*_LINUX_SFI_ACPI_H*/
 -- 
 1.6.0.6
 
