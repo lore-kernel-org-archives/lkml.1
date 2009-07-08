@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbZGHRjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbZGHRld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756727AbZGHRjw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 13:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbZGHRjr
+	id S1755317AbZGHRld (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 13:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbZGHRl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 13:39:47 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:47769 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754339AbZGHRjq (ORCPT
+	Wed, 8 Jul 2009 13:41:26 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:40248 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753786AbZGHRlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 13:39:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=uSW1OTqBJOIfD/jIO+6C7taTFe2KZ+bnQG6nXvbNIzJMKyMBOjoUvsE/CMrnpL+BCdTxnYIaKMsbySLD1a6RxrZOcxwpHclozVe6D1jycfgut0uSG3b8Uvot3O2lSX17DZF/SlJiXJzAORuNnPrXLP8FC2URYN0C6vdl1S0nlMw=  ;
-X-YMail-OSG: txUpXZIVM1nLYYWJdgICWJNuVBjzjslybXCo6vuvKnuW2zbfLnPtJxjitD7nDs0_82lzqj7pkOJgaG0Vkpy52ZvYFydodsRNHP_Pm9SO9cQ1dRpFpKffgbu7iJC2LmYJvmNdxJQwCNlqTzsvD8dTuJ3k5WFlDa.BF8IYbYXvrHoYhQgw._RHxdPkuP3AMbUMBa21iJY_GBXKz_ETcQU6BigMm65Yu6bUnSuzhLnvnNpVadXiwMCHsBaEuV45wd0bHgXS8ec5hpEV65zA2j6bvwCViGUL48EjjJY.JgBcac1vvVD4ZJDuq3Folg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [PATCH 29/44] includecheck fix: drivers/spi, amba-pl022.c
-Date: Wed, 8 Jul 2009 10:39:44 -0700
-User-Agent: KMail/1.9.10
-Cc: spi-devel-general@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1247063308.4382.12.camel@ht.satnam> <1247067147.4382.80.camel@ht.satnam>
-In-Reply-To: <1247067147.4382.80.camel@ht.satnam>
+	Wed, 8 Jul 2009 13:41:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HK5Hl5xzrzCa19YJnQzEJOe0erjkrCjTa5qzWnsB9zQIdueOcEHrXBAlbpMzw6taHX
+         jQM5GGaZ3CmagOhu9GEhEwDQ47hGwLgu6qWnKqbT3Fk6Dty0zGwkxAvfFkvE3M5SOELs
+         OZd+x6BMb35Rjsl7tGj1/H195GIzf0/sfq3v8=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+In-Reply-To: <20090708161052.GA20951@srcf.ucam.org>
+References: <200907081556.34682.czoccolo@gmail.com>
+	 <20090708161052.GA20951@srcf.ucam.org>
+Date: Wed, 8 Jul 2009 19:41:23 +0200
+Message-ID: <4e5e476b0907081041g5561a8b2s1bc393809a09b78b@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: ondemand: Introduces stepped frequency increase
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       cpufreq@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907081039.44665.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 July 2009, Jaswinder Singh Rajput wrote:
-> 
-> fix the following 'make includecheck' warnings:
-> 
->   drivers/spi/amba-pl022.c: linux/delay.h is included more than once.
->   drivers/spi/amba-pl022.c: linux/errno.h is included more than once.
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Hi Matthew,
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+On Wed, Jul 8, 2009 at 6:10 PM, Matthew Garrett<mjg@redhat.com> wrote:
+> On Wed, Jul 08, 2009 at 03:56:33PM +0200, Corrado Zoccolo wrote:
+>> The patch introduces a new sysfs tunable cpufreq/ondemand/freq_step,
+>> as found in conservative governor, to chose the frequency increase step,
+>> expressed as percentage (default = 100 is previous behaviour).
+>>
+>> This allows fine tuning powersaving on mobile CPUs, since smaller steps will allow to:
+>> * absorb punctual load spikes
+>> * stabilize at the needed frequency, without passing for more power consuming states, and
+>
+> Is this a measured powersaving? The ondemand model is based on the
+> assumption that the idle state is disproportionately lower in power than
+> any running state, and therefore it's more sensible to run flat out for
+> short periods of time than run at half speed for longer. Is this
+> inherently flawed, or is it an artifact of differences in your processor
+> design?
 
+The flawed assumption is that running at doubled frequency halves the
+completion time.
+On cpus that can change the core speed without impacting the
+memory-cache bandwidth
+(i.e. the Pentium M), workloads that access lot of memory go at the
+same speed at
+maximum and minimum frequency.
+Now I see new CPUs that can flush their cache during deep idle states (Atoms),
+this aggravates the aforementioned problem, rendering the high
+frequency state much less appetible.
 
-> ---
->  drivers/spi/amba-pl022.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/spi/amba-pl022.c b/drivers/spi/amba-pl022.c
-> index da76797..c0f950a 100644
-> --- a/drivers/spi/amba-pl022.c
-> +++ b/drivers/spi/amba-pl022.c
-> @@ -38,14 +38,12 @@
->  #include <linux/interrupt.h>
->  #include <linux/spi/spi.h>
->  #include <linux/workqueue.h>
-> -#include <linux/errno.h>
->  #include <linux/delay.h>
->  #include <linux/clk.h>
->  #include <linux/err.h>
->  #include <linux/amba/bus.h>
->  #include <linux/amba/pl022.h>
->  #include <linux/io.h>
-> -#include <linux/delay.h>
->  
->  /*
->   * This macro is used to define some register default values.
-> -- 
-> 1.6.0.6
-> 
-> 
-> 
-> 
+Corrado
+
+>
+> --
+> Matthew Garrett | mjg59@srcf.ucam.org
+>
 
 
+
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
