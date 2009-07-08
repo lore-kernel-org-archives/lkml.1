@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317AbZGHRld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbZGHRog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317AbZGHRld (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 13:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbZGHRl0
+	id S1755277AbZGHRog (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 13:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbZGHRo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 13:41:26 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:40248 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753786AbZGHRlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 13:41:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=HK5Hl5xzrzCa19YJnQzEJOe0erjkrCjTa5qzWnsB9zQIdueOcEHrXBAlbpMzw6taHX
-         jQM5GGaZ3CmagOhu9GEhEwDQ47hGwLgu6qWnKqbT3Fk6Dty0zGwkxAvfFkvE3M5SOELs
-         OZd+x6BMb35Rjsl7tGj1/H195GIzf0/sfq3v8=
-MIME-Version: 1.0
-In-Reply-To: <20090708161052.GA20951@srcf.ucam.org>
-References: <200907081556.34682.czoccolo@gmail.com>
-	 <20090708161052.GA20951@srcf.ucam.org>
-Date: Wed, 8 Jul 2009 19:41:23 +0200
-Message-ID: <4e5e476b0907081041g5561a8b2s1bc393809a09b78b@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: ondemand: Introduces stepped frequency increase
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 8 Jul 2009 13:44:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33483 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753921AbZGHRo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 13:44:29 -0400
+Subject: Re: [PATCH 29/44] includecheck fix: drivers/spi, amba-pl022.c
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <63386a3d0907081028s4a36fccen9cea9a316e2ef4c6@mail.gmail.com>
+References: <1247063308.4382.12.camel@ht.satnam>
+	 <1247067147.4382.80.camel@ht.satnam>
+	 <63386a3d0907081028s4a36fccen9cea9a316e2ef4c6@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 23:12:47 +0530
+Message-Id: <1247074967.4382.115.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthew,
+On Wed, 2009-07-08 at 19:28 +0200, Linus Walleij wrote:
+> 2009/7/8 Jaswinder Singh Rajput <jaswinder@kernel.org>:
+> 
+> > fix the following 'make includecheck' warnings:
+> >
+> >  drivers/spi/amba-pl022.c: linux/delay.h is included more than once.
+> >  drivers/spi/amba-pl022.c: linux/errno.h is included more than once.
+> 
+> Acked-by: Linus Walleij <linus.walleij@stericsson.com>
+> 
+> David are you merging this?
+> 
 
-On Wed, Jul 8, 2009 at 6:10 PM, Matthew Garrett<mjg@redhat.com> wrote:
-> On Wed, Jul 08, 2009 at 03:56:33PM +0200, Corrado Zoccolo wrote:
->> The patch introduces a new sysfs tunable cpufreq/ondemand/freq_step,
->> as found in conservative governor, to chose the frequency increase step,
->> expressed as percentage (default = 100 is previous behaviour).
->>
->> This allows fine tuning powersaving on mobile CPUs, since smaller steps will allow to:
->> * absorb punctual load spikes
->> * stabilize at the needed frequency, without passing for more power consuming states, and
->
-> Is this a measured powersaving? The ondemand model is based on the
-> assumption that the idle state is disproportionately lower in power than
-> any running state, and therefore it's more sensible to run flat out for
-> short periods of time than run at half speed for longer. Is this
-> inherently flawed, or is it an artifact of differences in your processor
-> design?
+This is a big patchset, So better me or Sam will send this to Linus
+after collecting some more ACKs.
 
-The flawed assumption is that running at doubled frequency halves the
-completion time.
-On cpus that can change the core speed without impacting the
-memory-cache bandwidth
-(i.e. the Pentium M), workloads that access lot of memory go at the
-same speed at
-maximum and minimum frequency.
-Now I see new CPUs that can flush their cache during deep idle states (Atoms),
-this aggravates the aforementioned problem, rendering the high
-frequency state much less appetible.
+Thanks,
+--
+JSR
 
-Corrado
-
->
-> --
-> Matthew Garrett | mjg59@srcf.ucam.org
->
-
-
-
--- 
-__________________________________________________________________________
-
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
