@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbZGHEpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbZGHEpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757399AbZGHEpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 00:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZGHEpg
+	id S1759246AbZGHEpz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 00:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758402AbZGHEpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 00:45:36 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:42154 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752212AbZGHEpf (ORCPT
+	Wed, 8 Jul 2009 00:45:41 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:57597 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757794AbZGHEpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 00:45:35 -0400
-Message-ID: <4A542452.6060703@nokia.com>
-Date: Wed, 08 Jul 2009 07:45:06 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 8 Jul 2009 00:45:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=uu1DLs1pyJPZ26RIeH/g5A3dn9XpOz4qc7+/pL1a7n86EOfeSdrz8DsmW1otDc5Z8o
+         ggEN2qjc78cbaM1OgjBmhMZlTboy5Wj/EFnFpMAqAbGJzhQzW43lcbreB6PEHt1Hludr
+         g4sjeaW2ABYS1f/33q9vJpjLiDOIhhaZkdQQw=
+Message-ID: <4A5424C5.10405@gmail.com>
+Date: Tue, 07 Jul 2009 21:47:01 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: ubi tree build warnings
-References: <20090708130921.a361f6d2.sfr@canb.auug.org.au>
-In-Reply-To: <20090708130921.a361f6d2.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 08 Jul 2009 04:45:10.0632 (UTC) FILETIME=[E00B7E80:01C9FF86]
-X-Nokia-AV: Clean
+To: mactel-linux.org-users@queuemail.com
+CC: mactel-linux-users <mactel-linux-users@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Mactel-linux-users] touchpad synaptics pm-suspend
+References: <4A53C580.2040000@queuemail.com> <4A540461.1030204@gmail.com> <4A541D42.8070004@queuemail.com>
+In-Reply-To: <4A541D42.8070004@queuemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext Stephen Rothwell wrote:
-> Hi Artem,
-> 
-> Today's linux-next build (x86_64 allmodconfig) produced these warnings:
-> 
-> drivers/mtd/ubi/io.c: In function 'nor_erase_prepare':
-> drivers/mtd/ubi/io.c:484: warning: passing argument 5 of 'ubi->mtd->write' from incompatible pointer type
-> drivers/mtd/ubi/io.c:484: note: expected 'const u_char *' but argument is of type 'uint32_t *'
-> drivers/mtd/ubi/io.c:486: warning: format '%zd' expects type 'signed size_t', but argument 5 has type 'int'
-> drivers/mtd/ubi/io.c:486: warning: too many arguments for format
-> drivers/mtd/ubi/io.c:493: warning: passing argument 5 of 'ubi->mtd->write' from incompatible pointer type
-> drivers/mtd/ubi/io.c:493: note: expected 'const u_char *' but argument is of type 'uint32_t *'
-> 
-> Introduced by commit ebf53f421308c2f59c9bcbad4c5c297a0d00199a ("UBI: fix
-> NOR flash recovery").
+paul s wrote:
+>
+> i have not, just what is in the repository for the distribution...
+>
+>
+>
+> On 07/07/2009 10:28 PM, Justin P. Mattock wrote:
+>> paul s wrote:
+>>> hi -
+>>>
+>>> when my mbp4,1 comes back from suspend the touchpad is
+>>> frozen|unresponsive|not working. it only seems to be with suspend as
+>>> when it returns from hibernate it is fine...
+>>>
+>>> i am using 2.6.29.5-191.fc11.x86_64 is anyone experiencing this 
+>>> issue...
+>>>
+>>> i have been looking around, played with the fdi and also added a script
+>>> to the /etc/pm/sleep.d to load and unload appletouch to no avail...
+>>>
+>>> cheers
+>>> paul
+>>>
+>>> ------------------------------------------------------------------------------ 
+>>>
+>>> Enter the BlackBerry Developer Challenge
+>>> This is your chance to win up to $100,000 in prizes! For a limited 
+>>> time,
+>>> vendors submitting new applications to BlackBerry App World(TM) will 
+>>> have
+>>> the opportunity to enter the BlackBerry Developer Challenge. See 
+>>> full prize
+>>> details at: http://p.sf.net/sfu/Challenge
+>>> _______________________________________________
+>>> Mactel-linux-users mailing list
+>>> Mactel-linux-users@lists.sourceforge.net
+>>> https://lists.sourceforge.net/lists/listinfo/mactel-linux-users
+>>>
+>> have you tried the latest stable kernel?
+>>
+>> Justin P. Mattock
+>>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+Not sure for redhat, but if you feel comfortable,
+try just grabbing  a fresh tar.ball from kernel.org,
+or use git to pull the latest from Linus's tree.
+(this way your  up-to-date, and the fix could be already
+in there).
 
-Will fix ASAP, thank you! I'm always wondering how you manage
-to reproduce warnings I do not see.
+Justin P. Mattock
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+
