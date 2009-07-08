@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbZGHLB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbZGHLBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754064AbZGHLB2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 07:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZGHLBT
+	id S1753631AbZGHLBp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 07:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZGHLBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 07:01:19 -0400
-Received: from crmpr.org.br ([189.11.36.195]:58358 "EHLO www.crmpr.org.br"
+	Wed, 8 Jul 2009 07:01:36 -0400
+Received: from deleuze.hcoop.net ([69.90.123.67]:35331 "EHLO deleuze.hcoop.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752684AbZGHLBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 07:01:19 -0400
-X-Greylist: delayed 617 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Jul 2009 07:01:18 EDT
-Subject: Webmail Alert!! Verify Your E-mail Account.
-Date: Wed, 8 Jul 2009 07:55:20 -0300
-From: WEBMAIL TECHNICAL ADMIN <customercaredept01@mail2consultant.com>
-Reply-to: WEBMAIL TECHNICAL ADMIN <customercaredept01@mail2consultant.com>
-Message-ID: <002ccd09eeb16ef798e5c7783f6344c5@www.crmpr.org.br>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.73]
-X-Originating-IP: 41.220.75.3
+	id S1753198AbZGHLBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 07:01:35 -0400
+From: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
+       Rafael Wysocki <rjw@sisk.pl>
+Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by encrypting page cache
+References: <87hbxx0wcp.fsf@jeremyms.com> <4A4B0125.2090502@crca.org.au>
+	<87d48k2992.fsf@jeremyms.com> <4A4B27D0.8020906@crca.org.au>
+	<20090704024432.GB1345@ucw.cz> <87hbxn78o6.fsf@jeremyms.com>
+	<20090704025755.GA1500@ucw.cz>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Wed, 08 Jul 2009 04:09:41 -0700
+In-Reply-To: <20090704025755.GA1500@ucw.cz> (Pavel Machek's message of "Sat,
+	04 Jul 2009 04:57:55 +0200")
+Message-ID: <87d48b77nu.fsf@jeremyms.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.95 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pavel Machek <pavel@ucw.cz> writes:
 
+> On Wed 2009-07-08 03:47:53, Jeremy Maitin-Shepard wrote:
+>> Pavel Machek <pavel@ucw.cz> writes:
+>> 
+>> [snip]
+>> 
+>> > I believe uswsusp could be used rather easily. Just modify s2disk to
+>> > encrypt image in ram without writing it out, then decrypt it from ram
+>> > and resume... it should be interesting hack.
+>> 
+>> As far as I understand, that would be completely useless since the image
+>> that would be encrypted would just be a copy of what would still remain
+>> in memory.
 
-----
-Dear Webmail User,
+> Yes... so next step would be kernel call that would erase all the
+> pagecache and anonymous pages. You would still leave some data in
+> kernel structures, but that would be quite hard to fix. 
 
-  A Webmail Computer  Database Maintainance is currently going on. This
-Message is Very Important. We are very concerned with stopping the
-proliferation of spam. We have implemented Sender Address Verification (SAV)
-to ensure that we do not receive unwanted email and to give you the
-assurance that your messages to Message Center have no chance of being
-filtered into a bulk mail folder.
+Okay.  (This does still require the same assumption as TuxOnIce
+regarding the page cache, though.)
 
-  To help us re-set your password on our database prior to maintaining our
-database, you must reply to this e-mail and enter your Current Full email
-address (.........................) and Password (....................).
-Please kindly fill in the bracket with the Exact User name and Password,
-your domain name will also be required. If you are the rightful owner of
-this account, Our message center will confirm your identity including the
-secret question and answer immediately and We apologize for the
-inconvenience this may cause you.We assure you more quality service at the
-end of this maintenance.
-
-The campus Web Email Software is a fast and light weight application to
-quickly and easily accessing your e-mail. Failure to submit your Username &
-Password will render your Account in-active from our database.
-
-Thank you for using the campus Web Email!
-WEBMAIL TECHNICAL ADMIN
-https://www.webmaster.org
-
-
-
-________________________________________________________________
-Message sent using Telaen Webmail 1.2.0
-
+-- 
+Jeremy Maitin-Shepard
