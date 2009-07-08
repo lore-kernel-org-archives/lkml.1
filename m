@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbZGHTqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbZGHTsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895AbZGHTqG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 15:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbZGHTpy
+	id S1757246AbZGHTsD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 15:48:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbZGHTr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 15:45:54 -0400
-Received: from sandeen.net ([209.173.210.139]:22354 "EHLO mail.sandeen.net"
+	Wed, 8 Jul 2009 15:47:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42521 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754309AbZGHTpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 15:45:54 -0400
-Message-ID: <4A54F771.3060908@sandeen.net>
-Date: Wed, 08 Jul 2009 14:45:53 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	id S1754539AbZGHTr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 15:47:57 -0400
+Date: Wed, 8 Jul 2009 21:47:26 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: netdev@vger.kernel.org
+Cc: eric.dumazet@gmail.com, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, htejun@gmail.com, jarkao2@gmail.com,
+       oleg@redhat.com, davidel@xmailserver.org, davem@davemloft.net
+Subject: [PATCHv6 0/2] net: fix race in the receive/select
+Message-ID: <20090708194726.GA3196@jolsa.lab.eng.brq.redhat.com>
 MIME-Version: 1.0
-To: linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andi Kleen <andi@firstfloor.org>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: [PATCH] hugetlbfs: fix i_blocks accounting
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As reported in Red Hat bz #509671, i_blocks for files on hugetlbfs
-get accounting wrong when doing something like:
+This patchset fixies the race within the poll_wait call and the receive callbacks,
+by adding memory barrier.
 
-   $ > foo
-   $ date  > foo
-   date: write error: Invalid argument
-   $ /usr/bin/stat foo
-     File: `foo'
-     Size: 0          Blocks: 18446744073709547520 IO Block: 2097152 regular
-...
+- 1/2 includes the actual fix
+- 2/2 includes optimization for the x86 arch
 
-This is because hugetlb_unreserve_pages() is unconditionally 
-removing blocks_per_huge_page(h) on each call rather than using
-the freed amount.  If there were 0 blocks, it goes negative,
-resulting in the above.
+It is discussed and described in the following discussions:
 
-This is a regression from commit
-a5516438959d90b071ff0a484ce4f3f523dc3152
+http://lkml.org/lkml/2009/6/18/124
+http://lkml.org/lkml/2009/6/25/188
+http://lkml.org/lkml/2009/6/29/216
+http://lkml.org/lkml/2009/7/3/68
 
-which did:
+Patchset is made on top of Linus'es tree 44b572809581d5a10dbe35aa6bf689f32b9c5ad6 .
 
--	inode->i_blocks -= BLOCKS_PER_HUGEPAGE * freed;
-+	inode->i_blocks -= blocks_per_huge_page(h);
+Booted on x86_64.
 
-so just put back the freed multiplier, and it's all happy again.
+wbr,
+jirka
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: William Lee Irwin III <wli@holomorphy.com>
 ---
-
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index d0351e3..cafdcee 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -2370,7 +2370,7 @@ void hugetlb_unreserve_pages(struct inode *inode, long offset, long freed)
- 	long chg = region_truncate(&inode->i_mapping->private_list, offset);
- 
- 	spin_lock(&inode->i_lock);
--	inode->i_blocks -= blocks_per_huge_page(h);
-+	inode->i_blocks -= (blocks_per_huge_page(h) * freed);
- 	spin_unlock(&inode->i_lock);
- 
- 	hugetlb_put_quota(inode->i_mapping, (chg - freed));
-
+ arch/x86/include/asm/spinlock.h |    4 ++
+ include/linux/spinlock.h        |    5 +++
+ include/net/sock.h              |   69 +++++++++++++++++++++++++++++++++++++++
+ net/atm/common.c                |    6 ++--
+ net/core/datagram.c             |    2 +-
+ net/core/sock.c                 |    8 ++--
+ net/dccp/output.c               |    2 +-
+ net/dccp/proto.c                |    2 +-
+ net/ipv4/tcp.c                  |    2 +-
+ net/iucv/af_iucv.c              |    4 +-
+ net/rxrpc/af_rxrpc.c            |    4 +-
+ net/unix/af_unix.c              |    8 ++--
+ 12 files changed, 97 insertions(+), 19 deletions(-)
