@@ -1,122 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZGHQmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbZGHQoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbZGHQmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZGHQmr
+	id S1755152AbZGHQoU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZGHQoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:42:47 -0400
-Received: from mail-pz0-f193.google.com ([209.85.222.193]:53094 "EHLO
-	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754027AbZGHQmq (ORCPT
+	Wed, 8 Jul 2009 12:44:12 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:51143 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753525AbZGHQoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:42:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=odbv0saeL7bQKEURbKb15nY7TmkouuyoHzBJxETRDqj0QMllSPZYpJSYhA4cljT+HX
-         3XeRg9XTW5klCpfYaCyhDuX5ZP7jxEXpg68l+v36wZV+Rel6NGztAgwZ+MuREEdEtqwd
-         D4SbDcNPJAV2brsUyImCWQsKhv/sm0Dg7BUmA=
-Message-ID: <4A54CC78.9020707@gmail.com>
-Date: Wed, 08 Jul 2009 09:42:32 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
-MIME-Version: 1.0
-To: mactel-linux.org-users@queuemail.com
-CC: mactel-linux-users <mactel-linux-users@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Mactel-linux-users] touchpad synaptics pm-suspend
-References: <4A53C580.2040000@queuemail.com> <4A540461.1030204@gmail.com> <4A541D42.8070004@queuemail.com> <4A5424C5.10405@gmail.com> <4A546A87.5070009@queuemail.com>
-In-Reply-To: <4A546A87.5070009@queuemail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 8 Jul 2009 12:44:11 -0400
+Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <1247069178.5973.6.camel@desktop>
+References: <4A4CB4B4.5010307@turknet.net.tr>
+	 <20090702130728.22af524c.akpm@linux-foundation.org>
+	 <8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com>
+	 <1247063244.4159.40.camel@mulgrave.site>  <1247069178.5973.6.camel@desktop>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 16:44:05 +0000
+Message-Id: <1247071445.4159.214.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-paul s wrote:
-> does your touchpad work from resume? i know it is not the same model, 
-> but curious...
->
-> i updated the kernel from rawhide(2.6.31.rc2) and there were just 
-> crazy system errors, actually even saw a kernelloops warning for the 
-> first time...
->
->
->
-> On 07/08/2009 12:47 AM, Justin P. Mattock wrote:
->> paul s wrote:
->>>
->>> i have not, just what is in the repository for the distribution...
->>>
->>>
->>>
->>> On 07/07/2009 10:28 PM, Justin P. Mattock wrote:
->>>> paul s wrote:
->>>>> hi -
->>>>>
->>>>> when my mbp4,1 comes back from suspend the touchpad is
->>>>> frozen|unresponsive|not working. it only seems to be with suspend as
->>>>> when it returns from hibernate it is fine...
->>>>>
->>>>> i am using 2.6.29.5-191.fc11.x86_64 is anyone experiencing this 
->>>>> issue...
->>>>>
->>>>> i have been looking around, played with the fdi and also added a 
->>>>> script
->>>>> to the /etc/pm/sleep.d to load and unload appletouch to no avail...
->>>>>
->>>>> cheers
->>>>> paul
->>>>>
->>>>> ------------------------------------------------------------------------------ 
->>>>>
->>>>> Enter the BlackBerry Developer Challenge
->>>>> This is your chance to win up to $100,000 in prizes! For a limited 
->>>>> time,
->>>>> vendors submitting new applications to BlackBerry App World(TM) 
->>>>> will have
->>>>> the opportunity to enter the BlackBerry Developer Challenge. See 
->>>>> full prize
->>>>> details at: http://p.sf.net/sfu/Challenge
->>>>> _______________________________________________
->>>>> Mactel-linux-users mailing list
->>>>> Mactel-linux-users@lists.sourceforge.net
->>>>> https://lists.sourceforge.net/lists/listinfo/mactel-linux-users
->>>>>
->>>> have you tried the latest stable kernel?
->>>>
->>>> Justin P. Mattock
->>>>
->>> -- 
->>> To unsubscribe from this list: send the line "unsubscribe 
->>> linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>>
->> Not sure for redhat, but if you feel comfortable,
->> try just grabbing  a fresh tar.ball from kernel.org,
->> or use git to pull the latest from Linus's tree.
->> (this way your  up-to-date, and the fix could be already
->> in there).
->>
->> Justin P. Mattock
->>
->>
->
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-If you can save those messages, and
-send them to kernel.org.
-Honestly I have not tried S2D/S2R
-on my machine for a while(probably
-end up with a black screen).
+On Wed, 2009-07-08 at 09:06 -0700, Daniel Walker wrote:
+> On Wed, 2009-07-08 at 09:27 -0500, James Bottomley wrote:
+> > 
+> > You might also try this patch from martin petersen:  it will print out
+> > the actual command that's causing the problems ... that might give a
+> > clue.
+> > 
+> > James
+> 
+> On the bugzilla entry ,
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=13727
+> 
+> Thomas Meyer indicated it was (possibly) the following commit,
+> 
+> 018e0446890661504783f92388ecce7138c1566d
+> 
+> I added Jens to the CC ..
 
-Justin P. Mattock
+So thats:
+
+commit 018e0446890661504783f92388ecce7138c1566d
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Fri Jun 26 16:27:10 2009 +0200
+
+    block: get rid of queue-private command filter
+
+What this tends to suggest is that the command filter was blocking some
+type of command sent from user space which is causing the problem, and
+now we're letting it through.  Restoring the command filter will work
+around the problem, but the root cause should be finding and fixing
+whatever is issuing the commands in the first place.
+
+James
+
 
