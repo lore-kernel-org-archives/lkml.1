@@ -1,115 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZGHSXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZGHSZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756685AbZGHSXI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 14:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZGHSWz
+	id S1755259AbZGHSZK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 14:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbZGHSZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 14:22:55 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:53271 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754080AbZGHSWy convert rfc822-to-8bit (ORCPT
+	Wed, 8 Jul 2009 14:25:00 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:47097 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754270AbZGHSY7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 14:22:54 -0400
+	Wed, 8 Jul 2009 14:24:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=G59/dRnx6PvXhj4iA816oHjg9ozKltzqIK3eotX+smkvChzVdotsuR+hYFv9js2UCc
-         4kaGqA/BagVFOc1sytPWXKpfB+28mrX679yabGGdfvVP/lAoyyIT3M+hHbcX5FgAx6NL
-         7wivDIU7jhUvW4C5RVM5deicQAsXnEMRbxg0E=
+        b=oItlftUZzwTlMRwW+21hlgHST7x5oioAQG3wbInCYs6kRRYwhYofaO0Wn8BiXmyjUO
+         rFl0sL5OtILrBQ5e3YXlXMOVvxlwXdmzpL08Wr7BItYD5lSO/sJ6DIdwQ0HpA8BtFKFZ
+         f2FHWUmPIwydruzuwpvzBdZvHnnBQCLqjs2Ks=
 MIME-Version: 1.0
-In-Reply-To: <1247071445.4159.214.camel@mulgrave.site>
-References: <4A4CB4B4.5010307@turknet.net.tr>
-	 <20090702130728.22af524c.akpm@linux-foundation.org>
-	 <8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com>
-	 <1247063244.4159.40.camel@mulgrave.site>
-	 <1247069178.5973.6.camel@desktop>
-	 <1247071445.4159.214.camel@mulgrave.site>
-Date: Wed, 8 Jul 2009 20:22:51 +0200
-Message-ID: <8db1092f0907081122l7152e8bcyf2fd73d1386f6ac6@mail.gmail.com>
-Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Daniel Walker <dwalker@fifo99.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <4A54CC78.9020707@gmail.com>
+References: <4A53C580.2040000@queuemail.com> <4A540461.1030204@gmail.com>
+	 <4A541D42.8070004@queuemail.com> <4A5424C5.10405@gmail.com>
+	 <4A546A87.5070009@queuemail.com> <4A54CC78.9020707@gmail.com>
+Date: Wed, 8 Jul 2009 11:24:57 -0700
+Message-ID: <dd18b0c30907081124o2c439504m6b90f9dc00453358@mail.gmail.com>
+Subject: Re: [Mactel-linux-users] touchpad synaptics pm-suspend
+From: Justin Mattock <justinmattock@gmail.com>
+To: mactel-linux.org-users@queuemail.com
+Cc: mactel-linux-users <mactel-linux-users@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/8 James Bottomley <James.Bottomley@hansenpartnership.com>:
-> On Wed, 2009-07-08 at 09:06 -0700, Daniel Walker wrote:
->> On Wed, 2009-07-08 at 09:27 -0500, James Bottomley wrote:
->> >
->> > You might also try this patch from martin petersen: Â it will print out
->> > the actual command that's causing the problems ... that might give a
->> > clue.
->> >
->> > James
+On Wed, Jul 8, 2009 at 9:42 AM, Justin P.
+Mattock<justinmattock@gmail.com> wrote:
+> paul s wrote:
 >>
->> On the bugzilla entry ,
+>> does your touchpad work from resume? i know it is not the same model, but
+>> curious...
 >>
->> http://bugzilla.kernel.org/show_bug.cgi?id=13727
+>> i updated the kernel from rawhide(2.6.31.rc2) and there were just crazy
+>> system errors, actually even saw a kernelloops warning for the first time...
 >>
->> Thomas Meyer indicated it was (possibly) the following commit,
 >>
->> 018e0446890661504783f92388ecce7138c1566d
 >>
->> I added Jens to the CC ..
+>> On 07/08/2009 12:47 AM, Justin P. Mattock wrote:
+>>>
+>>> paul s wrote:
+>>>>
+>>>> i have not, just what is in the repository for the distribution...
+>>>>
+>>>>
+>>>>
+>>>> On 07/07/2009 10:28 PM, Justin P. Mattock wrote:
+>>>>>
+>>>>> paul s wrote:
+>>>>>>
+>>>>>> hi -
+>>>>>>
+>>>>>> when my mbp4,1 comes back from suspend the touchpad is
+>>>>>> frozen|unresponsive|not working. it only seems to be with suspend as
+>>>>>> when it returns from hibernate it is fine...
+>>>>>>
+>>>>>> i am using 2.6.29.5-191.fc11.x86_64 is anyone experiencing this
+>>>>>> issue...
+>>>>>>
+>>>>>> i have been looking around, played with the fdi and also added a
+>>>>>> script
+>>>>>> to the /etc/pm/sleep.d to load and unload appletouch to no avail...
+>>>>>>
+>>>>>> cheers
+>>>>>> paul
+>>>>>>
+>>>>>>
+>>>>>> ------------------------------------------------------------------------------
+>>>>>> Enter the BlackBerry Developer Challenge
+>>>>>> This is your chance to win up to $100,000 in prizes! For a limited
+>>>>>> time,
+>>>>>> vendors submitting new applications to BlackBerry App World(TM) will
+>>>>>> have
+>>>>>> the opportunity to enter the BlackBerry Developer Challenge. See full
+>>>>>> prize
+>>>>>> details at: http://p.sf.net/sfu/Challenge
+>>>>>> _______________________________________________
+>>>>>> Mactel-linux-users mailing list
+>>>>>> Mactel-linux-users@lists.sourceforge.net
+>>>>>> https://lists.sourceforge.net/lists/listinfo/mactel-linux-users
+>>>>>>
+>>>>> have you tried the latest stable kernel?
+>>>>>
+>>>>> Justin P. Mattock
+>>>>>
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+>>>> in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>
+>>> Not sure for redhat, but if you feel comfortable,
+>>> try just grabbing  a fresh tar.ball from kernel.org,
+>>> or use git to pull the latest from Linus's tree.
+>>> (this way your  up-to-date, and the fix could be already
+>>> in there).
+>>>
+>>> Justin P. Mattock
+>>>
+>>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> If you can save those messages, and
+> send them to kernel.org.
+> Honestly I have not tried S2D/S2R
+> on my machine for a while(probably
+> end up with a black screen).
 >
-> So thats:
->
-> commit 018e0446890661504783f92388ecce7138c1566d
-> Author: Jens Axboe <jens.axboe@oracle.com>
-> Date: Â  Fri Jun 26 16:27:10 2009 +0200
->
-> Â  Â block: get rid of queue-private command filter
->
-> What this tends to suggest is that the command filter was blocking some
-> type of command sent from user space which is causing the problem, and
-> now we're letting it through. Â Restoring the command filter will work
-> around the problem, but the root cause should be finding and fixing
-> whatever is issuing the commands in the first place.
->
-> James
->
+> Justin P. Mattock
 >
 >
 
-Confirm. I find some time, and do bisection:
-018e0446890661504783f92388ecce7138c1566d is first bad commit
-commit 018e0446890661504783f92388ecce7138c1566d
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Fri Jun 26 16:27:10 2009 +0200
+interesting, s2ram works,
+bluetooth is intact, touch pad is intact
+(while doing this multiple times) s2disk
+shutdowns the system(configuration issue somewhere)
+the only issue is the first s2ram takes a good minuet,
+but after that resumes within seconds.
+the screen is really dark and green
+(probably missing a library)
 
-    block: get rid of queue-private command filter
-
-    The initial patches to support this through sysfs export were broken
-    and have been if 0'ed out in any release. So lets just kill the code
-    and reclaim some space in struct request_queue, if anyone would later
-    like to fixup the sysfs bits, the git history can easily restore
-    the removed bits.
-
-    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-
-:040000 040000 aaaec08cd15fe376286ef07b90eddb60f7dc98a1
-5cc15daa4a596dcb97300baf7828e78ceeb40d5e M      block
-:040000 040000 f1fbb94e7136c18e0df7d967800073a98901d51d
-0d0a6e6e360b75daf9dc673a5ef0b7d745d5718e M      drivers
-:040000 040000 e56a6498a1ca54adce4972cc2fe092a6e054165f
-1c1e974e56532151cf0c98bfeb1ff05971e5b2c1 M      include
-
-I revert this commit and in -rc2 k3b can see dvd drive. (some
-explanation: I have little different problem; k3b can't see/detect DVD
-drive).
-
-
-
-Regards
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Justin P. Mattock
