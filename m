@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbZGHWy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759010AbZGHWz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758757AbZGHWy2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757190AbZGHWyS
+	id S1759010AbZGHWz0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757190AbZGHWzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:54:18 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:48298 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755970AbZGHWyR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:54:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=QSnd3df0Jmz/MMpedY8zoqUbk0RSWlgC9AvKnLBQaSBuXr4uN0GXWiuRT35Elwth6M
-         rSoYRc5hWqnCHHCPTtT4M58172Z8J+UVtFYK9BWKHTEnkIDoAGwTX16zzNcS22mdyyv1
-         RhG4EyzQqiCcxHwadXhe40sKT232W5ZxR5SpU=
-Date: Thu, 9 Jul 2009 00:48:28 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Andres Freund <andres@anarazel.de>
-Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
-	possibly?caused by netem)
-Message-ID: <20090708224828.GD3666@ami.dom.local>
-References: <200907031326.21822.andres@anarazel.de> <200907071811.27570.andres@anarazel.de> <20090708080852.GC3148@ami.dom.local> <200907090023.18040.andres@anarazel.de>
+	Wed, 8 Jul 2009 18:55:13 -0400
+Received: from mail.easycrypt.de ([84.200.20.67]:35887 "EHLO mail.easycrypt.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754439AbZGHWzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 18:55:13 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Jul 2009 18:55:12 EDT
+Message-ID: <4A55222E.5030405@easycrypt.de>
+Date: Thu, 09 Jul 2009 00:48:14 +0200
+From: Timm Korte <korte-kernel@easycrypt.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; de; rv:1.8.1.22) Gecko/20090605 Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907090023.18040.andres@anarazel.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: "impossible" spinlock "wrong CPU" problem with custom device driver
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 09, 2009 at 12:23:17AM +0200, Andres Freund wrote:
+I'm trying to understand a spinlog bug in a kernel module (device driver).
+I have a spinlock that is uses in the actual hardware interrupt handler
+as well as in a seperate kernel thread doing the real work via a work
+queue. The first one uses the spinlock with spin_lock() and
+spin_unlock(), while the thread uses spin_lock_irqsave() and
+spin_unlock_irqrestore().
+On rare occasions (can't reproduce on purpose), i get a spinlog debug
+message about wrong cpu on _raw_spin_unlock when called from the kernel
+thread.
+
+This is the source (for the kernel_thread) that runs into the problem:
+
+static int my_irqthread_function(void *ptr) {
+  struct my_dev *mydev = ptr;
+
+  daemonize(MY_NAME "%02x", mydev->mynum);
+  allow_signal(SIGTERM);
+  while (!wait_event_interruptible(mydev->irqthread_wait,
+atomic_read(&mydev->irqthread_pending_count))) {
+    do {
+      uint8_t my_irq_pending = 0;
+      unsigned long iflags;
+
+      spin_lock_irqsave(&mydev->irq_pending_lock, iflags);
+      my_irq_pending = mydev->irq_pending;
+      mydev->irq_pending = 0;
+      spin_unlock_irqrestore(&mydev->irq_pending_lock, iflags);
+
+      // handle irqs
+      if (my_irq_pending & INT_IPAC1) {
+         my_handle_interrupt(&mydev->mydev[IPAC1]);
+      }
 ...
-> Unfortunately this just yields the same backtraces during softlockup and not 
-> earlier.
-> I did not test without lockdep yet, but that should not have stopped the BUG 
-> from appearing, right?
+      // continue if the pending count still is != 0 after decrementing
+    } while (!atomic_dec_and_test(&mydev->irqthread_pending_count));
+  }
 
-Since it looks like hrtimers now, these changes in timers shouldn't
-matter. Let's wait for new ideas.
+  mydev->irqthread = 0;
+  complete_and_exit(&mydev->irqthread_exit, 0);
+}
 
-Thanks for testing anyway,
-Jarek P.
+The error (SPIN_BUG with kernel panic on my SMP box) happens on the
+"spin_unlock_irqrestore(&mydev->irq_pending_lock, iflags);" - but i
+really can't figure out, how the thread could be moved to another cpu,
+while holding the lock and only doing two assignment operations.
+
+The only thing i could think of, is that it might have something to do
+with the enabled sigterm signal - even though the module wasn't being
+unloaded at the time the bug occured.
+
+System is FC4 based with a 2.6.17 kernel (can't change).
+
+So I'm sort of out of ideas and hope someone here has an idea, what
+might have gone wrong here.
+
+Timm
