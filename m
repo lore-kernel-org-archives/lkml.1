@@ -1,72 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757852AbZGHXpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZGHXua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757852AbZGHXpk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 19:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZGHXpd
+	id S1756839AbZGHXua (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 19:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbZGHXuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 19:45:33 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45384 "EHLO smtps.tip.net.au"
+	Wed, 8 Jul 2009 19:50:22 -0400
+Received: from sh.osrg.net ([192.16.179.4]:60525 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754173AbZGHXpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 19:45:32 -0400
-Date: Thu, 9 Jul 2009 09:45:26 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: sfi-devel@simplefirmware.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [SFI-devel] linux-next: sfi tree build warning
-Message-Id: <20090709094526.4764014c.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LFD.2.00.0907081123360.9604@localhost.localdomain>
-References: <20090708164400.f2138d79.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0907081123360.9604@localhost.localdomain>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+	id S1755864AbZGHXuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 19:50:21 -0400
+Date: Thu, 9 Jul 2009 08:49:34 +0900
+To: jens.axboe@oracle.com
+Cc: James.Bottomley@HansenPartnership.com, dwalker@fifo99.com,
+       maciej.rutecki@gmail.com, akpm@linux-foundation.org,
+       tarkan.erimer@turknet.net.tr, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090708165728.GU23611@kernel.dk>
+References: <1247069178.5973.6.camel@desktop>
+	<1247071445.4159.214.camel@mulgrave.site>
+	<20090708165728.GU23611@kernel.dk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__9_Jul_2009_09_45_26_+1000_V13E7B_5ThqF7DWE"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090709084839G.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 09 Jul 2009 08:49:35 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__9_Jul_2009_09_45_26_+1000_V13E7B_5ThqF7DWE
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 8 Jul 2009 18:57:28 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Hi Len,
+> On Wed, Jul 08 2009, James Bottomley wrote:
+> > On Wed, 2009-07-08 at 09:06 -0700, Daniel Walker wrote:
+> > > On Wed, 2009-07-08 at 09:27 -0500, James Bottomley wrote:
+> > > > 
+> > > > You might also try this patch from martin petersen:  it will print out
+> > > > the actual command that's causing the problems ... that might give a
+> > > > clue.
+> > > > 
+> > > > James
+> > > 
+> > > On the bugzilla entry ,
+> > > 
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=13727
+> > > 
+> > > Thomas Meyer indicated it was (possibly) the following commit,
+> > > 
+> > > 018e0446890661504783f92388ecce7138c1566d
+> > > 
+> > > I added Jens to the CC ..
+> > 
+> > So thats:
+> > 
+> > commit 018e0446890661504783f92388ecce7138c1566d
+> > Author: Jens Axboe <jens.axboe@oracle.com>
+> > Date:   Fri Jun 26 16:27:10 2009 +0200
+> > 
+> >     block: get rid of queue-private command filter
+> > 
+> > What this tends to suggest is that the command filter was blocking some
+> > type of command sent from user space which is causing the problem, and
+> > now we're letting it through.  Restoring the command filter will work
+> > around the problem, but the root cause should be finding and fixing
+> > whatever is issuing the commands in the first place.
+> 
+> There should be no functional change, since the filters were all the
+> same. Perhaps blk_scsi_ioctl_init() isn't being run, a good start would
+> be to stick a printk() in there and verify that it's actually being
+> executed. I've been tricked by __init before.
 
-On Wed, 08 Jul 2009 11:26:48 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
->
-> > Today's linux-next build (x86_64 allmodconfig) produced this warning:
->=20
-> ah good, this means the SFI tree actually made it into linux-next:-)
+I can't find where you call blk_scsi_ioctl_init(). I've attached a fix
+(not tested).
 
-Indeed :-)
+Jens, I'm not sure that I saw the above patch on any mailing list. If
+you merged the patch without sending any mailing list, please don't do
+that.
 
-> > arch/x86/kernel/sfi.c: In function 'sfi_init_memory_map':
-> > arch/x86/kernel/sfi.c:99: warning: cast to pointer from integer of diff=
-erent size
-> > arch/x86/kernel/sfi.c:100: warning: cast to pointer from integer of dif=
-ferent size
->=20
-> This should go away when you pull the patch below for tomorrow's build.
 
-Great, thanks.
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] block: call blk_scsi_ioctl_init()
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Currently, blk_scsi_ioctl_init() is not called so
+blk_default_cmd_filter isn't initalized. Some commands are not blocked
+wrongly.
 
---Signature=_Thu__9_Jul_2009_09_45_26_+1000_V13E7B_5ThqF7DWE
-Content-Type: application/pgp-signature
+This fixes a regression introduced:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+commit 018e0446890661504783f92388ecce7138c1566d
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Fri Jun 26 16:27:10 2009 +0200
 
-iEYEARECAAYFAkpVL5YACgkQjjKRsyhoI8yyVQCglbHzrfSK7qnHSXV61YKIyYti
-DMQAnihZrpdhJQlI8Kj0G+y46rrC3idk
-=nGsn
------END PGP SIGNATURE-----
+    block: get rid of queue-private command filter
 
---Signature=_Thu__9_Jul_2009_09_45_26_+1000_V13E7B_5ThqF7DWE--
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ block/scsi_ioctl.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
+index f0e0ce0..e5b1001 100644
+--- a/block/scsi_ioctl.c
++++ b/block/scsi_ioctl.c
+@@ -680,3 +680,4 @@ int __init blk_scsi_ioctl_init(void)
+ 	blk_set_cmd_filter_defaults(&blk_default_cmd_filter);
+ 	return 0;
+ }
++fs_initcall(blk_scsi_ioctl_init);
+-- 
+1.6.0.6
+
