@@ -1,181 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbZGHKuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZGHKyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbZGHKuN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 06:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbZGHKtp
+	id S1754311AbZGHKyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 06:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZGHKyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 06:49:45 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:64691 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755202AbZGHKtn (ORCPT
+	Wed, 8 Jul 2009 06:54:08 -0400
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:38576 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbZGHKyH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 06:49:43 -0400
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-To: sameo@linux.intel.com
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org
-Subject: [PATCH 3/3] MFD: TWL4030: OMAP: Board-specifc DPS scripts for RX51 board
-Date: Wed,  8 Jul 2009 13:49:39 +0300
-Message-Id: <1247050179-31187-1-git-send-email-amit.kucheria@verdurent.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1247050046-31104-1-git-send-email-./0000-cover-letter.patch>
-References: <1247050046-31104-1-git-send-email-./0000-cover-letter.patch>
+	Wed, 8 Jul 2009 06:54:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ce0YiC4V300inaPECVZbnHse3VRcDSRnU35k3y4NBjsWpDbSGF+yTMQPUEpu8xoZ9E
+         AdyS3Y9gXjKARW2wuwgeYug7RJ6pg6CrxMcUgyVfMx+FNG0t6BgC7M7ICskEFNdEAUm3
+         /uQtEGf/iFCC0mnfvrf+cJaVjinWyZ23c2JqU=
+MIME-Version: 1.0
+In-Reply-To: <20090623153928.GA32604@suse.de>
+References: <b6a2187b0906222211i4509bc4cu39e9123cba61039a@mail.gmail.com>
+	 <20090623144221.GA29593@suse.de>
+	 <b6a2187b0906230829k308cb875r7362f184bccb1d6d@mail.gmail.com>
+	 <20090623153928.GA32604@suse.de>
+Date: Wed, 8 Jul 2009 20:54:04 +1000
+Message-ID: <21d7e9970907080354h6949b27va40fb830f612287@mail.gmail.com>
+Subject: Re: can we move USB_DEVICEFS to non-embedded?
+From: Dave Airlie <airlied@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Scott James Remnant <scott@canonical.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Dave Jones <davej@redhat.com>,
+       Peter Jones <pjones@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for Dynamic Power Switching (DPS) for the RX51 board.
+On Wed, Jun 24, 2009 at 1:39 AM, Greg KH<gregkh@suse.de> wrote:
+> On Tue, Jun 23, 2009 at 11:29:50PM +0800, Jeff Chua wrote:
+>> On Tue, Jun 23, 2009 at 10:42 PM, Greg KH<gregkh@suse.de> wrote:
+>> > On Tue, Jun 23, 2009 at 01:11:51PM +0800, Jeff Chua wrote:
+>> >> commit cc71329b3b89b4a5be849b617f2c4f151f0b9213 moved USB_DEVICEFS to
+>> >> be embedded and marked it as depreciated. Can this be reverted? This
+>> >> breaks vmware and those systems not using udev.
+>>
+>> > vmware now works properly with this fix, and has for over a year or so.
+>>
+>> vmware is working, but can't detect USB devices.
+>
+> Odd, what version of vmware are you using?
+>
+>> > What distro does not use udev or mdev or something like it already and
+>> > also does not use an updated libusb?
+>> > We need some specifics here please.
+>>
+>> I'm not using it and have been fine without it all these while, so
+>> don't see any gain moving to udev or perhaps it's time to consider ...
+>
+> If you are running your own custom distro/install, then you should be
+> able to select CONFIG_EMBEDDED and then USB_DEVICEFS just fine on your
+> own.  But note, that you don't sound like the "normal" user at all :)
+>
 
-Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
----
- arch/arm/mach-omap2/board-rx51-peripherals.c |  122 +++++++++++++++++++++++++-
- 1 files changed, 120 insertions(+), 2 deletions(-)
+Okay can we revert this for a better reason? it seems to have unhidden a race
+condition on booting some of my machines. I've booted some other machines
+with the same USB disk and the same kernel fine. The two machines it so far
+has turned up issues on are an AMD 1Ghz Athlon with SIS chipset, the other is
+an Intel Celeron CPU with a AMD rc410 chipset.
 
-diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
-index 9a0bf67..f7ebec8 100644
---- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-+++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-@@ -1,5 +1,5 @@
- /*
-- * linux/arch/arm/mach-omap2/board-rx51-flash.c
-+ * linux/arch/arm/mach-omap2/board-rx51-peripherals.c
-  *
-  * Copyright (C) 2008-2009 Nokia
-  *
-@@ -278,7 +278,124 @@ static struct twl4030_gpio_platform_data rx51_gpio_data = {
- 	.setup			= rx51_twlgpio_setup,
- };
- 
--static struct twl4030_platform_data rx51_twldata = {
-+static struct twl4030_ins sleep_on_seq[] __initdata = {
-+/*
-+ * Turn off VDD1 and VDD2.
-+ */
-+	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_OFF), 4},
-+	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_OFF), 2},
-+/*
-+ * And also turn off the OMAP3 PLLs and the sysclk output.
-+ */
-+	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_OFF), 3},
-+	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_OFF), 3},
-+};
-+
-+static struct twl4030_script sleep_on_script __initdata = {
-+	.script = sleep_on_seq,
-+	.size   = ARRAY_SIZE(sleep_on_seq),
-+	.flags  = TRITON_SLEEP_SCRIPT,
-+};
-+
-+static struct twl4030_ins wakeup_seq[] __initdata = {
-+/*
-+ * Reenable the OMAP3 PLLs.
-+ * Wakeup VDD1 and VDD2.
-+ * Reenable sysclk output.
-+ */
-+	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_ACTIVE), 0x30},
-+	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_ACTIVE), 0x30},
-+	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_ACTIVE), 0x37},
-+	{MSG_SINGULAR(DEV_GRP_P1, 0x19, RES_STATE_ACTIVE), 3},
-+};
-+
-+static struct twl4030_script wakeup_script __initdata = {
-+	.script	= wakeup_seq,
-+	.size	= ARRAY_SIZE(wakeup_seq),
-+	.flags	= TRITON_WAKEUP12_SCRIPT,
-+};
-+
-+static struct twl4030_ins wakeup_p3_seq[] __initdata = {
-+/*
-+ * Wakeup VDD1 (dummy to be able to insert a delay)
-+ * Enable CLKEN
-+ */
-+	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_ACTIVE), 3},
-+};
-+
-+static struct twl4030_script wakeup_p3_script __initdata = {
-+	.script	= wakeup_p3_seq,
-+	.size	= ARRAY_SIZE(wakeup_p3_seq),
-+	.flags	= TRITON_WAKEUP3_SCRIPT,
-+};
-+
-+static struct twl4030_ins wrst_seq[] __initdata = {
-+/*
-+ * Reset twl4030.
-+ * Reset VDD1 regulator.
-+ * Reset VDD2 regulator.
-+ * Reset VPLL1 regulator.
-+ * Enable sysclk output.
-+ * Reenable twl4030.
-+ */
-+	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_OFF), 2},
-+	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_ALL, 0, 1, RES_STATE_ACTIVE),
-+		0x13},
-+	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 2, RES_STATE_WRST), 0x13},
-+	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 3, RES_STATE_OFF), 0x13},
-+	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD1, RES_STATE_WRST), 0x13},
-+	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD2, RES_STATE_WRST), 0x13},
-+	{MSG_SINGULAR(DEV_GRP_NULL, RES_VPLL1, RES_STATE_WRST), 0x35},
-+	{MSG_SINGULAR(DEV_GRP_P1, RES_HFCLKOUT, RES_STATE_ACTIVE), 2},
-+	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_ACTIVE), 2},
-+};
-+
-+static struct twl4030_script wrst_script __initdata = {
-+	.script = wrst_seq,
-+	.size   = ARRAY_SIZE(wrst_seq),
-+	.flags  = TRITON_WRST_SCRIPT,
-+};
-+
-+static struct twl4030_script *twl4030_scripts[] __initdata = {
-+	/* wakeup12 script should be loaded before sleep script, otherwise a
-+	   board might hit retention before loading of wakeup script is
-+	   completed. This can cause boot failures depending on timing issues.
-+	*/
-+	&wakeup_script,
-+	&sleep_on_script,
-+	&wakeup_p3_script,
-+	&wrst_script,
-+};
-+
-+static struct twl4030_resconfig twl4030_rconfig[] __initdata = {
-+	{ .resource = RES_VINTANA1, .devgroup = -1, .type = -1, .type2 = 1 },
-+	{ .resource = RES_VINTANA2, .devgroup = -1, .type = -1, .type2 = 1 },
-+	{ .resource = RES_VINTDIG, .devgroup = -1, .type = -1, .type2 = 1 },
-+	{ .resource = RES_VMMC1, .devgroup = -1, .type = -1, .type2 = 3},
-+	{ .resource = RES_VMMC2, .devgroup = DEV_GRP_NULL, .type = -1,
-+	  .type2 = 3},
-+	{ .resource = RES_VAUX1, .devgroup = -1, .type = -1, .type2 = 3},
-+	{ .resource = RES_VAUX2, .devgroup = -1, .type = -1, .type2 = 3},
-+	{ .resource = RES_VAUX3, .devgroup = -1, .type = -1, .type2 = 3},
-+	{ .resource = RES_VAUX4, .devgroup = -1, .type = -1, .type2 = 3},
-+	{ .resource = RES_VPLL2, .devgroup = -1, .type = -1, .type2 = 3},
-+	{ .resource = RES_VDAC, .devgroup = -1, .type = -1, .type2 = 3},
-+	{ .resource = RES_VSIM, .devgroup = DEV_GRP_NULL, .type = -1,
-+	  .type2 = 3},
-+	{ .resource = RES_CLKEN, .devgroup = DEV_GRP_P3, .type = -1,
-+		.type2 = 1 },
-+	{ 0, 0},
-+};
-+
-+static struct twl4030_power_data rx51_t2scripts_data __initdata = {
-+	.scripts        = twl4030_scripts,
-+	.size   = ARRAY_SIZE(twl4030_scripts),
-+	.resource_config = twl4030_rconfig,
-+};
-+
-+
-+
-+static struct twl4030_platform_data rx51_twldata __initdata = {
- 	.irq_base		= TWL4030_IRQ_BASE,
- 	.irq_end		= TWL4030_IRQ_END,
- 
-@@ -286,6 +403,7 @@ static struct twl4030_platform_data rx51_twldata = {
- 	.gpio			= &rx51_gpio_data,
- 	.keypad			= &rx51_kp_data,
- 	.madc			= &rx51_madc_data,
-+	.power			= &rx51_t2scripts_data,
- 
- 	.vaux1			= &rx51_vaux1,
- 	.vaux2			= &rx51_vaux2,
--- 
-1.6.3.3
+If I take a stock F11 distro, and build 2.6.31-rc2 on a USB HDD root,
+I can't boot
+I'm not quite sure if something in the F11 initrd needs usbfs for
+something (cc'ed Peter)
 
+The same hang happens if I boot a 2.6.30 kernel with an F11 initrd and
+with usbfs turned off.
+
+Also for reference all rawhide kernels fail to boot on the same F11 system.
+
+I haven't tried using a rawhide initrd due to rawhide being a bit
+unusable at the moment.
+
+Dave.
