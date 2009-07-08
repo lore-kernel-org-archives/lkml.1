@@ -1,83 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZGHO5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZGHPAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756665AbZGHO5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 10:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZGHO5D
+	id S1756809AbZGHPAZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 11:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbZGHPAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 10:57:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37831 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753576AbZGHO5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 10:57:02 -0400
-Date: Wed, 8 Jul 2009 07:56:25 -0700
-From: Greg KH <gregkh@suse.de>
-To: Peter Jones <pjones@redhat.com>
-Cc: Dave Airlie <airlied@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Scott James Remnant <scott@canonical.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Dave Jones <davej@redhat.com>
-Subject: Re: can we move USB_DEVICEFS to non-embedded?
-Message-ID: <20090708145625.GA20690@suse.de>
-References: <b6a2187b0906222211i4509bc4cu39e9123cba61039a@mail.gmail.com>
- <20090623144221.GA29593@suse.de>
- <b6a2187b0906230829k308cb875r7362f184bccb1d6d@mail.gmail.com>
- <20090623153928.GA32604@suse.de>
- <21d7e9970907080354h6949b27va40fb830f612287@mail.gmail.com>
- <4A54A4A6.2060100@redhat.com>
- <4A54A538.3080407@redhat.com>
- <20090708140419.GA20418@suse.de>
- <4A54A938.5030807@redhat.com>
+	Wed, 8 Jul 2009 11:00:11 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:30873 "EHLO
+	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754286AbZGHPAJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 11:00:09 -0400
+X-SpamScore: -43
+X-BigFish: VPS-43(zz542N1432R98dNef8K1805Ma2dbP9371Pzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KMGXNP-01-6TZ-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A54A938.5030807@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
+Date: Wed, 8 Jul 2009 09:59:55 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273036209F0@sausexmb4.amd.com>
+In-Reply-To: <200907081319.57307.sheng@linux.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
+Thread-Index: Acn/i7oBwJEfnIKuSB6kuE4ZdU/MAAAUNTuQ
+References: <200905050909.58583.mark.langsdorf@amd.com> <200905191356.37071.mark.langsdorf@amd.com> <200905201725.18046.mark.langsdorf@amd.com> <200907081319.57307.sheng@linux.intel.com>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "Sheng Yang" <sheng@linux.intel.com>
+CC: "Roedel, Joerg" <Joerg.Roedel@amd.com>, <peterz@infradead.org>,
+       "Ingo Molnar" <mingo@elte.hu>, <avi@redhat.com>, <kvm@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 08 Jul 2009 14:59:56.0121 (UTC) FILETIME=[C1827490:01C9FFDC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 08, 2009 at 10:12:08AM -0400, Peter Jones wrote:
-> Greg KH wrote:
-> > On Wed, Jul 08, 2009 at 09:55:04AM -0400, Peter Jones wrote:
-> >> On 07/08/2009 09:52 AM, Peter Jones wrote:
-> >>> On 07/08/2009 06:54 AM, Dave Airlie wrote:
-> >>>
-> >>>> I'm not quite sure if something in the F11 initrd needs usbfs for
-> >>>> something (cc'ed Peter)
-> >>> Not a thing.
-> >> Actually, I take it back.  We do mount usbfs, and we examine
-> >> /proc/bus/usb/devices as a heuristic to try and determine if
-> >> all the devices have been enumerated.
-> > 
-> > How can you ever know if all devices are enumerated as you don't know
-> > how many devices will be showing up?
+The last variant of the scheduler that I tried
+showed worse performance for both the baseline
+case (no pause filter enabled) and the test
+case (pause filter enabled) versus not changing
+the scheduler.
+
+Some other work came up and I haven't have a
+chance to experiment with this for a while.
+
+-Mark Langsdorf
+Operating System Research Center
+AMD 
+
+> -----Original Message-----
+> From: Sheng Yang [mailto:sheng@linux.intel.com] 
+> Sent: Wednesday, July 08, 2009 12:20 AM
+> To: Langsdorf, Mark
+> Cc: Roedel, Joerg; peterz@infradead.org; Ingo Molnar; 
+> avi@redhat.com; kvm@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH][KVM][retry 4] Add support for Pause 
+> Filtering to AMD SVM
 > 
-> You don't, that's why I said it's a heuristic.  But basically, we have a 
-> timeout, and if the device list doesn't change in that amount of time, we
-> call it done.
+> On Thursday 21 May 2009 06:25:17 Mark Langsdorf wrote:
+> > This feature creates a new field in the VMCB called Pause
+> > Filter Count.  If Pause Filter Count is greater than 0 and
+> > intercepting PAUSEs is enabled, the processor will increment
+> > an internal counter when a PAUSE instruction occurs instead
+> > of intercepting.  When the internal counter reaches the
+> > Pause Filter Count value, a PAUSE intercept will occur.
+> >
 > 
-> It's not the best technique ever, but it does work.
-
-Works for what?  Why would you want to delay your boot process like
-this?
-
-> >> So that could be related to what you're seeing.
-> > 
-> > That file is now available in /sys/kernel/debug/usb/devices if you
-> > really need it.
+> (dig it from archives...)
 > 
-> Oh, okay.  I can change it to use that then.
+> Any update for the patch(I mean the scheduler part)? I think 
+> people agreed on 
+> the approach?
 > 
-> > But I would think that you do not.
+> -- 
+> regards
+> Yang, Sheng
 > 
-> Well, we pretty much do until we switch to dracut.
+> > This feature can be used to detect contended spinlocks,
+> > especially when the lock holding VCPU is not scheduled.
+> > Rescheduling another VCPU prevents the VCPU seeking the
+> > lock from wasting its quantum by spinning idly.  Perform
+> > the reschedule by increasing the the credited time on
+> > the VCPU.
+> >
+> > Experimental results show that most spinlocks are held
+> > for less than 1000 PAUSE cycles or more than a few
+> > thousand.  Default the Pause Filter Counter to 3000 to
+> > detect the contended spinlocks.
+> >
+> > Processor support for this feature is indicated by a CPUID
+> > bit.
+> >
+> > On a 24 core system running 4 guests each with 16 VCPUs,
+> > this patch improved overall performance of each guest's
+> > 32 job kernbench by approximately 1%.  Further performance
+> > improvement may be possible with a more sophisticated
+> > yield algorithm.
+> >
+> > -Mark Langsdorf
+> > Operating System Research Center
+> > AMD
+> >
+> > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> > ---
+> >  arch/x86/include/asm/svm.h |    3 ++-
+> >  arch/x86/kvm/svm.c         |   13 +++++++++++++
+> >  include/linux/sched.h      |    7 +++++++
+> >  kernel/sched.c             |   18 ++++++++++++++++++
+> >  4 files changed, 40 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+> > index 85574b7..1fecb7e 100644
+> > --- a/arch/x86/include/asm/svm.h
+> > +++ b/arch/x86/include/asm/svm.h
+> > @@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) 
+> vmcb_control_area {
+> >  	u16 intercept_dr_write;
+> >  	u32 intercept_exceptions;
+> >  	u64 intercept;
+> > -	u8 reserved_1[44];
+> > +	u8 reserved_1[42];
+> > +	u16 pause_filter_count;
+> >  	u64 iopm_base_pa;
+> >  	u64 msrpm_base_pa;
+> >  	u64 tsc_offset;
+> > diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> > index ef43a18..dad6c4b 100644
+> > --- a/arch/x86/kvm/svm.c
+> > +++ b/arch/x86/kvm/svm.c
+> > @@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
+> >  #define SVM_FEATURE_NPT  (1 << 0)
+> >  #define SVM_FEATURE_LBRV (1 << 1)
+> >  #define SVM_FEATURE_SVML (1 << 2)
+> > +#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
+> >
+> >  #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
+> >
+> > @@ -575,6 +576,11 @@ static void init_vmcb(struct vcpu_svm *svm)
+> >
+> >  	svm->nested_vmcb = 0;
+> >  	svm->vcpu.arch.hflags = HF_GIF_MASK;
+> > +
+> > +	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
+> > +		control->pause_filter_count = 3000;
+> > +		control->intercept |= (1ULL << INTERCEPT_PAUSE);
+> > +	}
+> >  }
+> >
+> >  static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
+> > @@ -2087,6 +2093,12 @@ static int 
+> interrupt_window_interception(struct
+> > vcpu_svm *svm, return 1;
+> >  }
+> >
+> > +static int pause_interception(struct vcpu_svm *svm, struct kvm_run
+> > *kvm_run) +{
+> > +	sched_delay_yield(1000000);
+> > +	return 1;
+> > +}
+> > +
+> >  static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+> >  				      struct kvm_run *kvm_run) = {
+> >  	[SVM_EXIT_READ_CR0]           		= 
+> emulate_on_interception,
+> > @@ -2123,6 +2135,7 @@ static int 
+> (*svm_exit_handlers[])(struct vcpu_svm
+> > *svm, [SVM_EXIT_CPUID]			= cpuid_interception,
+> >  	[SVM_EXIT_IRET]                         = iret_interception,
+> >  	[SVM_EXIT_INVD]                         = 
+> emulate_on_interception,
+> > +	[SVM_EXIT_PAUSE]			= pause_interception,
+> >  	[SVM_EXIT_HLT]				= halt_interception,
+> >  	[SVM_EXIT_INVLPG]			= invlpg_interception,
+> >  	[SVM_EXIT_INVLPGA]			= 
+> invalid_op_interception,
+> > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > index b4c38bc..9cde585 100644
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -2283,6 +2283,9 @@ static inline unsigned int 
+> task_cpu(const struct
+> > task_struct *p) return task_thread_info(p)->cpu;
+> >  }
+> >
+> > +extern void sched_delay_yield(unsigned long ns);
+> > +
+> > +
+> >  extern void set_task_cpu(struct task_struct *p, unsigned int cpu);
+> >
+> >  #else
+> > @@ -2292,6 +2295,10 @@ static inline unsigned int 
+> task_cpu(const struct
+> > task_struct *p) return 0;
+> >  }
+> >
+> > +void sched_delay_yield(struct task_struct *p, unsigned int delay)
+> > +{
+> > +}
+> > +
+> >  static inline void set_task_cpu(struct task_struct *p, 
+> unsigned int cpu)
+> >  {
+> >  }
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index b902e58..3aed2f6 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -1947,6 +1947,24 @@ task_hot(struct task_struct *p, u64 
+> now, struct
+> > sched_domain *sd) return delta < (s64)sysctl_sched_migration_cost;
+> >  }
+> >
+> > +/*
+> > + * Interface for yielding a thread by delaying it for a known
+> > + * interval.  Use at your own risk and not with real-time.
+> > + *
+> > + * Like yield, except for SCHED_OTHER/BATCH, where it will
+> > + * give us @ns time for the 'good' cause.
+> > + */
+> > +void sched_delay_yield(unsigned long ns)
+> > +{
+> > +	struct task_struct *curr = current;
+> > +	if (curr->sched_class == &fair_sched_class) {
+> > +		struct sched_entity *se = &curr->se;
+> > +		__update_curr(cfs_rq_of(se), se, ns);
+> > +		schedule();
+> > +	} else
+> > +		yield();
+> > +}
+> > +EXPORT_SYMBOL_GPL(sched_delay_yield);
+> >
+> >  void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+> >  {
+> 
+> 
+> 
+> 
 
-What is dracut and why would it change this?
-
-As no other distro does this kind of waiting, I'm a bit confused as to
-the need for it.
-
-thanks,
-
-greg k-h
