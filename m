@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZGHVpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbZGHVtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757889AbZGHVpo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 17:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755713AbZGHVpg
+	id S1756439AbZGHVtf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 17:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754939AbZGHVtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 17:45:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43909 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754761AbZGHVpg (ORCPT
+	Wed, 8 Jul 2009 17:49:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43099 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754718AbZGHVtY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 17:45:36 -0400
-Subject: Re: [patch] perf_counter: Add p6 PMU
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Vince Weaver <vince@deater.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0907081718450.2715@pianoman.cluster.toy>
-References: <Pine.LNX.4.64.0907071559200.30742@pianoman.cluster.toy>
-	 <1247051751.9777.49.camel@twins>
-	 <Pine.LNX.4.64.0907081718450.2715@pianoman.cluster.toy>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 23:45:29 +0200
-Message-Id: <1247089529.16156.27.camel@laptop>
+	Wed, 8 Jul 2009 17:49:24 -0400
+Date: Wed, 8 Jul 2009 14:47:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: avorontsov@ru.mvista.com
+Cc: torvalds@linux-foundation.org, a.p.zijlstra@chello.nl, oleg@redhat.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH/RFC] sched: Remove SYSTEM_RUNNING checks from
+ cond_resched*()
+Message-Id: <20090708144744.5555b88d.akpm@linux-foundation.org>
+In-Reply-To: <20090708213331.GA9346@oksana.dev.rtsoft.ru>
+References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
+	<20090708005000.GA12380@redhat.com>
+	<1247034263.9777.24.camel@twins>
+	<alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
+	<20090708141024.f8b581c5.akpm@linux-foundation.org>
+	<20090708213331.GA9346@oksana.dev.rtsoft.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.19; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 17:46 -0400, Vince Weaver wrote:
-> On Wed, 8 Jul 2009, Peter Zijlstra wrote:
-> 
-> >   doesn't sound like the right kind of event.. but then, it doesn't
-> >   have anything better either.
-> 
-> Is there a way to specify "invalid event"?  Just setting it to 0 doesn't 
-> work, on the Pentium Pro event 0 returns what looks like essentially
-> random numbers.
+(belatedly cc'ing netdev)
 
-Hmm, bugger. I was assuming writing 0 to the evensel would disable the
-counter. Apparently that only works for eventsel1, which would mean we
-cannot run counter1 without counter0. That means we'd need to do a
-counter swap at times... :/
+Original diagnosis:
 
-I think we can extend __hw_perf_counter_init() to return failure when
-->event_map() returns 0 or something.
+: Using early netconsole and gianfar driver this error pops up:
+: 
+:   netconsole: timeout waiting for carrier
+: 
+: It appears that net/core/netpoll.c:netpoll_setup() is using
+: cond_resched() in a loop waiting for a carrier.
+: 
+: The thing is that cond_resched() is a no-op when system_state !=
+: SYSTEM_RUNNING, and so drivers/net/phy/phy.c's state_queue is never
+: scheduled, therefore link detection doesn't work
 
+> On Thu, 9 Jul 2009 01:33:31 +0400 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> On Wed, Jul 08, 2009 at 02:10:24PM -0700, Andrew Morton wrote:
+> > > On Wed, 8 Jul 2009 09:12:30 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > That said, I do agree that maybe SYSTEM_RUNNING isn't the right check. 
+> > > Testing that the scheduler is initialized may be the more correct one. I 
+> > > think the SYSTEM_RUNNING one just comes from that being used for other 
+> > > debug issues.
 > > 
-> >  - s/CORE_/P6_/ for the evntsel masks
+> > Agreed.  system_state is too general.
+> > 
+> > If we specifically want to know whether it is safe to call schedule() then
+> > let's create a global boolean it_is_safe_to_call_schedule and test that,
+> > rather than testing something which indirectly and unreliably implies "it
+> > is safe to call schedule".  If that boolean already exists then no-brainer.
+> > 
+> > All that being said, I wonder if the netconsole code should be using
+> > msleep(1) instead.  Spinning on cond_resched() is a bit rude.  But one
+> > would have to verify that it is safe to call schedule() at this time, and
+> > for the netconsole caller, this is dubious.
 > 
-> thanks, I missed that.
+> What do you mean by "verify that it is safe"? If it works,
+> can I assume that it's safe? ;-) It works, fwiw.
 > 
-> > -	int err;
-> > -	err = checking_wrmsrl(hwc->config_base + idx,
-> > +	(void)checking_wrmsrl(hwc->config_base + idx,
-> 
-> the patches that do the above seem to be unrelated to p6 support.
-> Did they get mixed in somehow?
 
-Yeah, random cleanups..
+netconsole is supposed to be available as early as possible in boot for
+obvious reasons.  I'd say there's a decent risk now and in the future that
+netconsole will be initialised prior to the scheduler being available.
 
-> The patch as it stands will break non-p6 intel perf counters, as Core2 and 
-> atom are also cpu family 6.  The attached patch takes the updated version 
-> you sent out, and includes a fix to the detection logic.
-
-Ah, thanks!
-
-> Also the current patch gives the following warning:
->  arch/x86/kernel/cpu/perf_counter.c: In function p6_pmu_disable_counter:
->  arch/x86/kernel/cpu/perf_counter.c:925: warning: right shift count >= width of type
-
-#define checking_wrmsrl(msr, val) wrmsr_safe((msr), (u32)(val),         \
-                                             (u32)((val) >> 32))
-
-and I passed in a unsigned long, which on ia32 is well 32 bits :-)
-
-> though I don't see where that actually happens, unless some deep macro 
-> magic is going on.
-> 
-> Patch attached below.  This is my first attempt at kernel development in 
-> the modern era, so I have no idea how to do the signed off by if multiple 
-> people are involved.  Do I just put then all together?
-
-Yeah, that usually works..
-
-Thanks, I'll have a got at it tomorrow.
-
+In fact, if "netconsole: timeout waiting for carrier" newly added to
+netpoll_setup() a depedency on the scheduler being available then perhaps
+that was an incorrect change.
 
