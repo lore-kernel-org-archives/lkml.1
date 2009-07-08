@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbZGHOtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756665AbZGHO5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759529AbZGHOtX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 10:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759379AbZGHOsW
+	id S1756665AbZGHO5S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 10:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753956AbZGHO5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 10:48:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52282 "EHLO hera.kernel.org"
+	Wed, 8 Jul 2009 10:57:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37831 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759388AbZGHOsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 10:48:21 -0400
-Subject: [PATCH 13/44] includecheck fix: mn10300, sys_mn10300.c
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
-References: <1247063308.4382.12.camel@ht.satnam>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 20:14:47 +0530
-Message-Id: <1247064287.4382.33.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753576AbZGHO5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 10:57:02 -0400
+Date: Wed, 8 Jul 2009 07:56:25 -0700
+From: Greg KH <gregkh@suse.de>
+To: Peter Jones <pjones@redhat.com>
+Cc: Dave Airlie <airlied@gmail.com>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Scott James Remnant <scott@canonical.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Dave Jones <davej@redhat.com>
+Subject: Re: can we move USB_DEVICEFS to non-embedded?
+Message-ID: <20090708145625.GA20690@suse.de>
+References: <b6a2187b0906222211i4509bc4cu39e9123cba61039a@mail.gmail.com>
+ <20090623144221.GA29593@suse.de>
+ <b6a2187b0906230829k308cb875r7362f184bccb1d6d@mail.gmail.com>
+ <20090623153928.GA32604@suse.de>
+ <21d7e9970907080354h6949b27va40fb830f612287@mail.gmail.com>
+ <4A54A4A6.2060100@redhat.com>
+ <4A54A538.3080407@redhat.com>
+ <20090708140419.GA20418@suse.de>
+ <4A54A938.5030807@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A54A938.5030807@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-includecheck fix: mn10300, sys_mn10300.c
+On Wed, Jul 08, 2009 at 10:12:08AM -0400, Peter Jones wrote:
+> Greg KH wrote:
+> > On Wed, Jul 08, 2009 at 09:55:04AM -0400, Peter Jones wrote:
+> >> On 07/08/2009 09:52 AM, Peter Jones wrote:
+> >>> On 07/08/2009 06:54 AM, Dave Airlie wrote:
+> >>>
+> >>>> I'm not quite sure if something in the F11 initrd needs usbfs for
+> >>>> something (cc'ed Peter)
+> >>> Not a thing.
+> >> Actually, I take it back.  We do mount usbfs, and we examine
+> >> /proc/bus/usb/devices as a heuristic to try and determine if
+> >> all the devices have been enumerated.
+> > 
+> > How can you ever know if all devices are enumerated as you don't know
+> > how many devices will be showing up?
+> 
+> You don't, that's why I said it's a heuristic.  But basically, we have a 
+> timeout, and if the device list doesn't change in that amount of time, we
+> call it done.
+> 
+> It's not the best technique ever, but it does work.
 
-fix the following 'make includecheck' warning:
+Works for what?  Why would you want to delay your boot process like
+this?
 
-  arch/mn10300/kernel/sys_mn10300.c: linux/syscalls.h is included more than once.
+> >> So that could be related to what you're seeing.
+> > 
+> > That file is now available in /sys/kernel/debug/usb/devices if you
+> > really need it.
+> 
+> Oh, okay.  I can change it to use that then.
+> 
+> > But I would think that you do not.
+> 
+> Well, we pretty much do until we switch to dracut.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/mn10300/kernel/sys_mn10300.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+What is dracut and why would it change this?
 
-diff --git a/arch/mn10300/kernel/sys_mn10300.c b/arch/mn10300/kernel/sys_mn10300.c
-index bca5a84..6551ada 100644
---- a/arch/mn10300/kernel/sys_mn10300.c
-+++ b/arch/mn10300/kernel/sys_mn10300.c
-@@ -21,7 +21,6 @@
- #include <linux/mman.h>
- #include <linux/file.h>
- #include <linux/utsname.h>
--#include <linux/syscalls.h>
- #include <linux/tty.h>
- 
- #include <asm/uaccess.h>
--- 
-1.6.0.6
+As no other distro does this kind of waiting, I'm a bit confused as to
+the need for it.
 
+thanks,
 
-
+greg k-h
