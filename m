@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbZGHWxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbZGHWy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758096AbZGHWxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZGHWxb
+	id S1758757AbZGHWy2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757190AbZGHWyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:53:31 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:22372 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755076AbZGHWxa (ORCPT
+	Wed, 8 Jul 2009 18:54:18 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:48298 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970AbZGHWyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:53:30 -0400
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4A4CB4B4.5010307@turknet.net.tr>
-	<20090702130728.22af524c.akpm@linux-foundation.org>
-	<8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com>
-	<1247063244.4159.40.camel@mulgrave.site>
-Date: Wed, 08 Jul 2009 18:52:55 -0400
-In-Reply-To: <1247063244.4159.40.camel@mulgrave.site> (James Bottomley's
-	message of "Wed, 08 Jul 2009 09:27:24 -0500")
-Message-ID: <yq1my7eg52w.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Wed, 8 Jul 2009 18:54:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QSnd3df0Jmz/MMpedY8zoqUbk0RSWlgC9AvKnLBQaSBuXr4uN0GXWiuRT35Elwth6M
+         rSoYRc5hWqnCHHCPTtT4M58172Z8J+UVtFYK9BWKHTEnkIDoAGwTX16zzNcS22mdyyv1
+         RhG4EyzQqiCcxHwadXhe40sKT232W5ZxR5SpU=
+Date: Thu, 9 Jul 2009 00:48:28 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Andres Freund <andres@anarazel.de>
+Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
+	possibly?caused by netem)
+Message-ID: <20090708224828.GD3666@ami.dom.local>
+References: <200907031326.21822.andres@anarazel.de> <200907071811.27570.andres@anarazel.de> <20090708080852.GC3148@ami.dom.local> <200907090023.18040.andres@anarazel.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.4A55234A.00E5:SCFSTAT5015188,ss=1,fgs=0
+Content-Disposition: inline
+In-Reply-To: <200907090023.18040.andres@anarazel.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "James" == James Bottomley <James.Bottomley@HansenPartnership.com> writes:
+On Thu, Jul 09, 2009 at 12:23:17AM +0200, Andres Freund wrote:
+...
+> Unfortunately this just yields the same backtraces during softlockup and not 
+> earlier.
+> I did not test without lockdep yet, but that should not have stopped the BUG 
+> from appearing, right?
 
-James> You might also try this patch from martin petersen: it will print
-James> out the actual command that's causing the problems ... that might
-James> give a clue.
+Since it looks like hrtimers now, these changes in timers shouldn't
+matter. Let's wait for new ideas.
 
-Any particular reason you didn't merge that patch, btw.?  It's been
-extremely useful on this end...
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
-
+Thanks for testing anyway,
+Jarek P.
