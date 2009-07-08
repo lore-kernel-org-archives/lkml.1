@@ -1,177 +1,527 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbZGHDwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZGHDxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271AbZGHDwJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 23:52:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZGHDv5
+	id S1758873AbZGHDxT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 23:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZGHDxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 23:51:57 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:28955 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755816AbZGHDv4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 23:51:56 -0400
-X-IronPort-AV: E=Sophos;i="4.42,366,1243814400"; 
-   d="scan'208";a="339570476"
-From: Roland Dreier <rdreier@cisco.com>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: 2.6.31-rc2 -- INFO: inconsistent lock state -- inconsistent  {IN-RECLAIM_FS-W} -> {RECLAIM_FS-ON-W} usage.
-References: <a44ae5cd0907052122w1733780eh84c37a0b288cbd1d@mail.gmail.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 07 Jul 2009 20:51:54 -0700
-In-Reply-To: <a44ae5cd0907052122w1733780eh84c37a0b288cbd1d@mail.gmail.com>
-	(Miles Lane's message of "Mon, 6 Jul 2009 00:22:11 -0400")
-Message-ID: <adafxd7x25h.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Tue, 7 Jul 2009 23:53:09 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:59783 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752547AbZGHDxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 23:53:07 -0400
+Date: Wed, 8 Jul 2009 09:22:53 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Vladislav Buzov <vbuzov@embeddedalley.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers Mailing List 
+	<containers@lists.linux-foundation.org>,
+       Dan Malek <dan@embeddedalley.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 1/1] Memory usage limit notification addition to memcg
+Message-ID: <20090708035252.GA3215@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1239660512-25468-1-git-send-email-dan@embeddedalley.com> <1246998310-16764-1-git-send-email-vbuzov@embeddedalley.com> <1246998310-16764-2-git-send-email-vbuzov@embeddedalley.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 Jul 2009 03:51:55.0363 (UTC) FILETIME=[6F842330:01C9FF7F]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1246998310-16764-2-git-send-email-vbuzov@embeddedalley.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ adding Eric Paris cc as this looks to be an inotify issue ]
+* Vladislav Buzov <vbuzov@embeddedalley.com> [2009-07-07 13:25:10]:
 
- > [ 6627.976224] =================================
- > [ 6627.976237] [ INFO: inconsistent lock state ]
- > [ 6627.976247] 2.6.31-rc2 #16
- > [ 6627.976254] ---------------------------------
- > [ 6627.976263] inconsistent {IN-RECLAIM_FS-W} -> {RECLAIM_FS-ON-W} usage.
- > [ 6627.976276] khubd/217 [HC0[0]:SC0[0]:HE1:SE1] takes:
- > [ 6627.976285]  (iprune_mutex){+.+.?.}, at: [<c10ba899>]
- > invalidate_inodes+0x20/0xe3
- > [ 6627.976315] {IN-RECLAIM_FS-W} state was registered at:
- > [ 6627.976324]   [<c10536ab>] __lock_acquire+0x2c9/0xac4
- > [ 6627.976343]   [<c1053f45>] lock_acquire+0x9f/0xc2
- > [ 6627.976358]   [<c1308872>] __mutex_lock_common+0x2d/0x323
- > [ 6627.976376]   [<c1308c00>] mutex_lock_nested+0x2e/0x36
- > [ 6627.976392]   [<c10ba6ff>] shrink_icache_memory+0x38/0x1b2
- > [ 6627.976407]   [<c108bfb6>] shrink_slab+0xe2/0x13c
- > [ 6627.976424]   [<c108c3e1>] kswapd+0x3d1/0x55d
- > [ 6627.976439]   [<c10449b5>] kthread+0x66/0x6b
- > [ 6627.976454]   [<c1003fdf>] kernel_thread_helper+0x7/0x10
- > [ 6627.976472]   [<ffffffff>] 0xffffffff
- > [ 6627.976494] irq event stamp: 41543
- > [ 6627.976501] hardirqs last  enabled at (41543): [<c13086f7>]
- > __mutex_unlock_slowpath+0x10a/0x118
- > [ 6627.976520] hardirqs last disabled at (41542): [<c1308645>]
- > __mutex_unlock_slowpath+0x58/0x118
- > [ 6627.976539] softirqs last  enabled at (41158): [<c129d01f>]
- > __rcu_read_unlock_bh+0x1c/0x1e
- > [ 6627.976559] softirqs last disabled at (41156): [<c129cfcb>]
- > __rcu_read_lock_bh+0x8/0x26
- > [ 6627.976576]
- > [ 6627.976579] other info that might help us debug this:
- > [ 6627.976590] 2 locks held by khubd/217:
- > [ 6627.976598]  #0:  (&type->s_umount_key#39){.+.+.+}, at:
- > [<c10acd4b>] get_super+0x42/0x87
- > [ 6627.976631]  #1:  (iprune_mutex){+.+.?.}, at: [<c10ba899>]
- > invalidate_inodes+0x20/0xe3
- > [ 6627.976657]
- > [ 6627.976660] stack backtrace:
- > [ 6627.976672] Pid: 217, comm: khubd Not tainted 2.6.31-rc2 #16
- > [ 6627.976681] Call Trace:
- > [ 6627.976696]  [<c1307907>] ? printk+0xf/0x18
- > [ 6627.976711]  [<c10526d7>] valid_state+0x12a/0x13d
- > [ 6627.976726]  [<c10527ad>] mark_lock+0xc3/0x1b4
- > [ 6627.976740]  [<c1052eea>] ? check_usage_backwards+0x0/0x3f
- > [ 6627.976755]  [<c10528e1>] mark_held_locks+0x43/0x5b
- > [ 6627.976772]  [<c10cf46d>] ? inotify_ignored_and_remove_idr+0x19/0x74
- > [ 6627.976787]  [<c105299e>] lockdep_trace_alloc+0xa5/0xc1
- > [ 6627.976802]  [<c10a6685>] kmem_cache_alloc+0x21/0x13a
- > [ 6627.976818]  [<c10cf46d>] inotify_ignored_and_remove_idr+0x19/0x74
- > [ 6627.976834]  [<c10ceb77>] inotify_freeing_mark+0x8/0xa
- > [ 6627.976849]  [<c10cd989>] fsnotify_destroy_mark_by_entry+0xf1/0x115
- > [ 6627.976858]  [<c10cda32>] fsnotify_clear_marks_by_inode+0x85/0xa2
- > [ 6627.976858]  [<c10ccdbf>] __fsnotify_inode_delete+0x8/0xd
- > [ 6627.976858]  [<c10cd670>] fsnotify_unmount_inodes+0xb0/0xdf
- > [ 6627.976858]  [<c10ba8b9>] invalidate_inodes+0x40/0xe3
- > [ 6627.976858]  [<c10c977f>] __invalidate_device+0x21/0x38
- > [ 6627.976858]  [<c116c981>] invalidate_partition+0x1e/0x2d
- > [ 6627.976858]  [<c10e7710>] del_gendisk+0x2d/0xf0
- > [ 6627.976858]  [<c122e473>] sd_remove+0x35/0x67
- > [ 6627.976858]  [<c121b637>] __device_release_driver+0x47/0x7f
- > [ 6627.976858]  [<c121b70c>] device_release_driver+0x18/0x23
- > [ 6627.976858]  [<c121ad1b>] bus_remove_device+0x71/0x7e
- > [ 6627.976858]  [<c1219a0a>] device_del+0xf0/0x131
- > [ 6627.976858]  [<c122a4a6>] __scsi_remove_device+0x34/0x65
- > [ 6627.976858]  [<c12285a5>] scsi_forget_host+0x35/0x51
- > [ 6627.976858]  [<c1223615>] scsi_remove_host+0x69/0xd4
- > [ 6627.976858]  [<f805f67c>] quiesce_and_remove_host+0x4c/0x7e [usb_storage]
- > [ 6627.976858]  [<f805f760>] usb_stor_disconnect+0x11/0x1b [usb_storage]
- > [ 6627.976858]  [<c124adca>] usb_unbind_interface+0x4e/0xc4
- > [ 6627.976858]  [<c121b637>] __device_release_driver+0x47/0x7f
- > [ 6627.976858]  [<c121b70c>] device_release_driver+0x18/0x23
- > [ 6627.976858]  [<c121ad1b>] bus_remove_device+0x71/0x7e
- > [ 6627.976858]  [<c1219a0a>] device_del+0xf0/0x131
- > [ 6627.976858]  [<c1248795>] usb_disable_device+0xc1/0x125
- > [ 6627.976858]  [<c1243f37>] usb_disconnect+0xb2/0x117
- > [ 6627.976858]  [<c12450da>] hub_thread+0x533/0xe45
- > [ 6627.976858]  [<c13080fd>] ? schedule+0x70c/0x769
- > [ 6627.976858]  [<c1044bfc>] ? autoremove_wake_function+0x0/0x2f
- > [ 6627.976858]  [<c1244ba7>] ? hub_thread+0x0/0xe45
- > [ 6627.976858]  [<c10449b5>] kthread+0x66/0x6b
- > [ 6627.976858]  [<c104494f>] ? kthread+0x0/0x6b
- > [ 6627.976858]  [<c1003fdf>] kernel_thread_helper+0x7/0x10
- > [ 6628.142547] usb 1-3:1.0: uevent
+> This patch updates the Memory Controller cgroup to add
+> a configurable memory usage limit notification. The feature
+> was presented at the April 2009 Embedded Linux Conference.
+> 
+> Signed-off-by: Dan Malek <dan@embeddedalley.com>
+> Signed-off-by: Vladislav Buzov <vbuzov@embeddedalley.com>
+> ---
+>  Documentation/cgroups/mem_notify.txt |  140 ++++++++++++++++++++++++++
+>  include/linux/memcontrol.h           |   21 ++++
+>  init/Kconfig                         |    9 ++
+>  mm/memcontrol.c                      |  178 ++++++++++++++++++++++++++++++++++
+>  4 files changed, 348 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/cgroups/mem_notify.txt
+> 
+> diff --git a/Documentation/cgroups/mem_notify.txt b/Documentation/cgroups/mem_notify.txt
+> new file mode 100644
+> index 0000000..b4f20d0
+> --- /dev/null
+> +++ b/Documentation/cgroups/mem_notify.txt
+> @@ -0,0 +1,140 @@
+> +
+> +Memory Limit Notificiation
+> +
+> +Attempts have been made in the past to provide a mechanism for
+> +the notification to processes (task, an address space) when memory
+> +usage is approaching a high limit.  The intention is that it gives
+> +the application an opportunity to release some memory and continue
+> +operation rather than be OOM killed.  The CE Linux Forum requested
+> +a more comtemporary implementation, and this is the result.
+> +
+> +The memory threshold notification is a configurable extension to the
+> +existing Memory Resource Controller.  Please read memory.txt in this
+> +directory to understand its operation before continuing here.
+> +
+> +1. Operation
+> +
+> +When a kernel is configured with CGROUP_MEM_NOTIFY, three additional
+> +files will appear in the memory resource controller:
+> +
+> +	memory.notify_threshold_in_bytes
+> +	memory.notify_available_in_bytes
+> +	memory.notify_threshold_lowait
+> +
+> +The notification is based upon reaching a threshold below the memory
+> +resouce controller limit (memory.limit_in_bytes). The threshold
+> +represents the minimal number of bytes that should be available under
+> +the limit. When the controller group is created, the threshold is set
+> +to zero which triggers notification when the memory resource controller
+> +limit is reached.
+> +
+> +The threshold may be set by writing to memory.notify_threshold_in_bytes,
+> +such as:
+> +
+> +	echo 10M > memory.notify_threshold_in_bytes
+> +
+> +The current number of available bytes may be read at any time from
+> +the memory.notify_available_in_bytes
+> +
+> +The memory.notify_threshold_lowait is a blocking read file.  The read will
+> +block until one of four conditions occurs:
+> +
+> +    - The amount of available memory is equal or less than the threshold
+> +      defined in memory.notify_threshold_in_bytes
+> +    - The memory.notify_threshold_lowait file is written with any value (debug)
+> +    - A thread is moved to another controller group
+> +    - The cgroup is destroyed or forced empty (memory.force_empty)
+> +
+> +
+> +1.1 Example Usage
+> +
+> +An application must be designed to properly take advantage of this
+> +memory threshold notification feature.  It is a powerful management component
+> +of some operating systems and embedded devices that must provide
+> +highly available and reliable computing services.  The application works
+> +in conjunction with information provided by the operating system to
+> +control limited resource usage.  Since many programmers still think
+> +memory is infinite and never check the return value from malloc(), it
+> +may come as a surprise that such mechanisms have been utilized long ago.
+> +
+> +A typical application will be multithreaded, with one thread either
+> +polling or waiting for the notification event.  When the event occurs,
+> +the thread will take whatever action is appropriate within the application
+> +design.  This could be actually running a garbage collection algorithm
+> +or to simply signal other processing threads they must do something to
+> +reduce their memory usage.  The notification thread will then be required
+> +to poll the actual usage until the low limit of its choosing is met,
+> +at which time the reclaim of memory can stop and the notification thread
+> +will wait for the next event.
+> +
+> +Internally, the application only needs to
+> +fopen("memory.notify_available_in_bytes" ..) or
+> +fopen("memory.notify_threshold_lowait" ...), then either poll the former
+> +file or block read on the latter file using fread() or fscanf() as desired.
+> +Comparing the value returned from either of these read function with the
+> +value obtained by reading memory.notify_threshold_in_bytes will be an
+> +indication of the amount of memory used over the threshold limit.
 
-I don't believe that this is actually related to usb; it looks to be an
-inotify issue (and I believe lockdep is warning about a real bug).
+Polling is never good (from the power consumption and efficiency
+view point), unless by poll you mean select() and wait on events.
+Blocked read requires a dedicated thread, adding a select or some
+other notification mechanism allows the software to wait on several
+events at the same time.
 
-What lockdep is saying is that iprune_mutex is held during reclaim, when
-it is taken in prune_icache(); however invalidate_inodes() also takes
-iprune_mutex and then calls into fsnotify_unmount_inodes(), which ends
-up in fsnotify_destroy_mark_by_entry().  And if inotify is in use, then
-it calls into inotify_freeing_mark() via group->ops->freeing_mark, which
-just does inotify_ignored_and_remove_idr().
+> +
+> +2. Configuration
+> +
+> +Follow the instructions in memory.txt for the configuration and usage of
+> +the Memory Resource Controller cgroup.  Once this is created and tasks
+> +assigned, use the memory threshold notification as described here.
+> +
+> +The only action that is needed outside of the application waiting or polling
+> +is to set the memory.notify_threshold_in_bytes.  To set a notification to occur
+> +when memory usage of the cgroup reaches or exceeds 1 MByte below the limit
+> +can be simply done:
+> +
+> +	echo 1M > memory.notify_threshold_in_bytes
+> +
+> +This value may be read or changed at any time.  Writing a higher value once
+> +the Memory Resource Controller is in operation may trigger immediate
+> +notification if the usage is above the new threshold.
+> +
+> +3. Debug and Testing
+> +
+> +The design of cgroups makes it easier to perform some debugging or
+> +monitoring tasks without modification to the application.  For example,
+> +a write of any value to memory.notify_threshold_lowait will wake up all
+> +threads waiting for notifications regardless of current memory usage.
+> +
+> +Collecting performance data about the cgroup is also simplified, as
+> +no application modifications are necessary.  A separate task can be
+> +created that will open and monitor any necessary files of the cgroup
+> +(such as current limits, usage and usage percentages and even when
+> +notification occurs).  This task can also operate outside of the cgroup,
+> +so its memory usage is not charged to the cgroup.
+> +
+> +4. Design
+> +
+> +The memory threshold notification is a configurable extension to the
+> +existing Memory Resource Controller, which operates as described to
+> +track and manage the memory of the Control Group. The Memory Resource
+> +Controller will still continue to reclaim memory under pressure
+> +of the limits, and may OOM kill tasks within the cgroup according to
+> +the OOM Killer configuration.
+> +
+> +The memory notification threshold was chosen as a number of bytes of the
+> +memory not in use so the cgroup paramaters may continue to be dynamically
 
-And then if we look at this:
+Could you clarify the meaning of "not in use"
 
-void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
-				    struct fsnotify_group *group)
-{
-	//..
+> +modified without the need to modify the notificaton parameters.
+> +Otherwise, the notification threshold would have to also be computed
+> +and modified on any Memory Resource Controller operating parameter change.
+> +
+> +The cgroup file semantics are not well suited for this type of notificaton
+> +mechanism.  While applications may choose to simply poll the current
+> +usage at their convenience, it was also desired to have a notification
+> +event that would trigger when the usage attained the threshold.  The
+> +blocking read() was chosen, as it is the only current useful method.
 
-	event_priv = kmem_cache_alloc(event_priv_cachep, GFP_KERNEL);
+Could you please elaborate further, why would other mechanisms not
+work? Hint: please see cgroupstats.
 
-	//...
+> +This presented the problems of "out of band" notification, when you want
+> +to return some exceptional status other than reaching the notification
+> +threshold.  In the cases listed above, the read() on the
+> +memory.notify_threshold_lowait file will not block and return "0" for
+> +the remaining size.  When this occurs, the thread must determine if the task
+> +has moved to a new cgroup or if the cgroup has been destroyed.  Due to
+> +the usage model of this cgroup, neither is likely to happen during normal
+> +operation of a product.
+> +
+> +Dan Malek <dan@embeddedalley.com>
+> +Embedded Alley Solutions, Inc.
+> +6 July 2009
+> diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+> index e46a073..78205a3 100644
+> --- a/include/linux/memcontrol.h
+> +++ b/include/linux/memcontrol.h
+> @@ -118,6 +118,27 @@ static inline bool mem_cgroup_disabled(void)
+> 
+>  extern bool mem_cgroup_oom_called(struct task_struct *task);
+>  void mem_cgroup_update_mapped_file_stat(struct page *page, int val);
+> +
+> +#ifdef CONFIG_CGROUP_MEM_NOTIFY
+> +void mem_cgroup_notify_test_and_wakeup(struct mem_cgroup *mcg,
+> +			unsigned long long usage, unsigned long long limit);
+> +void mem_cgroup_notify_new_limit(struct mem_cgroup *mcg,
+> +						unsigned long long newlimit);
+> +void mem_cgroup_notify_move_task(struct cgroup *old_cont);
+> +#else
+> +static inline void mem_cgroup_notify_test_and_wakeup(struct mem_cgroup *mcg,
+> +			unsigned long long usage, unsigned long long limit)
+> +{
+> +}
+> +static inline void mem_cgroup_notify_new_limit(struct mem_cgroup *mcg,
+> +						unsigned long long newlimit)
+> +{
+> +}
+> +static inline void mem_cgroup_notify_move_task(struct cgroup *old_cont)
+> +{
+> +}
+> +#endif
+> +
+>  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+>  struct mem_cgroup;
+> 
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 1ce05a4..fb2f7d5 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -594,6 +594,15 @@ config CGROUP_MEM_RES_CTLR
+>  	  This config option also selects MM_OWNER config option, which
+>  	  could in turn add some fork/exit overhead.
+> 
+> +config CGROUP_MEM_NOTIFY
+> +	bool "Memory Usage Limit Notification"
+> +	depends on CGROUP_MEM_RES_CTLR
+> +	help
+> +	  Provides a memory notification when usage reaches a preset limit.
+> +	  It is an extenstion to the memory resource controller, since it
+> +	  uses the memory usage accounting of the cgroup to test against
+> +	  the notification limit.  (See Documentation/cgroups/mem_notify.txt)
+> +
+>  config CGROUP_MEM_RES_CTLR_SWAP
+>  	bool "Memory Resource Controller Swap Extension(EXPERIMENTAL)"
+>  	depends on CGROUP_MEM_RES_CTLR && SWAP && EXPERIMENTAL
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index e2fa20d..cf04279 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -6,6 +6,10 @@
+>   * Copyright 2007 OpenVZ SWsoft Inc
+>   * Author: Pavel Emelianov <xemul@openvz.org>
+>   *
+> + * Memory Limit Notification update
+> + * Copyright 2009 CE Linux Forum and Embedded Alley Solutions, Inc.
+> + * Author: Dan Malek <dan@embeddedalley.com>
+> + *
+>   * This program is free software; you can redistribute it and/or modify
+>   * it under the terms of the GNU General Public License as published by
+>   * the Free Software Foundation; either version 2 of the License, or
+> @@ -180,6 +184,11 @@ struct mem_cgroup {
+>  	/* set when res.limit == memsw.limit */
+>  	bool		memsw_is_minimum;
+> 
+> +#ifdef CONFIG_CGROUP_MEM_NOTIFY
+> +	unsigned long long notify_threshold_bytes;
+> +	wait_queue_head_t notify_threshold_wait;
+> +#endif
+> +
+>  	/*
+>  	 * statistics. This must be placed at the end of memcg.
+>  	 */
+> @@ -995,6 +1004,13 @@ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+> 
+>  	VM_BUG_ON(css_is_removed(&mem->css));
+> 
+> +	/*
+> +	 * We check on the way in so we don't have to duplicate code
+> +	 * in both the normal and error exit path.
+> +	 */
+> +	mem_cgroup_notify_test_and_wakeup(mem, mem->res.usage + PAGE_SIZE,
+> +							mem->res.limit);
+> +
 
-	fsnotify_add_notify_event(group, inotify_ignored_event, fsn_event_priv);
-}
+I don't think it is a good idea to directly read out mem->res.*
+without any protection
 
-so it does a GFP_KERNEL allocation with iprune_mutex held; which could
-deadlock if it triggers reclaim and ends up in prune_icache().  The
-trivial fix for this immediate issue is:
+>  	while (1) {
+>  		int ret;
+>  		bool noswap = false;
+> @@ -1744,6 +1760,12 @@ static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
+>  	u64 curusage, oldusage;
+> 
+>  	/*
+> +	 * Test and notify ahead of the necessity to free pages, as
+> +	 * applications giving up pages may help this reclaim procedure.
+> +	 */
+> +	mem_cgroup_notify_new_limit(memcg, val);
+> +
+> +	/*
+>  	 * For keeping hierarchical_reclaim simple, how long we should retry
+>  	 * is depends on callers. We set our retry-count to be function
+>  	 * of # of children which we should visit in this loop.
+> @@ -2308,6 +2330,139 @@ static int mem_cgroup_swappiness_write(struct cgroup *cgrp, struct cftype *cft,
+>  	return 0;
+>  }
+> 
+> +#ifdef CONFIG_CGROUP_MEM_NOTIFY
+> +/*
+> + * Check if a task exceeded notification threshold set for a memory cgroup.
+> + * Wake up waiting notification threads, if any.
+> + */
+> +void mem_cgroup_notify_test_and_wakeup(struct mem_cgroup *mcg,
 
-diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
-index ff27a29..b1727e8 100644
---- a/fs/notify/inotify/inotify_user.c
-+++ b/fs/notify/inotify/inotify_user.c
-@@ -379,7 +379,7 @@ void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
- 
- 	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
- 
--	event_priv = kmem_cache_alloc(event_priv_cachep, GFP_KERNEL);
-+	event_priv = kmem_cache_alloc(event_priv_cachep, GFP_NOFS);
- 	if (unlikely(!event_priv))
- 		goto skip_send_ignore;
- 
-but I don't think this fully fixes things -- notice that there is also
-fsnotify_add_notify_event() there, which it seems might do
-fsnotify_alloc_event_holder(), which is just
+Could you please use mem or memcg, since we've been using that as a
+standard convention in our code.
 
-	return kmem_cache_alloc(fsnotify_event_holder_cachep, GFP_KERNEL);
+> +				       unsigned long long usage,
+> +				       unsigned long long limit)
+> +{
+> +	if (unlikely(usage == RESOURCE_MAX))
 
-ie another GFP_KERNEL allocation that might happen with iprune_mutex
-held.  Again the simple fix is to change this to GFP_NOFS but I'm not
-sure if it might not be better to pass a gfp mask in to know when we
-might be in reclaim and when we might not be, to avoid failing
-allocations and lost events.
+I don't think it is a good idea to use unlikely since it is always
+likely for root to be at RESOURCE_MAX. Using likely/unlikely on user
+parameters IMHO is not a good idea.
 
-Anyway, hope this helps...
+> +		return;
+> +
+> +	if ((limit - usage <= mcg->notify_threshold_bytes) &&
+> +	    waitqueue_active(&mcg->notify_threshold_wait))
+> +		wake_up(&mcg->notify_threshold_wait);
+> +}
+> +/*
+> + * Check if current notification threshold exceeds new memory usage
+> + * limit set for a memory cgroup. If so, set threshold to zero to
+> + * notify tasks in the group when maximal memory usage is achieved.
+> + */
+> +void mem_cgroup_notify_new_limit(struct mem_cgroup *mcg,
+> +				 unsigned long long newlimit)
+> +{
+> +	if (newlimit <= mcg->notify_threshold_bytes)
+> +		mcg->notify_threshold_bytes = 0;
+> +
+> +	mem_cgroup_notify_test_and_wakeup(mcg, mcg->res.usage, newlimit);
+> +}
+
+
+Again, I am confused about the mutual exclusion, what protects the new
+values being added.
+
+> +
+> +static u64 mem_cgroup_notify_threshold_read(struct cgroup *cgrp,
+> +					    struct cftype *cft)
+> +{
+> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+> +	return memcg->notify_threshold_bytes;
+> +}
+> +
+> +static int mem_cgroup_notify_threshold_write(struct cgroup *cgrp,
+> +					     struct cftype *cft,
+> +					     const char *buffer)
+> +{
+> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+> +	unsigned long long val;
+> +	int ret;
+> +
+> +	/* This function does all necessary parse...reuse it */
+> +	ret = res_counter_memparse_write_strategy(buffer, &val);
+> +	if (ret)
+> +		return ret;
+> +
+> +	/* Threshold must be lower than usage limit */
+> +	if (val >= memcg->res.limit)
+> +		return -EINVAL;
+> +
+> +	memcg->notify_threshold_bytes = val;
+> +
+> +	/* Check to see if the new threshold should cause notification */
+> +	mem_cgroup_notify_test_and_wakeup(memcg, memcg->res.usage,
+> +							memcg->res.limit);
+> +
+> +	return 0;
+> +}
+> +
+> +static u64 mem_cgroup_notify_available_read(struct cgroup *cgrp,
+> +					    struct cftype *cft)
+> +{
+> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+> +	return memcg->res.limit - memcg->res.usage;
+> +}
+
+Please use res_counter abstractions to read mem->res values
+
+> +
+> +static u64 mem_cgroup_notify_threshold_lowait(struct cgroup *cgrp,
+> +					      struct cftype *cft)
+> +{
+> +	struct mem_cgroup *mem = mem_cgroup_from_cont(cgrp);
+> +	unsigned long long available_bytes;
+> +	DEFINE_WAIT(notify_lowait);
+> +
+> +	/*
+> +	 * A memory resource usage of zero is a special case that
+> +	 * causes us not to sleep.  It normally happens when the
+> +	 * cgroup is about to be destroyed, and we don't want someone
+> +	 * trying to sleep on a queue that is about to go away.  This
+> +	 * condition can also be forced as part of testing.
+> +	 */
+> +	available_bytes = mem->res.limit - mem->res.usage;
+> +	if (likely(mem->res.usage != 0)) {
+> +
+> +		prepare_to_wait(&mem->notify_threshold_wait, &notify_lowait,
+> +							TASK_INTERRUPTIBLE);
+> +
+> +		if (available_bytes > mem->notify_threshold_bytes)
+> +			schedule();
+> +
+> +		available_bytes = mem->res.limit - mem->res.usage;
+> +
+> +		finish_wait(&mem->notify_threshold_wait, &notify_lowait);
+> +	}
+> +
+> +	return available_bytes;
+> +}
+> +
+> +/*
+> + * This is used to wake up all threads that may be hanging
+> + * out waiting for a low memory condition prior to that happening.
+> + * Useful for triggering the event to assist with debug of applications.
+> + */
+> +static int mem_cgroup_notify_threshold_wake_em_up(struct cgroup *cgrp,
+> +						  unsigned int event)
+> +{
+> +	struct mem_cgroup *mem;
+> +
+> +	mem = mem_cgroup_from_cont(cgrp);
+> +	wake_up(&mem->notify_threshold_wait);
+> +	return 0;
+> +}
+> +
+> +/*
+> + * We wake up all notification threads any time a migration takes
+> + * place.  They will have to check to see if a move is needed to
+> + * a new cgroup file to wait for notification.
+> + * This isn't so much a task move as it is an attach.  A thread not
+> + * a child of an existing task won't have a valid parent, which
+> + * is necessary to test because it won't have a valid mem_cgroup
+> + * either.  Which further means it won't have a proper wait queue
+> + * and we can't do a wakeup.
+> + */
+> +void mem_cgroup_notify_move_task(struct cgroup *old_cont)
+> +{
+> +	if (old_cont->parent != NULL)
+> +		mem_cgroup_notify_threshold_wake_em_up(old_cont, 0);
+> +}
+> +#endif /* CONFIG_CGROUP_MEM_NOTIFY */
+> +
+> 
+>  static struct cftype mem_cgroup_files[] = {
+>  	{
+> @@ -2351,6 +2506,22 @@ static struct cftype mem_cgroup_files[] = {
+>  		.read_u64 = mem_cgroup_swappiness_read,
+>  		.write_u64 = mem_cgroup_swappiness_write,
+>  	},
+> +#ifdef CONFIG_CGROUP_MEM_NOTIFY
+> +	{
+> +		.name = "notify_threshold_in_bytes",
+> +		.write_string = mem_cgroup_notify_threshold_write,
+> +		.read_u64 = mem_cgroup_notify_threshold_read,
+> +	},
+> +	{
+> +		.name = "notify_available_in_bytes",
+> +		.read_u64 = mem_cgroup_notify_available_read,
+> +	},
+> +	{
+> +		.name = "notify_threshold_lowait",
+> +		.trigger = mem_cgroup_notify_threshold_wake_em_up,
+> +		.read_u64 = mem_cgroup_notify_threshold_lowait,
+> +	},
+> +#endif
+>  };
+> 
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> @@ -2554,6 +2725,11 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+>  	mem->last_scanned_child = 0;
+>  	spin_lock_init(&mem->reclaim_param_lock);
+> 
+> +#ifdef CONFIG_CGROUP_MEM_NOTIFY
+> +	init_waitqueue_head(&mem->notify_threshold_wait);
+> +	mem->notify_threshold_bytes = 0;
+> +#endif
+> +
+>  	if (parent)
+>  		mem->swappiness = get_swappiness(parent);
+>  	atomic_set(&mem->refcnt, 1);
+> @@ -2597,6 +2773,8 @@ static void mem_cgroup_move_task(struct cgroup_subsys *ss,
+>  				struct cgroup *old_cont,
+>  				struct task_struct *p)
+>  {
+> +	mem_cgroup_notify_move_task(old_cont);
+> +
+>  	mutex_lock(&memcg_tasklist);
+>  	/*
+>  	 * FIXME: It's better to move charges of this process from old
+> -- 
+> 1.5.6.3
+> 
+
+-- 
+	Balbir
