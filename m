@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZGHLYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZGHLkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbZGHLYr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 07:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbZGHLYk
+	id S1754761AbZGHLkH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 07:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbZGHLj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 07:24:40 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51710 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753652AbZGHLYk (ORCPT
+	Wed, 8 Jul 2009 07:39:56 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:48800 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752271AbZGHLj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 07:24:40 -0400
-Date: Sat, 4 Jul 2009 05:34:29 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: David Howells <dhowells@redhat.com>
-Cc: vapier.adi@gmail.com, rgetz@blackfin.uclinux.org, lethal@linux-sh.org,
-       gerg@uclinux.org, uclinux-dist-devel@blackfin.uclinux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FDPIC: Ignore the loader's PT_GNU_STACK when
-	calculating the stack size
-Message-ID: <20090704033429.GA1799@ucw.cz>
-References: <20090704024606.GE1345@ucw.cz> <20090701120814.30741.10146.stgit@warthog.procyon.org.uk> <24530.1247050900@redhat.com>
+	Wed, 8 Jul 2009 07:39:56 -0400
+Date: Wed, 8 Jul 2009 12:39:49 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alexey Fisher <bug-track@fisher-privat.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Richard A. Holden III" <aciddeath@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Intel BIOS - Corrupted low memory at ffff880000004200
+Message-ID: <20090708113949.GA8960@srcf.ucam.org>
+References: <4A5210A2.2080301@fisher-privat.net> <4A52254F.8080103@fisher-privat.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <24530.1247050900@redhat.com>
+In-Reply-To: <4A52254F.8080103@fisher-privat.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-07-08 12:01:40, David Howells wrote:
-> Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > The patch seems wrong to me; loader needs the stack, too, right?
-> > 
-> > What about making sure that the loader specifies reasonable stack
-> > size, instead?
-> 
-> The loader doesn't need its own stack, unless it _is_ the executable.  It uses
-> the executable's stack.  The problem is that the executable and the loader can
-> both specify the stack size for NOMMU, but which one do we pick, or do we
-> consider both.
+On Mon, Jul 06, 2009 at 06:24:47PM +0200, Alexey Fisher wrote:
+> Hallo Ingo, Richard.
+>
+> I'm getting "Corrupted low memory" trace with my Intel DG45ID board
+> after resume. This board  has different dmi-bios-vendor... so probably
+> it will be nice to have it in your patch.
 
-Imageine loader needs 64K, while executable only needs 4K. You surely
-want to execute it with 64K stack, because it will not fit into 4K?
+I'm beginning to think that we should be doing this on all hardware, 
+perhaps with a kernel option to disable it for embedded devices that 
+really need that 64K. The low-memory corruption issue seems to be very 
+widespread.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Matthew Garrett | mjg59@srcf.ucam.org
