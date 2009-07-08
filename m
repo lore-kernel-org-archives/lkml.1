@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbZGHJXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbZGHJ1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758644AbZGHJXe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 05:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757614AbZGHJXZ
+	id S1758813AbZGHJ1S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 05:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZGHJ1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 05:23:25 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40648 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756768AbZGHJXY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 05:23:24 -0400
-Date: Wed, 8 Jul 2009 11:21:33 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: tridge@samba.org
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090708092133.GC24385@elf.ucw.cz>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090702214646.GD1485@ucw.cz> <19021.12158.915384.574218@samba.org> <20090702223349.GA30840@elf.ucw.cz> <19021.14217.587592.808935@samba.org> <20090702224446.GD30840@elf.ucw.cz> <19021.18919.560478.630755@samba.org>
+	Wed, 8 Jul 2009 05:27:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48367 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751068AbZGHJ1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 05:27:05 -0400
+Message-ID: <4A546646.70305@kernel.org>
+Date: Wed, 08 Jul 2009 18:26:30 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19021.18919.560478.630755@samba.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au,
+       Sam Ravnborg <sam@ravnborg.org>, Paul Mundt <lethal@linux-sh.org>,
+       Tony Luck <tony.luck@intel.com>, Mike Frysinger <vapier@gentoo.org>
+Subject: [PATCH percpu 1/2] microblaze: include EXIT_TEXT to _stext
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Jul 2009 09:26:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-07-03 09:59:35, tridge@samba.org wrote:
-> Hi Pavel,
-> 
->  > That's why we have ethernet checksums. 
-> 
-> which of course just changes the number of bits. The argument remains
-> the same. 
+From: Michal Simek <monstr@monstr.eu>
 
-Ok, so what is your estimate of XP crash probability?
+Microblaze wants to throw out EXIT_TEXT during runtime too.  This
+hasn't caused trouble till now because the linker script didn't
+discard EXIT_TEXT and it ended up in its default output section.  As
+discard definition is about to be unified, include EXIT_TEXT into
+_stext explicitly and while at it replace explicit exitcall definition
+to EXIT_CALL.
 
->  > It already _was_ perfect before you started patching it.
-> 
-> wow, I really didn't expect the objection to my patch to be that VFAT
-> is perfect!
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+Michal, I added the commit messaeg and SOB.  If you don't like it
+please let me know.
 
-But ... it was, and there is still possibility of just using position
-in directory to avoid collisions completely.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If there's no further objection, I'll commit this and the next patch
+to percpu#for-next.
+
+Thanks.
+
+ arch/microblaze/kernel/vmlinux.lds.S |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: work/arch/microblaze/kernel/vmlinux.lds.S
+===================================================================
+--- work.orig/arch/microblaze/kernel/vmlinux.lds.S
++++ work/arch/microblaze/kernel/vmlinux.lds.S
+@@ -23,8 +23,8 @@ SECTIONS {
+ 		_stext = . ;
+ 		*(.text .text.*)
+ 		*(.fixup)
+-
+-		*(.exitcall.exit)
++               EXIT_TEXT
++               EXIT_CALL
+ 		SCHED_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
