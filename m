@@ -1,275 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758464AbZGHUSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbZGHUWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758464AbZGHUSt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 16:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbZGHUSm
+	id S1758244AbZGHUWg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 16:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbZGHUW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 16:18:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34427 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754753AbZGHUSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 16:18:41 -0400
-Date: Wed, 8 Jul 2009 16:17:43 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
-       rostedt@goodmis.org, fweisbec@gmail.com
-Subject: [PATCH 3/2] perf_counters: add debugfs dir option
-Message-ID: <20090708201743.GA3123@redhat.com>
-References: <cover.1246912068.git.jbaron@redhat.com> <0d7326e18b9860fbf8fb2739f90a23eb9262e24b.1246912068.git.jbaron@redhat.com> <1246955360.8143.113.camel@twins>
+	Wed, 8 Jul 2009 16:22:27 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:45712 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754668AbZGHUW0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 16:22:26 -0400
+Message-ID: <4A54FFFE.10306@petalogix.com>
+Date: Wed, 08 Jul 2009 22:22:22 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246955360.8143.113.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, mingo@elte.hu,
+       arnd@arndb.de, lethal@linux-sh.org, ltp-list@lists.sourceforge.net
+Subject: Re: mmap hw behavior
+References: <4A54D14F.9090101@petalogix.com>	<20090708.103520.193697491.davem@davemloft.net>	<4A54DF6F.1010405@petalogix.com> <20090708.110624.104984745.davem@davemloft.net>
+In-Reply-To: <20090708.110624.104984745.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 10:29:20AM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-07-06 at 17:12 -0400, Jason Baron wrote:
-> > Add support to 'perf list' and 'perf stat' for kernel tracepoints. The
-> > implementation creates a 'for_each_subsystem' and 'for_each_event' for
-> > easy iteration over the tracepoints. The debugfs filesystem must be mounted
-> > at '/sys/kernel/debug'. We can add an optional search path in the future.
-> 
-> I don't have a single machine that has that mount point.
-> 
-> 
+David Miller wrote:
+> From: Michal Simek <michal.simek@petalogix.com>
+> Date: Wed, 08 Jul 2009 20:03:27 +0200
+>
+>   
+>> David Miller wrote:
+>>     
+>>> From: Michal Simek <michal.simek@petalogix.com>
+>>> Date: Wed, 08 Jul 2009 19:03:11 +0200
+>>>
+>>>   
+>>>       
+>>>> When I call mmap for that open file with pointer to calloc place
+>>>> (first parameter, + length zero) it should be one tlb invalidation
+>>>> for calloc and new tlb which connect open file.  We check it and we
+>>>> don't have any tlb invalidation that's why I think that kernel do
+>>>> different thigs.  Or is it there any copying? Or anything different?
+>>>>     
+>>>>         
+>>> There is no need to tlb flush the calloc area unless that memory area
+>>> is actually touched by the user application and thus the page is
+>>> faulted in.
+>>>   
+>>>       
+>> That calloc area is filled by any value (in that test). Is it mean that
+>> for this case when calloc area is touched
+>> there must be tlb invalidation + remapping?
+>>     
+>
+> Yes, if the calloc area is written to by the application, there
+> should be a tlb flush when the mmap() overrides that virtual region
+> with a different mapping.
+>   
+Can you please point me to any code which exactly do this? (for example
+file mm/mmap.c line from ... to ... )
 
-ok, The patch below adds support for a 'PERF_DIR_DEBUGFS' environment
-variable. It also adds a command line for '--debugfs-dir' and
-'--debugfs-dir='. By default 'perf' continues to look in
-/sys/kernel/debug, which I believe is most common.
+Thanks,
+Michal
 
-thanks,
-
--Jason
-
-Signed-off-by: Jason Baron <jbaron@redhat.com>
-
-
- tools/perf/perf.c              |   16 ++++++++
- tools/perf/util/cache.h        |    1 +
- tools/perf/util/parse-events.c |   78
-++++++++++++++++++++++++----------------
- 3 files changed, 62 insertions(+), 33 deletions(-)
-
-
-
-diff --git a/tools/perf/perf.c b/tools/perf/perf.c
-index c565678..29876ee 100644
---- a/tools/perf/perf.c
-+++ b/tools/perf/perf.c
-@@ -122,6 +122,20 @@ static int handle_options(const char*** argv, int* argc, int* envchanged)
- 			setenv(PERF_WORK_TREE_ENVIRONMENT, cmd + 12, 1);
- 			if (envchanged)
- 				*envchanged = 1;
-+		} else if (!strcmp(cmd, "--debugfs-dir")) {
-+			if (*argc < 2) {
-+				fprintf(stderr, "No directory given for --debugfs-dir.\n");
-+				usage(perf_usage_string);
-+			}
-+			setenv(PERF_DEBUGFS_ENVIRONMENT, (*argv)[1], 1);
-+			if (envchanged)
-+				*envchanged = 1;
-+			(*argv)++;
-+			(*argc)--;
-+		} else if (!prefixcmp(cmd, "--debugfs-dir=")) {
-+			setenv(PERF_DEBUGFS_ENVIRONMENT, cmd + 14, 1);
-+			if (envchanged)
-+				*envchanged = 1;
- 		} else {
- 			fprintf(stderr, "Unknown option: %s\n", cmd);
- 			usage(perf_usage_string);
-@@ -354,7 +368,7 @@ int main(int argc, const char **argv)
- 	cmd = perf_extract_argv0_path(argv[0]);
- 	if (!cmd)
- 		cmd = "perf-help";
--
-+	setenv(PERF_DEBUGFS_ENVIRONMENT, "/sys/kernel/debug/", 0);
- 	/*
- 	 * "perf-xxxx" is the same as "perf xxxx", but we obviously:
- 	 *
-diff --git a/tools/perf/util/cache.h b/tools/perf/util/cache.h
-index 161d5f4..4ba4b3e 100644
---- a/tools/perf/util/cache.h
-+++ b/tools/perf/util/cache.h
-@@ -18,6 +18,7 @@
- #define PERFATTRIBUTES_FILE ".perfattributes"
- #define INFOATTRIBUTES_FILE "info/attributes"
- #define ATTRIBUTE_MACRO_PREFIX "[attr]"
-+#define PERF_DEBUGFS_ENVIRONMENT "PERF_DIR_DEBUGFS"
- 
- typedef int (*config_fn_t)(const char *, const char *, void *);
- extern int perf_default_config(const char *, const char *, void *);
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index d454eac..54b6c23 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -5,6 +5,7 @@
- #include "parse-events.h"
- #include "exec_cmd.h"
- #include "string.h"
-+#include "cache.h"
- 
- extern char *strcasestr(const char *haystack, const char *needle);
- 
-@@ -12,8 +13,6 @@ int					nr_counters;
- 
- struct perf_counter_attr		attrs[MAX_COUNTERS];
- 
--static char default_debugfs_path[] = "/sys/kernel/debug/tracing/events";
--
- struct event_symbol {
- 	u8	type;
- 	u64	config;
-@@ -21,6 +20,8 @@ struct event_symbol {
- 	char	*alias;
- };
- 
-+static char debugfs_path[MAXPATHLEN];
-+
- #define CHW(x) .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_##x
- #define CSW(x) .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_##x
- 
-@@ -112,30 +113,38 @@ static unsigned long hw_cache_stat[C(MAX)] = {
-  [C(BPU)]	= (CACHE_READ),
- };
- 
--#define for_each_subsystem(sys_dir, sys_dirent, sys_next, file, st)	       \
--	while (!readdir_r(sys_dir, &sys_dirent, &sys_next) && sys_next)	       \
--	if (sprintf(file, "%s/%s", default_debugfs_path, sys_dirent.d_name) && \
--	   (stat(file, &st) == 0) && (S_ISDIR(st.st_mode)) &&		       \
--	   (strcmp(sys_dirent.d_name, ".") != 0) &&			       \
-+#define for_each_subsystem(sys_dir, sys_dirent, sys_next, file, st)	     \
-+	while (!readdir_r(sys_dir, &sys_dirent, &sys_next) && sys_next)	     \
-+	if (snprintf(file, MAXPATHLEN, "%s/%s/%s",			     \
-+		     getenv(PERF_DEBUGFS_ENVIRONMENT), "tracing/events",     \
-+		     sys_dirent.d_name) &&				     \
-+	   (stat(file, &st) == 0) && (S_ISDIR(st.st_mode)) &&		     \
-+	   (strcmp(sys_dirent.d_name, ".") != 0) &&			     \
- 	   (strcmp(sys_dirent.d_name, "..") != 0))
- 
--#define for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next, file, st)    \
--	while (!readdir_r(evt_dir, &evt_dirent, &evt_next) && evt_next)        \
--	if (sprintf(file, "%s/%s/%s", default_debugfs_path, sys_dirent.d_name, \
--			evt_dirent.d_name) && 				       \
--	   (stat(file, &st) == 0) && (S_ISDIR(st.st_mode)) &&		       \
--	   (strcmp(evt_dirent.d_name, ".") != 0) && 			       \
-+#define for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next, file, st)  \
-+	while (!readdir_r(evt_dir, &evt_dirent, &evt_next) && evt_next)	     \
-+	if (snprintf(file, MAXPATHLEN, "%s/%s/%s/%s",			     \
-+		     getenv(PERF_DEBUGFS_ENVIRONMENT), "tracing/events",     \
-+		     sys_dirent.d_name, evt_dirent.d_name) &&		     \
-+	   (stat(file, &st) == 0) && (S_ISDIR(st.st_mode)) &&		     \
-+	   (strcmp(evt_dirent.d_name, ".") != 0) &&			     \
- 	   (strcmp(evt_dirent.d_name, "..") != 0))
- 
--#define MAX_PATH_LENGTH (strlen(default_debugfs_path) + 3 + \
--			(3 * (strlen(sys_dirent.d_name))) + 1)
- #define MAX_EVENT_LENGTH 30
- 
--static int valid_debugfs_mount(void)
-+static void set_debugfs_path(void)
-+{
-+	snprintf(debugfs_path, MAXPATHLEN, "%s/%s",
-+		 getenv(PERF_DEBUGFS_ENVIRONMENT),
-+		 "tracing/events");
-+}
-+
-+static int valid_debugfs_mount(const char *mount)
- {
- 	struct statfs st_fs;
- 
--	if (statfs(default_debugfs_path, &st_fs) < 0)
-+	if (statfs(mount, &st_fs) < 0)
- 		return -ENOENT;
- 	else if (st_fs.f_type != (long) DEBUGFS_MAGIC)
- 		return -ENOENT;
-@@ -151,12 +160,13 @@ static char *tracepoint_id_to_name(u64 config)
- 	char id_buf[4];
- 	int fd;
- 	long long id;
--	char evt_path[MAX_PATH_LENGTH];
-+	char evt_path[MAXPATHLEN];
- 
--	if (valid_debugfs_mount())
-+	set_debugfs_path();
-+	if (valid_debugfs_mount(debugfs_path))
- 		return "unkown";
- 
--	sys_dir = opendir(default_debugfs_path);
-+	sys_dir = opendir(debugfs_path);
- 	if (!sys_dir)
- 		goto cleanup;
- 	for_each_subsystem(sys_dir, sys_dirent, sys_next, evt_path, st) {
-@@ -165,8 +175,9 @@ static char *tracepoint_id_to_name(u64 config)
- 			goto cleanup;
- 		for_each_event(sys_dirent, evt_dir, evt_dirent, evt_next,
- 								evt_path, st) {
--			sprintf(evt_path, "%s/%s/%s/id", default_debugfs_path,
--				sys_dirent.d_name, evt_dirent.d_name);
-+			snprintf(evt_path, MAXPATHLEN, "%s/%s/%s/id",
-+				 debugfs_path, sys_dirent.d_name,
-+				 evt_dirent.d_name);
- 			fd = open(evt_path, O_RDONLY);
- 			if (fd < 0)
- 				continue;
-@@ -362,9 +373,10 @@ static int parse_tracepoint_event(const char **strp,
- 	int fd;
- 	unsigned int sys_length, evt_length;
- 	u64 id;
--	char evt_path[MAX_PATH_LENGTH];
-+	char evt_path[MAXPATHLEN];
- 
--	if (valid_debugfs_mount())
-+	set_debugfs_path();
-+	if (valid_debugfs_mount(debugfs_path))
- 		return 0;
- 
- 	evt_name = strchr(*strp, ':');
-@@ -381,7 +393,7 @@ static int parse_tracepoint_event(const char **strp,
- 	} else
- 		return 0;
- 
--	sys_dir = opendir(default_debugfs_path);
-+	sys_dir = opendir(debugfs_path);
- 	if (!sys_dir)
- 		goto cleanup;
- 	for_each_subsystem(sys_dir, sys_dirent, sys_next, evt_path, st) {
-@@ -392,10 +404,11 @@ static int parse_tracepoint_event(const char **strp,
- 			for_each_event(sys_dirent, evt_dir, evt_dirent,
- 						       evt_next, evt_path, st) {
- 				if (strcmp(evt_dirent.d_name, evt_name) == 0) {
--					sprintf(evt_path, "%s/%s/%s/id",
--						default_debugfs_path,
--						sys_dirent.d_name,
--						evt_dirent.d_name);
-+					snprintf(evt_path, MAXPATHLEN,
-+						 "%s/%s/%s/id",
-+						 debugfs_path,
-+						 sys_dirent.d_name,
-+						 evt_dirent.d_name);
- 					fd = open(evt_path, O_RDONLY);
- 					if (fd < 0)
- 						continue;
-@@ -589,12 +602,13 @@ static void print_tracepoint_events(void)
- 	DIR *sys_dir, *evt_dir;
- 	struct dirent *sys_next, *evt_next, sys_dirent, evt_dirent;
- 	struct stat st;
--	char evt_path[MAX_PATH_LENGTH];
-+	char evt_path[MAXPATHLEN];
- 
--	if (valid_debugfs_mount())
-+	set_debugfs_path();
-+	if (valid_debugfs_mount(debugfs_path))
- 		return;
- 
--	sys_dir = opendir(default_debugfs_path);
-+	sys_dir = opendir(debugfs_path);
- 	if (!sys_dir)
- 		goto cleanup;
- 	for_each_subsystem(sys_dir, sys_dirent, sys_next, evt_path, st) {
-
+-- 
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
 
