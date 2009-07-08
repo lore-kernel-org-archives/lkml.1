@@ -1,84 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZGHLmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbZGHLn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbZGHLmR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 07:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZGHLmC
+	id S1755923AbZGHLn7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 07:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbZGHLnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 07:42:02 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:55912 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbZGHLmB (ORCPT
+	Wed, 8 Jul 2009 07:43:50 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:41979 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753540AbZGHLnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 07:42:01 -0400
-Subject: Re: can we move USB_DEVICEFS to non-embedded?
-From: Scott James Remnant <scott@ubuntu.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Jones <davej@redhat.com>, Peter Jones <pjones@redhat.com>
-In-Reply-To: <21d7e9970907080420h41375e36q1efacb9f3555b9de@mail.gmail.com>
-References: <b6a2187b0906222211i4509bc4cu39e9123cba61039a@mail.gmail.com>
-	 <20090623144221.GA29593@suse.de>
-	 <b6a2187b0906230829k308cb875r7362f184bccb1d6d@mail.gmail.com>
-	 <20090623153928.GA32604@suse.de>
-	 <21d7e9970907080354h6949b27va40fb830f612287@mail.gmail.com>
-	 <ac3eb2510907080403h14e5597eu3dee309456eab17e@mail.gmail.com>
-	 <21d7e9970907080420h41375e36q1efacb9f3555b9de@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-3ZGNBgZcbkPoQv+KtLSo"
-Date: Wed, 08 Jul 2009 12:42:24 +0100
-Message-Id: <1247053344.12859.29.camel@quest>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 8 Jul 2009 07:43:49 -0400
+In-Reply-To: <20090623145059.GA6478@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+MIME-Version: 1.0
+Subject: [PATCH] score: add regsets support for score
+X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
+Message-ID: <OF5282122C.261603C7-ON482575ED.003A86FA-482575ED.003C4AEE@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Wed, 8 Jul 2009 18:53:12 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/07/08 ?? 06:53:13,
+	Serialize complete at 2009/07/08 ?? 06:53:13
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ptrace.c add register sets support for score architecture.
 
---=-3ZGNBgZcbkPoQv+KtLSo
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+- genregs_get(struct task_struct *target,
+               const struct user_regset *regset,
+               unsigned int pos, unsigned int count,
+               void *kbuf, void __user *ubuf)
+        Retrieve the contents of score userspace general registers.
 
-On Wed, 2009-07-08 at 21:20 +1000, Dave Airlie wrote:
+- genregs_set(struct task_struct *target,
+               const struct user_regset *regset,
+               unsigned int pos, unsigned int count,
+               const void *kbuf, const void __user *ubuf)
+        Update the contents of the score userspace general registers.
 
-> On Wed, Jul 8, 2009 at 9:03 PM, Kay Sievers<kay.sievers@vrfy.org> wrote:
-> > On Wed, Jul 8, 2009 at 12:54, Dave Airlie<airlied@gmail.com> wrote:
-> >
-> >> Okay can we revert this for a better reason? it seems to have unhidden=
- a race
-> >> condition on booting some of my machines. I've booted some other machi=
-nes
-> >> with the same USB disk and the same kernel fine.
-> >
-> > Are you sure? USBFS is for userspace USB drivers, booting from
-> > usb-storage devices should be fully handled by the kernel.
-> >
->=20
-> Yes, changing just this option means the difference between a bootable
-> and stuck in initrd system. maybe Peter knows if our initrd does somethin=
-g
-> otherwise I suspect we have a race that usbfs was hiding.
->=20
-I assume you're not using libusual or anything like that?  We had a race
-caused by libusual calling modprobe before we'd generated modules.dep
+Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
+---
+ arch/score/include/asm/elf.h |    3 +-
+ arch/score/kernel/ptrace.c   |   78 
+++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 80 insertions(+), 1 deletions(-)
 
-Scott
---=20
-Scott James Remnant
-scott@ubuntu.com
-
---=-3ZGNBgZcbkPoQv+KtLSo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpUhh8ACgkQSnQiFMl4yK65dwCgi3zrJuE/QISisTw2JSEOp/Pq
-f+wAn39A+hssib6AYn25fkz7jesmUrpO
-=z+P6
------END PGP SIGNATURE-----
-
---=-3ZGNBgZcbkPoQv+KtLSo--
+diff --git a/arch/score/include/asm/elf.h b/arch/score/include/asm/elf.h
+index 8324363..d69668c 100644
+--- a/arch/score/include/asm/elf.h
++++ b/arch/score/include/asm/elf.h
+@@ -2,7 +2,7 @@
+ #define _ASM_SCORE_ELF_H
+ 
+ /* ELF register definitions */
+-#define ELF_NGREG      45
++#define ELF_NGREG      42
+ #define ELF_NFPREG     33
+ #define EM_SCORE7      135
+ 
+@@ -57,6 +57,7 @@ do { \
+ struct task_struct;
+ struct pt_regs;
+ 
++#define CORE_DUMP_USE_REGSET
+ #define USE_ELF_CORE_DUMP
+ #define ELF_EXEC_PAGESIZE      PAGE_SIZE
+ 
+diff --git a/arch/score/kernel/ptrace.c b/arch/score/kernel/ptrace.c
+index 1db876b..9eec6a2 100644
+--- a/arch/score/kernel/ptrace.c
++++ b/arch/score/kernel/ptrace.c
+@@ -23,11 +23,89 @@
+  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  */
+ 
++#include <linux/elf.h>
+ #include <linux/kernel.h>
+ #include <linux/ptrace.h>
++#include <linux/regset.h>
+ 
+ #include <asm/uaccess.h>
+ 
++/*
++ * retrieve the contents of SCORE userspace general registers
++ */
++static int genregs_get(struct task_struct *target,
++                      const struct user_regset *regset,
++                      unsigned int pos, unsigned int count,
++                      void *kbuf, void __user *ubuf)
++{
++       const struct pt_regs *regs = task_pt_regs(target);
++       int end_pos = sizeof(struct pt_regs) - 9 * sizeof(long);
++       int ret;
++
++       ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++                                 regs->regs,
++                                 offsetof(struct pt_regs, regs),
++                                 end_pos);
++       if (!ret)
++               ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
++                                               end_pos, -1);
++
++       return ret;
++}
++
++/*
++ * update the contents of the SCORE userspace general registers
++ */
++static int genregs_set(struct task_struct *target,
++                      const struct user_regset *regset,
++                      unsigned int pos, unsigned int count,
++                      const void *kbuf, const void __user *ubuf)
++{
++       struct pt_regs *regs = task_pt_regs(target);
++       int end_pos = sizeof(struct pt_regs) - 9 * sizeof(long);
++       int ret;
++
++       ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++                                regs->regs,
++                                offsetof(struct pt_regs, regs),
++                                end_pos);
++       if (!ret)
++               ret = user_regset_copyin_ignore(&pos, &count, &kbuf, 
+&ubuf,
++                                               end_pos, -1);
++
++       return ret;
++}
++
++/*
++ * Define the register sets available on the score7 under Linux
++ */
++enum score7_regset {
++       REGSET_GENERAL,
++};
++
++static const struct user_regset score7_regsets[] = {
++       [REGSET_GENERAL] = {
++               .core_note_type = NT_PRSTATUS,
++               .n              = ELF_NGREG,
++               .size           = sizeof(long),
++               .align          = sizeof(long),
++               .get            = genregs_get,
++               .set            = genregs_set,
++       },
++};
++
++static const struct user_regset_view user_score_native_view = {
++       .name           = "score7",
++       .e_machine      = EM_SCORE7,
++       .regsets        = score7_regsets,
++       .n              = ARRAY_SIZE(score7_regsets),
++};
++
++const struct user_regset_view *task_user_regset_view(struct task_struct 
+*task)
++{
++       return &user_score_native_view;
++}
++
+ static int is_16bitinsn(unsigned long insn)
+ {
+        if ((insn & INSN32_MASK) == INSN32_MASK)
+-- 
+1.6.2
 
