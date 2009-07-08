@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbZGHATh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbZGHAcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbZGHATh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 20:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757239AbZGHATa
+	id S1758960AbZGHAcR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 20:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbZGHAcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 20:19:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47788 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756094AbZGHATa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 20:19:30 -0400
-Message-ID: <4A53E602.6030505@kernel.org>
-Date: Wed, 08 Jul 2009 09:19:14 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 7 Jul 2009 20:32:07 -0400
+Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:62092 "EHLO
+	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754229AbZGHAcH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 20:32:07 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #13667] drm: display arifacts when X.Org is stopped
+Date: Wed, 8 Jul 2009 02:32:03 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Dave Airlie" <airlied@gmail.com>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <dWkuWjWDsSB.A.6tE.d0oUKB@chimera>
+In-Reply-To: <dWkuWjWDsSB.A.6tE.d0oUKB@chimera>
 MIME-Version: 1.0
-To: "Figo.zhang" <figo1802@gmail.com>
-CC: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] vmalloc.c: fix double error checking
-References: <1246983201.2597.13.camel@myhost>
-In-Reply-To: <1246983201.2597.13.camel@myhost>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 08 Jul 2009 00:19:26 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200907080232.04551.elendil@planet.nl>
+X-OriginalArrivalTime: 08 Jul 2009 00:32:05.0733 (UTC) FILETIME=[8523C950:01C9FF63]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Figo.zhang wrote:
-> it is no need for double error checking.
-> 
-> Signed-off-by: Figo.zhang <figo1802@gmail.com>
-> -		err = vmap_pud_range(pgd, addr, next, prot, pages, &nr);
-> -		if (err)
-> -			break;
-> +		if (vmap_pud_range(pgd, addr, next, prot, pages, &nr))
-> +			return -ENOMEM;
+On Tuesday 07 July 2009, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me
+> know (either way).
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13667
+> Subject	: drm: display arifacts when X.Org is stopped
+> Submitter	: Frans Pop <elendil@planet.nl>
+> Date		: 2009-06-27 18:52 (10 days old)
+> References	: http://lkml.org/lkml/2009/6/27/105
 
-Wouldn't it be better to keep the error return value?
+Problem is still there with -rc2. Dave said he'd try to reproduce, but 
+I've not heard back from him yet.
 
-Thanks.
-
---
-tejun
+Cheers,
+FJP
