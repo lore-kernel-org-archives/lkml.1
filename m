@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbZGHOqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbZGHOqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757763AbZGHOqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 10:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbZGHOp7
+	id S1758059AbZGHOqa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 10:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757663AbZGHOqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 10:45:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60502 "EHLO hera.kernel.org"
+	Wed, 8 Jul 2009 10:46:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60514 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757189AbZGHOp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 10:45:59 -0400
-Subject: [PATCH 2/44] includecheck fix: arm, atomic.h
+	id S1757518AbZGHOqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 10:46:08 -0400
+Subject: [PATCH 4/44] includecheck fix: arm, board-dm355-leopard.c
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
 References: <1247063308.4382.12.camel@ht.satnam>
 Content-Type: text/plain
-Date: Wed, 08 Jul 2009 20:01:39 +0530
-Message-Id: <1247063499.4382.16.camel@ht.satnam>
+Date: Wed, 08 Jul 2009 20:04:33 +0530
+Message-Id: <1247063673.4382.20.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -28,26 +29,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 fix the following 'make includecheck' warning:
 
-  arch/arm/include/asm/atomic.h: asm/system.h is included more than once.
+  arch/arm/mach-davinci/board-dm355-leopard.c: mach/common.h is included more than once.
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/arm/include/asm/atomic.h |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ arch/arm/mach-davinci/board-dm355-leopard.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/include/asm/atomic.h b/arch/arm/include/asm/atomic.h
-index 9e07fe5..9ed2377 100644
---- a/arch/arm/include/asm/atomic.h
-+++ b/arch/arm/include/asm/atomic.h
-@@ -159,8 +159,6 @@ static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
+diff --git a/arch/arm/mach-davinci/board-dm355-leopard.c b/arch/arm/mach-davinci/board-dm355-leopard.c
+index 28c9008..84ad5d1 100644
+--- a/arch/arm/mach-davinci/board-dm355-leopard.c
++++ b/arch/arm/mach-davinci/board-dm355-leopard.c
+@@ -36,7 +36,6 @@
+ #include <mach/serial.h>
+ #include <mach/nand.h>
+ #include <mach/mmc.h>
+-#include <mach/common.h>
  
- #else /* ARM_ARCH_6 */
- 
--#include <asm/system.h>
--
- #ifdef CONFIG_SMP
- #error SMP not supported on pre-ARMv6 CPUs
- #endif
+ #define DAVINCI_ASYNC_EMIF_CONTROL_BASE		0x01e10000
+ #define DAVINCI_ASYNC_EMIF_DATA_CE0_BASE	0x02000000
 -- 
 1.6.0.6
 
