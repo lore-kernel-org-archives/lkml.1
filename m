@@ -1,98 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759149AbZGHJou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758466AbZGHJpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759149AbZGHJou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 05:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758579AbZGHJol
+	id S1758466AbZGHJpr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 05:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758579AbZGHJpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 05:44:41 -0400
-Received: from krypton.spydercomm.com ([69.64.33.54]:58771 "EHLO
-	krypton.spydercomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758227AbZGHJok (ORCPT
+	Wed, 8 Jul 2009 05:45:40 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46973 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758300AbZGHJpj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 05:44:40 -0400
-Message-ID: <4A546A87.5070009@queuemail.com>
-Date: Wed, 08 Jul 2009 05:44:39 -0400
-From: paul s <mactel-linux.org-users@queuemail.com>
-Reply-To: mactel-linux.org-users@queuemail.com
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: mactel-linux-users <mactel-linux-users@lists.sourceforge.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [Mactel-linux-users] touchpad synaptics pm-suspend
-References: <4A53C580.2040000@queuemail.com> <4A540461.1030204@gmail.com> <4A541D42.8070004@queuemail.com> <4A5424C5.10405@gmail.com>
-In-Reply-To: <4A5424C5.10405@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 8 Jul 2009 05:45:39 -0400
+Subject: Re: [RFC PATCH 1/3] kmemleak: Allow partial freeing of memory
+ blocks
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org
+In-Reply-To: <1247046141.6595.12.camel@pc1117.cambridge.arm.com>
+References: <20090706104654.16051.44029.stgit@pc1117.cambridge.arm.com>
+	 <20090706105149.16051.99106.stgit@pc1117.cambridge.arm.com>
+	 <1246950733.24285.10.camel@penberg-laptop>
+	 <tnxtz1ovq8p.fsf@pc1117.cambridge.arm.com>
+	 <tnxiqi4vchj.fsf@pc1117.cambridge.arm.com>
+	 <1247035243.15919.28.camel@penberg-laptop>
+	 <1247046141.6595.12.camel@pc1117.cambridge.arm.com>
+Date: Wed, 08 Jul 2009 12:45:36 +0300
+Message-Id: <1247046336.15919.69.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-does your touchpad work from resume? i know it is not the same model, 
-but curious...
-
-i updated the kernel from rawhide(2.6.31.rc2) and there were just crazy 
-system errors, actually even saw a kernelloops warning for the first 
-time...
-
-
-
-On 07/08/2009 12:47 AM, Justin P. Mattock wrote:
-> paul s wrote:
->>
->> i have not, just what is in the repository for the distribution...
->>
->>
->>
->> On 07/07/2009 10:28 PM, Justin P. Mattock wrote:
->>> paul s wrote:
->>>> hi -
->>>>
->>>> when my mbp4,1 comes back from suspend the touchpad is
->>>> frozen|unresponsive|not working. it only seems to be with suspend as
->>>> when it returns from hibernate it is fine...
->>>>
->>>> i am using 2.6.29.5-191.fc11.x86_64 is anyone experiencing this 
->>>> issue...
->>>>
->>>> i have been looking around, played with the fdi and also added a script
->>>> to the /etc/pm/sleep.d to load and unload appletouch to no avail...
->>>>
->>>> cheers
->>>> paul
->>>>
->>>> ------------------------------------------------------------------------------ 
->>>>
->>>> Enter the BlackBerry Developer Challenge
->>>> This is your chance to win up to $100,000 in prizes! For a limited 
->>>> time,
->>>> vendors submitting new applications to BlackBerry App World(TM) will 
->>>> have
->>>> the opportunity to enter the BlackBerry Developer Challenge. See 
->>>> full prize
->>>> details at: http://p.sf.net/sfu/Challenge
->>>> _______________________________________________
->>>> Mactel-linux-users mailing list
->>>> Mactel-linux-users@lists.sourceforge.net
->>>> https://lists.sourceforge.net/lists/listinfo/mactel-linux-users
->>>>
->>> have you tried the latest stable kernel?
->>>
->>> Justin P. Mattock
->>>
->> -- 
->> To unsubscribe from this list: send the line "unsubscribe 
->> linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> Not sure for redhat, but if you feel comfortable,
-> try just grabbing  a fresh tar.ball from kernel.org,
-> or use git to pull the latest from Linus's tree.
-> (this way your  up-to-date, and the fix could be already
-> in there).
+On Wed, 2009-07-08 at 10:42 +0100, Catalin Marinas wrote:
+> kmemleak: Allow partial freeing of memory blocks
 > 
-> Justin P. Mattock
+> From: Catalin Marinas <catalin.marinas@arm.com>
+> 
+> Functions like free_bootmem() are allowed to free only part of a memory
+> block. This patch adds support for this via the kmemleak_free_part()
+> callback which removes the original object and creates one or two
+> additional objects as a result of the memory block split.
+> 
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+
+Looks good to me!
+
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+> ---
+>  include/linux/kmemleak.h |    4 ++
+>  mm/kmemleak.c            |   95 +++++++++++++++++++++++++++++++++++++++-------
+>  2 files changed, 85 insertions(+), 14 deletions(-)
+> 
+> diff --git a/include/linux/kmemleak.h b/include/linux/kmemleak.h
+> index 7796aed..6a63807 100644
+> --- a/include/linux/kmemleak.h
+> +++ b/include/linux/kmemleak.h
+> @@ -27,6 +27,7 @@ extern void kmemleak_init(void);
+>  extern void kmemleak_alloc(const void *ptr, size_t size, int min_count,
+>  			   gfp_t gfp);
+>  extern void kmemleak_free(const void *ptr);
+> +extern void kmemleak_free_part(const void *ptr, size_t size);
+>  extern void kmemleak_padding(const void *ptr, unsigned long offset,
+>  			     size_t size);
+>  extern void kmemleak_not_leak(const void *ptr);
+> @@ -71,6 +72,9 @@ static inline void kmemleak_alloc_recursive(const void *ptr, size_t size,
+>  static inline void kmemleak_free(const void *ptr)
+>  {
+>  }
+> +static inline void kmemleak_free_part(const void *ptr, size_t size)
+> +{
+> +}
+>  static inline void kmemleak_free_recursive(const void *ptr, unsigned long flags)
+>  {
+>  }
+> diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+> index 5f7d8ae..7b4647d 100644
+> --- a/mm/kmemleak.c
+> +++ b/mm/kmemleak.c
+> @@ -210,6 +210,7 @@ static DEFINE_MUTEX(scan_mutex);
+>  enum {
+>  	KMEMLEAK_ALLOC,
+>  	KMEMLEAK_FREE,
+> +	KMEMLEAK_FREE_PART,
+>  	KMEMLEAK_NOT_LEAK,
+>  	KMEMLEAK_IGNORE,
+>  	KMEMLEAK_SCAN_AREA,
+> @@ -524,27 +525,17 @@ out:
+>   * Remove the metadata (struct kmemleak_object) for a memory block from the
+>   * object_list and object_tree_root and decrement its use_count.
+>   */
+> -static void delete_object(unsigned long ptr)
+> +static void __delete_object(struct kmemleak_object *object)
+>  {
+>  	unsigned long flags;
+> -	struct kmemleak_object *object;
+>  
+>  	write_lock_irqsave(&kmemleak_lock, flags);
+> -	object = lookup_object(ptr, 0);
+> -	if (!object) {
+> -#ifdef DEBUG
+> -		kmemleak_warn("Freeing unknown object at 0x%08lx\n",
+> -			      ptr);
+> -#endif
+> -		write_unlock_irqrestore(&kmemleak_lock, flags);
+> -		return;
+> -	}
+>  	prio_tree_remove(&object_tree_root, &object->tree_node);
+>  	list_del_rcu(&object->object_list);
+>  	write_unlock_irqrestore(&kmemleak_lock, flags);
+>  
+>  	WARN_ON(!(object->flags & OBJECT_ALLOCATED));
+> -	WARN_ON(atomic_read(&object->use_count) < 1);
+> +	WARN_ON(atomic_read(&object->use_count) < 2);
+>  
+>  	/*
+>  	 * Locking here also ensures that the corresponding memory block
+> @@ -557,6 +548,64 @@ static void delete_object(unsigned long ptr)
+>  }
+>  
+>  /*
+> + * Look up the metadata (struct kmemleak_object) corresponding to ptr and
+> + * delete it.
+> + */
+> +static void delete_object_full(unsigned long ptr)
+> +{
+> +	struct kmemleak_object *object;
+> +
+> +	object = find_and_get_object(ptr, 0);
+> +	if (!object) {
+> +#ifdef DEBUG
+> +		kmemleak_warn("Freeing unknown object at 0x%08lx\n",
+> +			      ptr);
+> +#endif
+> +		return;
+> +	}
+> +	__delete_object(object);
+> +	put_object(object);
+> +}
+> +
+> +/*
+> + * Look up the metadata (struct kmemleak_object) corresponding to ptr and
+> + * delete it. If the memory block is partially freed, the function may create
+> + * additional metadata for the remaining parts of the block.
+> + */
+> +static void delete_object_part(unsigned long ptr, size_t size)
+> +{
+> +	struct kmemleak_object *object;
+> +	unsigned long start, end;
+> +
+> +	object = find_and_get_object(ptr, 1);
+> +	if (!object) {
+> +#ifdef DEBUG
+> +		kmemleak_warn("Partially freeing unknown object at 0x%08lx "
+> +			      "(size %zu)\n", ptr, size);
+> +#endif
+> +		return;
+> +	}
+> +	__delete_object(object);
+> +
+> +	/*
+> +	 * Create one or two objects that may result from the memory block
+> +	 * split. Note that partial freeing is only done by free_bootmem() and
+> +	 * this happens before kmemleak_init() is called. The path below is
+> +	 * only executed during early log recording in kmemleak_init(), so
+> +	 * GFP_KERNEL is enough.
+> +	 */
+> +	start = object->pointer;
+> +	end = object->pointer + object->size;
+> +	if (ptr > start)
+> +		create_object(start, ptr - start, object->min_count,
+> +			      GFP_KERNEL);
+> +	if (ptr + size < end)
+> +		create_object(ptr + size, end - ptr - size, object->min_count,
+> +			      GFP_KERNEL);
+> +
+> +	put_object(object);
+> +}
+> +/*
+>   * Make a object permanently as gray-colored so that it can no longer be
+>   * reported as a leak. This is used in general to mark a false positive.
+>   */
+> @@ -720,13 +769,28 @@ void kmemleak_free(const void *ptr)
+>  	pr_debug("%s(0x%p)\n", __func__, ptr);
+>  
+>  	if (atomic_read(&kmemleak_enabled) && ptr && !IS_ERR(ptr))
+> -		delete_object((unsigned long)ptr);
+> +		delete_object_full((unsigned long)ptr);
+>  	else if (atomic_read(&kmemleak_early_log))
+>  		log_early(KMEMLEAK_FREE, ptr, 0, 0, 0, 0);
+>  }
+>  EXPORT_SYMBOL_GPL(kmemleak_free);
+>  
+>  /*
+> + * Partial memory freeing function callback. This function is usually called
+> + * from bootmem allocator when (part of) a memory block is freed.
+> + */
+> +void kmemleak_free_part(const void *ptr, size_t size)
+> +{
+> +	pr_debug("%s(0x%p)\n", __func__, ptr);
+> +
+> +	if (atomic_read(&kmemleak_enabled) && ptr && !IS_ERR(ptr))
+> +		delete_object_part((unsigned long)ptr, size);
+> +	else if (atomic_read(&kmemleak_early_log))
+> +		log_early(KMEMLEAK_FREE_PART, ptr, size, 0, 0, 0);
+> +}
+> +EXPORT_SYMBOL_GPL(kmemleak_free_part);
+> +
+> +/*
+>   * Mark an already allocated memory block as a false positive. This will cause
+>   * the block to no longer be reported as leak and always be scanned.
+>   */
+> @@ -1345,7 +1409,7 @@ static int kmemleak_cleanup_thread(void *arg)
+>  
+>  	rcu_read_lock();
+>  	list_for_each_entry_rcu(object, &object_list, object_list)
+> -		delete_object(object->pointer);
+> +		delete_object_full(object->pointer);
+>  	rcu_read_unlock();
+>  	mutex_unlock(&scan_mutex);
+>  
+> @@ -1440,6 +1504,9 @@ void __init kmemleak_init(void)
+>  		case KMEMLEAK_FREE:
+>  			kmemleak_free(log->ptr);
+>  			break;
+> +		case KMEMLEAK_FREE_PART:
+> +			kmemleak_free_part(log->ptr, log->size);
+> +			break;
+>  		case KMEMLEAK_NOT_LEAK:
+>  			kmemleak_not_leak(log->ptr);
+>  			break;
 > 
 > 
 
