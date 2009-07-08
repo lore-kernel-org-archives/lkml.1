@@ -1,94 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759399AbZGHGh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758834AbZGHGkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759399AbZGHGh1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 02:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbZGHGhR
+	id S1758834AbZGHGkP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 02:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757399AbZGHGkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 02:37:17 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:42347 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbZGHGhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 02:37:16 -0400
-Date: Wed, 8 Jul 2009 16:37:09 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: linux-next: manual merge of the percpu tree with the
- cpufreq-current tree
-Message-Id: <20090708163709.fe7216b0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+	Wed, 8 Jul 2009 02:40:04 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3071 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752190AbZGHGkD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 02:40:03 -0400
+Subject: Re: [PATCH 5/7] MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
+From: Joe Perches <joe@perches.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+In-Reply-To: <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com>
+References: <cover.1247032324.git.joe@perches.com>
+	 <9c84258bdd3ebecd54e2bc203dbded1382af9c02.1247032324.git.joe@perches.com>
+	 <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 07 Jul 2009 23:39:57 -0700
+Message-Id: <1247035197.5124.9.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, 2009-07-08 at 09:32 +0300, Pekka Enberg wrote:
+> Hi Joe,
 
-Today's linux-next merge of the percpu tree got a conflict in
-drivers/cpufreq/cpufreq_ondemand.c between commit
-5a75c82828e7c088ca6e7b4827911dc29cc8e774 ("[CPUFREQ] Cleanup locking in
-ondemand governor") from the cpufreq-current tree and commit
-245b2e70eabd797932adb263a65da0bab3711753 ("percpu: clean up percpu
-variable definitions") from the percpu tree.
+Hi Pekka.
 
-I fixed it up (see below) and can carry the fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> On Wed, Jul 8, 2009 at 8:55 AM, Joe Perches<joe@perches.com> wrote:
+> > from sections that should not have them.
+> What is that supposed to mean?
 
-diff --cc drivers/cpufreq/cpufreq_ondemand.c
-index d6ba142,36f292a..0000000
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@@ -70,15 -70,10 +70,15 @@@ struct cpu_dbs_info_s 
-  	unsigned int freq_lo_jiffies;
-  	unsigned int freq_hi_jiffies;
-  	int cpu;
- -	unsigned int enable:1,
- -		sample_type:1;
- +	unsigned int sample_type:1;
- +	/*
- +	 * percpu mutex that serializes governor limit change with
- +	 * do_dbs_timer invocation. We do not want do_dbs_timer to run
- +	 * when user is changing the governor or limits.
- +	 */
- +	struct mutex timer_mutex;
-  };
-- static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
-+ static DEFINE_PER_CPU(struct cpu_dbs_info_s, od_cpu_dbs_info);
-  
-  static unsigned int dbs_enable;	/* number of CPUs using this policy */
-  
-@@@ -190,13 -193,6 +191,13 @@@ static unsigned int powersave_bias_targ
-  	return freq_hi;
-  }
-  
- +static void ondemand_powersave_bias_init_cpu(int cpu)
- +{
-- 	struct cpu_dbs_info_s *dbs_info = &per_cpu(cpu_dbs_info, cpu);
-++	struct cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
- +	dbs_info->freq_table = cpufreq_frequency_get_table(cpu);
- +	dbs_info->freq_lo = 0;
- +}
- +
-  static void ondemand_powersave_bias_init(void)
-  {
-  	int i;
-@@@ -550,10 -569,9 +551,10 @@@ static int cpufreq_governor_dbs(struct 
-  			return rc;
-  		}
-  
- +		dbs_enable++;
-  		for_each_cpu(j, policy->cpus) {
-  			struct cpu_dbs_info_s *j_dbs_info;
-- 			j_dbs_info = &per_cpu(cpu_dbs_info, j);
-+ 			j_dbs_info = &per_cpu(od_cpu_dbs_info, j);
-  			j_dbs_info->cur_policy = policy;
-  
-  			j_dbs_info->prev_cpu_idle = get_cpu_idle_time(j,
+That there should be no sections that have LKML as a
+list entry other than "everything".
+
+A earlier commit, b5472cddbe2c41fd434592ecf3c5b81a551d5bea,
+removed all the entries for LKML but "THE REST".
+These removed entries have been added since that commit.
+
+Having just a few sections show LKML as an entry
+may lead people to think that LKML should not be
+used as a CC entry unless it is specifically listed.
+
+Documentation/SubmittingPatches already states that
+LKML should be CC'd on all patches.
+
+cheers, Joe
+
