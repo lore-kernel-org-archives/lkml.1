@@ -1,202 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbZGHFTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZGHF3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbZGHFTy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 01:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZGHFTq
+	id S1756377AbZGHF3k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 01:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbZGHF3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 01:19:46 -0400
-Received: from mga05.intel.com ([192.55.52.89]:60357 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751200AbZGHFTo (ORCPT
+	Wed, 8 Jul 2009 01:29:30 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:43738 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbZGHF33 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 01:19:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,366,1243839600"; 
-   d="scan'208";a="705891000"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: Mark Langsdorf <mark.langsdorf@amd.com>
-Subject: Re: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
-Date: Wed, 8 Jul 2009 13:19:55 +0800
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; x86_64; ; )
-Cc: Joerg Roedel <joerg.roedel@amd.com>, peterz@infradead.org,
-       Ingo Molnar <mingo@elte.hu>, avi@redhat.com, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200905050909.58583.mark.langsdorf@amd.com> <200905191356.37071.mark.langsdorf@amd.com> <200905201725.18046.mark.langsdorf@amd.com>
-In-Reply-To: <200905201725.18046.mark.langsdorf@amd.com>
+	Wed, 8 Jul 2009 01:29:29 -0400
+Message-ID: <4A542EA1.4010608@gmail.com>
+Date: Wed, 08 Jul 2009 08:29:05 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907081319.57307.sheng@linux.intel.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: ubi tree build warnings
+References: <20090708130921.a361f6d2.sfr@canb.auug.org.au>
+In-Reply-To: <20090708130921.a361f6d2.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 08 Jul 2009 05:29:06.0909 (UTC) FILETIME=[036370D0:01C9FF8D]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 May 2009 06:25:17 Mark Langsdorf wrote:
-> This feature creates a new field in the VMCB called Pause
-> Filter Count.  If Pause Filter Count is greater than 0 and
-> intercepting PAUSEs is enabled, the processor will increment
-> an internal counter when a PAUSE instruction occurs instead
-> of intercepting.  When the internal counter reaches the
-> Pause Filter Count value, a PAUSE intercept will occur.
->
+Stephen Rothwell wrote:
+> Hi Artem,
+> 
+> Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+> 
+> drivers/mtd/ubi/io.c: In function 'nor_erase_prepare':
+> drivers/mtd/ubi/io.c:484: warning: passing argument 5 of 'ubi->mtd->write' from incompatible pointer type
+> drivers/mtd/ubi/io.c:484: note: expected 'const u_char *' but argument is of type 'uint32_t *'
+> drivers/mtd/ubi/io.c:486: warning: format '%zd' expects type 'signed size_t', but argument 5 has type 'int'
+> drivers/mtd/ubi/io.c:486: warning: too many arguments for format
+> drivers/mtd/ubi/io.c:493: warning: passing argument 5 of 'ubi->mtd->write' from incompatible pointer type
+> drivers/mtd/ubi/io.c:493: note: expected 'const u_char *' but argument is of type 'uint32_t *'
+> 
+> Introduced by commit ebf53f421308c2f59c9bcbad4c5c297a0d00199a ("UBI: fix
+> NOR flash recovery").
 
-(dig it from archives...)
+Fixed the warnings. In fact I do see them, but did not notice
+them before. Thanks a lot for catching this and keeping our
+kernel clean.
 
-Any update for the patch(I mean the scheduler part)? I think people agreed on 
-the approach?
+Pushed the fix:
+http://git.infradead.org/ubi-2.6.git?a=commit;h=83c2099f5e1f0a4621ed4f20fc539069c636a24b
 
 -- 
-regards
-Yang, Sheng
-
-> This feature can be used to detect contended spinlocks,
-> especially when the lock holding VCPU is not scheduled.
-> Rescheduling another VCPU prevents the VCPU seeking the
-> lock from wasting its quantum by spinning idly.  Perform
-> the reschedule by increasing the the credited time on
-> the VCPU.
->
-> Experimental results show that most spinlocks are held
-> for less than 1000 PAUSE cycles or more than a few
-> thousand.  Default the Pause Filter Counter to 3000 to
-> detect the contended spinlocks.
->
-> Processor support for this feature is indicated by a CPUID
-> bit.
->
-> On a 24 core system running 4 guests each with 16 VCPUs,
-> this patch improved overall performance of each guest's
-> 32 job kernbench by approximately 1%.  Further performance
-> improvement may be possible with a more sophisticated
-> yield algorithm.
->
-> -Mark Langsdorf
-> Operating System Research Center
-> AMD
->
-> Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-> ---
->  arch/x86/include/asm/svm.h |    3 ++-
->  arch/x86/kvm/svm.c         |   13 +++++++++++++
->  include/linux/sched.h      |    7 +++++++
->  kernel/sched.c             |   18 ++++++++++++++++++
->  4 files changed, 40 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
-> index 85574b7..1fecb7e 100644
-> --- a/arch/x86/include/asm/svm.h
-> +++ b/arch/x86/include/asm/svm.h
-> @@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
->  	u16 intercept_dr_write;
->  	u32 intercept_exceptions;
->  	u64 intercept;
-> -	u8 reserved_1[44];
-> +	u8 reserved_1[42];
-> +	u16 pause_filter_count;
->  	u64 iopm_base_pa;
->  	u64 msrpm_base_pa;
->  	u64 tsc_offset;
-> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-> index ef43a18..dad6c4b 100644
-> --- a/arch/x86/kvm/svm.c
-> +++ b/arch/x86/kvm/svm.c
-> @@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
->  #define SVM_FEATURE_NPT  (1 << 0)
->  #define SVM_FEATURE_LBRV (1 << 1)
->  #define SVM_FEATURE_SVML (1 << 2)
-> +#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
->
->  #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
->
-> @@ -575,6 +576,11 @@ static void init_vmcb(struct vcpu_svm *svm)
->
->  	svm->nested_vmcb = 0;
->  	svm->vcpu.arch.hflags = HF_GIF_MASK;
-> +
-> +	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
-> +		control->pause_filter_count = 3000;
-> +		control->intercept |= (1ULL << INTERCEPT_PAUSE);
-> +	}
->  }
->
->  static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
-> @@ -2087,6 +2093,12 @@ static int interrupt_window_interception(struct
-> vcpu_svm *svm, return 1;
->  }
->
-> +static int pause_interception(struct vcpu_svm *svm, struct kvm_run
-> *kvm_run) +{
-> +	sched_delay_yield(1000000);
-> +	return 1;
-> +}
-> +
->  static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
->  				      struct kvm_run *kvm_run) = {
->  	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
-> @@ -2123,6 +2135,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm
-> *svm, [SVM_EXIT_CPUID]			= cpuid_interception,
->  	[SVM_EXIT_IRET]                         = iret_interception,
->  	[SVM_EXIT_INVD]                         = emulate_on_interception,
-> +	[SVM_EXIT_PAUSE]			= pause_interception,
->  	[SVM_EXIT_HLT]				= halt_interception,
->  	[SVM_EXIT_INVLPG]			= invlpg_interception,
->  	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index b4c38bc..9cde585 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -2283,6 +2283,9 @@ static inline unsigned int task_cpu(const struct
-> task_struct *p) return task_thread_info(p)->cpu;
->  }
->
-> +extern void sched_delay_yield(unsigned long ns);
-> +
-> +
->  extern void set_task_cpu(struct task_struct *p, unsigned int cpu);
->
->  #else
-> @@ -2292,6 +2295,10 @@ static inline unsigned int task_cpu(const struct
-> task_struct *p) return 0;
->  }
->
-> +void sched_delay_yield(struct task_struct *p, unsigned int delay)
-> +{
-> +}
-> +
->  static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
->  {
->  }
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index b902e58..3aed2f6 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -1947,6 +1947,24 @@ task_hot(struct task_struct *p, u64 now, struct
-> sched_domain *sd) return delta < (s64)sysctl_sched_migration_cost;
->  }
->
-> +/*
-> + * Interface for yielding a thread by delaying it for a known
-> + * interval.  Use at your own risk and not with real-time.
-> + *
-> + * Like yield, except for SCHED_OTHER/BATCH, where it will
-> + * give us @ns time for the 'good' cause.
-> + */
-> +void sched_delay_yield(unsigned long ns)
-> +{
-> +	struct task_struct *curr = current;
-> +	if (curr->sched_class == &fair_sched_class) {
-> +		struct sched_entity *se = &curr->se;
-> +		__update_curr(cfs_rq_of(se), se, ns);
-> +		schedule();
-> +	} else
-> +		yield();
-> +}
-> +EXPORT_SYMBOL_GPL(sched_delay_yield);
->
->  void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
->  {
-
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
