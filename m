@@ -1,296 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbZGHDug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbZGHDwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757312AbZGHDug (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 23:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbZGHDu1
+	id S1758271AbZGHDwJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 23:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZGHDv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 23:50:27 -0400
-Received: from web36707.mail.mud.yahoo.com ([209.191.85.41]:27377 "HELO
-	web36707.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755321AbZGHDu0 (ORCPT
+	Tue, 7 Jul 2009 23:51:57 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:28955 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755816AbZGHDv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 23:50:26 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Jul 2009 23:50:25 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
-  b=3vZmLibb0SV2TZiINoUBBrGdb8Kk/RYHU7JcXH3zlss9nb4xuPj8/c2TCuB21BwTeLb4QGOSx90eN+aFxHfE0Zcxqy3JJXRAxkXUU5dXKiBQvV0TI8qBy4KQCRPMz43I4GVZguwM9rBTWD3L7JWOzIFBeiUC7hRwlkEI4ckUExc=;
-Message-ID: <322837.89052.qm@web36707.mail.mud.yahoo.com>
-X-YMail-OSG: iSs3LU4VM1lMvIxXW4bRU.qWoZTwDx6Vhng7v0p.XdUMNfhnGw_NI.oke2TVrQEML8sJQUN3UIrpUVLSNU8GcxiZno5nWkF3rLb807N1eaZyJe50gNwXmXVR1eaWu70i1hSwVsIBvNYg0LjSd31PYYbmJv7kxPH1BUhMyyUILJemnP6vD6LCfZNqKAx3CjzdSVJ6J4lew3RhHFpg_TW39Qi1rUfVFbC8oHeL06kC1E2wWIfi7a7j_vsWM6Wu4aYj6X.yTu7aJJAyS25QQjJG3B9nM4HFD63pNw6h4mkFqHxLgsRJHVzYy35qCDYNfuuF.7OVyA--
-X-Mailer: YahooMailClassic/5.4.17 YahooMailWebService/0.7.289.15
-Date: Tue, 7 Jul 2009 20:43:44 -0700 (PDT)
-From: Zibeli Aton <zibeli@yahoo.com>
-Subject: PROBLEM: 2.6.30 and later kernel no longer boots using encrypted filesystem setup
-To: linux-kernel@vger.kernel.org
+	Tue, 7 Jul 2009 23:51:56 -0400
+X-IronPort-AV: E=Sophos;i="4.42,366,1243814400"; 
+   d="scan'208";a="339570476"
+From: Roland Dreier <rdreier@cisco.com>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Eric Paris <eparis@redhat.com>
+Subject: Re: 2.6.31-rc2 -- INFO: inconsistent lock state -- inconsistent  {IN-RECLAIM_FS-W} -> {RECLAIM_FS-ON-W} usage.
+References: <a44ae5cd0907052122w1733780eh84c37a0b288cbd1d@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 07 Jul 2009 20:51:54 -0700
+In-Reply-To: <a44ae5cd0907052122w1733780eh84c37a0b288cbd1d@mail.gmail.com>
+	(Miles Lane's message of "Mon, 6 Jul 2009 00:22:11 -0400")
+Message-ID: <adafxd7x25h.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 Jul 2009 03:51:55.0363 (UTC) FILETIME=[6F842330:01C9FF7F]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[ adding Eric Paris cc as this looks to be an inotify issue ]
 
-I've done a lot of searching and can't figure out what might be going on here, so wondering if anyone here can suggest any possible causes.  Please cc: me with any responses if at all possible.
+ > [ 6627.976224] =================================
+ > [ 6627.976237] [ INFO: inconsistent lock state ]
+ > [ 6627.976247] 2.6.31-rc2 #16
+ > [ 6627.976254] ---------------------------------
+ > [ 6627.976263] inconsistent {IN-RECLAIM_FS-W} -> {RECLAIM_FS-ON-W} usage.
+ > [ 6627.976276] khubd/217 [HC0[0]:SC0[0]:HE1:SE1] takes:
+ > [ 6627.976285]  (iprune_mutex){+.+.?.}, at: [<c10ba899>]
+ > invalidate_inodes+0x20/0xe3
+ > [ 6627.976315] {IN-RECLAIM_FS-W} state was registered at:
+ > [ 6627.976324]   [<c10536ab>] __lock_acquire+0x2c9/0xac4
+ > [ 6627.976343]   [<c1053f45>] lock_acquire+0x9f/0xc2
+ > [ 6627.976358]   [<c1308872>] __mutex_lock_common+0x2d/0x323
+ > [ 6627.976376]   [<c1308c00>] mutex_lock_nested+0x2e/0x36
+ > [ 6627.976392]   [<c10ba6ff>] shrink_icache_memory+0x38/0x1b2
+ > [ 6627.976407]   [<c108bfb6>] shrink_slab+0xe2/0x13c
+ > [ 6627.976424]   [<c108c3e1>] kswapd+0x3d1/0x55d
+ > [ 6627.976439]   [<c10449b5>] kthread+0x66/0x6b
+ > [ 6627.976454]   [<c1003fdf>] kernel_thread_helper+0x7/0x10
+ > [ 6627.976472]   [<ffffffff>] 0xffffffff
+ > [ 6627.976494] irq event stamp: 41543
+ > [ 6627.976501] hardirqs last  enabled at (41543): [<c13086f7>]
+ > __mutex_unlock_slowpath+0x10a/0x118
+ > [ 6627.976520] hardirqs last disabled at (41542): [<c1308645>]
+ > __mutex_unlock_slowpath+0x58/0x118
+ > [ 6627.976539] softirqs last  enabled at (41158): [<c129d01f>]
+ > __rcu_read_unlock_bh+0x1c/0x1e
+ > [ 6627.976559] softirqs last disabled at (41156): [<c129cfcb>]
+ > __rcu_read_lock_bh+0x8/0x26
+ > [ 6627.976576]
+ > [ 6627.976579] other info that might help us debug this:
+ > [ 6627.976590] 2 locks held by khubd/217:
+ > [ 6627.976598]  #0:  (&type->s_umount_key#39){.+.+.+}, at:
+ > [<c10acd4b>] get_super+0x42/0x87
+ > [ 6627.976631]  #1:  (iprune_mutex){+.+.?.}, at: [<c10ba899>]
+ > invalidate_inodes+0x20/0xe3
+ > [ 6627.976657]
+ > [ 6627.976660] stack backtrace:
+ > [ 6627.976672] Pid: 217, comm: khubd Not tainted 2.6.31-rc2 #16
+ > [ 6627.976681] Call Trace:
+ > [ 6627.976696]  [<c1307907>] ? printk+0xf/0x18
+ > [ 6627.976711]  [<c10526d7>] valid_state+0x12a/0x13d
+ > [ 6627.976726]  [<c10527ad>] mark_lock+0xc3/0x1b4
+ > [ 6627.976740]  [<c1052eea>] ? check_usage_backwards+0x0/0x3f
+ > [ 6627.976755]  [<c10528e1>] mark_held_locks+0x43/0x5b
+ > [ 6627.976772]  [<c10cf46d>] ? inotify_ignored_and_remove_idr+0x19/0x74
+ > [ 6627.976787]  [<c105299e>] lockdep_trace_alloc+0xa5/0xc1
+ > [ 6627.976802]  [<c10a6685>] kmem_cache_alloc+0x21/0x13a
+ > [ 6627.976818]  [<c10cf46d>] inotify_ignored_and_remove_idr+0x19/0x74
+ > [ 6627.976834]  [<c10ceb77>] inotify_freeing_mark+0x8/0xa
+ > [ 6627.976849]  [<c10cd989>] fsnotify_destroy_mark_by_entry+0xf1/0x115
+ > [ 6627.976858]  [<c10cda32>] fsnotify_clear_marks_by_inode+0x85/0xa2
+ > [ 6627.976858]  [<c10ccdbf>] __fsnotify_inode_delete+0x8/0xd
+ > [ 6627.976858]  [<c10cd670>] fsnotify_unmount_inodes+0xb0/0xdf
+ > [ 6627.976858]  [<c10ba8b9>] invalidate_inodes+0x40/0xe3
+ > [ 6627.976858]  [<c10c977f>] __invalidate_device+0x21/0x38
+ > [ 6627.976858]  [<c116c981>] invalidate_partition+0x1e/0x2d
+ > [ 6627.976858]  [<c10e7710>] del_gendisk+0x2d/0xf0
+ > [ 6627.976858]  [<c122e473>] sd_remove+0x35/0x67
+ > [ 6627.976858]  [<c121b637>] __device_release_driver+0x47/0x7f
+ > [ 6627.976858]  [<c121b70c>] device_release_driver+0x18/0x23
+ > [ 6627.976858]  [<c121ad1b>] bus_remove_device+0x71/0x7e
+ > [ 6627.976858]  [<c1219a0a>] device_del+0xf0/0x131
+ > [ 6627.976858]  [<c122a4a6>] __scsi_remove_device+0x34/0x65
+ > [ 6627.976858]  [<c12285a5>] scsi_forget_host+0x35/0x51
+ > [ 6627.976858]  [<c1223615>] scsi_remove_host+0x69/0xd4
+ > [ 6627.976858]  [<f805f67c>] quiesce_and_remove_host+0x4c/0x7e [usb_storage]
+ > [ 6627.976858]  [<f805f760>] usb_stor_disconnect+0x11/0x1b [usb_storage]
+ > [ 6627.976858]  [<c124adca>] usb_unbind_interface+0x4e/0xc4
+ > [ 6627.976858]  [<c121b637>] __device_release_driver+0x47/0x7f
+ > [ 6627.976858]  [<c121b70c>] device_release_driver+0x18/0x23
+ > [ 6627.976858]  [<c121ad1b>] bus_remove_device+0x71/0x7e
+ > [ 6627.976858]  [<c1219a0a>] device_del+0xf0/0x131
+ > [ 6627.976858]  [<c1248795>] usb_disable_device+0xc1/0x125
+ > [ 6627.976858]  [<c1243f37>] usb_disconnect+0xb2/0x117
+ > [ 6627.976858]  [<c12450da>] hub_thread+0x533/0xe45
+ > [ 6627.976858]  [<c13080fd>] ? schedule+0x70c/0x769
+ > [ 6627.976858]  [<c1044bfc>] ? autoremove_wake_function+0x0/0x2f
+ > [ 6627.976858]  [<c1244ba7>] ? hub_thread+0x0/0xe45
+ > [ 6627.976858]  [<c10449b5>] kthread+0x66/0x6b
+ > [ 6627.976858]  [<c104494f>] ? kthread+0x0/0x6b
+ > [ 6627.976858]  [<c1003fdf>] kernel_thread_helper+0x7/0x10
+ > [ 6628.142547] usb 1-3:1.0: uevent
 
-I'll attempt to follow the suggest format from http://kernel.org/pub/linux/docs/lkml/reporting-bugs.html.
+I don't believe that this is actually related to usb; it looks to be an
+inotify issue (and I believe lockdep is warning about a real bug).
 
-[1.] 2.6.30 and later kernel no longer boots using encrypted root filesystem setup
+What lockdep is saying is that iprune_mutex is held during reclaim, when
+it is taken in prune_icache(); however invalidate_inodes() also takes
+iprune_mutex and then calls into fsnotify_unmount_inodes(), which ends
+up in fsnotify_destroy_mark_by_entry().  And if inotify is in use, then
+it calls into inotify_freeing_mark() via group->ops->freeing_mark, which
+just does inotify_ignored_and_remove_idr().
 
-[2.] Neither the 2.6.30 and 2.6.30.1 kernels will boot under my encrypted root filesystem setup on an x86 box, though the 2.6.29.x kernels still boot fine and the newer kernels boot fine if I do not use the encrypted filesystem setup.
+And then if we look at this:
 
-When I attempt to boot the 2.6.30.x kernels (via grub), the boot fails immediately, apparently in decompressing the kernel, giving the message "Destination address too large", which from grepping the kernel source tree, apparently comes from arch/x86/boot/compressed/misc.c
+void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
+				    struct fsnotify_group *group)
+{
+	//..
 
-My encrypted filesystem works by first booting from a very small (ca 30 MB), unencrypted, ext2 partition on sda1.  This partition is passed to the kernel as the root partition by grub.  This small partition contains only the kernel image plus a few binaries needed to run an init script that mounts the encrypted partition (sda2) via losetup and dmsetup, then pivots_root to it.  However, since the 2.6.30.x kernels apparently never even decompress themselves, the process never gets this far.
+	event_priv = kmem_cache_alloc(event_priv_cachep, GFP_KERNEL);
 
-I can boot the same kernel successfully on the same machine by booting it from another, larger partition (sda4) which, if relevant, is an ext3 partition.  I can also still boot the original encrypted system by using the 2.6.29.4 kernel with the exact same parameters and configuration as the 2.6.30.x kernels that fail.
+	//...
 
-The only differences I see that seem relevant so early in the boot process is that the initial root filesystem (on sda1) for the encrypted boot setup is ext2 instead of the ext3 on the larger partition that boots successfully and that the size of the sda1 partition is much, much smaller.
+	fsnotify_add_notify_event(group, inotify_ignored_event, fsn_event_priv);
+}
 
-[3.] KEYWORDS: x86 boot decompression "Destination address too large"
+so it does a GFP_KERNEL allocation with iprune_mutex held; which could
+deadlock if it triggers reclaim and ends up in prune_icache().  The
+trivial fix for this immediate issue is:
 
-[4.] KERNEL VERSION: Linux version 2.6.30.1-20090704 (me@elfs) (gcc version 4.4.0 (GCC) ) #1 SMP
-
-[5.] MESSAGES SEEN ON FAILED BOOT:
-
-  Booting command-list
-root (hd0,0)
-  Filesystem type is ext2fs, partition type 0x83
-kernel /boot/bzImage-2.6.30.1-20090704 ro root=/dev/sda1
-  [Linux-bzImage, setup=0x2c00, size=0x26e0a0]
-
-Destination address too large
-
- -- System halted
-
-[6.] n/a
-
-[7.] Environment
-
-[7.1] ver_linux script output (after booting from larger partition):
-Linux elfs 2.6.30.1-20090706 #1 SMP Mon Jul 6 18:47:42 CST 2009 i686 pentium3 i386 GNU/Linux
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index ff27a29..b1727e8 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -379,7 +379,7 @@ void inotify_ignored_and_remove_idr(struct fsnotify_mark_entry *entry,
  
-Gnu C                  4.4.0
-Gnu make               3.81
-binutils               2.19.1
-util-linux             ./ver_linux: line 23: fdformat: command not found
-mount                  support
-module-init-tools      found
-Linux C Library        2.10.1
-Dynamic linker (ldd)   2.10.1
-Linux C++ Library      6.0.11
-Procps                 3.2.8
-Kbd                    1.15
-Sh-utils               7.4
-Modules Loaded         snd_hda_codec_idt nvidia snd_hda_intel snd_hda_codec snd_hwdep
+ 	ientry = container_of(entry, struct inotify_inode_mark_entry, fsn_entry);
+ 
+-	event_priv = kmem_cache_alloc(event_priv_cachep, GFP_KERNEL);
++	event_priv = kmem_cache_alloc(event_priv_cachep, GFP_NOFS);
+ 	if (unlikely(!event_priv))
+ 		goto skip_send_ignore;
+ 
+but I don't think this fully fixes things -- notice that there is also
+fsnotify_add_notify_event() there, which it seems might do
+fsnotify_alloc_event_holder(), which is just
 
+	return kmem_cache_alloc(fsnotify_event_holder_cachep, GFP_KERNEL);
 
-[7.2.]  cat /proc/cpuinfo output:
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 23
-model name      : Intel(R) Core(TM)2 Duo CPU     P7450  @ 2.13GHz
-stepping        : 6
-cpu MHz         : 2127.937
-cache size      : 3072 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 2
-apicid          : 0
-initial apicid  : 0
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl est tm2 ssse3 cx16 xtpr pdcm sse4_1 lahf_lm
-bogomips        : 4255.87
-clflush size    : 64
-power management:
+ie another GFP_KERNEL allocation that might happen with iprune_mutex
+held.  Again the simple fix is to change this to GFP_NOFS but I'm not
+sure if it might not be better to pass a gfp mask in to know when we
+might be in reclaim and when we might not be, to avoid failing
+allocations and lost events.
 
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 23
-model name      : Intel(R) Core(TM)2 Duo CPU     P7450  @ 2.13GHz
-stepping        : 6
-cpu MHz         : 2127.937
-cache size      : 3072 KB
-physical id     : 0
-siblings        : 2
-core id         : 1
-cpu cores       : 2
-apicid          : 1
-initial apicid  : 1
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc arch_perfmon pebs bts pni dtes64 monitor ds_cpl est tm2 ssse3 cx16 xtpr pdcm sse4_1 lahf_lm
-bogomips        : 4255.91
-clflush size    : 64
-power management:
-
-
-
-[7.3.] n/a as modules never loaded
-
-[7.4.] cat /proc/ioports output (on 2.6.30.1 kernel from larger ext3 partition):
-0000-001f : dma1
-0020-0021 : pic1
-0040-0043 : timer0
-0050-0053 : timer1
-0060-0060 : keyboard
-0064-0064 : keyboard
-0070-0077 : rtc0
-0080-008f : dma page reg
-00a0-00a1 : pic2
-00c0-00df : dma2
-00f0-00ff : fpu
-03c0-03df : vesafb
-0400-047f : pnp 00:01
-  0400-0403 : ACPI PM1a_EVT_BLK
-  0404-0405 : ACPI PM1a_CNT_BLK
-  0408-040b : ACPI PM_TMR
-  0410-0415 : ACPI CPU throttle
-  0420-042f : ACPI GPE0_BLK
-  0450-0450 : ACPI PM2_CNT_BLK
-0500-053f : pnp 00:01
-0600-060f : pnp 00:01
-0610-0610 : pnp 00:01
-0800-080f : pnp 00:01
-0810-0817 : pnp 00:01
-0820-0823 : pnp 00:01
-0cf8-0cff : PCI conf1
-1000-1fff : PCI Bus 0000:06
-2000-2fff : PCI Bus 0000:05
-3000-3fff : PCI Bus 0000:04
-  3000-30ff : 0000:04:00.0
-    3000-30ff : r8169
-4000-4fff : PCI Bus 0000:03
-5000-5fff : PCI Bus 0000:02
-6000-6fff : PCI Bus 0000:01
-  6000-607f : 0000:01:00.0
-7000-701f : 0000:00:1f.3
-  7000-701f : i801_smbus
-7020-703f : 0000:00:1f.2
-  7020-703f : ahci
-7040-705f : 0000:00:1d.2
-  7040-705f : uhci_hcd
-7060-707f : 0000:00:1d.1
-  7060-707f : uhci_hcd
-7080-709f : 0000:00:1d.0
-  7080-709f : uhci_hcd
-70a0-70bf : 0000:00:1a.1
-  70a0-70bf : uhci_hcd
-70c0-70df : 0000:00:1a.0
-  70c0-70df : uhci_hcd
-70e0-70e7 : 0000:00:1f.2
-  70e0-70e7 : ahci
-70e8-70ef : 0000:00:1f.2
-  70e8-70ef : ahci
-70f0-70f3 : 0000:00:1f.2
-  70f0-70f3 : ahci
-70f4-70f7 : 0000:00:1f.2
-  70f4-70f7 : ahci
-
-cat /proc/iomem output (on 2.6.30.1 kernel from larger ext3 partition):
-00000000-0009dfff : System RAM
-0009e000-0009ffff : reserved
-000a0000-000bffff : Video RAM area
-000c0000-000ce5ff : Video ROM
-000e0000-000fffff : reserved
-  000f0000-000fffff : System ROM
-00100000-7fc6afff : System RAM
-  00100000-004855d8 : Kernel code
-  004855d9-005e8413 : Kernel data
-  0063a000-0068fbf3 : Kernel bss
-7fc6b000-7fcbefff : reserved
-7fcbf000-7fd82fff : System RAM
-7fd83000-7fdbefff : ACPI Non-volatile Storage
-7fdbf000-7fddefff : System RAM
-7fddf000-7fdf6fff : ACPI Tables
-7fdf7000-7fdfffff : System RAM
-7fe00000-7fffffff : reserved
-80000000-8fffffff : PCI Bus 0000:01
-  80000000-8fffffff : 0000:01:00.0
-90000000-92ffffff : PCI Bus 0000:01
-  90000000-91ffffff : 0000:01:00.0
-    91000000-91dfffff : vesafb
-  92000000-92ffffff : 0000:01:00.0
-    92000000-92ffffff : nvidia
-93000000-93ffffff : PCI Bus 0000:02
-94000000-94ffffff : PCI Bus 0000:03
-95000000-95ffffff : PCI Bus 0000:04
-  95000000-9500ffff : 0000:04:00.0
-    95000000-9500ffff : r8169
-  95010000-95010fff : 0000:04:00.0
-    95010000-95010fff : r8169
-  95020000-9502ffff : 0000:04:00.0
-96000000-96ffffff : PCI Bus 0000:05
-97000000-97ffffff : PCI Bus 0000:06
-98000000-98ffffff : PCI Bus 0000:06
-99000000-99ffffff : PCI Bus 0000:05
-  99000000-990000ff : 0000:05:00.4
-  99000100-990001ff : 0000:05:00.3
-  99000200-990002ff : 0000:05:00.2
-  99000300-990003ff : 0000:05:00.0
-    99000300-990003ff : mmc0
-9a000000-9affffff : PCI Bus 0000:04
-9b000000-9bffffff : PCI Bus 0000:03
-  9b000000-9b001fff : 0000:03:00.0
-    9b000000-9b001fff : iwlagn
-9c000000-9cffffff : PCI Bus 0000:02
-9d000000-9d003fff : 0000:00:1b.0
-  9d000000-9d003fff : ICH HD audio
-9d004000-9d0047ff : 0000:00:1f.2
-  9d004000-9d0047ff : ahci
-9d004800-9d004bff : 0000:00:1d.7
-  9d004800-9d004bff : ehci_hcd
-9d004c00-9d004fff : 0000:00:1a.7
-  9d004c00-9d004fff : ehci_hcd
-9d005000-9d0050ff : 0000:00:1f.3
-f8000000-fbffffff : PCI MMCONFIG 0 [00-3f]
-  f8000000-fbffffff : reserved
-    f8000000-fbffffff : pnp 00:01
-fec00000-fec00fff : IOAPIC 0
-  fec00000-fec00fff : reserved
-    fec00000-fec00fff : pnp 00:01
-fed00000-fed003ff : HPET 0
-fed10000-fed13fff : reserved
-  fed10000-fed13fff : pnp 00:01
-fed18000-fed19fff : reserved
-  fed18000-fed18fff : pnp 00:01
-  fed19000-fed19fff : pnp 00:01
-fed1c000-fed1ffff : reserved
-  fed1c000-fed1ffff : pnp 00:01
-fed20000-fed8ffff : pnp 00:01
-fee00000-fee00fff : Local APIC
-  fee00000-fee00fff : reserved
-    fee00000-fee00fff : pnp 00:01
-fff00000-ffffffff : reserved
-
-[7.5.] PCI information 
-  lspci not installed - can install if deemed relevant
-
-[7.6.] SCSI information (from /proc/scsi/scsi)
-Attached devices:
-Host: scsi0 Channel: 00 Id: 00 Lun: 00
-  Vendor: ATA      Model: FUJITSU MHZ2320B Rev: 8909
-  Type:   Direct-Access                    ANSI  SCSI revision: 05
-Host: scsi4 Channel: 00 Id: 00 Lun: 00
-  Vendor: HL-DT-ST Model: DVDRAM GSA-T50N  Rev: RC04
-  Type:   CD-ROM                           ANSI  SCSI revision: 05
-Host: scsi6 Channel: 00 Id: 00 Lun: 00
-  Vendor: Generic  Model: USB Flash Disk   Rev: 0.00
-  Type:   Direct-Access                    ANSI  SCSI revision: 02
-
-
-      
+Anyway, hope this helps...
