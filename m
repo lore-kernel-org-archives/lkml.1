@@ -1,115 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbZGHCRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758400AbZGHCcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758795AbZGHCRh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 22:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757943AbZGHCR0
+	id S1758400AbZGHCcs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 22:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZGHCck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 22:17:26 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59557 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758538AbZGHCRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 22:17:24 -0400
-Message-ID: <4A54018C.5090804@cn.fujitsu.com>
-Date: Wed, 08 Jul 2009 10:16:44 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Tue, 7 Jul 2009 22:32:40 -0400
+Received: from mail-pz0-f193.google.com ([209.85.222.193]:61000 "EHLO
+	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbZGHCck (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 22:32:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Rxx0w71+xzifoVgVuh2QNekEK9DOuZq0u3fYOMg/xddLPJegRzmgkZZCYlHvIJ9BR6
+         2ISVDR+BhwTHfDfWuLJQps+yS+cb4uGtLbS+bjeCurGR24EQAiuKz/Zl4tM/yhwhMD33
+         ltijLY9un9vhR8QQQiI/VmxIOSwRt56dDv2og=
+Message-ID: <4A540461.1030204@gmail.com>
+Date: Tue, 07 Jul 2009 19:28:49 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 11/25] io-controller: Export disk time used and nr sectors
- dipatched through cgroups
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-12-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1246564917-19603-12-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+To: mactel-linux.org-users@queuemail.com
+CC: mactel-linux-users <mactel-linux-users@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Mactel-linux-users] touchpad synaptics pm-suspend
+References: <4A53C580.2040000@queuemail.com>
+In-Reply-To: <4A53C580.2040000@queuemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
->  
-> +static int io_cgroup_disk_time_read(struct cgroup *cgroup,
-> +				struct cftype *cftype, struct seq_file *m)
-> +{
-> +	struct io_cgroup *iocg;
-> +	struct io_group *iog;
-> +	struct hlist_node *n;
-> +
-> +	if (!cgroup_lock_live_group(cgroup))
-> +		return -ENODEV;
-> +
-> +	iocg = cgroup_to_io_cgroup(cgroup);
-> +
-> +	rcu_read_lock();
-> +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-> +		/*
-> +		 * There might be groups which are not functional and
-> +		 * waiting to be reclaimed upon cgoup deletion.
-> +		 */
-> +		if (iog->key) {
-> +			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-> +					MINOR(iog->dev),
-> +					iog->entity.total_service);
+paul s wrote:
+> hi -
+>
+> when my mbp4,1 comes back from suspend the touchpad is
+> frozen|unresponsive|not working. it only seems to be with suspend as
+> when it returns from hibernate it is fine...
+>
+> i am using 2.6.29.5-191.fc11.x86_64 is anyone experiencing this issue...
+>
+> i have been looking around, played with the fdi and also added a script
+> to the /etc/pm/sleep.d to load and unload appletouch to no avail...
+>
+> cheers
+> paul
+>
+> ------------------------------------------------------------------------------
+> Enter the BlackBerry Developer Challenge
+> This is your chance to win up to $100,000 in prizes! For a limited time,
+> vendors submitting new applications to BlackBerry App World(TM) will have
+> the opportunity to enter the BlackBerry Developer Challenge. See full prize
+> details at: http://p.sf.net/sfu/Challenge
+> _______________________________________________
+> Mactel-linux-users mailing list
+> Mactel-linux-users@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/mactel-linux-users
+>
+>    
+have you tried the latest stable kernel?
 
-Hi Vivek,
-
-Let io.disk_*'s outputs conform with io.policy's.
-
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 7c83d1e..29392e7 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1631,7 +1631,7 @@ static int io_cgroup_disk_time_read(struct cgroup *cgroup,
- 		 * waiting to be reclaimed upon cgoup deletion.
- 		 */
- 		if (iog->key) {
--			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-+			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
- 					MINOR(iog->dev),
- 					iog->entity.total_service);
- 		}
-@@ -1661,7 +1661,7 @@ static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
- 		 * waiting to be reclaimed upon cgoup deletion.
- 		 */
- 		if (iog->key) {
--			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-+			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
- 					MINOR(iog->dev),
- 					iog->entity.total_sector_service);
- 		}
-@@ -1692,7 +1692,7 @@ static int io_cgroup_disk_queue_read(struct cgroup *cgroup,
- 		 * waiting to be reclaimed upon cgoup deletion.
- 		 */
- 		if (iog->key) {
--			seq_printf(m, "%u %u %lu %lu\n", MAJOR(iog->dev),
-+			seq_printf(m, "%u:%u %lu %lu\n", MAJOR(iog->dev),
- 					MINOR(iog->dev), iog->queue,
- 					iog->queue_duration);
- 		}
-@@ -1722,7 +1722,7 @@ static int io_cgroup_disk_dequeue_read(struct cgroup *cgroup,
- 		 * waiting to be reclaimed upon cgoup deletion.
- 		 */
- 		if (iog->key) {
--			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-+			seq_printf(m, "%u:%u %lu\n", MAJOR(iog->dev),
- 					MINOR(iog->dev), iog->dequeue);
- 		}
- 	}
--- 
-1.5.4.rc3
-
-
+Justin P. Mattock
