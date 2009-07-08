@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755766AbZGHQra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbZGHQuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755766AbZGHQra (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbZGHQrV
+	id S1757096AbZGHQuy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZGHQur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:47:21 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45501 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbZGHQrV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:47:21 -0400
-Message-ID: <4A54CD65.1050902@zytor.com>
-Date: Wed, 08 Jul 2009 09:46:29 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 8 Jul 2009 12:50:47 -0400
+Received: from claw.goop.org ([74.207.240.146]:37489 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752888AbZGHQuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:50:46 -0400
+Message-ID: <4A54CE62.8040704@goop.org>
+Date: Wed, 08 Jul 2009 09:50:42 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: tridge@samba.org, Rusty Russell <rusty@rustcorp.com.au>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090702214646.GD1485@ucw.cz> <19021.12158.915384.574218@samba.org> <20090702223349.GA30840@elf.ucw.cz> <19021.14217.587592.808935@samba.org> <20090702224446.GD30840@elf.ucw.cz> <19021.18919.560478.630755@samba.org> <20090708092133.GC24385@elf.ucw.cz>
-In-Reply-To: <20090708092133.GC24385@elf.ucw.cz>
-Content-Type: text/plain; charset=UTF-8
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: jeremy@xensource.com, chrisw@sous-sol.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 33/44] includecheck fix: drivers/xen, evtchn.c
+References: <1247063308.4382.12.camel@ht.satnam> <1247067749.4382.90.camel@ht.satnam>
+In-Reply-To: <1247067749.4382.90.camel@ht.satnam>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> 
-> But ... it was, and there is still possibility of just using position
-> in directory to avoid collisions completely.
+On 07/08/09 08:42, Jaswinder Singh Rajput wrote:
+> fix the following 'make includecheck' warning:
+>
+>   drivers/xen/evtchn.c: linux/errno.h is included more than once.
+>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+>   
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-I was just going to ask this.  Rather than using a random number, we
-should use something based on the position in the directory, and I
-suspect we should still verify that it is unique (since some FAT
-implementation may garbage-collect the directory thereby moving the offset.)
+Thanks,
+    J
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+> ---
+>  drivers/xen/evtchn.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/xen/evtchn.c b/drivers/xen/evtchn.c
+> index af03195..79bedba 100644
+> --- a/drivers/xen/evtchn.c
+> +++ b/drivers/xen/evtchn.c
+> @@ -38,7 +38,6 @@
+>  #include <linux/string.h>
+>  #include <linux/errno.h>
+>  #include <linux/fs.h>
+> -#include <linux/errno.h>
+>  #include <linux/miscdevice.h>
+>  #include <linux/major.h>
+>  #include <linux/proc_fs.h>
+>   
 
