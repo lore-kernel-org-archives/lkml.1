@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756377AbZGHF3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZGHFhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756377AbZGHF3k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 01:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbZGHF3a
+	id S1755343AbZGHFhM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 01:37:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZGHFhC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 01:29:30 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:43738 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbZGHF33 (ORCPT
+	Wed, 8 Jul 2009 01:37:02 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:35080 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbZGHFhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 01:29:29 -0400
-Message-ID: <4A542EA1.4010608@gmail.com>
-Date: Wed, 08 Jul 2009 08:29:05 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 8 Jul 2009 01:37:00 -0400
+To: Matthias Pfaller <leo@marco.de>
+Cc: linux-kernel@vger.kernel.org
+References: <4A53728B.9020703@marco.de>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 07 Jul 2009 22:36:53 -0700
+In-Reply-To: <4A53728B.9020703@marco.de> (Matthias Pfaller's message of "Tue\, 07 Jul 2009 18\:06\:35 +0200")
+Message-ID: <m1iqi3wxai.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: ubi tree build warnings
-References: <20090708130921.a361f6d2.sfr@canb.auug.org.au>
-In-Reply-To: <20090708130921.a361f6d2.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 08 Jul 2009 05:29:06.0909 (UTC) FILETIME=[036370D0:01C9FF8D]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: leo@marco.de, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Matthias Pfaller <leo@marco.de>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: Bug in dmi_get_year (causing apic not getting enabled)
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi Artem,
-> 
-> Today's linux-next build (x86_64 allmodconfig) produced these warnings:
-> 
-> drivers/mtd/ubi/io.c: In function 'nor_erase_prepare':
-> drivers/mtd/ubi/io.c:484: warning: passing argument 5 of 'ubi->mtd->write' from incompatible pointer type
-> drivers/mtd/ubi/io.c:484: note: expected 'const u_char *' but argument is of type 'uint32_t *'
-> drivers/mtd/ubi/io.c:486: warning: format '%zd' expects type 'signed size_t', but argument 5 has type 'int'
-> drivers/mtd/ubi/io.c:486: warning: too many arguments for format
-> drivers/mtd/ubi/io.c:493: warning: passing argument 5 of 'ubi->mtd->write' from incompatible pointer type
-> drivers/mtd/ubi/io.c:493: note: expected 'const u_char *' but argument is of type 'uint32_t *'
-> 
-> Introduced by commit ebf53f421308c2f59c9bcbad4c5c297a0d00199a ("UBI: fix
-> NOR flash recovery").
+Matthias Pfaller <leo@marco.de> writes:
 
-Fixed the warnings. In fact I do see them, but did not notice
-them before. Thanks a lot for catching this and keeping our
-kernel clean.
+> Hi,
+>
+> dmi_get_year extracts the year with:
+>
+> 	simple_strtoul(s, NULL, 0);
+>
+> for biosdates in 2008 and 2009 this will return 0 because 8 and 9 are no valid
+> octal digits. This will e.g. result in the apic not getting enabled.
+> Changing this to
+>
+> 	simple_strtoul(s, NULL, 10);
+>
+> should fix the problem.
 
-Pushed the fix:
-http://git.infradead.org/ubi-2.6.git?a=commit;h=83c2099f5e1f0a4621ed4f20fc539069c636a24b
+Only if there is a leading 0....
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+
+Eric
