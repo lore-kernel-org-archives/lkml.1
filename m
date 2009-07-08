@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbZGHMpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZGHMq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756549AbZGHMpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 08:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZGHMpb
+	id S1755551AbZGHMq4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 08:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbZGHMqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 08:45:31 -0400
-Received: from mga12.intel.com ([143.182.124.36]:41803 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754311AbZGHMpb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 08:45:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,368,1243839600"; 
-   d="scan'208";a="162731657"
-Date: Wed, 8 Jul 2009 14:43:37 +0100
-From: Alan Cox <alan@linux.intel.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: Erik Ekman <erik@kryo.se>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -tip][RFC] serial8250: update to dev_pm_ops
-Message-ID: <20090708144337.7006fa0a@t61.ukuu.org.uk>
-In-Reply-To: <200907081310.53579.elendil@planet.nl>
-References: <20090701083737.41f28c7d.erik@kryo.se>
-	<200907081310.53579.elendil@planet.nl>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Jul 2009 08:46:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58227 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754762AbZGHMqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 08:46:48 -0400
+Message-ID: <4A549520.3010403@redhat.com>
+Date: Wed, 08 Jul 2009 08:46:24 -0400
+From: William Cohen <wcohen@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] add block IO documentation to tracepoint docbook
+References: <4A4BBECD.8000908@redhat.com> <4A4C53EE.5000503@cn.fujitsu.com>
+In-Reply-To: <4A4C53EE.5000503@cn.fujitsu.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Jul 2009 13:10:51 +0200
-Frans Pop <elendil@planet.nl> wrote:
-
-> Adding some CCs as there's no reply yet.
+Li Zefan wrote:
+> More CCed
 > 
-> > From dmesg:
-> > Platform driver 'serial8250' needs updating - please use dev_pm_ops
-> >
-> > Is this how it should be done?
+> William Cohen wrote:
+>> The following patch adds block IO tracepoint documentation to the tracepoint
+>> docbook.
+>>
+>> Signed-off-by: William Cohen <wcohen@xxxxxxxxxx>
 > 
-> Alan or Rafael can probably tell.
+> Nice, thanks!
+> 
+> Acked-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+>> +/**
+>> + * block_rq_abort - Abort Block Operation Request
+> 
+> Is it necessary to uppercase the first letter of every word?
 
-No idea. I've not looked at this so your guess is as good as mine (but
-looks quite believable. I don't plan to do anything until someone who
-needs platform 8250 support sends a tested version of the change
-however.
+I was assuming that it was a title. However, lower case would be okay.
 
-Alan
-h
+-Will
+> 
+>> + * @q: queue containing the block operation request
+>> + * @rq: block IO operation request
+>> + *
+>> + * Called immediately after pending block IO operation request @rq in
+>> + * queue @q is aborted. The fields in the operation request @rq
+>> + * can be examined to determine which device and sectors the pending
+>> + * operation would access.
+>> + */
+>>  TRACE_EVENT(block_rq_abort,
+>>  
+>>  	TP_PROTO(struct request_queue *q, struct request *rq),
+> 
+> 
+
