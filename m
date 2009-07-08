@@ -1,97 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758507AbZGHAuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbZGHAxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758507AbZGHAuT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 20:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbZGHAuI
+	id S1758368AbZGHAxi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 20:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZGHAxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 20:50:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56707 "EHLO smtps.tip.net.au"
+	Tue, 7 Jul 2009 20:53:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52333 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754487AbZGHAuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 20:50:07 -0400
-Date: Wed, 8 Jul 2009 10:50:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: sfi-devel@simplefirmware.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: sfi tree build failure
-Message-Id: <20090708105005.3d8facaa.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LFD.2.00.0907071120230.4244@localhost.localdomain>
-References: <20090630171937.75f64662.sfr@canb.auug.org.au>
-	<20090706161432.111a42ee.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0907062348130.32467@localhost.localdomain>
-	<20090707154353.628365ac.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0907071120230.4244@localhost.localdomain>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__8_Jul_2009_10_50_05_+1000_gNjJ1FPzTA2epvop"
+	id S1754298AbZGHAxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 20:53:30 -0400
+Date: Wed, 8 Jul 2009 02:50:00 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] sched: Remove SYSTEM_RUNNING checks from
+	cond_resched*()
+Message-ID: <20090708005000.GA12380@redhat.com>
+References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__8_Jul_2009_10_50_05_+1000_gNjJ1FPzTA2epvop
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Len,
-
-On Tue, 07 Jul 2009 11:31:06 -0400 (EDT) Len Brown <lenb@kernel.org> wrote:
+On 07/08, Anton Vorontsov wrote:
 >
-> > I still get the same error.
->=20
-> git.kernel.org took a long time to update from master.kerne.org
-> last night.  (indeed, I was sending patches through e-mail to
-> some folks to work around it); so I suspect you pulled the SFI
-> tree before the mirror updated and got the same thing you
-> got over the weekend.
+> but I'm curious if removing the checks makes sense
+> nowadays.
+...
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -6560,8 +6560,7 @@ static void __cond_resched(void)
+>
+>  int __sched _cond_resched(void)
+>  {
+> -	if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE) &&
+> -					system_state == SYSTEM_RUNNING) {
+> +	if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE)) {
+>  		__cond_resched();
+>  		return 1;
+>  	}
 
-I fetch from master ... and did get an update.
+and, with CONFIG_PREEMPT preempt_schedule() does not check system_state,
+so it looks really strange cond_resched() does check SYSTEM_RUNNING.
 
-> surfing to git.kernel.org, it seems to be up to date now.
->=20
-> The tree should include this one of interest:
->=20
-> commit 4844be551844e05d4b70f0624e9c34fd486d3e33
-> Author: Len Brown <len.brown@intel.com>
-> Date:   Mon Jul 6 23:57:55 2009 -0400
->=20
->     SFI: revert changes to linux/acpi.h, fix ppc build
 
-It has that now.  When I refetched yesterday, the head of sfi-test branch
-was c24b5f47a66895c2f2ac6e8b665c94f7854e32b4 ("SFI: work around ppc build
-failure") which is the commit before the above one.
 
-It doesn't matter, hopefully it will be better today.
+debug_smp_processor_id() looks strange too:
+	
+	/*
+	 * It is valid to assume CPU-locality during early bootup:
+	 */
+	if (system_state != SYSTEM_RUNNING)
+		goto out;
 
-> Note that Linus pulls from master.kernel.org rather than git.kernel.org
-> to avoid any possible sync delay between tree push and his pull.
+this doesn't look right, smp_init() is called before we set
+SYSTEM_RUNNING.
 
-As do I for the same reason.
+Hmm, and
 
-> If you have trouble with a copy of the tree that includes
-> the commit above, (I don't expect to see the same failure,
-> but it is always possible there is another one after this one),
-> then please send me the complete build log.
+	/*
+	 * Kernel threads bound to a single CPU can safely use
+	 * smp_processor_id():
+	 */
+	if (cpumask_equal(&current->cpus_allowed, cpumask_of(this_cpu)))
+		goto out;
 
-Will do.
+perhaps this should use PF_THREAD_BOUND ?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Oleg.
 
---Signature=_Wed__8_Jul_2009_10_50_05_+1000_gNjJ1FPzTA2epvop
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpT7T0ACgkQjjKRsyhoI8yKtACgjxWWLxaKZWSPJKBdC9jVF7IZ
-pp4An1+ckFTrjwEHVLi3MqdAYgof4RCN
-=dtnL
------END PGP SIGNATURE-----
-
---Signature=_Wed__8_Jul_2009_10_50_05_+1000_gNjJ1FPzTA2epvop--
