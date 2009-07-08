@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759241AbZGHQFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbZGHQGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759241AbZGHQFy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758999AbZGHQEx
+	id S1759586AbZGHQGr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757679AbZGHQFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:04:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53202 "EHLO hera.kernel.org"
+	Wed, 8 Jul 2009 12:05:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53232 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758987AbZGHQEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:04:52 -0400
-Subject: [PATCH 32/44] includecheck fix: drivers/video, vgacon.c
+	id S1759101AbZGHQFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:05:13 -0400
+Subject: [PATCH 29/44] includecheck fix: drivers/spi, amba-pl022.c
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Martin Mares <mj@ucw.cz>, mchehab@infradead.org,
-       linux-media@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
+To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
 References: <1247063308.4382.12.camel@ht.satnam>
 Content-Type: text/plain
-Date: Wed, 08 Jul 2009 21:10:24 +0530
-Message-Id: <1247067624.4382.88.camel@ht.satnam>
+Date: Wed, 08 Jul 2009 21:02:27 +0530
+Message-Id: <1247067147.4382.80.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -27,27 +26,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-fix the following 'make includecheck' warning:
+fix the following 'make includecheck' warnings:
 
-  drivers/video/console/vgacon.c: linux/slab.h is included more than once.
+  drivers/spi/amba-pl022.c: linux/delay.h is included more than once.
+  drivers/spi/amba-pl022.c: linux/errno.h is included more than once.
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- drivers/video/console/vgacon.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/spi/amba-pl022.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 59d7d5e..74e96cf 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -180,7 +180,6 @@ static inline void vga_set_mem_top(struct vc_data *c)
- }
+diff --git a/drivers/spi/amba-pl022.c b/drivers/spi/amba-pl022.c
+index da76797..c0f950a 100644
+--- a/drivers/spi/amba-pl022.c
++++ b/drivers/spi/amba-pl022.c
+@@ -38,14 +38,12 @@
+ #include <linux/interrupt.h>
+ #include <linux/spi/spi.h>
+ #include <linux/workqueue.h>
+-#include <linux/errno.h>
+ #include <linux/delay.h>
+ #include <linux/clk.h>
+ #include <linux/err.h>
+ #include <linux/amba/bus.h>
+ #include <linux/amba/pl022.h>
+ #include <linux/io.h>
+-#include <linux/delay.h>
  
- #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
--#include <linux/slab.h>
- /* software scrollback */
- static void *vgacon_scrollback;
- static int vgacon_scrollback_tail;
+ /*
+  * This macro is used to define some register default values.
 -- 
 1.6.0.6
 
