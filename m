@@ -1,100 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbZGHUZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758876AbZGHU0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758791AbZGHUZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 16:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbZGHUZQ
+	id S1758876AbZGHU0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 16:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbZGHU0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 16:25:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38381 "EHLO mx1.redhat.com"
+	Wed, 8 Jul 2009 16:26:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60463 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754539AbZGHUZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 16:25:15 -0400
-Date: Wed, 8 Jul 2009 16:11:59 -0400
+	id S1755599AbZGHU0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 16:26:14 -0400
+Date: Wed, 8 Jul 2009 16:26:13 -0400
 From: Valerie Aurora <vaurora@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] [1/2] Optimization for touch_atime
-Message-ID: <20090708201159.GB16893@shell>
-References: <20090706924.495556466@firstfloor.org>
+To: Josef Bacik <josef@redhat.com>
+Cc: linux-ext4@vger.kernel.org, emcnabb@redhat.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] fix softlockups in ext2/3 when trying to allocate blocks
+Message-ID: <20090708202612.GC16893@shell>
+References: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090706924.495556466@firstfloor.org>
+In-Reply-To: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com>
 User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 06, 2009 at 09:24:46PM +0200, Andi Kleen wrote:
+On Mon, Jul 06, 2009 at 03:47:39PM -0400, Josef Bacik wrote:
+> This isn't a huge deal, but using a big beefy box with more CPUs than what is
+> sane, you can get a nice flood of softlockup messages when running heavy
+> multi-threaded io tests on ext2/3.  The processors compete for blocks from the
+> allocator, so they will loop quite a bit trying to get their allocation.  This
+> patch simply makes sure that we reschedule if need be.  This made the softlockup
+> messages disappear whereas before they happened almost immediately.  Thanks,
 > 
-> Some benchmark testing shows touch_atime to be high up in profile
-> logs for IO intensive workloads. Most likely that's due to the lock
-> in mnt_want_write().  Unfortunately touch_atime first takes the lock,
-> and then does all the other tests that could avoid atime updates (like
-> noatime or relatime).
-> 
-> Do it the other way round -- first try to avoid the update and only
-> then if that didn't succeed take the lock. That works because none of
-> the atime avoidance tests rely on locking.
-> 
-> This also eliminates a goto.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
+> Tested-by: Evan McNabb <emcnabb@redhat.com>
+> Signed-off-by: Josef Bacik <josef@redhat.com>
 > ---
->  fs/inode.c |   20 ++++++++++----------
->  1 file changed, 10 insertions(+), 10 deletions(-)
+>  fs/ext2/balloc.c |    1 +
+>  fs/ext3/balloc.c |    2 ++
+>  2 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> Index: linux-2.6.30-ak/fs/inode.c
-> ===================================================================
-> --- linux-2.6.30-ak.orig/fs/inode.c
-> +++ linux-2.6.30-ak/fs/inode.c
-> @@ -1361,31 +1361,31 @@ void touch_atime(struct vfsmount *mnt, s
->  	struct inode *inode = dentry->d_inode;
->  	struct timespec now;
->  
-> -	if (mnt_want_write(mnt))
-> -		return;
->  	if (inode->i_flags & S_NOATIME)
-> -		goto out;
-> +		return;
->  	if (IS_NOATIME(inode))
-> -		goto out;
-> +		return;
->  	if ((inode->i_sb->s_flags & MS_NODIRATIME) && S_ISDIR(inode->i_mode))
-> -		goto out;
-> +		return;
->  
->  	if (mnt->mnt_flags & MNT_NOATIME)
-> -		goto out;
-> +		return;
->  	if ((mnt->mnt_flags & MNT_NODIRATIME) && S_ISDIR(inode->i_mode))
-> -		goto out;
-> +		return;
->  
->  	now = current_fs_time(inode->i_sb);
->  
->  	if (!relatime_need_update(mnt, inode, now))
-> -		goto out;
-> +		return;
->  
->  	if (timespec_equal(&inode->i_atime, &now))
-> -		goto out;
-> +		return;
-> +
-> +	if (mnt_want_write(mnt))
-> +		return;
->  
->  	inode->i_atime = now;
->  	mark_inode_dirty_sync(inode);
-> -out:
->  	mnt_drop_write(mnt);
+> diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
+> index 7f8d2e5..17dd55f 100644
+> --- a/fs/ext2/balloc.c
+> +++ b/fs/ext2/balloc.c
+> @@ -1176,6 +1176,7 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
+>  			break;				/* succeed */
+>  		}
+>  		num = *count;
+> +		cond_resched();
+>  	}
+>  	return ret;
 >  }
->  EXPORT_SYMBOL(touch_atime);
+> diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
+> index 27967f9..cffc8cd 100644
+> --- a/fs/ext3/balloc.c
+> +++ b/fs/ext3/balloc.c
+> @@ -735,6 +735,7 @@ bitmap_search_next_usable_block(ext3_grpblk_t start, struct buffer_head *bh,
+>  	struct journal_head *jh = bh2jh(bh);
+>  
+>  	while (start < maxblocks) {
+> +		cond_resched();
+>  		next = ext3_find_next_zero_bit(bh->b_data, maxblocks, start);
+>  		if (next >= maxblocks)
+>  			return -1;
 
-Nice!
+I'm curious: Why schedule at the beginning of the while() loop rather
+than at the end?
 
-Reviewed-by: Valerie Aurora <vaurora@redhat.com>
+> @@ -1391,6 +1392,7 @@ ext3_try_to_allocate_with_rsv(struct super_block *sb, handle_t *handle,
+>  			break;				/* succeed */
+>  		}
+>  		num = *count;
+> +		cond_resched();
+>  	}
+>  out:
+>  	if (ret >= 0) {
+> -- 
+> 1.6.2.2
+
+I like this patch in general, but I worry about introducing new
+performance problems in other cases.  Have you guys tested on single
+cpu systems?  Maybe with a file system close to ENOSPC or badly
+fragmented?
 
 -VAL
