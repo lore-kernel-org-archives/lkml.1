@@ -1,123 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbZGHPia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbZGHPpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757260AbZGHPia (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 11:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbZGHPiM
+	id S1757129AbZGHPpA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 11:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZGHPox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 11:38:12 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33454 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756172AbZGHPiK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 11:38:10 -0400
-Subject: [PATCH] sched_rt: fix overload bug on rt group scheduling -v2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, zengzm.kernel@gmail.com
-In-Reply-To: <49D49FB6.3000101@novell.com>
-References: <1238604015.8530.3666.camel@twins> <49D40DBF.8030507@novell.com>
-	 <1238654901.8530.5373.camel@twins>  <49D49FB6.3000101@novell.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 08 Jul 2009 17:37:56 +0200
-Message-Id: <1247067476.9777.57.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 8 Jul 2009 11:44:53 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51206 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753865AbZGHPow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 11:44:52 -0400
+Date: Wed, 8 Jul 2009 17:44:50 +0200
+From: Jan Kara <jack@suse.cz>
+To: linux-kernel@vger.kernel.org, Jiaying Zhang <jiayingz@google.com>
+Subject: [PULL REQUEST] Quota changes for 2.6.31-rc3
+Message-ID: <20090708154450.GA30616@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg, how's this?
+  Hit send too early...
 
----
-Subject: sched_rt: fix overload bug on rt group scheduling
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Wed, 01 Apr 2009 18:40:15 +0200
+----- Forwarded message from Jan Kara <jack@suse.cz> -----
 
-Fixes an easily triggerable BUG() when setting process affinities.
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PULL REQUEST] Quota changes for 2.6.31-rc3
 
-Make sure to count the number of migratable tasks in the same place:
-the root rt_rq. Otherwise the number doesn't make sense and we'll hit
-the BUG in set_cpus_allowed_rt().
+  Hello Linus,
 
-Also, make sure we only count tasks, not groups (this is probably
-already taken care of by the fact that rt_se->nr_cpus_allowed will be 0
-for groups, but be more explicit)
+  could you please pull from
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched_rt.c |   18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-quota-2.6.git
+for_linus
 
-Index: linux-2.6/kernel/sched_rt.c
-===================================================================
---- linux-2.6.orig/kernel/sched_rt.c
-+++ linux-2.6/kernel/sched_rt.c
-@@ -10,6 +10,8 @@ static inline struct task_struct *rt_tas
- 
- #ifdef CONFIG_RT_GROUP_SCHED
- 
-+#define rt_entity_is_task(rt_se) (!(rt_se)->my_q)
-+
- static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
- {
- 	return rt_rq->rq;
-@@ -22,6 +24,8 @@ static inline struct rt_rq *rt_rq_of_se(
- 
- #else /* CONFIG_RT_GROUP_SCHED */
- 
-+#define rt_entity_is_task(rt_se) (1)
-+
- static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
- {
- 	return container_of(rt_rq, struct rq, rt);
-@@ -73,7 +77,7 @@ static inline void rt_clear_overload(str
- 
- static void update_rt_migration(struct rt_rq *rt_rq)
- {
--	if (rt_rq->rt_nr_migratory && (rt_rq->rt_nr_running > 1)) {
-+	if (rt_rq->rt_nr_migratory && rt_rq->rt_nr_total > 1) {
- 		if (!rt_rq->overloaded) {
- 			rt_set_overload(rq_of_rt_rq(rt_rq));
- 			rt_rq->overloaded = 1;
-@@ -86,6 +90,12 @@ static void update_rt_migration(struct r
- 
- static void inc_rt_migration(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
- {
-+	if (!rt_entity_is_task(rt_se))
-+		return;
-+
-+	rt_rq = &rq_of_rt_rq(rt_rq)->rt;
-+
-+	rt_rq->rt_nr_total++;
- 	if (rt_se->nr_cpus_allowed > 1)
- 		rt_rq->rt_nr_migratory++;
- 
-@@ -94,6 +104,12 @@ static void inc_rt_migration(struct sche
- 
- static void dec_rt_migration(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
- {
-+	if (!rt_entity_is_task(rt_se))
-+		return;
-+
-+	rt_rq = &rq_of_rt_rq(rt_rq)->rt;
-+
-+	rt_rq->rt_nr_total--;
- 	if (rt_se->nr_cpus_allowed > 1)
- 		rt_rq->rt_nr_migratory--;
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index fd3ac58..a07d520 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -493,6 +493,7 @@ struct rt_rq {
- #endif
- #ifdef CONFIG_SMP
- 	unsigned long rt_nr_migratory;
-+	unsigned long rt_nr_total;
- 	int overloaded;
- 	struct plist_head pushable_tasks;
- #endif
+  to get:
 
+Jiaying Zhang (1):
+      quota: Fix possible deadlock during parallel quotaon and quotaoff
+
+The diffstat is
+
+ fs/quota/dquot.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+							Thanks
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
+
+----- End forwarded message -----
