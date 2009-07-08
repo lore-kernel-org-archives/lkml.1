@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750836AbZGHERi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbZGHESs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750836AbZGHERi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 00:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758475AbZGHEPL
+	id S1757947AbZGHESs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 00:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbZGHESj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 00:15:11 -0400
-Received: from vms173015pub.verizon.net ([206.46.173.15]:42823 "EHLO
-	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758591AbZGHEPH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 00:15:07 -0400
-From: Len Brown <lenb@kernel.org>
-To: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Cc: Feng Tang <feng.tang@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Len Brown <len.brown@intel.com>
-Subject: [PATCH 11/12] SFI, PCI: Hook MMCONFIG
-Date: Wed, 08 Jul 2009 00:13:57 -0400
-Message-id: <24fe646fcbbd9049850de4ac57cf6a67846b38c4.1247025117.git.len.brown@intel.com>
-X-Mailer: git-send-email 1.6.3.3.385.g60647
-In-reply-to: <1247026438-20891-1-git-send-email-lenb@kernel.org>
-References: <1247026438-20891-1-git-send-email-lenb@kernel.org>
-In-reply-to: <8e4a93858bce74ed3080dd607aa471023f1a2737.1247025117.git.len.brown@intel.com>
-References: <8e4a93858bce74ed3080dd607aa471023f1a2737.1247025117.git.len.brown@intel.com>
-X-Patchwork-Hint: ignore
+	Wed, 8 Jul 2009 00:18:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:59460 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750836AbZGHESi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 00:18:38 -0400
+Date: Wed, 8 Jul 2009 14:18:25 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: sound tree build warning
+Message-Id: <20090708141825.da103bc8.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__8_Jul_2009_14_18_25_+1000_c5zw7AnShgMLk_z8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Feng Tang <feng.tang@intel.com>
+--Signature=_Wed__8_Jul_2009_14_18_25_+1000_c5zw7AnShgMLk_z8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-First check ACPI, and if that fails, ask SFI to find the MCFG.
+Hi Takashi,
 
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Feng Tang <feng.tang@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/Kconfig               |    2 +-
- arch/x86/pci/mmconfig-shared.c |    5 ++++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+Today's linux-next build (x86_64 allmodconfig) produced these warnings:
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 8e864c0..8e20a0e 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1880,7 +1880,7 @@ config PCI_DIRECT
- 
- config PCI_MMCONFIG
- 	def_bool y
--	depends on X86_32 && PCI && ACPI && (PCI_GOMMCONFIG || PCI_GOANY)
-+	depends on X86_32 && PCI && (ACPI || SFI) && (PCI_GOMMCONFIG || PCI_GOANY)
- 
- config PCI_OLPC
- 	def_bool y
-diff --git a/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
-index 712443e..373780b 100644
---- a/arch/x86/pci/mmconfig-shared.c
-+++ b/arch/x86/pci/mmconfig-shared.c
-@@ -13,6 +13,7 @@
- #include <linux/pci.h>
- #include <linux/init.h>
- #include <linux/acpi.h>
-+#include <linux/sfi_acpi.h>
- #include <linux/bitmap.h>
- #include <linux/sort.h>
- #include <asm/e820.h>
-@@ -606,7 +607,9 @@ static void __init __pci_mmcfg_init(int early)
- 	}
- 
- 	if (!known_bridge)
--		acpi_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg);
-+		if (acpi_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg))
-+			sfi_acpi_table_parse(ACPI_SIG_MCFG, NULL, NULL, 0,
-+				pci_parse_mcfg);
- 
- 	pci_mmcfg_reject_broken(early);
- 
--- 
-1.6.0.6
+sound/pci/hda/patch_via.c: In function 'via_mux_enum_put':
+sound/pci/hda/patch_via.c:395: warning: unused variable 'vendor_id'
+sound/pci/hda/patch_via.c: In function 'get_mux_nids':
+sound/pci/hda/patch_via.c:1337: warning: unused variable 'type'
+sound/pci/hda/patch_via.c:1354: warning: no return statement in function re=
+turning non-void
 
+Introduced by commit 337b9d02b4873ceac91565272545fb6fd446d939 ("ALSA: hda
+- Fix capture source selection in patch_via.c").
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__8_Jul_2009_14_18_25_+1000_c5zw7AnShgMLk_z8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpUHhEACgkQjjKRsyhoI8w5IgCfbv9zaS2aS+NJNAfbdr48CYsu
+LjUAoIM3b0ElHKwuIftK9GAyMo/jlYFJ
+=/SQT
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__8_Jul_2009_14_18_25_+1000_c5zw7AnShgMLk_z8--
