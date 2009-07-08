@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZGHQC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbZGHQCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbZGHQC0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbZGHQCP
+	id S1757555AbZGHQCi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbZGHQC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:02:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52974 "EHLO hera.kernel.org"
+	Wed, 8 Jul 2009 12:02:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53047 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751889AbZGHQCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:02:14 -0400
-Subject: [PATCH 17/44] includecheck fix: um, helper.c
+	id S1753893AbZGHQC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:02:29 -0400
+Subject: [PATCH 18/44] includecheck fix: x86, dumpstack.c
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
        Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
 In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
 References: <1247063308.4382.12.camel@ht.satnam>
 Content-Type: text/plain
-Date: Wed, 08 Jul 2009 20:25:50 +0530
-Message-Id: <1247064950.4382.45.camel@ht.satnam>
+Date: Wed, 08 Jul 2009 20:27:05 +0530
+Message-Id: <1247065025.4382.47.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -28,25 +28,25 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 fix the following 'make includecheck' warning:
 
-  arch/um/os-Linux/helper.c: linux/limits.h is included more than once.
+  arch/x86/kernel/dumpstack.c: linux/ftrace.h is included more than once.
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/um/os-Linux/helper.c |    1 -
+ arch/x86/kernel/dumpstack.c |    1 -
  1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/arch/um/os-Linux/helper.c b/arch/um/os-Linux/helper.c
-index 30860b8..b6b1096 100644
---- a/arch/um/os-Linux/helper.c
-+++ b/arch/um/os-Linux/helper.c
+diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
+index c840571..2d8a371 100644
+--- a/arch/x86/kernel/dumpstack.c
++++ b/arch/x86/kernel/dumpstack.c
 @@ -15,7 +15,6 @@
- #include "os.h"
- #include "um_malloc.h"
- #include "user.h"
--#include <linux/limits.h>
+ #include <linux/bug.h>
+ #include <linux/nmi.h>
+ #include <linux/sysfs.h>
+-#include <linux/ftrace.h>
  
- struct helper_data {
- 	void (*pre_exec)(void*);
+ #include <asm/stacktrace.h>
+ 
 -- 
 1.6.0.6
 
