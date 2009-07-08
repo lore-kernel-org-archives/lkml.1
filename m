@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbZGHMXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755663AbZGHMXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbZGHMXB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 08:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbZGHMWw
+	id S1755663AbZGHMXY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 08:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZGHMXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 08:22:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58722 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753357AbZGHMWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 08:22:52 -0400
-Date: Wed, 8 Jul 2009 14:22:50 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jan Kara <jack@suse.cz>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [rfc][patch 4/4] fs: tmpfs, ext2 use new truncate
-Message-ID: <20090708122250.GP2714@wotan.suse.de>
-References: <20090707144423.GC2714@wotan.suse.de> <20090707144918.GF2714@wotan.suse.de> <20090707163829.GB14947@infradead.org> <20090708065327.GM2714@wotan.suse.de> <20090708111420.GB20924@duck.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090708111420.GB20924@duck.suse.cz>
-User-Agent: Mutt/1.5.9i
+	Wed, 8 Jul 2009 08:23:09 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:46747 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753946AbZGHMXI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 08:23:08 -0400
+Date: Wed, 8 Jul 2009 14:23:06 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: tridge@samba.org
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Martin Steigerwald <Martin@lichtvoll.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Theodore Tso <tytso@mit.edu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Pavel Machek <pavel@ucw.cz>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+In-Reply-To: <19028.31088.400461.939917@samba.org>
+Message-ID: <alpine.LSU.2.00.0907081421240.6724@fbirervta.pbzchgretzou.qr>
+References: <19013.8005.541836.436991@samba.org> <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr> <19026.38137.63807.427511@samba.org> <200907072356.51553.Martin@lichtvoll.de> <19028.3736.892828.352905@samba.org> <20090708110451.1092afa7@lxorguk.ukuu.org.uk>
+ <19028.31088.400461.939917@samba.org>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 08, 2009 at 01:14:20PM +0200, Jan Kara wrote:
-> On Wed 08-07-09 08:53:27, Nick Piggin wrote:
-> > On Tue, Jul 07, 2009 at 12:38:29PM -0400, Christoph Hellwig wrote:
-> > > We can't move this to the caller easily.  ext2_delete_inode gets
-> > > called for all inodes, but we only want to go on truncating for the
-> > > limited set that passes this check.
-> > 
-> > Hmm, shouldn't they have no ->i_blocks in that case?
->   Not necessarily. Inode can have extended attributes set and those can
-> be stored in a special block which is accounted in i_blocks.
 
-OK fair enough. But I don't know if all those checks are
-realy appropriate. For example an IS_APPEND inode should
-be able to have its blocks trimmed off if a write fails.
+On Wednesday 2009-07-08 12:48, tridge@samba.org wrote:
+>
+> - some vendors may decide not to use Linux, and switch to embedded
+>   windows instead if we don't have a clearly supported way of
+>   avoiding these patents in the Linux kernels.
 
+I perceive that:
+Linux is primarily about doing things the right way, not about making
+the largest userbase (it is a welcomed side-effect though).
