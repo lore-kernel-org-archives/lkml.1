@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbZGHIWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZGHIYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757648AbZGHIWw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 04:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbZGHIWj
+	id S1758213AbZGHIYa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 04:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbZGHIYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 04:22:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48307 "EHLO mx2.redhat.com"
+	Wed, 8 Jul 2009 04:24:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50894 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752622AbZGHIWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 04:22:38 -0400
-Date: Wed, 8 Jul 2009 10:22:33 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: srostedt@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: scripts/recordmcount.pl doc question
-Message-ID: <20090708082233.GA3234@jolsa.lab.eng.brq.redhat.com>
+	id S1755294AbZGHIYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 04:24:16 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: jens.axboe@oracle.com
+Subject: [PATCH] Send uevents for disk write_protect changes
+Date: Wed, 8 Jul 2009 13:55:52 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.31-rc2-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: Hannes Reinecke <hare@suse.de>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200907081355.53226.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Hannes Reinecke <hare@suse.de>
+Subject: Send uevents for write_protect changes
 
-I was reading throught the recordmcount.pl starting comment,
-and spot a tiny discrepancy. 
+Whenever a block device changes it's read-only attribute
+notify the userspace about it.
 
-The second example is about my_func not being global, but the example code 
-has the ".globl my_func" statement just moved. IMO it should be erased,
-if not I'm curious what I'm missing.. :)
+Signed-off-by: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
-wbr,
-jirka
+---
 
+diff --git a/block/genhd.c b/block/genhd.c
+index f4c64c2..b89328e 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -1215,6 +1215,16 @@ void put_disk(struct gendisk *disk)
+ 
+ EXPORT_SYMBOL(put_disk);
+ 
++static void set_disk_ro_uevent(struct gendisk *gd, int ro)
++{
++	char event[] = "DISK_RO=1";
++	char *envp[] = { event, NULL };
++
++	if (!ro)
++		event[8] = '0';
++	kobject_uevent_env(&disk_to_dev(gd)->kobj, KOBJ_CHANGE, envp);
++}
++
+ void set_device_ro(struct block_device *bdev, int flag)
+ {
+ 	bdev->bd_part->policy = flag;
+@@ -1227,8 +1237,12 @@ void set_disk_ro(struct gendisk *disk, int flag)
+ 	struct disk_part_iter piter;
+ 	struct hd_struct *part;
+ 
+-	disk_part_iter_init(&piter, disk,
+-			    DISK_PITER_INCL_EMPTY | DISK_PITER_INCL_PART0);
++	if (disk->part0.policy != flag) {
++		set_disk_ro_uevent(disk, flag);
++		disk->part0.policy = flag;
++	}
++
++	disk_part_iter_init(&piter, disk, DISK_PITER_INCL_EMPTY);
+ 	while ((part = disk_part_iter_next(&piter)))
+ 		part->policy = flag;
+ 	disk_part_iter_exit(&piter);
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 7109e2b..db4ebe1 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -57,7 +57,6 @@
- #        call mcount  (offset: 0x5)
- #        [...]
- #        ret
--#  .globl my_func
- #  other_func:
- #        [...]
- #        call mcount (offset: 0x1b)
