@@ -1,76 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759122AbZGHUWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758791AbZGHUZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759122AbZGHUWr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 16:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757057AbZGHUW3
+	id S1758791AbZGHUZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 16:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbZGHUZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 16:22:29 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:39661 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755202AbZGHUW2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 16:22:28 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Null Pointer BUG in uhci_hcd
-Date: Wed, 8 Jul 2009 15:22:19 -0500
-User-Agent: KMail/1.9.9
-Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0907081555310.22105-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0907081555310.22105-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Jul 2009 16:25:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38381 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754539AbZGHUZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 16:25:15 -0400
+Date: Wed, 8 Jul 2009 16:11:59 -0400
+From: Valerie Aurora <vaurora@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] [1/2] Optimization for touch_atime
+Message-ID: <20090708201159.GB16893@shell>
+References: <20090706924.495556466@firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907081522.22026.lkml@morethan.org>
+In-Reply-To: <20090706924.495556466@firstfloor.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed July 8 2009, Alan Stern wrote:
-> On Wed, 8 Jul 2009, Michael S. Zick wrote:
+On Mon, Jul 06, 2009 at 09:24:46PM +0200, Andi Kleen wrote:
 > 
-> > But, then again, we might just get lucky:
-> > ehci_hcd 0000:00:10.4: Unlink after no-IRQ?  Controller is probably using the wrong IRQ.
-> > usb 1-5: khubd timed out on ep0in len=18/64
+> Some benchmark testing shows touch_atime to be high up in profile
+> logs for IO intensive workloads. Most likely that's due to the lock
+> in mnt_want_write().  Unfortunately touch_atime first takes the lock,
+> and then does all the other tests that could avoid atime updates (like
+> noatime or relatime).
 > 
-> Like I've been telling you all along, the hardware isn't working.  
->
-
-That sounds very fragile.
-
-> I suspect it's worse than a simple interrupt-routing mistake.
+> Do it the other way round -- first try to avoid the update and only
+> then if that didn't succeed take the lock. That works because none of
+> the atime avoidance tests rely on locking.
 > 
-
-I would not object to your removing that one mistake - that is one less
-to contend with.
-
-> > > > For more information enable CONFIG_USB_DEBUG and CONFIG_DEBUG_FS, then 
-> > > > see what's sitting in the usb/uhci/* files in debugfs.
-> > > > 
-> > 
-
-Fours up-time - nothing written to dmesg since boot -
-Just the usual hard-lockup.
-
-Also - something in the combined fix/diagnostic patch
-disable any sensing of external usb events.
-So I couldn't very well poke devices at it.  ;)
-
-> > Anything in particular to look for/at?
+> This also eliminates a goto.
 > 
-> Just post the contents of those files.
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 > 
-
-Will capture that information during this afternoon's testing.
-
-Mike
-> Alan Stern
+> ---
+>  fs/inode.c |   20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
 > 
-> 
-> 
+> Index: linux-2.6.30-ak/fs/inode.c
+> ===================================================================
+> --- linux-2.6.30-ak.orig/fs/inode.c
+> +++ linux-2.6.30-ak/fs/inode.c
+> @@ -1361,31 +1361,31 @@ void touch_atime(struct vfsmount *mnt, s
+>  	struct inode *inode = dentry->d_inode;
+>  	struct timespec now;
+>  
+> -	if (mnt_want_write(mnt))
+> -		return;
+>  	if (inode->i_flags & S_NOATIME)
+> -		goto out;
+> +		return;
+>  	if (IS_NOATIME(inode))
+> -		goto out;
+> +		return;
+>  	if ((inode->i_sb->s_flags & MS_NODIRATIME) && S_ISDIR(inode->i_mode))
+> -		goto out;
+> +		return;
+>  
+>  	if (mnt->mnt_flags & MNT_NOATIME)
+> -		goto out;
+> +		return;
+>  	if ((mnt->mnt_flags & MNT_NODIRATIME) && S_ISDIR(inode->i_mode))
+> -		goto out;
+> +		return;
+>  
+>  	now = current_fs_time(inode->i_sb);
+>  
+>  	if (!relatime_need_update(mnt, inode, now))
+> -		goto out;
+> +		return;
+>  
+>  	if (timespec_equal(&inode->i_atime, &now))
+> -		goto out;
+> +		return;
+> +
+> +	if (mnt_want_write(mnt))
+> +		return;
+>  
+>  	inode->i_atime = now;
+>  	mark_inode_dirty_sync(inode);
+> -out:
+>  	mnt_drop_write(mnt);
+>  }
+>  EXPORT_SYMBOL(touch_atime);
 
+Nice!
 
+Reviewed-by: Valerie Aurora <vaurora@redhat.com>
+
+-VAL
