@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbZGHEt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZGHE6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759251AbZGHEt0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 00:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbZGHEtT
+	id S1755345AbZGHE6e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 00:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZGHE60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 00:49:19 -0400
-Received: from mail-px0-f181.google.com ([209.85.216.181]:47312 "EHLO
-	mail-px0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbZGHEtS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 00:49:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=b5bfN/d9znRjd4uymvilY3NEbjR8hwBaaIHQ96Gwh7If4o9BG99hfzdennNS2VevWm
-         TP80AtOBWUYicd1+6d5/BZXjk9JuKuiIVZMPrkH3fd3uJncJEPiEap1+rb/kqtH6h8A4
-         nO57wWOtvNPagb3Ck9NKUHilFDe1ti1ADOjds=
-Date: Wed, 8 Jul 2009 12:51:26 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Kees Cook <kees.cook@canonical.com>
-Cc: linux-kernel@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH] proc: fix reported unit for RLIMIT_CPU
-Message-ID: <20090708045126.GB5917@cr0.nay.redhat.com>
-References: <20090708042331.GT11156@outflux.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090708042331.GT11156@outflux.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 8 Jul 2009 00:58:26 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:49664 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750900AbZGHE60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 00:58:26 -0400
+Date: Wed, 8 Jul 2009 14:58:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Artem.Bityutskiy@nokia.com
+Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: ubi tree build warnings
+Message-Id: <20090708145819.3ad0c903.sfr@canb.auug.org.au>
+In-Reply-To: <4A542452.6060703@nokia.com>
+References: <20090708130921.a361f6d2.sfr@canb.auug.org.au>
+	<4A542452.6060703@nokia.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__8_Jul_2009_14_58_19_+1000_4_coQtPNJ9P1qRK8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 09:23:32PM -0700, Kees Cook wrote:
->/proc/$pid/limits should show RLIMIT_CPU as seconds, which is the unit
->used in kernel/posix-cpu-timers.c:
->
->        unsigned long psecs = cputime_to_secs(ptime);
->        ...
->        if (psecs >= sig->rlim[RLIMIT_CPU].rlim_max) {
->                ...
->                __group_send_sig_info(SIGKILL, SEND_SIG_PRIV, tsk);
->
->Signed-off-by: Kees Cook <kees.cook@canonical.com>
+--Signature=_Wed__8_Jul_2009_14_58_19_+1000_4_coQtPNJ9P1qRK8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Artem,
 
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+On Wed, 08 Jul 2009 07:45:06 +0300 Artem Bityutskiy <Artem.Bityutskiy@nokia=
+.com> wrote:
+>
+> Will fix ASAP, thank you! I'm always wondering how you manage
+> to reproduce warnings I do not see.
 
->---
-> fs/proc/base.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->
->diff --git a/fs/proc/base.c b/fs/proc/base.c
->index 3ce5ae9..5891360 100644
->--- a/fs/proc/base.c
->+++ b/fs/proc/base.c
->@@ -461,7 +461,7 @@ struct limit_names {
-> };
-> 
-> static const struct limit_names lnames[RLIM_NLIMITS] = {
->-	[RLIMIT_CPU] = {"Max cpu time", "ms"},
->+	[RLIMIT_CPU] = {"Max cpu time", "seconds"},
-> 	[RLIMIT_FSIZE] = {"Max file size", "bytes"},
-> 	[RLIMIT_DATA] = {"Max data size", "bytes"},
-> 	[RLIMIT_STACK] = {"Max stack size", "bytes"},
->-- 
->1.6.3.3
->
->-- 
->Kees Cook
->Ubuntu Security Team
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+Probably a different config or compiler (I am using gcc 4.4.0).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__8_Jul_2009_14_58_19_+1000_4_coQtPNJ9P1qRK8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpUJ2sACgkQjjKRsyhoI8zCBQCfZRKydeY7X69PEhAC+BEjQgO/
+da0AoLxSPHw3V4+NaJ5EG6Aww96a41g0
+=h2i7
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__8_Jul_2009_14_58_19_+1000_4_coQtPNJ9P1qRK8--
