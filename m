@@ -1,103 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbZGHTk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbZGHTlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758316AbZGHTk0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 15:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZGHTkQ
+	id S1757318AbZGHTlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 15:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZGHTlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 15:40:16 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:43622 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753677AbZGHTkP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 15:40:15 -0400
-Subject: Re: [PATCH] kmemcheck: fix sparse warning
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-sparse@vger.kernel.org
-In-Reply-To: <19f34abd0907081228p541d1cdao85f37aaa479fcfc5@mail.gmail.com>
-References: <1246873983.20908.0.camel@johannes.local>
-	 <19f34abd0907081228p541d1cdao85f37aaa479fcfc5@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-jzH9nkzRQWl0Uyh/4Zgz"
-Date: Wed, 08 Jul 2009 21:39:41 +0200
-Message-Id: <1247081981.18386.10.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Wed, 8 Jul 2009 15:41:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42130 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751847AbZGHTlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 15:41:03 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-acpi@vger.kernel.org
+Subject: Re: [BISECTED] HP G7000 battery disappears after suspend
+Date: Wed, 8 Jul 2009 21:41:17 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>
+References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com>
+In-Reply-To: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907082141.18135.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 08 July 2009, Alan Jenkins wrote:
+> Hi,
+> 
+> I've borrowed this laptop for a few days.  Linux works pretty well,
+> but I found a problem on newer kernels.  After suspend it claims the
+> battery has been removed.  E.g. /proc/acpi/battery/BAT0/state claims
+> the battery is not present (but it is).
+> 
+> I've attached acpidump and dmidecode output at
+> <http://bugzilla.kernel.org/show_bug.cgi?id=13745>.  I still have
+> access to the laptop for further tests, but only until Friday.
+> 
+> I bisected it to the commit below.  Manually reverting the patch fixes
+> the problem (in both 2.6.30 and 2.6.31-rc2).
 
---=-jzH9nkzRQWl0Uyh/4Zgz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Well, the commit below can't be reverted, because that would cause the boxes
+it fixed to stop working.
 
-On Wed, 2009-07-08 at 21:28 +0200, Vegard Nossum wrote:
+Now, the only case this patch can make any difference is when the BIOS doesn't
+set SCI_EN before returning control the the kernel, which quite evidently is a
+BIOS bug.  The fact that the battery doesn't work with this patch applied means
+that the BIOS not only doesn't set SCI_EN, but also expects it to remain unset,
+which is insane.
 
-> >  #define kmemcheck_annotate_bitfield(ptr, name)                        =
- \
-> > -       do if (ptr) {                                                  =
- \
-> > +       do { if (ptr) {                                                =
- \
-> >                int _n =3D (long) &((ptr)->name##_end)                  =
-  \
-> >                        - (long) &((ptr)->name##_begin);                =
-\
-> >                BUILD_BUG_ON(_n < 0);                                   =
-\
-> >                                                                        =
-\
-> >                kmemcheck_mark_initialized(&((ptr)->name##_begin), _n); =
-\
-> > -       } while (0)
-> > +       } } while (0)
-> >
-> >  #define kmemcheck_annotate_variable(var)                              =
- \
-> >        do {                                                            =
-\
-> >
-> >
-> >
->=20
-> I'll change the patch title to "kmemcheck: work around bogus sparse
-> warning" and fix the indentation, sounds ok?
+IMO this is a "won't fix", sorry.
 
-Well, it's debatable whether it's bogus or not, but I don't care as long
-as it gets fixed.
+Best,
+Rafael
 
-> Meanwhile, I Cced sparse mailing list in case somebody else knows
-> anything else about this warning (what it means, whether it's
-> justified in this case, whether it should be fixed in sparse, etc.).
 
-Everybody take me off the CC please then :) This has been discussed far
-too many times already. In this special case, the warning probably isn't
-all that useful, but ISTR Linus saying that he wanted it this way.
-
-johannes
-
---=-jzH9nkzRQWl0Uyh/4Zgz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKVPX6AAoJEODzc/N7+QmaieUP/iVV2/nB5k5wDYQXwgopAOoE
-v0OG4XFYs437G1Rea0qGWq0SDjqQ6IL31k2O82HJdloTi6BWELCWGg6+EkIOcPss
-u8aGYq0HcgYU0B6EkyOb+0Z8mgWvNVxCqozl8PEUweeSdmAajyAhpKH9DgZ+2M08
-iQIfvk8SoDOeYi8DTXArcP6iSnGfm/edYuRv4CBSfUohLGFX63R7mFyoZlblS4Ai
-uonaFJTmrDPtanjS2VeO6STsBR1GDZg5jpUS6iSnDOtvpnHMuWNP5XRRnaDzxGjx
-DfvCiPPwjyPIGp1sLxe5EnYNxTinGCWh23Pv+nG8FDp14yoEFyl7lKc6oHoiNU6P
-MQ1gmTaHAVAlA+ehWfh/53uXJuYZUCHJF4oWhR9uRyNyuYSputyMITuEPwcO4nop
-GolH3Mdw3t0+ADdKr7WPtheGFFaWsAtK5QrhhzYO3Ycun/jDqjGx5C/Bc1AMbJhC
-ZKxowHb3Rlt+Ejx7g1zhOQ03sMeh3bMbn+k/WJYp3dD0boaVmZYcHZ9rDkNE+l8G
-kOkHSq9ZyBR1xdwseoe0QfMM0F53GWAb4Ts5lzMXdo6JKL7fnBaWD2urMpkZzb/q
-dU47vys9UjEb+Q1bM/QH7ktOgPJvipgBOr8cAGUCGa9vW9R7JhXJJ3IhaayUmVVu
-2cr9aAeaB2z2M/R4WnuU
-=g/U8
------END PGP SIGNATURE-----
-
---=-jzH9nkzRQWl0Uyh/4Zgz--
-
+> commit d0c71fe7ebc180f1b7bc7da1d39a07fc19eec768
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Sat Oct 4 00:05:05 2008 +0200
+> 
+>     ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
+> 
+>     On some machines, like for example MSI Wind U100, the BIOS doesn't
+>     enable ACPI before returning control to the OS, which sometimes
+>     causes resume to fail.  This is against the ACPI specification,
+>     which clearly states that "When the platform is waking from an S1, S2
+>     or S3 state, OSPM assumes the hardware is already in the ACPI mode
+>     and will not issue an ACPI_ENABLE", but it won't hurt to check the
+>     SCI_EN bit and enable ACPI during resume from S3 if this bit is not
+>     set.
+> 
+>     Fortunately, we already have acpi_enable() for that, so use it in the
+>     resume code path, before executing _BFS, in analogy with the
+>     resume-from-hibernation code path.
+> 
+>     NOTE: We aren't supposed to set SCI_EN directly, because it's owned
+>     by the hardware.
+> 
+>     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>     Pavel Machek <pavel@suse.cz>
+>     Signed-off-by: Len Brown <len.brown@intel.com>
