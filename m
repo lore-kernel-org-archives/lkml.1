@@ -1,86 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbZGHW2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758410AbZGHWbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbZGHW2G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZGHW1x
+	id S1758410AbZGHWbu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZGHWbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:27:53 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:59458 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755123AbZGHW1w convert rfc822-to-8bit (ORCPT
+	Wed, 8 Jul 2009 18:31:37 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:53575 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755196AbZGHWbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:27:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZKakE+wZVtF67SP/5B3hg9Bgh9g3Xu9uLlM1Rn9he3stqFMlxm5U5j96R1j0dpg+ju
-         3bVcS9Ob+PU7Cup6hrqoItZJmjsCduHqkQ3SDATSOCUj4/laesK+6gen4H/4cHQAkKMA
-         IK1aS39tSWOcFRX9NT27+2x6nhu3wd0H4AjCE=
+	Wed, 8 Jul 2009 18:31:36 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Null Pointer BUG in uhci_hcd
+Date: Wed, 8 Jul 2009 17:31:29 -0500
+User-Agent: KMail/1.9.9
+Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <Pine.LNX.4.44L0.0907081658260.22105-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0907081658260.22105-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <20090708220749.GA3666@ami.dom.local>
-References: <200907031326.21822.andres@anarazel.de> <200907071811.27570.andres@anarazel.de> 
-	<20090708080852.GC3148@ami.dom.local> <200907081029.34527.andres@anarazel.de> 
-	<20090708091344.GD3148@ami.dom.local> <a5d9929e0907081444r4a1e0828taf538c686577f09c@mail.gmail.com> 
-	<20090708220749.GA3666@ami.dom.local>
-From: Joao Correia <joaomiguelcorreia@gmail.com>
-Date: Wed, 8 Jul 2009 23:27:30 +0100
-Message-ID: <a5d9929e0907081527n38a4c369k5b886520b7cc0229@mail.gmail.com>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( 
-	possibly?caused by netem)
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Andres Freund <andres@anarazel.de>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907081731.33106.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 8, 2009 at 11:07 PM, Jarek Poplawski<jarkao2@gmail.com> wrote:
-> On Wed, Jul 08, 2009 at 10:44:47PM +0100, Joao Correia wrote:
->> Hello again
-> Hello!
->
-> ...
->> So again, the only thing that stops that freeze is  `echo 0 >>
->> /proc/sys/kernel/timer_migration`. Apologies for pointing you in the
->> wrong direction.
->
-> No problem: the direction is almost right, we only need one U-turn ;-)
-> In case you're not bored or too bored, one little patch to check the
-> other side (after reverting the previous patch).
->
-> Thanks,
-> Jarek P.
-> ---
->
->  kernel/hrtimer.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-> index 9002958..23387e4 100644
-> --- a/kernel/hrtimer.c
-> +++ b/kernel/hrtimer.c
-> @@ -203,7 +203,7 @@ switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base,
->        int cpu, preferred_cpu = -1;
->
->        cpu = smp_processor_id();
-> -#if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
-> +#if 0
->        if (!pinned && get_sysctl_timer_migration() && idle_cpu(cpu)) {
->                preferred_cpu = get_nohz_load_balancer();
->                if (preferred_cpu >= 0)
+On Wed July 8 2009, Alan Stern wrote:
+> On Wed, 8 Jul 2009, Michael S. Zick wrote:
+> 
+> > > Like I've been telling you all along, the hardware isn't working.  
+> > >
+> > 
+> > That sounds very fragile.
+> 
+> I'm not sure how to interpret that sentence.  If you mean that your
+> system's hardware design isn't good, I agree.  If you mean that the
+> kernel shouldn't produce a lot of output when faced with broken
+> hardware, that's not so clear.  What else should it do (bearing in mind
+> that the kernel can't tell the hardware is broken)?
+> 
+
+It is unlikely that VIA Tech. will recall the CX700 chipset.
+
+So being able to take a device off-line (like the driver claims it is doing)
+and *leave* it off-line - until told to "try again" - that would be an
+improvement.
+
+The current process of filling up the /var/log directory until the machine
+chokes is a rather fragile sort of response to a hot-plugged device, good or bad.
+
+> > > I suspect it's worse than a simple interrupt-routing mistake.
+> > > 
+> > 
+> > I would not object to your removing that one mistake - that is one less
+> > to contend with.
+> 
+> I didn't say there was an interrupt-routing mistake; I said it was 
+> _worse_ than an interrupt-routing mistake.
+> 
+
+Never claimed you did - the driver made that claim.
+But still, it would be nice to get rid of the interrupt-routing mistake.
+
+I suppose waiting for the OLPC project to find and fix the problem is 
+a viable alternative also.
+You will not be the first to give up on this C7-M/CX700 combination. ;)
+
+> > > > > > For more information enable CONFIG_USB_DEBUG and CONFIG_DEBUG_FS, then 
+> > > > > > see what's sitting in the usb/uhci/* files in debugfs.
+> > > > > > 
+> > > > 
+> > 
+> > Fours up-time - nothing written to dmesg since boot -
+> > Just the usual hard-lockup.
+> > 
+> > Also - something in the combined fix/diagnostic patch
+> > disable any sensing of external usb events.
+> > So I couldn't very well poke devices at it.  ;)
+> 
+> You should take out those BUG statements.  If they ever trigger, they 
+> will certainly lock up your system.
 >
 
-(this time i triple-checked :-) )
+Although I would expect that they not do so silently.
 
-So, with only this last patch applied, no freeze. No need to disable
-anything through /proc.
+I take them out and just in time before starting the next 
+round of testing.
 
-Where should i put the BUG_ON?
+Mike 
+> Alan Stern
+> 
+> 
+> 
 
-Joao Correia
+
