@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZGHIo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbZGHIql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758668AbZGHIo6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 04:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756702AbZGHIov
+	id S1759434AbZGHIql (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 04:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756702AbZGHIqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 04:44:51 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49665 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756065AbZGHIou (ORCPT
+	Wed, 8 Jul 2009 04:46:31 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:40714 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754794AbZGHIqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 04:44:50 -0400
-Date: Wed, 8 Jul 2009 10:44:40 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <greg@kroah.com>, malchev@google.com
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Brian Swetland <swetland@google.com>
-Subject: Re: HTC Dream camera support for staging
-Message-ID: <20090708084439.GC20020@elf.ucw.cz>
-References: <20090629114339.GA25552@elf.ucw.cz> <20090702200824.GJ10957@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090702200824.GJ10957@kroah.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 8 Jul 2009 04:46:30 -0400
+Subject: Re: Possible memory leak in net/wireless/scan.c
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-wireless@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1247022413.4755.56.camel@johannes.local>
+References: <1246986269.9451.105.camel@pc1117.cambridge.arm.com>
+	 <1247022413.4755.56.camel@johannes.local>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Wed, 08 Jul 2009 09:46:24 +0100
+Message-Id: <1247042784.6595.7.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Jul 2009 08:46:25.0197 (UTC) FILETIME=[938ED5D0:01C9FFA8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-07-02 13:08:24, Greg KH wrote:
-> On Mon, Jun 29, 2009 at 01:43:40PM +0200, Pavel Machek wrote:
+On Wed, 2009-07-08 at 05:06 +0200, Johannes Berg wrote:
+> On Tue, 2009-07-07 at 18:04 +0100, Catalin Marinas wrote:
+> > Hi,
 > > 
-> > This patch adds driver for HTC Dream camera. I guess driver is
-> > slightly higher quality than usual for staging/ , but it is fairly big
-> > and I don't feel like doing all the cleanups myself. Also some parts
-> > can probably be removed, as they did not end up in shipping hardware..
-> > 
-> > The driver is actually so big that I'll attach it gzipped, otherwise
-> > it would not pass maillist limits.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> > Cc: Brian Swetland <swetland@google.com>
+> > I'm investigating several kmemleak reports like the one below (it could
+> > as well be a false positive but it needs more digging):
 > 
-> Can you resubmit it with the original author descriptions?  It's not
-> fair to them to have it shown up as coming from you.
+> By the way, what kind of machine do you need for kmemleak to be
+> feasible? I tried booting a kernel with it in kvm on my 2 ghz laptop,
+> and that was completely unfeasible.
 
-Yes, done... and thanks.
+What do you mean by unfeasible?
 
-Brian... I'd like to submit qdsp5 and smd code, too. Who should be
-listed as their authors?
+There are some patches in my kmemleak branch which I'll push upstream
+again (important ones are the renicing of the kmemleak thread and a few
+more cond_resched calls):
 
-Oh and... thanks for the serial debugging cable. After short fight
-(using ttyMSM2, not ttyS0 took me a while to figure), it seems to work.
-									Pavel
+http://www.linux-arm.org/git?p=linux-2.6.git;a=shortlog;h=kmemleak
+
+There are 3 more patches under discussion to track the bootmem
+allocations (which dropped the number of false positives to 0 on my
+laptop).
+
+Anyway, I run it from some ARM embedded systems at ~200MHz and 256MB of
+RAM to dual core x86 at 2GHz with 3GB of RAM. I also ran it on quemu in
+the past (but, well, in the embedded world I'm pretty used with
+emulators taking 10 min to boot the kernel).
+
+But it can slow things down since it tracks every memory allocation and
+it needs to look up the pointer in an rb tree.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Catalin
+
