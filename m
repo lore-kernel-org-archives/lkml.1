@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758059AbZGHOqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758074AbZGHOqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758059AbZGHOqa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 10:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757663AbZGHOqJ
+	id S1758074AbZGHOqn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 10:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757750AbZGHOqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 10:46:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60514 "EHLO hera.kernel.org"
+	Wed, 8 Jul 2009 10:46:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60515 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757518AbZGHOqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 10:46:08 -0400
-Subject: [PATCH 4/44] includecheck fix: arm, board-dm355-leopard.c
+	id S1757679AbZGHOqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 10:46:09 -0400
+Subject: [PATCH 3/44] includecheck fix: arm, board-dm355-evm.c
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: Russell King <rmk+lkml@arm.linux.org.uk>
 Cc: Kevin Hilman <khilman@deeprootsystems.com>,
@@ -17,8 +17,8 @@ Cc: Kevin Hilman <khilman@deeprootsystems.com>,
 In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
 References: <1247063308.4382.12.camel@ht.satnam>
 Content-Type: text/plain
-Date: Wed, 08 Jul 2009 20:04:33 +0530
-Message-Id: <1247063673.4382.20.camel@ht.satnam>
+Date: Wed, 08 Jul 2009 20:03:08 +0530
+Message-Id: <1247063588.4382.18.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -29,18 +29,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 fix the following 'make includecheck' warning:
 
-  arch/arm/mach-davinci/board-dm355-leopard.c: mach/common.h is included more than once.
+  arch/arm/mach-davinci/board-dm355-evm.c: mach/common.h is included more than once.
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/arm/mach-davinci/board-dm355-leopard.c |    1 -
+ arch/arm/mach-davinci/board-dm355-evm.c |    1 -
  1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-davinci/board-dm355-leopard.c b/arch/arm/mach-davinci/board-dm355-leopard.c
-index 28c9008..84ad5d1 100644
---- a/arch/arm/mach-davinci/board-dm355-leopard.c
-+++ b/arch/arm/mach-davinci/board-dm355-leopard.c
-@@ -36,7 +36,6 @@
+diff --git a/arch/arm/mach-davinci/board-dm355-evm.c b/arch/arm/mach-davinci/board-dm355-evm.c
+index 5ac2f56..d6ab64c 100644
+--- a/arch/arm/mach-davinci/board-dm355-evm.c
++++ b/arch/arm/mach-davinci/board-dm355-evm.c
+@@ -37,7 +37,6 @@
  #include <mach/serial.h>
  #include <mach/nand.h>
  #include <mach/mmc.h>
