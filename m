@@ -1,156 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbZGHNeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbZGHNma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283AbZGHNeU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 09:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZGHNeN
+	id S1756303AbZGHNma (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 09:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbZGHNmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 09:34:13 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:58617 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755223AbZGHNeN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 09:34:13 -0400
-Subject: Re: [PATCH] kmemleak: Fix scheduling-while-atomic bug
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090701093015.GA6862@elte.hu>
-References: <200907010300.n6130rRf026194@hera.kernel.org>
-	 <20090701075332.GA17252@elte.hu>
-	 <1246439937.8492.18.camel@pc1117.cambridge.arm.com>
-	 <20090701093015.GA6862@elte.hu>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 08 Jul 2009 14:33:16 +0100
-Message-Id: <1247059996.6595.36.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Jul 2009 13:33:17.0008 (UTC) FILETIME=[A698C500:01C9FFD0]
+	Wed, 8 Jul 2009 09:42:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45492 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755577AbZGHNmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 09:42:22 -0400
+Date: Wed, 8 Jul 2009 09:41:14 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [RFC] IO scheduler based IO controller V6
+Message-ID: <20090708134114.GA24048@redhat.com>
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <20090708035621.GB3215@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090708035621.GB3215@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-
-On Wed, 2009-07-01 at 11:30 +0200, Ingo Molnar wrote:
-> * Catalin Marinas <catalin.marinas@arm.com> wrote:
+On Wed, Jul 08, 2009 at 09:26:21AM +0530, Balbir Singh wrote:
+> * Vivek Goyal <vgoyal@redhat.com> [2009-07-02 16:01:32]:
 > 
-> > > The minimal fix below removes scan_yield() and adds a 
-> > > cond_resched() to the outmost (safe) place of the scanning 
-> > > thread. This solves the regression.
 > > 
-> > With CONFIG_PREEMPT disabled it won't reschedule during the bss 
-> > scanning but I don't see this as a real issue (task stacks 
-> > scanning probably takes longer anyway).
+> > Hi All,
+> > 
+> > Here is the V6 of the IO controller patches generated on top of 2.6.31-rc1.
+> > 
+> > Previous versions of the patches was posted here.
+> > 
+> > (V1) http://lkml.org/lkml/2009/3/11/486
+> > (V2) http://lkml.org/lkml/2009/5/5/275
+> > (V3) http://lkml.org/lkml/2009/5/26/472
+> > (V4) http://lkml.org/lkml/2009/6/8/580
+> > (V5) http://lkml.org/lkml/2009/6/19/279
+> > 
+> > This patchset is still work in progress but I want to keep on getting the
+> > snapshot of my tree out at regular intervals to get the feedback hence V6.
+> >
 > 
-> Yeah. I suspect one more cond_resched() could be added - i just 
-> didnt see an obvious place for it, given that scan_block() is being 
-> called with asymetric held-locks contexts.
+> Hi, Vivek,
+> 
+> I was able to compile and boot a 2.6.31-rc1 kernel with this patchset.
+> I have a request could you fold up all patches and make one
+> consolidated patch available somewhere (makes it easier to test), may
+> be a git tree?
+> 
 
-I tried with a few cond_resched() calls in the kmemleak_scan() function
-but it looks like a significant (well, 1-2 seconds, depending on the
-hardware) amount of time is spent in scanning the data and bss sections.
-The patch below makes the system with !PREEMPT more responsive during
-the scanning episodes.
+Thanks for trying it out balbir. Ok, for ease of patching and testing, I 
+will also maintain a consolidated patch. For V6 you can download the patch
+from here.
 
-Are you ok with this approach? Thanks.
+http://people.redhat.com/~vgoyal/io-controller/io-scheduler-based-io-controller-v6.patch
 
+> I did some quick tests with some io benchmarks and found in a simple
+> scenario that the scheduler worked as expected, except that it took
+> very long. I'll investigate further and revert back.
 
-kmemleak: Add more cond_resched() calls in the scanning thread
+Thanks. I will wait for details.
 
-From: Catalin Marinas <catalin.marinas@arm.com>
-
-Following recent fix to no longer reschedule in the scan_block()
-function, the system may become unresponsive with !PREEMPT. This patch
-re-adds the cond_resched() call to scan_block() but conditioned by the
-allow_resched parameter.
-
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- mm/kmemleak.c |   19 +++++++++++--------
- 1 files changed, 11 insertions(+), 8 deletions(-)
-
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 6006553..93f1481 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -807,7 +807,7 @@ static int scan_should_stop(void)
-  * found to the gray list.
-  */
- static void scan_block(void *_start, void *_end,
--		       struct kmemleak_object *scanned)
-+		       struct kmemleak_object *scanned, int allow_resched)
- {
- 	unsigned long *ptr;
- 	unsigned long *start = PTR_ALIGN(_start, BYTES_PER_POINTER);
-@@ -818,6 +818,8 @@ static void scan_block(void *_start, void *_end,
- 		unsigned long pointer = *ptr;
- 		struct kmemleak_object *object;
- 
-+		if (allow_resched)
-+			cond_resched();
- 		if (scan_should_stop())
- 			break;
- 
-@@ -881,12 +883,12 @@ static void scan_object(struct kmemleak_object *object)
- 		goto out;
- 	if (hlist_empty(&object->area_list))
- 		scan_block((void *)object->pointer,
--			   (void *)(object->pointer + object->size), object);
-+			   (void *)(object->pointer + object->size), object, 0);
- 	else
- 		hlist_for_each_entry(area, elem, &object->area_list, node)
- 			scan_block((void *)(object->pointer + area->offset),
- 				   (void *)(object->pointer + area->offset
--					    + area->length), object);
-+					    + area->length), object, 0);
- out:
- 	spin_unlock_irqrestore(&object->lock, flags);
- }
-@@ -931,14 +933,14 @@ static void kmemleak_scan(void)
- 	rcu_read_unlock();
- 
- 	/* data/bss scanning */
--	scan_block(_sdata, _edata, NULL);
--	scan_block(__bss_start, __bss_stop, NULL);
-+	scan_block(_sdata, _edata, NULL, 1);
-+	scan_block(__bss_start, __bss_stop, NULL, 1);
- 
- #ifdef CONFIG_SMP
- 	/* per-cpu sections scanning */
- 	for_each_possible_cpu(i)
- 		scan_block(__per_cpu_start + per_cpu_offset(i),
--			   __per_cpu_end + per_cpu_offset(i), NULL);
-+			   __per_cpu_end + per_cpu_offset(i), NULL, 1);
- #endif
- 
- 	/*
-@@ -960,7 +962,7 @@ static void kmemleak_scan(void)
- 			/* only scan if page is in use */
- 			if (page_count(page) == 0)
- 				continue;
--			scan_block(page, page + 1, NULL);
-+			scan_block(page, page + 1, NULL, 1);
- 		}
- 	}
- 
-@@ -972,7 +974,8 @@ static void kmemleak_scan(void)
- 		read_lock(&tasklist_lock);
- 		for_each_process(task)
- 			scan_block(task_stack_page(task),
--				   task_stack_page(task) + THREAD_SIZE, NULL);
-+				   task_stack_page(task) + THREAD_SIZE,
-+				   NULL, 0);
- 		read_unlock(&tasklist_lock);
- 	}
- 
-
-
--- 
-Catalin
-
+Vivek
