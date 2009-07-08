@@ -1,78 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbZGHW5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbZGHXKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbZGHW5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZGHW5H
+	id S1758285AbZGHXKs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 19:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbZGHXKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:57:07 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:41642 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754763AbZGHW5G (ORCPT
+	Wed, 8 Jul 2009 19:10:39 -0400
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:50486 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755221AbZGHXKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:57:06 -0400
-Message-ID: <4A55243B.8090001@codemonkey.ws>
-Date: Wed, 08 Jul 2009 17:56:59 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 8 Jul 2009 19:10:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Nq3R6dAmHcaengIvZ1rx/ZUZdFrStcQoNGlCVAl2CBui5R7bNI2deslTXePXzuJAw7
+         hNDrAF6jjEoXbsAi8zB5jMBhipuA1EWfIvwrd6Q+BAUqhlbAX4/xdwiDG9tOjfAt6Ye6
+         kO/PdU8RGuNsWVSaWaCYAOENTXJr0X4xdGq8c=
 MIME-Version: 1.0
-To: Dan Magenheimer <dan.magenheimer@oracle.com>
-CC: linux-kernel@vger.kernel.org, npiggin@suse.de, akpm@osdl.org,
-       jeremy@goop.org, xen-devel@lists.xensource.com,
-       tmem-devel@oss.oracle.com, alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org,
-       kurt.hackel@oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
-       Rik van Riel <riel@redhat.com>, dave.mccracken@oracle.com,
-       Marcelo Tosatti <mtosatti@redhat.com>, sunil.mushran@oracle.com,
-       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
-       chris.mason@oracle.com, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
-References: <482d25af-01eb-4c2a-9b1d-bdaf4020ce88@default>
-In-Reply-To: <482d25af-01eb-4c2a-9b1d-bdaf4020ce88@default>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Wed, 8 Jul 2009 19:10:34 -0400
+Message-ID: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com>
+Subject: [PATCH v5] RO/NX protection for loadable kernel modules
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Cc: Arjan van de Ven <arjan@infradead.org>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Magenheimer wrote:
-> Tmem [PATCH 0/4] (Take 2): Transcendent memory
-> Transcendent memory - Take 2
-> Changes since take 1:
-> 1) Patches can be applied serially; function names in diff (Rik van Riel)
-> 2) Descriptions and diffstats for individual patches (Rik van Riel)
-> 3) Restructure of tmem_ops to be more Linux-like (Jeremy Fitzhardinge)
-> 4) Drop shared pools until security implications are understood (Pavel
->    Machek and Jeremy Fitzhardinge)
-> 5) Documentation/transcendent-memory.txt added including API description
->    (see also below for API description).
-> 
-> Signed-off-by: Dan Magenheimer <dan.magenheimer@oracle.com>
-> 
-> Normal memory is directly addressable by the kernel, of a known
-> normally-fixed size, synchronously accessible, and persistent (though
-> not across a reboot).
-> 
-> What if there was a class of memory that is of unknown and dynamically
-> variable size, is addressable only indirectly by the kernel, can be
-> configured either as persistent or as "ephemeral" (meaning it will be
-> around for awhile, but might disappear without warning), and is still
-> fast enough to be synchronously accessible?
+This patch is a logical extension of the protection provided by
+CONFIG_DEBUG_RODATA to LKMs. The protection is provided by splitting
+module_core and module_init into three logical parts each and setting
+appropriate page access permissions for each individual section:
 
-I have trouble mapping this to a VMM capable of overcommit without just 
-coming back to CMM2.
+ 1. Code: RO+X
+ 2. RO data: RO+NX
+ 3. RW data: RW+NX
 
-In CMM2 parlance, ephemeral tmem pools is just normal kernel memory 
-marked in the volatile state, no?
+In order to achieve proper protection, layout_sections() have been
+modified to align each of the three parts mentioned above onto page
+boundary. Next, the corresponding page access permissions are set
+right before successful exit from load_module(). Further, free_module()
+and sys_init_module have been modified to set module_core and
+module_init as RW+NX right before calling module_free().
 
-It seems to me that an architecture built around hinting would be more 
-robust than having to use separate memory pools for this type of memory 
-(especially since you are requiring a copy to/from the pool).
+By default, the original section layout is preserved and RO/NX is
+enforced only for whole pages of same content.
+However, when compiled with CONFIG_DEBUG_RODATA=y, the patch
+will page-align each group of sections to ensure that each page contains
+only one type of content.
 
-For instance, you can mark data DMA'd from disk (perhaps by read-ahead) 
-as volatile without ever bringing it into the CPU cache.  With tmem, if 
-you wanted to use a tmem pool for all of the page cache, you'd likely 
-suffer significant overhead due to copying.
+v1: Initial proof-of-concept patch.
 
-Regards,
+v2: The patch have been re-written to reduce the number of #ifdefs and
+to make it architecture-agnostic. Code formatting have been corrected also.
 
-Anthony Liguori
+v3: Opportunistic RO/NX protectiuon is now unconditional. Section
+page-alignment is enabled when CONFIG_DEBUG_RODATA=y.
 
+v4: Removed most macros and improved coding style.
+
+v5: Changed page-alignment and RO/NX section size calculation
+
+The patch have been developed for Linux 2.6.30 by Siarhei Liakh
+<sliakh.lkml@gmail.com> and Xuxian Jiang <jiang@cs.ncsu.edu>.
+
+---
+
+Signed-off-by: Siarhei Liakh <sliakh.lkml@gmail.com>
+Signed-off-by: Xuxian Jiang <jiang@cs.ncsu.edu>
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 627ac08..5ba770e 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -293,6 +293,9 @@ struct module
+ 	/* The size of the executable code in each section.  */
+ 	unsigned int init_text_size, core_text_size;
+
++	/* Size of RO sections of the module (text+rodata) */
++	unsigned int init_ro_size, core_ro_size;
++
+ 	/* Arch-specific module values */
+ 	struct mod_arch_specific arch;
+
+diff --git a/kernel/module.c b/kernel/module.c
+index e797812..a51e5aa 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -52,6 +52,7 @@
+ #include <linux/ftrace.h>
+ #include <linux/async.h>
+ #include <linux/percpu.h>
++#include <linux/pfn.h>
+
+ #if 0
+ #define DEBUGP printk
+@@ -63,6 +64,22 @@
+ #define ARCH_SHF_SMALL 0
+ #endif
+
++/* Modules' sections will be aligned on page boundaries
++ * to ensure complete separation of code and data, but
++ * only when CONFIG_DEBUG_RODATA=y */
++#ifdef CONFIG_DEBUG_RODATA
++#define debug_align(X) ALIGN(X, PAGE_SIZE)
++#else
++#define debug_align(X) (X)
++#endif
++
++/* Given BASE and SIZE this macro calculates the number of pages the
++ * memory regions occupies */
++#define NUMBER_OF_PAGES(BASE, SIZE) ((SIZE > 0) ?		\
++		(PFN_DOWN((unsigned long)BASE + SIZE - 1) -	\
++			 PFN_DOWN((unsigned long)BASE) + 1)	\
++		: (0UL))
++
+ /* If this is set, the section belongs in the init part of the module */
+ #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
+
+@@ -1471,6 +1488,93 @@ static int __unlink_module(void *_mod)
+ 	return 0;
+ }
+
++/* LKM RO/NX protection: protect module's text/ro-data
++ * from modification and any data from execution.
++ * Siarhei Liakh, Xuxian Jiang  */
++static void set_section_ro_nx(void *base,
++			unsigned long text_size,
++			unsigned long ro_size,
++			unsigned long total_size)
++{
++	/* begin and end PFNs of the current subsection */
++	unsigned long begin_pfn;
++	unsigned long end_pfn;
++
++	/* Initially, all module sections have RWX permissions*/
++
++	DEBUGP("PROTECTING MODULE SECTION: 0x%lx\n"
++			"  text size: %lu\n"
++			"  ro size: %lu\n"
++			"  total size: %lu\n",
++			(unsigned long)base,
++			text_size, ro_size, total_size);
++
++	/* Set RO for module text and RO-data*/
++	if (ro_size > 0) {
++		/* Always protect first page.
++		 * Do not protect last partial page */
++		begin_pfn = PFN_DOWN((unsigned long)base);
++		end_pfn = PFN_DOWN((unsigned long)base + ro_size);
++
++		/*Set text RO if there are still pages between begin and end*/
++		if (end_pfn > begin_pfn) {
++			DEBUGP("  RO: 0x%lx %lu\n",
++					begin_pfn << PAGE_SHIFT,
++					end_pfn - begin_pfn);
++			set_memory_ro(begin_pfn << PAGE_SHIFT,
++						end_pfn - begin_pfn);
++		} else {
++			DEBUGP("  RO: less than a page, not enforcing.\n");
++		}
++	} else {
++		DEBUGP("  RO: section not present.\n");
++	}
++
++	/* Set NX permissions for module data */
++	if (total_size > text_size) {
++		/* Do not protect first partial page
++		 * Always protect last page. */
++		begin_pfn = PFN_UP((unsigned long)base + text_size);
++		end_pfn = PFN_UP((unsigned long)base + total_size);
++
++		/*Set data NX if there are still pages between begin and end*/
++		if (end_pfn > begin_pfn) {
++			DEBUGP("  NX: 0x%lx %lu\n",
++					begin_pfn << PAGE_SHIFT,
++					end_pfn - begin_pfn);
++			set_memory_nx(begin_pfn << PAGE_SHIFT,
++						end_pfn - begin_pfn);
++		} else {
++			DEBUGP("  NX: less than a page, not enforcing.\n");
++		}
++	} else {
++		DEBUGP("  NX: section not present.\n");
++	}
++}
++
++/* Setting memory back to RW+NX before releasing it */
++void unset_section_ro_nx(struct module *mod, void *module_region)
++{
++	unsigned long total_pages;
++
++	if (mod->module_core == module_region) {
++		/* Set core as NX+RW */
++		total_pages = NUMBER_OF_PAGES(mod->module_core, mod->core_size);
++		DEBUGP("Restoring RW+NX for module's CORE: 0x%lx %lu\n",
++				(unsigned long)mod->module_core, total_pages);
++		set_memory_nx((unsigned long)mod->module_core, total_pages);
++		set_memory_rw((unsigned long)mod->module_core, total_pages);
++
++	} else if (mod->module_init == module_region) {
++		/* Set init as NX+RW */
++		total_pages = NUMBER_OF_PAGES(mod->module_init, mod->init_size);
++		DEBUGP("Restoring RW+NX for module's INIT: 0x%lx %lu\n",
++				(unsigned long)mod->module_init, total_pages);
++		set_memory_nx((unsigned long)mod->module_init, total_pages);
++		set_memory_rw((unsigned long)mod->module_init, total_pages);
++	}
++}
++
+ /* Free a module, remove from lists, etc (must hold module_mutex). */
+ static void free_module(struct module *mod)
+ {
+@@ -1493,6 +1597,7 @@ static void free_module(struct module *mod)
+ 	ftrace_release(mod->module_core, mod->core_size);
+
+ 	/* This may be NULL, but that's OK */
++	unset_section_ro_nx(mod, mod->module_init);
+ 	module_free(mod, mod->module_init);
+ 	kfree(mod->args);
+ 	if (mod->percpu)
+@@ -1505,6 +1610,7 @@ static void free_module(struct module *mod)
+ 	lockdep_free_key_range(mod->module_core, mod->core_size);
+
+ 	/* Finally, free the core (containing the module structure) */
++	unset_section_ro_nx(mod, mod->module_core);
+ 	module_free(mod, mod->module_core);
+ }
+
+@@ -1678,8 +1784,20 @@ static void layout_sections(struct module *mod,
+ 			s->sh_entsize = get_offset(mod, &mod->core_size, s, i);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
+-		if (m == 0)
++		switch (m) {
++		case 0: /* executable */
++			mod->core_size = debug_align(mod->core_size);
+ 			mod->core_text_size = mod->core_size;
++			break;
++		case 1: /* RO: text and ro-data */
++			mod->core_size = debug_align(mod->core_size);
++			mod->core_ro_size = mod->core_size;
++			break;
++		case 3: /* whole module core (executable + RO data +
++			 * RW data + small alloc) */
++			mod->core_size = debug_align(mod->core_size);
++			break;
++		}
+ 	}
+
+ 	DEBUGP("Init section allocation order:\n");
+@@ -1696,8 +1814,20 @@ static void layout_sections(struct module *mod,
+ 					 | INIT_OFFSET_MASK);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
+-		if (m == 0)
++		switch (m) {
++		case 0: /* executable */
++			mod->init_size = debug_align(mod->init_size);
+ 			mod->init_text_size = mod->init_size;
++			break;
++		case 1: /* RO: text and ro-data */
++			mod->init_size = debug_align(mod->init_size);
++			mod->init_ro_size = mod->init_size;
++			break;
++		case 3: /* whole module init (executable + RO data +
++			 * RW data + small alloc) */
++			mod->init_size = debug_align(mod->init_size);
++			break;
++		}
+ 	}
+ }
+
+@@ -2291,6 +2421,18 @@ static noinline struct module *load_module(void
+__user *umod,
+ 	/* Get rid of temporary copy */
+ 	vfree(hdr);
+
++	/* Set RO and NX regions for core */
++	set_section_ro_nx(mod->module_core,
++				mod->core_text_size,
++				mod->core_ro_size,
++				mod->core_size);
++
++	/* Set RO and NX regions for init */
++	set_section_ro_nx(mod->module_init,
++				mod->init_text_size,
++				mod->init_ro_size,
++				mod->init_size);
++
+ 	/* Done! */
+ 	return mod;
+
+@@ -2394,6 +2536,7 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
+ 	mutex_lock(&module_mutex);
+ 	/* Drop initial reference. */
+ 	module_put(mod);
++	unset_section_ro_nx(mod, mod->module_init);
+ 	module_free(mod, mod->module_init);
+ 	mod->module_init = NULL;
+ 	mod->init_size = 0;
