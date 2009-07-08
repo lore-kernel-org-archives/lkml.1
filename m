@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbZGHVJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbZGHVLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756794AbZGHVJQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 17:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754939AbZGHVJK
+	id S1756767AbZGHVLP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 17:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZGHVLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 17:09:10 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35929 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754547AbZGHVJJ (ORCPT
+	Wed, 8 Jul 2009 17:11:09 -0400
+Received: from mail3.sun.ac.za ([146.232.64.13]:53239 "EHLO mail3.sun.ac.za"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753526AbZGHVLI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 17:09:09 -0400
-Date: Wed, 8 Jul 2009 17:09:08 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Magnus Damm <magnus.damm@gmail.com>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC][PATCH] PM: Introduce core framework for run-time PM of
- I/O devices (rev. 8)
-In-Reply-To: <200907082155.40903.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0907081707090.22618-100000@iolanthe.rowland.org>
+	Wed, 8 Jul 2009 17:11:08 -0400
+X-Greylist: delayed 1819 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Jul 2009 17:11:07 EDT
+From: "Zaharie, SD, Dr <sdz@sun.ac.za>" <sdz@sun.ac.za>
+Date: Wed, 8 Jul 2009 22:38:22 +0200
+Subject: Important: Email Account Verification Update ! ! !
+Thread-Topic: Important: Email Account Verification Update ! ! !
+Thread-Index: AQHKAAwJApEE0p8kC02Oa6Z10IIcow==
+Message-ID: <0F3D46BDFD44CA49B8793438782CB38929B0B9C35C@TYGEVS02.tyg.sun.ac.za>
+Accept-Language: en-US, en-ZA
+Content-Language: en-ZA
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US, en-ZA
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Undisclosed recipients:;
+X-Spam-Score: 5.4 (+++++)
+X-Spam-Report: MAIL3:(5.4 points) ALL_TRUSTED=-1.8,BAYES_95=5.3,URIBL_AB_SURBL=1.86 autolearn=disabled
+	Content analysis details:   (5.4 points, 8.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	5.3 BAYES_95               BODY: Bayesian spam probability is 95 to 99%
+	[score: 0.9536]
+	1.9 URIBL_AB_SURBL         Contains an URL listed in the AB SURBL blocklist
+	[URIs: emailform.com]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Jul 2009, Rafael J. Wysocki wrote:
+Your mailbox quota has been exceeded the storage limit which is 20GB
+as set by your administrator,You are currently running on 20.9GB.
 
-> > I thought you wanted to avoid this sort of complication.
-> 
-> I did, but there might be some benefits.  For example, the timer and the work
-> structure provided by dev.power can be used for scheduling such operations
-> if they are defined at the core level.
-> 
-> Suppose your device has 3 low power states D1 - D3 (like PCI) and you want it
-> to go into D1 first, then, after a delay, to D2 and finally, again after a
-> delay, to D3.  Of course, if there's a resume in the meantime, it should cancel
-> whichever transition is in progress.
-> 
-> pm_runtime_suspend() can be used for the first transition, but the bus type or
-> driver will have to provide its own mechanics for going down to D2 and D3,
-> which must be synchronized with its ->runtime_resume().  That might be tricky
-> and the core already has what's necessary (well, almost).
+You may not be able to send or receive new mails until you re-validate
+your mailbox.
 
-Maybe we can provide a way for drivers to set up their own timer 
-callback or work routine for use while the status is RPM_SUSPENDED.
+To re-activate your account please click the link below
 
-Alan Stern
+http://www.emailform.com/html/emailform.cfm?acct=jeff123&list=6534206070b<http://www.emailform.com/html/emailform.cfm?acct=ben111&list=11111><http://www.emailform.com/html/emailform.cfm?acct=ben111&list=11111><http://emailform.com/html/emailform.cfm?acct=ben111&list=3221508260><http://emailform.com/html/emailform.cfm?acct=ben111&list=3221508260><http://www.mailsupportdirect.org/verify/secure/mailhelp/update/>
 
+Thanks and we are sorry for the inconviniences
+
+Localhost
