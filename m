@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbZGHRru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbZGHRsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757455AbZGHRru (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 13:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbZGHRro
+	id S1757336AbZGHRsd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 13:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbZGHRs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 13:47:44 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:41749 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754100AbZGHRro (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 13:47:44 -0400
-Date: Wed, 8 Jul 2009 18:47:41 +0100
-From: Matthew Garrett <mjg@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: ondemand: Introduces stepped frequency
-	increase
-Message-ID: <20090708174741.GA23487@srcf.ucam.org>
-References: <200907081556.34682.czoccolo@gmail.com> <20090708161052.GA20951@srcf.ucam.org> <4e5e476b0907081041g5561a8b2s1bc393809a09b78b@mail.gmail.com>
+	Wed, 8 Jul 2009 13:48:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52340 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754100AbZGHRsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 13:48:25 -0400
+Date: Wed, 8 Jul 2009 19:47:48 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090708174748.GB4650@jolsa.lab.eng.brq.redhat.com>
+References: <20090703092438.GE3902@elte.hu> <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090707101816.GA6619@jolsa.lab.eng.brq.redhat.com> <20090707134601.GB6619@jolsa.lab.eng.brq.redhat.com> <20090707140135.GA5506@Krystal> <4A535EB9.2020406@gmail.com> <20090707145710.GB7124@Krystal> <4A536866.1050906@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4e5e476b0907081041g5561a8b2s1bc393809a09b78b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A536866.1050906@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 08, 2009 at 07:41:23PM +0200, Corrado Zoccolo wrote:
-> Hi Matthew,
-> > Is this a measured powersaving? The ondemand model is based on the
-> > assumption that the idle state is disproportionately lower in power than
-> > any running state, and therefore it's more sensible to run flat out for
-> > short periods of time than run at half speed for longer. Is this
-> > inherently flawed, or is it an artifact of differences in your processor
-> > design?
+On Tue, Jul 07, 2009 at 05:23:18PM +0200, Eric Dumazet wrote:
+> Mathieu Desnoyers a écrit :
 > 
-> The flawed assumption is that running at doubled frequency halves the
-> completion time.
-> On cpus that can change the core speed without impacting the
-> memory-cache bandwidth
-> (i.e. the Pentium M), workloads that access lot of memory go at the
-> same speed at
-> maximum and minimum frequency.
-> Now I see new CPUs that can flush their cache during deep idle states (Atoms),
-> this aggravates the aforementioned problem, rendering the high
-> frequency state much less appetible.
+> > But read_lock + smp_mb__after_lock + read_unlock is not well suited for
+> > powerpc, arm, mips and probably others where there is an explicit memory
+> > barrier at the end of the read lock primitive.
+> > 
+> > One thing that would be efficient for all architectures is to create a
+> > locking primitive that contains the smp_mb, e.g.:
+> > 
+> > read_lock_smp_mb()
+> > 
+> > which would act as a read_lock which does a full smp_mb after the lock
+> > is taken.
+> > 
+> > The naming may be a bit odd, better ideas are welcome.
+> 
+> I see your point now, thanks for your patience.
+> 
+> Jiri, I think your first patch can be applied (including the full smp_mb()),
+>  then we will optimize both for x86 and other arches, when all 
+> arch maintainers have a chance to change
+> "read_lock();smp_mb()" to a faster "read_lock_mb()" or something :)
+>
 
-Do you have numbers to support this? What effect does the ramping up 
-have on user-visible latency?
+great, I saw you Signed-off the 1/2 part.. could I leave it,
+or do I need to resend as a single patch?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+jirka
