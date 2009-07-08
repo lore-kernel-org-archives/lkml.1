@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbZGHQuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZGHQwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757096AbZGHQuy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753726AbZGHQur
+	id S1755691AbZGHQwe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbZGHQwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:50:47 -0400
-Received: from claw.goop.org ([74.207.240.146]:37489 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752888AbZGHQuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:50:46 -0400
-Message-ID: <4A54CE62.8040704@goop.org>
-Date: Wed, 08 Jul 2009 09:50:42 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Wed, 8 Jul 2009 12:52:24 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:23068 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753428AbZGHQwX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:52:23 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: David =?iso-8859-1?q?H=E4rdeman?= <david@hardeman.nu>
+Subject: Re: [PATCH 1/2] ACPI: reintroduce acpi_device_ops .shutdown method
+Date: Wed, 8 Jul 2009 10:52:19 -0600
+User-Agent: KMail/1.9.10
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-input@vger.kernel.org,
+       jbarnes@virtuousgeek.org, "Len Brown" <lenb@kernel.org>
+References: <1246079912-17619-1-git-send-email-david@hardeman.nu> <200906301711.34074.bjorn.helgaas@hp.com> <737c7bd0a2f550d21d45b347d018a1ac.squirrel@www.hardeman.nu>
+In-Reply-To: <737c7bd0a2f550d21d45b347d018a1ac.squirrel@www.hardeman.nu>
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: jeremy@xensource.com, chrisw@sous-sol.org, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 33/44] includecheck fix: drivers/xen, evtchn.c
-References: <1247063308.4382.12.camel@ht.satnam> <1247067749.4382.90.camel@ht.satnam>
-In-Reply-To: <1247067749.4382.90.camel@ht.satnam>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200907081052.20142.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/08/09 08:42, Jaswinder Singh Rajput wrote:
-> fix the following 'make includecheck' warning:
->
->   drivers/xen/evtchn.c: linux/errno.h is included more than once.
->
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
->   
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+On Wednesday 01 July 2009 02:20:59 am David Härdeman wrote:
+> On Wed, July 1, 2009 01:11, Bjorn Helgaas wrote:
+> > The winbond driver does not use any ACPI-specific functionality, so
+> > it might be simpler to write it as a PNP driver (which would depend
+> > on PNPACPI, of course).
+> 
+> As far as I could tell from a quick look at include/linux/pnp.h, a
+> pnp_driver doesn't seem to have any .shutdown methods either, so I'm not
+> sure how it would help?
 
-Thanks,
-    J
+PNPACPI parses the device resources for you, so you could get rid
+of the _CRS stuff in your driver.
 
-> ---
->  drivers/xen/evtchn.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/xen/evtchn.c b/drivers/xen/evtchn.c
-> index af03195..79bedba 100644
-> --- a/drivers/xen/evtchn.c
-> +++ b/drivers/xen/evtchn.c
-> @@ -38,7 +38,6 @@
->  #include <linux/string.h>
->  #include <linux/errno.h>
->  #include <linux/fs.h>
-> -#include <linux/errno.h>
->  #include <linux/miscdevice.h>
->  #include <linux/major.h>
->  #include <linux/proc_fs.h>
->   
+The only reason PNP and ACPI don't have .shutdown is because nobody
+has needed it yet.  If you need it (and it sounds like you do), I
+think the cleanest thing would be to add it to PNP and turn your
+driver into a PNP driver.
 
+Bjorn
