@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbZGHWd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbZGHWeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759530AbZGHWd5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758650AbZGHWbv
+	id S1759563AbZGHWeT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758723AbZGHWcE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:31:51 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47052 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757956AbZGHWbq (ORCPT
+	Wed, 8 Jul 2009 18:32:04 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:61698 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758361AbZGHWcB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:31:46 -0400
-From: Andi Kleen <andi@firstfloor.org>
-References: <200907091231.681564770@firstfloor.org>
-In-Reply-To: <200907091231.681564770@firstfloor.org>
-To: linux-kernel@vger.kernel.org, x86@kernel.org
-Subject: [PATCH] [8/8] x86: mce: Lower maximum number of banks to architecture limit
-Message-Id: <20090708223145.6F76A1D035D@basil.firstfloor.org>
-Date: Thu,  9 Jul 2009 00:31:45 +0200 (CEST)
+	Wed, 8 Jul 2009 18:32:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tKu1+E3gKV+gflj4Qb8qQiKCLG9gCiJR+8UGiHvnl1013FB4ofFSRNgnhnd9AhbCpU
+         Pu5yFtujvW5IXjFrLqLC3K4dIzisi6U2ErJn1eLWP7ArLZPhWEPfTG5wdNWD5MIV665s
+         K8o/60so5H9TExluC7c4Fd+8GT5HAozcwLeoM=
+MIME-Version: 1.0
+In-Reply-To: <20090707220640.5352ac94@infradead.org>
+References: <817ecb6f0907051623l46ad93e9uc24d8d61669c938e@mail.gmail.com>
+	 <200907061043.11793.rusty@rustcorp.com.au>
+	 <817ecb6f0907071747g1d3455cdy9eb84102c17c5ad0@mail.gmail.com>
+	 <20090707220640.5352ac94@infradead.org>
+Date: Wed, 8 Jul 2009 18:31:59 -0400
+Message-ID: <817ecb6f0907081531u2f63c3c6y9b1cbc7bf8ff653@mail.gmail.com>
+Subject: Re: [PATCH v4] RO/NX protection for loadable kernel modules
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I like it, you can already put
+>
+> Acked-by: Arjan van de Ven <arjan@linux.intel.com>
 
-The Intel x86 architecture right now only supports 32 machine check
-banks, more would bump into other MSRs.
+Thanks, I will add this to V5.
 
-So lower the max define to 32.
+...
+>> +             /*Set text RO if there are still pages between begin
+>> and end*/
+>> +             if (end_addr > begin_addr) {
+>> +                     pg_count = PFN_DOWN(end_addr - 1) -
+>> +                                     PFN_DOWN(begin_addr) + 1;
+>> +                     DEBUGP("  RO: 0x%lx %lu\n", begin_addr,
+>> pg_count);
+>> +                     set_memory_ro(begin_addr, pg_count);
+>> +             } else {
+...
+> I *think* this can be done as
+>
+> begin_pfn = PFN_UP( (base);
+> end_pfn = PFN_DOWN(base + ro_size);
+>
+> if (end_pfn > begin_pfn)
+>        set_memory_ro(begin_pfn >> PAGE_SHIFT, end_pfn - begin_pfn);
+>
+> (note that I think the +1 you have might be buggy)
 
-This only affects a few bitmaps, most data structures are dynamically
-sized anyways.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- arch/x86/include/asm/mce.h |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-Index: linux/arch/x86/include/asm/mce.h
-===================================================================
---- linux.orig/arch/x86/include/asm/mce.h
-+++ linux/arch/x86/include/asm/mce.h
-@@ -130,10 +130,11 @@ void mce_log(struct mce *m);
- DECLARE_PER_CPU(struct sys_device, mce_dev);
- 
- /*
-- * To support more than 128 would need to escape the predefined
-- * Linux defined extended banks first.
-+ * Maximum banks number.
-+ * This is the limit of the current register layout on
-+ * Intel CPUs.
-  */
--#define MAX_NR_BANKS (MCE_EXTENDED_BANK - 1)
-+#define MAX_NR_BANKS 32
- 
- #ifdef CONFIG_X86_MCE_INTEL
- extern int mce_cmci_disabled;
+The +1 is necessary because of (end_addr - 1). However, I like your
+way better, so I will incorporate it in V5.
