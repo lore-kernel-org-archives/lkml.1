@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZGHWZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbZGHW0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbZGHWZS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZGHWZH
+	id S1758752AbZGHW0W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZGHW0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:25:07 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32847 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753869AbZGHWZG (ORCPT
+	Wed, 8 Jul 2009 18:26:15 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:49489 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753869AbZGHW0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:25:06 -0400
-Date: Wed, 8 Jul 2009 23:24:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [BISECTED] (REGRESSION) HP G7000 battery disappears after
- suspend
-Message-ID: <20090708232435.5e694c28@lxorguk.ukuu.org.uk>
-In-Reply-To: <200907082141.18135.rjw@sisk.pl>
-References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com>
-	<200907082141.18135.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Jul 2009 18:26:15 -0400
+X-IronPort-AV: E=Sophos;i="4.42,370,1243814400"; 
+   d="scan'208";a="340194362"
+From: Roland Dreier <rdreier@cisco.com>
+To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+Cc: Roland Dreier <rolandd@cisco.com>, of-ewg <ewg@lists.openfabrics.org>,
+       of-general <general@lists.openfabrics.org>,
+       linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Hoang-Nam Nguyen <HNGUYEN@linux.vnet.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>
+Subject: Re: [PATCH] ehca: use port autodetect mode as default
+References: <20090707160639.6b45bf4d@BL3D1974.boeblingen.de.ibm.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 08 Jul 2009 15:26:13 -0700
+In-Reply-To: <20090707160639.6b45bf4d@BL3D1974.boeblingen.de.ibm.com>
+	(Alexander Schmidt's message of "Tue, 7 Jul 2009 16:06:39 +0200")
+Message-ID: <adamy7e24my.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 08 Jul 2009 22:26:14.0241 (UTC) FILETIME=[1A834D10:01CA001B]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Now, the only case this patch can make any difference is when the BIOS doesn't
-> set SCI_EN before returning control the the kernel, which quite evidently is a
-> BIOS bug.  The fact that the battery doesn't work with this patch applied means
-> that the BIOS not only doesn't set SCI_EN, but also expects it to remain unset,
-> which is insane.
-> 
-> IMO this is a "won't fix", sorry.
-
-It's an "oh god we need another DMI entry" case and a regression so it
-wants fixing for the next -rc.
-
-Alan
+looks good, applied
