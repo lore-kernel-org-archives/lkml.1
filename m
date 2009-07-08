@@ -1,102 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbZGHWLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZGHWOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758623AbZGHWLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 18:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbZGHWLF
+	id S1755638AbZGHWOZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 18:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZGHWOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 18:11:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36679 "EHLO mx2.redhat.com"
+	Wed, 8 Jul 2009 18:14:16 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:54442 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755062AbZGHWLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 18:11:03 -0400
-Date: Thu, 9 Jul 2009 00:10:31 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: netdev@vger.kernel.org
-Cc: eric.dumazet@gmail.com, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, htejun@gmail.com, jarkao2@gmail.com,
-       oleg@redhat.com, davidel@xmailserver.org, davem@davemloft.net
-Subject: [PATCHv7 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090708221031.GD2945@jolsa.redhat.com>
-References: <20090708220717.GB2945@jolsa.redhat.com>
+	id S1752007AbZGHWOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 18:14:15 -0400
+Date: Wed, 8 Jul 2009 15:14:13 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: tridge@samba.org
+Cc: Pavel Machek <pavel@ucw.cz>, Rusty Russell <rusty@rustcorp.com.au>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Message-ID: <20090708221413.GH15111@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <200907012019.53932.rusty@rustcorp.com.au> <20090702214646.GD1485@ucw.cz> <19021.12158.915384.574218@samba.org> <20090702223349.GA30840@elf.ucw.cz> <19021.14217.587592.808935@samba.org> <20090702224446.GD30840@elf.ucw.cz> <19021.18919.560478.630755@samba.org> <20090708092133.GC24385@elf.ucw.cz> <20090708142520.GA7817@linux.vnet.ibm.com> <19029.4803.604820.157625@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090708220717.GB2945@jolsa.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <19029.4803.604820.157625@samba.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding smp_mb__after_lock define to be used as a smp_mb call after
-a lock.
+On Thu, Jul 09, 2009 at 07:42:27AM +1000, tridge@samba.org wrote:
+> Hi Paul,
+> 
+> These probabilities are way off. They assume that whatever interaction
+> happens in XP has infinite memory. The testing I've done indicates
+> that the memory for this interaction is very small (maybe 3 or 4? it's
+> hard to know precisely).
 
-Making it nop for x86, since {read|write|spin}_lock() on x86 are
-full memory barriers.
+Good to know!  I will rework assuming that the memory is 4, let me
+know if you learn more.
 
-wbr,
-jirka
+> I've also confirmed this with lots of testing. If the probability was
+> 39% for any directory size then I would have found it.
 
+This new information will likely reduce the predicted probability of
+bluescreen by several orders of magnitude for large directories.  Not
+that much effect for small directories, but not a real issue given
+how low the probabilities are to begin with.
 
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
----
- arch/x86/include/asm/spinlock.h |    4 ++++
- include/linux/spinlock.h        |    5 +++++
- include/net/sock.h              |    5 ++++-
- 3 files changed, 13 insertions(+), 1 deletions(-)
+> In all my testing I did not once produce a XP crash with the full
+> patch. To produce the XP crash I needed to have a reduced version of
+> the patch with less randomness.
 
-diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-index b7e5db8..4e77853 100644
---- a/arch/x86/include/asm/spinlock.h
-+++ b/arch/x86/include/asm/spinlock.h
-@@ -302,4 +302,8 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
- #define _raw_read_relax(lock)	cpu_relax()
- #define _raw_write_relax(lock)	cpu_relax()
- 
-+/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-+static inline void smp_mb__after_lock(void) { }
-+#define ARCH_HAS_SMP_MB_AFTER_LOCK
-+
- #endif /* _ASM_X86_SPINLOCK_H */
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index 252b245..4be57ab 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -132,6 +132,11 @@ do {								\
- #endif /*__raw_spin_is_contended*/
- #endif
- 
-+/* The lock does not imply full memory barrier. */
-+#ifndef ARCH_HAS_SMP_MB_AFTER_LOCK
-+static inline void smp_mb__after_lock(void) { smp_mb(); }
-+#endif
-+
- /**
-  * spin_unlock_wait - wait until the spinlock gets unlocked
-  * @lock: the spinlock in question.
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 4eb8409..2c0da92 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
-  * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
-  * could then endup calling schedule and sleep forever if there are no more
-  * data on the socket.
-+ *
-+ * The sk_has_sleeper is always called right after a call to read_lock, so we
-+ * can use smp_mb__after_lock barrier.
-  */
- static inline int sk_has_sleeper(struct sock *sk)
- {
-@@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
- 	 *
- 	 * This memory barrier is paired in the sock_poll_wait.
- 	 */
--	smp_mb();
-+	smp_mb__after_lock();
- 	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
- }
- 
--- 
-1.6.2.5
+Well, let's see if I can produce a reasonably realistic model.  :-)
+(I knew I should have gotten more sleep last night!!!)
 
+							Thanx, Paul
