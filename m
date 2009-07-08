@@ -1,159 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbZGHUIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbZGHUK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759320AbZGHUIq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 16:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759076AbZGHUId
+	id S1759207AbZGHUK5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 16:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbZGHUKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 16:08:33 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:46649 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758903AbZGHUIb (ORCPT
+	Wed, 8 Jul 2009 16:10:52 -0400
+Received: from smtprelay03.ispgateway.de ([80.67.31.26]:53654 "EHLO
+	smtprelay03.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753766AbZGHUKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 16:08:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=dMIHJrN1cEt8vIcQlRHOVOhXhOEaCDYpTJ/3rBhZIgp9OgW0jx2pV9EvhimbRgK+Nj
-         NUtfHB4nfG8ZYUhMGGMExgRCsxsIQW8TlDljP46RrYswyLneYG6m8+85JbM7qvs3MhEt
-         LV2ZQEL5dyrIF6877LCxsNClG1XISj6Qe1tls=
-Message-ID: <4A54FC7E.1020902@gmail.com>
-Date: Wed, 08 Jul 2009 22:07:26 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] staging/rt*: don't confuse user of rt3070 driver with
- rt2870 strings
-Content-Type: text/plain; charset=UTF-8
+	Wed, 8 Jul 2009 16:10:51 -0400
+Date: Wed, 8 Jul 2009 22:10:49 +0200
+From: Peter Feuerer <peter@piie.net>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, Andreas Mohr <andi@lisas.de>
+Subject: Re: [PATCH] Acerhdf: 0.5.15-2
+Message-Id: <20090708221049.617f2b4e.peter@piie.net>
+In-Reply-To: <20090707220756.384b1999.peter@piie.net>
+References: <20090705135806.GB9778@liondog.tnic>
+	<cone.1246812673.209196.4691.1000@onepiie>
+	<20090706074341.GA27582@liondog.tnic>
+	<20090707220756.384b1999.peter@piie.net>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Df-Sender: peter@piie.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH 3/3] staging/rt*: don't confuse user of rt3070 driver with rt2870 strings
+Hi Boris,
 
-Original author didn't bother to change strings for rt3070 driver. Fix it.
+found a little Bug, the "strncmp" in BIOS detection was using the wrong length, here's a new patch...
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+--peter
+
+On Tue, 7 Jul 2009 22:07:56 +0200
+Peter Feuerer <peter@piie.net> wrote:
+
+> Hi Boris,
+> 
+> On Mon, 6 Jul 2009 09:43:42 +0200
+> Borislav Petkov <petkovbb@googlemail.com> wrote:
+> 
+> > The thing I'm observing here with the 0x21 command is that whenever it
+> > is written into the ->fanreg, the fan gets turned on for maybe a second
+> > or less and then off again. The 0x20 keeps it off just fine. What does
+> > your BIOS version string say, here it is:
+> > 
+> > [33340.535861] acerhdf: Acer Aspire One Fan driver, v.0.5.14
+> > [33340.537078] acerhdf: BIOS info: Acer v0.3309, product: AOA150
+> 
+> I tested your patch with value 0x20 on my machine ("AOA110" product, "v0.3309" version).
+> The fan was freaking out and spinning high like a helicopter.
+> 
+> I think we have to distinguish between the BIOS products too. Here a patch, please have a look at it and test it.
+> 
+> cheers,
+> 	peter
+
+Peter:
+ o Applied Borislav Petkov's patch
+ o Added BIOS product to BIOS table as AOA110 and AOA150 have
+   different register values
+ o Added force_product parameter to allow forcing different
+   product
+ o fixed linker warning caused by "acerhdf_drv" not being named
+   "acerhdf_driver"
+
+Signed-off-by: Peter Feuerer <peter@piie.net>
 ---
-Next steps could be:
-- removal of loading configuration from kernel
-- removal of driver "versions"
-
-Bart, are you preparing some patches for these drivers?
----
- drivers/staging/rt2860/rt_linux.h      |   33 ++++++++++++++++---------------
- drivers/staging/rt2860/sta_ioctl.c     |    7 +-----
- drivers/staging/rt2870/2870_main_dev.c |    4 +-
- drivers/staging/rt2870/rt2870.h        |    4 +++
- 4 files changed, 24 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/staging/rt2860/rt_linux.h b/drivers/staging/rt2860/rt_linux.h
-index 85175c1..a4cf3f8 100644
---- a/drivers/staging/rt2860/rt_linux.h
-+++ b/drivers/staging/rt2860/rt_linux.h
-@@ -93,22 +93,23 @@ typedef int (*HARD_START_XMIT_FUNC)(struct sk_buff *skb, struct net_device *net_
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index bdfee17..388622c 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -52,7 +52,7 @@
+  */
+ #undef START_IN_KERNEL_MODE
  
- // add by kathy
+-#define DRV_VER "0.5.13"
++#define DRV_VER "0.5.15"
  
--#ifdef RT2860
--#define STA_PROFILE_PATH			"/etc/Wireless/RT2860STA/RT2860STA.dat"
--#define STA_RTMP_FIRMWARE_FILE_NAME "/etc/Wireless/RT2860STA/RT2860STA.bin"
--#define STA_NIC_DEVICE_NAME			"RT2860STA"
--#define STA_DRIVER_VERSION			"1.8.1.1"
--#endif
--#ifdef RT2870
--#define STA_PROFILE_PATH			"/etc/Wireless/RT2870STA/RT2870STA.dat"
--#define STA_RT2870_IMAGE_FILE_NAME  "/etc/Wireless/RT2870STA/rt2870.bin"
--#define STA_NIC_DEVICE_NAME			"RT2870STA"
--#ifndef RT30xx
--#define STA_DRIVER_VERSION			"1.4.0.0"
--#endif
--#ifdef RT30xx
--#define STA_DRIVER_VERSION			"2.0.1.0"
--#endif
-+/* order of "if defined()" is important, because for 3070 driver
-+   both RT2870 and RT3070 are defined */
-+#if defined(RT2860)
-+ #define STA_PROFILE_PATH			"/etc/Wireless/RT2860STA/RT2860STA.dat"
-+ #define STA_RTMP_FIRMWARE_FILE_NAME "/etc/Wireless/RT2860STA/RT2860STA.bin"
-+ #define STA_NIC_DEVICE_NAME			"RT2860STA"
-+ #define STA_DRIVER_VERSION			"1.8.1.1"
-+#elif defined(RT3070)
-+ #define STA_PROFILE_PATH			"/etc/Wireless/RT3070STA/RT3070STA.dat"
-+ #define STA_RT2870_IMAGE_FILE_NAME  "/etc/Wireless/RT3070STA/rt2870.bin"
-+ #define STA_NIC_DEVICE_NAME			"RT3070STA"
-+ #define STA_DRIVER_VERSION			"2.0.1.0"
-+#elif defined(RT2870)
-+ #define STA_PROFILE_PATH			"/etc/Wireless/RT2870STA/RT2870STA.dat"
-+ #define STA_RT2870_IMAGE_FILE_NAME  "/etc/Wireless/RT2870STA/rt2870.bin"
-+ #define STA_NIC_DEVICE_NAME			"RT2870STA"
-+ #define STA_DRIVER_VERSION			"1.4.0.0"
- #endif
+ /*
+  * According to the Atom N270 datasheet,
+@@ -90,6 +90,7 @@ static unsigned int fanoff = 58;
+ static unsigned int verbose;
+ static unsigned int fanstate = ACERHDF_FAN_AUTO;
+ static char force_bios[16];
++static char force_product[16];
+ static unsigned int prev_interval;
+ struct thermal_zone_device *thz_dev;
+ struct thermal_cooling_device *cl_dev;
+@@ -107,34 +108,54 @@ module_param(verbose, uint, 0600);
+ MODULE_PARM_DESC(verbose, "Enable verbose dmesg output");
+ module_param_string(force_bios, force_bios, 16, 0);
+ MODULE_PARM_DESC(force_bios, "Force BIOS version and omit BIOS check");
++module_param_string(force_product, force_product, 16, 0);
++MODULE_PARM_DESC(force_product, "Force BIOS product and omit BIOS check");
++
++/*
++ * cmd_off: to switch the fan completely off / to check if the fan is off
++ *	cmd_auto: to set the BIOS in control of the fan. The BIOS regulates then
++ *		the fan speed depending on the temperature
++ */
++struct fancmd {
++	u8 cmd_off;
++	u8 cmd_auto;
++};
  
- #ifdef RT2860
-diff --git a/drivers/staging/rt2860/sta_ioctl.c b/drivers/staging/rt2860/sta_ioctl.c
-index eb0109a..a4f22df 100644
---- a/drivers/staging/rt2860/sta_ioctl.c
-+++ b/drivers/staging/rt2860/sta_ioctl.c
-@@ -531,12 +531,7 @@ rt_ioctl_giwname(struct net_device *dev,
- 		   char *name, char *extra)
+ /* BIOS settings */
+ struct bios_settings_t {
+ 	const char *vendor;
++	const char *product;
+ 	const char *version;
+ 	unsigned char fanreg;
+ 	unsigned char tempreg;
+-	unsigned char fancmd[2]; /* fan off and auto commands */
++	struct fancmd cmd;
+ };
+ 
+ /* Register addresses and values for different BIOS versions */
+ static const struct bios_settings_t bios_tbl[] = {
+-	{"Acer", "v0.3109", 0x55, 0x58, {0x1f, 0x00} },
+-	{"Acer", "v0.3114", 0x55, 0x58, {0x1f, 0x00} },
+-	{"Acer", "v0.3301", 0x55, 0x58, {0xaf, 0x00} },
+-	{"Acer", "v0.3304", 0x55, 0x58, {0xaf, 0x00} },
+-	{"Acer", "v0.3305", 0x55, 0x58, {0xaf, 0x00} },
+-	{"Acer", "v0.3308", 0x55, 0x58, {0x21, 0x00} },
+-	{"Acer", "v0.3309", 0x55, 0x58, {0x21, 0x00} },
+-	{"Acer", "v0.3310", 0x55, 0x58, {0x21, 0x00} },
+-	{"Gateway", "v0.3103", 0x55, 0x58, {0x21, 0x00} },
+-	{"Packard Bell", "v0.3105", 0x55, 0x58, {0x21, 0x00} },
+-	{"", "", 0, 0, {0, 0} }
++	/* working for AOA110 and AOA150 and other */
++	{"Acer", "AO", "v0.3109", 0x55, 0x58, {0x1f, 0x00} },
++	{"Acer", "AO", "v0.3114", 0x55, 0x58, {0x1f, 0x00} },
++	{"Acer", "AO", "v0.3301", 0x55, 0x58, {0xaf, 0x00} },
++	{"Acer", "AO", "v0.3304", 0x55, 0x58, {0xaf, 0x00} },
++	{"Acer", "AO", "v0.3305", 0x55, 0x58, {0xaf, 0x00} },
++	{"Acer", "AO", "v0.3308", 0x55, 0x58, {0x21, 0x00} },
++	/* AOA110 */
++	{"Acer", "AOA110", "v0.3309", 0x55, 0x58, {0x21, 0x00} },
++	{"Acer", "AOA110", "v0.3310", 0x55, 0x58, {0x21, 0x00} },
++	/* AOA150 */
++	{"Acer", "AOA150", "v0.3309", 0x55, 0x58, {0x20, 0x00} },
++	{"Acer", "AOA150", "v0.3310", 0x55, 0x58, {0x20, 0x00} },
++	/* special BIOS / other */
++	{"Gateway", "AOA110", "v0.3103", 0x55, 0x58, {0x21, 0x00} },
++	{"Packard Bell", "DOA150", "v0.3104", 0x55, 0x58, {0x21, 0x00} },
++	{"Packard Bell", "AOA110", "v0.3105", 0x55, 0x58, {0x21, 0x00} },
++	/* pewpew-terminator */
++	{"", "", "", 0, 0, {0, 0} }
+ };
+ 
+ static const struct bios_settings_t *bios_cfg __read_mostly;
+ 
+-
+ static int acerhdf_get_temp(int *temp)
  {
- //	PRTMP_ADAPTER pAdapter = dev->ml_priv;
--#ifdef RT2860
--    strncpy(name, "RT2860 Wireless", IFNAMSIZ);
--#endif
--#ifdef RT2870
--	strncpy(name, "RT2870 Wireless", IFNAMSIZ);
--#endif // RT2870 //
-+	strncpy(name, RT28xx_CHIP_NAME " Wireless", IFNAMSIZ);
+ 	u8 read_temp;
+@@ -150,13 +171,14 @@ static int acerhdf_get_temp(int *temp)
+ static int acerhdf_get_fanstate(int *state)
+ {
+ 	u8 fan;
+-	bool tmp;
+ 
+ 	if (ec_read(bios_cfg->fanreg, &fan))
+ 		return -EINVAL;
+ 
+-	tmp = (fan == bios_cfg->fancmd[ACERHDF_FAN_OFF]);
+-	*state = tmp ? ACERHDF_FAN_OFF : ACERHDF_FAN_AUTO;
++	if (fan != bios_cfg->cmd.cmd_off)
++		*state = ACERHDF_FAN_AUTO;
++	else
++		*state = ACERHDF_FAN_OFF;
+ 
+ 	return 0;
+ }
+@@ -175,7 +197,8 @@ static void acerhdf_change_fanstate(int state)
+ 		state = ACERHDF_FAN_AUTO;
+ 	}
+ 
+-	cmd = bios_cfg->fancmd[state];
++	cmd = (state == ACERHDF_FAN_OFF) ? bios_cfg->cmd.cmd_off
++					 : bios_cfg->cmd.cmd_auto;
+ 	fanstate = state;
+ 
+ 	ec_write(bios_cfg->fanreg, cmd);
+@@ -437,7 +460,7 @@ static int acerhdf_remove(struct platform_device *device)
  	return 0;
  }
  
-diff --git a/drivers/staging/rt2870/2870_main_dev.c b/drivers/staging/rt2870/2870_main_dev.c
-index dd01c64..154b853 100644
---- a/drivers/staging/rt2870/2870_main_dev.c
-+++ b/drivers/staging/rt2870/2870_main_dev.c
-@@ -45,7 +45,7 @@
- // *** If you have a solution for the bug in current version of driver, please mail to me.
- // Otherwise post to forum in ralinktech's web site(www.ralinktech.com) and let all users help you. ***
- MODULE_AUTHOR("Paul Lin <paul_lin@ralinktech.com>");
--MODULE_DESCRIPTION("RT2870 Wireless Lan Linux Driver");
-+MODULE_DESCRIPTION(RT28xx_CHIP_NAME " Wireless LAN Linux Driver");
- MODULE_LICENSE("GPL");
- #ifdef MODULE_VERSION
- MODULE_VERSION(STA_DRIVER_VERSION);
-@@ -1418,7 +1418,7 @@ VOID RT2870_BssBeaconStart(
- 		pAd->CommonCfg.BeaconAdjust = 0;
- 		pAd->CommonCfg.BeaconFactor = 0xffffffff / (pAd->CommonCfg.BeaconPeriod << 10);
- 		pAd->CommonCfg.BeaconRemain = (0xffffffff % (pAd->CommonCfg.BeaconPeriod << 10)) + 1;
--		printk("RT2870_BssBeaconStart:BeaconFactor=%d, BeaconRemain=%d!\n", pAd->CommonCfg.BeaconFactor, pAd->CommonCfg.BeaconRemain);
-+		printk(RT28xx_CHIP_NAME "_BssBeaconStart:BeaconFactor=%d, BeaconRemain=%d!\n", pAd->CommonCfg.BeaconFactor, pAd->CommonCfg.BeaconRemain);
- 		RTMPSetTimer(&pAd->CommonCfg.BeaconUpdateTimer, pAd->CommonCfg.BeaconPeriod);
+-struct platform_driver acerhdf_drv = {
++static struct platform_driver acerhdf_driver = {
+ 	.driver = {
+ 		.name = "acerhdf",
+ 		.owner = THIS_MODULE,
+@@ -454,32 +477,40 @@ static int acerhdf_check_hardware(void)
+ {
+ 	char const *vendor, *version, *product;
+ 	int i;
++	unsigned long prod_len = 0;
  
+ 	/* get BIOS data */
+ 	vendor  = dmi_get_system_info(DMI_SYS_VENDOR);
+ 	version = dmi_get_system_info(DMI_BIOS_VERSION);
+ 	product = dmi_get_system_info(DMI_PRODUCT_NAME);
+ 
++
+ 	pr_info("Acer Aspire One Fan driver, v.%s\n", DRV_VER);
+ 
+-	if (!force_bios[0]) {
+-		if (strncmp(product, "AO", 2)) {
+-			pr_err("no Aspire One hardware found\n");
+-			return -EINVAL;
+-		}
+-	} else {
+-		pr_info("forcing BIOS version: %s\n", version);
++	if (force_bios[0]) {
+ 		version = force_bios;
++		pr_info("forcing BIOS version: %s\n", version);
+ 		kernelmode = 0;
  	}
-diff --git a/drivers/staging/rt2870/rt2870.h b/drivers/staging/rt2870/rt2870.h
-index 9679ccb..259a237 100644
---- a/drivers/staging/rt2870/rt2870.h
-+++ b/drivers/staging/rt2870/rt2870.h
-@@ -523,7 +523,11 @@ extern UCHAR EpToQueue[6];
- 	{	RTUSB_SET_BULK_FLAG(pAd, fRTUSB_BULK_OUT_PSPOLL);	\
- 		RTUSBKickBulkOut(pAd); }
  
-+#ifdef RT30xx
-+#define RT28xx_CHIP_NAME            "RT3070"
-+#else
- #define RT28xx_CHIP_NAME            "RT2870"
-+#endif
- #define USB_CYC_CFG                 0x02a4
- #ifndef RT30xx
- #define STATUS_SUCCESS				0x00
--- 
-1.6.3.3
-
++	if (force_product[0]) {
++		product = force_product;
++		pr_info("forcing BIOS product: %s\n", product);
++		kernelmode = 0;
++	}
++
++	prod_len = strlen(product);
++
+ 	if (verbose)
+ 		pr_info("BIOS info: %s %s, product: %s\n",
+ 			vendor, version, product);
+ 
+ 	/* search BIOS version and vendor in BIOS settings table */
+ 	for (i = 0; bios_tbl[i].version[0]; i++) {
+-		if (!strcmp(bios_tbl[i].vendor, vendor) &&
++		if (strlen(bios_tbl[i].product) >= prod_len &&
++		    !strncmp(bios_tbl[i].product, product,
++			   strlen(bios_tbl[i].product)) &&
++		    !strcmp(bios_tbl[i].vendor, vendor) &&
+ 		    !strcmp(bios_tbl[i].version, version)) {
+ 			bios_cfg = &bios_tbl[i];
+ 			break;
+@@ -487,8 +518,8 @@ static int acerhdf_check_hardware(void)
+ 	}
+ 
+ 	if (!bios_cfg) {
+-		pr_err("unknown (unsupported) BIOS version %s/%s, "
+-			"please report, aborting!\n", vendor, version);
++		pr_err("unknown (unsupported) BIOS version %s/%s/%s, "
++			"please report, aborting!\n", vendor, product, version);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -509,7 +540,7 @@ static int acerhdf_register_platform(void)
+ {
+ 	int err = 0;
+ 
+-	err = platform_driver_register(&acerhdf_drv);
++	err = platform_driver_register(&acerhdf_driver);
+ 	if (err)
+ 		return err;
+ 
+@@ -525,7 +556,7 @@ static void acerhdf_unregister_platform(void)
+ 		return;
+ 
+ 	platform_device_del(acerhdf_dev);
+-	platform_driver_unregister(&acerhdf_drv);
++	platform_driver_unregister(&acerhdf_driver);
+ }
+ 
+ static int acerhdf_register_thermal(void)
