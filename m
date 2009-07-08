@@ -1,70 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755803AbZGHSEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757721AbZGHSD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755803AbZGHSEQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 14:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460AbZGHSD6
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 14:03:58 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:58518 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757626AbZGHSD4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1757721AbZGHSD4 (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 8 Jul 2009 14:03:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=HhNLcMwtKxbkkApvAWXQJB4rd51qYBR8uvowCCdp4RNN/IQbnenQ5zzPLnBVPCNT/a
-         bLnJi3+UGnFXL6v6fTlF3KxQGZGz/3IXwL22JCXlJ9iFLifWQyPXVFBcQxoa/nOQHlrw
-         ssKOPF512rbSxNE/HMmGAE7rwu8jK0AjR1anM=
-Date: Wed, 8 Jul 2009 22:03:53 +0400
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH -tip] x86,idt_descr -- use NR_VECTORS instead of hardcoded
-	number
-Message-ID: <20090708180353.GH5301@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZGHSDe
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 8 Jul 2009 14:03:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57454 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753923AbZGHSDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 14:03:32 -0400
+Subject: Re: [PATCH 0/44] includecheck: fix multiple includes
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>,
+       David Howells <dhowells@redhat.com>, benh@kernel.crashing.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       jdike@addtoit.com, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       dbrownell@users.sourceforge.net, Greg KH <greg@kroah.com>,
+       mchehab@infradead.org, jeremy@xensource.com, felixb@sgi.com,
+       lenb@kernel.org, airlied@linux.ie, bcrl@kvack.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
+References: <1247063308.4382.12.camel@ht.satnam>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 23:30:59 +0530
+Message-Id: <1247076059.4382.127.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
+Hello all,
 
-Please review
+On Wed, 2009-07-08 at 19:58 +0530, Jaswinder Singh Rajput wrote:
+> The following changes since commit faf80d62e44dc627efb741f48db50c1858d1667c:
+>   Linus Torvalds (1):
+>         Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/headers-check-2.6.git master
+> 
+> Jaswinder Singh Rajput (44):
 
- arch/x86/kernel/cpu/common.c |    2 +-
- arch/x86/kernel/traps.c      |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+This is a big patchset, so it will be better that either me or Sam will
+send it to Linus after collecting ACKs.
 
-Index: linux-2.6.git/arch/x86/kernel/cpu/common.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6.git/arch/x86/kernel/cpu/common.c
-@@ -982,7 +982,7 @@ static __init int setup_disablecpuid(cha
- __setup("clearcpuid=", setup_disablecpuid);
- 
- #ifdef CONFIG_X86_64
--struct desc_ptr idt_descr = { 256 * 16 - 1, (unsigned long) idt_table };
-+struct desc_ptr idt_descr = { NR_VECTORS * 16 - 1, (unsigned long) idt_table };
- 
- DEFINE_PER_CPU_FIRST(union irq_stack_union,
- 		     irq_stack_union) __aligned(PAGE_SIZE);
-Index: linux-2.6.git/arch/x86/kernel/traps.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/traps.c
-+++ linux-2.6.git/arch/x86/kernel/traps.c
-@@ -76,7 +76,7 @@ char ignore_fpu_irq;
-  * F0 0F bug workaround.. We have a special link segment
-  * for this.
-  */
--gate_desc idt_table[256]
-+gate_desc idt_table[NR_VECTORS]
- 	__attribute__((__section__(".data.idt"))) = { { { { 0, 0 } } }, };
- #endif
- 
+So far I received ACKs for:
+
+       includecheck fix: Documentation, cfag12864b-example.c
+        Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+       includecheck fix: drivers/spi, amba-pl022.c
+        Acked-by: Linus Walleij <linus.walleij@stericsson.com>
+        Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+
+       includecheck fix: drivers/xen, evtchn.c
+        Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+
+       includecheck fix: include/acpi, acpi_bus.h
+        Acked-by: Len Brown <len.brown@intel.com>
+
+I am still waiting ACK/NAK for :
+
+      includecheck fix: arm, misc.c
+      includecheck fix: arm, atomic.h
+      includecheck fix: arm, board-dm355-evm.c
+      includecheck fix: arm, board-dm355-leopard.c
+      includecheck fix: arm, board-dm644x-evm.c
+      includecheck fix: arm, board-dm646x-evm.c
+      includecheck fix: arm, board-sffsdr.c
+      includecheck fix: arm, mach-mx3/devices.c
+      includecheck fix: arm, mach-omap1/mcbsp.c
+      includecheck fix: arm, mach-omap2/mcbsp.c
+      includecheck fix: arm, plat-s3c64xx/pm.c
+      includecheck fix: arm, plat-stmp3xxx/pinmux.c
+
+      includecheck fix: mn10300, sys_mn10300.c
+
+      includecheck fix: powerpc, mpc7450-pmu.c
+      includecheck fix: powerpc, ppc970-pmu.c
+
+      includecheck fix: s390, sys_s390.c
+
+      includecheck fix: um, helper.c
+
+      includecheck fix: x86, dumpstack.c
+      includecheck fix: x86, traps.c
+      includecheck fix: x86, shadow.c
+
+      includecheck fix: drivers/char, vt.c
+
+      includecheck fix: drivers/net, sja1000.c
+      includecheck fix: drivers/net, axnet_cs.c
+      includecheck fix: drivers/net, smc911x.h
+
+      includecheck fix: drivers/parisc, ccio-dma.c
+
+      includecheck fix: drivers/scsi, libfcoe.c
+      includecheck fix: drivers/scsi, ibmvscsi.c
+
+      includecheck fix: drivers/staging, usbdrv.c
+      includecheck fix: drivers/staging, rt_linux.h
+
+      includecheck fix: drivers/video, vgacon.c
+
+      includecheck fix: fs/xfs, xfs_iops.c
+
+      includecheck fix: include/drm, drm_memory.h
+
+      includecheck fix: include/linux, aio.h
+
+      includecheck fix: include/linux, ftrace.h
+
+      includecheck fix: include/linux, icmpv6.h
+      includecheck fix: include/linux, net_dropmon.h
+
+      includecheck fix: include/linux, rfkill.h
+
+      includecheck fix: kernel/trace, ring_buffer.c
+
+      includecheck fix: mm, nommu.c
+      includecheck fix: mm, shmem.c
+
+Thanks,
+--
+JSR
+
