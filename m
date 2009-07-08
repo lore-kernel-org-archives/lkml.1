@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbZGHRYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbZGHR2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757628AbZGHRYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 13:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbZGHRYK
+	id S1754416AbZGHR2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 13:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZGHR2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 13:24:10 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:46339 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754548AbZGHRYJ (ORCPT
+	Wed, 8 Jul 2009 13:28:05 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:54923 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbZGHR2E convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 13:24:09 -0400
+	Wed, 8 Jul 2009 13:28:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=gGy77SdPqPUHuA5dhUCxzyU6V8rYZQkP5OeihjXpBVSe2z0wR9dQMR6mLh/5tQRzTt
-         VmKHD3E8oXGjGA1w/6LRTVdT29/5G5g86Bys8955QXB5S6eLt+UMWWfihIEuBPf5XUn9
-         zPwbvItfqWWU+zfMRWcISCBOYSHV51qEZdxsQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Subject: [PATCH] isofs: fix Joliet regression
-Date: Wed, 8 Jul 2009 19:29:52 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30-next-20090618-10582-g427bc60; KDE/4.2.4; i686; ; )
-Cc: linux-kernel@vger.kernel.org
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fulSJxtn+wvkTq3qJN128RZyrOt4N5eH6T9VMnF/U2zs+ROiiH7CBGh6B2SlV5DcxC
+         xDu3Jj20ZC10wSsNk8/4EysXBSbkhdbjQk5MxCRBsA1r4CSXp0cGwfx1hQqWnlbr0DOq
+         KWAqhDi2ja9EnxAnXK8VBelvdKmW0sY7UtyDE=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907081929.54372.bzolnier@gmail.com>
+In-Reply-To: <1247067147.4382.80.camel@ht.satnam>
+References: <1247063308.4382.12.camel@ht.satnam>
+	 <1247067147.4382.80.camel@ht.satnam>
+Date: Wed, 8 Jul 2009 19:28:01 +0200
+Message-ID: <63386a3d0907081028s4a36fccen9cea9a316e2ef4c6@mail.gmail.com>
+Subject: Re: [PATCH 29/44] includecheck fix: drivers/spi, amba-pl022.c
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] isofs: fix Joliet regression
+2009/7/8 Jaswinder Singh Rajput <jaswinder@kernel.org>:
 
-commit 5404ac8e4418ab3d254950ee4f9bcafc1da20b4a ("isofs: cleanup mount
-option processing") missed conversion of joliet option flag resulting
-in non-working Joliet support.
+> fix the following 'make includecheck' warnings:
+>
+>  drivers/spi/amba-pl022.c: linux/delay.h is included more than once.
+>  drivers/spi/amba-pl022.c: linux/errno.h is included more than once.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-I really want to believe that this is just the unlucky coincidence with
-the ongoing vfat madness...
+Acked-by: Linus Walleij <linus.walleij@stericsson.com>
 
- fs/isofs/inode.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+David are you merging this?
 
-Index: b/fs/isofs/inode.c
-===================================================================
---- a/fs/isofs/inode.c
-+++ b/fs/isofs/inode.c
-@@ -142,6 +142,7 @@ static const struct dentry_operations is
- 
- struct iso9660_options{
- 	unsigned int rock:1;
-+	unsigned int joliet:1;
- 	unsigned int cruft:1;
- 	unsigned int hide:1;
- 	unsigned int showassoc:1;
-@@ -151,7 +152,6 @@ struct iso9660_options{
- 	unsigned int gid_set:1;
- 	unsigned int utf8:1;
- 	unsigned char map;
--	char joliet;
- 	unsigned char check;
- 	unsigned int blocksize;
- 	mode_t fmode;
-@@ -632,7 +632,7 @@ static int isofs_fill_super(struct super
- 			else if (isonum_711(vdp->type) == ISO_VD_SUPPLEMENTARY) {
- 				sec = (struct iso_supplementary_descriptor *)vdp;
- 				if (sec->escape[0] == 0x25 && sec->escape[1] == 0x2f) {
--					if (opt.joliet == 'y') {
-+					if (opt.joliet) {
- 						if (sec->escape[2] == 0x40)
- 							joliet_level = 1;
- 						else if (sec->escape[2] == 0x43)
+Linus Walleij
