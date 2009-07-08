@@ -1,55 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbZGHHnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758691AbZGHHsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759480AbZGHHnH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 03:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758988AbZGHHmc
+	id S1758691AbZGHHsj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 03:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZGHHsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 03:42:32 -0400
-Received: from mail.samba.org ([66.70.73.150]:39499 "EHLO lists.samba.org"
+	Wed, 8 Jul 2009 03:48:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48806 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757339AbZGHHm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 03:42:28 -0400
+	id S1755880AbZGHHsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 03:48:30 -0400
+Date: Wed, 8 Jul 2009 10:47:42 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [KVM PATCH v9 1/2] KVM: make io_bus interface more robust
+Message-ID: <20090708074742.GA10803@redhat.com>
+References: <20090706202742.14222.65548.stgit@dev.haskins.net> <20090706203315.14222.25490.stgit@dev.haskins.net> <20090707112035.GB3647@redhat.com> <4A538533.3030703@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19028.19210.992993.643974@samba.org>
-Date: Wed, 8 Jul 2009 17:30:18 +1000
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <20090706200431.GC13638@shareable.org>
-References: <alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
-	<19021.19842.663727.146474@samba.org>
-	<87hbxu60qm.fsf@devron.myhome.or.jp>
-	<19021.23231.213863.726785@samba.org>
-	<alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
-	<19021.26102.80885.330380@samba.org>
-	<alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr>
-	<19021.31291.642416.956966@samba.org>
-	<alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr>
-	<19021.63615.450348.192109@samba.org>
-	<20090706200431.GC13638@shareable.org>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+Content-Disposition: inline
+In-Reply-To: <4A538533.3030703@novell.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jamie,
+On Tue, Jul 07, 2009 at 01:26:11PM -0400, Gregory Haskins wrote:
+> These patches pass checkpatch.pl and I happen to like the extra
+> whitespace for readability.  I agree that a random isolated whitespace
+> hunk, or double whitespace in a row are probably inadvertent and should
+> be pointed out.  But these little one liners in the middle of code I
+> generally do on purpose (for instance, [A]).
 
- > I think it's ok to break that compatibility if dualnames is off,
- > because that's unfortunately the best available compromise.
+Where it's on purpose, it's on purpose. I am just trying to convey a
+rather obvious point that each line of code should have a purpose in
+life, and that includes empty lines :)
 
-You probably noticed this, but the patch that has been put in only
-changes the shortname setting when dualnames is off.
+> I suppose its personal preference either way, so I guess unless Avi
+> objects lets just each have our own style in that regard.
 
-Cheers, Tridge
+I think Avi already said we don't need to standardize everything.
+I hope at least some of the comments were helpful.
+
+> >> @@ -552,6 +554,11 @@ struct kvm_pic *kvm_create_pic(struct kvm *kvm)
+> >>  	 * Initialize PIO device
+> >>  	 */
+> >>  	kvm_iodevice_init(&s->dev, &picdev_ops);
+> >> -	kvm_io_bus_register_dev(kvm, &kvm->pio_bus, &s->dev);
+> >> +	ret = kvm_io_bus_register_dev(kvm, &kvm->pio_bus, &s->dev);
+> >> +	if (ret < 0) {
+> >>     
+> >
+> > I thought the function returns 0 on success?
+> > If so can we just if (ret) all over?
+> >
+> >   
+> 
+> I guess, but what does that churn buy us?
+
+It's not that important really. I think we need to document the return
+value, and check it according to how it is documented. The reason I
+commented, I see < 0 and ask "what if it is > 0"? I look it up and it
+turns out it's never > 0.  So why check < 0?
+
+> >> +	ret = kvm_io_bus_register_dev(kvm, &kvm->mmio_bus, &dev->dev);
+> >> +	if (ret < 0)
+> >> +		kfree(dev);
+> >> +
+> >>     
+> >
+> > kill empty line
+> >   
+> 
+> Why do you object here especially when there is precedence
+
+How do you mean, precedence?
+
+> with
+> something like the space before the return with [B]?  I think big
+> mono-blocks of code are ugly and harder to read, personally.
+
+I don't intend to keep arguing and I agree it's a question of style.
+But since you ask why I'll try to answer. I think an
+empty line should help delimit a block of code with some common meaning,
+like a paragraph.  But if overused it loses meaning and stops being
+helpful.
+
+E.g., it does not make sense to put it between every 2 lines of code in a
+function.  It also does not make sense to put it after } which is
+already delimiting a block in a visible way; it does not make sense to
+put it around a multiline comment which is delimited by /**/.  It does
+not make sense to put it around an idented block which is already
+delimited by indentation.
+
+> >> +		if (bus->devs[i] == dev) {
+> >> +			bus->devs[i] = bus->devs[--bus->dev_count];
+> >> +			break;
+> >> +		}
+> >> +	}
+> >>     
+> >
+> > no {} around single statement
+
+
+This is actually part of style IMO, it is just hard for a perl script to
+catch :).
+
+> >
+> >   
+> >>  }
+> >>  
+> >>  static struct notifier_block kvm_cpu_notifier = {
+> >>     
+> 
+> 
+
+
