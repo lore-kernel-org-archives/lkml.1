@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbZGHFsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759009AbZGHFtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbZGHFsv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 01:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbZGHFsg
+	id S1759009AbZGHFtO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 01:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756434AbZGHFsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 01:48:36 -0400
-Received: from stargate.chelsio.com ([67.207.112.58]:20968 "EHLO
+	Wed, 8 Jul 2009 01:48:42 -0400
+Received: from stargate.chelsio.com ([67.207.112.58]:18807 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752488AbZGHFsf (ORCPT
+	with ESMTP id S1755829AbZGHFsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 01:48:35 -0400
+	Wed, 8 Jul 2009 01:48:40 -0400
 From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 1/8 net-next-2.6] cxgb3: Drain Mac Tx fifo when the port goes
-	down.
+Subject: [PATCH 2/8 net-next-2.6] cxgb3: Fix T3C MAC max packet size access
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Tue, 07 Jul 2009 22:48:32 -0700
-Message-ID: <20090708054832.11344.82449.stgit@speedy5>
+Date: Tue, 07 Jul 2009 22:48:38 -0700
+Message-ID: <20090708054838.11344.97432.stgit@speedy5>
+In-Reply-To: <20090708054832.11344.82449.stgit@speedy5>
+References: <20090708054832.11344.82449.stgit@speedy5>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -28,85 +29,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Drain the MAC TX fifos when a port goes down.
-Back pressure might otherwise occur, leading to both
-ports of the same adapter to hang.
+Max packet size is not the only field in T3C's High Water Mark register.
+Mask the register to access this field.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/cxgb3_main.c |   29 ++++++++++++++++++++++++++++-
- 1 files changed, 28 insertions(+), 1 deletions(-)
+ drivers/net/cxgb3/xgmac.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
 
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index 538dda4..ef59921 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -172,6 +172,23 @@ static void link_report(struct net_device *dev)
- 	}
- }
+diff --git a/drivers/net/cxgb3/xgmac.c b/drivers/net/cxgb3/xgmac.c
+index f87f943..0109ee4 100644
+--- a/drivers/net/cxgb3/xgmac.c
++++ b/drivers/net/cxgb3/xgmac.c
+@@ -447,11 +447,12 @@ int t3_mac_set_speed_duplex_fc(struct cmac *mac, int speed, int duplex, int fc)
  
-+static void enable_tx_fifo_drain(struct adapter *adapter,
-+				 struct port_info *pi)
-+{
-+	t3_set_reg_field(adapter, A_XGM_TXFIFO_CFG + pi->mac.offset, 0,
-+			 F_ENDROPPKT);
-+	t3_write_reg(adapter, A_XGM_RX_CTRL + pi->mac.offset, 0);
-+	t3_write_reg(adapter, A_XGM_TX_CTRL + pi->mac.offset, F_TXEN);
-+	t3_write_reg(adapter, A_XGM_RX_CTRL + pi->mac.offset, F_RXEN);
-+}
-+
-+static void disable_tx_fifo_drain(struct adapter *adapter,
-+				  struct port_info *pi)
-+{
-+	t3_set_reg_field(adapter, A_XGM_TXFIFO_CFG + pi->mac.offset,
-+			 F_ENDROPPKT, 0);
-+}
-+
- void t3_os_link_fault(struct adapter *adap, int port_id, int state)
- {
- 	struct net_device *dev = adap->port[port_id];
-@@ -185,6 +202,8 @@ void t3_os_link_fault(struct adapter *adap, int port_id, int state)
- 
- 		netif_carrier_on(dev);
- 
-+		disable_tx_fifo_drain(adap, pi);
-+
- 		/* Clear local faults */
- 		t3_xgm_intr_disable(adap, pi->port_id);
- 		t3_read_reg(adap, A_XGM_INT_STATUS +
-@@ -200,9 +219,12 @@ void t3_os_link_fault(struct adapter *adap, int port_id, int state)
- 		t3_xgm_intr_enable(adap, pi->port_id);
- 
- 		t3_mac_enable(mac, MAC_DIRECTION_TX);
--	} else
-+	} else {
- 		netif_carrier_off(dev);
- 
-+		/* Flush TX FIFO */
-+		enable_tx_fifo_drain(adap, pi);
+ 	val = t3_read_reg(adap, A_XGM_RXFIFO_CFG + oft);
+ 	val &= ~V_RXFIFOPAUSEHWM(M_RXFIFOPAUSEHWM);
+-	if (fc & PAUSE_TX)
+-		val |= V_RXFIFOPAUSEHWM(rx_fifo_hwm(
+-						t3_read_reg(adap,
+-						A_XGM_RX_MAX_PKT_SIZE
+-						+ oft)) / 8);
++	if (fc & PAUSE_TX) {
++		u32 rx_max_pkt_size =
++		    G_RXMAXPKTSIZE(t3_read_reg(adap,
++					       A_XGM_RX_MAX_PKT_SIZE + oft));
++		val |= V_RXFIFOPAUSEHWM(rx_fifo_hwm(rx_max_pkt_size) / 8);
 +	}
- 	link_report(dev);
- }
+ 	t3_write_reg(adap, A_XGM_RXFIFO_CFG + oft, val);
  
-@@ -232,6 +254,8 @@ void t3_os_link_changed(struct adapter *adapter, int port_id, int link_stat,
- 
- 	if (link_stat != netif_carrier_ok(dev)) {
- 		if (link_stat) {
-+			disable_tx_fifo_drain(adapter, pi);
-+
- 			t3_mac_enable(mac, MAC_DIRECTION_RX);
- 
- 			/* Clear local faults */
-@@ -263,6 +287,9 @@ void t3_os_link_changed(struct adapter *adapter, int port_id, int link_stat,
- 			t3_read_reg(adapter, A_XGM_INT_STATUS + pi->mac.offset);
- 			t3_mac_disable(mac, MAC_DIRECTION_RX);
- 			t3_link_start(&pi->phy, mac, &pi->link_config);
-+
-+			/* Flush TX FIFO */
-+			enable_tx_fifo_drain(adapter, pi);
- 		}
- 
- 		link_report(dev);
+ 	t3_set_reg_field(adap, A_XGM_TX_CFG + oft, F_TXPAUSEEN,
 
