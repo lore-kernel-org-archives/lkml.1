@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760523AbZGHQLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbZGHQPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760523AbZGHQLn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758401AbZGHQLe
+	id S1757212AbZGHQPG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:15:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbZGHQO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:11:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60146 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758356AbZGHQLc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:11:32 -0400
-Subject: [PATCH 41/44] includecheck fix: include/linux, rfkill.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1247063308.4382.12.camel@ht.satnam>
-References: <1247063308.4382.12.camel@ht.satnam>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 21:25:54 +0530
-Message-Id: <1247068554.4382.106.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Jul 2009 12:14:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49724 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754116AbZGHQOz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 12:14:55 -0400
+Date: Wed, 8 Jul 2009 09:12:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Oleg Nesterov <oleg@redhat.com>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] sched: Remove SYSTEM_RUNNING checks from
+ cond_resched*()
+In-Reply-To: <1247034263.9777.24.camel@twins>
+Message-ID: <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
+References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>  <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-fix the following 'make includecheck' warning:
 
-  include/linux/rfkill.h: linux/types.h is included more than once.
+On Wed, 8 Jul 2009, Peter Zijlstra wrote:
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- include/linux/rfkill.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+> On Wed, 2009-07-08 at 02:50 +0200, Oleg Nesterov wrote:
+> 
+> > 	/*
+> > 	 * It is valid to assume CPU-locality during early bootup:
+> > 	 */
+> > 	if (system_state != SYSTEM_RUNNING)
+> > 		goto out;
+> > 
+> > this doesn't look right, smp_init() is called before we set
+> > SYSTEM_RUNNING.
+> 
+> The thing is, there's also ton's of code that might end up calling
+> cond_resched() and co before the scheduler is fully initialized. Doing
+> so would indeed mess things up.
 
-diff --git a/include/linux/rfkill.h b/include/linux/rfkill.h
-index e73e242..2ce2983 100644
---- a/include/linux/rfkill.h
-+++ b/include/linux/rfkill.h
-@@ -99,7 +99,6 @@ enum rfkill_user_states {
- #undef RFKILL_STATE_UNBLOCKED
- #undef RFKILL_STATE_HARD_BLOCKED
- 
--#include <linux/types.h>
- #include <linux/kernel.h>
- #include <linux/list.h>
- #include <linux/mutex.h>
--- 
-1.6.0.6
+I forget what triggered me to add some of them, but we definitely had bugs 
+with the scheduler being called early, and having some really nasty oopses 
+happen early in the boot (and that early, they don't get saved, so the 
+reporting percentage goes down to something very low).
 
+So I think that the patch Anton posted is probably the RightThing(tm) to 
+do, and in that sense I like it - but they make me very nervous. There's a 
+lot of "cond_resched()"s sprinkled about in helper routines, and if they 
+are ever called early, you're basically screwed.
 
+> Also, by definition we'd have to call smp_init() before SYSTEM_RUNNING,
+> because you simply cannot declare a system up and running when your core
+> functionality isn't initialized.
 
+Now, that part I'm not sure about.
+
+We can consider a UP system to be running, and brining up the other CPU's 
+to be a matter of CPU hotplug. 
+
+It's not what we do _now_, of course. We don't force hotplug support on 
+people just because they want SMP, and we don't want to go through the 
+whole "rewrite locks" things twice etc.
+
+> So I'd really rather preserve these checks -- I can even remember
+> running into some of these things a while back, but memory isn't
+> providing specific cases.
+
+Yes. I get nervous too about the patch.
+
+That said, I do agree that maybe SYSTEM_RUNNING isn't the right check. 
+Testing that the scheduler is initialized may be the more correct one. I 
+think the SYSTEM_RUNNING one just comes from that being used for other 
+debug issues.
+
+		Linus
