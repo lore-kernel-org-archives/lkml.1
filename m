@@ -1,285 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760333AbZGHQJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbZGHQJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760333AbZGHQJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 12:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759837AbZGHQHY
+	id S1759268AbZGHQJc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 12:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759674AbZGHQGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 12:07:24 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:14139
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759838AbZGHQHV (ORCPT
+	Wed, 8 Jul 2009 12:06:50 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:37587 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759657AbZGHQGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 12:07:21 -0400
-Message-ID: <4A54C435.1000503@panasas.com>
-Date: Wed, 08 Jul 2009 19:07:17 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
-References: <20090707144423.GC2714@wotan.suse.de> <20090707144823.GE2714@wotan.suse.de> <20090707145820.GA9976@infradead.org> <20090707150257.GG2714@wotan.suse.de> <20090707150758.GA18075@infradead.org> <20090707154809.GH2714@wotan.suse.de> <20090707163042.GA14947@infradead.org> <20090708063225.GL2714@wotan.suse.de> <20090708104701.GA31419@infradead.org> <20090708123412.GQ2714@wotan.suse.de>
-In-Reply-To: <20090708123412.GQ2714@wotan.suse.de>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 8 Jul 2009 12:06:48 -0400
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: tridge@samba.org, Martin Steigerwald <Martin@lichtvoll.de>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Theodore Tso <tytso@mit.edu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Pavel Machek <pavel@ucw.cz>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+In-Reply-To: <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk>
+References: <19013.8005.541836.436991@samba.org>
+	 <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
+	 <19026.38137.63807.427511@samba.org>
+	 <200907072356.51553.Martin@lichtvoll.de>
+	 <19028.3736.892828.352905@samba.org>
+	 <20090708110451.1092afa7@lxorguk.ukuu.org.uk>
+	 <1247066878.4159.153.camel@mulgrave.site>
+	 <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 16:06:42 +0000
+Message-Id: <1247069202.4159.212.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Jul 2009 16:07:20.0272 (UTC) FILETIME=[2C02ED00:01C9FFE6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/08/2009 03:34 PM, Nick Piggin wrote:
-> On Wed, Jul 08, 2009 at 06:47:01AM -0400, Christoph Hellwig wrote:
->> On Wed, Jul 08, 2009 at 08:32:25AM +0200, Nick Piggin wrote:
->>> Thanks for the patch, I think I will fold it in to the series. I
->>> think we probably do need to call simple_setsize in inode_setattr
->>> though (unless you propose to eventually convert every filesystem
->>> to define a .setattr). This would also require eg. your ext2
->>> conversion to strip ATTR_SIZE before passing through to inode_setattr.
->> Yes, we should eventually make .setattr mandatory.  Doing a default
->> action when a method lacks tends to cause more issues than it solves.
->>
->> I'm happy to help in doing that part of the conversion (and also other
->> bits)
+On Wed, 2009-07-08 at 16:37 +0100, Alan Cox wrote:
+> > > I think we already proved it had no use upstream. Vendors will remove
+> > > the code from their source tree if worried about patents so including it
+> > > in the base tree is really irrelevant. So I find your argument about this
+> > > less than convincing.
+> > 
+> > You have asserted such, but that's not proof.  If your assertion were
+> > valid, vendors would already have removed all the msdos/vfat code, which
+> > they haven't.
 > 
-> OK well here is what I have now for 3/4 and 4/4. Basically just
-> folded your patch on top, changed ordering of some checks, have
-> fs clear ATTR_SIZE before calling inode_setattr, add a .new_truncate
-> field to check against rather than .truncate, and provide a default
-> ATTR_SIZE handler in inode_setattr (simple_setsize).
-> 
-> ---
-> Introduce a new truncate calling sequence into fs/mm subsystems. Rather than
-> setattr > vmtruncate > truncate, have filesystems call their truncate sequence
-> from ->setattr if filesystem specific operations are required. vmtruncate is
-> deprecated, and truncate_pagecache and inode_newsize_ok helpers introduced
-> previously should be used.
-> 
-> simple_setsize is also introduced to perform the equivalent of vmtruncate.
-> simple_setsize gets called by inode_setattr when ATTR_SIZE is passed. So
-> filesystems implementing their own truncate code in setattr then calling
-> through to inode_setattr should clear ATTR_SIZE.
-> 
-> A new attribute is introduced into inode_operations structure; .new_truncate
-> is a temporary hack to distinguish filesystems that implement the new
-> truncate system. These guys cannot trim off block past i_size via vmtruncate,
-> so instead they must handle it in fs code. This gives better opportunity to
-> catch errors etc anyway. .new_truncate and .truncate will go away once all
-> filesystems are converted.
-> 
-> Big problem with the previous calling sequence: the filesystem is not called
-> until i_size has already changed.  This means it is not allowed to fail the
-> call, and also it does not know what the previous i_size was. Also, generic
-> code calling vmtruncate to truncate allocated blocks in case of error had
-> no good way to return a meaningful error (or, for example, atomically handle
-> block deallocation).
-> 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-> ---
->  Documentation/filesystems/vfs.txt |    7 ++++++-
->  fs/attr.c                         |    7 ++++++-
->  fs/buffer.c                       |   12 +++++++++---
->  fs/direct-io.c                    |    7 ++++---
->  fs/libfs.c                        |   17 +++++++++++++++++
->  include/linux/fs.h                |    2 ++
->  mm/truncate.c                     |    6 ++----
->  7 files changed, 46 insertions(+), 12 deletions(-)
-> 
-> Index: linux-2.6/fs/libfs.c
-> ===================================================================
-> --- linux-2.6.orig/fs/libfs.c
-> +++ linux-2.6/fs/libfs.c
-> @@ -329,6 +329,22 @@ int simple_rename(struct inode *old_dir,
->  	return 0;
->  }
->  
-> +int simple_setsize(struct inode *inode, loff_t newsize)
-> +{
-> +	loff_t oldsize;
-> +	int error;
-> +
-> +	error = inode_newsize_ok(inode, newsize);
-> +	if (error)
-> +		return error;
-> +
-> +	oldsize = inode->i_size;
-> +	i_size_write(inode, newsize);
-> +	truncate_pagecache(inode, oldsize, newsize);
-> +
-> +	return error;
-> +}
-> +
->  int simple_readpage(struct file *file, struct page *page)
->  {
->  	clear_highpage(page);
-> @@ -840,6 +856,7 @@ EXPORT_SYMBOL(generic_read_dir);
->  EXPORT_SYMBOL(get_sb_pseudo);
->  EXPORT_SYMBOL(simple_write_begin);
->  EXPORT_SYMBOL(simple_write_end);
-> +EXPORT_SYMBOL(simple_setsize);
->  EXPORT_SYMBOL(simple_dir_inode_operations);
->  EXPORT_SYMBOL(simple_dir_operations);
->  EXPORT_SYMBOL(simple_empty);
-> Index: linux-2.6/include/linux/fs.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/fs.h
-> +++ linux-2.6/include/linux/fs.h
-> @@ -1527,6 +1527,7 @@ struct inode_operations {
->  	void * (*follow_link) (struct dentry *, struct nameidata *);
->  	void (*put_link) (struct dentry *, struct nameidata *, void *);
->  	void (*truncate) (struct inode *);
-> +	int new_truncate; /* nasty hack to transition to new truncate code */
->  	int (*permission) (struct inode *, int);
->  	int (*setattr) (struct dentry *, struct iattr *);
->  	int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *);
-> @@ -2332,6 +2333,7 @@ extern int simple_link(struct dentry *,
->  extern int simple_unlink(struct inode *, struct dentry *);
->  extern int simple_rmdir(struct inode *, struct dentry *);
->  extern int simple_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
-> +extern int simple_setsize(struct inode *inode, loff_t newsize);
->  extern int simple_sync_file(struct file *, struct dentry *, int);
->  extern int simple_empty(struct dentry *);
->  extern int simple_readpage(struct file *file, struct page *page);
-> Index: linux-2.6/fs/buffer.c
-> ===================================================================
-> --- linux-2.6.orig/fs/buffer.c
-> +++ linux-2.6/fs/buffer.c
-> @@ -1992,9 +1992,14 @@ int block_write_begin(struct file *file,
->  			 * prepare_write() may have instantiated a few blocks
->  			 * outside i_size.  Trim these off again. Don't need
->  			 * i_size_read because we hold i_mutex.
-> +			 *
-> +			 * Filesystems which define i_op->new_truncate must
-> +			 * handle this themselves. Eventually this will go
-> +			 * away because everyone will be converted.
->  			 */
->  			if (pos + len > inode->i_size)
-> -				vmtruncate(inode, inode->i_size);
-> +				if (!inode->i_op->new_truncate)
-> +					vmtruncate(inode, inode->i_size);
->  		}
->  	}
->  
-> @@ -2371,7 +2376,7 @@ int block_commit_write(struct page *page
->   *
->   * We are not allowed to take the i_mutex here so we have to play games to
->   * protect against truncate races as the page could now be beyond EOF.  Because
-> - * vmtruncate() writes the inode size before removing pages, once we have the
-> + * truncate writes the inode size before removing pages, once we have the
->   * page lock we can determine safely if the page is beyond EOF. If it is not
->   * beyond EOF, then the page is guaranteed safe against truncation until we
->   * unlock the page.
-> @@ -2595,7 +2600,8 @@ out_release:
->  	*pagep = NULL;
->  
->  	if (pos + len > inode->i_size)
-> -		vmtruncate(inode, inode->i_size);
-> +		if (!inode->i_op->new_truncate)
-> +			vmtruncate(inode, inode->i_size);
->  
->  	return ret;
->  }
-> Index: linux-2.6/fs/direct-io.c
-> ===================================================================
-> --- linux-2.6.orig/fs/direct-io.c
-> +++ linux-2.6/fs/direct-io.c
-> @@ -1210,14 +1210,15 @@ __blockdev_direct_IO(int rw, struct kioc
->  	/*
->  	 * In case of error extending write may have instantiated a few
->  	 * blocks outside i_size. Trim these off again for DIO_LOCKING.
-> -	 * NOTE: DIO_NO_LOCK/DIO_OWN_LOCK callers have to handle this by
-> -	 * it's own meaner.
-> +	 * NOTE: DIO_NO_LOCK/DIO_OWN_LOCK callers have to handle this in
-> +	 * their own manner.
->  	 */
->  	if (unlikely(retval < 0 && (rw & WRITE))) {
->  		loff_t isize = i_size_read(inode);
->  
->  		if (end > isize && dio_lock_type == DIO_LOCKING)
-> -			vmtruncate(inode, isize);
-> +			if (!inode->i_op->new_truncate)
-> +				vmtruncate(inode, isize);
->  	}
->  
->  	if (rw == READ && dio_lock_type == DIO_LOCKING)
-> Index: linux-2.6/fs/attr.c
-> ===================================================================
-> --- linux-2.6.orig/fs/attr.c
-> +++ linux-2.6/fs/attr.c
-> @@ -112,7 +112,12 @@ int inode_setattr(struct inode * inode,
->  
->  	if (ia_valid & ATTR_SIZE &&
->  	    attr->ia_size != i_size_read(inode)) {
-> -		int error = vmtruncate(inode, attr->ia_size);
-> +		int error;
-> +
-> +		if (inode->i_op->new_truncate)
-> +			error = simple_setsize(inode, attr->ia_size);
+> That represents loss of functionality for loss of risk (a trade off).
 
-I don't understand this branch.
-If a filesystem has been converted to set "i_op->new_truncate=true"
-then it must have been converted to intersect ->setattr and has set
-the i_size (And needs to clear ATTR_SIZE, why?)
+Precisely ... that's what this whole thread is about.  Accepting the
+lawyer's argument that this patch eliminates the risk of suit under the
+FAT32 patents, does the loss of functionality it comes with represent an
+adequate reward?
 
-All other cases of systems not converted, or systems that do not have
-->truncate will fall to the "else" part.
+>  If
+> they are going to disable stuff then they'll pull the lot (loss of risk
+> for free).
 
-before the removal of i_op->new_truncate you will need to do something
-with the systems that do not have ->truncate which will be a 
-.setattr = simple_setattr or something
+I'd agree with that, the problem is the loss of functionality ... and
+actually, the best outcome for this would be to come up with a true
+light weight filesystem that could replace the rather crap DOS/FAT32 one
+in embedded applications based on fully free source and no patent
+encumbrances and have it adopted as a universal standard for flash/USB
+stick/mmc interchange.
 
-So I don't understand this conditional
+> Remember the GPL requires you provide the *sources* you used
+> to create the binaries, not redacted ones so if you don't want to provide
+> feature X for some reason you need to pull it out of your source tree
+> before you build.
 
-> +		else
-> +			error = vmtruncate(inode, attr->ia_size);
->  		if (error)
->  			return error;
->  	}
-> Index: linux-2.6/Documentation/filesystems/vfs.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/filesystems/vfs.txt
-> +++ linux-2.6/Documentation/filesystems/vfs.txt
-> @@ -401,11 +401,16 @@ otherwise noted.
->    	started might not be in the page cache at the end of the
->    	walk).
->  
-> -  truncate: called by the VFS to change the size of a file.  The
-> +  truncate: Deprecated. This will not be called if ->setsize is defined.
-> +	Called by the VFS to change the size of a file.  The
->   	i_size field of the inode is set to the desired size by the
->   	VFS before this method is called.  This method is called by
->   	the truncate(2) system call and related functionality.
->  
-> +	Note: ->truncate and vmtruncate are deprecated. Do not add new
-> +	instances/calls of these. Filesystems shoud be converted to do their
-> +	truncate sequence via ->setattr().
-> +
->    permission: called by the VFS to check for access rights on a POSIX-like
->    	filesystem.
->  
-> Index: linux-2.6/mm/truncate.c
-> ===================================================================
-> --- linux-2.6.orig/mm/truncate.c
-> +++ linux-2.6/mm/truncate.c
-> @@ -513,12 +513,10 @@ int vmtruncate(struct inode * inode, lof
->  	loff_t oldsize;
->  	int error;
->  
-> -	error = inode_newsize_ok(inode, offset);
-> +	error = simple_setsize(inode, offset);
->  	if (error)
->  		return error;
-> -	oldsize = inode->i_size;
-> -	i_size_write(inode, offset);
-> -	truncate_pagecache(inode, oldsize, offset);
-> +
->  	if (inode->i_op->truncate)
->  		inode->i_op->truncate(inode);
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+OK, so we disagree on whether providing source code constitutes
+contributory infringement.
 
-Boaz
+> > > 	- do we want to ship the feature because of patent concern
+> > > 	> do not ship
+> > > 	- is it less risk to remove the source from our build tree or
+> > > 	  configure it out
+> > > 	> remove from the tree
+> > > 	- is there a functionality difference to the user between
+> > > 	  removing or unconfiguring it
+> > > 	> No
+> > > 
+> > > At that point nobody managing risk is going to do anything but remove the
+> > > code that worries them. It's additional risk with no return.
+> > 
+> > I think you might be confusing two sources of risk.  The risk of
+> > actually infringing a real patent is what you're covering above.  The
+> > source of risk in this case is the risk of being trolled with an invalid
+> > patent but have to spend millions of dollars to demonstrate such if it
+> > goes to trial.  The patch mitigates the latter risk by making it
+> > demonstrable at a preliminary hearing that the invalid patent doesn't
+> > read upon the kernel implementation.
+> 
+> At that point we get into legal advice I can't comment on in public.
+> However based on previous discussions about source code and other patterns
+> suffice to say I don't agree.
+
+OK, so rather than get into a what my lawyer says versus what your
+lawyer says argument, can we get back to the technical aspects of this
+and leave the lawyers retained by the vendors to sort out what they
+actually do?
+
+James
+
+
