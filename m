@@ -1,105 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbZGHG1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759051AbZGHG1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757864AbZGHG1g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 02:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZGHG13
+	id S1759051AbZGHG1s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 02:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbZGHG1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 02:27:29 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40300 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751229AbZGHG12 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 02:27:28 -0400
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 16:26:44 +1000
-Message-Id: <1247034404.6066.121.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Jul 2009 02:27:37 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:31856 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755880AbZGHG1g convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 02:27:36 -0400
+Date: 08 Jul 2009 08:27:28 +0200
+From: krzysztof.h1@poczta.fm
+Subject: =?UTF-8?q?Re:_Re:_matroxfb:_fix_regression_with_uninitalized_fb=5Finfo->mm=5Flock_mutex_(second_head)?=
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       a.p.zijlstra@chello.nl, rjw@sisk.pl, stable@kernel.org
+MIME-Version: 1.0
+Content-Type: TEXT/plain; CHARSET=ISO-8859-2
+Content-Transfer-Encoding: 8BIT
+X-ORIGINATE-IP: 83.17.101.58
+IMPORTANCE: Normal
+X-MSMAIL-PRIORITY: Normal
+X-PRIORITY: 3
+X-Mailer: PSE3
+Message-Id: <20090708062729.E32231B00E2@f41.poczta.interia.pl>
+X-EMID: d4240acc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus !
+Linus Torvalds napisa³(a):
+> 
+> 
+> On Tue, 7 Jul 2009, Krzysztof Helt wrote:
+> > 
+> > Remove redundant locking by the mm_lock mutex before a second head of
+> matrox 
+> > framebuffer is registered.
+> 
+> Why do you write misleading commentary like this.
+> 
 
-Here are a bunch of minor powerpc updates for 2.6.31. Mostly a few
-more alloc_bootmem -> km/zalloc changes to avoid warnings at boot,
-a bug or two, minor cosmetic stuffs, and some changes of a whole
-bunch of pr_debug() into pr_devel() for low level stuff that really
-doesn't want those built in normal kernels.
+I have not intention to mislead someone. English is not my primary language and this can be a source of this unfortunate wording.
 
-Cheers,
-Ben.
+> > +/*
+> > + * This function is called before the register_framebuffer so
+> > + * no locking is needed.
+> > + */
+> 
+> Or this?
+> 
+> It&#039;s not about "needed". The locking is not only not needed, it would be 
+> BUGGY.
+> 
+> And it&#039;s not "redundant". That implies that it&#039;s done somewhere else. It&#039;s
+> 
+> more than "not needed" - it would be actively buggy to lock things there.
+> 
+> I really don&#039;t like how you&#039;re approaching this. You&#039;re ignoring the real
+> 
+> issues I ask you, you&#039;re writing misleading comments and commit messages,
+> 
+> and the end result is fragile code. I still don&#039;t understand why you 
+> insist on initializing those things late, which is the primary problem 
+> here.
+> 
 
-The following changes since commit faf80d62e44dc627efb741f48db50c1858d1667c:
-  Linus Torvalds (1):
-        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+The mm_lock mutex is used only inside the fb_mmap() function and driver's specific code. The fb_mmap() 
+cannot be called before a framebuffer is registered. That's why it is enough to initialize the mutex
+just before registering the framebuffer (or inside the register_framebuffer()). A current approach 
+allows for statically declared fb_info structures (you consider it wrong).
 
-are available in the git repository at:
+It is easy to find affected drivers: "grep -rl mm_lock drivers/video/*". I went too far with some
+drivers and added mm_lock mutex to functions which are called only from a probing function. They do
+not need any locking yet. This is similar as marking them as __init or __devinit which makes incorrect
+calling them after driver initialization. Some of these functions are so short they can be unrolled
+into the probing functions. Does it make removal of the unneeded mutexing correct then?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+All other drivers just have, let's say, inefficient code - calling a function which is called just
+a moment later or set values which are not used before set again later (i810fb, matroxfb, sisfb).
+The mm_lock patch converted this inefficient code into broken code. 
 
-Anton Vorontsov (1):
-      powerpc: Don't use alloc_bootmem() in init_IRQ() path
+I understand you choose different approach. In order to keep this inefficient code in place you 
+decided to change some correctly working legacy drivers and disallow statically declared fb_info 
+structures. I see I cannot convince you it is worse solution so I am not trying any more.
 
-Benjamin Herrenschmidt (1):
-      Merge commit 'jwb/merge' into merge
+However, you can still count my patches as small code improvements.
 
-Grant Likely (1):
-      powerpc: Fix spin_event_timeout() to be robust over context switches
+My fault is that I haven't tested the patch on a hardware and driver with added mm_lock mutex and
+broken by this (like sisfb or matroxfb). I have not known I broke them.
 
-Huang Weiyi (1):
-      powerpc/perf_counter: Remove duplicated #include
+Regards,
+Krzysztof
 
-Joe Perches (1):
-      powerpc: Remove unnecessary semicolons
-
-Josh Boyer (1):
-      powerpc/44x: Fix build error with -Werror for Warp platform
-
-Michael Ellerman (7):
-      powerpc/pseries: Use pr_devel() in pseries LPAR HPTE routines
-      powerpc/pseries: Use pr_devel() in xics.c
-      powerpc: Use pr_devel() in arch/powerpc/mm/mmu_context_nohash.c
-      powerpc: Cleanup & use pr_devel() in arch/powerpc/mm/slb.c
-      powerpc: Use pr_devel() in arch/powerpc/mm/gup.c
-      powerpc/cell: Use pr_devel() in axon_msi.c
-      powerpc: Use pr_devel() in do_dcache_icache_coherency()
-
-Sean MacLennan (2):
-      powerpc/44x: Update Warp defconfig
-      powerpc/4xx: Have Warp take advantage of GPIO LEDs default-state = keep
-
- arch/powerpc/boot/dts/warp.dts               |    3 +-
- arch/powerpc/configs/44x/warp_defconfig      |  200 ++++++++++++++++++++------
- arch/powerpc/include/asm/delay.h             |    2 +
- arch/powerpc/kernel/mpc7450-pmu.c            |    1 -
- arch/powerpc/kernel/ppc970-pmu.c             |    1 -
- arch/powerpc/mm/gup.c                        |   10 +-
- arch/powerpc/mm/mmu_context_nohash.c         |   16 +-
- arch/powerpc/mm/pgtable.c                    |    4 +-
- arch/powerpc/mm/slb.c                        |   13 +--
- arch/powerpc/mm/tlb_hash64.c                 |    2 +-
- arch/powerpc/oprofile/cell/vma_map.c         |    2 +-
- arch/powerpc/platforms/44x/warp.c            |   19 +--
- arch/powerpc/platforms/82xx/pq2ads-pci-pic.c |    2 +-
- arch/powerpc/platforms/cell/axon_msi.c       |   22 ++--
- arch/powerpc/platforms/powermac/cpufreq_64.c |    2 +-
- arch/powerpc/platforms/powermac/pic.c        |    2 +-
- arch/powerpc/platforms/ps3/system-bus.c      |    1 -
- arch/powerpc/platforms/pseries/lpar.c        |   18 ++--
- arch/powerpc/platforms/pseries/xics.c        |    8 +-
- arch/powerpc/sysdev/fsl_rio.c                |    2 +-
- arch/powerpc/sysdev/ipic.c                   |    4 +-
- arch/powerpc/sysdev/mpic.c                   |    9 +-
- arch/powerpc/sysdev/ppc4xx_pci.c             |    4 +-
- arch/powerpc/sysdev/qe_lib/qe_ic.c           |    4 +-
- arch/powerpc/sysdev/uic.c                    |    3 +-
- 25 files changed, 225 insertions(+), 129 deletions(-)
-
+----------------------------------------------------------------------
+Teraz AC/OC + ubezpieczenie kosztow leczenia za granica
+http://link.interia.pl/f2230
 
