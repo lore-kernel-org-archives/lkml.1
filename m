@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758400AbZGHCcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbZGHCkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758400AbZGHCcs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Jul 2009 22:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZGHCck
+	id S1758917AbZGHCkb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Jul 2009 22:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZGHCkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Jul 2009 22:32:40 -0400
-Received: from mail-pz0-f193.google.com ([209.85.222.193]:61000 "EHLO
-	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbZGHCck (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Jul 2009 22:32:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Rxx0w71+xzifoVgVuh2QNekEK9DOuZq0u3fYOMg/xddLPJegRzmgkZZCYlHvIJ9BR6
-         2ISVDR+BhwTHfDfWuLJQps+yS+cb4uGtLbS+bjeCurGR24EQAiuKz/Zl4tM/yhwhMD33
-         ltijLY9un9vhR8QQQiI/VmxIOSwRt56dDv2og=
-Message-ID: <4A540461.1030204@gmail.com>
-Date: Tue, 07 Jul 2009 19:28:49 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
-MIME-Version: 1.0
-To: mactel-linux.org-users@queuemail.com
-CC: mactel-linux-users <mactel-linux-users@lists.sourceforge.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Mactel-linux-users] touchpad synaptics pm-suspend
-References: <4A53C580.2040000@queuemail.com>
-In-Reply-To: <4A53C580.2040000@queuemail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Jul 2009 22:40:21 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60877 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755916AbZGHCkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Jul 2009 22:40:20 -0400
+Date: Wed, 8 Jul 2009 12:40:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: linux-next: manual merge of the wireless tree with the net-current
+ tree
+Message-Id: <20090708124005.ecbf2907.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__8_Jul_2009_12_40_05_+1000_c9aGqdwAm=Wt_QVB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-paul s wrote:
-> hi -
->
-> when my mbp4,1 comes back from suspend the touchpad is
-> frozen|unresponsive|not working. it only seems to be with suspend as
-> when it returns from hibernate it is fine...
->
-> i am using 2.6.29.5-191.fc11.x86_64 is anyone experiencing this issue...
->
-> i have been looking around, played with the fdi and also added a script
-> to the /etc/pm/sleep.d to load and unload appletouch to no avail...
->
-> cheers
-> paul
->
-> ------------------------------------------------------------------------------
-> Enter the BlackBerry Developer Challenge
-> This is your chance to win up to $100,000 in prizes! For a limited time,
-> vendors submitting new applications to BlackBerry App World(TM) will have
-> the opportunity to enter the BlackBerry Developer Challenge. See full prize
-> details at: http://p.sf.net/sfu/Challenge
-> _______________________________________________
-> Mactel-linux-users mailing list
-> Mactel-linux-users@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/mactel-linux-users
->
->    
-have you tried the latest stable kernel?
+--Signature=_Wed__8_Jul_2009_12_40_05_+1000_c9aGqdwAm=Wt_QVB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Justin P. Mattock
+Hi John,
+
+Today's linux-next merge of the wireless tree got a conflict in
+drivers/net/wireless/p54/p54common.c between commit
+0ca1b08eba627b4245efd0f71b55a062bf163777 ("Revert "p54: Use SKB list
+handling helpers instead of by-hand code."") from the net-current tree
+and commit 373234a7c69600397aea39c1452806736df2dfc5 ("p54: Modify p54
+files for new organization") from the wireless tree.
+
+For today, I just ignored the net-current change.  This will need fixing.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__8_Jul_2009_12_40_05_+1000_c9aGqdwAm=Wt_QVB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpUBwUACgkQjjKRsyhoI8z+lgCgm7JzMwKHPQLaMxIc+H1tSMwe
+RZYAn1lz5J2pkNRjwsGS82Y7CSCNZaYv
+=9dO+
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__8_Jul_2009_12_40_05_+1000_c9aGqdwAm=Wt_QVB--
