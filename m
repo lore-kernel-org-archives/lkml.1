@@ -1,85 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbZGHTlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbZGHTmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757318AbZGHTlT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 15:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZGHTlE
+	id S1757935AbZGHTmZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 15:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZGHTmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 15:41:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42130 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751847AbZGHTlD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 15:41:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-acpi@vger.kernel.org
-Subject: Re: [BISECTED] HP G7000 battery disappears after suspend
-Date: Wed, 8 Jul 2009 21:41:17 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>
-References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com>
-In-Reply-To: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com>
+	Wed, 8 Jul 2009 15:42:17 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:39683 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754322AbZGHTmQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 15:42:16 -0400
+Date: Wed, 8 Jul 2009 15:42:15 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Magnus Damm <magnus.damm@gmail.com>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC][PATCH] PM: Introduce core framework for run-time PM of
+ I/O devices (rev. 8)
+In-Reply-To: <200907082101.29387.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0907081530120.22105-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907082141.18135.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 July 2009, Alan Jenkins wrote:
-> Hi,
-> 
-> I've borrowed this laptop for a few days.  Linux works pretty well,
-> but I found a problem on newer kernels.  After suspend it claims the
-> battery has been removed.  E.g. /proc/acpi/battery/BAT0/state claims
-> the battery is not present (but it is).
-> 
-> I've attached acpidump and dmidecode output at
-> <http://bugzilla.kernel.org/show_bug.cgi?id=13745>.  I still have
-> access to the laptop for further tests, but only until Friday.
-> 
-> I bisected it to the commit below.  Manually reverting the patch fixes
-> the problem (in both 2.6.30 and 2.6.31-rc2).
+On Wed, 8 Jul 2009, Rafael J. Wysocki wrote:
 
-Well, the commit below can't be reverted, because that would cause the boxes
-it fixed to stop working.
+> > So I'd like to tie in two levels of power management in our runtime PM
+> > implementation. The most simple level is clock stopping, and I can do
+> > that using the bus callbacks ->runtime_suspend() and
+> > ->runtime_resume() with v8. The driver runtime callbacks are never
+> > invoked for clock stopping.
+> > 
+> > On top of the clock stopping I'd like to turn off power to the domain.
 
-Now, the only case this patch can make any difference is when the BIOS doesn't
-set SCI_EN before returning control the the kernel, which quite evidently is a
-BIOS bug.  The fact that the battery doesn't work with this patch applied means
-that the BIOS not only doesn't set SCI_EN, but also expects it to remain unset,
-which is insane.
+I take it the devices in a single power domain don't all share a common 
+parent.
 
-IMO this is a "won't fix", sorry.
+> > So if all clocks are stopped to the devices within a domain, then I'd
+> > like to call the per-device ->runtime_suspend() callbacks provided by
+> > the drivers.
 
-Best,
-Rafael
+Why?  That is, why not tell the driver as soon as the device's own 
+clock is stopped?  What point is there in waiting for all the other 
+clocks to be stopped as well?
 
+> > I wonder how to fit these two levels of power management into the
+> > runtime PM in a nice way. My first attempts simply made use of
+> > pm_runtime_resume() and pm_runtime_suspend(), but I'd like to move to
+> > get()/put() if possible. But for that to work I need to implement
+> > ->runtime_idle() in my bus code, and I wonder if the current runtime
+> > PM idle behaviour is a good fit.
+> > 
+> > Below is how I'd like to make use of the runtime PM code. I'm not sure
+> > if it's compatible with your view. =)
+> > 
+> > Drivers call pm_runtime_get_sync() and pm_runtime_put() before and
+> > after using the hardware. The runtime PM code invokes the bus
+> > ->runtime_idle() callback ASAP (of course depending on put() or
+> > put_sync(), but no timer). The bus->runtime_idle() callback stops the
+> > clock and decreases the power domain usage count. If the power domain
+> > is unused, then the pm_schedule_suspend() is called for each of the
+> > devices in the power domain. This in turn will invoke the
+> > ->runtime_suspend() callback which starts the clock, calls the driver
+> > ->runtime_suspend() and stops the clock again. When all devices are
+> > runtime suspended the power domain is turned off.
 
-> commit d0c71fe7ebc180f1b7bc7da1d39a07fc19eec768
-> Author: Rafael J. Wysocki <rjw@sisk.pl>
-> Date:   Sat Oct 4 00:05:05 2008 +0200
+Instead, you should call pm_runtime_suspend from within the
+runtime_idle method.  When the runtime_suspend method runs, have it
+decrement the power domain's usage count.  Is the power domain
+represented by a single struct device?  If it is then that device's
+power.usage_count field would naturally be the thing to use; otherwise
+you'd have to set up your own counter.
+
+Then depending on how things are organized, when the power-domain
+device's usage_count goes to 0 you'll get a runtime_idle callback.  
+Call pm_runtime_resume for the power-domain device, and have that
+routine shut off the power.  Or if you set up your own private counter
+for the power domain, shut off the power when the counter goes to 0.
+
+> I think you'd need a separate bus type callback for that, call it
+> ->runtime_deepen() for now, which could be executed for a _suspended_
+> (from the core's point of view) device and the role of which would be to put
+> the (already suspended) device into a deeper low power state.
 > 
->     ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
-> 
->     On some machines, like for example MSI Wind U100, the BIOS doesn't
->     enable ACPI before returning control to the OS, which sometimes
->     causes resume to fail.  This is against the ACPI specification,
->     which clearly states that "When the platform is waking from an S1, S2
->     or S3 state, OSPM assumes the hardware is already in the ACPI mode
->     and will not issue an ACPI_ENABLE", but it won't hurt to check the
->     SCI_EN bit and enable ACPI during resume from S3 if this bit is not
->     set.
-> 
->     Fortunately, we already have acpi_enable() for that, so use it in the
->     resume code path, before executing _BFS, in analogy with the
->     resume-from-hibernation code path.
-> 
->     NOTE: We aren't supposed to set SCI_EN directly, because it's owned
->     by the hardware.
-> 
->     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->     Pavel Machek <pavel@suse.cz>
->     Signed-off-by: Len Brown <len.brown@intel.com>
+> Something like this might also be used for PCI and it's worth discussing IMO.
+
+I thought you wanted to avoid this sort of complication.
+
+Alan Stern
+
