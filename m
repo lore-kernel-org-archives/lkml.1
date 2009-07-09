@@ -1,132 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbZGIHsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZGIHuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756334AbZGIHsb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 03:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZGIHsY
+	id S1756777AbZGIHuT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 03:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbZGIHuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 03:48:24 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48254 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751483AbZGIHsY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 03:48:24 -0400
-From: Geoffrey Thomas <geofft@MIT.EDU>
-To: linux-kernel@vger.kernel.org
-Cc: Geoffrey Thomas <geofft@MIT.EDU>
-Subject: [PATCH] Return ENOEXEC, not ENOENT, if a binary's or script's interpreter doesn't exist.
-Date: Thu,  9 Jul 2009 03:48:20 -0400
-Message-Id: <1247125700-12630-1-git-send-email-geofft@mit.edu>
-X-Mailer: git-send-email 1.6.1.2.255.g2979d
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Thu, 9 Jul 2009 03:50:07 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35049 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752280AbZGIHuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 03:50:06 -0400
+Date: Thu, 9 Jul 2009 09:50:04 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: James.Bottomley@HansenPartnership.com, dwalker@fifo99.com,
+       maciej.rutecki@gmail.com, akpm@linux-foundation.org,
+       tarkan.erimer@turknet.net.tr, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
+Message-ID: <20090709075004.GH23611@kernel.dk>
+References: <1247069178.5973.6.camel@desktop> <1247071445.4159.214.camel@mulgrave.site> <20090708165728.GU23611@kernel.dk> <20090709084839G.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090709084839G.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you try to execute a binary compiled for ld-linux.so.1 (libc5) on a machine
-with only ld-linux.so.2 (libc6), your shell will claim "mybinary: No such file
-or directory", even though the binary exists. The ENOENT actually applies to
-the ELF intepreter, not to the file itself. The same happens if you have a
-nonexistent interpreter in a shell script's shebang line.
+On Thu, Jul 09 2009, FUJITA Tomonori wrote:
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH] block: call blk_scsi_ioctl_init()
+> 
+> Currently, blk_scsi_ioctl_init() is not called so
+> blk_default_cmd_filter isn't initalized. Some commands are not blocked
+> wrongly.
+> 
+> This fixes a regression introduced:
+> 
+> commit 018e0446890661504783f92388ecce7138c1566d
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Fri Jun 26 16:27:10 2009 +0200
+> 
+>     block: get rid of queue-private command filter
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+>  block/scsi_ioctl.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
+> index f0e0ce0..e5b1001 100644
+> --- a/block/scsi_ioctl.c
+> +++ b/block/scsi_ioctl.c
+> @@ -680,3 +680,4 @@ int __init blk_scsi_ioctl_init(void)
+>  	blk_set_cmd_filter_defaults(&blk_default_cmd_filter);
+>  	return 0;
+>  }
+> +fs_initcall(blk_scsi_ioctl_init);
+> -- 
+> 1.6.0.6
 
-Give a more helpful and more expected error, "cannot execute binary file", in
-these cases.
+You beat me to it, it was the missing call as I suspected. This
+works, I verified it myself. Applied to for-linus, going upstream
+soon.
 
-Signed-off-by: Geoffrey Thomas <geofft@mit.edu>
-Tested-by: Anders Kaseorg <andersk@mit.edu>
----
- fs/binfmt_elf.c       |    5 ++++-
- fs/binfmt_elf_fdpic.c |    2 ++
- fs/binfmt_em86.c      |    8 ++++++--
- fs/binfmt_misc.c      |    5 ++++-
- fs/binfmt_script.c    |    8 ++++++--
- 5 files changed, 22 insertions(+), 6 deletions(-)
-
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index b7c1603..56954e4 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -685,8 +685,11 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 
- 			interpreter = open_exec(elf_interpreter);
- 			retval = PTR_ERR(interpreter);
--			if (IS_ERR(interpreter))
-+			if (IS_ERR(interpreter)) {
-+				if (retval == -ENOENT)
-+					retval = -ENOEXEC;
- 				goto out_free_interp;
-+			}
- 
- 			/*
- 			 * If the binary is not readable then enforce
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 20fbece..604d117 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -232,6 +232,8 @@ static int load_elf_fdpic_binary(struct linux_binprm *bprm,
- 			interpreter = open_exec(interpreter_name);
- 			retval = PTR_ERR(interpreter);
- 			if (IS_ERR(interpreter)) {
-+				if (retval == -ENOENT)
-+					retval = -ENOEXEC;
- 				interpreter = NULL;
- 				goto error;
- 			}
-diff --git a/fs/binfmt_em86.c b/fs/binfmt_em86.c
-index 32fb00b..587e0b9 100644
---- a/fs/binfmt_em86.c
-+++ b/fs/binfmt_em86.c
-@@ -82,8 +82,12 @@ static int load_em86(struct linux_binprm *bprm,struct pt_regs *regs)
- 	 * space, and we don't need to copy it.
- 	 */
- 	file = open_exec(interp);
--	if (IS_ERR(file))
--		return PTR_ERR(file);
-+	if (IS_ERR(file)) {
-+		if (PTR_ERR(file) == -ENOENT)
-+			return -ENOEXEC;
-+		else
-+			return PTR_ERR(file);
-+	}
- 
- 	bprm->file = file;
- 
-diff --git a/fs/binfmt_misc.c b/fs/binfmt_misc.c
-index c4e8353..eecf0db 100644
---- a/fs/binfmt_misc.c
-+++ b/fs/binfmt_misc.c
-@@ -180,8 +180,11 @@ static int load_misc_binary(struct linux_binprm *bprm, struct pt_regs *regs)
- 
- 	interp_file = open_exec (iname);
- 	retval = PTR_ERR (interp_file);
--	if (IS_ERR (interp_file))
-+	if (IS_ERR (interp_file)) {
-+		if (retval == -ENOENT)
-+			retval = -ENOEXEC;
- 		goto _error;
-+	}
- 
- 	bprm->file = interp_file;
- 	if (fmt->flags & MISC_FMT_CREDENTIALS) {
-diff --git a/fs/binfmt_script.c b/fs/binfmt_script.c
-index 0834350..738446f 100644
---- a/fs/binfmt_script.c
-+++ b/fs/binfmt_script.c
-@@ -88,8 +88,12 @@ static int load_script(struct linux_binprm *bprm,struct pt_regs *regs)
- 	 * OK, now restart the process with the interpreter's dentry.
- 	 */
- 	file = open_exec(interp);
--	if (IS_ERR(file))
--		return PTR_ERR(file);
-+	if (IS_ERR(file)) {
-+		if (PTR_ERR(file) == -ENOENT)
-+			return -ENOEXEC;
-+		else
-+			return PTR_ERR(file);
-+	}
- 
- 	bprm->file = file;
- 	retval = prepare_binprm(bprm);
 -- 
-1.5.6.5
+Jens Axboe
 
