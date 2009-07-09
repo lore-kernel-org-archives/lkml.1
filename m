@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZGIUBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbZGIUDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbZGIUBp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 16:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZGIUBh
+	id S1754960AbZGIUDB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 16:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZGIUCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 16:01:37 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43260 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753407AbZGIUBh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 16:01:37 -0400
-Date: Thu, 9 Jul 2009 22:01:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, rjw@sisk.pl,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [regression] 2.6.30 leaking keys on console switch
-Message-ID: <20090709200135.GA16355@basil.fritz.box>
-References: <87eiss7uhb.fsf@basil.nowhere.org> <alpine.LNX.2.00.0907071048210.4994@wotan.suse.de> <20090708065325.GE3309@dtor-d630.eng.vmware.com> <alpine.LNX.2.00.0907081317000.27327@wotan.suse.de> <alpine.LNX.2.00.0907091328370.27327@wotan.suse.de>
+	Thu, 9 Jul 2009 16:02:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47680 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753993AbZGIUCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 16:02:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jan Scholz <scholz@fias.uni-frankfurt.de>, johannes@sipsolutions.net
+Subject: Re: [Bug #13337] [post 2.6.29 regression] hang during suspend of b44/b43 modules
+Date: Thu, 9 Jul 2009 22:03:09 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Tomas Janousek" <tomi@nomi.cz>,
+       "John W. Linville" <linville@tuxdriver.com>
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera> <87k52izvd9.fsf@scholz.fias.uni-frankfurt.de> <87y6qxx50z.fsf@scholz.fias.uni-frankfurt.de>
+In-Reply-To: <87y6qxx50z.fsf@scholz.fias.uni-frankfurt.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0907091328370.27327@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200907092203.10294.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 09, 2009 at 01:29:55PM +0200, Jiri Kosina wrote:
-> On Wed, 8 Jul 2009, Jiri Kosina wrote:
+On Thursday 09 July 2009, Jan Scholz wrote:
+> Hi,
 > 
-> > For completness, Andi sent me the following evtest output off-list 
-> > yesterday. The LeftAlt being autorepeated at time 1246964430.448470 is a 
-> > little bit suspicious, as it is preceeded by release ... I don't see how 
-> > this could be causing the behavior Andi is observing though.
-> > 
-> > I am not able to reproduce the problem myself.
+> I have just checked this on v2.6.31-rc1 and v2.6.31-rc2-214-g34f2547
+> (I wanted to test this on v2.6.31-rc2 as well, but there I had other
+> suspend-issues that are fixed in todays v2.6.31-rc2-214-g34f2547)
 > 
-> Umm, actually, Andi, could you verify whether reverting e7b5c1ef4d changes 
-> the behavior you are observing in any way?
+> For both v2.6.31-rc1 and v2.6.31-rc2-214-g34f2547 suspend to ram fails
+> with the test procedure described below, but it works fine when I revert
+> commit 5bb644a0fd25a5e083ecbfaa92a211db99aa6ef7
+>  "mac80211: cancel/restart all timers across suspend/resume"
 
-Tested that, no change unfortunately.
+Thanks for the update.
 
--Andi
+Johannes, do you have any idea what can go wrong here?
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Rafael
