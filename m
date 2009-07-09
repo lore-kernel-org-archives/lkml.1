@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759607AbZGICq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbZGICrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759607AbZGICq5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 22:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758989AbZGICqi
+	id S1759595AbZGICrP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 22:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759179AbZGICqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 22:46:38 -0400
-Received: from ey-out-1920.google.com ([74.125.78.148]:33801 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757172AbZGICqg (ORCPT
+	Wed, 8 Jul 2009 22:46:39 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:53356 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758789AbZGICqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 22:46:36 -0400
+	Wed, 8 Jul 2009 22:46:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ELi5qyuOD28aEB79/L2yJgl60HLYe7ZgFtl2JZMtmyo16hRb17/BPOQIimYFiQ/typ
-         BxwLx+BA/rFLcdWLu8mZ4SUHHdhWdxD1zX8zfC5HItyjviT+3tmr4sUpXOnj7FT3uXmx
-         V2fMC6f+aaKAo2Wpgb8V1+fHimu0NcX3lSupk=
+        b=HviESPyc/IcqrZQwr9xQNklMlA2RYUo5I8l7ouW0s0Nf+vbEZBUsNNqKfmvJ7370S6
+         l8AhUMQC6PrqLRUVxWs444k16gcJOXY0nPQEv7vGSHHz6EGy7wMGx1IDvYh78Eks9gbN
+         cBbKlY7PlcHy906EE5/lE3K4iVTyLVxmjaxz0=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: [PATCH 1/2] tracing/function-graph-tracer: Use the %pf format
-Date: Thu,  9 Jul 2009 04:46:29 +0200
-Message-Id: <1247107590-6428-2-git-send-email-fweisbec@gmail.com>
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: [PATCH 2/2] tracing/kmemtrace: Use the %pf format
+Date: Thu,  9 Jul 2009 04:46:30 +0200
+Message-Id: <1247107590-6428-3-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1247107590-6428-1-git-send-email-fweisbec@gmail.com>
 References: <1247107590-6428-1-git-send-email-fweisbec@gmail.com>
@@ -39,39 +41,60 @@ Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- kernel/trace/trace_functions_graph.c |   12 ++----------
- 1 files changed, 2 insertions(+), 10 deletions(-)
+ kernel/trace/kmemtrace.c |   25 +++++--------------------
+ 1 files changed, 5 insertions(+), 20 deletions(-)
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index d2249ab..abf7c4a 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -565,11 +565,7 @@ print_graph_entry_leaf(struct trace_iterator *iter,
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
- 
--	ret = seq_print_ip_sym(s, call->func, 0);
--	if (!ret)
--		return TRACE_TYPE_PARTIAL_LINE;
--
--	ret = trace_seq_printf(s, "();\n");
-+	ret = trace_seq_printf(s, "%pf();\n", (void *)call->func);
+diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
+index 74903b6..2f6fa47 100644
+--- a/kernel/trace/kmemtrace.c
++++ b/kernel/trace/kmemtrace.c
+@@ -389,19 +389,12 @@ kmemtrace_print_alloc_compress(struct trace_iterator *iter)
  	if (!ret)
  		return TRACE_TYPE_PARTIAL_LINE;
  
-@@ -612,11 +608,7 @@ print_graph_entry_nested(struct trace_iterator *iter,
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
+-	/* Node */
+-	ret = trace_seq_printf(s, "%4d   ", entry->node);
++	/* Node and call site*/
++	ret = trace_seq_printf(s, "%4d   %pf\n", entry->node,
++						 (void *)entry->call_site);
+ 	if (!ret)
+ 		return TRACE_TYPE_PARTIAL_LINE;
  
--	ret = seq_print_ip_sym(s, call->func, 0);
+-	/* Call site */
+-	ret = seq_print_ip_sym(s, entry->call_site, 0);
 -	if (!ret)
 -		return TRACE_TYPE_PARTIAL_LINE;
 -
--	ret = trace_seq_printf(s, "() {\n");
-+	ret = trace_seq_printf(s, "%pf() {\n", (void *)call->func);
+-	if (!trace_seq_printf(s, "\n"))
+-		return TRACE_TYPE_PARTIAL_LINE;
+-
+ 	return TRACE_TYPE_HANDLED;
+ }
+ 
+@@ -447,19 +440,11 @@ kmemtrace_print_free_compress(struct trace_iterator *iter)
  	if (!ret)
  		return TRACE_TYPE_PARTIAL_LINE;
+ 
+-	/* Skip node */
+-	ret = trace_seq_printf(s, "       ");
++	/* Skip node and print call site*/
++	ret = trace_seq_printf(s, "       %pf\n", (void *)entry->call_site);
+ 	if (!ret)
+ 		return TRACE_TYPE_PARTIAL_LINE;
+ 
+-	/* Call site */
+-	ret = seq_print_ip_sym(s, entry->call_site, 0);
+-	if (!ret)
+-		return TRACE_TYPE_PARTIAL_LINE;
+-
+-	if (!trace_seq_printf(s, "\n"))
+-		return TRACE_TYPE_PARTIAL_LINE;
+-
+ 	return TRACE_TYPE_HANDLED;
+ }
  
 -- 
 1.6.2.3
