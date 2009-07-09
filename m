@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbZGIM3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbZGIMfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760353AbZGIM3p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 08:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757947AbZGIM3h
+	id S1760131AbZGIMfb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 08:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758558AbZGIMfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 08:29:37 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:64230 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756795AbZGIM3g (ORCPT
+	Thu, 9 Jul 2009 08:35:23 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41350 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756795AbZGIMfX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 08:29:36 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 2/5] sparc: use asm-generic/dma-mapping-common.h
-Date: Thu, 9 Jul 2009 14:29:23 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.95; x86_64; ; )
-Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, reif@earthlink.net
-References: <1246860820-20629-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20090706.181131.92078657.davem@davemloft.net> <20090709185505X.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090709185505X.fujita.tomonori@lab.ntt.co.jp>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 9 Jul 2009 08:35:23 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 0/3] Fix sysrq caused USB performance regressions and leak
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Thu, 09 Jul 2009 13:35:17 +0100
+Message-ID: <20090709123301.15654.4698.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907091429.24100.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+smCh4UEBntR4e214+Nv2cNN9pj60nin51z3b
- Rf2D0DGeKjfGxWjLgHzVdASyHT1hPkpK4wAva9LodaOr/6Y9M2
- E+jF8Knoc8HUu0C3Ted5JBcg4pVCHtE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 July 2009, FUJITA Tomonori wrote:
-> The logic to move flush_write_buffers() from dma-mapping-common.h to
-> arch/x86/kernel/pci-nommu.c makes sense and it doesn't break anything.
-> However, I'd like to see the confirmation from a person who added
-> flush_write_buffers() long ago. I thought that we might overlook
-> something subtle.
+---
 
-I've tried to find out where it comes from, but unfortunately it's
-from prehistoric times (Linux-2.4.14.2), the commit is in 
+Alan Cox (3):
+      tty: Fix the PL2303 private methods for sysrq
+      tty: Fix USB kref leak
+      tty: Sort out the USB sysrq changes that wrecked performance
 
-http://git.kernel.org/?p=linux/kernel/git/tglx/history.git;a=commitdiff;h=a8a2069f432c5597bdf9c83ab3045b9ef32ab5e3
 
-None of the comments in that commit seem to refer to
-the actual change.
+ drivers/usb/serial/ftdi_sio.c |    2 +
+ drivers/usb/serial/generic.c  |   20 ++++++++++----
+ drivers/usb/serial/pl2303.c   |   58 +++++++++++++++++++++++------------------
+ include/linux/usb/serial.h    |    3 +-
+ 4 files changed, 50 insertions(+), 33 deletions(-)
 
-	Arnd <><
+-- 
+	"That was said by Eric Raymond who belongs to another movement" 
+			- Richard Stallman
