@@ -1,135 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbZGITrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbZGITtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755155AbZGITrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 15:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZGITra
+	id S1755262AbZGITtG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 15:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbZGITsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 15:47:30 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:44958 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753632AbZGITr3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 15:47:29 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: tridge@samba.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-Date: Thu, 9 Jul 2009 21:47:18 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.29.6-tp42-toi-3.0.1-00977-gf7efeea; KDE/4.2.4; i686; ; )
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
-References: <19013.8005.541836.436991@samba.org> <200907081339.59815.Martin@lichtvoll.de> <19029.28240.995268.850038@samba.org> (sfid-20090709_113856_286413_EC1F4C70)
-In-Reply-To: <19029.28240.995268.850038@samba.org>
+	Thu, 9 Jul 2009 15:48:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48955 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753060AbZGITsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 15:48:54 -0400
+Message-ID: <4A564990.3060202@kernel.org>
+Date: Thu, 09 Jul 2009 12:48:32 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2074799.f3HERdKTQ2";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: dann frazier <dannf@hp.com>
+CC: linux-scsi@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: mptsas, msi and the dl585 g2
+References: <20090630180300.GA9971@ldl.fc.hp.com> <4A4A5B01.9040200@kernel.org> <20090703225708.GA30664@ldl.fc.hp.com> <4A4FADDC.30606@kernel.org> <20090709185945.GG2613@ldl.fc.hp.com> <4A564263.5010305@kernel.org> <4A564634.1020708@kernel.org>
+In-Reply-To: <4A564634.1020708@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907092147.26875.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2074799.f3HERdKTQ2
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Yinghai Lu wrote:
+> Yinghai Lu wrote:
+>> dann frazier wrote:
+>>>   --------------------------------------------------------------------
+>>>   commit 30a18d6c3f1e774de656ebd8ff219d53e2ba4029
+>>>   Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
+>>>   Date:   Tue Feb 19 03:21:20 2008 -0800
+>>>
+>>>       x86: multi pci root bus with different io resource range, on
+>>>       64-bit
+>>>   --------------------------------------------------------------------
+>>>
+>>> This appears to be the commit that actually introduced the issue.
+>>> I've attached dmesg w/ PCI DEBUG enabled from both sides of this
+>>> changeset, as well as a diff w/o printk timestamps.
+>>>
+>>> Also note that #ifdef'ing out x86_pci_root_bus_res_quirks() in
+>>> amd_bus.c seems to avoid the problem as well.
+>> your BIOS didn't allocate io resources to some device under HT chain on node1/link2
+>> aka under peer root bus.
+>>
+>> Kernel try to allocate resource to them.
+>>
+>> and the patch did right thing according to range 
+>> bus: 40 index 1 mmio: [d9f00000, dfefffff]
+>>
+>> YH
+>>
+>>
+>> +bus: [00,3f] on node 0 link 1
+>> +bus: 00 index 0 io port: [0, 2fff]
+>> +bus: 00 index 1 mmio: [80000000, d9efffff]
+>> +bus: 00 index 2 mmio: [dff00000, e3ffffff]
+>> +bus: 00 index 3 mmio: [a0000, bffff]
+>> +bus: 00 index 4 mmio: [e8000000, ffffffff]
+>> +bus: 00 index 5 mmio: [480000000, fbffffffff]
+>> +bus: [40,7f] on node 1 link 2
+>> +bus: 40 index 0 io port: [3000, ffff]
+>> +bus: 40 index 1 mmio: [d9f00000, dfefffff]
+>> +bus: 40 index 2 mmio: [e4000000, e7ffffff]
+>>  ACPI: bus type pci registered
+>>  PCI: Using configuration type 1 for base access
+>>  ACPI: EC: Look up EC in DSDT
+>> @@ -646,18 +659,18 @@
+>>    IO window: disabled.
+>>    MEM window: disabled.
+>>    PREFETCH window: disabled.
+>> -  got res [88000000:8801ffff] bus [88000000:8801ffff] flags 27200 for BAR 6 of 0000:41:01.0
+>> -  got res [88020000:8803ffff] bus [88020000:8803ffff] flags 27200 for BAR 6 of 0000:41:02.0
+>> +  got res [d9f00000:d9f1ffff] bus [d9f00000:d9f1ffff] flags 27200 for BAR 6 of 0000:41:01.0
+>> +  got res [d9f20000:d9f3ffff] bus [d9f20000:d9f3ffff] flags 27200 for BAR 6 of 0000:41:02.0
+>>  PCI: Bridge: 0000:40:10.0
+>>    IO window: disabled.
+>>    MEM window: 0xda000000-0xddffffff
+>> -  PREFETCH window: 0x0000000088000000-0x00000000880fffff
+>> -  got res [88200000:883fffff] bus [88200000:883fffff] flags 27200 for BAR 6 of 0000:42:01.0
+>> -  got res [88100000:8813ffff] bus [88100000:8813ffff] flags 27200 for BAR 6 of 0000:42:02.0
+>> +  PREFETCH window: 0x00000000d9f00000-0x00000000d9ffffff
+>> +  got res [de000000:de1fffff] bus [de000000:de1fffff] flags 27200 for BAR 6 of 0000:42:01.0
+>> +  got res [de200000:de23ffff] bus [de200000:de23ffff] flags 27200 for BAR 6 of 0000:42:02.0
+>>  PCI: Bridge: 0000:40:11.0
+>>    IO window: 3000-3fff
+>>    MEM window: 0xdfe00000-0xdfefffff
+>> -  PREFETCH window: 0x0000000088100000-0x00000000883fffff
+>> +  PREFETCH window: 0x00000000de000000-0x00000000de2fffff
+>>
+>>
+> 
+> 
+> and those range are not overlapping with IOAPIC BAR allocating
+> [    0.000000] ACPI: IOAPIC (id[0x08] address[0xd9cf0000] gsi_base[0])
+> [    0.000000] IOAPIC[0]: apic_id 8, version 0, address 0xd9cf0000, GSI 0-23
+> [    0.000000] ACPI: IOAPIC (id[0x09] address[0xd9fd0000] gsi_base[24])
+> [    0.000000] IOAPIC[1]: apic_id 9, version 0, address 0xd9fd0000, GSI 24-30
+> [    0.000000] ACPI: IOAPIC (id[0x0a] address[0xd9fe0000] gsi_base[31])
+> [    0.000000] IOAPIC[2]: apic_id 10, version 0, address 0xd9fe0000, GSI 31-37
+> [    0.000000] ACPI: IOAPIC (id[0x0b] address[0xd9ff0000] gsi_base[38])
+> [    0.000000] IOAPIC[3]: apic_id 11, version 0, address 0xd9ff0000, GSI 38-61
+> 
 
-Am Donnerstag 09 Juli 2009 schrieb tridge@samba.org:
-> Hi Martin,
+with the new allocation:
+[    4.279139]   got res [d9f00000:d9f1ffff] bus [d9f00000:d9f1ffff] flags 27200 for BAR 6 of 0000:41:01.0
+[    4.279142]   got res [d9f20000:d9f3ffff] bus [d9f20000:d9f3ffff] flags 27200 for BAR 6 of 0000:41:02.0
+[    4.279144] PCI: Bridge: 0000:40:10.0
+[    4.299135]   IO window: disabled.
+[    4.319148]   MEM window: 0xda000000-0xddffffff
+[    4.333140]   PREFETCH window: 0x00000000d9f00000-0x00000000d9ffffff
+[    4.370170]   got res [de000000:de1fffff] bus [de000000:de1fffff] flags 27200 for BAR 6 of 0000:42:01.0
+[    4.370173]   got res [de200000:de23ffff] bus [de200000:de23ffff] flags 27200 for BAR 6 of 0000:42:02.0
+[    4.370175] PCI: Bridge: 0000:40:11.0
+[    4.390143]   IO window: 3000-3fff
+[    4.410177]   MEM window: 0xdfe00000-0xdfefffff
+[    4.435157]   PREFETCH window: 0x00000000de000000-0x00000000de2fffff
 
-Hi Tridge,
 
->  > The question before that would be whether anyone has a comprehensive
->  > list of those tools, cause I think there are quite many. Well at
->  > least those from bigger vendors should be tested I think. Paragon,
->  > Symantec, ...
->
-> Do you happen to have any of those handy to test with?
+[    4.333140]   PREFETCH window: 0x00000000d9f00000-0x00000000d9ffffff
+are all directed to one 8132 PCI-X bridge.
 
-There might be some stuff laying around on some magazine CD/DVDs, but=20
-honestly I lack the motivation to do any testing. I am still not a fan of=20
-your patch. And I think the people that are interested in getting the=20
-patch in should do the testing - not me. Why should I do the work that=20
-TomTom and other companies not willing or able to fight patents legally=20
-might be interested in getting done? A motivation would be to think that=20
-it actually helps towards a software patent free world, but I am not=20
-convinced that it does.
+the the IOAPIC for 9, 10, 11... falling that range...
 
->  > And has it been tested with Linux tools such as fsck.msdos,
->  > fsck.vfat, parted and partimage? I think it probably has not much
->  > effect on parted and partimage, but what about the fscks?
->
-> I tested it with dosfstools (which provides the fsck.vfat on Linux
-> distros) and with mtools. Both required patches to work correctly. I
-> have submitted both patches to the maintainers of those packages.
->
-> The patch to dosfstools makes it skip the invalid 8.3 entries, just as
-> windows chkdsk does. The patch is here:
->
->   http://samba.org/tridge/dosfstools.patch1
->
-> The patch to mtools is partly cosmetic, and partly to fix a bug in the
-> VFAT checksum routine. The code in mtools incorrectly treated a nul
-> byte as special in 8.3 directory entries. The patch is here:
->
->   http://samba.org/tridge/mtools.patch1
+we need one better to allocate range for that pci-x bridge to aovide ioapic BAR allocated...
 
-Okay. But then before activating the your Linux kernel patch as default=20
-there should a transition time to let distro pick up the newest stuff and=20
-a safety margin for users to upgrade to them. If it should be activated as=
-=20
-default at all.
+anyway your BIOS sucks.
 
->  > Thus even when the patch only changes the values stored for new - or
->  > rewritten? - files it actively corrupts the meta consistency of the
->  > whole filesystem. To me it is like inserting a defective inode into
->  > a consistent Linux filesystem.
+YH
 
-> If the windows implementation is taken as the reference implementation
-> then the files are not considered defective. The windows chkdsk will
-> (with a small probability) complain of duplicates, but it doesn't
-> complain about the entries being defective in any other way.
 
-But you and others consider the characters / bytes your patch put into the=
-=20
-short names as invalid. How did you come to that conclusion? Either these=20
-characters are invalid or they are not. An indication would be on what DOS=
-=20
-would allow me to create. Does it allow me to create files with those=20
-characters such as blanks or null bytes with simple DOS commands. If not,=20
-then not checking filenames in short name FAT for invalid names seems to=20
-be an omission in CHKDSK for me.
-
-Even when fsck.{ext3,whatever}/xfs_check/xfs_repair doesn't moan about "/"=
-=20
-in filenames I would still consider them invalid and think any software=20
-which creates those actively corrupts an Ext3, XFS, whatever unix=20
-filesystem.
-
-Ciao,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart2074799.f3HERdKTQ2
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpWSUgACgkQmRvqrKWZhMfPUgCcClfn0PZyFPWiHAjguvL7gr6G
-Xo8AniZopGDlibrx/S3NS+5gN+P/IhL4
-=SSwp
------END PGP SIGNATURE-----
-
---nextPart2074799.f3HERdKTQ2--
