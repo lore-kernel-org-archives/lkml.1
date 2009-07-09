@@ -1,77 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761337AbZGIOqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761547AbZGIOqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761337AbZGIOqS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 10:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760900AbZGIOqJ
+	id S1761547AbZGIOqe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 10:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756304AbZGIOq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 10:46:09 -0400
-Received: from waste.org ([66.93.16.53]:47700 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760730AbZGIOqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 10:46:08 -0400
-Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
- using phylib
-From: Matt Mackall <mpm@selenic.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <1247149862.12784.6.camel@twins>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-	 <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
-	 <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
-	 <20090708141024.f8b581c5.akpm@linux-foundation.org>
-	 <20090708213331.GA9346@oksana.dev.rtsoft.ru>
-	 <20090708144744.5555b88d.akpm@linux-foundation.org>
-	 <20090708222003.GA12318@oksana.dev.rtsoft.ru>
-	 <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>
-	 <1247145977.21295.899.camel@calx>  <1247147206.7439.2.camel@twins>
-	 <1247149093.21295.915.camel@calx>  <1247149862.12784.6.camel@twins>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 09:43:00 -0500
-Message-Id: <1247150580.21295.937.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Jul 2009 10:46:27 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48310 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758018AbZGIOq0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 10:46:26 -0400
+Date: Thu, 9 Jul 2009 10:45:59 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@vinegar-pot.mit.edu
+To: linux-kernel@vger.kernel.org
+cc: Paul Mundt <lethal@linux-sh.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-sh@vger.kernel.org, Anders Kaseorg <andersk@ksplice.com>
+Subject: [PATCH] sh: Clean up linker script using new linker script macros.
+Message-ID: <alpine.DEB.1.10.0907082333190.6580@vinegar-pot.mit.edu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 16:31 +0200, Peter Zijlstra wrote:
-> On Thu, 2009-07-09 at 09:18 -0500, Matt Mackall wrote:
-> > 
-> > Sorry if I was unclear. I'm suggesting setting the count so the existing
-> > PREEMPT_ACTIVE test here fires:
-> > 
-> > int __sched _cond_resched(void)
-> > {
-> >         if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE) &&
-> >                                         system_state == SYSTEM_RUNNING) {
-> >                 __cond_resched();
-> >                 return 1;
-> >         }
-> >         return 0;
-> > }
-> 
-> Right, /me read preempt and thought a simple preempt inc but didn't read
-> the code. Shame on me.
-> 
-> So something like (utterly untested and such)
+This patch converts the sh architecture to use the new linker script 
+macros in include/asm-generic/vmlinux.lds.h.
 
-Yeah, that's what I had in mind. Probably throw in a define:
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-sh@vger.kernel.org
+---
+ arch/sh/kernel/vmlinux.lds.S |   87 +++++------------------------------------
+ 1 files changed, 11 insertions(+), 76 deletions(-)
 
-/* for disabling scheduling in early boot */
-#define PREEMPT_EARLY (1 + PREEMPT_ACTIVE)
-
-and slap a comment on the sub_preempt_count().
-
-Does anything actually use scheduler_running yet? Perhaps my tree is
-old.
-
-Also, might_sleep's use of system_state probably bears revisiting.
-
+diff --git a/arch/sh/kernel/vmlinux.lds.S b/arch/sh/kernel/vmlinux.lds.S
+index f53c76a..7e833db 100644
+--- a/arch/sh/kernel/vmlinux.lds.S
++++ b/arch/sh/kernel/vmlinux.lds.S
+@@ -50,12 +50,7 @@ SECTIONS
+ 		_etext = .;		/* End of text section */
+ 	} = 0x0009
+ 
+-	. = ALIGN(16);		/* Exception table */
+-	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+-		__start___ex_table = .;
+-		*(__ex_table)
+-		__stop___ex_table = .;
+-	}
++	EXCEPTION_TABLE(16)
+ 
+ 	NOTES
+ 	RO_DATA(PAGE_SIZE)
+@@ -71,69 +66,14 @@ SECTIONS
+ 		__uncached_end = .;
+ 	}
+ 
+-	. = ALIGN(THREAD_SIZE);
+-	.data : AT(ADDR(.data) - LOAD_OFFSET) {		/* Data */
+-		*(.data.init_task)
+-
+-		. = ALIGN(L1_CACHE_BYTES);
+-		*(.data.cacheline_aligned)
+-
+-		. = ALIGN(L1_CACHE_BYTES);
+-		*(.data.read_mostly)
+-
+-		. = ALIGN(PAGE_SIZE);
+-		*(.data.page_aligned)
+-
+-		__nosave_begin = .;
+-		*(.data.nosave)
+-		. = ALIGN(PAGE_SIZE);
+-		__nosave_end = .;
+-
+-		DATA_DATA
+-		CONSTRUCTORS
+-	}
++	RW_DATA_SECTION(L1_CACHE_BYTES, PAGE_SIZE, THREAD_SIZE)
+ 
+ 	_edata = .;			/* End of data section */
+ 
+ 	. = ALIGN(PAGE_SIZE);		/* Init code and data */
+-	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+-		__init_begin = .;
+-		_sinittext = .;
+-		INIT_TEXT
+-		_einittext = .;
+-	}
+-
+-	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) { INIT_DATA }
+-
+-	. = ALIGN(16);
+-	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-		__setup_start = .;
+-		*(.init.setup)
+-		__setup_end = .;
+-	}
+-
+-	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-		__initcall_start = .;
+-		INITCALLS
+-		__initcall_end = .;
+-	}
+-
+-	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-		__con_initcall_start = .;
+-		*(.con_initcall.init)
+-		__con_initcall_end = .;
+-	}
+-
+-	SECURITY_INIT
+-
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	. = ALIGN(PAGE_SIZE);
+-	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-		__initramfs_start = .;
+-		*(.init.ramfs)
+-		__initramfs_end = .;
+-	}
+-#endif
++	__init_begin = .;
++	INIT_TEXT_SECTION(PAGE_SIZE)
++	INIT_DATA_SECTION(16)
+ 
+ 	. = ALIGN(4);
+ 	.machvec.init : AT(ADDR(.machvec.init) - LOAD_OFFSET) {
+@@ -152,16 +92,11 @@ SECTIONS
+ 	.exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) { EXIT_DATA }
+ 
+ 	. = ALIGN(PAGE_SIZE);
+-	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+-		__init_end = .;
+-		__bss_start = .;		/* BSS */
+-		*(.bss.page_aligned)
+-		*(.bss)
+-		*(COMMON)
+-		. = ALIGN(4);
+-		_ebss = .;			/* uClinux MTD sucks */
+-		_end = . ;
+-	}
++	__init_end = .;
++	BSS(PAGE_SIZE)
++	. = ALIGN(4);
++	_ebss = .;			/* uClinux MTD sucks */
++	_end = . ;
+ 
+ 	/*
+ 	 * When something in the kernel is NOT compiled as a module, the
+@@ -170,7 +105,7 @@ SECTIONS
+ 	 * it's a module.
+ 	 */
+ 	/DISCARD/ : {
+-		*(.exitcall.exit)
++		EXIT_CALL
+ 	}
+ 
+ 	STABS_DEBUG
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+1.6.3.3
