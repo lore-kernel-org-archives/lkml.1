@@ -1,151 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbZGIAAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbZGIADP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758754AbZGIAAT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 20:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZGIAAG
+	id S1758670AbZGIADP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 20:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZGIADC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 20:00:06 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:54104 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754972AbZGIAAE (ORCPT
+	Wed, 8 Jul 2009 20:03:02 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52399 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756513AbZGIADA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 20:00:04 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Null Pointer BUG in uhci_hcd
-Date: Wed, 8 Jul 2009 18:59:33 -0500
-User-Agent: KMail/1.9.9
-Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0907081555310.22105-100000@iolanthe.rowland.org> <200907081856.12191.lkml@morethan.org>
-In-Reply-To: <200907081856.12191.lkml@morethan.org>
+	Wed, 8 Jul 2009 20:03:00 -0400
+Date: Wed, 8 Jul 2009 17:01:14 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
+       oleg@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
+ using phylib
+In-Reply-To: <20090708222003.GA12318@oksana.dev.rtsoft.ru>
+Message-ID: <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>
+References: <20090707235812.GA12824@oksana.dev.rtsoft.ru> <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins> <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain> <20090708141024.f8b581c5.akpm@linux-foundation.org>
+ <20090708213331.GA9346@oksana.dev.rtsoft.ru> <20090708144744.5555b88d.akpm@linux-foundation.org> <20090708222003.GA12318@oksana.dev.rtsoft.ru>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907081859.36005.lkml@morethan.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed July 8 2009, Michael S. Zick wrote:
-> On Wed July 8 2009, Alan Stern wrote:
-> > On Wed, 8 Jul 2009, Michael S. Zick wrote:
-> > 
-> > > But, then again, we might just get lucky:
-> > > ehci_hcd 0000:00:10.4: Unlink after no-IRQ?  Controller is probably using the wrong IRQ.
-> > > usb 1-5: khubd timed out on ep0in len=18/64
-> > 
-> > Like I've been telling you all along, the hardware isn't working.  I 
-> > suspect it's worse than a simple interrupt-routing mistake.
-> > 
-> > > > > For more information enable CONFIG_USB_DEBUG and CONFIG_DEBUG_FS, then 
-> > > > > see what's sitting in the usb/uhci/* files in debugfs.
-> > > > > 
-> > > 
-> > > Anything in particular to look for/at?
-> > 
-> > Just post the contents of those files.
-> >
-> Done:
-> 
-
-All "BUG" statements out - -
-Still does not notice plugging in an external device.
-Nothing, zip, nada in the dmesg as a result of plug/unplug.
-
-Mike
-> root@cb01:/sys/kernel/debug/uhci# cat *
-> Root-hub state: suspended   FSBR: 0
-> HC status
->   usbcmd    =     0048   Maxp32 CF EGSM
->   usbstat   =     0020   HCHalted
->   usbint    =     0002
->   usbfrnum  =   (1)4a8
->   flbaseadd = 19c7f000
->   sof       =       40
->   stat1     =     0480   OverCurrent
->   stat2     =     0480   OverCurrent
-> Most recent frame: 52a (298)   Last ISO frame: 52a (298)
-> Periodic load table
->         0       0       0       0       0       0       0       0
->         0       0       0       0       0       0       0       0
->         0       0       0       0       0       0       0       0
->         0       0       0       0       0       0       0       0
-> Total: 0, #INT: 0, #ISO: 0
-> Root-hub state: suspended   FSBR: 0
-> HC status
->   usbcmd    =     0048   Maxp32 CF EGSM
->   usbstat   =     0020   HCHalted
->   usbint    =     0002
->   usbfrnum  =   (1)4a0
->   flbaseadd = 19c63000
->   sof       =       40
->   stat1     =     0480   OverCurrent
->   stat2     =     0480   OverCurrent
-> Most recent frame: 528 (296)   Last ISO frame: 528 (296)
-> Periodic load table
->         0       0       0       0       0       0       0       0
->         0       0       0       0       0       0       0       0
->         0       0       0       0       0       0       0       0
->         0       0       0       0       0       0       0       0
-> Total: 0, #INT: 0, #ISO: 0
-> Root-hub state: running   FSBR: 0
-> HC status
->   usbcmd    =     00c1   Maxp64 CF RS
->   usbstat   =     0000
->   usbint    =     000f
->   usbfrnum  =   (0)c1c
->   flbaseadd = 19c9c000
->   sof       =       40
->   stat1     =     0495   OverCurrent Enabled Connected
->   stat2     =     0495   OverCurrent Enabled Connected
-> Most recent frame: 56aee (750)   Last ISO frame: 56aee (750)
-> Periodic load table
->         0       0       0       0       0       0       0       0
->         0       0       0       0       0       0       0       0
->         17      0       0       0       0       0       0       0
->         0       0       0       0       0       0       0       0
-> Total: 17, #INT: 1, #ISO: 0
-> 
-> And, at no extra cost:
-> 
-> root@cb01:/sys/kernel/debug/ehci/0000:00:10.4# cat *
-> size = 256
-> bus pci, device 0000:00:10.4
-> EHCI Host Controller
-> EHCI 1.00, hcd state 4
-> ownership 01000001 linux
-> SMI sts/enable 0xe00f0000
-> structural params 0x00103206
-> capability params 0x00006872
-> status 100f Halt FLR PCD ERR INT
-> command 010008 (park)=0 ithresh=1 period=256 HALT
-> intrenable 37 IAA FATAL PCD ERR INT
-> uframe 14db
-> port 1 status 701000 POWER sig=se0
-> port 2 status 701000 POWER sig=se0
-> port 3 status 701000 POWER sig=se0
-> port 4 status 701000 POWER sig=se0
-> port 5 status 703802 POWER OWNER sig=j CSC
-> port 6 status 703802 POWER OWNER sig=j CSC
-> irq normal 0 err 0 reclaim 0 (lost 20)
-> complete 0 unlink 20
-> 
-> Mike 
-> > Alan Stern
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> > 
-> 
-> 
-> 
 
 
+On Thu, 9 Jul 2009, Anton Vorontsov wrote:
+> 
+> The netpoll code is using msleep() just a few lines below cond_resched(),
+> so we won't make things worse. ;-)
+
+Yeah. That function is definitely sleeping. It does things like 
+kmalloc(GFP_KERNEL), rtnl_lock() and synchronize_rcu() etc too, so an 
+added msleep() is the least of our problems.
+
+Afaik, it's called from a bog-standard "module_init()", which happens late 
+enough that everything works.
+
+In fact, I wonder if we should set SYSTEM_RUNNING much earlier - _before_ 
+doing the whole "do_initcalls()". By then we've set up all the core stuff 
+and enabled interrupts, so we really _are_ running. We just don't 
+necessarily have drivers, filesystems etc loaded yet. But anything that 
+happens late enough to be an initcall should be largely considered to 
+be during "normal code".
+
+(The "early_initcall" cases are special - those really do happen pretty 
+early).
+
+So ACK on Anton's patch, but I wonder if we _also_ should do the 
+following?
+
+Looking at the people looking at SYSTEM_RUNNING, I do note some odd cases. 
+Why the heck does kernel/perf_counter.c do it, for example?
+
+		Linus
+
+---
+ init/main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/init/main.c b/init/main.c
+index 2c5ade7..f10d9cd 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -788,6 +788,7 @@ static void __init do_initcalls(void)
+ {
+ 	initcall_t *call;
+ 
++	system_state = SYSTEM_RUNNING;
+ 	for (call = __early_initcall_end; call < __initcall_end; call++)
+ 		do_one_initcall(*call);
+ 
+@@ -839,7 +840,6 @@ static noinline int init_post(void)
+ 	free_initmem();
+ 	unlock_kernel();
+ 	mark_rodata_ro();
+-	system_state = SYSTEM_RUNNING;
+ 	numa_default_policy();
+ 
+ 	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
