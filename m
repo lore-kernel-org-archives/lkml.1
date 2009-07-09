@@ -1,73 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759120AbZGIJKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZGIJNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759120AbZGIJKV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 05:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756685AbZGIJKK
+	id S1755215AbZGIJNQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 05:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbZGIJNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 05:10:10 -0400
-Received: from viefep13-int.chello.at ([62.179.121.33]:22101 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756191AbZGIJKH (ORCPT
+	Thu, 9 Jul 2009 05:13:00 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:15269
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756084AbZGIJM7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 05:10:07 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 1/3] Increase lockdep limits: MAX_STACK_TRACE_ENTRIES
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Dave Jones <davej@redhat.com>, Joao Correia <joaomiguelcorreia@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <1247130416.11409.14.camel@pc1117.cambridge.arm.com>
-References: <a5d9929e0907070825j1dda6584t93196e2730dedc5c@mail.gmail.com>
-	 <1246980836.9777.5.camel@twins>
-	 <a5d9929e0907070838q7ed3306du3bb7880e47d7207b@mail.gmail.com>
-	 <1246981444.9777.11.camel@twins>
-	 <a5d9929e0907070850v72cd4da4y1cbbb10fddebd575@mail.gmail.com>
-	 <1246982101.9777.15.camel@twins>  <20090708172248.GB2521@redhat.com>
-	 <1247078164.16156.18.camel@laptop>
-	 <1247130416.11409.14.camel@pc1117.cambridge.arm.com>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 11:09:58 +0200
-Message-Id: <1247130598.9777.326.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 9 Jul 2009 05:12:59 -0400
+Message-ID: <4A55B493.6070402@panasas.com>
+Date: Thu, 09 Jul 2009 12:12:51 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Niel Lambrechts <niel.lambrechts@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH 2/4] block: use the same failfast bits for bio and request
+References: <1246610898-22350-1-git-send-email-tj@kernel.org> <1246610898-22350-3-git-send-email-tj@kernel.org> <4A5071E5.8030908@panasas.com> <4A553DA4.4080408@kernel.org>
+In-Reply-To: <4A553DA4.4080408@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Jul 2009 09:12:54.0878 (UTC) FILETIME=[717EA7E0:01CA0075]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 10:06 +0100, Catalin Marinas wrote:
-> On Wed, 2009-07-08 at 20:36 +0200, Peter Zijlstra wrote:
-> > As a side node, I see that each and every trace ends with a -1 entry:
-> > 
-> > ...
-> > [ 1194.412158]    [<c01f7990>] do_mount+0x3c0/0x7c0
-> > [ 1194.412158]    [<c01f7e14>] sys_mount+0x84/0xb0
-> > [ 1194.412158]    [<c01221b1>] syscall_call+0x7/0xb
-> > [ 1194.412158]    [<ffffffff>] 0xffffffff
-> > 
-> > Which seems to come from:
-> > 
-> > void save_stack_trace(struct stack_trace *trace)
-> > {
-> >         dump_trace(current, NULL, NULL, 0, &save_stack_ops, trace);
-> >         if (trace->nr_entries < trace->max_entries)
-> >                 trace->entries[trace->nr_entries++] = ULONG_MAX;
-> > }
-> > EXPORT_SYMBOL_GPL(save_stack_trace);
-> > 
-> > commit 006e84ee3a54e393ec6bef2a9bc891dc5bde2843 seems involved,..
+On 07/09/2009 03:45 AM, Tejun Heo wrote:
+> Hello, Boaz.
 > 
-> The reason for this is that if there are no more traces to show, it
-> inserts -1. In this case, it cannot trace beyond the system call. If the
-> stack trace is truncated because of the maximum number of trace entries
-> it can show, you won't get a -1.
+> Boaz Harrosh wrote:
+>> Thanks for doing this, it has been neglected for a long time.
+>> However, it will happen again, I don't like these implicit matches
+>> which are not enforced, They get to drift away. There are several ways
+>> to make sure two sets of enums stay in sync. (I'll have a try at it
+>> tomorrow. if you want). 
 > 
-> Before the commit above, it was always inserting -1 even if the trace
-> was longer than the maximum number of entries.
+> They don't share the exact same set of bits, so it's a bit blurry but
+> yeah it would be better if the bits are defined in more systematic
+> way.
+> 
 
-Seems daft to me, I'll fix up lockdep to truncate that last entry,
-having a gazillion copies of -1 in the trace entries doesn't make sense.
+I meant something simple like:
 
+	__REQ_RW = BIO_RW,
+	__REQ_FAILFAST_DEV = BIO_RW_FAILFAST_DEV,
+	__REQ_FAILFAST_TRANSPORT = BIO_RW_FAILFAST_TRANSPORT,
+	__REQ_FAILFAST_DRIVER = BIO_RW_FAILFAST_DRIVER,
+	...
+
+And a fat comment which you did
+
+>>> @@ -142,37 +142,40 @@ struct bio {
+>>>   *
+>>>   * bit 0 -- data direction
+>>>   *	If not set, bio is a read from device. If set, it's a write to device.
+>>> - * bit 1 -- rw-ahead when set
+>>> - * bit 2 -- barrier
+>>> + * bit 1 -- fail fast device errors
+>>> + * bit 2 -- fail fast transport errors
+>>> + * bit 3 -- fail fast driver errors
+>>> + * bit 4 -- rw-ahead when set
+>>> + * bit 5 -- barrier
+>> Please kill all these evil bit 1, bit 2 ,bit n comments. The ways we
+>> invent to torture ourselfs...
+>>
+>> Just move all the comments to the enums declarations below. And be done
+>> with it, also for the next time.
+> 
+> Heh... I agree too.  Unless ABI is fixed, this type of comments are
+> often painful.  Care to submit a patch.  This series is already in
+> block#for-next.
+> 
+
+It's becoming futile to comments on patches these days they get submitted
+before and during any comments. ;-)
+
+>>>  #define bio_rw_flagged(bio, flag)	((bio)->bi_rw & (1 << (flag)))
+>>>  
+>> I wish there was also an helper to set these bits. it gives me an heart attack
+>> every time I need to:
+>> 	bio->bi_rw &= ~(1 << BIO_RW);
+> 
+> What's more disturbing to me is the different between RQ and BIO
+> flags.  __REQ_* are bit positions, REQ_* are masks while BIO_* are bit
+> positions.  Sadly it seems it's already too late to change that.  I
+> personally an not a big fan of simple accessors or flags defined as
+> bit positions.  They seem to obscure things without much benefit.
+> 
+
+I think that everywhere we should use __set_bit() __clear_bit() and
+test_bit() with enums defined as bit-positions. It is most clear readable
+code wise, least error prone, and easiest to maintain.
+Perhaps a new:
+	test_bits(void *flag, unsigned bit1, ...);
+for testing bunch of bits at once
+
+Please note that with inlines and constant bits the generated code is
+just as fast as bit-mask. Without slaving over double definitions.
+(and accessors)
+
+> Thanks.
+> 
+
+Boaz
