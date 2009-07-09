@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbZGIAEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759156AbZGIAFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758918AbZGIAEn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 20:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbZGIAEg
+	id S1759156AbZGIAFm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 20:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbZGIAFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 20:04:36 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:44156 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756713AbZGIAEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 20:04:36 -0400
-Date: Thu, 9 Jul 2009 01:04:34 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-cc: dri-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 36/44] includecheck fix: include/drm, drm_memory.h
-In-Reply-To: <1247068169.4382.99.camel@ht.satnam>
-Message-ID: <alpine.DEB.2.00.0907090104170.20307@skynet.skynet.ie>
-References: <1247063308.4382.12.camel@ht.satnam> <1247068169.4382.99.camel@ht.satnam>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 8 Jul 2009 20:05:34 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:40863 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754553AbZGIAFe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 20:05:34 -0400
+X-IronPort-AV: E=Sophos;i="4.42,371,1243814400"; 
+   d="scan'208";a="85073602"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org
+Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
+Subject: fealnx: Fix build breakage -- PR_CONT should be KERN_CONT
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 08 Jul 2009 17:05:32 -0700
+Message-ID: <aday6qyzpo3.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 09 Jul 2009 00:05:33.0280 (UTC) FILETIME=[FA607E00:01CA0028]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit ad361c98 ("Remove multiple KERN_ prefixes from printk formats")
+broke the build for fealnx because it added some "printk(PR_CONT ..."
+calls, when PR_CONT doesn't exist; it should be "printk(KERN_CONT ..."
 
-> fix the following 'make includecheck' warning:
-> 
->   include/drm/drm_memory.h: linux/vmalloc.h is included more than once.
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+ drivers/net/fealnx.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Acked-by: Dave Airlie <airlied@redhat.com>
-
-Dave.
-> ---
->  include/drm/drm_memory.h |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/drm/drm_memory.h b/include/drm/drm_memory.h
-> index 63e425b..15af9b3 100644
-> --- a/include/drm/drm_memory.h
-> +++ b/include/drm/drm_memory.h
-> @@ -44,8 +44,6 @@
->  
->  #if __OS_HAS_AGP
->  
-> -#include <linux/vmalloc.h>
-> -
->  #ifdef HAVE_PAGE_AGP
->  #include <asm/agp.h>
->  #else
-> 
+diff --git a/drivers/net/fealnx.c b/drivers/net/fealnx.c
+index 053fb49..48385c4 100644
+--- a/drivers/net/fealnx.c
++++ b/drivers/net/fealnx.c
+@@ -1216,13 +1216,13 @@ static void fealnx_tx_timeout(struct net_device *dev)
+ 	{
+ 		printk(KERN_DEBUG "  Rx ring %p: ", np->rx_ring);
+ 		for (i = 0; i < RX_RING_SIZE; i++)
+-			printk(PR_CONT " %8.8x",
++			printk(KERN_CONT " %8.8x",
+ 			       (unsigned int) np->rx_ring[i].status);
+ 		printk(KERN_CONT "\n");
+ 		printk(KERN_DEBUG "  Tx ring %p: ", np->tx_ring);
+ 		for (i = 0; i < TX_RING_SIZE; i++)
+-			printk(PR_CONT " %4.4x", np->tx_ring[i].status);
+-		printk(PR_CONT "\n");
++			printk(KERN_CONT " %4.4x", np->tx_ring[i].status);
++		printk(KERN_CONT "\n");
+ 	}
+ 
+ 	spin_lock_irqsave(&np->lock, flags);
