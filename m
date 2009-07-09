@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761341AbZGIO2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbZGIO2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761341AbZGIO2b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 10:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761122AbZGIO2Y
+	id S1761385AbZGIO2m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 10:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761335AbZGIO22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 10:28:24 -0400
-Received: from www.tglx.de ([62.245.132.106]:54446 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761013AbZGIO2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 10:28:23 -0400
-Date: Thu, 9 Jul 2009 16:28:05 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jarek Poplawski <jarkao2@gmail.com>
-cc: Andres Freund <andres@anarazel.de>,
-       Joao Correia <joaomiguelcorreia@gmail.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Patrick McHardy <kaber@trash.net>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused
- by netem)
-In-Reply-To: <20090709142414.GC3651@ami.dom.local>
-Message-ID: <alpine.LFD.2.00.0907091625540.24704@localhost.localdomain>
-References: <200907031326.21822.andres@anarazel.de> <200907071811.27570.andres@anarazel.de> <20090708080852.GC3148@ami.dom.local> <200907090023.18040.andres@anarazel.de> <20090708224828.GD3666@ami.dom.local> <alpine.LFD.2.00.0907090956490.24704@localhost.localdomain>
- <20090709104412.GA3651@ami.dom.local> <alpine.LFD.2.00.0907091401040.24704@localhost.localdomain> <20090709132256.GB3651@ami.dom.local> <alpine.LFD.2.00.0907091601120.24704@localhost.localdomain> <20090709142414.GC3651@ami.dom.local>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 9 Jul 2009 10:28:28 -0400
+Received: from mail-pz0-f175.google.com ([209.85.222.175]:53971 "EHLO
+	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761289AbZGIO21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 10:28:27 -0400
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 7/44] includecheck fix: arm, board-sffsdr.c
+References: <1247063308.4382.12.camel@ht.satnam>
+	<1247063846.4382.24.camel@ht.satnam>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Thu, 09 Jul 2009 07:28:24 -0700
+In-Reply-To: <1247063846.4382.24.camel@ht.satnam> (Jaswinder Singh Rajput's message of "Wed\, 08 Jul 2009 20\:07\:26 +0530")
+Message-ID: <8763e2x75j.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Jul 2009, Jarek Poplawski wrote:
-> On Thu, Jul 09, 2009 at 04:15:28PM +0200, Thomas Gleixner wrote:
-> > On Thu, 9 Jul 2009, Jarek Poplawski wrote:
-> > > On Thu, Jul 09, 2009 at 02:03:50PM +0200, Thomas Gleixner wrote:
-> > > > On Thu, 9 Jul 2009, Jarek Poplawski wrote:
-> > > > > > 
-> > > > > > I have the feeling that the code relies on some implicit cpu
-> > > > > > boundness, which is not longer guaranteed with the timer migration
-> > > > > > changes, but that's a question for the network experts.
-> > > > > 
-> > > > > As a matter of fact, I've just looked at this __netif_schedule(),
-> > > > > which really is cpu bound, so you might be 100% right.
-> > > > 
-> > > > So the watchdog is the one which causes the trouble. The patch below
-> > > > should fix this.
-> > > 
-> > > I hope so. On the other hand it seems it should work with this
-> > > migration yet, so it probably needs additional debugging.
-> > 
-> > Right. I just provided the patch to narrow down the problem, but
-> > please test the fix of the hrtimer migration code which I sent out a
-> > bit earlier: http://lkml.org/lkml/2009/7/9/150
-> > 
-> > It fixes a possible endless loop in the timer code which is related to
-> > the migration changes. Looking at the backtraces of the spinlock
-> > lockup I think that is what you hit.
-> 
-> Actually, Andres and Joao hit this, and I hope they'll try these two
-> patches.
+Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
 
-Please test them separate from each other. The one I sent in this
-thread was just for narrowing down the issue, but I'm now quite sure
-that they really hit the issue which is addressed by the hrtimer
-patch.
+> fix the following 'make includecheck' warning:
+>
+>   arch/arm/mach-davinci/board-sffsdr.c: mach/common.h is included more than once.
+>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-Thanks,
+Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
 
-	tglx
+> ---
+>  arch/arm/mach-davinci/board-sffsdr.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/arm/mach-davinci/board-sffsdr.c b/arch/arm/mach-davinci/board-sffsdr.c
+> index 748a8e4..7acdfd8 100644
+> --- a/arch/arm/mach-davinci/board-sffsdr.c
+> +++ b/arch/arm/mach-davinci/board-sffsdr.c
+> @@ -52,7 +52,6 @@
+>  #include <mach/serial.h>
+>  #include <mach/psc.h>
+>  #include <mach/mux.h>
+> -#include <mach/common.h>
+>  
+>  #define SFFSDR_PHY_MASK		(0x2)
+>  #define SFFSDR_MDIO_FREQUENCY	(2200000) /* PHY bus frequency */
+> -- 
+> 1.6.0.6
