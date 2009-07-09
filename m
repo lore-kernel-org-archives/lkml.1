@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbZGIVu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZGIV5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756848AbZGIVu1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 17:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbZGIVuU
+	id S1755556AbZGIV5F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 17:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754696AbZGIV4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 17:50:20 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:36943 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755572AbZGIVuT convert rfc822-to-8bit (ORCPT
+	Thu, 9 Jul 2009 17:56:54 -0400
+Received: from mga03.intel.com ([143.182.124.21]:27908 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753715AbZGIV4x convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 17:50:19 -0400
-MIME-Version: 1.0
-Message-ID: <fa083462-f28d-4188-9006-a285141acc21@default>
-Date: Thu, 9 Jul 2009 14:48:10 -0700 (PDT)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Anthony Liguori <anthony@codemonkey.ws>, linux-kernel@vger.kernel.org,
-       npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
-       xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
-       alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org, kurt.hackel@oracle.com,
-       Rusty Russell <rusty@rustcorp.com.au>, dave.mccracken@oracle.com,
-       Marcelo Tosatti <mtosatti@redhat.com>, sunil.mushran@oracle.com,
-       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
-       chris.mason@oracle.com, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: RE: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
-In-Reply-To: <4A5660CB.5080607@redhat.com>
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
- 9.0.0.6627]
-Content-Type: text/plain; charset=utf-8
+	Thu, 9 Jul 2009 17:56:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,375,1243839600"; 
+   d="scan'208";a="163376589"
+From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
+To: Magnus Damm <magnus.damm@gmail.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+CC: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Date: Fri, 10 Jul 2009 03:26:45 +0530
+Subject: RE: [linux-pm] [RFC][PATCH] PM: Introduce core framework for
+	run-time PM of I/O devices (rev. 8)
+Thread-Topic: [linux-pm] [RFC][PATCH] PM: Introduce core framework for
+	run-time PM of I/O devices (rev. 8)
+Thread-Index: AcoAqy8XnjCmJfmaTgicBn6D7E6MngANCe3g
+Message-ID: <175E0F9A9EFCEA46A65F5552BB057298BB5F3EA2@bgsmsx502.gar.corp.intel.com>
+References: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8@mail.gmail.com>
+	<Pine.LNX.4.44L0.0907090937530.5823-100000@iolanthe.rowland.org>
+ <aec7e5c30907090831y180b0972o6dcb961dd292a3c0@mail.gmail.com>
+In-Reply-To: <aec7e5c30907090831y180b0972o6dcb961dd292a3c0@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4A5665CF.0080:SCFSTAT5015188,ss=1,fgs=0
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I'm not saying either one is bad or good -- and I'm sure
-> > each can be adapted to approximately deliver the value
-> > of the other -- they are just approaching the same problem
-> > from different perspectives.
-> 
-> Indeed.  Tmem and auto-ballooning have a simple mechanism,
-> but the policy required to make it work right could well
-> be too complex to ever get right.
-> 
-> CMM2 has a more complex mechanism, but the policy is
-> absolutely trivial.
+Hi,
 
-Could you elaborate a bit more on what policy you
-are referring to and what decisions the policies are
-trying to guide?  And are you looking at the policies
-in Linux or in the hypervisor or the sum of both?
+I am newbee to this mailing list. Please excuse me if I am talking nonsense here.
 
-The Linux-side policies in the tmem patch seem trivial
-to me and the Xen-side implementation is certainly
-working correctly, though "working right" is a hard
-objective to measure.  But depending on how you define
-"working right", the pageframe replacement algorithm
-in Linux may also be "too complex to ever get right"
-but it's been working well enough for a long time.
 
-> CMM2 and auto-ballooning seem to give about similar
-> performance gains on zSystem.
 
-Tmem provides a huge advantage over my self-ballooning
-implementation, but maybe that's because it is more
-aggressive than the CMM auto-ballooning, resulting
-in more refaults that must be "fixed".
+On Thu, Jul 9, 2009 at 10:48 PM, Alan Stern<stern@rowland.harvard.edu> wrote:
+>> On Thu, 9 Jul 2009, Magnus Damm wrote:
+>>
+>>> Clocks should be stopped as soon as possible without any delay. The
+>>> clock stopping is very cheap performance wise. Also, the clock
+>> stopping is done on bus level without invoking any driver callbacks.
+>>> Delaying the clock stopping does not make any sense to me.
+>>
+>> In that case the device driver or bus subsystem should manage the
+>> device's clock directly.  There's no need to tie it in with the runtime
+>> PM framework.  Simply start the clock before each I/O operation and
+>> stop it afterward.
 
-> I suspect that for Xen and KVM, we'll want to choose
-> for the approach that has the simpler policy, because
-> relying on different versions of different operating
-> systems to all get the policy of auto-ballooning or
-> tmem right is likely to result in bad interactions
-> between guests and other intractable issues.
+> It's not that easy. The clock needs to be enabled to let the hardware
+> device perform device specific stuff. For instance, the clock for the
+> LCD controller needs to be on to redraw the screen. When the driver
+> knows that it's done with the clock it can notify the bus using
+> Runtime PM.
 
-Again, not sure what tmem policy in Linux you are referring
-to or what bad interactions you foresee.  Could you
-clarify?
-
-Auto-ballooning policy is certainly a challenge, but
-that's true whether CMM or tmem, right?
-
-Thanks,
-Dan
+Is there any plan to look into the "Clock Framework" that was developed as part of OMAP and extending this to make it generic for all platforms?
