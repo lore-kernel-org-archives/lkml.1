@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbZGIXge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752194AbZGIXjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbZGIXge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 19:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZGIXg1
+	id S1752194AbZGIXjS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 19:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZGIXjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 19:36:27 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:53482 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbZGIXg0 (ORCPT
+	Thu, 9 Jul 2009 19:39:10 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56831 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbZGIXjK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 19:36:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=W0V0685ppHMQoXU4jm47esHUyUTvSIR872iIHc/QIIDWU9k3/QJJH8t5CpH0s3mhFF
-         U0+hSMaeesDs1ZBrVkg8oC6RFZQhPdMQ1R1Hma4dAi1k38x1Q5aTnOw/dxrItmJeKfLV
-         a+/KNO5PZ/Kt6D2hrxKsWQiPz9AgVc+K+obNU=
-Message-ID: <4A567F52.1040505@gmail.com>
-Date: Thu, 09 Jul 2009 17:37:54 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 9 Jul 2009 19:39:10 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH 2/5] add buffer cache information to show_free_areas()
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+In-Reply-To: <alpine.DEB.1.10.0907091635070.17835@gentwo.org>
+References: <20090709171027.23C0.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0907091635070.17835@gentwo.org>
+Message-Id: <20090710083741.17C1.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: lkml@MoreThan.org
-CC: linux-kernel@vger.kernel.org
-Subject: Re: EHCI, BIOS handoff warning/error?
-References: <200907090857.47350.lkml@morethan.org>
-In-Reply-To: <200907090857.47350.lkml@morethan.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 10 Jul 2009 08:39:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/09/2009 07:57 AM, Michael S. Zick wrote:
-> Anyone with thoughts on this one?
-> Even a translation of the message might help.
->
-> pci 0000:00:01.0: disabling DAC on VIA PCI bridge
-> pci 0000:00:10.0: uhci_check_and_reset_hc: legsup = 0x2000
-> pci 0000:00:10.0: Performing full reset
-> pci 0000:00:10.1: uhci_check_and_reset_hc: legsup = 0x2000
-> pci 0000:00:10.1: Performing full reset
-> pci 0000:00:10.2: uhci_check_and_reset_hc: legsup = 0x2000
-> pci 0000:00:10.2: Performing full reset
-> pci 0000:00:10.4: EHCI: BIOS handoff
-> pci 0000:00:10.4: EHCI: BIOS handoff failed (BIOS bug?) 01010001
-> pci 0000:01:00.0: Boot video device
+> On Thu, 9 Jul 2009, KOSAKI Motohiro wrote:
+> 
+> > Subject: [PATCH] add buffer cache information to show_free_areas()
+> >
+> > When administrator analysis memory shortage reason from OOM log, They
+> > often need to know rest number of cache like pages.
+> 
+> Maybe:
+> 
+> "
+> It is often useful to know the statistics for all pages that are handled
+> like page cache pages when looking at OOM log output.
+> 
+> Therefore show_free_areas() should also display buffer cache statistics.
+> "
 
-That would mean the BIOS failed to indicate it has given up control of 
-the EHCI controller within the allowed time period.
+Thanks good description. Will fix.
+
+
+
