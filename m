@@ -1,114 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760237AbZGIK7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbZGILBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760237AbZGIK7Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 06:59:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758723AbZGIK7C
+	id S1756360AbZGILBe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 07:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZGILB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 06:59:02 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:37426 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758100AbZGIK7A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 06:59:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jR04yU+5llGxvnx6kBx9hxdQaX4XuQWbm3IHs5j6m4ySrp2l82exLQlXAGWmalXys+
-         tcS9hov500a6BU8E5YANNu8xnHWg/qeciZpNiXZEY6tgXZlkohbb/FFWuReVHa1nFKki
-         A7pc132VRkx7I+/Dyfq/Tt/QkENWR+IEhoeCI=
-MIME-Version: 1.0
-In-Reply-To: <20090709140234.239F.A69D9226@jp.fujitsu.com>
-References: <20090707184714.0C73.A69D9226@jp.fujitsu.com>
-	 <28c262360907070620n3e22801egd4493c149a263ecd@mail.gmail.com>
-	 <20090709140234.239F.A69D9226@jp.fujitsu.com>
-Date: Thu, 9 Jul 2009 19:58:59 +0900
-Message-ID: <28c262360907090358q7cdbd067y22b7312c489e7598@mail.gmail.com>
-Subject: Re: [RFC PATCH 2/2] Don't continue reclaim if the system have plenty 
-	free memory
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Jul 2009 07:01:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38777 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753482AbZGILB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 07:01:26 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090709101930.GJ10937@elf.ucw.cz>
+References: <20090709101930.GJ10937@elf.ucw.cz> <20090704024606.GE1345@ucw.cz> <20090701120814.30741.10146.stgit@warthog.procyon.org.uk> <24530.1247050900@redhat.com> <20090704033429.GA1799@ucw.cz> <8bd0f97a0907081148vc716eeepfdaf8178b1ecbce1@mail.gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: dhowells@redhat.com, Mike Frysinger <vapier.adi@gmail.com>,
+       rgetz@blackfin.uclinux.org, lethal@linux-sh.org, gerg@uclinux.org,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FDPIC: Ignore the loader's PT_GNU_STACK when calculating the stack size
+Date: Thu, 09 Jul 2009 11:59:11 +0100
+Message-ID: <24280.1247137151@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 9, 2009 at 2:08 PM, KOSAKI
-Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
->> Hi, Kosaki.
->>
->> On Tue, Jul 7, 2009 at 6:48 PM, KOSAKI
->> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
->> > Subject: [PATCH] Don't continue reclaim if the system have plenty free memory
->> >
->> > On concurrent reclaim situation, if one reclaimer makes OOM, maybe other
->> > reclaimer can stop reclaim because OOM killer makes enough free memory.
->> >
->> > But current kernel doesn't have its logic. Then, we can face following accidental
->> > 2nd OOM scenario.
->> >
->> > 1. System memory is used by only one big process.
->> > 2. memory shortage occur and concurrent reclaim start.
->> > 3. One reclaimer makes OOM and OOM killer kill above big process.
->> > 4. Almost reclaimable page will be freed.
->> > 5. Another reclaimer can't find any reclaimable page because those pages are
->> > ? already freed.
->> > 6. Then, system makes accidental and unnecessary 2nd OOM killer.
->> >
->>
->> Did you see the this situation ?
->> Why I ask is that we have already a routine for preventing parallel
->> OOM killing in __alloc_pages_may_oom.
->>
->> Couldn't it protect your scenario ?
+Pavel Machek <pavel@ucw.cz> wrote:
+
+> > i really dont think this is realistic.  there is exactly one ldso that
+> > everyone uses under FDPIC ELF, and it needs a very minuscule stack.
+> 
+> Not very realistic; but that argues that the patch is NOP.
 >
-> Can you please see actual code of this patch?
+> And if it _is_ realistic, the patch adds a bug.
 
-I mean follow as,
+No, it doesn't.  The problem is that the loader, when it is linked, is given a
+sillyly large default stack size, and this causes the application to be given a
+much larger stack than is strictly necessary - a stack that is drawn from a
+limited pool of non-pageable RAM and that must be allocated as a contiguous
+lump.
 
-static inline struct page *
-__alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
-        struct zonelist *zonelist, enum zone_type high_zoneidx,
-...
-<snip>
+The executables should take into account the amount of stack space needed to
+call into all their libraries - and that includes the loader.  You can argue
+that the loader should specify the amount of extra overhead it will need, and
+that this should be _added_ to the executable's stack estimate, but using the
+loader's stack estimate instead of the executable's does not really make sense.
 
-        /*
-         * Go through the zonelist yet one more time, keep very high watermark
-         * here, this is only to catch a parallel oom killing, we must fail if
-         * we're still under heavy pressure.
-         */
-        page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask,
-                order, zonelist, high_zoneidx,
-                ALLOC_WMARK_HIGH|ALLOC_CPUSET,
-                preferred_zone, migratetype);
+You can also argue that the executable doesn't know how much space the loader
+will use, because the loader can be independently replaced; but this isn't a
+good argument because the loader doesn't know how much the executable will use,
+and neither know how much the various shared libs will use.  The only way to do
+that is to add up all the stack estimates.
 
+Now, it *is* perfectly reasonable to use the loader's stack estimate in the
+case that the loader is run as an executable.  It could, for example, behave as
+the GLIBC loader and have some functions available for shared library query and
+suchlike.
 
-> Those two patches fix different problem.
->
-> 1/2 fixes the issue of that concurrent direct reclaimer makes
-> too many isolated pages.
-> 2/2 fixes the issue of that reclaim and exit race makes accidental oom.
->
->
->> If it can't, Could you explain the scenario in more detail ?
->
-> __alloc_pages_may_oom() check don't effect the threads of already
-> entered reclaim. it's obvious.
-
-Threads which are entered into direct reclaim mode will call
-__alloc_pages_may_oom before out_of_memory.
-At that time, if one big process is killed a while ago,
-get_page_from_freelist in __alloc_pages_may_oom will be succeeded at
-last. So I think it doesn't occur OOM.
-
-But in that case, we suffered from unnecessary page scanning per each
-priority(12~0). So in this case, your patch is good to me. then you
-would be better to change log. :)
-
--- 
-Kind regards,
-Minchan Kim
+David
