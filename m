@@ -1,67 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbZGIWAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbZGIWBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757406AbZGIWAq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 18:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbZGIV7z
+	id S1757511AbZGIWBV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 18:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbZGIWBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 17:59:55 -0400
-Received: from www.tglx.de ([62.245.132.106]:37953 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757133AbZGIV7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 17:59:54 -0400
-Message-Id: <20090709215606.725707255@linutronix.de>
-User-Agent: quilt/0.47-1
-Date: Thu, 09 Jul 2009 21:59:34 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: netdev@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Patrick McHardy <kaber@trash.net>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 3/3] net: use HRTIMER_RESTART in sched_cbq
-References: <20090709215455.703939259@linutronix.de>
-Content-Disposition: inline; filename=net-sched-cbq-use-hrtimer-restart.patch
+	Thu, 9 Jul 2009 18:01:06 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:28358 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753730AbZGIWBE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 18:01:04 -0400
+Date: Thu, 9 Jul 2009 16:01:00 -0600
+From: dann frazier <dannf@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH} x86/pci: insert ioapic resource before assign
+ unassigned resource for pci
+Message-ID: <20090709220100.GN2613@ldl.fc.hp.com>
+References: <20090630180300.GA9971@ldl.fc.hp.com>
+ <4A4A5B01.9040200@kernel.org>
+ <20090703225708.GA30664@ldl.fc.hp.com>
+ <4A4FADDC.30606@kernel.org>
+ <20090709185945.GG2613@ldl.fc.hp.com>
+ <4A564263.5010305@kernel.org>
+ <4A564634.1020708@kernel.org>
+ <4A564990.3060202@kernel.org>
+ <1247172044.3898.147.camel@mulgrave.site>
+ <4A56641B.9050204@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A56641B.9050204@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Restarting a hrtimer from the callback function via hrtimer_start is
-inefficient. The canonical way is to modify the expiry value of the
-timer and return HRTIMER_RESTART to the hrtimer core code which takes
-care of the restart.
+Thanks Yinghai!
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- net/sched/sch_cbq.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Tested-by: dann frazier <dannf@hp.com>
 
-Index: linux-2.6/net/sched/sch_cbq.c
-===================================================================
---- linux-2.6.orig/net/sched/sch_cbq.c
-+++ linux-2.6/net/sched/sch_cbq.c
-@@ -605,6 +605,7 @@ static enum hrtimer_restart cbq_undelay(
- 	struct cbq_sched_data *q = container_of(timer, struct cbq_sched_data,
- 						delay_timer);
- 	struct Qdisc *sch = q->watchdog.qdisc;
-+	enum hrtimer_restart ret = HRTIMER_NORESTART;
- 	psched_time_t now;
- 	psched_tdiff_t delay = 0;
- 	unsigned pmask;
-@@ -634,13 +635,14 @@ static enum hrtimer_restart cbq_undelay(
- 
- 		time = ktime_set(0, 0);
- 		time = ktime_add_ns(time, PSCHED_TICKS2NS(now + delay));
--		hrtimer_start(&q->delay_timer, time, HRTIMER_MODE_ABS);
-+		hrtimer_set_expires(&q->delay_timer, time);
-+		ret = HRTIMER_RESTART;
- 	}
- 	spin_unlock(&q->lock);
- 
- 	sch->flags &= ~TCQ_F_THROTTLED;
- 	__netif_schedule(qdisc_root(sch));
--	return HRTIMER_NORESTART;
-+	return ret;
- }
- 
- #ifdef CONFIG_NET_CLS_ACT
+On Thu, Jul 09, 2009 at 02:41:47PM -0700, Yinghai Lu wrote:
+> 
+> Stephen reported that his DL585 G2 need noapic after 2.6.22 (?)
+> 
+> Bann bisected
 
+s/Bann/Dann/ :)
+
+>   --------------------------------------------------------------------
+>   commit 30a18d6c3f1e774de656ebd8ff219d53e2ba4029
+>   Date:   Tue Feb 19 03:21:20 2008 -0800
+> 
+>       x86: multi pci root bus with different io resource range, on
+>       64-bit
+>   --------------------------------------------------------------------
+> cause the problem.
+> 
+> it turns out that
+> 1. that system have two HT chains.
+> 2. BIOS doesn't allocate resource for BAR 6 under 8132 etc
+> 3. that patches will try to split root resource to peer root resources
+>    according to pci conf of NB
+> 4. pci assign unassign path, assign some range to pci-x  bridge, but it
+>    is overlapping with ioapic addr of io4 and 8132.
+> 
+> the reason is at that point ioapic address and BAR is not inserted yet.
+> the BAR for io4 ioapic is not in regular position.
+> the BAR for 8132 is sitting to func1, and pci-x bridge is func0.
+> 
+> aka that patch is not the cause, and it just uncover other problems.
+> 
+> solution is trying to insert ioapic_resource early a little bit.
+> 
+> Reported-by: Stephen Frost <sfrost@snowman.net>
+> Reported-by: dann frazier <dannf@hp.com>
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  arch/x86/include/asm/io_apic.h |    2 ++
+>  arch/x86/kernel/apic/io_apic.c |   14 +++-----------
+>  arch/x86/pci/i386.c            |    7 +++++++
+>  3 files changed, 12 insertions(+), 11 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/include/asm/io_apic.h
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/include/asm/io_apic.h
+> +++ linux-2.6/arch/x86/include/asm/io_apic.h
+> @@ -161,6 +161,7 @@ extern int io_apic_set_pci_routing(struc
+>  		 struct io_apic_irq_attr *irq_attr);
+>  extern int (*ioapic_renumber_irq)(int ioapic, int irq);
+>  extern void ioapic_init_mappings(void);
+> +extern void ioapic_insert_resources(void);
+>  
+>  extern struct IO_APIC_route_entry **alloc_ioapic_entries(void);
+>  extern void free_ioapic_entries(struct IO_APIC_route_entry **ioapic_entries);
+> @@ -180,6 +181,7 @@ extern void ioapic_write_entry(int apic,
+>  #define io_apic_assign_pci_irqs 0
+>  static const int timer_through_8259 = 0;
+>  static inline void ioapic_init_mappings(void)	{ }
+> +static inline void ioapic_insert_resources(void) { }
+>  
+>  static inline void probe_nr_irqs_gsi(void)	{ }
+>  #endif
+> Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
+> +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+> @@ -4182,28 +4182,20 @@ fake_ioapic_page:
+>  	}
+>  }
+>  
+> -static int __init ioapic_insert_resources(void)
+> +void __init ioapic_insert_resources(void)
+>  {
+>  	int i;
+>  	struct resource *r = ioapic_resources;
+>  
+>  	if (!r) {
+> -		if (nr_ioapics > 0) {
+> +		if (nr_ioapics > 0)
+>  			printk(KERN_ERR
+>  				"IO APIC resources couldn't be allocated.\n");
+> -			return -1;
+> -		}
+> -		return 0;
+> +		return;
+>  	}
+>  
+>  	for (i = 0; i < nr_ioapics; i++) {
+>  		insert_resource(&iomem_resource, r);
+>  		r++;
+>  	}
+> -
+> -	return 0;
+>  }
+> -
+> -/* Insert the IO APIC resources after PCI initialization has occured to handle
+> - * IO APICS that are mapped in on a BAR in PCI space. */
+> -late_initcall(ioapic_insert_resources);
+> Index: linux-2.6/arch/x86/pci/i386.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/pci/i386.c
+> +++ linux-2.6/arch/x86/pci/i386.c
+> @@ -35,6 +35,7 @@
+>  #include <asm/pat.h>
+>  #include <asm/e820.h>
+>  #include <asm/pci_x86.h>
+> +#include <asm/io_apic.h>
+>  
+>  
+>  static int
+> @@ -227,6 +228,12 @@ void __init pcibios_resource_survey(void
+>  	pcibios_allocate_resources(1);
+>  
+>  	e820_reserve_resources_late();
+> +	/*
+> +	 * Insert the IO APIC resources after PCI initialization has
+> +	 * occured to handle IO APICS that are mapped in on a BAR in
+> +	 * PCI space, but before we trying to assign unassigned pci res.
+> +	 */
+> +	ioapic_insert_resources();
+>  }
+>  
+>  /**
+> 
+
+-- 
+dann frazier
 
