@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751615AbZGIXbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751748AbZGIXd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751615AbZGIXbs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 19:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbZGIXbj
+	id S1751748AbZGIXd2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 19:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZGIXdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 19:31:39 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:48526 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751100AbZGIXbi (ORCPT
+	Thu, 9 Jul 2009 19:33:21 -0400
+Received: from mail-qy0-f193.google.com ([209.85.221.193]:33929 "EHLO
+	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbZGIXdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 19:31:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=mbpofqj/aexFnGJUPXxaZV9EhUMK50s9H4iqUnbULRUmmRfesaoQJ+DPZrj++dtrfv
-         U4DTZCS2ZfdScLu3wdcwnQa0Li+zvnyR37CaQRQb9S80KCOWb4Ey8J7BmOUx75nx4Rkk
-         JLuxZdee1YIcRWCdv53WHMcWxtpGt40sZx5sQ=
+	Thu, 9 Jul 2009 19:33:20 -0400
+Message-ID: <4A567E3B.90609@codemonkey.ws>
+Date: Thu, 09 Jul 2009 18:33:15 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <4A56344C.3010500@warlich.name>
-References: <4A4771FD.1020207@warlich.name> <4A52F39A.1030704@warlich.name>
-	 <4A5311C7.1020507@warlich.name> <4A535973.9090206@gmail.com>
-	 <4A5388EA.7030503@warlich.name> <4A53DA88.5080703@gmail.com>
-	 <4A543FA5.1090608@warlich.name> <4A54AD1A.1040009@kernel.org>
-	 <4A54B98B.50806@gmail.com> <4A56344C.3010500@warlich.name>
-Date: Thu, 9 Jul 2009 17:31:36 -0600
-Message-ID: <51f3faa70907091631s329255en5fc197091b9ae4f0@mail.gmail.com>
-Subject: Re: "EXT3-fs error" after resume from s2ram
-From: Robert Hancock <hancockrwd@gmail.com>
-To: Christof Warlich <christof@warlich.name>
-Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
-       ide <linux-ide@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
+       xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
+       alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org, kurt.hackel@oracle.com,
+       Rusty Russell <rusty@rustcorp.com.au>, dave.mccracken@oracle.com,
+       Marcelo Tosatti <mtosatti@redhat.com>, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       chris.mason@oracle.com, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
+References: <7cb22078-f200-45e3-a265-10cce2ae8224@default>
+In-Reply-To: <7cb22078-f200-45e3-a265-10cce2ae8224@default>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 9, 2009 at 12:17 PM, Christof Warlich<christof@warlich.name> wrote:
-> Hi Tejun, Robert,
->
-> hey, great: Suspend to ram seems to work like a charm now! Many thanks to
-> Robert for taking the time to identify the root cause and to Tejun for
-> providing the patch.
->
-> I've attached both boot and suspend / resume messages from
-> /var/log/kern.log, just let me know if I can do anything else to
-> help getting the patch into an official kernel release. Furthermore, I would
-> be happy to be kept posted on the progress being made regarding this.
->
-> Just one clarification: From what I understood so far, it will be impossible
-> to ever utilize the full disk capacity as long as the BIOS applies the HPA
-> on boot, right?
+Dan Magenheimer wrote:
+> But this means that either the content of that page must have been
+> preserved somewhere or the discard fault handler has sufficient
+> information to go back and get the content from the source (e.g.
+> the filesystem).  Or am I misunderstanding?
+>   
 
-I believe that's the case, yes.. if the BIOS is applying the HPA on
-each boot, then we can't change the max address again without a
-hardware reset..
+As Rik said, it's the later.
+
+> With tmem, the equivalent of the "failure to access a discarded page"
+> is inline and synchronous, so if the tmem access "fails", the
+> normal code immediately executes.
+>   
+
+Yup.  This is the main difference AFAICT.  It's really just API 
+semantics within Linux.
+
+You could clearly use the volatile state of CMM2 to implement tmem as an 
+API in Linux.  The get/put functions would set a flag such that if the 
+discard handler was invoked as long as that operation happened, the 
+operation could safely fail.  That's why I claimed tmem is a subset of CMM2.
+
+> I suppose changing Linux to utilize the two tmem services
+> as described above is a semantic change.  But to me it
+> seems no more of a semantic change than requiring a new
+> special page fault handler because a page of memory might
+> disappear behind the OS's back.
+>
+> But IMHO this is a corollary of the fundamental difference.  CMM2's
+> is more the "VMware" approach which is that OS's should never have
+> to be modified to run in a virtual environment.  (Oh, but maybe
+> modified just slightly to make the hypervisor a little less
+> clueless about the OS's resource utilization.)
+
+While I always enjoy a good holy war, I'd like to avoid one here because 
+I want to stay on the topic at hand.
+
+If there was one change to tmem that would make it more palatable, for 
+me it would be changing the way pools are "allocated".  Instead of 
+getting an opaque handle from the hypervisor, I would force the guest to 
+allocate it's own memory and to tell the hypervisor that it's a tmem 
+pool.  You could then introduce semantics about whether the guest was 
+allowed to directly manipulate the memory as long as it was in the 
+pool.  It would be required to access the memory via get/put functions 
+that under Xen, would end up being a hypercall and a copy.  Presumably 
+you would do some tricks with ballooning to allocate empty memory in Xen 
+and then use those addresses as tmem pools.  On KVM, we could do 
+something more clever.
+
+The big advantage of keeping the tmem pool part of the normal set of 
+guest memory is that you don't introduce new challenges with respect to 
+memory accounting.  Whether or not tmem is directly accessible from the 
+guest, it is another memory resource.  I'm certain that you'll want to 
+do accounting of how much tmem is being consumed by each guest, and I 
+strongly suspect that you'll want to do tmem accounting on a per-process 
+basis.  I also suspect that doing tmem limiting for things like cgroups 
+would be desirable.
+
+That all points to making tmem normal memory so that all that 
+infrastructure can be reused.  I'm not sure how well this maps to Xen 
+guests, but it works out fine when the VMM is capable of presenting 
+memory to the guest without actually allocating it (via overcommit).
+
+Regards,
+
+Anthony Liguori
