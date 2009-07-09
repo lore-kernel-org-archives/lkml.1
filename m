@@ -1,72 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760537AbZGIHDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760371AbZGIHCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760537AbZGIHDB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 03:03:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbZGIHAG
+	id S1760371AbZGIHCb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 03:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbZGIG7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 03:00:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:29296 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759956AbZGIHAE convert rfc822-to-8bit (ORCPT
+	Thu, 9 Jul 2009 02:59:39 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:30053 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758321AbZGIG7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 03:00:04 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090709062906.GA14804@feather>
-References: <1246873983.20908.0.camel@johannes.local>
-	 <19f34abd0907081228p541d1cdao85f37aaa479fcfc5@mail.gmail.com>
-	 <20090709062906.GA14804@feather>
-Date: Thu, 9 Jul 2009 09:00:02 +0200
-Message-ID: <154e089b0907090000r54dc2436ta25b58395a04acc@mail.gmail.com>
-Subject: Re: [PATCH] kmemcheck: fix sparse warning
-From: Hannes Eder <hannes@hanneseder.net>
-To: Josh Triplett <josh@joshtriplett.org>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Linux Torvalds <torvalds@linux-foundation.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-sparse@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 9 Jul 2009 02:59:36 -0400
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>, Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-fsdevel@vger.kernel.org,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org
+Date: Thu, 09 Jul 2009 11:49:46 +0300
+Message-Id: <20090709084946.12122.55544.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090709084822.12122.79749.sendpatchset@localhost.localdomain>
+References: <20090709084822.12122.79749.sendpatchset@localhost.localdomain>
+Subject: [PATCH v3 12/18] reiserfs: do not manipulate s_dirt directly
+X-OriginalArrivalTime: 09 Jul 2009 06:59:17.0778 (UTC) FILETIME=[C6EE4720:01CA0062]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 9, 2009 at 08:29, Josh Triplett<josh@joshtriplett.org> wrote:
-> [Adding Linus and Chris Li to CC; Linus for further background on
-> -Wdo-while, and Chris Li for Sparse.]
->
-> On Wed, Jul 08, 2009 at 09:28:24PM +0200, Vegard Nossum wrote:
->> 2009/7/6 Johannes Berg <johannes@sipsolutions.net>:
->> > Whether or not the sparse warning
->> >
->> > warning: do-while statement is not a compound statement
->> >
->> > is justified or not in this case, it is annoying and
->> > trivial to fix.
-> [...]
->>
->> I'll change the patch title to "kmemcheck: work around bogus sparse
->> warning" and fix the indentation, sounds ok?
->>
->> Meanwhile, I Cced sparse mailing list in case somebody else knows
->> anything else about this warning (what it means, whether it's
->> justified in this case, whether it should be fixed in sparse, etc.).
->
-> -Wdo-while gives a warning if you write:
->
-> do
->    statement
-> while (...);
->
-> where "statement" does not consist of a compound statement surrounded by
-> braces.  As far as I know, this warning exists primarily because it
-> matched Linus's preference for readability.
+... use new VFS helpers instead.
 
-see:
-http://lkml.org/lkml/2008/12/23/180
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ fs/reiserfs/journal.c |    6 +++---
+ fs/reiserfs/resize.c  |    2 +-
+ fs/reiserfs/super.c   |   10 +++++-----
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-an related messages/threads
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index 77f5bb7..1197c30 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -3259,7 +3259,7 @@ int journal_mark_dirty(struct reiserfs_transaction_handle *th,
+ 			       th->t_trans_id, journal->j_trans_id);
+ 	}
+ 
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 
+ 	prepared = test_clear_buffer_journal_prepared(bh);
+ 	clear_buffer_journal_restore_dirty(bh);
+@@ -3554,7 +3554,7 @@ int reiserfs_flush_old_commits(struct super_block *sb)
+ 			do_journal_end(&th, sb, 1, COMMIT_NOW | WAIT);
+ 		}
+ 	}
+-	return sb->s_dirt;
++	return is_sb_dirty(sb);
+ }
+ 
+ /*
+@@ -3984,7 +3984,7 @@ static int do_journal_end(struct reiserfs_transaction_handle *th,
+ 	 ** it tells us if we should continue with the journal_end, or just return
+ 	 */
+ 	if (!check_journal_end(th, sb, nblocks, flags)) {
+-		sb->s_dirt = 1;
++		mark_sb_dirty(sb);
+ 		wake_queued_writers(sb);
+ 		reiserfs_async_progress_wait(sb);
+ 		goto out;
+diff --git a/fs/reiserfs/resize.c b/fs/reiserfs/resize.c
+index 18b315d..265bed0 100644
+--- a/fs/reiserfs/resize.c
++++ b/fs/reiserfs/resize.c
+@@ -201,7 +201,7 @@ int reiserfs_resize(struct super_block *s, unsigned long block_count_new)
+ 					  (bmap_nr_new - bmap_nr)));
+ 	PUT_SB_BLOCK_COUNT(s, block_count_new);
+ 	PUT_SB_BMAP_NR(s, bmap_would_wrap(bmap_nr_new) ? : bmap_nr_new);
+-	s->s_dirt = 1;
++	mark_sb_dirty(s);
+ 
+ 	journal_mark_dirty(&th, s, SB_BUFFER_WITH_SB(s));
+ 
+diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
+index d3aeb06..a026cad 100644
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -71,8 +71,8 @@ static int reiserfs_sync_fs(struct super_block *s, int wait)
+ 	if (!journal_begin(&th, s, 1))
+ 		if (!journal_end_sync(&th, s, 1))
+ 			reiserfs_flush_old_commits(s);
+-	s->s_dirt = 0;	/* Even if it's not true.
+-			 * We'll loop forever in sync_supers otherwise */
++	mark_sb_clean(s); /* Even if it's not true.
++			   * We'll loop forever in sync_supers otherwise */
+ 	reiserfs_write_unlock(s);
+ 	return 0;
+ }
+@@ -98,7 +98,7 @@ static int reiserfs_freeze(struct super_block *s)
+ 			journal_end_sync(&th, s, 1);
+ 		}
+ 	}
+-	s->s_dirt = 0;
++	mark_sb_clean(s);
+ 	reiserfs_write_unlock(s);
+ 	return 0;
+ }
+@@ -468,7 +468,7 @@ static void reiserfs_put_super(struct super_block *s)
+ 
+ 	lock_kernel();
+ 
+-	if (s->s_dirt)
++	if (is_sb_dirty(s))
+ 		reiserfs_write_super(s);
+ 
+ 	/* change file system state to current state if it was mounted with read-write permissions */
+@@ -1287,7 +1287,7 @@ static int reiserfs_remount(struct super_block *s, int *mount_flags, char *arg)
+ 	err = journal_end(&th, s, 10);
+ 	if (err)
+ 		goto out_err;
+-	s->s_dirt = 0;
++	mark_sb_clean(s);
+ 
+ 	if (!(*mount_flags & MS_RDONLY)) {
+ 		finish_unfinished(s);
+-- 
+1.6.0.6
 
-Cheers,
--Hannes
