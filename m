@@ -1,93 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZGIWAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbZGIWA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbZGIWAJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 18:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbZGIV7o
+	id S1755834AbZGIWA1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 18:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbZGIV7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 17:59:44 -0400
-Received: from www.tglx.de ([62.245.132.106]:37942 "EHLO www.tglx.de"
+	Thu, 9 Jul 2009 17:59:49 -0400
+Received: from www.tglx.de ([62.245.132.106]:37946 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756882AbZGIV7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 17:59:43 -0400
-Message-Id: <20090709215606.526259917@linutronix.de>
+	id S1756995AbZGIV7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 17:59:47 -0400
+Message-Id: <20090709215606.626294588@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Thu, 09 Jul 2009 21:59:22 -0000
+Date: Thu, 09 Jul 2009 21:59:30 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: netdev@vger.kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
        Patrick McHardy <kaber@trash.net>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 1/3] net: serialize hrtimer callback in sched_cbq
+Subject: [patch 2/3] net: sanitize hrtimer usage in sched_cbq
 References: <20090709215455.703939259@linutronix.de>
 Content-Disposition: inline;
-	filename=net-sched-cbq-serialize-hrtimer-callback.patch
+	filename=net-sched-cbq-sanitize-hrtimer-usage.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The hrtimer callback cbq_undelay() is not serialized against
-cbq_ovl_delay(). That affects at least q->pmask and q->delay_timer.
+The usage of hrtimer in cbq_ovl_delay() is less than obvious and in
+two aspects wrong.
 
-Lock it proper.
+The intention of the code is to arm an hrtimer with the expiry time
+X. If the timer is already armed the code needs to check whether the
+expiry time X is earlier than the expiry time of the armed timer and
+either keep the active timer or rearm it to X. If the timer is not
+armed it needs to schedule it to X. That's not what the code does.
+
+It calls hrtimer_try_to_cancel() unconditionally and checks the return
+value. If the return value is non zero then it compares the expiry
+time of the timer with the new expiry time and picks the earlier
+one. The return value check does not take into account that the timer
+might run its callback (expressed by a return value of -1). In that
+case the expiry time of the timer is probably earlier than the new
+expiry time so it rearms the already expired timer with the expiry
+value in the past.
+
+If the timer is not active (hrtimer_try_to_cancel() returns 0) it does
+not set the new expiry time X but instead restarts the timer with the
+expiry time which was active when the timer fired last. That's in the
+past as well.
+
+Change the code to check whether the timer is enqueued. If it is
+enqueued then the expiry time of the timer is checked against the new
+expiry time and it only calls hrtimer_start when the new expiry time
+is earlier than the already armed timer. If the timer is not active
+then arm it unconditionally with the new expiry time.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Patrick McHardy <kaber@trash.net>
 ---
- net/sched/sch_cbq.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ net/sched/sch_cbq.c |   21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
 Index: linux-2.6/net/sched/sch_cbq.c
 ===================================================================
 --- linux-2.6.orig/net/sched/sch_cbq.c
 +++ linux-2.6/net/sched/sch_cbq.c
-@@ -163,6 +163,7 @@ struct cbq_sched_data
- 	psched_time_t		now_rt;		/* Cached real time */
- 	unsigned		pmask;
+@@ -494,7 +494,6 @@ static void cbq_ovl_delay(struct cbq_cla
  
-+	spinlock_t		lock;
- 	struct hrtimer		delay_timer;
- 	struct qdisc_watchdog	watchdog;	/* Watchdog timer,
- 						   started when CBQ has
-@@ -503,6 +504,9 @@ static void cbq_ovl_delay(struct cbq_cla
+ 	if (!cl->delayed) {
+ 		psched_time_t sched = q->now;
+-		ktime_t expires;
+ 
+ 		delay += cl->offtime;
+ 		if (cl->avgidle < 0)
+@@ -504,6 +503,7 @@ static void cbq_ovl_delay(struct cbq_cla
  		cl->undertime = q->now + delay;
  
  		if (delay > 0) {
-+			unsigned long flags;
-+
-+			spin_lock_irqsave(&q->lock, flags);
- 			sched += delay + cl->penalty;
- 			cl->penalized = sched;
- 			cl->cpriority = TC_CBQ_MAXPRIO;
-@@ -518,6 +522,7 @@ static void cbq_ovl_delay(struct cbq_cla
- 			hrtimer_restart(&q->delay_timer);
++			ktime_t expires, actexp;
+ 			unsigned long flags;
+ 
+ 			spin_lock_irqsave(&q->lock, flags);
+@@ -514,12 +514,19 @@ static void cbq_ovl_delay(struct cbq_cla
+ 
+ 			expires = ktime_set(0, 0);
+ 			expires = ktime_add_ns(expires, PSCHED_TICKS2NS(sched));
+-			if (hrtimer_try_to_cancel(&q->delay_timer) &&
+-			    ktime_to_ns(ktime_sub(
+-					hrtimer_get_expires(&q->delay_timer),
+-					expires)) > 0)
+-				hrtimer_set_expires(&q->delay_timer, expires);
+-			hrtimer_restart(&q->delay_timer);
++			/*
++			 * If the timer is queued check whether the
++			 * new expiry time is earlier than the current
++			 * one.
++			 */
++			if (hrtimer_is_queued(&q->delay_timer)) {
++				actexp = hrtimer_get_expires(&q->delay_timer);
++				if (expires.tv64 >= actexp.tv64)
++					expires.tv64 = 0;
++			}
++			if (expires.tv64)
++				hrtimer_start(&q->delay_timer, expires,
++					      HRTIMER_MODE_ABS);
  			cl->delayed = 1;
  			cl->xstats.overactions++;
-+			spin_unlock_irqrestore(&q->lock, flags);
- 			return;
- 		}
- 		delay = 1;
-@@ -599,6 +604,7 @@ static enum hrtimer_restart cbq_undelay(
- 
- 	now = psched_get_time();
- 
-+	spin_lock(&q->lock);
- 	pmask = q->pmask;
- 	q->pmask = 0;
- 
-@@ -623,6 +629,7 @@ static enum hrtimer_restart cbq_undelay(
- 		time = ktime_add_ns(time, PSCHED_TICKS2NS(now + delay));
- 		hrtimer_start(&q->delay_timer, time, HRTIMER_MODE_ABS);
- 	}
-+	spin_unlock(&q->lock);
- 
- 	sch->flags &= ~TCQ_F_THROTTLED;
- 	__netif_schedule(qdisc_root(sch));
-@@ -1396,6 +1403,7 @@ static int cbq_init(struct Qdisc *sch, s
- 	q->link.avpkt = q->link.allot/2;
- 	q->link.minidle = -0x7FFFFFFF;
- 
-+	spin_lock_init(&q->lock);
- 	qdisc_watchdog_init(&q->watchdog, sch);
- 	hrtimer_init(&q->delay_timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
- 	q->delay_timer.function = cbq_undelay;
+ 			spin_unlock_irqrestore(&q->lock, flags);
 
 
