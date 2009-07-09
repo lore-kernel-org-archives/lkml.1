@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758368AbZGIHUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbZGIHVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758368AbZGIHUm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 03:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757889AbZGIHUe
+	id S1760241AbZGIHVb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 03:21:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756956AbZGIHVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 03:20:34 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60585 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755063AbZGIHUd (ORCPT
+	Thu, 9 Jul 2009 03:21:22 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49615 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbZGIHVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 03:20:33 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
-Cc: kosaki.motohiro@jp.fujitsu.com, Minchan Kim <minchan.kim@gmail.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
-In-Reply-To: <20090709144938.23A8.A69D9226@jp.fujitsu.com>
-References: <alpine.DEB.1.10.0907071252060.5124@gentwo.org> <20090709144938.23A8.A69D9226@jp.fujitsu.com>
-Message-Id: <20090709161712.23B0.A69D9226@jp.fujitsu.com>
+	Thu, 9 Jul 2009 03:21:21 -0400
+Date: Thu, 9 Jul 2009 09:21:14 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: tridge@samba.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Martin Steigerwald <Martin@lichtvoll.de>,
+       Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
+       Rusty Russell <rusty@rustcorp.com.au>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+Message-ID: <20090709072113.GC7992@elf.ucw.cz>
+References: <19026.38137.63807.427511@samba.org> <200907072356.51553.Martin@lichtvoll.de> <19028.3736.892828.352905@samba.org> <20090708110451.1092afa7@lxorguk.ukuu.org.uk> <1247066878.4159.153.camel@mulgrave.site> <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk> <1247069202.4159.212.camel@mulgrave.site> <20090708171848.21633768@lxorguk.ukuu.org.uk> <19029.29008.522539.547122@samba.org> <87skh68lys.fsf@devron.myhome.or.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu,  9 Jul 2009 16:20:29 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87skh68lys.fsf@devron.myhome.or.jp>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > On Mon, 6 Jul 2009, Minchan Kim wrote:
-> > 
-> > > Anyway, I think it's not a big cost in normal system.
-> > > So If you want to add new accounting, I don't have any objection. :)
-> > 
-> > Lets keep the counters to a mininum. If we can calculate the values from
-> > something else then there is no justification for a new counter.
-> > 
-> > A new counter increases the size of the per cpu structures that exist for
-> > each zone and each cpu. 1 byte gets multiplies by the number of cpus and
-> > that gets multiplied by the number of zones.
+On Thu 2009-07-09 14:27:39, OGAWA Hirofumi wrote:
+> tridge@samba.org writes:
 > 
-> OK. I'll implement this idea.
+> > Can you explain what standard you think should be applied to patent
+> > workaround patches for them to be acceptable? I'd like to know if
+> > there is the possibility of us finding some agreement in the future or
+> > not.
+> 
+> You are talking different thing than patch. Please stop it.
 
-Grr, sorry I cancel this opinion. Shem pages can't be calculated 
-by minchan's formula.
+Uff, the patch is obviously trash -- takes working code, replaces it
+with known broken code -- so some justification is neccessary.
 
-if those page are mlocked, the page move to unevictable lru. then
-this calculation don't account mlocked page. However mlocked tmpfs pages
-also make OOM issue.
-
-
-
+Outside of U.S., the patch makes obviously no sense.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
