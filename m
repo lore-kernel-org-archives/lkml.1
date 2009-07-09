@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759387AbZGIIHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbZGIIJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759387AbZGIIHa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 04:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759018AbZGIIG5
+	id S1759530AbZGIIJu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 04:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbZGIIJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 04:06:57 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:43107 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758629AbZGIIGy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 04:06:54 -0400
-Message-ID: <4A55A4AE.3000206@mxs.nes.nec.co.jp>
-Date: Thu, 09 Jul 2009 17:05:02 +0900
-From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>
-CC: kexec-ml <kexec@lists.infradead.org>
-Subject: [PATCH] kdump: Enable kdump if 2nd-kernel is loaded.
-Content-Type: text/plain; charset=ISO-2022-JP
+	Thu, 9 Jul 2009 04:09:35 -0400
+Received: from sh.osrg.net ([192.16.179.4]:51473 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751747AbZGIIJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 04:09:32 -0400
+Date: Thu, 9 Jul 2009 17:08:51 +0900
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com,
+       dwalker@fifo99.com, maciej.rutecki@gmail.com, akpm@linux-foundation.org,
+       tarkan.erimer@turknet.net.tr, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090709075004.GH23611@kernel.dk>
+References: <20090708165728.GU23611@kernel.dk>
+	<20090709084839G.fujita.tomonori@lab.ntt.co.jp>
+	<20090709075004.GH23611@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090709170727S.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 09 Jul 2009 17:08:52 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 9 Jul 2009 09:50:04 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Hi,
+> On Thu, Jul 09 2009, FUJITA Tomonori wrote:
+> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Subject: [PATCH] block: call blk_scsi_ioctl_init()
+> > 
+> > Currently, blk_scsi_ioctl_init() is not called so
+> > blk_default_cmd_filter isn't initalized. Some commands are not blocked
+> > wrongly.
+> > 
+> > This fixes a regression introduced:
+> > 
+> > commit 018e0446890661504783f92388ecce7138c1566d
+> > Author: Jens Axboe <jens.axboe@oracle.com>
+> > Date:   Fri Jun 26 16:27:10 2009 +0200
+> > 
+> >     block: get rid of queue-private command filter
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > ---
+> >  block/scsi_ioctl.c |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
+> > index f0e0ce0..e5b1001 100644
+> > --- a/block/scsi_ioctl.c
+> > +++ b/block/scsi_ioctl.c
+> > @@ -680,3 +680,4 @@ int __init blk_scsi_ioctl_init(void)
+> >  	blk_set_cmd_filter_defaults(&blk_default_cmd_filter);
+> >  	return 0;
+> >  }
+> > +fs_initcall(blk_scsi_ioctl_init);
+> > -- 
+> > 1.6.0.6
+> 
+> You beat me to it, it was the missing call as I suspected. This
+> works, I verified it myself. Applied to for-linus, going upstream
+> soon.
 
-This patch enables a kdump if 2nd-kernel is loaded.
-(The patch is based on linux-2.6.31-rc2.)
-
-Now, a kdump is enabled if a kernel parameter "oops=panic" is specified and
-2nd-kernel is loaded. I think that a kdump should be enabled regardless of
-"oops=panic" if 2nd-kernel is loaded, because a system administrator loads
-2nd-kernel for enabling a kdump.
-
-* Reference
-  The discussion about this patch
-  http://lists.infradead.org/pipermail/kexec/2009-July/003417.html
+I really hope that you become more serious about not causing such
+incident; breaking mainline kernel by merging your trivial patch after
+-rc1 (even without sending the patch to any mailing list). You broke
+mainline in the exact same way just months ago (the commit
+1e42807918d17e8c93bf14fbb74be84b141334c1 in 2.6.29-rc7).
 
 
-Thanks
-Ken'ichi Ohmichi
-
-Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
-Acked-by: Simon Horman <horms@verge.net.au>
----
---- a/kernel/kexec.c	2009-07-08 12:30:26.000000000 +0900
-+++ b/kernel/kexec.c	2009-07-08 12:38:08.000000000 +0900
-@@ -57,6 +57,8 @@ struct resource crashk_res = {
- 
- int kexec_should_crash(struct task_struct *p)
- {
-+	if (kexec_crash_image)
-+		return 1;
- 	if (in_interrupt() || !p->pid || is_global_init(p) || panic_on_oops)
- 		return 1;
- 	return 0;
-
-_______________________________________________
-kexec mailing list
-kexec@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kexec
-
+Thanks,
