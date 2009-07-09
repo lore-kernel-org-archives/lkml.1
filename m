@@ -1,28 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZGIUta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbZGIUvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbZGIUta (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 16:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZGIUtX
+	id S1755523AbZGIUvi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 16:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbZGIUv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 16:49:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58355 "EHLO mx2.redhat.com"
+	Thu, 9 Jul 2009 16:51:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58416 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753644AbZGIUtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 16:49:22 -0400
-Date: Thu, 9 Jul 2009 16:47:59 -0400
+	id S1753653AbZGIUv2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 16:51:28 -0400
+Date: Thu, 9 Jul 2009 16:51:08 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: Jens Axboe <jens.axboe@oracle.com>,
        linux kernel mailing list <linux-kernel@vger.kernel.org>
 Cc: Divyesh Shah <dpshah@google.com>, Moyer Jeff Moyer <jmoyer@redhat.com>
-Subject: cfq-iosched: no need to keep track of busy_rt_queues
-Message-ID: <20090709204759.GF30832@redhat.com>
+Subject: [PATCH] cfq-iosched: no need to keep track of busy_rt_queues
+Message-ID: <20090709205108.GG30832@redhat.com>
+References: <20090709204759.GF30832@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090709204759.GF30832@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Resending as had forgotten to put "[PATCH]" in subject line.
 
 o Get rid of busy_rt_queues infrastructure. Looks like it is redundant.
 
@@ -31,9 +35,6 @@ o Once an RT queue gets request it will preempt any of the BE or IDLE queues
   will anyway select this queue before any of the BE or IDLE queue. Hence
   looks like there is no need to keep track of how many busy RT queues are
   currently on service tree. 
-
-o I ran one RT reader and two BE readers. Can't see preemption due to
-  busy_rt_queues kicking in.
 
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
