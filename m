@@ -1,43 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbZGILaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759183AbZGILev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760147AbZGILaJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 07:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbZGIL35
+	id S1759183AbZGILev (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 07:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbZGILem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 07:29:57 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52216 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbZGIL35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 07:29:57 -0400
-Date: Thu, 9 Jul 2009 13:29:55 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, rjw@sisk.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [regression] 2.6.30 leaking keys on console switch
-In-Reply-To: <alpine.LNX.2.00.0907081317000.27327@wotan.suse.de>
-Message-ID: <alpine.LNX.2.00.0907091328370.27327@wotan.suse.de>
-References: <87eiss7uhb.fsf@basil.nowhere.org> <alpine.LNX.2.00.0907071048210.4994@wotan.suse.de> <20090708065325.GE3309@dtor-d630.eng.vmware.com> <alpine.LNX.2.00.0907081317000.27327@wotan.suse.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Jul 2009 07:34:42 -0400
+Received: from easi.embeddedalley.com ([71.6.201.124]:58063 "HELO
+	easi.embeddedalley.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755640AbZGILel (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 07:34:41 -0400
+Subject: Re: [PATCH 0/44] includecheck: fix multiple includes
+From: dmitry pervushin <dpervushin@embeddedalley.com>
+Reply-To: dpervushin@embeddedalley.com
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       davinci <davinci-linux-open-source@linux.davincidsp.com>,
+       Hugo Villeneuve <hugo.villeneuve@lyrtech.com>, philip@opensdr.com,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Eduardo Valentin <eduardo.valentin@indt.org.br>,
+       Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org,
+       Ben Dooks <ben-linux@fluff.org>, Ben Dooks <ben@simtec.co.uk>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       arm <linux-arm@lists.arm.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1247113711.2453.27.camel@ht.satnam>
+References: <1247063308.4382.12.camel@ht.satnam>
+	 <1247076059.4382.127.camel@ht.satnam>
+	 <20090708211321.GA15928@flint.arm.linux.org.uk>
+	 <1247113711.2453.27.camel@ht.satnam>
+Content-Type: text/plain
+Organization: EmbeddedAlley
+Date: Thu, 09 Jul 2009 15:34:18 +0400
+Message-Id: <1247139259.18729.21.camel@hp.diimka.lan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Jul 2009, Jiri Kosina wrote:
-
-> For completness, Andi sent me the following evtest output off-list 
-> yesterday. The LeftAlt being autorepeated at time 1246964430.448470 is a 
-> little bit suspicious, as it is preceeded by release ... I don't see how 
-> this could be causing the behavior Andi is observing though.
+On Thu, 2009-07-09 at 09:58 +0530, Jaswinder Singh Rajput wrote:
+> On Wed, 2009-07-08 at 22:13 +0100, Russell King wrote:
+> > On Wed, Jul 08, 2009 at 11:30:59PM +0530, Jaswinder Singh Rajput wrote:
+> > > I am still waiting ACK/NAK for :
+for this:
+> > >       includecheck fix: arm, plat-stmp3xxx/pinmux.c
+Acked-by: dmitry pervushin <dpervushin@embeddedalley.com>
+> > 
+> > You're still waiting because apparantly you never sent this set anywhere
+> > near any ARM people before.
+> > 
+> > For the first two, I'll ack them:
+> > 
+> > Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> > 
+> > The remainder look sane to me, but you'll have to seek acks from the
+> > individual platform maintainer(s).
+> > 
 > 
-> I am not able to reproduce the problem myself.
+> OK, adding some more ARM people and ARM lists to get remaining ACK/NAK.
+> 
+> Patches are already posted to LKML and also available at :
+> 
+> http://git.kernel.org/?p=linux/kernel/git/jaswinder/headers-check-2.6.git;a=summary
+> 
+> In case if you are not able to find these patches let me know.
+> 
+> Thanks,
+> --
+> JSR
+> 
+> 
 
-Umm, actually, Andi, could you verify whether reverting e7b5c1ef4d changes 
-the behavior you are observing in any way?
-
--- 
-Jiri Kosina
-SUSE Labs
