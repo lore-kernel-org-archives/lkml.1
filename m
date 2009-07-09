@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759658AbZGIJrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759418AbZGIJuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759658AbZGIJrb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 05:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbZGIJrY
+	id S1759418AbZGIJuI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 05:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757930AbZGIJt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 05:47:24 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:53972 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756598AbZGIJrX (ORCPT
+	Thu, 9 Jul 2009 05:49:58 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45946 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756465AbZGIJt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 05:47:23 -0400
-Subject: Possible memory leaks in drivers/gpu/drm/
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: David Airlie <airlied@linux.ie>, dri-devel@lists.sourceforge.net
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Thu, 09 Jul 2009 10:47:10 +0100
-Message-Id: <1247132830.11409.29.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Jul 2009 09:47:10.0906 (UTC) FILETIME=[3AFBA1A0:01CA007A]
+	Thu, 9 Jul 2009 05:49:58 -0400
+Date: Thu, 9 Jul 2009 11:48:00 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, swetland@google.com
+Subject: Re: Framebuffer support for HTC Dream
+Message-ID: <20090709094755.GA10937@elf.ucw.cz>
+References: <20090629111029.GA15514@elf.ucw.cz> <20090629123840.1e20f17d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090629123840.1e20f17d.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> > index fb19803..4a7873b 100644
+> > --- a/drivers/video/Kconfig
+> > +++ b/drivers/video/Kconfig
+> > @@ -2119,6 +2119,14 @@ config FB_PRE_INIT_FB
+> >  	  Select this option if display contents should be inherited as set by
+> >  	  the bootloader.
+> >  
+> > +config FB_MSM
+> > +	tristate
+> > +	depends on FB && ARCH_MSM
+> > +	select FB_CFB_FILLRECT
+> > +	select FB_CFB_COPYAREA
+> > +	select FB_CFB_IMAGEBLIT
+> > +	default y
+> 
+> I'm seeing gpio calls in there.  Do we need a gpio dependency, or did
+> ARCH_MSM give us gpio anyway?
 
-I get some kmemleak reports in the drm code. The first happens when Xorg
-is running:
+AFAICT, ARCH_MSM needs GENERIC_GPIO, so we are ok.
 
-unreferenced object 0xc2659050 (size 32):
-  comm "Xorg", pid 2585, jiffies 4294902558
-  backtrace:
-    [<c01e0c3a>] create_object+0xfa/0x250
-    [<c01e1e7d>] kmemleak_alloc+0x5d/0x70
-    [<c01db2d5>] __kmalloc+0x115/0x1f0
-    [<fa3a53f5>] drm_setversion+0x1c5/0x260 [drm]
-    [<fa3a3612>] drm_ioctl+0x192/0x3a0 [drm]
-    [<c01f1d29>] vfs_ioctl+0x79/0x90
-    [<c01f1e8a>] do_vfs_ioctl+0x6a/0x5e0
-    [<c01f2463>] sys_ioctl+0x63/0x70
-    [<c010300c>] sysenter_do_call+0x12/0x38
-
-It looks like this is one of the kmalloc calls in the drm_set_busid()
-function (I'll do more checks tonight to see exactly which of the two
-kmalloc's).
-
-When the Xorg exits, it seems to leave behind several of these (the same
-happens when glxinfo exits):
-
-unreferenced object 0xc22b7540 (size 148):
-  comm "Xorg", pid 2585, jiffies 4294902559
-  backtrace:
-    [<c01e0c3a>] create_object+0xfa/0x250
-    [<c01e1e7d>] kmemleak_alloc+0x5d/0x70
-    [<c01dac1b>] kmem_cache_alloc+0x14b/0x190
-    [<c0309400>] idr_pre_get+0x50/0x70
-    [<fa3a4d74>] drm_gem_handle_create+0x24/0x90 [drm]
-    [<fa7f79ad>] i915_gem_create_ioctl+0x5d/0xb0 [i915]
-    [<fa3a3612>] drm_ioctl+0x192/0x3a0 [drm]
-    [<c01f1d29>] vfs_ioctl+0x79/0x90
-    [<c01f1e8a>] do_vfs_ioctl+0x6a/0x5e0
-    [<c01f2463>] sys_ioctl+0x63/0x70
-    [<c010300c>] sysenter_do_call+0x12/0x38
-
-Are they real leaks?
-
-Thanks.
+Thanks,
+									Pavel
 
 -- 
-Catalin
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
