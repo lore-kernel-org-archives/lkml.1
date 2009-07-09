@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZGIMYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbZGIM3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbZGIMYj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 08:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbZGIMYb
+	id S1760353AbZGIM3p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 08:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757947AbZGIM3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 08:24:31 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40606 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755999AbZGIMYb (ORCPT
+	Thu, 9 Jul 2009 08:29:37 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:64230 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756795AbZGIM3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 08:24:31 -0400
-Subject: Re: possible migration bug with hotplug cpu
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lucas De Marchi <lucas.de.marchi@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <193b0f820907090457s7a3662f4gcdecdc22fcae857b@mail.gmail.com>
-References: <193b0f820907080848m5b72e2a9l52944ae3de785d90@mail.gmail.com>
-	 <1247068556.9777.58.camel@twins>
-	 <193b0f820907080905u643e90ddi42a719e6163b0bc@mail.gmail.com>
-	 <193b0f820907080939sf0bec93n16ee4b5aca6e1a7a@mail.gmail.com>
-	 <193b0f820907090457s7a3662f4gcdecdc22fcae857b@mail.gmail.com>
-Content-Type: text/plain
+	Thu, 9 Jul 2009 08:29:36 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH 2/5] sparc: use asm-generic/dma-mapping-common.h
+Date: Thu, 9 Jul 2009 14:29:23 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.95; x86_64; ; )
+Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, reif@earthlink.net
+References: <1246860820-20629-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20090706.181131.92078657.davem@davemloft.net> <20090709185505X.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090709185505X.fujita.tomonori@lab.ntt.co.jp>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Thu, 09 Jul 2009 14:24:26 +0200
-Message-Id: <1247142266.9777.371.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Message-Id: <200907091429.24100.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+smCh4UEBntR4e214+Nv2cNN9pj60nin51z3b
+ Rf2D0DGeKjfGxWjLgHzVdASyHT1hPkpK4wAva9LodaOr/6Y9M2
+ E+jF8Knoc8HUu0C3Ted5JBcg4pVCHtE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 13:57 +0200, Lucas De Marchi wrote:
-> So, I found the problem.
-> 
-> These fields are currently not initialized upon fork. I noted that when I
-> updated to 2.6.31-rc2; commit 6c594c21fcb02c662f11c97be4d7d2b73060a205 was
-> merged into kernel by Ingo (not present yet in 2.6.30), but it only initializes
-> nr_migrations. Why the other fields are not initialized to 0? Even when there
-> are more processors, these fields may be wrong if not zeroed when a new task
-> is started. Below the fast way to fix it. This fixed the counters for me.
+On Thursday 09 July 2009, FUJITA Tomonori wrote:
+> The logic to move flush_write_buffers() from dma-mapping-common.h to
+> arch/x86/kernel/pci-nommu.c makes sense and it doesn't break anything.
+> However, I'd like to see the confirmation from a person who added
+> flush_write_buffers() long ago. I thought that we might overlook
+> something subtle.
 
-Ah, awesome. I hadn't had time to look in detail yet. Thanks!
+I've tried to find out where it comes from, but unfortunately it's
+from prehistoric times (Linux-2.4.14.2), the commit is in 
 
-> What do you think of creating a struct sched_statistics embedded into
-> sched_entity so we coudl memset it to zero all at once? All fields of
-> SCHED_STATS piece should be initialized, right?
+http://git.kernel.org/?p=linux/kernel/git/tglx/history.git;a=commitdiff;h=a8a2069f432c5597bdf9c83ab3045b9ef32ab5e3
 
-Sounds like a sane plan.
+None of the comments in that commit seem to refer to
+the actual change.
 
-One of the things I have wanted to do for a long time is to rename
-sched_entity to sched_fair_entity, and do something like:
-
-struct sched_entity {
-	struct sched_common_entity       common;
-
-	union {
-		struct sched_fair_entity fair;
-		struct sched_rt_entity   rt;
-	};
-};
-
-I imagine we can add struct sched_statistics to the end of this as well.
-
-The reason I haven't come around to doing this is that it takes a bit of
-time to refactor the code and find all the common bits. So its been on
-my todo list like forever.
-
-Can I persuade you to look at this? :-)
-
-I'll queue the below, can I add:
-
-Signed-off-by: Lucas De Marchi <lucas.de.marchi@gmail.com>
-
-?
-
+	Arnd <><
