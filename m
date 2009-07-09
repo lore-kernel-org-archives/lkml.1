@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759812AbZGIDYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758396AbZGID0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759812AbZGIDYL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 23:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbZGIDYA
+	id S1758396AbZGID0f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 23:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbZGID02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 23:24:00 -0400
-Received: from mail.samba.org ([66.70.73.150]:41365 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753192AbZGIDX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 23:23:59 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Jul 2009 23:26:28 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44917 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755090AbZGID02 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 23:26:28 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 9 Jul 2009 12:24:28 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: linux-mm@kvack.org
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       npiggin@suse.de,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       avi@redhat.com, "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, aarcange@redhat.com
+Subject: [PATCH 0/2] ZERO PAGE again v3.
+Message-Id: <20090709122428.8c2d4232.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <19029.25281.239186.836650@samba.org>
-Date: Thu, 9 Jul 2009 13:23:45 +1000
-To: Martin Steigerwald <Martin@lichtvoll.de>
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <200907081339.59815.Martin@lichtvoll.de>
-References: <19013.8005.541836.436991@samba.org>
-	<200907072356.51553.Martin@lichtvoll.de>
-	<19028.3736.892828.352905@samba.org>
-	<200907081339.59815.Martin@lichtvoll.de>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan and Martin,
+After v2 discussion, I felt that "Go" sign can be given if implemetaion is neat
+and tiny and overhead seems very small. Here is v3.
 
-As promised, I have continued to investigate what is happening with
-Win98, even though I don't think it is a high priority.
+In this version,
 
-I've discovered two things that are interesting:
+ - use pte_special() in vm_normal_page()
+   All ZERO_PAGE check will go down to vm_normal_page() and check is done here.
+   Some new flags in follow_page() and get_user_pages().
 
-  1) the 11 spaces varient works pretty nicely with it
+ - per arch use-zero-page config is added.
+   IIUC, archs which have _PAGE_SPECIAL is only x86, powerpc, s390.
+   Because this patch make use of pte_special() check, config to use zero page
+   is added and you can turn it off if necessary.
+   I this patch, only x86 is turned on which I can test.
 
-  2) the current dualnames patch works nicely if you change the first
-  byte to a '~' instead of a space.
+Any comments are welcome. 
 
-What seems to be happening is that Win98 either wants all spaces, or
-it wants to see a '~' in the 8 byte prefix, after taking into account
-nul termination. If it doesn't see this '~' then it doesn't even look
-for a long name.
+Thanks,
+-Kame
 
-Cheers, Tridge
