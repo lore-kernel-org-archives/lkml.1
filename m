@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759600AbZGIDqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758418AbZGID7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759600AbZGIDqv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 23:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbZGIDqm
+	id S1758418AbZGID7A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 23:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbZGID6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 23:46:42 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53720 "EHLO
+	Wed, 8 Jul 2009 23:58:49 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39015 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755016AbZGIDql (ORCPT
+	with ESMTP id S1755551AbZGID6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 23:46:41 -0400
-Message-ID: <4A5567E9.5080403@zytor.com>
-Date: Wed, 08 Jul 2009 20:45:45 -0700
+	Wed, 8 Jul 2009 23:58:49 -0400
+Message-ID: <4A556AB7.6000209@zytor.com>
+Date: Wed, 08 Jul 2009 20:57:43 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@openvz.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86,apic -- don't forget to disconnect BSP discrete
- 	apic
-References: <20090708200741.GI5301@lenovo> <4A55109C.7040506@zytor.com> <aa79d98a0907082004i616ff057ic8eea014f712064d@mail.gmail.com>
-In-Reply-To: <aa79d98a0907082004i616ff057ic8eea014f712064d@mail.gmail.com>
+To: Feng Tang <feng.tang@intel.com>
+CC: Len Brown <lenb@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
+       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "Brown, Len" <len.brown@intel.com>
+Subject: Re: [PATCH 08/12] SFI, x86: hook e820() for memory map initialization
+References: <1247026438-20891-1-git-send-email-lenb@kernel.org>	<5bf6b3c7c08a76ea8dc52e9e07728c2958938952.1247025117.git.len.brown@intel.com>	<4A551184.1020707@zytor.com> <20090709091141.19652887@feng-desktop>
+In-Reply-To: <20090709091141.19652887@feng-desktop>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> On 7/9/09, H. Peter Anvin <hpa@zytor.com> wrote:
->> Cyrill Gorcunov wrote:
->>> In case of discrete APIC cpu_has_apic could be not set.
->>> This leads to disconnect_bsp_APIC is not called where
->>> it should.
->> I thought we were going to turn on cpu_has_apic in this case?
->>
->> 	-hpa
->>
->>
-> Yes, this is just a temporary fix. I'll remove this snippet as only
-> cpu-has-apic patch will be ready (i need to re-check all ways and and
-> i need some time for this. Hope will finish it at weekend). Dunno
-> Peter. If there is no urgency -- lets mark that we have this temporary
-> workaround in lklm and if we get kind of bugreport we could apply the
-> patch shortly :)
+Feng Tang wrote:
+> 
+> Hi hpa,
+> 
+> I understand your concern, and I've added that code into our boot loader
+> for Moosrestown which sets up a e820 memory table in boot parameters by 
+> parsing SFI table. 
+> 
+> The reason we still keep this piece of code is to be compatible with old
+> version boot loaders which may not know SFI info yet. And
+> sfi_init_memory_map() only get called when kernel can't find an e820 table
+> in boot parameters.
+> 
+> Anyway, I think we can remove the code if it really breaks the rule.
+> 
+> Thanks,
+> Feng
+> 
 
+What I'm concerned about is that we will want to be able to use the
+range allocator, which relies on the e820 memory map, extremely early
+during boot.  In the EFI case, we allow (*optionally*) to fill in
+additional information from the EFI map after initial boot, but we still
+require memory ranges in the initial map (they can, however, be a subset
+of the available memory.)
 
-Since discrete-APIC systems are so old and rare I think it can wait for
-the proper fix, however, as you said, if there are unexpected problems
-we can reconsider.
+I'm really concerned about saying "well, it works now" and tying
+ourselves into an interface that we cannot support in the long term
+(read: we'll be stuck with it.)
 
 	-hpa
-
 
 -- 
 H. Peter Anvin, Intel Open Source Technology Center
