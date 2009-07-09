@@ -1,74 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbZGIK2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbZGIK2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215AbZGIK2D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 06:28:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbZGIK1y
+	id S1759264AbZGIK2Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 06:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbZGIK2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 06:27:54 -0400
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:64028 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755833AbZGIK1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 06:27:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WP5V6iU0kN5Q5JY5WTCQjN3596+DmnDWVYErBfylBE7gQkIlHQK4nemC8k7B8klU+t
-         rb3bfAXmkFgg8V/wDyoDPafGiBemSqlv15KdqvHINhcpu93bqXv9nkSOliD9SzRFQzmL
-         5iw/vfrpd13xduH3yq4hNNPeROpO349lyV7+8=
+	Thu, 9 Jul 2009 06:28:15 -0400
+Received: from co203.xi-lite.net ([149.6.83.203]:53517 "EHLO co203.xi-lite.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752033AbZGIK2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 06:28:14 -0400
+Message-ID: <4A55C631.7030103@parrot.com>
+Date: Thu, 9 Jul 2009 12:28:01 +0200
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-In-Reply-To: <20090709161712.23B0.A69D9226@jp.fujitsu.com>
-References: <alpine.DEB.1.10.0907071252060.5124@gentwo.org>
-	 <20090709144938.23A8.A69D9226@jp.fujitsu.com>
-	 <20090709161712.23B0.A69D9226@jp.fujitsu.com>
-Date: Thu, 9 Jul 2009 19:27:52 +0900
-Message-ID: <28c262360907090327w63b0cdfdn5bc2ad628239e53b@mail.gmail.com>
-Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: <pierre@ossman.eu>
+CC: <sdhci-devel@lists.ossman.eu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: sdhci can turn off irq up to 200 ms
+References: <4A4B6184.7000903@parrot.com>
+In-Reply-To: <4A4B6184.7000903@parrot.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+	boundary="------------080408050900030800000604"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 9, 2009 at 4:20 PM, KOSAKI
-Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
->> > On Mon, 6 Jul 2009, Minchan Kim wrote:
->> >
->> > > Anyway, I think it's not a big cost in normal system.
->> > > So If you want to add new accounting, I don't have any objection. :)
->> >
->> > Lets keep the counters to a mininum. If we can calculate the values from
->> > something else then there is no justification for a new counter.
->> >
->> > A new counter increases the size of the per cpu structures that exist for
->> > each zone and each cpu. 1 byte gets multiplies by the number of cpus and
->> > that gets multiplied by the number of zones.
->>
->> OK. I'll implement this idea.
->
-> Grr, sorry I cancel this opinion. Shem pages can't be calculated
-> by minchan's formula.
->
-> if those page are mlocked, the page move to unevictable lru. then
-> this calculation don't account mlocked page. However mlocked tmpfs pages
-> also make OOM issue.
+--------------080408050900030800000604
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8bit
 
-Absolutely. You're right.
-But In my opinion,  mlocked shmem pages are important ?
-Now we care only number of unevictable pages but don't care what kinds
-of pages there are in unevictable list.
+Matthieu CASTET a écrit :
+> Hi,
+> 
+> sdhci code got tasklets (sdhci_tasklet_card and sdhci_tasklet_finish),
+> that does :
+> {
+> spin_lock_irqsave
+> 
+> if (cond) {
+> sdhci_reset
+> sdhci_reset
+> }
+> 
+> spin_unlock_irqrestore
+> }
+> 
+> The problem is that sdhci_reset [1] does busy pooling on a register up
+> to a timeout of 100 ms.
+> That's not low latency friendly.
+> 
+> On our system, we saw that sdhci_reset take 1 ms. That should be because
+> we enter in mdelay, even if the hardware clears the bit faster.
+> I wonder why there is an mdelay(1). Using cpu_relax and
+> time_is_after_jiffies should make sdhci_reset faster.
+> 
+In case somebody cares, here a patch that reduce on our hardware
+sdhci_reset from 1 ms to 30 us.
 
-What we need is to decode OOM more easily.
-I think what kinds of pages there area unevictable lur list is not important.
 
--- 
-Kind regards,
-Minchan Kim
+Matthieu
+
+--------------080408050900030800000604
+Content-Type: text/x-diff; name="sdhci.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="sdhci.diff"
+
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 6779b4e..3e199b6 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -156,18 +156,17 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
+ 		host->clock = 0;
+ 
+ 	/* Wait max 100 ms */
+-	timeout = 100;
++	timeout = jiffies + msecs_to_jiffies(100);
+ 
+ 	/* hw clears the bit when it's done */
+ 	while (sdhci_readb(host, SDHCI_SOFTWARE_RESET) & mask) {
+-		if (timeout == 0) {
++		if (time_is_before_jiffies(timeout)) {
+ 			printk(KERN_ERR "%s: Reset 0x%x never completed.\n",
+ 				mmc_hostname(host->mmc), (int)mask);
+ 			sdhci_dumpregs(host);
+ 			return;
+ 		}
+-		timeout--;
+-		mdelay(1);
++		cpu_relax();
+ 	}
+ 
+ 	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
+
+--------------080408050900030800000604--
