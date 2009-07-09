@@ -1,88 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbZGIENb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbZGIEOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752713AbZGIENb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 00:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZGIENU
+	id S1751564AbZGIEOu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 00:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbZGIEOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 00:13:20 -0400
-Received: from mail.samba.org ([66.70.73.150]:43547 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbZGIENT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 00:13:19 -0400
+	Thu, 9 Jul 2009 00:14:43 -0400
+Received: from mail-pz0-f175.google.com ([209.85.222.175]:64613 "EHLO
+	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750846AbZGIEOm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 00:14:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=CW9n1PBksNuq+gkFUd8JPBG7Lop6PsV4TgI0K7kdyKX0gM2aiUZp+T9EW9vQHjHj0Q
+         vspD+4HYdLWMnRoEXRMGAY2p0FM25gFmEeX5cUmXOM/SxuLGjkkJj6NhhUuzEuYAEjlh
+         8YiUnJS6EiJ+zuhm4LSUQGshCatiR6d/AaJoI=
+Message-ID: <4A556F04.3090408@gmail.com>
+Date: Wed, 08 Jul 2009 21:16:04 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: mactel-linux.org-users@queuemail.com
+CC: mactel-linux-users <mactel-linux-users@lists.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Mactel-linux-users] touchpad synaptics pm-suspend
+References: <4A53C580.2040000@queuemail.com> <4A540461.1030204@gmail.com>	 <4A541D42.8070004@queuemail.com> <4A5424C5.10405@gmail.com>	 <4A546A87.5070009@queuemail.com> <4A54CC78.9020707@gmail.com> <dd18b0c30907081124o2c439504m6b90f9dc00453358@mail.gmail.com> <4A550D61.40707@queuemail.com>
+In-Reply-To: <4A550D61.40707@queuemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <19029.28240.995268.850038@samba.org>
-Date: Thu, 9 Jul 2009 14:13:04 +1000
-To: Martin Steigerwald <Martin@lichtvoll.de>
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <200907081339.59815.Martin@lichtvoll.de>
-References: <19013.8005.541836.436991@samba.org>
-	<200907072356.51553.Martin@lichtvoll.de>
-	<19028.3736.892828.352905@samba.org>
-	<200907081339.59815.Martin@lichtvoll.de>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Martin,
+paul s wrote:
+> > interesting, s2ram works,
+>
+> agreed...
+>
+> > (while doing this multiple times) s2disk
+> > shutdowns the system(configuration issue somewhere)
+>
+> hibernate took a while to shutdown... resume was slow once x started, 
+> all applications and service restored though...
+>
+> > the screen is really dark and green
+> > (probably missing a library)
+>
+> everything looks good with mine when it comes back from sleep, the 
+> button for the touchpad works, its just the touchpad itself... killing 
+> x doesn't fix it either...
+>
+>
+>
+> On 07/08/2009 02:24 PM, Justin Mattock wrote:
+>> On Wed, Jul 8, 2009 at 9:42 AM, Justin P.
+>> Mattock<justinmattock@gmail.com> wrote:
+>>> paul s wrote:
+>>>> does your touchpad work from resume? i know it is not the same 
+>>>> model, but
+>>>> curious...
+>>>>
+>>>> i updated the kernel from rawhide(2.6.31.rc2) and there were just 
+>>>> crazy
+>>>> system errors, actually even saw a kernelloops warning for the 
+>>>> first time...
+>>>>
+>>>>
+>>>>
+>>>> On 07/08/2009 12:47 AM, Justin P. Mattock wrote:
+>>>>> paul s wrote:
+>>>>>> i have not, just what is in the repository for the distribution...
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> On 07/07/2009 10:28 PM, Justin P. Mattock wrote:
+>>>>>>> paul s wrote:
+>>>>>>>> hi -
+>>>>>>>>
+>>>>>>>> when my mbp4,1 comes back from suspend the touchpad is
+>>>>>>>> frozen|unresponsive|not working. it only seems to be with 
+>>>>>>>> suspend as
+>>>>>>>> when it returns from hibernate it is fine...
+>>>>>>>>
+>>>>>>>> i am using 2.6.29.5-191.fc11.x86_64 is anyone experiencing this
+>>>>>>>> issue...
+>>>>>>>>
+>>>>>>>> i have been looking around, played with the fdi and also added a
+>>>>>>>> script
+>>>>>>>> to the /etc/pm/sleep.d to load and unload appletouch to no 
+>>>>>>>> avail...
+>>>>>>>>
+>>>>>>>> cheers
+>>>>>>>> paul
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> ------------------------------------------------------------------------------ 
+>>>>>>>>
+>>>>>>>> Enter the BlackBerry Developer Challenge
+>>>>>>>> This is your chance to win up to $100,000 in prizes! For a limited
+>>>>>>>> time,
+>>>>>>>> vendors submitting new applications to BlackBerry App World(TM) 
+>>>>>>>> will
+>>>>>>>> have
+>>>>>>>> the opportunity to enter the BlackBerry Developer Challenge. 
+>>>>>>>> See full
+>>>>>>>> prize
+>>>>>>>> details at: http://p.sf.net/sfu/Challenge
+>>>>>>>> _______________________________________________
+>>>>>>>> Mactel-linux-users mailing list
+>>>>>>>> Mactel-linux-users@lists.sourceforge.net
+>>>>>>>> https://lists.sourceforge.net/lists/listinfo/mactel-linux-users
+>>>>>>>>
+>>>>>>> have you tried the latest stable kernel?
+>>>>>>>
+>>>>>>> Justin P. Mattock
+>>>>>>>
+>>>>>> -- 
+>>>>>> To unsubscribe from this list: send the line "unsubscribe 
+>>>>>> linux-kernel"
+>>>>>> in
+>>>>>> the body of a message to majordomo@vger.kernel.org
+>>>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>>>
+>>>>> Not sure for redhat, but if you feel comfortable,
+>>>>> try just grabbing  a fresh tar.ball from kernel.org,
+>>>>> or use git to pull the latest from Linus's tree.
+>>>>> (this way your  up-to-date, and the fix could be already
+>>>>> in there).
+>>>>>
+>>>>> Justin P. Mattock
+>>>>>
+>>>>>
+>>>> -- 
+>>>> To unsubscribe from this list: send the line "unsubscribe 
+>>>> linux-kernel" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>
+>>> If you can save those messages, and
+>>> send them to kernel.org.
+>>> Honestly I have not tried S2D/S2R
+>>> on my machine for a while(probably
+>>> end up with a black screen).
+>>>
+>>> Justin P. Mattock
+>>>
+>>>
+>>
+>> interesting, s2ram works,
+>> bluetooth is intact, touch pad is intact
+>> (while doing this multiple times) s2disk
+>> shutdowns the system(configuration issue somewhere)
+>> the only issue is the first s2ram takes a good minuet,
+>> but after that resumes within seconds.
+>> the screen is really dark and green
+>> (probably missing a library)
+>>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+s2ram works as expected over here,
+s2disk resulted in a shutdown
+(after looking at the documentation, seems
+easier to just stick with s2ram).
 
- > The question before that would be whether anyone has a comprehensive list 
- > of those tools, cause I think there are quite many. Well at least those 
- > from bigger vendors should be tested I think. Paragon, Symantec, ...
+Anyways the machine I have here is the macbook pro
+with the ati chipset.
+you on the other hand have the nvidia which acts differently
+than having the radeon module and so forth.
+you also have a different module than appletouch/synaptics
+to deal with the touchpad i.g. bcm5974. In this case
+I don't have any machines that have that hardware here.
 
-Do you happen to have any of those handy to test with?
+My guess is hoping somebody who is reading this post, and has the hardware
+add to this on why s2ram works, but s2disk fry's the mechanism for bcm5974
+to wakeup from s2disk and be functional?
+Also since the hardware is new try and update xserver/synaptic to make sure
+that area is up-to-date(as well as making sure your xorg.conf is set right)
 
- > And has it been tested with Linux tools such as fsck.msdos, fsck.vfat, 
- > parted and partimage? I think it probably has not much effect on parted and 
- > partimage, but what about the fscks?
+In the meantime I'll have to see if there is any info on doing s2ram
+(simple version) somewhere to try, so I can see if this results with a 
+non working
+touchpad. With the equipment I have here.
 
-I tested it with dosfstools (which provides the fsck.vfat on Linux
-distros) and with mtools. Both required patches to work correctly. I
-have submitted both patches to the maintainers of those packages.
-
-The patch to dosfstools makes it skip the invalid 8.3 entries, just as
-windows chkdsk does. The patch is here:
-
-  http://samba.org/tridge/dosfstools.patch1
-
-The patch to mtools is partly cosmetic, and partly to fix a bug in the
-VFAT checksum routine. The code in mtools incorrectly treated a nul
-byte as special in 8.3 directory entries. The patch is here:
-
-  http://samba.org/tridge/mtools.patch1
-
- > Thus even when the patch only changes the values stored for new - or 
- > rewritten? - files it actively corrupts the meta consistency of the whole 
- > filesystem. To me it is like inserting a defective inode into a consistent 
- > Linux filesystem.
-
-If the windows implementation is taken as the reference implementation
-then the files are not considered defective. The windows chkdsk will
-(with a small probability) complain of duplicates, but it doesn't
-complain about the entries being defective in any other way.
-
- > I don't believe that Microsoft is still providing updates for Win98. But I 
- > think Windows 2000 might still be in use - I for example have a Win 2000 
- > installation on my ThinkPad T23, although I didn't boot it for about a 
- > year or so. Has it been tested against Windows 2000? I digged for the mail 
- > where you said something about against which Windows versions you tested, 
- > but I didn't find it anymore.
-
-I haven't tested against w2k yet. I'll need to dig through my old MSDN
-CD stack and see if I can find a w2k CD to test with. It's no longer
-offered on current MSDN subscriptions.
-
-Cheers, Tridge
+Justin P. Mattock
