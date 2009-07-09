@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759425AbZGIJYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbZGIJaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759425AbZGIJYl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 05:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbZGIJYc
+	id S1757935AbZGIJaX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 05:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZGIJaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 05:24:32 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:55598 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753452AbZGIJYc (ORCPT
+	Thu, 9 Jul 2009 05:30:12 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:54415 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754201AbZGIJaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 05:24:32 -0400
-Date: Thu, 9 Jul 2009 11:24:26 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] timer stats: fix quick check optimization
-Message-ID: <20090709092426.GA4943@osiris.boeblingen.de.ibm.com>
+	Thu, 9 Jul 2009 05:30:11 -0400
+Date: Thu, 9 Jul 2009 10:30:05 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Joe Perches <joe@perches.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH 5/7] MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
+Message-ID: <20090709093004.GA32655@sirena.org.uk>
+References: <cover.1247032324.git.joe@perches.com> <9c84258bdd3ebecd54e2bc203dbded1382af9c02.1247032324.git.joe@perches.com> <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com> <1247035197.5124.9.camel@Joe-Laptop.home> <1247035481.15919.31.camel@penberg-laptop> <1247035628.5124.11.camel@Joe-Laptop.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1247035628.5124.11.camel@Joe-Laptop.home>
+X-Cookie: Noone ever built a statue to a critic.
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Tue, Jul 07, 2009 at 11:47:08PM -0700, Joe Perches wrote:
 
-git commit 507e1231 "timer stats: Optimize by adding quick check to avoid
-function calls" added one wrong check so that one unnecessary function call
-isn't elimated.
-time_stats_account_hrtimer() checks if timer->start_pid isn't initialized
-in order to find out if timer_stats_update_stats() should be called.
-However start_pid is initialized with -1 instead of 0, so that the function
-call always happens.
-Check timer->start_site like in timer_stats_account_timer() to fix this.
+> Well, if scripts/get_maintainer.pl gets used more often,
+> it would.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- include/linux/hrtimer.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/include/linux/hrtimer.h
-===================================================================
---- linux-2.6.orig/include/linux/hrtimer.h
-+++ linux-2.6/include/linux/hrtimer.h
-@@ -448,7 +448,7 @@ extern void timer_stats_update_stats(voi
- 
- static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
- {
--	if (likely(!timer->start_pid))
-+	if (likely(!timer->start_site))
- 		return;
- 	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
- 				 timer->function, timer->start_comm, 0);
+FWIW I've noticed that get_maintainer.pl has a tendency to pick up
+people it probably shouldn't when run on areas that have had few people
+committing to them since it tends to pick up people who've done generic
+cleanups but have no specific interest in that area of code.  I think a
+heuristic based on filtering the git log based on the proportion of
+commits that were done by each committer would help with many of these
+cases.
