@@ -1,141 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759314AbZGIEy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbZGIFIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759314AbZGIEy7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 00:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbZGIEyu
+	id S1759212AbZGIFIv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 01:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZGIFIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 00:54:50 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37738 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755960AbZGIEyt (ORCPT
+	Thu, 9 Jul 2009 01:08:42 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48908 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbZGIFIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 00:54:49 -0400
-Message-ID: <ae515eca783abc9494e251f2be87327c.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <alpine.LFD.2.01.0907082058340.3352@localhost.localdomain>
-References: <20090709122428.8c2d4232.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090709122801.21806c01.kamezawa.hiroyu@jp.fujitsu.com>
-    <alpine.LFD.2.01.0907082058340.3352@localhost.localdomain>
-Date: Thu, 9 Jul 2009 13:54:46 +0900 (JST)
-Subject: Re: [PATCH 2/2] ZERO PAGE by pte_special
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       npiggin@suse.de,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       avi@redhat.com, "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       aarcange@redhat.com
-User-Agent: SquirrelMail/1.4.16
+	Thu, 9 Jul 2009 01:08:41 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Subject: Re: [RFC PATCH 2/2] Don't continue reclaim if the system have plenty  free memory
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>
+In-Reply-To: <28c262360907070620n3e22801egd4493c149a263ecd@mail.gmail.com>
+References: <20090707184714.0C73.A69D9226@jp.fujitsu.com> <28c262360907070620n3e22801egd4493c149a263ecd@mail.gmail.com>
+Message-Id: <20090709140234.239F.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu,  9 Jul 2009 14:08:38 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+> Hi, Kosaki.
+> 
+> On Tue, Jul 7, 2009 at 6:48 PM, KOSAKI
+> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+> > Subject: [PATCH] Don't continue reclaim if the system have plenty free memory
+> >
+> > On concurrent reclaim situation, if one reclaimer makes OOM, maybe other
+> > reclaimer can stop reclaim because OOM killer makes enough free memory.
+> >
+> > But current kernel doesn't have its logic. Then, we can face following accidental
+> > 2nd OOM scenario.
+> >
+> > 1. System memory is used by only one big process.
+> > 2. memory shortage occur and concurrent reclaim start.
+> > 3. One reclaimer makes OOM and OOM killer kill above big process.
+> > 4. Almost reclaimable page will be freed.
+> > 5. Another reclaimer can't find any reclaimable page because those pages are
+> > ? already freed.
+> > 6. Then, system makes accidental and unnecessary 2nd OOM killer.
+> >
+> 
+> Did you see the this situation ?
+> Why I ask is that we have already a routine for preventing parallel
+> OOM killing in __alloc_pages_may_oom.
 >
->
-> On Thu, 9 Jul 2009, KAMEZAWA Hiroyuki wrote:
->>
->> +	/* we can ignore zero page */
->> +	page = vm_normal_page(vma, addr, pte, 1);
->
->> -			page = vm_normal_page(vma, addr, ptent);
->> +			page = vm_normal_page(vma, addr, ptent, 1);
->
->> -	page = vm_normal_page(vma, address, pte);
->> +	page = vm_normal_page(vma, address, pte, (flags & FOLL_NOZERO));
->
->> +	int ignore_zero = !!(flags & GUP_FLAGS_IGNORE_ZERO);
->> ...
->> +				page = vm_normal_page(gate_vma, start,
->> +						      *pte, ignore_zero);
->
->> +			if (ignore_zero)
->> +				foll_flags |= FOLL_NOZERO;
->
->> +	/* This returns NULL when we find ZERO page */
->> +	old_page = vm_normal_page(vma, address, orig_pte, 1);
->
->> +		/* we can ignore zero page */
->> +		page = vm_normal_page(vma, addr, pte, 1);
->
->> +		/* we avoid zero page here */
->> +		page = vm_normal_page(vma, addr, *pte, 1);
->
->> +		/*
->> +		 * Because we comes from try_to_unmap_file(), we'll never see
->> +		 * ZERO_PAGE or ANON.
->> +		 */
->> +		page = vm_normal_page(vma, address, *pte, 1);
->
->>  struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long
->> addr,
->> -		pte_t pte);
->> +		pte_t pte, int ignore_zero);
->
-> So I'm quoting these different uses, because they show the pattern that
-> exists all over this patch: confusion about "no zero" vs "ignore zero" vs
-> just plain no explanation at all.
->
-> Quite frankly, I hate the "ignore zero page" naming/comments. I can kind
-> of see why you named them that way - we'll not consider it a normal page.
-> But that's not "ignoring" it. That's very much noticing it, just saying we
-> don't want to get the "struct page" for it.
->
-> I equally hate the anonymous "1" use, with or without comments. Does "1"
-> mean that you want the zero page, does it means you _don't_ want it, what
-> does it mean? Yes, I know that it means FOLL_NOZERO, and that when set, we
-> don't want the zero page, but regardless, it's just not very readable.
->
-> So I would suggest:
->
->  - never pass in "1".
->
->  - never talk about "ignoring" it.
->
->  - always pass in a _flag_, in this case FOLL_NOZERO.
->
-> If you follow those rules, you almost don't need commentary. Assuming
-> somebody is knowledgeable about the Linux VM, and knows we have a zero
-> page, you can just see a line like
->
-> 	page = vm_normal_page(vma, address, *pte, FOLL_NOZERO);
->
-Ahh, yes. This looks much better. I'll do in this way in v4.
+> Couldn't it protect your scenario ?
+
+Can you please see actual code of this patch?
+Those two patches fix different problem.
+
+1/2 fixes the issue of that concurrent direct reclaimer makes
+too many isolated pages.
+2/2 fixes the issue of that reclaim and exit race makes accidental oom.
 
 
+> If it can't, Could you explain the scenario in more detail ?
 
-> and you can understand that you don't want to see ZERO_PAGE. There's never
-> any question like "what does that '1' mean here?"
->
-> In fact, I'd pass in all of "flags", and then inside vm_normal_page() just
-> do
->
-> 	if (flags & FOLL_NOZERO) {
-> 		...
->
-> rather than ever have any boolean arguments.
->
-> (Again, I think that we should unify all of FOLL_xyz and FAULT_FLAG_xyz
-> and GUP_xyz into _one_ namespace - probably all under FAULT_FLAG_xyz - but
-> that's still a separate issue from this particular patchset).
->
-sure...it's confusing...I'll start some work to clean it up when I have
-a chance.
+__alloc_pages_may_oom() check don't effect the threads of already
+entered reclaim. it's obvious.
 
-
-> Anyway, that said, I think the patch looks pretty simple and fairly
-> straightforward. Looks very much like 2.6.32 material, assuming people
-> will test it heavily and clean it up as per above before the next merge
-> window.
->
-
-Thanks,
--Kame
 
 
 
