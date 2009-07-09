@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760744AbZGIOLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbZGIOP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760744AbZGIOLK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 10:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759701AbZGIOKz
+	id S1760816AbZGIOP5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 10:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759419AbZGIOPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 10:10:55 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46614 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759207AbZGIOKz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 10:10:55 -0400
-Date: Thu, 9 Jul 2009 15:10:09 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: tridge@samba.org, Martin Steigerwald <Martin@lichtvoll.de>,
-       Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-Message-ID: <20090709151009.07b2508b@lxorguk.ukuu.org.uk>
-In-Reply-To: <1247147981.3898.15.camel@mulgrave.site>
-References: <19013.8005.541836.436991@samba.org>
-	<alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
-	<19026.38137.63807.427511@samba.org>
-	<200907072356.51553.Martin@lichtvoll.de>
-	<19028.3736.892828.352905@samba.org>
-	<20090708110451.1092afa7@lxorguk.ukuu.org.uk>
-	<19028.31088.400461.939917@samba.org>
-	<20090708130256.40957c3f@lxorguk.ukuu.org.uk>
-	<19028.39145.180869.603673@samba.org>
-	<20090708142510.5068b4c3@lxorguk.ukuu.org.uk>
-	<19029.17896.769106.375379@samba.org>
-	<20090709104228.7821e2f0@lxorguk.ukuu.org.uk>
-	<1247147981.3898.15.camel@mulgrave.site>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Jul 2009 10:15:47 -0400
+Received: from www.tglx.de ([62.245.132.106]:40863 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757499AbZGIOPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 10:15:47 -0400
+Date: Thu, 9 Jul 2009 16:15:28 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jarek Poplawski <jarkao2@gmail.com>
+cc: Andres Freund <andres@anarazel.de>,
+       Joao Correia <joaomiguelcorreia@gmail.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Patrick McHardy <kaber@trash.net>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused
+ by netem)
+In-Reply-To: <20090709132256.GB3651@ami.dom.local>
+Message-ID: <alpine.LFD.2.00.0907091601120.24704@localhost.localdomain>
+References: <200907031326.21822.andres@anarazel.de> <200907071811.27570.andres@anarazel.de> <20090708080852.GC3148@ami.dom.local> <200907090023.18040.andres@anarazel.de> <20090708224828.GD3666@ami.dom.local> <alpine.LFD.2.00.0907090956490.24704@localhost.localdomain>
+ <20090709104412.GA3651@ami.dom.local> <alpine.LFD.2.00.0907091401040.24704@localhost.localdomain> <20090709132256.GB3651@ami.dom.local>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Even if they go for the non-infringing tweak they will still end up with
-> > patches to rip out the potentially infringing code paths.
+On Thu, 9 Jul 2009, Jarek Poplawski wrote:
+> On Thu, Jul 09, 2009 at 02:03:50PM +0200, Thomas Gleixner wrote:
+> > On Thu, 9 Jul 2009, Jarek Poplawski wrote:
+> > > > 
+> > > > I have the feeling that the code relies on some implicit cpu
+> > > > boundness, which is not longer guaranteed with the timer migration
+> > > > changes, but that's a question for the network experts.
+> > > 
+> > > As a matter of fact, I've just looked at this __netif_schedule(),
+> > > which really is cpu bound, so you might be 100% right.
+> > 
+> > So the watchdog is the one which causes the trouble. The patch below
+> > should fix this.
 > 
-> You keep saying this and I keep pointing out to you it's not true.
+> I hope so. On the other hand it seems it should work with this
+> migration yet, so it probably needs additional debugging.
 
-You keep saying this is not true and you keep ignoring the fact that a)
-it is true and b) you can look at lots of existing RPM packages and see
-that today. The evidence is out there - no hearsay, no question marks, go
-look.
+Right. I just provided the patch to narrow down the problem, but
+please test the fix of the hrtimer migration code which I sent out a
+bit earlier: http://lkml.org/lkml/2009/7/9/150
 
-> contributory infringement based on shipping the code.  I don't actually
-> believe that a compile time option they turn on in the binary kernel to
-> make it non infringing coupled with shipping code where the user could
-> recompile with it off is sufficient to rise to the tests under the
-> contributory infringement doctrine.
+It fixes a possible endless loop in the timer code which is related to
+the migration changes. Looking at the backtraces of the spinlock
+lockup I think that is what you hit.
 
-Its a simple risk test. Anything which reduces risk but does not change
-functionality is something you do. Its basically a zero cost way to
-reduce the chances of being shot at.
+       spin_lock(root_lock);
+       qdisc_run(q);
+	 __qdisc_run(q);
+	   dequeue_skb(q);
+             q->dequeue(q);
+               qdisc_watchdog_schedule();
+                 hrtimer_start();
+                   switch_hrtimer_base(); <- loops forever
 
-The decision they have to make is full vfat v tridgefat v fat. Once you
-make that decision and any part of that decision involves not enabling a
-feature because of a theoretical concern about a dubious patent you rip
-the code out of your tree as well. So if a vendor picked tridgefat they'd
-rip out the source bits outside of the ifdefs that switched tridgefat v
-vfat.
+Now the other CPU is stuck in dev_xmit() spin_lock(root_lock)
 
-Alan
+Thanks,
+
+	tglx
