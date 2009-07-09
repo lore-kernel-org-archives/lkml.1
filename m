@@ -1,56 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbZGIV25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbZGIVcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbZGIV25 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 17:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbZGIV2t
+	id S1755969AbZGIVcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 17:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbZGIVcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 17:28:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55729 "EHLO mx2.redhat.com"
+	Thu, 9 Jul 2009 17:32:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53517 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755146AbZGIV2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 17:28:49 -0400
-Date: Thu, 9 Jul 2009 23:25:55 +0200
+	id S1753653AbZGIVcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 17:32:11 -0400
+Date: Thu, 9 Jul 2009 23:28:47 +0200
 From: Oleg Nesterov <oleg@redhat.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jmorris@namei.org,
-       roland@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rework/fix is_single_threaded()
-Message-ID: <20090709212555.GA9861@redhat.com>
-References: <20090413214513.GA1119@redhat.com> <14878.1239876272@redhat.com> <20090416133658.GA6532@redhat.com> <20090416145444.GA12884@redhat.com> <20090618120716.fd1e4d92.akpm@linux-foundation.org> <20090618194238.GA17810@redhat.com> <20090622115148.5f1e5d1b.akpm@linux-foundation.org> <20090622171431.GA5010@redhat.com> <20090622140440.01d85542.akpm@linux-foundation.org> <28464.1247144463@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -mm 1/2] rename is_single_threaded(task) to
+	is_current_single_threaded(void)
+Message-ID: <20090709212847.GA10238@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <28464.1247144463@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/09, David Howells wrote:
->
-> Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > David, do you still dislike ->mmap_sem? I didn't see other objections,
-> > and again, imho tasklist_lock is worse.
->
-> My main objection to taking mmap_sem is that it restricts where the function
-> can be used.  It can't, for example, be called by anyone holding a spinlock.
+(on top of rework-fix-is_single_threaded.patch)
 
-Yes, it is might_sleep().
+- is_single_threaded(task) is not safe unless task == current,
+  we can't use task->signal or task->mm.
 
-> Furthermore, the more locks, the more chance of someone accidentally
-> deadlocking something.
+- it doesn't make sense unless task == current, the task can
+  fork right after the check.
 
-The current code is not lockless too, tasklist_lock is not free and
-can lead too deadlocks as well.
+Rename it to is_current_single_threaded() and kill the argument.
 
-Anyway. I agree it is better to avoid ->mmap_sem, I'll send the patch
-in a minute. But I'd really like to do this in a separate patch, the
-change is subtle and needs a changelog at least.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
 
-> But apart from that, go for it.
+ include/linux/sched.h        |    2 +-
+ lib/is_single_threaded.c     |    3 ++-
+ security/selinux/hooks.c     |    2 +-
+ security/keys/process_keys.c |    2 +-
+ 4 files changed, 5 insertions(+), 4 deletions(-)
 
-Great, thanks. Then I'll make the patch on top.
-
-Oleg.
+--- WAIT/include/linux/sched.h~ISS_1_RENAME	2009-07-01 20:20:57.000000000 +0200
++++ WAIT/include/linux/sched.h	2009-07-09 22:14:21.000000000 +0200
+@@ -2055,7 +2055,7 @@ static inline unsigned long wait_task_in
+ #define for_each_process(p) \
+ 	for (p = &init_task ; (p = next_task(p)) != &init_task ; )
+ 
+-extern bool is_single_threaded(struct task_struct *);
++extern bool is_current_single_threaded(void);
+ 
+ /*
+  * Careful: do_each_thread/while_each_thread is a double loop so
+--- WAIT/lib/is_single_threaded.c~ISS_1_RENAME	2009-07-09 19:43:27.000000000 +0200
++++ WAIT/lib/is_single_threaded.c	2009-07-09 22:16:29.000000000 +0200
+@@ -15,8 +15,9 @@
+ /*
+  * Returns true if the task does not share ->mm with another thread/process.
+  */
+-bool is_single_threaded(struct task_struct *task)
++bool is_current_single_threaded(void)
+ {
++	struct task_struct *task = current;
+ 	struct mm_struct *mm = task->mm;
+ 	struct task_struct *p, *t;
+ 	bool ret;
+--- WAIT/security/selinux/hooks.c~ISS_1_RENAME	2009-07-03 11:15:08.000000000 +0200
++++ WAIT/security/selinux/hooks.c	2009-07-09 22:17:58.000000000 +0200
+@@ -5182,7 +5182,7 @@ static int selinux_setprocattr(struct ta
+ 
+ 		/* Only allow single threaded processes to change context */
+ 		error = -EPERM;
+-		if (!is_single_threaded(p)) {
++		if (!is_current_single_threaded()) {
+ 			error = security_bounded_transition(tsec->sid, sid);
+ 			if (error)
+ 				goto abort_change;
+--- WAIT/security/keys/process_keys.c~ISS_1_RENAME	2009-04-06 00:03:42.000000000 +0200
++++ WAIT/security/keys/process_keys.c	2009-07-09 22:18:31.000000000 +0200
+@@ -702,7 +702,7 @@ long join_session_keyring(const char *na
+ 	/* only permit this if there's a single thread in the thread group -
+ 	 * this avoids us having to adjust the creds on all threads and risking
+ 	 * ENOMEM */
+-	if (!is_single_threaded(current))
++	if (!is_current_single_threaded())
+ 		return -EMLINK;
+ 
+ 	new = prepare_creds();
 
