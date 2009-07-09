@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbZGIAU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZGIA15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758949AbZGIAU5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 20:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZGIAUu
+	id S1757994AbZGIA15 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 20:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbZGIA1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 20:20:50 -0400
-Received: from mail-px0-f193.google.com ([209.85.216.193]:60154 "EHLO
-	mail-px0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754743AbZGIAUu convert rfc822-to-8bit (ORCPT
+	Wed, 8 Jul 2009 20:27:48 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:39477 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755799AbZGIA1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 20:20:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RN5YMALQ08LitR8jRuJ4cFQfzaLXajDniqu9amm6s3YINqOI9U+RylUVAZycwwqpVx
-         Z6IQ2GHqbA7ZWnsBMxdoJ94r8sW5pfarrxuuPdMv4w3UBx57hwOoJ+N1usCPadr6N39B
-         aSX3FAtRDgJz9Dthn+GGeZxlahJPezgo0Izxo=
+	Wed, 8 Jul 2009 20:27:47 -0400
+Message-ID: <4A55397F.8050207@codemonkey.ws>
+Date: Wed, 08 Jul 2009 19:27:43 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <1247098591-4887-1-git-send-email-tom.leiming@gmail.com>
-References: <1247098591-4887-1-git-send-email-tom.leiming@gmail.com>
-Date: Thu, 9 Jul 2009 08:20:48 +0800
-Message-ID: <d82e647a0907081720v438344fcj1b37e0e226818632@mail.gmail.com>
-Subject: Re: [PATCH] driver core:firmware_class:fix memory leak of page 
-	pointers array
-From: Ming Lei <tom.leiming@gmail.com>
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, catalin.marinas@arm.com, dwmw2@infradead.org,
-       kay.sievers@vrfy.org, Ming Lei <tom.leiming@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Dan Magenheimer <dan.magenheimer@oracle.com>, npiggin@suse.de,
+       akpm@osdl.org, xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
+       kurt.hackel@oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, dave.mccracken@oracle.com,
+       linux-mm@kvack.org, chris.mason@oracle.com, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>, alan@lxorguk.ukuu.org.uk,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [Xen-devel] Re: [RFC PATCH 0/4] (Take 2): transcendent memory
+ ("tmem") for Linux
+References: <ac5dec0d-e593-4a82-8c9d-8aa374e8c6ed@default> <4A553272.5050909@codemonkey.ws> <4A553707.5060107@goop.org>
+In-Reply-To: <4A553707.5060107@goop.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/9  <tom.leiming@gmail.com>:
-> From: Ming Lei <tom.leiming@gmail.com>
+Jeremy Fitzhardinge wrote:
+> On 07/08/09 16:57, Anthony Liguori wrote:
+>   
+>> Why does tmem require a special store?
+>>
+>> A VMM can trap write operations pages can be stored on disk
+>> transparently by the VMM if necessary.  I guess that's the bit I'm
+>> missing.
+>>     
 >
-> The page pointers array is allocated in fw_realloc_buffer() called by
-> firmware_data_write(), and should be freed in release function of firmware
-> device.
->
-> Signed-off-by:Ming Lei <tom.leiming@gmail.com>
-> Reported-by:Catalin Marinas <catalin.marinas@arm.com>
-> Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+> tmem doesn't store anything to disk.  It's more about making sure that
+> free host memory can be quickly and efficiently be handed out to guests
+> as they need it; to increase "memory liquidity" as it were.  Guests need
+> to explicitly ask to use tmem, rather than having the host/hypervisor
+> try to intuit what to do based on access patterns and hints; typically
+> they'll use tmem as the first line storage for memory which they were
+> about to swap out anyway.
 
----
-This patch is against Catalin Marinas's patch:
-	[PATCH] Free struct device in fw_dev_release()
+If the primary use of tmem is to avoid swapping when measure pressure 
+would have forced it, how is this different using ballooning along with 
+a shrinker callback?
 
-> ---
->  drivers/base/firmware_class.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-> index fc46653..2643366 100644
-> --- a/drivers/base/firmware_class.c
-> +++ b/drivers/base/firmware_class.c
-> @@ -180,7 +180,6 @@ static ssize_t firmware_loading_store(struct device *dev,
->                                goto err;
->                        }
->                        /* Pages will be freed by vfree() */
-> -                       fw_priv->pages = NULL;
->                        fw_priv->page_array_size = 0;
->                        fw_priv->nr_pages = 0;
->                        complete(&fw_priv->completion);
-> --
-> 1.6.0.GIT
->
->
+With virtio-balloon, a guest can touch any of the memory it's ballooned 
+to immediately reclaim that memory.  I think the main difference with 
+tmem is that you can also mark a page as being volatile.  The hypervisor 
+can then reclaim that page without swapping it (it can always reclaim 
+memory and swap it) and generate a special fault to the guest if it 
+attempts to access it.
 
+You can fail to put with tmem, right?  You can also fail to get?  In 
+both cases though, these failures can be handled because Linux is able 
+to recreate the page on it's on (by doing disk IO).  So why not just 
+generate a special fault instead of having to introduce special accessors?
 
+Regards,
 
--- 
-Lei Ming
+Anthony Liguori
