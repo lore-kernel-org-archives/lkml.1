@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZGIRXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZGIRZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbZGIRXH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 13:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbZGIRW4
+	id S1754161AbZGIRZx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 13:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZGIRZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 13:22:56 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:41722 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753815AbZGIRWz (ORCPT
+	Thu, 9 Jul 2009 13:25:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:24055 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbZGIRZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 13:22:55 -0400
-Date: Thu, 9 Jul 2009 10:22:48 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: linux-next: Tree for July 6-July 9 (percpu/x86)
-Message-Id: <20090709102248.01e2312c.randy.dunlap@oracle.com>
-In-Reply-To: <20090706095343.df21d4c9.rdunlap@xenotime.net>
-References: <20090706162632.fdde002e.sfr@canb.auug.org.au>
-	<20090706095343.df21d4c9.rdunlap@xenotime.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt004.oracle.com [141.146.116.13]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4A562765.01E5:SCFSTAT5015188,ss=1,fgs=0
+	Thu, 9 Jul 2009 13:25:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Ms1e4acR4N5gVcZUBYZsrd+I3INM4Tk482+lDBs7cdJ/wrSNZtgU8j80n2Svt0vFjI
+         ecmXkeDFtubAfW4fQTjgoxT6Ykgi4BuW6RyEmHfWYu0PjdtxXGORVGQq+7OB3voWvhz2
+         JM0Pe+mhKy0RTBtDC/pD8BHeQf3Udr10+PlpE=
+Date: Thu, 9 Jul 2009 21:25:42 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 18/44] includecheck fix: x86, dumpstack.c
+Message-ID: <20090709172542.GF5208@lenovo>
+References: <1247063308.4382.12.camel@ht.satnam> <1247065025.4382.47.camel@ht.satnam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247065025.4382.47.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009 09:53:43 -0700 Randy Dunlap wrote:
+[Jaswinder Singh Rajput - Wed, Jul 08, 2009 at 08:27:05PM +0530]
+| 
+| fix the following 'make includecheck' warning:
+| 
+|   arch/x86/kernel/dumpstack.c: linux/ftrace.h is included more than once.
+| 
+| Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+| ---
+|  arch/x86/kernel/dumpstack.c |    1 -
+|  1 files changed, 0 insertions(+), 1 deletions(-)
+| 
+| diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
+| index c840571..2d8a371 100644
+| --- a/arch/x86/kernel/dumpstack.c
+| +++ b/arch/x86/kernel/dumpstack.c
+| @@ -15,7 +15,6 @@
+|  #include <linux/bug.h>
+|  #include <linux/nmi.h>
+|  #include <linux/sysfs.h>
+| -#include <linux/ftrace.h>
+|  
+|  #include <asm/stacktrace.h>
+|  
+| -- 
+| 1.6.0.6
 
-> On Mon, 6 Jul 2009 16:26:32 +1000 Stephen Rothwell wrote:
-> 
-> > Hi all,
-> > 
-> > Changes since 20090703:
-> > 
-> > The percpu tree lost all its conflicts but gained another against the tip
-> > tree.
-> 
-> arch/x86/mm/pageattr.c: In function 'cpa_process_alias':
-> arch/x86/mm/pageattr.c:749: error: implicit declaration of function 'pcpu_lpage_remapped'
-> 
-> config attached.
-
-
-Still present in 20090709...
-
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+Looks good to me.
+Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
+ 
+	-- Cyrill
