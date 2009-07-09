@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbZGIIDC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbZGIIF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbZGIIDC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 04:03:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZGIICq
+	id S1756823AbZGIIF3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 04:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZGIIFB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 04:02:46 -0400
-Received: from viefep19-int.chello.at ([62.179.121.39]:17099 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751452AbZGIICn (ORCPT
+	Thu, 9 Jul 2009 04:05:01 -0400
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:52726 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751866AbZGIIEw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 04:02:43 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 1/3] Increase lockdep limits: MAX_STACK_TRACE_ENTRIES
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dave Jones <davej@redhat.com>
-Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Catalin Marinas <catalin.marinas@arm.com>
-In-Reply-To: <20090709043931.GA11391@redhat.com>
-References: <a5d9929e0907070825j1dda6584t93196e2730dedc5c@mail.gmail.com>
-	 <1246980836.9777.5.camel@twins>
-	 <a5d9929e0907070838q7ed3306du3bb7880e47d7207b@mail.gmail.com>
-	 <1246981444.9777.11.camel@twins>
-	 <a5d9929e0907070850v72cd4da4y1cbbb10fddebd575@mail.gmail.com>
-	 <1246982101.9777.15.camel@twins> <20090708172248.GB2521@redhat.com>
-	 <1247078164.16156.18.camel@laptop>  <20090709043931.GA11391@redhat.com>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 10:02:36 +0200
-Message-Id: <1247126556.9777.323.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 9 Jul 2009 04:04:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=cWt5xvcWrBhy1rroCmIflsjiNYQSTyS8eBkD9yOROT6g79fy63YUM4l8zniKlcFBLr
+         qtmKLkXpwu3kE8uECA/HM2ahcJIdOPEETwEECyuHH+br4SP6cUXx0ev/v7h6n0HdlUFs
+         CRy7gRgml9rUaH9y3MTFxTMDz8bAy2Iezj0yI=
+MIME-Version: 1.0
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Thu, 9 Jul 2009 04:04:31 -0400
+Message-ID: <8bd0f97a0907090104h5d4984dfkbeb82616a01128c8@mail.gmail.com>
+Subject: truncate on MAP_SHARED files in ramfs filesystems on no-mmu
+To: David Howells <dhowells@redhat.com>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 00:39 -0400, Dave Jones wrote:
-> On Wed, Jul 08, 2009 at 08:36:04PM +0200, Peter Zijlstra wrote:
->  > Looking at a lockdep dump hch gave me I can see that that is certainly
->  > possible, I see tons of very deep callchains.
->  > 
->  > /me wonders if we're getting significantly deeper..
-> 
-> Looking at /proc/lockdep, I'm curious..
-> Take a look at http://davej.fedorapeople.org/lockdep
-> scroll down to c12c0924
-> 
-> What's up with all those old_style_spin_init's ?
+reviewing LTP tests shows mmap09 failing.  this test creates a file of
+a certain length, opens it and creates a shared mapping, and then
+tries various truncate tests:
+truncate to a smaller size
+truncate to a larger size
+truncate to size 0
 
-What kernel are you running? Does your lib/dma_debug.c:dma_debug_init()
-have spin_lock_init() in that HASH_SIZE loop?
+the first and last fail on no-mmu due to
+file-nommu.c:ramfs_nommu_resize() rejecting attempts to shrink on a
+shared mapping:
+    /* check that a decrease in size doesn't cut off any shared mappings */
+    if (newsize < size) {
+        ret = ramfs_nommu_check_mappings(inode, newsize, size);
+        if (ret < 0)
+            return ret;
+    }
 
-If so, then there's someone else doing silly, if not, you seriously need
-to upgrade your kernel because you're running something ancient,
-like .30 :-)
-
+my question is why ?  if an application maps a fd with MAP_SHARED,
+truncates it, and then it or someone else who has that fd mapped tries
+to access the now-invalid tail end, that is a bug in the application.
+i dont see why we should be protecting users here from their own buggy
+code ?
+-mike
