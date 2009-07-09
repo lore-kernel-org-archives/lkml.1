@@ -1,176 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760730AbZGIM45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760759AbZGIM51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760730AbZGIM45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 08:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757971AbZGIM4u
+	id S1760759AbZGIM51 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 08:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760425AbZGIM5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 08:56:50 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52662 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757388AbZGIM4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 08:56:49 -0400
-Message-ID: <4A55E962.2010004@cn.fujitsu.com>
-Date: Thu, 09 Jul 2009 20:58:10 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 9 Jul 2009 08:57:19 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:56557 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760004AbZGIM5S convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 08:57:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZA7XblgvOJynKKR6RaOdS53/yQOBc3WASsk8sZVQLJHk6Mm/kveuQpbV8gS6UL5snO
+         h7AhTXfvOvCNgUFqYfe7RnGNKTmSXnclT08llicIafZ9ZmWmFXG63tz0lQvzjA4xu5VT
+         xp6BZkjxO3qQJBfzTvmAtz1edKIBJHxzwBRTo=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Zhaolei <zhaolei@cn.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, Li Zefan <lizf@cn.fujitsu.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: [PATCH v4] ftrace: add a tracepoint for __raise_softirq_irqoff()
-References: <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com> <4A0CCB2E.10202@cn.fujitsu.com> <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin> <20090519082435.GB15286@elte.hu> <4A4DD0C7.6070401@cn.fujitsu.com> <20090703094450.GB21141@elte.hu>
-In-Reply-To: <20090703094450.GB21141@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1247142266.9777.371.camel@twins>
+References: <193b0f820907080848m5b72e2a9l52944ae3de785d90@mail.gmail.com> 
+	<1247068556.9777.58.camel@twins> <193b0f820907080905u643e90ddi42a719e6163b0bc@mail.gmail.com> 
+	<193b0f820907080939sf0bec93n16ee4b5aca6e1a7a@mail.gmail.com> 
+	<193b0f820907090457s7a3662f4gcdecdc22fcae857b@mail.gmail.com> 
+	<1247142266.9777.371.camel@twins>
+From: Lucas De Marchi <lucas.de.marchi@gmail.com>
+Date: Thu, 9 Jul 2009 14:55:21 +0200
+Message-ID: <193b0f820907090555j30106a1cx6e0fffd0c2a19691@mail.gmail.com>
+Subject: Re: possible migration bug with hotplug cpu
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> 
->> Ingo Molnar wrote:
->>> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
->>>
->>>> * From: "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>
->>>>> Steven Rostedt wrote:
->>>>>> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
->>>>>>>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->>>>>>>>
->>>>>>>> This patch is modified from Mathieu Desnoyers' patch. The original patch
->>>>>>>> can be found here: 
->>>>>>>> http://marc.info/?l=linux-kernel&m=123791201816245&w=2
->>>>>>>> This tracepoint can trace the time stamp when softirq action is raised. 
->>>>>>>>
->>>>>>>> Changelog for v1 -> v2: 
->>>>>>>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
->>>>>>>> 2: Move the tracepoint from raise_softirq_irqoff() to
->>>>>>>>    __raise_softirq_irqoff()
->>>>>>>>
->>>>>>>> Changelog for v2 -> v3: 
->>>>>>>> Move the definition of __raise_softifq_irqoff() to .c file when
->>>>>>>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
->>>>>>>>
->>>>>>>> Changelog for v3 -> v4: 
->>>>>>>> 1: Come back to v2, and use forward declarations to avoid
->>>>>>>>    recursive includes as Mathieu's suggestion
->>>>>>>> 2: Modifiy the tracepoint name
->>>>>>>> 3: Add comments for this tracepoint
->>>>>>>>
->>>>>>> This is a step in the right direction, but please see my email to Lai
->>>>>>> about the fact that this assumes correct and undocumented include
->>>>>>> dependencies in kernel/trace/events.c. Not explicitely stating the
->>>>>>> include dependencies is a build error waiting to happen.
->>>>>>>
->>>>>>> Including interrupt.h under a ifdef would allow keeping track of
->>>>>>> TRACE_EVENT specific build dependencies neatly on a per header basis.
->>>>>> This is all moot, the events.c file no longer exists and as not an issue.
->>>>>>
->>>>> As Steve's says, use ftrace in ftrace.h not in events.c now. 
->>>>> So, this mistake does not exist.
->>>>> Dose this patch has other error? I expect for your views.
->>>>>
->>>>> Thanks for your review, is great help to me. ;-) 
->>>> Hello,
->>>>
->>>> It seems Mathieu has no other comments on this patch now.
->>>> Ingo, what is your opinion on this patch?
->>> There's a complication: this area of the softirq code needs fixes 
->>> (unrelated to tracing).
->>>  
->>> This API:
->>>
->>> inline void raise_softirq_irqoff(unsigned int nr)
->>> {
->>>         __raise_softirq_irqoff(nr);
->>>
->>>         /*
->>>          * If we're in an interrupt or softirq, we're done
->>>          * (this also catches softirq-disabled code). We will
->>>          * actually run the softirq once we return from
->>>          * the irq or softirq.
->>>          *
->>>          * Otherwise we wake up ksoftirqd to make sure we
->>>          * schedule the softirq soon.
->>>          */
->>>         if (!in_interrupt())
->>>                 wakeup_softirqd();
->>> }
->>>
->>> is broken with RT tasks (as recently reported to lkml), as when a 
->>> real-time task wakes up ksoftirqd (which has lower priority) it wont 
->>> execute and we starve softirq execution.
->>>
->>> The proper solution would be to have a new API:
->>>
->>> 	raise_softirq_check()
->>>
->>> and to remove the wakeup_softirqd() hack from raise_softirq_irqoff() 
->>> - and put raise_softirq_check() to all places that use 
->>> raise_softirq*() from process context.
->>>  
->>> raise_softirq_check() would execute softirq handlers from process 
->>> context, if there's any pending ones. It has to be called outside of 
->>> bh critical sections - i.e. often a bit after the raise_softirq() 
->>> has been done.
->>>
->>> __raise_softirq_irqoff() would be made private to kernel/softirq.c, 
->>> and we'd only have two public APIs to trigger softirqs: 
->>> raise_softirq() and raise_softirq_irqoff(). Both just set the 
->>> pending flag and dont do any wakeup.
->>>
->>> As a side-effect of these fixes, the tracepoints will be sorted out 
->>> as well - there wont be any need to hack into 
->>> __raise_softirq_irqoff().
->>>
->>> 	Ingo
->>>
->> Hi, Ingo
->>
->> 	Could you give me the .config file that this bug occurs?
-> 
-> I havent reproduced this - it was reported in a recent thread on 
-> lkml. I dont have an URI for it - does anyone on the Cc: remember 
-> the details?
-> 
-> 	Ingo
-> 
-> 
-> 
+On Thu, Jul 9, 2009 at 14:24, Peter Zijlstra<peterz@infradead.org> wrote:
+> One of the things I have wanted to do for a long time is to rename
+> sched_entity to sched_fair_entity, and do something like:
+>
+> struct sched_entity {
+>        struct sched_common_entity       common;
+>
+>        union {
+>                struct sched_fair_entity fair;
+>                struct sched_rt_entity   rt;
+>        };
+> };
+>
+> I imagine we can add struct sched_statistics to the end of this as well.
+>
+> The reason I haven't come around to doing this is that it takes a bit of
+> time to refactor the code and find all the common bits. So its been on
+> my todo list like forever.
+>
+> Can I persuade you to look at this? :-)
 
-I haven't found the email you referred, I've searched it from
-when you pointed out this softirq problem till now.
-If anyone know it, please let me know.
+It looks like a very good idea. As you told, it will take a time to refactor
+the code. I can look at this, but only on the end of next week.
 
-If my analysis is correct, I will say this problem does NOT exist:
-(non-PREEMPT_RT)
+> I'll queue the below, can I add:
+>
+> Signed-off-by: Lucas De Marchi <lucas.de.marchi@gmail.com>
+>
+> ?
 
-1) the (outmost) interrupt will call do_softirq() when it exits.
-   softirq will not be starved when interrupts occur.
+Sure. I'm not very habituated yet with it... do I re-send the email
+or you add it by yourself?
 
-2) the clocks will provide tick-interrupt periodic.
+thanks
 
-3) even when CONFIG_NO_HZ=y, the cpu still provide periodic tick
-   when current task is RT-task(which is non-idle task).
-
-So any softirq will be called in time(one jiffy). Maybe my analysis is
-incorrect or maybe the RT task disables the irq very long time or maybe
-there is other bug in kernel which has influence and impacts softirq.
-
-A) I will be still finding the email or the .config and probe
-   this problem. The endeavors to ensure all softirq handled
-   are not useful and it may not solve the problem. Because
-   the tick-interrupt does ensure pending softirq handled.
-
-B) If my thinking is correct, it's the best that we insert
-   tracepoints at raise_softirq() functions, it's very helpful
-   and one of its benefit is help us to probe problems
-   which happen here.
-
-
-	Lai
-
+Lucas De Marchi
