@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760648AbZGINrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbZGINsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760648AbZGINrQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 09:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759143AbZGINq7
+	id S1760737AbZGINsS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 09:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760131AbZGINsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 09:46:59 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:2598 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758578AbZGINq6 (ORCPT
+	Thu, 9 Jul 2009 09:48:06 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42376 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759143AbZGINsF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 09:46:58 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
- using phylib
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <1247145977.21295.899.camel@calx>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-	 <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
-	 <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
-	 <20090708141024.f8b581c5.akpm@linux-foundation.org>
-	 <20090708213331.GA9346@oksana.dev.rtsoft.ru>
-	 <20090708144744.5555b88d.akpm@linux-foundation.org>
-	 <20090708222003.GA12318@oksana.dev.rtsoft.ru>
-	 <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>
-	 <1247145977.21295.899.camel@calx>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 15:46:46 +0200
-Message-Id: <1247147206.7439.2.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Jul 2009 09:48:05 -0400
+Date: Thu, 9 Jul 2009 09:48:02 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Magnus Damm <magnus.damm@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC][PATCH] PM: Introduce core framework for run-time PM of
+ I/O  devices (rev. 8)
+In-Reply-To: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0907090937530.5823-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 08:26 -0500, Matt Mackall wrote: 
-> On Wed, 2009-07-08 at 17:01 -0700, Linus Torvalds wrote:
-> > 
-> > On Thu, 9 Jul 2009, Anton Vorontsov wrote:
-> > > 
-> > > The netpoll code is using msleep() just a few lines below cond_resched(),
-> > > so we won't make things worse. ;-)
-> > 
-> > Yeah. That function is definitely sleeping. It does things like 
-> > kmalloc(GFP_KERNEL), rtnl_lock() and synchronize_rcu() etc too, so an 
-> > added msleep() is the least of our problems.
-> > 
-> > Afaik, it's called from a bog-standard "module_init()", which happens late 
-> > enough that everything works.
-> > 
-> > In fact, I wonder if we should set SYSTEM_RUNNING much earlier - _before_ 
-> > doing the whole "do_initcalls()".
+On Thu, 9 Jul 2009, Magnus Damm wrote:
+
+> Clocks should be stopped as soon as possible without any delay. The
+> clock stopping is very cheap performance wise. Also, the clock
+> stopping is done on bus level without invoking any driver callbacks.
+> Delaying the clock stopping does not make any sense to me.
+
+In that case the device driver or bus subsystem should manage the
+device's clock directly.  There's no need to tie it in with the runtime
+PM framework.  Simply start the clock before each I/O operation and
+stop it afterward.
+
+> For my use case the driver callbacks manage context save and restore.
+> This to allow turning off power domains.
 > 
-> Well there are two ways of consistently defining SYSTEM_RUNNING:
+> The reason why I don't want to execute the driver ->runtime_suspend()
+> callbacks directly is performance. Basically, we only want to execute
+> the driver callbacks when we know that we will be able to power off
+> the domain. The driver callbacks need to save and restore registers,
+> and each uncached memory access is expensive. Executing the driver
+> callback does not give us any power savings at all, it's just consumes
+> power.
 > 
-> a) define it with reference to the well-understood notion of booting vs
-> running and don't switch it until handing off to init
+> I want to avoid the situation where the driver ->runtime_suspend() and
+> ->runtime_resume() callbacks get invoked over and over for all devices
+> except one in a certain power domain even though we will never be able
+> to power off because a single device in the power domain is active.
 
-This makes the most sense IMHO.
+Okay, I get the picture.  So what you want is something like this: Each 
+time a driver starts a clock, it does a pm_runtime_get on the 
+power-domain device.  Each time it stops the clock, it does a 
+pm_runtime_put on the power-domain device.
 
-> b) define it with reference to its usage by an arbitrary user like
-> cond_resched()
-> 
-> In the latter case, we obviously need to move it to the earliest point
-> that scheduling is possible. But there are a number of things like 
-> 
-> http://lxr.linux.no/linux+v2.6.30/kernel/printk.c#L228
-> 
-> that assume the definition is actually (a). We're currently within a
-> couple lines of a strict definition of (a) already, so I actually think
-> cond_resched() is just wrong (and we already know it broke a
-> previously-working user). It should perhaps be using another private
-> flag that gets set as soon as scheduling is up and running.
+When the power-domain device's runtime_idle callback runs, it should
+call pm_schedule_suspend.  The runtime_suspend callback should call
+pm_runtime_suspend for each of the devices in the power domain before
+turning off the power supply.  Conversely, the runtime_resume callback
+for the power-domain device should turn on the power supply and then
+call pm_runtime_resume for each of the devices in the domain.
 
-Right as mentioned before in this thread, we grew scheduler_running a
-while back which could be used for this.
+This will have to get more complicated if the individual device drivers
+want to maintain their own usage counters -- especially if they want to
+turn off the clock while leaving the counter positive.
 
-> But I'd actually go further and say that it's unfortunate to be checking
-> extra flags in such an important inline, especially since the check is
-> false for all but the first couple seconds of run time. Seems like we
-> could avoid adding an extra check by artificially elevating the preempt
-> count in early boot (or at compile time) then dropping it when
-> scheduling becomes available.
-
-Calling cond_resched() and co when !preemptable is an error so this
-wouldn't actually work.
-
-
+Alan Stern
 
