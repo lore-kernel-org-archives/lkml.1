@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbZGIEah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbZGIEj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757722AbZGIEah (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 00:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZGIEa3
+	id S1759206AbZGIEj7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 00:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZGIEjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 00:30:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47003 "EHLO hera.kernel.org"
+	Thu, 9 Jul 2009 00:39:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34891 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146AbZGIEa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 00:30:28 -0400
-Subject: Re: [PATCH 0/44] includecheck: fix multiple includes
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       davinci <davinci-linux-open-source@linux.davincidsp.com>,
-       Hugo Villeneuve <hugo.villeneuve@lyrtech.com>, philip@opensdr.com,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       Eduardo Valentin <eduardo.valentin@indt.org.br>,
-       Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org,
-       Ben Dooks <ben-linux@fluff.org>, Ben Dooks <ben@simtec.co.uk>,
-       dmitry pervushin <dpervushin@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       arm <linux-arm@lists.arm.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090708211321.GA15928@flint.arm.linux.org.uk>
-References: <1247063308.4382.12.camel@ht.satnam>
-	 <1247076059.4382.127.camel@ht.satnam>
-	 <20090708211321.GA15928@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 09:58:31 +0530
-Message-Id: <1247113711.2453.27.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1751186AbZGIEjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 00:39:49 -0400
+Date: Thu, 9 Jul 2009 00:39:31 -0400
+From: Dave Jones <davej@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH 1/3] Increase lockdep limits: MAX_STACK_TRACE_ENTRIES
+Message-ID: <20090709043931.GA11391@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Joao Correia <joaomiguelcorreia@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	=?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Catalin Marinas <catalin.marinas@arm.com>
+References: <a5d9929e0907070825j1dda6584t93196e2730dedc5c@mail.gmail.com> <1246980836.9777.5.camel@twins> <a5d9929e0907070838q7ed3306du3bb7880e47d7207b@mail.gmail.com> <1246981444.9777.11.camel@twins> <a5d9929e0907070850v72cd4da4y1cbbb10fddebd575@mail.gmail.com> <1246982101.9777.15.camel@twins> <20090708172248.GB2521@redhat.com> <1247078164.16156.18.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247078164.16156.18.camel@laptop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 22:13 +0100, Russell King wrote:
-> On Wed, Jul 08, 2009 at 11:30:59PM +0530, Jaswinder Singh Rajput wrote:
-> > I am still waiting ACK/NAK for :
-> > 
-> >       includecheck fix: arm, misc.c
-> >       includecheck fix: arm, atomic.h
-> >       includecheck fix: arm, board-dm355-evm.c
-> >       includecheck fix: arm, board-dm355-leopard.c
-> >       includecheck fix: arm, board-dm644x-evm.c
-> >       includecheck fix: arm, board-dm646x-evm.c
-> >       includecheck fix: arm, board-sffsdr.c
-> >       includecheck fix: arm, mach-mx3/devices.c
-> >       includecheck fix: arm, mach-omap1/mcbsp.c
-> >       includecheck fix: arm, mach-omap2/mcbsp.c
-> >       includecheck fix: arm, plat-s3c64xx/pm.c
-> >       includecheck fix: arm, plat-stmp3xxx/pinmux.c
-> 
-> You're still waiting because apparantly you never sent this set anywhere
-> near any ARM people before.
-> 
-> For the first two, I'll ack them:
-> 
-> Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> 
-> The remainder look sane to me, but you'll have to seek acks from the
-> individual platform maintainer(s).
-> 
+On Wed, Jul 08, 2009 at 08:36:04PM +0200, Peter Zijlstra wrote:
+ > Looking at a lockdep dump hch gave me I can see that that is certainly
+ > possible, I see tons of very deep callchains.
+ > 
+ > /me wonders if we're getting significantly deeper..
 
-OK, adding some more ARM people and ARM lists to get remaining ACK/NAK.
+Looking at /proc/lockdep, I'm curious..
+Take a look at http://davej.fedorapeople.org/lockdep
+scroll down to c12c0924
 
-Patches are already posted to LKML and also available at :
+What's up with all those old_style_spin_init's ?
 
-http://git.kernel.org/?p=linux/kernel/git/jaswinder/headers-check-2.6.git;a=summary
-
-In case if you are not able to find these patches let me know.
-
-Thanks,
---
-JSR
-
+	Dave
 
