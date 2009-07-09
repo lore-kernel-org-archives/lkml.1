@@ -1,98 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761227AbZGIPbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbZGIPfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761227AbZGIPbT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 11:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760889AbZGIPbF
+	id S1761130AbZGIPfT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 11:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbZGIPfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 11:31:05 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:1968 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760742AbZGIPbD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 11:31:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=BwSV1p27a3yE7eMOzthjm+wDcawjuDNgq0U1bS59mZ6ur8JiEdkw02358wQxKw+L22
-         /M71gX0c/6yJzFyQ117h0L8zxgZn+uKPw21nZsONSzbk6iw0dBk2nDvs3ynRurmn/jK0
-         cGZINYUVbcqTYR0o8d0b32UuU+8QMjmDX7+EU=
+	Thu, 9 Jul 2009 11:35:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43079 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759424AbZGIPfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 11:35:05 -0400
+Message-ID: <4A560ED7.2070403@redhat.com>
+Date: Thu, 09 Jul 2009 18:37:59 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0907090937530.5823-100000@iolanthe.rowland.org>
-References: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0907090937530.5823-100000@iolanthe.rowland.org>
-Date: Fri, 10 Jul 2009 00:31:02 +0900
-Message-ID: <aec7e5c30907090831y180b0972o6dcb961dd292a3c0@mail.gmail.com>
-Subject: Re: [RFC][PATCH] PM: Introduce core framework for run-time PM of I/O 
-	devices (rev. 8)
-From: Magnus Damm <magnus.damm@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: KSM: current madvise rollup
+References: <Pine.LNX.4.64.0906291419440.5078@sister.anvils> <4A49E051.1080400@redhat.com> <Pine.LNX.4.64.0906301518370.967@sister.anvils> <4A4A5C56.5000109@redhat.com> <Pine.LNX.4.64.0907010057320.4255@sister.anvils> <4A4B317F.4050100@redhat.com> <Pine.LNX.4.64.0907082035400.10356@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0907082035400.10356@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 9, 2009 at 10:48 PM, Alan Stern<stern@rowland.harvard.edu> wrote:
-> On Thu, 9 Jul 2009, Magnus Damm wrote:
+Hugh Dickins wrote:
+> Hi Izik,
 >
->> Clocks should be stopped as soon as possible without any delay. The
->> clock stopping is very cheap performance wise. Also, the clock
->> stopping is done on bus level without invoking any driver callbacks.
->> Delaying the clock stopping does not make any sense to me.
+> Sorry, I've not yet replied to your response of 1 July, nor shall I
+> right now.  Instead, more urgent to send you my current KSM rollup,
+> against 2.6.31-rc2, with which I'm now pretty happy - to the extent
+> that I've put my signoff to it below.
 >
-> In that case the device driver or bus subsystem should manage the
-> device's clock directly.  There's no need to tie it in with the runtime
-> PM framework.  Simply start the clock before each I/O operation and
-> stop it afterward.
-
-It's not that easy. The clock needs to be enabled to let the hardware
-device perform device specific stuff. For instance, the clock for the
-LCD controller needs to be on to redraw the screen. When the driver
-knows that it's done with the clock it can notify the bus using
-Runtime PM.
-
->> For my use case the driver callbacks manage context save and restore.
->> This to allow turning off power domains.
->>
->> The reason why I don't want to execute the driver ->runtime_suspend()
->> callbacks directly is performance. Basically, we only want to execute
->> the driver callbacks when we know that we will be able to power off
->> the domain. The driver callbacks need to save and restore registers,
->> and each uncached memory access is expensive. Executing the driver
->> callback does not give us any power savings at all, it's just consumes
->> power.
->>
->> I want to avoid the situation where the driver ->runtime_suspend() and
->> ->runtime_resume() callbacks get invoked over and over for all devices
->> except one in a certain power domain even though we will never be able
->> to power off because a single device in the power domain is active.
+> Though of course it's actually your and Andrea's and Chris's work,
+> just played around with by me; I don't know what the order of
+> signoffs should be in the end.
 >
-> Okay, I get the picture.  So what you want is something like this: Each
-> time a driver starts a clock, it does a pm_runtime_get on the
-> power-domain device.  Each time it stops the clock, it does a
-> pm_runtime_put on the power-domain device.
-
-Yes, this is exactly what I'd like to do in the driver.
-
-> When the power-domain device's runtime_idle callback runs, it should
-> call pm_schedule_suspend.  The runtime_suspend callback should call
-> pm_runtime_suspend for each of the devices in the power domain before
-> turning off the power supply.  Conversely, the runtime_resume callback
-> for the power-domain device should turn on the power supply and then
-> call pm_runtime_resume for each of the devices in the domain.
+> What it mainly lacks is a Documentation file, and more statistics in
+> sysfs: though we can already see how much is being merged, we don't
+> see any comparison against how much isn't.
 >
-> This will have to get more complicated if the individual device drivers
-> want to maintain their own usage counters -- especially if they want to
-> turn off the clock while leaving the counter positive.
+> But if you still like the patch below, let's advance to splitting
+> it up and getting it into mmotm: I have some opinions on the splitup,
+> I'll make some suggestions on that tomorrow.
+>   
 
-I'd like to mange both clocks and power domains using Runtime PM. The
-prototype I just posted does that, but the code is not very well
-integrated with the shared Runtime PM code.
+I like it very much, you really ~cleaned / optimized / made better 
+interface~ it up i got to say, thanks you.
+(Very high standard you have)
 
-/ magnus
+> You asked for a full diff against -rc2, but may want some explanation
+> of differences from what I sent before.  The main changes are:-
+>
+> A reliable PageKsm(), not dependent on the nature of the vma it's in:
+> it's like PageAnon, but with NULL anon_vma - needs a couple of slight
+> adjustments outside ksm.c.
+>   
+
+Good change.
+
+> Consequently, no reason to go on prohibiting KSM on private anonymous
+> pages COWed from template file pages in file-backed vmas.
+>   
+
+Agree.
+
+> Most of what get_user_pages did for us was unhelpful: now rely on
+> find_vma and follow_page and handle_mm_fault directly, which allow
+> us to check VM_MERGEABLE and PageKsm ourselves where needed.
+>
+> Which eliminates the separate is_present_pte checks, and spares us
+> from wasting rmap_items on absent ptes.
+>   
+
+That is great, much better.
+(I actually searched where you have exported follow_page and 
+handle_mm_fault, and then realized that life are easier when you are not 
+a modules anymore)
+
+> Which then drew attention to the hyperactive allocation and freeing
+> of tree_items, "slabinfo -AD" showing huge activity there, even when
+> idling.  It's not much of a problem really, but might cause concern.
+>
+> And revealed that really those tree_items were a waste of space, can
+> be packed within the rmap_items that pointed to them, while still
+> keeping to the nice cache-friendly 64-byte or 32-byte rmap_item.
+> (If another field needed later, can make rmap_list singly linked.)
+>   
+
+That change together with the "is_stable_tree" embedded inside the 
+rmap_item address are my favorite changes.
+
+> mremap move issue sorted, in simplest COW-breaking way.  My previous
+> code to unmerge according to rmap_item->stable was racy/buggy for
+> two reasons: ignore rmap_items there now, just scan the ptes.
+>
+> ksmd used to be running at higher priority: now nice 0.
+>   
+
+
+That is indeed logical change, maybe we can even punish it in another 5 
+points in nice...
+
+> Moved mm_slot hash functions together; made hash table smaller
+> now it's used less frequently than it was in your design.
+>
+> More cleanup, making similar things more alike.
+>   
+
+Really quality work. (What i did was just walk from line 1 to the end of 
+ksm.c with my eyes, I still want to apply the patch and play with it)
+
+The only thing i was afraid is if the check inside the 
+stable_tree_search is safe:
+
++			page2[0] = get_ksm_page(tree_rmap_item);
++			if (page2[0])
++				break;
+
+
+But i convinced myself that it is safe due to the fact that the page is 
+anonymous, so it wasnt be able to get remapped by the user (to try to 
+corrupt the stable tree) without the page will get breaked.
+
+So from my side I believe we can send it to mmotm I still want to run it 
+on my machine and play with it, to add some bug_ons (just for my own 
+testing) to see that everything
+going well, but I couldn't find one objection to any of your changes. 
+(And i did try hard to find at least one..., i thought maybe 
+module_init() can be replaced with something different, but i then i saw 
+it used in vmscan.c, so i gave up...)
+
+
+What you want to do now? send it to mmotm or do you want to play with it 
+more?
+
+
+Big thanks.
+
+
