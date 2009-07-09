@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbZGIJzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbZGIKAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760162AbZGIJzt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 05:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759263AbZGIJzo
+	id S1759626AbZGIKAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 06:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbZGIKAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 05:55:44 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54412 "EHLO sh.osrg.net"
+	Thu, 9 Jul 2009 06:00:04 -0400
+Received: from gg.genua.de ([151.136.100.2]:2003 "EHLO gg.genua.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751953AbZGIJzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 05:55:43 -0400
-Date: Thu, 9 Jul 2009 18:55:30 +0900
-To: davem@davemloft.net
-Cc: arnd@arndb.de, fujita.tomonori@lab.ntt.co.jp, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, reif@earthlink.net
-Subject: Re: [PATCH 2/5] sparc: use asm-generic/dma-mapping-common.h
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090706.181131.92078657.davem@davemloft.net>
-References: <1246860820-20629-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<200907061026.28878.arnd@arndb.de>
-	<20090706.181131.92078657.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090709185505X.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 09 Jul 2009 18:55:31 +0900 (JST)
+	id S1755215AbZGIKAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 06:00:04 -0400
+X-Greylist: delayed 847 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Jul 2009 06:00:03 EDT
+From: Sten Spans <Sten_Spans@genua.de>
+Date: Thu, 9 Jul 2009 11:45:44 +0200
+To: linux-kernel@vger.kernel.org
+Subject: security_file_lock cmd argument
+Message-ID: <20090709094544.GA23769@false>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 06 Jul 2009 18:11:31 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
 
-> From: Arnd Bergmann <arnd@arndb.de>
-> Date: Mon, 6 Jul 2009 10:26:28 +0200
-> 
-> > On Monday 06 July 2009, FUJITA Tomonori wrote:
-> >> +static inline struct dma_map_ops *get_dma_ops(struct device *dev)
-> >> +{
-> >> +       return dma_ops;
-> >> +}
-> >> +
-> >> +#define flush_write_buffers()
-> >> +
-> >> +#include <asm-generic/dma-mapping-common.h>
-> > 
-> > I still think the flush_write_buffers() x86-ism should not be required
-> > to use dma-mapping-common.h and only be used in arch/x86/kernel/pci-nommu.c
-> > so you don't have to add dummy definitions to all architectures.
-> > 
-> > See http://lkml.org/lkml/2009/6/30/134
-> > 
-> > Otherwise, your series looks good!
-> 
-> Since we have until the 2.6.32 merge window to merge this, why
-> don't we take care of this flush_write_buffers() thing first?
->
-> I'm completely fine with these changes otherwise, thanks!
+I was playing around with the security_file_lock hook which
+is invoked from fs/locks.c. The desciption in include/linux/security.h
+states the following:
 
-The logic to move flush_write_buffers() from dma-mapping-common.h to
-arch/x86/kernel/pci-nommu.c makes sense and it doesn't break anything.
-However, I'd like to see the confirmation from a person who added
-flush_write_buffers() long ago. I thought that we might overlook
-something subtle.
+ * @file_lock:
+ *      Check permission before performing file locking operations.
+ *      Note: this hook mediates both flock and fcntl style locks.
+ *      @file contains the file structure.
+ *      @cmd contains the posix-translated lock operation to perform
+ *      (e.g. F_RDLCK, F_WRLCK).
 
-I'll put Arnd's patch in the next submission if you like.
+However when invoked via sys_flock:
 
+SYSCALL_DEFINE2(flock, unsigned int, fd, unsigned int, cmd)
+{
+..
+        error = security_file_lock(filp, cmd);
 
-btw, Robert asked me about the dma-debug feature so I uploaded the new
-version (I also found and fixed one bug wrt dma_{alloc|free}_coherent
-for pci devices on SPARC32):
+Which results in passing flock style arguments (LOCK_*) rather
+than fcntl (F_*LCK). This also is inconsistent with the two
+other security_file_lock invocations in the same file.
+This one-liner fixes the issue:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git sparc
+--- fs/locks.c.orig	2009-07-09 11:26:45.000000000 +0200
++++ fs/locks.c	2009-07-09 11:27:24.000000000 +0200
+@@ -1590,7 +1590,7 @@
+ 	if (can_sleep)
+ 		lock->fl_flags |= FL_SLEEP;
+ 
+-	error = security_file_lock(filp, cmd);
++	error = security_file_lock(filp, lock->fl_type);
+ 	if (error)
+ 		goto out_free;
+ 
+-- 
+GeNUA Gesellschaft für Netzwerk - und Unix-Administration mbH
+Domagkstr. 7, D-85551 Kirchheim. http://www.genua.de
+Tel: (089) 99 19 50-0, Fax: (089) 99 19 50 - 999
+ 
+ Geschäftsführer: Dr. Magnus Harlander, Dr. Michaela Harlander,
+ Bernhard Schneck. Amtsgericht München HRB 98238
