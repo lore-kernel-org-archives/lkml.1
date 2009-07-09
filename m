@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZGIS3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbZGISac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbZGIS3W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 14:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZGIS3P
+	id S1755434AbZGISac (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 14:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZGISaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 14:29:15 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:49670 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752925AbZGIS3P convert rfc822-to-8bit (ORCPT
+	Thu, 9 Jul 2009 14:30:24 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:55457 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbZGISaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 14:29:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Hv+SRHOJHyZZIu+SMc2MyBLzUrApX8dM8rH9IvQNqx4zJ8J1mCWQh7msauhlfp0dyI
-         TJTgXymjDypWAVkDUCHtgoEun3MvAoB9DW3AItQrWnpBrn1CUbiuHDdryf1jOnyr1IBx
-         BqmCddsq0HA+D/XNlFc6h0luNYuk3RSGvS2JA=
+	Thu, 9 Jul 2009 14:30:23 -0400
+Message-ID: <4A56373C.4050409@vlnb.net>
+Date: Thu, 09 Jul 2009 22:30:20 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0907092016360.2768@localhost.localdomain>
-References: <1247063308.4382.12.camel@ht.satnam>
-	 <1247065179.4382.51.camel@ht.satnam> <20090709162807.GD5208@lenovo>
-	 <alpine.LFD.2.00.0907092016360.2768@localhost.localdomain>
-Date: Thu, 9 Jul 2009 21:29:12 +0300
-X-Google-Sender-Auth: e3e81f372aafedb2
-Message-ID: <84144f020907091129q14880d4aqeae964621f8e6ca8@mail.gmail.com>
-Subject: Re: [PATCH 20/44] includecheck fix: x86, shadow.c
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH]: Rename REQ_COPY_USER to more descriptive	REQ_HAS_TAIL_SPACE_FOR_PADDING
+References: <4A563259.5000601@vlnb.net> <20090709181713.GQ23611@kernel.dk>
+In-Reply-To: <20090709181713.GQ23611@kernel.dk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19vCI5+CrL1VrrGFadAaosZpLPG9RxP23tC5oL
+ cIGGP/CqqofswKPzlLrpaDIGtor8S8HcJCcibgtjsIowNt+1uz
+ QnNZugjEys/uz7dT9Vnfg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+Jens Axboe, on 07/09/2009 10:17 PM wrote:
+> On Thu, Jul 09 2009, Vladislav Bolkhovitin wrote:
+>> Currently names of REQ_COPY_USER and __REQ_COPY_USER constants are confusing,
+>> because they actually mean that the buffer for the corresponding requests
+>> has space in the tail for padding in case of DMA padding restrictions.
+> 
+> No, that's not what it means, the fact that there's padding room is a
+> side effect of the map type. So I'd suggest adding a comment above that
+> if {} in blk_rq_map_sg(), something that should have been there from the
+> beginning.
 
-> On Thu, 9 Jul 2009, Cyrill Gorcunov wrote:
->> |  #include <linux/kmemcheck.h>
->> |  #include <linux/module.h>
->> |  #include <linux/mm.h>
->> | -#include <linux/module.h>
->> |
->> |  #include <asm/page.h>
->> |  #include <asm/pgtable.h>
->> | --
->> | 1.6.0.6
->> |
->>
->> Better to CC Vegard on this.
+Can you elaborate a bit more about what REQ_COPY_USER should mean, please?
 
-On Thu, Jul 9, 2009 at 9:18 PM, Thomas Gleixner<tglx@linutronix.de> wrote:
-> Can we stop this kindergarden already? The patch is so obvious that it
-> just should be applied. I'll pick up all x86 ones and fold them in.
+As far as I can see from the sources, currently it's used to only to 
+determine if there is the padding space. Maybe, the original meaning 
+doesn't make sense anymore?
 
-What kindergarten are you talking about? Technically Ingo "kicked"
-kmemcheck out of the x86 tree so the patch should go through
-kmemcheck.git which makes Cyrill's CC correction spot on.
+Thanks,
+Vlad
 
-                        Pekka
+
+
