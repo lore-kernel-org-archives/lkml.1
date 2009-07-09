@@ -1,71 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751778AbZGIX1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751705AbZGIXaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751778AbZGIX1L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 19:27:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbZGIX0s
+	id S1751705AbZGIXaW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 19:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZGIXaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 19:26:48 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:46817 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873AbZGIX0q (ORCPT
+	Thu, 9 Jul 2009 19:30:12 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:54294 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750960AbZGIXaK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 19:26:46 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=CYQk/5+saZr7xZdtmucOHrbVRgY/TABGY4rh//fmzDME9hHTgUHXNWgklSNz0Iko0
-	wMyFV7ruKt4ifchIGnC3g==
-Date: Thu, 9 Jul 2009 16:26:36 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [patch v2] slub: add option to disable higher order debugging
- slabs
-In-Reply-To: <alpine.DEB.1.10.0907071150010.5124@gentwo.org>
-Message-ID: <alpine.DEB.2.00.0907091620470.16817@chino.kir.corp.google.com>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <1246374095.8014.28.camel@penberg-laptop> <alpine.DEB.1.10.0906301114450.3879@gentwo.org> <alpine.DEB.2.00.0906301248000.16312@chino.kir.corp.google.com> <alpine.DEB.1.10.0906301632570.22158@gentwo.org>
- <alpine.DEB.2.00.0906301413460.24397@chino.kir.corp.google.com> <alpine.DEB.1.10.0906301722280.17682@gentwo.org> <alpine.DEB.2.00.0906301445070.26290@chino.kir.corp.google.com> <84144f020906302253n2424d4a5k3aaf124838a041df@mail.gmail.com>
- <alpine.DEB.2.00.0907021016380.30890@chino.kir.corp.google.com> <84144f020907030023v2d09632bt13b6c25f96c0b803@mail.gmail.com> <alpine.DEB.2.00.0907062252500.9699@chino.kir.corp.google.com> <alpine.DEB.2.00.0907070013400.14978@chino.kir.corp.google.com>
- <alpine.DEB.1.10.0907071150010.5124@gentwo.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 9 Jul 2009 19:30:10 -0400
+X-Greylist: delayed 449 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Jul 2009 19:30:10 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Huzm9uEhxj9wqNhZzBt7IVdacc5Kz2SWi0QPN2PgW/lgGExevw+K7p2Kd86MDbjIGk
+         xGVhNWrp9o5Z/UnIMUbIMNH6ItL2T3wGF+qj7RrPH9l24bdFbyk2gtTOoISMi8VmflZz
+         LF1g35cuOWhjb/6/5kfBXBdBt0Th4EyuM59Gg=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <ab18d8520907090849p14d3c48eub6d01bdfd750cdf5@mail.gmail.com>
+References: <20090709123301.15654.4698.stgit@localhost.localdomain>
+	 <20090709123523.15654.15754.stgit@localhost.localdomain>
+	 <ab18d8520907090849p14d3c48eub6d01bdfd750cdf5@mail.gmail.com>
+Date: Fri, 10 Jul 2009 07:22:39 +0800
+Message-ID: <ab18d8520907091622w2a22e6bar3e15bb1397a4dbb2@mail.gmail.com>
+Subject: Re: [PATCH 1/3] tty: Sort out the USB sysrq changes that wrecked 
+	performance
+From: Fengwei Yin <yfw.kernel@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Jul 2009, Christoph Lameter wrote:
+On Thu, Jul 9, 2009 at 11:49 PM, Fengwei Yin<yfw.kernel@gmail.com> wrote:
+> Hi Alan,
+>
+> On Thu, Jul 9, 2009 at 8:35 PM, Alan Cox<alan@lxorguk.ukuu.org.uk> wrote:
+>> From: Alan Cox <alan@linux.intel.com>
+>>
+>> We can't go around calling all sorts of magic per character functions at
+>> full rate 3G data speed.
+>>
+>> Signed-off-by: Alan Cox <alan@linux.intel.com>
+>> ---
+>>
+>>  drivers/usb/serial/generic.c |   15 +++++++++++----
+>>  1 files changed, 11 insertions(+), 4 deletions(-)
+>>
+>>
+>> diff --git a/drivers/usb/serial/generic.c b/drivers/usb/serial/generic.c
+>> index 932d624..e9aa7a4 100644
+>> --- a/drivers/usb/serial/generic.c
+>> +++ b/drivers/usb/serial/generic.c
+>> @@ -424,10 +424,17 @@ static void flush_and_resubmit_read_urb(struct usb_serial_port *port)
+>>        if (!tty)
+>>                goto done;
+>>
+>> -       /* Push data to tty */
+>> -       for (i = 0; i < urb->actual_length; i++, ch++) {
+>> -               if (!usb_serial_handle_sysrq_char(port, *ch))
+>> -                       tty_insert_flip_char(tty, *ch, TTY_NORMAL);
+>> +       /* The per character mucking around with sysrq path it too slow for
+>> +          stuff like 3G modems, so shortcircuit it in the 99.9999999% of cases
+>> +          where the USB serial is not a console anyway */
+>> +       if (!port->console || !port->sysrq)
+>> +               tty_insert_flip_string(tty, ch, urb->actual_length);
+>> +       else {
+>> +               /* Push data to tty */
+>> +               for (i = 0; i < urb->actual_length; i++, ch++) {
+>> +                       if (!usb_serial_handle_sysrq_char(port, *ch))
+>> +                               tty_insert_flip_char(tty, *ch, TTY_NORMAL);
+>> +               }
+>>        }
+>>        tty_flip_buffer_push(tty);
+>>        tty_kref_put(tty);
+>>
+>
+> What about the change like this:
+>
+> diff --git a/drivers/usb/serial/generic.c b/drivers/usb/serial/generic.c
+> index 932d624..b4fd33b 100644
+> --- a/drivers/usb/serial/generic.c
+> +++ b/drivers/usb/serial/generic.c
+> @@ -424,10 +424,26 @@ static void flush_and_resubmit_read_urb(struct
+> usb_serial_port *port)
+>        if (!tty)
+>                goto done;
+>
+> -       /* Push data to tty */
+> -       for (i = 0; i < urb->actual_length; i++, ch++) {
+> -               if (!usb_serial_handle_sysrq_char(port, *ch))
+> -                       tty_insert_flip_char(tty, *ch, TTY_NORMAL);
+> +        /* The per character mucking around with sysrq path it too slow for
+> +           stuff like 3G modems, so shortcircuit it in the 99.9999999% of cases
+> +           where the USB serial is not a console anyway */
+> +        if (!port->console || !port->sysrq)
+> +                tty_insert_flip_string(tty, ch, urb->actual_length);
+> +        else {
+> +               /*
+> +                * Most of data shouldn't be sysrq request even when
+> +                * tty is a printk console.
+> +                */
+> +               if (time_before(jiffies, port->sysrq)) {
+> +                       /* Push data to tty */
+> +                       for (i = 0; i < urb->actual_length; i++, ch++) {
+> +                               if (!usb_serial_handle_sysrq_char(port, *ch))
+> +                                       tty_insert_flip_char(tty, *ch,
+> +                                                       TTY_NORMAL);
+> +                       }
+> +               } else {
+> +                       tty_insert_flip_string(tty, ch, urb->actual_length);
+> +               }
+>        }
+>        tty_flip_buffer_push(tty);
+>        tty_kref_put(tty);
+>
+Oh. Just ignore my change. If it's console, we don't need this "optimization".
 
-> > + * Debugging flags that require metadata to be stored in the slab, up to
-> > + * DEBUG_SIZE in size.
-> > + */
-> > +#define DEBUG_SIZE_FLAGS (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER)
-> > +#define DEBUG_SIZE (3 * sizeof(void *) + 2 * sizeof(struct track))
-> 
-> There is no need for DEBUG_SIZE since slub keeps both the size of the
-> object kmem_cache->objsize and the size with the metadata kmem_cache->size
-> 
-> If the order of both is different then the order would increase.
-> 
+Regards
+Yin, Fengwei
 
-Without DEBUG_SIZE_FLAGS, the only way to determine what flags have 
-increased the size is in calculate_sizes() and then disable them by 
-default if slub_debug=O is specified.  calculate_sizes() is used by 
-the `store', `poison', and `red_zone' callbacks, so the admin still has 
-the ability to enable these options even though slub_debug=O was used.
-
-So we can either mask off the size-increasing debug bits when the cache is 
-created in kmem_cache_flags() like I did, or we can move the logic to 
-calculate_sizes() with an added formal to determine whether this is from 
-kmem_cache_open() or one of the attribute callbacks.
-
-I think my solution is the cleanest and provides a single entity, 
-DEBUG_SIZE_FLAGS, which specifies the flags that slub_debug=O clears if 
-the minimum order increases.
+>
+> Regards
+> Yin, Fengwei
+>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
