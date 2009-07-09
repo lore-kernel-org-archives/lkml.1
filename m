@@ -1,69 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761434AbZGIQxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbZGIRF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761434AbZGIQxa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 12:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760971AbZGIQxM
+	id S1753120AbZGIRF1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 13:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZGIRFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 12:53:12 -0400
-Received: from av11-1-sn2.hy.skanova.net ([81.228.8.183]:38662 "EHLO
-	av11-1-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760852AbZGIQxL (ORCPT
+	Thu, 9 Jul 2009 13:05:17 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:19463 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752220AbZGIRFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 12:53:11 -0400
-Message-ID: <4A562073.1080703@mocean-labs.com>
-Date: Thu, 09 Jul 2009 18:53:07 +0200
-From: =?ISO-8859-1?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	Thu, 9 Jul 2009 13:05:16 -0400
+X-IronPort-AV: E=Sophos;i="4.42,374,1243828800"; 
+   d="scan'208";a="3655429"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: [PATCH] kernel.printk.c - ensure that "console enabled" messages are printed on the console
+Date: Thu, 9 Jul 2009 13:08:37 -0400
+User-Agent: KMail/1.9.5
+CC: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+References: <200907040017.26921.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200907040017.26921.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-To: linux-input@vger.kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, kwangwoo.lee@gmail.com,
-       Thierry Reding <thierry.reding@avionic-design.de>,
-       soni.trilok@gmail.com
-Subject: [PATCH 1/1] tsc2007: Cancel work sync, increase polling frequency,
- make exit platform hw callback optional
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-ID: <200907091308.37370.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 09 Jul 2009 17:05:14.0479 (UTC) FILETIME=[6D3697F0:01CA00B7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the remove function, ancel the work using the _sync version,
-to make sure any running "work" is finished. Make the
-exit_platform_hw callback optional since it's not needed on all
-platforms.
+From: Robin Getz <rgetz@blackfin.uclinux.org>
 
-When the screen is touched, the polling frequency is increased
-to reduce the risk of missing taps.
+Today, when a console is registered without CON_PRINTBUFFER, end users never
+see the announcement of it being added, and never know if they missed something,
+if the console is really at the start or not, and just leads to general confusion.
 
-Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+This re-orders existing code, to make sure the console is added, before 
+the "console [%s%d] enabled" is printed out - ensuring that this message
+is _always_ seen.
+
+This has the desired/intended side effect of making sure that 
+"console enabled:" messages are printed on the bootconsole, and the real
+console. This does cause the same line is printed twice if the bootconsole
+and real console are the same device, but if they are on different devices,
+the message is printed to both consoles.
+
+Signed-off-by : Robin Getz <rgetz@blackfin.uclinux.org>
+
 ---
-Index: linux-2.6.30/drivers/input/touchscreen/tsc2007.c
-===================================================================
---- linux-2.6.30/drivers/input/touchscreen/tsc2007.c	(revision 945)
-+++ linux-2.6.30/drivers/input/touchscreen/tsc2007.c	(revision 999)
-@@ -27,7 +27,7 @@
-  #include <linux/i2c.h>
-  #include <linux/i2c/tsc2007.h>
 
--#define TS_POLL_PERIOD	msecs_to_jiffies(5) /* ms delay between samples */
-+#define TS_POLL_PERIOD	msecs_to_jiffies(1) /* ms delay between samples */
+ printk.c |   44 +++++++++++++++++++++++++++++---------------
+ 1 file changed, 29 insertions(+), 15 deletions(-)
 
-  #define TSC2007_MEASURE_TEMP0		(0x0 << 4)
-  #define TSC2007_MEASURE_AUX		(0x2 << 4)
-@@ -332,11 +332,11 @@
-  	struct tsc2007	*ts = i2c_get_clientdata(client);
-  	struct tsc2007_platform_data *pdata;
+patch generated for -tip
 
--	/* cancel any work */
--	cancel_delayed_work(&ts->work);
-+	cancel_delayed_work_sync(&ts->work);
+---
 
-  	pdata = client->dev.platform_data;
--	pdata->exit_platform_hw();
-+	if (pdata->exit_platform_hw)
-+		pdata->exit_platform_hw();
-
-  	free_irq(ts->irq, ts);
-  	input_unregister_device(ts->input);
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 41fe609..60f35b9 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -1240,22 +1240,14 @@ void register_console(struct console *newcon)
+ 	if (!(newcon->flags & CON_ENABLED))
+ 		return;
+ 
+-	if (bcon && ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV)) {
+-		/* we need to iterate through twice, to make sure we print
+-		 * everything out, before we unregister the console(s)
+-		 */
+-		printk(KERN_INFO "console handover:");
+-		for_each_console(bcon)
+-			printk("boot [%s%d] ", bcon->name, bcon->index);
+-		printk(" -> real [%s%d]\n", newcon->name, newcon->index);
+-		for_each_console(bcon)
+-			unregister_console(bcon);
++	/*
++	 * If we have a bootconsole, and are switching to a real console,
++	 * don't print everything out again, since when the boot console, and
++	 * the real console are the same physical device, it's annoying to
++	 * see the beginning boot messages twice
++	 */
++	if (bcon && ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV))
+ 		newcon->flags &= ~CON_PRINTBUFFER;
+-	} else {
+-		printk(KERN_INFO "%sconsole [%s%d] enabled\n",
+-			(newcon->flags & CON_BOOT) ? "boot" : "" ,
+-			newcon->name, newcon->index);
+-	}
+ 
+ 	/*
+ 	 *	Put this console in the list - keep the
+@@ -1281,6 +1273,28 @@ void register_console(struct console *newcon)
+ 		spin_unlock_irqrestore(&logbuf_lock, flags);
+ 	}
+ 	release_console_sem();
++
++	/*
++	 *  By unregistering the bootconsoles after we enable the real console
++	 * we get the "console xxx enabled" message on all the consoles - 
++	 * boot consoles, real consoles, etc - this is to ensure that end
++	 * users know there might be something in the kernel's log buffer that
++	 * went to the bootconsole (that they do not see on the real console)
++	 */
++	if (bcon && ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV)) {
++		/* we need to iterate through twice, to make sure we print
++		 * everything out, before we unregister the console(s)
++		 */
++		printk(KERN_INFO "console [%s%d] enabled, bootconsole disabled\n",
++			newcon->name, newcon->index);
++		for_each_console(bcon)
++			if (bcon->flags & CON_BOOT)
++				unregister_console(bcon);
++	} else {
++		printk(KERN_INFO "%sconsole [%s%d] enabled\n",
++			(newcon->flags & CON_BOOT) ? "boot" : "" ,
++			newcon->name, newcon->index);
++	}
+ }
+ EXPORT_SYMBOL(register_console);
+ 
