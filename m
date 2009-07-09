@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632AbZGITKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754179AbZGITSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753632AbZGITKy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 15:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZGITKq
+	id S1754179AbZGITSo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 15:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZGITSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 15:10:46 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:36095 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753177AbZGITKp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 15:10:45 -0400
-X-SpamScore: -5
-X-BigFish: VPS-5(zz4015L62a3Lzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KMJ3XE-02-X85-01
-Date: Thu, 9 Jul 2009 21:10:32 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: [GIT PULL] oprofile fixes for v2.6.31-rc2
-Message-ID: <20090709191031.GH3226@erda.amd.com>
+	Thu, 9 Jul 2009 15:18:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44530 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752892AbZGITSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 15:18:34 -0400
+Message-ID: <4A564263.5010305@kernel.org>
+Date: Thu, 09 Jul 2009 12:17:55 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 09 Jul 2009 19:10:33.0616 (UTC) FILETIME=[EEF7D900:01CA00C8]
+To: dann frazier <dannf@hp.com>
+CC: linux-scsi@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: mptsas, msi and the dl585 g2
+References: <20090630180300.GA9971@ldl.fc.hp.com> <4A4A5B01.9040200@kernel.org> <20090703225708.GA30664@ldl.fc.hp.com> <4A4FADDC.30606@kernel.org> <20090709185945.GG2613@ldl.fc.hp.com>
+In-Reply-To: <20090709185945.GG2613@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+dann frazier wrote:
+> 
+>   --------------------------------------------------------------------
+>   commit 30a18d6c3f1e774de656ebd8ff219d53e2ba4029
+>   Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
+>   Date:   Tue Feb 19 03:21:20 2008 -0800
+> 
+>       x86: multi pci root bus with different io resource range, on
+>       64-bit
+>   --------------------------------------------------------------------
+> 
+> This appears to be the commit that actually introduced the issue.
+> I've attached dmesg w/ PCI DEBUG enabled from both sides of this
+> changeset, as well as a diff w/o printk timestamps.
+> 
+> Also note that #ifdef'ing out x86_pci_root_bus_res_quirks() in
+> amd_bus.c seems to avoid the problem as well.
 
-please pull oprofile fixes for v2.6.31-rc2 from:
+your BIOS didn't allocate io resources to some device under HT chain on node1/link2
+aka under peer root bus.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git fixes-for-linus
+Kernel try to allocate resource to them.
 
-Thanks,
+and the patch did right thing according to range 
+bus: 40 index 1 mmio: [d9f00000, dfefffff]
 
--Robert
+YH
 
 
-The following changes since commit faf80d62e44dc627efb741f48db50c1858d1667c:
-  Linus Torvalds (1):
-        Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git fixes-for-linus
-
-Maynard Johnson (1):
-      oprofile: reset bt_lost_no_mapping with other stats
-
-Robert Richter (3):
-      Merge commit 'v2.6.30' into oprofile/master
-      x86/oprofile: rename kernel parameter for architectural perfmon to arch_perfmon
-      Merge branches 'oprofile/fixes' and 'oprofile/stable' into oprofile/fixes-for-linus
-
- Documentation/kernel-parameters.txt |    4 ++--
- arch/x86/oprofile/nmi_int.c         |    2 +-
- drivers/oprofile/oprofile_stats.c   |    1 +
- 3 files changed, 4 insertions(+), 3 deletions(-)
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
++bus: [00,3f] on node 0 link 1
++bus: 00 index 0 io port: [0, 2fff]
++bus: 00 index 1 mmio: [80000000, d9efffff]
++bus: 00 index 2 mmio: [dff00000, e3ffffff]
++bus: 00 index 3 mmio: [a0000, bffff]
++bus: 00 index 4 mmio: [e8000000, ffffffff]
++bus: 00 index 5 mmio: [480000000, fbffffffff]
++bus: [40,7f] on node 1 link 2
++bus: 40 index 0 io port: [3000, ffff]
++bus: 40 index 1 mmio: [d9f00000, dfefffff]
++bus: 40 index 2 mmio: [e4000000, e7ffffff]
+ ACPI: bus type pci registered
+ PCI: Using configuration type 1 for base access
+ ACPI: EC: Look up EC in DSDT
+@@ -646,18 +659,18 @@
+   IO window: disabled.
+   MEM window: disabled.
+   PREFETCH window: disabled.
+-  got res [88000000:8801ffff] bus [88000000:8801ffff] flags 27200 for BAR 6 of 0000:41:01.0
+-  got res [88020000:8803ffff] bus [88020000:8803ffff] flags 27200 for BAR 6 of 0000:41:02.0
++  got res [d9f00000:d9f1ffff] bus [d9f00000:d9f1ffff] flags 27200 for BAR 6 of 0000:41:01.0
++  got res [d9f20000:d9f3ffff] bus [d9f20000:d9f3ffff] flags 27200 for BAR 6 of 0000:41:02.0
+ PCI: Bridge: 0000:40:10.0
+   IO window: disabled.
+   MEM window: 0xda000000-0xddffffff
+-  PREFETCH window: 0x0000000088000000-0x00000000880fffff
+-  got res [88200000:883fffff] bus [88200000:883fffff] flags 27200 for BAR 6 of 0000:42:01.0
+-  got res [88100000:8813ffff] bus [88100000:8813ffff] flags 27200 for BAR 6 of 0000:42:02.0
++  PREFETCH window: 0x00000000d9f00000-0x00000000d9ffffff
++  got res [de000000:de1fffff] bus [de000000:de1fffff] flags 27200 for BAR 6 of 0000:42:01.0
++  got res [de200000:de23ffff] bus [de200000:de23ffff] flags 27200 for BAR 6 of 0000:42:02.0
+ PCI: Bridge: 0000:40:11.0
+   IO window: 3000-3fff
+   MEM window: 0xdfe00000-0xdfefffff
+-  PREFETCH window: 0x0000000088100000-0x00000000883fffff
++  PREFETCH window: 0x00000000de000000-0x00000000de2fffff
 
