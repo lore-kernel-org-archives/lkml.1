@@ -1,96 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbZGIVgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZGIVgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756426AbZGIVgZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 17:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZGIVgS
+	id S1756846AbZGIVgk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 17:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755756AbZGIVgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 17:36:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53613 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753949AbZGIVgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 17:36:17 -0400
-Date: Thu, 9 Jul 2009 23:33:00 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 2/2] is_current_single_threaded: don't use
-	->mmap_sem
-Message-ID: <20090709213300.GA10256@redhat.com>
-References: <20090709212849.GA10245@redhat.com>
+	Thu, 9 Jul 2009 17:36:31 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:46661 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756343AbZGIVga (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 17:36:30 -0400
+Date: Thu, 9 Jul 2009 17:36:30 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Greg KH <greg@kroah.com>, Tony Cook <tony-cook@bigpond.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       <linux-usb-devel@lists.sourceforge.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29.5: Oops when unplugging Moschip 7840/7820 USB serial
+ device
+In-Reply-To: <4A565991.2060606@goop.org>
+Message-ID: <Pine.LNX.4.44L0.0907091728590.11378-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090709212849.GA10245@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/09, Oleg Nesterov wrote:
->
-> is_current_single_threaded() can safely miss a freshly forked CLONE_VM
-> task, but in this case it must not miss its parent. That is why we take
-> mm->mmap_sem for writing to make sure a thread/task with the same ->mm
-> can't pass exit_mm() and disappear.
->
-> However we can avoid ->mmap_sem and rely on rcu/barriers:
->
-> 	- if we do not see the exiting parent on thread/process list
-> 	  we see the result of list_del_rcu(), in this case we must
-> 	  also see the result of list_add_rcu() which does wmb().
->
-> 	- if we do see the parent but its ->mm == NULL, we need rmb()
-> 	  to make sure we can't miss the child.
+On Thu, 9 Jul 2009, Jeremy Fitzhardinge wrote:
 
-To simplify the review, below is the code after the patch.
+> I unplugged a Moschip 7840/7820 USB serial adapter, and it oopsed.  I had been using it
+> with picoterm, but it was not open at the time I unplugged it.
+> 
+> Thanks,
+> 	J
+> 
+> BUG: unable to handle kernel NULL pointer dereference at 00000000000000b4
+> IP: [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
+> PGD 12e19c067 PUD 12e19d067 PMD 0 
+> Oops: 0002 [#1] SMP 
+> last sysfs file: /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq
+> CPU 0 
+> Modules linked in: mos7840 usbserial joydev aes_x86_64 aes_generic hidp fuse ipt_MASQUERADE iptable_nat nf_nat rfcomm bridge stp llc bnep sco l2cap coretemp sunrpc ip6t_REJECT nf_conntrack_ipv6 ip6table_filter ip6_tables ipv6 cpufreq_ondemand acpi_cpufreq freq_table dm_multipath kvm_intel kvm uinput snd_hda_codec_conexant snd_hda_intel snd_hda_codec arc4 ecb snd_hwdep thinkpad_acpi iwlagn usb_storage snd_pcm hwmon btusb e1000e pcspkr iwlcore snd_timer iTCO_wdt lib80211 iTCO_vendor_support mac80211 i2c_i801 wmi snd bluetooth cfg80211 soundcore snd_page_alloc i915 drm i2c_algo_bit i2c_core video output [last unloaded: microcode]
+> Pid: 27, comm: khubd Not tainted 2.6.29.5-191.fc11.x86_64 #1 74542GU
+> RIP: 0010:[<ffffffff81029eb5>]  [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
 
-Oleg.
+> Call Trace:
+>  [<ffffffff81029f7f>] default_spin_lock_flags+0x9/0xe
+>  [<ffffffff813abf94>] _spin_lock_irqsave+0x32/0x3b
+>  [<ffffffffa0399afa>] mos7840_shutdown+0x93/0x120 [mos7840]
 
-/*
- * Returns true if the task does not share ->mm with another thread/process.
- */
-bool is_current_single_threaded(void)
-{
-	struct task_struct *task = current;
-	struct mm_struct *mm = task->mm;
-	struct task_struct *p, *t;
-	bool ret;
+The fix for this bug is in 2.6.30.1, but it hasn't been added to the 
+2.6.29.stable tree (or 2.6.27.stable).
 
-	if (atomic_read(&task->signal->live) != 1)
-		return false;
-
-	if (atomic_read(&mm->mm_users) == 1)
-		return true;
-
-	ret = false;
-	rcu_read_lock();
-	for_each_process(p) {
-		if (unlikely(p->flags & PF_KTHREAD))
-			continue;
-		if (unlikely(p == task->group_leader))
-			continue;
-
-		t = p;
-		do {
-			if (unlikely(t->mm == mm))
-				goto found;
-			if (likely(t->mm))
-				break;
-			/*
-			 * t->mm == NULL. Make sure next_thread/next_task
-			 * will see other CLONE_VM tasks which might be
-			 * forked before exiting.
-			 */
-			smp_rmb();
-		} while_each_thread(p, t);
-	}
-	ret = true;
-found:
-	rcu_read_unlock();
-
-	return ret;
-}
+Alan Stern
 
