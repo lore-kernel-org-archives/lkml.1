@@ -1,100 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759019AbZGICT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbZGICXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759019AbZGICT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 22:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbZGICTU
+	id S1758845AbZGICXc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 22:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756765AbZGICXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 22:19:20 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42061 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755582AbZGICTU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 22:19:20 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH 4/5] add isolate pages vmstat
-Cc: kosaki.motohiro@jp.fujitsu.com, Minchan Kim <minchan.kim@gmail.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
-In-Reply-To: <alpine.DEB.1.10.0907071248560.5124@gentwo.org>
-References: <20090707101855.0C63.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0907071248560.5124@gentwo.org>
-Message-Id: <20090709111458.238C.A69D9226@jp.fujitsu.com>
+	Wed, 8 Jul 2009 22:23:23 -0400
+Received: from mail.samba.org ([66.70.73.150]:36185 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755529AbZGICXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 22:23:22 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu,  9 Jul 2009 11:19:06 +0900 (JST)
+Message-ID: <19029.21645.316650.934926@samba.org>
+Date: Thu, 9 Jul 2009 12:23:09 +1000
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+In-Reply-To: <alpine.LSU.2.00.0907081146290.29609@fbirervta.pbzchgretzou.qr>
+References: <87hbxu60qm.fsf@devron.myhome.or.jp>
+	<19021.23231.213863.726785@samba.org>
+	<alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
+	<19021.26102.80885.330380@samba.org>
+	<alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr>
+	<19021.31291.642416.956966@samba.org>
+	<alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr>
+	<19021.63615.450348.192109@samba.org>
+	<alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr>
+	<19025.63119.656216.431469@samba.org>
+	<20090707195129.GB24203@elf.ucw.cz>
+	<19028.19921.30399.762710@samba.org>
+	<alpine.LSU.2.00.0907081146290.29609@fbirervta.pbzchgretzou.qr>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 7 Jul 2009, KOSAKI Motohiro wrote:
-> 
-> > +++ b/include/linux/mmzone.h
-> > @@ -100,6 +100,8 @@ enum zone_stat_item {
-> >  	NR_BOUNCE,
-> >  	NR_VMSCAN_WRITE,
-> >  	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
-> > +	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
-> > +	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
-> 
-> LRU counters are rarer in use then the counters used for dirty pages etc.
-> 
-> Could you move the counters for reclaim into a separate cacheline?
-> 
+Hi Jan,
 
-Current definition is here.
+ > It is much more with devices that are commonly operated with long
+ > names - multimedia players come to mind - and these "always"
+ > want a valid 8.3.
 
-dirty pages and other frequently used counter stay in first cache line.
-NR_ISOLATED_(ANON|FILE) and other unfrequently used counter stay in second
-cache line.
+Would you mind running an experiment for me with your IOneIt MP3
+player?
 
-Do you mean we shouldn't use zone_stat_item for it?
+Change vfat_build_dummy_83_buffer() to just do this:
 
+  memset(msdos_name, ' ', 11);
 
----------------------------------------------------------
-enum zone_stat_item {
-        /* First 128 byte cacheline (assuming 64 bit words) */
-        NR_FREE_PAGES,
-        NR_LRU_BASE,
-        NR_INACTIVE_ANON = NR_LRU_BASE, /* must match order of LRU_[IN]ACTIVE */
-        NR_ACTIVE_ANON,         /*  "     "     "   "       "         */
-        NR_INACTIVE_FILE,       /*  "     "     "   "       "         */
-        NR_ACTIVE_FILE,         /*  "     "     "   "       "         */
-        NR_UNEVICTABLE,         /*  "     "     "   "       "         */
-        NR_MLOCK,               /* mlock()ed pages found and moved off LRU */
-        NR_ANON_PAGES,  /* Mapped anonymous pages */
-        NR_FILE_MAPPED, /* pagecache pages mapped into pagetables.
-                           only modified from process context */
-        NR_FILE_PAGES,
-        NR_FILE_DIRTY,
-        NR_WRITEBACK,
-        NR_SLAB_RECLAIMABLE,
-        NR_SLAB_UNRECLAIMABLE,
-        NR_PAGETABLE,           /* used for pagetables */
-        NR_KERNEL_STACK,
-        /* Second 128 byte cacheline */
-        NR_UNSTABLE_NFS,        /* NFS unstable pages */
-        NR_BOUNCE,
-        NR_VMSCAN_WRITE,
-        NR_WRITEBACK_TEMP,      /* Writeback using temporary buffers */
-        NR_ISOLATED_ANON,       /* Temporary isolated pages from anon lru */
-        NR_ISOLATED_FILE,       /* Temporary isolated pages from file lru */
-        NR_SHMEM,               /* shmem pages (included tmpfs/GEM pages) */
-#ifdef CONFIG_NUMA
-        NUMA_HIT,               /* allocated in intended node */
-        NUMA_MISS,              /* allocated in non intended node */
-        NUMA_FOREIGN,           /* was intended here, hit elsewhere */
-        NUMA_INTERLEAVE_HIT,    /* interleaver preferred this zone */
-        NUMA_LOCAL,             /* allocation from local node */
-        NUMA_OTHER,             /* allocation from other node */
-#endif
-        NR_VM_ZONE_STAT_ITEMS };
+and nothing else. Then delete and re-create the files that you had
+problems with and see if your MP3 player is then happy to play
+them. That helps a lot with Win98, and I wonder if it also helps with
+your IOneIt player.
 
+As I mentioned previously, since your report I'm trying to test on a
+bunch of different MP3/media players. So far the tests I've done have
+worked fine with the dualnames patch, but I'm still waiting on
+delivery of more cheap MP3 players from eBay.
 
-
-
-
+Cheers, Tridge
