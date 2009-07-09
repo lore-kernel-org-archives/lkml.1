@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZGIV5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbZGIV63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbZGIV5F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 17:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754696AbZGIV4y
+	id S1755861AbZGIV63 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 17:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbZGIV6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 17:56:54 -0400
-Received: from mga03.intel.com ([143.182.124.21]:27908 "EHLO mga03.intel.com"
+	Thu, 9 Jul 2009 17:58:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:39528 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753715AbZGIV4x convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 17:56:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,375,1243839600"; 
-   d="scan'208";a="163376589"
-From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
-To: Magnus Damm <magnus.damm@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-CC: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Date: Fri, 10 Jul 2009 03:26:45 +0530
-Subject: RE: [linux-pm] [RFC][PATCH] PM: Introduce core framework for
-	run-time PM of I/O devices (rev. 8)
-Thread-Topic: [linux-pm] [RFC][PATCH] PM: Introduce core framework for
-	run-time PM of I/O devices (rev. 8)
-Thread-Index: AcoAqy8XnjCmJfmaTgicBn6D7E6MngANCe3g
-Message-ID: <175E0F9A9EFCEA46A65F5552BB057298BB5F3EA2@bgsmsx502.gar.corp.intel.com>
-References: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8@mail.gmail.com>
-	<Pine.LNX.4.44L0.0907090937530.5823-100000@iolanthe.rowland.org>
- <aec7e5c30907090831y180b0972o6dcb961dd292a3c0@mail.gmail.com>
-In-Reply-To: <aec7e5c30907090831y180b0972o6dcb961dd292a3c0@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	id S1754095AbZGIV6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 17:58:21 -0400
+Date: Thu, 9 Jul 2009 23:58:17 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, rjw@sisk.pl,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [regression] 2.6.30 leaking keys on console switch
+In-Reply-To: <20090709200318.GB16355@basil.fritz.box>
+Message-ID: <alpine.LNX.2.00.0907092356250.27327@wotan.suse.de>
+References: <87eiss7uhb.fsf@basil.nowhere.org> <alpine.LNX.2.00.0907071048210.4994@wotan.suse.de> <20090708065325.GE3309@dtor-d630.eng.vmware.com> <alpine.LNX.2.00.0907091319480.27327@wotan.suse.de> <20090709200318.GB16355@basil.fritz.box>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 9 Jul 2009, Andi Kleen wrote:
 
-I am newbee to this mailing list. Please excuse me if I am talking nonsense here.
+> > Umm, actually, Andi, could you verify whether reverting e7b5c1ef4d changes 
+> > the behavior you are observing in any way?
+> Tested that, no change unfortunately.
 
+Is there any possibility to connect PS/2 keyboard to those systems, to see 
+if it is specific to USB keyboards or whether it is rather generic input 
+problem?
 
+On Thu, 9 Jul 2009, Andi Kleen wrote:
 
-On Thu, Jul 9, 2009 at 10:48 PM, Alan Stern<stern@rowland.harvard.edu> wrote:
->> On Thu, 9 Jul 2009, Magnus Damm wrote:
->>
->>> Clocks should be stopped as soon as possible without any delay. The
->>> clock stopping is very cheap performance wise. Also, the clock
->> stopping is done on bus level without invoking any driver callbacks.
->>> Delaying the clock stopping does not make any sense to me.
->>
->> In that case the device driver or bus subsystem should manage the
->> device's clock directly.  There's no need to tie it in with the runtime
->> PM framework.  Simply start the clock before each I/O operation and
->> stop it afterward.
+> > By the way, if I understand it correctly, Andi is able to see the very 
+> > same effect even inside X, so tty can be possibly ruled out, right?
+> > 
+> > Still, I don't see the leaking F key in the evtest output (see the mail 
+> > from yesterday), which is quite puzzling.
+> 
+> Everything quite puzzling.
+> 
+> I find it puzzling that people cannot reproduce this. I see this on two
+> quite different systems (different keyboard, system). Does really nobody
+> else see it?
 
-> It's not that easy. The clock needs to be enabled to let the hardware
-> device perform device specific stuff. For instance, the clock for the
-> LCD controller needs to be on to redraw the screen. When the driver
-> knows that it's done with the clock it can notify the bus using
-> Runtime PM.
+I really tried, and I don't. Could you please send me your config?
 
-Is there any plan to look into the "Clock Framework" that was developed as part of OMAP and extending this to make it generic for all platforms?
+-- 
+Jiri Kosina
+SUSE Labs
