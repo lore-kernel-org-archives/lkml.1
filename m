@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZGIRad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbZGIRbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZGIRad (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 13:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZGIRa0
+	id S1754294AbZGIRbt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 13:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZGIRbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 13:30:26 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:57945 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751066AbZGIRaZ (ORCPT
+	Thu, 9 Jul 2009 13:31:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35007 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751564AbZGIRbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 13:30:25 -0400
-Date: Thu, 9 Jul 2009 10:30:21 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for July 9 (x86/pci)
-Message-Id: <20090709103021.d39a711a.randy.dunlap@oracle.com>
-In-Reply-To: <20090709163031.acdb5439.sfr@canb.auug.org.au>
-References: <20090709163031.acdb5439.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt009.oracle.com [141.146.116.18]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4A562929.01C4:SCFSTAT5015188,ss=1,fgs=0
+	Thu, 9 Jul 2009 13:31:38 -0400
+Date: Thu, 9 Jul 2009 10:29:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Matt Mackall <mpm@selenic.com>, Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
+ using phylib
+In-Reply-To: <1247149862.12784.6.camel@twins>
+Message-ID: <alpine.LFD.2.01.0907091027020.3352@localhost.localdomain>
+References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>  <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>  <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>  <20090708141024.f8b581c5.akpm@linux-foundation.org> 
+ <20090708213331.GA9346@oksana.dev.rtsoft.ru>  <20090708144744.5555b88d.akpm@linux-foundation.org>  <20090708222003.GA12318@oksana.dev.rtsoft.ru>  <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>  <1247145977.21295.899.camel@calx> 
+ <1247147206.7439.2.camel@twins>  <1247149093.21295.915.camel@calx> <1247149862.12784.6.camel@twins>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Jul 2009 16:30:31 +1000 Stephen Rothwell wrote:
 
-> Hi all,
+
+On Thu, 9 Jul 2009, Peter Zijlstra wrote:
 > 
-> Changes since 20090708:
+> So something like (utterly untested and such)
 
+This looks like a good patch. Please make it so - who knows what other 
+uses of cond_resched() we have in module init routines that might have 
+deadlocks without it. The netpoll case got fixed, but please just do this.
 
-when ACPI is disabled (SFI=y):
+I'd like to do my system_state movement too (the thing is, when you load 
+drivers as modules you _will_ have "system_state == SYSTEM_RUNNING", so 
+any initcall that depends on it being "early boot" is already broken), but 
+there's no way that patch is appropriate for post-rc2. This one, however, 
+looks appropriate (modulo getting some testing, of course)
 
-
-arch/x86/pci/mmconfig_32.c: In function 'get_base_addr':
-arch/x86/pci/mmconfig_32.c:34: error: invalid use of undefined type 'struct acpi_mcfg_allocation'
-arch/x86/pci/mmconfig_32.c:34: error: dereferencing pointer to incomplete type
-arch/x86/pci/mmconfig_32.c:35: error: dereferencing pointer to incomplete type
-arch/x86/pci/mmconfig_32.c:36: error: dereferencing pointer to incomplete type
-arch/x86/pci/mmconfig_32.c:37: error: dereferencing pointer to incomplete type
-arch/x86/pci/mmconfig_32.c:38: error: dereferencing pointer to incomplete type
-
-(X86_32, clearly)
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+		Linus
