@@ -1,106 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbZGIE0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZGIE3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758536AbZGIE0j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 00:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbZGIE03
+	id S1752184AbZGIE3F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 00:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbZGIE2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 00:26:29 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:55142 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbZGIE02 (ORCPT
+	Thu, 9 Jul 2009 00:28:54 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:59359 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750805AbZGIE2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 00:26:28 -0400
-Message-ID: <4A557153.8000108@gmail.com>
-Date: Thu, 09 Jul 2009 06:25:55 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Jiri Olsa <jolsa@redhat.com>
-CC: netdev@vger.kernel.org, mathieu.desnoyers@polymtl.ca, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, htejun@gmail.com, jarkao2@gmail.com,
-       oleg@redhat.com, davidel@xmailserver.org, davem@davemloft.net
-Subject: Re: [PATCHv7 2/2] memory barrier: adding smp_mb__after_lock
-References: <20090708220717.GB2945@jolsa.redhat.com> <20090708221031.GD2945@jolsa.redhat.com>
-In-Reply-To: <20090708221031.GD2945@jolsa.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 09 Jul 2009 06:25:57 +0200 (CEST)
+	Thu, 9 Jul 2009 00:28:53 -0400
+Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <yq1my7eg52w.fsf@sermon.lab.mkp.net>
+References: <4A4CB4B4.5010307@turknet.net.tr>
+	 <20090702130728.22af524c.akpm@linux-foundation.org>
+	 <8db1092f0907080609w60e37ac0id49a44bd4796b425@mail.gmail.com>
+	 <1247063244.4159.40.camel@mulgrave.site>
+	 <yq1my7eg52w.fsf@sermon.lab.mkp.net>
+Content-Type: text/plain
+Date: Wed, 08 Jul 2009 23:28:47 -0500
+Message-Id: <1247113727.4159.285.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Olsa a écrit :
-> Adding smp_mb__after_lock define to be used as a smp_mb call after
-> a lock.
+On Wed, 2009-07-08 at 18:52 -0400, Martin K. Petersen wrote:
+> >>>>> "James" == James Bottomley <James.Bottomley@HansenPartnership.com> writes:
 > 
-> Making it nop for x86, since {read|write|spin}_lock() on x86 are
-> full memory barriers.
+> James> You might also try this patch from martin petersen: it will print
+> James> out the actual command that's causing the problems ... that might
+> James> give a clue.
 > 
-> wbr,
-> jirka
-> 
-> 
-> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+> Any particular reason you didn't merge that patch, btw.?  It's been
+> extremely useful on this end...
 
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+No-one reminded me ... until the potential debugging use triggered a
+memory.
 
-> ---
->  arch/x86/include/asm/spinlock.h |    4 ++++
->  include/linux/spinlock.h        |    5 +++++
->  include/net/sock.h              |    5 ++++-
->  3 files changed, 13 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-> index b7e5db8..4e77853 100644
-> --- a/arch/x86/include/asm/spinlock.h
-> +++ b/arch/x86/include/asm/spinlock.h
-> @@ -302,4 +302,8 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
->  #define _raw_read_relax(lock)	cpu_relax()
->  #define _raw_write_relax(lock)	cpu_relax()
->  
-> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-> +static inline void smp_mb__after_lock(void) { }
-> +#define ARCH_HAS_SMP_MB_AFTER_LOCK
-> +
->  #endif /* _ASM_X86_SPINLOCK_H */
-> diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-> index 252b245..4be57ab 100644
-> --- a/include/linux/spinlock.h
-> +++ b/include/linux/spinlock.h
-> @@ -132,6 +132,11 @@ do {								\
->  #endif /*__raw_spin_is_contended*/
->  #endif
->  
-> +/* The lock does not imply full memory barrier. */
-> +#ifndef ARCH_HAS_SMP_MB_AFTER_LOCK
-> +static inline void smp_mb__after_lock(void) { smp_mb(); }
-> +#endif
-> +
->  /**
->   * spin_unlock_wait - wait until the spinlock gets unlocked
->   * @lock: the spinlock in question.
-> diff --git a/include/net/sock.h b/include/net/sock.h
-> index 4eb8409..2c0da92 100644
-> --- a/include/net/sock.h
-> +++ b/include/net/sock.h
-> @@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
->   * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
->   * could then endup calling schedule and sleep forever if there are no more
->   * data on the socket.
-> + *
-> + * The sk_has_sleeper is always called right after a call to read_lock, so we
-> + * can use smp_mb__after_lock barrier.
->   */
->  static inline int sk_has_sleeper(struct sock *sk)
->  {
-> @@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
->  	 *
->  	 * This memory barrier is paired in the sock_poll_wait.
->  	 */
-> -	smp_mb();
-> +	smp_mb__after_lock();
->  	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
->  }
->  
+James
+
 
