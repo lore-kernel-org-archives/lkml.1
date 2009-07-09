@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759263AbZGIJxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760162AbZGIJzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759263AbZGIJxi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 05:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbZGIJxb
+	id S1760162AbZGIJzt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 05:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759263AbZGIJzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 05:53:31 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57838 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758485AbZGIJxa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 05:53:30 -0400
-Date: Thu, 9 Jul 2009 11:53:23 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: Greg KH <greg@kroah.com>, malchev@google.com,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: HTC Dream camera support for staging
-Message-ID: <20090709095322.GB10937@elf.ucw.cz>
-References: <20090629114339.GA25552@elf.ucw.cz> <20090702200824.GJ10957@kroah.com> <20090708084439.GC20020@elf.ucw.cz> <a55d774e0907080247x23a2f134p1ecdb079c158df5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a55d774e0907080247x23a2f134p1ecdb079c158df5@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 9 Jul 2009 05:55:44 -0400
+Received: from sh.osrg.net ([192.16.179.4]:54412 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751953AbZGIJzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 05:55:43 -0400
+Date: Thu, 9 Jul 2009 18:55:30 +0900
+To: davem@davemloft.net
+Cc: arnd@arndb.de, fujita.tomonori@lab.ntt.co.jp, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, reif@earthlink.net
+Subject: Re: [PATCH 2/5] sparc: use asm-generic/dma-mapping-common.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090706.181131.92078657.davem@davemloft.net>
+References: <1246860820-20629-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<200907061026.28878.arnd@arndb.de>
+	<20090706.181131.92078657.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090709185505X.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 09 Jul 2009 18:55:31 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, 06 Jul 2009 18:11:31 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-> >> Can you resubmit it with the original author descriptions?  It's not
-> >> fair to them to have it shown up as coming from you.
-> >
-> > Yes, done... and thanks.
-> >
-> > Brian... I'd like to submit qdsp5 and smd code, too. Who should be
-> > listed as their authors?
+> From: Arnd Bergmann <arnd@arndb.de>
+> Date: Mon, 6 Jul 2009 10:26:28 +0200
 > 
-> smd is pretty much my fault at this point, though Arve hacks on the
-> PM-related bits.
+> > On Monday 06 July 2009, FUJITA Tomonori wrote:
+> >> +static inline struct dma_map_ops *get_dma_ops(struct device *dev)
+> >> +{
+> >> +       return dma_ops;
+> >> +}
+> >> +
+> >> +#define flush_write_buffers()
+> >> +
+> >> +#include <asm-generic/dma-mapping-common.h>
+> > 
+> > I still think the flush_write_buffers() x86-ism should not be required
+> > to use dma-mapping-common.h and only be used in arch/x86/kernel/pci-nommu.c
+> > so you don't have to add dummy definitions to all architectures.
+> > 
+> > See http://lkml.org/lkml/2009/6/30/134
+> > 
+> > Otherwise, your series looks good!
 > 
-> The latest incarnation of the rpcrouter is me, with a lot of the
-> original work by Iliyan, based heavily on the work Qualcomm did (thus
-> their copyright on it as well as Google's).
-> 
-> qdsp5 is Iliyan.
-> 
-> Might be worth breaking these into at least three pieces (smd,
-> rpcrouter, qdsp5)?
+> Since we have until the 2.6.32 merge window to merge this, why
+> don't we take care of this flush_write_buffers() thing first?
+>
+> I'm completely fine with these changes otherwise, thanks!
 
-Sorry, I already submitted the patch. I just listed everyone I could
-find in the sources in From: ; that included san@google but not
-Arve. I hope that's not too bad.
+The logic to move flush_write_buffers() from dma-mapping-common.h to
+arch/x86/kernel/pci-nommu.c makes sense and it doesn't break anything.
+However, I'd like to see the confirmation from a person who added
+flush_write_buffers() long ago. I thought that we might overlook
+something subtle.
 
-> Are you highly opposed to having smd and rpcrouter under
-> arch/arm/mach-msm?  They're (for better or worse) pretty integral to
-> the core operation of the platform (suspend/resume and a lot of other
-> core SoC functions require coordination with the modem core).
+I'll put Arnd's patch in the next submission if you like.
 
-I am not opposed to having the code under mach-msm/ ... it would be
-actually preffered. But it is quite a lot of code, and I guess it
-makes sense to clean it up in staging/ then move it to the proper
-place.
 
-Alternatively if you can create nice git series for rmk/-next; that
-would work, too. 
+btw, Robert asked me about the dma-debug feature so I uploaded the new
+version (I also found and fixed one bug wrt dma_{alloc|free}_coherent
+for pci devices on SPARC32):
 
-But I guess that staging/ stuff is quite easy to remove, and useful
-for people that want to use the phones in the meantime :-).
-
-> The qdsp5 stuff could exist elsewhere easily (though I'm not sure
-> where the logical place is), and stuff on top of it like the v4l2
-> camera stuff has obvious homes in the usual driver hierarchy.
-
-Ack.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git sparc
