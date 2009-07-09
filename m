@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbZGIFlC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZGIFqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758373AbZGIFlC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 01:41:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbZGIFkw
+	id S1757887AbZGIFqr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 01:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZGIFqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 01:40:52 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:50753 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbZGIFkv (ORCPT
+	Thu, 9 Jul 2009 01:46:40 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4615 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbZGIFqj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 01:40:51 -0400
-Message-ID: <4A5582DE.9010501@petalogix.com>
-Date: Thu, 09 Jul 2009 07:40:46 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, mingo@elte.hu,
-       arnd@arndb.de, lethal@linux-sh.org, ltp-list@lists.sourceforge.net
-Subject: Re: mmap hw behavior
-References: <4A54DF6F.1010405@petalogix.com>	<20090708.110624.104984745.davem@davemloft.net>	<4A54FFFE.10306@petalogix.com> <20090708.181551.189345850.davem@davemloft.net>
-In-Reply-To: <20090708.181551.189345850.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Jul 2009 01:46:39 -0400
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 0/2] get_maintainer improvements
+Date: Wed,  8 Jul 2009 22:46:36 -0700
+Message-Id: <cover.1247117932.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Michal Simek <michal.simek@petalogix.com>
-> Date: Wed, 08 Jul 2009 22:22:22 +0200
->
->   
->> Can you please point me to any code which exactly do this? (for example
->> file mm/mmap.c line from ... to ... )
->>     
->
-> Sorry I don't have time to read the source code for you.
-> I'd have to look it up too, just like you.
->   
-It is ok - I didn't want to read the code from - just if you know any
-functions which
-could help me.
+Arnd Bergmann pointed out that the directory pattern trailing slash
+requirement is unnecessary and error prone.  He also sent a patch to
+fix it which I've modified a bit.
 
-Thank you very much,
-Michal
+Andrew Morton wanted the ability to use -f directory.  Added it.
 
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+Joe Perches (2):
+  scripts/get_maintainer.pl: Add -f directory use
+  MAINTAINERS: Remove directory trailing slash pattern requirement
+
+ MAINTAINERS               |    9 ++++-----
+ scripts/get_maintainer.pl |   23 +++++++++++++++++++----
+ 2 files changed, 23 insertions(+), 9 deletions(-)
 
