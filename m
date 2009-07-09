@@ -1,392 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759380AbZGIBp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759111AbZGIBuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759380AbZGIBp1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 21:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbZGIBpT
+	id S1759111AbZGIBuA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 21:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbZGIBtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 21:45:19 -0400
-Received: from smtp109.prem.mail.sp1.yahoo.com ([98.136.44.54]:28285 "HELO
-	smtp109.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755302AbZGIBpR (ORCPT
+	Wed, 8 Jul 2009 21:49:51 -0400
+Received: from mga10.intel.com ([192.55.52.92]:1840 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754902AbZGIBtu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 21:45:17 -0400
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: MNfLx7oVM1nL58hDKAOqs.3.syX4OQ3OftyUYT0kCW2cfiv3a5eoqJK9bxSVPTTqSzWxjUqBsfQL2ncwihBTmMepwqNRj7XeTlcRkqJhaMISqgjFUpnnRTBTJ6RX3CQBaBF5asbLXDlqQ88s4lVFZZwLc7phw_KgpWbis7uyfGXqAZX9fp9RQoaNYgSlbABIvQG_PMORg3ygfvVDyPpmBoRF1J2cR975A7sCXZL._WgupfjNxGrHM1DGje_30bl4jPGrJWYwblcd2MS.wJ1RAV7a9xR5rw6qkjpyXDwRZ4jWRsIGlppVdqB2TnCHN8TSWnsCVUDf6oGd7rwUQk1Rap6E9X8zv6XPUw--
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4A554B95.6070709@schaufler-ca.com>
-Date: Wed, 08 Jul 2009 18:44:53 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Wed, 8 Jul 2009 21:49:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,371,1243839600"; 
+   d="scan'208";a="706211846"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Subject: Re: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
+Date: Thu, 9 Jul 2009 09:50:04 +0800
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; x86_64; ; )
+Cc: "Roedel, Joerg" <Joerg.Roedel@amd.com>, peterz@infradead.org,
+       "Ingo Molnar" <mingo@elte.hu>, avi@redhat.com, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Edwin Zhai <edwin.zhai@intel.com>
+References: <200905050909.58583.mark.langsdorf@amd.com> <200907081319.57307.sheng@linux.intel.com> <6453C3CB8E2B3646B0D020C112613273036209F0@sausexmb4.amd.com>
+In-Reply-To: <6453C3CB8E2B3646B0D020C112613273036209F0@sausexmb4.amd.com>
 MIME-Version: 1.0
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-CC: jmorris@namei.org, gregkh@suse.de, sds@tycho.nsa.gov,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on sysfs
- files, directories, and symlinks.
-References: <1247074106-23405-1-git-send-email-dpquigl@tycho.nsa.gov>
-In-Reply-To: <1247074106-23405-1-git-send-email-dpquigl@tycho.nsa.gov>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907090950.06204.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David P. Quigley wrote:
-> This patch adds a setxattr handler to the file, directory, and symlink
-> inode_operations structures for sysfs. This handler uses two new LSM hooks. The
-> first hook takes the xattr name and value and turns the context into a secid.
-> This is embedded into the sysfs_dirent structure so it remains persistent even
-> if the inode structures are evicted from the cache. The second hook allows for
-> the secid to be taken from the sysfs_dirent and be pushed into the inode
-> structure as the actual secid for the inode.
->   
-
-Nacked-by: Casey Schaufler <casey@schaufler-ca.com>
-
-I'm all for sysfs supporting xattrs.
-
-I am completely opposed to secids as file system metadata.
-
-What do you get when you do an ls -Z?
-
-An LSM must not be beholden to exposing transient internal
-representations of security data to userspace, which is what
-you're doing here. An LSM gets to decide what the security
-information it maintains looks like by defining a security blob.
-
-If you want this in, implement xattrs in sysfs for real. Smack
-depends on the existing, published, and supported xattr interfaces
-for dealing with getting and setting the values. Not secids.
-Smack maintains secids because labeled networking and audit require
-them, and they got there first.
-
-
-> This patch addresses an issue where SELinux was denying KVM access to the PCI
-> configuration entries in sysfs. The lack of setxattr handlers for sysfs
-> required that a single label be assigned to all entries in sysfs. Granting KVM
-> access to every entry in sysfs is not an acceptable solution so fine grained
-> labeling of sysfs is required such that individual entries can be labeled
-> appropriately.
+On Wednesday 08 July 2009 22:59:55 Langsdorf, Mark wrote:
+> The last variant of the scheduler that I tried
+> showed worse performance for both the baseline
+> case (no pause filter enabled) and the test
+> case (pause filter enabled) versus not changing
+> the scheduler.
 >
-> Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
-> ---
->  fs/sysfs/dir.c             |    1 +
->  fs/sysfs/inode.c           |   21 +++++++++++++++++++++
->  fs/sysfs/symlink.c         |    2 ++
->  fs/sysfs/sysfs.h           |    3 +++
->  include/linux/security.h   |   16 ++++++++++++++++
->  security/capability.c      |   12 ++++++++++++
->  security/security.c        |   11 +++++++++++
->  security/selinux/hooks.c   |   24 ++++++++++++++++++++++++
->  security/smack/smack_lsm.c |   42 +++++++++++++++++++++++++++++++++++++++++-
->  9 files changed, 131 insertions(+), 1 deletions(-)
+> Some other work came up and I haven't have a
+> chance to experiment with this for a while.
+
+Um, I am afraid we have the different result... With your scheduler patch, we 
+got 1% more performance improvement in the quick test. Of course more tests 
+are needed to find a better value of delay.
+
+Do you have time to work on it recently? Maybe we can help to push the 
+scheduler part. (oh, as you know, we need to push our PLE...)
+
+-- 
+regards
+Yang, Sheng
+
+> -Mark Langsdorf
+> Operating System Research Center
+> AMD
 >
-> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-> index d88d0fa..fc21682 100644
-> --- a/fs/sysfs/dir.c
-> +++ b/fs/sysfs/dir.c
-> @@ -760,6 +760,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
->  const struct inode_operations sysfs_dir_inode_operations = {
->  	.lookup		= sysfs_lookup,
->  	.setattr	= sysfs_setattr,
-> +	.setxattr	= sysfs_setxattr,
->  };
->  
->  static void remove_dir(struct sysfs_dirent *sd)
-> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-> index 555f0ff..9f8b760 100644
-> --- a/fs/sysfs/inode.c
-> +++ b/fs/sysfs/inode.c
-> @@ -18,6 +18,7 @@
->  #include <linux/capability.h>
->  #include <linux/errno.h>
->  #include <linux/sched.h>
-> +#include <linux/security.h>
->  #include "sysfs.h"
->  
->  extern struct super_block * sysfs_sb;
-> @@ -35,6 +36,7 @@ static struct backing_dev_info sysfs_backing_dev_info = {
->  
->  static const struct inode_operations sysfs_inode_operations ={
->  	.setattr	= sysfs_setattr,
-> +	.setxattr	= sysfs_setxattr,
->  };
->  
->  int __init sysfs_inode_init(void)
-> @@ -104,6 +106,23 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
->  	return error;
->  }
->  
-> +int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
-> +		size_t size, int flags)
-> +{
-> +	struct sysfs_dirent *sd = dentry->d_fsdata;
-> +	int error;
-> +	u32 secid;
-> +
-> +	if (!sd)
-> +		return -EINVAL;
-> +
-> +	error = security_xattr_to_secid(name, value, size, &secid);
-> +	if (!error)
-> +		sd->s_secid = secid;
-> +
-> +	return error;
-> +}
-> +
->  static inline void set_default_inode_attr(struct inode * inode, mode_t mode)
->  {
->  	inode->i_mode = mode;
-> @@ -163,6 +182,8 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
->  	} else
->  		set_default_inode_attr(inode, sd->s_mode);
->  
-> +	if (sd->s_secid)
-> +		security_inode_setsecid(inode, sd->s_secid);
->  
->  	/* initialize inode according to type */
->  	switch (sysfs_type(sd)) {
-> diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-> index 1d897ad..c5081ad 100644
-> --- a/fs/sysfs/symlink.c
-> +++ b/fs/sysfs/symlink.c
-> @@ -16,6 +16,7 @@
->  #include <linux/kobject.h>
->  #include <linux/namei.h>
->  #include <linux/mutex.h>
-> +#include <linux/security.h>
->  
->  #include "sysfs.h"
->  
-> @@ -209,6 +210,7 @@ static void sysfs_put_link(struct dentry *dentry, struct nameidata *nd, void *co
->  }
->  
->  const struct inode_operations sysfs_symlink_inode_operations = {
-> +	.setxattr = sysfs_setxattr,
->  	.readlink = generic_readlink,
->  	.follow_link = sysfs_follow_link,
->  	.put_link = sysfs_put_link,
-> diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-> index 3fa0d98..732d183 100644
-> --- a/fs/sysfs/sysfs.h
-> +++ b/fs/sysfs/sysfs.h
-> @@ -57,6 +57,7 @@ struct sysfs_dirent {
->  	ino_t			s_ino;
->  	umode_t			s_mode;
->  	struct iattr		*s_iattr;
-> +	u32			s_secid;
->  };
->  
->  #define SD_DEACTIVATED_BIAS		INT_MIN
-> @@ -148,6 +149,8 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
->  struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
->  void sysfs_delete_inode(struct inode *inode);
->  int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
-> +int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
-> +		size_t size, int flags);
->  int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
->  int sysfs_inode_init(void);
->  
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index 1459091..35ecc8d 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -1440,6 +1440,9 @@ struct security_operations {
->  	int (*inode_setsecurity) (struct inode *inode, const char *name, const void *value, size_t size, int flags);
->  	int (*inode_listsecurity) (struct inode *inode, char *buffer, size_t buffer_size);
->  	void (*inode_getsecid) (const struct inode *inode, u32 *secid);
-> +	void (*inode_setsecid)(struct inode *inode, u32 secid);
-> +	int (*xattr_to_secid) (const char *name, const void *value,
-> +			size_t size, u32 *secid);
->  
->  	int (*file_permission) (struct file *file, int mask);
->  	int (*file_alloc_security) (struct file *file);
-> @@ -1699,6 +1702,9 @@ int security_inode_getsecurity(const struct inode *inode, const char *name, void
->  int security_inode_setsecurity(struct inode *inode, const char *name, const void *value, size_t size, int flags);
->  int security_inode_listsecurity(struct inode *inode, char *buffer, size_t buffer_size);
->  void security_inode_getsecid(const struct inode *inode, u32 *secid);
-> +void security_inode_setsecid(struct inode *inode, u32 secid);
-> +int security_xattr_to_secid(const char *name, const void *value,
-> +		size_t size, u32 *secid);
->  int security_file_permission(struct file *file, int mask);
->  int security_file_alloc(struct file *file);
->  void security_file_free(struct file *file);
-> @@ -2172,6 +2178,16 @@ static inline void security_inode_getsecid(const struct inode *inode, u32 *secid
->  	*secid = 0;
->  }
->  
-> +static inline void security_inode_setsecid(struct inode *inode, u32 secid)
-> +{
-> +}
-> +
-> +static inline int security_xattr_to_secid(const char *name, const void *value,
-> +		size_t size, u32 *secid)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
-> +
->  static inline int security_file_permission(struct file *file, int mask)
->  {
->  	return 0;
-> diff --git a/security/capability.c b/security/capability.c
-> index f218dd3..a3f3d5b 100644
-> --- a/security/capability.c
-> +++ b/security/capability.c
-> @@ -263,6 +263,16 @@ static void cap_inode_getsecid(const struct inode *inode, u32 *secid)
->  	*secid = 0;
->  }
->  
-> +static void cap_inode_setsecid(struct inode *inode, u32 secid)
-> +{
-> +}
-> +
-> +int cap_xattr_to_secid(const char *name, const void *value,
-> +		size_t size, u32 *secid)
-> +{
-> +     return -EOPNOTSUPP;
-> +}
-> +
->  #ifdef CONFIG_SECURITY_PATH
->  static int cap_path_mknod(struct path *dir, struct dentry *dentry, int mode,
->  			  unsigned int dev)
-> @@ -926,6 +936,8 @@ void security_fixup_ops(struct security_operations *ops)
->  	set_to_cap_if_null(ops, inode_setsecurity);
->  	set_to_cap_if_null(ops, inode_listsecurity);
->  	set_to_cap_if_null(ops, inode_getsecid);
-> +	set_to_cap_if_null(ops, inode_setsecid);
-> +	set_to_cap_if_null(ops, xattr_to_secid);
->  #ifdef CONFIG_SECURITY_PATH
->  	set_to_cap_if_null(ops, path_mknod);
->  	set_to_cap_if_null(ops, path_mkdir);
-> diff --git a/security/security.c b/security/security.c
-> index 4501c5e..8313e15 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -615,6 +615,17 @@ void security_inode_getsecid(const struct inode *inode, u32 *secid)
->  	security_ops->inode_getsecid(inode, secid);
->  }
->  
-> +void security_inode_setsecid(struct inode *inode, u32 secid)
-> +{
-> +	security_ops->inode_setsecid(inode, secid);
-> +}
-> +
-> +int security_xattr_to_secid(const char *name, const void *value,
-> +		size_t size, u32 *secid)
-> +{
-> +	return security_ops->xattr_to_secid(name, value, size, secid);
-> +}
-> +
->  int security_file_permission(struct file *file, int mask)
->  {
->  	return security_ops->file_permission(file, mask);
-> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> index 2081055..395c36d 100644
-> --- a/security/selinux/hooks.c
-> +++ b/security/selinux/hooks.c
-> @@ -448,6 +448,10 @@ static int sb_finish_set_opts(struct super_block *sb)
->  	    sbsec->behavior > ARRAY_SIZE(labeling_behaviors))
->  		sbsec->flags &= ~SE_SBLABELSUPP;
->  
-> +	/* Special handling for sysfs. Is genfs but also has setxattr handler*/
-> +	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs")) == 0)
-> +		sbsec->flags |= SE_SBLABELSUPP;
-> +
->  	/* Initialize the root inode. */
->  	rc = inode_doinit_with_dentry(root_inode, root);
->  
-> @@ -2931,6 +2935,24 @@ static void selinux_inode_getsecid(const struct inode *inode, u32 *secid)
->  	*secid = isec->sid;
->  }
->  
-> +static void selinux_inode_setsecid(struct inode *inode, u32 secid)
-> +{
-> +	struct inode_security_struct *isec = inode->i_security;
-> +	isec->sid = secid;
-> +}
-> +
-> +static int selinux_xattr_to_secid(const char *name, const void *value,
-> +		size_t size, u32 *secid)
-> +{
-> +	if (strcmp(name, XATTR_NAME_SELINUX))
-> +		return -EOPNOTSUPP;
-> +
-> +	if (!value || !size)
-> +		return -EINVAL;
-> +
-> +	return security_context_to_sid((void *)value, size, secid);
-> +}
-> +
->  /* file security operations */
->  
->  static int selinux_revalidate_file_permission(struct file *file, int mask)
-> @@ -5372,6 +5394,8 @@ static struct security_operations selinux_ops = {
->  	.inode_setsecurity =		selinux_inode_setsecurity,
->  	.inode_listsecurity =		selinux_inode_listsecurity,
->  	.inode_getsecid =		selinux_inode_getsecid,
-> +	.inode_setsecid =               selinux_inode_setsecid,
-> +	.xattr_to_secid =               selinux_xattr_to_secid,
->  
->  	.file_permission =		selinux_file_permission,
->  	.file_alloc_security =		selinux_file_alloc_security,
-> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-> index 1c9bdbc..be66c8e 100644
-> --- a/security/smack/smack_lsm.c
-> +++ b/security/smack/smack_lsm.c
-> @@ -869,6 +869,44 @@ static void smack_inode_getsecid(const struct inode *inode, u32 *secid)
->  	*secid = smack_to_secid(isp->smk_inode);
->  }
->  
-> +/**
-> + * smack_inode_setsecid - Set inode's security id
-> + * @inode: inode to set the info in
-> + * @secid: secid to set the inode to
-> + */
-> +static void smack_inode_setsecid(struct inode *inode, u32 secid)
-> +{
-> +	struct inode_smack *isp = inode->i_security;
-> +	
-> +	isp->smk_inode = smack_from_secid(secid);	
-> +}
-> +
-> +/**
-> + * smack_xattr_to_secid - convert a valid xattr into a secid
-> + * @name: name of the xattr attempting to be converted
-> + * @value: value associated with the xattr
-> + * @size: size of value
-> + * @secid: location to place resuting secid
-> + */
-> +static int smack_xattr_to_secid(const char *name, const void* value,
-> +			size_t size, u32 *secid)
-> +{
-> +	char *sp;	
-> +
-> +	if (strcmp(name, XATTR_NAME_SMACK))
-> +		return -EOPNOTSUPP;
-> +
-> +	if (!value || !size)
-> +		return -EINVAL;
-> +
-> +	sp = smk_import(value, size);
-> +	if (sp == NULL)
-> +		return -EINVAL;
-> +
-> +	*secid = smack_to_secid(sp);
-> +}
-> +
-> +
->  /*
->   * File Hooks
->   */
-> @@ -3062,7 +3100,9 @@ struct security_operations smack_ops = {
->  	.inode_setsecurity = 		smack_inode_setsecurity,
->  	.inode_listsecurity = 		smack_inode_listsecurity,
->  	.inode_getsecid =		smack_inode_getsecid,
-> -
-> +	.inode_setsecid = 		smack_inode_setsecid,
-> +	.xattr_to_secid =		smack_xattr_to_secid,
-> +	
->  	.file_permission = 		smack_file_permission,
->  	.file_alloc_security = 		smack_file_alloc_security,
->  	.file_free_security = 		smack_file_free_security,
->   
+> > -----Original Message-----
+> > From: Sheng Yang [mailto:sheng@linux.intel.com]
+> > Sent: Wednesday, July 08, 2009 12:20 AM
+> > To: Langsdorf, Mark
+> > Cc: Roedel, Joerg; peterz@infradead.org; Ingo Molnar;
+> > avi@redhat.com; kvm@vger.kernel.org; linux-kernel@vger.kernel.org
+> > Subject: Re: [PATCH][KVM][retry 4] Add support for Pause
+> > Filtering to AMD SVM
+> >
+> > On Thursday 21 May 2009 06:25:17 Mark Langsdorf wrote:
+> > > This feature creates a new field in the VMCB called Pause
+> > > Filter Count.  If Pause Filter Count is greater than 0 and
+> > > intercepting PAUSEs is enabled, the processor will increment
+> > > an internal counter when a PAUSE instruction occurs instead
+> > > of intercepting.  When the internal counter reaches the
+> > > Pause Filter Count value, a PAUSE intercept will occur.
+> >
+> > (dig it from archives...)
+> >
+> > Any update for the patch(I mean the scheduler part)? I think
+> > people agreed on
+> > the approach?
+> >
+> > --
+> > regards
+> > Yang, Sheng
+> >
+> > > This feature can be used to detect contended spinlocks,
+> > > especially when the lock holding VCPU is not scheduled.
+> > > Rescheduling another VCPU prevents the VCPU seeking the
+> > > lock from wasting its quantum by spinning idly.  Perform
+> > > the reschedule by increasing the the credited time on
+> > > the VCPU.
+> > >
+> > > Experimental results show that most spinlocks are held
+> > > for less than 1000 PAUSE cycles or more than a few
+> > > thousand.  Default the Pause Filter Counter to 3000 to
+> > > detect the contended spinlocks.
+> > >
+> > > Processor support for this feature is indicated by a CPUID
+> > > bit.
+> > >
+> > > On a 24 core system running 4 guests each with 16 VCPUs,
+> > > this patch improved overall performance of each guest's
+> > > 32 job kernbench by approximately 1%.  Further performance
+> > > improvement may be possible with a more sophisticated
+> > > yield algorithm.
+> > >
+> > > -Mark Langsdorf
+> > > Operating System Research Center
+> > > AMD
+> > >
+> > > Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+> > > ---
+> > >  arch/x86/include/asm/svm.h |    3 ++-
+> > >  arch/x86/kvm/svm.c         |   13 +++++++++++++
+> > >  include/linux/sched.h      |    7 +++++++
+> > >  kernel/sched.c             |   18 ++++++++++++++++++
+> > >  4 files changed, 40 insertions(+), 1 deletions(-)
+> > >
+> > > diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+> > > index 85574b7..1fecb7e 100644
+> > > --- a/arch/x86/include/asm/svm.h
+> > > +++ b/arch/x86/include/asm/svm.h
+> > > @@ -57,7 +57,8 @@ struct __attribute__ ((__packed__))
+> >
+> > vmcb_control_area {
+> >
+> > >  	u16 intercept_dr_write;
+> > >  	u32 intercept_exceptions;
+> > >  	u64 intercept;
+> > > -	u8 reserved_1[44];
+> > > +	u8 reserved_1[42];
+> > > +	u16 pause_filter_count;
+> > >  	u64 iopm_base_pa;
+> > >  	u64 msrpm_base_pa;
+> > >  	u64 tsc_offset;
+> > > diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> > > index ef43a18..dad6c4b 100644
+> > > --- a/arch/x86/kvm/svm.c
+> > > +++ b/arch/x86/kvm/svm.c
+> > > @@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
+> > >  #define SVM_FEATURE_NPT  (1 << 0)
+> > >  #define SVM_FEATURE_LBRV (1 << 1)
+> > >  #define SVM_FEATURE_SVML (1 << 2)
+> > > +#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
+> > >
+> > >  #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
+> > >
+> > > @@ -575,6 +576,11 @@ static void init_vmcb(struct vcpu_svm *svm)
+> > >
+> > >  	svm->nested_vmcb = 0;
+> > >  	svm->vcpu.arch.hflags = HF_GIF_MASK;
+> > > +
+> > > +	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
+> > > +		control->pause_filter_count = 3000;
+> > > +		control->intercept |= (1ULL << INTERCEPT_PAUSE);
+> > > +	}
+> > >  }
+> > >
+> > >  static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
+> > > @@ -2087,6 +2093,12 @@ static int
+> >
+> > interrupt_window_interception(struct
+> >
+> > > vcpu_svm *svm, return 1;
+> > >  }
+> > >
+> > > +static int pause_interception(struct vcpu_svm *svm, struct kvm_run
+> > > *kvm_run) +{
+> > > +	sched_delay_yield(1000000);
+> > > +	return 1;
+> > > +}
+> > > +
+> > >  static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+> > >  				      struct kvm_run *kvm_run) = {
+> > >  	[SVM_EXIT_READ_CR0]           		=
+> >
+> > emulate_on_interception,
+> >
+> > > @@ -2123,6 +2135,7 @@ static int
+> >
+> > (*svm_exit_handlers[])(struct vcpu_svm
+> >
+> > > *svm, [SVM_EXIT_CPUID]			= cpuid_interception,
+> > >  	[SVM_EXIT_IRET]                         = iret_interception,
+> > >  	[SVM_EXIT_INVD]                         =
+> >
+> > emulate_on_interception,
+> >
+> > > +	[SVM_EXIT_PAUSE]			= pause_interception,
+> > >  	[SVM_EXIT_HLT]				= halt_interception,
+> > >  	[SVM_EXIT_INVLPG]			= invlpg_interception,
+> > >  	[SVM_EXIT_INVLPGA]			=
+> >
+> > invalid_op_interception,
+> >
+> > > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > > index b4c38bc..9cde585 100644
+> > > --- a/include/linux/sched.h
+> > > +++ b/include/linux/sched.h
+> > > @@ -2283,6 +2283,9 @@ static inline unsigned int
+> >
+> > task_cpu(const struct
+> >
+> > > task_struct *p) return task_thread_info(p)->cpu;
+> > >  }
+> > >
+> > > +extern void sched_delay_yield(unsigned long ns);
+> > > +
+> > > +
+> > >  extern void set_task_cpu(struct task_struct *p, unsigned int cpu);
+> > >
+> > >  #else
+> > > @@ -2292,6 +2295,10 @@ static inline unsigned int
+> >
+> > task_cpu(const struct
+> >
+> > > task_struct *p) return 0;
+> > >  }
+> > >
+> > > +void sched_delay_yield(struct task_struct *p, unsigned int delay)
+> > > +{
+> > > +}
+> > > +
+> > >  static inline void set_task_cpu(struct task_struct *p,
+> >
+> > unsigned int cpu)
+> >
+> > >  {
+> > >  }
+> > > diff --git a/kernel/sched.c b/kernel/sched.c
+> > > index b902e58..3aed2f6 100644
+> > > --- a/kernel/sched.c
+> > > +++ b/kernel/sched.c
+> > > @@ -1947,6 +1947,24 @@ task_hot(struct task_struct *p, u64
+> >
+> > now, struct
+> >
+> > > sched_domain *sd) return delta < (s64)sysctl_sched_migration_cost;
+> > >  }
+> > >
+> > > +/*
+> > > + * Interface for yielding a thread by delaying it for a known
+> > > + * interval.  Use at your own risk and not with real-time.
+> > > + *
+> > > + * Like yield, except for SCHED_OTHER/BATCH, where it will
+> > > + * give us @ns time for the 'good' cause.
+> > > + */
+> > > +void sched_delay_yield(unsigned long ns)
+> > > +{
+> > > +	struct task_struct *curr = current;
+> > > +	if (curr->sched_class == &fair_sched_class) {
+> > > +		struct sched_entity *se = &curr->se;
+> > > +		__update_curr(cfs_rq_of(se), se, ns);
+> > > +		schedule();
+> > > +	} else
+> > > +		yield();
+> > > +}
+> > > +EXPORT_SYMBOL_GPL(sched_delay_yield);
+> > >
+> > >  void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
+> > >  {
+
+
