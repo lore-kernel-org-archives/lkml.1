@@ -1,111 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbZGIGGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbZGIGO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757999AbZGIGGd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 02:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbZGIGG0
+	id S1759803AbZGIGO7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 02:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZGIGOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 02:06:26 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:64505 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbZGIGG0 convert rfc822-to-8bit (ORCPT
+	Thu, 9 Jul 2009 02:14:50 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:38382 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbZGIGOu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 02:06:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=MWI0OmA1pfjsY+S9m6MMciS+rW0PlxHyiCUMYomx8ALd6AM4ekPgXQzEvGbT0YbZVi
-         xSnTPnVGrwQp1qS2IBhUColiqbk//SqtT3BJJ+KeDMcKtcxgzCujHpUkZhSATCf3ysaW
-         9+E4S/RqU5tAbcmoH3n6bbKppn8RgKVmfOajQ=
-MIME-Version: 1.0
-In-Reply-To: <4A492E22.3060307@shipmail.org>
-References: <1245931298.13359.8.camel@localhost.localdomain>
-	 <21d7e9970906251700n5f5fbd07ke24022b576b1770b@mail.gmail.com>
-	 <1246024775.2371.0.camel@localhost> <4A492E22.3060307@shipmail.org>
-Date: Thu, 9 Jul 2009 16:06:24 +1000
-Message-ID: <21d7e9970907082306p68105109g3b754972fe9c53fa@mail.gmail.com>
-Subject: Re: TTM page pool allocator
-From: Dave Airlie <airlied@gmail.com>
-To: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-Cc: Jerome Glisse <glisse@freedesktop.org>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 9 Jul 2009 02:14:50 -0400
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-afs@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] AFS: fix compilation warning
+Date: Thu,  9 Jul 2009 11:04:34 +0300
+Message-Id: <1247126674-22912-1-git-send-email-Artem.Bityutskiy@nokia.com>
+X-Mailer: git-send-email 1.6.0.6
+X-OriginalArrivalTime: 09 Jul 2009 06:14:07.0249 (UTC) FILETIME=[77546010:01CA005C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/30 Thomas Hellstr�m <thomas@shipmail.org>:
-> Jerome Glisse skrev:
->>
->> On Fri, 2009-06-26 at 10:00 +1000, Dave Airlie wrote:
->>
->>>
->>> On Thu, Jun 25, 2009 at 10:01 PM, Jerome Glisse<glisse@freedesktop.org>
->>> wrote:
->>>
->>>>
->>>> Hi,
->>>>
->>>> Thomas i attach a reworked page pool allocator based on Dave works,
->>>> this one should be ok with ttm cache status tracking. It definitely
->>>> helps on AGP system, now the bottleneck is in mesa vertex's dma
->>>> allocation.
->>>>
->>>>
->>>
->>> My original version kept a list of wb pages as well, this proved to be
->>> quite a useful
->>> optimisation on my test systems when I implemented it, without it I
->>> was spending ~20%
->>> of my CPU in getting free pages, granted I always used WB pages on
->>> PCIE/IGP systems.
->>>
->>> Another optimisation I made at the time was around the populate call,
->>> (not sure if this
->>> is what still happens):
->>>
->>> Allocate a 64K local BO for DMA object.
->>> Write into the first 5 pages from userspace - get WB pages.
->>> Bind to GART, swap those 5 pages to WC + flush.
->>> Then populate the rest with WC pages from the list.
->>>
->>> Granted I think allocating WC in the first place from the pool might
->>> work just as well since most of the DMA buffers are write only.
->>>
->>> Dave.
->>> --
->>>
->>
->> Attached a new version of the patch, which integrate changes discussed.
->>
->> Cheers,
->> Jerome
->>
->
-> Hi, Jerome!
-> Still some outstanding things:
->
-> 1) The AGP protection fixes compilation errors when AGP is not enabled, but
-> what about architectures that need the map_page_into_agp() semantics for TTM
-> even when AGP is not enabled? At the very least TTM should be disabled on
-> those architectures. The best option would be to make those calls non-agp
-> specific.
->
-> 2) Why is the page refcount upped with get_page() after an alloc_page()?
->
-> 3) It seems like pages are cache-transitioned one-by-one when freed. Again,
-> this is a global TLB flush per page. Can't we free a large chunk of pages at
-> once?
->
+Fix the following warning:
 
-Jerome,
+fs/afs/dir.c: In function ‘afs_d_revalidate’:
+fs/afs/dir.c:567: warning: ‘fid.vnode’ may be used uninitialized in this function
+fs/afs/dir.c:567: warning: ‘fid.unique’ may be used uninitialized in this function
 
-have we addressed these?
+Cc: linux-afs@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-I'd really like to push this soon, as I'd like to fix up the 32 vs 36
-bit dma masks if possible
-which relies on us being able to tell the allocator to use GFP_DMA32 on some hw
-(32-bit PAE mainly with a PCI card).
+---
+ fs/afs/dir.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Dave.
+diff --git a/fs/afs/dir.c b/fs/afs/dir.c
+index 9bd7577..88067f3 100644
+--- a/fs/afs/dir.c
++++ b/fs/afs/dir.c
+@@ -564,7 +564,7 @@ static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
+ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
+ {
+ 	struct afs_vnode *vnode, *dir;
+-	struct afs_fid fid;
++	struct afs_fid uninitialized_var(fid);
+ 	struct dentry *parent;
+ 	struct key *key;
+ 	void *dir_version;
+-- 
+1.6.0.6
+
