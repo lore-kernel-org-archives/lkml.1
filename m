@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbZGIFVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbZGIF1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757051AbZGIFVg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 01:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZGIFV0
+	id S1758321AbZGIF1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 01:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbZGIF1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 01:21:26 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:22463 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752235AbZGIFV0 (ORCPT
+	Thu, 9 Jul 2009 01:27:44 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:34188 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbZGIF1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 01:21:26 -0400
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org
-Date: Thu, 09 Jul 2009 10:11:17 +0300
-Message-Id: <20090709071117.10126.42653.sendpatchset@localhost.localdomain>
-Subject: [GIT PULL] UBI changes for 2.6.31-rc3
-X-OriginalArrivalTime: 09 Jul 2009 05:20:49.0051 (UTC) FILETIME=[050E16B0:01CA0055]
-X-Nokia-AV: Clean
+	Thu, 9 Jul 2009 01:27:43 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: tridge@samba.org
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Martin Steigerwald <Martin@lichtvoll.de>,
+       Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+References: <19013.8005.541836.436991@samba.org>
+	<alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
+	<19026.38137.63807.427511@samba.org>
+	<200907072356.51553.Martin@lichtvoll.de>
+	<19028.3736.892828.352905@samba.org>
+	<20090708110451.1092afa7@lxorguk.ukuu.org.uk>
+	<1247066878.4159.153.camel@mulgrave.site>
+	<20090708163736.0f98e7e0@lxorguk.ukuu.org.uk>
+	<1247069202.4159.212.camel@mulgrave.site>
+	<20090708171848.21633768@lxorguk.ukuu.org.uk>
+	<19029.29008.522539.547122@samba.org>
+Date: Thu, 09 Jul 2009 14:27:39 +0900
+In-Reply-To: <19029.29008.522539.547122@samba.org> (tridge@samba.org's message
+	of "Thu, 9 Jul 2009 14:25:52 +1000")
+Message-ID: <87skh68lys.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+tridge@samba.org writes:
 
-here are UBI NOR recovery and debugging code fixes. Pease pull
-from
+> Can you explain what standard you think should be applied to patent
+> workaround patches for them to be acceptable? I'd like to know if
+> there is the possibility of us finding some agreement in the future or
+> not.
 
-git://git.infradead.org/ubi-2.6.git linux-next
+You are talking different thing than patch. Please stop it.
 
-The following changes since commit 8e4a718ff38d8539938ec3421935904c27e00c39:
-  Linus Torvalds (1):
-        Linux 2.6.31-rc2
-
-Adrian Hunter (1):
-      UBI: add image sequence number to EC header
-
-Artem Bityutskiy (5):
-      UBI: add empty eraseblocks verification
-      UBI: remove bogus debugging checks
-      UBI: nicify image sequence number handling
-      UBI: fix NOR flash recovery
-      UBI: fix compilation warnings
-
- drivers/mtd/ubi/build.c     |    6 ++
- drivers/mtd/ubi/debug.c     |    2 +
- drivers/mtd/ubi/debug.h     |    7 ++
- drivers/mtd/ubi/io.c        |  157 +++++++++++++++++--------------------------
- drivers/mtd/ubi/scan.c      |   14 ++++
- drivers/mtd/ubi/scan.h      |    2 +
- drivers/mtd/ubi/ubi-media.h |   12 +++-
- drivers/mtd/ubi/ubi.h       |    6 ++-
- drivers/mtd/ubi/wl.c        |    8 ++
- 9 files changed, 116 insertions(+), 98 deletions(-)
-
-Thanks,
-Artem.
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
