@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbZGIFVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbZGIFVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759382AbZGIFVT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 01:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZGIFVJ
+	id S1757051AbZGIFVg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 01:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZGIFV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 01:21:09 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:22423 "EHLO
+	Thu, 9 Jul 2009 01:21:26 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:22463 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbZGIFVI (ORCPT
+	with ESMTP id S1752235AbZGIFV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 01:21:08 -0400
+	Thu, 9 Jul 2009 01:21:26 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
        linux-kernel@vger.kernel.org
-Date: Thu, 09 Jul 2009 10:10:58 +0300
-Message-Id: <20090709071058.10124.94970.sendpatchset@localhost.localdomain>
-Subject: [GIT PULL] UBIFS changes for 2.6.31-rc3
-X-OriginalArrivalTime: 09 Jul 2009 05:20:29.0941 (UTC) FILETIME=[F9AA2250:01CA0054]
+Date: Thu, 09 Jul 2009 10:11:17 +0300
+Message-Id: <20090709071117.10126.42653.sendpatchset@localhost.localdomain>
+Subject: [GIT PULL] UBI changes for 2.6.31-rc3
+X-OriginalArrivalTime: 09 Jul 2009 05:20:49.0051 (UTC) FILETIME=[050E16B0:01CA0055]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,45 +25,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Linus,
 
-here are UBIFS fixes for mount regression, compilation warnings,
-recovery amendments and dumps.
+here are UBI NOR recovery and debugging code fixes. Pease pull
+from
 
-Please, pull from:
-
-git://git.infradead.org/ubifs-2.6.git linux-next
+git://git.infradead.org/ubi-2.6.git linux-next
 
 The following changes since commit 8e4a718ff38d8539938ec3421935904c27e00c39:
   Linus Torvalds (1):
         Linux 2.6.31-rc2
 
-Adrian Hunter (3):
-      UBIFS: fix integer overflow warning
-      UBIFS: fix 64-bit divisions in debug print
-      UBIFS: minor spelling and grammar fixes
+Adrian Hunter (1):
+      UBI: add image sequence number to EC header
 
-Artem Bityutskiy (10):
-      UBIFS: improve debugging messaged
-      UBIFS: slightly optimize write-buffer timer usage
-      UBIFS: set write-buffer timout to 3-5 seconds
-      UBIFS: few spelling fixes
-      UBIFS: fix assertion warning
-      MAINTAINERS: update ahunter's e-mail address
-      UBIFS: dump a little more in case of corruptions
-      UBIFS: small amendments in the LEB scanning code
-      UBIFS: clean up free space checking
-      UBIFS: fix corruption dump
+Artem Bityutskiy (5):
+      UBI: add empty eraseblocks verification
+      UBI: remove bogus debugging checks
+      UBI: nicify image sequence number handling
+      UBI: fix NOR flash recovery
+      UBI: fix compilation warnings
 
-Daniel Mack (1):
-      UBIFS: allow more than one volume to be mounted
-
- MAINTAINERS         |    2 +-
- fs/ubifs/io.c       |   57 ++++++++++++++++++++++++--------------------------
- fs/ubifs/recovery.c |   57 +++++++++++++++++++++++++++++---------------------
- fs/ubifs/replay.c   |    9 ++++---
- fs/ubifs/scan.c     |   20 ++++++++++-------
- fs/ubifs/super.c    |   14 +++++++-----
- fs/ubifs/ubifs.h    |   11 ++++++---
- 7 files changed, 93 insertions(+), 77 deletions(-)
+ drivers/mtd/ubi/build.c     |    6 ++
+ drivers/mtd/ubi/debug.c     |    2 +
+ drivers/mtd/ubi/debug.h     |    7 ++
+ drivers/mtd/ubi/io.c        |  157 +++++++++++++++++--------------------------
+ drivers/mtd/ubi/scan.c      |   14 ++++
+ drivers/mtd/ubi/scan.h      |    2 +
+ drivers/mtd/ubi/ubi-media.h |   12 +++-
+ drivers/mtd/ubi/ubi.h       |    6 ++-
+ drivers/mtd/ubi/wl.c        |    8 ++
+ 9 files changed, 116 insertions(+), 98 deletions(-)
 
 Thanks,
 Artem.
