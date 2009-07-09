@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbZGIFIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbZGIFOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759212AbZGIFIv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 01:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZGIFIm
+	id S1753452AbZGIFOD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 01:14:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbZGIFNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 01:08:42 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48908 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751250AbZGIFIl (ORCPT
+	Thu, 9 Jul 2009 01:13:55 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38637 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751441AbZGIFNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 01:08:41 -0400
+	Thu, 9 Jul 2009 01:13:54 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [RFC PATCH 2/2] Don't continue reclaim if the system have plenty  free memory
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
 Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
        linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <28c262360907070620n3e22801egd4493c149a263ecd@mail.gmail.com>
-References: <20090707184714.0C73.A69D9226@jp.fujitsu.com> <28c262360907070620n3e22801egd4493c149a263ecd@mail.gmail.com>
-Message-Id: <20090709140234.239F.A69D9226@jp.fujitsu.com>
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+In-Reply-To: <20090707135656.GB9444@localhost>
+References: <20090707102106.0C66.A69D9226@jp.fujitsu.com> <20090707135656.GB9444@localhost>
+Message-Id: <20090709141319.23A2.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu,  9 Jul 2009 14:08:38 +0900 (JST)
+Date: Thu,  9 Jul 2009 14:13:49 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi, Kosaki.
+> On Tue, Jul 07, 2009 at 09:22:48AM +0800, KOSAKI Motohiro wrote:
+> > > On Sun, Jul 05, 2009 at 08:21:20PM +0800, KOSAKI Motohiro wrote:
+> > > > > On Sun, Jul 05, 2009 at 05:26:18PM +0800, KOSAKI Motohiro wrote:
 > 
-> On Tue, Jul 7, 2009 at 6:48 PM, KOSAKI
-> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
-> > Subject: [PATCH] Don't continue reclaim if the system have plenty free memory
-> >
-> > On concurrent reclaim situation, if one reclaimer makes OOM, maybe other
-> > reclaimer can stop reclaim because OOM killer makes enough free memory.
-> >
-> > But current kernel doesn't have its logic. Then, we can face following accidental
-> > 2nd OOM scenario.
-> >
-> > 1. System memory is used by only one big process.
-> > 2. memory shortage occur and concurrent reclaim start.
-> > 3. One reclaimer makes OOM and OOM killer kill above big process.
-> > 4. Almost reclaimable page will be freed.
-> > 5. Another reclaimer can't find any reclaimable page because those pages are
-> > ? already freed.
-> > 6. Then, system makes accidental and unnecessary 2nd OOM killer.
-> >
+> > @@ -2118,9 +2118,9 @@ void show_free_areas(void)
+> >  	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
+> >  		" inactive_file:%lu unevictable:%lu\n"
+> >  		" isolated_anon:%lu isolated_file:%lu\n"
+> > -		" dirty:%lu writeback:%lu buffer:%lu unstable:%lu\n"
+> > +		" dirty:%lu writeback:%lu buffer:%lu shmem:%lu\n"
 > 
-> Did you see the this situation ?
-> Why I ask is that we have already a routine for preventing parallel
-> OOM killing in __alloc_pages_may_oom.
->
-> Couldn't it protect your scenario ?
+> btw, nfs unstable pages are related to writeback pages, so it may be
+> better to put "unstable" right after "writeback" (as it was)?
 
-Can you please see actual code of this patch?
-Those two patches fix different problem.
-
-1/2 fixes the issue of that concurrent direct reclaimer makes
-too many isolated pages.
-2/2 fixes the issue of that reclaim and exit race makes accidental oom.
-
-
-> If it can't, Could you explain the scenario in more detail ?
-
-__alloc_pages_may_oom() check don't effect the threads of already
-entered reclaim. it's obvious.
-
+OK, will fix.
 
 
 
