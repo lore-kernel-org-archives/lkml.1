@@ -1,135 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbZGITtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZGIUAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755262AbZGITtG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 15:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbZGITsz
+	id S1755419AbZGIUAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 16:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZGIUAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 15:48:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48955 "EHLO hera.kernel.org"
+	Thu, 9 Jul 2009 16:00:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60921 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753060AbZGITsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 15:48:54 -0400
-Message-ID: <4A564990.3060202@kernel.org>
-Date: Thu, 09 Jul 2009 12:48:32 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1753599AbZGIUAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 16:00:04 -0400
+Date: Thu, 9 Jul 2009 15:59:41 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 2/2] cfq-iosched: get rid of the need for __GFP_FAIL in
+	cfq_find_alloc_queue()
+Message-ID: <20090709195941.GE30832@redhat.com>
+References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com> <1246007120-24034-3-git-send-email-jens.axboe@oracle.com> <x497hyz9d2g.fsf@segfault.boston.devel.redhat.com> <20090627182617.GX23611@kernel.dk> <20090709154446.GD30832@redhat.com> <20090709173823.GN23611@kernel.dk>
 MIME-Version: 1.0
-To: dann frazier <dannf@hp.com>
-CC: linux-scsi@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: mptsas, msi and the dl585 g2
-References: <20090630180300.GA9971@ldl.fc.hp.com> <4A4A5B01.9040200@kernel.org> <20090703225708.GA30664@ldl.fc.hp.com> <4A4FADDC.30606@kernel.org> <20090709185945.GG2613@ldl.fc.hp.com> <4A564263.5010305@kernel.org> <4A564634.1020708@kernel.org>
-In-Reply-To: <4A564634.1020708@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090709173823.GN23611@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Yinghai Lu wrote:
->> dann frazier wrote:
->>>   --------------------------------------------------------------------
->>>   commit 30a18d6c3f1e774de656ebd8ff219d53e2ba4029
->>>   Author: Yinghai Lu <Yinghai.Lu@Sun.COM>
->>>   Date:   Tue Feb 19 03:21:20 2008 -0800
->>>
->>>       x86: multi pci root bus with different io resource range, on
->>>       64-bit
->>>   --------------------------------------------------------------------
->>>
->>> This appears to be the commit that actually introduced the issue.
->>> I've attached dmesg w/ PCI DEBUG enabled from both sides of this
->>> changeset, as well as a diff w/o printk timestamps.
->>>
->>> Also note that #ifdef'ing out x86_pci_root_bus_res_quirks() in
->>> amd_bus.c seems to avoid the problem as well.
->> your BIOS didn't allocate io resources to some device under HT chain on node1/link2
->> aka under peer root bus.
->>
->> Kernel try to allocate resource to them.
->>
->> and the patch did right thing according to range 
->> bus: 40 index 1 mmio: [d9f00000, dfefffff]
->>
->> YH
->>
->>
->> +bus: [00,3f] on node 0 link 1
->> +bus: 00 index 0 io port: [0, 2fff]
->> +bus: 00 index 1 mmio: [80000000, d9efffff]
->> +bus: 00 index 2 mmio: [dff00000, e3ffffff]
->> +bus: 00 index 3 mmio: [a0000, bffff]
->> +bus: 00 index 4 mmio: [e8000000, ffffffff]
->> +bus: 00 index 5 mmio: [480000000, fbffffffff]
->> +bus: [40,7f] on node 1 link 2
->> +bus: 40 index 0 io port: [3000, ffff]
->> +bus: 40 index 1 mmio: [d9f00000, dfefffff]
->> +bus: 40 index 2 mmio: [e4000000, e7ffffff]
->>  ACPI: bus type pci registered
->>  PCI: Using configuration type 1 for base access
->>  ACPI: EC: Look up EC in DSDT
->> @@ -646,18 +659,18 @@
->>    IO window: disabled.
->>    MEM window: disabled.
->>    PREFETCH window: disabled.
->> -  got res [88000000:8801ffff] bus [88000000:8801ffff] flags 27200 for BAR 6 of 0000:41:01.0
->> -  got res [88020000:8803ffff] bus [88020000:8803ffff] flags 27200 for BAR 6 of 0000:41:02.0
->> +  got res [d9f00000:d9f1ffff] bus [d9f00000:d9f1ffff] flags 27200 for BAR 6 of 0000:41:01.0
->> +  got res [d9f20000:d9f3ffff] bus [d9f20000:d9f3ffff] flags 27200 for BAR 6 of 0000:41:02.0
->>  PCI: Bridge: 0000:40:10.0
->>    IO window: disabled.
->>    MEM window: 0xda000000-0xddffffff
->> -  PREFETCH window: 0x0000000088000000-0x00000000880fffff
->> -  got res [88200000:883fffff] bus [88200000:883fffff] flags 27200 for BAR 6 of 0000:42:01.0
->> -  got res [88100000:8813ffff] bus [88100000:8813ffff] flags 27200 for BAR 6 of 0000:42:02.0
->> +  PREFETCH window: 0x00000000d9f00000-0x00000000d9ffffff
->> +  got res [de000000:de1fffff] bus [de000000:de1fffff] flags 27200 for BAR 6 of 0000:42:01.0
->> +  got res [de200000:de23ffff] bus [de200000:de23ffff] flags 27200 for BAR 6 of 0000:42:02.0
->>  PCI: Bridge: 0000:40:11.0
->>    IO window: 3000-3fff
->>    MEM window: 0xdfe00000-0xdfefffff
->> -  PREFETCH window: 0x0000000088100000-0x00000000883fffff
->> +  PREFETCH window: 0x00000000de000000-0x00000000de2fffff
->>
->>
+On Thu, Jul 09, 2009 at 07:38:23PM +0200, Jens Axboe wrote:
+> On Thu, Jul 09 2009, Vivek Goyal wrote:
+> > On Sat, Jun 27, 2009 at 08:26:17PM +0200, Jens Axboe wrote:
+> > > On Fri, Jun 26 2009, Jeff Moyer wrote:
+> > > > Jens Axboe <jens.axboe@oracle.com> writes:
+> > > > 
+> > > > > Setup an emergency fallback cfqq that we allocate at IO scheduler init
+> > > > > time. If the slab allocation fails in cfq_find_alloc_queue(), we'll just
+> > > > > punt IO to that cfqq instead. This ensures that cfq_find_alloc_queue()
+> > > > > never fails without having to ensure free memory.
+> > > > >
+> > > > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > > > ---
+> > > > >  block/cfq-iosched.c |  124 +++++++++++++++++++++++++++-----------------------
+> > > > >  1 files changed, 67 insertions(+), 57 deletions(-)
+> > > > >
+> > > > > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> > > > > index c760ae7..91e7e0b 100644
+> > > > > --- a/block/cfq-iosched.c
+> > > > > +++ b/block/cfq-iosched.c
+> > > > > +	/*
+> > > > > +	 * Fallback dummy cfqq for extreme OOM conditions
+> > > > > +	 */
+> > > > > +	struct cfq_queue oom_cfqq;
+> > > > 
+> > > > OK, so you're embedding a cfqq into the cfqd.  That's 136 bytes, so I
+> > > > guess that's not too bad.
+> > > > 
+> > > > > +	/*
+> > > > > +	 * Our fallback cfqq if cfq_find_alloc_queue() runs into OOM issues.
+> > > > > +	 * Grab a permanent reference to it, so that the normal code flow
+> > > > > +	 * will not attempt to free it.
+> > > > > +	 */
+> > > > > +	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
+> > > > > +	atomic_inc(&cfqd->oom_cfqq.ref);
+> > > > > +
+> > > > 
+> > > > I guess this is so we never try to free it, good.  ;)
+> > > > 
+> > > > One issue I have with this patch is that, if a task happens to run into
+> > > > this condition, there is no way out.  It will always have the oom_cfqq
+> > > > as it's cfqq.  Can't we fix that if we recover from the OOM condition?
+> > > 
+> > > Yeah, I fixed that about an hour after posting the patches. See:
+> > > 
+> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0370bc158cb1d5faa4b8a38c0de3211f0fd5bd64
+> > > 
+> > 
+> > Hi Jens,
+> > 
+> > I think above patch might not fix the issue of an oom_cfqq getting stuck
+> > with an io context. The reason being that once we allocate the cfqq, it
+> > will be cached in cic and once next request comes, we will retrieve it
+> > from cic and never call cfq_get_queue()/cfq_find_alloc_queue().
+> > 
+> > I think we probably need to do cfqq == oom_cfqq check in cfq_set_request()
+> > also.
 > 
-> 
-> and those range are not overlapping with IOAPIC BAR allocating
-> [    0.000000] ACPI: IOAPIC (id[0x08] address[0xd9cf0000] gsi_base[0])
-> [    0.000000] IOAPIC[0]: apic_id 8, version 0, address 0xd9cf0000, GSI 0-23
-> [    0.000000] ACPI: IOAPIC (id[0x09] address[0xd9fd0000] gsi_base[24])
-> [    0.000000] IOAPIC[1]: apic_id 9, version 0, address 0xd9fd0000, GSI 24-30
-> [    0.000000] ACPI: IOAPIC (id[0x0a] address[0xd9fe0000] gsi_base[31])
-> [    0.000000] IOAPIC[2]: apic_id 10, version 0, address 0xd9fe0000, GSI 31-37
-> [    0.000000] ACPI: IOAPIC (id[0x0b] address[0xd9ff0000] gsi_base[38])
-> [    0.000000] IOAPIC[3]: apic_id 11, version 0, address 0xd9ff0000, GSI 38-61
-> 
+> Yes good catch, this is needed too!  Can you please send as a "real"
+> patch with signed-off-by added? Thanks!
 
-with the new allocation:
-[    4.279139]   got res [d9f00000:d9f1ffff] bus [d9f00000:d9f1ffff] flags 27200 for BAR 6 of 0000:41:01.0
-[    4.279142]   got res [d9f20000:d9f3ffff] bus [d9f20000:d9f3ffff] flags 27200 for BAR 6 of 0000:41:02.0
-[    4.279144] PCI: Bridge: 0000:40:10.0
-[    4.299135]   IO window: disabled.
-[    4.319148]   MEM window: 0xda000000-0xddffffff
-[    4.333140]   PREFETCH window: 0x00000000d9f00000-0x00000000d9ffffff
-[    4.370170]   got res [de000000:de1fffff] bus [de000000:de1fffff] flags 27200 for BAR 6 of 0000:42:01.0
-[    4.370173]   got res [de200000:de23ffff] bus [de200000:de23ffff] flags 27200 for BAR 6 of 0000:42:02.0
-[    4.370175] PCI: Bridge: 0000:40:11.0
-[    4.390143]   IO window: 3000-3fff
-[    4.410177]   MEM window: 0xdfe00000-0xdfefffff
-[    4.435157]   PREFETCH window: 0x00000000de000000-0x00000000de2fffff
+Sure. Here you go.
 
+In case memory is scarce, we now default to oom_cfqq. Once memory is
+available again, we should allocate a new cfqq and stop using oom_cfqq for
+a particular io context.
 
-[    4.333140]   PREFETCH window: 0x00000000d9f00000-0x00000000d9ffffff
-are all directed to one 8132 PCI-X bridge.
+Once a new request comes in, check if we are using oom_cfqq, and if yes,
+try to allocate a new cfqq.
 
-the the IOAPIC for 9, 10, 11... falling that range...
+Tested the patch by forcing the use of oom_cfqq and upon next request thread
+realized that it was using oom_cfqq and it allocated a new cfqq.
 
-we need one better to allocate range for that pci-x bridge to aovide ioapic BAR allocated...
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/cfq-iosched.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-anyway your BIOS sucks.
-
-YH
-
-
+Index: linux5/block/cfq-iosched.c
+===================================================================
+--- linux5.orig/block/cfq-iosched.c	2009-07-04 13:58:48.000000000 -0400
++++ linux5/block/cfq-iosched.c	2009-07-09 15:56:59.000000000 -0400
+@@ -2311,7 +2311,7 @@ cfq_set_request(struct request_queue *q,
+ 		goto queue_fail;
+ 
+ 	cfqq = cic_to_cfqq(cic, is_sync);
+-	if (!cfqq) {
++	if (!cfqq || cfqq == &cfqd->oom_cfqq) {
+ 		cfqq = cfq_get_queue(cfqd, is_sync, cic->ioc, gfp_mask);
+ 		cic_set_cfqq(cic, cfqq, is_sync);
+ 	}
