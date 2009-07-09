@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761098AbZGIQqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761110AbZGIQwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761098AbZGIQqw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 12:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760154AbZGIQqm
+	id S1761110AbZGIQwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 12:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760343AbZGIQwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 12:46:42 -0400
-Received: from mail.anarazel.de ([217.115.131.40]:43829 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759419AbZGIQqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 12:46:42 -0400
-From: Andres Freund <andres@anarazel.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused by netem)
-Date: Thu, 9 Jul 2009 18:46:37 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc2-andres-00152-g6a6dd01-dirty; KDE/4.2.95; x86_64; ; )
-Cc: Jarek Poplawski <jarkao2@gmail.com>,
-       Joao Correia <joaomiguelcorreia@gmail.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Patrick McHardy <kaber@trash.net>,
-       Peter Zijlstra <peterz@infradead.org>
-References: <200907031326.21822.andres@anarazel.de> <200907091728.23367.andres@anarazel.de> <alpine.LFD.2.00.0907091801130.24704@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0907091801130.24704@localhost.localdomain>
+	Thu, 9 Jul 2009 12:52:06 -0400
+Received: from av12-2-sn2.hy.skanova.net ([81.228.8.186]:60297 "EHLO
+	av12-2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759720AbZGIQwF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 12:52:05 -0400
+Message-ID: <4A56202C.9020809@mocean-labs.com>
+Date: Thu, 09 Jul 2009 18:51:56 +0200
+From: =?ISO-8859-1?Q?Richard_R=F6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kwangwoo.lee@gmail.com, thierry.reding@avionic-design.de,
+       soni.trilok@gmail.com
+Subject: Re: [PATCH 1/2] tsc2007: remove HR timer
+References: <4A40C288.2060702@mocean-labs.com> <20090625142010.bd656a9d.akpm@linux-foundation.org>
+In-Reply-To: <20090625142010.bd656a9d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907091846.37926.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 July 2009 18:01:56 Thomas Gleixner wrote:
-> Andres,
+On 6/25/09 11:20 PM, Andrew Morton wrote:
+> On Tue, 23 Jun 2009 13:54:48 +0200
+> Richard R__jfors<richard.rojfors.ext@mocean-labs.com>  wrote:
 >
-> On Thu, 9 Jul 2009, Andres Freund wrote:
-> > On Thursday 09 July 2009 16:28:05 Thomas Gleixner wrote:
-> > > Please test them separate from each other. The one I sent in this
-> > > thread was just for narrowing down the issue, but I'm now quite sure
-> > > that they really hit the issue which is addressed by the hrtimer
-> > > patch.
-> >
-> > No crash yet. 15min running (seconds to a minute before).
-> >
-> > Will let it run for some hours to be sure.
+>> This patch removes the HR timer, since it's bad to do synchronous I2C
+>> in the HR timer callback context. The new implementation makes use
+>> of the global workqueue. The work is scheduled every 5ms when polling
+>> rather than 5 us.
+>>
 >
-> Which one of the patches are you testing ?
-Your "real" one, i.e. de907e8432b08f2d5966c36e0747e97c0e596810
+> "it's bad" isn't a very good description of the problem which the patch
+> fixes.
 
-1h30m now...
+The problem is that the synchronous I2C calls in HR-timer callback 
+context might end up in a deadlock.
 
+>
+> This matters.  People wish to make decisions about whether this patch
+> is needed in 2.6.29.x, 2.6.30.x, 2.6.31, 2.6.32, etc.  Without knowing
+> the effects of the problem which the patch fixes, we cannot make that
+> decision!
+>
+>> +	/* cancel any work */
+>> +	cancel_delayed_work(&ts->work);
+>> +
+>
+> Should this have been cancel_delayed_work_sync()?
 
-Andres
+It should, I will post a new patch shortly which should be applied after 
+these two which fixes this.
+
+--Richard
