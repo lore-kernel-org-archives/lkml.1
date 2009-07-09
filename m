@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759745AbZGIFrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759530AbZGIFuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759745AbZGIFrt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 01:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbZGIFrk
+	id S1759530AbZGIFuZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 01:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZGIFuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 01:47:40 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:38137 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757238AbZGIFrj (ORCPT
+	Thu, 9 Jul 2009 01:50:16 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56064 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751588AbZGIFuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 01:47:39 -0400
-Subject: Re: [PATCH 41/44] includecheck fix: include/linux, rfkill.h
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
+	Thu, 9 Jul 2009 01:50:15 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
+Cc: kosaki.motohiro@jp.fujitsu.com, Minchan Kim <minchan.kim@gmail.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1247112119.2453.4.camel@ht.satnam>
-References: <1247063308.4382.12.camel@ht.satnam>
-	 <1247068554.4382.106.camel@ht.satnam>
-	 <1247081557.9709.16.camel@localhost.localdomain>
-	 <1247112119.2453.4.camel@ht.satnam>
-Content-Type: text/plain
-Date: Wed, 08 Jul 2009 22:47:42 -0700
-Message-Id: <1247118462.9709.36.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>
+In-Reply-To: <alpine.DEB.1.10.0907071252060.5124@gentwo.org>
+References: <28c262360907050827y577c3859g5e05e82935e96010@mail.gmail.com> <alpine.DEB.1.10.0907071252060.5124@gentwo.org>
+Message-Id: <20090709144938.23A8.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu,  9 Jul 2009 14:50:09 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jaswinder,
-
-> > > fix the following 'make includecheck' warning:
-> > > 
-> > >   include/linux/rfkill.h: linux/types.h is included more than once.
-> > > 
-> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > > ---
-> > >  include/linux/rfkill.h |    1 -
-> > >  1 files changed, 0 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/include/linux/rfkill.h b/include/linux/rfkill.h
-> > > index e73e242..2ce2983 100644
-> > > --- a/include/linux/rfkill.h
-> > > +++ b/include/linux/rfkill.h
-> > > @@ -99,7 +99,6 @@ enum rfkill_user_states {
-> > >  #undef RFKILL_STATE_UNBLOCKED
-> > >  #undef RFKILL_STATE_HARD_BLOCKED
-> > >  
-> > > -#include <linux/types.h>
-> > >  #include <linux/kernel.h>
-> > >  #include <linux/list.h>
-> > >  #include <linux/mutex.h>
-> > 
-> > with the #ifdef __KERNEL__ in between it is kinda weird, but patch seems
-> > correct.
-> > 
+> On Mon, 6 Jul 2009, Minchan Kim wrote:
 > 
-> ACK or Reviewed-by ?
+> > Anyway, I think it's not a big cost in normal system.
+> > So If you want to add new accounting, I don't have any objection. :)
+> 
+> Lets keep the counters to a mininum. If we can calculate the values from
+> something else then there is no justification for a new counter.
+> 
+> A new counter increases the size of the per cpu structures that exist for
+> each zone and each cpu. 1 byte gets multiplies by the number of cpus and
+> that gets multiplied by the number of zones.
 
-both if you want to, but John already picked it up for wireless-testing
-if I am not mistaken. So it is on its way into 2.6.32 somehow.
+OK. I'll implement this idea.
 
-Regards
-
-Marcel
 
 
