@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758842AbZGIMOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZGIMYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758842AbZGIMOd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 08:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727AbZGIMO0
+	id S1759939AbZGIMYj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 08:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbZGIMYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 08:14:26 -0400
-Received: from gw3.lbox.cz ([62.245.111.133]:54779 "EHLO develbox.linuxbox.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756229AbZGIMOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 08:14:25 -0400
-X-Greylist: delayed 633 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Jul 2009 08:14:24 EDT
-Date: Thu, 9 Jul 2009 14:07:59 +0200
-From: Nikola Ciprich <extmaillist@linuxbox.cz>
-To: Linux kernel list <linux-kernel@vger.kernel.org>
-Cc: nikola.ciprich@linuxbox.cz, netfilter-devel@lists.netfilter.org
-Subject: 2.6.30.1: BUG: sleeping function called from invalid context at
-	include/linux/kernel.h
-Message-ID: <20090709120759.GB683@develbox.linuxbox.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 9 Jul 2009 08:24:31 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40606 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755999AbZGIMYb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 08:24:31 -0400
+Subject: Re: possible migration bug with hotplug cpu
+From: Peter Zijlstra <peterz@infradead.org>
+To: Lucas De Marchi <lucas.de.marchi@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <193b0f820907090457s7a3662f4gcdecdc22fcae857b@mail.gmail.com>
+References: <193b0f820907080848m5b72e2a9l52944ae3de785d90@mail.gmail.com>
+	 <1247068556.9777.58.camel@twins>
+	 <193b0f820907080905u643e90ddi42a719e6163b0bc@mail.gmail.com>
+	 <193b0f820907080939sf0bec93n16ee4b5aca6e1a7a@mail.gmail.com>
+	 <193b0f820907090457s7a3662f4gcdecdc22fcae857b@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 09 Jul 2009 14:24:26 +0200
+Message-Id: <1247142266.9777.371.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HHi,
-on one of my testing machines running 2.6.30.1, I noticed following:
+On Thu, 2009-07-09 at 13:57 +0200, Lucas De Marchi wrote:
+> So, I found the problem.
+> 
+> These fields are currently not initialized upon fork. I noted that when I
+> updated to 2.6.31-rc2; commit 6c594c21fcb02c662f11c97be4d7d2b73060a205 was
+> merged into kernel by Ingo (not present yet in 2.6.30), but it only initializes
+> nr_migrations. Why the other fields are not initialized to 0? Even when there
+> are more processors, these fields may be wrong if not zeroed when a new task
+> is started. Below the fast way to fix it. This fixed the counters for me.
 
-[43601.016119] BUG: sleeping function called from invalid context at include/linux/kernel.h:155
-[43601.016123] in_atomic(): 1, irqs_disabled(): 0, pid: 2197, name: zip
-[43601.016126] 1 lock held by zip/2197:
-[43601.016128]  #0:  (rcu_read_lock){......}, at: [<ffffffff804770e0>] nf_log_proc_dostring+0x90/0x180
-[43601.016141] Pid: 2197, comm: zip Not tainted 2.6.30lb.00_01_PRE16 #1
-[43601.016144] Call Trace:
-[43601.016150]  [<ffffffff802674f5>] ? __debug_show_held_locks+0x15/0x30
-[43601.016156]  [<ffffffff80234031>] __might_sleep+0x101/0x130
-[43601.016160]  [<ffffffff802488cd>] proc_dostring+0x15d/0x180
-[43601.016165]  [<ffffffff80477140>] nf_log_proc_dostring+0xf0/0x180
-[43601.016169]  [<ffffffff804770e0>] ? nf_log_proc_dostring+0x90/0x180
-[43601.016175]  [<ffffffff80339da0>] proc_sys_call_handler+0xc0/0xd0
-[43601.016179]  [<ffffffff80339ddc>] proc_sys_read+0xc/0x10
-[43601.016184]  [<ffffffff802dffd4>] vfs_read+0xc4/0x180
-[43601.016188]  [<ffffffff802e04a0>] sys_read+0x50/0x90
-[43601.016193]  [<ffffffff8020b36b>] system_call_fastpath+0x16/0x1b
+Ah, awesome. I hadn't had time to look in detail yet. Thanks!
 
-Apparently, there is something wrong in the nf_log code...
+> What do you think of creating a struct sched_statistics embedded into
+> sched_entity so we coudl memset it to zero all at once? All fields of
+> SCHED_STATS piece should be initialized, right?
 
--- 
--------------------------------------
-Nikola CIPRICH
-LinuxBox.cz, s.r.o.
-28. rijna 168, 709 01 Ostrava
+Sounds like a sane plan.
 
-tel.:   +420 596 603 142
-fax:    +420 596 621 273
-mobil:  +420 777 093 799
-www.linuxbox.cz
+One of the things I have wanted to do for a long time is to rename
+sched_entity to sched_fair_entity, and do something like:
 
-mobil servis: +420 737 238 656
-email servis: servis@linuxbox.cz
--------------------------------------
+struct sched_entity {
+	struct sched_common_entity       common;
+
+	union {
+		struct sched_fair_entity fair;
+		struct sched_rt_entity   rt;
+	};
+};
+
+I imagine we can add struct sched_statistics to the end of this as well.
+
+The reason I haven't come around to doing this is that it takes a bit of
+time to refactor the code and find all the common bits. So its been on
+my todo list like forever.
+
+Can I persuade you to look at this? :-)
+
+I'll queue the below, can I add:
+
+Signed-off-by: Lucas De Marchi <lucas.de.marchi@gmail.com>
+
+?
+
