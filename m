@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759457AbZGICbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759581AbZGICg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759457AbZGICbu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 22:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758001AbZGICbn
+	id S1759581AbZGICg7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 22:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758989AbZGICgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 22:31:43 -0400
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:45081 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757821AbZGICbm convert rfc822-to-8bit (ORCPT
+	Wed, 8 Jul 2009 22:36:52 -0400
+Received: from mail-pz0-f175.google.com ([209.85.222.175]:57844 "EHLO
+	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758638AbZGICgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 22:31:42 -0400
+	Wed, 8 Jul 2009 22:36:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gGjCiTCcMUHzyMXWESMxJvs7QZ6ruZHYphGH3lOF3xZu69PAON/AomGJCSwtkFxGrZ
-         J1Mczyqig/o3wTN5Rzjdihbb+k7T1TvBiYebULoCgZMuGYHfqqxd+04F1jG1fCk1ClRr
-         CtLuQfRvVzF7fy/PL3Q7JN/yF5XklbSk9e98I=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iP1iOrJ8UAWCV/lXqVRG6hULPJ/bXYi8ENBEaVxPVOwZlvgEeXzOI9g1XyPxOB50t4
+         Ibd7YPArDQ9pUYeeaeSo0IyrLYYVlXagLucLOZXZOq9vz16voRvbMU1/kyYfEtWHuQEB
+         8Q+5dDzUS6ldwh1eVwt+dTVIWtdOt71HD+kKk=
+Date: Thu, 9 Jul 2009 10:38:55 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Dick Streefland <dick@streefland.net>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
+Message-ID: <20090709023855.GA5648@cr0.nay.redhat.com>
+References: <20090623225245.GA10443@streefland.net> <20090624021506.GA5871@cr0.nay.redhat.com> <20090624114607.GA10817@streefland.net> <20090624133148.GA12878@streefland.net> <20090629025146.GA5998@cr0.nay.redhat.com> <20090629113613.GA6853@streefland.net>
 MIME-Version: 1.0
-In-Reply-To: <4A554F1E.5020508@oracle.com>
-References: <20090623144221.GA29593@suse.de> <4A54A538.3080407@redhat.com>
-	 <20090708140419.GA20418@suse.de> <4A54A938.5030807@redhat.com>
-	 <20090708145625.GA20690@suse.de> <4A54B5C2.9000908@redhat.com>
-	 <20090708154758.GB20979@suse.de>
-	 <21d7e9970907081423v6d3830eey227f3d54b10382a6@mail.gmail.com>
-	 <b6a2187b0907081743w61102ff4u75d15c2f3cae26d@mail.gmail.com>
-	 <4A554F1E.5020508@oracle.com>
-Date: Thu, 9 Jul 2009 10:31:41 +0800
-Message-ID: <b6a2187b0907081931w7dcf2544m4b580f7841b80cf3@mail.gmail.com>
-Subject: Re: can we move USB_DEVICEFS to non-embedded?
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Dave Airlie <airlied@gmail.com>, Greg KH <gregkh@suse.de>,
-       Peter Jones <pjones@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Scott James Remnant <scott@canonical.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Dave Jones <davej@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090629113613.GA6853@streefland.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 9, 2009 at 9:59 AM, Randy Dunlap<randy.dunlap@oracle.com> wrote:
->> Without CONFIG_EMBEDDED ...
->>   CONFIG_NAMESPACES=y
-> Under General Setup, Namespaces support
+On Mon, Jun 29, 2009 at 01:36:13PM +0200, Dick Streefland wrote:
+>On Monday 2009-06-29 10:51, Amerigo Wang wrote:
+>| Does this work?
+>| My quick test shows no...
+>| 
+>| I still can't get the right offset number with this trick.
+>| 
+>| P.S. My grep is 2.5.1.
+>
+>I've tested the script with grep 2.5.1, and it works for me. Can you be
+>more specific about what you think is wrong with the offsets? You need
+>to be aware of the fact that because "tr" replaces the first character
+>of the pattern by a newline, an offset will be 1 higher than the start
+>of the original pattern. The resulting offsets are therefore 1-based
+>instead of 0-based, which is exactly what "tail" expects for the "-c"
+>option.
 
-You're good. Thanks.
+Hi,
 
->> With CONFIG_EMBEDDED=y ...
->>   # CONFIG_NAMESPACES is not set
->>   CONFIG_VMSPLIT_3G=y
-> Under Processor type and features, Memory split
+I appologize for my delay, I totally missed this thread, sorry.
 
-This is one I'm having trouble with. When CONFIG_EMBEDED is not set, I
-can't find any "VMSPLIT" in .config, but when CONFIG_EMBEDDED is set,
-I'll have to choose the VMSPLIT option. Should I select VMSPLIT_3G?
+I just tested it, it works! So,
 
-Here's what it says ...
+Tested-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-  | Prompt: Memory split
-  |   Defined at arch/x86/Kconfig:1062
-  |   Depends on: EXPERIMENTAL && X86_32 && EMBEDDED
-  |   Location:
-  |     -> Processor type and features
-  |   Selected by: EXPERIMENTAL && X86_32 && EMBEDDED && m
 
-Thanks,
-Jeff.
+But, I still don't understand the behavior of 'grep -abo',
+please try the following commands:
+
+echo -e '\x01\x02\x03\x04' > test.bin
+od -x test.bin
+tr $'\x01\x02\x03\x04' '1234' < test.bin | grep -abo '4'
+
+
+Am I missing something here??
+
+Thanks.
