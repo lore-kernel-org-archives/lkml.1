@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZGIR3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZGIRad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbZGIR3l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 13:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbZGIR3e
+	id S1754630AbZGIRad (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 13:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZGIRa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 13:29:34 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51379 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751066AbZGIR3d (ORCPT
+	Thu, 9 Jul 2009 13:30:26 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:57945 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbZGIRaZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 13:29:33 -0400
-Subject: [GIT PULL] Kmemleak fixes
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Thu, 09 Jul 2009 18:29:20 +0100
-Message-Id: <1247160560.11409.96.camel@pc1117.cambridge.arm.com>
+	Thu, 9 Jul 2009 13:30:25 -0400
+Date: Thu, 9 Jul 2009 10:30:21 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for July 9 (x86/pci)
+Message-Id: <20090709103021.d39a711a.randy.dunlap@oracle.com>
+In-Reply-To: <20090709163031.acdb5439.sfr@canb.auug.org.au>
+References: <20090709163031.acdb5439.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Jul 2009 17:29:21.0551 (UTC) FILETIME=[CBBC41F0:01CA00BA]
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4A562929.01C4:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, 9 Jul 2009 16:30:31 +1000 Stephen Rothwell wrote:
 
-Would you please consider merging the kmemleak branch?
-
-It contains several fixes to bugs raised recently and also reduces the
-number of false positives to nearly 0 (actually making the tool usable -
-one of the slub kmalloc calls for large blocks was completely missed and
-bootmem allocations would need to be tracked as well since many of them
-contain valid pointers).
-
-Thanks.
+> Hi all,
+> 
+> Changes since 20090708:
 
 
-The following changes since commit 34f25476ace556263784ea2f8173e22b25557a13:
-  Linus Torvalds (1):
-        Merge branch 'fixes' of git://git.kernel.org/.../davej/cpufreq
+when ACPI is disabled (SFI=y):
 
-are available in the git repository at:
 
-  git://linux-arm.org/linux-2.6 kmemleak
+arch/x86/pci/mmconfig_32.c: In function 'get_base_addr':
+arch/x86/pci/mmconfig_32.c:34: error: invalid use of undefined type 'struct acpi_mcfg_allocation'
+arch/x86/pci/mmconfig_32.c:34: error: dereferencing pointer to incomplete type
+arch/x86/pci/mmconfig_32.c:35: error: dereferencing pointer to incomplete type
+arch/x86/pci/mmconfig_32.c:36: error: dereferencing pointer to incomplete type
+arch/x86/pci/mmconfig_32.c:37: error: dereferencing pointer to incomplete type
+arch/x86/pci/mmconfig_32.c:38: error: dereferencing pointer to incomplete type
 
-Catalin Marinas (9):
-      kmemleak: Renice the scanning thread to +10
-      kmemleak: Add more cond_resched() calls in the scanning thread
-      kmemleak: Remove the reported leaks number limitation
-      kmemleak: Do not acquire scan_mutex in kmemleak_open()
-      kmemleak: Scan objects allocated during a scanning episode
-      kmemleak: Trace the kmalloc_large* functions in slub
-      kmemleak: Allow partial freeing of memory blocks
-      kmemleak: Add callbacks to the bootmem allocator
-      kmemleak: Remove alloc_bootmem annotations introduced in the past
+(X86_32, clearly)
 
- include/linux/kmemleak.h |    4 +
- include/linux/slub_def.h |    2 +
- kernel/pid.c             |    7 --
- mm/bootmem.c             |    6 +
- mm/kmemleak.c            |  236 ++++++++++++++++++++++++++++++++--------------
- mm/page_alloc.c          |   14 +--
- mm/slub.c                |   10 +-
- 7 files changed, 185 insertions(+), 94 deletions(-)
-
--- 
-Catalin
-
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
