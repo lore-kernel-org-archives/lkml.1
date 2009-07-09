@@ -1,142 +1,507 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbZGIUXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbZGIUZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756864AbZGIUXO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 16:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbZGIUVH
+	id S1756126AbZGIUZg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 16:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZGIUZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 16:21:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41369 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755913AbZGIUUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 16:20:55 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip -v11 09/11] tracing: Kprobe-tracer supports more than 6
-	arguments
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Date: Thu, 09 Jul 2009 16:23:15 -0400
-Message-ID: <20090709202315.13223.49733.stgit@localhost.localdomain>
-In-Reply-To: <20090709202220.13223.97114.stgit@localhost.localdomain>
-References: <20090709202220.13223.97114.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Thu, 9 Jul 2009 16:25:27 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:30668 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753993AbZGIUZZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 16:25:25 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: "Stephen J. Gowdy" <gowdy@cern.ch>
+Subject: [Bug 13751] 2.6.30 oops with acpi/button
+Date: Thu, 9 Jul 2009 14:25:07 -0600
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, Matthew Garrett <mjg@redhat.com>
+References: <alpine.LRH.2.00.0907090806560.5445@localhost.localdomain>
+In-Reply-To: <alpine.LRH.2.00.0907090806560.5445@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_kIlVKvjU7Kr0ZWB"
+Message-Id: <200907091425.08119.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support up to 128 arguments for each kprobes event.
+--Boundary-00=_kIlVKvjU7Kr0ZWB
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>
----
+>  	I've not had time to go back to it but with 2.6.30 I get an oops 
+> when I close the lid on my HP Compaq 6910p laptop.
 
- Documentation/trace/kprobetrace.txt |    2 +-
- kernel/trace/trace_kprobe.c         |   21 +++++++++++++--------
- 2 files changed, 14 insertions(+), 9 deletions(-)
+I opened this bugzilla for the oops:
+  http://bugzilla.kernel.org/show_bug.cgi?id=13751
 
-diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-index 9ad907c..b29a54b 100644
---- a/Documentation/trace/kprobetrace.txt
-+++ b/Documentation/trace/kprobetrace.txt
-@@ -32,7 +32,7 @@ Synopsis of kprobe_events
-  SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted.
-  MEMADDR		: Address where the probe is inserted.
+Other reports that may be related:
+  http://lkml.indiana.edu/hypermail/linux/kernel/0906.2/02139.html
+  https://bugs.launchpad.net/ubuntu/hardy/+source/hotkey-setup/+bug/157691
+
+I see floundering and workarounds in the reports above, but no
+real solution yet.
+
+The oops is a page fault on the IP, which means we branched into
+the weeds, possibly by following a bad function pointer:
+
+  BUG: unable to handle kernel paging request at ffff88007f223c30
+  IP: [<ffff88007f223c30>] 0xffff88007f223c30
+
+One possible cause is a module that doesn't clean up properly
+when it is unloaded.  Can you reproduce the problem with
+CONFIG_MODULE_UNLOAD turned off?
+
+I doubt this is a button driver problem, but attached is a patch that
+reverts the driver to the 2.6.29 version.  Can you try it out?
+
+Bjorn
+
+--Boundary-00=_kIlVKvjU7Kr0ZWB
+Content-Type: text/x-diff;
+  charset="iso 8859-15";
+  name="button.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="button.patch"
+
+commit e82e0de17d168f1352da986053943e98aa41a47a
+Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Date:   Thu Jul 9 09:45:38 2009 -0600
+
+diff --git a/drivers/acpi/button.c b/drivers/acpi/button.c
+index 9195deb..c2f0606 100644
+--- a/drivers/acpi/button.c
++++ b/drivers/acpi/button.c
+@@ -1,5 +1,5 @@
+ /*
+- *  button.c - ACPI Button Driver
++ *  acpi_button.c - ACPI Button Driver ($Revision: 30 $)
+  *
+  *  Copyright (C) 2001, 2002 Andy Grover <andrew.grover@intel.com>
+  *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
+@@ -41,13 +41,17 @@
  
-- FETCHARGS		: Arguments.
-+ FETCHARGS		: Arguments. Each probe can have up to 128 args.
-   %REG	: Fetch register REG
-   sN	: Fetch Nth entry of stack (N >= 0)
-   @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 57bf521..8754c7e 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -32,7 +32,7 @@
- #include "trace.h"
- #include "trace_output.h"
+ #define ACPI_BUTTON_SUBCLASS_POWER	"power"
+ #define ACPI_BUTTON_HID_POWER		"PNP0C0C"
+-#define ACPI_BUTTON_DEVICE_NAME_POWER	"Power Button"
++#define ACPI_BUTTON_DEVICE_NAME_POWER	"Power Button (CM)"
++#define ACPI_BUTTON_DEVICE_NAME_POWERF	"Power Button (FF)"
+ #define ACPI_BUTTON_TYPE_POWER		0x01
++#define ACPI_BUTTON_TYPE_POWERF		0x02
  
--#define TRACE_KPROBE_ARGS 6
-+#define MAX_TRACE_ARGS 128
- #define MAX_ARGSTR_LEN 63
+ #define ACPI_BUTTON_SUBCLASS_SLEEP	"sleep"
+ #define ACPI_BUTTON_HID_SLEEP		"PNP0C0E"
+-#define ACPI_BUTTON_DEVICE_NAME_SLEEP	"Sleep Button"
++#define ACPI_BUTTON_DEVICE_NAME_SLEEP	"Sleep Button (CM)"
++#define ACPI_BUTTON_DEVICE_NAME_SLEEPF	"Sleep Button (FF)"
+ #define ACPI_BUTTON_TYPE_SLEEP		0x03
++#define ACPI_BUTTON_TYPE_SLEEPF		0x04
  
- /* currently, trace_kprobe only supports X86. */
-@@ -174,11 +174,15 @@ struct trace_probe {
- 		struct kretprobe	rp;
- 	};
- 	const char		*symbol;	/* symbol name */
--	unsigned int		nr_args;
--	struct fetch_func	args[TRACE_KPROBE_ARGS];
- 	struct ftrace_event_call	call;
-+	unsigned int		nr_args;
-+	struct fetch_func	args[];
+ #define ACPI_BUTTON_SUBCLASS_LID	"lid"
+ #define ACPI_BUTTON_HID_LID		"PNP0C0D"
+@@ -74,7 +78,6 @@ MODULE_DEVICE_TABLE(acpi, button_device_ids);
+ static int acpi_button_add(struct acpi_device *device);
+ static int acpi_button_remove(struct acpi_device *device, int type);
+ static int acpi_button_resume(struct acpi_device *device);
+-static void acpi_button_notify(struct acpi_device *device, u32 event);
+ static int acpi_button_info_open_fs(struct inode *inode, struct file *file);
+ static int acpi_button_state_open_fs(struct inode *inode, struct file *file);
+ 
+@@ -86,11 +89,11 @@ static struct acpi_driver acpi_button_driver = {
+ 		.add = acpi_button_add,
+ 		.resume = acpi_button_resume,
+ 		.remove = acpi_button_remove,
+-		.notify = acpi_button_notify,
+ 	},
  };
  
-+#define SIZEOF_TRACE_PROBE(n)			\
-+	(offsetof(struct trace_probe, args) +	\
-+	(sizeof(struct fetch_func) * (n)))
-+
- static int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs);
- static int kretprobe_trace_func(struct kretprobe_instance *ri,
- 				struct pt_regs *regs);
-@@ -248,11 +252,11 @@ static DEFINE_MUTEX(probe_lock);
- static LIST_HEAD(probe_list);
+ struct acpi_button {
++	struct acpi_device *device;	/* Fixed button kludge */
+ 	unsigned int type;
+ 	struct input_dev *input;
+ 	char phys[32];			/* for input device */
+@@ -121,10 +124,14 @@ static struct proc_dir_entry *acpi_button_dir;
  
- static struct trace_probe *alloc_trace_probe(const char *symbol,
--					     const char *event)
-+					     const char *event, int nargs)
+ static int acpi_button_info_seq_show(struct seq_file *seq, void *offset)
  {
- 	struct trace_probe *tp;
+-	struct acpi_device *device = seq->private;
++	struct acpi_button *button = seq->private;
++
++	if (!button || !button->device)
++		return 0;
  
--	tp = kzalloc(sizeof(struct trace_probe), GFP_KERNEL);
-+	tp = kzalloc(SIZEOF_TRACE_PROBE(nargs), GFP_KERNEL);
- 	if (!tp)
- 		return ERR_PTR(-ENOMEM);
+ 	seq_printf(seq, "type:                    %s\n",
+-		   acpi_device_name(device));
++		   acpi_device_name(button->device));
++
+ 	return 0;
+ }
  
-@@ -550,9 +554,10 @@ static int create_trace_probe(int argc, char **argv)
- 		if (offset && is_return)
- 			return -EINVAL;
+@@ -135,11 +142,14 @@ static int acpi_button_info_open_fs(struct inode *inode, struct file *file)
+ 
+ static int acpi_button_state_seq_show(struct seq_file *seq, void *offset)
+ {
+-	struct acpi_device *device = seq->private;
++	struct acpi_button *button = seq->private;
+ 	acpi_status status;
+ 	unsigned long long state;
+ 
+-	status = acpi_evaluate_integer(device->handle, "_LID", NULL, &state);
++	if (!button || !button->device)
++		return 0;
++
++	status = acpi_evaluate_integer(button->device->handle, "_LID", NULL, &state);
+ 	seq_printf(seq, "state:      %s\n",
+ 		   ACPI_FAILURE(status) ? "unsupported" :
+ 			(state ? "open" : "closed"));
+@@ -157,17 +167,24 @@ static struct proc_dir_entry *acpi_lid_dir;
+ 
+ static int acpi_button_add_fs(struct acpi_device *device)
+ {
+-	struct acpi_button *button = acpi_driver_data(device);
+ 	struct proc_dir_entry *entry = NULL;
++	struct acpi_button *button;
++
++	if (!device || !acpi_driver_data(device))
++		return -EINVAL;
++
++	button = acpi_driver_data(device);
+ 
+ 	switch (button->type) {
+ 	case ACPI_BUTTON_TYPE_POWER:
++	case ACPI_BUTTON_TYPE_POWERF:
+ 		if (!acpi_power_dir)
+ 			acpi_power_dir = proc_mkdir(ACPI_BUTTON_SUBCLASS_POWER,
+ 						    acpi_button_dir);
+ 		entry = acpi_power_dir;
+ 		break;
+ 	case ACPI_BUTTON_TYPE_SLEEP:
++	case ACPI_BUTTON_TYPE_SLEEPF:
+ 		if (!acpi_sleep_dir)
+ 			acpi_sleep_dir = proc_mkdir(ACPI_BUTTON_SUBCLASS_SLEEP,
+ 						    acpi_button_dir);
+@@ -191,7 +208,8 @@ static int acpi_button_add_fs(struct acpi_device *device)
+ 	/* 'info' [R] */
+ 	entry = proc_create_data(ACPI_BUTTON_FILE_INFO,
+ 				 S_IRUGO, acpi_device_dir(device),
+-				 &acpi_button_info_fops, device);
++				 &acpi_button_info_fops,
++				 acpi_driver_data(device));
+ 	if (!entry)
+ 		return -ENODEV;
+ 
+@@ -199,7 +217,8 @@ static int acpi_button_add_fs(struct acpi_device *device)
+ 	if (button->type == ACPI_BUTTON_TYPE_LID) {
+ 		entry = proc_create_data(ACPI_BUTTON_FILE_STATE,
+ 					 S_IRUGO, acpi_device_dir(device),
+-					 &acpi_button_state_fops, device);
++					 &acpi_button_state_fops,
++					 acpi_driver_data(device));
+ 		if (!entry)
+ 			return -ENODEV;
  	}
-+	argc -= 2; argv += 2;
+@@ -229,35 +248,34 @@ static int acpi_button_remove_fs(struct acpi_device *device)
+ /* --------------------------------------------------------------------------
+                                 Driver Interface
+    -------------------------------------------------------------------------- */
+-static int acpi_lid_send_state(struct acpi_device *device)
++static int acpi_lid_send_state(struct acpi_button *button)
+ {
+-	struct acpi_button *button = acpi_driver_data(device);
+ 	unsigned long long state;
+ 	acpi_status status;
  
- 	/* setup a probe */
--	tp = alloc_trace_probe(symbol, event);
-+	tp = alloc_trace_probe(symbol, event, argc);
- 	if (IS_ERR(tp))
- 		return PTR_ERR(tp);
+-	status = acpi_evaluate_integer(device->handle, "_LID", NULL, &state);
++	status = acpi_evaluate_integer(button->device->handle, "_LID", NULL,
++					&state);
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
+-
+ 	/* input layer checks if event is redundant */
+ 	input_report_switch(button->input, SW_LID, !state);
+ 	input_sync(button->input);
+ 	return 0;
+ }
  
-@@ -571,8 +576,8 @@ static int create_trace_probe(int argc, char **argv)
- 		kp->addr = addr;
+-static void acpi_button_notify(struct acpi_device *device, u32 event)
++static void acpi_button_notify(acpi_handle handle, u32 event, void *data)
+ {
+-	struct acpi_button *button = acpi_driver_data(device);
++	struct acpi_button *button = data;
+ 	struct input_dev *input;
  
- 	/* parse arguments */
--	argc -= 2; argv += 2; ret = 0;
--	for (i = 0; i < argc && i < TRACE_KPROBE_ARGS; i++) {
-+	ret = 0;
-+	for (i = 0; i < argc && i < MAX_TRACE_ARGS; i++) {
- 		if (strlen(argv[i]) > MAX_ARGSTR_LEN) {
- 			pr_info("Argument%d(%s) is too long.\n", i, argv[i]);
- 			ret = -ENOSPC;
++	if (!button || !button->device)
++		return;
++
+ 	switch (event) {
+-	case ACPI_FIXED_HARDWARE_EVENT:
+-		event = ACPI_BUTTON_NOTIFY_STATUS;
+-		/* fall through */
+ 	case ACPI_BUTTON_NOTIFY_STATUS:
+ 		input = button->input;
+ 		if (button->type == ACPI_BUTTON_TYPE_LID) {
+-			acpi_lid_send_state(device);
++			acpi_lid_send_state(button);
+ 		} else {
+ 			int keycode = test_bit(KEY_SLEEP, input->keybit) ?
+ 						KEY_SLEEP : KEY_POWER;
+@@ -268,35 +286,102 @@ static void acpi_button_notify(struct acpi_device *device, u32 event)
+ 			input_sync(input);
+ 		}
+ 
+-		acpi_bus_generate_proc_event(device, event, ++button->pushed);
++		acpi_bus_generate_proc_event(button->device, event,
++					++button->pushed);
+ 		break;
+ 	default:
+ 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+ 				  "Unsupported event [0x%x]\n", event));
+ 		break;
+ 	}
++
++	return;
+ }
+ 
+-static int acpi_button_resume(struct acpi_device *device)
++static acpi_status acpi_button_notify_fixed(void *data)
+ {
+-	struct acpi_button *button = acpi_driver_data(device);
++	struct acpi_button *button = data;
+ 
+-	if (button->type == ACPI_BUTTON_TYPE_LID)
+-		return acpi_lid_send_state(device);
++	if (!button)
++		return AE_BAD_PARAMETER;
++
++	acpi_button_notify(button->device->handle, ACPI_BUTTON_NOTIFY_STATUS, button);
++
++	return AE_OK;
++}
++
++static int acpi_button_install_notify_handlers(struct acpi_button *button)
++{
++	acpi_status status;
++
++	switch (button->type) {
++	case ACPI_BUTTON_TYPE_POWERF:
++		status =
++		    acpi_install_fixed_event_handler(ACPI_EVENT_POWER_BUTTON,
++						     acpi_button_notify_fixed,
++						     button);
++		break;
++	case ACPI_BUTTON_TYPE_SLEEPF:
++		status =
++		    acpi_install_fixed_event_handler(ACPI_EVENT_SLEEP_BUTTON,
++						     acpi_button_notify_fixed,
++						     button);
++		break;
++	default:
++		status = acpi_install_notify_handler(button->device->handle,
++						     ACPI_DEVICE_NOTIFY,
++						     acpi_button_notify,
++						     button);
++		break;
++	}
++
++	return ACPI_FAILURE(status) ? -ENODEV : 0;
++}
++
++static int acpi_button_resume(struct acpi_device *device)
++{
++	struct acpi_button *button;
++	if (!device)
++		return -EINVAL;
++	button = acpi_driver_data(device);
++	if (button && button->type == ACPI_BUTTON_TYPE_LID)
++		return acpi_lid_send_state(button);
+ 	return 0;
+ }
+ 
++static void acpi_button_remove_notify_handlers(struct acpi_button *button)
++{
++	switch (button->type) {
++	case ACPI_BUTTON_TYPE_POWERF:
++		acpi_remove_fixed_event_handler(ACPI_EVENT_POWER_BUTTON,
++						acpi_button_notify_fixed);
++		break;
++	case ACPI_BUTTON_TYPE_SLEEPF:
++		acpi_remove_fixed_event_handler(ACPI_EVENT_SLEEP_BUTTON,
++						acpi_button_notify_fixed);
++		break;
++	default:
++		acpi_remove_notify_handler(button->device->handle,
++					   ACPI_DEVICE_NOTIFY,
++					   acpi_button_notify);
++		break;
++	}
++}
++
+ static int acpi_button_add(struct acpi_device *device)
+ {
++	int error;
+ 	struct acpi_button *button;
+ 	struct input_dev *input;
+-	char *hid, *name, *class;
+-	int error;
++
++	if (!device)
++		return -EINVAL;
+ 
+ 	button = kzalloc(sizeof(struct acpi_button), GFP_KERNEL);
+ 	if (!button)
+ 		return -ENOMEM;
+ 
++	button->device = device;
+ 	device->driver_data = button;
+ 
+ 	button->input = input = input_allocate_device();
+@@ -305,29 +390,40 @@ static int acpi_button_add(struct acpi_device *device)
+ 		goto err_free_button;
+ 	}
+ 
+-	hid = acpi_device_hid(device);
+-	name = acpi_device_name(device);
+-	class = acpi_device_class(device);
+-
+-	if (!strcmp(hid, ACPI_BUTTON_HID_POWER) ||
+-	    !strcmp(hid, ACPI_BUTTON_HID_POWERF)) {
++	/*
++	 * Determine the button type (via hid), as fixed-feature buttons
++	 * need to be handled a bit differently than generic-space.
++	 */
++	if (!strcmp(acpi_device_hid(device), ACPI_BUTTON_HID_POWER)) {
+ 		button->type = ACPI_BUTTON_TYPE_POWER;
+-		strcpy(name, ACPI_BUTTON_DEVICE_NAME_POWER);
+-		sprintf(class, "%s/%s",
++		strcpy(acpi_device_name(device), ACPI_BUTTON_DEVICE_NAME_POWER);
++		sprintf(acpi_device_class(device), "%s/%s",
+ 			ACPI_BUTTON_CLASS, ACPI_BUTTON_SUBCLASS_POWER);
+-	} else if (!strcmp(hid, ACPI_BUTTON_HID_SLEEP) ||
+-		   !strcmp(hid, ACPI_BUTTON_HID_SLEEPF)) {
++	} else if (!strcmp(acpi_device_hid(device), ACPI_BUTTON_HID_POWERF)) {
++		button->type = ACPI_BUTTON_TYPE_POWERF;
++		strcpy(acpi_device_name(device),
++		       ACPI_BUTTON_DEVICE_NAME_POWERF);
++		sprintf(acpi_device_class(device), "%s/%s",
++			ACPI_BUTTON_CLASS, ACPI_BUTTON_SUBCLASS_POWER);
++	} else if (!strcmp(acpi_device_hid(device), ACPI_BUTTON_HID_SLEEP)) {
+ 		button->type = ACPI_BUTTON_TYPE_SLEEP;
+-		strcpy(name, ACPI_BUTTON_DEVICE_NAME_SLEEP);
+-		sprintf(class, "%s/%s",
++		strcpy(acpi_device_name(device), ACPI_BUTTON_DEVICE_NAME_SLEEP);
++		sprintf(acpi_device_class(device), "%s/%s",
++			ACPI_BUTTON_CLASS, ACPI_BUTTON_SUBCLASS_SLEEP);
++	} else if (!strcmp(acpi_device_hid(device), ACPI_BUTTON_HID_SLEEPF)) {
++		button->type = ACPI_BUTTON_TYPE_SLEEPF;
++		strcpy(acpi_device_name(device),
++		       ACPI_BUTTON_DEVICE_NAME_SLEEPF);
++		sprintf(acpi_device_class(device), "%s/%s",
+ 			ACPI_BUTTON_CLASS, ACPI_BUTTON_SUBCLASS_SLEEP);
+-	} else if (!strcmp(hid, ACPI_BUTTON_HID_LID)) {
++	} else if (!strcmp(acpi_device_hid(device), ACPI_BUTTON_HID_LID)) {
+ 		button->type = ACPI_BUTTON_TYPE_LID;
+-		strcpy(name, ACPI_BUTTON_DEVICE_NAME_LID);
+-		sprintf(class, "%s/%s",
++		strcpy(acpi_device_name(device), ACPI_BUTTON_DEVICE_NAME_LID);
++		sprintf(acpi_device_class(device), "%s/%s",
+ 			ACPI_BUTTON_CLASS, ACPI_BUTTON_SUBCLASS_LID);
+ 	} else {
+-		printk(KERN_ERR PREFIX "Unsupported hid [%s]\n", hid);
++		printk(KERN_ERR PREFIX "Unsupported hid [%s]\n",
++			    acpi_device_hid(device));
+ 		error = -ENODEV;
+ 		goto err_free_input;
+ 	}
+@@ -336,9 +432,14 @@ static int acpi_button_add(struct acpi_device *device)
+ 	if (error)
+ 		goto err_free_input;
+ 
+-	snprintf(button->phys, sizeof(button->phys), "%s/button/input0", hid);
++	error = acpi_button_install_notify_handlers(button);
++	if (error)
++		goto err_remove_fs;
+ 
+-	input->name = name;
++	snprintf(button->phys, sizeof(button->phys),
++		 "%s/button/input0", acpi_device_hid(device));
++
++	input->name = acpi_device_name(device);
+ 	input->phys = button->phys;
+ 	input->id.bustype = BUS_HOST;
+ 	input->id.product = button->type;
+@@ -346,11 +447,13 @@ static int acpi_button_add(struct acpi_device *device)
+ 
+ 	switch (button->type) {
+ 	case ACPI_BUTTON_TYPE_POWER:
++	case ACPI_BUTTON_TYPE_POWERF:
+ 		input->evbit[0] = BIT_MASK(EV_KEY);
+ 		set_bit(KEY_POWER, input->keybit);
+ 		break;
+ 
+ 	case ACPI_BUTTON_TYPE_SLEEP:
++	case ACPI_BUTTON_TYPE_SLEEPF:
+ 		input->evbit[0] = BIT_MASK(EV_KEY);
+ 		set_bit(KEY_SLEEP, input->keybit);
+ 		break;
+@@ -363,9 +466,9 @@ static int acpi_button_add(struct acpi_device *device)
+ 
+ 	error = input_register_device(input);
+ 	if (error)
+-		goto err_remove_fs;
++		goto err_remove_handlers;
+ 	if (button->type == ACPI_BUTTON_TYPE_LID)
+-		acpi_lid_send_state(device);
++		acpi_lid_send_state(button);
+ 
+ 	if (device->wakeup.flags.valid) {
+ 		/* Button's GPE is run-wake GPE */
+@@ -377,9 +480,13 @@ static int acpi_button_add(struct acpi_device *device)
+ 		device->wakeup.state.enabled = 1;
+ 	}
+ 
+-	printk(KERN_INFO PREFIX "%s [%s]\n", name, acpi_device_bid(device));
++	printk(KERN_INFO PREFIX "%s [%s]\n",
++	       acpi_device_name(device), acpi_device_bid(device));
++
+ 	return 0;
+ 
++ err_remove_handlers:
++	acpi_button_remove_notify_handlers(button);
+  err_remove_fs:
+ 	acpi_button_remove_fs(device);
+  err_free_input:
+@@ -391,11 +498,18 @@ static int acpi_button_add(struct acpi_device *device)
+ 
+ static int acpi_button_remove(struct acpi_device *device, int type)
+ {
+-	struct acpi_button *button = acpi_driver_data(device);
++	struct acpi_button *button;
++
++	if (!device || !acpi_driver_data(device))
++		return -EINVAL;
+ 
++	button = acpi_driver_data(device);
++
++	acpi_button_remove_notify_handlers(button);
+ 	acpi_button_remove_fs(device);
+ 	input_unregister_device(button->input);
+ 	kfree(button);
++
+ 	return 0;
+ }
+ 
+@@ -406,7 +520,6 @@ static int __init acpi_button_init(void)
+ 	acpi_button_dir = proc_mkdir(ACPI_BUTTON_CLASS, acpi_root_dir);
+ 	if (!acpi_button_dir)
+ 		return -ENODEV;
+-
+ 	result = acpi_bus_register_driver(&acpi_button_driver);
+ 	if (result < 0) {
+ 		remove_proc_entry(ACPI_BUTTON_CLASS, acpi_root_dir);
 
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+--Boundary-00=_kIlVKvjU7Kr0ZWB--
