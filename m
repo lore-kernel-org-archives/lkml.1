@@ -1,38 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbZGIUim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZGIUk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbZGIUim (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 16:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbZGIUie
+	id S1755972AbZGIUk6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 16:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbZGIUkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 16:38:34 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:49989 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754559AbZGIUid (ORCPT
+	Thu, 9 Jul 2009 16:40:49 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:51974 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753970AbZGIUkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 16:38:33 -0400
-Date: Thu, 9 Jul 2009 16:38:24 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH 3/5][resend] Show kernel stack usage to /proc/meminfo
- and OOM log
-In-Reply-To: <20090709171122.23C3.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.1.10.0907091637380.17835@gentwo.org>
-References: <20090709165820.23B7.A69D9226@jp.fujitsu.com> <20090709171122.23C3.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Jul 2009 16:40:49 -0400
+Subject: Re: mptsas, msi and the dl585 g2
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: dann frazier <dannf@hp.com>, linux-scsi@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A564990.3060202@kernel.org>
+References: <20090630180300.GA9971@ldl.fc.hp.com>
+	 <4A4A5B01.9040200@kernel.org> <20090703225708.GA30664@ldl.fc.hp.com>
+	 <4A4FADDC.30606@kernel.org> <20090709185945.GG2613@ldl.fc.hp.com>
+	 <4A564263.5010305@kernel.org> <4A564634.1020708@kernel.org>
+	 <4A564990.3060202@kernel.org>
+Content-Type: text/plain
+Date: Thu, 09 Jul 2009 15:40:44 -0500
+Message-Id: <1247172044.3898.147.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Jul 2009, KOSAKI Motohiro wrote:
+On Thu, 2009-07-09 at 12:48 -0700, Yinghai Lu wrote:
+> [    4.333140]   PREFETCH window: 0x00000000d9f00000-0x00000000d9ffffff
+> are all directed to one 8132 PCI-X bridge.
+> 
+> the the IOAPIC for 9, 10, 11... falling that range...
+> 
+> we need one better to allocate range for that pci-x bridge to aovide ioapic BAR allocated...
+> 
+> anyway your BIOS sucks.
 
-> Subject: [PATCH] Show kernel stack usage to /proc/meminfo and OOM log
+It's a sad and very annoying fact of life that most BIOSs suck.  If they
+didn't suck, our bios handling code wouldn't be a nasty mess of
+exceptions, work arounds and quirks.
 
-Subject: Show kernel stack usage in /proc/meminfo and OOM log output
+Can we fix this so that both the DL585 and the opteron multi root stuff
+can work?  There's a large population of DL585's out there, so we can't
+release 2.6.32 like this ... and I'd rather not have to choose between
+breaking the DL585's and breaking the Sun Opterons.
+
+James
+
+
+
+
