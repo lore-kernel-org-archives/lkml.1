@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbZGIRpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbZGIRvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754415AbZGIRpF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 13:45:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbZGIRow
+	id S1754190AbZGIRvL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 13:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbZGIRu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 13:44:52 -0400
-Received: from www.tglx.de ([62.245.132.106]:52597 "EHLO www.tglx.de"
+	Thu, 9 Jul 2009 13:50:58 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:32899 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbZGIRow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 13:44:52 -0400
-Date: Thu, 9 Jul 2009 19:44:33 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andres Freund <andres@anarazel.de>
-cc: Jarek Poplawski <jarkao2@gmail.com>,
-       Joao Correia <joaomiguelcorreia@gmail.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Patrick McHardy <kaber@trash.net>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused
- by netem)
-In-Reply-To: <200907091846.37926.andres@anarazel.de>
-Message-ID: <alpine.LFD.2.00.0907091943290.2768@localhost.localdomain>
-References: <200907031326.21822.andres@anarazel.de> <200907091728.23367.andres@anarazel.de> <alpine.LFD.2.00.0907091801130.24704@localhost.localdomain> <200907091846.37926.andres@anarazel.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752878AbZGIRu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 13:50:58 -0400
+X-IronPort-AV: E=Sophos;i="4.42,374,1243839600"; 
+   d="scan'208";a="202824231"
+Subject: Re: [PATCH][RFC] NFS: Propagate 'fsc' mount option through
+ automounts
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: David Howells <dhowells@redhat.com>
+Cc: steved@redhat.com, nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1552.1247160463@redhat.com>
+References: <1552.1247160463@redhat.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Thu, 09 Jul 2009 13:50:51 -0400
+Message-Id: <1247161851.5766.44.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 09 Jul 2009 17:50:56.0303 (UTC) FILETIME=[CF77BBF0:01CA00BD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andres,
-
-On Thu, 9 Jul 2009, Andres Freund wrote:
-
-> On Thursday 09 July 2009 18:01:56 Thomas Gleixner wrote:
-> > Andres,
-> >
-> > On Thu, 9 Jul 2009, Andres Freund wrote:
-> > > On Thursday 09 July 2009 16:28:05 Thomas Gleixner wrote:
-> > > > Please test them separate from each other. The one I sent in this
-> > > > thread was just for narrowing down the issue, but I'm now quite sure
-> > > > that they really hit the issue which is addressed by the hrtimer
-> > > > patch.
-> > >
-> > > No crash yet. 15min running (seconds to a minute before).
-> > >
-> > > Will let it run for some hours to be sure.
-> >
-> > Which one of the patches are you testing ?
-> Your "real" one, i.e. de907e8432b08f2d5966c36e0747e97c0e596810
+On Thu, 2009-07-09 at 18:27 +0100, David Howells wrote:
+> Propagate the NFS 'fsc' mount option through NFS automounts of various types.
 > 
-> 1h30m now...
+> This is now required as commit:
+> 
+> 	commit c02d7adf8c5429727a98bad1d039bccad4c61c50
+> 	Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+> 	Date:   Mon Jun 22 15:09:14 2009 -0400
+> 
+> 	NFSv4: Replace nfs4_path_walk() with VFS path lookup in a private namespace
+> 
+> now uses VFS-driven automounting to reach all submounts barring the root, thus
+> preventing fscaching from being enabled on any submount other than the root.
+> 
+> This patch gets around that by propagating the NFS_OPTION_FSCACHE flag across
+> automounts.
+> 
+> Note, however, that it doesn't propagate the uniquifier in the case of
+> 'fsc=<xxx>' being passed to mount.  This is probably wrong, and needs looking
+> at.
 
-Looks like I hit the nail on the head. Queueing it up for Linus.
+Why not just use the mount path as the default uniquifier?
 
-Thanks,
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
+> 
+>  fs/nfs/client.c |    1 +
+>  fs/nfs/super.c  |    6 ++++++
+>  2 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+> index c2d0616..0949b46 100644
+> --- a/fs/nfs/client.c
+> +++ b/fs/nfs/client.c
+> @@ -964,6 +964,7 @@ static void nfs_server_copy_userdata(struct nfs_server *target, struct nfs_serve
+>  	target->acdirmin = source->acdirmin;
+>  	target->acdirmax = source->acdirmax;
+>  	target->caps = source->caps;
+> +	target->options = source->options;
 
-	tglx
+BTW: Why does fscache require a private flag field?
+
+>  }
+>  
+>  /*
+> diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+> index 0b4cbdc..bfab16f 100644
+> --- a/fs/nfs/super.c
+> +++ b/fs/nfs/super.c
+> @@ -2214,6 +2214,7 @@ static int nfs_xdev_get_sb(struct file_system_type *fs_type, int flags,
+>  	struct nfs_server *server;
+>  	struct dentry *mntroot;
+>  	int (*compare_super)(struct super_block *, void *) = nfs_compare_super;
+> +	struct nfs_parsed_mount_data parsed_data = { .fscache_uniq = NULL, };
+
+Rather than wasting all this space on the stack, how about just changing
+the second argument of nfs_fscache_get_super_cookie()? You only use the
+pointer to data->fscache_uniq.
+
+>  	struct nfs_sb_mountdata sb_mntdata = {
+>  		.mntflags = flags,
+>  	};
+
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
