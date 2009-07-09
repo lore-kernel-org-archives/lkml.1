@@ -1,84 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbZGIIMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758979AbZGIIMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759945AbZGIIMU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 04:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758629AbZGIIMI
+	id S1758979AbZGIIMz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 04:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758629AbZGIIMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 04:12:08 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58268 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756238AbZGIIMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 04:12:06 -0400
-Date: Thu, 9 Jul 2009 10:12:05 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: James.Bottomley@HansenPartnership.com, dwalker@fifo99.com,
-       maciej.rutecki@gmail.com, akpm@linux-foundation.org,
-       tarkan.erimer@turknet.net.tr, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
-Message-ID: <20090709081204.GI23611@kernel.dk>
-References: <20090708165728.GU23611@kernel.dk> <20090709084839G.fujita.tomonori@lab.ntt.co.jp> <20090709075004.GH23611@kernel.dk> <20090709170727S.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 9 Jul 2009 04:12:40 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35087 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751876AbZGIIMi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 04:12:38 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/5][resend] Show kernel stack usage to /proc/meminfo and OOM log
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+In-Reply-To: <20090709165820.23B7.A69D9226@jp.fujitsu.com>
+References: <20090709165820.23B7.A69D9226@jp.fujitsu.com>
+Message-Id: <20090709171122.23C3.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090709170727S.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu,  9 Jul 2009 17:12:35 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 09 2009, FUJITA Tomonori wrote:
-> On Thu, 9 Jul 2009 09:50:04 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Thu, Jul 09 2009, FUJITA Tomonori wrote:
-> > > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > Subject: [PATCH] block: call blk_scsi_ioctl_init()
-> > > 
-> > > Currently, blk_scsi_ioctl_init() is not called so
-> > > blk_default_cmd_filter isn't initalized. Some commands are not blocked
-> > > wrongly.
-> > > 
-> > > This fixes a regression introduced:
-> > > 
-> > > commit 018e0446890661504783f92388ecce7138c1566d
-> > > Author: Jens Axboe <jens.axboe@oracle.com>
-> > > Date:   Fri Jun 26 16:27:10 2009 +0200
-> > > 
-> > >     block: get rid of queue-private command filter
-> > > 
-> > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > ---
-> > >  block/scsi_ioctl.c |    1 +
-> > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
-> > > index f0e0ce0..e5b1001 100644
-> > > --- a/block/scsi_ioctl.c
-> > > +++ b/block/scsi_ioctl.c
-> > > @@ -680,3 +680,4 @@ int __init blk_scsi_ioctl_init(void)
-> > >  	blk_set_cmd_filter_defaults(&blk_default_cmd_filter);
-> > >  	return 0;
-> > >  }
-> > > +fs_initcall(blk_scsi_ioctl_init);
-> > > -- 
-> > > 1.6.0.6
-> > 
-> > You beat me to it, it was the missing call as I suspected. This
-> > works, I verified it myself. Applied to for-linus, going upstream
-> > soon.
-> 
-> I really hope that you become more serious about not causing such
-> incident; breaking mainline kernel by merging your trivial patch after
-> -rc1 (even without sending the patch to any mailing list). You broke
-> mainline in the exact same way just months ago (the commit
-> 1e42807918d17e8c93bf14fbb74be84b141334c1 in 2.6.29-rc7).
+Subject: [PATCH] Show kernel stack usage to /proc/meminfo and OOM log
 
-It should have waited for .32, I agree. I had it sitting around
-for quite a while, not sure why the merged version didn't have
-the initcall added. But yes, I should have posted and postponed
-it.
+The amount of memory allocated to kernel stacks can become significant and
+cause OOM conditions. However, we do not display the amount of memory
+consumed by stacks.'
 
--- 
-Jens Axboe
+Add code to display the amount of memory used for stacks in /proc/meminfo.
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Reviewed-by: <cl@linux-foundation.org>
+---
+ drivers/base/node.c    |    3 +++
+ fs/proc/meminfo.c      |    2 ++
+ include/linux/mmzone.h |    3 ++-
+ kernel/fork.c          |   11 +++++++++++
+ mm/page_alloc.c        |    3 +++
+ mm/vmstat.c            |    1 +
+ 6 files changed, 22 insertions(+), 1 deletion(-)
+
+Index: b/fs/proc/meminfo.c
+===================================================================
+--- a/fs/proc/meminfo.c
++++ b/fs/proc/meminfo.c
+@@ -84,6 +84,7 @@ static int meminfo_proc_show(struct seq_
+ 		"Slab:           %8lu kB\n"
+ 		"SReclaimable:   %8lu kB\n"
+ 		"SUnreclaim:     %8lu kB\n"
++		"KernelStack:    %8lu kB\n"
+ 		"PageTables:     %8lu kB\n"
+ #ifdef CONFIG_QUICKLIST
+ 		"Quicklists:     %8lu kB\n"
+@@ -128,6 +129,7 @@ static int meminfo_proc_show(struct seq_
+ 				global_page_state(NR_SLAB_UNRECLAIMABLE)),
+ 		K(global_page_state(NR_SLAB_RECLAIMABLE)),
+ 		K(global_page_state(NR_SLAB_UNRECLAIMABLE)),
++		global_page_state(NR_KERNEL_STACK) * THREAD_SIZE / 1024,
+ 		K(global_page_state(NR_PAGETABLE)),
+ #ifdef CONFIG_QUICKLIST
+ 		K(quicklist_total_size()),
+Index: b/include/linux/mmzone.h
+===================================================================
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -94,10 +94,11 @@ enum zone_stat_item {
+ 	NR_SLAB_RECLAIMABLE,
+ 	NR_SLAB_UNRECLAIMABLE,
+ 	NR_PAGETABLE,		/* used for pagetables */
++	NR_KERNEL_STACK,
++	/* Second 128 byte cacheline */
+ 	NR_UNSTABLE_NFS,	/* NFS unstable pages */
+ 	NR_BOUNCE,
+ 	NR_VMSCAN_WRITE,
+-	/* Second 128 byte cacheline */
+ 	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
+ #ifdef CONFIG_NUMA
+ 	NUMA_HIT,		/* allocated in intended node */
+Index: b/kernel/fork.c
+===================================================================
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -137,9 +137,17 @@ struct kmem_cache *vm_area_cachep;
+ /* SLAB cache for mm_struct structures (tsk->mm) */
+ static struct kmem_cache *mm_cachep;
+ 
++static void account_kernel_stack(struct thread_info *ti, int account)
++{
++	struct zone *zone = page_zone(virt_to_page(ti));
++
++	mod_zone_page_state(zone, NR_KERNEL_STACK, account);
++}
++
+ void free_task(struct task_struct *tsk)
+ {
+ 	prop_local_destroy_single(&tsk->dirties);
++	account_kernel_stack(tsk->stack, -1);
+ 	free_thread_info(tsk->stack);
+ 	rt_mutex_debug_task_free(tsk);
+ 	ftrace_graph_exit_task(tsk);
+@@ -255,6 +263,9 @@ static struct task_struct *dup_task_stru
+ 	tsk->btrace_seq = 0;
+ #endif
+ 	tsk->splice_pipe = NULL;
++
++	account_kernel_stack(ti, 1);
++
+ 	return tsk;
+ 
+ out:
+Index: b/mm/page_alloc.c
+===================================================================
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2158,6 +2158,7 @@ void show_free_areas(void)
+ 			" mapped:%lukB"
+ 			" slab_reclaimable:%lukB"
+ 			" slab_unreclaimable:%lukB"
++			" kernel_stack:%lukB"
+ 			" pagetables:%lukB"
+ 			" unstable:%lukB"
+ 			" bounce:%lukB"
+@@ -2182,6 +2183,8 @@ void show_free_areas(void)
+ 			K(zone_page_state(zone, NR_FILE_MAPPED)),
+ 			K(zone_page_state(zone, NR_SLAB_RECLAIMABLE)),
+ 			K(zone_page_state(zone, NR_SLAB_UNRECLAIMABLE)),
++			zone_page_state(zone, NR_KERNEL_STACK) *
++				THREAD_SIZE / 1024,
+ 			K(zone_page_state(zone, NR_PAGETABLE)),
+ 			K(zone_page_state(zone, NR_UNSTABLE_NFS)),
+ 			K(zone_page_state(zone, NR_BOUNCE)),
+Index: b/mm/vmstat.c
+===================================================================
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -639,6 +639,7 @@ static const char * const vmstat_text[] 
+ 	"nr_slab_reclaimable",
+ 	"nr_slab_unreclaimable",
+ 	"nr_page_table_pages",
++	"nr_kernel_stack",
+ 	"nr_unstable",
+ 	"nr_bounce",
+ 	"nr_vmscan_write",
+Index: b/drivers/base/node.c
+===================================================================
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -85,6 +85,7 @@ static ssize_t node_read_meminfo(struct 
+ 		       "Node %d FilePages:      %8lu kB\n"
+ 		       "Node %d Mapped:         %8lu kB\n"
+ 		       "Node %d AnonPages:      %8lu kB\n"
++		       "Node %d KernelStack:    %8lu kB\n"
+ 		       "Node %d PageTables:     %8lu kB\n"
+ 		       "Node %d NFS_Unstable:   %8lu kB\n"
+ 		       "Node %d Bounce:         %8lu kB\n"
+@@ -116,6 +117,8 @@ static ssize_t node_read_meminfo(struct 
+ 		       nid, K(node_page_state(nid, NR_FILE_PAGES)),
+ 		       nid, K(node_page_state(nid, NR_FILE_MAPPED)),
+ 		       nid, K(node_page_state(nid, NR_ANON_PAGES)),
++		       nid, node_page_state(nid, NR_KERNEL_STACK) *
++				THREAD_SIZE / 1024,
+ 		       nid, K(node_page_state(nid, NR_PAGETABLE)),
+ 		       nid, K(node_page_state(nid, NR_UNSTABLE_NFS)),
+ 		       nid, K(node_page_state(nid, NR_BOUNCE)),
+
 
