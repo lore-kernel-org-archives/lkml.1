@@ -1,109 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760349AbZGIKvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbZGIKyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760349AbZGIKvA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 06:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbZGIKuv
+	id S1760115AbZGIKyX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 06:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbZGIKyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 06:50:51 -0400
-Received: from web15703.mail.cnb.yahoo.com ([202.165.102.70]:27995 "HELO
-	web15703.mail.cnb.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754661AbZGIKuu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 06:50:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.cn;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
-  b=oUxy+65L1eLq6PYRZR412OflxwHNcb/Xd9B4/zXaE1dBn56qi3m95ZWF8sNemk9Zdi3Z/I++rbnbkEWFaCQjH1X2nE5J9NiUbCxVF5nRZNUaYvG6OO8sGYrw8D7yoqlkGJLib0DVcpAKv8d/rM3cm1HYPssZImcX/vsjQoNavZo=;
-Message-ID: <789976.67811.qm@web15703.mail.cnb.yahoo.com>
-X-YMail-OSG: KFSAWuoVM1ncdWbV6kwCUHYLbBcASRgM3jf.q_luaYrCF8Mp4vzu9DD.yzvNyeOJCJKV8upb4_H59oQWPdfgXCpxik7QaXHXVuNCVChWfNTkZOLyDnJBJmCS7faUuyxkj.mflkqqjD_UeWvIQtLw97OaIZPg0fnORvuW7WmS04tuK38-
-X-Mailer: YahooMailClassic/5.4.17 YahooMailWebService/0.7.289.15
-Date: Thu, 9 Jul 2009 18:50:47 +0800 (CST)
-From: peter meng <mengsanshui@yahoo.com.cn>
-Subject: Ask a question related Assemble and C revert  within vmlinux ?
-To: linux-kernel@vger.kernel.org
+	Thu, 9 Jul 2009 06:54:15 -0400
+Received: from mail.open.by ([193.232.92.17]:62536 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752039AbZGIKyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 06:54:14 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 8979 [Jul 09 2009]
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Thu, 9 Jul 2009 13:55:49 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: kmemeleak BUG: lock held when returning to user space!
+Message-ID: <20090709105549.GB3434@localdomain.by>
+References: <20090709104202.GA3434@localdomain.by>
+ <tnxeisquo90.fsf@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BwCQnh7xodEAoBMC"
+Content-Disposition: inline
+In-Reply-To: <tnxeisquo90.fsf@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi
+--BwCQnh7xodEAoBMC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I compile the linux kernel with mips .
-Is there any tools let the Assemble code correspond to C code ?
-I mean Assemble line correspond to C line .
+On (07/09/09 11:47), Catalin Marinas wrote:
+> Date: Thu, 09 Jul 2009 11:47:23 +0100
+> From: Catalin Marinas <catalin.marinas@arm.com>
+> To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+> 	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+> 	linux-kernel@vger.kernel.org, linux-mm@kvack.org
+> Subject: Re: kmemeleak BUG: lock held when returning to user space!
+> User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+>=20
+> Sergey Senozhatsky <sergey.senozhatsky@mail.by> wrote:
+> > kernel: [  149.507103] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D
+> > kernel: [  149.507113] [ BUG: lock held when returning to user space! ]
+> > kernel: [  149.507119] ------------------------------------------------
+> > kernel: [  149.507127] cat/3279 is leaving the kernel with locks still =
+held!
+> > kernel: [  149.507135] 1 lock held by cat/3279:
+> > kernel: [  149.507141]  #0:  (scan_mutex){+.+.+.}, at: [<c110707c>] kme=
+mleak_open+0x4c/0x80
+> >
+> > problem is here:
+> > static int kmemleak_open(struct inode *inode, struct file *file)
+>=20
+> It's been fixed in my kmemleak branch which I'll push to Linus:
+>=20
+Ok. Nice to hear.
 
+> http://www.linux-arm.org/git?p=3Dlinux-2.6.git;a=3Dshortlog;h=3Dkmemleak
+>=20
+> --=20
+> Catalin
+>=20
 
+	Sergey
+--BwCQnh7xodEAoBMC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-----------------cut from objdump -S vmlinux ----------------------
-801b5b40 <ip_rcv>:
-801b5b40:       27bdffc0        addiu   sp,sp,-64
-801b5b44:       afb00028        sw      s0,40(sp)
-801b5b48:       afbf0038        sw      ra,56(sp)
-801b5b4c:       afb30034        sw      s3,52(sp)
-801b5b50:       afb20030        sw      s2,48(sp)
-801b5b54:       afb1002c        sw      s1,44(sp)
-801b5b58:       8c82006c        lw      v0,108(a0)
-801b5b5c:       3c0300e0        lui     v1,0xe0
-801b5b60:       3c050060        lui     a1,0x60
-801b5b64:       00431024        and     v0,v0,v1
-801b5b68:       10450022        beq     v0,a1,801b5bf4 <ip_rcv+0xb4>
-801b5b6c:       00808021        move    s0,a0
-801b5b70:       3c128029        lui     s2,0x8029
-801b5b74:       8e42ef90        lw      v0,-4208(s2)
-801b5b78:       00808821        move    s1,a0
-801b5b7c:       8c430004        lw      v1,4(v0)
-801b5b80:       24630001        addiu   v1,v1,1
-801b5b84:       ac430004        sw      v1,4(v0)
-801b5b88:       8c850078        lw      a1,120(a0)
-801b5b8c:       38a50001        xori    a1,a1,0x1
-801b5b90:       14a00027        bnez    a1,801b5c30 <ip_rcv+0xf0>
-801b5b94:       00000000        nop
-801b5b98:       122000d6        beqz    s1,801b5ef4 <ip_rcv+0x3b4>
-801b5b9c:       02208021        move    s0,s1
-801b5ba0:       8e250058        lw      a1,88(s1)
-........
-----------------------ip_rcv source code ---------------
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-int ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt, struct net_device *orig_dev)
-{
-	struct iphdr *iph;
-	u32 len;
+iJwEAQECAAYFAkpVzLUACgkQfKHnntdSXjTpQwQA1EX6uQ7i38G8BWSaWAOzltDW
+G7Kat5fxYMQGt8/fswOF0ODBEa6a8fm2ThIWkIRpUIN/MFDE7j3OMAfw8pfvwpDt
+p55fvdbG82nR4Nw4MW7JIsldTRF0/s2Vf9+8HJ921IiBoFgh3yexpHC8UBAqYZ6f
+mRzNxn2itpIxsCDSZBk=
+=2xyK
+-----END PGP SIGNATURE-----
 
-	/* When the interface is in promisc. mode, drop all the crap
-	 * that it receives, do not try to analyse it.
-	 */
-	if (skb->pkt_type == PACKET_OTHERHOST)
-		goto drop;
-
-	IP_INC_STATS_BH(IPSTATS_MIB_INRECEIVES);
-
-	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL) {
-		IP_INC_STATS_BH(IPSTATS_MIB_INDISCARDS);
-		goto out;
-	}
-
-	if (!pskb_may_pull(skb, sizeof(struct iphdr)))
-		goto inhdr_error;
-
-	iph = skb->nh.iph;
-
-
-	if (iph->ihl < 5 || iph->version != 4)
-		goto inhdr_error;
-
-	if (!pskb_may_pull(skb, iph->ihl*4))
-		goto inhdr_error;
-
-	iph = skb->nh.iph;
-.............
-
-
-Thanks a lot .
-Best Regards.
-Peter Meng
-
-
-
-      
+--BwCQnh7xodEAoBMC--
