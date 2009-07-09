@@ -1,134 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbZGIPnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760940AbZGIPpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760756AbZGIPnb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 11:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbZGIPnX
+	id S1760940AbZGIPpl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 11:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbZGIPpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 11:43:23 -0400
-Received: from vms173013pub.verizon.net ([206.46.173.13]:52445 "EHLO
-	vms173013pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755289AbZGIPnW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 11:43:22 -0400
-X-Greylist: delayed 3617 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Jul 2009 11:43:22 EDT
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: Wu Fengguang <fengguang.wu@gmail.com>
-Subject: Re: OOM killer in 2.6.31-rc2
-Date: Thu, 09 Jul 2009 10:42:37 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc2; KDE/4.2.4; i686; ; )
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Minchan Kim <minchan.kim@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-References: <200907061056.00229.gene.heskett@verizon.net>
- <20090708051515.GA17156@localhost> <20090708075501.GA1122@localhost>
-In-reply-to: <20090708075501.GA1122@localhost>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200907091042.38022.gene.heskett@verizon.net>
+	Thu, 9 Jul 2009 11:45:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47488 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756117AbZGIPpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 11:45:33 -0400
+Date: Thu, 9 Jul 2009 11:44:46 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 2/2] cfq-iosched: get rid of the need for __GFP_FAIL in
+	cfq_find_alloc_queue()
+Message-ID: <20090709154446.GD30832@redhat.com>
+References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com> <1246007120-24034-3-git-send-email-jens.axboe@oracle.com> <x497hyz9d2g.fsf@segfault.boston.devel.redhat.com> <20090627182617.GX23611@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090627182617.GX23611@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 July 2009, Wu Fengguang wrote:
->On Wed, Jul 08, 2009 at 01:15:15PM +0800, Wu Fengguang wrote:
->> On Tue, Jul 07, 2009 at 11:42:07PM -0400, Gene Heskett wrote:
-[...]
->> I guess your near 800MB slab cache is somehow under scanned.
->
->Gene, can you run .31 with this patch? When OOM happens, it will tell
->us whether the majority slab pages are reclaimable. Another way to
->find things out is to run `slabtop` when your system is moderately loaded.
+On Sat, Jun 27, 2009 at 08:26:17PM +0200, Jens Axboe wrote:
+> On Fri, Jun 26 2009, Jeff Moyer wrote:
+> > Jens Axboe <jens.axboe@oracle.com> writes:
+> > 
+> > > Setup an emergency fallback cfqq that we allocate at IO scheduler init
+> > > time. If the slab allocation fails in cfq_find_alloc_queue(), we'll just
+> > > punt IO to that cfqq instead. This ensures that cfq_find_alloc_queue()
+> > > never fails without having to ensure free memory.
+> > >
+> > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > ---
+> > >  block/cfq-iosched.c |  124 +++++++++++++++++++++++++++-----------------------
+> > >  1 files changed, 67 insertions(+), 57 deletions(-)
+> > >
+> > > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> > > index c760ae7..91e7e0b 100644
+> > > --- a/block/cfq-iosched.c
+> > > +++ b/block/cfq-iosched.c
+> > > +	/*
+> > > +	 * Fallback dummy cfqq for extreme OOM conditions
+> > > +	 */
+> > > +	struct cfq_queue oom_cfqq;
+> > 
+> > OK, so you're embedding a cfqq into the cfqd.  That's 136 bytes, so I
+> > guess that's not too bad.
+> > 
+> > > +	/*
+> > > +	 * Our fallback cfqq if cfq_find_alloc_queue() runs into OOM issues.
+> > > +	 * Grab a permanent reference to it, so that the normal code flow
+> > > +	 * will not attempt to free it.
+> > > +	 */
+> > > +	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
+> > > +	atomic_inc(&cfqd->oom_cfqq.ref);
+> > > +
+> > 
+> > I guess this is so we never try to free it, good.  ;)
+> > 
+> > One issue I have with this patch is that, if a task happens to run into
+> > this condition, there is no way out.  It will always have the oom_cfqq
+> > as it's cfqq.  Can't we fix that if we recover from the OOM condition?
+> 
+> Yeah, I fixed that about an hour after posting the patches. See:
+> 
+> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0370bc158cb1d5faa4b8a38c0de3211f0fd5bd64
+> 
 
-Its been running continuously, and after 24 hours is now showing:
+Hi Jens,
 
- Active / Total Objects (% used)    : 578136 / 869737 (66.5%)
- Active / Total Slabs (% used)      : 35832 / 35836 (100.0%)
- Active / Total Caches (% used)     : 104 / 163 (63.8%)
- Active / Total Size (% used)       : 115103.39K / 135776.88K (84.8%)
- Minimum / Average / Maximum Object : 0.01K / 0.16K / 4096.00K
+I think above patch might not fix the issue of an oom_cfqq getting stuck
+with an io context. The reason being that once we allocate the cfqq, it
+will be cached in cic and once next request comes, we will retrieve it
+from cic and never call cfq_get_queue()/cfq_find_alloc_queue().
 
-  OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME
-439989 179391  40%    0.05K   6567       67     26268K buffer_head
-126237 126222  99%    0.13K   4353       29     17412K dentry
-121296 121296 100%    0.48K  15162        8     60648K ext3_inode_cache
- 64779  47350  73%    0.28K   4983       13     19932K radix_tree_node
- 17158  16014  93%    0.08K    373       46      1492K vm_area_struct
- 14250  14250 100%    0.12K    475       30      1900K size-128
- 12600  12544  99%    0.04K    150       84       600K sysfs_dir_cache
- 11187  10813  96%    0.03K     99      113       396K size-32
-  9170   9170 100%    0.36K    917       10      3668K proc_inode_cache
-  8820   7560  85%    0.12K    294       30      1176K filp
-  8791   6107  69%    0.06K    149       59       596K size-64
-  6858   5532  80%    0.01K     27      254       108K anon_vma
-  3213   3157  98%    0.06K     51       63       204K 
-inotify_inode_mark_entry
-  2392   2319  96%    0.04K     26       92       104K Acpi-Operand
-  2020    778  38%    0.19K    101       20       404K skbuff_head_cache
-  1467   1442  98%    0.43K    163        9       652K shmem_inode_cache
-  1352   1212  89%    0.02K      8      169        32K Acpi-Namespace
-  1350    579  42%    0.12K     45       30       180K cred_jar
-  1288   1252  97%    0.50K    161        8       644K size-512
-  1121   1062  94%    0.06K     19       59        76K pid
-   998    990  99%    2.00K    499        2      1996K size-2048
-   780    665  85%    0.05K     10       78        40K ext3_xattr
-   702    653  93%    0.14K     27       26       108K idr_layer_cache
-   668    567  84%    1.00K    167        4       668K size-1024
-   650    547  84%    0.38K     65       10       260K sock_inode_cache
-   594    442  74%    0.44K     66        9       264K UNIX
-   585    474  81%    0.25K     39       15       156K size-256
-   560    526  93%    0.19K     28       20       112K size-192
-   555    272  49%    0.25K     37       15       148K ip_dst_cache
-   539    423  78%    0.34K     49       11       196K inode_cache
-   452    198  43%    0.03K      4      113        16K fs_cache
+I think we probably need to do cfqq == oom_cfqq check in cfq_set_request()
+also.
 
-Is there anything unusual there?
 
->Thanks,
->Fengguang
->---
->From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->
->Subject: [PATCH] add per-zone statistics to show_free_areas()
->
->Currently, show_free_area() mainly display system memory usage. but it
->doesn't display per-zone memory usage information.
->
->However, if DMA zone OOM occur, Administrator definitely need to know
->per-zone memory usage information.
-[...]
-To Wu Fengguang, David H., Rafael W., lkml:
+---
+ block/cfq-iosched.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-With this patch, the newest bios for this board, and without the 
-CONFIG_HIGHMEM64G in the config, 2.6.31-rc2 has achieved a full days uptime.
-I did do a swapoff -a; swapon -a about an hour into the boot to zero the swap, 
-and in nearly 24 hours it hasn't used any.  No oom's that I can find in the 
-logs.
-
-If the 64G highmem option, and this bios meet on this machine, the crash is at 
-least 20 hours overdue.  But it appears to be 100% normal yet.
-
-My opinion is that the 64G, long address memory handling may be broken 
-somewhere.  Running w/o it costs me about half a gig of ram, but in this case, 
-the loss is well worth it.
-
-What is the reason that setting the 4G of memory option results in only 
-approximately 3.5G being shown again?
-
-Many Thanks to all of you, I have a stable machine now.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
-
-People are like onions -- you cut them up, and they make you cry.
+Index: linux5/block/cfq-iosched.c
+===================================================================
+--- linux5.orig/block/cfq-iosched.c	2009-07-04 13:58:48.000000000 -0400
++++ linux5/block/cfq-iosched.c	2009-07-09 11:33:45.000000000 -0400
+@@ -2311,7 +2311,7 @@ cfq_set_request(struct request_queue *q,
+ 		goto queue_fail;
+ 
+ 	cfqq = cic_to_cfqq(cic, is_sync);
+-	if (!cfqq) {
++	if (!cfqq || cfqq == &cfqd->oom_cfqq) {
+ 		cfqq = cfq_get_queue(cfqd, is_sync, cic->ioc, gfp_mask);
+ 		cic_set_cfqq(cic, cfqq, is_sync);
+ 	}
 
