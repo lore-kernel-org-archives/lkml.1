@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbZGIN3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbZGINfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760859AbZGIN3r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 09:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759143AbZGIN3h
+	id S1760816AbZGINfH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 09:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbZGINez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 09:29:37 -0400
-Received: from waste.org ([66.93.16.53]:58385 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757483AbZGIN3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 09:29:36 -0400
-Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
- using phylib
-From: Matt Mackall <mpm@selenic.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       oleg@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-	 <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
-	 <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
-	 <20090708141024.f8b581c5.akpm@linux-foundation.org>
-	 <20090708213331.GA9346@oksana.dev.rtsoft.ru>
-	 <20090708144744.5555b88d.akpm@linux-foundation.org>
-	 <20090708222003.GA12318@oksana.dev.rtsoft.ru>
-	 <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 08:26:17 -0500
-Message-Id: <1247145977.21295.899.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Thu, 9 Jul 2009 09:34:55 -0400
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:32983 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757483AbZGINey (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 09:34:54 -0400
+From: Martin Steigerwald <Martin@lichtvoll.de>
+To: tridge@samba.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+Date: Thu, 9 Jul 2009 15:34:38 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.29.6-tp42-toi-3.0.1-00977-gf7efeea; KDE/4.2.4; i686; ; )
+Cc: Jan Engelhardt <jengelh@medozas.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
+References: <19013.8005.541836.436991@samba.org> <200907081339.59815.Martin@lichtvoll.de> <19029.25281.239186.836650@samba.org> (sfid-20090709_113854_558845_0DB8F692)
+In-Reply-To: <19029.25281.239186.836650@samba.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1514348.bRY98G55eX";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907091534.52015.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-08 at 17:01 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 9 Jul 2009, Anton Vorontsov wrote:
-> > 
-> > The netpoll code is using msleep() just a few lines below cond_resched(),
-> > so we won't make things worse. ;-)
-> 
-> Yeah. That function is definitely sleeping. It does things like 
-> kmalloc(GFP_KERNEL), rtnl_lock() and synchronize_rcu() etc too, so an 
-> added msleep() is the least of our problems.
-> 
-> Afaik, it's called from a bog-standard "module_init()", which happens late 
-> enough that everything works.
-> 
-> In fact, I wonder if we should set SYSTEM_RUNNING much earlier - _before_ 
-> doing the whole "do_initcalls()".
+--nextPart1514348.bRY98G55eX
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Well there are two ways of consistently defining SYSTEM_RUNNING:
+Am Donnerstag 09 Juli 2009 schrieb tridge@samba.org:
+> What seems to be happening is that Win98 either wants all spaces, or
+       ^^^^^
 
-a) define it with reference to the well-understood notion of booting vs
-running and don't switch it until handing off to init
+I can't comment on the technical details, cause I do not know them. But=20
+this again looks to me like playing roulette on compatibility.
 
-b) define it with reference to its usage by an arbitrary user like
-cond_resched()
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
 
-In the latter case, we obviously need to move it to the earliest point
-that scheduling is possible. But there are a number of things like 
+--nextPart1514348.bRY98G55eX
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-http://lxr.linux.no/linux+v2.6.30/kernel/printk.c#L228
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-that assume the definition is actually (a). We're currently within a
-couple lines of a strict definition of (a) already, so I actually think
-cond_resched() is just wrong (and we already know it broke a
-previously-working user). It should perhaps be using another private
-flag that gets set as soon as scheduling is up and running.
+iEYEABECAAYFAkpV8e8ACgkQmRvqrKWZhMfAhwCcDpLjo/JpiQ6XdF3gFgnxFtfc
+3UQAoIUifzr5AGpIgtScrBiE0apLR2PL
+=jioC
+-----END PGP SIGNATURE-----
 
-But I'd actually go further and say that it's unfortunate to be checking
-extra flags in such an important inline, especially since the check is
-false for all but the first couple seconds of run time. Seems like we
-could avoid adding an extra check by artificially elevating the preempt
-count in early boot (or at compile time) then dropping it when
-scheduling becomes available.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+--nextPart1514348.bRY98G55eX--
