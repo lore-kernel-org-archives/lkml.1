@@ -1,49 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZGISUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZGISXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365AbZGISUX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 14:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZGISUM
+	id S1755218AbZGISXX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 14:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbZGISXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 14:20:12 -0400
-Received: from www.tglx.de ([62.245.132.106]:51365 "EHLO www.tglx.de"
+	Thu, 9 Jul 2009 14:23:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60468 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752108AbZGISUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 14:20:11 -0400
-Date: Thu, 9 Jul 2009 20:18:47 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH 20/44] includecheck fix: x86, shadow.c
-In-Reply-To: <20090709162807.GD5208@lenovo>
-Message-ID: <alpine.LFD.2.00.0907092016360.2768@localhost.localdomain>
-References: <1247063308.4382.12.camel@ht.satnam> <1247065179.4382.51.camel@ht.satnam> <20090709162807.GD5208@lenovo>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753219AbZGISXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 14:23:13 -0400
+Date: Thu, 9 Jul 2009 21:22:26 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [KVM PATCH v10 1/2] KVM: make io_bus interface more robust
+Message-ID: <20090709182226.GB4351@redhat.com>
+References: <20090707210023.21953.22087.stgit@dev.haskins.net> <20090707210843.21953.65864.stgit@dev.haskins.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090707210843.21953.65864.stgit@dev.haskins.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Jul 2009, Cyrill Gorcunov wrote:
-> |  #include <linux/kmemcheck.h>
-> |  #include <linux/module.h>
-> |  #include <linux/mm.h>
-> | -#include <linux/module.h>
-> |  
-> |  #include <asm/page.h>
-> |  #include <asm/pgtable.h>
-> | -- 
-> | 1.6.0.6
-> |
+Not worth respinning for, but if you do generate v11 ...
+
+On Tue, Jul 07, 2009 at 05:08:44PM -0400, Gregory Haskins wrote:
+> Today kvm_io_bus_regsiter_dev() returns void and will internally BUG_ON
+> if it fails.  We want to create dynamic MMIO/PIO entries driven from
+> userspace later in the series, so we need to enhance the code to be more
+> robust with the following changes:
 > 
-> Better to CC Vegard on this.
+>    1) Add a return value to the registration function
+>    2) Fix up all the callsites to check the return code, handle any
+>       failures, and percolate the error up to the caller.
+>    3) Add an unregister function that collapses holes in the array
+> 
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> ---
+> 
+>  arch/x86/kvm/i8254.c      |   20 ++++++++++++++++++--
+>  arch/x86/kvm/i8259.c      |    9 ++++++++-
+>  include/linux/kvm_host.h  |   10 +++++++---
+>  virt/kvm/coalesced_mmio.c |    8 ++++++--
+>  virt/kvm/ioapic.c         |    8 ++++++--
+>  virt/kvm/kvm_main.c       |   39 ++++++++++++++++++++++++++++++++++-----
+>  6 files changed, 79 insertions(+), 15 deletions(-)
+> 
+> diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+> index 8c3ac30..4441355 100644
+> --- a/arch/x86/kvm/i8254.c
+> +++ b/arch/x86/kvm/i8254.c
+> @@ -591,6 +591,7 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
+>  {
+>  	struct kvm_pit *pit;
+>  	struct kvm_kpit_state *pit_state;
+> +	int ret;
+>  
+>  	pit = kzalloc(sizeof(struct kvm_pit), GFP_KERNEL);
+>  	if (!pit)
+> @@ -625,14 +626,29 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
+>  	kvm_register_irq_mask_notifier(kvm, 0, &pit->mask_notifier);
+>  
+>  	kvm_iodevice_init(&pit->dev, &pit_dev_ops);
+> -	__kvm_io_bus_register_dev(&kvm->pio_bus, &pit->dev);
+> +	ret = __kvm_io_bus_register_dev(&kvm->pio_bus, &pit->dev);
+> +	if (ret < 0)
+> +		goto fail;
+>  
+>  	if (flags & KVM_PIT_SPEAKER_DUMMY) {
+>  		kvm_iodevice_init(&pit->speaker_dev, &speaker_dev_ops);
+> -		__kvm_io_bus_register_dev(&kvm->pio_bus, &pit->speaker_dev);
+> +		ret = __kvm_io_bus_register_dev(&kvm->pio_bus,
+> +						&pit->speaker_dev);
+> +		if (ret < 0)
+> +			goto fail_unregister;
+>  	}
+>  
+>  	return pit;
+> +
+> +fail_unregister:
+> +	__kvm_io_bus_unregister_dev(&kvm->pio_bus, &pit->dev);
+> +
+> +fail:
+> +	if (pit->irq_source_id >= 0)
+> +		kvm_free_irq_source_id(kvm, pit->irq_source_id);
+> +
+> +	kfree(pit);
+> +	return NULL;
+>  }
+>  
+>  void kvm_free_pit(struct kvm *kvm)
+> diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
+> index 1d1bb75..670e426 100644
+> --- a/arch/x86/kvm/i8259.c
+> +++ b/arch/x86/kvm/i8259.c
+> @@ -536,6 +536,8 @@ static const struct kvm_io_device_ops picdev_ops = {
+>  struct kvm_pic *kvm_create_pic(struct kvm *kvm)
+>  {
+>  	struct kvm_pic *s;
+> +	int ret;
+> +
+>  	s = kzalloc(sizeof(struct kvm_pic), GFP_KERNEL);
+>  	if (!s)
+>  		return NULL;
+> @@ -552,6 +554,11 @@ struct kvm_pic *kvm_create_pic(struct kvm *kvm)
+>  	 * Initialize PIO device
+>  	 */
+>  	kvm_iodevice_init(&s->dev, &picdev_ops);
+> -	kvm_io_bus_register_dev(kvm, &kvm->pio_bus, &s->dev);
+> +	ret = kvm_io_bus_register_dev(kvm, &kvm->pio_bus, &s->dev);
+> +	if (ret < 0) {
+> +		kfree(s);
+> +		return NULL;
+> +	}
+> +
+>  	return s;
+>  }
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 8e04a34..306bc67 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -64,10 +64,14 @@ int kvm_io_bus_write(struct kvm_io_bus *bus, gpa_t addr, int len,
+>  		     const void *val);
+>  int kvm_io_bus_read(struct kvm_io_bus *bus, gpa_t addr, int len,
+>  		    void *val);
+> -void __kvm_io_bus_register_dev(struct kvm_io_bus *bus,
+> +int __kvm_io_bus_register_dev(struct kvm_io_bus *bus,
+> +			       struct kvm_io_device *dev);
+> +int kvm_io_bus_register_dev(struct kvm *kvm, struct kvm_io_bus *bus,
+> +			    struct kvm_io_device *dev);
+> +void __kvm_io_bus_unregister_dev(struct kvm_io_bus *bus,
+> +				 struct kvm_io_device *dev);
+> +void kvm_io_bus_unregister_dev(struct kvm *kvm, struct kvm_io_bus *bus,
+>  			       struct kvm_io_device *dev);
+> -void kvm_io_bus_register_dev(struct kvm *kvm, struct kvm_io_bus *bus,
+> -			     struct kvm_io_device *dev);
+>  
+>  struct kvm_vcpu {
+>  	struct kvm *kvm;
+> diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
+> index 0352f81..04d69cd 100644
+> --- a/virt/kvm/coalesced_mmio.c
+> +++ b/virt/kvm/coalesced_mmio.c
+> @@ -92,6 +92,7 @@ static const struct kvm_io_device_ops coalesced_mmio_ops = {
+>  int kvm_coalesced_mmio_init(struct kvm *kvm)
+>  {
+>  	struct kvm_coalesced_mmio_dev *dev;
+> +	int ret;
+>  
+>  	dev = kzalloc(sizeof(struct kvm_coalesced_mmio_dev), GFP_KERNEL);
+>  	if (!dev)
+> @@ -100,9 +101,12 @@ int kvm_coalesced_mmio_init(struct kvm *kvm)
+>  	kvm_iodevice_init(&dev->dev, &coalesced_mmio_ops);
+>  	dev->kvm = kvm;
+>  	kvm->coalesced_mmio_dev = dev;
+> -	kvm_io_bus_register_dev(kvm, &kvm->mmio_bus, &dev->dev);
+>  
+> -	return 0;
+> +	ret = kvm_io_bus_register_dev(kvm, &kvm->mmio_bus, &dev->dev);
+> +	if (ret < 0)
+> +		kfree(dev);
+> +
+> +	return ret;
+>  }
+>  
+>  int kvm_vm_ioctl_register_coalesced_mmio(struct kvm *kvm,
+> diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+> index 92496ff..048836d 100644
+> --- a/virt/kvm/ioapic.c
+> +++ b/virt/kvm/ioapic.c
+> @@ -340,6 +340,7 @@ static const struct kvm_io_device_ops ioapic_mmio_ops = {
+>  int kvm_ioapic_init(struct kvm *kvm)
+>  {
+>  	struct kvm_ioapic *ioapic;
+> +	int ret;
+>  
+>  	ioapic = kzalloc(sizeof(struct kvm_ioapic), GFP_KERNEL);
+>  	if (!ioapic)
+> @@ -348,7 +349,10 @@ int kvm_ioapic_init(struct kvm *kvm)
+>  	kvm_ioapic_reset(ioapic);
+>  	kvm_iodevice_init(&ioapic->dev, &ioapic_mmio_ops);
+>  	ioapic->kvm = kvm;
+> -	kvm_io_bus_register_dev(kvm, &kvm->mmio_bus, &ioapic->dev);
+> -	return 0;
+> +	ret = kvm_io_bus_register_dev(kvm, &kvm->mmio_bus, &ioapic->dev);
+> +	if (ret < 0)
+> +		kfree(ioapic);
+> +
+> +	return ret;
+>  }
+>  
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 05b6bc7..dd92b44 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -2533,21 +2533,50 @@ int kvm_io_bus_read(struct kvm_io_bus *bus, gpa_t addr, int len, void *val)
+>  	return -EOPNOTSUPP;
+>  }
+>  
+> -void kvm_io_bus_register_dev(struct kvm *kvm, struct kvm_io_bus *bus,
+> +int kvm_io_bus_register_dev(struct kvm *kvm, struct kvm_io_bus *bus,
+>  			     struct kvm_io_device *dev)
+>  {
+> +	int ret;
+> +
+>  	down_write(&kvm->slots_lock);
+> -	__kvm_io_bus_register_dev(bus, dev);
+> +	ret = __kvm_io_bus_register_dev(bus, dev);
+>  	up_write(&kvm->slots_lock);
+> +
+> +	return ret;
+>  }
+>  
+>  /* An unlocked version. Caller must have write lock on slots_lock. */
+> -void __kvm_io_bus_register_dev(struct kvm_io_bus *bus,
+> -			     struct kvm_io_device *dev)
+> +int __kvm_io_bus_register_dev(struct kvm_io_bus *bus,
+> +			      struct kvm_io_device *dev)
+>  {
+> -	BUG_ON(bus->dev_count > (NR_IOBUS_DEVS-1));
+> +	if (bus->dev_count > NR_IOBUS_DEVS-1)
 
-Can we stop this kindergarden already? The patch is so obvious that it
-just should be applied. I'll pick up all x86 ones and fold them in.
+Make this NR_IOBUS_DEVS - 1 (spaces around -)
 
-Thanks,
-
-	tglx
+> +		return -ENOSPC;
+>  
+>  	bus->devs[bus->dev_count++] = dev;
+> +
+> +	return 0;
+> +}
+> +
+> +void kvm_io_bus_unregister_dev(struct kvm *kvm,
+> +			       struct kvm_io_bus *bus,
+> +			       struct kvm_io_device *dev)
+> +{
+> +	down_write(&kvm->slots_lock);
+> +	__kvm_io_bus_unregister_dev(bus, dev);
+> +	up_write(&kvm->slots_lock);
+> +}
+> +
+> +/* An unlocked version. Caller must have write lock on slots_lock. */
+> +void __kvm_io_bus_unregister_dev(struct kvm_io_bus *bus,
+> +				 struct kvm_io_device *dev)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < bus->dev_count; i++)
+> +		if (bus->devs[i] == dev) {
+> +			bus->devs[i] = bus->devs[--bus->dev_count];
+> +			break;
+> +		}
+>  }
+>  
+>  static struct notifier_block kvm_cpu_notifier = {
