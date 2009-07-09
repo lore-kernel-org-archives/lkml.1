@@ -1,140 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760460AbZGIMye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760730AbZGIM45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760460AbZGIMye (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 08:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbZGIMyY
+	id S1760730AbZGIM45 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 08:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757971AbZGIM4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 08:54:24 -0400
-Received: from waste.org ([66.93.16.53]:54575 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759600AbZGIMyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 08:54:23 -0400
-Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
- using phylib
-From: Matt Mackall <mpm@selenic.com>
-To: avorontsov@ru.mvista.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       a.p.zijlstra@chello.nl, oleg@redhat.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20090708222003.GA12318@oksana.dev.rtsoft.ru>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-	 <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
-	 <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
-	 <20090708141024.f8b581c5.akpm@linux-foundation.org>
-	 <20090708213331.GA9346@oksana.dev.rtsoft.ru>
-	 <20090708144744.5555b88d.akpm@linux-foundation.org>
-	 <20090708222003.GA12318@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 07:52:45 -0500
-Message-Id: <1247143965.21295.867.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Thu, 9 Jul 2009 08:56:50 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52662 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757388AbZGIM4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 08:56:49 -0400
+Message-ID: <4A55E962.2010004@cn.fujitsu.com>
+Date: Thu, 09 Jul 2009 20:58:10 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Zhaolei <zhaolei@cn.fujitsu.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: [PATCH v4] ftrace: add a tracepoint for __raise_softirq_irqoff()
+References: <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com> <4A0CCB2E.10202@cn.fujitsu.com> <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin> <20090519082435.GB15286@elte.hu> <4A4DD0C7.6070401@cn.fujitsu.com> <20090703094450.GB21141@elte.hu>
+In-Reply-To: <20090703094450.GB21141@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 02:20 +0400, Anton Vorontsov wrote:
-> Using early netconsole and gianfar driver this error pops up:
+Ingo Molnar wrote:
+> * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 > 
->   netconsole: timeout waiting for carrier
+>> Ingo Molnar wrote:
+>>> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+>>>
+>>>> * From: "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>
+>>>>> Steven Rostedt wrote:
+>>>>>> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
+>>>>>>>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>>>>>>>>
+>>>>>>>> This patch is modified from Mathieu Desnoyers' patch. The original patch
+>>>>>>>> can be found here: 
+>>>>>>>> http://marc.info/?l=linux-kernel&m=123791201816245&w=2
+>>>>>>>> This tracepoint can trace the time stamp when softirq action is raised. 
+>>>>>>>>
+>>>>>>>> Changelog for v1 -> v2: 
+>>>>>>>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
+>>>>>>>> 2: Move the tracepoint from raise_softirq_irqoff() to
+>>>>>>>>    __raise_softirq_irqoff()
+>>>>>>>>
+>>>>>>>> Changelog for v2 -> v3: 
+>>>>>>>> Move the definition of __raise_softifq_irqoff() to .c file when
+>>>>>>>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
+>>>>>>>>
+>>>>>>>> Changelog for v3 -> v4: 
+>>>>>>>> 1: Come back to v2, and use forward declarations to avoid
+>>>>>>>>    recursive includes as Mathieu's suggestion
+>>>>>>>> 2: Modifiy the tracepoint name
+>>>>>>>> 3: Add comments for this tracepoint
+>>>>>>>>
+>>>>>>> This is a step in the right direction, but please see my email to Lai
+>>>>>>> about the fact that this assumes correct and undocumented include
+>>>>>>> dependencies in kernel/trace/events.c. Not explicitely stating the
+>>>>>>> include dependencies is a build error waiting to happen.
+>>>>>>>
+>>>>>>> Including interrupt.h under a ifdef would allow keeping track of
+>>>>>>> TRACE_EVENT specific build dependencies neatly on a per header basis.
+>>>>>> This is all moot, the events.c file no longer exists and as not an issue.
+>>>>>>
+>>>>> As Steve's says, use ftrace in ftrace.h not in events.c now. 
+>>>>> So, this mistake does not exist.
+>>>>> Dose this patch has other error? I expect for your views.
+>>>>>
+>>>>> Thanks for your review, is great help to me. ;-) 
+>>>> Hello,
+>>>>
+>>>> It seems Mathieu has no other comments on this patch now.
+>>>> Ingo, what is your opinion on this patch?
+>>> There's a complication: this area of the softirq code needs fixes 
+>>> (unrelated to tracing).
+>>>  
+>>> This API:
+>>>
+>>> inline void raise_softirq_irqoff(unsigned int nr)
+>>> {
+>>>         __raise_softirq_irqoff(nr);
+>>>
+>>>         /*
+>>>          * If we're in an interrupt or softirq, we're done
+>>>          * (this also catches softirq-disabled code). We will
+>>>          * actually run the softirq once we return from
+>>>          * the irq or softirq.
+>>>          *
+>>>          * Otherwise we wake up ksoftirqd to make sure we
+>>>          * schedule the softirq soon.
+>>>          */
+>>>         if (!in_interrupt())
+>>>                 wakeup_softirqd();
+>>> }
+>>>
+>>> is broken with RT tasks (as recently reported to lkml), as when a 
+>>> real-time task wakes up ksoftirqd (which has lower priority) it wont 
+>>> execute and we starve softirq execution.
+>>>
+>>> The proper solution would be to have a new API:
+>>>
+>>> 	raise_softirq_check()
+>>>
+>>> and to remove the wakeup_softirqd() hack from raise_softirq_irqoff() 
+>>> - and put raise_softirq_check() to all places that use 
+>>> raise_softirq*() from process context.
+>>>  
+>>> raise_softirq_check() would execute softirq handlers from process 
+>>> context, if there's any pending ones. It has to be called outside of 
+>>> bh critical sections - i.e. often a bit after the raise_softirq() 
+>>> has been done.
+>>>
+>>> __raise_softirq_irqoff() would be made private to kernel/softirq.c, 
+>>> and we'd only have two public APIs to trigger softirqs: 
+>>> raise_softirq() and raise_softirq_irqoff(). Both just set the 
+>>> pending flag and dont do any wakeup.
+>>>
+>>> As a side-effect of these fixes, the tracepoints will be sorted out 
+>>> as well - there wont be any need to hack into 
+>>> __raise_softirq_irqoff().
+>>>
+>>> 	Ingo
+>>>
+>> Hi, Ingo
+>>
+>> 	Could you give me the .config file that this bug occurs?
 > 
-> It appears that net/core/netpoll.c:netpoll_setup() is using
-> cond_resched() in a loop waiting for a carrier.
+> I havent reproduced this - it was reported in a recent thread on 
+> lkml. I dont have an URI for it - does anyone on the Cc: remember 
+> the details?
 > 
-> The thing is that cond_resched() is a no-op when system_state !=
-> SYSTEM_RUNNING, and so drivers/net/phy/phy.c's state_queue is never
-> scheduled, therefore link detection doesn't work.
+> 	Ingo
 > 
-> I belive that the main problem is in cond_resched()[1], but despite
-> how the cond_resched() story ends, it might be a good idea to call
-> msleep(1) instead of cond_resched(), as suggested by Andrew Morton.
 > 
-> [1] http://lkml.org/lkml/2009/7/7/463
 > 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> 
-> On Wed, Jul 08, 2009 at 02:47:44PM -0700, Andrew Morton wrote:
-> > (belatedly cc'ing netdev)
-> > 
-> > Original diagnosis:
-> > 
-> > : Using early netconsole and gianfar driver this error pops up:
-> > : 
-> > :   netconsole: timeout waiting for carrier
-> > : 
-> > : It appears that net/core/netpoll.c:netpoll_setup() is using
-> > : cond_resched() in a loop waiting for a carrier.
-> > : 
-> > : The thing is that cond_resched() is a no-op when system_state !=
-> > : SYSTEM_RUNNING, and so drivers/net/phy/phy.c's state_queue is never
-> > : scheduled, therefore link detection doesn't work
-> > 
-> > > On Thu, 9 Jul 2009 01:33:31 +0400 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> > > On Wed, Jul 08, 2009 at 02:10:24PM -0700, Andrew Morton wrote:
-> > > > > On Wed, 8 Jul 2009 09:12:30 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > > > > That said, I do agree that maybe SYSTEM_RUNNING isn't the right check. 
-> > > > > Testing that the scheduler is initialized may be the more correct one. I 
-> > > > > think the SYSTEM_RUNNING one just comes from that being used for other 
-> > > > > debug issues.
-> > > > 
-> > > > Agreed.  system_state is too general.
-> > > > 
-> > > > If we specifically want to know whether it is safe to call schedule() then
-> > > > let's create a global boolean it_is_safe_to_call_schedule and test that,
-> > > > rather than testing something which indirectly and unreliably implies "it
-> > > > is safe to call schedule".  If that boolean already exists then no-brainer.
-> > > > 
-> > > > All that being said, I wonder if the netconsole code should be using
-> > > > msleep(1) instead.  Spinning on cond_resched() is a bit rude.  But one
-> > > > would have to verify that it is safe to call schedule() at this time, and
-> > > > for the netconsole caller, this is dubious.
-> > > 
-> > > What do you mean by "verify that it is safe"? If it works,
-> > > can I assume that it's safe? ;-) It works, fwiw.
-> > > 
-> > 
-> > netconsole is supposed to be available as early as possible in boot for
-> > obvious reasons.  I'd say there's a decent risk now and in the future that
-> > netconsole will be initialised prior to the scheduler being available.
-> > 
-> > In fact, if "netconsole: timeout waiting for carrier" newly added to
-> > netpoll_setup() a depedency on the scheduler being available then perhaps
-> > that was an incorrect change.
-> 
-> 'git blame' says that carrier detection code didn't change since 2.6.12
-> (where git history starts), PHYLIB is using workqueue since its
-> submission (2.6.13). And SYSTEM_RUNNING check was added in 2.6.16.
-> So it's not a new dependency.
-> 
-> The netpoll code is using msleep() just a few lines below cond_resched(),
-> so we won't make things worse. ;-)
 
-I think that's an improvement with or without the SYSTEM_RUNNING fix.
+I haven't found the email you referred, I've searched it from
+when you pointed out this softirq problem till now.
+If anyone know it, please let me know.
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
+If my analysis is correct, I will say this problem does NOT exist:
+(non-PREEMPT_RT)
 
-> Thanks!
-> 
->  net/core/netpoll.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/core/netpoll.c b/net/core/netpoll.c
-> index 9675f31..df30feb 100644
-> --- a/net/core/netpoll.c
-> +++ b/net/core/netpoll.c
-> @@ -740,7 +740,7 @@ int netpoll_setup(struct netpoll *np)
->  				       np->name);
->  				break;
->  			}
-> -			cond_resched();
-> +			msleep(1);
->  		}
->  
->  		/* If carrier appears to come up instantly, we don't
+1) the (outmost) interrupt will call do_softirq() when it exits.
+   softirq will not be starved when interrupts occur.
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+2) the clocks will provide tick-interrupt periodic.
 
+3) even when CONFIG_NO_HZ=y, the cpu still provide periodic tick
+   when current task is RT-task(which is non-idle task).
+
+So any softirq will be called in time(one jiffy). Maybe my analysis is
+incorrect or maybe the RT task disables the irq very long time or maybe
+there is other bug in kernel which has influence and impacts softirq.
+
+A) I will be still finding the email or the .config and probe
+   this problem. The endeavors to ensure all softirq handled
+   are not useful and it may not solve the problem. Because
+   the tick-interrupt does ensure pending softirq handled.
+
+B) If my thinking is correct, it's the best that we insert
+   tracepoints at raise_softirq() functions, it's very helpful
+   and one of its benefit is help us to probe problems
+   which happen here.
+
+
+	Lai
 
