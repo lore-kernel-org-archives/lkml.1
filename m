@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759010AbZGIBFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757771AbZGIBJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759010AbZGIBFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 21:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755908AbZGIBFN
+	id S1757771AbZGIBJj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 21:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbZGIBJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 21:05:13 -0400
-Received: from mail.lang.hm ([64.81.33.126]:54005 "EHLO bifrost.lang.hm"
+	Wed, 8 Jul 2009 21:09:31 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:44507 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755088AbZGIBFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 21:05:12 -0400
-Date: Wed, 8 Jul 2009 18:05:06 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: linux-kernel <linux-kernel@vger.kernel.org>
-cc: linux-raid@vger.kernel.org
-Subject: Re: partition detection problem on 2.6.29.1 and 2.6.30
-In-Reply-To: <alpine.DEB.1.10.0907081424140.9159@asgard>
-Message-ID: <alpine.DEB.1.10.0907081759550.9159@asgard>
-References: <alpine.DEB.1.10.0907081424140.9159@asgard>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1755054AbZGIBJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 21:09:31 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; FORMAT=flowed; CHARSET=US-ASCII
-Content-ID: <alpine.DEB.1.10.0907081759552.9159@asgard>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19029.17220.326485.724846@cargo.ozlabs.ibm.com>
+Date: Thu, 9 Jul 2009 11:09:24 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: lib: Export generic atomic64_t functions
+In-Reply-To: <ada63e221js.fsf@cisco.com>
+References: <ada63e221js.fsf@cisco.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I managed to track the problem down.
+Roland Dreier writes:
 
-it turns out that at some point someone created a md array using the raw 
-devices instead of the partitions. it looks like the kernel autodetection 
-for raid kicked in prior to the partition detection and after it claimed 
-the drives the partition detection was never given a chance to do so.
-
-this is logical, but it makes the dmesg output that appears to be 
-identifying the paritions _very_ misleading.
-
-David Lang
-
-On Wed, 8 Jul 2009, david@lang.hm wrote:
-
-> Date: Wed, 8 Jul 2009 14:35:41 -0700 (PDT)
-> From: david@lang.hm
-> To: linux-kernel <linux-kernel@vger.kernel.org>
-> Subject: partition detection problem on 2.6.29.1 and 2.6.30
+> The generic atomic64_t implementation in lib/ did not export the
+> functions it defined, which means that modules that use atomic64_t
+> would not link on platforms (such as 32-bit powerpc).  For example,
+> trying to build a kernel with CONFIG_NET_RDS on such a platform would
+> fail with:
 > 
-> I have a system that has a large number of drives in it (45), and it's had a 
-> problem with banks of disks getting disconnected from it.
->
-> however, when I started looking into it today (after another sysadmin worked 
-> on it for a while), I found that the system is not able to access the 
-> partitions on the drives.
->
-> if I am reading dmesg correctly it is seeing the partitions during boot, and 
-> if I do 'fdisk -l' it lists all the paritions correctly, but if I try to do a
->
-> dd if=/dev/sdb1 of=/dev/null count=1
->
-> I get the error "dd: opening `/dev/sdb1': No such device or address"
->
-> #ls -l /dev/sdb1
-> brw-rw---- 1 root disk 8, 17 Nov  7  2006 /dev/sdb1
->
-> I removed udev and setup nodes manually to eliminate any possibility that it 
-> was a problem there.
->
-> the attachment partitions.missing.partitions is a cat of /proc/partitions
->
-> sysfs shows all the drives but none of the partitions.
->
-> if I run fdisk and do a write (which runs the ioctl to re-read the parition 
-> table) the system detects the partition and is able to access it until the 
-> next reboot.
->
-> what is going on here?
->
-> David Lang
+>     ERROR: "atomic64_read" [net/rds/rds.ko] undefined!
+>     ERROR: "atomic64_set" [net/rds/rds.ko] undefined!
+> 
+> Fix this by exporting the atomic64_t functions to modules.  (I export
+> the entire API even if it's not all currently used by in-tree modules to
+> avoid having to continue fixing this in dribs and drabs)
+> 
+> Signed-off-by: Roland Dreier <rolandd@cisco.com>
+
+Nice, thanks.
+
+Acked-by: Paul Mackerras <paulus@samba.org>
+
+Andrew, I think this should be safe to go in 2.6.31.  Could you
+include it in your next batch for Linus, or should I send it to him
+directly?
+
+Paul.
