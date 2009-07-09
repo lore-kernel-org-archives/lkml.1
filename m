@@ -1,71 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760633AbZGIHDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbZGIHEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760633AbZGIHDs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 03:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760031AbZGIHA0
+	id S1760625AbZGIHEB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 03:04:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760165AbZGIHBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 03:00:26 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:41776 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756620AbZGIHAX (ORCPT
+	Thu, 9 Jul 2009 03:01:31 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59515 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759719AbZGIHBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 03:00:23 -0400
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>, Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-fsdevel@vger.kernel.org,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org
-Date: Thu, 09 Jul 2009 11:50:20 +0300
-Message-Id: <20090709085020.12122.31230.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090709084822.12122.79749.sendpatchset@localhost.localdomain>
-References: <20090709084822.12122.79749.sendpatchset@localhost.localdomain>
-Subject: [PATCH v3 17/18] rename s_dirt to s_dirty
-X-OriginalArrivalTime: 09 Jul 2009 06:59:49.0087 (UTC) FILETIME=[D997A6F0:01CA0062]
-X-Nokia-AV: Clean
+	Thu, 9 Jul 2009 03:01:30 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [RFC PATCH 1/2] vmscan don't isolate too many pages in a zone
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>
+In-Reply-To: <20090709030731.GA17097@localhost>
+References: <20090709024710.GA16783@localhost> <20090709030731.GA17097@localhost>
+Message-Id: <20090709121647.2395.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu,  9 Jul 2009 16:01:26 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to make sure no one uses 's_dirt' directly any more,
-re-name it to 's_dirty'.
+Hi
 
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
----
- include/linux/fs.h |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+> I tried the semaphore based concurrent direct reclaim throttling, and
+> get these numbers. The run time is normal 30s, but can sometimes go up
+> by many folds. It seems that there are more hidden problems..
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index d98d8d1..7882a61 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1315,7 +1315,7 @@ struct super_block {
- 	dev_t			s_dev;		/* search index; _not_ kdev_t */
- 	unsigned long		s_blocksize;
- 	unsigned char		s_blocksize_bits;
--	unsigned char		s_dirt;
-+	unsigned char		s_dirty;
- 	unsigned long long	s_maxbytes;	/* Max file size */
- 	struct file_system_type	*s_type;
- 	const struct super_operations	*s_op;
-@@ -1795,15 +1795,15 @@ int __put_super_and_need_restart(struct super_block *sb);
-  */
- static inline void mark_sb_dirty(struct super_block *sb)
- {
--	sb->s_dirt = 1;
-+	sb->s_dirty = 1;
- }
- static inline void mark_sb_clean(struct super_block *sb)
- {
--	sb->s_dirt = 0;
-+	sb->s_dirty = 0;
- }
- static inline int is_sb_dirty(struct super_block *sb)
- {
--	return sb->s_dirt;
-+	return sb->s_dirty;
- }
- 
- /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
--- 
-1.6.0.6
+Hmm....
+I think I and you have different priority list. May I explain why Rik
+and decide to use half of LRU pages?
+
+the system have 4GB (=1M pages) memory. my patch allow 1M/2/32=16384
+threads. I agree this is very large and inefficient. However IOW 
+this is very conservative.
+I believe it don't makes too strong restriction problem.
+
+In the other hand, your patch's concurrent restriction is small constant
+value (=32).
+it can be more efficient and it also can makes regression. IOW it is more
+aggressive approach.
+
+e.g.
+if the system have >100 CPU, my patch can get enough much reclaimer but
+your patch makes tons idle cpus.
+
+
+And, To recall original issue tearch us this is rarely and a bit insane
+workload issue.
+Then, I priotize to
+
+1. prevent unnecessary OOM
+2. no regression to typical workload
+3. msgctl11 performance
+
+
+IOW, I don't think msgctl11 performance is so important.
+May I ask why do you think msgctl11 performance is so important?
+
+
+>
+> --- linux.orig/mm/vmscan.c
+> +++ linux/mm/vmscan.c
+> @@ -1042,6 +1042,7 @@ static unsigned long shrink_inactive_lis
+>  	unsigned long nr_reclaimed = 0;
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>  	int lumpy_reclaim = 0;
+> +	static struct semaphore direct_reclaim_sem = __SEMAPHORE_INITIALIZER(direct_reclaim_sem, 32);
+>  
+>  	/*
+>  	 * If we need a large contiguous chunk of memory, or have
+> @@ -1057,6 +1058,9 @@ static unsigned long shrink_inactive_lis
+>  
+>  	pagevec_init(&pvec, 1);
+>  
+> +	if (!current_is_kswapd())
+> +		down(&direct_reclaim_sem);
+> +
+>  	lru_add_drain();
+>  	spin_lock_irq(&zone->lru_lock);
+>  	do {
+> @@ -1173,6 +1177,10 @@ static unsigned long shrink_inactive_lis
+>  done:
+>  	local_irq_enable();
+>  	pagevec_release(&pvec);
+> +
+> +	if (!current_is_kswapd())
+> +		up(&direct_reclaim_sem);
+> +
+>  	return nr_reclaimed;
+>  }
+
+
+
+
 
