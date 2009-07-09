@@ -1,106 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbZGIRjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbZGIRpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754937AbZGIRjm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 13:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbZGIRjO
+	id S1754415AbZGIRpF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 13:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbZGIRow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 13:39:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48290 "EHLO mx2.redhat.com"
+	Thu, 9 Jul 2009 13:44:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:52597 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754112AbZGIRjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 13:39:12 -0400
-Date: Thu, 9 Jul 2009 19:36:14 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Dominic Duval <dduval@redhat.com>, Frank Hirtz <fhirtz@redhat.com>,
-       "Fuller, Johnray" <Johnray.Fuller@gs.com>,
-       "James M. Leddy" <jleddy@redhat.com>,
-       Larry Woodman <lwoodman@redhat.com>,
-       Paul Batkowski <pbatkowski@redhat.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] proc_flush_task: flush /proc/tid/task/pid when a
-	sub-thread exits
-Message-ID: <20090709173614.GA29076@redhat.com>
+	id S1751955AbZGIRow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 13:44:52 -0400
+Date: Thu, 9 Jul 2009 19:44:33 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andres Freund <andres@anarazel.de>
+cc: Jarek Poplawski <jarkao2@gmail.com>,
+       Joao Correia <joaomiguelcorreia@gmail.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Patrick McHardy <kaber@trash.net>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused
+ by netem)
+In-Reply-To: <200907091846.37926.andres@anarazel.de>
+Message-ID: <alpine.LFD.2.00.0907091943290.2768@localhost.localdomain>
+References: <200907031326.21822.andres@anarazel.de> <200907091728.23367.andres@anarazel.de> <alpine.LFD.2.00.0907091801130.24704@localhost.localdomain> <200907091846.37926.andres@anarazel.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The exiting sub-thread flushes /proc/pid only, but this doesn't buy
-too much: ps and friends mostly use /proc/tid/task/pid.
+Andres,
 
-Remove "if (thread_group_leader())" checks from proc_flush_task() path,
-this means we always remove /proc/tid/task/pid dentry on exit, and this
-actually matches the comment above proc_flush_task().
+On Thu, 9 Jul 2009, Andres Freund wrote:
 
-The test-case:
+> On Thursday 09 July 2009 18:01:56 Thomas Gleixner wrote:
+> > Andres,
+> >
+> > On Thu, 9 Jul 2009, Andres Freund wrote:
+> > > On Thursday 09 July 2009 16:28:05 Thomas Gleixner wrote:
+> > > > Please test them separate from each other. The one I sent in this
+> > > > thread was just for narrowing down the issue, but I'm now quite sure
+> > > > that they really hit the issue which is addressed by the hrtimer
+> > > > patch.
+> > >
+> > > No crash yet. 15min running (seconds to a minute before).
+> > >
+> > > Will let it run for some hours to be sure.
+> >
+> > Which one of the patches are you testing ?
+> Your "real" one, i.e. de907e8432b08f2d5966c36e0747e97c0e596810
+> 
+> 1h30m now...
 
-	static void* tfunc(void *arg)
-	{
-		char name[256];
+Looks like I hit the nail on the head. Queueing it up for Linus.
 
-		sprintf(name, "/proc/%d/task/%ld/status", getpid(), gettid());
-		close(open(name, O_RDONLY));
+Thanks,
 
-		return NULL;
-	}
-
-	int main(void)
-	{
-		pthread_t t;
-
-		for (;;) {
-			if (!pthread_create(&t, NULL, &tfunc, NULL))
-				pthread_join(t, NULL);
-		}
-	}
-
-slabtop shows that pid/proc_inode_cache/etc grow quickly and "indefinitely"
-until the task is killed or shrink_slab() is called, not good. And the main
-thread needs a lot of time to exit.
-
-The same can happen if something like "ps -efL" runs continuously, while
-some application spawns short-living threads.
-
-Reported-by: "James M. Leddy" <jleddy@redhat.com>
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-
---- WAIT/fs/proc/base.c~PROC_FLUSH_THREAD	2009-06-23 20:16:44.000000000 +0200
-+++ WAIT/fs/proc/base.c	2009-07-09 17:56:27.000000000 +0200
-@@ -2601,9 +2601,6 @@ static void proc_flush_task_mnt(struct v
- 		dput(dentry);
- 	}
- 
--	if (tgid == 0)
--		goto out;
--
- 	name.name = buf;
- 	name.len = snprintf(buf, sizeof(buf), "%d", tgid);
- 	leader = d_hash_and_lookup(mnt->mnt_root, &name);
-@@ -2660,17 +2657,16 @@ out:
- void proc_flush_task(struct task_struct *task)
- {
- 	int i;
--	struct pid *pid, *tgid = NULL;
-+	struct pid *pid, *tgid;
- 	struct upid *upid;
- 
- 	pid = task_pid(task);
--	if (thread_group_leader(task))
--		tgid = task_tgid(task);
-+	tgid = task_tgid(task);
- 
- 	for (i = 0; i <= pid->level; i++) {
- 		upid = &pid->numbers[i];
- 		proc_flush_task_mnt(upid->ns->proc_mnt, upid->nr,
--			tgid ? tgid->numbers[i].nr : 0);
-+					tgid->numbers[i].nr);
- 	}
- 
- 	upid = &pid->numbers[pid->level];
-
+	tglx
