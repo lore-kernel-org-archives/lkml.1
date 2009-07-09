@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760591AbZGIM6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbZGINCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760591AbZGIM6U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 08:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760004AbZGIM6F
+	id S1760685AbZGINCS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 09:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759070AbZGINCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 08:58:05 -0400
-Received: from waste.org ([66.93.16.53]:46409 "EHLO waste.org"
+	Thu, 9 Jul 2009 09:02:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59607 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759040AbZGIM6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 08:58:03 -0400
-Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
- using phylib
-From: Matt Mackall <mpm@selenic.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <1247126210.9777.317.camel@twins>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-	 <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
-	 <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
-	 <20090708141024.f8b581c5.akpm@linux-foundation.org>
-	 <20090708213331.GA9346@oksana.dev.rtsoft.ru>
-	 <20090708144744.5555b88d.akpm@linux-foundation.org>
-	 <20090708222003.GA12318@oksana.dev.rtsoft.ru>
-	 <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>
-	 <1247126210.9777.317.camel@twins>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 07:56:42 -0500
-Message-Id: <1247144202.21295.869.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	id S1757971AbZGINCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 09:02:08 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090622192453.GA6066@redhat.com>
+References: <20090622192453.GA6066@redhat.com> <20090413214513.GA1119@redhat.com> <14878.1239876272@redhat.com> <20090416133658.GA6532@redhat.com> <20090416145444.GA12884@redhat.com> <20090618120716.fd1e4d92.akpm@linux-foundation.org> <20090618194238.GA17810@redhat.com> <20090622115148.5f1e5d1b.akpm@linux-foundation.org> <20090622171431.GA5010@redhat.com> <20090622140440.01d85542.akpm@linux-foundation.org> 
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       jmorris@namei.org, roland@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rework/fix is_single_threaded()
+Date: Thu, 09 Jul 2009 14:01:03 +0100
+Message-ID: <28464.1247144463@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 09:56 +0200, Peter Zijlstra wrote:
-> On Wed, 2009-07-08 at 17:01 -0700, Linus Torvalds wrote:
-> > Looking at the people looking at SYSTEM_RUNNING, I do note some odd cases. 
-> > Why the heck does kernel/perf_counter.c do it, for example?
-> 
-> Ah, those are the swcounter and other probe entry points. I've had
-> several cases where we called into the perf counter code from those
-> points before it was initialized, getting in kernel segfaults due to
-> dereferencing uninitialized data etc..
-> 
-> I could keep a variable that tracked the perf_counter_init() state, and
-> use that instead if you prefer?
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-Looks like that'd be more accurate. Linus's proposed patch might break
-your current assumptions.
+> Unless David replies.
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+Sorry, I missed the last three messages.
 
+> David, do you still dislike ->mmap_sem? I didn't see other objections,
+> and again, imho tasklist_lock is worse.
 
+My main objection to taking mmap_sem is that it restricts where the function
+can be used.  It can't, for example, be called by anyone holding a spinlock.
+Furthermore, the more locks, the more chance of someone accidentally
+deadlocking something.
+
+But apart from that, go for it.
+
+David
