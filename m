@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbZGIFOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbZGIFVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbZGIFOD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 01:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbZGIFNz
+	id S1759382AbZGIFVT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 01:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZGIFVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 01:13:55 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38637 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbZGIFNy (ORCPT
+	Thu, 9 Jul 2009 01:21:09 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:22423 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbZGIFVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 01:13:54 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 5/5] add NR_ANON_PAGES to OOM log
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-In-Reply-To: <20090707135656.GB9444@localhost>
-References: <20090707102106.0C66.A69D9226@jp.fujitsu.com> <20090707135656.GB9444@localhost>
-Message-Id: <20090709141319.23A2.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu,  9 Jul 2009 14:13:49 +0900 (JST)
+	Thu, 9 Jul 2009 01:21:08 -0400
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org
+Date: Thu, 09 Jul 2009 10:10:58 +0300
+Message-Id: <20090709071058.10124.94970.sendpatchset@localhost.localdomain>
+Subject: [GIT PULL] UBIFS changes for 2.6.31-rc3
+X-OriginalArrivalTime: 09 Jul 2009 05:20:29.0941 (UTC) FILETIME=[F9AA2250:01CA0054]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Jul 07, 2009 at 09:22:48AM +0800, KOSAKI Motohiro wrote:
-> > > On Sun, Jul 05, 2009 at 08:21:20PM +0800, KOSAKI Motohiro wrote:
-> > > > > On Sun, Jul 05, 2009 at 05:26:18PM +0800, KOSAKI Motohiro wrote:
-> 
-> > @@ -2118,9 +2118,9 @@ void show_free_areas(void)
-> >  	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
-> >  		" inactive_file:%lu unevictable:%lu\n"
-> >  		" isolated_anon:%lu isolated_file:%lu\n"
-> > -		" dirty:%lu writeback:%lu buffer:%lu unstable:%lu\n"
-> > +		" dirty:%lu writeback:%lu buffer:%lu shmem:%lu\n"
-> 
-> btw, nfs unstable pages are related to writeback pages, so it may be
-> better to put "unstable" right after "writeback" (as it was)?
+Hi Linus,
 
-OK, will fix.
+here are UBIFS fixes for mount regression, compilation warnings,
+recovery amendments and dumps.
 
+Please, pull from:
 
+git://git.infradead.org/ubifs-2.6.git linux-next
 
+The following changes since commit 8e4a718ff38d8539938ec3421935904c27e00c39:
+  Linus Torvalds (1):
+        Linux 2.6.31-rc2
+
+Adrian Hunter (3):
+      UBIFS: fix integer overflow warning
+      UBIFS: fix 64-bit divisions in debug print
+      UBIFS: minor spelling and grammar fixes
+
+Artem Bityutskiy (10):
+      UBIFS: improve debugging messaged
+      UBIFS: slightly optimize write-buffer timer usage
+      UBIFS: set write-buffer timout to 3-5 seconds
+      UBIFS: few spelling fixes
+      UBIFS: fix assertion warning
+      MAINTAINERS: update ahunter's e-mail address
+      UBIFS: dump a little more in case of corruptions
+      UBIFS: small amendments in the LEB scanning code
+      UBIFS: clean up free space checking
+      UBIFS: fix corruption dump
+
+Daniel Mack (1):
+      UBIFS: allow more than one volume to be mounted
+
+ MAINTAINERS         |    2 +-
+ fs/ubifs/io.c       |   57 ++++++++++++++++++++++++--------------------------
+ fs/ubifs/recovery.c |   57 +++++++++++++++++++++++++++++---------------------
+ fs/ubifs/replay.c   |    9 ++++---
+ fs/ubifs/scan.c     |   20 ++++++++++-------
+ fs/ubifs/super.c    |   14 +++++++-----
+ fs/ubifs/ubifs.h    |   11 ++++++---
+ 7 files changed, 93 insertions(+), 77 deletions(-)
+
+Thanks,
+Artem.
