@@ -1,43 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbZGIC3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759533AbZGICaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758557AbZGIC3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 22:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756791AbZGIC3E
+	id S1759533AbZGICaN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 22:30:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbZGICaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 22:29:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57285 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755573AbZGIC3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 22:29:03 -0400
-Message-ID: <4A5555E1.7000601@kernel.org>
-Date: Thu, 09 Jul 2009 11:28:49 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 8 Jul 2009 22:30:03 -0400
+Received: from mailfilter13.ihug.co.nz ([203.109.136.13]:58995 "EHLO
+	mailfilter13.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756791AbZGICaD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 22:30:03 -0400
+X-Greylist: delayed 594 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Jul 2009 22:30:02 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvhNACnxVEopzaIV/2dsb2JhbACBUY06iHuCCYYGsGCECAU
+X-IronPort-AV: E=Sophos;i="4.42,371,1243771200"; 
+   d="scan'208";a="193757617"
 MIME-Version: 1.0
-To: monstr@monstr.eu
-CC: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       microblaze-uclinux@itee.uq.edu.au, Sam Ravnborg <sam@ravnborg.org>,
-       Paul Mundt <lethal@linux-sh.org>, Tony Luck <tony.luck@intel.com>,
-       Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [PATCH percpu 1/2] microblaze: include EXIT_TEXT to _stext
-References: <4A546646.70305@kernel.org> <4A5476D2.7040709@monstr.eu>
-In-Reply-To: <4A5476D2.7040709@monstr.eu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Jul 2009 02:28:52 +0000 (UTC)
+Date: Thu, 09 Jul 2009 14:20:06 +1200
+From: UKNL <unl@unl.co.uk>
+To: undisclosed-recipients:;
+Subject: (no subject)
+Reply-To: kyleevan@9.cn
+Message-ID: <18cd11dcf06a30c73e24eb270c5f44bc@vodafone.co.nz>
+SenderIP: 41.205.162.21
+User-Agent: Vodafone Webmail
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Simek wrote:
->> Michal, I added the commit messaeg and SOB.  If you don't like it
->> please let me know.
-> 
-> It is ok. I rechecked it and works.
-
-Thanks.  Patches committed to percpu#for-next.
-
--- 
-tejun
+Confirm this receipt by contacting the due process unit officer Dr.Evan
+Kyle for the sum of 
+One million Pounds E-mail (kyleevan@9.cn)Fill the details:
+FullName,Address,Tel,Occupation:
