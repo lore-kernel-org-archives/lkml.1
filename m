@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759422AbZGIHAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZGIHAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759422AbZGIHAT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 03:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759307AbZGIG6v
+	id S1755962AbZGIHAm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 03:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758789AbZGIG6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 02:58:51 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:41615 "EHLO
+	Thu, 9 Jul 2009 02:58:53 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:41623 "EHLO
 	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758787AbZGIG6s (ORCPT
+	with ESMTP id S1759337AbZGIG6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 02:58:48 -0400
+	Thu, 9 Jul 2009 02:58:50 -0400
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 To: Al Viro <viro@ZenIV.linux.org.uk>, Jens Axboe <jens.axboe@oracle.com>
 Cc: linux-fsdevel@vger.kernel.org,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
        linux-kernel@vger.kernel.org
-Date: Thu, 09 Jul 2009 11:48:57 +0300
-Message-Id: <20090709084857.12122.38427.sendpatchset@localhost.localdomain>
+Date: Thu, 09 Jul 2009 11:49:11 +0300
+Message-Id: <20090709084911.12122.76873.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090709084822.12122.79749.sendpatchset@localhost.localdomain>
 References: <20090709084822.12122.79749.sendpatchset@localhost.localdomain>
-Subject: [PATCH v3 05/18] EXT2: do not manipulate s_dirt directly
-X-OriginalArrivalTime: 09 Jul 2009 06:58:28.0982 (UTC) FILETIME=[A9D89960:01CA0062]
+Subject: [PATCH v3 07/18] FAT: do not manipulate s_dirt directly
+X-OriginalArrivalTime: 09 Jul 2009 06:58:42.0622 (UTC) FILETIME=[B1F9E5E0:01CA0062]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,118 +30,81 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ---
- fs/ext2/balloc.c |    4 ++--
- fs/ext2/ialloc.c |    4 ++--
- fs/ext2/super.c  |   10 +++++-----
- fs/ext2/xattr.c  |    2 +-
- 4 files changed, 10 insertions(+), 10 deletions(-)
+ fs/fat/fatent.c |    8 ++++----
+ fs/fat/inode.c  |    6 +++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
-index 7f8d2e5..a3de92b 100644
---- a/fs/ext2/balloc.c
-+++ b/fs/ext2/balloc.c
-@@ -164,7 +164,7 @@ static void release_blocks(struct super_block *sb, int count)
- 		struct ext2_sb_info *sbi = EXT2_SB(sb);
+diff --git a/fs/fat/fatent.c b/fs/fat/fatent.c
+index a810377..46db5e5 100644
+--- a/fs/fat/fatent.c
++++ b/fs/fat/fatent.c
+@@ -498,7 +498,7 @@ int fat_alloc_clusters(struct inode *inode, int *cluster, int nr_cluster)
+ 				sbi->prev_free = entry;
+ 				if (sbi->free_clusters != -1)
+ 					sbi->free_clusters--;
+-				sb->s_dirt = 1;
++				mark_sb_dirty(sb);
  
- 		percpu_counter_add(&sbi->s_freeblocks_counter, count);
--		sb->s_dirt = 1;
-+		mark_sb_dirty(sb);
- 	}
- }
- 
-@@ -179,7 +179,7 @@ static void group_adjust_blocks(struct super_block *sb, int group_no,
- 		free_blocks = le16_to_cpu(desc->bg_free_blocks_count);
- 		desc->bg_free_blocks_count = cpu_to_le16(free_blocks + count);
- 		spin_unlock(sb_bgl_lock(sbi, group_no));
--		sb->s_dirt = 1;
-+		mark_sb_dirty(sb);
- 		mark_buffer_dirty(bh);
- 	}
- }
-diff --git a/fs/ext2/ialloc.c b/fs/ext2/ialloc.c
-index 15387c9..bb8cf4e 100644
---- a/fs/ext2/ialloc.c
-+++ b/fs/ext2/ialloc.c
-@@ -81,7 +81,7 @@ static void ext2_release_inode(struct super_block *sb, int group, int dir)
- 	spin_unlock(sb_bgl_lock(EXT2_SB(sb), group));
- 	if (dir)
- 		percpu_counter_dec(&EXT2_SB(sb)->s_dirs_counter);
+ 				cluster[idx_clus] = entry;
+ 				idx_clus++;
+@@ -520,7 +520,7 @@ int fat_alloc_clusters(struct inode *inode, int *cluster, int nr_cluster)
+ 	/* Couldn't allocate the free entries */
+ 	sbi->free_clusters = 0;
+ 	sbi->free_clus_valid = 1;
 -	sb->s_dirt = 1;
 +	mark_sb_dirty(sb);
- 	mark_buffer_dirty(bh);
- }
+ 	err = -ENOSPC;
  
-@@ -548,7 +548,7 @@ got:
+ out:
+@@ -581,7 +581,7 @@ int fat_free_clusters(struct inode *inode, int cluster)
+ 		ops->ent_put(&fatent, FAT_ENT_FREE);
+ 		if (sbi->free_clusters != -1) {
+ 			sbi->free_clusters++;
+-			sb->s_dirt = 1;
++			mark_sb_dirty(sb);
+ 		}
+ 
+ 		if (nr_bhs + fatent.nr_bhs > MAX_BUF_PER_PAGE) {
+@@ -671,7 +671,7 @@ int fat_count_free_clusters(struct super_block *sb)
  	}
- 	spin_unlock(sb_bgl_lock(sbi, group));
- 
+ 	sbi->free_clusters = free;
+ 	sbi->free_clus_valid = 1;
 -	sb->s_dirt = 1;
 +	mark_sb_dirty(sb);
- 	mark_buffer_dirty(bh2);
- 	inode->i_uid = current_fsuid();
- 	if (test_opt (sb, GRPID))
-diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-index 1a9ffee..95fdfe9 100644
---- a/fs/ext2/super.c
-+++ b/fs/ext2/super.c
-@@ -117,7 +117,7 @@ static void ext2_put_super (struct super_block * sb)
+ 	fatent_brelse(&fatent);
+ out:
+ 	unlock_fat(sbi);
+diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+index 8970d8c..cdf552e 100644
+--- a/fs/fat/inode.c
++++ b/fs/fat/inode.c
+@@ -442,7 +442,7 @@ static void fat_clear_inode(struct inode *inode)
+ static void fat_write_super(struct super_block *sb)
+ {
+ 	lock_super(sb);
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ 
+ 	if (!(sb->s_flags & MS_RDONLY))
+ 		fat_clusters_flush(sb);
+@@ -453,7 +453,7 @@ static int fat_sync_fs(struct super_block *sb, int wait)
+ {
+ 	lock_super(sb);
+ 	fat_clusters_flush(sb);
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ 	unlock_super(sb);
+ 
+ 	return 0;
+@@ -465,7 +465,7 @@ static void fat_put_super(struct super_block *sb)
  
  	lock_kernel();
  
 -	if (sb->s_dirt)
 +	if (is_sb_dirty(sb))
- 		ext2_write_super(sb);
+ 		fat_write_super(sb);
  
- 	ext2_xattr_put_super(sb);
-@@ -1094,7 +1094,7 @@ static void ext2_commit_super (struct super_block * sb,
- {
- 	es->s_wtime = cpu_to_le32(get_seconds());
- 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- }
- 
- static void ext2_sync_super(struct super_block *sb, struct ext2_super_block *es)
-@@ -1104,7 +1104,7 @@ static void ext2_sync_super(struct super_block *sb, struct ext2_super_block *es)
- 	es->s_wtime = cpu_to_le32(get_seconds());
- 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
- 	sync_dirty_buffer(EXT2_SB(sb)->s_sbh);
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- }
- 
- /*
-@@ -1135,7 +1135,7 @@ static int ext2_sync_fs(struct super_block *sb, int wait)
- 	} else {
- 		ext2_commit_super(sb, es);
- 	}
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- 	unlock_kernel();
- 
- 	return 0;
-@@ -1147,7 +1147,7 @@ void ext2_write_super(struct super_block *sb)
- 	if (!(sb->s_flags & MS_RDONLY))
- 		ext2_sync_fs(sb, 1);
- 	else
--		sb->s_dirt = 0;
-+		mark_sb_clean(sb);
- }
- 
- static int ext2_remount (struct super_block * sb, int * flags, char * data)
-diff --git a/fs/ext2/xattr.c b/fs/ext2/xattr.c
-index 7913531..1673ee4 100644
---- a/fs/ext2/xattr.c
-+++ b/fs/ext2/xattr.c
-@@ -343,7 +343,7 @@ static void ext2_xattr_update_super_block(struct super_block *sb)
- 		return;
- 
- 	EXT2_SET_COMPAT_FEATURE(sb, EXT2_FEATURE_COMPAT_EXT_ATTR);
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
- 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
- }
- 
+ 	iput(sbi->fat_inode);
 -- 
 1.6.0.6
 
