@@ -1,108 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbZGIQHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761112AbZGIQLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761338AbZGIQHp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 12:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760804AbZGIQHg
+	id S1761112AbZGIQLr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 12:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759397AbZGIQLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 12:07:36 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:44315 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760379AbZGIQHf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 12:07:35 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Null Pointer BUG in uhci_hcd
-Date: Thu, 9 Jul 2009 11:07:28 -0500
-User-Agent: KMail/1.9.9
-Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0907091106050.5823-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0907091106050.5823-100000@iolanthe.rowland.org>
+	Thu, 9 Jul 2009 12:11:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52402 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759771AbZGIQLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 12:11:40 -0400
+Date: Thu, 9 Jul 2009 12:10:59 -0400
+From: Dave Jones <davej@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Joao Correia <joaomiguelcorreia@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH 1/3] Increase lockdep limits: MAX_STACK_TRACE_ENTRIES
+Message-ID: <20090709161059.GA2909@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Joao Correia <joaomiguelcorreia@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	=?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Catalin Marinas <catalin.marinas@arm.com>
+References: <a5d9929e0907070825j1dda6584t93196e2730dedc5c@mail.gmail.com> <1246980836.9777.5.camel@twins> <a5d9929e0907070838q7ed3306du3bb7880e47d7207b@mail.gmail.com> <1246981444.9777.11.camel@twins> <a5d9929e0907070850v72cd4da4y1cbbb10fddebd575@mail.gmail.com> <1246982101.9777.15.camel@twins> <20090708172248.GB2521@redhat.com> <1247078164.16156.18.camel@laptop> <20090709043931.GA11391@redhat.com> <1247126556.9777.323.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907091107.31446.lkml@morethan.org>
+In-Reply-To: <1247126556.9777.323.camel@twins>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu July 9 2009, Alan Stern wrote:
-> On Thu, 9 Jul 2009, Michael S. Zick wrote:
-> 
+On Thu, Jul 09, 2009 at 10:02:36AM +0200, Peter Zijlstra wrote:
+ > On Thu, 2009-07-09 at 00:39 -0400, Dave Jones wrote:
+ > > On Wed, Jul 08, 2009 at 08:36:04PM +0200, Peter Zijlstra wrote:
+ > >  > Looking at a lockdep dump hch gave me I can see that that is certainly
+ > >  > possible, I see tons of very deep callchains.
+ > >  > 
+ > >  > /me wonders if we're getting significantly deeper..
+ > > 
+ > > Looking at /proc/lockdep, I'm curious..
+ > > Take a look at http://davej.fedorapeople.org/lockdep
+ > > scroll down to c12c0924
+ > > 
+ > > What's up with all those old_style_spin_init's ?
+ > 
+ > What kernel are you running?
 
-Going to have to mark this thread as "suspended" -
-Have a 1Mbyte per minute memory leak that needs finding first.  ;)
+.31rc2
 
-Mike
-> > In case you missed it - this is the CX700 integrated chipset in a NetBook.
-> > No all USB devices are removable in the sense of being physically impossible.
-> 
-> Do the best you can.
-> 
-> > The documentation for the CX700 has been released from NDA and is available
-> > at the VIA Linux portal - just in case you don't already have your copy.
-> > 
-> > More testing today - including trying some of the many kernel options available
-> > for dealing with funky irq, bios, and acpi implementations.
-> > 
-> > On the subject of irq's:
-> > 
-> > root@cb01:~# biosdecode
-> > # biosdecode 2.9
-> > SMBIOS 2.4 present.
-> >         Structure Table Length: 1556 bytes
-> >         Structure Table Address: 0x000DC010
-> >         Number Of Structures: 47
-> >         Maximum Structure Size: 119 bytes
-> > BIOS32 Service Directory present.
-> >         Revision: 0
-> >         Calling Interface Address: 0x000FDD64
-> > ACPI 1.0 present.
-> >         OEM Identifier: PTLTD
-> >         RSD Table 32-bit Address: 0x1BEE5663
-> > PNP BIOS 1.0 present.
-> >         Event Notification: Not Supported
-> >         Real Mode 16-bit Code Address: E923:768E
-> >         Real Mode 16-bit Data Address: 0040:0000
-> >         16-bit Protected Mode Code Address: 0x00015FCF
-> >         16-bit Protected Mode Data Address: 0x00000400
-> > PCI Interrupt Routing 1.0 present.
-> >         Router ID: 00:11.0
-> >         Exclusive IRQs: None
-> >         Compatible Router: 1106:8324
-> >         Slot Entry 1: ID 00:00, on-board
-> >         Slot Entry 2: ID 00:11, on-board
-> >         Slot Entry 3: ID 00:10, on-board
-> >         Slot Entry 4: ID 00:0f, on-board
-> >         Slot Entry 5: ID 04:09, slot number 9
-> >         Slot Entry 6: ID 00:01, on-board
-> >         Slot Entry 7: ID 01:00, on-board
-> >         Slot Entry 8: ID 00:13, on-board
-> >         Slot Entry 9: ID 02:01, on-board
-> >         Slot Entry 10: ID 00:13, on-board
-> >         Slot Entry 11: ID 03:03, slot number 49
-> >         Slot Entry 12: ID 03:04, slot number 50
-> >         Slot Entry 13: ID 03:05, slot number 51
-> >         Slot Entry 14: ID 03:06, slot number 52
-> >         Slot Entry 15: ID 03:07, slot number 53
-> 
-> Means nothing to me.  I'm no ACPI or chipset expert.
-> 
-> > Whatever a VIA 8324 router happens to be - - -
-> > 
-> > All four of the different brands of "Nano-book reference design"
-> > machines have the same, or very similar, BIOS (all the VIA demo
-> > board BIOS).  That interrupt table is the same in all machines.
-> > Only one of the manufacturer's even bothered to change the serial
-> > number of the machine (1234567890) - they are that "similar".
-> 
-> Alan Stern
-> 
-> 
-> 
+ > Does your lib/dma_debug.c:dma_debug_init()
+ > have spin_lock_init() in that HASH_SIZE loop?
+
+it's doing it by hand..
+
+ 717         for (i = 0; i < HASH_SIZE; ++i) {
+ 718                 INIT_LIST_HEAD(&dma_entry_hash[i].list);
+ 719                 dma_entry_hash[i].lock = SPIN_LOCK_UNLOCKED;
+ 720         }
 
 
+	Dave
+ 
