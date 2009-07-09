@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbZGIO2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761336AbZGIO3C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761385AbZGIO2m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 10:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761335AbZGIO22
+	id S1761336AbZGIO3C (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 10:29:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761194AbZGIO2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 10:28:28 -0400
-Received: from mail-pz0-f175.google.com ([209.85.222.175]:53971 "EHLO
-	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761289AbZGIO21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 10:28:27 -0400
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 7/44] includecheck fix: arm, board-sffsdr.c
-References: <1247063308.4382.12.camel@ht.satnam>
-	<1247063846.4382.24.camel@ht.satnam>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Thu, 09 Jul 2009 07:28:24 -0700
-In-Reply-To: <1247063846.4382.24.camel@ht.satnam> (Jaswinder Singh Rajput's message of "Wed\, 08 Jul 2009 20\:07\:26 +0530")
-Message-ID: <8763e2x75j.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 9 Jul 2009 10:28:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51920 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761161AbZGIO2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 10:28:53 -0400
+Date: Thu, 9 Jul 2009 17:28:08 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [KVM PATCH v10 0/2] ioeventfd (formerly iosignalfd)
+Message-ID: <20090709142808.GA26895@redhat.com>
+References: <20090707210023.21953.22087.stgit@dev.haskins.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090707210023.21953.22087.stgit@dev.haskins.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+On Tue, Jul 07, 2009 at 05:08:38PM -0400, Gregory Haskins wrote:
+> (Applies to kvm.git/master:3abaf217)
+> 
+> This is v10 of the series.  For more details, please see the header to
+> patch 2/2.
+> 
+> This series has been tested against the kvm-eventfd unit test, and
+> appears to be functioning properly.  You can download this test here:
+> 
+> ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
+> 
+> (Note: unit test has been updated to accomodate new feature-set)
+> 
+> Please consider for inclusion to kvm.git
 
-> fix the following 'make includecheck' warning:
->
->   arch/arm/mach-davinci/board-sffsdr.c: mach/common.h is included more than once.
->
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-
-Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
-
-> ---
->  arch/arm/mach-davinci/board-sffsdr.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/arm/mach-davinci/board-sffsdr.c b/arch/arm/mach-davinci/board-sffsdr.c
-> index 748a8e4..7acdfd8 100644
-> --- a/arch/arm/mach-davinci/board-sffsdr.c
-> +++ b/arch/arm/mach-davinci/board-sffsdr.c
-> @@ -52,7 +52,6 @@
->  #include <mach/serial.h>
->  #include <mach/psc.h>
->  #include <mach/mux.h>
-> -#include <mach/common.h>
->  
->  #define SFFSDR_PHY_MASK		(0x2)
->  #define SFFSDR_MDIO_FREQUENCY	(2200000) /* PHY bus frequency */
-> -- 
-> 1.6.0.6
+Acked-by: Michael S. Tsirkin <mst@redhat.com>
