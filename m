@@ -1,46 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbZGIJaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbZGIJgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757935AbZGIJaX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 05:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZGIJaM
+	id S1757312AbZGIJgN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 05:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbZGIJf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 05:30:12 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:54415 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201AbZGIJaL (ORCPT
+	Thu, 9 Jul 2009 05:35:59 -0400
+Received: from mail.prodrive.nl ([194.151.106.228]:28934 "EHLO
+	mail.prodrive.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752181AbZGIJf6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 05:30:11 -0400
-Date: Thu, 9 Jul 2009 10:30:05 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Joe Perches <joe@perches.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [PATCH 5/7] MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
-Message-ID: <20090709093004.GA32655@sirena.org.uk>
-References: <cover.1247032324.git.joe@perches.com> <9c84258bdd3ebecd54e2bc203dbded1382af9c02.1247032324.git.joe@perches.com> <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com> <1247035197.5124.9.camel@Joe-Laptop.home> <1247035481.15919.31.camel@penberg-laptop> <1247035628.5124.11.camel@Joe-Laptop.home>
+	Thu, 9 Jul 2009 05:35:58 -0400
+X-Greylist: delayed 1857 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Jul 2009 05:35:58 EDT
+X-TM-IMSS-Message-ID: <d62c34830003f086@prodrive.nl>
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247035628.5124.11.camel@Joe-Laptop.home>
-X-Cookie: Noone ever built a statue to a critic.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: PCIe dma-able memory location in physical memory for Intel Nehalem + Tylersburg architecture
+Date: Thu, 9 Jul 2009 11:04:59 +0200
+Message-ID: <4CD35CD1F8085945B597F80EEC894213030C20F6@exc01.bk.prodrive.nl>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: PCIe dma-able memory location in physical memory for Intel Nehalem + Tylersburg architecture
+Thread-Index: AcoAdFbJUgfNJ7SmQauzjQMtkxN2qA==
+From: "Rob van de Voort" <rob.van.der.voort@Prodrive.nl>
+To: <linux-kernel@vger.kernel.org>
+X-TM-AS-Product-Ver: IMSS-7.0.0.6219-5.6.0.1016-16752.006
+X-TM-AS-User-Approved-Sender: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 11:47:08PM -0700, Joe Perches wrote:
+Hello,
 
-> Well, if scripts/get_maintainer.pl gets used more often,
-> it would.
+I have the following question regarding the (re-)allocation of dma-able
+memory for a PCIe device. I wish to know on which CPU / Memory
+controller the dma-able memory will be allocated. In addition i would
+like to know how i can control this allocation process, or how to
+reroute it to another CPU / Memory controller.
 
-FWIW I've noticed that get_maintainer.pl has a tendency to pick up
-people it probably shouldn't when run on areas that have had few people
-committing to them since it tends to pick up people who've done generic
-cleanups but have no specific interest in that area of code.  I think a
-heuristic based on filtering the git log based on the proportion of
-commits that were done by each committer would help with many of these
-cases.
+The system i use contains two Nehalem processors connected via intel QPI
+bus. Both processors have 3GB of DDR3 RAM in their memory banks. The
+PCIe bus is controlled by a tylersburg io hub which is also connected to
+the intel QPI bus
+
+The system runs a 64bit linux kernel. Furthermore a PCIe device which
+can only use 32 bit addressing is connected to the PCIe bus. I want to
+allocate dma-able memory for this device using a driver, i know how to
+do this. For maximal performance i would like to control the allocation
+of dma-able memory, in particular the allocation to a certain CPU /
+memory controller. The tylersburg IO hub has an influence on this
+allocation but can i influence this.
+
+So my questions are:
+-1- How can i know were our dma-able memory is allocated in physical
+memory?
+-2- How can i control / redirect this allocation to a certain memory
+controller / CPU?
+
+Thanks for any reply,
+
+Rob van de Voort
+
+P.S  I'd be grateful if people could point me in the direction of
+resources I could read. Thus far I have gone over the PCI / DMA
+documentation in
+the kernel, and a couple of articles on lwn. 
+If this is the wrong mailing list for this type of question i hope you
+can redirect me to the correct one.
+
+
+
+Disclaimer: The information contained in this email, including any attachments is 
+confidential and is for the sole use of the intended recipient(s). Any unauthorized 
+review, use, disclosure or distribution is prohibited. If you are not the intended 
+recipient, please notify the sender immediately by replying to this message and 
+destroy all copies of this message and any attachments.
