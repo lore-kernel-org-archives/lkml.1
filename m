@@ -1,55 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756349AbZGIU5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZGIU7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756349AbZGIU5X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 16:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbZGIU5O
+	id S1754549AbZGIU7Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 16:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZGIU7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 16:57:14 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:41073 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755331AbZGIU5N (ORCPT
+	Thu, 9 Jul 2009 16:59:01 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:60091 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653AbZGIU7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 16:57:13 -0400
-Message-ID: <4A5659A0.2030202@davidnewall.com>
-Date: Fri, 10 Jul 2009 06:27:04 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Thu, 9 Jul 2009 16:59:00 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Null Pointer BUG in uhci_hcd
+Date: Thu, 9 Jul 2009 15:58:53 -0500
+User-Agent: KMail/1.9.9
+Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <Pine.LNX.4.44L0.0907091106050.5823-100000@iolanthe.rowland.org> <200907091107.31446.lkml@morethan.org>
+In-Reply-To: <200907091107.31446.lkml@morethan.org>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       tridge@samba.org, Martin Steigerwald <Martin@lichtvoll.de>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-References: <20090708110451.1092afa7@lxorguk.ukuu.org.uk> <19028.31088.400461.939917@samba.org> <20090708130256.40957c3f@lxorguk.ukuu.org.uk> <19028.39145.180869.603673@samba.org> <20090708142510.5068b4c3@lxorguk.ukuu.org.uk> <19029.17896.769106.375379@samba.org> <20090709104228.7821e2f0@lxorguk.ukuu.org.uk> <1247147981.3898.15.camel@mulgrave.site> <20090709151009.07b2508b@lxorguk.ukuu.org.uk> <20090709152541.GA6334@mit.edu> <20090709171501.GA2991@infradead.org>
-In-Reply-To: <20090709171501.GA2991@infradead.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907091558.56984.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> If someone really wants a patch to corrupt their filesystems they know
-> where to find it.
->   
+On Thu July 9 2009, Michael S. Zick wrote:
+> On Thu July 9 2009, Alan Stern wrote:
+> > On Thu, 9 Jul 2009, Michael S. Zick wrote:
+> > 
+> 
+> Going to have to mark this thread as "suspended" -
+> Have a 1Mbyte per minute memory leak that needs finding first.  ;)
+>
 
-No need for pettiness. Andrew's already intimated that he's still
-working the patch, and he's a very clever lad and knows if it corrupts
-it needs more work.
+Hmmm...  acpi=noirq  stops the memory leak.  (???)
+That's the easy part - now to figure out why. ;)
 
-What I don't understand is how anybody could be satisfied with the
-status quo. We cannot leave vfat unchanged, for that will perpetuate a
-pool of victims to be sued, and Linux loses credibility every time that
-happens. Something *must* change.
+Then we can go back to this thread; see if there was a real driver problem
+or this thread was just demonstrating an artifact of the above <whatever>.
 
-What is especially attractive about Andrew's position (he said this more
-eloquently than me) is that developing a solution to avoid the patent
-will impact Microsoft revenues; and that will be most instructive to
-them. That's almost sufficient reason by itself!
+Mike 
+
+> Mike
+> > > In case you missed it - this is the CX700 integrated chipset in a NetBook.
+> > > No all USB devices are removable in the sense of being physically impossible.
+> > 
+> > Do the best you can.
+> > 
+> > > The documentation for the CX700 has been released from NDA and is available
+> > > at the VIA Linux portal - just in case you don't already have your copy.
+> > > 
+> > > More testing today - including trying some of the many kernel options available
+> > > for dealing with funky irq, bios, and acpi implementations.
+> > > 
+> > > On the subject of irq's:
+> > > 
+> > > root@cb01:~# biosdecode
+> > > # biosdecode 2.9
+> > > SMBIOS 2.4 present.
+> > >         Structure Table Length: 1556 bytes
+> > >         Structure Table Address: 0x000DC010
+> > >         Number Of Structures: 47
+> > >         Maximum Structure Size: 119 bytes
+> > > BIOS32 Service Directory present.
+> > >         Revision: 0
+> > >         Calling Interface Address: 0x000FDD64
+> > > ACPI 1.0 present.
+> > >         OEM Identifier: PTLTD
+> > >         RSD Table 32-bit Address: 0x1BEE5663
+> > > PNP BIOS 1.0 present.
+> > >         Event Notification: Not Supported
+> > >         Real Mode 16-bit Code Address: E923:768E
+> > >         Real Mode 16-bit Data Address: 0040:0000
+> > >         16-bit Protected Mode Code Address: 0x00015FCF
+> > >         16-bit Protected Mode Data Address: 0x00000400
+> > > PCI Interrupt Routing 1.0 present.
+> > >         Router ID: 00:11.0
+> > >         Exclusive IRQs: None
+> > >         Compatible Router: 1106:8324
+> > >         Slot Entry 1: ID 00:00, on-board
+> > >         Slot Entry 2: ID 00:11, on-board
+> > >         Slot Entry 3: ID 00:10, on-board
+> > >         Slot Entry 4: ID 00:0f, on-board
+> > >         Slot Entry 5: ID 04:09, slot number 9
+> > >         Slot Entry 6: ID 00:01, on-board
+> > >         Slot Entry 7: ID 01:00, on-board
+> > >         Slot Entry 8: ID 00:13, on-board
+> > >         Slot Entry 9: ID 02:01, on-board
+> > >         Slot Entry 10: ID 00:13, on-board
+> > >         Slot Entry 11: ID 03:03, slot number 49
+> > >         Slot Entry 12: ID 03:04, slot number 50
+> > >         Slot Entry 13: ID 03:05, slot number 51
+> > >         Slot Entry 14: ID 03:06, slot number 52
+> > >         Slot Entry 15: ID 03:07, slot number 53
+> > 
+> > Means nothing to me.  I'm no ACPI or chipset expert.
+> > 
+> > > Whatever a VIA 8324 router happens to be - - -
+> > > 
+> > > All four of the different brands of "Nano-book reference design"
+> > > machines have the same, or very similar, BIOS (all the VIA demo
+> > > board BIOS).  That interrupt table is the same in all machines.
+> > > Only one of the manufacturer's even bothered to change the serial
+> > > number of the machine (1234567890) - they are that "similar".
+> > 
+> > Alan Stern
+> > 
+> > 
+> > 
+> 
+> 
+> 
+
+
