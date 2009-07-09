@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbZGIRJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZGIRPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbZGIRJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 13:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZGIRJT
+	id S1753833AbZGIRPb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 13:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbZGIRPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 13:09:19 -0400
-Received: from outbound-mail-141.bluehost.com ([67.222.38.31]:54076 "HELO
-	outbound-mail-141.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752229AbZGIRJS (ORCPT
+	Thu, 9 Jul 2009 13:15:17 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46829 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbZGIRPQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 13:09:18 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=B3pdcYmamn8CEM1A3Bz1bo5qDL5YJCBNaFccQ6rHDYh7BbnV695slOZq7acl86DEC3nZh1A2IFNkzgHRs5QDJKH9z+ljPIMeXelkr8Lr19cIsB7B40I6o518zZzxADel;
-Date: Thu, 9 Jul 2009 10:09:14 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: Dave Airlie <airlied@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Thu, 9 Jul 2009 13:15:16 -0400
+Date: Thu, 9 Jul 2009 13:15:01 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       tridge@samba.org, Martin Steigerwald <Martin@lichtvoll.de>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [Bug #13667] drm: display arifacts when X.Org is stopped
-Message-ID: <20090709100914.2502763a@jbarnes-g45>
-In-Reply-To: <200907090328.53643.elendil@planet.nl>
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
-	<200907080700.33120.elendil@planet.nl>
-	<21d7e9970907081642l3ef6df5blde31df656cd74432@mail.gmail.com>
-	<200907090328.53643.elendil@planet.nl>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+Message-ID: <20090709171501.GA2991@infradead.org>
+References: <20090708110451.1092afa7@lxorguk.ukuu.org.uk> <19028.31088.400461.939917@samba.org> <20090708130256.40957c3f@lxorguk.ukuu.org.uk> <19028.39145.180869.603673@samba.org> <20090708142510.5068b4c3@lxorguk.ukuu.org.uk> <19029.17896.769106.375379@samba.org> <20090709104228.7821e2f0@lxorguk.ukuu.org.uk> <1247147981.3898.15.camel@mulgrave.site> <20090709151009.07b2508b@lxorguk.ukuu.org.uk> <20090709152541.GA6334@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090709152541.GA6334@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Jul 2009 03:28:52 +0200
-Frans Pop <elendil@planet.nl> wrote:
+On Thu, Jul 09, 2009 at 11:25:41AM -0400, Theodore Tso wrote:
+> Look, even if what you say is valid (despite the advice of lawyers),
+> it is still useful for us to apply the patch (with the CONFIG option)
+> in the upstream sources.  It means that support for the workaround
+> stays in the mainstream sources, so we don't have to worry about
+> separate patch going no longer applying as time goes by and the
+> upstream sources change over time.  *If* a vendor really wants to
+> strip out the source code, they can do that easily enough using
+> unifdef to strip out the one specific CONFIG option.
 
-> On Thursday 09 July 2009, Dave Airlie wrote:
-> > > [1] I'd even go so far as to feel it should be a standard test
-> > > case for video driver developers, given that this is the third
-> > > time it's shown regressions :-) For the third case the bug was in
-> > > the X.Org i830 driver:
-> > > http://bugs.freedesktop.org/show_bug.cgi?id=14481.
-> >
-> > It might surprise you to learn this, but vesafb has never been
-> > considered supportable by the X.org community, and you'll notice not
-> > very many distros ship with it enabled, it breaks suspend/resume on
-> > many machines for example.
-> 
-> I beg to disagree.
-> - Debian does have it enabled by default.
-> - I have always used it on all my machines without any problems.
-> - Both my laptops and my desktop suspend and resume perfectly with
-> vesafb and X.Org.
-> - Jesse Barnes seems to disagree with you. To quote from the BR cited
->   above (comment #11): "and you're right, making things work with
-> vesafb isn't unreasonable".
+By putting it in the kernel tree we would only give the bogus patent
+claims more credit.  And so far no one has but IBM has actually care
+about the patch.  Tridge can put the patch into the IBM kernel tree for
+the service processors if you really deeply care, but can we leave the
+rest of the world alone?
 
-Since my ears are burning I figured I'd better qualify this: I made
-that statement before we had KMS upstream.  Supporting the case where
-multiple drivers try to bang on the same device has always been a big
-pain.  In a KMS configuration we don't support it at all.
-
-> Yes, and I really welcome the great progress being made there. But
-> for me it's not yet an option as I run Debian stable on these boxes.
-
-Sounds like that's not an option for you though... which means
-debugging where the interaction is going wrong...
-
-Jesse
+If someone really wants a patch to corrupt their filesystems they know
+where to find it.
