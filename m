@@ -1,66 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760307AbZGIMu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760460AbZGIMye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760307AbZGIMu1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 08:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbZGIMuR
+	id S1760460AbZGIMye (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 08:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbZGIMyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 08:50:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:11111 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759349AbZGIMuP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 08:50:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=xRX7yWVD+ZKqkx/uuZe6f62Qds1hsEAWZxeEv0YxD/uzTR04Zf/PQ8dKvvGQK7WJvq
-         4ZKceQmJy2HOESgnuOEsgZu4ZXWuVwWcoZaNywru4ooZlP2wWfNfHOcfIPFo5OsygQBC
-         l3JmOvcv/BTp6Px6jyZNBMQfWRkpjw2c1pKpM=
-MIME-Version: 1.0
-In-Reply-To: <3ace41890907090540v6895e2bay8128c0d565a7a55f@mail.gmail.com>
-References: <4A54FB81.30302@gmail.com> <3ace41890907081449m3ad6c4fdt55781848eedaec1e@mail.gmail.com> 
-	<4A551B43.3020104@gmail.com> <3ace41890907082118h52764c98i7ebd9365bcd69b2c@mail.gmail.com> 
-	<4A5575C1.8090403@lwfinger.net> <3ace41890907090347m1f337731rb09b90327664ed5@mail.gmail.com> 
-	<4A55D123.5090802@gmail.com> <3ace41890907090540v6895e2bay8128c0d565a7a55f@mail.gmail.com>
-From: =?ISO-8859-1?Q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>
-Date: Thu, 9 Jul 2009 14:49:54 +0200
-Message-ID: <69e28c910907090549q542691fan6756ebf9edac45a9@mail.gmail.com>
-Subject: Re: [PATCH] wireless: fix supported cards for rtl8187
-To: Hin-Tak Leung <hintak.leung@gmail.com>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Linux wireless <linux-wireless@vger.kernel.org>,
-       Przemyslaw Kulczycki <azrael@autocom.pl>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 9 Jul 2009 08:54:24 -0400
+Received: from waste.org ([66.93.16.53]:54575 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759600AbZGIMyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 08:54:23 -0400
+Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
+ using phylib
+From: Matt Mackall <mpm@selenic.com>
+To: avorontsov@ru.mvista.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       a.p.zijlstra@chello.nl, oleg@redhat.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20090708222003.GA12318@oksana.dev.rtsoft.ru>
+References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
+	 <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
+	 <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
+	 <20090708141024.f8b581c5.akpm@linux-foundation.org>
+	 <20090708213331.GA9346@oksana.dev.rtsoft.ru>
+	 <20090708144744.5555b88d.akpm@linux-foundation.org>
+	 <20090708222003.GA12318@oksana.dev.rtsoft.ru>
+Content-Type: text/plain
+Date: Thu, 09 Jul 2009 07:52:45 -0500
+Message-Id: <1247143965.21295.867.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/9 Hin-Tak Leung <hintak.leung@gmail.com>:
-> Here is some info from Gabor (shouldn't this be reply-all rather than just me):
-> ------------------
-> The v1 and v2 look identical (though the label on the device indicates
-> the revision). The v3 looks completely different. They all have
-> different USB IDs (v1 is stock RT73, v2 has a custom ID, while v3 is
-> AFAIK stock RT2070).
-> ------------------
->
-> I guess to be informative, may I suggest adding '(for v1  see rt73usb,
-> and v3 see rt3070)' or something similiar to the 'v2' change?
-> It is fair customary in Kconfig to mention even alternative/competing
-> drivers for the same device. And when you add v3 support to the rt3070
-> driver, a reverse mention may be appropriate. (I guess I am spending
-> far too long on this discussion - but I reckon, the purpose of a
-> non-code-changing change is meant to be informative, so one might want
-> to be as informative as appropriate without being too wordy...)
->
+On Thu, 2009-07-09 at 02:20 +0400, Anton Vorontsov wrote:
+> Using early netconsole and gianfar driver this error pops up:
+> 
+>   netconsole: timeout waiting for carrier
+> 
+> It appears that net/core/netpoll.c:netpoll_setup() is using
+> cond_resched() in a loop waiting for a carrier.
+> 
+> The thing is that cond_resched() is a no-op when system_state !=
+> SYSTEM_RUNNING, and so drivers/net/phy/phy.c's state_queue is never
+> scheduled, therefore link detection doesn't work.
+> 
+> I belive that the main problem is in cond_resched()[1], but despite
+> how the cond_resched() story ends, it might be a good idea to call
+> msleep(1) instead of cond_resched(), as suggested by Andrew Morton.
+> 
+> [1] http://lkml.org/lkml/2009/7/7/463
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> 
+> On Wed, Jul 08, 2009 at 02:47:44PM -0700, Andrew Morton wrote:
+> > (belatedly cc'ing netdev)
+> > 
+> > Original diagnosis:
+> > 
+> > : Using early netconsole and gianfar driver this error pops up:
+> > : 
+> > :   netconsole: timeout waiting for carrier
+> > : 
+> > : It appears that net/core/netpoll.c:netpoll_setup() is using
+> > : cond_resched() in a loop waiting for a carrier.
+> > : 
+> > : The thing is that cond_resched() is a no-op when system_state !=
+> > : SYSTEM_RUNNING, and so drivers/net/phy/phy.c's state_queue is never
+> > : scheduled, therefore link detection doesn't work
+> > 
+> > > On Thu, 9 Jul 2009 01:33:31 +0400 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > > On Wed, Jul 08, 2009 at 02:10:24PM -0700, Andrew Morton wrote:
+> > > > > On Wed, 8 Jul 2009 09:12:30 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > > > That said, I do agree that maybe SYSTEM_RUNNING isn't the right check. 
+> > > > > Testing that the scheduler is initialized may be the more correct one. I 
+> > > > > think the SYSTEM_RUNNING one just comes from that being used for other 
+> > > > > debug issues.
+> > > > 
+> > > > Agreed.  system_state is too general.
+> > > > 
+> > > > If we specifically want to know whether it is safe to call schedule() then
+> > > > let's create a global boolean it_is_safe_to_call_schedule and test that,
+> > > > rather than testing something which indirectly and unreliably implies "it
+> > > > is safe to call schedule".  If that boolean already exists then no-brainer.
+> > > > 
+> > > > All that being said, I wonder if the netconsole code should be using
+> > > > msleep(1) instead.  Spinning on cond_resched() is a bit rude.  But one
+> > > > would have to verify that it is safe to call schedule() at this time, and
+> > > > for the netconsole caller, this is dubious.
+> > > 
+> > > What do you mean by "verify that it is safe"? If it works,
+> > > can I assume that it's safe? ;-) It works, fwiw.
+> > > 
+> > 
+> > netconsole is supposed to be available as early as possible in boot for
+> > obvious reasons.  I'd say there's a decent risk now and in the future that
+> > netconsole will be initialised prior to the scheduler being available.
+> > 
+> > In fact, if "netconsole: timeout waiting for carrier" newly added to
+> > netpoll_setup() a depedency on the scheduler being available then perhaps
+> > that was an incorrect change.
+> 
+> 'git blame' says that carrier detection code didn't change since 2.6.12
+> (where git history starts), PHYLIB is using workqueue since its
+> submission (2.6.13). And SYSTEM_RUNNING check was added in 2.6.16.
+> So it's not a new dependency.
+> 
+> The netpoll code is using msleep() just a few lines below cond_resched(),
+> so we won't make things worse. ;-)
 
-Yes, sorry, it was intended to be reply-to-all, but Gmail's
-default-reply-to-all feature appears to be broken.
+I think that's an improvement with or without the SYSTEM_RUNNING fix.
+
+Signed-off-by: Matt Mackall <mpm@selenic.com>
+
+> Thanks!
+> 
+>  net/core/netpoll.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/core/netpoll.c b/net/core/netpoll.c
+> index 9675f31..df30feb 100644
+> --- a/net/core/netpoll.c
+> +++ b/net/core/netpoll.c
+> @@ -740,7 +740,7 @@ int netpoll_setup(struct netpoll *np)
+>  				       np->name);
+>  				break;
+>  			}
+> -			cond_resched();
+> +			msleep(1);
+>  		}
+>  
+>  		/* If carrier appears to come up instantly, we don't
 
 -- 
-Vista: [V]iruses, [I]ntruders, [S]pyware, [T]rojans and [A]dware. :-)
+http://selenic.com : development and support for Mercurial and Linux
+
+
