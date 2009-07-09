@@ -1,99 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbZGIQHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbZGIQHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbZGIQHX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 12:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760379AbZGIQHN
+	id S1761338AbZGIQHp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 12:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760804AbZGIQHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 12:07:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52278 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760347AbZGIQHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 12:07:12 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <8bd0f97a0907090822g1533e9dt97c3f29ccaf4945b@mail.gmail.com>
-References: <8bd0f97a0907090822g1533e9dt97c3f29ccaf4945b@mail.gmail.com> <8bd0f97a0907090104h5d4984dfkbeb82616a01128c8@mail.gmail.com> <24005.1247134018@redhat.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: dhowells@redhat.com,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: truncate on MAP_SHARED files in ramfs filesystems on no-mmu
-Date: Thu, 09 Jul 2009 17:07:08 +0100
-Message-ID: <24988.1247155628@redhat.com>
+	Thu, 9 Jul 2009 12:07:36 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:44315 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760379AbZGIQHf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 12:07:35 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Null Pointer BUG in uhci_hcd
+Date: Thu, 9 Jul 2009 11:07:28 -0500
+User-Agent: KMail/1.9.9
+Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <Pine.LNX.4.44L0.0907091106050.5823-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0907091106050.5823-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907091107.31446.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger <vapier.adi@gmail.com> wrote:
-
-> you dont need a MMU (virtual memory) to protect against it.  you only
-> need a MPU which some systems have.
-
-You may not have that either.  FRV doesn't, for example.  Furthermore, if you
-have an MPU only, you can still do a lot of the missing bits of NOMMU mmap() -
-shared writable disk or NFS files for example, so it can be argued that
-MPU-only systems shouldn't be using mm/nommu.c.
-
-> > This doesn't only protect the process with a mapping on that file against
-> > its own truncate, but also other processes that have made mappings against
-> > that file.
+On Thu July 9 2009, Alan Stern wrote:
+> On Thu, 9 Jul 2009, Michael S. Zick wrote:
 > 
-> and those too are broken
 
-Not necessarily.  They may not be expecting the truncation.  Just because the
-first process might be incorrect doesn't mean that the other affected processes
-are.
+Going to have to mark this thread as "suspended" -
+Have a 1Mbyte per minute memory leak that needs finding first.  ;)
 
-> > Whilst you can argue it either way, you need a better reason to change this
-> > than it causes some LTP failures.  You cannot expect all the MM-related LTP
-> > tests to work against a NOMMU system.
+Mike
+> > In case you missed it - this is the CX700 integrated chipset in a NetBook.
+> > No all USB devices are removable in the sense of being physically impossible.
 > 
-> crappy programming is likely to crash regardless of standard functions we
-> attempt to disable in the kernel.  this isnt a virtual memory issue at all,
-> it's memory protection.
-
-Are you actually seeing this in a real world situation?  Or just in LTP?
-
-> > Doing it this way also makes things simpler in the kernel and makes the
-> > system more robust.
+> Do the best you can.
 > 
-> really?  looks like the kernel is a lot more complicated to me.  the fix here
-> would be to delete a whole bunch of code.
-
-Delete what?  The check for ramfs_nommu_check_mappings()?  That is not
-sufficient.  That might allow truncate to give the pages back to the system,
-but the pages are still pointed to by VMAs and regions.  NOMMU truncate, as it
-stands, will not take care of that: unmap_mapping_range() is not implemented
-for NOMMU as the aforementioned check renders it unnecessary.
-
-It is simpler in that we simply reject a truncate that would cut down a mapping
-rather than trying to shrink that mapping.
-
-It is more robust in that if one process has a file mapped, and another process
-truncates it, then that second process isn't prevented from accessing the
-region that has been taken away from it.
-
-> > If a process shared mmaps a file and then wants to truncate it, it can
-> > always munmap the excess first.
+> > The documentation for the CX700 has been released from NDA and is available
+> > at the VIA Linux portal - just in case you don't already have your copy.
+> > 
+> > More testing today - including trying some of the many kernel options available
+> > for dealing with funky irq, bios, and acpi implementations.
+> > 
+> > On the subject of irq's:
+> > 
+> > root@cb01:~# biosdecode
+> > # biosdecode 2.9
+> > SMBIOS 2.4 present.
+> >         Structure Table Length: 1556 bytes
+> >         Structure Table Address: 0x000DC010
+> >         Number Of Structures: 47
+> >         Maximum Structure Size: 119 bytes
+> > BIOS32 Service Directory present.
+> >         Revision: 0
+> >         Calling Interface Address: 0x000FDD64
+> > ACPI 1.0 present.
+> >         OEM Identifier: PTLTD
+> >         RSD Table 32-bit Address: 0x1BEE5663
+> > PNP BIOS 1.0 present.
+> >         Event Notification: Not Supported
+> >         Real Mode 16-bit Code Address: E923:768E
+> >         Real Mode 16-bit Data Address: 0040:0000
+> >         16-bit Protected Mode Code Address: 0x00015FCF
+> >         16-bit Protected Mode Data Address: 0x00000400
+> > PCI Interrupt Routing 1.0 present.
+> >         Router ID: 00:11.0
+> >         Exclusive IRQs: None
+> >         Compatible Router: 1106:8324
+> >         Slot Entry 1: ID 00:00, on-board
+> >         Slot Entry 2: ID 00:11, on-board
+> >         Slot Entry 3: ID 00:10, on-board
+> >         Slot Entry 4: ID 00:0f, on-board
+> >         Slot Entry 5: ID 04:09, slot number 9
+> >         Slot Entry 6: ID 00:01, on-board
+> >         Slot Entry 7: ID 01:00, on-board
+> >         Slot Entry 8: ID 00:13, on-board
+> >         Slot Entry 9: ID 02:01, on-board
+> >         Slot Entry 10: ID 00:13, on-board
+> >         Slot Entry 11: ID 03:03, slot number 49
+> >         Slot Entry 12: ID 03:04, slot number 50
+> >         Slot Entry 13: ID 03:05, slot number 51
+> >         Slot Entry 14: ID 03:06, slot number 52
+> >         Slot Entry 15: ID 03:07, slot number 53
 > 
-> sure, we could go around changing a whole bunch of things specific to no-mmu,
-> but that's kind of the wrong way to go.  applications shouldnt need to know
-> they're running with different MMU features available.
+> Means nothing to me.  I'm no ACPI or chipset expert.
+> 
+> > Whatever a VIA 8324 router happens to be - - -
+> > 
+> > All four of the different brands of "Nano-book reference design"
+> > machines have the same, or very similar, BIOS (all the VIA demo
+> > board BIOS).  That interrupt table is the same in all machines.
+> > Only one of the manufacturer's even bothered to change the serial
+> > number of the machine (1234567890) - they are that "similar".
+> 
+> Alan Stern
+> 
+> 
+> 
 
-Can you point to a real world case where this is a problem?
 
-
-Note that it would be very easy to add (if such does not already exist) an LTP
-test that creates a file, expands it, maps it, shrinks it and then attempts to
-alter the removed part of the mapping in the expectation of receiving a SIGBUS.
-
-As it stands, such a test will work on MMU, but go wrong on NOMMU in a
-different way in these two cases.  With the current behaviour, the shrink
-request will be rejected, but the system will survive.  With your proposed
-behaviour, the system will potentially be wrecked.
-
-The NOMMU situation behaves differently to the MMU situation in either case.
-
-David
