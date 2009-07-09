@@ -1,127 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761367AbZGIQY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761098AbZGIQ2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761367AbZGIQY6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 12:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760309AbZGIQYt
+	id S1761098AbZGIQ2U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 12:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760309AbZGIQ2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 12:24:49 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:54709 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756304AbZGIQYt (ORCPT
+	Thu, 9 Jul 2009 12:28:13 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:43866 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758410AbZGIQ2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 12:24:49 -0400
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: ARM Linux Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Siarhei Siamashka <siarhei.siamashka@nokia.com>
-Subject: [PATCH] ARM: copy_page.S: take into account the size of the cache line
-Date: Thu,  9 Jul 2009 19:23:25 +0300
-Message-Id: <1247156605-16245-1-git-send-email-kirill@shutemov.name>
-X-Mailer: git-send-email 1.6.2.4
+	Thu, 9 Jul 2009 12:28:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tB2nmWjnc8nHeRnEOo641UwCQju+ghmXx6lWOdRNeY/hu5aR9p+pGxISAcWHVD9+YG
+         GLkwUkvav/5r+SFVDsdezbdnz4EgHVdx8QEkga8AWBgoViaHFG5q79Qhhrcm8ep7VDYu
+         ekWAQbG29T7zloQBDrzBWuGljVoJlY8EV/HRY=
+Date: Thu, 9 Jul 2009 20:28:07 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH 20/44] includecheck fix: x86, shadow.c
+Message-ID: <20090709162807.GD5208@lenovo>
+References: <1247063308.4382.12.camel@ht.satnam> <1247065179.4382.51.camel@ht.satnam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247065179.4382.51.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kirill A. Shutemov <kirill@shutemov.name>
+[Jaswinder Singh Rajput - Wed, Jul 08, 2009 at 08:29:39PM +0530]
+| 
+| fix the following 'make includecheck' warning:
+| 
+|   arch/x86/mm/kmemcheck/shadow.c: linux/module.h is included more than once.
+| 
+| Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+| ---
+|  arch/x86/mm/kmemcheck/shadow.c |    1 -
+|  1 files changed, 0 insertions(+), 1 deletions(-)
+| 
+| diff --git a/arch/x86/mm/kmemcheck/shadow.c b/arch/x86/mm/kmemcheck/shadow.c
+| index e773b6b..3f66b82 100644
+| --- a/arch/x86/mm/kmemcheck/shadow.c
+| +++ b/arch/x86/mm/kmemcheck/shadow.c
+| @@ -1,7 +1,6 @@
+|  #include <linux/kmemcheck.h>
+|  #include <linux/module.h>
+|  #include <linux/mm.h>
+| -#include <linux/module.h>
+|  
+|  #include <asm/page.h>
+|  #include <asm/pgtable.h>
+| -- 
+| 1.6.0.6
+|
 
-Optimized version of copy_page() was written with assumption that cache
-line size is 32 bytes. On Cortex-A8 cache line size is 64 bytes.
-
-This patch tries to generalize copy_page() to work with any cache line
-size if cache line size is multiple of 16 and page size is multiple of
-two cache line size.
-
-Unfortunately, kernel doesn't provide a macros with correct cache size.
-L1_CACHE_SHIFT is 5 on any ARM. So we have to define macros for this
-propose by ourself.
-
-After this optimization we've got ~25% speedup on OMAP3(tested in
-userspace).
-
-There is test for kernelspace which trigger copy-on-write after fork():
-
- #include <stdlib.h>
- #include <string.h>
- #include <unistd.h>
-
- #define BUF_SIZE (10000*4096)
- #define NFORK 200
-
- int main(int argc, char **argv)
- {
-         char *buf = malloc(BUF_SIZE);
-         int i;
-
-         memset(buf, 0, BUF_SIZE);
-
-         for(i = 0; i < NFORK; i++) {
-                 if (fork()) {
-                         wait(NULL);
-                 } else {
-                         int j;
-
-                         for(j = 0; j < BUF_SIZE; j+= 4096)
-                                 buf[j] = (j & 0xFF) + 1;
-                         break;
-                 }
-         }
-
-         free(buf);
-         return 0;
- }
-
-Before optimization this test takes ~66 seconds, after optimization
-takes ~56 seconds.
-
-Signed-off-by: Siarhei Siamashka <siarhei.siamashka@nokia.com>
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
----
- arch/arm/lib/copy_page.S |   21 +++++++++++++--------
- 1 files changed, 13 insertions(+), 8 deletions(-)
-
-diff --git a/arch/arm/lib/copy_page.S b/arch/arm/lib/copy_page.S
-index 6ae04db..3bd1b9c 100644
---- a/arch/arm/lib/copy_page.S
-+++ b/arch/arm/lib/copy_page.S
-@@ -13,7 +13,13 @@
- #include <asm/assembler.h>
- #include <asm/asm-offsets.h>
+Better to CC Vegard on this.
  
--#define COPY_COUNT (PAGE_SZ/64 PLD( -1 ))
-+#if CONFIG_ARCH_OMAP3
-+#define CACHE_LINE_SZ 64
-+#else
-+#define CACHE_LINE_SZ 32
-+#endif
-+
-+#define COPY_COUNT (PAGE_SZ/(2 * CACHE_LINE_SZ) PLD( -1 ))
- 
- 		.text
- 		.align	5
-@@ -26,17 +32,16 @@
- ENTRY(copy_page)
- 		stmfd	sp!, {r4, lr}			@	2
- 	PLD(	pld	[r1, #0]		)
--	PLD(	pld	[r1, #32]		)
-+	PLD(	pld	[r1, #CACHE_LINE_SZ]		)
- 		mov	r2, #COPY_COUNT			@	1
- 		ldmia	r1!, {r3, r4, ip, lr}		@	4+1
--1:	PLD(	pld	[r1, #64]		)
--	PLD(	pld	[r1, #96]		)
--2:		stmia	r0!, {r3, r4, ip, lr}		@	4
--		ldmia	r1!, {r3, r4, ip, lr}		@	4+1
--		stmia	r0!, {r3, r4, ip, lr}		@	4
--		ldmia	r1!, {r3, r4, ip, lr}		@	4+1
-+1:	PLD(	pld	[r1, #(2*CACHE_LINE_SZ)])
-+	PLD(	pld	[r1, #(3*CACHE_LINE_SZ)])
-+2:
-+	.rept	(2 * (CACHE_LINE_SZ) / 16 - 1)
- 		stmia	r0!, {r3, r4, ip, lr}		@	4
- 		ldmia	r1!, {r3, r4, ip, lr}		@	4
-+	.endr
- 		subs	r2, r2, #1			@	1
- 		stmia	r0!, {r3, r4, ip, lr}		@	4
- 		ldmgtia	r1!, {r3, r4, ip, lr}		@	4
--- 
-1.6.3.3
-
+	-- Cyrill
