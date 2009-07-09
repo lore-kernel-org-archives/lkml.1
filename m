@@ -1,97 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbZGIK2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbZGIKcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759264AbZGIK2Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 06:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbZGIK2P
+	id S1760114AbZGIKcl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 06:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756401AbZGIKcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 06:28:15 -0400
-Received: from co203.xi-lite.net ([149.6.83.203]:53517 "EHLO co203.xi-lite.net"
+	Thu, 9 Jul 2009 06:32:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:36322 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752033AbZGIK2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 06:28:14 -0400
-Message-ID: <4A55C631.7030103@parrot.com>
-Date: Thu, 9 Jul 2009 12:28:01 +0200
-From: Matthieu CASTET <matthieu.castet@parrot.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	id S1756215AbZGIKca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 06:32:30 -0400
+Date: Thu, 9 Jul 2009 12:31:53 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jarek Poplawski <jarkao2@gmail.com>
+cc: Andres Freund <andres@anarazel.de>,
+       Joao Correia <joaomiguelcorreia@gmail.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Patrick McHardy <kaber@trash.net>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused
+ by netem)
+In-Reply-To: <20090708224828.GD3666@ami.dom.local>
+Message-ID: <alpine.LFD.2.00.0907090956490.24704@localhost.localdomain>
+References: <200907031326.21822.andres@anarazel.de> <200907071811.27570.andres@anarazel.de> <20090708080852.GC3148@ami.dom.local> <200907090023.18040.andres@anarazel.de> <20090708224828.GD3666@ami.dom.local>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: <pierre@ossman.eu>
-CC: <sdhci-devel@lists.ossman.eu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: sdhci can turn off irq up to 200 ms
-References: <4A4B6184.7000903@parrot.com>
-In-Reply-To: <4A4B6184.7000903@parrot.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
-	boundary="------------080408050900030800000604"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---------------080408050900030800000604
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8bit
-
-Matthieu CASTET a écrit :
-> Hi,
+On Thu, 9 Jul 2009, Jarek Poplawski wrote:
+> On Thu, Jul 09, 2009 at 12:23:17AM +0200, Andres Freund wrote:
+> ...
+> > Unfortunately this just yields the same backtraces during softlockup and not 
+> > earlier.
+> > I did not test without lockdep yet, but that should not have stopped the BUG 
+> > from appearing, right?
 > 
-> sdhci code got tasklets (sdhci_tasklet_card and sdhci_tasklet_finish),
-> that does :
-> {
-> spin_lock_irqsave
-> 
-> if (cond) {
-> sdhci_reset
-> sdhci_reset
-> }
-> 
-> spin_unlock_irqrestore
-> }
-> 
-> The problem is that sdhci_reset [1] does busy pooling on a register up
-> to a timeout of 100 ms.
-> That's not low latency friendly.
-> 
-> On our system, we saw that sdhci_reset take 1 ms. That should be because
-> we enter in mdelay, even if the hardware clears the bit faster.
-> I wonder why there is an mdelay(1). Using cpu_relax and
-> time_is_after_jiffies should make sdhci_reset faster.
-> 
-In case somebody cares, here a patch that reduce on our hardware
-sdhci_reset from 1 ms to 30 us.
+> Since it looks like hrtimers now, these changes in timers shouldn't
+> matter. Let's wait for new ideas.
 
+Some background:
 
-Matthieu
+Up to 2.6.30 hrtimer_start() and add_timer() enqueue (hr)timers on the
+CPU on which the functions are called. There is one exception when the
+timer callback is currently running on another CPU then it is enqueued
+on that other CPU.
 
---------------080408050900030800000604
-Content-Type: text/x-diff; name="sdhci.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline; filename="sdhci.diff"
+The migration patches change that behaviour and enqeue the timer on
+the nohz.idle_balancer CPU when parts of the system are idle.
 
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 6779b4e..3e199b6 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -156,18 +156,17 @@ static void sdhci_reset(struct sdhci_host *host, u8 mask)
- 		host->clock = 0;
- 
- 	/* Wait max 100 ms */
--	timeout = 100;
-+	timeout = jiffies + msecs_to_jiffies(100);
- 
- 	/* hw clears the bit when it's done */
- 	while (sdhci_readb(host, SDHCI_SOFTWARE_RESET) & mask) {
--		if (timeout == 0) {
-+		if (time_is_before_jiffies(timeout)) {
- 			printk(KERN_ERR "%s: Reset 0x%x never completed.\n",
- 				mmc_hostname(host->mmc), (int)mask);
- 			sdhci_dumpregs(host);
- 			return;
- 		}
--		timeout--;
--		mdelay(1);
-+		cpu_relax();
- 	}
- 
- 	if (host->quirks & SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET)
+With the migration code disabled (via sysctl or the #if 0 patch) the
+timer is always enqeued on the same CPU, i.e. you get the 2.6.30
+behaviour back.
 
---------------080408050900030800000604--
+As you found out it is probably related to hrtimers. Checking the
+network code the only hrtimer users are in net/sched/sch_api.c and
+net/sched/sch_cbq.c . There is some in net/can as well, but that's
+probably irrelevant for the problem at hand.
+
+I'm not familiar with that code, so I have no clue which problems
+might pop up due to enqueueing the timer on another CPU, but there is
+one pretty suspicios code sequence in cbq_ovl_delay()
+
+	expires = ktime_set(0, 0);
+	expires = ktime_add_ns(expires, PSCHED_US2NS(sched));
+	if (hrtimer_try_to_cancel(&q->delay_timer) &&
+	    ktime_to_ns(ktime_sub(
+			hrtimer_get_expires(&q->delay_timer),
+			expires)) > 0)
+		hrtimer_set_expires(&q->delay_timer, expires);
+	hrtimer_restart(&q->delay_timer);
+
+So we set the expiry value of the timer only when the timer was active
+(hrtimer_try_to_cancel() returned != 0) and the new expiry time is
+before the expiry time which was in the active timer. If the timer was
+inactive we start the timer with the last expiry time which is
+probably already in the past.
+
+I'm quite sure that this is not causing the migration problem, because
+we do not enqueue it on a different CPU when the timer is already
+expired.
+
+For completeness: hrtimer_try_to_cancel() can return -1 when the timer
+callback is running. So in that case we also fiddle with the expiry
+value and restart the timer while the callback code itself might do
+the same. There is no serializiation of that code and the callback it
+seems. The watchdog timer callback in sch_api.c is not serialized
+either.
+
+There is another oddity in cbq_undelay() which is the hrtimer callback
+function:
+
+	if (delay) {
+		ktime_t time;
+
+		time = ktime_set(0, 0);
+		time = ktime_add_ns(time, PSCHED_TICKS2NS(now + delay));
+		hrtimer_start(&q->delay_timer, time, HRTIMER_MODE_ABS);
+
+The canocial way to restart a hrtimer from the callback function is to
+set the expiry value and return HRTIMER_RESTART.
+
+	}
+
+	sch->flags &= ~TCQ_F_THROTTLED;
+	__netif_schedule(qdisc_root(sch));
+	return HRTIMER_NORESTART;
+
+Again, this should not cause the timer to be enqueued on another CPU
+as we do not enqueue on a different CPU when the callback is running,
+but see above ...
+
+I have the feeling that the code relies on some implicit cpu
+boundness, which is not longer guaranteed with the timer migration
+changes, but that's a question for the network experts.
+
+Thanks,
+
+	tglx
