@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761336AbZGIO3C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761456AbZGIOaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761336AbZGIO3C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 10:29:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761194AbZGIO2x
+	id S1761456AbZGIOaN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 10:30:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760832AbZGIOaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 10:28:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51920 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761161AbZGIO2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 10:28:53 -0400
-Date: Thu, 9 Jul 2009 17:28:08 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [KVM PATCH v10 0/2] ioeventfd (formerly iosignalfd)
-Message-ID: <20090709142808.GA26895@redhat.com>
-References: <20090707210023.21953.22087.stgit@dev.haskins.net>
+	Thu, 9 Jul 2009 10:30:06 -0400
+Received: from mail-pz0-f175.google.com ([209.85.222.175]:43728 "EHLO
+	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760828AbZGIOaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 10:30:04 -0400
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>, tony@atomide.com
+Subject: Re: [PATCH 9/44] includecheck fix: arm, mach-omap1/mcbsp.c
+References: <1247063308.4382.12.camel@ht.satnam>
+	<1247064002.4382.27.camel@ht.satnam>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Thu, 09 Jul 2009 07:30:02 -0700
+In-Reply-To: <1247064002.4382.27.camel@ht.satnam> (Jaswinder Singh Rajput's message of "Wed\, 08 Jul 2009 20\:10\:02 +0530")
+Message-ID: <87y6qyvsid.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090707210023.21953.22087.stgit@dev.haskins.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 07, 2009 at 05:08:38PM -0400, Gregory Haskins wrote:
-> (Applies to kvm.git/master:3abaf217)
-> 
-> This is v10 of the series.  For more details, please see the header to
-> patch 2/2.
-> 
-> This series has been tested against the kvm-eventfd unit test, and
-> appears to be functioning properly.  You can download this test here:
-> 
-> ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
-> 
-> (Note: unit test has been updated to accomodate new feature-set)
-> 
-> Please consider for inclusion to kvm.git
+Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
 
-Acked-by: Michael S. Tsirkin <mst@redhat.com>
+> fix the following 'make includecheck' warning:
+>
+>   arch/arm/mach-omap1/mcbsp.c: mach/irqs.h is included more than once.
+>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+
+Tony's on vacation, so I'll ack these minor OMAP changes on his
+behalf.
+
+Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+
+
+> ---
+>  arch/arm/mach-omap1/mcbsp.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/arm/mach-omap1/mcbsp.c b/arch/arm/mach-omap1/mcbsp.c
+> index a2d7814..505d98c 100644
+> --- a/arch/arm/mach-omap1/mcbsp.c
+> +++ b/arch/arm/mach-omap1/mcbsp.c
+> @@ -19,7 +19,6 @@
+>  
+>  #include <mach/irqs.h>
+>  #include <mach/dma.h>
+> -#include <mach/irqs.h>
+>  #include <mach/mux.h>
+>  #include <mach/cpu.h>
+>  #include <mach/mcbsp.h>
+> -- 
+> 1.6.0.6
