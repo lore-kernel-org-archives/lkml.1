@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbZGIRbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbZGIRf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754294AbZGIRbt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 13:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZGIRbj
+	id S1754326AbZGIRf6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 13:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZGIRfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 13:31:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35007 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751564AbZGIRbi (ORCPT
+	Thu, 9 Jul 2009 13:35:50 -0400
+Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:35590 "EHLO
+	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573AbZGIRfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 13:31:38 -0400
-Date: Thu, 9 Jul 2009 10:29:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
- using phylib
-In-Reply-To: <1247149862.12784.6.camel@twins>
-Message-ID: <alpine.LFD.2.01.0907091027020.3352@localhost.localdomain>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>  <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>  <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>  <20090708141024.f8b581c5.akpm@linux-foundation.org> 
- <20090708213331.GA9346@oksana.dev.rtsoft.ru>  <20090708144744.5555b88d.akpm@linux-foundation.org>  <20090708222003.GA12318@oksana.dev.rtsoft.ru>  <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>  <1247145977.21295.899.camel@calx> 
- <1247147206.7439.2.camel@twins>  <1247149093.21295.915.camel@calx> <1247149862.12784.6.camel@twins>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Jul 2009 13:35:50 -0400
+Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on
+ sysfs files, directories, and symlinks.
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: jmorris@namei.org, gregkh@suse.de, sds@tycho.nsa.gov,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+In-Reply-To: <4A554B95.6070709@schaufler-ca.com>
+References: <1247074106-23405-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <4A554B95.6070709@schaufler-ca.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Thu, 09 Jul 2009 13:26:44 -0400
+Message-Id: <1247160404.4398.218.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I just read over Casey's comments again and I'm pretty sure we have a
+big misunderstanding here. From his initial response it seems that he
+thinks that I am exposing the secids to userspace as the way for setting
+the labels on files. That isn't true. We are still using the full string
+based labels for the userspace interface what the secid is used for is
+to allow the kernel to keep track of changes until the sysfs_dirent is
+destroyed. 
 
+Dave
 
-On Thu, 9 Jul 2009, Peter Zijlstra wrote:
-> 
-> So something like (utterly untested and such)
-
-This looks like a good patch. Please make it so - who knows what other 
-uses of cond_resched() we have in module init routines that might have 
-deadlocks without it. The netpoll case got fixed, but please just do this.
-
-I'd like to do my system_state movement too (the thing is, when you load 
-drivers as modules you _will_ have "system_state == SYSTEM_RUNNING", so 
-any initcall that depends on it being "early boot" is already broken), but 
-there's no way that patch is appropriate for post-rc2. This one, however, 
-looks appropriate (modulo getting some testing, of course)
-
-		Linus
