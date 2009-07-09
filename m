@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759187AbZGIBTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbZGIBU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759187AbZGIBTf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 21:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757162AbZGIBT2
+	id S1759377AbZGIBU6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 21:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757162AbZGIBUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 21:19:28 -0400
-Received: from tundra.namei.org ([65.99.196.166]:45817 "EHLO tundra.namei.org"
+	Wed, 8 Jul 2009 21:20:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53802 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756010AbZGIBT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 21:19:27 -0400
-Date: Thu, 9 Jul 2009 11:19:17 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Mark Allyn <mark.a.allyn@intel.com>, linux-kernel@vger.kernel.org,
-       alan@linux.intel.com, charles.f.johnson@intel.com
-Subject: Re: [PATCH] This is the security processor driver for the Intel mid
- platform
-In-Reply-To: <20090709001716.3dca2032@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LRH.2.00.0907091105570.31140@tundra.namei.org>
-References: <1247083262-17356-1-git-send-email-mark.a.allyn@intel.com> <20090709001716.3dca2032@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1756457AbZGIBUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 21:20:49 -0400
+Message-ID: <4A5545CC.9030909@redhat.com>
+Date: Wed, 08 Jul 2009 21:20:12 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Dan Magenheimer <dan.magenheimer@oracle.com>, linux-kernel@vger.kernel.org,
+       npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
+       xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
+       alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org, kurt.hackel@oracle.com,
+       Rusty Russell <rusty@rustcorp.com.au>, dave.mccracken@oracle.com,
+       Marcelo Tosatti <mtosatti@redhat.com>, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       chris.mason@oracle.com, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
+References: <482d25af-01eb-4c2a-9b1d-bdaf4020ce88@default> <4A55243B.8090001@codemonkey.ws>
+In-Reply-To: <4A55243B.8090001@codemonkey.ws>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Jul 2009, Alan Cox wrote:
+Anthony Liguori wrote:
 
-> On Wed,  8 Jul 2009 13:01:02 -0700
-> Mark Allyn <mark.a.allyn@intel.com> wrote:
-> 
-> > This is the driver for the Security Processor (SEP) for the Intel MID Platform.
-> > 
+> I have trouble mapping this to a VMM capable of overcommit without just 
+> coming back to CMM2.
 
-> Whats a SEP ? (I know that but I work for Intel ;)). This needs a longer
-> text and a description that would be useful to more people. The one in
-> your intro text is probably pretty close.
+Same for me.  CMM2 has a more complex mechanism, but way
+easier policy than anything else out there.
 
-Also, please cc the linux-security-module list with security related code, 
-and also possibly the crypto list 
-(see http://vger.kernel.org/vger-lists.html)
+> In CMM2 parlance, ephemeral tmem pools is just normal kernel memory 
+> marked in the volatile state, no?
 
-Here's the output of checkpatch.pl with your patch:
+Basically.
 
-  total: 15 errors, 29 warnings, 4 checks, 5737 lines checked
+> It seems to me that an architecture built around hinting would be more 
+> robust than having to use separate memory pools for this type of memory 
+> (especially since you are requiring a copy to/from the pool).
 
-The errors need to be fixed or justified; see section 4 of 
-Documentation/SubmittingPatches.
+I agree.  Something along the lines of CMM2 needs more
+infrastructure, but will be infinitely easier to get right
+from the policy side.
 
+Automatic ballooning is an option too, with fairly simple
+infrastructure, but potentially insanely complex policy
+issues to sort out...
 
-- James
 -- 
-James Morris
-<jmorris@namei.org>
+All rights reversed.
