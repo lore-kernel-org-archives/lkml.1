@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbZGIMEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760346AbZGIME6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759854AbZGIMEq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 08:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758930AbZGIMEh
+	id S1760346AbZGIME6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 08:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760251AbZGIMEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 08:04:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55022 "EHLO hera.kernel.org"
+	Thu, 9 Jul 2009 08:04:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55025 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757483AbZGIMEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 08:04:36 -0400
-Date: Thu, 9 Jul 2009 12:04:08 GMT
+	id S1760288AbZGIMEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 08:04:45 -0400
+Date: Thu, 9 Jul 2009 12:04:21 GMT
 From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,33 +18,38 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        tglx@linutronix.de
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:timers/urgent] hrtimer: migration: always subtract base->offset
-Message-ID: <tip-94d25649812b7d7055c162c7d910e94d3d213d34@git.kernel.org>
-Git-Commit-ID: 94d25649812b7d7055c162c7d910e94d3d213d34
+Subject: [tip:timers/urgent] hrtimer: migration: do not check expiry time on current CPU
+Message-ID: <tip-de907e8432b08f2d5966c36e0747e97c0e596810@git.kernel.org>
+Git-Commit-ID: de907e8432b08f2d5966c36e0747e97c0e596810
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Jul 2009 12:04:09 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 09 Jul 2009 12:04:22 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  94d25649812b7d7055c162c7d910e94d3d213d34
-Gitweb:     http://git.kernel.org/tip/94d25649812b7d7055c162c7d910e94d3d213d34
+Commit-ID:  de907e8432b08f2d5966c36e0747e97c0e596810
+Gitweb:     http://git.kernel.org/tip/de907e8432b08f2d5966c36e0747e97c0e596810
 Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Thu, 9 Jul 2009 12:49:34 +0200
+AuthorDate: Thu, 9 Jul 2009 13:52:32 +0200
 Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Thu, 9 Jul 2009 13:58:06 +0200
+CommitDate: Thu, 9 Jul 2009 13:59:11 +0200
 
-hrtimer: migration: always subtract base->offset
+hrtimer: migration: do not check expiry time on current CPU
 
-The new timer migration code treats the !HIGHRES case special when
-calculating the CLOCK_MONOTONIC based expiry time to validate whether
-a timer should be enqueued on a different CPU or not.
+The timer migration code needs to check whether the expiry time of the
+timer is before the programmed clock event expiry time when the timer
+is enqueued on another CPU because we can not reprogram the timer
+device on the other CPU. The current logic checks the expiry time even
+if we enqueue on the current CPU when nohz_get_load_balancer() returns
+current CPU. This might lead to an endless loop in the expiry check
+code when the expiry time of the timer is before the current
+programmed next event.
 
-This is wrong as a CLOCK_REALTIME based timer expiry value needs to be
-converted to CLOCK_MONOTONIC in any case.
+Check whether nohz_get_load_balancer() returns current CPU and skip
+the expiry check if this is the case.
 
 Cc: Arun Bharadwaj <arun@linux.vnet.ibm.com
 LKML-Reference: <new-submission>
@@ -52,25 +57,32 @@ Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
 ---
- kernel/hrtimer.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+ kernel/hrtimer.c |   15 +++++++++++++--
+ 1 files changed, 13 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 9002958..0d43451 100644
+index 0d43451..d171ecf 100644
 --- a/kernel/hrtimer.c
 +++ b/kernel/hrtimer.c
-@@ -236,13 +236,8 @@ again:
- 		/* Optimized away for NOHZ=n SMP=n */
- 		if (cpu == preferred_cpu) {
- 			/* Calculate clock monotonic expiry time */
--#ifdef CONFIG_HIGH_RES_TIMERS
- 			ktime_t expires = ktime_sub(hrtimer_get_expires(timer),
--							new_base->offset);
--#else
--			ktime_t expires = hrtimer_get_expires(timer);
--#endif
--
-+						    new_base->offset);
- 			/*
- 			 * Get the next event on target cpu from the
- 			 * clock events layer.
+@@ -206,8 +206,19 @@ switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base,
+ #if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
+ 	if (!pinned && get_sysctl_timer_migration() && idle_cpu(cpu)) {
+ 		preferred_cpu = get_nohz_load_balancer();
+-		if (preferred_cpu >= 0)
+-			cpu = preferred_cpu;
++		if (preferred_cpu >= 0) {
++			/*
++			 * We must not check the expiry value when
++			 * preferred_cpu is the current cpu. If base
++			 * != new_base we would loop forever when the
++			 * timer expires before the current programmed
++			 * next timer event.
++			 */
++			if (preferred_cpu != cpu)
++				cpu = preferred_cpu;
++			else
++				preferred_cpu = -1;
++		}
+ 	}
+ #endif
+ 
