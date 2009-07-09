@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbZGIAQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbZGIAR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758345AbZGIAQp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 20:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbZGIAQh
+	id S1758641AbZGIAR2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 20:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742AbZGIARU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 20:16:37 -0400
-Received: from mail-pz0-f175.google.com ([209.85.222.175]:53913 "EHLO
-	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756165AbZGIAQg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 20:16:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=hj8W8Eq4mcktoe9j00K+tkIQ3xFK/jYMXshOWKP43JhjVpGXpUp+kVOaCpzMCMnkp3
-         103lSiubFMnoTuyoPADNnvE6qYNmiCccwDn7YXRqPbZ5QnjDH7P5Kek98upRdO6Kc6dA
-         QrE+3Cogvj+w21KK6y4m5fe6P0F3QvwEAny00=
-From: tom.leiming@gmail.com
-To: greg@kroah.com
-Cc: linux-kernel@vger.kernel.org, catalin.marinas@arm.com, dwmw2@infradead.org,
-       kay.sievers@vrfy.org, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH] driver core:firmware_class:fix memory leak of page pointers array
-Date: Thu,  9 Jul 2009 08:16:31 +0800
-Message-Id: <1247098591-4887-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+	Wed, 8 Jul 2009 20:17:20 -0400
+Received: from claw.goop.org ([74.207.240.146]:37900 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756586AbZGIART (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 20:17:19 -0400
+Message-ID: <4A553707.5060107@goop.org>
+Date: Wed, 08 Jul 2009 17:17:11 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Dan Magenheimer <dan.magenheimer@oracle.com>, npiggin@suse.de,
+       akpm@osdl.org, xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
+       kurt.hackel@oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
+       linux-kernel@vger.kernel.org, dave.mccracken@oracle.com,
+       linux-mm@kvack.org, chris.mason@oracle.com, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>, alan@lxorguk.ukuu.org.uk,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [Xen-devel] Re: [RFC PATCH 0/4] (Take 2): transcendent memory
+ ("tmem") for Linux
+References: <ac5dec0d-e593-4a82-8c9d-8aa374e8c6ed@default> <4A553272.5050909@codemonkey.ws>
+In-Reply-To: <4A553272.5050909@codemonkey.ws>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+On 07/08/09 16:57, Anthony Liguori wrote:
+> Why does tmem require a special store?
+>
+> A VMM can trap write operations pages can be stored on disk
+> transparently by the VMM if necessary.  I guess that's the bit I'm
+> missing.
 
-The page pointers array is allocated in fw_realloc_buffer() called by
-firmware_data_write(), and should be freed in release function of firmware
-device.
+tmem doesn't store anything to disk.  It's more about making sure that
+free host memory can be quickly and efficiently be handed out to guests
+as they need it; to increase "memory liquidity" as it were.  Guests need
+to explicitly ask to use tmem, rather than having the host/hypervisor
+try to intuit what to do based on access patterns and hints; typically
+they'll use tmem as the first line storage for memory which they were
+about to swap out anyway.  There's no point in making tmem swappable,
+because the guest is perfectly capable of swapping its own memory.
 
-Signed-off-by:Ming Lei <tom.leiming@gmail.com>
-Reported-by:Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: David Woodhouse <David.Woodhouse@intel.com>
----
- drivers/base/firmware_class.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+The copying interface avoids a lot of the delicate corners of the CMM
+code, in which subtle races can lurk in fairly hard-to-test-for ways. 
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index fc46653..2643366 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -180,7 +180,6 @@ static ssize_t firmware_loading_store(struct device *dev,
- 				goto err;
- 			}
- 			/* Pages will be freed by vfree() */
--			fw_priv->pages = NULL;
- 			fw_priv->page_array_size = 0;
- 			fw_priv->nr_pages = 0;
- 			complete(&fw_priv->completion);
--- 
-1.6.0.GIT
+>> The copy may be expensive on an older machine, but on newer
+>> machines copying a page is relatively inexpensive.
+>
+> I don't think that's a true statement at all :-)  If you had a
+> workload where data never came into the CPU cache (zero-copy) and now
+> you introduce a copy, even with new system, you're going to see a
+> significant performance hit.
 
+If the copy helps avoid physical disk IO, then it is cheap at the
+price.  A guest generally wouldn't push a page into tmem unless it was
+about to evict it anyway, so it has already determined the page is
+cold/unwanted, and the copy isn't a great cost.  Hot/busy pages
+shouldn't be anywhere near tmem; if they are, it suggests you've cut
+your domain's memory too aggressively.
+
+    J
