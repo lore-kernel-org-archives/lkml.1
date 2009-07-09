@@ -1,111 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZGITgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbZGITiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754297AbZGITgI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 15:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbZGITfs
+	id S1754958AbZGITiT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 15:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZGITiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 15:35:48 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1499 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754356AbZGITfr (ORCPT
+	Thu, 9 Jul 2009 15:38:07 -0400
+Received: from msux-gh1-uea01.nsa.gov ([63.239.67.1]:41417 "EHLO
+	msux-gh1-uea01.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752829AbZGITiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 15:35:47 -0400
-Subject: Re: [PATCH 5/7] MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
-From: Joe Perches <joe@perches.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-In-Reply-To: <20090709150810.GA25112@rakim.wolfsonmicro.main>
-References: <cover.1247032324.git.joe@perches.com>
-	 <9c84258bdd3ebecd54e2bc203dbded1382af9c02.1247032324.git.joe@perches.com>
-	 <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com>
-	 <1247035197.5124.9.camel@Joe-Laptop.home>
-	 <1247035481.15919.31.camel@penberg-laptop>
-	 <1247035628.5124.11.camel@Joe-Laptop.home>
-	 <20090709093004.GA32655@sirena.org.uk>
-	 <1247151536.12426.39.camel@Joe-Laptop.home>
-	 <20090709150810.GA25112@rakim.wolfsonmicro.main>
+	Thu, 9 Jul 2009 15:38:06 -0400
+Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on
+ sysfs files, directories, and symlinks.
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: Greg KH <gregkh@suse.de>
+Cc: jmorris@namei.org, sds@tycho.nsa.gov, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+In-Reply-To: <20090709175250.GB26378@suse.de>
+References: <1247074106-23405-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <20090709151803.GB24302@suse.de> <1247159613.4398.215.camel@localhost>
+	 <20090709175250.GB26378@suse.de>
 Content-Type: text/plain
-Date: Thu, 09 Jul 2009 12:35:39 -0700
-Message-Id: <1247168139.3461.2.camel@Joe-Laptop.home>
+Organization: National Security Agency
+Date: Thu, 09 Jul 2009 15:28:58 -0400
+Message-Id: <1247167738.4398.229.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 16:08 +0100, Mark Brown wrote:
-> That's pretty much what I was thinking of too - tweaking the values for
-> the log queries based on the total number of hits so people only turn up
-> if they did a certain proportion of the commits.  It'd take some
-> experimentation to work out what the values to use should be, I guess.
+On Thu, 2009-07-09 at 10:52 -0700, Greg KH wrote:
+> On Thu, Jul 09, 2009 at 01:13:33PM -0400, David P. Quigley wrote:
+> > The issue is that there really aren't any LSM hooks to accommodate that.
+> > I have a few LSM hooks for the Labeled NFS work which could be used for
+> > this but it still requires us to store the full xattr value somewhere
+> > and referencing it in the sysfs_dirent structure.
+> 
+> A void pointer would handle that properly, right?
 
-Perhaps something like this:
+A void pointer would suffice if we wanted to store the opaque blob. My
+argument is that storing that blob is too heavy weight memory wise.
 
-diff --git a/scripts/get_maintainer.pl b/scripts/get_maintainer.pl
-index 7fc09fc..a97f248 100755
---- a/scripts/get_maintainer.pl
-+++ b/scripts/get_maintainer.pl
-@@ -27,6 +27,7 @@ my $email_git = 1;
- my $email_git_penguin_chiefs = 0;
- my $email_git_min_signatures = 1;
- my $email_git_max_maintainers = 5;
-+my $email_git_min_percent = 0;
- my $email_git_since = "1-year-ago";
- my $output_multiline = 1;
- my $output_separator = ", ";
-@@ -65,6 +66,7 @@ if (!GetOptions(
- 		'git-chief-penguins!' => \$email_git_penguin_chiefs,
- 		'git-min-signatures=i' => \$email_git_min_signatures,
- 		'git-max-maintainers=i' => \$email_git_max_maintainers,
-+		'git-min-percent=i' => \$email_git_min_percent,
- 		'git-since=s' => \$email_git_since,
- 		'm!' => \$email_maintainer,
- 		'n!' => \$email_usename,
-@@ -307,6 +309,7 @@ MAINTAINER field selection options:
-     --git-chief-penguins => include ${penguin_chiefs}
-     --git-min-signatures => number of signatures required (default: 1)
-     --git-max-maintainers => maximum maintainers to add (default: 5)
-+    --git-min-percent => minimum percentage of commits required (default: 0)
-     --git-since => git history to use (default: 1-year-ago)
-     --m => include maintainer(s) if any
-     --n => include name 'Full Name <addr\@domain.tld>'
-@@ -497,6 +500,7 @@ sub recent_git_signoffs {
-     my $output = "";
-     my $count = 0;
-     my @lines = ();
-+    my $total_sign_offs;
- 
-     if (which("git") eq "") {
- 	warn("$P: git not found.  Add --nogit to options?\n");
-@@ -520,6 +524,14 @@ sub recent_git_signoffs {
-     $output =~ s/^\s*//gm;
- 
-     @lines = split("\n", $output);
-+
-+    $total_sign_offs = 0;
-+    foreach my $line (@lines) {
-+	if ($line =~ m/([0-9]+)\s+(.*)/) {
-+	    $total_sign_offs += $1;
-+	}
-+    }
-+
-     foreach my $line (@lines) {
- 	if ($line =~ m/([0-9]+)\s+(.*)/) {
- 	    my $sign_offs = $1;
-@@ -529,6 +541,11 @@ sub recent_git_signoffs {
- 	        $count > $email_git_max_maintainers) {
- 		last;
- 	    }
-+	    if ($email_git_min_percent > 0 &&
-+		(($sign_offs * 100 / $total_sign_offs) < $email_git_min_percent)
-+		) {
-+		last;
-+	    }
- 	} else {
- 	    die("$P: Unexpected git output: ${line}\n");
- 	}
+> 
+> > The issue here is that there are two ways of presenting security
+> > information. The first is through the xattr interface which represents
+> > the security information as an opaque blob which the LSM turns into an
+> > internal representation. The second which is left over from the early
+> > days is the secid which I equate to a file handle. The problem I see
+> > is that the opaque blob (the xattr) is the interface presented to user
+> > space. It isn't really used internally except to turn it into a data
+> > structure or to write it to disk for persistence.
+> 
+> That is the way that selinux does it, do the other lsms also handle it
+> this way?
 
+Casey handles this a different way in Smack but it has more to do with
+his model than his design. Since a Smack label is just a simple 23 byte
+string he doesn't do any conversion to store it in Smack. SELinux
+differs in that the label contains 4 components so these get broken out
+into the security structure so they can be handled separately by the
+security structure. I can't say for certain but I would probably say
+that a label based LSM which attempts to implement several models will
+probably have to do what SELinux does. The only thing I'm concerned with
+is that Casey did mention when I was creating hooks for the Labeled NFS
+work a situation where an LSM may implement multiple security.* xattrs.
+We don't currently have any LSMs that work that way so I'm not sure if I
+need to handle that now.
+
+> 
+> > The situation we have with sysfs is that there is no persistence for
+> > labels and the in-core inode maybe evicted so we need a way of
+> > persisting changes from the default label.
+> 
+> So you put it in the structure you did, which is correct.  You should
+> also listen to all sysfs netlink messages to be sure to lable things
+> when they are created, to handle the lack of persistence.
+
+Thanks for the heads up. I'll make sure I look into this.
+
+> 
+> thanks,
+> 
+> greg k-h
 
