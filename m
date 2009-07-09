@@ -1,58 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761457AbZGIOab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbZGIObT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761457AbZGIOab (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 10:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761233AbZGIOaW
+	id S1761389AbZGIObT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 10:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbZGIObM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 10:30:22 -0400
-Received: from mail-pz0-f175.google.com ([209.85.222.175]:43728 "EHLO
-	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761350AbZGIOaU (ORCPT
+	Thu, 9 Jul 2009 10:31:12 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:46402 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760737AbZGIObL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 10:30:20 -0400
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
-       LKML <linux-kernel@vger.kernel.org>, tony@atomide.com
-Subject: Re: [PATCH 10/44] includecheck fix: arm, mach-omap2/mcbsp.c
-References: <1247063308.4382.12.camel@ht.satnam>
-	<1247064065.4382.28.camel@ht.satnam>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Thu, 09 Jul 2009 07:30:18 -0700
-In-Reply-To: <1247064065.4382.28.camel@ht.satnam> (Jaswinder Singh Rajput's message of "Wed\, 08 Jul 2009 20\:11\:05 +0530")
-Message-ID: <87tz1mvshx.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 9 Jul 2009 10:31:11 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
+ using phylib
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <1247149093.21295.915.camel@calx>
+References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
+	 <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
+	 <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
+	 <20090708141024.f8b581c5.akpm@linux-foundation.org>
+	 <20090708213331.GA9346@oksana.dev.rtsoft.ru>
+	 <20090708144744.5555b88d.akpm@linux-foundation.org>
+	 <20090708222003.GA12318@oksana.dev.rtsoft.ru>
+	 <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>
+	 <1247145977.21295.899.camel@calx>  <1247147206.7439.2.camel@twins>
+	 <1247149093.21295.915.camel@calx>
+Content-Type: text/plain
+Date: Thu, 09 Jul 2009 16:31:02 +0200
+Message-Id: <1247149862.12784.6.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+On Thu, 2009-07-09 at 09:18 -0500, Matt Mackall wrote:
+> 
+> Sorry if I was unclear. I'm suggesting setting the count so the existing
+> PREEMPT_ACTIVE test here fires:
+> 
+> int __sched _cond_resched(void)
+> {
+>         if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE) &&
+>                                         system_state == SYSTEM_RUNNING) {
+>                 __cond_resched();
+>                 return 1;
+>         }
+>         return 0;
+> }
 
-> fix the following 'make includecheck' warning:
->
->   arch/arm/mach-omap2/mcbsp.c: mach/irqs.h is included more than once.
->
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Right, /me read preempt and thought a simple preempt inc but didn't read
+the code. Shame on me.
 
-Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+So something like (utterly untested and such)
 
-> ---
->  arch/arm/mach-omap2/mcbsp.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/arm/mach-omap2/mcbsp.c b/arch/arm/mach-omap2/mcbsp.c
-> index a5c0f04..99b6e15 100644
-> --- a/arch/arm/mach-omap2/mcbsp.c
-> +++ b/arch/arm/mach-omap2/mcbsp.c
-> @@ -19,7 +19,6 @@
->  
->  #include <mach/irqs.h>
->  #include <mach/dma.h>
-> -#include <mach/irqs.h>
->  #include <mach/mux.h>
->  #include <mach/cpu.h>
->  #include <mach/mcbsp.h>
-> -- 
-> 1.6.0.6
+---
+
+ arch/x86/include/asm/thread_info.h |    2 +-
+ kernel/sched.c                     |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
+index b078352..7b5dbce 100644
+--- a/arch/x86/include/asm/thread_info.h
++++ b/arch/x86/include/asm/thread_info.h
+@@ -49,7 +49,7 @@ struct thread_info {
+ 	.exec_domain	= &default_exec_domain,	\
+ 	.flags		= 0,			\
+ 	.cpu		= 0,			\
+-	.preempt_count	= 1,			\
++	.preempt_count	= 1 + PREEMPT_ACTIVE,	\
+ 	.addr_limit	= KERNEL_DS,		\
+ 	.restart_block = {			\
+ 		.fn = do_no_restart_syscall,	\
+diff --git a/kernel/sched.c b/kernel/sched.c
+index fd3ac58..8e81162 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6599,8 +6599,7 @@ static void __cond_resched(void)
+ 
+ int __sched _cond_resched(void)
+ {
+-	if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE) &&
+-					system_state == SYSTEM_RUNNING) {
++	if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE)) {
+ 		__cond_resched();
+ 		return 1;
+ 	}
+@@ -9422,6 +9421,7 @@ void __init sched_init(void)
+ 	perf_counter_init();
+ 
+ 	scheduler_running = 1;
++	sub_preempt_count(PREEMPT_ACTIVE);
+ }
+ 
+ #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
+
+
