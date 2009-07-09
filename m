@@ -1,111 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759514AbZGIB7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbZGICA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759514AbZGIB7O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 21:59:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZGIB7D
+	id S1757990AbZGICA1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 22:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZGICAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 21:59:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52121 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755062AbZGIB7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 21:59:02 -0400
-Date: Wed, 8 Jul 2009 21:58:42 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: dhaval@linux.vnet.ibm.com, snitzer@redhat.com, dm-devel@redhat.com,
-       jens.axboe@oracle.com, agk@redhat.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, jmoyer@redhat.com, fchecconi@gmail.com,
-       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
-Subject: Re: [RFC] IO scheduler based IO controller V6
-Message-ID: <20090709015842.GA29117@redhat.com>
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <20090708035621.GB3215@balbir.in.ibm.com> <20090708134114.GA24048@redhat.com> <20090708143925.GE3215@balbir.in.ibm.com>
+	Wed, 8 Jul 2009 22:00:18 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:60975 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752007AbZGICAS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 22:00:18 -0400
+Message-ID: <4A554F1E.5020508@oracle.com>
+Date: Wed, 08 Jul 2009 18:59:58 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090708143925.GE3215@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: Dave Airlie <airlied@gmail.com>, Greg KH <gregkh@suse.de>,
+       Peter Jones <pjones@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Scott James Remnant <scott@canonical.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Dave Jones <davej@redhat.com>
+Subject: Re: can we move USB_DEVICEFS to non-embedded?
+References: <20090623144221.GA29593@suse.de>	 <21d7e9970907080354h6949b27va40fb830f612287@mail.gmail.com>	 <4A54A4A6.2060100@redhat.com> <4A54A538.3080407@redhat.com>	 <20090708140419.GA20418@suse.de> <4A54A938.5030807@redhat.com>	 <20090708145625.GA20690@suse.de> <4A54B5C2.9000908@redhat.com>	 <20090708154758.GB20979@suse.de>	 <21d7e9970907081423v6d3830eey227f3d54b10382a6@mail.gmail.com> <b6a2187b0907081743w61102ff4u75d15c2f3cae26d@mail.gmail.com>
+In-Reply-To: <b6a2187b0907081743w61102ff4u75d15c2f3cae26d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4A554F10.01C0:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 08, 2009 at 08:09:25PM +0530, Balbir Singh wrote:
-> * Vivek Goyal <vgoyal@redhat.com> [2009-07-08 09:41:14]:
+Jeff Chua wrote:
+> On Thu, Jul 9, 2009 at 5:23 AM, Dave Airlie<airlied@gmail.com> wrote:
 > 
-> > On Wed, Jul 08, 2009 at 09:26:21AM +0530, Balbir Singh wrote:
-> > > * Vivek Goyal <vgoyal@redhat.com> [2009-07-02 16:01:32]:
-> > > 
-> > > > 
-> > > > Hi All,
-> > > > 
-> > > > Here is the V6 of the IO controller patches generated on top of 2.6.31-rc1.
-> > > > 
-> > > > Previous versions of the patches was posted here.
-> > > > 
-> > > > (V1) http://lkml.org/lkml/2009/3/11/486
-> > > > (V2) http://lkml.org/lkml/2009/5/5/275
-> > > > (V3) http://lkml.org/lkml/2009/5/26/472
-> > > > (V4) http://lkml.org/lkml/2009/6/8/580
-> > > > (V5) http://lkml.org/lkml/2009/6/19/279
-> > > > 
-> > > > This patchset is still work in progress but I want to keep on getting the
-> > > > snapshot of my tree out at regular intervals to get the feedback hence V6.
-> > > >
-> > > 
-> > > Hi, Vivek,
-> > > 
-> > > I was able to compile and boot a 2.6.31-rc1 kernel with this patchset.
-> > > I have a request could you fold up all patches and make one
-> > > consolidated patch available somewhere (makes it easier to test), may
-> > > be a git tree?
-> > > 
-> > 
-> > Thanks for trying it out balbir. Ok, for ease of patching and testing, I 
-> > will also maintain a consolidated patch. For V6 you can download the patch
-> > from here.
-> > 
-> > http://people.redhat.com/~vgoyal/io-controller/io-scheduler-based-io-controller-v6.patch
-> >
+>> So I don't think CONFIG_EMBEDDED is correct at least at this point.
 > 
-> Thanks, this will definitely help me get more testing done!
->  
-> > > I did some quick tests with some io benchmarks and found in a simple
-> > > scenario that the scheduler worked as expected, except that it took
-> > > very long. I'll investigate further and revert back.
-> > 
-> > Thanks. I will wait for details.
-> >
+> Without CONFIG_EMBEDDED ...
+>   CONFIG_NAMESPACES=y
+
+Under General Setup, Namespaces support
+
+> With CONFIG_EMBEDDED=y ...
+>   # CONFIG_NAMESPACES is not set
+>   CONFIG_VMSPLIT_3G=y
 > 
-> I'll try and send something out by Friday, but for now I am not even
-> very sure if it is a real problem. I ran iozone on two groups with 500
-> and 1000 as weights on the same parition and set fairness to 1 in
-> sysfs for the partition. I used a record size of 4 (default) and tried
-> to run it on a file size of 1G.
-> 
+> I can't find a place to change these using menuconfig when EMBEDDED is selected.
 
-Hi Balbir,
+Under Processor type and features, Memory split
 
-Trying iozone might be a good idea for analyzing the performance impact
-of io controller patches but it might not be the best thing to test
-fairness.
+> I agree that CONFIG_EMBEDDED is not the right place to hide this
+> becuase it changed the behavior of more than just usbfs.
 
-The biggest reason being that IO controller provides fairness only if
-there is constant contention between the groups. If one group goes away
-for sometime, other gets to use the disk full. Now while running above
-benchmark, there are numerous occasions where disk is not contended for
-and we don't see fairness numbers in user space.
 
-I would recommend trying out fio or small tests to begin with which
-can create continuously backlogged queues at the disk to see how 
-accurate the io-controller is.
-
-> BTW, I don't see anything about weights being multiple of an expected
-> figure documented anywhere. I tried weights of 1024 (similar to the
-> scheduler and got shouted back at :) ). Does the documentation patch
-> specify the expected range for weights? 
-> 
-
-Weight range is 1-1000. I will update documentation to reflect this.
-Thanks for pointing it out.
-
-Vivek
+~Randy
