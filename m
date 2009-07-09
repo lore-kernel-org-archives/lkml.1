@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbZGIADP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbZGIAEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbZGIADP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 20:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZGIADC
+	id S1758918AbZGIAEn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 20:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbZGIAEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 20:03:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52399 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756513AbZGIADA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 20:03:00 -0400
-Date: Wed, 8 Jul 2009 17:01:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
-       oleg@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
- using phylib
-In-Reply-To: <20090708222003.GA12318@oksana.dev.rtsoft.ru>
-Message-ID: <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru> <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins> <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain> <20090708141024.f8b581c5.akpm@linux-foundation.org>
- <20090708213331.GA9346@oksana.dev.rtsoft.ru> <20090708144744.5555b88d.akpm@linux-foundation.org> <20090708222003.GA12318@oksana.dev.rtsoft.ru>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 8 Jul 2009 20:04:36 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:44156 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756713AbZGIAEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 20:04:36 -0400
+Date: Thu, 9 Jul 2009 01:04:34 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: dri-devel@lists.sourceforge.net, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 36/44] includecheck fix: include/drm, drm_memory.h
+In-Reply-To: <1247068169.4382.99.camel@ht.satnam>
+Message-ID: <alpine.DEB.2.00.0907090104170.20307@skynet.skynet.ie>
+References: <1247063308.4382.12.camel@ht.satnam> <1247068169.4382.99.camel@ht.satnam>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -31,58 +27,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Thu, 9 Jul 2009, Anton Vorontsov wrote:
+> fix the following 'make includecheck' warning:
 > 
-> The netpoll code is using msleep() just a few lines below cond_resched(),
-> so we won't make things worse. ;-)
+>   include/drm/drm_memory.h: linux/vmalloc.h is included more than once.
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-Yeah. That function is definitely sleeping. It does things like 
-kmalloc(GFP_KERNEL), rtnl_lock() and synchronize_rcu() etc too, so an 
-added msleep() is the least of our problems.
+Acked-by: Dave Airlie <airlied@redhat.com>
 
-Afaik, it's called from a bog-standard "module_init()", which happens late 
-enough that everything works.
-
-In fact, I wonder if we should set SYSTEM_RUNNING much earlier - _before_ 
-doing the whole "do_initcalls()". By then we've set up all the core stuff 
-and enabled interrupts, so we really _are_ running. We just don't 
-necessarily have drivers, filesystems etc loaded yet. But anything that 
-happens late enough to be an initcall should be largely considered to 
-be during "normal code".
-
-(The "early_initcall" cases are special - those really do happen pretty 
-early).
-
-So ACK on Anton's patch, but I wonder if we _also_ should do the 
-following?
-
-Looking at the people looking at SYSTEM_RUNNING, I do note some odd cases. 
-Why the heck does kernel/perf_counter.c do it, for example?
-
-		Linus
-
----
- init/main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/init/main.c b/init/main.c
-index 2c5ade7..f10d9cd 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -788,6 +788,7 @@ static void __init do_initcalls(void)
- {
- 	initcall_t *call;
- 
-+	system_state = SYSTEM_RUNNING;
- 	for (call = __early_initcall_end; call < __initcall_end; call++)
- 		do_one_initcall(*call);
- 
-@@ -839,7 +840,6 @@ static noinline int init_post(void)
- 	free_initmem();
- 	unlock_kernel();
- 	mark_rodata_ro();
--	system_state = SYSTEM_RUNNING;
- 	numa_default_policy();
- 
- 	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
+Dave.
+> ---
+>  include/drm/drm_memory.h |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/drm/drm_memory.h b/include/drm/drm_memory.h
+> index 63e425b..15af9b3 100644
+> --- a/include/drm/drm_memory.h
+> +++ b/include/drm/drm_memory.h
+> @@ -44,8 +44,6 @@
+>  
+>  #if __OS_HAS_AGP
+>  
+> -#include <linux/vmalloc.h>
+> -
+>  #ifdef HAVE_PAGE_AGP
+>  #include <asm/agp.h>
+>  #else
+> 
