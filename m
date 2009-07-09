@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZGIVlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbZGIVnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbZGIVlx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 17:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbZGIVlq
+	id S1757209AbZGIVnT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 17:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbZGIVnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 17:41:46 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:14220 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753258AbZGIVlp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 17:41:45 -0400
-Message-ID: <4A566414.7060805@codemonkey.ws>
-Date: Thu, 09 Jul 2009 16:41:40 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 9 Jul 2009 17:43:05 -0400
+Received: from kroah.org ([198.145.64.141]:41025 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754511AbZGIVnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 17:43:04 -0400
+Date: Thu, 9 Jul 2009 14:42:45 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Tony Cook <tony-cook@bigpond.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29.5: Oops when unplugging Moschip 7840/7820 USB serial
+ device
+Message-ID: <20090709214245.GA28377@kroah.com>
+References: <4A565991.2060606@goop.org>
+ <Pine.LNX.4.44L0.0907091728590.11378-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Dan Magenheimer <dan.magenheimer@oracle.com>
-CC: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
-       xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
-       alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org, kurt.hackel@oracle.com,
-       Rusty Russell <rusty@rustcorp.com.au>, dave.mccracken@oracle.com,
-       Marcelo Tosatti <mtosatti@redhat.com>, sunil.mushran@oracle.com,
-       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
-       chris.mason@oracle.com, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
-References: <c0e57d57-3f36-4405-b3f1-1a8c48089394@default>
-In-Reply-To: <c0e57d57-3f36-4405-b3f1-1a8c48089394@default>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0907091728590.11378-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Magenheimer wrote:
-> CMM2's focus is on increasing the number of VM's that
-> can run on top of the hypervisor.  To do this, it
-> depends on hints provided by Linux to surreptitiously
-> steal memory away from Linux.  The stolen memory still
-> "belongs" to Linux and if Linux goes to use it but the
-> hypervisor has already given it to another Linux, the
-> hypervisor must jump through hoops to give it back.
->   
+On Thu, Jul 09, 2009 at 05:36:30PM -0400, Alan Stern wrote:
+> On Thu, 9 Jul 2009, Jeremy Fitzhardinge wrote:
+> 
+> > I unplugged a Moschip 7840/7820 USB serial adapter, and it oopsed.  I had been using it
+> > with picoterm, but it was not open at the time I unplugged it.
+> > 
+> > Thanks,
+> > 	J
+> > 
+> > BUG: unable to handle kernel NULL pointer dereference at 00000000000000b4
+> > IP: [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
+> > PGD 12e19c067 PUD 12e19d067 PMD 0 
+> > Oops: 0002 [#1] SMP 
+> > last sysfs file: /sys/devices/system/cpu/cpu1/cpufreq/scaling_cur_freq
+> > CPU 0 
+> > Modules linked in: mos7840 usbserial joydev aes_x86_64 aes_generic hidp fuse ipt_MASQUERADE iptable_nat nf_nat rfcomm bridge stp llc bnep sco l2cap coretemp sunrpc ip6t_REJECT nf_conntrack_ipv6 ip6table_filter ip6_tables ipv6 cpufreq_ondemand acpi_cpufreq freq_table dm_multipath kvm_intel kvm uinput snd_hda_codec_conexant snd_hda_intel snd_hda_codec arc4 ecb snd_hwdep thinkpad_acpi iwlagn usb_storage snd_pcm hwmon btusb e1000e pcspkr iwlcore snd_timer iTCO_wdt lib80211 iTCO_vendor_support mac80211 i2c_i801 wmi snd bluetooth cfg80211 soundcore snd_page_alloc i915 drm i2c_algo_bit i2c_core video output [last unloaded: microcode]
+> > Pid: 27, comm: khubd Not tainted 2.6.29.5-191.fc11.x86_64 #1 74542GU
+> > RIP: 0010:[<ffffffff81029eb5>]  [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
+> 
+> > Call Trace:
+> >  [<ffffffff81029f7f>] default_spin_lock_flags+0x9/0xe
+> >  [<ffffffff813abf94>] _spin_lock_irqsave+0x32/0x3b
+> >  [<ffffffffa0399afa>] mos7840_shutdown+0x93/0x120 [mos7840]
+> 
+> The fix for this bug is in 2.6.30.1, but it hasn't been added to the 
+> 2.6.29.stable tree (or 2.6.27.stable).
 
-It depends on how you define "jump through hoops".
+.29 is no longer being maintained.
 
-> If it guesses wrong and overcommits too aggressively,
-> the hypervisor must swap some memory to a "hypervisor
-> swap disk" (which btw has some policy challenges).
-> IMHO this is more of a "mainframe" model.
->   
+I didn't think the change was needed for .27, is it?
 
-No, not at all.  A guest marks a page as being "volatile", which tells 
-the hypervisor it never needs to swap that page.  It can discard it 
-whenever it likes.
+thanks,
 
-If the guest later tries to access that page, it will get a special 
-"discard fault".  For a lot of types of memory, the discard fault 
-handler can then restore that page transparently to the code that 
-generated the discard fault.
-
-AFAICT, ephemeral tmem has the exact same characteristics as volatile 
-CMM2 pages.  The difference is that tmem introduces an API to explicitly 
-manage this memory behind a copy interface whereas CMM2 uses hinting and 
-a special fault handler to allow any piece of memory to be marked in 
-this way.
-
-> In other words, CMM2, despite its name, is more of a
-> "subservient" memory management system (Linux is
-> subservient to the hypervisor) and tmem is more
-> collaborative (Linux and the hypervisor share the
-> responsibilities and the benefits/costs).
->   
-
-I don't really agree with your analysis of CMM2.  We can map CMM2 
-operations directly to ephemeral tmem interfaces so tmem is a subset of 
-CMM2, no?
-
-What's appealing to me about CMM2 is that it doesn't change the guest 
-semantically but rather just gives the VMM more information about how 
-the VMM is using it's memory.  This suggests that it allows greater 
-flexibility in the long term to the VMM and more importantly, provides 
-an easier implementation across a wide range of guests.
-
-Regards,
-
-Anthony Liguori
+greg k-h
