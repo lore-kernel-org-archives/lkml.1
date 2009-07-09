@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761308AbZGIOvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761143AbZGIOxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761308AbZGIOvf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 10:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbZGIOv1
+	id S1761143AbZGIOxB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 10:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758029AbZGIOwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 10:51:27 -0400
-Received: from viefep12-int.chello.at ([62.179.121.32]:21498 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759070AbZGIOv0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 10:51:26 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] netpoll: Fix carrier detection for drivers that are
- using phylib
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <1247150580.21295.937.camel@calx>
-References: <20090707235812.GA12824@oksana.dev.rtsoft.ru>
-	 <20090708005000.GA12380@redhat.com> <1247034263.9777.24.camel@twins>
-	 <alpine.LFD.2.01.0907080907210.3210@localhost.localdomain>
-	 <20090708141024.f8b581c5.akpm@linux-foundation.org>
-	 <20090708213331.GA9346@oksana.dev.rtsoft.ru>
-	 <20090708144744.5555b88d.akpm@linux-foundation.org>
-	 <20090708222003.GA12318@oksana.dev.rtsoft.ru>
-	 <alpine.LFD.2.01.0907081701050.3352@localhost.localdomain>
-	 <1247145977.21295.899.camel@calx>  <1247147206.7439.2.camel@twins>
-	 <1247149093.21295.915.camel@calx>  <1247149862.12784.6.camel@twins>
-	 <1247150580.21295.937.camel@calx>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 16:51:19 +0200
-Message-Id: <1247151079.12784.10.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Jul 2009 10:52:54 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:34335 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753072AbZGIOwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 10:52:53 -0400
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: felixb@sgi.com, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 34/44] includecheck fix: fs/xfs, xfs_iops.c
+References: <1247063308.4382.12.camel@ht.satnam>
+	<1247067971.4382.94.camel@ht.satnam>
+From: Olaf Weber <olaf@sgi.com>
+Date: Thu, 09 Jul 2009 16:52:48 +0200
+In-Reply-To: <1247067971.4382.94.camel@ht.satnam> (Jaswinder Singh Rajput's message of "Wed, 08 Jul 2009 21:16:11 +0530")
+Message-ID: <bzyhbxlx60v.fsf@fransum.emea.sgi.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.3 (irix)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 09:43 -0500, Matt Mackall wrote:
+Jaswinder Singh Rajput writes:
 
-> Yeah, that's what I had in mind. Probably throw in a define:
-> 
-> /* for disabling scheduling in early boot */
-> #define PREEMPT_EARLY (1 + PREEMPT_ACTIVE)
-> 
-> and slap a comment on the sub_preempt_count().
+> fix the following 'make includecheck' warning:
 
-Right, and visit all the other arch init code ;-)
+>   fs/xfs/linux-2.6/xfs_iops.c: xfs_acl.h is included more than once.
 
-I'll wait to see if Ingo has anything to say about it and then complete
-this thing.
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-> Does anything actually use scheduler_running yet? Perhaps my tree is
-> old.
+Acked-By: Olaf Weber <olaf@sgi.com>
 
-# git grep scheduler_running
-kernel/sched.c:static __read_mostly int scheduler_running;
-kernel/sched.c: scheduler_running = 1;
-kernel/sched_rt.c:      if (unlikely(!scheduler_running))
-kernel/sched_rt.c:      if (unlikely(!scheduler_running))
 
-If memory serves there used to be more, but I think that migrated into
-kernel/sched_clock.c, which has sched_clock_running.
 
-> Also, might_sleep's use of system_state probably bears revisiting.
+> ---
+>  fs/xfs/linux-2.6/xfs_iops.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
 
-Yeah, all that code is from long before we had scheduler_running (which
-was introduced around CFS/.23).
+> diff --git a/fs/xfs/linux-2.6/xfs_iops.c b/fs/xfs/linux-2.6/xfs_iops.c
+> index 58973bb..793a146 100644
+> --- a/fs/xfs/linux-2.6/xfs_iops.c
+> +++ b/fs/xfs/linux-2.6/xfs_iops.c
+> @@ -43,7 +43,6 @@
+>  #include "xfs_error.h"
+>  #include "xfs_itable.h"
+>  #include "xfs_rw.h"
+> -#include "xfs_acl.h"
+>  #include "xfs_attr.h"
+>  #include "xfs_buf_item.h"
+>  #include "xfs_utils.h"
+> -- 
+> 1.6.0.6
 
+-- 
+Olaf Weber                 SGI               Phone:  +31(0)30-6696752
+                           Veldzigt 2b       Fax:    +31(0)30-6696799
+Technical Lead             3454 PW de Meern  Vnet:   955-7151
+Storage Software           The Netherlands   Email:  olaf@sgi.com
