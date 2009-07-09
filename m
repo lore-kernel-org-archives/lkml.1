@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758465AbZGIIZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbZGII1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758465AbZGIIZF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 04:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZGIIYt
+	id S1758676AbZGII1M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 04:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbZGII1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 04:24:49 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:44994 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751774AbZGIIYr (ORCPT
+	Thu, 9 Jul 2009 04:27:00 -0400
+Received: from smtpq3.gn.mail.iss.as9143.net ([212.54.34.166]:49237 "EHLO
+	smtpq3.gn.mail.iss.as9143.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753532AbZGII07 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 04:24:47 -0400
-Date: Thu, 9 Jul 2009 10:24:45 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: tridge@samba.org
-cc: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <19029.21645.316650.934926@samba.org>
-Message-ID: <alpine.LSU.2.00.0907091002500.11529@fbirervta.pbzchgretzou.qr>
-References: <87hbxu60qm.fsf@devron.myhome.or.jp> <19021.23231.213863.726785@samba.org> <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr> <19021.26102.80885.330380@samba.org> <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr>
- <19021.31291.642416.956966@samba.org> <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr> <19021.63615.450348.192109@samba.org> <alpine.LSU.2.00.0907061337550.9199@fbirervta.pbzchgretzou.qr> <19025.63119.656216.431469@samba.org>
- <20090707195129.GB24203@elf.ucw.cz> <19028.19921.30399.762710@samba.org> <alpine.LSU.2.00.0907081146290.29609@fbirervta.pbzchgretzou.qr> <19029.21645.316650.934926@samba.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Thu, 9 Jul 2009 04:26:59 -0400
+Date: Thu, 9 Jul 2009 10:26:51 +0200
+From: Dick Streefland <dick@streefland.net>
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
+Message-ID: <20090709082651.GA6165@streefland.net>
+References: <20090623225245.GA10443@streefland.net> <20090624021506.GA5871@cr0.nay.redhat.com> <20090624114607.GA10817@streefland.net> <20090624133148.GA12878@streefland.net> <20090629025146.GA5998@cr0.nay.redhat.com> <20090629113613.GA6853@streefland.net> <20090709023855.GA5648@cr0.nay.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090709023855.GA5648@cr0.nay.redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-ZiggoSMTP-MailScanner-Information: Please contact the ISP for more information
+X-ZiggoSMTP-MailScanner-ID: 1MOoxw-0002Nx-Kj
+X-ZiggoSMTP-MailScanner: Found to be clean
+X-ZiggoSMTP-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-4.322, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -2.60, TW_IK 0.08)
+X-ZiggoSMTP-MailScanner-From: dick@streefland.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 2009-07-09 10:38, Amerigo Wang wrote:
+| I appologize for my delay, I totally missed this thread, sorry.
+| 
+| I just tested it, it works! So,
+| 
+| Tested-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-On Thursday 2009-07-09 04:23, tridge@samba.org wrote:
->
-> > It is much more with devices that are commonly operated with long
-> > names - multimedia players come to mind - and these "always"
-> > want a valid 8.3.
->
->Would you mind running an experiment for me with your IOneIt MP3
->player?
->
->Change vfat_build_dummy_83_buffer() to just do this:
->
->  memset(msdos_name, ' ', 11);
->
->and nothing else. Then delete and re-create the files that you had
->problems with and see if your MP3 player is then happy to play
->them. That helps a lot with Win98, and I wonder if it also helps with
->your IOneIt player.
+Great, thanks.
 
-Nope. It must not be blank.
+| But, I still don't understand the behavior of 'grep -abo',
+| please try the following commands:
+| 
+| echo -e '\x01\x02\x03\x04' > test.bin
+| od -x test.bin
+| tr $'\x01\x02\x03\x04' '1234' < test.bin | grep -abo '4'
+| 
+| Am I missing something here??
 
->As I mentioned previously, since your report I'm trying to test on a
->bunch of different MP3/media players. So far the tests I've done have
->worked fine with the dualnames patch, but I'm still waiting on
->delivery of more cheap MP3 players from eBay.
+The output with grep-2.5.3 is 3:4, which means that the string "4" was
+found at offset 3 (0-based). With grep-2.5.1, you get 0:4, which means
+that the line containing the string "4" has offset 0. The "tr" commands
+in the script ensure that the patterns we are looking for are always at
+the start of a line, so that it doesn't matter which version of grep is
+installed.
 
-If I read a review right, the device has also been
-distributed under the rebranded name Grundig MPAXX MP 650.
-(Other MPxyz numbers are rebrands of other devices.)
-The availability of MP650 is similarly low.
+-- 
+Dick
