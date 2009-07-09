@@ -1,226 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZGISFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbZGISK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbZGISFw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 14:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbZGISFU
+	id S1754649AbZGISK4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 14:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZGISKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 14:05:20 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:38162 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753599AbZGISFR (ORCPT
+	Thu, 9 Jul 2009 14:10:48 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:64282 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753624AbZGISKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 14:05:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=drPdRzCthVIe+ffts0aQPtb8ZJpWl5Sni3awjiapXkGrlU4Yz1XcdVSh0wuvOGhZot
-         K2n27VdfuOO42giiSSG9KVzz/0sSGqII3jCBKnNhF+PuK1oyWNp2Of/+WL4oWBYv4i4b
-         FPLLSNYW3ds/rVAlnFBXvdGSfN1WzGHrUR0Eg=
-Message-ID: <4A56315E.5030808@gmail.com>
-Date: Thu, 09 Jul 2009 22:05:18 +0400
-From: Eugene Kapun <abacabadabacaba@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090616)
+	Thu, 9 Jul 2009 14:10:47 -0400
+Message-ID: <4A563259.5000601@vlnb.net>
+Date: Thu, 09 Jul 2009 22:09:29 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: reiserfs-devel@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] reiserfs: fix crashes in extended attributes implementation
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH]: Rename REQ_COPY_USER to more descriptive REQ_HAS_TAIL_SPACE_FOR_PADDING
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+GOgAP7qMA9KKnirXVpIMns6fusmfSSk0Dew3
+ z8ci0e1vu2K8O3rnzAN2ngeVEgnEBTaWhQzsjLdjYCNK7kEQZg
+ PirWXOqcWYvXdnFdALz9Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eugene Kapun <abacabadabacaba@gmail.com>
+Currently names of REQ_COPY_USER and __REQ_COPY_USER constants are confusing,
+because they actually mean that the buffer for the corresponding requests
+has space in the tail for padding in case of DMA padding restrictions.
 
-Fixes crashes when:
-* .reiserfs_priv exists and is not a directory
-* .reiserfs_priv/xattrs exists and is not a directory
-* .reiserfs_prix/xattrs/<something> exists and is not a directory
-* .reiserfs_priv/xattrs/<something>/<something> exists and is not a
-  regular file
-Signed-off-by: Eugene Kapun <abacabadabacaba@gmail.com>
----
-This patch applies to linux-2.6.31-rc2-git4.
-This patch depends on patch 2/3 (reiserfs: add mount option that
-disables extended attributes support).
-This patch prevents reiserfs from crashing if certain directories are
-actually files or something else, and vice versa. Instead, it will
-refuse to mount such filesystem or abort operations on files with -EIO.
+This patch renames REQ_COPY_USER and __REQ_COPY_USER constants to more
+descriptive names REQ_HAS_TAIL_SPACE_FOR_PADDING and __REQ_HAS_TAIL_SPACE_FOR_PADDING
+correspondingly.
 
- fs/reiserfs/super.c |   53 ++++++++++++++++++++++--------------------
- fs/reiserfs/xattr.c |   44 +++++++++++++++++++++++++++-------
- 2 files changed, 63 insertions(+), 34 deletions(-)
+It's against 2.6.30.1, but if necessary, I can update it to any necessary
+kernel version.
 
-diff -uprN linux-2.6.31-rc2-git3.2/fs/reiserfs/super.c linux-2.6.31-rc2-git3.3/fs/reiserfs/super.c
---- linux-2.6.31-rc2-git3.2/fs/reiserfs/super.c	2009-07-09 15:03:10.000000000 +0400
-+++ linux-2.6.31-rc2-git3.3/fs/reiserfs/super.c	2009-07-09 13:57:15.000000000 +0400
-@@ -1762,11 +1762,8 @@ static int reiserfs_fill_super(struct su
+Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+
+ block/blk-map.c        |    6 +++---
+ block/blk-merge.c      |    2 +-
+ include/linux/blkdev.h |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff -upkr linux-2.6.30.1/block/blk-map.c linux-2.6.30.1/block/blk-map.c
+--- linux-2.6.30.1/block/blk-map.c	2009-06-10 07:05:27.000000000 +0400
++++ linux-2.6.30.1/block/blk-map.c	2009-07-08 21:18:53.000000000 +0400
+@@ -154,7 +155,7 @@ int blk_rq_map_user(struct request_queue
  	}
- 	// define and initialize hash function
- 	sbi->s_hash_function = hash_function(s);
--	if (sbi->s_hash_function == NULL) {
--		dput(s->s_root);
--		s->s_root = NULL;
--		goto error;
--	}
-+	if (sbi->s_hash_function == NULL)
-+		goto error_root;
  
- 	if (is_reiserfs_3_5(rs)
- 	    || (is_reiserfs_jr(rs) && SB_VERSION(s) == REISERFS_VERSION_1))
-@@ -1779,11 +1776,8 @@ static int reiserfs_fill_super(struct su
- 	if (!(s->s_flags & MS_RDONLY)) {
+ 	if (!bio_flagged(bio, BIO_USER_MAPPED))
+-		rq->cmd_flags |= REQ_COPY_USER;
++		rq->cmd_flags |= REQ_HAS_TAIL_SPACE_FOR_PADDING;
  
- 		errval = journal_begin(&th, s, 1);
--		if (errval) {
--			dput(s->s_root);
--			s->s_root = NULL;
--			goto error;
--		}
-+		if (errval)
-+			goto error_root;
- 		reiserfs_prepare_for_journal(s, SB_BUFFER_WITH_SB(s), 1);
- 
- 		set_sb_umount_state(rs, REISERFS_ERROR_FS);
-@@ -1834,18 +1828,12 @@ static int reiserfs_fill_super(struct su
- 
- 		journal_mark_dirty(&th, s, SB_BUFFER_WITH_SB(s));
- 		errval = journal_end(&th, s, 1);
--		if (errval) {
--			dput(s->s_root);
--			s->s_root = NULL;
--			goto error;
--		}
-+		if (errval)
-+			goto error_root;
- 
- 		if ((errval = reiserfs_lookup_privroot(s)) ||
--		    (errval = reiserfs_xattr_init(s, s->s_flags))) {
--			dput(s->s_root);
--			s->s_root = NULL;
--			goto error;
--		}
-+		    (errval = reiserfs_xattr_init(s, s->s_flags)))
-+			goto error_privroot;
- 
- 		/* look for files which were to be removed in previous session */
- 		finish_unfinished(s);
-@@ -1855,11 +1843,8 @@ static int reiserfs_fill_super(struct su
- 		}
- 
- 		if ((errval = reiserfs_lookup_privroot(s)) ||
--		    (errval = reiserfs_xattr_init(s, s->s_flags))) {
--			dput(s->s_root);
--			s->s_root = NULL;
--			goto error;
--		}
-+		    (errval = reiserfs_xattr_init(s, s->s_flags)))
-+			goto error_privroot;
+ 	rq->buffer = rq->data = NULL;
+ 	return 0;
+@@ -230,7 +231,7 @@ int blk_rq_map_user_iov(struct request_q
  	}
- 	// mark hash in super block: it could be unset. overwrite should be ok
- 	set_sb_hash_function_code(rs, function2code(sbi->s_hash_function));
-@@ -1873,6 +1858,24 @@ static int reiserfs_fill_super(struct su
  
- 	return (0);
+ 	if (!bio_flagged(bio, BIO_USER_MAPPED))
+-		rq->cmd_flags |= REQ_COPY_USER;
++		rq->cmd_flags |= REQ_HAS_TAIL_SPACE_FOR_PADDING;
  
-+error_privroot:
-+#ifdef CONFIG_REISERFS_FS_EXTENDED
-+	if (REISERFS_SB(s)->priv_root) {
-+		if (REISERFS_SB(s)->xattr_root) {
-+			d_invalidate(REISERFS_SB(s)->xattr_root);
-+			dput(REISERFS_SB(s)->xattr_root);
-+			REISERFS_SB(s)->xattr_root = NULL;
-+		}
-+		d_invalidate(REISERFS_SB(s)->priv_root);
-+		dput(REISERFS_SB(s)->priv_root);
-+		REISERFS_SB(s)->priv_root = NULL;
-+	}
-+#endif
-+
-+error_root:
-+	dput(s->s_root);
-+	s->s_root = NULL;
-+
- error:
- 	if (jinit_done) {	/* kill the commit thread, free journal ram */
- 		journal_release_error(NULL, s);
-diff -uprN linux-2.6.31-rc2-git3.2/fs/reiserfs/xattr.c linux-2.6.31-rc2-git3.3/fs/reiserfs/xattr.c
---- linux-2.6.31-rc2-git3.2/fs/reiserfs/xattr.c	2009-07-09 15:06:12.000000000 +0400
-+++ linux-2.6.31-rc2-git3.3/fs/reiserfs/xattr.c	2009-07-09 13:57:15.000000000 +0400
-@@ -155,10 +155,17 @@ static struct dentry *open_xa_dir(const 
- 	mutex_lock_nested(&xaroot->d_inode->i_mutex, I_MUTEX_XATTR);
+ 	blk_queue_bounce(q, &bio);
+ 	bio_get(bio);
+@@ -309,7 +836,7 @@ int blk_rq_map_kern(struct request_queue
+ 		bio->bi_rw |= (1 << BIO_RW);
  
- 	xadir = lookup_one_len(namebuf, xaroot, strlen(namebuf));
--	if (!IS_ERR(xadir) && !xadir->d_inode) {
--		int err = -ENODATA;
--		if (xattr_may_create(flags))
--			err = xattr_mkdir(xaroot->d_inode, xadir, 0700);
-+	if (!IS_ERR(xadir)) {
-+		int err;
-+		if (xadir->d_inode) {
-+			err = 0;
-+			if (!S_ISDIR(xadir->d_inode->i_mode))
-+				err = -EIO;
-+		} else {
-+			err = -ENODATA;
-+			if (xattr_may_create(flags))
-+				err = xattr_mkdir(xaroot->d_inode, xadir, 0700);
-+		}
- 		if (err) {
- 			dput(xadir);
- 			xadir = ERR_PTR(err);
-@@ -372,7 +379,8 @@ static struct dentry *xattr_lookup(struc
- 		if (xattr_may_create(flags))
- 			err = xattr_create(xadir->d_inode, xafile,
- 					      0700|S_IFREG);
--	}
-+	} else if (!S_ISREG(xafile->d_inode->i_mode))
-+		err = -EIO;
+ 	if (do_copy)
+-		rq->cmd_flags |= REQ_COPY_USER;
++		rq->cmd_flags |= REQ_HAS_TAIL_SPACE_FOR_PADDING;
  
- 	if (err)
- 		dput(xafile);
-@@ -992,8 +1000,17 @@ int reiserfs_lookup_privroot(struct supe
- 		REISERFS_SB(s)->priv_root = dentry;
- 		if (!reiserfs_expose_privroot(s))
- 			s->s_root->d_op = &xattr_lookup_poison_ops;
--		if (dentry->d_inode)
--			dentry->d_inode->i_flags |= S_PRIVATE;
-+		if (dentry->d_inode) {
-+			if (S_ISDIR(dentry->d_inode->i_mode)) {
-+				dentry->d_inode->i_flags |= S_PRIVATE;
-+			} else {
-+				reiserfs_warning(s, NULL,
-+					PRIVROOT_NAME " exists and "
-+					"is not a directory. Remount "
-+					"with -o noext to fix this");
-+				err = -EINVAL;
-+			}
-+		}
- 	} else
- 		err = PTR_ERR(dentry);
- 	mutex_unlock(&s->s_root->d_inode->i_mutex);
-@@ -1028,9 +1045,18 @@ int reiserfs_xattr_init(struct super_blo
- 			struct dentry *dentry;
- 			dentry = lookup_one_len(XAROOT_NAME, privroot,
- 						strlen(XAROOT_NAME));
--			if (!IS_ERR(dentry))
-+			if (!IS_ERR(dentry)) {
- 				REISERFS_SB(s)->xattr_root = dentry;
--			else
-+				if (dentry->d_inode &&
-+					!S_ISDIR(dentry->d_inode->i_mode)) {
-+					reiserfs_warning(s, NULL,
-+						PRIVROOT_NAME "/" XAROOT_NAME
-+						" exists and is not "
-+						"a directory. Remount with "
-+						"-o noext to fix this");
-+					err = -EINVAL;
-+				}
-+			} else
- 				err = PTR_ERR(dentry);
- 		}
- 		mutex_unlock(&privroot->d_inode->i_mutex);
-
+ 	blk_rq_bio_prep(q, rq, bio);
+ 	blk_queue_bounce(q, &rq->bio);
+diff -upkr linux-2.6.30.1/block/blk-merge.c linux-2.6.30.1/block/blk-merge.c
+--- linux-2.6.30.1/block/blk-merge.c	2009-06-10 07:05:27.000000000 +0400
++++ linux-2.6.30.1/block/blk-merge.c	2009-07-08 21:18:53.000000000 +0400
+@@ -198,7 +198,7 @@ new_segment:
+ 	} /* segments in rq */
+ 
+ 
+-	if (unlikely(rq->cmd_flags & REQ_COPY_USER) &&
++	if ((rq->cmd_flags & REQ_HAS_TAIL_SPACE_FOR_PADDING) &&
+ 	    (rq->data_len & q->dma_pad_mask)) {
+ 		unsigned int pad_len = (q->dma_pad_mask & ~rq->data_len) + 1;
+ 
+diff -upkr linux-2.6.30.1/include/linux/blkdev.h linux-2.6.30.1/include/linux/blkdev.h
+--- linux-2.6.30.1/include/linux/blkdev.h	2009-06-10 07:05:27.000000000 +0400
++++ linux-2.6.30.1/include/linux/blkdev.h	2009-07-08 21:18:53.000000000 +0400
+@@ -115,7 +115,7 @@ enum rq_flag_bits {
+ 	__REQ_RW_SYNC,		/* request is sync (sync write or read) */
+ 	__REQ_ALLOCED,		/* request came from our alloc pool */
+ 	__REQ_RW_META,		/* metadata io request */
+-	__REQ_COPY_USER,	/* contains copies of user pages */
++	__REQ_HAS_TAIL_SPACE_FOR_PADDING, /* has space for padding in the tail */
+ 	__REQ_INTEGRITY,	/* integrity metadata has been remapped */
+ 	__REQ_NOIDLE,		/* Don't anticipate more IO after this one */
+ 	__REQ_IO_STAT,		/* account I/O stat */
+@@ -143,7 +143,7 @@ enum rq_flag_bits {
+ #define REQ_RW_SYNC	(1 << __REQ_RW_SYNC)
+ #define REQ_ALLOCED	(1 << __REQ_ALLOCED)
+ #define REQ_RW_META	(1 << __REQ_RW_META)
+-#define REQ_COPY_USER	(1 << __REQ_COPY_USER)
++#define REQ_HAS_TAIL_SPACE_FOR_PADDING	(1 << __REQ_HAS_TAIL_SPACE_FOR_PADDING)
+ #define REQ_INTEGRITY	(1 << __REQ_INTEGRITY)
+ #define REQ_NOIDLE	(1 << __REQ_NOIDLE)
+ #define REQ_IO_STAT	(1 << __REQ_IO_STAT)
 
