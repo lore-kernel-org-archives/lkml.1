@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbZGIHCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760537AbZGIHDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758935AbZGIHCR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 03:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759812AbZGIG7h
+	id S1760537AbZGIHDB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 03:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbZGIHAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 02:59:37 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:41678 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759769AbZGIG7f (ORCPT
+	Thu, 9 Jul 2009 03:00:06 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:29296 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759956AbZGIHAE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 02:59:35 -0400
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>, Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-fsdevel@vger.kernel.org,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org
-Date: Thu, 09 Jul 2009 11:49:59 +0300
-Message-Id: <20090709084959.12122.46183.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090709084822.12122.79749.sendpatchset@localhost.localdomain>
-References: <20090709084822.12122.79749.sendpatchset@localhost.localdomain>
-Subject: [PATCH v3 14/18] UDF: do not manipulate s_dirt directly
-X-OriginalArrivalTime: 09 Jul 2009 06:59:28.0837 (UTC) FILETIME=[CD85BF50:01CA0062]
-X-Nokia-AV: Clean
+	Thu, 9 Jul 2009 03:00:04 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090709062906.GA14804@feather>
+References: <1246873983.20908.0.camel@johannes.local>
+	 <19f34abd0907081228p541d1cdao85f37aaa479fcfc5@mail.gmail.com>
+	 <20090709062906.GA14804@feather>
+Date: Thu, 9 Jul 2009 09:00:02 +0200
+Message-ID: <154e089b0907090000r54dc2436ta25b58395a04acc@mail.gmail.com>
+Subject: Re: [PATCH] kmemcheck: fix sparse warning
+From: Hannes Eder <hannes@hanneseder.net>
+To: Josh Triplett <josh@joshtriplett.org>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Linux Torvalds <torvalds@linux-foundation.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-sparse@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... use new VFS helpers instead.
+On Thu, Jul 9, 2009 at 08:29, Josh Triplett<josh@joshtriplett.org> wrote:
+> [Adding Linus and Chris Li to CC; Linus for further background on
+> -Wdo-while, and Chris Li for Sparse.]
+>
+> On Wed, Jul 08, 2009 at 09:28:24PM +0200, Vegard Nossum wrote:
+>> 2009/7/6 Johannes Berg <johannes@sipsolutions.net>:
+>> > Whether or not the sparse warning
+>> >
+>> > warning: do-while statement is not a compound statement
+>> >
+>> > is justified or not in this case, it is annoying and
+>> > trivial to fix.
+> [...]
+>>
+>> I'll change the patch title to "kmemcheck: work around bogus sparse
+>> warning" and fix the indentation, sounds ok?
+>>
+>> Meanwhile, I Cced sparse mailing list in case somebody else knows
+>> anything else about this warning (what it means, whether it's
+>> justified in this case, whether it should be fixed in sparse, etc.).
+>
+> -Wdo-while gives a warning if you write:
+>
+> do
+>    statement
+> while (...);
+>
+> where "statement" does not consist of a compound statement surrounded by
+> braces.  As far as I know, this warning exists primarily because it
+> matched Linus's preference for readability.
 
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Jan Kara <jack@suse.cz>
----
- fs/udf/super.c   |    6 +++---
- fs/udf/udfdecl.h |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+see:
+http://lkml.org/lkml/2008/12/23/180
 
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index 6832135..62b7774 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -1912,7 +1912,7 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
- 	sb->s_op = &udf_sb_ops;
- 	sb->s_export_op = &udf_export_ops;
- 	sb->dq_op = NULL;
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- 	sb->s_magic = UDF_SUPER_MAGIC;
- 	sb->s_time_gran = 1000;
- 
-@@ -2039,7 +2039,7 @@ static void udf_error(struct super_block *sb, const char *function,
- 
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		/* mark sb error */
--		sb->s_dirt = 1;
-+		mark_sb_dirty(sb);
- 	}
- 	va_start(args, fmt);
- 	vsnprintf(error_buf, sizeof(error_buf), fmt, args);
-@@ -2099,7 +2099,7 @@ static int udf_sync_fs(struct super_block *sb, int wait)
- 		 * the buffer for IO
- 		 */
- 		mark_buffer_dirty(sbi->s_lvid_bh);
--		sb->s_dirt = 0;
-+		mark_sb_clean(sb);
- 		sbi->s_lvid_dirty = 0;
- 	}
- 	mutex_unlock(&sbi->s_alloc_mutex);
-diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
-index 8d46f42..4305bcb 100644
---- a/fs/udf/udfdecl.h
-+++ b/fs/udf/udfdecl.h
-@@ -119,7 +119,7 @@ static inline void udf_updated_lvid(struct super_block *sb)
- 	WARN_ON_ONCE(((struct logicalVolIntegrityDesc *)
- 		     bh->b_data)->integrityType !=
- 		     cpu_to_le32(LVID_INTEGRITY_TYPE_OPEN));
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
- 	UDF_SB(sb)->s_lvid_dirty = 1;
- }
- 
--- 
-1.6.0.6
+an related messages/threads
 
+Cheers,
+-Hannes
