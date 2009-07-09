@@ -1,108 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759772AbZGIHMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760037AbZGIHNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759772AbZGIHMw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 03:12:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759444AbZGIHM1
+	id S1760037AbZGIHNU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 03:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759974AbZGIHND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 03:12:27 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:55325 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757398AbZGIHMX (ORCPT
+	Thu, 9 Jul 2009 03:13:03 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44890 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758705AbZGIHNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 03:12:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=JMsy6BtlnvvJDDbOdUKx9UalBXtumtLH+Jufo3erdtsZm/JY+JHW0qQMqL9EwvRtPN
-         UeuvUp/YCjjcI0VIBCBKXi9xcLY90fRrEWcC3COVvZbnQXnzehPpmovQLWZKDkOAW4S7
-         MRBO7+V/bZbyp5320g3db4xeBi6WViZGbEfTQ=
-Message-ID: <4A559851.5030302@gmail.com>
-Date: Thu, 09 Jul 2009 09:12:17 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
+	Thu, 9 Jul 2009 03:13:01 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4A559870.7090801@jp.fujitsu.com>
+Date: Thu, 09 Jul 2009 16:12:48 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-To: Matthias Pfaller <leo@marco.de>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
-Subject: DMI year "00" + ACPI [was: DMI: fix dmi_get_year year parsing]
-References: <1246998990-9594-1-git-send-email-jirislaby@gmail.com> <4A5440BA.6070409@marco.de> <4A5442AD.1080402@gmail.com> <4A5444BD.1090905@marco.de>
-In-Reply-To: <4A5444BD.1090905@marco.de>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+CC: Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
+       kexec@lists.infradead.org, "Luck, Tony" <tony.luck@intel.com>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>
+Subject: [PATCH v2 3/7] ia64, kexec: Unregister MCA handler before kexec
+References: <4A39E247.4030908@jp.fujitsu.com> <4A5595F3.2050609@jp.fujitsu.com>
+In-Reply-To: <4A5595F3.2050609@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/08/2009 09:03 AM, Matthias Pfaller wrote:
-> Jiri Slaby wrote:
->> On 07/08/2009 08:46 AM, Matthias Pfaller wrote:
->>> Jiri Slaby wrote:
->>>> Don't guess a year number base. Use 10 instead, since year may
->>>> be 2-digit starting with 0, so that we would end up in base equal
->>>> to 8.
->>>>
->>>> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
->>>> Reported-by: Matthias Pfaller <leo@marco.de>
->>>> ---
->>>>  drivers/firmware/dmi_scan.c |    2 +-
->>>>  1 files changed, 1 insertions(+), 1 deletions(-)
->>>>
->>>> diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
->>>> index 6071078..8fe0f6e 100644
->>>> --- a/drivers/firmware/dmi_scan.c
->>>> +++ b/drivers/firmware/dmi_scan.c
->>>> @@ -611,7 +611,7 @@ int dmi_get_year(int field)
->>>>          return 0;
->>>>  
->>>>      s += 1;
->>>> -    year = simple_strtoul(s, NULL, 0);
->>>> +    year = simple_strtoul(s, NULL, 10);
->>>>      if (year && year < 100) {    /* 2-digit year */
->>>>          year += 1900;
->>>>          if (year < 1996)    /* no dates < spec 1.0 */
->>> I just noticed, that this is not enough, because this will still fail
->>> for xxx/xx/00. I suggest the following patch:
->>
->> Actually the patch below is not correct. Standard says consider xx/xx/yy
->> as 19yy, not 20yy.
->>
->> BTW. the patch above is not useful, reporting 1908 and 1909 as a year is
->> almost the same as 1900.
-> 
-> Sorry, I don't understand.
+Summary:
 
-Nevermind, you're right. Both patches are OK, however we might hit a
-regression with 00/00/00 entries so that acpi gets unintentionally armed
-now for them (ACPI checks year == 0). I don't know if it's worth it. Any
-ideas?
+  MCA on the beginning of kdump/kexec kernel will result in unexpected
+  behavior because MCA handler for previous kernel is invoked on the
+  kdump kernel.
 
->>> --- drivers/firmware/dmi_scan.c.bak     Wed Jul  8 02:42:04 2009
->>> +++ drivers/firmware/dmi_scan.c Wed Jul  8 02:42:17 2009
->>> @@ -360,12 +360,15 @@
->>>                 return 0;
->>>
->>>         s += 1;
->>> -       year = simple_strtoul(s, NULL, 0);
->>> -       if (year && year < 100) {       /* 2-digit year */
->>> -               year += 1900;
->>> -               if (year < 1996)        /* no dates < spec 1.0 */
->>> -                       year += 100;
->>> +       if (s[0] == '0' && s[1] == '0' && s[2] == '\0') {
->>> +               year = 2000;
->>> +       } else {
->>> +               year = simple_strtoul(s, NULL, 10);
->>> +               if (year && year < 100) {       /* 2-digit year */
->>> +                       year += 1900;
->>> +                       if (year < 1996)        /* no dates < spec
->>> 1.0 */
->>> +                               year += 100;
->>> +               }
->>>         }
->>> -
->>>         return year;
->>>  }
+Description:
+
+  Once a cpu is passed to new kernel, all resources in previous kernel
+  should not be used from the cpu.  Even the resources for MCA handler
+  are no exception.  So we cannot handle MCAs and its machine check
+  errors during kernel transition, until new handler for new kernel is
+  registered with new resources ready for handling the MCA.
+
+How to reproduce:
+
+  Assert MCA while kdump kernel is booting, before new MCA handler for
+  kdump kernel is registered.
+
+Expected(Desirable) results:
+
+  No recovery, cancel kdump and reboot the system.
+
+Actual results:
+
+  MCA handler for previous kernel is invoked on the kdump kernel.
+  => panic, hang etc. (unexpected)
+
+Proposed fix:
+
+  To avoid entering MCA handler from early stage of new kernel,
+  unregister the entry point from SAL before leave from current
+  kernel.  Then SAL will make all MCAs to warmboot safely, without
+  invoking OS_MCA.
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>
+Cc: Haren Myneni <hbabu@us.ibm.com>
+Cc: kexec@lists.infradead.org
+---
+ arch/ia64/kernel/machine_kexec.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/arch/ia64/kernel/machine_kexec.c b/arch/ia64/kernel/machine_kexec.c
+index 571d663..3d3aeef 100644
+--- a/arch/ia64/kernel/machine_kexec.c
++++ b/arch/ia64/kernel/machine_kexec.c
+@@ -104,6 +104,9 @@ static void ia64_machine_kexec(struct unw_frame_info *info, void *arg)
+ 		ia64_sal_set_vectors(SAL_VECTOR_OS_INIT, 0, 0, 0, 0, 0, 0);
+ 	}
+ 
++	/* Unregister mca handler - No more recovery on current kernel */
++	ia64_sal_set_vectors(SAL_VECTOR_OS_MCA, 0, 0, 0, 0, 0, 0);
++
+ 	/* Interrupts aren't acceptable while we reboot */
+ 	local_irq_disable();
+ 
+-- 
+1.6.0
+
 
