@@ -1,104 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbZGIO4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761430AbZGIO7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761299AbZGIO4T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 10:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759249AbZGIO4N
+	id S1761430AbZGIO7M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 10:59:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZGIO7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 10:56:13 -0400
-Received: from smtp106.prem.mail.ac4.yahoo.com ([76.13.13.45]:30680 "HELO
-	smtp106.prem.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757116AbZGIO4M (ORCPT
+	Thu, 9 Jul 2009 10:59:06 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1205 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbZGIO7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 10:56:12 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Jul 2009 10:56:12 EDT
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: AnYvZs4VM1lYsD1fLD1nJGKcn9f8PxI8U56YeQdhFjwIq0rlURDxyIGWec4oHRYBZIAFRS2pzaD2P6yyn7zD8sZcFR7wRT0dA8pLF663.sSBb.AiOAcAcKSTsLNG0.pHt9KXX.rbxZK9GNonpf4E1BLHXdAOMBaFV1SXWzBpqsPNE0F14qK3NnA4Ko2Ep.eWB.joSWreTqwqb9DKQszSgNQdSlXvzACjjBPgGQ.CWdYv5UpR7XCNhQHkKqpFdFhFEtQlmQ8UhZXwqyZUkF5_gW6ltaeZJ8SfjYFaeYVYUWgegDydy7xhSw6Angn2cHkRO4RKEJKZmQJmr2fe5AX9Inp1kZy4zGoyZdqNYZo0M8VeBD_qMYcHqNTQEeIHyzE-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4A560363.6050304@schaufler-ca.com>
-Date: Thu, 09 Jul 2009 07:49:07 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-CC: jmorris@namei.org, gregkh@suse.de, sds@tycho.nsa.gov,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on sysfs
- files, directories, and symlinks.
-References: <1247074106-23405-1-git-send-email-dpquigl@tycho.nsa.gov>	 <4A554B95.6070709@schaufler-ca.com> <1247148306.4398.157.camel@localhost>
-In-Reply-To: <1247148306.4398.157.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 9 Jul 2009 10:59:05 -0400
+Subject: Re: [PATCH 5/7] MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
+From: Joe Perches <joe@perches.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+In-Reply-To: <20090709093004.GA32655@sirena.org.uk>
+References: <cover.1247032324.git.joe@perches.com>
+	 <9c84258bdd3ebecd54e2bc203dbded1382af9c02.1247032324.git.joe@perches.com>
+	 <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com>
+	 <1247035197.5124.9.camel@Joe-Laptop.home>
+	 <1247035481.15919.31.camel@penberg-laptop>
+	 <1247035628.5124.11.camel@Joe-Laptop.home>
+	 <20090709093004.GA32655@sirena.org.uk>
+Content-Type: text/plain
+Date: Thu, 09 Jul 2009 07:58:56 -0700
+Message-Id: <1247151536.12426.39.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David P. Quigley wrote:
-> On Wed, 2009-07-08 at 18:44 -0700, Casey Schaufler wrote:
->   
->> David P. Quigley wrote:
->>     
->>> This patch adds a setxattr handler to the file, directory, and symlink
->>> inode_operations structures for sysfs. This handler uses two new LSM hooks. The
->>> first hook takes the xattr name and value and turns the context into a secid.
->>> This is embedded into the sysfs_dirent structure so it remains persistent even
->>> if the inode structures are evicted from the cache. The second hook allows for
->>> the secid to be taken from the sysfs_dirent and be pushed into the inode
->>> structure as the actual secid for the inode.
->>>   
->>>       
->> Nacked-by: Casey Schaufler <casey@schaufler-ca.com>
->>
->> I'm all for sysfs supporting xattrs.
->>
->> I am completely opposed to secids as file system metadata.
->>
->> What do you get when you do an ls -Z?
->>
->> An LSM must not be beholden to exposing transient internal
->> representations of security data to userspace, which is what
->> you're doing here. An LSM gets to decide what the security
->> information it maintains looks like by defining a security blob.
->>
->> If you want this in, implement xattrs in sysfs for real. Smack
->> depends on the existing, published, and supported xattr interfaces
->> for dealing with getting and setting the values. Not secids.
->> Smack maintains secids because labeled networking and audit require
->> them, and they got there first.
->>
->>
->>     
->
-> So are you proposing that we embed a variable length string in the
-> sysfs_dirent structure because that sounds completely silly. 
+On Thu, 2009-07-09 at 10:30 +0100, Mark Brown wrote:
+> FWIW I've noticed that get_maintainer.pl has a tendency to pick up
+> people it probably shouldn't when run on areas that have had few people
+> committing to them since it tends to pick up people who've done generic
+> cleanups but have no specific interest in that area of code.  I think a
+> heuristic based on filtering the git log based on the proportion of
+> commits that were done by each committer would help with many of these
+> cases.
 
-No, I'm not proposing that because it sounds silly, I'm proposing it
-because that's the way xattrs work on Linux.
+Hi Mark.
 
-> It seems
-> completely reasonable here to take the blob coming in and have the LSM
-> turn it into a handle that is efficiently referenced by the
-> sysfs_dirent. The problem here is that sysfs entries have no backing
-> store at all which means everything we do will have to be added to
-> sysfs_dirent. I'm pretty sure we don't want to be doing lifecycle
-> management on strings inside this structure considering the only other
-> string I see is marked const. If you have a better way of doing this I'm
-> interested in hearing it but it doesn't seem reasonable to be storing
-> the xattr itself in the sysfs_dirent.
+git log "-by:" lines are already sorted by number of commits
+before selecting maintainers.  It doesn't matter if the
+line is acked-by:, Signed-off-by:, tested-by:, or
+brown-paper-bagged-by:, any "by:" signature is used.
 
-Smack depends on the xattr interfaces to inspect and manipulate labels
-on file system objects. Now you have a file system that "supports"
-xattrs, but not the xattr interfaces. What if I want to change the
-label on a sysfs entry? Or even read it? I can't with your scheme.
+get_maintainers does:
 
-You are proposing a one-off hack to solve a particular problem. It
-introduces issues of its own. I don't care that it is clever and
-compact. It's not right.
+    git log --since=${email_git_since} -- ${file} \
+    	 | grep -Ei "^[-_ 	a-z]+by:.*\@.*$" \
+         | cut -f2- -d":" | sort | uniq -c | sort -rn
+
+There are a few existing options that could be used
+to minimize cleanup style committers.
+
+    --git => include recent git *-by: signers
+    --git-min-signatures => number of signatures required (default: 1)
+    --git-max-maintainers => maximum maintainers to add (default: 5)
+    --git-since => git history to use (default: 1-year-ago)
+
+Using --nogit lists just the entries in MAINTAINERS
+
+Using --git-min-signatures=3 or so seems to minimize
+the generic cleanups committers.
+
+Using --git-max-maintainers=3 or so, for files with more
+changes, seems also to minimize the generic cleanup committers
+
+Using --git-since=6-months-ago reduces the history period
+
+Using --stat on the commit log and weighting for things
+for lines changed would probably not be good because generic
+cleanups often change more of the code than real logic
+changes.
+
+I suppose when the number of committers returned by
+the "git log | grep" is low, returning just the 
+most frequent committers might be good.
+
+Any suggestions on better heuristics?
 
 
->  I'd like to hear what Greg thinks
-> about that.
->
-> Dave
->
->
->   
