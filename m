@@ -1,141 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759222AbZGIBkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759135AbZGIBoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759222AbZGIBkt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 21:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbZGIBkj
+	id S1759135AbZGIBoK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 21:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbZGIBn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 21:40:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58442 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754972AbZGIBki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 21:40:38 -0400
-Date: Thu, 9 Jul 2009 11:40:34 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Hin-Tak Leung" <hintak.leung@gmail.com>,
-       Pascal Terjan <pterjan@mandriva.com>
-Subject: linux-next: manual merge of the wireless tree with the
- wireless-current tree
-Message-Id: <20090709114034.02e66f09.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Jul 2009 21:43:57 -0400
+Received: from easi.embeddedalley.com ([71.6.201.124]:42802 "HELO
+	easi.embeddedalley.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755302AbZGIBn4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 21:43:56 -0400
+Message-ID: <4A554B54.3080903@embeddedalley.com>
+Date: Wed, 08 Jul 2009 18:43:48 -0700
+From: "Vladislav D. Buzov" <vbuzov@embeddedalley.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers Mailing List 
+	<containers@lists.linux-foundation.org>,
+       Dan Malek <dan@embeddedalley.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org
+Subject: Re: [PATCH 1/1] Memory usage limit notification addition to memcg
+References: <1239660512-25468-1-git-send-email-dan@embeddedalley.com>	<1246998310-16764-1-git-send-email-vbuzov@embeddedalley.com>	<1246998310-16764-2-git-send-email-vbuzov@embeddedalley.com> <20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
+KAMEZAWA Hiroyuki wrote:
+> I don't think notify_available_in_bytes is necessary.
+>   
+I agree. This was a replacement for the old percentage calculation that
+was harder for the application to resolve. I'll remove it and update the
+example to use the other available memory controller information.
 
-Today's linux-next merge of the wireless tree got a conflict in
-drivers/net/wireless/zd1211rw/zd_usb.c between a couple of commits from
-the wireless-current tree and commit
-04755d92e9d150a3f308dd39664f859cc2182536 ("zd1211rw: sort vid/pid pairs
-by numerical value") from the wireless tree.
+> For making this kind of threashold useful, I think some relaxing margin is good.
+> for example) Once triggered, "notiry" will not be triggered in next 1ms
+> Do you have an idea ?
+>   
+There isn't any time attribute associated with this model. There is no
+"trigger," just that you don't sleep if the threshold is exceeded.
 
-I fixed it up (see below) and can carry the fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+The notification only happens if you are asking for it. One application
+implementation could be that you just respond to notifications. If one
+occurs, you will free some memory, then wait for another notification.
+If you didn't free enough memory, the notification just keeps occurring
+as you ask until the situation is resolved.
 
-diff --cc drivers/net/wireless/zd1211rw/zd_usb.c
-index 0e6e446,2c24dd9..0000000
---- a/drivers/net/wireless/zd1211rw/zd_usb.c
-+++ b/drivers/net/wireless/zd1211rw/zd_usb.c
-@@@ -36,58 -36,57 +36,58 @@@
-  
-  static struct usb_device_id usb_ids[] = {
-  	/* ZD1211 */
-+ 	{ USB_DEVICE(0x0105, 0x145f), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x0586, 0x3401), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x0586, 0x3402), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x0586, 0x3407), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x0586, 0x3409), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x079b, 0x004a), .driver_info = DEVICE_ZD1211 },
- -	{ USB_DEVICE(0x07b8, 0x6001), .driver_info = DEVICE_ZD1211 },
-  	{ USB_DEVICE(0x0ace, 0x1211), .driver_info = DEVICE_ZD1211 },
-  	{ USB_DEVICE(0x0ace, 0xa211), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x126f, 0xa006), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x6891, 0xa727), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x0b05, 0x170c), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x0b3b, 0x1630), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x0b3b, 0x5630), .driver_info = DEVICE_ZD1211 },
-  	{ USB_DEVICE(0x0df6, 0x9071), .driver_info = DEVICE_ZD1211 },
-  	{ USB_DEVICE(0x0df6, 0x9075), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x157e, 0x300b), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x079b, 0x004a), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x1740, 0x2000), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x157e, 0x3204), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x0586, 0x3402), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x0b3b, 0x5630), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x0b05, 0x170c), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x126f, 0xa006), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x129b, 0x1666), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x13b1, 0x001e), .driver_info = DEVICE_ZD1211 },
-  	{ USB_DEVICE(0x1435, 0x0711), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x0586, 0x3409), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x0b3b, 0x1630), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x0586, 0x3401), .driver_info = DEVICE_ZD1211 },
-  	{ USB_DEVICE(0x14ea, 0xab13), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x13b1, 0x001e), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x0586, 0x3407), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x129b, 0x1666), .driver_info = DEVICE_ZD1211 },
-  	{ USB_DEVICE(0x157e, 0x300a), .driver_info = DEVICE_ZD1211 },
-- 	{ USB_DEVICE(0x0105, 0x145f), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x157e, 0x300b), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x157e, 0x3204), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x1740, 0x2000), .driver_info = DEVICE_ZD1211 },
-+ 	{ USB_DEVICE(0x6891, 0xa727), .driver_info = DEVICE_ZD1211 },
-  	/* ZD1211B */
-+ 	{ USB_DEVICE(0x0053, 0x5301), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0411, 0x00da), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0471, 0x1236), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0471, 0x1237), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x050d, 0x705c), .driver_info = DEVICE_ZD1211B },
- +	{ USB_DEVICE(0x054c, 0x0257), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0ace, 0x1215), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0ace, 0xb215), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x157e, 0x300d), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0586, 0x340a), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0586, 0x340f), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0586, 0x3410), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0586, 0x3412), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0586, 0x3413), .driver_info = DEVICE_ZD1211B },
-  	{ USB_DEVICE(0x079b, 0x0062), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x1582, 0x6003), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x050d, 0x705c), .driver_info = DEVICE_ZD1211B },
-++	{ USB_DEVICE(0x07b8, 0x6001), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x07fa, 0x1196), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x083a, 0x4505), .driver_info = DEVICE_ZD1211B },
-  	{ USB_DEVICE(0x083a, 0xe503), .driver_info = DEVICE_ZD1211B },
-  	{ USB_DEVICE(0x083a, 0xe506), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x083a, 0x4505), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0471, 0x1236), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x13b1, 0x0024), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0586, 0x340f), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0ace, 0x1215), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x0ace, 0xb215), .driver_info = DEVICE_ZD1211B },
-  	{ USB_DEVICE(0x0b05, 0x171b), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0586, 0x3410), .driver_info = DEVICE_ZD1211B },
-  	{ USB_DEVICE(0x0baf, 0x0121), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0586, 0x3412), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0586, 0x3413), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0053, 0x5301), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0411, 0x00da), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x2019, 0x5303), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x129b, 0x1667), .driver_info = DEVICE_ZD1211B },
-  	{ USB_DEVICE(0x0cde, 0x001a), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0586, 0x340a), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x0471, 0x1237), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x07fa, 0x1196), .driver_info = DEVICE_ZD1211B },
-  	{ USB_DEVICE(0x0df6, 0x0036), .driver_info = DEVICE_ZD1211B },
-- 	{ USB_DEVICE(0x07b8, 0x6001), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x129b, 0x1667), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x13b1, 0x0024), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x1582, 0x6003), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x157e, 0x300d), .driver_info = DEVICE_ZD1211B },
-+ 	{ USB_DEVICE(0x2019, 0x5303), .driver_info = DEVICE_ZD1211B },
-  	/* "Driverless" devices that need ejecting */
-  	{ USB_DEVICE(0x0ace, 0x2011), .driver_info = DEVICE_INSTALLER },
-  	{ USB_DEVICE(0x0ace, 0x20ff), .driver_info = DEVICE_INSTALLER },
+> I know people likes to wait for file descriptor to get notification in these days.
+> Can't we have "event" file descriptor in cgroup layer and make it reusable for
+> other purposes ?
+That's next on the list to implement, and there were some comments in
+previous messages. I just didn't want to complicate providing this
+notification feature by having to also implement an "event" descriptor.
+I'm certain that will cause much discussion as well. :-)
+
+>
+> I hope this application will not block rmdir() ;)
+>   
+No, because there are no blocking reads (the wait continues to return)
+when the cgroup is being destroyed.
+
+> One question is how this works under hierarchical accounting.
+>
+> Considering following.
+>
+> /cgroup/A/                     no thresh
+>           001/                 thresh=5M
+>               John             thresh=1M
+>           002/                 no thresh
+>               Hiroyuki         no thresh
+>
+> If Hiroyuki use too much and hit /cgroup/A's limit, memory will be reclaimed from all
+> A,001,John,002,Hiroyuki and OOM Killer may kill processes in John.
+> But 001/John's notifier will not fire. Right ?
+>   
+The 001/John's applications will not be notified, since everything in
+that child cgroup is OK. This is based on the accounting behavior of the
+memory cgroup. If you want notification at the parent, you need to
+create a thread to catch that condition at the parent level. When that
+occurs, there is a mechanism to notify the children by just writing the
+notify_threshold_lowait file. Your applications need to be designed to
+identify this condition (or simply always free some resources when
+notified) for this to work.
+
+The OOM killer is an orthogonal discussion. You can select from
+available killers that may make the choices you desire, or implement
+your own requirements and attach it to the cgroup.
+
+> I don't think CONFIG is necessary. Let this always used.
+>   
+Ok.
+
+> 2 points.
+>  - Do we have to check this always we account ?
+>   
+What are the options? Every N pages? How to select N?
+
+>  - This will not catch hierarchical accounting threshold because this check
+>    only local cgroup, no ancestors.
+>   
+Right.. That was the intention so I'll need to fix it
+
+> I don't want to say this but you need to add hook to res_counter itself.
+>   
+I agree, res_counter seems to be the most appropriate place to keep and
+track the threshold as well as it already does for the usage and limit.
+During resource charge operation res_counter can check the usage against
+the threshold and, if it's exceeded, call the memory controller cgroup
+to notify its tasks
+
+> What this means ?? Can happen ?
+>   
+It means the cgroup was created but no one has yet set any limits on the
+cgroup itself. There is no reason to test any conditions for notification.
+
+> If this is true, "set limit" should be checked to guarantee this.
+> plz allow minus this for avoiding mess.
+Setting the memory controller cgroup limit and the notification
+threshold are two separate operations. There isn't any "mess," just some
+validation testing for reporting back to the source of the request. When
+changing the memory controller limit, we ensure the threshold limit is
+never allowed "negative." At most, the threshold limit will be equal the
+memory controller cgroup limit. Otherwise, the arithmetic and
+conditional tests during the operational part of the software becomes
+more complex, which we don't want.
+
+> plz call wake_em_up at pre_destroy(), too.
+>   
+Ok.
+
+Thanks,
+Vlad.
+
