@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759005AbZGIIHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759387AbZGIIHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759005AbZGIIHJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 04:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbZGIIGw
+	id S1759387AbZGIIHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 04:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759018AbZGIIG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 04:06:52 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47911 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754319AbZGIIGv (ORCPT
+	Thu, 9 Jul 2009 04:06:57 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:43107 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758629AbZGIIGy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 04:06:51 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/5][resend] add per-zone statistics to show_free_areas()
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-In-Reply-To: <20090709165820.23B7.A69D9226@jp.fujitsu.com>
-References: <20090709165820.23B7.A69D9226@jp.fujitsu.com>
-Message-Id: <20090709170535.23BA.A69D9226@jp.fujitsu.com>
+	Thu, 9 Jul 2009 04:06:54 -0400
+Message-ID: <4A55A4AE.3000206@mxs.nes.nec.co.jp>
+Date: Thu, 09 Jul 2009 17:05:02 +0900
+From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: lkml <linux-kernel@vger.kernel.org>
+CC: kexec-ml <kexec@lists.infradead.org>
+Subject: [PATCH] kdump: Enable kdump if 2nd-kernel is loaded.
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu,  9 Jul 2009 17:06:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] add per-zone statistics to show_free_areas()
 
-show_free_areas() displays only a limited amount of zone counters. This
-patch includes additional counters in the display to allow easier
-debugging. This may be especially useful if an OOM is due to running out
-of DMA memory.
+Hi,
+
+This patch enables a kdump if 2nd-kernel is loaded.
+(The patch is based on linux-2.6.31-rc2.)
+
+Now, a kdump is enabled if a kernel parameter "oops=panic" is specified and
+2nd-kernel is loaded. I think that a kdump should be enabled regardless of
+"oops=panic" if 2nd-kernel is loaded, because a system administrator loads
+2nd-kernel for enabling a kdump.
+
+* Reference
+  The discussion about this patch
+  http://lists.infradead.org/pipermail/kexec/2009-July/003417.html
 
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+Thanks
+Ken'ichi Ohmichi
+
+Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+Acked-by: Simon Horman <horms@verge.net.au>
 ---
- mm/page_alloc.c |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+--- a/kernel/kexec.c	2009-07-08 12:30:26.000000000 +0900
++++ b/kernel/kexec.c	2009-07-08 12:38:08.000000000 +0900
+@@ -57,6 +57,8 @@ struct resource crashk_res = {
+ 
+ int kexec_should_crash(struct task_struct *p)
+ {
++	if (kexec_crash_image)
++		return 1;
+ 	if (in_interrupt() || !p->pid || is_global_init(p) || panic_on_oops)
+ 		return 1;
+ 	return 0;
 
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2151,6 +2151,16 @@ void show_free_areas(void)
- 			" inactive_file:%lukB"
- 			" unevictable:%lukB"
- 			" present:%lukB"
-+			" mlocked:%lukB"
-+			" dirty:%lukB"
-+			" writeback:%lukB"
-+			" mapped:%lukB"
-+			" slab_reclaimable:%lukB"
-+			" slab_unreclaimable:%lukB"
-+			" pagetables:%lukB"
-+			" unstable:%lukB"
-+			" bounce:%lukB"
-+			" writeback_tmp:%lukB"
- 			" pages_scanned:%lu"
- 			" all_unreclaimable? %s"
- 			"\n",
-@@ -2165,6 +2175,16 @@ void show_free_areas(void)
- 			K(zone_page_state(zone, NR_INACTIVE_FILE)),
- 			K(zone_page_state(zone, NR_UNEVICTABLE)),
- 			K(zone->present_pages),
-+			K(zone_page_state(zone, NR_MLOCK)),
-+			K(zone_page_state(zone, NR_FILE_DIRTY)),
-+			K(zone_page_state(zone, NR_WRITEBACK)),
-+			K(zone_page_state(zone, NR_FILE_MAPPED)),
-+			K(zone_page_state(zone, NR_SLAB_RECLAIMABLE)),
-+			K(zone_page_state(zone, NR_SLAB_UNRECLAIMABLE)),
-+			K(zone_page_state(zone, NR_PAGETABLE)),
-+			K(zone_page_state(zone, NR_UNSTABLE_NFS)),
-+			K(zone_page_state(zone, NR_BOUNCE)),
-+			K(zone_page_state(zone, NR_WRITEBACK_TEMP)),
- 			zone->pages_scanned,
- 			(zone_is_all_unreclaimable(zone) ? "yes" : "no")
- 			);
-
+_______________________________________________
+kexec mailing list
+kexec@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kexec
 
