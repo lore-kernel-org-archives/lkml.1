@@ -1,104 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbZGIBv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759514AbZGIB7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbZGIBv5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 21:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZGIBvu
+	id S1759514AbZGIB7O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 21:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZGIB7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 21:51:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35791 "EHLO mx2.redhat.com"
+	Wed, 8 Jul 2009 21:59:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52121 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755019AbZGIBvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 21:51:49 -0400
-Date: Wed, 8 Jul 2009 21:51:05 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>
-Subject: [RFC PATCH 1/2] vmscan don't isolate too many pages in a zone
-Message-ID: <20090708215105.5016c929@bree.surriel.com>
-In-Reply-To: <20090708031901.GA9924@localhost>
-References: <20090707182947.0C6D.A69D9226@jp.fujitsu.com>
-	<20090707184034.0C70.A69D9226@jp.fujitsu.com>
-	<4A539B11.5020803@redhat.com>
-	<20090708031901.GA9924@localhost>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755062AbZGIB7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Jul 2009 21:59:02 -0400
+Date: Wed, 8 Jul 2009 21:58:42 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: dhaval@linux.vnet.ibm.com, snitzer@redhat.com, dm-devel@redhat.com,
+       jens.axboe@oracle.com, agk@redhat.com, paolo.valente@unimore.it,
+       fernando@oss.ntt.co.jp, jmoyer@redhat.com, fchecconi@gmail.com,
+       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, righi.andrea@gmail.com
+Subject: Re: [RFC] IO scheduler based IO controller V6
+Message-ID: <20090709015842.GA29117@redhat.com>
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <20090708035621.GB3215@balbir.in.ibm.com> <20090708134114.GA24048@redhat.com> <20090708143925.GE3215@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090708143925.GE3215@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When way too many processes go into direct reclaim, it is possible
-for all of the pages to be taken off the LRU.  One result of this
-is that the next process in the page reclaim code thinks there are
-no reclaimable pages left and triggers an out of memory kill.
-
-One solution to this problem is to never let so many processes into
-the page reclaim path that the entire LRU is emptied.  Limiting the
-system to only having half of each inactive list isolated for
-reclaim should be safe.
-
-Signed-off-by: Rik van Riel <riel@redhat.com>
----
-On Wed, 8 Jul 2009 11:19:01 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
-
-> > I guess I should mail out my (ugly) approach, so we can
-> > compare the two :)
+On Wed, Jul 08, 2009 at 08:09:25PM +0530, Balbir Singh wrote:
+> * Vivek Goyal <vgoyal@redhat.com> [2009-07-08 09:41:14]:
 > 
-> And it helps to be aware of all the alternatives, now and future :)
+> > On Wed, Jul 08, 2009 at 09:26:21AM +0530, Balbir Singh wrote:
+> > > * Vivek Goyal <vgoyal@redhat.com> [2009-07-02 16:01:32]:
+> > > 
+> > > > 
+> > > > Hi All,
+> > > > 
+> > > > Here is the V6 of the IO controller patches generated on top of 2.6.31-rc1.
+> > > > 
+> > > > Previous versions of the patches was posted here.
+> > > > 
+> > > > (V1) http://lkml.org/lkml/2009/3/11/486
+> > > > (V2) http://lkml.org/lkml/2009/5/5/275
+> > > > (V3) http://lkml.org/lkml/2009/5/26/472
+> > > > (V4) http://lkml.org/lkml/2009/6/8/580
+> > > > (V5) http://lkml.org/lkml/2009/6/19/279
+> > > > 
+> > > > This patchset is still work in progress but I want to keep on getting the
+> > > > snapshot of my tree out at regular intervals to get the feedback hence V6.
+> > > >
+> > > 
+> > > Hi, Vivek,
+> > > 
+> > > I was able to compile and boot a 2.6.31-rc1 kernel with this patchset.
+> > > I have a request could you fold up all patches and make one
+> > > consolidated patch available somewhere (makes it easier to test), may
+> > > be a git tree?
+> > > 
+> > 
+> > Thanks for trying it out balbir. Ok, for ease of patching and testing, I 
+> > will also maintain a consolidated patch. For V6 you can download the patch
+> > from here.
+> > 
+> > http://people.redhat.com/~vgoyal/io-controller/io-scheduler-based-io-controller-v6.patch
+> >
+> 
+> Thanks, this will definitely help me get more testing done!
+>  
+> > > I did some quick tests with some io benchmarks and found in a simple
+> > > scenario that the scheduler worked as expected, except that it took
+> > > very long. I'll investigate further and revert back.
+> > 
+> > Thanks. I will wait for details.
+> >
+> 
+> I'll try and send something out by Friday, but for now I am not even
+> very sure if it is a real problem. I ran iozone on two groups with 500
+> and 1000 as weights on the same parition and set fairness to 1 in
+> sysfs for the partition. I used a record size of 4 (default) and tried
+> to run it on a file size of 1G.
+> 
 
-Here is the per-zone alternative to Kosaki's patch.
+Hi Balbir,
 
-I believe Kosaki's patch will result in better performance
-and is more elegant overall, but here it is :)
+Trying iozone might be a good idea for analyzing the performance impact
+of io controller patches but it might not be the best thing to test
+fairness.
 
- mm/vmscan.c |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+The biggest reason being that IO controller provides fairness only if
+there is constant contention between the groups. If one group goes away
+for sometime, other gets to use the disk full. Now while running above
+benchmark, there are numerous occasions where disk is not contended for
+and we don't see fairness numbers in user space.
 
-Index: mmotm/mm/vmscan.c
-===================================================================
---- mmotm.orig/mm/vmscan.c	2009-07-08 21:37:01.000000000 -0400
-+++ mmotm/mm/vmscan.c	2009-07-08 21:39:02.000000000 -0400
-@@ -1035,6 +1035,27 @@ int isolate_lru_page(struct page *page)
- }
- 
- /*
-+ * Are there way too many processes in the direct reclaim path already?
-+ */
-+static int too_many_isolated(struct zone *zone, int file)
-+{
-+	unsigned long inactive, isolated;
-+
-+	if (current_is_kswapd())
-+		return 0;
-+
-+	if (file) {
-+		inactive = zone_page_state(zone, NR_INACTIVE_FILE);
-+		isolated = zone_page_state(zone, NR_ISOLATED_FILE);
-+	} else {
-+		inactive = zone_page_state(zone, NR_INACTIVE_ANON);
-+		isolated = zone_page_state(zone, NR_ISOLATED_ANON);
-+	}
-+
-+	return isolated > inactive;
-+}
-+
-+/*
-  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
-  * of reclaimed pages
-  */
-@@ -1049,6 +1070,10 @@ static unsigned long shrink_inactive_lis
- 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
- 	int lumpy_reclaim = 0;
- 
-+	while (unlikely(too_many_isolated(zone, file))) {
-+		schedule_timeout_interruptible(HZ/10);
-+	}
-+
- 	/*
- 	 * If we need a large contiguous chunk of memory, or have
- 	 * trouble getting a small set of contiguous pages, we
+I would recommend trying out fio or small tests to begin with which
+can create continuously backlogged queues at the disk to see how 
+accurate the io-controller is.
+
+> BTW, I don't see anything about weights being multiple of an expected
+> figure documented anywhere. I tried weights of 1024 (similar to the
+> scheduler and got shouted back at :) ). Does the documentation patch
+> specify the expected range for weights? 
+> 
+
+Weight range is 1-1000. I will update documentation to reflect this.
+Thanks for pointing it out.
+
+Vivek
