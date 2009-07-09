@@ -1,145 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761130AbZGIPfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbZGIPnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761130AbZGIPfT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 11:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760012AbZGIPfI
+	id S1760756AbZGIPnb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 11:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757182AbZGIPnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 11:35:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43079 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759424AbZGIPfF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 11:35:05 -0400
-Message-ID: <4A560ED7.2070403@redhat.com>
-Date: Thu, 09 Jul 2009 18:37:59 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: KSM: current madvise rollup
-References: <Pine.LNX.4.64.0906291419440.5078@sister.anvils> <4A49E051.1080400@redhat.com> <Pine.LNX.4.64.0906301518370.967@sister.anvils> <4A4A5C56.5000109@redhat.com> <Pine.LNX.4.64.0907010057320.4255@sister.anvils> <4A4B317F.4050100@redhat.com> <Pine.LNX.4.64.0907082035400.10356@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0907082035400.10356@sister.anvils>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Jul 2009 11:43:23 -0400
+Received: from vms173013pub.verizon.net ([206.46.173.13]:52445 "EHLO
+	vms173013pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755289AbZGIPnW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 11:43:22 -0400
+X-Greylist: delayed 3617 seconds by postgrey-1.27 at vger.kernel.org; Thu, 09 Jul 2009 11:43:22 EDT
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: Wu Fengguang <fengguang.wu@gmail.com>
+Subject: Re: OOM killer in 2.6.31-rc2
+Date: Thu, 09 Jul 2009 10:42:37 -0400
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc2; KDE/4.2.4; i686; ; )
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Minchan Kim <minchan.kim@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+References: <200907061056.00229.gene.heskett@verizon.net>
+ <20090708051515.GA17156@localhost> <20090708075501.GA1122@localhost>
+In-reply-to: <20090708075501.GA1122@localhost>
+MIME-version: 1.0
+Content-type: Text/Plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200907091042.38022.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> Hi Izik,
+On Wednesday 08 July 2009, Wu Fengguang wrote:
+>On Wed, Jul 08, 2009 at 01:15:15PM +0800, Wu Fengguang wrote:
+>> On Tue, Jul 07, 2009 at 11:42:07PM -0400, Gene Heskett wrote:
+[...]
+>> I guess your near 800MB slab cache is somehow under scanned.
 >
-> Sorry, I've not yet replied to your response of 1 July, nor shall I
-> right now.  Instead, more urgent to send you my current KSM rollup,
-> against 2.6.31-rc2, with which I'm now pretty happy - to the extent
-> that I've put my signoff to it below.
+>Gene, can you run .31 with this patch? When OOM happens, it will tell
+>us whether the majority slab pages are reclaimable. Another way to
+>find things out is to run `slabtop` when your system is moderately loaded.
+
+Its been running continuously, and after 24 hours is now showing:
+
+ Active / Total Objects (% used)    : 578136 / 869737 (66.5%)
+ Active / Total Slabs (% used)      : 35832 / 35836 (100.0%)
+ Active / Total Caches (% used)     : 104 / 163 (63.8%)
+ Active / Total Size (% used)       : 115103.39K / 135776.88K (84.8%)
+ Minimum / Average / Maximum Object : 0.01K / 0.16K / 4096.00K
+
+  OBJS ACTIVE  USE OBJ SIZE  SLABS OBJ/SLAB CACHE SIZE NAME
+439989 179391  40%    0.05K   6567       67     26268K buffer_head
+126237 126222  99%    0.13K   4353       29     17412K dentry
+121296 121296 100%    0.48K  15162        8     60648K ext3_inode_cache
+ 64779  47350  73%    0.28K   4983       13     19932K radix_tree_node
+ 17158  16014  93%    0.08K    373       46      1492K vm_area_struct
+ 14250  14250 100%    0.12K    475       30      1900K size-128
+ 12600  12544  99%    0.04K    150       84       600K sysfs_dir_cache
+ 11187  10813  96%    0.03K     99      113       396K size-32
+  9170   9170 100%    0.36K    917       10      3668K proc_inode_cache
+  8820   7560  85%    0.12K    294       30      1176K filp
+  8791   6107  69%    0.06K    149       59       596K size-64
+  6858   5532  80%    0.01K     27      254       108K anon_vma
+  3213   3157  98%    0.06K     51       63       204K 
+inotify_inode_mark_entry
+  2392   2319  96%    0.04K     26       92       104K Acpi-Operand
+  2020    778  38%    0.19K    101       20       404K skbuff_head_cache
+  1467   1442  98%    0.43K    163        9       652K shmem_inode_cache
+  1352   1212  89%    0.02K      8      169        32K Acpi-Namespace
+  1350    579  42%    0.12K     45       30       180K cred_jar
+  1288   1252  97%    0.50K    161        8       644K size-512
+  1121   1062  94%    0.06K     19       59        76K pid
+   998    990  99%    2.00K    499        2      1996K size-2048
+   780    665  85%    0.05K     10       78        40K ext3_xattr
+   702    653  93%    0.14K     27       26       108K idr_layer_cache
+   668    567  84%    1.00K    167        4       668K size-1024
+   650    547  84%    0.38K     65       10       260K sock_inode_cache
+   594    442  74%    0.44K     66        9       264K UNIX
+   585    474  81%    0.25K     39       15       156K size-256
+   560    526  93%    0.19K     28       20       112K size-192
+   555    272  49%    0.25K     37       15       148K ip_dst_cache
+   539    423  78%    0.34K     49       11       196K inode_cache
+   452    198  43%    0.03K      4      113        16K fs_cache
+
+Is there anything unusual there?
+
+>Thanks,
+>Fengguang
+>---
+>From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 >
-> Though of course it's actually your and Andrea's and Chris's work,
-> just played around with by me; I don't know what the order of
-> signoffs should be in the end.
+>Subject: [PATCH] add per-zone statistics to show_free_areas()
 >
-> What it mainly lacks is a Documentation file, and more statistics in
-> sysfs: though we can already see how much is being merged, we don't
-> see any comparison against how much isn't.
+>Currently, show_free_area() mainly display system memory usage. but it
+>doesn't display per-zone memory usage information.
 >
-> But if you still like the patch below, let's advance to splitting
-> it up and getting it into mmotm: I have some opinions on the splitup,
-> I'll make some suggestions on that tomorrow.
->   
+>However, if DMA zone OOM occur, Administrator definitely need to know
+>per-zone memory usage information.
+[...]
+To Wu Fengguang, David H., Rafael W., lkml:
 
-I like it very much, you really ~cleaned / optimized / made better 
-interface~ it up i got to say, thanks you.
-(Very high standard you have)
+With this patch, the newest bios for this board, and without the 
+CONFIG_HIGHMEM64G in the config, 2.6.31-rc2 has achieved a full days uptime.
+I did do a swapoff -a; swapon -a about an hour into the boot to zero the swap, 
+and in nearly 24 hours it hasn't used any.  No oom's that I can find in the 
+logs.
 
-> You asked for a full diff against -rc2, but may want some explanation
-> of differences from what I sent before.  The main changes are:-
->
-> A reliable PageKsm(), not dependent on the nature of the vma it's in:
-> it's like PageAnon, but with NULL anon_vma - needs a couple of slight
-> adjustments outside ksm.c.
->   
+If the 64G highmem option, and this bios meet on this machine, the crash is at 
+least 20 hours overdue.  But it appears to be 100% normal yet.
 
-Good change.
+My opinion is that the 64G, long address memory handling may be broken 
+somewhere.  Running w/o it costs me about half a gig of ram, but in this case, 
+the loss is well worth it.
 
-> Consequently, no reason to go on prohibiting KSM on private anonymous
-> pages COWed from template file pages in file-backed vmas.
->   
+What is the reason that setting the 4G of memory option results in only 
+approximately 3.5G being shown again?
 
-Agree.
+Many Thanks to all of you, I have a stable machine now.
 
-> Most of what get_user_pages did for us was unhelpful: now rely on
-> find_vma and follow_page and handle_mm_fault directly, which allow
-> us to check VM_MERGEABLE and PageKsm ourselves where needed.
->
-> Which eliminates the separate is_present_pte checks, and spares us
-> from wasting rmap_items on absent ptes.
->   
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The NRA is offering FREE Associate memberships to anyone who wants them.
+<https://www.nrahq.org/nrabonus/accept-membership.asp>
 
-That is great, much better.
-(I actually searched where you have exported follow_page and 
-handle_mm_fault, and then realized that life are easier when you are not 
-a modules anymore)
-
-> Which then drew attention to the hyperactive allocation and freeing
-> of tree_items, "slabinfo -AD" showing huge activity there, even when
-> idling.  It's not much of a problem really, but might cause concern.
->
-> And revealed that really those tree_items were a waste of space, can
-> be packed within the rmap_items that pointed to them, while still
-> keeping to the nice cache-friendly 64-byte or 32-byte rmap_item.
-> (If another field needed later, can make rmap_list singly linked.)
->   
-
-That change together with the "is_stable_tree" embedded inside the 
-rmap_item address are my favorite changes.
-
-> mremap move issue sorted, in simplest COW-breaking way.  My previous
-> code to unmerge according to rmap_item->stable was racy/buggy for
-> two reasons: ignore rmap_items there now, just scan the ptes.
->
-> ksmd used to be running at higher priority: now nice 0.
->   
-
-
-That is indeed logical change, maybe we can even punish it in another 5 
-points in nice...
-
-> Moved mm_slot hash functions together; made hash table smaller
-> now it's used less frequently than it was in your design.
->
-> More cleanup, making similar things more alike.
->   
-
-Really quality work. (What i did was just walk from line 1 to the end of 
-ksm.c with my eyes, I still want to apply the patch and play with it)
-
-The only thing i was afraid is if the check inside the 
-stable_tree_search is safe:
-
-+			page2[0] = get_ksm_page(tree_rmap_item);
-+			if (page2[0])
-+				break;
-
-
-But i convinced myself that it is safe due to the fact that the page is 
-anonymous, so it wasnt be able to get remapped by the user (to try to 
-corrupt the stable tree) without the page will get breaked.
-
-So from my side I believe we can send it to mmotm I still want to run it 
-on my machine and play with it, to add some bug_ons (just for my own 
-testing) to see that everything
-going well, but I couldn't find one objection to any of your changes. 
-(And i did try hard to find at least one..., i thought maybe 
-module_init() can be replaced with something different, but i then i saw 
-it used in vmscan.c, so i gave up...)
-
-
-What you want to do now? send it to mmotm or do you want to play with it 
-more?
-
-
-Big thanks.
-
+People are like onions -- you cut them up, and they make you cry.
 
