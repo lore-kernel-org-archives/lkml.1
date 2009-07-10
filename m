@@ -1,57 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbZGJUnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbZGJVHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757637AbZGJUnY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 16:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbZGJUnR
+	id S1757205AbZGJVHK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 17:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbZGJVG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 16:43:17 -0400
-Received: from smtp146.mail.mud.yahoo.com ([209.191.106.57]:28801 "HELO
-	smtp146.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756070AbZGJUnQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 16:43:16 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Jul 2009 16:43:16 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.ar;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
-  b=y97A7NzpKj+xnWfHCx0GgD417cfyHB4aNF7tcqoI6sSeENpkurdsbqYLMLdqlHO66unP+1NoW6ahLOypQGmgfuJ6ggVFXH7zZiCkD+2a/BRRAQgA3p8EQHB2o6j4DBrn043ATiW7wJYCMrn6mFhWiFs95MZUP26YvDh9/IZ087Q=  ;
-X-Yahoo-SMTP: MJlmAJmswBD1ci8cgZcdLoLtCohJxg8-
-X-YMail-OSG: ExrprCsVM1kqdQv_A1YYz8ZhwjXj7sYCebZuGwJch6sn9AJHfdSwMDsHhx8EsdokKXOHoFb3zuw3Dylbav0_SHRx7kZX9evGuzujOc5D_Dhobt3F4Rx5vPxT8n183zWtIcCAWCWrEq_2c_I_mZFu9gXYM1he48z_TJkSMMpGxLJTCkvwVC1Ezs0iAZhky37kjUDnI0VlBxOFG.4HQzprJnIuWEyNu7nQH6UptyNFYKuKX2_zmsYlNRbC1AyuGXEzSkFXDJFLkCGQ6aayiX7LP.pgb5JPcSQXZjAZJ8YhcX3SBmP8tv_jq8vP0eUUjNaPAsbt3yfcPAMcbATu1OsSPioonyx3u0Fg7Wg-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4A57A62C.2030302@yahoo.com.ar>
-Date: Fri, 10 Jul 2009 17:35:56 -0300
-From: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
-Subject: No more vcs1 and vcsa1 in 2.6.30.N
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Jul 2009 17:06:59 -0400
+Received: from outbound-mail-129.bluehost.com ([67.222.38.29]:44623 "HELO
+	outbound-mail-129.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752302AbZGJVG6 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 17:06:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=Jxo3PrRl9Ly4z/I8IdQzyQ/1UMa6WbmoiGIK/wfz2Y4Pgycr1tc0dHeX7p07I7B+mWbDQoHZAZ6C55xPfYw7QOTOSrmwDxTniiMxDZAEfQaQxpRgjxJkabnz94f7QoA+;
+Date: Fri, 10 Jul 2009 14:06:54 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Subject: Re: [PATCH] x86/PCI: initialize PCI bus node numbers early
+Message-ID: <20090710140654.32132bcb@jbarnes-g45>
+In-Reply-To: <20090710132249.1a032cfb@jbarnes-g45>
+References: <20090710104419.0032be7b@jbarnes-g45>
+	<4A57A1FE.30609@kernel.org>
+	<20090710132249.1a032cfb@jbarnes-g45>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Fri, 10 Jul 2009 13:22:49 -0700
+Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-Since upgrade my system to 2.6.30[.1]. I don't have anymore
-/sys/devices/virtual/vc/vcs1 and /sys/devices/virtual/vc/vcs1 in
-consequence not have anymore the corresponding char devs in /dev.
+> On Fri, 10 Jul 2009 13:18:06 -0700
+> Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+> > Jesse Barnes wrote:
+> > > The current mp_bus_to_node array is initialized only by AMD
+> > > specific code, since AMD platforms have registers that can be
+> > > used for determining mode numbers.  On new Intel platforms it's
+> > > necessary to initialize this array as well though, otherwise all
+> > > PCI node numbers will be 0, when in fact they should be -1
+> > > (indicating that I/O isn't tied to any particular node).
+> > > 
+> > > So move the mp_bus_to_node code into the common PCI code, and
+> > > initialize it early with a default value of -1.  This may be
+> > > overridden later by arch code (e.g. the AMD code).
+> > > 
+> > > With this change, PCI consistent memory and other node specific
+> > > allocations (e.g. skbuff allocs) should occur on the "current"
+> > > node. If, for performance reasons, applications want to be bound
+> > > to specific nodes, they should open their devices only after being
+> > > pinned to the CPU where they'll run, for maximum locality.
+> > > 
+> > > Any thoughts here Yinghai or Jesse?
+> > > 
+> > > 
+> > >  include/asm/pci.h |    2 +
+> > >  kernel/setup.c    |    2 +
+> > >  pci/amd_bus.c     |   61
+> > > +----------------------------------------- pci/common.c      |
+> > > 77 ++++++++++++++++++++++++++++++++++++++++++++++++++++++ 4 files
+> > > changed, 83 insertions(+), 59 deletions(-)
+> > > 
+> > > Thanks,
+> > 
+> > could use
+> > 
+> > static int mp_bus_to_node[BUS_NR] = {
+> >         [0 ... BUS_NR - 1] = -1
+> > };
+> > 
+> > so we avoid to add pci_bus_to_node_init()
+> 
+> Ah yeah that would clean things up a bit...  Thanks.
+> 
 
-The problem is with this commit: {vcs: hook sysfs devices into object
-lifetime instead of "binding"} [#1]
-Reverting it solves the issue.
+So something like this...
 
-[#1]
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.30.y.git;a=commitdiff;h=4995f8ef9d3aac72745e12419d7fbaa8d01b1d81
+--
 
-Cheers,
+>From 2b51fba93f7b2dabf453a74923a9a217611ebc1a Mon Sep 17 00:00:00 2001
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date: Fri, 10 Jul 2009 14:04:30 -0700
+Subject: [PATCH] x86/PCI: initialize PCI bus node numbers early
+
+The current mp_bus_to_node array is initialized only by AMD specific
+code, since AMD platforms have registers that can be used for
+determining mode numbers.  On new Intel platforms it's necessary to
+initialize this array as well though, otherwise all PCI node numbers
+will be 0, when in fact they should be -1 (indicating that I/O isn't
+tied to any particular node).
+
+So move the mp_bus_to_node code into the common PCI code, and
+initialize it early with a default value of -1.  This may be overridden
+later by arch code (e.g. the AMD code).
+
+With this change, PCI consistent memory and other node specific
+allocations (e.g. skbuff allocs) should occur on the "current" node.
+If, for performance reasons, applications want to be bound to specific
+nodes, they should open their devices only after being pinned to the
+CPU where they'll run, for maximum locality.
+
+Acked-by: Yinghai Lu <yinghai@kernel.org>
+Tested-by: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+---
+ arch/x86/pci/amd_bus.c |   64 +-------------------------------------------
+ arch/x86/pci/common.c  |   69 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 70 insertions(+), 63 deletions(-)
+
+diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
+index 3ffa10d..572ee97 100644
+--- a/arch/x86/pci/amd_bus.c
++++ b/arch/x86/pci/amd_bus.c
+@@ -15,63 +15,6 @@
+  * also get peer root bus resource for io,mmio
+  */
+ 
+-#ifdef CONFIG_NUMA
+-
+-#define BUS_NR 256
+-
+-#ifdef CONFIG_X86_64
+-
+-static int mp_bus_to_node[BUS_NR];
+-
+-void set_mp_bus_to_node(int busnum, int node)
+-{
+-	if (busnum >= 0 &&  busnum < BUS_NR)
+-		mp_bus_to_node[busnum] = node;
+-}
+-
+-int get_mp_bus_to_node(int busnum)
+-{
+-	int node = -1;
+-
+-	if (busnum < 0 || busnum > (BUS_NR - 1))
+-		return node;
+-
+-	node = mp_bus_to_node[busnum];
+-
+-	/*
+-	 * let numa_node_id to decide it later in dma_alloc_pages
+-	 * if there is no ram on that node
+-	 */
+-	if (node != -1 && !node_online(node))
+-		node = -1;
+-
+-	return node;
+-}
+-
+-#else /* CONFIG_X86_32 */
+-
+-static unsigned char mp_bus_to_node[BUS_NR];
+-
+-void set_mp_bus_to_node(int busnum, int node)
+-{
+-	if (busnum >= 0 &&  busnum < BUS_NR)
+-	mp_bus_to_node[busnum] = (unsigned char) node;
+-}
+-
+-int get_mp_bus_to_node(int busnum)
+-{
+-	int node;
+-
+-	if (busnum < 0 || busnum > (BUS_NR - 1))
+-		return 0;
+-	node = mp_bus_to_node[busnum];
+-	return node;
+-}
+-
+-#endif /* CONFIG_X86_32 */
+-
+-#endif /* CONFIG_NUMA */
+-
+ #ifdef CONFIG_X86_64
+ 
+ /*
+@@ -301,11 +244,6 @@ static int __init early_fill_mp_bus_info(void)
+ 	u64 val;
+ 	u32 address;
+ 
+-#ifdef CONFIG_NUMA
+-	for (i = 0; i < BUS_NR; i++)
+-		mp_bus_to_node[i] = -1;
+-#endif
+-
+ 	if (!early_pci_allowed())
+ 		return -1;
+ 
+@@ -346,7 +284,7 @@ static int __init early_fill_mp_bus_info(void)
+ 		node = (reg >> 4) & 0x07;
+ #ifdef CONFIG_NUMA
+ 		for (j = min_bus; j <= max_bus; j++)
+-			mp_bus_to_node[j] = (unsigned char) node;
++			set_mp_bus_to_node(j, node);
+ #endif
+ 		link = (reg >> 8) & 0x03;
+ 
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 2202b62..8ce1ce1 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -600,3 +600,72 @@ struct pci_bus * __devinit pci_scan_bus_with_sysdata(int busno)
+ {
+ 	return pci_scan_bus_on_node(busno, &pci_root_ops, -1);
+ }
++
++/*
++ * NUMA info for PCI busses
++ *
++ * Early arch code is responsible for filling in reasonable values here.
++ * A node id of "-1" means "use current node".  In other words, if a bus
++ * has a -1 node id, it's not tightly coupled to any particular chunk
++ * of memory (as is the case on some Nehalem systems).
++ */
++#ifdef CONFIG_NUMA
++
++#define BUS_NR 256
++
++#ifdef CONFIG_X86_64
++
++static int mp_bus_to_node[BUS_NR] = {
++	[0 ... BUS_NR - 1] = -1;
++};
++
++void set_mp_bus_to_node(int busnum, int node)
++{
++	if (busnum >= 0 &&  busnum < BUS_NR)
++		mp_bus_to_node[busnum] = node;
++}
++
++int get_mp_bus_to_node(int busnum)
++{
++	int node = -1;
++
++	if (busnum < 0 || busnum > (BUS_NR - 1))
++		return node;
++
++	node = mp_bus_to_node[busnum];
++
++	/*
++	 * let numa_node_id to decide it later in dma_alloc_pages
++	 * if there is no ram on that node
++	 */
++	if (node != -1 && !node_online(node))
++		node = -1;
++
++	return node;
++}
++
++#else /* CONFIG_X86_32 */
++
++static unsigned char mp_bus_to_node[BUS_NR] = {
++	[0 ... BUS_NR - 1] = -1;
++};
++
++void set_mp_bus_to_node(int busnum, int node)
++{
++	if (busnum >= 0 &&  busnum < BUS_NR)
++	mp_bus_to_node[busnum] = (unsigned char) node;
++}
++
++int get_mp_bus_to_node(int busnum)
++{
++	int node;
++
++	if (busnum < 0 || busnum > (BUS_NR - 1))
++		return 0;
++	node = mp_bus_to_node[busnum];
++	return node;
++}
++
++#endif /* CONFIG_X86_32 */
++
++#endif /* CONFIG_NUMA */
+-- 
+1.6.0.4
 
 
-Please CC to me, not subscribed to LKML. Thanks.
 
 -- 
-Gerardo Exequiel Pozzi ( djgera )
-http://www.djgera.com.ar
-KeyID: 0x1B8C330D
-Key fingerprint = 0CAA D5D4 CD85 4434 A219  76ED 39AB 221B 1B8C 330D
-
+Jesse Barnes, Intel Open Source Technology Center
