@@ -1,111 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbZGJKoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbZGJKor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755499AbZGJKoc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 06:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755307AbZGJKnq
+	id S1755522AbZGJKor (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 06:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZGJKoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 06:43:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53585 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755339AbZGJKno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 06:43:44 -0400
-Date: Fri, 10 Jul 2009 10:42:18 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, lizf@cn.fujitsu.com,
-       eduard.munteanu@linux360.ro, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, laijs@cn.fujitsu.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, penberg@cs.helsinki.fi,
-       eduard.munteanu@linux360.ro, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, laijs@cn.fujitsu.com, mingo@elte.hu
-In-Reply-To: <1247107590-6428-3-git-send-email-fweisbec@gmail.com>
-References: <1247107590-6428-3-git-send-email-fweisbec@gmail.com>
-Subject: [tip:tracing/core] tracing/kmemtrace: Use the %pf format
-Message-ID: <tip-6a167c655858cbec4175532fd00417661c87f149@git.kernel.org>
-Git-Commit-ID: 6a167c655858cbec4175532fd00417661c87f149
-X-Mailer: tip-git-log-daemon
+	Fri, 10 Jul 2009 06:44:37 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:64136 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754824AbZGJKog (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 06:44:36 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: liqin.chen@sunplusct.com
+Subject: Re: [PATCH] score: add regsets support for score
+Date: Fri, 10 Jul 2009 12:44:28 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.95; x86_64; ; )
+References: <OF46A53443.CAD32185-ON482575EF.0034F550-482575EF.0035E714@sunplusct.com>
+In-Reply-To: <OF46A53443.CAD32185-ON482575EF.0034F550-482575EF.0035E714@sunplusct.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?gb2312?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2E?=
+ =?gb2312?q?a=5E3zb?=)
+ =?gb2312?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?gb2312?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 10:42:25 +0000 (UTC)
+Message-Id: <200907101244.28829.arnd@arndb.de>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>
+Content-Type: Text/Plain;
+  charset="gb2312"
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX1/9kdvxqPYyT07wT+ZqLmnbimGvk3Enr9Glljx
+ y2av7fp+0J+Js1wXPTl5cNm9qTmrNfP3YWE7dI3w9oPNupieX7
+ NM0EgrDXJwGDy3RPtRH5w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6a167c655858cbec4175532fd00417661c87f149
-Gitweb:     http://git.kernel.org/tip/6a167c655858cbec4175532fd00417661c87f149
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 9 Jul 2009 04:46:30 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Jul 2009 12:07:20 +0200
+On Friday 10 July 2009, liqin.chen@sunplusct.com wrote:
+> Arnd Bergmann <arnd@arndb.de> Ð´ÓÚ 2009-07-09 23:08:54:
+> 
+> > You still use an email client that breaks patches by adding line-wraps.
+> > Please use a different mail client for sending patches. You could for
+> > example use git-send-email with a random freemail account and still
+> > set your corporate sender address.
+> 
+> Sorry, our MIS haven't solved this problem yet,
+> I have to used it until they fixed this bug.
 
-tracing/kmemtrace: Use the %pf format
+What's the problem? Do you need a development machine with SMTP access to
+the internet? If so, the easiest way would be to use master.kernel.org
+once you have an account there and not rely on your company infrastructure.
 
-Remove the obsolete seq_print_ip_sym() usage and replace it
-by the %pf format in order to print function symbols.
+I noticed that you have started using Thunderbird instead of Notes now.
+While Thunderbird has the same bug, you can at least work around it,
+see the section on thunderbird in
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/email-clients.txt
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-LKML-Reference: <1247107590-6428-3-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+OTOH, if you got thunderbird to send out your mails, you should
+also be able to send out using git-send-email on the same server,
+without any help from your MIS.
 
-
----
- kernel/trace/kmemtrace.c |   25 +++++--------------------
- 1 files changed, 5 insertions(+), 20 deletions(-)
-
-diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
-index 74903b6..2f6fa47 100644
---- a/kernel/trace/kmemtrace.c
-+++ b/kernel/trace/kmemtrace.c
-@@ -389,19 +389,12 @@ kmemtrace_print_alloc_compress(struct trace_iterator *iter)
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
--	/* Node */
--	ret = trace_seq_printf(s, "%4d   ", entry->node);
-+	/* Node and call site*/
-+	ret = trace_seq_printf(s, "%4d   %pf\n", entry->node,
-+						 (void *)entry->call_site);
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
--	/* Call site */
--	ret = seq_print_ip_sym(s, entry->call_site, 0);
--	if (!ret)
--		return TRACE_TYPE_PARTIAL_LINE;
--
--	if (!trace_seq_printf(s, "\n"))
--		return TRACE_TYPE_PARTIAL_LINE;
--
- 	return TRACE_TYPE_HANDLED;
- }
- 
-@@ -447,19 +440,11 @@ kmemtrace_print_free_compress(struct trace_iterator *iter)
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
--	/* Skip node */
--	ret = trace_seq_printf(s, "       ");
-+	/* Skip node and print call site*/
-+	ret = trace_seq_printf(s, "       %pf\n", (void *)entry->call_site);
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
--	/* Call site */
--	ret = seq_print_ip_sym(s, entry->call_site, 0);
--	if (!ret)
--		return TRACE_TYPE_PARTIAL_LINE;
--
--	if (!trace_seq_printf(s, "\n"))
--		return TRACE_TYPE_PARTIAL_LINE;
--
- 	return TRACE_TYPE_HANDLED;
- }
- 
+	Arnd <><
