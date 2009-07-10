@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbZGJHM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZGJHN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751907AbZGJHM7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 03:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbZGJHMw
+	id S1752814AbZGJHN1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 03:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZGJHNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 03:12:52 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44519 "EHLO e2.ny.us.ibm.com"
+	Fri, 10 Jul 2009 03:13:19 -0400
+Received: from mga14.intel.com ([143.182.124.37]:60460 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbZGJHMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 03:12:51 -0400
-Subject: Re: [PATCH Resend2] Remove 'SBC8240 Wind River' Device Driver Code
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: dedekind@infradead.org, linux-mtd@lists.infradead.org,
-       carolyn.j.smith@exgate.tek.com, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Jim Cromie <jim.cromie@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       linux-next <linux-next@vger.kernel.org>,
-       Scott Wood <scottwood@freescale.com>, dwmw2@infradead.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-In-Reply-To: <4A56DD51.5040703@gmail.com>
-References: <20090701135247.27488.10776.sendpatchset@subratamodak.linux.ibm.com>
-	 <1246846628.5743.2.camel@subratamodak.linux.ibm.com>
-	 <1247205588.20721.353.camel@localhost.localdomain>
-	 <1247206539.6630.0.camel@subratamodak.linux.ibm.com>
-	 <4A56DD51.5040703@gmail.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Fri, 10 Jul 2009 12:42:41 +0530
-Message-Id: <1247209961.6630.3.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 7bit
+	id S1750787AbZGJHNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 03:13:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,377,1243839600"; 
+   d="scan'208";a="163513547"
+Date: Fri, 10 Jul 2009 14:37:30 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13726] fio sync read 4k block size 35% regression
+Message-ID: <20090710063730.GA23814@localhost>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <dWkuWjWDsSB.A.lME.S0oUKB@chimera> <1246946802.2560.532.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246946802.2560.532.camel@ymzhang>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-10 at 09:18 +0300, Artem Bityutskiy wrote:
-> Subrata Modak wrote:
-> > On Fri, 2009-07-10 at 08:59 +0300, Artem Bityutskiy wrote:
-> >> On Mon, 2009-07-06 at 07:47 +0530, Subrata Modak wrote:
-> >>> Hi,
-> >>>
-> >>> Is there somebody else whom i should also address to get an attention
-> >>> for this patch ? I apolozise if i have not included someone. Kindly
-> >>> connect to the concerned.
-> >> I'm putting your patch to l2-mtd-2.6.git.
+On Tue, Jul 07, 2009 at 02:06:42PM +0800, Zhang, Yanmin wrote:
+> On Tue, 2009-07-07 at 02:01 +0200, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
 > > 
-> > Thanks very much. Would i receive some automatic confirmation once it
-> > make to Linus tree ?
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13726
+> > Subject		: fio sync read 4k block size 35% regression
+> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > Date		: 2009-07-01 11:25 (6 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=51daa88ebd8e0d437289f589af29d4b39379ea76
+> > References	: http://lkml.org/lkml/2009/6/30/679
+> > Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
+> Fengguang,
 > 
-> I do not think so. I'm not MTD maintainer and in l2-mtd-2.6.git
-> I just collect random patches, which the maintainer then usually
-> takes from my tree.
+> I'm still working on it now. The new testing against 2.6.31-rc2 is ongoing.
+> fio sync/mmap read has new behavior. I did collect some data. But suddenly
+> with new created data, the fio_sync_read_4k regression disappeared, while
 
-Thanks. I just want this through before 2.6.31 stable is released, so
-that the build fails does not occur on next trees based on that stable
-one.
+Do you mean the fio_sync_read_4k regression disappeared because we are
+collecting data with lots of printks?
 
-Regards--
-Subrata
+> fio_mmap_read is still there. Originally, the testing and bisect were stable.
+> Let me check what happens firstly.
 
-> 
+Thanks! What's your fio_mmap_read job file and the readahead traces?
 
+Thanks,
+Fengguang
