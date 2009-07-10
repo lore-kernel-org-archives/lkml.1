@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751323AbZGJHw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZGJHxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751323AbZGJHw7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 03:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbZGJHwv
+	id S1751218AbZGJHxb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 03:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbZGJHxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 03:52:51 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39895 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbZGJHwu (ORCPT
+	Fri, 10 Jul 2009 03:53:23 -0400
+Received: from mail-px0-f193.google.com ([209.85.216.193]:52038 "EHLO
+	mail-px0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbZGJHxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 03:52:50 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4A56F343.7040907@jp.fujitsu.com>
-Date: Fri, 10 Jul 2009 16:52:35 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Fri, 10 Jul 2009 03:53:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qdk6Ac/WkPvRv1gHbxmpTBO6+GwuJjsZIpBhzmq/5tx4uHpXcUY5P5HnQxoHAeOC0f
+         g8n33NJzZH+W5R66CikyFRI25YQJIAhl8UkyMqgq5HLbRKNE57CkgcEsEb9OEukjfr4i
+         6QUDzvbb7cYB98YmE4Sv/iXNvi2R+77B6zjmo=
+Date: Fri, 10 Jul 2009 15:55:30 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Dick Streefland <dick@streefland.net>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
+Message-ID: <20090710075530.GB6263@cr0.nay.redhat.com>
+References: <20090623225245.GA10443@streefland.net> <20090624021506.GA5871@cr0.nay.redhat.com> <20090624114607.GA10817@streefland.net> <20090624133148.GA12878@streefland.net> <20090629025146.GA5998@cr0.nay.redhat.com> <20090629113613.GA6853@streefland.net> <20090709023855.GA5648@cr0.nay.redhat.com> <20090709082651.GA6165@streefland.net>
 MIME-Version: 1.0
-To: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-CC: kexec-ml <kexec@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kdump: Enable kdump if 2nd-kernel is loaded.
-References: <4A55A4AE.3000206@mxs.nes.nec.co.jp> <4A56E069.5040907@jp.fujitsu.com> <4A56E83B.50600@mxs.nes.nec.co.jp>
-In-Reply-To: <4A56E83B.50600@mxs.nes.nec.co.jp>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090709082651.GA6165@streefland.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ohmichi-san,
+On Thu, Jul 09, 2009 at 10:26:51AM +0200, Dick Streefland wrote:
+>On Thursday 2009-07-09 10:38, Amerigo Wang wrote:
+>| I appologize for my delay, I totally missed this thread, sorry.
+>| 
+>| I just tested it, it works! So,
+>| 
+>| Tested-by: WANG Cong <xiyou.wangcong@gmail.com>
+>
+>Great, thanks.
+>
+>| But, I still don't understand the behavior of 'grep -abo',
+>| please try the following commands:
+>| 
+>| echo -e '\x01\x02\x03\x04' > test.bin
+>| od -x test.bin
+>| tr $'\x01\x02\x03\x04' '1234' < test.bin | grep -abo '4'
+>| 
+>| Am I missing something here??
+>
+>The output with grep-2.5.3 is 3:4, which means that the string "4" was
+>found at offset 3 (0-based). With grep-2.5.1, you get 0:4, which means
+>that the line containing the string "4" has offset 0. The "tr" commands
+>in the script ensure that the patterns we are looking for are always at
+>the start of a line, so that it doesn't matter which version of grep is
+>installed.
 
-Ken'ichi Ohmichi wrote:
-> Hidetoshi Seto wrote:
->> I'd like to quote your comment:
->>
->>>> I tried to test a kdump on linux-2.6.31-rc1 *without* a kernel parameter
->>>> "oops=panic" by `echo c > /proc/sysrq-trigger`, but a kdump did not work
->>>> because a kdump, which is occurred by `echo c > /proc/sysrq-trigger`, has
->>>> been changed to a NULL pointer error instead of calling crash_kexec()
->>>> since linux-2.6.31-rc1.
->> So the real problem is that kdump is not triggered by the NULL pointer oops
->> if !panic_on_oops, isn't it?
->>
->> It seems that you should report this trouble of sysrq-c as a regression.
-> 
-> I don't think this problem is a regression of sysrq-c.
-> This change of sysrq-c looks reasonable to me. Because sysrq-c is used
-> for the test of kdump, and its code path has been changed to the same
-> path as a kdump on oops (a real problem, not test).
-> So we can test a kdump by a real oops, that is good to me.
-> As a result, I could find this problem a kdump is not enabled without
-> "oops=panic".
+Hmm, I see, it is really a _big_ change. :)
 
-Still I believe this is a regression of sysrq-c.
-If required function of sysrq-c were "cause a real oops", then it is not
-regression.  But as described in Documentation/sysrq.txt, real usage of
-sysrq-c is "perform a kexec reboot," i.e. kdump.
-So I think sysrq-c should use panic instead of oops if it want to kick
-the kdump unconditionally.
+Have you checked other version of grep? I mean lower version, of course,
+does your script work with them too?
 
-However, yes, I agree it is a problem on the kdump's policy that kdump on
-oops is not enabled without the option.  I'm not sure how much people want
-to enable kdump only on panic while not on oops, but I suppose it will be
-negligible.  Or it would be better to introduce kdump_on_oops option or so.
-
-
-Thanks,
-H.Seto
+Thank you!
 
