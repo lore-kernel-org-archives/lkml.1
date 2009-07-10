@@ -1,84 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbZGJFrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZGJFww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbZGJFrn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 01:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZGJFre
+	id S1752470AbZGJFww (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 01:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbZGJFwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 01:47:34 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33611 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbZGJFrb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 01:47:31 -0400
-Date: Fri, 10 Jul 2009 07:45:53 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       davinci <davinci-linux-open-source@linux.davincidsp.com>,
-       Hugo Villeneuve <hugo.villeneuve@lyrtech.com>, philip@opensdr.com,
-       Eduardo Valentin <eduardo.valentin@indt.org.br>,
-       Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org,
-       Ben Dooks <ben-linux@fluff.org>, Ben Dooks <ben@simtec.co.uk>,
-       dmitry pervushin <dpervushin@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       arm <linux-arm@lists.arm.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/44] includecheck: fix multiple includes
-Message-ID: <20090710054552.GS2714@pengutronix.de>
-References: <1247063308.4382.12.camel@ht.satnam> <1247076059.4382.127.camel@ht.satnam> <20090708211321.GA15928@flint.arm.linux.org.uk> <1247113711.2453.27.camel@ht.satnam>
+	Fri, 10 Jul 2009 01:52:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45323 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750970AbZGJFwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 01:52:43 -0400
+Date: Fri, 10 Jul 2009 07:52:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Feng Tang <feng.tang@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH 11/12] SFI, PCI: Hook MMCONFIG
+Message-ID: <20090710055229.GD22218@elte.hu>
+References: <8e4a93858bce74ed3080dd607aa471023f1a2737.1247025117.git.len.brown@intel.com> <24fe646fcbbd9049850de4ac57cf6a67846b38c4.1247025117.git.len.brown@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1247113711.2453.27.camel@ht.satnam>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 07:45:01 up 59 days, 20:09, 13 users,  load average: 0.06, 0.04,
-	0.12
+In-Reply-To: <24fe646fcbbd9049850de4ac57cf6a67846b38c4.1247025117.git.len.brown@intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 09, 2009 at 09:58:31AM +0530, Jaswinder Singh Rajput wrote:
-> On Wed, 2009-07-08 at 22:13 +0100, Russell King wrote:
-> > On Wed, Jul 08, 2009 at 11:30:59PM +0530, Jaswinder Singh Rajput wrote:
-> > > I am still waiting ACK/NAK for :
-> > > 
-> > >       includecheck fix: arm, misc.c
-> > >       includecheck fix: arm, atomic.h
-> > >       includecheck fix: arm, board-dm355-evm.c
-> > >       includecheck fix: arm, board-dm355-leopard.c
-> > >       includecheck fix: arm, board-dm644x-evm.c
-> > >       includecheck fix: arm, board-dm646x-evm.c
-> > >       includecheck fix: arm, board-sffsdr.c
-> > >       includecheck fix: arm, mach-mx3/devices.c
-> > >       includecheck fix: arm, mach-omap1/mcbsp.c
-> > >       includecheck fix: arm, mach-omap2/mcbsp.c
-> > >       includecheck fix: arm, plat-s3c64xx/pm.c
-> > >       includecheck fix: arm, plat-stmp3xxx/pinmux.c
 
-For mach-mx3/devices.c:
+* Len Brown <lenb@kernel.org> wrote:
 
-Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+> From: Feng Tang <feng.tang@intel.com>
+> 
+> First check ACPI, and if that fails, ask SFI to find the MCFG.
+> 
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Signed-off-by: Feng Tang <feng.tang@intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  arch/x86/Kconfig               |    2 +-
+>  arch/x86/pci/mmconfig-shared.c |    5 ++++-
+>  2 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 8e864c0..8e20a0e 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1880,7 +1880,7 @@ config PCI_DIRECT
+>  
+>  config PCI_MMCONFIG
+>  	def_bool y
+> -	depends on X86_32 && PCI && ACPI && (PCI_GOMMCONFIG || PCI_GOANY)
+> +	depends on X86_32 && PCI && (ACPI || SFI) && (PCI_GOMMCONFIG || PCI_GOANY)
 
+Please also update the 64-bit side (there's no reason to do this on 
+32-bit only - even though your sample hw is probably 32-bit only) - 
+and while at it, also unify the currently separate 32-bit and 64-bit 
+PCI_MMCONFIG definitions.
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> @@ -606,7 +607,9 @@ static void __init __pci_mmcfg_init(int early)
+>  	}
+>  
+>  	if (!known_bridge)
+> -		acpi_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg);
+> +		if (acpi_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg))
+> +			sfi_acpi_table_parse(ACPI_SIG_MCFG, NULL, NULL, 0,
+> +				pci_parse_mcfg);
+
+Please introduce one common/generic helper:
+
+		x86_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg);
+
+and do the fallback in that helper. We generally want to try ACPI 
+first, SFI second. That helper makes it easier to add such fallback 
+in other places as well, and will de-uglify the above code as well.
+
+	Ingo
