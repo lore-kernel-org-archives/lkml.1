@@ -1,101 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbZGJQL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbZGJQNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbZGJQL4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 12:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZGJQLt
+	id S1755932AbZGJQNB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 12:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZGJQMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 12:11:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33253 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753061AbZGJQLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 12:11:48 -0400
-Date: Fri, 10 Jul 2009 18:11:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] sched: Drop the need_resched() loop from
-	cond_resched()
-Message-ID: <20090710161141.GC22049@elte.hu>
-References: <1247237391-5352-1-git-send-email-fweisbec@gmail.com> <200907101717.39460.arnd@arndb.de> <20090710152425.GB5318@nowhere> <200907101735.29463.arnd@arndb.de> <20090710155037.GC5318@nowhere>
+	Fri, 10 Jul 2009 12:12:53 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41134 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752073AbZGJQMw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 12:12:52 -0400
+Message-ID: <4A575735.9050208@zytor.com>
+Date: Fri, 10 Jul 2009 07:59:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090710155037.GC5318@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexey Fisher <bug-track@fisher-privat.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Richard A. Holden III" <aciddeath@gmail.com>
+Subject: Re: Intel BIOS - Corrupted low memory at ffff880000004200
+References: <4A5210A2.2080301@fisher-privat.net> <4A52254F.8080103@fisher-privat.net> <20090708113949.GA8960@srcf.ucam.org> <20090710115238.GA8812@elte.hu>
+In-Reply-To: <20090710115238.GA8812@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Fri, Jul 10, 2009 at 05:35:29PM +0200, Arnd Bergmann wrote:
-> > On Friday 10 July 2009, Frederic Weisbecker wrote:
-> > > On Fri, Jul 10, 2009 at 05:17:38PM +0200, Arnd Bergmann wrote:
-> > > > On Friday 10 July 2009, Frederic Weisbecker wrote:
-> > > > > --- a/kernel/sched.c
-> > > > > +++ b/kernel/sched.c
-> > > > > @@ -6613,11 +6613,9 @@ static void __cond_resched(void)
-> > > > >          * PREEMPT_ACTIVE, which could trigger a second
-> > > > >          * cond_resched() call.
-> > > > >          */
-> > > > > -       do {
-> > > > > -               add_preempt_count(PREEMPT_ACTIVE);
-> > > > > -               schedule();
-> > > > > -               sub_preempt_count(PREEMPT_ACTIVE);
-> > > > > -       } while (need_resched());
-> > > > > +       add_preempt_count(PREEMPT_ACTIVE);
-> > > > > +       schedule();
-> > > > > +       sub_preempt_count(PREEMPT_ACTIVE);
-> > > > >  }
-> > > > >  
-> > > > 
-> > > > If you drop the loop, then you should also remove the comment that
-> > > > explains why it was put there.
-> > > > 
-> > > 
-> > > Hmm, these comments seem to actually explain why we do the PREEMPT_ACTIVE
-> > > trick, which is to prevent from cond_resched() recursion, right?
-> > > 
-> > 
-> > I think we both misinterpreted the comment, which seemed to refer
-> > to older code added by Ingo in 5bbcfd900 "cond_resched(): fix bogus
-> > might_sleep() warning" and removed by Andrew in e7b384043e2
-> > "cond_resched() fix".
-> > 
-> > The original code in Ingos version looked like
-> > 
-> >  static inline void __cond_resched(void)
-> >  {
-> >        /*
-> >         * The BKS might be reacquired before we have dropped
-> >         * PREEMPT_ACTIVE, which could trigger a second
-> >         * cond_resched() call.
-> >         */
-> >        if (unlikely(preempt_count()))
-> >                return;
-> >        do {
-> >                add_preempt_count(PREEMPT_ACTIVE);
-> >                schedule();
-> > 	...
-> > 
-> > 
-> > So, it's got nothing to do with the loop, but should still be removed
-> > because the 'if (unlikely(preempt_count()))' is no longer there.
+Ingo Molnar wrote:
 > 
+> So i'd really like to know what is happening there, instead of just 
+> zapping support for 64K of RAM on the majority of Linux systems.
 > 
-> Yeah, but the comment still fits the code after this patch, don't 
-> you think? :-)
+> We might end up doing the same thing in the end (i.e. disable that 
+> 64k of RAM) - but it should be an informed decision, not a wild stab 
+> in the dark.
+> 
 
-... except that there's no Big Kernel Semaphore anymore ;-)
+Speaking as a boot loader author, I can let you know that these kinds of
+problems are in no wise limited to suspend/resume.
 
-	Ingo
+Pretty much any time you're executing BIOS code you're going to have
+*some* platform which has severe memory corruption somewhere.  This is
+particularly painful for boot loaders, obviously, because the BIOS
+corrupts the boot loader as it is running.  In most cases, there simply
+isn't any way to prevent the corruption, and it's simply dumb luck that
+you will boot most of the time.
+
+And no, I don't think EFI is going to magically solve anything.  EFI
+will just spread the same class of corruption problems over the entire
+memory map.  It will reduce the density of such bugs -- in particular it
+will eliminiate the "right offset, wrong segment" as well as "idiot
+coding assembly" class of problems -- but it will not confine the ones
+that can and will happen; it's still fundamentally a super-privileged
+flat memory space.
+
+The root cause seems to be a lack of verification practices in the BIOS
+industry in the post-DOS era.  Back when DOS was still a commercially
+significant system, the BIOS didn't just support the running OS, it also
+directly supported running applications.  That put a relatively high bar
+on how broken your BIOS could be and still have a viable platform.
+These days, it doesn't look like neither the BIOS vendors nor the OEMs
+necessarily even know how to QA, and since the BIOS industry is
+relatively small and highly consolidated, if there isn't sufficient OEM
+pressure it simply won't happen since there is no money in it.
+
+The HDMI case is a good example -- that probably involved SMI being
+triggered and the SMI code then clobbering a wild pointer.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
