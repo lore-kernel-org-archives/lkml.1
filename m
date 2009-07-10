@@ -1,108 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbZGJTbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbZGJTbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755489AbZGJTbi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 15:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZGJTb1
+	id S1756492AbZGJTbt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 15:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbZGJTbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 15:31:27 -0400
-Received: from vena.lwn.net ([206.168.112.25]:41401 "EHLO vena.lwn.net"
+	Fri, 10 Jul 2009 15:31:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53470 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753072AbZGJTb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 15:31:26 -0400
-Date: Fri, 10 Jul 2009 13:31:27 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Martin Steigerwald <Martin@lichtvoll.de>
-Cc: David Newall <davidn@davidnewall.com>,
-       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       tridge@samba.org, Jan Engelhardt <jengelh@medozas.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-Message-ID: <20090710133127.6839dc87@bike.lwn.net>
-In-Reply-To: <200907102049.12427.Martin@lichtvoll.de>
-References: <20090708110451.1092afa7@lxorguk.ukuu.org.uk>
-	<200907100023.48039.Martin@lichtvoll.de>
-	<4A569D36.3060707@davidnewall.com>
-	<200907102049.12427.Martin@lichtvoll.de>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	id S1755162AbZGJTb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 15:31:27 -0400
+Date: Fri, 10 Jul 2009 21:31:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: Re: [GIT PULL] core kernel fixes
+Message-ID: <20090710193110.GA28281@elte.hu>
+References: <20090710162848.GA26862@elte.hu> <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Jul 2009 20:49:00 +0200
-Martin Steigerwald <Martin@lichtvoll.de> wrote:
 
-> To me your thoughts appear to be *within* the patent approach and *thus* 
-> implicitely saying "yes" software patents as such. Going this way I think 
-> actually strengthen patents. 
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-One deals with reality on reality's terms.  For the moment, software
-patents exist in some parts of the world.  People are working on that,
-but one cannot just stick one's fingers into one's ears and wish the
-problem away.
+> 
+> On Fri, 10 Jul 2009, Ingo Molnar wrote:
+> > 
+> > Joerg Roedel (1):
+> >       dma-debug: fix off-by-one error in overlap function
+> >
+> > diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+> > index 3b93129..c9187fe 100644
+> > --- a/lib/dma-debug.c
+> > +++ b/lib/dma-debug.c
+> > @@ -862,7 +862,7 @@ static inline bool overlap(void *addr, u64 size, void *start, void *end)
+> >  
+> >  	return ((addr >= start && addr < end) ||
+> >  		(addr2 >= start && addr2 < end) ||
+> > -		((addr < start) && (addr2 >= end)));
+> > +		((addr < start) && (addr2 > end)));
+> >  }
+> >  
+> >  static void check_for_illegal_area(struct device *dev, void *addr, u64 size)
+> 
+> The above seems like total shit.
+> 
+> If (addr < start && addr2 == end) then the two areas very much overlap.
+> 
+> What am I missing (apart from the fact that all those variables are 
+> horribly badly named)?
+> 
+> Also, the tests make no sense. That's not how you are supposed to check 
+> for overlap to begin with.
+> 
+> Isn't it easier to test for _not_ overlapping?
+> 
+> 	/* range1 is fully before range2 */
+> 	(end1 <= start2 || 
+> 	/* range1 is fully after range2 */
+> 	start1 >= end2)
+> 
+> possibly together with checking for overflow in the size addition? 
+> But I didn't think that through, so maybe I'm doing something 
+> stupid.
+> 
+> Finally, why is 'size' a u64? It will overflow anyway if it's 
+> bigger than a pointer, so it should be just 'unsigned long'. Or it 
+> should all be done in u64 if people care. Or we should care about 
+> overflow (which cannot be done with pointers).
+> 
+> Also, comparing pointers is unsafe to begin with. It's not clear 
+> if they are signed or unsigned comparisons, and gcc has 
+> historically had bugs here (only unsigned comparisons make sense 
+> for pointers, but _technically_ a crazy compiler person could 
+> argue that at least in some environments any valid pointers to the 
+> same object - which is the only thing C defines - must not cross 
+> the sign barrier, so they use a buggy signed compare).
 
-> The FAT patents have not yet been tested. 
-> They might easily just be void and invalid.
+hm, indeed - and i missed that.
 
-The FAT patents *have* been tested, invalidated, and then revalidated.
-Yes, they might still be invalid - I believe they are.  This helps a
-Linux user whose products have been seized at the US border exactly
-how? 
+[ Even in the pointer space i think this cast is slightly confused 
+  too:
 
-> But going the way you outline would be giving in to the patent claim 
-> *before* it has even been tried and tested for validity. And thus IMHO 
-> this strengthens the patent and it holder. If you change the upstream 
-> kernel Microsoft can always say: "Look Linux kernel developers think that 
-> the kernel infringed our patents." 
+    static inline bool overlap(void *addr, u64 size, void *start, void *end)
+    {
+            void *addr2 = (char *)addr + size;
 
-The point is not to give in to the claim; the point is to make it
-irrelevant.  That "invalidates" the patent in a way which (1) doesn't
-cost several million dollars and (2) is rather more certain in its
-outcome.
+  as void * has byte granular arithmetics already so 'addr + size'
+  would suffice. ]
 
-> The linux kernel has not yet been proven to infringe any FAT patent. 
-> Microsoft claims that it does. But so did SCO claim that it contains 
-> source of UNIX that they said they have a license for. SCO could never 
-> prove that claim. The linux kernel community ignored SCO for exactly that 
-> reason. 
+> IOW, I think this whole function is just total crap, apparently 
+> put together by randomly assembling characters until it compiles. 
+> Somebody should put more effort into looking at it, but I think it 
+> should be something like
+> 
+> 	static inline int overlap(void *addr, unsigned long len, void *start, void *end)
+> 	{
+> 		unsigned long a1 = (unsigned long) addr;
+> 		unsigned long b1 = a1 + len;
+> 		unsigned long a2 = (unsigned long) start;
+> 		unsigned long b2 = (unsigned long) end;
 
-The Linux community did not ignore SCO.  We looked very hard at our
-code and our processes, and adopted things like the DCO very much in
-response to SCO.  The whole SCO affair has, IMO, made us a lot
-stronger.
+At least some arguments have unsigned long natural types (they come 
+out of page_address() for example) so the function parameters could 
+perhaps be changed to unsigned long too as well.
 
-SCO is a very different story, though.  Copyright infringement is
-usually pretty easy to avoid - just do your own work.  Patent
-infringement happens regardless of how original your work is.
+> 	#ifdef WE_CARE_DEEPLY
+> 		/* Overflow? */
+> 		if (b1 < a1)
+> 			return 1;
+> 	#ifdef AND_ARE_ANAL
+> 		if (b2 < a2)
+> 			return 1;
+> 	#endif
+> 	#endif
+> 		return !(b1 <= a2 || a1 >= b2);
+> 	}
+> 
+> but I really migth have done soemthing wrong there. It's a simple 
+> function, but somebody needs to double-check that I haven't made 
+> it worse.
 
-> Why on Earth should it handle Microsoft differently?  Just due to 
-> its sheer size and weight in capital? The trial with TomTom just proves 
-> nothing right now.
+Looks correct to me.
 
-The TomTom trial proves that companies like TomTom have no real hope of
-withstanding patent attacks and nicely invalidating obnoxious patents
-as a favor for the rest of us.
-
-Perhaps (a future version of) this patch isn't the right solution to
-the VFAT patent problem.  Be we do need to figure out how we can
-respond to patents which are being used to attack our users.  Telling
-them to take the bullet and try to invalidate the patent for us isn't
-going to fly.  Neither is ignoring the problem.
-
-I have a lot of sympathy for Alan's assertion that we can't muck up our
-upstream code with hackarounds for every bit of legal obnoxiousness we
-encounter.  But outright refusal of things like patent workarounds does
-not help us either.  Linux is a pragmatic system; somehow, I believe,
-we can find a way to minimize our patent hassles without messing up the
-system as a whole.
-
-jon
+	Ingo
