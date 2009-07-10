@@ -1,135 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZGJKmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZGJKmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbZGJKmI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 06:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbZGJKle
+	id S1754951AbZGJKmZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 06:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbZGJKlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 06:41:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37769 "EHLO hera.kernel.org"
+	Fri, 10 Jul 2009 06:41:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53260 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754627AbZGJKlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 06:41:32 -0400
-Date: Fri, 10 Jul 2009 10:41:02 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+	id S1754767AbZGJKlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 06:41:50 -0400
+Date: Fri, 10 Jul 2009 10:41:14 GMT
+From: tip-bot for Lucas De Marchi <lucas.de.marchi@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, ghaskins@novell.com,
-       tglx@linutronix.de, mingo@elte.hu
+       a.p.zijlstra@chello.nl, lucas.de.marchi@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
-       ghaskins@novell.com, mingo@elte.hu
-In-Reply-To: <1247067476.9777.57.camel@twins>
-References: <1247067476.9777.57.camel@twins>
-Subject: [tip:sched/urgent] sched_rt: Fix overload bug on rt group scheduling
-Message-ID: <tip-a1ba4d8ba9f06a397e97cbd67a93ee306860b40a@git.kernel.org>
-Git-Commit-ID: a1ba4d8ba9f06a397e97cbd67a93ee306860b40a
+       lucas.de.marchi@gmail.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <193b0f820907090457s7a3662f4gcdecdc22fcae857b@mail.gmail.com>
+References: <193b0f820907090457s7a3662f4gcdecdc22fcae857b@mail.gmail.com>
+Subject: [tip:sched/urgent] sched: Reset sched stats on fork()
+Message-ID: <tip-7793527b90d9418211f4fe8464cc1dcb1631ea1b@git.kernel.org>
+Git-Commit-ID: 7793527b90d9418211f4fe8464cc1dcb1631ea1b
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 10:41:03 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 10:41:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a1ba4d8ba9f06a397e97cbd67a93ee306860b40a
-Gitweb:     http://git.kernel.org/tip/a1ba4d8ba9f06a397e97cbd67a93ee306860b40a
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Wed, 1 Apr 2009 18:40:15 +0200
+Commit-ID:  7793527b90d9418211f4fe8464cc1dcb1631ea1b
+Gitweb:     http://git.kernel.org/tip/7793527b90d9418211f4fe8464cc1dcb1631ea1b
+Author:     Lucas De Marchi <lucas.de.marchi@gmail.com>
+AuthorDate: Thu, 9 Jul 2009 13:57:20 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Fri, 10 Jul 2009 10:43:29 +0200
 
-sched_rt: Fix overload bug on rt group scheduling
+sched: Reset sched stats on fork()
 
-Fixes an easily triggerable BUG() when setting process affinities.
+The sched_stat fields are currently not reset upon fork.
+Ingo's recent commit 6c594c21fcb02c662f11c97be4d7d2b73060a205
+did reset nr_migrations, but it didn't reset any of the
+others.
 
-Make sure to count the number of migratable tasks in the same place:
-the root rt_rq. Otherwise the number doesn't make sense and we'll hit
-the BUG in set_cpus_allowed_rt().
+This patch resets all sched_stat fields on fork.
 
-Also, make sure we only count tasks, not groups (this is probably
-already taken care of by the fact that rt_se->nr_cpus_allowed will be 0
-for groups, but be more explicit)
-
-Tested-by: Thomas Gleixner <tglx@linutronix.de>
-CC: stable@kernel.org
+Signed-off-by: Lucas De Marchi <lucas.de.marchi@gmail.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Gregory Haskins <ghaskins@novell.com>
-LKML-Reference: <1247067476.9777.57.camel@twins>
+LKML-Reference: <193b0f820907090457s7a3662f4gcdecdc22fcae857b@mail.gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/sched.c    |    1 +
- kernel/sched_rt.c |   18 +++++++++++++++++-
- 2 files changed, 18 insertions(+), 1 deletions(-)
+ kernel/sched.c |   40 +++++++++++++++++++++++++++++++---------
+ 1 files changed, 31 insertions(+), 9 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 7c9098d..a17f3d9 100644
+index a17f3d9..c4549bd 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -493,6 +493,7 @@ struct rt_rq {
+@@ -2572,15 +2572,37 @@ static void __sched_fork(struct task_struct *p)
+ 	p->se.avg_wakeup		= sysctl_sched_wakeup_granularity;
+ 
+ #ifdef CONFIG_SCHEDSTATS
+-	p->se.wait_start		= 0;
+-	p->se.sum_sleep_runtime		= 0;
+-	p->se.sleep_start		= 0;
+-	p->se.block_start		= 0;
+-	p->se.sleep_max			= 0;
+-	p->se.block_max			= 0;
+-	p->se.exec_max			= 0;
+-	p->se.slice_max			= 0;
+-	p->se.wait_max			= 0;
++	p->se.wait_start			= 0;
++	p->se.wait_max				= 0;
++	p->se.wait_count			= 0;
++	p->se.wait_sum				= 0;
++
++	p->se.sleep_start			= 0;
++	p->se.sleep_max				= 0;
++	p->se.sum_sleep_runtime			= 0;
++
++	p->se.block_start			= 0;
++	p->se.block_max				= 0;
++	p->se.exec_max				= 0;
++	p->se.slice_max				= 0;
++
++	p->se.nr_migrations_cold		= 0;
++	p->se.nr_failed_migrations_affine	= 0;
++	p->se.nr_failed_migrations_running	= 0;
++	p->se.nr_failed_migrations_hot		= 0;
++	p->se.nr_forced_migrations		= 0;
++	p->se.nr_forced2_migrations		= 0;
++
++	p->se.nr_wakeups			= 0;
++	p->se.nr_wakeups_sync			= 0;
++	p->se.nr_wakeups_migrate		= 0;
++	p->se.nr_wakeups_local			= 0;
++	p->se.nr_wakeups_remote			= 0;
++	p->se.nr_wakeups_affine			= 0;
++	p->se.nr_wakeups_affine_attempts	= 0;
++	p->se.nr_wakeups_passive		= 0;
++	p->se.nr_wakeups_idle			= 0;
++
  #endif
- #ifdef CONFIG_SMP
- 	unsigned long rt_nr_migratory;
-+	unsigned long rt_nr_total;
- 	int overloaded;
- 	struct plist_head pushable_tasks;
- #endif
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 9bf0d2a..3918e01 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -10,6 +10,8 @@ static inline struct task_struct *rt_task_of(struct sched_rt_entity *rt_se)
  
- #ifdef CONFIG_RT_GROUP_SCHED
- 
-+#define rt_entity_is_task(rt_se) (!(rt_se)->my_q)
-+
- static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
- {
- 	return rt_rq->rq;
-@@ -22,6 +24,8 @@ static inline struct rt_rq *rt_rq_of_se(struct sched_rt_entity *rt_se)
- 
- #else /* CONFIG_RT_GROUP_SCHED */
- 
-+#define rt_entity_is_task(rt_se) (1)
-+
- static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
- {
- 	return container_of(rt_rq, struct rq, rt);
-@@ -73,7 +77,7 @@ static inline void rt_clear_overload(struct rq *rq)
- 
- static void update_rt_migration(struct rt_rq *rt_rq)
- {
--	if (rt_rq->rt_nr_migratory && (rt_rq->rt_nr_running > 1)) {
-+	if (rt_rq->rt_nr_migratory && rt_rq->rt_nr_total > 1) {
- 		if (!rt_rq->overloaded) {
- 			rt_set_overload(rq_of_rt_rq(rt_rq));
- 			rt_rq->overloaded = 1;
-@@ -86,6 +90,12 @@ static void update_rt_migration(struct rt_rq *rt_rq)
- 
- static void inc_rt_migration(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
- {
-+	if (!rt_entity_is_task(rt_se))
-+		return;
-+
-+	rt_rq = &rq_of_rt_rq(rt_rq)->rt;
-+
-+	rt_rq->rt_nr_total++;
- 	if (rt_se->nr_cpus_allowed > 1)
- 		rt_rq->rt_nr_migratory++;
- 
-@@ -94,6 +104,12 @@ static void inc_rt_migration(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
- 
- static void dec_rt_migration(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
- {
-+	if (!rt_entity_is_task(rt_se))
-+		return;
-+
-+	rt_rq = &rq_of_rt_rq(rt_rq)->rt;
-+
-+	rt_rq->rt_nr_total--;
- 	if (rt_se->nr_cpus_allowed > 1)
- 		rt_rq->rt_nr_migratory--;
- 
+ 	INIT_LIST_HEAD(&p->rt.run_list);
