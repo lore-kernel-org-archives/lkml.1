@@ -1,46 +1,378 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753045AbZGJByv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZGJB5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753045AbZGJByv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 21:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZGJByo
+	id S1752814AbZGJB5P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 21:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbZGJB5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 21:54:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46254 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751390AbZGJByo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 21:54:44 -0400
-Date: Thu, 9 Jul 2009 21:54:39 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Fix compile error in bmac.c
-Message-ID: <20090710015439.GA28864@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
+	Thu, 9 Jul 2009 21:57:00 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62717 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750919AbZGJB47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 21:56:59 -0400
+Message-ID: <4A569FC5.7090801@cn.fujitsu.com>
+Date: Fri, 10 Jul 2009 09:56:21 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: [PATCH] io-controller: implement per group request allocation limitation
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1246564917-19603-1-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks like the change in ad361c9884e809340f6daca80d56a9e9c871690a
-wasn't compile tested.
+Hi Vivek,
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+This patch exports a cgroup based per group request limits interface.
+and removes the global one. Now we can use this interface to perform
+different request allocation limitation for different groups. 
 
---- linux-2.6.30.noarch/drivers/net/bmac.c~	2009-07-09 21:51:36.000000000 -0400
-+++ linux-2.6.30.noarch/drivers/net/bmac.c	2009-07-09 21:51:47.000000000 -0400
-@@ -431,7 +431,7 @@ bmac_init_phy(struct net_device *dev)
- 			printk(KERN_DEBUG);
- 		printk(KERN_CONT " %.4x", bmac_mif_read(dev, addr));
- 	}
--	print(KERN_CONT "\n");
-+	printk(KERN_CONT "\n");
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ block/blk-core.c     |   23 ++++++++++--
+ block/blk-settings.c |    1 -
+ block/blk-sysfs.c    |   43 -----------------------
+ block/elevator-fq.c  |   94 ++++++++++++++++++++++++++++++++++++++++++++++---
+ block/elevator-fq.h  |    4 ++
+ 5 files changed, 111 insertions(+), 54 deletions(-)
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 79fe6a9..7010b76 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -722,13 +722,20 @@ static void ioc_set_batching(struct request_queue *q, struct io_context *ioc)
+ static void __freed_request(struct request_queue *q, int sync,
+ 					struct request_list *rl)
+ {
++	struct io_group *iog;
++	unsigned long nr_group_requests;
++
+ 	if (q->rq_data.count[sync] < queue_congestion_off_threshold(q))
+ 		blk_clear_queue_congested(q, sync);
  
- 	if (bp->is_bmac_plus) {
- 		unsigned int capable, ctrl;
+ 	if (q->rq_data.count[sync] + 1 <= q->nr_requests)
+ 		blk_clear_queue_full(q, sync);
+ 
+-	if (rl->count[sync] + 1 <= q->nr_group_requests) {
++	iog = rl_iog(rl);
++
++	nr_group_requests = get_group_requests(q, iog);
++
++	if (nr_group_requests && rl->count[sync] + 1 <= nr_group_requests) {
+ 		if (waitqueue_active(&rl->wait[sync]))
+ 			wake_up(&rl->wait[sync]);
+ 	}
+@@ -828,6 +835,8 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
+ 	const bool is_sync = rw_is_sync(rw_flags) != 0;
+ 	int may_queue, priv;
+ 	int sleep_on_global = 0;
++	struct io_group *iog;
++	unsigned long nr_group_requests;
+ 
+ 	may_queue = elv_may_queue(q, rw_flags);
+ 	if (may_queue == ELV_MQUEUE_NO)
+@@ -843,7 +852,12 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
+ 	if (q->rq_data.count[is_sync]+1 >= q->nr_requests)
+ 		blk_set_queue_full(q, is_sync);
+ 
+-	if (rl->count[is_sync]+1 >= q->nr_group_requests) {
++	iog = rl_iog(rl);
++
++	nr_group_requests = get_group_requests(q, iog);
++
++	if (nr_group_requests &&
++	    rl->count[is_sync]+1 >= nr_group_requests) {
+ 		ioc = current_io_context(GFP_ATOMIC, q->node);
+ 		/*
+ 		 * The queue request descriptor group will fill after this
+@@ -852,7 +866,7 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
+ 		 * This process will be allowed to complete a batch of
+ 		 * requests, others will be blocked.
+ 		 */
+-		if (rl->count[is_sync] <= q->nr_group_requests)
++		if (rl->count[is_sync] <= nr_group_requests)
+ 			ioc_set_batching(q, ioc);
+ 		else {
+ 			if (may_queue != ELV_MQUEUE_MUST
+@@ -898,7 +912,8 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
+ 	 * from per group request list
+ 	 */
+ 
+-	if (rl->count[is_sync] >= (3 * q->nr_group_requests / 2))
++	if (nr_group_requests &&
++	    rl->count[is_sync] >= (3 * nr_group_requests / 2))
+ 		goto out;
+ 
+ 	rl->starved[is_sync] = 0;
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+index 78b8aec..bd582a7 100644
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -148,7 +148,6 @@ void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
+ 	 * set defaults
+ 	 */
+ 	q->nr_requests = BLKDEV_MAX_RQ;
+-	q->nr_group_requests = BLKDEV_MAX_GROUP_RQ;
+ 
+ 	q->make_request_fn = mfn;
+ 	blk_queue_dma_alignment(q, 511);
+diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+index 92b9f25..706d852 100644
+--- a/block/blk-sysfs.c
++++ b/block/blk-sysfs.c
+@@ -78,40 +78,8 @@ queue_requests_store(struct request_queue *q, const char *page, size_t count)
+ 	return ret;
+ }
+ #ifdef CONFIG_GROUP_IOSCHED
+-static ssize_t queue_group_requests_show(struct request_queue *q, char *page)
+-{
+-	return queue_var_show(q->nr_group_requests, (page));
+-}
+-
+ extern void elv_io_group_congestion_threshold(struct request_queue *q,
+ 					      struct io_group *iog);
+-
+-static ssize_t
+-queue_group_requests_store(struct request_queue *q, const char *page,
+-					size_t count)
+-{
+-	struct hlist_node *n;
+-	struct io_group *iog;
+-	struct elv_fq_data *efqd;
+-	unsigned long nr;
+-	int ret = queue_var_store(&nr, page, count);
+-
+-	if (nr < BLKDEV_MIN_RQ)
+-		nr = BLKDEV_MIN_RQ;
+-
+-	spin_lock_irq(q->queue_lock);
+-
+-	q->nr_group_requests = nr;
+-
+-	efqd = &q->elevator->efqd;
+-
+-	hlist_for_each_entry(iog, n, &efqd->group_list, elv_data_node) {
+-		elv_io_group_congestion_threshold(q, iog);
+-	}
+-
+-	spin_unlock_irq(q->queue_lock);
+-	return ret;
+-}
+ #endif
+ 
+ static ssize_t queue_ra_show(struct request_queue *q, char *page)
+@@ -278,14 +246,6 @@ static struct queue_sysfs_entry queue_requests_entry = {
+ 	.store = queue_requests_store,
+ };
+ 
+-#ifdef CONFIG_GROUP_IOSCHED
+-static struct queue_sysfs_entry queue_group_requests_entry = {
+-	.attr = {.name = "nr_group_requests", .mode = S_IRUGO | S_IWUSR },
+-	.show = queue_group_requests_show,
+-	.store = queue_group_requests_store,
+-};
+-#endif
+-
+ static struct queue_sysfs_entry queue_ra_entry = {
+ 	.attr = {.name = "read_ahead_kb", .mode = S_IRUGO | S_IWUSR },
+ 	.show = queue_ra_show,
+@@ -360,9 +320,6 @@ static struct queue_sysfs_entry queue_iostats_entry = {
+ 
+ static struct attribute *default_attrs[] = {
+ 	&queue_requests_entry.attr,
+-#ifdef CONFIG_GROUP_IOSCHED
+-	&queue_group_requests_entry.attr,
+-#endif
+ 	&queue_ra_entry.attr,
+ 	&queue_max_hw_sectors_entry.attr,
+ 	&queue_max_sectors_entry.attr,
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 29392e7..bfb0210 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -59,6 +59,35 @@ elv_release_ioq(struct elevator_queue *eq, struct io_queue **ioq_ptr);
+ #define for_each_entity_safe(entity, parent) \
+ 	for (; entity && ({ parent = entity->parent; 1; }); entity = parent)
+ 
++unsigned short get_group_requests(struct request_queue *q,
++				  struct io_group *iog)
++{
++	struct cgroup_subsys_state *css;
++	struct io_cgroup *iocg;
++	unsigned long nr_group_requests;
++
++	if (!iog)
++		return q->nr_requests;
++
++	rcu_read_lock();
++
++	if (!iog->iocg_id) {
++		nr_group_requests = 0;
++		goto out;
++	}
++
++	css = css_lookup(&io_subsys, iog->iocg_id);
++	if (!css) {
++		nr_group_requests = 0;
++		goto out;
++	}
++
++	iocg = container_of(css, struct io_cgroup, css);
++	nr_group_requests = iocg->nr_group_requests;
++out:
++	rcu_read_unlock();
++	return nr_group_requests;
++}
+ 
+ static struct io_entity *bfq_lookup_next_entity(struct io_sched_data *sd,
+ 						 int extract);
+@@ -1257,14 +1286,17 @@ void elv_io_group_congestion_threshold(struct request_queue *q,
+ 						struct io_group *iog)
+ {
+ 	int nr;
++	unsigned long nr_group_requests;
+ 
+-	nr = q->nr_group_requests - (q->nr_group_requests / 8) + 1;
+-	if (nr > q->nr_group_requests)
+-		nr = q->nr_group_requests;
++	nr_group_requests = get_group_requests(q, iog);
++
++	nr = nr_group_requests - (nr_group_requests / 8) + 1;
++	if (nr > nr_group_requests)
++		nr = nr_group_requests;
+ 	iog->nr_congestion_on = nr;
+ 
+-	nr = q->nr_group_requests - (q->nr_group_requests / 8)
+-			- (q->nr_group_requests / 16) - 1;
++	nr = nr_group_requests - (nr_group_requests / 8)
++			- (nr_group_requests / 16) - 1;
+ 	if (nr < 1)
+ 		nr = 1;
+ 	iog->nr_congestion_off = nr;
+@@ -1283,6 +1315,7 @@ int elv_io_group_congested(struct request_queue *q, struct page *page, int sync)
+ {
+ 	struct io_group *iog;
+ 	int ret = 0;
++	unsigned long nr_group_requests;
+ 
+ 	rcu_read_lock();
+ 
+@@ -1300,10 +1333,11 @@ int elv_io_group_congested(struct request_queue *q, struct page *page, int sync)
+ 	}
+ 
+ 	ret = elv_is_iog_congested(q, iog, sync);
++	nr_group_requests = get_group_requests(q, iog);
+ 	if (ret)
+ 		elv_log_iog(&q->elevator->efqd, iog, "iog congested=%d sync=%d"
+ 			" rl.count[sync]=%d nr_group_requests=%d",
+-			ret, sync, iog->rl.count[sync], q->nr_group_requests);
++			ret, sync, iog->rl.count[sync], nr_group_requests);
+ 	rcu_read_unlock();
+ 	return ret;
+ }
+@@ -1549,6 +1583,48 @@ free_buf:
+ 	return ret;
+ }
+ 
++static u64 io_cgroup_nr_requests_read(struct cgroup *cgroup,
++				       struct cftype *cftype)
++{
++	struct io_cgroup *iocg;
++	u64 ret;
++
++	if (!cgroup_lock_live_group(cgroup))
++		return -ENODEV;
++
++	iocg = cgroup_to_io_cgroup(cgroup);
++	spin_lock_irq(&iocg->lock);
++	ret = iocg->nr_group_requests;
++	spin_unlock_irq(&iocg->lock);
++
++	cgroup_unlock();
++
++	return ret;
++}
++
++static int io_cgroup_nr_requests_write(struct cgroup *cgroup,
++					struct cftype *cftype,
++					u64 val)
++{
++	struct io_cgroup *iocg;
++
++	if (val < BLKDEV_MIN_RQ)
++		val = BLKDEV_MIN_RQ;
++
++	if (!cgroup_lock_live_group(cgroup))
++		return -ENODEV;
++
++	iocg = cgroup_to_io_cgroup(cgroup);
++
++	spin_lock_irq(&iocg->lock);
++	iocg->nr_group_requests = (unsigned long)val;
++	spin_unlock_irq(&iocg->lock);
++
++	cgroup_unlock();
++
++	return 0;
++}
++
+ #define SHOW_FUNCTION(__VAR)						\
+ static u64 io_cgroup_##__VAR##_read(struct cgroup *cgroup,		\
+ 				       struct cftype *cftype)		\
+@@ -1735,6 +1811,11 @@ static int io_cgroup_disk_dequeue_read(struct cgroup *cgroup,
+ 
+ struct cftype bfqio_files[] = {
+ 	{
++		.name = "nr_group_requests",
++		.read_u64 = io_cgroup_nr_requests_read,
++		.write_u64 = io_cgroup_nr_requests_write,
++	},
++	{
+ 		.name = "policy",
+ 		.read_seq_string = io_cgroup_policy_read,
+ 		.write_string = io_cgroup_policy_write,
+@@ -1790,6 +1871,7 @@ static struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
+ 
+ 	spin_lock_init(&iocg->lock);
+ 	INIT_HLIST_HEAD(&iocg->group_data);
++	iocg->nr_group_requests = BLKDEV_MAX_GROUP_RQ;
+ 	iocg->weight = IO_DEFAULT_GRP_WEIGHT;
+ 	iocg->ioprio_class = IO_DEFAULT_GRP_CLASS;
+ 	INIT_LIST_HEAD(&iocg->policy_list);
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index f089a55..df077d0 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -308,6 +308,7 @@ struct io_cgroup {
+ 	unsigned int weight;
+ 	unsigned short ioprio_class;
+ 
++	unsigned long nr_group_requests;
+ 	/* list of io_policy_node */
+ 	struct list_head policy_list;
+ 
+@@ -386,6 +387,9 @@ struct elv_fq_data {
+ 	unsigned int fairness;
+ };
+ 
++extern unsigned short get_group_requests(struct request_queue *q,
++					 struct io_group *iog);
++
+ /* Logging facilities. */
+ #ifdef CONFIG_DEBUG_GROUP_IOSCHED
+ #define elv_log_ioq(efqd, ioq, fmt, args...) \
+-- 
+1.5.4.rc3 
+
