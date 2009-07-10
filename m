@@ -1,81 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbZGJUfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757143AbZGJUhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757591AbZGJUfJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 16:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbZGJUep
+	id S1757143AbZGJUhT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 16:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756402AbZGJUhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 16:34:45 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:40597 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754559AbZGJUen (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 16:34:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=rEKbMr13ZoKrCMUPDhBGb+6m3UjYGR9yMKPBvyv7yP2ZmFQ+YAfbXXRtHZEd3GnLyo
-         awmvlSkj0SQfMQMy85dea840K+acDw9Vw+MUWf0pqmOr8jsd234kZ6ZMDa0D6x+nBaKk
-         4U1sDo4DBX0L/Hk5t/YQ+SL5DrvcJPH4Saigs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-Date: Fri, 10 Jul 2009 22:40:14 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc2-next-20090710-03838-g1540e8b-dirty; KDE/4.2.4; i686; ; )
-Cc: Martin Steigerwald <Martin@lichtvoll.de>,
-       David Newall <davidn@davidnewall.com>,
-       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       tridge@samba.org, Jan Engelhardt <jengelh@medozas.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, jcm@jonmasters.org
-References: <20090708110451.1092afa7@lxorguk.ukuu.org.uk> <200907102049.12427.Martin@lichtvoll.de> <20090710133127.6839dc87@bike.lwn.net>
-In-Reply-To: <20090710133127.6839dc87@bike.lwn.net>
+	Fri, 10 Jul 2009 16:37:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49905 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756773AbZGJUhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 16:37:07 -0400
+Date: Fri, 10 Jul 2009 22:36:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: [GIT PULL, v2] core kernel fixes
+Message-ID: <20090710203650.GA5950@elte.hu>
+References: <20090710162848.GA26862@elte.hu> <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain> <20090710193110.GA28281@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907102240.15773.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090710193110.GA28281@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 July 2009 21:31:27 Jonathan Corbet wrote:
+Linus,
 
-> I have a lot of sympathy for Alan's assertion that we can't muck up our
-> upstream code with hackarounds for every bit of legal obnoxiousness we
-> encounter.  But outright refusal of things like patent workarounds does
-> not help us either.  Linux is a pragmatic system; somehow, I believe,
-> we can find a way to minimize our patent hassles without messing up the
-> system as a whole.
+Please pull the v2 core-fixes-for-linus git tree from:
 
-Alan, Pavel and other people are suggesting pragmatic *long-term* solutions,
-like moving kernel.org outside problematic geopolitical area.  Tainting *our*
-code-base with (confusing for *our* users) workarounds doesn't belong in this
-class of solutions.. actually no.. it is a PURE F*CKING IDIOCY..
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus-2
 
-Microsoft having patents on their *obsolete* filesystem should be *their*
-problem, not *ours*.  We keep said filesystem strictly for compatibility
-reasons and not because we would like to encourage hardware/software vendors
-or users to use it.  Lets just update VFAT help text to mention potential
-risks of using it, default it to N, rip it from defconfigs, pass it through
-lawyers, remove CONFIG_VFAT_FS_DUALNAMES and move on..
+This has the overlap() bug(s) fixed. [ You might want to hold off on 
+pulling this for a few hours, just in case the fresh dma-debug.c fix 
+has any unexpected (and unprecedented) breakages. ]
 
-When it comes to distributions if they really need they can easily deal with
-the problem by simply allowing the 3-rd parties to host the repositories with
-risky package (like they do with mp3 etc).
+ Thanks,
 
-The end result is that end-users can still use full vfat, vendors are safe,
-kernel developers don't waste their time on artificial problems and the blame
-goes where it belong..
+	Ingo
 
-[ The validity of potentially bogus patents (or problems of hardware vendors
-  caused by *their* decisions to use *obsolete* and patent-risky filesystem in
-  their products) is an entirely different matter/discussion and it shouldn't
-  be mixed with technical solutions.. ]
+------------------>
+Arnd Bergmann (1):
+      signals: declare sys_rt_tgsigqueueinfo in syscalls.h
+
+Ingo Molnar (2):
+      dma-debug: Put all hash-chain locks into the same lock class
+      dma-debug: Fix the overlap() function to be correct and readable
+
+Joerg Roedel (1):
+      dma-debug: fix off-by-one error in overlap function
+
+Maynard Johnson (1):
+      oprofile: reset bt_lost_no_mapping with other stats
+
+Paul E. McKenney (1):
+      rcu: Mark Hierarchical RCU no longer experimental
+
+Robert Richter (1):
+      x86/oprofile: rename kernel parameter for architectural perfmon to arch_perfmon
+
+
+ Documentation/kernel-parameters.txt |    4 ++--
+ arch/x86/oprofile/nmi_int.c         |    2 +-
+ drivers/oprofile/oprofile_stats.c   |    1 +
+ include/linux/syscalls.h            |    2 ++
+ kernel/rcutree.c                    |    3 +--
+ lib/dma-debug.c                     |   26 +++++++++++++-------------
+ 6 files changed, 20 insertions(+), 18 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 92e1ab8..c59e965 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1728,8 +1728,8 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	oprofile.cpu_type=	Force an oprofile cpu type
+ 			This might be useful if you have an older oprofile
+ 			userland or if you want common events.
+-			Format: { archperfmon }
+-			archperfmon: [X86] Force use of architectural
++			Format: { arch_perfmon }
++			arch_perfmon: [X86] Force use of architectural
+ 				perfmon on Intel CPUs instead of the
+ 				CPU specific event set.
+ 
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index b07dd8d..89b9a5c 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -390,7 +390,7 @@ static int __init p4_init(char **cpu_type)
+ static int force_arch_perfmon;
+ static int force_cpu_type(const char *str, struct kernel_param *kp)
+ {
+-	if (!strcmp(str, "archperfmon")) {
++	if (!strcmp(str, "arch_perfmon")) {
+ 		force_arch_perfmon = 1;
+ 		printk(KERN_INFO "oprofile: forcing architectural perfmon\n");
+ 	}
+diff --git a/drivers/oprofile/oprofile_stats.c b/drivers/oprofile/oprofile_stats.c
+index e1f6ce0..3c2270a 100644
+--- a/drivers/oprofile/oprofile_stats.c
++++ b/drivers/oprofile/oprofile_stats.c
+@@ -33,6 +33,7 @@ void oprofile_reset_stats(void)
+ 	atomic_set(&oprofile_stats.sample_lost_no_mm, 0);
+ 	atomic_set(&oprofile_stats.sample_lost_no_mapping, 0);
+ 	atomic_set(&oprofile_stats.event_lost_overflow, 0);
++	atomic_set(&oprofile_stats.bt_lost_no_mapping, 0);
+ }
+ 
+ 
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index fa4242c..80de700 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -321,6 +321,8 @@ asmlinkage long sys_rt_sigtimedwait(const sigset_t __user *uthese,
+ 				siginfo_t __user *uinfo,
+ 				const struct timespec __user *uts,
+ 				size_t sigsetsize);
++asmlinkage long sys_rt_tgsigqueueinfo(pid_t tgid, pid_t  pid, int sig,
++		siginfo_t __user *uinfo);
+ asmlinkage long sys_kill(int pid, int sig);
+ asmlinkage long sys_tgkill(int tgid, int pid, int sig);
+ asmlinkage long sys_tkill(int pid, int sig);
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 0dccfbb..7717b95 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -1533,7 +1533,7 @@ void __init __rcu_init(void)
+ 	int j;
+ 	struct rcu_node *rnp;
+ 
+-	printk(KERN_WARNING "Experimental hierarchical RCU implementation.\n");
++	printk(KERN_INFO "Hierarchical RCU implementation.\n");
+ #ifdef CONFIG_RCU_CPU_STALL_DETECTOR
+ 	printk(KERN_INFO "RCU-based detection of stalled CPUs is enabled.\n");
+ #endif /* #ifdef CONFIG_RCU_CPU_STALL_DETECTOR */
+@@ -1546,7 +1546,6 @@ void __init __rcu_init(void)
+ 		rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE, (void *)(long)i);
+ 	/* Register notifier for non-boot CPUs */
+ 	register_cpu_notifier(&rcu_nb);
+-	printk(KERN_WARNING "Experimental hierarchical RCU init done.\n");
+ }
+ 
+ module_param(blimit, int, 0);
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 3b93129..65b0d99 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -716,7 +716,7 @@ void dma_debug_init(u32 num_entries)
+ 
+ 	for (i = 0; i < HASH_SIZE; ++i) {
+ 		INIT_LIST_HEAD(&dma_entry_hash[i].list);
+-		dma_entry_hash[i].lock = SPIN_LOCK_UNLOCKED;
++		spin_lock_init(&dma_entry_hash[i].lock);
+ 	}
+ 
+ 	if (dma_debug_fs_init() != 0) {
+@@ -856,22 +856,21 @@ static void check_for_stack(struct device *dev, void *addr)
+ 				"stack [addr=%p]\n", addr);
+ }
+ 
+-static inline bool overlap(void *addr, u64 size, void *start, void *end)
++static inline bool overlap(void *addr, unsigned long len, void *start, void *end)
+ {
+-	void *addr2 = (char *)addr + size;
++	unsigned long a1 = (unsigned long)addr;
++	unsigned long b1 = a1 + len;
++	unsigned long a2 = (unsigned long)start;
++	unsigned long b2 = (unsigned long)end;
+ 
+-	return ((addr >= start && addr < end) ||
+-		(addr2 >= start && addr2 < end) ||
+-		((addr < start) && (addr2 >= end)));
++	return !(b1 <= a2 || a1 >= b2);
+ }
+ 
+-static void check_for_illegal_area(struct device *dev, void *addr, u64 size)
++static void check_for_illegal_area(struct device *dev, void *addr, unsigned long len)
+ {
+-	if (overlap(addr, size, _text, _etext) ||
+-	    overlap(addr, size, __start_rodata, __end_rodata))
+-		err_printk(dev, NULL, "DMA-API: device driver maps "
+-				"memory from kernel text or rodata "
+-				"[addr=%p] [size=%llu]\n", addr, size);
++	if (overlap(addr, len, _text, _etext) ||
++	    overlap(addr, len, __start_rodata, __end_rodata))
++		err_printk(dev, NULL, "DMA-API: device driver maps memory from kernel text or rodata [addr=%p] [len=%lu]\n", addr, len);
+ }
+ 
+ static void check_sync(struct device *dev,
+@@ -969,7 +968,8 @@ void debug_dma_map_page(struct device *dev, struct page *page, size_t offset,
+ 		entry->type = dma_debug_single;
+ 
+ 	if (!PageHighMem(page)) {
+-		void *addr = ((char *)page_address(page)) + offset;
++		void *addr = page_address(page) + offset;
++
+ 		check_for_stack(dev, addr);
+ 		check_for_illegal_area(dev, addr, size);
+ 	}
