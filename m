@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZGJBbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbZGJBbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752504AbZGJBbJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 21:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbZGJBat
+	id S1753087AbZGJBbY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 21:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZGJBbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 21:30:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35848 "EHLO mx2.redhat.com"
+	Thu, 9 Jul 2009 21:31:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35852 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752808AbZGJBas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 21:30:48 -0400
-Date: Fri, 10 Jul 2009 03:27:35 +0200
+	id S1753127AbZGJBa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 21:30:59 -0400
+Date: Fri, 10 Jul 2009 03:27:40 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: James Morris <jmorris@namei.org>
 Cc: Christoph Hellwig <hch@infradead.org>, David Howells <dhowells@redhat.com>,
        Roland McGrath <roland@redhat.com>,
        "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] mm_for_maps: minor cleanups/fixes
-Message-ID: <20090710012735.GA384@redhat.com>
+Subject: [PATCH 2/2] mm_for_maps: take ->cred_guard_mutex to fix the race
+	with exec
+Message-ID: <20090710012740.GA395@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,12 +26,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By the previous discussion, on top of
+The problem is minor, but without ->cred_guard_mutex held we can race
+with exec() and get the new ->mm but check old creds.
 
-	"mm_for_maps: simplify, use ptrace_may_access()"
-	commit a893a84e8799270fbec5c3708d001650aab47138
+Now we do not need to re-check task->mm after ptrace_may_access(), it
+can't be changed to the new mm under us.
 
-in git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+Strictly speaking, this also fixes another very minor problem. Unless
+security check fails or the task exits mm_for_maps() should never
+return NULL, the caller should get either old or new ->mm.
 
-Oleg.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ fs/proc/base.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+--- WAIT/fs/proc/base.c~2_CRED_MUTEX	2009-07-10 02:05:14.000000000 +0200
++++ WAIT/fs/proc/base.c	2009-07-10 03:23:01.000000000 +0200
+@@ -234,19 +234,19 @@ static int check_mem_permission(struct t
+ 
+ struct mm_struct *mm_for_maps(struct task_struct *task)
+ {
+-	struct mm_struct *mm = get_task_mm(task);
++	struct mm_struct *mm;
+ 
+-	if (mm && mm != current->mm) {
+-		/*
+-		 * task->mm can be changed before security check,
+-		 * in that case we must notice the change after.
+-		 */
+-		if (!ptrace_may_access(task, PTRACE_MODE_READ) ||
+-		    mm != task->mm) {
+-			mmput(mm);
+-			mm = NULL;
+-		}
++	if (mutex_lock_killable(&task->cred_guard_mutex))
++		return NULL;
++
++	mm = get_task_mm(task);
++	if (mm && mm != current->mm &&
++			!ptrace_may_access(task, PTRACE_MODE_READ)) {
++		mmput(mm);
++		mm = NULL;
+ 	}
++	mutex_unlock(&task->cred_guard_mutex);
++
+ 	return mm;
+ }
+ 
 
