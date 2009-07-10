@@ -1,91 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbZGJTmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZGJTmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756779AbZGJTmA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 15:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZGJTlv
+	id S1756971AbZGJTmq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 15:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZGJTmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 15:41:51 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:47579 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752563AbZGJTlu (ORCPT
+	Fri, 10 Jul 2009 15:42:35 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:23700 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756109AbZGJTme (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 15:41:50 -0400
-Subject: [PATCH 2.6.31] rfkill: allow toggling soft state in sysfs again
-From: Johannes Berg <johannes@sipsolutions.net>
-To: John Linville <linville@tuxdriver.com>
-Cc: Thiemo Nagel <thiemo.nagel@ph.tum.de>,
-       Corentin Chary <corentin.chary@gmail.com>,
-       debian-eeepc-devel@lists.alioth.debian.org,
-       acpi4asus-user@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <507E3B9268%linux@youmustbejoking.demon.co.uk>
-References: <4A5716AA.5000903@ph.tum.de>
-	 <71cd59b00907100545v6f440a19xfc3668826eb1e509@mail.gmail.com>
-	 <4A5743AB.6090303@ph.tum.de>
-	 <71cd59b00907100646h5e0283fcyce5874cc4a19106b@mail.gmail.com>
-	 <4A575119.9070505@ph.tum.de> <507E3B9268%linux@youmustbejoking.demon.co.uk>
-Content-Type: text/plain
-Date: Fri, 10 Jul 2009 21:41:39 +0200
-Message-Id: <1247254899.21972.9.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Fri, 10 Jul 2009 15:42:34 -0400
+Subject: [PATCH 0/3] ACPI/PCI Hotplug: acpiphp cleanup
+To: jbarnes@virtuousgeek.org, lenb@kernel.org
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Date: Fri, 10 Jul 2009 13:42:33 -0600
+Message-ID: <20090710193601.30165.62311.stgit@bob.kio>
+User-Agent: StGit/0.14.3.386.gb02d
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apparently there actually _are_ tools that try to set
-this in sysfs even though it wasn't supposed to be used
-this way without claiming first. Guess what: now that
-I've cleaned it all up it doesn't matter and we can
-simply allow setting the soft-block state in sysfs.
+Hi Len, Jesse,
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+I'd like to have this patch series considered for the current release
+because it clarifies some usage of the new interface acpi_get_pci_dev()
+that was also introduced in this release cycle.
+
+The short story is, acpi_get_pci_dev() doesn't always return a struct
+pci_dev, because a PCI root bridge may not have an associated pci_dev on
+platforms with non-materialized root bridges.
+
+See this patch for more:
+
+	http://patchwork.kernel.org/patch/32613/
+
+I had to export acpi_pci_root to accomplish my goal, but it did result
+in a nice net cleanup in acpiphp.
+
+It should probably go through Jesse's tree, but needs Len's ACK for
+the acpi_pci_root bit.
+
+Thanks.
+
+/ac
+
 ---
-*shrug*, I don't like it, but whatever...
 
-Please test & report.
+Alex Chiang (3):
+      ACPI: export acpi_pci_root and friends
+      PCI Hotplug: acpiphp: find bridges the easy way
+      PCI Hotplug: convert acpi_pci_detect_ejectable() to take an acpi_handle
 
- net/rfkill/core.c |   27 +++++++++++++++++++--------
- 1 file changed, 19 insertions(+), 8 deletions(-)
 
---- wireless-testing.orig/net/rfkill/core.c	2009-07-10 21:29:10.000000000 +0200
-+++ wireless-testing/net/rfkill/core.c	2009-07-10 21:36:31.000000000 +0200
-@@ -648,15 +648,26 @@ static ssize_t rfkill_state_store(struct
- 				  struct device_attribute *attr,
- 				  const char *buf, size_t count)
- {
--	/*
--	 * The intention was that userspace can only take control over
--	 * a given device when/if rfkill-input doesn't control it due
--	 * to user_claim. Since user_claim is currently unsupported,
--	 * we never support changing the state from userspace -- this
--	 * can be implemented again later.
--	 */
-+	struct rfkill *rfkill = to_rfkill(dev);
-+	unsigned long state;
-+	int err;
-+
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EPERM;
-+
-+	err = strict_strtoul(buf, 0, &state);
-+	if (err)
-+		return err;
-+
-+	if (state != RFKILL_USER_STATE_SOFT_BLOCKED &&
-+	    state != RFKILL_USER_STATE_UNBLOCKED)
-+		return -EINVAL;
-+
-+	mutex_lock(&rfkill_global_mutex);
-+	rfkill_set_block(rfkill, state == RFKILL_USER_STATE_SOFT_BLOCKED);
-+	mutex_unlock(&rfkill_global_mutex);
- 
--	return -EPERM;
-+	return err ?: count;
- }
- 
- static ssize_t rfkill_claim_show(struct device *dev,
-
+ drivers/acpi/pci_root.c            |   17 +------
+ drivers/pci/hotplug/acpi_pcihp.c   |    9 +---
+ drivers/pci/hotplug/acpiphp_glue.c |   92 +++++++++---------------------------
+ drivers/pci/hotplug/pciehp_acpi.c  |    5 +-
+ include/acpi/acpi_bus.h            |   14 +++++
+ include/linux/pci_hotplug.h        |    2 -
+ 6 files changed, 47 insertions(+), 92 deletions(-)
 
