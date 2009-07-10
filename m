@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbZGJQsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZGJQxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755531AbZGJQsQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 12:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZGJQsC
+	id S1756065AbZGJQxA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 12:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZGJQww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 12:48:02 -0400
-Received: from sh.osrg.net ([192.16.179.4]:36544 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751055AbZGJQsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 12:48:00 -0400
-Date: Sat, 11 Jul 2009 01:47:23 +0900 (JST)
-Message-Id: <20090711.014723.132733323.ryusuke@osrg.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [GIT PULL] nilfs2 fixes for 2.6.31-rc3
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 10 Jul 2009 12:52:52 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:21327 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbZGJQww (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 12:52:52 -0400
+X-IronPort-AV: E=Sophos;i="4.42,379,1243828800"; 
+   d="scan'208";a="3700163"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: truncate on MAP_SHARED files in ramfs filesystems on no-mmu
+Date: Fri, 10 Jul 2009 12:56:13 -0400
+User-Agent: KMail/1.9.5
+CC: "Mike Frysinger" <vapier.adi@gmail.com>,
+       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>
+References: <8bd0f97a0907090822g1533e9dt97c3f29ccaf4945b@mail.gmail.com> <24005.1247134018@redhat.com> <24988.1247155628@redhat.com>
+In-Reply-To: <24988.1247155628@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sat, 11 Jul 2009 01:47:24 +0900 (JST)
+Content-Disposition: inline
+Message-ID: <200907101256.13881.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 10 Jul 2009 16:52:50.0230 (UTC) FILETIME=[DC04F560:01CA017E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu 9 Jul 2009 12:07, David Howells pondered:
+> Note that it would be very easy to add (if such does not already exist)
+> an LTP test that creates a file, expands it, maps it, shrinks it and then
+> attempts to alter the removed part of the mapping in the expectation 
+> of receiving a SIGBUS.
+> 
+> As it stands, such a test will work on MMU, but go wrong on NOMMU in a
+> different way in these two cases.  With the current behaviour, the
+> shrink request will be rejected, but the system will survive.  With your
+> proposed behaviour, the system will potentially be wrecked.
+> 
+> The NOMMU situation behaves differently to the MMU situation in either
+> case.
 
-please pull bug-fixes of nilfs from
+I guess what we were looking at - was the normal case of when userspace 
+doesn't go wrong.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-linus
-
-The following changes since commit 8e4a718ff38d8539938ec3421935904c27e00c39
- Linus Torvalds (1):
-      Linux 2.6.31-rc2
-
-Jiro SEKIBA (1):
-      nilfs2: fix disorder in cp count on error during deleting checkpoints
-
-Ryusuke Konishi (4):
-      nilfs2: remove unlikely directive causing mis-conversion of error code
-      nilfs2: fix hang problem of log writer which occurs after write failures
-      nilfs2: fix incorrect KERN_CRIT messages in case of write failures
-      nilfs2: fix lockdep warning between regular file and inode file
-
- fs/nilfs2/bmap.c    |    5 +++++
- fs/nilfs2/cpfile.c  |    5 ++---
- fs/nilfs2/dat.c     |    9 ---------
- fs/nilfs2/segment.c |   30 ++++++++----------------------
- 4 files changed, 15 insertions(+), 34 deletions(-)
---
-
-The "nilfs2: fix disorder in cp count on error during deleting
-checkpoints" fixes a bug on error path which throws off checkpoint
-count on disk.
-
-The "nilfs2: fix hang problem of log writer which occurs after write
-failures" fixes a reported hang problem.
-
-The "nilfs2: remove unlikely directive causing mis-conversion of error code",
-and "nilfs2: fix incorrect KERN_CRIT messages in case of write failures"
-fix the related bugs.
-
-The "nilfs2: fix lockdep warning between regular file and inode file"
-fixes a false positive of lockdep check.
-
-Thanks,
-Ryusuke Konishi
+The kernel (today in noMMU) assumes the userspace is going to do something bad 
+after it does the shrink - but for those people who are using things 
+properly - it doesn't allow it to work at all.
