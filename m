@@ -1,96 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbZGJMqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbZGJMvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757399AbZGJMqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 08:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756076AbZGJMlq
+	id S1755128AbZGJMvS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 08:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbZGJMvC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 08:41:46 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:19704 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756065AbZGJMlo (ORCPT
+	Fri, 10 Jul 2009 08:51:02 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:54576 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbZGJMvA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 08:41:44 -0400
-From: Adrian Hunter <adrian.hunter@nokia.com>
-To: Pierre Ossman <pierre@ossman.eu>
-Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
-       Denis Karpov <ext-denis.2.karpov@nokia.com>,
-       Adrian Hunter <adrian.hunter@nokia.com>,
-       linux-omap Mailing List <linux-omap@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Date: Fri, 10 Jul 2009 15:43:45 +0300
-Message-Id: <20090710124345.1262.35414.sendpatchset@ahunter-tower>
-In-Reply-To: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
-References: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
-Subject: [PATCH 31/32] omap_hsmmc: set a large data timeout for commands with busy signal
-X-OriginalArrivalTime: 10 Jul 2009 12:40:11.0650 (UTC) FILETIME=[90CD3620:01CA015B]
-X-Nokia-AV: Clean
+	Fri, 10 Jul 2009 08:51:00 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "liqin.chen" <liqin.chen@sunplusct.com>
+Subject: Re: [PATCH V2] score: add regset support
+Date: Fri, 10 Jul 2009 14:49:44 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.95; x86_64; ; )
+Cc: Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-arch@vger.kernel.org, linux-arch-owner@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <4A570650.3060309@sunplusct.com>
+In-Reply-To: <4A570650.3060309@sunplusct.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907101449.45286.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18KKF5ECKb9vXR0TAdm0/I/DbgjNSIM+8SFo/g
+ Oq5YhXTgxe41BjFZH0va+KZhRWv40GGRlUPtqF/atwjr1WjeD+
+ njcO41E7A+/URu+hNqjtQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 54996066acb35e82f89715c6c59b28bc81e12239 Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Fri, 26 Jun 2009 11:29:20 +0300
-Subject: [PATCH] omap_hsmmc: set a large data timeout for commands with busy signal
+On Friday 10 July 2009, liqin.chen wrote:
+> +static int genregs_get(struct task_struct *target,
+> +               const struct user_regset *regset,
+> +               unsigned int pos, unsigned int count,
+> +               void *kbuf, void __user *ubuf)
+> +{
+> +    const struct pt_regs *regs = task_pt_regs(target);
+> +    int ret;
+> +
+> +    /* skip 8 * sizeof(unsigned long) not use for pt_regs */
+> +    ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
+> +                    0, offsetof(struct pt_regs, regs));
+> +
+> +    /* r0 - r31 */
+> +    ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> +                  regs->regs,
+> +                  offsetof(struct pt_regs, regs),
+> +                  offsetof(struct pt_regs, cel));
+> +
+> +    if (!ret)
+> +        /* cel, ceh, sr0, sr1, sr2, epc, ema, psr, ecr, condition */
+> +        ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> +                    &regs->cel,
+> +                    offsetof(struct pt_regs, cel),
+> +                    offsetof(struct pt_regs, is_syscall));
 
-Commands like SWITCH (CMD6) send a response and then signal busy
-while the operation is completed.  These commands are expected
-to always succeed (otherwise the response would have indicated an
-error).
+The two user_regset_copyout are consecutive, so AFAICT they can
+be combined into a single function call.
 
-Set an arbitrarily large data timeout value (100ms) for these commands
-to ensure that premature timeouts do not occur.
+> +
+> +    if (!ret)
+> +        ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
+> +                        sizeof(struct pt_regs), -1);
+> +
+> +    return ret;
+> +}
 
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
- drivers/mmc/host/omap_hsmmc.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+While the code looks correct to me now based on Rolands comments,
+I think it would be nicer to define separate pt_regs and user_regset
+data structures to make the two independent and give you more
+flexibility with the kernel stack layout in the future.
 
-diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index 427bd49..ae8d33b 100644
---- a/drivers/mmc/host/omap_hsmmc.c
-+++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -982,7 +982,8 @@ static int omap_hsmmc_start_dma_transfer(struct omap_hsmmc_host *host,
- }
+Maybe you could change
+
+struct pt_regs {
+       unsigned long pad0[6];
+       unsigned long orig_r4;
+       unsigned long orig_r7;
+       unsigned long regs[32];
+
+       unsigned long cel;
+       unsigned long ceh;
+
+       unsigned long sr0;      /* cnt */
+       unsigned long sr1;      /* lcr */
+       unsigned long sr2;      /* scr */
+
+       unsigned long cp0_epc;
+       unsigned long cp0_ema;
+       unsigned long cp0_psr;
+       unsigned long cp0_ecr;
+       unsigned long cp0_condition;
+
+       long is_syscall;
+};
+
+to
+
+struct pt_regs {
+       unsigned long regs[32];
+
+       unsigned long cel;
+       unsigned long ceh;
+
+       unsigned long sr0;      /* cnt */
+       unsigned long sr1;      /* lcr */
+       unsigned long sr2;      /* scr */
+
+       unsigned long cp0_epc;
+       unsigned long cp0_ema;
+       unsigned long cp0_psr;
+       unsigned long cp0_ecr;
+       unsigned long cp0_condition;
+#ifdef __KERNEL__
+       unsigned long orig_r4;
+       unsigned long orig_r7;
+       long is_syscall;
+       unsigned long pad0[3];
+#else
+       unsigned long pad0[6];
+#endif
+};
+
+> @@ -356,11 +430,17 @@ arch_ptrace(struct task_struct *child, long 
+> request, long addr, long data)
+>      }
+>  
+>      case PTRACE_GETREGS:
+> -        ret = ptrace_getregs(child, (void __user *)datap);
+> +        return copy_regset_to_user(child, &user_score_native_view,
+> +                        REGSET_GENERAL,
+> +                        0, sizeof(struct pt_regs),
+> +                        (void __user *)datap);                        	
+>          break;
+>  
+>      case PTRACE_SETREGS:
+> -        ret = ptrace_setregs(child, (void __user *)datap);
+> +        return copy_regset_from_user(child, &user_score_native_view,
+> +                        REGSET_GENERAL,
+> +                        0, sizeof(struct pt_regs),
+> +                        (const void __user *)datap);
+>          break;
+>  
+>      default:
+
+I guess you still need to remove the PTRACE_PEEKUSR and PTRACE_POKEUSR
+code, as mentioned by Roland.
+
+Roland, Christoph: Do you think it would be reasonable to implement
+this in common code? That would make it possible to have an empty
+arch_ptrace() function.
+
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index 61c78b2..a6b7862 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -570,6 +570,21 @@ int ptrace_request(struct task_struct *child, long request,
+ 			return 0;
+ 		return ptrace_resume(child, request, SIGKILL);
  
- static void set_data_timeout(struct omap_hsmmc_host *host,
--			     struct mmc_request *req)
-+			     unsigned int timeout_ns,
-+			     unsigned int timeout_clks)
- {
- 	unsigned int timeout, cycle_ns;
- 	uint32_t reg, clkd, dto = 0;
-@@ -993,8 +994,8 @@ static void set_data_timeout(struct omap_hsmmc_host *host,
- 		clkd = 1;
- 
- 	cycle_ns = 1000000000 / (clk_get_rate(host->fclk) / clkd);
--	timeout = req->data->timeout_ns / cycle_ns;
--	timeout += req->data->timeout_clks;
-+	timeout = timeout_ns / cycle_ns;
-+	timeout += timeout_clks;
- 	if (timeout) {
- 		while ((timeout & 0x80000000) == 0) {
- 			dto += 1;
-@@ -1028,12 +1029,18 @@ omap_hsmmc_prepare_data(struct omap_hsmmc_host *host, struct mmc_request *req)
- 
- 	if (req->data == NULL) {
- 		OMAP_HSMMC_WRITE(host->base, BLK, 0);
-+		/*
-+		 * Set an arbitrary 100ms data timeout for commands with
-+		 * busy signal.
-+		 */
-+		if (req->cmd->flags & MMC_RSP_BUSY)
-+			set_data_timeout(host, 100000000U, 0);
- 		return 0;
++#if defined(PTRACE_GENERIC_GETREGS) && defined(REGSET_GENERAL)
++	case PTRACE_GETREGS:
++		return copy_regset_to_user(child,
++				task_user_regset_view(child),
++				REGSET_GENERAL, 0,
++				sizeof(struct pt_regs),
++				(void __user *)datap);
++	case PTRACE_GETREGS:
++		return copy_regset_from_user(child,
++				task_user_regset_view(child),
++				REGSET_GENERAL, 0,
++				sizeof(struct pt_regs),
++				(void __user *)datap);
++#endif
++
+ 	default:
+ 		break;
  	}
- 
- 	OMAP_HSMMC_WRITE(host->base, BLK, (req->data->blksz)
- 					| (req->data->blocks << 16));
--	set_data_timeout(host, req);
-+	set_data_timeout(host, req->data->timeout_ns, req->data->timeout_clks);
- 
- 	if (host->use_dma) {
- 		ret = omap_hsmmc_start_dma_transfer(host, req);
--- 
-1.5.6.3
-
