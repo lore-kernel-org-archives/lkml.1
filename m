@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbZGJKnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbZGJKnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbZGJKnY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 06:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbZGJKmm
+	id S1755048AbZGJKnp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 06:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbZGJKnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 06:42:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53485 "EHLO hera.kernel.org"
+	Fri, 10 Jul 2009 06:43:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53569 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755027AbZGJKmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 06:42:40 -0400
-Date: Fri, 10 Jul 2009 10:42:04 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+	id S1755130AbZGJKnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 06:43:31 -0400
+Date: Fri, 10 Jul 2009 10:42:46 GMT
+From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        lizf@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
@@ -18,71 +18,88 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
        tglx@linutronix.de, laijs@cn.fujitsu.com, mingo@elte.hu
-In-Reply-To: <1247107590-6428-2-git-send-email-fweisbec@gmail.com>
-References: <1247107590-6428-2-git-send-email-fweisbec@gmail.com>
-Subject: [tip:tracing/core] tracing/function-graph-tracer: Use the %pf format
-Message-ID: <tip-68baafcfc46074c4bb4e4c3115c2c76a8a85f37d@git.kernel.org>
-Git-Commit-ID: 68baafcfc46074c4bb4e4c3115c2c76a8a85f37d
+In-Reply-To: <4A51B16A.6020708@cn.fujitsu.com>
+References: <4A51B16A.6020708@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing/stat: Add stat_release() callback
+Message-ID: <tip-d8ea37d5de58d35a39d0b4e7d209751aaa1b8174@git.kernel.org>
+Git-Commit-ID: d8ea37d5de58d35a39d0b4e7d209751aaa1b8174
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 10:42:05 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 10:42:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  68baafcfc46074c4bb4e4c3115c2c76a8a85f37d
-Gitweb:     http://git.kernel.org/tip/68baafcfc46074c4bb4e4c3115c2c76a8a85f37d
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 9 Jul 2009 04:46:29 +0200
+Commit-ID:  d8ea37d5de58d35a39d0b4e7d209751aaa1b8174
+Gitweb:     http://git.kernel.org/tip/d8ea37d5de58d35a39d0b4e7d209751aaa1b8174
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Mon, 6 Jul 2009 16:10:18 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Jul 2009 12:07:19 +0200
+CommitDate: Fri, 10 Jul 2009 12:14:05 +0200
 
-tracing/function-graph-tracer: Use the %pf format
+tracing/stat: Add stat_release() callback
 
-Remove the obsolete seq_print_ip_sym() usage and replace it
-by the %pf format in order to print function symbols.
+Add stat_release() callback to struct tracer_stat, so a stat tracer
+can release it's entries after the stat file has been read out.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <1247107590-6428-2-git-send-email-fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <4A51B16A.6020708@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/trace_functions_graph.c |   12 ++----------
- 1 files changed, 2 insertions(+), 10 deletions(-)
+ kernel/trace/trace_stat.c |    7 +++++--
+ kernel/trace/trace_stat.h |    2 ++
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index d2249ab..abf7c4a 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -565,11 +565,7 @@ print_graph_entry_leaf(struct trace_iterator *iter,
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
+diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+index e66f5e4..f069461 100644
+--- a/kernel/trace/trace_stat.c
++++ b/kernel/trace/trace_stat.c
+@@ -49,7 +49,8 @@ static struct dentry		*stat_dir;
+  * but it will at least advance closer to the next one
+  * to be released.
+  */
+-static struct rb_node *release_next(struct rb_node *node)
++static struct rb_node *release_next(struct tracer_stat *ts,
++				    struct rb_node *node)
+ {
+ 	struct stat_node *snode;
+ 	struct rb_node *parent = rb_parent(node);
+@@ -67,6 +68,8 @@ static struct rb_node *release_next(struct rb_node *node)
+ 			parent->rb_right = NULL;
  
--	ret = seq_print_ip_sym(s, call->func, 0);
--	if (!ret)
--		return TRACE_TYPE_PARTIAL_LINE;
--
--	ret = trace_seq_printf(s, "();\n");
-+	ret = trace_seq_printf(s, "%pf();\n", (void *)call->func);
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
+ 		snode = container_of(node, struct stat_node, node);
++		if (ts->stat_release)
++			ts->stat_release(snode->stat);
+ 		kfree(snode);
  
-@@ -612,11 +608,7 @@ print_graph_entry_nested(struct trace_iterator *iter,
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
+ 		return parent;
+@@ -78,7 +81,7 @@ static void reset_stat_session(struct stat_session *session)
+ 	struct rb_node *node = session->stat_root.rb_node;
  
--	ret = seq_print_ip_sym(s, call->func, 0);
--	if (!ret)
--		return TRACE_TYPE_PARTIAL_LINE;
--
--	ret = trace_seq_printf(s, "() {\n");
-+	ret = trace_seq_printf(s, "%pf() {\n", (void *)call->func);
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
+ 	while (node)
+-		node = release_next(node);
++		node = release_next(session->ts, node);
  
+ 	session->stat_root = RB_ROOT;
+ }
+diff --git a/kernel/trace/trace_stat.h b/kernel/trace/trace_stat.h
+index f3546a2..8f03914 100644
+--- a/kernel/trace/trace_stat.h
++++ b/kernel/trace/trace_stat.h
+@@ -18,6 +18,8 @@ struct tracer_stat {
+ 	int			(*stat_cmp)(void *p1, void *p2);
+ 	/* Print a stat entry */
+ 	int			(*stat_show)(struct seq_file *s, void *p);
++	/* Release an entry */
++	void			(*stat_release)(void *stat);
+ 	/* Print the headers of your stat entries */
+ 	int			(*stat_headers)(struct seq_file *s);
+ };
