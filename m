@@ -1,81 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbZGJOLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbZGJONa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbZGJOLW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 10:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZGJOLP
+	id S1755839AbZGJONa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 10:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZGJONX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 10:11:15 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:33678 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751806AbZGJOLP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 10:11:15 -0400
-X-IronPort-AV: E=Sophos;i="4.42,378,1243828800"; 
-   d="scan'208";a="1364251"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] kernel.printk.c - ensure that "console enabled"messages are printed on the console
-Date: Fri, 10 Jul 2009 10:13:56 -0400
-User-Agent: KMail/1.9.5
-CC: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <200907040017.26921.rgetz@blackfin.uclinux.org> <200907091308.37370.rgetz@blackfin.uclinux.org> <20090710102547.GD5499@elte.hu>
-In-Reply-To: <20090710102547.GD5499@elte.hu>
+	Fri, 10 Jul 2009 10:13:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48869 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753630AbZGJONW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 10:13:22 -0400
+Date: Fri, 10 Jul 2009 16:12:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ian Campbell <Ian.Campbell@eu.citrix.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "beckyb@kernel.crashing.org" <beckyb@kernel.crashing.org>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: Re: [00/15] swiotlb cleanup
+Message-ID: <20090710141248.GE26264@elte.hu>
+References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20090710051236.GA22218@elte.hu> <1247234512.4002.417.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-ID: <200907101013.56177.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 10 Jul 2009 14:10:32.0121 (UTC) FILETIME=[2FA77290:01CA0168]
+In-Reply-To: <1247234512.4002.417.camel@zakaz.uk.xensource.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 10 Jul 2009 06:25, Ingo Molnar pondered:
-> 
-> * Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> 
-> > From: Robin Getz <rgetz@blackfin.uclinux.org>
-> > 
-> > Today, when a console is registered without CON_PRINTBUFFER, end 
-> > users never see the announcement of it being added, and never know 
-> > if they missed something, if the console is really at the start or 
-> > not, and just leads to general confusion.
-> > 
-> > This re-orders existing code, to make sure the console is added, 
-> > before the "console [%s%d] enabled" is printed out - ensuring that 
-> > this message is _always_ seen.
-> > 
-> > This has the desired/intended side effect of making sure that 
-> > "console enabled:" messages are printed on the bootconsole, and 
-> > the real console. This does cause the same line is printed twice 
-> > if the bootconsole and real console are the same device, but if 
-> > they are on different devices, the message is printed to both 
-> > consoles.
-> > 
-> > Signed-off-by : Robin Getz <rgetz@blackfin.uclinux.org>
-> > 
-> > ---
-> > 
-> >  printk.c |   44 +++++++++++++++++++++++++++++---------------
-> >  1 file changed, 29 insertions(+), 15 deletions(-)
-> > 
-> > patch generated for -tip
-> 
-> Looks good, applied it to tip:core/printk for v2.6.32, thanks Robin. 
-> 
-> i fixed a couple of small details in the patch:
-> 
->  - re-broke the commit log as it was too wide for nice git log 
->    output
 
-Hmm - I didn't know there was a restriction on this - what is the number?
+* Ian Campbell <Ian.Campbell@eu.citrix.com> wrote:
 
->  - fixed a stray whitespace warned about by scripts/checkpatch.pl
->  - fixed another stray whitespace found the old fashioned way
->  - fixed the patch title to match the prefix used by your previous 
->    commit as well
+> I've not examined the series in detail it looks OK but I don't 
+> think it is quite sufficient. The Xen determination of whether a 
+> buffer is dma_capable or not is based on the physical address 
+> while dma_capable takes only the dma address.
+> 
+> I'm not sure we can "invert" our conditions to work back from dma 
+> address to physical since given a start dma address and a length 
+> we would need to check that dma_to_phys(dma+PAGE_SIZE) == 
+> dma_to_phys(dma)+PAGE_SIZE etc. However dma+PAGE_SIZE might belong 
+> to a different domain so translating it to a physical address in 
+> isolation tells us nothing especially useful since it would give 
+> us the physical address in that other guest which is useless to 
+> us. If we could pass both physical and dma address to dma_capable 
+> I think that would probably be sufficient for our purposes.
+> 
+> As well as that Xen needs some way to influence the allocation of 
+> the actual bounce buffer itself since we need to arrange for it to 
+> be machine address contiguous as well as physical address 
+> contiguous. This series explicitly removes those hooks without 
+> replacement. My most recent proposal was to have a new 
+> swiotlb_init variant which was given a preallocated buffer which 
+> this series doesn't necessarily preclude.
+> 
+> The phys_to_dma and dma_to_phys translation points are the last 
+> piece Xen needs and seem to be preserved in this series.
+> 
+> However Fujita's objection to all of the previous swiotlb-for-xen 
+> proposals was around the addition of the Xen hooks in whichever 
+> location. Originally these hooks were via __weak functions and 
+> later proposals implemented them via function pointer hooks in the 
+> x86 implementations of the arch-abstract interfaces (phys<->dma 
+> and dma_capable etc). I don't think this series addresses those 
+> objections (fair enough -- it wasn't intended to) or leads to any 
+> new approach to solving the issue, although I also don't think it 
+> makes the issue any harder to address. I don't think it will be 
+> possible to make progress on Xen usage of swiotlb until a solution 
+> can be found to this conflict of opinion.
+> 
+> Fujita suggested that we export the core sync_single() 
+> functionality and reimplemented the surrounding infrastructure in 
+> terms of that (and incorporating our additional requirements). I 
+> prototyped this (it is currently unworking, in fact it seems to 
+> have developed rather a taste for filesystems :-() but the 
+> diffstat of my WIP patch is:
+>
+>          arch/x86/kernel/pci-swiotlb.c |    6 
+>          arch/x86/xen/pci-swiotlb.c    |    2 
+>          drivers/pci/xen-iommu.c       |  385 ++++++++++++++++++++++++++++++++++++++++--
+>          include/linux/swiotlb.h       |   12 +
+>          lib/swiotlb.c                 |   10 -
+>          5 files changed, 385 insertions(+), 30 deletions(-)
+>
+> where a fair number of the lines in xen-iommu.c are copies of 
+> functions from swiotlb.c with minor modifications. As I say it 
+> doesn't work yet but I think it's roughly indicative of what such 
+> an approach would look like. I don't like it much but am happy to 
+> run with it if it looks to be the most acceptable approach. [...]
 
-Thanks
--Robin
++400 lines of code to avoid much fewer lines of generic code impact 
+on the lib/swiotlb.c side sounds like a bad technical choice to me. 
+
+It makes the swiotlb code less useful and basically forks a random 
+implementation of it in drivers/pci/xen-iommu.c.
+
+Fujita-san, can you think of a solution that avoids the whole-sale 
+copying of hundreds of lines of code?
+
+	Ingo
