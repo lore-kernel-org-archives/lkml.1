@@ -1,166 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbZGJEFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZGJEHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752170AbZGJEFt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 00:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbZGJEFm
+	id S1752725AbZGJEHJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 00:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbZGJEG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 00:05:42 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:37437 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbZGJEFl (ORCPT
+	Fri, 10 Jul 2009 00:06:59 -0400
+Received: from mail-px0-f193.google.com ([209.85.216.193]:60973 "EHLO
+	mail-px0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbZGJEG6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 00:05:41 -0400
-Message-ID: <4A56BE07.9050104@novell.com>
-Date: Fri, 10 Jul 2009 00:05:27 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, zengzm.kernel@gmail.com
-Subject: Re: [PATCH] sched_rt: fix overload bug on rt group scheduling -v2
-References: <1238604015.8530.3666.camel@twins> <49D40DBF.8030507@novell.com>	 <1238654901.8530.5373.camel@twins>  <49D49FB6.3000101@novell.com> <1247067476.9777.57.camel@twins>
-In-Reply-To: <1247067476.9777.57.camel@twins>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig0F72B5396014887E3BB032C3"
+	Fri, 10 Jul 2009 00:06:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=tnNMyUpUK2Y/PATG1stbIVtV/L/DLGR08NgpfLx1W26PLIe26hFLtxQxzGqMv8+npd
+         VFATInXiUs7jZCAKri6LAFCTLNWFJUErUmDB3c4KXTJnvv4at2rjcqM1vqu1a1Ul3CZu
+         PoTpMl82wsaR7tpAgtn1Ww0XBW15US1z7JACw=
+Subject: Re: [PATCH 2/2] tracing/filter: remove empty subsystem and it's
+ directory
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A55A8BE.9010707@cn.fujitsu.com>
+References: <4A55A83C.1030005@cn.fujitsu.com>
+	 <4A55A8BE.9010707@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Thu, 09 Jul 2009 23:06:54 -0500
+Message-Id: <1247198814.6229.4.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0F72B5396014887E3BB032C3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2009-07-09 at 16:22 +0800, Xiao Guangrong wrote:
+> Remove empty subsystem and it's directory when module unload.
+> 
+> Before patch:
+>  # rmmod trace-events-sample.ko
+>  # ls sample
+>  enable  filter
+> 
+> After patch:
+>  # rmmod trace-events-sample.ko
+>  # ls sample
+>  ls: cannot access sample: No such file or directory
+> 
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 
-Peter Zijlstra wrote:
-> Greg, how's this?
->  =20
+Looks like it does the trick.
 
-Hi Peter,
-  Sorry for the delay getting back to you.
-
-I can't vouch specifically for the rt-group specific part, but as far as
-the general balancer modifications to the migration code, it looks good. =
-
-
-> ---
-> Subject: sched_rt: fix overload bug on rt group scheduling
-> From: Peter Zijlstra <peterz@infradead.org>
-> Date: Wed, 01 Apr 2009 18:40:15 +0200
->
-> Fixes an easily triggerable BUG() when setting process affinities.
->
-> Make sure to count the number of migratable tasks in the same place:
-> the root rt_rq. Otherwise the number doesn't make sense and we'll hit
-> the BUG in set_cpus_allowed_rt().
->
-> Also, make sure we only count tasks, not groups (this is probably
-> already taken care of by the fact that rt_se->nr_cpus_allowed will be 0=
-
-> for groups, but be more explicit)
->
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->  =20
-
-Acked-by: Gregory Haskins <ghaskins@novell.com>
+Acked-by: Tom Zanussi <tzanussi@gmail.com>
 
 > ---
->  kernel/sched_rt.c |   18 +++++++++++++++++-
->  1 file changed, 17 insertions(+), 1 deletion(-)
->
-> Index: linux-2.6/kernel/sched_rt.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.orig/kernel/sched_rt.c
-> +++ linux-2.6/kernel/sched_rt.c
-> @@ -10,6 +10,8 @@ static inline struct task_struct *rt_tas
-> =20
->  #ifdef CONFIG_RT_GROUP_SCHED
-> =20
-> +#define rt_entity_is_task(rt_se) (!(rt_se)->my_q)
+>  kernel/trace/trace.h        |    1 +
+>  kernel/trace/trace_events.c |   32 +++++++++++++++++++++++++++++++-
+>  2 files changed, 32 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 61b4e94..0e7de4b 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -780,6 +780,7 @@ struct event_subsystem {
+>  	const char		*name;
+>  	struct dentry		*entry;
+>  	void			*filter;
+> +	int			nr_events;
+>  };
+>  
+>  struct filter_pred;
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index fecac13..90cf936 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -851,8 +851,10 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
+>  
+>  	/* First see if we did not already create this dir */
+>  	list_for_each_entry(system, &event_subsystems, list) {
+> -		if (strcmp(system->name, name) == 0)
+> +		if (strcmp(system->name, name) == 0) {
+> +			system->nr_events++;
+>  			return system->entry;
+> +		}
+>  	}
+>  
+>  	/* need to create new entry */
+> @@ -871,6 +873,7 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
+>  		return d_events;
+>  	}
+>  
+> +	system->nr_events = 1;
+>  	system->name = kstrdup(name, GFP_KERNEL);
+>  	if (!system->name) {
+>  		debugfs_remove(system->entry);
+> @@ -905,6 +908,32 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
+>  	return system->entry;
+>  }
+>  
+> +static void remove_subsystem_dir(const char *name)
+> +{
+> +	struct event_subsystem *system;
 > +
->  static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
->  {
->  	return rt_rq->rq;
-> @@ -22,6 +24,8 @@ static inline struct rt_rq *rt_rq_of_se(
-> =20
->  #else /* CONFIG_RT_GROUP_SCHED */
-> =20
-> +#define rt_entity_is_task(rt_se) (1)
-> +
->  static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
->  {
->  	return container_of(rt_rq, struct rq, rt);
-> @@ -73,7 +77,7 @@ static inline void rt_clear_overload(str
-> =20
->  static void update_rt_migration(struct rt_rq *rt_rq)
->  {
-> -	if (rt_rq->rt_nr_migratory && (rt_rq->rt_nr_running > 1)) {
-> +	if (rt_rq->rt_nr_migratory && rt_rq->rt_nr_total > 1) {
->  		if (!rt_rq->overloaded) {
->  			rt_set_overload(rq_of_rt_rq(rt_rq));
->  			rt_rq->overloaded =3D 1;
-> @@ -86,6 +90,12 @@ static void update_rt_migration(struct r
-> =20
->  static void inc_rt_migration(struct sched_rt_entity *rt_se, struct rt_=
-rq *rt_rq)
->  {
-> +	if (!rt_entity_is_task(rt_se))
+> +	if (strcmp(name, TRACE_SYSTEM) == 0)
 > +		return;
 > +
-> +	rt_rq =3D &rq_of_rt_rq(rt_rq)->rt;
+> +	list_for_each_entry(system, &event_subsystems, list) {
+> +		if (strcmp(system->name, name) == 0) {
+> +			if (!--system->nr_events) {
+> +				struct event_filter *filter = system->filter;
 > +
-> +	rt_rq->rt_nr_total++;
->  	if (rt_se->nr_cpus_allowed > 1)
->  		rt_rq->rt_nr_migratory++;
-> =20
-> @@ -94,6 +104,12 @@ static void inc_rt_migration(struct sche
-> =20
->  static void dec_rt_migration(struct sched_rt_entity *rt_se, struct rt_=
-rq *rt_rq)
->  {
-> +	if (!rt_entity_is_task(rt_se))
-> +		return;
+> +				debugfs_remove_recursive(system->entry);
+> +				list_del(&system->list);
+> +				if (filter) {
+> +					kfree(filter->filter_string);
+> +					kfree(filter);
+> +				}
+> +				kfree(system->name);
+> +				kfree(system);
+> +			}
+> +			break;
+> +		}
+> +	}
+> +}
 > +
-> +	rt_rq =3D &rq_of_rt_rq(rt_rq)->rt;
-> +
-> +	rt_rq->rt_nr_total--;
->  	if (rt_se->nr_cpus_allowed > 1)
->  		rt_rq->rt_nr_migratory--;
-> =20
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index fd3ac58..a07d520 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -493,6 +493,7 @@ struct rt_rq {
->  #endif
->  #ifdef CONFIG_SMP
->  	unsigned long rt_nr_migratory;
-> +	unsigned long rt_nr_total;
->  	int overloaded;
->  	struct plist_head pushable_tasks;
->  #endif
->
->  =20
+>  static int
+>  event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+>  		 const struct file_operations *id,
+> @@ -1079,6 +1108,7 @@ static void trace_module_remove_events(struct module *mod)
+>  			list_del(&call->list);
+>  			trace_destroy_fields(call);
+>  			destroy_preds(call);
+> +			remove_subsystem_dir(call->system);
+>  		}
+>  	}
+>  
 
-
-
---------------enig0F72B5396014887E3BB032C3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpWvgsACgkQlOSOBdgZUxnxNACdGiUzpGL/+Yn3Za0480xf+mA8
-LrMAn1VG5JzrzMRiPleMtecGjEnao52D
-=QFQA
------END PGP SIGNATURE-----
-
---------------enig0F72B5396014887E3BB032C3--
