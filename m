@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbZGJWbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbZGJWeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757862AbZGJWbh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 18:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZGJWb2
+	id S1757736AbZGJWeX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 18:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757343AbZGJWeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 18:31:28 -0400
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:54981 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754047AbZGJWb1 convert rfc822-to-8bit (ORCPT
+	Fri, 10 Jul 2009 18:34:15 -0400
+Received: from ru.mvista.com ([213.79.90.228]:56033 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756833AbZGJWeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 18:31:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=cznS9mV5bLojIaYVqzlJjyOnoF+8UwuLOLgVId4LnmPqyKmHnMfmdF2wACUwdi/9oY
-         GskV5nlJC0h7mhbNLkDpU1EOokouzKidB+5xXeqoT8xC8Uv3cscYNqlkOhXkUyWOyHU7
-         19i+tS9Ca/UqwHp0OUC1+wJJf7dTXcDLBmHiw=
+	Fri, 10 Jul 2009 18:34:14 -0400
+Date: Sat, 11 Jul 2009 02:34:12 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>,
+       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
+       mingo@elte.hu
+Subject: Re: [PATCH 0/2] cond_resched() optimization
+Message-ID: <20090710223412.GA920@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090710125755.559739294@chello.nl>
 MIME-Version: 1.0
-In-Reply-To: <4A57BD9B.4030405@acm.org>
-References: <4A57BD9B.4030405@acm.org>
-From: David Rees <drees76@gmail.com>
-Date: Fri, 10 Jul 2009 15:31:06 -0700
-Message-ID: <72dbd3150907101531v623bb584r46f05bfab8d0d3ff@mail.gmail.com>
-Subject: Re: make xconfig fails on Fedora 10 for 2.6.30
-To: Wayne Pollock <pollock@acm.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090710125755.559739294@chello.nl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 3:15 PM, Wayne Pollock<pollock@acm.org> wrote:
-> The work-around was to manually create the missing symlink
-> for "libXi.so".  I suspect other distro's install that
-> symlink automatically so maybe that's why the bug was
-> not discovered.  But I believe it is correct to say all
-> applications should use a soname (including the major
-> version number), and not just the "linker" name (the
-> name ending in ".so" with no version numbers).
->
-> Or am I missing something?
+On Fri, Jul 10, 2009 at 02:57:55PM +0200, Peter Zijlstra wrote:
+> Matt suggested, whereupon Linus sayeth:
+> 
+>  "This looks like a good patch. Please make it so"
+> 
+> Compile and boot tested on x86_64 only.
 
-ldconfig should create those symlinks for you automatically.  Unless
-it's looking for the 32-bit version for some reason and you have a
-64-bit system.  Then there's something else going on...
+Tested on ppc32, boots fine.
 
--Dave
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
