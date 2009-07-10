@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbZGJUDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbZGJUEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493AbZGJUDY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 16:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbZGJUDR
+	id S1756850AbZGJUEU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 16:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbZGJUEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 16:03:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58648 "EHLO mx3.mail.elte.hu"
+	Fri, 10 Jul 2009 16:04:07 -0400
+Received: from mga02.intel.com ([134.134.136.20]:1238 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753987AbZGJUDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 16:03:17 -0400
-Date: Fri, 10 Jul 2009 22:02:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: Re: [GIT PULL] core kernel fixes
-Message-ID: <20090710200259.GA2020@elte.hu>
-References: <20090710162848.GA26862@elte.hu> <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain> <20090710193110.GA28281@elte.hu> <alpine.LFD.2.01.0907101249060.3352@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0907101249060.3352@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752302AbZGJUEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 16:04:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,379,1243839600"; 
+   d="scan'208";a="429219472"
+Date: Fri, 10 Jul 2009 13:03:44 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, dann frazier <dannf@hp.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Stephen Frost <sfrost@snowman.net>
+Subject: Re: [PATCH] x86/pci: insert ioapic resource before assign
+ unassigned resource for pci -v2
+Message-ID: <20090710130344.75f4d243@jbarnes-g45>
+In-Reply-To: <4A576E04.9070004@kernel.org>
+References: <20090630180300.GA9971@ldl.fc.hp.com>
+	<4A4A5B01.9040200@kernel.org>
+	<20090703225708.GA30664@ldl.fc.hp.com>
+	<4A4FADDC.30606@kernel.org>
+	<20090709185945.GG2613@ldl.fc.hp.com>
+	<4A564263.5010305@kernel.org>
+	<4A564634.1020708@kernel.org>
+	<4A564990.3060202@kernel.org>
+	<1247172044.3898.147.camel@mulgrave.site>
+	<4A56641B.9050204@kernel.org>
+	<4A576E04.9070004@kernel.org>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 10 Jul 2009 09:36:20 -0700
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Fri, 10 Jul 2009, Ingo Molnar wrote:
-> > > 
-> > > but I really migth have done soemthing wrong there. It's a 
-> > > simple function, but somebody needs to double-check that I 
-> > > haven't made it worse.
-> > 
-> > Looks correct to me.
 > 
-> Note, I didn't look at how 'end' works, and it really does matter 
-> if 'end' is an "inclusive" or "exclusive" end pointer address. So 
-> my replacement overlap() function was written more as a conceptual 
-> patch - I did not check the exact semantics of the arguments 
-> passed in.
+> Stephen reported that his DL585 G2 need noapic after 2.6.22 (?)
 > 
-> If 'end' is exclusive, then 'b1' should be calculated as 
-> 'a1+size-1', because the ranges must have the same rules. And then 
-> you should use the 'strict inequality' operators for testing the 
-> ranges.
+> Dann bisected
+>   --------------------------------------------------------------------
+>   commit 30a18d6c3f1e774de656ebd8ff219d53e2ba4029
+>   Date:   Tue Feb 19 03:21:20 2008 -0800
+> 
+>       x86: multi pci root bus with different io resource range, on
+>       64-bit
+>   --------------------------------------------------------------------
+> caused the problem.
+> 
 
-The ranges are inclusive in terms of non-overlap: we can have 
-adjacent ranges with b1==a2 or b2==a1 that are still considered 
-non-overlapping. Hence the sharp test you used (which is negated) 
-looks correct to me.
+Applied to my for-linus tree, thanks Yinghai.
 
-The end-of-range symbols we use:
-
-        if (overlap(addr, len, _text, _etext) ||
-            overlap(addr, len, __start_rodata, __end_rodata))
-
-Are all at the first byte outside of the to-be-avoided range:
-
-        .text : {
-                _text = .;      /* Text */
-                *(.text)
-                *(.text.*)
-                _etext = . ;
-        }
-
-        ...
-
-        __param : AT(ADDR(__param) - LOAD_OFFSET) {                     \
-                VMLINUX_SYMBOL(__start___param) = .;                    \
-                *(__param)                                              \
-                VMLINUX_SYMBOL(__stop___param) = .;                     \
-                . = ALIGN((align));                                     \
-                VMLINUX_SYMBOL(__end_rodata) = .;                       \
-        }                                                               \
-
-        ...
-
-I think ...
-
-	Ingo
+-- 
+Jesse Barnes, Intel Open Source Technology Center
