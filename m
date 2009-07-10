@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZGJXll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbZGJXrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbZGJXll (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 19:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbZGJXla
+	id S1758036AbZGJXrl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 19:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbZGJXrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 19:41:30 -0400
-Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:39004 "EHLO
-	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756584AbZGJXl3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 19:41:29 -0400
-Date: Sat, 11 Jul 2009 00:09:26 +0100
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: John Linville <linville@tuxdriver.com>,
-       Thiemo Nagel <thiemo.nagel@ph.tum.de>,
-       Corentin Chary <corentin.chary@gmail.com>,
-       debian-eeepc-devel@lists.alioth.debian.org,
-       acpi4asus-user@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.31] rfkill: allow toggling soft state in sysfs again
-Message-ID: <507E529B48%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <1247262952.26071.1.camel@johannes.local>
-References: <4A5716AA.5000903@ph.tum.de> 
- <71cd59b00907100545v6f440a19xfc3668826eb1e509@mail.gmail.com> 
- <4A5743AB.6090303@ph.tum.de> 
- <71cd59b00907100646h5e0283fcyce5874cc4a19106b@mail.gmail.com> 
- <4A575119.9070505@ph.tum.de> <507E3B9268%linux@youmustbejoking.demon.co.uk> 
- <1247254899.21972.9.camel@johannes.local> 
- <507E47A184%linux@youmustbejoking.demon.co.uk> 
- <1247262952.26071.1.camel@johannes.local>
-Mail-Followup-To: Johannes Berg <johannes@sipsolutions.net>, John Linville 
- <linville@tuxdriver.com>, Thiemo Nagel <thiemo.nagel@ph.tum.de>, Corentin Chary 
- <corentin.chary@gmail.com>, debian-eeepc-devel@lists.alioth.debian.org, 
- acpi4asus-user@lists.sourceforge.net, linux-wireless@vger.kernel.org, 
- linux-kernel@vger.kernel.org
-User-Agent: Messenger-Pro/2.58.5.3087 (Qt/4.5.1) (Linux-x86_64)
-X-NuLabour-Date: Sat, 8988 Dec 1984 00:09:26 +0100
+	Fri, 10 Jul 2009 19:47:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48624 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757388AbZGJXrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 19:47:31 -0400
+Date: Fri, 10 Jul 2009 19:46:47 -0400
+From: Dave Jones <davej@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       cpufreq@vger.kernel.org
+Subject: Re: 2.6.31-rc2+: Interrupts enabled after cpufreq_suspend
+Message-ID: <20090710234646.GA11669@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Marcin Slusarz <marcin.slusarz@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Linux PM List <linux-pm@lists.linux-foundation.org>,
+	cpufreq@vger.kernel.org
+References: <4A561074.5080407@gmail.com> <20090710192511.GB6240@redhat.com> <1247264617.21776.6.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
+Content-Disposition: inline
+In-Reply-To: <1247264617.21776.6.camel@pasglop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I demand that Johannes Berg may or may not have written...
+On Sat, Jul 11, 2009 at 08:23:37AM +1000, Ben Herrenschmidt wrote:
+ > On Fri, 2009-07-10 at 15:25 -0400, Dave Jones wrote:
+ > 
+ > > The answer seems to be in 42d4dc3f4e1ec1396371aac89d0dccfdd977191b
+ > > which introduced all this code to work around some failure that only happens
+ > > on PPC...
+ > > 
+ > >     [PATCH] Add suspend method to cpufreq core
+ > >     
+ > >     In order to properly fix some issues with cpufreq vs. sleep on
+ > >     PowerBooks, I had to add a suspend callback to the pmac_cpufreq driver.
+ > >     I must force a switch to full speed before sleep and I switch back to
+ > >     previous speed on resume.
+ > > 
+ > > 
+ > > Ben, is there something better we can do here ?
+ > > 
+ > > I really don't want to add an #ifdef __powerpc__ to core code if we can help it.
+ > > I'd rather we didn't call into driver guts at all from the suspend path.
+ > 
+ > Wait a minute ... having a suspend/resume method in cpufreq is one
+ > thing, having it muck around with SMP is another :-) The ppc code
+ > doesn't do that.
+ > 
+ > There's nothing fundamentally "fail" in requiring a switch to a given
+ > frequency before suspend. I don't know what kind of major FAIL the K8
+ > code is doing here though :-)
 
-> On Fri, 2009-07-10 at 22:09 +0100, Darren Salt wrote:
->> I demand that Johannes Berg may or may not have written...
-[snip]
->>> *shrug*, I don't like it, but whatever...
->> I do. It means that we have a nice simple text-based interface for use in
->> scripts (for now), and a binary interface which is better suited to the
->> likes of desktop applications.
+The fail part comes from the fact that interrupts get reenabled.
+And that's something that can easily happen out of our control if
+we call into acpi_cpufreq's ->get method for example, so powernow-k8 isn't
+the sole reason.
 
-> Indeed, and as long as you expect to only use soft toggle... problem is
-> that you won't know whether it's soft-toggled or not while it's
-> hard-blocked (off)!
+ > I'm happy instead of #ifdef's however to push the logic into the ppc
+ > driver, or use a flag that the ppc driver sets to enable that logic.
 
-Which is fine for eeepc-acpi-scripts and anything else which doesn't care
-about hard-blocking because the hardware doesn't do that.
+Cool.
 
-eeepc-acpi-scripts should eventually use your rfkill utility, though. (I
-intend to make sure that it does so.)
+	Dave
 
-[snip]
--- 
-| Darren Salt            | linux at youmustbejoking | nr. Ashington, | Doon
-| using Debian GNU/Linux | or ds    ,demon,co,uk    | Northumberland | Army
-|   Kill all extremists!
-
-A large dog will have a surprising effect on your life.
