@@ -1,56 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752108AbZGJLhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbZGJLn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752108AbZGJLhY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 07:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbZGJLhN
+	id S1753936AbZGJLn1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 07:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZGJLnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 07:37:13 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:34771 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbZGJLhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 07:37:11 -0400
-Message-ID: <52588.192.168.10.89.1247225810.squirrel@dbdmail.itg.ti.com>
-Date: Fri, 10 Jul 2009 17:06:50 +0530 (IST)
-Subject: [PATCH 0/2] [MTD] [NAND] Add prefetch and dma support for omap2/3  
-              NAND      driver
-From: "vimal singh" <vimalsingh@ti.com>
-To: linux-mtd@lists.infradead.org
-Cc: "Tony Lindgren" <tony@atomide.com>, dwmw2@infradead.org,
-       dedekind@infradead.org, david-b@pacbell.net,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Fri, 10 Jul 2009 07:43:17 -0400
+Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:51497 "EHLO
+	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750873AbZGJLnQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 07:43:16 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: [regression] ath5k: Overrides regulatory domain set for cfg80211
+Date: Fri, 10 Jul 2009 13:43:12 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200907082340.07787.elendil@planet.nl> <200907090311.40205.elendil@planet.nl> <43e72e890907081907j279f48eep99e73cc2951dfdb@mail.gmail.com>
+In-Reply-To: <43e72e890907081907j279f48eep99e73cc2951dfdb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-References: <54851.192.168.10.89.1243946277.squirrel@dbdmail.itg.ti.com>   
-    <47286.192.168.10.89.1244108024.squirrel@dbdmail.itg.ti.com>
-In-Reply-To: <47286.192.168.10.89.1244108024.squirrel@dbdmail.itg.ti.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200907101343.14113.elendil@planet.nl>
+X-OriginalArrivalTime: 10 Jul 2009 11:43:14.0851 (UTC) FILETIME=[9C3B0F30:01CA0153]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Thanks again for your elaborate explanation Louis.
 
-I have splited gpmc prefetch support for NAND into two patches:
-[PATCH 1:2] : Adding support for nand prefetch-read and post-write, in MPU mode.
-[PATCH 2:2] : Adding DMA mode support in nand prefetch/post-write
+On Thursday 09 July 2009, Luis R. Rodriguez wrote:
+> EU is a valid regulatory domain only when the relic option
+> CONFIG_WIRELESS_OLD_REGULATORY is used. When you use OLD_REG and "EU"
+> you get stuck to a statically defined regulatory domain in the kernel.
+>
+> >  [Now I specify NL and it gives me US; how's that an improvement?]
+>
+> Since you are using OLD_REG the default is "US", that was the behavior
+> prior to the new regulatory code so its left as is. So that is by
+> design following the old crap regulatory code design.
+>
+> > cfg80211: Calling CRDA for country: NL
+> >  [no agent, so this does not actually change anything]
+>
+> Users of OLD_REG who do not have new userspace should stick to using
+> the 3 static regulatory domains:
+>
+>   1) US *
+>   2) JP
+>   3) EU
 
-These patches implements Tony's comments. (For comments and discussion see:
-http://lists.infradead.org/pipermail/linux-mtd/2009-June/025993.html)
+Right, so the EU I had originally was correct after all :-)
 
-Other than that, gpmc_prefetch_(inti/request) call has been removed, as nothing
-great was done in that and we really do not need that.
+> >> For further information please also read
+> >> Documentation/feature-removal-schedule.txt. Please use a valid
+> >> ISO-3166 alpha2 country code, I also advise to abandon the usage of
+> >> the ieee80211_regdom module parameter which we do eventually intend
+> >> on deprecating and if you know anyone using that please suggest the
+> >> same.
+> >
+> > As mentioned above I do not currently have the option of abandoning
+> > it.
+>
+> Yes you do, but you don't seem to want to do anything beyond what your
+> distribution offers, which is different.
 
-Function 'gpmc_prefetch_enable' does check for 'if prefetch is already being
-used by some other driver?'. And if it is busy, normal cpu copy method for
-read/write request will be used.
+You're right :-)
+However, I am also a Debian Developer and Debian may (just as we did for 
+Etch), at some point want to offer a newer kernel than the current .26 
+for stable (possibly .31). From that PoV it is important to ensure there 
+are no incompatibilities with what's in Debian stable.
+For that reason I am very conservative when it comes to installer newer or 
+backported versions of packages.
 
-Thanks and regards,
-vimal
+> > That seems particularly bad in my case. For some weird reason this
+> > Trust PCMCIA card seems to have AM in its EEPROM, which is Armenia...
+> > The card was bought in the Netherlands (NL), which is also where I
+> > live.
+>
+> Yeah the short story of that is Armenia and Netherlands both have the
+> same regulatory rules, the first alpha2 that matched the same group
+> was picked up, which just so happened to be Armenia. In the future it
+> will be easier if cards are just programmed with the alpha2 country
+> code or with a world regulatory domain code, and just abandon the
+> grouping idea. That is something we will have to look forward to
+> change and promote for future device. What counts for regulatory
+> purposes is your device is complaint. The alternative was to keep all
+> the regulatory information statically in the kernel for each
+> regulatory group for Atheros devices.
 
+Ah! I had no idea about that and I guess that this is the real issue here: 
+a simple usability problem. If I had seen the correct countrycode (NL 
+instead of AM), I probably never would have reported a regression. What 
+prompted my mail was that, from a user PoV, the country being selected 
+looked to be completely broken. How am I, as a simple user, supposed to 
+know that Armenia uses the same domain as the Netherlands and that what 
+the driver is doing is actually 100% correct (and even that my PCMCIA 
+card is not as broken as I thought)?
 
+Would it be possible to improve the info presented by the kernel? Maybe 
+print an extra line with a list of countries that use the selected reg 
+domain (depends I guess on what's the max. nr. of countries that share a 
+domain). Or at least indicate that the country code is a somewhat random 
+choice.
 
+> > I can to some extend understand respecting hardware settings for APs,
+> > but for a wireless NIC it seems a useless limitation.
+>
+> You are right to a certain degree. The thing is wireless cards *can*
+> be used as APs on a regular desktops. Perhaps not with iwlagn, but
+> with ath5k and ath9k you can do AP, IBSS, Mesh, all of which actually
+> do start transmit with out any AP being around. For these cases you
+> *do* need to ensure proper regulatory compliance. And we haven't even
+> touched on DFS!
 
+Well, IIUC you do know what mode the card is being used in, so in theory 
+you could distinguish between them. I'm not pushing for that though.
+
+End conclusion is that there is no regression and no backwards 
+compatibility issue (which is good news), just a usability issue.
+
+Thanks,
+FJP
