@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZGJUZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbZGJU1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757254AbZGJUZb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 16:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbZGJUZV
+	id S1757198AbZGJU1R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 16:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZGJU1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 16:25:21 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:57788 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756099AbZGJUZT (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 16:25:19 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
-       mingo@elte.hu, tony.luck@intel.com, rth@twiddle.net,
-       geert@linux-m68k.org
-Subject: Re: [PATCH 1/2] sched: INIT_PREEMPT_COUNT
-In-Reply-To: Your message of "Fri, 10 Jul 2009 17:51:06 +0200."
-             <1247241066.7529.50.camel@twins>
-From: Valdis.Kletnieks@vt.edu
-References: <20090710125755.559739294@chello.nl> <20090710130125.037018244@chello.nl> <17047.1247240546@turing-police.cc.vt.edu>
-            <1247241066.7529.50.camel@twins>
+	Fri, 10 Jul 2009 16:27:07 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3210 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752859AbZGJU1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 16:27:07 -0400
+Subject: Re: [PATCH] MAINTAINERS: INPUT: Add Dmitry's name to his email
+ address
+From: Joe Perches <joe@perches.com>
+To: Stefan Schmidt <stefan@datenfreihafen.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Dmitry Torokhov <dtor@mail.ru>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090710202121.GA8273@dodger.lab.datenfreihafen.org>
+References: <1247256960.11673.63.camel@Joe-Laptop.home>
+	 <20090710202121.GA8273@dodger.lab.datenfreihafen.org>
+Content-Type: text/plain
+Date: Fri, 10 Jul 2009 13:26:52 -0700
+Message-Id: <1247257612.11673.70.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1247257453_3858P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Date: Fri, 10 Jul 2009 16:24:13 -0400
-Message-ID: <47357.1247257453@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1247257453_3858P
-Content-Type: text/plain; charset=us-ascii
-
-On Fri, 10 Jul 2009 17:51:06 +0200, Peter Zijlstra said:
-
-> Something along the lines of the below?
+On Fri, 2009-07-10 at 22:21 +0200, Stefan Schmidt wrote:
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index e4a4de9..18fc1fa 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -2978,6 +2978,7 @@ F:	include/linux/inotify.h
+> >  INPUT (KEYBOARD, MOUSE, JOYSTICK, TOUCHSCREEN) DRIVERS
+> >  P:	Dmitry Torokhov
+> >  M:	dmitry.torokhov@gmail.com
+> > +P:	Dmitry Torokhov
+> >  M:	dtor@mail.ru
+> >  L:	linux-input@vger.kernel.org
+> >  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git
 > 
-> ---
-> Index: linux-2.6/include/linux/sched.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/sched.h
-> +++ linux-2.6/include/linux/sched.h
-> @@ -502,7 +502,9 @@ struct task_cputime {
->  
->  /*
->   * Disable preemption until the scheduler is running.
-> - * Reset by start_kernel()->sched_init()->init_idle().
-> + *
-> + * We reset this initial offset of init_thread_info.preempt_count in:
-> + *     start_kernel()->sched_init()->init_idle().
->   */
->  #define INIT_PREEMPT_COUNT	(1)
+> Hmm, do I miss something or is this the same line as two lines above?
 
-Works for me, thanks...
+You're right, it's the same name, new email address.
+It's just standardizing, a name for an email address.
 
---==_Exmh_1247257453_3858P
-Content-Type: application/pgp-signature
+Scripts that parse MAINTAINERS have difficulty
+figuring out names for addresses when the style
+isn't consistent.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+At some point, it'd be nicer for people that
+manually cut and paste entries in MAINTAINERS
+to have the lines appear like:
 
-iD8DBQFKV6NtcC3lWbTT17ARAmvFAJ4nO7b0ABq9AyeGxd6WenWLuIf2fQCg0Fwh
-r0VnakKSjRIusnawKBOjLho=
-=NwLF
------END PGP SIGNATURE-----
+M:	Dmitry Torokhov <dtor@mail.ru>
 
---==_Exmh_1247257453_3858P--
+There is a script to do this conversion.
+http://lkml.org/lkml/2009/6/1/275
+
+cheers, Joe
+
