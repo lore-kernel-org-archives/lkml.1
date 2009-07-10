@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZGJTwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbZGJT5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbZGJTwx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 15:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbZGJTwq
+	id S1756878AbZGJT5V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 15:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbZGJT5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 15:52:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40149 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755232AbZGJTwq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 15:52:46 -0400
-Date: Fri, 10 Jul 2009 12:52:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: Re: [GIT PULL] core kernel fixes
-In-Reply-To: <20090710193110.GA28281@elte.hu>
-Message-ID: <alpine.LFD.2.01.0907101249060.3352@localhost.localdomain>
-References: <20090710162848.GA26862@elte.hu> <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain> <20090710193110.GA28281@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 10 Jul 2009 15:57:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39901 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753389AbZGJT5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 15:57:11 -0400
+Message-ID: <4A579D9A.1010306@redhat.com>
+Date: Fri, 10 Jul 2009 15:59:22 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH -tip -v11 11/11] tracing: Add kprobes event profiling
+ interface
+References: <20090709202220.13223.97114.stgit@localhost.localdomain> <20090709202327.13223.16418.stgit@localhost.localdomain> <4A56E3D8.3010806@cn.fujitsu.com>
+In-Reply-To: <4A56E3D8.3010806@cn.fujitsu.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-
-On Fri, 10 Jul 2009, Ingo Molnar wrote:
-> > 
-> > but I really migth have done soemthing wrong there. It's a simple 
-> > function, but somebody needs to double-check that I haven't made 
-> > it worse.
+Li Zefan wrote:
+>> +Event Profiling
+>> +---------------
+>> + You can check the total number of probe hits and probe miss-hits via
+>> +/sys/kernel/debug/tracing/kprobe_profile.
+>> + The fist column is event name, the second is the number of probe hits,
 > 
-> Looks correct to me.
+> s/fist/first
 
-Note, I didn't look at how 'end' works, and it really does matter if 'end' 
-is an "inclusive" or "exclusive" end pointer address. So my replacement 
-overlap() function was written more as a conceptual patch - I did not 
-check the exact semantics of the arguments passed in.
+Oops, fixed.
 
-If 'end' is exclusive, then 'b1' should be calculated as 'a1+size-1', 
-because the ranges must have the same rules. And then you should use the 
-'strict inequality' operators for testing the ranges.
+> 
+>> +the third is the number of probe miss-hits.
+>> +
+>> +
+> ...
+>> +/* Probes profiling interfaces */
+>> +static int profile_seq_show(struct seq_file *m, void *v)
+>> +{
+>> +	struct trace_probe *tp = v;
+>> +
+>> +	if (tp == NULL)
+>> +		return 0;
+>> +
+> 
+> tp will never be NULL, which is guaranteed by seq_file
 
-		Linus
+OK, fixed.
+
+>> +	seq_printf(m, "%s", tp->call.name);
+>> +
+>> +	seq_printf(m, "\t%8lu %8lu\n", tp->nhits,
+>> +		   probe_is_return(tp) ? tp->rp.kp.nmissed : tp->kp.nmissed);
+>> +
+>> +	return 0;
+>> +}
+
+Thank you for review!
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
