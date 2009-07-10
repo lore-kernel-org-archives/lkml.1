@@ -1,80 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZGJNAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZGJNAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbZGJNAj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 09:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbZGJNAG
+	id S1755422AbZGJNAv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 09:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbZGJNAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 09:00:06 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:53339 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbZGJNAD (ORCPT
+	Fri, 10 Jul 2009 09:00:10 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:59481 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754443AbZGJNAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 09:00:03 -0400
+	Fri, 10 Jul 2009 09:00:09 -0400
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
        lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Fri, 10 Jul 2009 18:29:50 +0530
-Message-Id: <20090710125950.5610.99139.sendpatchset@balbir-laptop>
-Subject: [RFC][PATCH 0/5] Memory controller soft limit patches (v9)
+Date: Fri, 10 Jul 2009 18:30:04 +0530
+Message-Id: <20090710130004.5610.57822.sendpatchset@balbir-laptop>
+In-Reply-To: <20090710125950.5610.99139.sendpatchset@balbir-laptop>
+References: <20090710125950.5610.99139.sendpatchset@balbir-laptop>
+Subject: [RFC][PATCH 2/5] Memory controller soft limit interface (v9)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Feature: Add soft limits interface to resource counters
 
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-New Feature: Soft limits for memory resource controller.
+Changelog v8..v1 (yeah this patch changed only in v8)
+1. Change ULONGLOGMAX to RESOURCE_MAX while initializing the soft limit
+   counter
 
-Here is v9 of the new soft limit implementation. Soft limits is a new feature
-for the memory resource controller, something similar has existed in the
-group scheduler in the form of shares. The CPU controllers interpretation
-of shares is very different though. 
+Changelog v2...v1
+1. Add support for res_counter_check_soft_limit_locked. This is used
+   by the hierarchy code.
 
-Soft limits are the most useful feature to have for environments where
-the administrator wants to overcommit the system, such that only on memory
-contention do the limits become active. The current soft limits implementation
-provides a soft_limit_in_bytes interface for the memory controller and not
-for memory+swap controller. The implementation maintains an RB-Tree of groups
-that exceed their soft limit and starts reclaiming from the group that
-exceeds this limit by the maximum amount.
+Add an interface to allow get/set of soft limits. Soft limits for memory plus
+swap controller (memsw) is currently not supported. Resource counters have
+been enhanced to support soft limits and new type RES_SOFT_LIMIT has been
+added. Unlike hard limits, soft limits can be directly set and do not
+need any reclaim or checks before setting them to a newer value.
 
-v9 attempts to address several review comments for v8 by Kamezawa, including
-moving over to an event based approach for soft limit rb tree management,
-simplification of data structure names and many others. Comments not
-addressed have been answered via email or I've added comments in the code.
+Kamezawa-San raised a question as to whether soft limit should belong
+to res_counter. Since all resources understand the basic concepts of
+hard and soft limits, it is justified to add soft limits here. Soft limits
+are a generic resource usage feature, even file system quotas support
+soft limits.
 
-TODOs
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-1. The current implementation maintains the delta from the soft limit
-   and pushes back groups to their soft limits, a ratio of delta/soft_limit
-   might be more useful
+ include/linux/res_counter.h |   58 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/res_counter.c        |    3 ++
+ mm/memcontrol.c             |   20 +++++++++++++++
+ 3 files changed, 81 insertions(+), 0 deletions(-)
 
-Tests
------
 
-I've run two memory intensive workloads with differing soft limits and
-seen that they are pushed back to their soft limit on contention. Their usage
-was their soft limit plus additional memory that they were able to grab
-on the system. Soft limit can take a while before we see the expected
-results.
-
-I ran overhead tests (reaim) and found no significant overhead as a result
-of these patches.
-
-Please review, comment.
-
-Series
-------
-
-memcg-soft-limits-documentation.patch
-memcg-soft-limits-interface.patch
-memcg-soft-limits-organize.patch
-memcg-soft-limits-refactor-reclaim-bits
-memcg-soft-limits-reclaim-on-contention.patch
-
+diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+index 511f42f..fcb9884 100644
+--- a/include/linux/res_counter.h
++++ b/include/linux/res_counter.h
+@@ -35,6 +35,10 @@ struct res_counter {
+ 	 */
+ 	unsigned long long limit;
+ 	/*
++	 * the limit that usage can be exceed
++	 */
++	unsigned long long soft_limit;
++	/*
+ 	 * the number of unsuccessful attempts to consume the resource
+ 	 */
+ 	unsigned long long failcnt;
+@@ -87,6 +91,7 @@ enum {
+ 	RES_MAX_USAGE,
+ 	RES_LIMIT,
+ 	RES_FAILCNT,
++	RES_SOFT_LIMIT,
+ };
+ 
+ /*
+@@ -132,6 +137,36 @@ static inline bool res_counter_limit_check_locked(struct res_counter *cnt)
+ 	return false;
+ }
+ 
++static inline bool res_counter_soft_limit_check_locked(struct res_counter *cnt)
++{
++	if (cnt->usage < cnt->soft_limit)
++		return true;
++
++	return false;
++}
++
++/**
++ * Get the difference between the usage and the soft limit
++ * @cnt: The counter
++ *
++ * Returns 0 if usage is less than or equal to soft limit
++ * The difference between usage and soft limit, otherwise.
++ */
++static inline unsigned long long
++res_counter_soft_limit_excess(struct res_counter *cnt)
++{
++	unsigned long long excess;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	if (cnt->usage <= cnt->soft_limit)
++		excess = 0;
++	else
++		excess = cnt->usage - cnt->soft_limit;
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return excess;
++}
++
+ /*
+  * Helper function to detect if the cgroup is within it's limit or
+  * not. It's currently called from cgroup_rss_prepare()
+@@ -147,6 +182,17 @@ static inline bool res_counter_check_under_limit(struct res_counter *cnt)
+ 	return ret;
+ }
+ 
++static inline bool res_counter_check_under_soft_limit(struct res_counter *cnt)
++{
++	bool ret;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	ret = res_counter_soft_limit_check_locked(cnt);
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return ret;
++}
++
+ static inline void res_counter_reset_max(struct res_counter *cnt)
+ {
+ 	unsigned long flags;
+@@ -180,4 +226,16 @@ static inline int res_counter_set_limit(struct res_counter *cnt,
+ 	return ret;
+ }
+ 
++static inline int
++res_counter_set_soft_limit(struct res_counter *cnt,
++				unsigned long long soft_limit)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	cnt->soft_limit = soft_limit;
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return 0;
++}
++
+ #endif
+diff --git a/kernel/res_counter.c b/kernel/res_counter.c
+index e1338f0..bcdabf3 100644
+--- a/kernel/res_counter.c
++++ b/kernel/res_counter.c
+@@ -19,6 +19,7 @@ void res_counter_init(struct res_counter *counter, struct res_counter *parent)
+ {
+ 	spin_lock_init(&counter->lock);
+ 	counter->limit = RESOURCE_MAX;
++	counter->soft_limit = RESOURCE_MAX;
+ 	counter->parent = parent;
+ }
+ 
+@@ -101,6 +102,8 @@ res_counter_member(struct res_counter *counter, int member)
+ 		return &counter->limit;
+ 	case RES_FAILCNT:
+ 		return &counter->failcnt;
++	case RES_SOFT_LIMIT:
++		return &counter->soft_limit;
+ 	};
+ 
+ 	BUG();
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 4da70c9..3c9292b 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -2106,6 +2106,20 @@ static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
+ 		else
+ 			ret = mem_cgroup_resize_memsw_limit(memcg, val);
+ 		break;
++	case RES_SOFT_LIMIT:
++		ret = res_counter_memparse_write_strategy(buffer, &val);
++		if (ret)
++			break;
++		/*
++		 * For memsw, soft limits are hard to implement in terms
++		 * of semantics, for now, we support soft limits for
++		 * control without swap
++		 */
++		if (type == _MEM)
++			ret = res_counter_set_soft_limit(&memcg->res, val);
++		else
++			ret = -EINVAL;
++		break;
+ 	default:
+ 		ret = -EINVAL; /* should be BUG() ? */
+ 		break;
+@@ -2359,6 +2373,12 @@ static struct cftype mem_cgroup_files[] = {
+ 		.read_u64 = mem_cgroup_read,
+ 	},
+ 	{
++		.name = "soft_limit_in_bytes",
++		.private = MEMFILE_PRIVATE(_MEM, RES_SOFT_LIMIT),
++		.write_string = mem_cgroup_write,
++		.read_u64 = mem_cgroup_read,
++	},
++	{
+ 		.name = "failcnt",
+ 		.private = MEMFILE_PRIVATE(_MEM, RES_FAILCNT),
+ 		.trigger = mem_cgroup_reset,
 
 -- 
 	Balbir
