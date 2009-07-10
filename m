@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZGJOZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZGJO0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbZGJOZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 10:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZGJOZv
+	id S1754638AbZGJO0c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 10:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbZGJO0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 10:25:51 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:34346 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751868AbZGJOZu (ORCPT
+	Fri, 10 Jul 2009 10:26:24 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:47647 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992AbZGJO0X convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 10:25:50 -0400
-X-IronPort-AV: E=Sophos;i="4.42,378,1243828800"; 
-   d="scan'208";a="3694608"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: Boot Consoles question...
-Date: Fri, 10 Jul 2009 10:28:03 -0400
-User-Agent: KMail/1.9.5
-CC: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <200907040017.26921.rgetz@blackfin.uclinux.org> <200907071949.41311.rgetz@blackfin.uclinux.org> <20090710102857.GF5499@elte.hu>
-In-Reply-To: <20090710102857.GF5499@elte.hu>
+	Fri, 10 Jul 2009 10:26:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=NdJvAa7bilQjgmgerz/tjE1aqnSmfYI+s7Ylw58CrIoL4yUIHbPwZBB06u+Kf/VaJw
+         QTkBHMAfiR2KekxkhnNISJHbf1vHxa/vt2VuEwXQ2dhuPpOFLNP4T7pWzHMHpnX/LHLW
+         0IMbpSnQQmDj5U68lLSj+ewVZfG0iFXYrsLYI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200907101028.03153.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 10 Jul 2009 14:24:38.0850 (UTC) FILETIME=[28580A20:01CA016A]
+In-Reply-To: <20090710141618.GF26264@elte.hu>
+References: <200907040017.26921.rgetz@blackfin.uclinux.org> 
+	<200907091308.37370.rgetz@blackfin.uclinux.org> <20090710102547.GD5499@elte.hu> 
+	<200907101013.56177.rgetz@blackfin.uclinux.org> <20090710141618.GF26264@elte.hu>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 10 Jul 2009 10:26:01 -0400
+Message-ID: <8bd0f97a0907100726i6d00c75q1189080dea711831@mail.gmail.com>
+Subject: Re: [PATCH] kernel.printk.c - ensure that "console enabled"messages 
+	are printed on the console
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 10 Jul 2009 06:28, Ingo Molnar pondered:
-> 
-> * Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> 
-> > On Sat 4 Jul 2009 12:07, Robin Getz pondered:
-> > > On Sat 4 Jul 2009 06:29, Ingo Molnar pondered:
-> > > > Could be changed i guess ... but is it really an issue?
-> > > 
-> > > It is just a change from "normal" (when the kernel has no boot
-> > > console).
-> > > 
-> > > >  One artifact 
-> > > >  could be manual scroll-back - it would perhaps be nice indeed to
-> > > >  allow the scrollback to the top of the bootlog.
-> > > 
-> > > Exactly.
-> > > 
-> > > One of my thoughts (was since CON_PRINTBUFFER isn't used after 
-> > > register_console()) - was for the CON_BOOT's CON_PRINTBUFFER flag to
-> > > control the clearing of the CON_PRINTBUFFER for the real console or
-> > > not... 
-> > > 
-> > > All early_printk consoles that I looked at have their
-> > > CON_PRINTBUFFER set.
-> > > 
-> > > Which means that something like should do the trick -- allow people
-> > > who want 
-> > > to override things to do so, and still have the today's setup work
-> > > as is...
-> > 
-> > I guess no one liked that idea?
-> 
-> No, this means no-one objected :)
+On Fri, Jul 10, 2009 at 10:16, Ingo Molnar wrote:
+> * Robin Getz wrote:
+>> On Fri 10 Jul 2009 06:25, Ingo Molnar pondered:
+>> >  - re-broke the commit log as it was too wide for nice git log
+>> >    output
+>>
+>> Hmm - I didn't know there was a restriction on this - what is the number?
+>
+> 'git log' adds 4 leading spaces to commit messages and then if you
+> look at it via a small terminal it can quickly wrap at the end,
+> making the commit log harder to read.
+>
+> Also, commit logs get quoted in emails and if we reply to that in up
+> to a depth of 4, the colums do get eaten up quickly.
+>
+> 60 cols sounds like a reasonable compromise. There's no 'written'
+> rule for this AFAIK, i just do it for all changes i commit, to
+> increase commit quality.
 
-Silence is consensus?
+the upper rule based on what you point out:
+ - git-log adds 4 and 80 cols is the min directly supported
+ - logs go through e-mail which wraps at 78
+leaves us with user-typed paragraphs at 76
 
-> > How about at least making sure that the real console gets a 
-> > message that something is on the bootconsole? Right now the switch 
-> > message:
-> > 
-> > console handover:boot [early_shadow0]  -> real [ttyBF0]
-> > 
-> > only is printed on the bootconsole, not on the real console - so 
-> > someone looking at the real console may not know there is anything 
-> > on the boot console. They just think that things are missing...
-> 
-> Mind sending a full (changelogged, titled, etc.) patch for the other 
-> bit as well? It kind of overlaps this one but both make sense, 
-> especially if people end up objecting against the more intrusive one 
-> and it gets dropped/reverted ;-)
-
-Will do - (as soon as I get my system up and running again - moved buildings, 
-so still unpacking)...
-
-
+for copy & pasted output (i.e. gcc output and kernel crash logs), i
+welsh on that a bit as it leaves it up to the viewer to wrap like
+normal.
+-mike
