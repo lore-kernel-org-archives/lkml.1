@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZGJJNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbZGJJNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbZGJJNA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 05:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbZGJJMx
+	id S1754337AbZGJJNq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 05:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbZGJJNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 05:12:53 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:33769 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbZGJJMw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 05:12:52 -0400
-In-Reply-To: <20090709210356.B1FD96BA56@magilla.sf.frob.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
+	Fri, 10 Jul 2009 05:13:39 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:37293 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbZGJJNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 05:13:38 -0400
+Date: Fri, 10 Jul 2009 11:13:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Alan.Brunelle@hp.com,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] Fix blktrace unaligned memory access
+Message-ID: <20090710091337.GD23611@kernel.dk>
+References: <20090710075339.GX23611@kernel.dk> <4A5704EA.5000807@cn.fujitsu.com>
 MIME-Version: 1.0
-Subject: Re: [PATCH] score: add regsets support for score
-X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
-Message-ID: <OFE8F25211.6F919E29-ON482575EF.0031BE0C-482575EF.00328689@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Fri, 10 Jul 2009 17:06:27 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/07/10 ?? 05:06:42,
-	Serialize complete at 2009/07/10 ?? 05:06:42
-Content-Type: text/plain; charset="GB2312"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A5704EA.5000807@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6A9D3Xx020880
 
-Roland McGrath <roland@redhat.com> Ğ´ÓÚ 2009-07-10 05:03:56:
-
-> > > +       ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> > > +                                 regs->regs,
-> > > +                                 offsetof(struct pt_regs, regs),
-> > > +                                 end_pos);
+On Fri, Jul 10 2009, Li Zefan wrote:
+> Jens Axboe wrote:
+> > Hi,
+> > 
+> > It seems that relay_reserve() (or the ring_buffer_event_data(), that one
+> > still needs some love) can return unaligned memory, there's no way
+> > around that when you have pdu lengths that aren't a nice size. This can
+> > cause unaligned access warnings on platforms that care about alignment.
+> > 
 > 
-> This looks odd to me.  The last two arguments here are offsets into
-> the userland ABI format defined by the user_regset layout.  Unless
-> offsetof(struct pt_regs, regs) is zero, then you need to precede
-> this call with one that fills in the initial stretch of the userland
-> format layout from its 0 up to offsetof(struct pt_regs, regs).  If
-> in fact offsetof(struct pt_regs, regs) is zero, then it would be far
-> less confusing to just write 0 there IMHO.  Using offsetof on
-> pt_regs at all here is very confusing to me unless pt_regs describes
-> the userland ABI layout (in which case the use here still doesn't
-> make sense).
+> Seems relay_reserve() does nothing for alignment..On the other hand,
+> ring_buffer_event_data() returns a ptr which is 32bit-aligned, but
+> this still means it can cause unaligned accesses on 64bits arch, while
+> I think it's fixable in ring buffer, it's certainly not an easy job.
 
-Thanks Roland,
+Right, it's a bit nasty...
 
-Maybe I misunderstand the arguments meaning of
-user_regset_copy(in/out), I rewrite these code,
-use userland ABI format the same as score's pt_regs, 
-just like sh arch do, maybe it's easy to understand.
-It will be sent out latter.
+> > This is an RFC, perhaps we can fix this in some other way. This one takes
+> > the simple approach, use an on-stack copy and memcpy() that to the
+> > destination.
+> > 
+> 
+> or get_unaligned() ?
 
-Best Regards
-Liqin
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+put_unaligned(), you mean? The big question is then which is faster, using
+put_unaligned() or doing the memcpy() of the structure...
+
+-- 
+Jens Axboe
+
