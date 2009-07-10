@@ -1,86 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZGJFww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZGJF5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbZGJFww (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 01:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbZGJFwo
+	id S1752814AbZGJF5i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 01:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZGJF53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 01:52:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45323 "EHLO mx3.mail.elte.hu"
+	Fri, 10 Jul 2009 01:57:29 -0400
+Received: from gate.crashing.org ([63.228.1.57]:48808 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750970AbZGJFwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 01:52:43 -0400
-Date: Fri, 10 Jul 2009 07:52:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Feng Tang <feng.tang@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: [PATCH 11/12] SFI, PCI: Hook MMCONFIG
-Message-ID: <20090710055229.GD22218@elte.hu>
-References: <8e4a93858bce74ed3080dd607aa471023f1a2737.1247025117.git.len.brown@intel.com> <24fe646fcbbd9049850de4ac57cf6a67846b38c4.1247025117.git.len.brown@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <24fe646fcbbd9049850de4ac57cf6a67846b38c4.1247025117.git.len.brown@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750830AbZGJF52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 01:57:28 -0400
+Subject: Re: [PATCH 00/11] swiotlb: Introduce architecture-specific APIs to
+ replace __weak functions (v2)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ian Campbell <ian.campbell@citrix.com>
+Cc: linux-kernel@vger.kernel.org, Becky Bruce <beckyb@kernel.crashing.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Kumar Gala <galak@kernel.crashing.org>, Olaf Kirch <okir@suse.de>,
+       Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, x86@kernel.org
+In-Reply-To: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
+References: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
+Content-Type: text/plain
+Date: Fri, 10 Jul 2009 15:55:56 +1000
+Message-Id: <1247205356.15530.18.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Len Brown <lenb@kernel.org> wrote:
-
-> From: Feng Tang <feng.tang@intel.com>
+On Mon, 2009-06-01 at 16:32 +0100, Ian Campbell wrote:
+> This series:
+> * removes the swiotlb_(arch_)_phys_to_bus and bus_to_phys __weak
+>   hooks, replacing them with an architecture-specific phys_to_dma and
+>   dma_to_phys interface. These are used by both PowerPC and Xen to
+>   provide the correct mapping from physical to DMA addresses.
+> * removes the swiotlb_address_needs_mapping and
+>   swiotlb_range_needs_mapping __weak functions as well as
+>   is_buffer_dma_capable (which should never have been a generic
+>   function). All three are replaced by a single architecture-specific
+>   interface which meets the needs of both PowerPC and Xen.
+> * removes the swiotlb_virt_to_bus __weak function and replaces it with
+>   a CONFIG_HIGHMEM compatible version when high memory is in use. This
+>   is needed for 32 bit PowerPC swiotlb support.
+> * removes the swiotlb_alloc* __weak functions and replaces them with
+>   swiotlb_init_with_buffer which allows the use of a caller allocated
+>   buffer (and emergency pool).
 > 
-> First check ACPI, and if that fails, ask SFI to find the MCFG.
+> I think these new interfaces are cleaner than the existing __weak
+> functions and isolate the swiotlb code from architecture internals.
 > 
-> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Signed-off-by: Feng Tang <feng.tang@intel.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  arch/x86/Kconfig               |    2 +-
->  arch/x86/pci/mmconfig-shared.c |    5 ++++-
->  2 files changed, 5 insertions(+), 2 deletions(-)
+> This series does not contain any Xen or PowerPC specific changes, those
+> will follow in separate postings. The complete patchset has been boot
+> tested under Xen and native-x86 and compiled for IA64 and PowerPC
 > 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 8e864c0..8e20a0e 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -1880,7 +1880,7 @@ config PCI_DIRECT
->  
->  config PCI_MMCONFIG
->  	def_bool y
-> -	depends on X86_32 && PCI && ACPI && (PCI_GOMMCONFIG || PCI_GOANY)
-> +	depends on X86_32 && PCI && (ACPI || SFI) && (PCI_GOMMCONFIG || PCI_GOANY)
+> Changes since v1: 
+> - Fixed compile error in swiotlb_dma_to_virt highmem version. Moved
+>   #ifdef into function to avoid prototype drift.
+> - checkpatch fixes.
+> - missed a swiotlb_arch_range_needs_mapping in swiotlb.h and x86
+>   pci-swiotlb.c and swiotlb_bus_to_phys/phys_to_bus implementations in
+>   x86.
+> - additionally replaced __weak swiotlb_alloc* with
+>   swiotlb_init_with_buffer.
 
-Please also update the 64-bit side (there's no reason to do this on 
-32-bit only - even though your sample hw is probably 32-bit only) - 
-and while at it, also unify the currently separate 32-bit and 64-bit 
-PCI_MMCONFIG definitions.
+Looks like I was only CCed on part of them... it's not very handy for me
+as I end up having some of the patches in one folder and some
+elsewhere :-)
 
-> @@ -606,7 +607,9 @@ static void __init __pci_mmcfg_init(int early)
->  	}
->  
->  	if (!known_bridge)
-> -		acpi_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg);
-> +		if (acpi_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg))
-> +			sfi_acpi_table_parse(ACPI_SIG_MCFG, NULL, NULL, 0,
-> +				pci_parse_mcfg);
+I don't have a firm objection but they will have to go through Becky
+and Kumar since they are the one who need swiotlb for their embedded
+platforms.
 
-Please introduce one common/generic helper:
+Cheers,
+Ben.
 
-		x86_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg);
 
-and do the fallback in that helper. We generally want to try ACPI 
-first, SFI second. That helper makes it easier to add such fallback 
-in other places as well, and will de-uglify the above code as well.
-
-	Ingo
