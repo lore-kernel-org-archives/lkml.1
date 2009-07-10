@@ -1,161 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbZGJDMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbZGJDQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617AbZGJDMq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 23:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbZGJDMh
+	id S1752838AbZGJDQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 23:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbZGJDQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 23:12:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48819 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750735AbZGJDMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 23:12:36 -0400
-Subject: Re: [GIT PULL] V2 trivial fixes typo "foo foo"
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Jiri Kosina <jkosina@suse.cz>, trivial <trivial@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1246984209.3613.46.camel@ht.satnam>
-References: <1246975428.3613.10.camel@ht.satnam>
-	 <1246984209.3613.46.camel@ht.satnam>
-Content-Type: text/plain
-Date: Fri, 10 Jul 2009 08:41:47 +0530
-Message-Id: <1247195507.2423.10.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Jul 2009 23:16:50 -0400
+Received: from mail-pz0-f175.google.com ([209.85.222.175]:36836 "EHLO
+	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbZGJDQt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 23:16:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZIKp7uQJR1D42not7TmS7Lk3YscSTzYdmZtGgcxb/Jsa+dLp8P8Jw9/FCHvbUSIN2g
+         rAfcn2VU1TVS/kTG9TLvZnP6wJFDtaW8W89VL3RjyRX4Epf/9OBvjANxP4pMtIcVOQNv
+         11EpfUNXt1oKDD9PL5hjkHKAiAQ5nYD86LWR0=
+Date: Fri, 10 Jul 2009 11:18:54 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Changli Gao <xiaosuo@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH: fd leak if pipe() is called with an invalid address.
+Message-ID: <20090710031854.GC5694@cr0.nay.redhat.com>
+References: <4A4C6013.9090509@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A4C6013.9090509@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Jiri,
+On Thu, Jul 02, 2009 at 03:21:55PM +0800, Changli Gao wrote:
+>fd leak if pipe() is called with an invalid address.
+>
+>Though -EFAULT is returned, the file descriptors opened by pipe() call
+>are left open.
+>
+>Signed-off-by: Changli Gao <xiaosuo@gmail.com>
+>----
+>
+> x86/ia32/sys_ia32.c     |    5 ++++-
+> xtensa/kernel/syscall.c |    5 ++++-
+> 2 files changed, 8 insertions(+), 2 deletions(-)
+>
+>
+>--- arch/x86/ia32/sys_ia32.c.orig	2009-07-02 15:08:39.000000000 +0800
+>+++ arch/x86/ia32/sys_ia32.c	2009-07-02 15:09:49.000000000 +0800
 
-On Tue, 2009-07-07 at 22:00 +0530, Jaswinder Singh Rajput wrote:
-> To stay on the safe side skipping following patches from V1 which can
-> raise confusions and objections:
-> 
->       trivial: fix typo "and and" in multiple files 
->       trivial: fix typo "are are" in multiple files
->       trivial: fix typo "has has" in multiple files
->       trivial: fix typo "on on" in multiple files
->       trivial: fix typo "that that" in multiple files
->       trivial: fix typo "this this" in multiple files
-> 
-> 
-> The following changes since commit faf80d62e44dc627efb741f48db50c1858d1667c:
->   Linus Torvalds (1):
->         Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6.git master
-> 
-> Jaswinder Singh Rajput (16):
->       trivial: fix typo "a a" in multiple files
->       trivial: fix typo "as as" in multiple files
->       trivial: fix typo "be be" in multiple files
->       trivial: fix typo "bit bit" in multiple files
->       trivial: fix typo "by by" in multiple files
->       trivial: fix typo "can can"
->       trivial: fix typo "could could" in multiple files
->       trivial: fix typo "from from" in multiple files
->       trivial: fix typo "lock lock"
->       trivial: fix typo "should should" in multiple files
->       trivial: fix typo "test test"
->       trivial: fix typo "too too"
->       trivial: fix typo "was was" in multiple files
->       trivial: fix typo "we we" in multiple files
->       trivial: fix typo "with with" in multiple files
->       trivial: fix typo "you you"
-> 
+This patch is not correctly made... You need to make the patch in the
+_upper_ directory of the top source code tree (if you don't use git),
+so that we can apply it with 'patch -p1 < XXX'.
 
-Have you pulled these patches.
+Probably this is the reason why Linus still doesn't merge it.
 
-Please Let me know if you face any issues.
+Can you re-make it and resend with my Acked-by?
 
-Thanks,
---
-JSR
-
->  Documentation/DocBook/uio-howto.tmpl               |    2 +-
->  Documentation/fb/viafb.txt                         |    2 +-
->  Documentation/filesystems/caching/operations.txt   |    2 +-
->  Documentation/scsi/advansys.txt                    |    2 +-
->  Documentation/sysfs-rules.txt                      |    2 +-
->  arch/frv/kernel/sleep.S                            |    2 +-
->  arch/ia64/include/asm/sn/pda.h                     |    2 +-
->  arch/microblaze/kernel/signal.c                    |    2 +-
->  arch/mips/cavium-octeon/setup.c                    |    2 +-
->  arch/mips/include/asm/octeon/octeon.h              |    2 +-
->  arch/sparc/kernel/head_64.S                        |    2 +-
->  arch/x86/include/asm/xen/hypercall.h               |    2 +-
->  arch/x86/math-emu/reg_u_sub.S                      |    2 +-
->  crypto/testmgr.h                                   |   10 +++++-----
->  drivers/char/amiserial.c                           |    2 +-
->  drivers/char/xilinx_hwicap/xilinx_hwicap.c         |    2 +-
->  drivers/media/dvb/ttpci/av7110.c                   |    2 +-
->  drivers/media/video/hdpvr/hdpvr-video.c            |    2 +-
->  drivers/media/video/ov511.c                        |    2 +-
->  drivers/media/video/ovcamchip/ov7x10.c             |    2 +-
->  drivers/media/video/pvrusb2/pvrusb2-hdw.c          |    2 +-
->  drivers/mtd/ubi/vmt.c                              |    4 ++--
->  drivers/net/fs_enet/fs_enet.h                      |    2 +-
->  drivers/net/ixgbe/ixgbe_82598.c                    |    2 +-
->  drivers/net/ixgbe/ixgbe_82599.c                    |    2 +-
->  drivers/net/ixgbe/ixgbe_common.c                   |    2 +-
->  drivers/net/s2io.c                                 |    2 +-
->  drivers/net/skfp/fplustm.c                         |    2 +-
->  drivers/net/sky2.c                                 |    2 +-
->  drivers/net/wireless/libertas/scan.c               |    2 +-
->  drivers/parisc/ccio-dma.c                          |    2 +-
->  drivers/pci/hotplug/ibmphp.h                       |    2 +-
->  drivers/rtc/rtc-m41t80.c                           |    2 +-
->  drivers/scsi/libfc/fc_fcp.c                        |    2 +-
->  drivers/scsi/lpfc/lpfc_debugfs.c                   |    2 +-
->  drivers/scsi/sym53c8xx_2/sym_hipd.c                |    2 +-
->  drivers/scsi/sym53c8xx_2/sym_hipd.h                |    2 +-
->  drivers/staging/android/binder.c                   |    2 +-
->  drivers/staging/frontier/alphatrack.c              |    2 +-
->  drivers/staging/frontier/tranzport.c               |    2 +-
->  .../staging/rtl8192su/ieee80211/rtl819x_HTProc.c   |    2 +-
->  drivers/staging/rtl8192su/r8192S_phy.c             |    2 +-
->  drivers/staging/rtl8192su/r819xU_phy.c             |    2 +-
->  drivers/staging/wlan-ng/prism2sta.c                |    2 +-
->  drivers/usb/atm/ueagle-atm.c                       |    2 +-
->  drivers/video/aty/mach64_cursor.c                  |    2 +-
->  drivers/video/riva/fbdev.c                         |    2 +-
->  drivers/watchdog/eurotechwdt.c                     |    2 +-
->  drivers/watchdog/pc87413_wdt.c                     |    2 +-
->  drivers/watchdog/w83977f_wdt.c                     |    2 +-
->  drivers/watchdog/wdt.c                             |    2 +-
->  drivers/watchdog/wdt977.c                          |    2 +-
->  drivers/watchdog/wdt_pci.c                         |    2 +-
->  fs/cifs/inode.c                                    |    2 +-
->  fs/exec.c                                          |    2 +-
->  fs/jbd/journal.c                                   |    2 +-
->  fs/jbd2/journal.c                                  |    2 +-
->  fs/ocfs2/cluster/quorum.c                          |    2 +-
->  fs/squashfs/cache.c                                |    2 +-
->  fs/ubifs/misc.h                                    |    2 +-
->  fs/ufs/super.c                                     |    2 +-
->  fs/xfs/xfs_trans_ail.c                             |    2 +-
->  include/linux/exportfs.h                           |    2 +-
->  include/linux/ipv6.h                               |    2 +-
->  include/linux/mtd/pfow.h                           |    2 +-
->  include/linux/usb/gadget.h                         |    2 +-
->  include/linux/wimax/debug.h                        |    2 +-
->  include/sound/soc-dai.h                            |    2 +-
->  kernel/perf_counter.c                              |    2 +-
->  net/atm/lec.c                                      |    2 +-
->  net/dccp/ipv4.c                                    |    2 +-
->  net/ipv4/netfilter/nf_nat_pptp.c                   |    2 +-
->  net/netfilter/nf_conntrack_pptp.c                  |    2 +-
->  net/rds/ib_cm.c                                    |    2 +-
->  net/rds/iw_cm.c                                    |    2 +-
->  net/sctp/sm_make_chunk.c                           |    2 +-
->  net/sunrpc/svcsock.c                               |    2 +-
->  scripts/Kbuild.include                             |    2 +-
->  scripts/namespace.pl                               |    2 +-
->  sound/isa/cs423x/cs4236_lib.c                      |    2 +-
->  sound/isa/es18xx.c                                 |    2 +-
->  81 files changed, 86 insertions(+), 86 deletions(-)
-> 
-
+Thanks.
