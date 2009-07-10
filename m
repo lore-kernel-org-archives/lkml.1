@@ -1,143 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbZGJWIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbZGJWKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563AbZGJWIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 18:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZGJWII
+	id S1757425AbZGJWKV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 18:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZGJWKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 18:08:08 -0400
-Received: from 71-20-254-182.war.clearwire-wmx.net ([71.20.254.182]:54720 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752750AbZGJWIH (ORCPT
+	Fri, 10 Jul 2009 18:10:11 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:25495 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752337AbZGJWKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 18:08:07 -0400
-Subject: [git pull] drm/i915 fixes for 2.6.30-rc2
-From: Eric Anholt <eric@anholt.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-1AIuu9UwCHyjEwLZe3J9"
-Date: Fri, 10 Jul 2009 15:07:53 -0700
-Message-Id: <1247263673.4678.10.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Fri, 10 Jul 2009 18:10:09 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andreas Sundstrom <sunkan@zappa.cx>
+Subject: Re: 2.6.30 kernel panic when closing lid
+Date: Fri, 10 Jul 2009 16:10:05 -0600
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, Frans Pop <elendil@planet.nl>
+References: <4A3BF368.9090103@zappa.cx>
+In-Reply-To: <4A3BF368.9090103@zappa.cx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907101610.05884.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 19 June 2009 02:22:00 pm Andreas Sundstrom wrote:
+> My laptop has started crashing when I close the lid. This does not
+> happen with 2.6.29.4 which I was using before 2.6.30, ...
 
---=-1AIuu9UwCHyjEwLZe3J9
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I opened a bugzilla for this regression:
+  http://bugzilla.kernel.org/show_bug.cgi?id=13751
 
-The following changes since commit c2cc49a2f8a479dde96a599646d30b6cc9dbed78=
-:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../sfrench/cifs-2.6
+If either of you can test the suggestions in comment #12 of the
+bugzilla, I'd like to try to fix this oops.
 
-are available in the git repository at:
+Thanks!
+  Bjorn
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-intel-=
-next
-
-Didn't send a request out for a while as there were some suspend/resume
-regressions that I figured were ours but apparently came from elsewhere
-in the tree.  Lots of KMS fixes in here, some of which fixed several
-reported bugs at the same time.  Also fixes the reported tiling
-regression we hope.
-
-There's one featurey bit here, "enable error detection & state
-collection."  There's more to this series coming, but I think it's
-valuable enough to let it in.  The plan is that we end up with the GPU
-catching interrupts, sending a uevent up to userland, and misc userland
-magic seeing that, capturing the error state for debugging, and then
-resetting the GPU.  No more losing your whole X session just because you
-tried to play some game and the GPU segfaulted.  Add in the ability to
-do kerneloops style reporting in the future, and we're pretty excited.
-
-Andy Whitcroft (1):
-      drm/i915: fix up a raw 64bit divide
-
-Ben Gamari (3):
-      drm/i915: Remove gtt_bound from drm_i915_gem_object
-      drm/i915: Add gtt_offset to gem object list debugfs output
-      drm/i915: Move lock to more reasonable location
-
-Chris Wilson (1):
-      drm/i915: Refactor calls to unmap_mapping_range
-
-Eric Anholt (3):
-      drm/i915: Disable GEM when a broken video BIOS takes up the whole ape=
-rture.
-      drm/i915: Fix harmless warning from patch merged after i2c rework.
-      drm/i915: Zap the GTT mapping when transitioning from untiled to tile=
-d.
-
-Jesse Barnes (1):
-      drm/i915: enable error detection & state collection
-
-Keith Packard (2):
-      drm/i915: Make driver less chatty
-      drm/i915: Adjust DisplayPort clocks to use 96MHz reference
-
-Shaohua Li (1):
-      drm/i915: add FIFO watermark support
-
-Zhao Yakui (4):
-      drm/i915: Check the LID device to decide whether the LVDS should be i=
-nitialized
-      drm/i915: Restore the KMS modeset for every activated CRTC
-      drm: Disable the unused connectors explicitly when resuming with KMS.
-      drm/i915: Avoid saving/restore the modesetting registers twice in KMS=
- mode
-
-Zhenyu Wang (2):
-      drm/i915: Don't update display FIFO watermark on IGDNG
-      drm/i915: Fix for LVDS VBT change on IGDNG
-
-ling.ma@intel.com (4):
-      drm/i915: Set SSC frequency for 8xx chips correctly
-      drm/i915: enable sdvo lvds scaling function.
-      drm/i915: crt fetch EDID by DVI-I converter on G4x platform
-      drm/i915: Disable VGA output when doing DRM_MODE_DPMS_OFF.
-
- drivers/gpu/drm/drm_crtc_helper.c       |    2 +
- drivers/gpu/drm/i915/i915_dma.c         |   72 +++++-
- drivers/gpu/drm/i915/i915_drv.c         |    9 +-
- drivers/gpu/drm/i915/i915_drv.h         |   27 ++-
- drivers/gpu/drm/i915/i915_gem.c         |   36 ++-
- drivers/gpu/drm/i915/i915_gem_debugfs.c |   44 +++-
- drivers/gpu/drm/i915/i915_gem_tiling.c  |    6 +
- drivers/gpu/drm/i915/i915_irq.c         |  143 ++++++++++-
- drivers/gpu/drm/i915/i915_reg.h         |   60 ++++-
- drivers/gpu/drm/i915/i915_suspend.c     |  221 +++++++++-------
- drivers/gpu/drm/i915/intel_bios.c       |   20 +-
- drivers/gpu/drm/i915/intel_crt.c        |   30 ++-
- drivers/gpu/drm/i915/intel_display.c    |  448 +++++++++++++++++++++++++++=
-++-
- drivers/gpu/drm/i915/intel_dp.c         |   11 +-
- drivers/gpu/drm/i915/intel_dp_i2c.c     |   11 +-
- drivers/gpu/drm/i915/intel_fb.c         |   18 +-
- drivers/gpu/drm/i915/intel_lvds.c       |   74 +++++-
- drivers/gpu/drm/i915/intel_sdvo.c       |  114 +++++++-
- drivers/gpu/drm/i915/intel_sdvo_regs.h  |    1 +
- 19 files changed, 1159 insertions(+), 188 deletions(-)
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-1AIuu9UwCHyjEwLZe3J9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpXu7UACgkQHUdvYGzw6veWKwCeIRo0vt6syTH1x2DuIz+ZP9HS
-xbUAn044cpLY0Jhu97cfAorqBbPXtFXo
-=R80g
------END PGP SIGNATURE-----
-
---=-1AIuu9UwCHyjEwLZe3J9--
-
+> I have tried to catch the full output with a USB serial console, but
+> it's not able to send the full output before it dies it seems. Sometimes
+> it gets further than other times.
+> 
+> Here is one oops/panic:
+> [   31.295898] kernel tried to execute NX-protected page - exploit
+> attempt? (uid: 0)
+> [   31.296575] BUG: unable to handle kernel paging request at
+> ffff88013a891630
+> [   31.297233] IP: [<ffffffff814f6940>] fair_sched_class+0x0/0xc0
+> [   31.297594] PGD 202063 PUD b067 PMD 800000013a8001e3
+> [   31.298567] Oops: 0011 [#1] SMP
+> [   31.298569] last sysfs file:
+> /sys/devices/pci0000:00/0000:00:1c.1/0000:10:00.0/firmware/0000:10:00.0/loading
+> [   31.298572] CPU 1
+> [   31.298574] Modules linked in: iscsi_tcp libiscsi_tcp libiscsi
+> scsi_transport_iscsi sbp2 btusb sdhci_pci sdhci bluetooth psmouse
+> ricoh_mmc ohci1394 mmc_core ieee1394 pl2303
+> [   31.298585] Pid: 0, comm: swapper Not tainted 2.6.30 #9 HP Compaq
+> 6910p (GB949ET#AK8)
+> [   31.298587] RIP: c2c0:[<ffffffff814f6940>]  [<ffffffff814f6940>]
+> fair_sched_class+0x0/0xc0
+> [   31.298592] RSP: ffffffff8102e891:ffff88013b9a1b20  EFLAGS:
+> ffff88013b8c4a80
+> [   31.298594] RAX: ffffffff81030f1a RBX: ffffffff810b047b RCX:
+> ffffffff8123d135
+> [   31.298597] RDX: ffff88013b976580 RSI: 0000000000000001 RDI:
+> ffff88013b8c4a80
+> [   31.298599] RBP: ffffffff810303a2 R08: ffff88013b9a1ae0 R09:
+> ffff88002804c2c0
+> [   31.298601] R10: ffff88013b9765b8 R11: ffff88002804c328 R12:
+> ffff88013b9a1ab0
+> [   31.298603] R13: 0000000000000001 R14: 0000000000000001 R15:
+> ffff88002804c328
+> [   31.298606] FS:  000000[   31.319076] bad: scheduling from the idle
+> thread!
+> [   31.319[   31.320577] Call Trace:
+> [   31.321325] bad: scheduling from the idle thread!
+> [   31.322044] Pid: 0, comm: swapper Tainted: [   31.322805] Call Trace:
+> [   31.323568] bad: scheduling from the idle thread!
+> [   31.324318] Pid: 0, comm: swapper Tainted: G      D    2.6.30 #9
+> [   31.325028] Call Trace:
+> 
+> I did a few runs and the full output from that is here:
+> http://pastebin.com/fe18c31c
+> 
+> fair_sched_class seems to be mentioned every time from what I've seen.
+> 
+> I also tried removing "button" support from ACPI and that seems to
+> eliminate the problem, so I have a workaround.
+> Compiling "button" as a module does not seem to eliminate the problem
+> though even with the module blacklisted (and not loaded then of course).
+> 
+> This is on a HP Compaq 6910p as you might have seen in the oops/panic
+> output.
+> I don't know how to proceed on troubleshooting/debugging this.
+> 
+> Let me know if there is anything I can do to help find the issue.
+> 
+> P.S. I'm currently not subscribed so please feel free to CC me on any
+> posts regarding
+> this.
+> 
+> /Andreas Sundstrom
