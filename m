@@ -1,48 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbZGJWeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbZGJWje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757736AbZGJWeX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 18:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757343AbZGJWeP
+	id S1757638AbZGJWje (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 18:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbZGJWjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 18:34:15 -0400
-Received: from ru.mvista.com ([213.79.90.228]:56033 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756833AbZGJWeO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 18:34:14 -0400
-Date: Sat, 11 Jul 2009 02:34:12 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
-       mingo@elte.hu
-Subject: Re: [PATCH 0/2] cond_resched() optimization
-Message-ID: <20090710223412.GA920@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090710125755.559739294@chello.nl>
+	Fri, 10 Jul 2009 18:39:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56424 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754474AbZGJWjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 18:39:24 -0400
+Message-ID: <4A57C3D1.7000407@redhat.com>
+Date: Sat, 11 Jul 2009 01:42:25 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090710125755.559739294@chello.nl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: KSM: current madvise rollup
+References: <Pine.LNX.4.64.0906291419440.5078@sister.anvils> <4A49E051.1080400@redhat.com> <Pine.LNX.4.64.0906301518370.967@sister.anvils> <4A4A5C56.5000109@redhat.com> <Pine.LNX.4.64.0907010057320.4255@sister.anvils> <4A4B317F.4050100@redhat.com> <Pine.LNX.4.64.0907082035400.10356@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0907082035400.10356@sister.anvils>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 02:57:55PM +0200, Peter Zijlstra wrote:
-> Matt suggested, whereupon Linus sayeth:
-> 
->  "This looks like a good patch. Please make it so"
-> 
-> Compile and boot tested on x86_64 only.
+Hugh Dickins wrote:
+>  
+>   
+Hey Hugh,
 
-Tested on ppc32, boots fine.
+I started to hack the code around to make sure i understand everything, 
+and in addition i wanted to add few things
 
-Thanks,
+One thing that catched my eyes was:
+> +
+> +/*
+> + * cmp_and_merge_page - take a page computes its hash value and check if there
+> + * is similar hash value to different page,
+> + * in case we find that there is similar hash to different page we call to
+> + * try_to_merge_two_pages().
+> + *
+> + * @page: the page that we are searching identical page to.
+> + * @rmap_item: the reverse mapping into the virtual address of this page
+> + */
+> +static void cmp_and_merge_page(struct page *page, struct rmap_item *rmap_item)
+> +{
+> +	struct page *page2[1];
+> +	struct rmap_item *tree_rmap_item;
+> +	unsigned int checksum;
+> +	int err;
+> +
+> +	if (in_stable_tree(rmap_item))
+> +		remove_rmap_item_from_tree(rmap_item);
+> +
+>
+>   
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+So when we enter to cmp_and_merge_page, if the page is in_stable_tree() 
+we will remove the rmap_item from the stable tree,
+And then we have inside:
+
+> + * ksm_do_scan  - the ksm scanner main worker function.
+> + * @scan_npages - number of pages we want to scan before we return.
+> + */
+> +static void ksm_do_scan(unsigned int scan_npages)
+> +{
+> +	struct rmap_item *rmap_item;
+> +	struct page *page;
+> +
+> +	while (scan_npages--) {
+> +		cond_resched();
+> +		rmap_item = scan_get_next_rmap_item(&page);
+> +		if (!rmap_item)
+> +			return;
+> +		if (!PageKsm(page) || !in_stable_tree(rmap_item))
+> +			cmp_and_merge_page(page, rmap_item);
+> +		put_page(page);
+> +	}
+> +}
+>   
+
+So this check for: if (!PageKsm(page) || !in_stable_tree(rmap_item)) 
+will be true for !in_stable_tree(rmap_item)
+
+Isnt it mean that we are "stop using the stable tree help" ?
+It look like every item that will go into the stable tree will get 
+flushed from it in the second run, that will highly increase the ksmd 
+cpu usage, and will make it find less pages...
+Was this what you wanted to do? or am i missed anything?
+
+Beside this one more thing i noticed while checking this code:
+beacuse the new "Ksm shared page" is not File backed page, it isnt count 
+in top as a shared page, and i couldnt find a way to see how many pages 
+are shared for each application..
+This is important for management tools such as a tool that will want to 
+know what Virtual Machines it want to migrate from the host into another 
+host based on the memory sharing in that specific host (Meaning how much 
+ram it really take on that specific host)
+
+So I started to prepre a patch that will show merged pages count inside 
+/proc/pid/mergedpages, But then i thought this statics lie:
+if we will have 2 applications: application A and application B, that 
+share the same page, how should it look like?:
+
+cat /proc/pid_of_A/merged_pages -> 1
+cat /proc/pid_of_B/merged_pages -> 1
+
+or:
+
+cat /proc/pid_of_A/merged_pages -> 0 (beacuse this one was shared with 
+the page of B)
+cat /proc/pid_of_B/merged_pages -> 1
+
+To make the second method thing work as much as reaible as we can we 
+would want to break KsmPages that have just one mapping into them...
+
+
+What do you think about that? witch direction should we take for that?
+
+
+(Other than this stuff, everything running happy and nice, I think cpu 
+is little bit too high beacuse the removing of the stable_tree issue)
+
+Thanks.
