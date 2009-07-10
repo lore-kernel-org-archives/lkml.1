@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbZGJCG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751940AbZGJCK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752796AbZGJCG6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 22:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZGJCGv
+	id S1751940AbZGJCK7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 22:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZGJCKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 22:06:51 -0400
-Received: from mail-px0-f193.google.com ([209.85.216.193]:60776 "EHLO
-	mail-px0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751100AbZGJCGu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 22:06:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=bss9aMhX/wSlHPDYh8uUZK5SoVd4jl8T6yxhoWrrS6ZpTN9oUKKy7UtGysR0XQxmYK
-         AqM86+Z7B/9NTZjdlK1vuCfClpQbW2rHjJasjCdIQZYRVDkU34xJSiRJ2dPoeRmfj9Tj
-         UjlPlZ/sKLrhhE46ZicLoDoklaldwzGikDQd4=
-Subject: [PATCH] vmalloc.c: fix lose num_physpages checking
-From: "Figo.zhang" <figo1802@gmail.com>
-To: Andrew Morton <akpm@osdl.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Fri, 10 Jul 2009 10:06:44 +0800
-Message-Id: <1247191604.2572.3.camel@myhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Thu, 9 Jul 2009 22:10:45 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:49424 "EHLO smtp.anarazel.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751017AbZGJCKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 22:10:43 -0400
+From: Andres Freund <andres@anarazel.de>
+To: John Dykstra <john.dykstra1@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc2: Reported regressions from 2.6.30
+Date: Fri, 10 Jul 2009 04:10:37 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc2-andres-00152-g6a6dd01-dirty; KDE/4.2.95; x86_64; ; )
+Cc: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <200907070325.51439.andres@anarazel.de> <1247190417.7306.2.camel@merlyn>
+In-Reply-To: <1247190417.7306.2.camel@merlyn>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907100410.37506.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__get_vm_area_node() lose size (physpages limit) checking, it be called by
-__get_vm_area() that some drivers called it directly.
+Hi John, Hi Rafael,
 
-Signed-off-by: Figo.zhang  <figo1802@gmail.com>
---- 
-mm/vmalloc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Friday 10 July 2009 03:46:57 John Dykstra wrote:
+> On Tue, 2009-07-07 at 03:25 +0200, Andres Freund wrote:
+> > There is also http://lkml.org/lkml/2009/6/30/398 : Soft-Lockup/Race
+> > in
+> > networking in 2.6.31-rc1+195 (possibly caused by netem)
+>
+> There is some similarity between this soft lockup and the one reported
+> in http://www.spinics.net/lists/netdev/msg100957.html.  In both, the
+> process is doing both sends and receives on raw sockets.
+The issue turned out to be a hrtimer bug - i dont see anything like it in your 
+trace. If you still want to test the fix, its 
+de907e8432b08f2d5966c36e0747e97c0e596810 in -tip (or 
+http://lkml.org/lkml/2009/7/9/150)
 
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index f8189a4..99f3aea 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -1144,7 +1144,7 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
- 	}
- 
- 	size = PAGE_ALIGN(size);
--	if (unlikely(!size))
-+	if (unlikely(!size || (size >> PAGE_SHIFT) > num_physpages))
- 		return NULL;
- 
- 	area = kmalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node);
+Rafael: In case youre reading this, I guess you can mark that bug as resolved.
 
-
+Andres
