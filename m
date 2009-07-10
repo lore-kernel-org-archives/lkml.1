@@ -1,179 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbZGJDR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbZGJDXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753156AbZGJDR6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 23:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZGJDRt
+	id S1753277AbZGJDXT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 23:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbZGJDXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 23:17:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39315
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750833AbZGJDRs (ORCPT
+	Thu, 9 Jul 2009 23:23:08 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:45626 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750835AbZGJDXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 23:17:48 -0400
-Date: Thu, 09 Jul 2009 20:17:51 -0700 (PDT)
-Message-Id: <20090709.201751.09493544.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 9 Jul 2009 23:23:07 -0400
+Subject: Re: [GIT-PULL] includecheck fixes
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       David Howells <dhowells@redhat.com>, benh@kernel.crashing.org,
+       paulus@samba.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       jdike@addtoit.com, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>, dbrownell@users.sourceforge.net,
+       mchehab@infradead.org, jeremy@xensource.com, felixb@sgi.com,
+       lenb@kernel.org, airlied@linux.ie, bcrl@kvack.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Jiri Kosina <JKosina@novell.com>
+In-Reply-To: <1247194755.2423.7.camel@ht.satnam>
+References: <1247063308.4382.12.camel@ht.satnam>
+	 <1247164809.2452.9.camel@ht.satnam>  <20090709222626.GA32746@kroah.com>
+	 <1247194755.2423.7.camel@ht.satnam>
+Content-Type: text/plain
+Date: Fri, 10 Jul 2009 03:22:56 +0000
+Message-Id: <1247196176.3898.158.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-07-10 at 08:29 +0530, Jaswinder Singh Rajput wrote:
+> Hello Greg,
+> 
+> On Thu, 2009-07-09 at 15:26 -0700, Greg KH wrote:
+> > On Fri, Jul 10, 2009 at 12:10:09AM +0530, Jaswinder Singh Rajput wrote:
+> > > Linus,
+> > > 
+> > > Please pull includecheck fixes, these all are clean and safe patches
+> > > with relevant Acks.
+> > 
+> > Shouldn't stuff like this go through the trivial tree?  And stuff like
+> > that is relevant for the main pre-rc1 merge, not this late in the merge
+> > cycle, right?
+> > 
+> 
+> You did not specified what is your problem ? and where was you when we
+> discussed it earlier ?
 
-1) FEC build fix and FEC_X_DES_ACTIVE register offset cure, from
-   Greg Ungerer.
+The problem, as you have been told several times, is that maintainers
+are very busy people and don't necessarily have time to deal with
+mechanical replacement trivia like this.
 
-2) The socket poll vs. wake up memory ordering fix, after going
-   through many revisions and discussion, seems ready to merge.
-   From Jiri Olsa.
+The point is that Jiri Kosina takes that burden on himself to verify and
+submit the changes like this, so something like this should go through
+him.
 
-3) The netpoll carrier detection fix from Anton Vorontsov.
+> Normally brain is above then the eyes, do you know why ?
+> 
+> To use your brain instead of follow things blindly.
+> 
+> The point of watching patches for some time means test and wait so that
+> they can show their real faces.
 
-4) Revert fib_trie to pre-2.6.22 era root node thresholds to
-   fix memory allocation overstress seen with BGP workloads.
-   From Jarek Poplawski.
+Abusing people who do real work, particularly when you manifestly do
+not, is a gross breach of etiquette ... welcome to my killfile.
 
-5) davinci_emac goes OOPS if MAC address changed while interface
-   is down, fix from Pablo Bitton.
+James
 
-6) cxgb3 hits wrong TX queue and crashses, from Roland Dreier.
 
-7) IGB bug fix from Alexander Duyck
-
-8) IXGBE bug fix from Yi Zou
-
-9) R6040 bug fixes from Florian Fainelli
-
-10) Merge in wireless bug fixes via John Linville.
-
-Please pull, thanks a lot!
-
-The following changes since commit 2e3167308048ca6c810733384d8289082f7e4ec1:
-  Roland Dreier (1):
-        fealnx: Fix build breakage -- PR_CONT should be KERN_CONT
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Alexander Duyck (1):
-      igb: set lan id prior to configuring phy
-
-Andrey Yurovsky (1):
-      mac80211: fix allocation in mesh_queue_preq
-
-Anton Vorontsov (1):
-      netpoll: Fix carrier detection for drivers that are using phylib
-
-Clyde McPherson (2):
-      b43: Add support for 4318E
-      ssb: Add support for 4318E
-
-David S. Miller (1):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-
-Florian Fainelli (2):
-      r6040: restore MIER register correctly when IRQ line is shared
-      r6040: bump driver version to 0.24 and date to 08 July 2009
-
-Greg Ungerer (2):
-      fec: remove extra ";" from definition names
-      fec: fix definition of 5272 version of FEC_X_DES_ACTIVE register
-
-Hin-Tak Leung (1):
-      zd1211rw: adding SONY IFU-WLM2 (054c:0257) as a zd1211b device
-
-Jarek Poplawski (1):
-      ipv4: Fix fib_trie rebalancing, part 4 (root thresholds)
-
-Jaswinder Singh Rajput (1):
-      includecheck fix: include/linux, rfkill.h
-
-Jay Sternberg (1):
-      Atheros Kconfig needs to be dependent on WLAN_80211
-
-Jiri Olsa (2):
-      net: adding memory barrier to the poll and receive callbacks
-      memory barrier: adding smp_mb__after_lock
-
-Jiri Slaby (1):
-      Wireless: nl80211, fix lock imbalance
-
-Johannes Berg (4):
-      hp-wmi: fix rfkill bug
-      cfg80211: fix refcount leak
-      mac80211_hwsim: avoid NULL access
-      mac80211: fix docbook
-
-Larry Finger (2):
-      b43/b43legacy: fix radio LED initialization
-      p54: tx refused but queue active
-
-Luciano Coelho (1):
-      mac80211: minstrel: avoid accessing negative indices in rix_to_ndx()
-
-Pablo Bitton (1):
-      davinci_emac: fix kernel oops when changing MAC address while interface is down
-
-Pascal Terjan (1):
-      zd1211rw: 07b8:6001 is a ZD1211B
-
-Roland Dreier (1):
-      cxgb3: Fix crash caused by stashing wrong netdev_queue
-
-Samuel Ortiz (1):
-      iwmc3200wifi: add Kconfig help
-
-Vasanthakumar Thiagarajan (1):
-      ath9k: Fix leak in tx descriptor
-
-Yi Zou (1):
-      ixgbe: Fix coexistence of FCoE and Flow Director in 82599
-
- Documentation/DocBook/mac80211.tmpl        |    2 -
- arch/x86/include/asm/spinlock.h            |    4 ++
- drivers/net/cxgb3/cxgb3_main.c             |    3 +-
- drivers/net/davinci_emac.c                 |   12 ++++-
- drivers/net/fec.h                          |   12 ++--
- drivers/net/igb/e1000_82575.c              |    4 ++
- drivers/net/ixgbe/ixgbe_dcb_nl.c           |    6 ++
- drivers/net/ixgbe/ixgbe_main.c             |   19 ++++---
- drivers/net/r6040.c                        |    9 ++-
- drivers/net/wireless/ath/Kconfig           |    1 +
- drivers/net/wireless/ath/ath9k/xmit.c      |    9 +++-
- drivers/net/wireless/b43/b43.h             |    1 +
- drivers/net/wireless/b43/main.c            |    7 ++-
- drivers/net/wireless/b43/pcmcia.c          |    1 +
- drivers/net/wireless/b43legacy/b43legacy.h |    1 +
- drivers/net/wireless/b43legacy/main.c      |    7 ++-
- drivers/net/wireless/iwmc3200wifi/Kconfig  |    9 ++++
- drivers/net/wireless/mac80211_hwsim.c      |    1 +
- drivers/net/wireless/p54/p54common.c       |    5 +-
- drivers/net/wireless/zd1211rw/zd_usb.c     |    3 +-
- drivers/platform/x86/hp-wmi.c              |    2 +-
- drivers/ssb/pcmcia.c                       |    6 ++-
- include/linux/rfkill.h                     |    1 -
- include/linux/spinlock.h                   |    5 ++
- include/net/sock.h                         |   69 ++++++++++++++++++++++++++++
- net/atm/common.c                           |    6 +-
- net/core/datagram.c                        |    2 +-
- net/core/netpoll.c                         |    2 +-
- net/core/sock.c                            |    8 ++--
- net/dccp/output.c                          |    2 +-
- net/dccp/proto.c                           |    2 +-
- net/ipv4/fib_trie.c                        |    4 +-
- net/ipv4/tcp.c                             |    2 +-
- net/iucv/af_iucv.c                         |    4 +-
- net/mac80211/mesh_hwmp.c                   |    2 +-
- net/mac80211/rc80211_minstrel.c            |    5 ++-
- net/rxrpc/af_rxrpc.c                       |    4 +-
- net/unix/af_unix.c                         |    8 ++--
- net/wireless/nl80211.c                     |    1 +
- net/wireless/scan.c                        |    1 -
- 40 files changed, 192 insertions(+), 60 deletions(-)
