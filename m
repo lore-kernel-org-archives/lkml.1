@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZGJF5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbZGJGHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814AbZGJF5i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 01:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZGJF53
+	id S1753500AbZGJGHU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 02:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996AbZGJGHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 01:57:29 -0400
-Received: from gate.crashing.org ([63.228.1.57]:48808 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830AbZGJF52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 01:57:28 -0400
-Subject: Re: [PATCH 00/11] swiotlb: Introduce architecture-specific APIs to
- replace __weak functions (v2)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ian Campbell <ian.campbell@citrix.com>
-Cc: linux-kernel@vger.kernel.org, Becky Bruce <beckyb@kernel.crashing.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Kumar Gala <galak@kernel.crashing.org>, Olaf Kirch <okir@suse.de>,
-       Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, x86@kernel.org
-In-Reply-To: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
-References: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
-Content-Type: text/plain
-Date: Fri, 10 Jul 2009 15:55:56 +1000
-Message-Id: <1247205356.15530.18.camel@pasglop>
+	Fri, 10 Jul 2009 02:07:08 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:34908 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbZGJGHH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 02:07:07 -0400
+Subject: Re: [PATCH Resend2] Remove 'SBC8240 Wind River' Device Driver Code
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: subrata@linux.vnet.ibm.com
+Cc: linux-mtd@lists.infradead.org, carolyn.j.smith@exgate.tek.com,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Jim Cromie <jim.cromie@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       linux-next <linux-next@vger.kernel.org>,
+       Scott Wood <scottwood@freescale.com>, dwmw2@infradead.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+In-Reply-To: <1246846628.5743.2.camel@subratamodak.linux.ibm.com>
+References: <20090701135247.27488.10776.sendpatchset@subratamodak.linux.ibm.com>
+	 <1246846628.5743.2.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 10 Jul 2009 08:59:48 +0300
+Message-Id: <1247205588.20721.353.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 10 Jul 2009 05:59:56.0375 (UTC) FILETIME=[A6950E70:01CA0123]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-01 at 16:32 +0100, Ian Campbell wrote:
-> This series:
-> * removes the swiotlb_(arch_)_phys_to_bus and bus_to_phys __weak
->   hooks, replacing them with an architecture-specific phys_to_dma and
->   dma_to_phys interface. These are used by both PowerPC and Xen to
->   provide the correct mapping from physical to DMA addresses.
-> * removes the swiotlb_address_needs_mapping and
->   swiotlb_range_needs_mapping __weak functions as well as
->   is_buffer_dma_capable (which should never have been a generic
->   function). All three are replaced by a single architecture-specific
->   interface which meets the needs of both PowerPC and Xen.
-> * removes the swiotlb_virt_to_bus __weak function and replaces it with
->   a CONFIG_HIGHMEM compatible version when high memory is in use. This
->   is needed for 32 bit PowerPC swiotlb support.
-> * removes the swiotlb_alloc* __weak functions and replaces them with
->   swiotlb_init_with_buffer which allows the use of a caller allocated
->   buffer (and emergency pool).
+On Mon, 2009-07-06 at 07:47 +0530, Subrata Modak wrote:
+> Hi,
 > 
-> I think these new interfaces are cleaner than the existing __weak
-> functions and isolate the swiotlb code from architecture internals.
-> 
-> This series does not contain any Xen or PowerPC specific changes, those
-> will follow in separate postings. The complete patchset has been boot
-> tested under Xen and native-x86 and compiled for IA64 and PowerPC
-> 
-> Changes since v1: 
-> - Fixed compile error in swiotlb_dma_to_virt highmem version. Moved
->   #ifdef into function to avoid prototype drift.
-> - checkpatch fixes.
-> - missed a swiotlb_arch_range_needs_mapping in swiotlb.h and x86
->   pci-swiotlb.c and swiotlb_bus_to_phys/phys_to_bus implementations in
->   x86.
-> - additionally replaced __weak swiotlb_alloc* with
->   swiotlb_init_with_buffer.
+> Is there somebody else whom i should also address to get an attention
+> for this patch ? I apolozise if i have not included someone. Kindly
+> connect to the concerned.
 
-Looks like I was only CCed on part of them... it's not very handy for me
-as I end up having some of the patches in one folder and some
-elsewhere :-)
+I'm putting your patch to l2-mtd-2.6.git.
 
-I don't have a firm objection but they will have to go through Becky
-and Kumar since they are the one who need swiotlb for their embedded
-platforms.
-
-Cheers,
-Ben.
-
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
