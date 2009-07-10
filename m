@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751313AbZGJHEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751541AbZGJHFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751313AbZGJHEm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 03:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbZGJHEc
+	id S1751541AbZGJHFn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 03:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbZGJHFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 03:04:32 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:34429 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbZGJHEb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 03:04:31 -0400
-Message-ID: <4A56E7F9.9030405@in.ibm.com>
-Date: Fri, 10 Jul 2009 12:34:25 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Fri, 10 Jul 2009 03:05:36 -0400
+Received: from deleuze.hcoop.net ([69.90.123.67]:42869 "EHLO deleuze.hcoop.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbZGJHFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 03:05:35 -0400
+From: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
+       Rafael Wysocki <rjw@sisk.pl>
+Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by encrypting page cache
+References: <87hbxx0wcp.fsf@jeremyms.com> <4A4B0125.2090502@crca.org.au>
+	<87d48k2992.fsf@jeremyms.com> <4A4B27D0.8020906@crca.org.au>
+	<20090704024432.GB1345@ucw.cz> <87hbxn78o6.fsf@jeremyms.com>
+	<20090704025755.GA1500@ucw.cz> <87d48b77nu.fsf@jeremyms.com>
+	<20090709101433.GG10937@elf.ucw.cz>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Fri, 10 Jul 2009 00:05:23 -0700
+In-Reply-To: <20090709101433.GG10937@elf.ucw.cz> (Pavel Machek's message of
+	"Thu, 09 Jul 2009 12:14:33 +0200")
+Message-ID: <87hbxl587g.fsf@jeremyms.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.95 (gnu/linux)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: OOM with hackbench against next 0708
-References: <20090708173104.d39108bb.sfr@canb.auug.org.au> <4A5499B4.5050007@in.ibm.com> <1247066549.14309.1029.camel@nimitz>
-In-Reply-To: <1247066549.14309.1029.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hansen wrote:
-> This doesn't look like a kernel bug at all to me.  You're out of memory,
-> out of swap, and the thing that got killed was the thing allocating
-> memory.  You're also down to 65MB of pagecache, which is awfully low for
-> a 6GB machine.  That tells me it's also been effective in reclaiming
-> disk cache.
->
-> There are a couple of possibilities:
-> 1. hackbench is broken, allocating too much memory and ooming, or it
->    has been misconfigured by a user
-> 2. hackbench broke because something the kernel is telling it is wrong
-> 3. The kernel is leaking (or just plain using) some memory more than a
->    few releases ago, and that caused the oom.
->
-> I'd go back and carefully examine how hackbench is being run and that it
-> is consistent.  You should also double-check your finding that the
-> several-day-old -next isn't seeing this issue.
->   
-Thanks Dave for the pointers.
+Pavel Machek <pavel@ucw.cz> writes:
 
-I am able to consistently recreate this issue with next 0708. hackbench
-creates 3600 tasks in my case. After starting the tests machine becomes
-unresponsive and i finally have to reboot it.
+> On Wed 2009-07-08 04:09:41, Jeremy Maitin-Shepard wrote:
+>> Pavel Machek <pavel@ucw.cz> writes:
+>> 
+>> > On Wed 2009-07-08 03:47:53, Jeremy Maitin-Shepard wrote:
+>> >> Pavel Machek <pavel@ucw.cz> writes:
+>> >> 
+>> >> [snip]
+>> >> 
+>> >> > I believe uswsusp could be used rather easily. Just modify s2disk to
+>> >> > encrypt image in ram without writing it out, then decrypt it from ram
+>> >> > and resume... it should be interesting hack.
+>> >> 
+>> >> As far as I understand, that would be completely useless since the image
+>> >> that would be encrypted would just be a copy of what would still remain
+>> >> in memory.
+>> 
+>> > Yes... so next step would be kernel call that would erase all the
+>> > pagecache and anonymous pages. You would still leave some data in
+>> > kernel structures, but that would be quite hard to fix. 
+>> 
+>> Okay.  (This does still require the same assumption as TuxOnIce
+>> regarding the page cache, though.)
 
-The test ran successfully on next03, but unfortunately i did
-not save the config file for that run. If i use the config file from
-0708 and compile a 0703, the machine becomes unresponsive because
-of OOM's. I can't explain why the test ran successfully against
-0703 :-( in previous attempt.
+> (Not sure; clearing the page cache could be done atomically, from
+> interrupts disabled. But I'm no mm expert.)
 
-Only data point i have at this time is the same tests runs successfully
-against 2.6.31-rc2. But may be that's not even an argument :-)
-
-Thanks
--Sachin
-
-
+But surely it wouldn't work to leave interrupts disabled after that
+until the page cache is restored.  After the page cache (and other
+sensitive memory) is encrypted, after possibly entering and resuming
+from S3, the page cache needs to be decrypted.  Userspace will be doing
+the decryption if a uswsusp-like model is being used, and even if the
+decryption is done in the kernel, userspace needs to provide the
+encryption key to the kernel.  Even disregarding the issue of running
+userspace with interrupts disabled, which I assume might have problems,
+userspace would likely need to talk to some of the devices in order to
+obtain the encryption key from the user.
 
 -- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+Jeremy Maitin-Shepard
