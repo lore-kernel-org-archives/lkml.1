@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbZGJPA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZGJPFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbZGJPA6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 11:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbZGJPAu
+	id S1754662AbZGJPFr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 11:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZGJPFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 11:00:50 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:42253 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbZGJPAt (ORCPT
+	Fri, 10 Jul 2009 11:05:40 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:39225 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbZGJPFk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 11:00:49 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 1/2] sched: Drop the need_resched() loop from
- cond_resched()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1247237391-5352-1-git-send-email-fweisbec@gmail.com>
-References: <1247237391-5352-1-git-send-email-fweisbec@gmail.com>
-Content-Type: text/plain
-Date: Fri, 10 Jul 2009 17:00:45 +0200
-Message-Id: <1247238045.7529.44.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 10 Jul 2009 11:05:40 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: EHCI, BIOS handoff warning/error?
+Date: Fri, 10 Jul 2009 10:05:35 -0500
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200907090857.47350.lkml@morethan.org> <4A567F52.1040505@gmail.com>
+In-Reply-To: <4A567F52.1040505@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907101005.37228.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-10 at 16:49 +0200, Frederic Weisbecker wrote:
-> The schedule() function is a loop that reschedules the current task
-> while the TIF_NEED_RESCHED flag is set:
+On Thu July 9 2009, Robert Hancock wrote:
+> On 07/09/2009 07:57 AM, Michael S. Zick wrote:
+> > Anyone with thoughts on this one?
+> > Even a translation of the message might help.
+> >
+> > pci 0000:00:01.0: disabling DAC on VIA PCI bridge
+> > pci 0000:00:10.0: uhci_check_and_reset_hc: legsup = 0x2000
+> > pci 0000:00:10.0: Performing full reset
+> > pci 0000:00:10.1: uhci_check_and_reset_hc: legsup = 0x2000
+> > pci 0000:00:10.1: Performing full reset
+> > pci 0000:00:10.2: uhci_check_and_reset_hc: legsup = 0x2000
+> > pci 0000:00:10.2: Performing full reset
+> > pci 0000:00:10.4: EHCI: BIOS handoff
+> > pci 0000:00:10.4: EHCI: BIOS handoff failed (BIOS bug?) 01010001
+> > pci 0000:01:00.0: Boot video device
 > 
-> void schedule(void)
-> {
-> need_resched:
-> 	/* schedule code */
-> 	if (need_resched())
-> 		goto need_resched;
-> }
-> 
-> And cond_resched() repeat this loop:
-> 
-> do {
-> 	add_preempt_count(PREEMPT_ACTIVE);
-> 	schedule();
-> 	sub_preempt_count(PREEMPT_ACTIVE);
-> } while(need_resched());
-> 
-> This loop is needless because schedule() already did the check and
-> nothing can set TIF_NEED_RESCHED between schedule() exit and the loop
-> check in need_resched().
-> 
-> Then remove this needless loop.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> That would mean the BIOS failed to indicate it has given up control of 
+> the EHCI controller within the allowed time period.
+>
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Thanks.  I'll just toss that one onto the "timing fixups" stack.
 
-> ---
->  kernel/sched.c |    8 +++-----
->  1 files changed, 3 insertions(+), 5 deletions(-)
+Mike
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 4d1e387..87ecac1 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -6613,11 +6613,9 @@ static void __cond_resched(void)
->  	 * PREEMPT_ACTIVE, which could trigger a second
->  	 * cond_resched() call.
->  	 */
-> -	do {
-> -		add_preempt_count(PREEMPT_ACTIVE);
-> -		schedule();
-> -		sub_preempt_count(PREEMPT_ACTIVE);
-> -	} while (need_resched());
-> +	add_preempt_count(PREEMPT_ACTIVE);
-> +	schedule();
-> +	sub_preempt_count(PREEMPT_ACTIVE);
->  }
->  
->  int __sched _cond_resched(void)
+> 
+
 
