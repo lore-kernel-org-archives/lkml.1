@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbZGJPvD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbZGJPvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752754AbZGJPvD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 11:51:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbZGJPuo
+	id S1755594AbZGJPvW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 11:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbZGJPvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 11:50:44 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:50849 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752007AbZGJPum (ORCPT
+	Fri, 10 Jul 2009 11:51:15 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:42887 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbZGJPvP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 11:50:42 -0400
-Subject: Re: [PATCH] reduce export symbol CRC table size on 64-bit archs
-From: Jon Masters <jonathan@jonmasters.org>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Michal Marek <mmarek@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>, tony.luck@intel.com,
-       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-modules@vger.kernel.org,
-       hpa@zytor.com
-In-Reply-To: <4A57089B0200007800009C0E@vpn.id2.novell.com>
-References: <4A4A18780200007800008345@vpn.id2.novell.com>
-	 <4A4E671C.2090201@suse.cz> <4A51C71B0200007800008EE2@vpn.id2.novell.com>
-	 <200907092044.22108.rusty@rustcorp.com.au>
-	 <4A57089B0200007800009C0E@vpn.id2.novell.com>
+	Fri, 10 Jul 2009 11:51:15 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 1/2] sched: INIT_PREEMPT_COUNT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Andrew Morton <akpm@linux-foundation.org>, oleg@redhat.com,
+       mingo@elte.hu, tony.luck@intel.com, rth@twiddle.net,
+       geert@linux-m68k.org
+In-Reply-To: <17047.1247240546@turing-police.cc.vt.edu>
+References: <20090710125755.559739294@chello.nl>
+	 <20090710130125.037018244@chello.nl>
+	 <17047.1247240546@turing-police.cc.vt.edu>
 Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Fri, 10 Jul 2009 11:50:01 -0400
-Message-Id: <1247241001.5006.11.camel@localhost.localdomain>
+Date: Fri, 10 Jul 2009 17:51:06 +0200
+Message-Id: <1247241066.7529.50.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-10 at 08:23 +0100, Jan Beulich wrote:
+On Fri, 2009-07-10 at 11:42 -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Fri, 10 Jul 2009 14:57:56 +0200, Peter Zijlstra said:
+> 
+> > +/*
+> > + * Disable preemption until the scheduler is running.
+> > + * Reset by start_kernel()->sched_init()->init_idle().
+> > + */
+> > +#define INIT_PREEMPT_COUNT	(1)
+> > +
+> 
+> I had to look at this for quite some time before it sank in that it wasn't
+> a reset of a #define, or a reset of (1) (anybody else remember changing the
+> value of '5' in a Fortran program?).  Especially when stuck in with a bunch
+> of cputimer defines. Would have taken even longer if I was looking in sched.h
+> for something and not looking at this patch at the same time.
+> 
+> Can we fix this comment to mention it's thread_info.preempt_count that
+> needs the reset?
 
-> Actually I meanwhile think that module-init-tools can easily detect the changed
-> layout without any further kernel side adjustments: Since it is known that a
-> CRC always is a 32-bit value, simply checking whether the so-far-used 64-bit
-> value has more than 32 significant bits should suffice: If so, the new layout
-> is being used (with the symbol name starting at offset 4), else the old one is
-> in effect (name at offset 8). This ought to be a pretty trivial change to that
-> code.
+Something along the lines of the below?
 
-Agreed. That can be done. I won't get chance to do that until Sunday
-though because I'm about to be on a plane back from Tokyo to Boston and
-I expect a day of living hell with jetlag/email craziness.
-
-Jon.
+---
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -502,7 +502,9 @@ struct task_cputime {
+ 
+ /*
+  * Disable preemption until the scheduler is running.
+- * Reset by start_kernel()->sched_init()->init_idle().
++ *
++ * We reset this initial offset of init_thread_info.preempt_count in:
++ *     start_kernel()->sched_init()->init_idle().
+  */
+ #define INIT_PREEMPT_COUNT	(1)
+ 
 
 
