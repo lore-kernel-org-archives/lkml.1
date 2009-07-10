@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZGJHU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbZGJHWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753299AbZGJHU2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 03:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZGJHUV
+	id S1753301AbZGJHWV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 03:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbZGJHWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 03:20:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42989 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750787AbZGJHUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 03:20:20 -0400
-Subject: Re: [PATCH 0/44] includecheck: fix multiple includes
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Sascha Hauer <s.hauer@pengutronix.de>, Ben Dooks <ben-linux@fluff.org>,
-       Olaf Weber <olaf@sgi.com>,
-       dmitry pervushin <dpervushin@embeddedalley.com>,
-       Dave Airlie <airlied@redhat.com>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>,
-       David Howells <dhowells@redhat.com>, benh@kernel.crashing.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       jdike@addtoit.com, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       dbrownell@users.sourceforge.net, Greg KH <greg@kroah.com>,
-       mchehab@infradead.org, jeremy@xensource.com, felixb@sgi.com,
-       lenb@kernel.org, airlied@linux.ie, bcrl@kvack.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1247076059.4382.127.camel@ht.satnam>
-References: <1247063308.4382.12.camel@ht.satnam>
-	 <1247076059.4382.127.camel@ht.satnam>
-Content-Type: text/plain
-Date: Fri, 10 Jul 2009 12:47:13 +0530
-Message-Id: <1247210233.2471.12.camel@ht.satnam>
+	Fri, 10 Jul 2009 03:22:13 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:59563 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZGJHWM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 03:22:12 -0400
+Subject: Re: [PATCH Resend2] Remove 'SBC8240 Wind River' Device Driver Code
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: subrata@linux.vnet.ibm.com
+Cc: Artem Bityutskiy <dedekind1@gmail.com>, linux-mtd@lists.infradead.org,
+       carolyn.j.smith@exgate.tek.com, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Jim Cromie <jim.cromie@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       linux-next <linux-next@vger.kernel.org>,
+       Scott Wood <scottwood@freescale.com>, dwmw2@infradead.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+In-Reply-To: <1247209961.6630.3.camel@subratamodak.linux.ibm.com>
+References: <20090701135247.27488.10776.sendpatchset@subratamodak.linux.ibm.com>
+	 <1246846628.5743.2.camel@subratamodak.linux.ibm.com>
+	 <1247205588.20721.353.camel@localhost.localdomain>
+	 <1247206539.6630.0.camel@subratamodak.linux.ibm.com>
+	 <4A56DD51.5040703@gmail.com>
+	 <1247209961.6630.3.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 10 Jul 2009 10:14:55 +0300
+Message-Id: <1247210095.20721.362.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 10 Jul 2009 07:14:58.0353 (UTC) FILETIME=[21F86210:01CA012E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
-
-On Wed, 2009-07-08 at 23:30 +0530, Jaswinder Singh Rajput wrote:
-> Hello all,
-> 
-> On Wed, 2009-07-08 at 19:58 +0530, Jaswinder Singh Rajput wrote:
-> > The following changes since commit faf80d62e44dc627efb741f48db50c1858d1667c:
-> >   Linus Torvalds (1):
-> >         Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+On Fri, 2009-07-10 at 12:42 +0530, Subrata Modak wrote:
+> On Fri, 2009-07-10 at 09:18 +0300, Artem Bityutskiy wrote:
+> > Subrata Modak wrote:
+> > > On Fri, 2009-07-10 at 08:59 +0300, Artem Bityutskiy wrote:
+> > >> On Mon, 2009-07-06 at 07:47 +0530, Subrata Modak wrote:
+> > >>> Hi,
+> > >>>
+> > >>> Is there somebody else whom i should also address to get an attention
+> > >>> for this patch ? I apolozise if i have not included someone. Kindly
+> > >>> connect to the concerned.
+> > >> I'm putting your patch to l2-mtd-2.6.git.
+> > > 
+> > > Thanks very much. Would i receive some automatic confirmation once it
+> > > make to Linus tree ?
 > > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/headers-check-2.6.git master
-> > 
-> > Jaswinder Singh Rajput (44):
+> > I do not think so. I'm not MTD maintainer and in l2-mtd-2.6.git
+> > I just collect random patches, which the maintainer then usually
+> > takes from my tree.
 > 
-> This is a big patchset, so it will be better that either me or Sam will
-> send it to Linus after collecting ACKs.
+> Thanks. I just want this through before 2.6.31 stable is released, so
+> that the build fails does not occur on next trees based on that stable
+> one.
 
-> I am still waiting ACK/NAK for :
-> 
+Then you should bug dwmw2.
 
-Thanks for all your ACKs and support.
-
-Sorry guys, I give up and do not want to hear more crap from crapy
-people just for nothing and withdrawing pull request.
-
-If you want, apply these patches or just trashed it.
-
-Thanks,
---
-JSR
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
