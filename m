@@ -1,249 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbZGJVvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbZGJV41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756445AbZGJVvU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 17:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZGJVvK
+	id S1756102AbZGJV41 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 17:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbZGJV4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 17:51:10 -0400
-Received: from cassarossa.samfundet.no ([129.241.93.19]:35903 "EHLO
-	cassarossa.samfundet.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbZGJVvI (ORCPT
+	Fri, 10 Jul 2009 17:56:18 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:57798 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754033AbZGJV4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 17:51:08 -0400
-From: Henrik Austad <henrik@austad.us>
-To: LKML <linux-kernel@vger.kernel.org>
-Date: Fri, 10 Jul 2009 23:50:46 +0200
-User-Agent: KMail/1.9.10
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907102350.47124.henrik@austad.us>
-X-SA-Exim-Connect-IP: 212.251.216.90
-X-SA-Exim-Mail-From: henrik@austad.us
-Subject: RFC for a new Scheduling policy/class in the Linux-kernel
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:20:07 +0000)
-X-SA-Exim-Scanned: Yes (on asterix.frsk.net)
+	Fri, 10 Jul 2009 17:56:17 -0400
+Subject: Re: [PATCH 2.6.31] rfkill: allow toggling soft state in sysfs again
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Darren Salt <linux@youmustbejoking.demon.co.uk>
+Cc: John Linville <linville@tuxdriver.com>,
+       Thiemo Nagel <thiemo.nagel@ph.tum.de>,
+       Corentin Chary <corentin.chary@gmail.com>,
+       debian-eeepc-devel@lists.alioth.debian.org,
+       acpi4asus-user@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <507E47A184%linux@youmustbejoking.demon.co.uk>
+References: <4A5716AA.5000903@ph.tum.de>
+	 <71cd59b00907100545v6f440a19xfc3668826eb1e509@mail.gmail.com>
+	 <4A5743AB.6090303@ph.tum.de>
+	 <71cd59b00907100646h5e0283fcyce5874cc4a19106b@mail.gmail.com>
+	 <4A575119.9070505@ph.tum.de> <507E3B9268%linux@youmustbejoking.demon.co.uk>
+	 <1247254899.21972.9.camel@johannes.local>
+	 <507E47A184%linux@youmustbejoking.demon.co.uk>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MvvnSk+qNM5ucUSE8A8Z"
+Date: Fri, 10 Jul 2009 23:55:52 +0200
+Message-Id: <1247262952.26071.1.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all!
 
-This is a proposal for a global [1], deadline driven scheduler for
-real-time tasks in the Linux kernel. I thought I should send out an RFC to
-gather some feedback instead of wildy hack away at it.
+--=-MvvnSk+qNM5ucUSE8A8Z
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This proposed scheduler is a modified MLLF (modified Least Laxity First)
-called Earliest Failure First (EFF) as it orders tasks according to when
-they will miss their deadlines, not when the actual deadline is.
+On Fri, 2009-07-10 at 22:09 +0100, Darren Salt wrote:
+> I demand that Johannes Berg may or may not have written...
+>=20
+> > Apparently there actually _are_ tools that try to set this in sysfs eve=
+n
+> > though it wasn't supposed to be used this way without claiming first.
+>=20
+> Then it should have been documented as such. I don't see anything about t=
+his
+> in Documentation/rfkill.txt (as found in 2.6.30), other than a vague
+> statement that "Kernel handles events", which isn't exactly helpful :-\
 
-== Motivation and background ==
+Oh, it's not just that rfkill was horrible, the documentation matched :)
+All the SHOUTING in it about what you must and must not do but nothing
+actually helpful :)
 
-Deadlines will give the developer greater flexibility and expressiveness
-when creating real-time applications. Compared to a priority scheme,
-this simplifies the process considerably as it removes the need for
-calculating the priorities off-line in order to find the priority-map
-that will order the tasks in the correct order. Yet another important
-aspect with deadlines instead of priorities, are systems too dynamic to
-analyze (a large application with 100s of processes/threads or a system
-running more than one rt-application).
+> > *shrug*, I don't like it, but whatever...
+>=20
+> I do. It means that we have a nice simple text-based interface for use in
+> scripts (for now), and a binary interface which is better suited to the l=
+ikes
+> of desktop applications.
 
-* In very large systems, it becomes very difficult to find the correct
-  set of priorities, even with sophisticated tools, and a slight change
-  will require a re-calculation of all priorities.
+Indeed, and as long as you expect to only use soft toggle... problem is
+that you won't know whether it's soft-toggled or not while it's
+hard-blocked (off)!
 
-* In very dynamic systems, it can be impossible to analyze the system
-  off-line, reducing the calculated priorities to best-effort only
+> > Please test & report.
+>=20
+> With the patch applied, Bluetooth toggling is working again, so you get t=
+o
+> add this:
+>=20
+> Tested-By: Darren Salt <linux@youmustbejoking.demon.co.uk>
 
-* If more than one application run at the same time, this become even
-  worse.
+Ok, John, please pick up the patch.
 
+johannes
 
-As a final point, a schedule of tasks with their priorities, is in
-almost all scenarios, a result of all deadlines for all tasks. This also
-goes for non-rt tasks, even though the concept of deadlines are a bit
-more fuzzy here. The problem is that this mapping is a one-way function,
---you cannot determine the deadlines from a set of priorities.
+--=-MvvnSk+qNM5ucUSE8A8Z
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-The problem is, how to implement this efficiently in a priority-oriented
-kernel, and more importantly, how to extend this to multi-core
-systems. For single-core systems, EDF is optimal and can accept tasks up
-to 100% utilization and still guarantee that all deadlines are
-met. However, on multi-core, this breaks down and the utilization bound
-must be set very low if any guarantee should be given (known as "Dhall's
-effect").
+-----BEGIN PGP SIGNATURE-----
 
-== Related Work ==
+iQIcBAABAgAGBQJKV7jlAAoJEODzc/N7+QmahX0P/jKd86jntVSAeS8i5p08UnDf
+cnueuwfGqLQHKtliVTcINIZXHciVMCDxaN6w0hE60Y27iBEvwLIuMypu5I1ekjNL
+Kq4enHX//ag7bzske/c70QQ7KBU7ukFLjbx0uOAgk9+b40nzLu/4Ttur/dV9J7qZ
+jtvW1Ch7ZX6AOeexZxC2dXF8Jxfnnvwvxr7ArUzpjcZaexaPyMfass8yN7nenXSL
+N4lDw0cwnMMM5CgPxQDyMVoJ0uRzWh33es1Pw87ON4GYkNwIVVQQAPqGsoNp0LwR
+vNinVWFQVRaabrUnJYsAwnHbrMDn1wfJacXDfXvhmhupaPzePwOkLA8LUP1iOa6A
+Hr/EHNOIIr+Mb0bc7leM3lwQtS11ZnNWw24HIspmTxCEGeSkh9AK/Kbyga5gnnFs
+J1fkqhWqObxs0bLs0vNp17aE4ZmjaBKZBsEmM4BfwxE/ty7Pjl7WzHBw5QF2bBbU
+ADJ+Tw4p112JYRpvNwnD5TWyjS2yphyms8fsquNBDSDWAOB7OcDi/cH9wZ3ksGAv
+TbeqresEv5ox5Va37q432wvlDvxTWOz5ntk9ZBobgxBR2hnu95XmD4N+4wyCTTQ7
+5ATKijsJdeMof0afmmzEmDqhIE0MYYTrXsdF+nZfG5MsdtXoULuHiP831vzJWufh
+wL2ZJezlCKazCeM/G7+S
+=vG3B
+-----END PGP SIGNATURE-----
 
-Recently, I've been working away on a pfair-based scheduler (PD^2 to be
-exact), but this failed for several reasons [2]. The most prominent being
-the sensitivity for timer inaccuracies and very frequent task
-preemption. pfair has several good qualities, as it reduces jitter,
-scales to many cores and achieves high sustained utilization. However,
-the benefits do not outweigh the added overhead and strict requirements
-placed on the timer infrastructure.
+--=-MvvnSk+qNM5ucUSE8A8Z--
 
-This latter point is what haunts EDF on multi-core platforms. A global
-EDF-US[1/2] cannot exceed (m+1)/2, standard EDF is much
-worse. Partitioned can reach higher limits, but is very susceptible to
-the bin-packing heuristics. Going fully partitioned will also introduce
-other issues like the need for load balancing and more complex deadline
-inheritance logic. However, one clear benefit with EDF, is that it will
-minimize the number of task-switches, clearly something desirable.
-
-== Proposed algorithm ==
-
-So, with this in mind, my motivation was to find a way to extend the a
-deadline driver scheduler scheduler to battle Dhall's effect. This can
-be done if you look at time in a more general sense than just
-deadlines. What you must do, is look at how the expected computation
-time needed by a task with respect to the tasks deadline compares to
-other tasks.
-
-=== Notation ===
-
-- Take a set of tasks with corresponding attributes.  This set and their
-  attributes are called the schedule, 'S' and contains *all* tasks for
-  the given scheduling class (i.e. all EFF-tasks).
-
-- Consider a multi-core system with 'm' processors.
-
-- Let the i'th task in the schedule be denoted tau_i. [3]
-
-- Each task will run in intervals, each 'round' is called a job. A task
-  consists of an infinite sequence of jobs. The k'th job of tau_i is
-  called tau_{i,k}
-
-- Each task has a set of (relative) attributes supplied when the task is
-  inserted into the scheduler (passed via syscall)
-  * Period T_i
-  * Deadline D_i
-  * WCET C_i
-
-- Each job (tau_{i,k}) has absolute attributes (computed from the relative
-  tasks-attributes coupled with physical time).
-  * Release-time r_{i,k}
-  * Deadline d_{i,k}
-  * Allocated time so for a job, C_a(t, tau_{i,k})
-    When C_a equals WCET, the jobs budget is exhausted and it should
-    start a new cycle. This is tested (see below) by the scheduler.
-  * Remaining time for the job, C_r(t, tau_{i,nk})
-
-- The acceptance function for EFF screens new tasks on their expected
-  utilization. Depending on the mode and implementation, it can be based
-  on the period, or on the deadline. The latter will cause firmer
-  restraints, but may lead to wasted resources.
-
-	U = C_i / T_i		For SRT (bounded deadline tardiness)
-	U = C_i / D_i		For HRT
-
-- A relative measure, time to failure, ttf, indicates how much time is
-  left before a job must be scheduled to run in order to avoid a
-  deadline-miss. This will decrease as time progresses and the job is
-  not granted CPU time. For tasks currently running on a CPU, this value
-  will be constant.
-
-	Take a job with a WCET of 10ms, it has been allowed to run for 4
-	ms so far. The deadline is 8 ms away. Then the job must be
-	scheduled to run within the next 4 ms, otherwise it will not be
-	able to finish in time.
-
-- An absolute value, time of failure (tof) can also be computed in a
-  static manner. For tasks not running on a CPU, the allocated time is
-  static. That means you can take the absolute deadline, subtract the
-  allocated time and you have the absolute point in time when a given
-  job will fail to meet its deadline.
-
-=== Outline of scheduler ===
-
-Store tasks in 2 queues. One of size m, containing all the tasks
-currently running on the CPUs (queue R). The other will hold all
-currently active tasks waiting to execute (queue W).
-
-queue R is sorted based on ttf (time to failure, the relative time left
-until a task will miss it's deadline). As the tasks approaches the
-absolute time of failure at the same rate C_a increases, ttf is
-constant. R is only a 'map' of tasks to the CPUs. Position 0 in R
-(i.e. smallest ttf) does not result in CPU#0, as the position->CPU will
-be quite fluent.
-
-queue W is sorted based on absolute time of failure (tof). Since this is
-a fixed point in time, and the tasks in W are not running (C_a is
-unchanged), this value is constant.
-
-When a task is scheduled to run, a timer is set at the point in time
-where it has exhausted it's budget (t_now + WCET - C_a). This is to
-ensure that a runaway task does not grab the CPU.
-
-When a new task arrives, it is handled according the following rules:
-- The system has one or more CPUs not running EFF-tasks. Pick any of the
-  free CPUs and assign the new job there. Set a timer to
-
-- All CPUs are busy, the new task has greater time to failure than the
-  head of W. The task is inserted into W at the appropriate place.
-
-- All CPUs are busy and the new task has smaller time to failure than
-  the head of W. The new task is compared to the last task in Q. If time
-  to failure is larger than the task at the tail, it is added to the
-  head of W.
-
-- If all CPUs are busy, and time to failure is smaller than the tail of
-  Q, the new task is a candidate for insertion. At this point the tasks
-  must be compared to see if picking one or the other will cause a
-  deadline-miss. If both will miss the deadline if the other is
-  scheduled, keep the existing running and place the new at the head of
-  W (as you will have a deadline-miss anyway unless the the task is
-  picked up by another CPU soon).
-
-- A task running on a CPU with ttf=0 should *never* be preempted with
-  another task. If all tasks in R have ttf=0, and a newly arrived task
-  has ttf=0, a deadline-miss is inevitable and switching tasks will only
-  waste resources.
-
-When a task in R finish (or is stopped due to the timer-limit), it is
-removed from R, and the head of W is added to R, inserted at the
-appropriate place.
-
-It has been some discussion lately (in particular on #linux-rt) about
-the bandwidth inheritance (BWI) and proxy execution protocol (PEP). It
-should be possible to extend EFF to handle both. As a side note, if
-anyone has some good information about PEP, I'd like a copy :)
-
-Based on this, I think the utilization can be set as high as M
-(i.e. full utilization of all CPUs), but the jitter can probably be
-quite bad, so for jitter-sensitive tasks, a short period/deadline should
-be used.
-
-There are still some issues left to solve, for instance how to best
-handle sporadic tasks, and whether or not deadline-miss should be allow,
-or just 'bounded deadline tardiness'. Either way, EFF should be able to
-handle it. Then, there are problems concerning blocking of tasks. One
-solution would be BWI or PEP, but I have not had the time to read
-properly through those, but from what I've gathered a combination of BWI
-and PEP looks promising (anyone with good info about BWI and PEP - feel
-free to share! (-: ).
-
-
-
-	Henrik
-
-
-1) Before you freeze at 'global' and get all caught up on "This won't
-   ever scale to X", or "He will be haunted by Y" - I do not want to
-   extend a global algorithm to 2000 cores. I would like to scale to a
-   single *chip* and then we can worry about 2-way and 4-way systems
-   later. For the record, I've donned my asbestos suit anyway.
-
-2) http://austad.us/kernel/thesis_henrikau.pdf
-
-3) Anyone want to include LaTeX-notation into an email-rfc?
-
-
-
--- 
- -> henrik
