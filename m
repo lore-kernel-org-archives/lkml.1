@@ -1,76 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbZGJJcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZGJJji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754163AbZGJJcA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 05:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZGJJbv
+	id S1754348AbZGJJji (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 05:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZGJJja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 05:31:51 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:49525 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbZGJJbv (ORCPT
+	Fri, 10 Jul 2009 05:39:30 -0400
+Received: from 219-87-157-179.static.tfn.net.tw ([219.87.157.179]:35180 "EHLO
+	mswedge1.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbZGJJj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 05:31:51 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=sDUASzXJwVMR20NBjfElfmfRI2EXhLUPy03JAc9HkQInu59UGf69xSoWWNBmbbyo9
-	pjsA9oQI3CPAk6PSsk7aw==
-Date: Fri, 10 Jul 2009 02:31:43 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Ingo Molnar <mingo@elte.hu>, Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-kernel@vger.kernel.org, vegard.nossum@gmail.com,
-       graydon@redhat.com, fche@redhat.com, Nick Piggin <npiggin@suse.de>,
-       cl@linux-foundation.org
-Subject: Re: [RFC][PATCH] Check write to slab memory which freed already
- using mudflap
-In-Reply-To: <1247217548.771.10.camel@penberg-laptop>
-Message-ID: <alpine.DEB.2.00.0907100223140.14601@chino.kir.corp.google.com>
-References: <1247156020.27671.40.camel@debian-nb> <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com> <20090710084745.GA26752@elte.hu> <alpine.DEB.2.00.0907100158090.13880@chino.kir.corp.google.com> <1247217548.771.10.camel@penberg-laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 10 Jul 2009 05:39:29 -0400
+X-Greylist: delayed 1299 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Jul 2009 05:39:28 EDT
+Message-ID: <4A570650.3060309@sunplusct.com>
+Date: Fri, 10 Jul 2009 17:13:52 +0800
+From: "liqin.chen" <liqin.chen@sunplusct.com>
+User-Agent: Thunderbird 1.5.0.2 (X11/20060524)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Roland McGrath <roland@redhat.com>
+CC: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
+       linux-arch@vger.kernel.org, linux-arch-owner@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH V2] score: add regset support
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Jul 2009, Pekka Enberg wrote:
+ptrace.c add register sets support for score architecture.
 
-> > I'm not sure what the status of slqb is, although I would have expected it 
-> > to have been pushed for inclusion in 2.6.31 as a slab allocator 
-> > alternative.  Nick, any forecast for inclusion?
-> 
-> 2.6.32 most likely. Nick has fixed a bunch of problems but there's still
-> one ppc boot time bug that's turning out to be hard to find.
-> 
+- genregs_get(struct task_struct *target,
+           const struct user_regset *regset,
+           unsigned int pos, unsigned int count,
+           void *kbuf, void __user *ubuf)
+    Retrieve the contents of score userspace general registers.
 
-Ah, ok, there's still outstanding bugs.  I was curious as to why it wasn't 
-merged as a non-default option that would have perhaps attracted more 
-attention to it.
+- genregs_set(struct task_struct *target,
+           const struct user_regset *regset,
+           unsigned int pos, unsigned int count,
+           const void *kbuf, const void __user *ubuf)
+    Update the contents of the score userspace general registers.
 
-> > SLUB has a pretty noticeable performance degradation on benchmarks such as 
-> > netperf TCP_RR with high numbers of threads (see my post about it: 
-> > http://marc.info/?l=linux-kernel&m=123839191416472).  CONFIG_SLAB is the 
-> > optimal configuration for workloads that share similiar slab thrashing 
-> > patterns (which my patchset dealt with in an indirect way and yet still 
-> > didn't match slab's performance).  I haven't yet seen data that suggests 
-> > anything other than CONFIG_SLAB has parity with such a benchmark.
-> 
-> As I said before, I'm interesting in getting those patches merged. I
-> think Christoph raised some issues that need to be take care of before
-> we can do that, no?
-> 
+Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
+---
+ arch/score/include/asm/elf.h    |   18 +++--
+ arch/score/include/asm/ptrace.h |    2 +
+ arch/score/kernel/ptrace.c      |  140 
+++++++++++++++++++++++++++++++--------
+ 3 files changed, 123 insertions(+), 37 deletions(-)
 
-The issue was the addition of an increment to the freeing fastpath and 
-some arithemetic in the allocation slowpath that would have negatively 
-affected performance for caches that don't suffer from the issue, even 
-under affected benchmarks such as netperf TCP_RR.
+diff --git a/arch/score/include/asm/elf.h b/arch/score/include/asm/elf.h
+index 8324363..43526d9 100644
+--- a/arch/score/include/asm/elf.h
++++ b/arch/score/include/asm/elf.h
+@@ -1,9 +1,8 @@
+ #ifndef _ASM_SCORE_ELF_H
+ #define _ASM_SCORE_ELF_H
+ 
+-/* ELF register definitions */
+-#define ELF_NGREG    45
+-#define ELF_NFPREG    33
++#include <linux/ptrace.h>
++
+ #define EM_SCORE7    135
+ 
+ /* Relocation types. */
+@@ -30,11 +29,15 @@
+ #define R_SCORE_IMM30        20
+ #define R_SCORE_IMM32        21
+ 
+-typedef unsigned long elf_greg_t;
+-typedef elf_greg_t elf_gregset_t[ELF_NGREG];
++/* ELF register definitions */
++typedef unsigned long    elf_greg_t;
++
++#define ELF_NGREG    (sizeof(struct pt_regs) / sizeof(elf_greg_t))
++typedef elf_greg_t    elf_gregset_t[ELF_NGREG];
+ 
+-typedef double elf_fpreg_t;
+-typedef elf_fpreg_t elf_fpregset_t[ELF_NFPREG];
++/* Score does not have fp regs. */
++typedef double        elf_fpreg_t;
++typedef elf_fpreg_t    elf_fpregset_t;
+ 
+ #define elf_check_arch(x)    ((x)->e_machine == EM_SCORE7)
+ 
+@@ -57,6 +60,7 @@ do {                                \
+ struct task_struct;
+ struct pt_regs;
+ 
++#define CORE_DUMP_USE_REGSET
+ #define USE_ELF_CORE_DUMP
+ #define ELF_EXEC_PAGESIZE    PAGE_SIZE
+ 
+diff --git a/arch/score/include/asm/ptrace.h 
+b/arch/score/include/asm/ptrace.h
+index 66b14c8..19ce850 100644
+--- a/arch/score/include/asm/ptrace.h
++++ b/arch/score/include/asm/ptrace.h
+@@ -74,6 +74,8 @@ struct pt_regs {
+ 
+ #ifdef __KERNEL__
+ 
++struct task_struct;
++
+ /*
+  * Does the process account for user or for system time?
+  */
+diff --git a/arch/score/kernel/ptrace.c b/arch/score/kernel/ptrace.c
+index 1db876b..43784d8 100644
+--- a/arch/score/kernel/ptrace.c
++++ b/arch/score/kernel/ptrace.c
+@@ -23,11 +23,113 @@
+  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+  */
+ 
++#include <linux/elf.h>
+ #include <linux/kernel.h>
+ #include <linux/ptrace.h>
++#include <linux/regset.h>
+ 
+ #include <asm/uaccess.h>
+ 
++/*
++ * retrieve the contents of SCORE userspace general registers
++ */
++static int genregs_get(struct task_struct *target,
++               const struct user_regset *regset,
++               unsigned int pos, unsigned int count,
++               void *kbuf, void __user *ubuf)
++{
++    const struct pt_regs *regs = task_pt_regs(target);
++    int ret;
++
++    /* skip 8 * sizeof(unsigned long) not use for pt_regs */
++    ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
++                    0, offsetof(struct pt_regs, regs));
++
++    /* r0 - r31 */
++    ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++                  regs->regs,
++                  offsetof(struct pt_regs, regs),
++                  offsetof(struct pt_regs, cel));
++
++    if (!ret)
++        /* cel, ceh, sr0, sr1, sr2, epc, ema, psr, ecr, condition */
++        ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++                    &regs->cel,
++                    offsetof(struct pt_regs, cel),
++                    offsetof(struct pt_regs, is_syscall));
++
++    if (!ret)
++        ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
++                        sizeof(struct pt_regs), -1);
++
++    return ret;
++}
++
++/*
++ * update the contents of the SCORE userspace general registers
++ */
++static int genregs_set(struct task_struct *target,
++               const struct user_regset *regset,
++               unsigned int pos, unsigned int count,
++               const void *kbuf, const void __user *ubuf)
++{
++    struct pt_regs *regs = task_pt_regs(target);
++    int ret;
++
++    /* skip 8 * sizeof(unsigned long) */
++    ret = user_regset_copyin_ignore(&pos, &count, &kbuf, &ubuf,
++                    0, offsetof(struct pt_regs, regs));
++
++    /* r0 - r31 */
++    ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++                  regs->regs,
++                  offsetof(struct pt_regs, regs),
++                  offsetof(struct pt_regs, cel));
++
++    if (!ret)
++        /* cel, ceh, sr0, sr1, sr2, epc, ema, psr, ecr, condition */
++        ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++                    &regs->cel,
++                    offsetof(struct pt_regs, cel),
++                    offsetof(struct pt_regs, is_syscall));
++
++    if (!ret)
++        ret = user_regset_copyin_ignore(&pos, &count, &kbuf, &ubuf,
++                        sizeof(struct pt_regs), -1);
++
++    return ret;
++}
++
++/*
++ * Define the register sets available on the score7 under Linux
++ */
++enum score7_regset {
++    REGSET_GENERAL,
++};
++
++static const struct user_regset score7_regsets[] = {
++    [REGSET_GENERAL] = {
++        .core_note_type    = NT_PRSTATUS,
++        .n        = ELF_NGREG,
++        .size        = sizeof(long),
++        .align        = sizeof(long),
++        .get        = genregs_get,
++        .set        = genregs_set,
++    },
++};
++
++static const struct user_regset_view user_score_native_view = {
++    .name        = "score7",
++    .e_machine    = EM_SCORE7,
++    .regsets    = score7_regsets,
++    .n        = ARRAY_SIZE(score7_regsets),
++};
++
++const struct user_regset_view *task_user_regset_view(struct task_struct 
+*task)
++{
++    return &user_score_native_view;
++}
++
+ static int is_16bitinsn(unsigned long insn)
+ {
+     if ((insn & INSN32_MASK) == INSN32_MASK)
+@@ -80,34 +182,6 @@ write_tsk_long(struct task_struct *child,
+     return copied != sizeof(val) ? -EIO : 0;
+ }
+ 
+-/*
+- * Get all user integer registers.
+- */
+-static int ptrace_getregs(struct task_struct *tsk, void __user *uregs)
+-{
+-    struct pt_regs *regs = task_pt_regs(tsk);
+-
+-    return copy_to_user(uregs, regs, sizeof(struct pt_regs)) ? -EFAULT : 0;
+-}
+-
+-/*
+- * Set all user integer registers.
+- */
+-static int ptrace_setregs(struct task_struct *tsk, void __user *uregs)
+-{
+-    struct pt_regs newregs;
+-    int ret;
+-
+-    ret = -EFAULT;
+-    if (copy_from_user(&newregs, uregs, sizeof(struct pt_regs)) == 0) {
+-        struct pt_regs *regs = task_pt_regs(tsk);
+-        *regs = newregs;
+-        ret = 0;
+-    }
+-
+-    return ret;
+-}
+-
+ void user_enable_single_step(struct task_struct *child)
+ {
+     /* far_epc is the target of branch */
+@@ -356,11 +430,17 @@ arch_ptrace(struct task_struct *child, long 
+request, long addr, long data)
+     }
+ 
+     case PTRACE_GETREGS:
+-        ret = ptrace_getregs(child, (void __user *)datap);
++        return copy_regset_to_user(child, &user_score_native_view,
++                        REGSET_GENERAL,
++                        0, sizeof(struct pt_regs),
++                        (void __user *)datap);
+         break;
+ 
+     case PTRACE_SETREGS:
+-        ret = ptrace_setregs(child, (void __user *)datap);
++        return copy_regset_from_user(child, &user_score_native_view,
++                        REGSET_GENERAL,
++                        0, sizeof(struct pt_regs),
++                        (const void __user *)datap);
+         break;
+ 
+     default:
+-- 
+1.6.2
 
-Even ignoring the impact on workloads that don't suffer from these 
-patterns, parity with slab still unfortunately isn't reached with the 
-patchset.  It also diverges from the fundamental design of slub which is 
-optimized by filling up partial slabs as quickly as possible to minimize 
-the scanning contention on list_lock for high cpu counts and less memory 
-consumption overall by reducing slab internal fragmentation.
