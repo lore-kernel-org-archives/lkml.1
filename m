@@ -1,33 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbZGJXxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbZGJX6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757970AbZGJXxd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 19:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbZGJXx0
+	id S1757984AbZGJX6g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 19:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757511AbZGJX63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 19:53:26 -0400
-Received: from grape.dcsi.net.au ([203.22.132.9]:58931 "EHLO grape.dcsi.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756810AbZGJXx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 19:53:26 -0400
-X-Greylist: delayed 422 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Jul 2009 19:53:26 EDT
-From: "Leongatha Stadium Cinema" <carinos@dcsi.net.au>
-Reply-To: mailacount@megamail.pt
-Subject: N/A
-Date: Sat, 11 Jul 2009 09:42:10 +1000
-Message-Id: <20090710233656.M94315@dcsi.net.au>
-X-OriginatingIP: 85.214.149.36 (carinos)
+	Fri, 10 Jul 2009 19:58:29 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:28559 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757494AbZGJX62 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 19:58:28 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Bbl1SMO6Y3lvcSiOD7RU42kHGqaWtyJS93UYCoPtZvU70JK4Sr/O7CsqPTZZA7rl/
+	a3rfrS47t0ROvujeJDyfA==
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
-X-Antivirus: checked in 0.002sec at grape.dcsi.net.au ([203.22.132.9])
-	by smf-clamd v1.2.1 - http://smfs.sf.net/
-To: unlisted-recipients:; (no To-header on input)
+In-Reply-To: <20090705063850.GX11273@balbir.in.ibm.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	 <20090705063850.GX11273@balbir.in.ibm.com>
+Date: Fri, 10 Jul 2009 16:58:23 -0700
+Message-ID: <6599ad830907101658i13e4046br70377a487dd6b49b@mail.gmail.com>
+Subject: Re: [PATCH 0/2] CGroups: cgroup member list enhancement/fix
+From: Paul Menage <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Cc: lizf@cn.fujitzu.com, serue@us.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, bblum@google.com,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message is from  EMAIL ACCOUNNT MANAGEMENT email account owners. We are 
-currently upgrading our data base and e-mail account center. We are deleting 
-all unused  email account to create more space for new accounts.To prevent 
-your account from closing you will have to update it below so that we will 
-know that it's a present used account.EmailUsername AND Password 
+On Sat, Jul 4, 2009 at 11:38 PM, Balbir Singh<balbir@linux.vnet.ibm.com> wrote:
+>
+> Paul, I don't see an interface to migrate all procs or at-least I
+> can't read it in the changelog. As discussed in the containers
+> mini-summit in 2008, it would be a nice thing to have (I've not looked
+> at the implementation yet).
+>
+
+We're still working on that bit.
+
+We want to provide the guarantee that if you write a tgid to the procs
+file, all its threads get migrated even if you race with a clone()
+call, and are trying to figure out a nice way to do that without
+introducing unnecessary overhead/synchronization in the fork path.
+
+Paul
