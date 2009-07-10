@@ -1,39 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbZGJMGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbZGJMFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026AbZGJMGK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 08:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZGJMFa
+	id S1754218AbZGJMFi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 08:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625AbZGJMFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 08:05:30 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53343 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbZGJMFZ (ORCPT
+	Fri, 10 Jul 2009 08:05:06 -0400
+Received: from 220-128-130-175.HINET-IP.hinet.net ([220.128.130.175]:35973
+	"EHLO mail.hbhousing.com.tw" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750983AbZGJMFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 08:05:25 -0400
-Date: Fri, 10 Jul 2009 01:19:57 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "John A. Gregor" <john.gregor@qlogic.com>, ralph.campbell@qlogic.com,
-       linux-kernel@vger.kernel.org, johng@diamond.mv.qlogic.com
-Subject: Re: [PATCH] x86_64/__iowrite32_copy: don't use string move for PIO
-	writes
-Message-ID: <20090709231957.GC1469@ucw.cz>
-References: <1246907224-22758-1-git-send-email-john.gregor@qlogic.com> <4A526CE6.30200@zytor.com> <4a526e77.IPiyTZWRWfll2+00%john.gregor@qlogic.com> <4A527EE4.1080102@zytor.com>
+	Fri, 10 Jul 2009 08:05:00 -0400
+X-Greylist: delayed 1602 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Jul 2009 08:04:58 EDT
+From: "MITSUBISHI COMPANY UK" <info@mitsubishi.com>
+Reply-To: infomitscombonanza@googlemail.com
+Subject: Your E-mail Attach To category\\"A\\" 870,000GBP&#8207;
+Date: Fri, 10 Jul 2009 20:30:03 +0800
+Message-Id: <20090710122911.M51719@mitsubishi.com>
+X-Mailer: OpenWebMail 2.52 20060502
+X-OriginatingIP: 85.214.143.29 (vincent)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A527EE4.1080102@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset=big5
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+MITSUBISHI COMPANY UK.
+28 TANFIELD ROAD,LONDON, UK.
 
-> - the current code is fine as long as it doesn't cross from cached to
->   uncached memory, which it never should in any kind of sensible driver;
+You have just been awarded,the sum of  &pound;870.000.00 in the  MITSUBISHI COMPANY 
+Award 2009, Anniversary Bonanza. held in July.
 
-Should we add a comment somewhere saying that is not permitted (and why)?
+Names:............. Address:..............
+Country:................ Age:..........
+Phone Number............ Occupation.......Sex
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Regards.Felke Courtney.
+Online Co-ordinator.
