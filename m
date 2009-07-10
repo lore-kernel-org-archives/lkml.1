@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbZGJBM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751946AbZGJBUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbZGJBM7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 21:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZGJBJ2
+	id S1751946AbZGJBUS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 21:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbZGJBUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 21:09:28 -0400
-Received: from sh.osrg.net ([192.16.179.4]:55375 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183AbZGJBJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 21:09:19 -0400
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       benh@kernel.crashing.org, tony.luck@intel.com, x86@kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, beckyb@kernel.crashing.org
-Subject: [PATCH 05/15] x86: add dma_capable() to replace is_buffer_dma_capable()
-Date: Fri, 10 Jul 2009 10:04:54 +0900
-Message-Id: <1247187904-31999-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 10 Jul 2009 10:08:01 +0900 (JST)
+	Thu, 9 Jul 2009 21:20:06 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:33815 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750751AbZGJBUF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 21:20:05 -0400
+Date: Fri, 10 Jul 2009 10:19:57 +0900 (JST)
+Message-Id: <20090710.101957.1000278277145503338.ryov@valinux.co.jp>
+To: takebe_akio@jp.fujitsu.com
+Cc: dm-devel@redhat.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org,
+       ioband-devel@lists.sourceforge.net, corsetproject@googlegroups.com,
+       kunai@linux-foundation.jp, osonoi@linux-foundation.jp
+Subject: Re: [Xen-devel] Re: [dm-devel] IO controller mini-summit -- Japan,
+ Oct 2009
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <4A568C33.4040007@jp.fujitsu.com>
+References: <20090701.204450.104062613.ryov@valinux.co.jp>
+	<4A568C33.4040007@jp.fujitsu.com>
+X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dma_capable() eventually replaces is_buffer_dma_capable(), which tells
-if a memory area is dma-capable or not. The problem of
-is_buffer_dma_capable() is that it doesn't take a pointer to struct
-device so it doesn't work for POWERPC.
+Takebe-san,
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/x86/include/asm/dma-mapping.h |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+Thank you for being interested in the mini-summit.
+I've added your name in the attendees list.
+https://sourceforge.net/apps/trac/ioband/wiki/iosummit
 
-diff --git a/arch/x86/include/asm/dma-mapping.h b/arch/x86/include/asm/dma-mapping.h
-index 1c3f943..adac59c 100644
---- a/arch/x86/include/asm/dma-mapping.h
-+++ b/arch/x86/include/asm/dma-mapping.h
-@@ -55,6 +55,14 @@ extern int dma_set_mask(struct device *dev, u64 mask);
- extern void *dma_generic_alloc_coherent(struct device *dev, size_t size,
- 					dma_addr_t *dma_addr, gfp_t flag);
- 
-+static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
-+{
-+	if (!dev->dma_mask)
-+		return 0;
-+
-+	return addr + size <= *dev->dma_mask;
-+}
-+
- static inline void
- dma_cache_sync(struct device *dev, void *vaddr, size_t size,
- 	enum dma_data_direction dir)
--- 
-1.6.0.6
+I'll post a draft of agenda items for the meeting sometime soon.
 
+Thanks,
+Ryo Tsuruta
+
+Akio Takebe <takebe_akio@jp.fujitsu.com> wrote:
+> Hi, Ryo
+> 
+> I'm a fun of IO controller, especially dm-ioband.
+> I'm interested in a discussiond about issues and
+> directions for developing IO controller.
+> Please let me join the mini-summit.
+> 
+> Best Regards,
+> 
+> Akio Takebe
+> 
+> Ryo Tsuruta wrote:
+> > Hi All,
+> > We will hold a Linux IO controller Mini-Summit in Tokyo, Japan
+> > on Saturday, Oct. 17, 2009 -- day before the 9th Linux kernel summit.
+> > This is a good opportunity to meet face-to-face to discuss issues and
+> > directions for developing IO controller.
+> > Details of the summit are still sketchy, so suggestions for agenda
+> > topics are welcome. Please e-mail to me or post on the wiki page at
+> > http://apps.sourceforge.net/trac/ioband/wiki/iosummit
+> > (You need an account on SourceForge.net to edit this page.)
+> > The final agenda will be formed by consensus of the attendees.
+> > Please join the summit if you are interested.
+> > Thanks,
+> > Ryo Tsuruta
+> > --
+> > dm-devel mailing list
+> > dm-devel@redhat.com
+> > https://www.redhat.com/mailman/listinfo/dm-devel
+> > 
+> 
+> _______________________________________________
+> Xen-devel mailing list
+> Xen-devel@lists.xensource.com
+> http://lists.xensource.com/xen-devel
