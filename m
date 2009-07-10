@@ -1,84 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752605AbZGJDHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbZGJDMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752605AbZGJDHb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 23:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZGJDHY
+	id S1752617AbZGJDMq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 23:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbZGJDMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 23:07:24 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:56137 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbZGJDHX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 23:07:23 -0400
-Date: Thu, 9 Jul 2009 22:07:23 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       David Howells <dhowells@redhat.com>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] mm_for_maps: take ->cred_guard_mutex to fix the
-	race with exec
-Message-ID: <20090710030723.GB11280@us.ibm.com>
-References: <20090710012740.GA395@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090710012740.GA395@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 9 Jul 2009 23:12:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48819 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbZGJDMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 23:12:36 -0400
+Subject: Re: [GIT PULL] V2 trivial fixes typo "foo foo"
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Jiri Kosina <jkosina@suse.cz>, trivial <trivial@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1246984209.3613.46.camel@ht.satnam>
+References: <1246975428.3613.10.camel@ht.satnam>
+	 <1246984209.3613.46.camel@ht.satnam>
+Content-Type: text/plain
+Date: Fri, 10 Jul 2009 08:41:47 +0530
+Message-Id: <1247195507.2423.10.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oleg Nesterov (oleg@redhat.com):
-> The problem is minor, but without ->cred_guard_mutex held we can race
-> with exec() and get the new ->mm but check old creds.
-> 
-> Now we do not need to re-check task->mm after ptrace_may_access(), it
-> can't be changed to the new mm under us.
-> 
-> Strictly speaking, this also fixes another very minor problem. Unless
-> security check fails or the task exits mm_for_maps() should never
-> return NULL, the caller should get either old or new ->mm.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Hello Jiri,
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+On Tue, 2009-07-07 at 22:00 +0530, Jaswinder Singh Rajput wrote:
+> To stay on the safe side skipping following patches from V1 which can
+> raise confusions and objections:
+> 
+>       trivial: fix typo "and and" in multiple files 
+>       trivial: fix typo "are are" in multiple files
+>       trivial: fix typo "has has" in multiple files
+>       trivial: fix typo "on on" in multiple files
+>       trivial: fix typo "that that" in multiple files
+>       trivial: fix typo "this this" in multiple files
+> 
+> 
+> The following changes since commit faf80d62e44dc627efb741f48db50c1858d1667c:
+>   Linus Torvalds (1):
+>         Merge branch 'x86-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6.git master
+> 
+> Jaswinder Singh Rajput (16):
+>       trivial: fix typo "a a" in multiple files
+>       trivial: fix typo "as as" in multiple files
+>       trivial: fix typo "be be" in multiple files
+>       trivial: fix typo "bit bit" in multiple files
+>       trivial: fix typo "by by" in multiple files
+>       trivial: fix typo "can can"
+>       trivial: fix typo "could could" in multiple files
+>       trivial: fix typo "from from" in multiple files
+>       trivial: fix typo "lock lock"
+>       trivial: fix typo "should should" in multiple files
+>       trivial: fix typo "test test"
+>       trivial: fix typo "too too"
+>       trivial: fix typo "was was" in multiple files
+>       trivial: fix typo "we we" in multiple files
+>       trivial: fix typo "with with" in multiple files
+>       trivial: fix typo "you you"
+> 
 
-> ---
+Have you pulled these patches.
+
+Please Let me know if you face any issues.
+
+Thanks,
+--
+JSR
+
+>  Documentation/DocBook/uio-howto.tmpl               |    2 +-
+>  Documentation/fb/viafb.txt                         |    2 +-
+>  Documentation/filesystems/caching/operations.txt   |    2 +-
+>  Documentation/scsi/advansys.txt                    |    2 +-
+>  Documentation/sysfs-rules.txt                      |    2 +-
+>  arch/frv/kernel/sleep.S                            |    2 +-
+>  arch/ia64/include/asm/sn/pda.h                     |    2 +-
+>  arch/microblaze/kernel/signal.c                    |    2 +-
+>  arch/mips/cavium-octeon/setup.c                    |    2 +-
+>  arch/mips/include/asm/octeon/octeon.h              |    2 +-
+>  arch/sparc/kernel/head_64.S                        |    2 +-
+>  arch/x86/include/asm/xen/hypercall.h               |    2 +-
+>  arch/x86/math-emu/reg_u_sub.S                      |    2 +-
+>  crypto/testmgr.h                                   |   10 +++++-----
+>  drivers/char/amiserial.c                           |    2 +-
+>  drivers/char/xilinx_hwicap/xilinx_hwicap.c         |    2 +-
+>  drivers/media/dvb/ttpci/av7110.c                   |    2 +-
+>  drivers/media/video/hdpvr/hdpvr-video.c            |    2 +-
+>  drivers/media/video/ov511.c                        |    2 +-
+>  drivers/media/video/ovcamchip/ov7x10.c             |    2 +-
+>  drivers/media/video/pvrusb2/pvrusb2-hdw.c          |    2 +-
+>  drivers/mtd/ubi/vmt.c                              |    4 ++--
+>  drivers/net/fs_enet/fs_enet.h                      |    2 +-
+>  drivers/net/ixgbe/ixgbe_82598.c                    |    2 +-
+>  drivers/net/ixgbe/ixgbe_82599.c                    |    2 +-
+>  drivers/net/ixgbe/ixgbe_common.c                   |    2 +-
+>  drivers/net/s2io.c                                 |    2 +-
+>  drivers/net/skfp/fplustm.c                         |    2 +-
+>  drivers/net/sky2.c                                 |    2 +-
+>  drivers/net/wireless/libertas/scan.c               |    2 +-
+>  drivers/parisc/ccio-dma.c                          |    2 +-
+>  drivers/pci/hotplug/ibmphp.h                       |    2 +-
+>  drivers/rtc/rtc-m41t80.c                           |    2 +-
+>  drivers/scsi/libfc/fc_fcp.c                        |    2 +-
+>  drivers/scsi/lpfc/lpfc_debugfs.c                   |    2 +-
+>  drivers/scsi/sym53c8xx_2/sym_hipd.c                |    2 +-
+>  drivers/scsi/sym53c8xx_2/sym_hipd.h                |    2 +-
+>  drivers/staging/android/binder.c                   |    2 +-
+>  drivers/staging/frontier/alphatrack.c              |    2 +-
+>  drivers/staging/frontier/tranzport.c               |    2 +-
+>  .../staging/rtl8192su/ieee80211/rtl819x_HTProc.c   |    2 +-
+>  drivers/staging/rtl8192su/r8192S_phy.c             |    2 +-
+>  drivers/staging/rtl8192su/r819xU_phy.c             |    2 +-
+>  drivers/staging/wlan-ng/prism2sta.c                |    2 +-
+>  drivers/usb/atm/ueagle-atm.c                       |    2 +-
+>  drivers/video/aty/mach64_cursor.c                  |    2 +-
+>  drivers/video/riva/fbdev.c                         |    2 +-
+>  drivers/watchdog/eurotechwdt.c                     |    2 +-
+>  drivers/watchdog/pc87413_wdt.c                     |    2 +-
+>  drivers/watchdog/w83977f_wdt.c                     |    2 +-
+>  drivers/watchdog/wdt.c                             |    2 +-
+>  drivers/watchdog/wdt977.c                          |    2 +-
+>  drivers/watchdog/wdt_pci.c                         |    2 +-
+>  fs/cifs/inode.c                                    |    2 +-
+>  fs/exec.c                                          |    2 +-
+>  fs/jbd/journal.c                                   |    2 +-
+>  fs/jbd2/journal.c                                  |    2 +-
+>  fs/ocfs2/cluster/quorum.c                          |    2 +-
+>  fs/squashfs/cache.c                                |    2 +-
+>  fs/ubifs/misc.h                                    |    2 +-
+>  fs/ufs/super.c                                     |    2 +-
+>  fs/xfs/xfs_trans_ail.c                             |    2 +-
+>  include/linux/exportfs.h                           |    2 +-
+>  include/linux/ipv6.h                               |    2 +-
+>  include/linux/mtd/pfow.h                           |    2 +-
+>  include/linux/usb/gadget.h                         |    2 +-
+>  include/linux/wimax/debug.h                        |    2 +-
+>  include/sound/soc-dai.h                            |    2 +-
+>  kernel/perf_counter.c                              |    2 +-
+>  net/atm/lec.c                                      |    2 +-
+>  net/dccp/ipv4.c                                    |    2 +-
+>  net/ipv4/netfilter/nf_nat_pptp.c                   |    2 +-
+>  net/netfilter/nf_conntrack_pptp.c                  |    2 +-
+>  net/rds/ib_cm.c                                    |    2 +-
+>  net/rds/iw_cm.c                                    |    2 +-
+>  net/sctp/sm_make_chunk.c                           |    2 +-
+>  net/sunrpc/svcsock.c                               |    2 +-
+>  scripts/Kbuild.include                             |    2 +-
+>  scripts/namespace.pl                               |    2 +-
+>  sound/isa/cs423x/cs4236_lib.c                      |    2 +-
+>  sound/isa/es18xx.c                                 |    2 +-
+>  81 files changed, 86 insertions(+), 86 deletions(-)
 > 
->  fs/proc/base.c |   22 +++++++++++-----------
->  1 file changed, 11 insertions(+), 11 deletions(-)
-> 
-> --- WAIT/fs/proc/base.c~2_CRED_MUTEX	2009-07-10 02:05:14.000000000 +0200
-> +++ WAIT/fs/proc/base.c	2009-07-10 03:23:01.000000000 +0200
-> @@ -234,19 +234,19 @@ static int check_mem_permission(struct t
-> 
->  struct mm_struct *mm_for_maps(struct task_struct *task)
->  {
-> -	struct mm_struct *mm = get_task_mm(task);
-> +	struct mm_struct *mm;
-> 
-> -	if (mm && mm != current->mm) {
-> -		/*
-> -		 * task->mm can be changed before security check,
-> -		 * in that case we must notice the change after.
-> -		 */
-> -		if (!ptrace_may_access(task, PTRACE_MODE_READ) ||
-> -		    mm != task->mm) {
-> -			mmput(mm);
-> -			mm = NULL;
-> -		}
-> +	if (mutex_lock_killable(&task->cred_guard_mutex))
-> +		return NULL;
-> +
-> +	mm = get_task_mm(task);
-> +	if (mm && mm != current->mm &&
-> +			!ptrace_may_access(task, PTRACE_MODE_READ)) {
-> +		mmput(mm);
-> +		mm = NULL;
->  	}
-> +	mutex_unlock(&task->cred_guard_mutex);
-> +
->  	return mm;
->  }
-> 
+
