@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbZGJQKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbZGJQL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754956AbZGJQKs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 12:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbZGJQKl
+	id S1755925AbZGJQL4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 12:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZGJQLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 12:10:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35540 "EHLO mx2.mail.elte.hu"
+	Fri, 10 Jul 2009 12:11:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33253 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751375AbZGJQKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 12:10:40 -0400
-Date: Fri, 10 Jul 2009 18:10:34 +0200
+	id S1753061AbZGJQLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 12:11:48 -0400
+Date: Fri, 10 Jul 2009 18:11:41 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] sched: Move the sleeping while atomic checks early
-	in cond_resched()
-Message-ID: <20090710161034.GB22049@elte.hu>
-References: <1247237391-5352-1-git-send-email-fweisbec@gmail.com> <1247237391-5352-2-git-send-email-fweisbec@gmail.com> <1247237995.7529.43.camel@twins> <20090710150827.GA5318@nowhere> <1247238728.7529.46.camel@twins>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] sched: Drop the need_resched() loop from
+	cond_resched()
+Message-ID: <20090710161141.GC22049@elte.hu>
+References: <1247237391-5352-1-git-send-email-fweisbec@gmail.com> <200907101717.39460.arnd@arndb.de> <20090710152425.GB5318@nowhere> <200907101735.29463.arnd@arndb.de> <20090710155037.GC5318@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1247238728.7529.46.camel@twins>
+In-Reply-To: <20090710155037.GC5318@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -35,61 +36,66 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> On Fri, 2009-07-10 at 17:08 +0200, Frederic Weisbecker wrote:
-> > On Fri, Jul 10, 2009 at 04:59:55PM +0200, Peter Zijlstra wrote:
-> > > On Fri, 2009-07-10 at 16:49 +0200, Frederic Weisbecker wrote:
+> On Fri, Jul 10, 2009 at 05:35:29PM +0200, Arnd Bergmann wrote:
+> > On Friday 10 July 2009, Frederic Weisbecker wrote:
+> > > On Fri, Jul 10, 2009 at 05:17:38PM +0200, Arnd Bergmann wrote:
+> > > > On Friday 10 July 2009, Frederic Weisbecker wrote:
+> > > > > --- a/kernel/sched.c
+> > > > > +++ b/kernel/sched.c
+> > > > > @@ -6613,11 +6613,9 @@ static void __cond_resched(void)
+> > > > >          * PREEMPT_ACTIVE, which could trigger a second
+> > > > >          * cond_resched() call.
+> > > > >          */
+> > > > > -       do {
+> > > > > -               add_preempt_count(PREEMPT_ACTIVE);
+> > > > > -               schedule();
+> > > > > -               sub_preempt_count(PREEMPT_ACTIVE);
+> > > > > -       } while (need_resched());
+> > > > > +       add_preempt_count(PREEMPT_ACTIVE);
+> > > > > +       schedule();
+> > > > > +       sub_preempt_count(PREEMPT_ACTIVE);
+> > > > >  }
+> > > > >  
+> > > > 
+> > > > If you drop the loop, then you should also remove the comment that
+> > > > explains why it was put there.
+> > > > 
 > > > 
-> > > > index 0cb0d8d..e357dc7 100644
-> > > > --- a/include/linux/sched.h
-> > > > +++ b/include/linux/sched.h
-> > > > @@ -2279,11 +2279,13 @@ extern int _cond_resched(void);
-> > > >  #ifdef CONFIG_PREEMPT_BKL
-> > > >  static inline int cond_resched(void)
-> > > >  {
-> > > > +	might_sleep();
-> > > >  	return 0;
-> > > >  }
-> > > >  #else
-> > > >  static inline int cond_resched(void)
-> > > >  {
-> > > > +	might_sleep();
-> > > >  	return _cond_resched();
-> > > >  }
-> > > >  #endif
+> > > Hmm, these comments seem to actually explain why we do the PREEMPT_ACTIVE
+> > > trick, which is to prevent from cond_resched() recursion, right?
 > > > 
-> > > # define might_resched() _cond_resched()
+> > 
+> > I think we both misinterpreted the comment, which seemed to refer
+> > to older code added by Ingo in 5bbcfd900 "cond_resched(): fix bogus
+> > might_sleep() warning" and removed by Andrew in e7b384043e2
+> > "cond_resched() fix".
+> > 
+> > The original code in Ingos version looked like
+> > 
+> >  static inline void __cond_resched(void)
+> >  {
+> >        /*
+> >         * The BKS might be reacquired before we have dropped
+> >         * PREEMPT_ACTIVE, which could trigger a second
+> >         * cond_resched() call.
+> >         */
+> >        if (unlikely(preempt_count()))
+> >                return;
+> >        do {
+> >                add_preempt_count(PREEMPT_ACTIVE);
+> >                schedule();
+> > 	...
 > > 
 > > 
-> > Argh, indeed.
-> > I thought might_sleep() only wrapped __might_sleep(__FILE__, __LINE__)
-> > 
-> >  
-> > > # define might_sleep() \
-> > > 	do { __might_sleep(__FILE__, __LINE__); might_resched(); } while (0)
-> > > 
-> > > 
-> > > Doesn't seem to make it any better that, but yeah, moving that
-> > > __might_sleep() did occur to me earlier today when I touched that code.
-> > 
-> > 
-> > Ok.
-> > 
-> > Another idea: if cond_resched() was a macro and __might_sleep() was
-> > called inside, the given __FILE__ __LINE__ would be much more useful.
-> > 
-> > Only the backtraces would be useful in the current state, __FILE__
-> > and __LINE__ point to sched.h, which is not exactly what is needed,
-> > right?
+> > So, it's got nothing to do with the loop, but should still be removed
+> > because the 'if (unlikely(preempt_count()))' is no longer there.
 > 
-> Right. There's some CONFIG_PREEMPT_BKL clutter in sched.h but I 
-> think we could largely fold might_sleep() and cond_resched().
 > 
-> Ingo?
+> Yeah, but the comment still fits the code after this patch, don't 
+> you think? :-)
 
-Yep - CONFIG_PREEMPT_BKL wont ever come back so any legacy related 
-to it should be removed. (That doesnt mean it wont crash or 
-misbehave, this code is quite fragile.)
+... except that there's no Big Kernel Semaphore anymore ;-)
 
 	Ingo
