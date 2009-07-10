@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751774AbZGJBrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbZGJBrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751774AbZGJBrY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 21:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751078AbZGJBrI
+	id S1751876AbZGJBrz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 21:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZGJBrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 21:47:08 -0400
-Received: from mail-pz0-f175.google.com ([209.85.222.175]:53497 "EHLO
-	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbZGJBrE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 21:47:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=QwEEAKjfda0QrIV0jSZ9PuAvMaFUNmf7cRVGMyO903g59PwLmq8x6V8ncA5G3PUR3C
-         +M1Qw4rihvYgj9caD7IpdbUeB9z53eLX/lLXwiHTC4ewkLxPcWQ7awqplsmcin7VxH5a
-         ZNz7rI7gN3eKk9OdRmUUnQigo916+YziDuANo=
-Subject: Re: 2.6.31-rc2: Reported regressions from 2.6.30
-From: John Dykstra <john.dykstra1@gmail.com>
-To: Andres Freund <andres@anarazel.de>
-Cc: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-In-Reply-To: <200907070325.51439.andres@anarazel.de>
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
-	 <200907070325.51439.andres@anarazel.de>
-Content-Type: text/plain
-Date: Thu, 09 Jul 2009 20:46:57 -0500
-Message-Id: <1247190417.7306.2.camel@merlyn>
+	Thu, 9 Jul 2009 21:47:47 -0400
+Received: from sh.osrg.net ([192.16.179.4]:39853 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbZGJBrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 21:47:46 -0400
+Date: Fri, 10 Jul 2009 10:47:37 +0900
+To: linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, galak@kernel.crashing.org,
+       beckyb@kernel.crashing.org, linux-kernel@vger.kernel.org
+Subject: removing addr_needs_map in struct dma_mapping_ops
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090710104706I.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 10 Jul 2009 10:47:38 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-07 at 03:25 +0200, Andres Freund wrote:
-> There is also http://lkml.org/lkml/2009/6/30/398 : Soft-Lockup/Race
-> in 
-> networking in 2.6.31-rc1+195 (possibly caused by netem)
+I'm trying to convert POWERPC to use asm-generic/dma-mapping-common.h.
 
-There is some similarity between this soft lockup and the one reported
-in http://www.spinics.net/lists/netdev/msg100957.html.  In both, the
-process is doing both sends and receives on raw sockets.
+POWERPC needs addr_needs_map() in struct dma_mapping_ops for SWIOTLB
+support but I want to avoid add addr_needs_map() in struct
+dma_map_ops. IIRC, you guys think it as a temporary solution and
+talked about defining something like struct dma_data. Then we could
 
-  --  John
+struct dev_archdata {
+       ...
 
+       struct dma_data *ddata;
+};
+
+or
+
+struct dev_archdata {
+       ...
+
+       struct dma_data ddata;
+};
+
+
+struct dma_data needs dma_direct_offset, iommu_table, dma_base, and
+dma_window_size, anything else?
+
+
+Is it acceptable?
