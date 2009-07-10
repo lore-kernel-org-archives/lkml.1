@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbZGJIwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbZGJIxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbZGJIwS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 04:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbZGJIwD
+	id S1753985AbZGJIxs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 04:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbZGJIxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 04:52:03 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:48186 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbZGJIwD (ORCPT
+	Fri, 10 Jul 2009 04:53:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45666 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbZGJIxj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 04:52:03 -0400
-Subject: Re: [RFC][PATCH] Check write to slab memory which freed already
- using mudflap
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Janboe Ye <yuan-bo.ye@motorola.com>, linux-kernel@vger.kernel.org,
-       vegard.nossum@gmail.com, graydon@redhat.com, fche@redhat.com,
-       npiggin@suse.de, cl@linux-foundation.org
-In-Reply-To: <20090710084745.GA26752@elte.hu>
-References: <1247156020.27671.40.camel@debian-nb>
-	 <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com>
-	 <20090710084745.GA26752@elte.hu>
-Date: Fri, 10 Jul 2009 11:52:00 +0300
-Message-Id: <1247215920.32044.3.camel@penberg-laptop>
+	Fri, 10 Jul 2009 04:53:39 -0400
+Subject: Re: [PATCH Resend2] Remove 'SBC8240 Wind River' Device Driver Code
+From: David Woodhouse <dwmw2@infradead.org>
+To: subrata@linux.vnet.ibm.com
+Cc: dedekind@infradead.org, Artem Bityutskiy <dedekind1@gmail.com>,
+       linux-mtd@lists.infradead.org, carolyn.j.smith@exgate.tek.com,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Jim Cromie <jim.cromie@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       linux-next <linux-next@vger.kernel.org>,
+       Scott Wood <scottwood@freescale.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+In-Reply-To: <1247215625.6630.6.camel@subratamodak.linux.ibm.com>
+References: <20090701135247.27488.10776.sendpatchset@subratamodak.linux.ibm.com>
+	 <1246846628.5743.2.camel@subratamodak.linux.ibm.com>
+	 <1247205588.20721.353.camel@localhost.localdomain>
+	 <1247206539.6630.0.camel@subratamodak.linux.ibm.com>
+	 <4A56DD51.5040703@gmail.com>
+	 <1247209961.6630.3.camel@subratamodak.linux.ibm.com>
+	 <1247210095.20721.362.camel@localhost.localdomain>
+	 <1247215625.6630.6.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain
+Date: Fri, 10 Jul 2009 09:53:27 +0100
+Message-Id: <1247216007.29541.2.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Fri, 2009-07-10 at 14:17 +0530, Subrata Modak wrote:
+> Is it possible to get this patch through and before 2.6.31 stable is
+> released ?
 
-On Fri, 2009-07-10 at 10:47 +0200, Ingo Molnar wrote:
-> > >  arch/arm/include/asm/elf.h |    1 +
-> > >  arch/arm/kernel/module.c   |    1 +
-> > >  drivers/Makefile           |    4 +-
-> > >  include/mf-runtime.h       |   42 ++++++++++++++
-> > >  kernel/Makefile            |    2 +-
-> > >  kernel/mudflap.c           |  132 ++++++++++++++++++++++++++++++++++++++++++++
-> > >  lib/Kconfig.debug          |    7 ++
-> > >  mm/slab.c                  |   53 ++++++++++++++++++
-> > >  8 files changed, 240 insertions(+), 2 deletions(-)
-> > 
-> > SLAB is (slowly) going away so you might want to port this to SLUB 
-> > as well so we can merge both.
-> 
-> and SLQB which will replace both? :-/
+Hm, I was ignoring this until I was sure all the last-minute fixes for
+2.6.31 were out of the way; I was planning to submit it for 2.6.32.
 
-Well, I cannot really expect people to port patches to SLQB until it's
-in mainline. And whether SQLB will replace SLUB remains to be seen.
-We're still fixing minor issues here and there in SLUB so I have no
-reason to expect SLQB stabilization to happen overnight which means
-we're going to have SLUB in the tree for a while anyway.
+Do we really need to submit it for 2.6.31? It's not a regression, is it?
+It's been like this for _ages_.
 
-			Pekka
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
