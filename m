@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZGJUkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbZGJUnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbZGJUkV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 16:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbZGJUkK
+	id S1757637AbZGJUnY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 16:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbZGJUnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 16:40:10 -0400
-Received: from cantor.suse.de ([195.135.220.2]:39893 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752573AbZGJUkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 16:40:10 -0400
-Date: Fri, 10 Jul 2009 22:39:57 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Rongrong Cao <rrcao@ambarella.com>, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for-2.6.32] sound dapm: fix checking for external widgets
- bug
-In-Reply-To: <20090710191925.GA5916@sirena.org.uk>
-Message-ID: <alpine.LNX.2.00.0907102238150.4232@jikos.suse.cz>
-References: <90B0CE4312136749B97EBEAF5764F87403C8F77A@ambarella-ex.ambarella.net> <20090710191925.GA5916@sirena.org.uk>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 10 Jul 2009 16:43:17 -0400
+Received: from smtp146.mail.mud.yahoo.com ([209.191.106.57]:28801 "HELO
+	smtp146.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756070AbZGJUnQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 16:43:16 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Jul 2009 16:43:16 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.ar;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding;
+  b=y97A7NzpKj+xnWfHCx0GgD417cfyHB4aNF7tcqoI6sSeENpkurdsbqYLMLdqlHO66unP+1NoW6ahLOypQGmgfuJ6ggVFXH7zZiCkD+2a/BRRAQgA3p8EQHB2o6j4DBrn043ATiW7wJYCMrn6mFhWiFs95MZUP26YvDh9/IZ087Q=  ;
+X-Yahoo-SMTP: MJlmAJmswBD1ci8cgZcdLoLtCohJxg8-
+X-YMail-OSG: ExrprCsVM1kqdQv_A1YYz8ZhwjXj7sYCebZuGwJch6sn9AJHfdSwMDsHhx8EsdokKXOHoFb3zuw3Dylbav0_SHRx7kZX9evGuzujOc5D_Dhobt3F4Rx5vPxT8n183zWtIcCAWCWrEq_2c_I_mZFu9gXYM1he48z_TJkSMMpGxLJTCkvwVC1Ezs0iAZhky37kjUDnI0VlBxOFG.4HQzprJnIuWEyNu7nQH6UptyNFYKuKX2_zmsYlNRbC1AyuGXEzSkFXDJFLkCGQ6aayiX7LP.pgb5JPcSQXZjAZJ8YhcX3SBmP8tv_jq8vP0eUUjNaPAsbt3yfcPAMcbATu1OsSPioonyx3u0Fg7Wg-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4A57A62C.2030302@yahoo.com.ar>
+Date: Fri, 10 Jul 2009 17:35:56 -0300
+From: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: No more vcs1 and vcsa1 in 2.6.30.N
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Jul 2009, Mark Brown wrote:
+Hello.
 
-> I also notice that you've CCed trivial@kernel.org.  Please don't do that 
-> except for things that can't possibly cause bugs - a change like this 
-> doesn't really qualify since while the code clearly looks buggy it's 
-> always possible that the code is just obscure.
+Since upgrade my system to 2.6.30[.1]. I don't have anymore
+/sys/devices/virtual/vc/vcs1 and /sys/devices/virtual/vc/vcs1 in
+consequence not have anymore the corresponding char devs in /dev.
 
-Absolutely. 
+The problem is with this commit: {vcs: hook sysfs devices into object
+lifetime instead of "binding"} [#1]
+Reverting it solves the issue.
 
-Nevertheless, when the patch doesn't qualify for trivial queue, and I see 
-proper maintainers being also involved, I just silently skip the patch, 
-otherwise I just add proper maintainers to CC and don't apply it to 
-trivial queue.
+[#1]
+http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.30.y.git;a=commitdiff;h=4995f8ef9d3aac72745e12419d7fbaa8d01b1d81
+
+Cheers,
+
+
+Please CC to me, not subscribed to LKML. Thanks.
 
 -- 
-Jiri Kosina
-SUSE Labs
+Gerardo Exequiel Pozzi ( djgera )
+http://www.djgera.com.ar
+KeyID: 0x1B8C330D
+Key fingerprint = 0CAA D5D4 CD85 4434 A219  76ED 39AB 221B 1B8C 330D
+
