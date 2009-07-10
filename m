@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbZGJJOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbZGJJPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbZGJJOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 05:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbZGJJO0
+	id S1754269AbZGJJPA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 05:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbZGJJOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 05:14:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53863 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbZGJJOZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 05:14:25 -0400
-Subject: Re: [RFC][PATCH] Check write to slab memory which freed already
- using mudflap
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-kernel@vger.kernel.org, vegard.nossum@gmail.com,
-       graydon@redhat.com, fche@redhat.com, cl@linux-foundation.org
-In-Reply-To: <20090710090351.GD14666@wotan.suse.de>
-References: <1247156020.27671.40.camel@debian-nb>
-	 <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com>
-	 <20090710084745.GA26752@elte.hu> <1247215920.32044.3.camel@penberg-laptop>
-	 <20090710090351.GD14666@wotan.suse.de>
-Date: Fri, 10 Jul 2009 12:14:23 +0300
-Message-Id: <1247217263.771.8.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Fri, 10 Jul 2009 05:14:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48669 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751045AbZGJJOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 05:14:52 -0400
+Date: Fri, 10 Jul 2009 11:14:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Erdem Aktas <eaktas1@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [patch] perf_counter : breaking parameter parsing when the
+	command is reached
+Message-ID: <20090710091445.GC27445@elte.hu>
+References: <3fee128b0907052244n1c5fe000me5ca087918f6fa41@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3fee128b0907052244n1c5fe000me5ca087918f6fa41@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
 
-On Fri, 2009-07-10 at 11:03 +0200, Nick Piggin wrote:
-> > And whether SQLB will replace SLUB remains to be seen.
-> > We're still fixing minor issues here and there in SLUB so I have no
-> > reason to expect SLQB stabilization to happen overnight which means
-> > we're going to have SLUB in the tree for a while anyway.
+* Erdem Aktas <eaktas1@gmail.com> wrote:
+
+>     Once the perf parameter parser reaches a non-parameter word, that means
+>     the command is already found and the rest of the string is the parameter
+>     of this command so no need to parse more.
 > 
-> I think it's pretty good now. It was the right thing not to merge
-> it in this window (seeing as I'd forgotten to make it the default
-> in -next). And that flushed out a bug or two. The core logic I
-> think is pretty solid now though.
+>     As an example, when we want to run
+>     perf stat -- ls -al
+>     it is obvious that the -al is the parameter of the ls command, so we
+>     should able to run this like
+>     perf stat ls -al
+> 
+>     Signed-off-by: eaktas <eaktas1@gmail.com>
+> 
+> diff --git a/tools/perf/util/parse-options.c b/tools/perf/util/parse-options.c
+> index 1bf6719..4ad4962 100644
+> --- a/tools/perf/util/parse-options.c
+> +++ b/tools/perf/util/parse-options.c
+> @@ -284,6 +284,11 @@ int parse_options_step(struct parse_opt_ctx_t *ctx,
+>  			if (ctx->flags & PARSE_OPT_STOP_AT_NON_OPTION)
+>  				break;
+>  			ctx->out[ctx->cpidx++] = ctx->argv[0];
+> +			while (--(ctx->argc)) {
+> +				ctx->argv++;
+> +				ctx->out[ctx->cpidx++] = ctx->argv[0];
+> +			}
+> +			ctx->argc++;
 
-The long-standing PowerPC issue is still open, isnt't it? But anyway, my
-main point is that we've already seen from the SLAB to SLUB transition
-that while most of the bugs are fixed early on, there's a "fat tail" of
-problems ranging from performance regressions to slab corruption which
-take a long time to be discovered and fixed up.
+I think there might be a simpler solution: pass in 
+PARSE_OPT_STOP_AT_NON_OPTION.
 
-And I'm not trying to spread FUD on SLQB here, I'm simply stating the
-facts from the previous "slab rewrite" and I have no reason to expect
-this one to go any smoother. OTOH, SLQB has already had exposure in
-linux-next which hopefully makes merging to mainline less painful
-because 95% of the problems are ironed out. But I don't think there's
-much we can do about the remaining 5% that only trigger on weird
-architectures, workloads, or hardware configurations.
+Then we'll trigger this existing code in parse_options_end():
 
-But I think we've been in agreement on this with Nick in the past. So I
-guess my rant is directed towards Ingo who seems to be bit too eager to
-merge SLQB and rm mm/sl{a,u}b.c :-).
+        memmove(ctx->out + ctx->cpidx, ctx->argv, ctx->argc * sizeof(*ctx->out));
+        ctx->out[ctx->cpidx + ctx->argc] = NULL;
+        return ctx->cpidx + ctx->argc;
 
-			Pekka
+which should solve the issue just as well, correct?
 
+	Ingo
