@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbZGJBYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbZGJBaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752488AbZGJBYR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 21:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbZGJBYH
+	id S1752624AbZGJBaw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 21:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbZGJBam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 21:24:07 -0400
-Received: from mga14.intel.com ([143.182.124.37]:8319 "EHLO mga14.intel.com"
+	Thu, 9 Jul 2009 21:30:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35843 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750751AbZGJBYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 21:24:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,376,1243839600"; 
-   d="scan'208";a="163436824"
-Date: Fri, 10 Jul 2009 09:23:56 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH 5/5] add shmem vmstat
-Message-ID: <20090710012356.GA6809@localhost>
-References: <20090709165820.23B7.A69D9226@jp.fujitsu.com> <20090709171452.23C9.A69D9226@jp.fujitsu.com>
+	id S1750751AbZGJBam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 21:30:42 -0400
+Date: Fri, 10 Jul 2009 03:27:38 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: James Morris <jmorris@namei.org>
+Cc: Christoph Hellwig <hch@infradead.org>, David Howells <dhowells@redhat.com>,
+       Roland McGrath <roland@redhat.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] mm_for_maps: shift down_read(mmap_sem) to the caller
+Message-ID: <20090710012738.GA392@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090709171452.23C9.A69D9226@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 09, 2009 at 04:18:01PM +0800, KOSAKI Motohiro wrote:
-> ChangeLog
->   Since v1
->    - Fixed misaccounting bug on page migration
-> 
-> ========================
-> Subject: [PATCH] add shmem vmstat
-> 
-> Recently, We faced several OOM problem by plenty GEM cache. and generally,
-> plenty Shmem/Tmpfs potentially makes memory shortage problem.
-> 
-> We often use following calculation to know shmem pages,
->   shmem = NR_ACTIVE_ANON + NR_INACTIVE_ANON - NR_ANON_PAGES
-> but it is wrong expression. it doesn't consider isolated page and
-> mlocked page.
-> 
-> Then, This patch make explicit Shmem/Tmpfs vm-stat accounting.
-> 
-> 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+mm_for_maps() takes ->mmap_sem after security checks, this looks
+strange and obfuscates the locking rules. Move this lock to its
+single caller, m_start().
 
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
 
-Thanks for the nice work!
+ fs/proc/task_mmu.c   |    1 +
+ fs/proc/task_nommu.c |    1 +
+ fs/proc/base.c       |    8 +++-----
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+--- WAIT/fs/proc/task_mmu.c~1_MOVE_MMAP_SEM	2009-05-03 17:15:27.000000000 +0200
++++ WAIT/fs/proc/task_mmu.c	2009-07-10 02:00:56.000000000 +0200
+@@ -119,6 +119,7 @@ static void *m_start(struct seq_file *m,
+ 	mm = mm_for_maps(priv->task);
+ 	if (!mm)
+ 		return NULL;
++	down_read(&mm->mmap_sem);
+ 
+ 	tail_vma = get_gate_vma(priv->task);
+ 	priv->tail_vma = tail_vma;
+--- WAIT/fs/proc/task_nommu.c~1_MOVE_MMAP_SEM	2009-04-09 00:39:09.000000000 +0200
++++ WAIT/fs/proc/task_nommu.c	2009-07-10 02:01:25.000000000 +0200
+@@ -189,6 +189,7 @@ static void *m_start(struct seq_file *m,
+ 		priv->task = NULL;
+ 		return NULL;
+ 	}
++	down_read(&mm->mmap_sem);
+ 
+ 	/* start from the Nth VMA */
+ 	for (p = rb_first(&mm->mm_rb); p; p = rb_next(p))
+--- WAIT/fs/proc/base.c~1_MOVE_MMAP_SEM	2009-07-09 17:56:27.000000000 +0200
++++ WAIT/fs/proc/base.c	2009-07-10 02:05:14.000000000 +0200
+@@ -235,9 +235,8 @@ static int check_mem_permission(struct t
+ struct mm_struct *mm_for_maps(struct task_struct *task)
+ {
+ 	struct mm_struct *mm = get_task_mm(task);
+-	if (!mm)
+-		return NULL;
+-	if (mm != current->mm) {
++
++	if (mm && mm != current->mm) {
+ 		/*
+ 		 * task->mm can be changed before security check,
+ 		 * in that case we must notice the change after.
+@@ -245,10 +244,9 @@ struct mm_struct *mm_for_maps(struct tas
+ 		if (!ptrace_may_access(task, PTRACE_MODE_READ) ||
+ 		    mm != task->mm) {
+ 			mmput(mm);
+-			return NULL;
++			mm = NULL;
+ 		}
+ 	}
+-	down_read(&mm->mmap_sem);
+ 	return mm;
+ }
+ 
+
