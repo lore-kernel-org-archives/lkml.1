@@ -1,105 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbZGJV41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbZGJWIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbZGJV41 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 17:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbZGJV4S
+	id S1757563AbZGJWIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 18:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZGJWII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 17:56:18 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:57798 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754033AbZGJV4R (ORCPT
+	Fri, 10 Jul 2009 18:08:08 -0400
+Received: from 71-20-254-182.war.clearwire-wmx.net ([71.20.254.182]:54720 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752750AbZGJWIH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 17:56:17 -0400
-Subject: Re: [PATCH 2.6.31] rfkill: allow toggling soft state in sysfs again
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Darren Salt <linux@youmustbejoking.demon.co.uk>
-Cc: John Linville <linville@tuxdriver.com>,
-       Thiemo Nagel <thiemo.nagel@ph.tum.de>,
-       Corentin Chary <corentin.chary@gmail.com>,
-       debian-eeepc-devel@lists.alioth.debian.org,
-       acpi4asus-user@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <507E47A184%linux@youmustbejoking.demon.co.uk>
-References: <4A5716AA.5000903@ph.tum.de>
-	 <71cd59b00907100545v6f440a19xfc3668826eb1e509@mail.gmail.com>
-	 <4A5743AB.6090303@ph.tum.de>
-	 <71cd59b00907100646h5e0283fcyce5874cc4a19106b@mail.gmail.com>
-	 <4A575119.9070505@ph.tum.de> <507E3B9268%linux@youmustbejoking.demon.co.uk>
-	 <1247254899.21972.9.camel@johannes.local>
-	 <507E47A184%linux@youmustbejoking.demon.co.uk>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MvvnSk+qNM5ucUSE8A8Z"
-Date: Fri, 10 Jul 2009 23:55:52 +0200
-Message-Id: <1247262952.26071.1.camel@johannes.local>
+	Fri, 10 Jul 2009 18:08:07 -0400
+Subject: [git pull] drm/i915 fixes for 2.6.30-rc2
+From: Eric Anholt <eric@anholt.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-1AIuu9UwCHyjEwLZe3J9"
+Date: Fri, 10 Jul 2009 15:07:53 -0700
+Message-Id: <1247263673.4678.10.camel@gaiman.anholt.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-MvvnSk+qNM5ucUSE8A8Z
+--=-1AIuu9UwCHyjEwLZe3J9
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2009-07-10 at 22:09 +0100, Darren Salt wrote:
-> I demand that Johannes Berg may or may not have written...
->=20
-> > Apparently there actually _are_ tools that try to set this in sysfs eve=
-n
-> > though it wasn't supposed to be used this way without claiming first.
->=20
-> Then it should have been documented as such. I don't see anything about t=
-his
-> in Documentation/rfkill.txt (as found in 2.6.30), other than a vague
-> statement that "Kernel handles events", which isn't exactly helpful :-\
+The following changes since commit c2cc49a2f8a479dde96a599646d30b6cc9dbed78=
+:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../sfrench/cifs-2.6
 
-Oh, it's not just that rfkill was horrible, the documentation matched :)
-All the SHOUTING in it about what you must and must not do but nothing
-actually helpful :)
+are available in the git repository at:
 
-> > *shrug*, I don't like it, but whatever...
->=20
-> I do. It means that we have a nice simple text-based interface for use in
-> scripts (for now), and a binary interface which is better suited to the l=
-ikes
-> of desktop applications.
+  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-intel-=
+next
 
-Indeed, and as long as you expect to only use soft toggle... problem is
-that you won't know whether it's soft-toggled or not while it's
-hard-blocked (off)!
+Didn't send a request out for a while as there were some suspend/resume
+regressions that I figured were ours but apparently came from elsewhere
+in the tree.  Lots of KMS fixes in here, some of which fixed several
+reported bugs at the same time.  Also fixes the reported tiling
+regression we hope.
 
-> > Please test & report.
->=20
-> With the patch applied, Bluetooth toggling is working again, so you get t=
-o
-> add this:
->=20
-> Tested-By: Darren Salt <linux@youmustbejoking.demon.co.uk>
+There's one featurey bit here, "enable error detection & state
+collection."  There's more to this series coming, but I think it's
+valuable enough to let it in.  The plan is that we end up with the GPU
+catching interrupts, sending a uevent up to userland, and misc userland
+magic seeing that, capturing the error state for debugging, and then
+resetting the GPU.  No more losing your whole X session just because you
+tried to play some game and the GPU segfaulted.  Add in the ability to
+do kerneloops style reporting in the future, and we're pretty excited.
 
-Ok, John, please pick up the patch.
+Andy Whitcroft (1):
+      drm/i915: fix up a raw 64bit divide
 
-johannes
+Ben Gamari (3):
+      drm/i915: Remove gtt_bound from drm_i915_gem_object
+      drm/i915: Add gtt_offset to gem object list debugfs output
+      drm/i915: Move lock to more reasonable location
 
---=-MvvnSk+qNM5ucUSE8A8Z
+Chris Wilson (1):
+      drm/i915: Refactor calls to unmap_mapping_range
+
+Eric Anholt (3):
+      drm/i915: Disable GEM when a broken video BIOS takes up the whole ape=
+rture.
+      drm/i915: Fix harmless warning from patch merged after i2c rework.
+      drm/i915: Zap the GTT mapping when transitioning from untiled to tile=
+d.
+
+Jesse Barnes (1):
+      drm/i915: enable error detection & state collection
+
+Keith Packard (2):
+      drm/i915: Make driver less chatty
+      drm/i915: Adjust DisplayPort clocks to use 96MHz reference
+
+Shaohua Li (1):
+      drm/i915: add FIFO watermark support
+
+Zhao Yakui (4):
+      drm/i915: Check the LID device to decide whether the LVDS should be i=
+nitialized
+      drm/i915: Restore the KMS modeset for every activated CRTC
+      drm: Disable the unused connectors explicitly when resuming with KMS.
+      drm/i915: Avoid saving/restore the modesetting registers twice in KMS=
+ mode
+
+Zhenyu Wang (2):
+      drm/i915: Don't update display FIFO watermark on IGDNG
+      drm/i915: Fix for LVDS VBT change on IGDNG
+
+ling.ma@intel.com (4):
+      drm/i915: Set SSC frequency for 8xx chips correctly
+      drm/i915: enable sdvo lvds scaling function.
+      drm/i915: crt fetch EDID by DVI-I converter on G4x platform
+      drm/i915: Disable VGA output when doing DRM_MODE_DPMS_OFF.
+
+ drivers/gpu/drm/drm_crtc_helper.c       |    2 +
+ drivers/gpu/drm/i915/i915_dma.c         |   72 +++++-
+ drivers/gpu/drm/i915/i915_drv.c         |    9 +-
+ drivers/gpu/drm/i915/i915_drv.h         |   27 ++-
+ drivers/gpu/drm/i915/i915_gem.c         |   36 ++-
+ drivers/gpu/drm/i915/i915_gem_debugfs.c |   44 +++-
+ drivers/gpu/drm/i915/i915_gem_tiling.c  |    6 +
+ drivers/gpu/drm/i915/i915_irq.c         |  143 ++++++++++-
+ drivers/gpu/drm/i915/i915_reg.h         |   60 ++++-
+ drivers/gpu/drm/i915/i915_suspend.c     |  221 +++++++++-------
+ drivers/gpu/drm/i915/intel_bios.c       |   20 +-
+ drivers/gpu/drm/i915/intel_crt.c        |   30 ++-
+ drivers/gpu/drm/i915/intel_display.c    |  448 +++++++++++++++++++++++++++=
+++-
+ drivers/gpu/drm/i915/intel_dp.c         |   11 +-
+ drivers/gpu/drm/i915/intel_dp_i2c.c     |   11 +-
+ drivers/gpu/drm/i915/intel_fb.c         |   18 +-
+ drivers/gpu/drm/i915/intel_lvds.c       |   74 +++++-
+ drivers/gpu/drm/i915/intel_sdvo.c       |  114 +++++++-
+ drivers/gpu/drm/i915/intel_sdvo_regs.h  |    1 +
+ 19 files changed, 1159 insertions(+), 188 deletions(-)
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-1AIuu9UwCHyjEwLZe3J9
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-iQIcBAABAgAGBQJKV7jlAAoJEODzc/N7+QmahX0P/jKd86jntVSAeS8i5p08UnDf
-cnueuwfGqLQHKtliVTcINIZXHciVMCDxaN6w0hE60Y27iBEvwLIuMypu5I1ekjNL
-Kq4enHX//ag7bzske/c70QQ7KBU7ukFLjbx0uOAgk9+b40nzLu/4Ttur/dV9J7qZ
-jtvW1Ch7ZX6AOeexZxC2dXF8Jxfnnvwvxr7ArUzpjcZaexaPyMfass8yN7nenXSL
-N4lDw0cwnMMM5CgPxQDyMVoJ0uRzWh33es1Pw87ON4GYkNwIVVQQAPqGsoNp0LwR
-vNinVWFQVRaabrUnJYsAwnHbrMDn1wfJacXDfXvhmhupaPzePwOkLA8LUP1iOa6A
-Hr/EHNOIIr+Mb0bc7leM3lwQtS11ZnNWw24HIspmTxCEGeSkh9AK/Kbyga5gnnFs
-J1fkqhWqObxs0bLs0vNp17aE4ZmjaBKZBsEmM4BfwxE/ty7Pjl7WzHBw5QF2bBbU
-ADJ+Tw4p112JYRpvNwnD5TWyjS2yphyms8fsquNBDSDWAOB7OcDi/cH9wZ3ksGAv
-TbeqresEv5ox5Va37q432wvlDvxTWOz5ntk9ZBobgxBR2hnu95XmD4N+4wyCTTQ7
-5ATKijsJdeMof0afmmzEmDqhIE0MYYTrXsdF+nZfG5MsdtXoULuHiP831vzJWufh
-wL2ZJezlCKazCeM/G7+S
-=vG3B
+iEYEABECAAYFAkpXu7UACgkQHUdvYGzw6veWKwCeIRo0vt6syTH1x2DuIz+ZP9HS
+xbUAn044cpLY0Jhu97cfAorqBbPXtFXo
+=R80g
 -----END PGP SIGNATURE-----
 
---=-MvvnSk+qNM5ucUSE8A8Z--
+--=-1AIuu9UwCHyjEwLZe3J9--
 
