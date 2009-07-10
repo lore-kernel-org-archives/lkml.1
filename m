@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZGJMIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753595AbZGJMRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbZGJMIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 08:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZGJMIG
+	id S1753595AbZGJMRO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 08:17:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZGJMQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 08:08:06 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54233 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753907AbZGJMIF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 08:08:05 -0400
-Date: Fri, 10 Jul 2009 01:22:40 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC][PATCH] PM: Introduce core framework for run-time PM of
-	I/O devices (rev. 8)
-Message-ID: <20090709232239.GG1469@ucw.cz>
-References: <200907060252.12755.rjw@sisk.pl>
+	Fri, 10 Jul 2009 08:16:59 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52486 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750874AbZGJMQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 08:16:58 -0400
+X-Authenticated: #23875046
+X-Provags-ID: V01U2FsdGVkX18nq/oWdxQnR6uML3uZky5PJmlYTZx5iaRdqJqxZM
+	U3RNsH3d07p5KY
+Message-ID: <4A573131.40601@fisher-privat.net>
+Date: Fri, 10 Jul 2009 14:16:49 +0200
+From: Alexey Fisher <bug-track@fisher-privat.net>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090616)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907060252.12755.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Richard A. Holden III" <aciddeath@gmail.com>
+Subject: Re: Intel BIOS - Corrupted low memory at ffff880000004200
+References: <4A5210A2.2080301@fisher-privat.net> <4A52254F.8080103@fisher-privat.net> <20090708113949.GA8960@srcf.ucam.org> <20090710115238.GA8812@elte.hu>
+In-Reply-To: <20090710115238.GA8812@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi!
+Ingo Molnar schrieb:
+> * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> 
+>> On Mon, Jul 06, 2009 at 06:24:47PM +0200, Alexey Fisher wrote:
+>>> Hallo Ingo, Richard.
+>>>
+>>> I'm getting "Corrupted low memory" trace with my Intel DG45ID 
+>>> board after resume. This board has different dmi-bios-vendor... 
+>>> so probably it will be nice to have it in your patch.
+>> I'm beginning to think that we should be doing this on all 
+>> hardware, perhaps with a kernel option to disable it for embedded 
+>> devices that really need that 64K. The low-memory corruption issue 
+>> seems to be very widespread.
+> 
+> The problem is that the BIOS corrupted memory that it also marked as 
+> 'usable' in its E820 map it gave to the kernel. If that memory is 
+> not usable, it should not have been marked as such. Also, some of 
+> the reports showed corruption beyond this range so the workaround is 
+> not universal.
+> 
+> So i'd really like to know what is happening there, instead of just 
+> zapping support for 64K of RAM on the majority of Linux systems.
+> 
+> We might end up doing the same thing in the end (i.e. disable that 
+> 64k of RAM) - but it should be an informed decision, not a wild stab 
+> in the dark.
+> 
+> 	Ingo
 
-> +/**
-> + * Device run-time power management request types.
-> + *
-> + * RPM_REQ_NONE		Do nothing.
-> + *
-> + * RPM_REQ_IDLE		Run the device bus type's ->runtime_idle() callback
-> + *
-> + * RPM_REQ_SUSPEND	Run the device bus type's ->runtime_suspend() callback
-> + *
-> + * RPM_REQ_RESUME	Run the device bus type's ->runtime_resume() callback
-> + */
-> +
-> +enum rpm_request {
-> +	RPM_REQ_NONE = 0,
-> +	RPM_REQ_IDLE,
-> +	RPM_REQ_SUSPEND,
-> +	RPM_REQ_RESUME,
-> +};
-> +
->  struct dev_pm_info {
->  	pm_message_t		power_state;
-> -	unsigned		can_wakeup:1;
-> -	unsigned		should_wakeup:1;
-> +	unsigned int		can_wakeup:1;
-> +	unsigned int		should_wakeup:1;
->  	enum dpm_state		status;		/* Owned by the PM core */
-> -#ifdef	CONFIG_PM_SLEEP
-> +#ifdef CONFIG_PM_SLEEP
->  	struct list_head	entry;
->  #endif
-> +#ifdef CONFIG_PM_RUNTIME
-> +	struct timer_list	suspend_timer;
-> +	unsigned long		timer_expires;
-> +	struct work_struct	work;
-> +	wait_queue_head_t	wait_queue;
-> +	spinlock_t		lock;
-> +	atomic_t		usage_count;
-> +	atomic_t		child_count;
-> +	unsigned int		ignore_children:1;
-> +	unsigned int		runtime_disabled:1;
-> +	unsigned int		runtime_failure:1;
-> +	unsigned int		idle_notification:1;
-> +	unsigned int		request_pending:1;
-> +	unsigned int		deferred_resume:1;
-> +	enum rpm_request	request;
-> +	enum rpm_status		runtime_status;
-
-runtime_status seems to be accessed outside spinlocks. Should it be of
-type atomic_t?
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If i make memory dump like "dd if=/dev/mem of=memdump.dd bs=64k count=1" 
+before and after suspend. Will it help you find out whats happening.
