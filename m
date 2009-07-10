@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751940AbZGJJt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbZGJJv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751940AbZGJJt5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 05:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbZGJJtt
+	id S1752900AbZGJJv4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 05:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZGJJvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 05:49:49 -0400
-Received: from 219-87-157-179.static.tfn.net.tw ([219.87.157.179]:34960 "EHLO
-	mswedge1.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750811AbZGJJts (ORCPT
+	Fri, 10 Jul 2009 05:51:49 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:35607 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750838AbZGJJvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 05:49:48 -0400
-In-Reply-To: <200907091708.54468.arnd@arndb.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-MIME-Version: 1.0
-Subject: Re: [PATCH] score: add regsets support for score
-X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
-Message-ID: <OF46A53443.CAD32185-ON482575EF.0034F550-482575EF.0035E714@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Fri, 10 Jul 2009 17:43:21 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/07/10 ?? 05:43:21,
-	Serialize complete at 2009/07/10 ?? 05:43:21
-Content-Type: text/plain; charset="GB2312"
+	Fri, 10 Jul 2009 05:51:48 -0400
+Subject: Re: [RFC][PATCH] Check write to slab memory which freed already
+ using mudflap
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Rientjes <rientjes@google.com>
+Cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Janboe Ye <yuan-bo.ye@motorola.com>, linux-kernel@vger.kernel.org,
+       vegard.nossum@gmail.com, fche@redhat.com, cl@linux-foundation.org
+In-Reply-To: <alpine.DEB.2.00.0907100243010.14601@chino.kir.corp.google.com>
+References: <1247156020.27671.40.camel@debian-nb>
+	 <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com>
+	 <20090710084745.GA26752@elte.hu> <1247215920.32044.3.camel@penberg-laptop>
+	 <20090710090351.GD14666@wotan.suse.de>
+	 <1247217263.771.8.camel@penberg-laptop>
+	 <20090710092921.GF14666@wotan.suse.de>
+	 <1247218826.771.15.camel@penberg-laptop>
+	 <alpine.DEB.2.00.0907100243010.14601@chino.kir.corp.google.com>
+Date: Fri, 10 Jul 2009 12:51:46 +0300
+Message-Id: <1247219506.771.22.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6A9nxXx021410
 
-Arnd Bergmann <arnd@arndb.de> Ğ´ÓÚ 2009-07-09 23:08:54:
+Hi David,
 
-> You still use an email client that breaks patches by adding line-wraps.
-> Please use a different mail client for sending patches. You could for
-> example use git-send-email with a random freemail account and still
-> set your corporate sender address.
+On Fri, 10 Jul 2009, Pekka Enberg wrote:
+> > I'm not sure it's such a hard decision. SLAB is on it's way out because
+> > SLUB and SLQB code are much cleaner and the debugging support is better.
 
-Sorry, our MIS haven't solved this problem yet,
-I have to used it until they fixed this bug.
+On Fri, 2009-07-10 at 02:47 -0700, David Rientjes wrote:
+> I don't think that is good enough reason.  CONFIG_SLAB is by far the 
+> optimal choice for netperf TCP_RR on >= 16 cpus and pushing it out of the 
+> tree, even though it is no longer the default option, isn't an option for 
+> those of us who live by performance even if it comes at the cost of a 
+> dirtier implementation (enhanced debugging support doesn't even register 
+> on my radar since it's useless in a production environment).
 
-I will enclose a patch file in mail latter.
+Hey, I said SLAB is on its way out (yes, it really is). But I didn't say
+we're going to blindly remove it if performs better than the
+alternatives. I don't see any reason why SQLB can't reach the same
+performance as SLAB after on fundamental level, though. Can you?
 
-Best Regards
-Liqin
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+			Pekka
+
