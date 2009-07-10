@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753017AbZGJK2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZGJK3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753017AbZGJK2x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 06:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbZGJK2p
+	id S1753498AbZGJK3o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 06:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZGJK3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 06:28:45 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:61853 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750811AbZGJK2o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 06:28:44 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: usb mouse not responding after resume
-Date: Fri, 10 Jul 2009 12:28:40 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-usb@vger.kernel.org, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <E1MPCb9-0007w0-BK@pomaz-ex.szeredi.hu>
-In-reply-To: <E1MPCb9-0007w0-BK@pomaz-ex.szeredi.hu>
+	Fri, 10 Jul 2009 06:29:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58059 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751580AbZGJK3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 06:29:36 -0400
+Date: Fri, 10 Jul 2009 12:28:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Boot Consoles question...
+Message-ID: <20090710102857.GF5499@elte.hu>
+References: <200907040017.26921.rgetz@blackfin.uclinux.org> <20090704102904.GB32257@elte.hu> <200907041207.42388.rgetz@blackfin.uclinux.org> <200907071949.41311.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907101228.42047.elendil@planet.nl>
-X-OriginalArrivalTime: 10 Jul 2009 10:28:42.0665 (UTC) FILETIME=[3299A190:01CA0149]
+In-Reply-To: <200907071949.41311.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> Sometimes after resume the usb mouse plugged into my T60 notebook
-> isn't working.  Unplugging and replugging it fixes the problem.  A
-> keyboard is also plugged in, which works normally every time.
-> 
-> This has been happening on and off from about 2.6.30-rc* but in
-> 2.6.31-rc* seems to be getting more frequent.
-> 
-> Here's the suspend-resume-replug part of the dmesg.  Not sure if it is
-> enough, I'd be happy to provide more info.
 
-The most obvious first question is: is there any difference in the 
-messages between resumes where the mouse works and where it does not.
+* Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-Cheers,
-FJP
+> On Sat 4 Jul 2009 12:07, Robin Getz pondered:
+> > On Sat 4 Jul 2009 06:29, Ingo Molnar pondered:
+> > > Could be changed i guess ... but is it really an issue?
+> > 
+> > It is just a change from "normal" (when the kernel has no boot console).
+> > 
+> > >  One artifact 
+> > >  could be manual scroll-back - it would perhaps be nice indeed to
+> > >  allow the scrollback to the top of the bootlog.
+> > 
+> > Exactly.
+> > 
+> > One of my thoughts (was since CON_PRINTBUFFER isn't used after 
+> > register_console()) - was for the CON_BOOT's CON_PRINTBUFFER flag to control 
+> > the clearing of the CON_PRINTBUFFER for the real console or not...
+> > 
+> > All early_printk consoles that I looked at have their CON_PRINTBUFFER set.
+> > 
+> > Which means that something like should do the trick -- allow people who want 
+> > to override things to do so, and still have the today's setup work as is...
+> 
+> I guess no one liked that idea?
+
+No, this means no-one objected :)
+
+> How about at least making sure that the real console gets a 
+> message that something is on the bootconsole? Right now the switch 
+> message:
+> 
+> console handover:boot [early_shadow0]  -> real [ttyBF0]
+> 
+> only is printed on the bootconsole, not on the real console - so 
+> someone looking at the real console may not know there is anything 
+> on the boot console. They just think that things are missing...
+
+Mind sending a full (changelogged, titled, etc.) patch for the other 
+bit as well? It kind of overlaps this one but both make sense, 
+especially if people end up objecting against the more intrusive one 
+and it gets dropped/reverted ;-)
+
+	Ingo
