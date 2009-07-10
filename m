@@ -1,326 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZGJMlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbZGJMld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbZGJMlW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 08:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbZGJMiQ
+	id S1755900AbZGJMld (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 08:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZGJMiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 08:38:16 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:34911 "EHLO
+	Fri, 10 Jul 2009 08:38:19 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:34923 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755039AbZGJMiN (ORCPT
+	with ESMTP id S1754929AbZGJMiR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 08:38:13 -0400
+	Fri, 10 Jul 2009 08:38:17 -0400
 From: Adrian Hunter <adrian.hunter@nokia.com>
 To: Pierre Ossman <pierre@ossman.eu>
 Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
        Denis Karpov <ext-denis.2.karpov@nokia.com>,
        Adrian Hunter <adrian.hunter@nokia.com>,
-       linux-omap Mailing List <linux-omap@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Date: Fri, 10 Jul 2009 15:41:37 +0300
-Message-Id: <20090710124137.1262.63323.sendpatchset@ahunter-tower>
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-omap Mailing List <linux-omap@vger.kernel.org>
+Date: Fri, 10 Jul 2009 15:41:44 +0300
+Message-Id: <20090710124144.1262.46573.sendpatchset@ahunter-tower>
 In-Reply-To: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
 References: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
-Subject: [PATCH 13/32] omap_hsmmc: context save/restore support
-X-OriginalArrivalTime: 10 Jul 2009 12:38:01.0090 (UTC) FILETIME=[42FB5620:01CA015B]
+Subject: [PATCH 14/32] omap_hsmmc: set open drain bit correctly
+X-OriginalArrivalTime: 10 Jul 2009 12:38:10.0456 (UTC) FILETIME=[48907980:01CA015B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 3eb49df725b26329e85db6e4fc6f72fc029501a3 Mon Sep 17 00:00:00 2001
+>From 78e90903abbc084ebdd7716498eac9429c61e878 Mon Sep 17 00:00:00 2001
 From: Denis Karpov <ext-denis.2.karpov@nokia.com>
-Date: Wed, 22 Apr 2009 16:04:25 +0200
-Subject: [PATCH] omap_hsmmc: context save/restore support
+Date: Thu, 23 Apr 2009 16:44:58 +0300
+Subject: [PATCH] omap_hsmmc: set open drain bit correctly
 
-Keep the context over PM dynamic OFF states.
+The code could set the bit to 1 but not reset it to 0.
 
 Signed-off-by: Denis Karpov <ext-denis.2.karpov@nokia.com>
 Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 ---
- drivers/mmc/host/omap_hsmmc.c |  194 ++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 184 insertions(+), 10 deletions(-)
+ drivers/mmc/host/omap_hsmmc.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index dad0548..762aa01 100644
+index 762aa01..2e2a81c 100644
 --- a/drivers/mmc/host/omap_hsmmc.c
 +++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -37,6 +37,7 @@
+@@ -1111,9 +1111,11 @@ static void omap_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ 	if (do_send_init_stream)
+ 		send_init_stream(host);
  
- /* OMAP HSMMC Host Controller Registers */
- #define OMAP_HSMMC_SYSCONFIG	0x0010
-+#define OMAP_HSMMC_SYSSTATUS	0x0014
- #define OMAP_HSMMC_CON		0x002C
- #define OMAP_HSMMC_BLK		0x0104
- #define OMAP_HSMMC_ARG		0x0108
-@@ -94,6 +95,8 @@
- #define DUAL_VOLT_OCR_BIT	7
- #define SRC			(1 << 25)
- #define SRD			(1 << 26)
-+#define SOFTRESET		(1 << 1)
-+#define RESETDONE		(1 << 0)
- 
- /*
-  * FIXME: Most likely all the data using these _DEVID defines should come
-@@ -152,6 +155,8 @@ struct mmc_omap_host {
- 	int			slot_id;
- 	int			dbclk_enabled;
- 	int			response_busy;
-+	int			context_loss;
-+
- 	struct	omap_mmc_platform_data	*pdata;
- };
- 
-@@ -166,6 +171,166 @@ static void omap_mmc_stop_clock(struct mmc_omap_host *host)
- 		dev_dbg(mmc_dev(host->mmc), "MMC Clock is not stoped\n");
- }
- 
-+#ifdef CONFIG_PM
-+
-+/*
-+ * Restore the MMC host context, if it was lost as result of a
-+ * power state change.
-+ */
-+static int omap_mmc_restore_ctx(struct mmc_omap_host *host)
-+{
-+	struct mmc_ios *ios = &host->mmc->ios;
-+	struct omap_mmc_platform_data *pdata = host->pdata;
-+	int context_loss = 0;
-+	u32 hctl, capa, con;
-+	u16 dsor = 0;
-+	unsigned long timeout;
-+
-+	if (pdata->get_context_loss_count) {
-+		context_loss = pdata->get_context_loss_count(host->dev);
-+		if (context_loss < 0)
-+			return 1;
-+	}
-+
-+	dev_dbg(mmc_dev(host->mmc), "context was %slost\n",
-+		context_loss == host->context_loss ? "not " : "");
-+	if (host->context_loss == context_loss)
-+		return 1;
-+
-+	/* Wait for hardware reset */
-+	timeout = jiffies + msecs_to_jiffies(MMC_TIMEOUT_MS);
-+	while ((OMAP_HSMMC_READ(host->base, SYSSTATUS) & RESETDONE) != RESETDONE
-+		&& time_before(jiffies, timeout))
-+		;
-+
-+	/* Do software reset */
-+	OMAP_HSMMC_WRITE(host->base, SYSCONFIG, SOFTRESET);
-+	timeout = jiffies + msecs_to_jiffies(MMC_TIMEOUT_MS);
-+	while ((OMAP_HSMMC_READ(host->base, SYSSTATUS) & RESETDONE) != RESETDONE
-+		&& time_before(jiffies, timeout))
-+		;
-+
-+	OMAP_HSMMC_WRITE(host->base, SYSCONFIG,
-+			OMAP_HSMMC_READ(host->base, SYSCONFIG) | AUTOIDLE);
-+
-+	if (host->id == OMAP_MMC1_DEVID) {
-+		if (host->power_mode != MMC_POWER_OFF &&
-+		    (1 << ios->vdd) <= MMC_VDD_23_24)
-+			hctl = SDVS18;
-+		else
-+			hctl = SDVS30;
-+		capa = VS30 | VS18;
-+	} else {
-+		hctl = SDVS18;
-+		capa = VS18;
-+	}
-+
-+	OMAP_HSMMC_WRITE(host->base, HCTL,
-+			OMAP_HSMMC_READ(host->base, HCTL) | hctl);
-+
-+	OMAP_HSMMC_WRITE(host->base, CAPA,
-+			OMAP_HSMMC_READ(host->base, CAPA) | capa);
-+
-+	OMAP_HSMMC_WRITE(host->base, HCTL,
-+			OMAP_HSMMC_READ(host->base, HCTL) | SDBP);
-+
-+	timeout = jiffies + msecs_to_jiffies(MMC_TIMEOUT_MS);
-+	while ((OMAP_HSMMC_READ(host->base, HCTL) & SDBP) != SDBP
-+		&& time_before(jiffies, timeout))
-+		;
-+
-+	OMAP_HSMMC_WRITE(host->base, STAT, STAT_CLEAR);
-+	OMAP_HSMMC_WRITE(host->base, ISE, INT_EN_MASK);
-+	OMAP_HSMMC_WRITE(host->base, IE, INT_EN_MASK);
-+
-+	/* Do not initialize card-specific things if the power is off */
-+	if (host->power_mode == MMC_POWER_OFF)
-+		goto out;
-+
 +	con = OMAP_HSMMC_READ(host->base, CON);
-+	switch (ios->bus_width) {
-+	case MMC_BUS_WIDTH_8:
-+		OMAP_HSMMC_WRITE(host->base, CON, con | DW8);
-+		break;
-+	case MMC_BUS_WIDTH_4:
-+		OMAP_HSMMC_WRITE(host->base, CON, con & ~DW8);
-+		OMAP_HSMMC_WRITE(host->base, HCTL,
-+			OMAP_HSMMC_READ(host->base, HCTL) | FOUR_BIT);
-+		break;
-+	case MMC_BUS_WIDTH_1:
-+		OMAP_HSMMC_WRITE(host->base, CON, con & ~DW8);
-+		OMAP_HSMMC_WRITE(host->base, HCTL,
-+			OMAP_HSMMC_READ(host->base, HCTL) & ~FOUR_BIT);
-+		break;
-+	}
-+
-+	if (ios->clock) {
-+		dsor = OMAP_MMC_MASTER_CLOCK / ios->clock;
-+		if (dsor < 1)
-+			dsor = 1;
-+
-+		if (OMAP_MMC_MASTER_CLOCK / dsor > ios->clock)
-+			dsor++;
-+
-+		if (dsor > 250)
-+			dsor = 250;
-+	}
-+
-+	OMAP_HSMMC_WRITE(host->base, SYSCTL,
-+		OMAP_HSMMC_READ(host->base, SYSCTL) & ~CEN);
-+	OMAP_HSMMC_WRITE(host->base, SYSCTL, (dsor << 6) | (DTO << 16));
-+	OMAP_HSMMC_WRITE(host->base, SYSCTL,
-+		OMAP_HSMMC_READ(host->base, SYSCTL) | ICE);
-+
-+	timeout = jiffies + msecs_to_jiffies(MMC_TIMEOUT_MS);
-+	while ((OMAP_HSMMC_READ(host->base, SYSCTL) & ICS) != ICS
-+		&& time_before(jiffies, timeout))
-+		;
-+
-+	OMAP_HSMMC_WRITE(host->base, SYSCTL,
-+		OMAP_HSMMC_READ(host->base, SYSCTL) | CEN);
-+
-+	con = OMAP_HSMMC_READ(host->base, CON);
-+	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN)
+ 	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN)
+-		OMAP_HSMMC_WRITE(host->base, CON,
+-				OMAP_HSMMC_READ(host->base, CON) | OD);
 +		OMAP_HSMMC_WRITE(host->base, CON, con | OD);
 +	else
 +		OMAP_HSMMC_WRITE(host->base, CON, con & ~OD);
-+out:
-+	host->context_loss = context_loss;
-+
-+	dev_dbg(mmc_dev(host->mmc), "context is restored\n");
-+	return 0;
-+}
-+
-+/*
-+ * Save the MMC host context (store the number of power state changes so far).
-+ */
-+static void omap_mmc_save_ctx(struct mmc_omap_host *host)
-+{
-+	struct omap_mmc_platform_data *pdata = host->pdata;
-+	int context_loss;
-+
-+	if (pdata->get_context_loss_count) {
-+		context_loss = pdata->get_context_loss_count(host->dev);
-+		if (context_loss < 0)
-+			return;
-+		host->context_loss = context_loss;
-+	}
-+}
-+
-+#else
-+
-+static int omap_mmc_restore_ctx(struct mmc_omap_host *host)
-+{
-+	return 0;
-+}
-+
-+static void omap_mmc_save_ctx(struct mmc_omap_host *host)
-+{
-+}
-+
-+#endif
-+
- /*
-  * Send init stream sequence to card
-  * before sending IDLE command
-@@ -823,6 +988,7 @@ static int omap_mmc_enable(struct mmc_host *mmc)
- 	if (err)
- 		return err;
- 	dev_dbg(mmc_dev(host->mmc), "mmc_fclk: enabled\n");
-+	omap_mmc_restore_ctx(host);
- 	return 0;
+ 
+ 	mmc_host_lazy_disable(host->mmc);
  }
- 
-@@ -830,6 +996,7 @@ static int omap_mmc_disable(struct mmc_host *mmc, int lazy)
- {
- 	struct mmc_omap_host *host = mmc_priv(mmc);
- 
-+	omap_mmc_save_ctx(host);
- 	clk_disable(host->fclk);
- 	dev_dbg(mmc_dev(host->mmc), "mmc_fclk: disabled\n");
- 	return 0;
-@@ -934,7 +1101,7 @@ static void omap_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 
- 	/* Wait till the ICS bit is set */
- 	timeout = jiffies + msecs_to_jiffies(MMC_TIMEOUT_MS);
--	while ((OMAP_HSMMC_READ(host->base, SYSCTL) & ICS) != 0x2
-+	while ((OMAP_HSMMC_READ(host->base, SYSCTL) & ICS) != ICS
- 		&& time_before(jiffies, timeout))
- 		msleep(1);
- 
-@@ -1014,12 +1181,19 @@ static int mmc_regs_show(struct seq_file *s, void *data)
- {
- 	struct mmc_host *mmc = s->private;
- 	struct mmc_omap_host *host = mmc_priv(mmc);
-+	struct omap_mmc_platform_data *pdata = host->pdata;
-+	int context_loss = 0;
-+
-+	if (pdata->get_context_loss_count)
-+		context_loss = pdata->get_context_loss_count(host->dev);
- 
- 	seq_printf(s, "mmc%d:\n"
- 			" enabled:\t%d\n"
- 			" nesting_cnt:\t%d\n"
-+			" ctx_loss:\t%d:%d\n"
- 			"\nregs:\n",
--			mmc->index, mmc->enabled ? 1 : 0, mmc->nesting_cnt);
-+			mmc->index, mmc->enabled ? 1 : 0, mmc->nesting_cnt,
-+			host->context_loss, context_loss);
- 
- 	if (clk_enable(host->fclk) != 0) {
- 		seq_printf(s, "can't read the regs\n");
-@@ -1144,6 +1318,8 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
- 		goto err1;
- 	}
- 
-+	omap_mmc_save_ctx(host);
-+
- 	mmc->caps |= MMC_CAP_DISABLE;
- 	mmc_set_disable_delay(mmc, msecs_to_jiffies(100));
- 	if (mmc_host_enable(host->mmc) != 0) {
-@@ -1378,21 +1554,19 @@ static int omap_mmc_resume(struct platform_device *pdev)
- 		return 0;
- 
- 	if (host) {
--
--		if (mmc_host_enable(host->mmc) != 0)
--			goto clk_en_err;
--
- 		ret = clk_enable(host->iclk);
--		if (ret) {
--			mmc_host_disable(host->mmc);
--			clk_put(host->fclk);
-+		if (ret)
- 			goto clk_en_err;
--		}
- 
- 		if (clk_enable(host->dbclk) != 0)
- 			dev_dbg(mmc_dev(host->mmc),
- 					"Enabling debounce clk failed\n");
- 
-+		if (mmc_host_enable(host->mmc) != 0) {
-+			clk_disable(host->iclk);
-+			goto clk_en_err;
-+		}
-+
- 		omap_hsmmc_init(host);
- 
- 		if (host->pdata->resume) {
 -- 
 1.5.6.3
 
