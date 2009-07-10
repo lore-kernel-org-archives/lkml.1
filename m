@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbZGJUea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbZGJUex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757277AbZGJUea (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 16:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZGJUeX
+	id S1757539AbZGJUex (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 16:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbZGJUeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 16:34:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55729 "EHLO mx2.mail.elte.hu"
+	Fri, 10 Jul 2009 16:34:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55914 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755424AbZGJUeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 16:34:22 -0400
-Date: Fri, 10 Jul 2009 22:34:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: Re: [PATCH] dma-debug: Fix the overlap() function to be correct
-	and readable
-Message-ID: <20090710203404.GA4234@elte.hu>
-References: <20090710162848.GA26862@elte.hu> <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain> <20090710193110.GA28281@elte.hu> <20090710195157.GA31361@elte.hu> <alpine.LFD.2.01.0907101306000.3352@localhost.localdomain>
+	id S1756070AbZGJUen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 16:34:43 -0400
+Date: Fri, 10 Jul 2009 16:34:33 -0400
+From: Dave Jones <davej@redhat.com>
+To: Joao Correia <joaomiguelcorreia@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Amerigo Wang <xiyou.wangcong@gmail.com>
+Subject: Re: [PATCH 3/3] Increase lockdep limits: MAX_LOCKDEP_CHAINS_BITS
+Message-ID: <20090710203433.GA11105@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Joao Correia <joaomiguelcorreia@gmail.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Amerigo Wang <xiyou.wangcong@gmail.com>
+References: <a5d9929e0907070825p78c1e527ud8f8d047767f621e@mail.gmail.com> <1247078066.16156.15.camel@laptop> <a5d9929e0907081232y2c043a05lff8868c3c5931e9e@mail.gmail.com> <a5d9929e0907081233s6fc42c15k710047a1b0dcc5bf@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0907101306000.3352@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <a5d9929e0907081233s6fc42c15k710047a1b0dcc5bf@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 08, 2009 at 08:33:37PM +0100, Joao Correia wrote:
+ > On Wed, Jul 8, 2009 at 8:32 PM, Joao Correia<joaomiguelcorreia@gmail.com> wrote:
+ > > On Wed, Jul 8, 2009 at 7:34 PM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+ > >> On Tue, 2009-07-07 at 16:25 +0100, Joao Correia wrote:
+ > >>> (Applies to current Linus tree, as of 2.6.31-rc2)
+ > >>>
+ > >>> A third limit becomes apparent as being too low after raising
+ > >>> MAX_STACK_TRACE_ENTRIES and MAX_LOCK_DEPTH, although this one is more
+ > >>> elusive to trigger.
+ > >>
+ > >> Would this involve reloading modules a lot?
+ > >>
+ > >>
+ > >
+ > > All the other limits were triggered immediatly upon boot. This one
+ > > happens during regular system usage, after a couple of hours. Not
+ > > loading more modules than needed, the system stays at around 45
+ > > modules loaded, give or take. I do have qemu running, if that helps
+ > > anything.
+ > >
+ > > Joao Correia
+ > >
+ > 
+ > qemu running as a -host-, not the system running inside it. Just to clear it up.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Could you upload your /proc/lockdep someplace ? Maybe there's some obvious
+clues in there like the ones we saw in mine.
 
-> 
-> 
-> On Fri, 10 Jul 2009, Ingo Molnar wrote:
-> > 
-> > How about the patch below? Lightly tested.
-> >  
-> >  	if (!PageHighMem(page)) {
-> > -		void *addr = ((char *)page_address(page)) + offset;
-> > +		void *addr = (void *)page_address(page) + offset;
-> > +
-> 
-> Why is that 'void *' cast there? page_address() is already a void *.
-> 
-> Other than that it obviously looks good to me. But I never see my 
-> own bugs.
+	Dave
 
-hm, indeed. I distinctly remember page_address() having been 
-unsigned long ten years ago.
-
-And yes, i still have a "highmem-2.2.21-A0" patch proving it:
-
---- linux/include/linux/pagemap.h.orig  Thu Oct  7 14:54:24 1999
-+++ linux/include/linux/pagemap.h       Wed Oct 13 02:44:03 1999
-@@ -11,12 +11,24 @@
- 
- #include <linux/mm.h>
- #include <linux/fs.h>
-+#include <linux/list.h>
- 
--static inline unsigned long page_address(struct page * page)
-+extern inline unsigned long FIXME_page_address(struct page * page)
- {
-+       if (PageHIGHMEM(page))
-+               BUG();
-        return PAGE_OFFSET + ((page - mem_map) << PAGE_SHIFT);
-
-Which, beyond being a rather embarrasing hunk (whose author i wont 
-name voluntarily - i'll rather take the 5th), also shows that 
-page_address() started out as an unsigned long.
-
-Which got cleaned up for good once we added page->address, instead 
-of the above direct calculation.
-
-( Note to self: consider checking the types of core MM facilities 
-  somewhat more frequently than every 10 years. )
-
-	Ingo
