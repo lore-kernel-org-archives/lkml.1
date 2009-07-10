@@ -1,156 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbZGJQbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZGJQhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753981AbZGJQbp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 12:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZGJQbh
+	id S1755000AbZGJQhg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 12:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbZGJQh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 12:31:37 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:39234 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbZGJQbg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 12:31:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=mFKPiXK/gBjwyNGTq6KAcELh5hHjhGjzMvOeuY3Ezw2Vp1Rt1nuc+TRfcFP8kmGazG
-         g/46j+cW74eNbehZGBwwYv+ZR2/QdyYbMQB4RprWKx6Spd02HmuMIEJrGclSw/2/Kndm
-         ia65VeKCvyLDAw1PoprpDDlrDFkglQemGsjKY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BISECTED] HP G7000 battery disappears after suspend
-Date: Fri, 10 Jul 2009 18:37:26 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc2-next-20090708-03666-gb620e95-dirty; KDE/4.2.4; i686; ; )
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com> <61b223ba0907090619ld35b51eqe3ace5aad7fde821@mail.gmail.com> <200907092211.31250.rjw@sisk.pl>
-In-Reply-To: <200907092211.31250.rjw@sisk.pl>
+	Fri, 10 Jul 2009 12:37:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37051 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754201AbZGJQhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 12:37:25 -0400
+Message-ID: <4A576E04.9070004@kernel.org>
+Date: Fri, 10 Jul 2009 09:36:20 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>
+CC: dann frazier <dannf@hp.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Stephen Frost <sfrost@snowman.net>
+Subject: [PATCH] x86/pci: insert ioapic resource before assign unassigned
+ resource for pci -v2
+References: <20090630180300.GA9971@ldl.fc.hp.com>	 <4A4A5B01.9040200@kernel.org> <20090703225708.GA30664@ldl.fc.hp.com>	 <4A4FADDC.30606@kernel.org> <20090709185945.GG2613@ldl.fc.hp.com>	 <4A564263.5010305@kernel.org> <4A564634.1020708@kernel.org>	 <4A564990.3060202@kernel.org> <1247172044.3898.147.camel@mulgrave.site> <4A56641B.9050204@kernel.org>
+In-Reply-To: <4A56641B.9050204@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907101837.29026.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 July 2009 22:11:30 Rafael J. Wysocki wrote:
-> On Thursday 09 July 2009, Alan Jenkins wrote:
-> > 2009/7/8 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>:
-> > > On Wednesday 08 July 2009 21:41:17 Rafael J. Wysocki wrote:
-> > >> On Wednesday 08 July 2009, Alan Jenkins wrote:
-> > >> > Hi,
-> > >> >
-> > >> > I've borrowed this laptop for a few days.  Linux works pretty well,
-> > >> > but I found a problem on newer kernels.  After suspend it claims the
-> > >> > battery has been removed.  E.g. /proc/acpi/battery/BAT0/state claims
-> > >> > the battery is not present (but it is).
-> > >> >
-> > >> > I've attached acpidump and dmidecode output at
-> > >> > <http://bugzilla.kernel.org/show_bug.cgi?id=13745>.  I still have
-> > >> > access to the laptop for further tests, but only until Friday.
-> > >> >
-> > >> > I bisected it to the commit below.  Manually reverting the patch fixes
-> > >> > the problem (in both 2.6.30 and 2.6.31-rc2).
-> > >>
-> > >> Well, the commit below can't be reverted, because that would cause the boxes
-> > >> it fixed to stop working.
-> > >>
-> > >> Now, the only case this patch can make any difference is when the BIOS doesn't
-> > >> set SCI_EN before returning control the the kernel, which quite evidently is a
-> > >> BIOS bug.  The fact that the battery doesn't work with this patch applied means
-> > >> that the BIOS not only doesn't set SCI_EN, but also expects it to remain unset,
-> > >> which is insane.
-> > >>
-> > >> IMO this is a "won't fix", sorry.
-> > >
-> > > Lets be pragmatic here..
-> > >
-> > > Besides this is a regression and we are already handling some such insane
-> > > systems in STR case.  Moreover sending SMI ACPI_ENABLE command may result in
-> > > some things happening behind our back and not only setting of SCI_EN bit..
-> > >
-> > > PS Looking at the set_sci_en_on_resume quirk history it seems that if we are
-> > > lucky we may may fix another issue (screaming IRQ one) at the same time :)
-> > >
-> > > Alan, could you try this patch?
-> > >
-> > > ---
-> > > debug patch (needs to have both CONFIG_SUSPEND=y & CONFIG_HIBERNATION=y)
-> > >
-> > >  drivers/acpi/sleep.c |   13 ++++++++++++-
-> > >  1 file changed, 12 insertions(+), 1 deletion(-)
-> > >
-> > > Index: b/drivers/acpi/sleep.c
-> > > ===================================================================
-> > > --- a/drivers/acpi/sleep.c
-> > > +++ b/drivers/acpi/sleep.c
-> > > @@ -383,6 +383,14 @@ static struct dmi_system_id __initdata a
-> > >                },
-> > >        },
-> > >        {
-> > > +       .callback = init_set_sci_en_on_resume,
-> > > +       .ident = "Hewlett-Packard HP G7000 Notebook PC",
-> > > +       .matches = {
-> > > +               DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-> > > +               DMI_MATCH(DMI_PRODUCT_NAME, "HP G7000 Notebook PC"),
-> > > +               },
-> > > +       },
-> > > +       {
-> > >        .callback = init_old_suspend_ordering,
-> > >        .ident = "Panasonic CF51-2L",
-> > >        .matches = {
-> > 
-> > Thanks for coding this up for me in full.  It works, the battery now
-> > survives, and it does indeed remove the IRQ warning.
-> 
-> Great, thanks for testing, Bart, thanks for the patch!
-> 
-> Len, can you add the Bart's patch to your 2.6.31 queue, please?
 
-Here is the final patch version:
+Stephen reported that his DL585 G2 need noapic after 2.6.22 (?)
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] acpi: HP G7000 Notebook needs a SCI_EN resume quirk
+Dann bisected
+  --------------------------------------------------------------------
+  commit 30a18d6c3f1e774de656ebd8ff219d53e2ba4029
+  Date:   Tue Feb 19 03:21:20 2008 -0800
 
-This fixes regression (battery "vanishing" on resume) introduced by
-commit d0c71fe7ebc180f1b7bc7da1d39a07fc19eec768 ("ACPI Suspend: Enable
-ACPI during resume if SCI_EN is not set") and also the issue with
-the "screaming" IRQ 9.
+      x86: multi pci root bus with different io resource range, on
+      64-bit
+  --------------------------------------------------------------------
+caused the problem.
 
-Fixes:
-	http://bugzilla.kernel.org/show_bug.cgi?id=13745
+it turns out that
+1. that AMD-based system has two HT chains.
+2. BIOS doesn't allocate resource for BAR 6 of devices under 8132 etc
+3. that multi-peer-root patche will try to split root resource to peer
+   root resources according to pci conf of NB
+4. pci assign unassigned code assign some range to pci-x bridge, but it
+   is overlapping BAR that are used by ioapic addr of io4 and 8132.
 
-Reported-and-tested-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+the reason: at that point ioapic address are not inserted yet.
+
+aka that patch is not the cause, and it just uncover other problems.
+
+solution is trying to insert ioapic_resource early a little bit.
+
+v2: update comments
+
+Reported-by: Stephen Frost <sfrost@snowman.net>
+Reported-and-Tested-by: dann frazier <dannf@hp.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 Cc: stable@kernel.org
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
 ---
- drivers/acpi/sleep.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/io_apic.h |    2 ++
+ arch/x86/kernel/apic/io_apic.c |   14 +++-----------
+ arch/x86/pci/i386.c            |    7 +++++++
+ 3 files changed, 12 insertions(+), 11 deletions(-)
 
-Index: b/drivers/acpi/sleep.c
+Index: linux-2.6/arch/x86/include/asm/io_apic.h
 ===================================================================
---- a/drivers/acpi/sleep.c
-+++ b/drivers/acpi/sleep.c
-@@ -383,6 +383,14 @@ static struct dmi_system_id __initdata a
- 		},
- 	},
- 	{
-+	.callback = init_set_sci_en_on_resume,
-+	.ident = "Hewlett-Packard HP G7000 Notebook PC",
-+	.matches = {
-+		DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+		DMI_MATCH(DMI_PRODUCT_NAME, "HP G7000 Notebook PC"),
-+		},
-+	},
-+	{
- 	.callback = init_old_suspend_ordering,
- 	.ident = "Panasonic CF51-2L",
- 	.matches = {
-
-
+--- linux-2.6.orig/arch/x86/include/asm/io_apic.h
++++ linux-2.6/arch/x86/include/asm/io_apic.h
+@@ -161,6 +161,7 @@ extern int io_apic_set_pci_routing(struc
+ 		 struct io_apic_irq_attr *irq_attr);
+ extern int (*ioapic_renumber_irq)(int ioapic, int irq);
+ extern void ioapic_init_mappings(void);
++extern void ioapic_insert_resources(void);
+ 
+ extern struct IO_APIC_route_entry **alloc_ioapic_entries(void);
+ extern void free_ioapic_entries(struct IO_APIC_route_entry **ioapic_entries);
+@@ -180,6 +181,7 @@ extern void ioapic_write_entry(int apic,
+ #define io_apic_assign_pci_irqs 0
+ static const int timer_through_8259 = 0;
+ static inline void ioapic_init_mappings(void)	{ }
++static inline void ioapic_insert_resources(void) { }
+ 
+ static inline void probe_nr_irqs_gsi(void)	{ }
+ #endif
+Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+@@ -4181,28 +4181,20 @@ fake_ioapic_page:
+ 	}
+ }
+ 
+-static int __init ioapic_insert_resources(void)
++void __init ioapic_insert_resources(void)
+ {
+ 	int i;
+ 	struct resource *r = ioapic_resources;
+ 
+ 	if (!r) {
+-		if (nr_ioapics > 0) {
++		if (nr_ioapics > 0)
+ 			printk(KERN_ERR
+ 				"IO APIC resources couldn't be allocated.\n");
+-			return -1;
+-		}
+-		return 0;
++		return;
+ 	}
+ 
+ 	for (i = 0; i < nr_ioapics; i++) {
+ 		insert_resource(&iomem_resource, r);
+ 		r++;
+ 	}
+-
+-	return 0;
+ }
+-
+-/* Insert the IO APIC resources after PCI initialization has occured to handle
+- * IO APICS that are mapped in on a BAR in PCI space. */
+-late_initcall(ioapic_insert_resources);
+Index: linux-2.6/arch/x86/pci/i386.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/i386.c
++++ linux-2.6/arch/x86/pci/i386.c
+@@ -35,6 +35,7 @@
+ #include <asm/pat.h>
+ #include <asm/e820.h>
+ #include <asm/pci_x86.h>
++#include <asm/io_apic.h>
+ 
+ 
+ static int
+@@ -227,6 +228,12 @@ void __init pcibios_resource_survey(void
+ 	pcibios_allocate_resources(1);
+ 
+ 	e820_reserve_resources_late();
++	/*
++	 * Insert the IO APIC resources after PCI initialization has
++	 * occured to handle IO APICS that are mapped in on a BAR in
++	 * PCI space, but before trying to assign unassigned pci res.
++	 */
++	ioapic_insert_resources();
+ }
+ 
+ /**
