@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbZGJJPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbZGJJTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269AbZGJJPA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 05:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbZGJJOw
+	id S1754210AbZGJJTR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 05:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZGJJTG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 05:14:52 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48669 "EHLO mx3.mail.elte.hu"
+	Fri, 10 Jul 2009 05:19:06 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50015 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751045AbZGJJOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 05:14:52 -0400
-Date: Fri, 10 Jul 2009 11:14:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Erdem Aktas <eaktas1@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [patch] perf_counter : breaking parameter parsing when the
-	command is reached
-Message-ID: <20090710091445.GC27445@elte.hu>
-References: <3fee128b0907052244n1c5fe000me5ca087918f6fa41@mail.gmail.com>
-MIME-Version: 1.0
+	id S1751540AbZGJJTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 05:19:04 -0400
+Date: Fri, 10 Jul 2009 11:19:03 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: David Rientjes <rientjes@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Janboe Ye <yuan-bo.ye@motorola.com>, linux-kernel@vger.kernel.org,
+       vegard.nossum@gmail.com, graydon@redhat.com, fche@redhat.com
+Subject: Re: [RFC][PATCH] Check write to slab memory which freed already using mudflap
+Message-ID: <20090710091903.GE14666@wotan.suse.de>
+References: <1247156020.27671.40.camel@debian-nb> <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com> <20090710084745.GA26752@elte.hu> <alpine.DEB.2.00.0907100158090.13880@chino.kir.corp.google.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3fee128b0907052244n1c5fe000me5ca087918f6fa41@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.DEB.2.00.0907100158090.13880@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Erdem Aktas <eaktas1@gmail.com> wrote:
-
->     Once the perf parameter parser reaches a non-parameter word, that means
->     the command is already found and the rest of the string is the parameter
->     of this command so no need to parse more.
+On Fri, Jul 10, 2009 at 02:04:53AM -0700, David Rientjes wrote:
+> On Fri, 10 Jul 2009, Ingo Molnar wrote:
 > 
->     As an example, when we want to run
->     perf stat -- ls -al
->     it is obvious that the -al is the parameter of the ls command, so we
->     should able to run this like
->     perf stat ls -al
+> > > SLAB is (slowly) going away so you might want to port this to SLUB 
+> > > as well so we can merge both.
+> > 
+> > and SLQB which will replace both? :-/
+> > 
 > 
->     Signed-off-by: eaktas <eaktas1@gmail.com>
-> 
-> diff --git a/tools/perf/util/parse-options.c b/tools/perf/util/parse-options.c
-> index 1bf6719..4ad4962 100644
-> --- a/tools/perf/util/parse-options.c
-> +++ b/tools/perf/util/parse-options.c
-> @@ -284,6 +284,11 @@ int parse_options_step(struct parse_opt_ctx_t *ctx,
->  			if (ctx->flags & PARSE_OPT_STOP_AT_NON_OPTION)
->  				break;
->  			ctx->out[ctx->cpidx++] = ctx->argv[0];
-> +			while (--(ctx->argc)) {
-> +				ctx->argv++;
-> +				ctx->out[ctx->cpidx++] = ctx->argv[0];
-> +			}
-> +			ctx->argc++;
+> I'm not sure what the status of slqb is, although I would have expected it 
+> to have been pushed for inclusion in 2.6.31 as a slab allocator 
+> alternative.  Nick, any forecast for inclusion?
 
-I think there might be a simpler solution: pass in 
-PARSE_OPT_STOP_AT_NON_OPTION.
+Just had a hiccup with testing in the last cycle, so we decided
+not to merge it this time. I hope next window.
 
-Then we'll trigger this existing code in parse_options_end():
 
-        memmove(ctx->out + ctx->cpidx, ctx->argv, ctx->argc * sizeof(*ctx->out));
-        ctx->out[ctx->cpidx + ctx->argc] = NULL;
-        return ctx->cpidx + ctx->argc;
+> SLUB has a pretty noticeable performance degradation on benchmarks such as 
+> netperf TCP_RR with high numbers of threads (see my post about it: 
+> http://marc.info/?l=linux-kernel&m=123839191416472).  CONFIG_SLAB is the 
+> optimal configuration for workloads that share similiar slab thrashing 
+> patterns (which my patchset dealt with in an indirect way and yet still 
+> didn't match slab's performance).  I haven't yet seen data that suggests 
+> anything other than CONFIG_SLAB has parity with such a benchmark.
 
-which should solve the issue just as well, correct?
+I did do various netperf runs, but I can't remember whether I tried
+to reproduce your test case with SLQB.  I'll try ;)
 
-	Ingo
+I don't think there are any known performance regressions for SLQB
+versus others, but OTOH I don't think it has been widely performance
+tested (I don't think many people performance test -next).
+
