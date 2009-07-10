@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbZGJBbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbZGJBdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbZGJBbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 21:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZGJBbA
+	id S1752619AbZGJBdv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 21:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZGJBdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 21:31:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35852 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753127AbZGJBa7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 21:30:59 -0400
-Date: Fri, 10 Jul 2009 03:27:40 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: James Morris <jmorris@namei.org>
-Cc: Christoph Hellwig <hch@infradead.org>, David Howells <dhowells@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] mm_for_maps: take ->cred_guard_mutex to fix the race
-	with exec
-Message-ID: <20090710012740.GA395@redhat.com>
+	Thu, 9 Jul 2009 21:33:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53648 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbZGJBdo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 21:33:44 -0400
+Date: Thu, 9 Jul 2009 21:33:22 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/2] rename is_single_threaded(task) to
+	is_current_single_threaded(void)
+Message-ID: <20090710013322.GA27719@infradead.org>
+References: <20090709212847.GA10238@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090709212847.GA10238@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The problem is minor, but without ->cred_guard_mutex held we can race
-with exec() and get the new ->mm but check old creds.
+On Thu, Jul 09, 2009 at 11:28:47PM +0200, Oleg Nesterov wrote:
+> (on top of rework-fix-is_single_threaded.patch)
+> 
+> - is_single_threaded(task) is not safe unless task == current,
+>   we can't use task->signal or task->mm.
+> 
+> - it doesn't make sense unless task == current, the task can
+>   fork right after the check.
+> 
+> Rename it to is_current_single_threaded() and kill the argument.
 
-Now we do not need to re-check task->mm after ptrace_may_access(), it
-can't be changed to the new mm under us.
-
-Strictly speaking, this also fixes another very minor problem. Unless
-security check fails or the task exits mm_for_maps() should never
-return NULL, the caller should get either old or new ->mm.
-
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
-
- fs/proc/base.c |   22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
-
---- WAIT/fs/proc/base.c~2_CRED_MUTEX	2009-07-10 02:05:14.000000000 +0200
-+++ WAIT/fs/proc/base.c	2009-07-10 03:23:01.000000000 +0200
-@@ -234,19 +234,19 @@ static int check_mem_permission(struct t
- 
- struct mm_struct *mm_for_maps(struct task_struct *task)
- {
--	struct mm_struct *mm = get_task_mm(task);
-+	struct mm_struct *mm;
- 
--	if (mm && mm != current->mm) {
--		/*
--		 * task->mm can be changed before security check,
--		 * in that case we must notice the change after.
--		 */
--		if (!ptrace_may_access(task, PTRACE_MODE_READ) ||
--		    mm != task->mm) {
--			mmput(mm);
--			mm = NULL;
--		}
-+	if (mutex_lock_killable(&task->cred_guard_mutex))
-+		return NULL;
-+
-+	mm = get_task_mm(task);
-+	if (mm && mm != current->mm &&
-+			!ptrace_may_access(task, PTRACE_MODE_READ)) {
-+		mmput(mm);
-+		mm = NULL;
- 	}
-+	mutex_unlock(&task->cred_guard_mutex);
-+
- 	return mm;
- }
- 
+It would be more natural to put the current first, as in
+current_is_single_threaded().  That would also fit with the various
+other current_* helpers we have.
 
