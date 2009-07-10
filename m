@@ -1,100 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZGJOIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZGJOIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbZGJOIm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 10:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbZGJOIe
+	id S1756043AbZGJOIx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 10:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZGJOIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 10:08:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40777 "EHLO mx3.mail.elte.hu"
+	Fri, 10 Jul 2009 10:08:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34454 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbZGJOId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 10:08:33 -0400
-Date: Fri, 10 Jul 2009 16:07:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frans Pop <elendil@planet.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: linux-kernel@vger.kernel.org, cryptsetup@packages.debian.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH,RFC,resend] printk: restore previous console_loglevel
-	when re-enabling logging
-Message-ID: <20090710140749.GD26264@elte.hu>
-References: <200907061331.49930.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907061331.49930.elendil@planet.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1755568AbZGJOIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 10:08:38 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090710014857.GC4723@redhat.com>
+References: <20090710014857.GC4723@redhat.com> <20090709212847.GA10238@redhat.com> <20090710013322.GA27719@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 -mm 2/2] current_is_single_threaded: don't use ->mmap_sem
+Date: Fri, 10 Jul 2009 15:07:42 +0100
+Message-ID: <25973.1247234862@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-* Frans Pop <elendil@planet.nl> wrote:
+> current_is_single_threaded() can safely miss a freshly forked CLONE_VM
+> task, but in this case it must not miss its parent. That is why we take
+> mm->mmap_sem for writing to make sure a thread/task with the same ->mm
+> can't pass exit_mm() and disappear.
+> 
+> However we can avoid ->mmap_sem and rely on rcu/barriers:
+> 
+> 	- if we do not see the exiting parent on thread/process list
+> 	  we see the result of list_del_rcu(), in this case we must
+> 	  also see the result of list_add_rcu() which does wmb().
+> 
+> 	- if we do see the parent but its ->mm == NULL, we need rmb()
+> 	  to make sure we can't miss the child.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-> When logging to console is disabled from userspace using klogctl()
-> and later re-enabled, console_loglevel gets set to the default
-> log level instead to the previous value.
-> This means that if the kernel was booted with 'quiet', the boot is
-> suddenly no longer quiet after logging to console gets re-enabled.
-> 
-> Save the current console_loglevel when logging is disabled and
-> restore to that value. If the log level is set to a specific value
-> while disabled, this is interpreted as an implicit re-enabling of
-> the logging.
-> 
-> Signed-off-by: Frans Pop <elendil@planet.nl>
-> ---
-> 
-> Resend. The problem that prompted this patch is described in
-> http://lkml.org/lkml/2009/6/28/234
-> 
-> There are two variations possible on the patch below.
-> 
-> 1) If klogctl(7) is called while logging is not disabled, then set level
->    to default (partially preserving current functionality):
->  	case 7:		/* Enable logging to console */
-> -		console_loglevel = default_console_loglevel;
-> +		if (saved_console_loglevel == -1)
-> +			console_loglevel = default_console_loglevel;
-> +		else {
-> +			console_loglevel = saved_console_loglevel;
-> +			saved_console_loglevel = -1;
-> +		}
-> 
-> 2) If klogctl(8) is called while logging is disabled, then don't enable
->    logging, but remember the requested value for when logging does get
->    enabled again:
->  	case 8:		/* Set level of messages printed to console */
-> [...]
-> - 		console_loglevel = len;
-> +		if (saved_console_loglevel == -1)
-> +	 		console_loglevel = len;
-> +		else
-> +			saved_console_loglevel = len;
-> 
-> Yet another option would be to ignore the request.
-
-Looks like a possible solution to a real problem (most distros today 
-boot with quiet) - albeit it does change previous behavior so 
-objections are possible on those grounds.
-
-I've queued it up in the tip:core/printk tree and will push it out 
-to linux-next in a few days if there are no objections.
-
-Small sidenote: i moved the (somewhat obscurely placed) 
-saved_console_loglevel static variable out of local variable scope 
-and next to the console loglevel definitions (such as 
-console_printk[]), to increase its visibility as globally relevant 
-state and to move it next to the state this variable affects.
-
-Thanks,
-
-	Ingo
+Acked-by: David Howells <dhowells@redhat.com>
