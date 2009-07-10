@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbZGJTHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbZGJTJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222AbZGJTHu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 15:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbZGJTHl
+	id S1756141AbZGJTJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 15:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbZGJTJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 15:07:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50140 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbZGJTHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 15:07:41 -0400
-Date: Fri, 10 Jul 2009 15:07:28 -0400
-From: Dave Jones <davej@redhat.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for July 10 (cpufreq oops)
-Message-ID: <20090710190728.GA6240@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20090710151846.c7ebec37.sfr@canb.auug.org.au> <200907102054.37956.bzolnier@gmail.com>
+	Fri, 10 Jul 2009 15:09:03 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:38994 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752440AbZGJTJB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 15:09:01 -0400
+Date: Fri, 10 Jul 2009 15:09:00 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: K R I S K <kdbbox@gmail.com>
+cc: Miklos Szeredi <miklos@szeredi.hu>, <linux-usb@vger.kernel.org>,
+       <linux-input@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: usb mouse not responding after resume
+In-Reply-To: <12e16730907101144y57d5b348n9be6c2d37d7ad764@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0907101507480.4183-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907102054.37956.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 08:54:37PM +0200, Bartlomiej Zolnierkiewicz wrote:
- > On Friday 10 July 2009 07:18:46 Stephen Rothwell wrote:
- > > Hi all,
- > > 
- > > Changes since 20090709:
- >  
- > [ this particular problem goes back to next-20090709 ]
- > 
- > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
- > Subject: [PATCH] cpufreq: fix OOPS in __cpufreq_governor()
- > 
- > commit 0d923c15b774bed3491400bae6db50481ac8b9e4 ("[CPUFREQ] Factor out
- > policy setting from cpufreq_add_dev") accidentally reordered new_policy
- > setup and policy->governor reset.
- > 
- > Fix it, also update comment to match the function name while at it.
+On Fri, 10 Jul 2009, K R I S K wrote:
 
-Thanks Bart, good eyes.
+> How many USB devices are attached along with the mouse?
+> Are they high speed and full speed devices?
 
-I'll fold this into the original patch and regenerate the tree.
+If you read through Miklos's log extract you'll see that there are two 
+other devices: one full speed and one low speed.
 
-	Dave 
+Alan Stern
+
