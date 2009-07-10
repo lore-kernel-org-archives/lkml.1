@@ -1,102 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZGJMnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZGJMov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbZGJMnl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 08:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbZGJMji
+	id S1756943AbZGJMov (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 08:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbZGJMkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 08:39:38 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:19554 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755483AbZGJMjc (ORCPT
+	Fri, 10 Jul 2009 08:40:13 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:37316 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755747AbZGJMkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 08:39:32 -0400
+	Fri, 10 Jul 2009 08:40:10 -0400
 From: Adrian Hunter <adrian.hunter@nokia.com>
 To: Pierre Ossman <pierre@ossman.eu>
 Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
        Denis Karpov <ext-denis.2.karpov@nokia.com>,
        Adrian Hunter <adrian.hunter@nokia.com>,
-       linux-omap Mailing List <linux-omap@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Date: Fri, 10 Jul 2009 15:42:06 +0300
-Message-Id: <20090710124206.1262.47045.sendpatchset@ahunter-tower>
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-omap Mailing List <linux-omap@vger.kernel.org>
+Date: Fri, 10 Jul 2009 15:43:09 +0300
+Message-Id: <20090710124309.1262.22465.sendpatchset@ahunter-tower>
 In-Reply-To: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
 References: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
-Subject: [PATCH 17/32] omap_hsmmc: make use of new MMC_CAP_NONREMOVABLE host capability
-X-OriginalArrivalTime: 10 Jul 2009 12:38:32.0253 (UTC) FILETIME=[558E6ED0:01CA015B]
+Subject: [PATCH 26/32] omap_hsmmc: prevent races with irq handler
+X-OriginalArrivalTime: 10 Jul 2009 12:39:33.0104 (UTC) FILETIME=[79D38F00:01CA015B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 913b1f23036a578427626e5b0a154cd7547c0609 Mon Sep 17 00:00:00 2001
+>From 242fae6293adec671b14354f215217354f5076a0 Mon Sep 17 00:00:00 2001
 From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Mon, 11 May 2009 10:06:38 +0300
-Subject: [PATCH] omap_hsmmc: make use of new MMC_CAP_NONREMOVABLE host capability
+Date: Sat, 16 May 2009 10:32:34 +0300
+Subject: [PATCH] omap_hsmmc: prevent races with irq handler
 
-Let the board specify that a card is nonremovable e.g. eMMC
+If an unexpected interrupt occurs while preparing the
+next request, an oops can occur.
+
+For example, a new request is setting up DMA for data
+transfer so host->data is not NULL.  An unexpected
+transfer complete (TC) interrupt comes along and
+the interrupt handler sets host->data to NULL.  Oops!
+
+Prevent that by disabling interrupts while setting up
+a new request.
 
 Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 ---
- arch/arm/mach-omap2/mmc-twl4030.c     |    3 +++
- arch/arm/mach-omap2/mmc-twl4030.h     |    1 +
- arch/arm/plat-omap/include/mach/mmc.h |    3 +++
- drivers/mmc/host/omap_hsmmc.c         |    3 +++
- 4 files changed, 10 insertions(+), 0 deletions(-)
+ drivers/mmc/host/omap_hsmmc.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/mmc-twl4030.c b/arch/arm/mach-omap2/mmc-twl4030.c
-index 5be3111..67c22c6 100644
---- a/arch/arm/mach-omap2/mmc-twl4030.c
-+++ b/arch/arm/mach-omap2/mmc-twl4030.c
-@@ -409,6 +409,9 @@ void __init twl4030_mmc_init(struct twl4030_hsmmc_info *controllers)
- 		} else
- 			mmc->slots[0].gpio_wp = -EINVAL;
- 
-+		if (c->nonremovable)
-+			mmc->slots[0].nonremovable = 1;
-+
- 		/* NOTE:  MMC slots should have a Vcc regulator set up.
- 		 * This may be from a TWL4030-family chip, another
- 		 * controllable regulator, or a fixed supply.
-diff --git a/arch/arm/mach-omap2/mmc-twl4030.h b/arch/arm/mach-omap2/mmc-twl4030.h
-index 3807c45..75b0c64 100644
---- a/arch/arm/mach-omap2/mmc-twl4030.h
-+++ b/arch/arm/mach-omap2/mmc-twl4030.h
-@@ -12,6 +12,7 @@ struct twl4030_hsmmc_info {
- 	bool	transceiver;	/* MMC-2 option */
- 	bool	ext_clock;	/* use external pin for input clock */
- 	bool	cover_only;	/* No card detect - just cover switch */
-+	bool	nonremovable;	/* Nonremovable e.g. eMMC */
- 	int	gpio_cd;	/* or -EINVAL */
- 	int	gpio_wp;	/* or -EINVAL */
- 	char	*name;		/* or NULL for default */
-diff --git a/arch/arm/plat-omap/include/mach/mmc.h b/arch/arm/plat-omap/include/mach/mmc.h
-index 2f7cf31..bab486c 100644
---- a/arch/arm/plat-omap/include/mach/mmc.h
-+++ b/arch/arm/plat-omap/include/mach/mmc.h
-@@ -83,6 +83,9 @@ struct omap_mmc_platform_data {
- 		/* use the internal clock */
- 		unsigned internal_clock:1;
- 
-+		/* nonremovable e.g. eMMC */
-+		unsigned nonremovable:1;
-+
- 		int switch_pin;			/* gpio (card detect) */
- 		int gpio_wp;			/* gpio (write protect) */
- 
 diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index 15f1a9a..7b56988 100644
+index 28563d6..38e1410 100644
 --- a/drivers/mmc/host/omap_hsmmc.c
 +++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -1383,6 +1383,9 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
- 	else if (pdata->slots[host->slot_id].wires >= 4)
- 		mmc->caps |= MMC_CAP_4_BIT_DATA;
+@@ -452,6 +452,13 @@ mmc_omap_start_command(struct mmc_omap_host *host, struct mmc_command *cmd,
+ 	if (host->use_dma)
+ 		cmdreg |= DMA_EN;
  
-+	if (pdata->slots[host->slot_id].nonremovable)
-+		mmc->caps |= MMC_CAP_NONREMOVABLE;
++	/*
++	 * In an interrupt context (i.e. STOP command), the interrupt is already
++	 * enabled, otherwise it is not (i.e. new request).
++	 */
++	if (!in_interrupt())
++		enable_irq(host->irq);
 +
- 	omap_hsmmc_init(host);
+ 	OMAP_HSMMC_WRITE(host->base, ARG, cmd->arg);
+ 	OMAP_HSMMC_WRITE(host->base, CMD, cmdreg);
+ }
+@@ -1011,6 +1018,13 @@ static void omap_mmc_request(struct mmc_host *mmc, struct mmc_request *req)
+ 	struct mmc_omap_host *host = mmc_priv(mmc);
+ 	int err;
  
- 	/* Select DMA lines */
++	/*
++	 * Prevent races with the interrupt handler because of unexpected
++	 * interrupts, but not if we are already in interrupt context i.e.
++	 * retries.
++	 */
++	if (!in_interrupt())
++		disable_irq(host->irq);
+ 	WARN_ON(host->mrq != NULL);
+ 	host->mrq = req;
+ 	err = mmc_omap_prepare_data(host, req);
+@@ -1019,6 +1033,8 @@ static void omap_mmc_request(struct mmc_host *mmc, struct mmc_request *req)
+ 		if (req->data)
+ 			req->data->error = err;
+ 		host->mrq = NULL;
++		if (!in_interrupt())
++			enable_irq(host->irq);
+ 		mmc_request_done(mmc, req);
+ 		return;
+ 	}
 -- 
 1.5.6.3
 
