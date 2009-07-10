@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbZGJW6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbZGJXAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757781AbZGJW6P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 18:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757388AbZGJW6A
+	id S1757896AbZGJXAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 19:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbZGJXAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 18:58:00 -0400
-Received: from cantor.suse.de ([195.135.220.2]:42437 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753875AbZGJW6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 18:58:00 -0400
-Date: Fri, 10 Jul 2009 15:56:15 -0700
-From: Greg KH <gregkh@suse.de>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Greg KH <greg@kroah.com>, Ming Lei <tom.leiming@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Possible memory leak in request_firmware()
-Message-ID: <20090710225615.GA32643@suse.de>
-References: <1246979820.9451.71.camel@pc1117.cambridge.arm.com>
- <20090710173623.GA3687@kroah.com>
- <tnxskh4nog0.fsf@pc1117.cambridge.arm.com>
+	Fri, 10 Jul 2009 19:00:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:3378 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754967AbZGJXAq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 19:00:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:date:message-id:user-agent:mime-version:
+	content-type:content-transfer-encoding:x-system-of-record;
+	b=I4eh+T8ODDXvd7RH+POXw8oJeM+ih90R6YT0dyGbOPZCm3k/fRe9gdvhy0WfdgcyW
+	5M9+s0/r1zwtfz7WS9v3w==
+From: Ben Blum <bblum@google.com>
+Subject: [PATCH 0/3] Series short description
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com,
+       menage@google.com
+Date: Fri, 10 Jul 2009 15:59:45 -0700
+Message-ID: <20090710225343.15970.42287.stgit@hastromil.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tnxskh4nog0.fsf@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 11:49:35PM +0100, Catalin Marinas wrote:
-> Greg KH <greg@kroah.com> wrote:
-> > On Tue, Jul 07, 2009 at 04:17:00PM +0100, Catalin Marinas wrote:
-> >> I get a couple kmemleak reports like below which I think happen on the
-> >> failure path (-ENOENT) of a request_firmware() call:
-> >
-> > Hm, can you send me the final version of this patch, it seemed to go
-> > through a few different versions, with a signed-off-by line?
-> 
-> It was merged as commit 0f2f2221b4ad8.
+The following series implements...
 
-Ah, nice, I don't have to worry about it then, thanks.
+---
 
-greg k-h
+Ben Blum (3):
+      Quick vmalloc vs kmalloc fix to the case where array size > KMALLOC_MAX_SIZE
+      Ensures correct concurrent opening/reading of pidlists across pid namespaces
+      Adds a read-only "procs" file similar to "tasks" that shows only unique tgids
+
+
+ include/linux/cgroup.h |   46 +++++-
+ kernel/cgroup.c        |  378 ++++++++++++++++++++++++++++++++++--------------
+ 2 files changed, 309 insertions(+), 115 deletions(-)
+
