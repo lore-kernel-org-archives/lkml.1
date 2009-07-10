@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZGJO7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbZGJPAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbZGJO7l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 10:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbZGJO7e
+	id S1754889AbZGJPAP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 11:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZGJPAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 10:59:34 -0400
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:55246 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750961AbZGJO7d (ORCPT
+	Fri, 10 Jul 2009 11:00:03 -0400
+Received: from viefep13-int.chello.at ([62.179.121.33]:60523 "EHLO
+	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbZGJPAC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 10:59:33 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 13012] 2.6.28.9 causes init to segfault on Debian etch; 2.6.28.8 OK
-Date: Fri, 10 Jul 2009 16:59:29 +0200
-User-Agent: KMail/1.9.9
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kbuild@vger.kernel.org, barryn@pobox.com,
-       bugme-daemon@bugzilla.kernel.org
-References: <200907100928.07369.elendil@planet.nl>
-In-Reply-To: <200907100928.07369.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 10 Jul 2009 11:00:02 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 2/2] sched: Move the sleeping while atomic checks early
+ in cond_resched()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1247237391-5352-2-git-send-email-fweisbec@gmail.com>
+References: <1247237391-5352-1-git-send-email-fweisbec@gmail.com>
+	 <1247237391-5352-2-git-send-email-fweisbec@gmail.com>
+Content-Type: text/plain
+Date: Fri, 10 Jul 2009 16:59:55 +0200
+Message-Id: <1247237995.7529.43.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907101659.31813.elendil@planet.nl>
-X-OriginalArrivalTime: 10 Jul 2009 14:59:32.0538 (UTC) FILETIME=[084779A0:01CA016F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 July 2009, Frans Pop wrote:
-> On Thu, 9 Apr 2009, Linus Torvalds wrote:
-> > On Thu, 9 Apr 2009, Andrew Morton wrote:
-> > > -fwrapv killed Barry's gcc-4.1.2-compiled kernel in 2.6.27.x,
-> > > 2.6.28.x and presumably 2.6.29, 2.6.30.
-> >
-> > Auughh. I hate compiler bugs. They're horrible to debug.
-> >
-> > I _think_ 'fwrapv' only really matters with gcc-4.3, so maybe we
-> > could just enable it for new versions.
-> >
-> > HOWEVER, I also wonder if we could instead of "-fwrapv" use
-> > "-fno-strict-overflow". They are apparently subtly different, and
-> > maybe the bug literally only happens with -fwrapv.
-> >
-> > Barry, can you see if that simple "replace -fwrapv with
-> > -fno-strict-overflow" works for you?
+On Fri, 2009-07-10 at 16:49 +0200, Frederic Weisbecker wrote:
 
-Prompted by the same suggestion from Ben Hutchings I checked this too, 
-but -fno-strict-overflow was only introduced in gcc 4.2.
-So using it instead of -fwrapv *would* fix the problem for gcc 4.1, but 
-*only* because it would effectively do the same as the patch I proposed: 
-not add an option at all for gcc 4.1.
+> index 0cb0d8d..e357dc7 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -2279,11 +2279,13 @@ extern int _cond_resched(void);
+>  #ifdef CONFIG_PREEMPT_BKL
+>  static inline int cond_resched(void)
+>  {
+> +	might_sleep();
+>  	return 0;
+>  }
+>  #else
+>  static inline int cond_resched(void)
+>  {
+> +	might_sleep();
+>  	return _cond_resched();
+>  }
+>  #endif
 
-So that change seems illogical unless there are other reasons to 
-prefer -fno-strict-overflow over -fwrapv (well, it would avoid the
-gcc version check).
+# define might_resched() _cond_resched()
 
-It does however make it somewhat more logical to change the test in my 
-proposed patch to also allow -fwrapv for gcc 4.2.
+# define might_sleep() \
+	do { __might_sleep(__FILE__, __LINE__); might_resched(); } while (0)
 
-Cheers,
-FJP
+
+Doesn't seem to make it any better that, but yeah, moving that
+__might_sleep() did occur to me earlier today when I touched that code.
+
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 87ecac1..c22804b 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -6605,9 +6605,6 @@ SYSCALL_DEFINE0(sched_yield)
+>  
+>  static void __cond_resched(void)
+>  {
+> -#ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
+> -	__might_sleep(__FILE__, __LINE__);
+> -#endif
+>  	/*
+>  	 * The BKS might be reacquired before we have dropped
+>  	 * PREEMPT_ACTIVE, which could trigger a second
+
+
+
