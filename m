@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZGJOu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751474AbZGJO4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbZGJOu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 10:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZGJOuC
+	id S1751474AbZGJO4x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 10:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZGJO4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 10:50:02 -0400
-Received: from ey-out-1920.google.com ([74.125.78.146]:16238 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753987AbZGJOuA (ORCPT
+	Fri, 10 Jul 2009 10:56:44 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43818 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751868AbZGJO4n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 10:50:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=sJRRkwunpPNESB2qnLB9eFIHoOCkGmEcMXokdGNPM69Qvs5xYTKiLNiNnl2OtARQRJ
-         CUjh5QMey64d9oyoXiSdvwdTCvGSlBnboj6gjC7i0g9d00A5GHp02onZwzg0Q7DOETDn
-         w705+mdD1CHaB3+L7WUA02r0RV+ibJKEUXEO8=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 2/2] sched: Move the sleeping while atomic checks early in cond_resched()
-Date: Fri, 10 Jul 2009 16:49:51 +0200
-Message-Id: <1247237391-5352-2-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1247237391-5352-1-git-send-email-fweisbec@gmail.com>
-References: <1247237391-5352-1-git-send-email-fweisbec@gmail.com>
+	Fri, 10 Jul 2009 10:56:43 -0400
+Date: Fri, 10 Jul 2009 10:56:42 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: linux-usb@vger.kernel.org, <linux-input@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: usb mouse not responding after resume
+In-Reply-To: <E1MPCb9-0007w0-BK@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.44L0.0907101052500.2906-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-might_sleep() is called lately in cond_resched(), after the
-need_resched()/preempt enabled/system running tests are checked.
+On Fri, 10 Jul 2009, Miklos Szeredi wrote:
 
-It's better to check the sleeps while atomic earlier and not depend
-on some environment datas that reduce the chances to detect a
-problem.
+> Sometimes after resume the usb mouse plugged into my T60 notebook
+> isn't working.  Unplugging and replugging it fixes the problem.  A
+> keyboard is also plugged in, which works normally every time.
+> 
+> This has been happening on and off from about 2.6.30-rc* but in
+> 2.6.31-rc* seems to be getting more frequent.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/sched.h |    2 ++
- kernel/sched.c        |    3 ---
- 2 files changed, 2 insertions(+), 3 deletions(-)
+Looks like something is wrong with the mouse itself.
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 0cb0d8d..e357dc7 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -2279,11 +2279,13 @@ extern int _cond_resched(void);
- #ifdef CONFIG_PREEMPT_BKL
- static inline int cond_resched(void)
- {
-+	might_sleep();
- 	return 0;
- }
- #else
- static inline int cond_resched(void)
- {
-+	might_sleep();
- 	return _cond_resched();
- }
- #endif
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 87ecac1..c22804b 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6605,9 +6605,6 @@ SYSCALL_DEFINE0(sched_yield)
- 
- static void __cond_resched(void)
- {
--#ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
--	__might_sleep(__FILE__, __LINE__);
--#endif
- 	/*
- 	 * The BKS might be reacquired before we have dropped
- 	 * PREEMPT_ACTIVE, which could trigger a second
--- 
-1.6.2.3
+> Here's the suspend-resume-replug part of the dmesg.  Not sure if it is
+> enough, I'd be happy to provide more info.
+
+The log showed that the mouse disconnected itself during the suspend.  
+But then after the resume it reconnected -- presumably this log shows a
+cycle where the mouse _was_ working afterward.
+
+Can you provide a similar log for a cycle where the mouse _didn't_ 
+respond afterward?  It might not help much, however; most likely it 
+will show that the mouse disconnects itself during the suspend and then 
+doesn't reconnect.
+
+Have you tried plugging the mouse into a different USB port?  It might 
+help.
+
+Alan Stern
 
