@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZGJMhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZGJMhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbZGJMhJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 08:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbZGJMg4
+	id S1752073AbZGJMhk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 08:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZGJMg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 08:36:56 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:36653 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbZGJMgz (ORCPT
+	Fri, 10 Jul 2009 08:36:57 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:34832 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbZGJMgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 10 Jul 2009 08:36:55 -0400
 From: Adrian Hunter <adrian.hunter@nokia.com>
@@ -17,135 +17,85 @@ Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
        Adrian Hunter <adrian.hunter@nokia.com>,
        lkml <linux-kernel@vger.kernel.org>,
        linux-omap Mailing List <linux-omap@vger.kernel.org>
-Date: Fri, 10 Jul 2009 15:40:19 +0300
-Message-Id: <20090710124019.1262.83078.sendpatchset@ahunter-tower>
-In-Reply-To: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
-References: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
-Subject: [PATCH 2/32] mmc: allow host claim / release nesting
-X-OriginalArrivalTime: 10 Jul 2009 12:36:45.0847 (UTC) FILETIME=[16222A70:01CA015B]
+Date: Fri, 10 Jul 2009 15:40:04 +0300
+Message-Id: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
+Subject: [PATCH 0/32] mmc and omap_hsmmc patches
+X-OriginalArrivalTime: 10 Jul 2009 12:36:28.0238 (UTC) FILETIME=[0BA33EE0:01CA015B]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 2d65438fce412a63f09f90fb9af1049c775cbd70 Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Mon, 27 Apr 2009 13:38:42 +0300
-Subject: [PATCH] mmc: allow host claim / release nesting
+Hi Pierre
 
-This change allows the MMC host to be claimed in
-situations where the host may or may not have
-already been claimed.  Also 'mmc_try_claim_host()'
-is now exported.
+Here are 32 patches for mmc and omap_hsmmc.
 
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
- drivers/mmc/core/core.c  |   34 +++++++++++++++++++++++++---------
- include/linux/mmc/core.h |    1 +
- include/linux/mmc/host.h |    2 ++
- 3 files changed, 28 insertions(+), 9 deletions(-)
+Sorry there are so many.
 
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 41fd127..b262dc6 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -458,16 +458,18 @@ int __mmc_claim_host(struct mmc_host *host, atomic_t *abort)
- 	while (1) {
- 		set_current_state(TASK_UNINTERRUPTIBLE);
- 		stop = abort ? atomic_read(abort) : 0;
--		if (stop || !host->claimed)
-+		if (stop || !host->claimed || host->claimer == current)
- 			break;
- 		spin_unlock_irqrestore(&host->lock, flags);
- 		schedule();
- 		spin_lock_irqsave(&host->lock, flags);
- 	}
- 	set_current_state(TASK_RUNNING);
--	if (!stop)
-+	if (!stop) {
- 		host->claimed = 1;
--	else
-+		host->claimer = current;
-+		host->claim_cnt += 1;
-+	} else
- 		wake_up(&host->wq);
- 	spin_unlock_irqrestore(&host->lock, flags);
- 	remove_wait_queue(&host->wq, &wait);
-@@ -478,29 +480,43 @@ int __mmc_claim_host(struct mmc_host *host, atomic_t *abort)
- 
- EXPORT_SYMBOL(__mmc_claim_host);
- 
--static int mmc_try_claim_host(struct mmc_host *host)
-+/**
-+ *	mmc_try_claim_host - try exclusively to claim a host
-+ *	@host: mmc host to claim
-+ *
-+ *	Returns %1 if the host is claimed, %0 otherwise.
-+ */
-+int mmc_try_claim_host(struct mmc_host *host)
- {
- 	int claimed_host = 0;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&host->lock, flags);
--	if (!host->claimed) {
-+	if (!host->claimed || host->claimer == current) {
- 		host->claimed = 1;
-+		host->claimer = current;
-+		host->claim_cnt += 1;
- 		claimed_host = 1;
- 	}
- 	spin_unlock_irqrestore(&host->lock, flags);
- 	return claimed_host;
- }
-+EXPORT_SYMBOL(mmc_try_claim_host);
- 
- static void mmc_do_release_host(struct mmc_host *host)
- {
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&host->lock, flags);
--	host->claimed = 0;
--	spin_unlock_irqrestore(&host->lock, flags);
--
--	wake_up(&host->wq);
-+	if (--host->claim_cnt) {
-+		/* Release for nested claim */
-+		spin_unlock_irqrestore(&host->lock, flags);
-+	} else {
-+		host->claimed = 0;
-+		host->claimer = NULL;
-+		spin_unlock_irqrestore(&host->lock, flags);
-+		wake_up(&host->wq);
-+	}
- }
- 
- void mmc_host_deeper_disable(struct work_struct *work)
-diff --git a/include/linux/mmc/core.h b/include/linux/mmc/core.h
-index 7ac8b50..e4898e9 100644
---- a/include/linux/mmc/core.h
-+++ b/include/linux/mmc/core.h
-@@ -139,6 +139,7 @@ extern unsigned int mmc_align_data_size(struct mmc_card *, unsigned int);
- 
- extern int __mmc_claim_host(struct mmc_host *host, atomic_t *abort);
- extern void mmc_release_host(struct mmc_host *host);
-+extern int mmc_try_claim_host(struct mmc_host *host);
- 
- /**
-  *	mmc_claim_host - exclusively claim a host
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 583c068..9cc5be9 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -182,6 +182,8 @@ struct mmc_host {
- 	struct mmc_card		*card;		/* device attached to this host */
- 
- 	wait_queue_head_t	wq;
-+	struct task_struct	*claimer;	/* task that has host claimed */
-+	int			claim_cnt;	/* "claim" nesting count */
- 
- 	struct delayed_work	detect;
- 
--- 
-1.5.6.3
+They mostly relate to trying to save power.
 
+They split into 2 groups: the first 8 affect mmc core only
+and the remaining ones affect omap_hsmmc only.
+
+They apply cleanly on top of Linux 2.6.31-rc2
+
+Adrian Hunter (20):
+      mmc: add 'enable' and 'disable' methods to mmc host
+      mmc: allow host claim / release nesting
+      mmc: add MMC_CAP_NONREMOVABLE host capability
+      mmc: add ability to save power by powering off cards
+      mmc: add host capabilities for SD only and MMC only
+      mmc: check status after MMC SWITCH command
+      omap_hsmmc: make use of new enable/disable interface
+      omap_hsmmc: keep track of power mode
+      omap_hsmmc: ensure workqueues are empty before suspend
+      omap_hsmmc: make use of new MMC_CAP_NONREMOVABLE host capability
+      ARM: OMAP: mmc-twl4030: add regulator sleep / wake function
+      omap_hsmmc: put MMC regulator to sleep
+      omap_hsmmc: clear interrupt status after init sequence
+      omap_hsmmc: cater for weird CMD6 behaviour
+      omap_hsmmc: prevent races with irq handler
+      omap_hsmmc: pass host capabilities for SD only and MMC only
+      omap_hsmmc: protect the card when the cover is open
+      omap_hsmmc: ensure all clock enables and disables are paired
+      omap_hsmmc: set a large data timeout for commands with busy signal
+      ARM: OMAP: RX51: set MMC capabilities and power-saving flag
+
+Denis Karpov (8):
+      mmc: power off once at removal
+      omap_hsmmc: add debugfs entry (host registers)
+      ARM: OMAP: mmc-twl4030: add context loss counter support
+      omap_hsmmc: context save/restore support
+      omap_hsmmc: set open drain bit correctly
+      omap_hsmmc: support for deeper power saving states
+      omap_hsmmc: cleanup macro usage
+      omap_hsmmc: code refactoring
+
+Jarkko Lavinen (4):
+      mmc: add mmc card sleep and awake support
+      omap_hsmmc: fix scatter-gather list sanity checking
+      omap_hsmmc: add mmc card sleep and awake support
+      omap_hsmmc: fix NULL pointer dereference
+
+ arch/arm/mach-omap2/board-rx51-peripherals.c |    5 +
+ arch/arm/mach-omap2/mmc-twl4030.c            |   77 ++
+ arch/arm/mach-omap2/mmc-twl4030.h            |    2 +
+ arch/arm/plat-omap/include/mach/mmc.h        |   11 +
+ drivers/mmc/core/core.c                      |  288 +++++++-
+ drivers/mmc/core/core.h                      |    4 +
+ drivers/mmc/core/host.c                      |    1 +
+ drivers/mmc/core/host.h                      |    2 +
+ drivers/mmc/core/mmc.c                       |  130 +++-
+ drivers/mmc/core/mmc_ops.c                   |   59 ++
+ drivers/mmc/core/mmc_ops.h                   |    1 +
+ drivers/mmc/core/sd.c                        |   52 ++-
+ drivers/mmc/host/omap_hsmmc.c                | 1025 +++++++++++++++++++++-----
+ include/linux/mmc/card.h                     |    2 +
+ include/linux/mmc/core.h                     |    1 +
+ include/linux/mmc/host.h                     |   65 ++
+ include/linux/mmc/mmc.h                      |    3 +
+ 17 files changed, 1512 insertions(+), 216 deletions(-)
+
+
+Regards
+Adrian
