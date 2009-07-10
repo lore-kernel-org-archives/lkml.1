@@ -1,52 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbZGJSeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbZGJSew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbZGJSeA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 14:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756457AbZGJSdv
+	id S1756208AbZGJSew (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 14:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbZGJSep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 14:33:51 -0400
-Received: from solo.fdn.fr ([80.67.169.19]:60399 "EHLO solo.fdn.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756480AbZGJSdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 14:33:50 -0400
-Date: Fri, 10 Jul 2009 20:33:46 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org, xorg@lists.freedesktop.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: SIGQUIT from tty layer
-Message-ID: <20090710183346.GA7699@const.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org, xorg@lists.freedesktop.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20090709143141.GA17551@ben-laptop> <20090709150047.GE5328@const.famille.thibault.fr> <20090709171816.GA6046@ben-laptop>
+	Fri, 10 Jul 2009 14:34:45 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:18488 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752954AbZGJSep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 14:34:45 -0400
+X-Trace: 224772107/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.46.168/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.46.168
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvIEAHcmV0pPRS6o/2dsb2JhbACBUc8YhAgFgTs
+X-IronPort-AV: E=Sophos;i="4.42,379,1243810800"; 
+   d="scan'208";a="224772107"
+Date: Fri, 10 Jul 2009 19:34:06 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org, linux-mm@kvack.org
+Subject: Re: [BUG 2.6.30] Bad page map in process
+In-Reply-To: <Pine.LNX.4.64.0907081250110.15633@axis700.grange>
+Message-ID: <Pine.LNX.4.64.0907101900570.27223@sister.anvils>
+References: <Pine.LNX.4.64.0907081250110.15633@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090709171816.GA6046@ben-laptop>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Gamari, le Thu 09 Jul 2009 13:18:16 -0400, a écrit :
-> On Thu, Jul 09, 2009 at 05:00:47PM +0200, Samuel Thibault wrote:
-> > SIGQUIT is sent to the X server if the controling tty of the X server
-> > (probably its VT) receives the QUIT character (usually control-\, i.e.
-> > 0x1c)
+On Wed, 8 Jul 2009, Guennadi Liakhovetski wrote:
 > 
-> This, however, would imply that something is sending the character and
-> this something is certainly not me. Where else might this character come
-> from? How might I trace who's writing to the tty?
+> with a 2.6.30 kernel with only platform-specific modifications and this 
+> avr32 patch:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git;a=commitdiff;h=bb6e647051a59dca5a72b3deef1e061d7c1c34da
+> 
+> we're seeing kernel BUGs following an application segfault. Here's an 
+> example:
+> 
+> [60254.432000] application[465]: segfault at 4377f876 pc 2aaabbde sp 7faa77f0 ecr 24
+> [60255.396000] BUG: Bad page map in process application  pte:13f26ed4 pmd:92fdd000
+> [60255.404000] page:902c44c0 flags:0000002c count:1 mapcount:-1 mapping:9345765c index:5
+> [60255.412000] addr:2ae4f000 vm_flags:08000075 anon_vma:(null) mapping:93454dd4 index:0
 
-Not writing to the tty, but producing input for the tty.  Are you
-using evdev or the legacy kbd driver? 0x1c is the keycode of the enter
-key, maybe your workload happens to restart the keyboard driver, which
-temporarily re-enables signal keys.
+This is the first time I've seen one of these messages since putting it
+into 2.6.29, and nice to see that it's doing its job: the info amidst the
+data is that mapcount is -1 when it ought to be 0, and the mapping,index
+of the page the pte points to doesn't match up with the mapping,index
+which the vma intends at that address: probably the pte is corrupt.
 
-Or maybe it's on another tty, do you have anything beyond /dev/mem,
-/dev/null, /dev/tty7, /dev/agpgart and /dev/dri/card* in
-lsof -p $(pidof Xorg) | grep CHR
-?
+I've not looked up avr32 pte layout, is 13f26ed4 good or bad?
+I hope avr32 people can tell more about the likely cause.
 
-Samuel
+Also, the addr mapped by this pte (2ae4f000) is not the address
+which segfaulted (4377f876): it would have been satisfying if those
+had matched up, but I don't think we can conclude anything from the
+fact that they don't.
+
+> [60255.420000] vma->vm_ops->fault: filemap_fault+0x0/0x26c
+> [60255.424000] vma->vm_file->f_op->mmap: generic_file_readonly_mmap+0x0/0x18
+> [60255.432000] Call trace: (exiting)
+> 
+> Questions: can this BUG be caused by the segfault (it better not)?
+
+It better not.
+
+> If not, what can be the reason?
+
+It looks like page table corruption.
+
+> The problem occurs sporadically, I've only had one 
+> such case since yesterday. Yet one more application segfault last night 
+> didn't produce a BUG.
+
+I think page table corruption is causing segfaults, and page table
+corruption is causing "Bad page map"s when the app exits.  Yes,
+sometimes you'll see one, sometimes the other, sometimes both.
+
+More might be learnt by comparing all the different such messages
+you've seen: for example, we're now printing the "pmd" there, in
+case it emerges that all such errors occur in or near the same
+physical address.
+
+> This is with a kernel configured with SLAB. With 
+> SLUB we also observed similar BUGs on application exit but without signal 
+> handling path in the backtrace. But, I think, I've had other problems with 
+> SLUB before, so, we switched back to SLAB for now...
+
+I wouldn't read too much into the SLAB versus SLUB difference here,
+suspect just coincidence; but I could be horribly wrong.
+
+Hugh
