@@ -1,65 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbZGJKor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbZGJKpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbZGJKor (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 06:44:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZGJKoh
+	id S1755580AbZGJKpB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 06:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZGJKov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 06:44:37 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:64136 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754824AbZGJKog (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 06:44:36 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH] score: add regsets support for score
-Date: Fri, 10 Jul 2009 12:44:28 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.95; x86_64; ; )
-References: <OF46A53443.CAD32185-ON482575EF.0034F550-482575EF.0035E714@sunplusct.com>
-In-Reply-To: <OF46A53443.CAD32185-ON482575EF.0034F550-482575EF.0035E714@sunplusct.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?gb2312?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2E?=
- =?gb2312?q?a=5E3zb?=)
- =?gb2312?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?gb2312?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 10 Jul 2009 06:44:51 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53629 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755568AbZGJKou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 06:44:50 -0400
+Date: Fri, 10 Jul 2009 10:43:11 GMT
+From: tip-bot for Robin Getz <rgetz@blackfin.uclinux.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       rgetz@blackfin.uclinux.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       rgetz@blackfin.uclinux.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <200907091308.37370.rgetz@blackfin.uclinux.org>
+References: <200907091308.37370.rgetz@blackfin.uclinux.org>
+Subject: [tip:core/printk] printk: Ensure that "console enabled" messages are printed on the console
+Message-ID: <tip-8259cf4342029aad37660e524178c8858f48b0ab@git.kernel.org>
+Git-Commit-ID: 8259cf4342029aad37660e524178c8858f48b0ab
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Message-Id: <200907101244.28829.arnd@arndb.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Content-Type: Text/Plain;
-  charset="gb2312"
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX1/9kdvxqPYyT07wT+ZqLmnbimGvk3Enr9Glljx
- y2av7fp+0J+Js1wXPTl5cNm9qTmrNfP3YWE7dI3w9oPNupieX7
- NM0EgrDXJwGDy3RPtRH5w==
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 10:43:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 July 2009, liqin.chen@sunplusct.com wrote:
-> Arnd Bergmann <arnd@arndb.de> Ð´ÓÚ 2009-07-09 23:08:54:
-> 
-> > You still use an email client that breaks patches by adding line-wraps.
-> > Please use a different mail client for sending patches. You could for
-> > example use git-send-email with a random freemail account and still
-> > set your corporate sender address.
-> 
-> Sorry, our MIS haven't solved this problem yet,
-> I have to used it until they fixed this bug.
+Commit-ID:  8259cf4342029aad37660e524178c8858f48b0ab
+Gitweb:     http://git.kernel.org/tip/8259cf4342029aad37660e524178c8858f48b0ab
+Author:     Robin Getz <rgetz@blackfin.uclinux.org>
+AuthorDate: Thu, 9 Jul 2009 13:08:37 -0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 10 Jul 2009 12:24:47 +0200
 
-What's the problem? Do you need a development machine with SMTP access to
-the internet? If so, the easiest way would be to use master.kernel.org
-once you have an account there and not rely on your company infrastructure.
+printk: Ensure that "console enabled" messages are printed on the console
 
-I noticed that you have started using Thunderbird instead of Notes now.
-While Thunderbird has the same bug, you can at least work around it,
-see the section on thunderbird in
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/email-clients.txt
+Today, when a console is registered without CON_PRINTBUFFER,
+end users never see the announcement of it being added, and
+never know if they missed something, if the console is really
+at the start or not, and just leads to general confusion.
 
-OTOH, if you got thunderbird to send out your mails, you should
-also be able to send out using git-send-email on the same server,
-without any help from your MIS.
+This re-orders existing code, to make sure the console is
+added, before the "console [%s%d] enabled" is printed out -
+ensuring that this message is _always_ seen.
 
-	Arnd <><
+This has the desired/intended side effect of making sure that
+"console enabled:" messages are printed on the bootconsole, and
+the real console. This does cause the same line is printed
+twice if the bootconsole and real console are the same device,
+but if they are on different devices, the message is printed to
+both consoles.
+
+Signed-off-by : Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>
+LKML-Reference: <200907091308.37370.rgetz@blackfin.uclinux.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/printk.c |   44 +++++++++++++++++++++++++++++---------------
+ 1 files changed, 29 insertions(+), 15 deletions(-)
+
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 41fe609..668df35 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -1240,22 +1240,14 @@ void register_console(struct console *newcon)
+ 	if (!(newcon->flags & CON_ENABLED))
+ 		return;
+ 
+-	if (bcon && ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV)) {
+-		/* we need to iterate through twice, to make sure we print
+-		 * everything out, before we unregister the console(s)
+-		 */
+-		printk(KERN_INFO "console handover:");
+-		for_each_console(bcon)
+-			printk("boot [%s%d] ", bcon->name, bcon->index);
+-		printk(" -> real [%s%d]\n", newcon->name, newcon->index);
+-		for_each_console(bcon)
+-			unregister_console(bcon);
++	/*
++	 * If we have a bootconsole, and are switching to a real console,
++	 * don't print everything out again, since when the boot console, and
++	 * the real console are the same physical device, it's annoying to
++	 * see the beginning boot messages twice
++	 */
++	if (bcon && ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV))
+ 		newcon->flags &= ~CON_PRINTBUFFER;
+-	} else {
+-		printk(KERN_INFO "%sconsole [%s%d] enabled\n",
+-			(newcon->flags & CON_BOOT) ? "boot" : "" ,
+-			newcon->name, newcon->index);
+-	}
+ 
+ 	/*
+ 	 *	Put this console in the list - keep the
+@@ -1281,6 +1273,28 @@ void register_console(struct console *newcon)
+ 		spin_unlock_irqrestore(&logbuf_lock, flags);
+ 	}
+ 	release_console_sem();
++
++	/*
++	 * By unregistering the bootconsoles after we enable the real console
++	 * we get the "console xxx enabled" message on all the consoles -
++	 * boot consoles, real consoles, etc - this is to ensure that end
++	 * users know there might be something in the kernel's log buffer that
++	 * went to the bootconsole (that they do not see on the real console)
++	 */
++	if (bcon && ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV)) {
++		/* we need to iterate through twice, to make sure we print
++		 * everything out, before we unregister the console(s)
++		 */
++		printk(KERN_INFO "console [%s%d] enabled, bootconsole disabled\n",
++			newcon->name, newcon->index);
++		for_each_console(bcon)
++			if (bcon->flags & CON_BOOT)
++				unregister_console(bcon);
++	} else {
++		printk(KERN_INFO "%sconsole [%s%d] enabled\n",
++			(newcon->flags & CON_BOOT) ? "boot" : "" ,
++			newcon->name, newcon->index);
++	}
+ }
+ EXPORT_SYMBOL(register_console);
+ 
