@@ -1,70 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbZGJDzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751376AbZGJEB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752757AbZGJDzl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 23:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZGJDze
+	id S1751376AbZGJEB0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 00:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbZGJEBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 23:55:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53449 "EHLO hera.kernel.org"
+	Fri, 10 Jul 2009 00:01:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59261 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751889AbZGJDzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 23:55:33 -0400
-Subject: Re: [GIT-PULL] includecheck fixes
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       David Howells <dhowells@redhat.com>, benh@kernel.crashing.org,
-       paulus@samba.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       jdike@addtoit.com, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       dbrownell@users.sourceforge.net, mchehab@infradead.org,
-       jeremy@xensource.com, felixb@sgi.com, lenb@kernel.org, airlied@linux.ie,
-       bcrl@kvack.org, Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-In-Reply-To: <20090710033520.GA2458@kroah.com>
-References: <1247063308.4382.12.camel@ht.satnam>
-	 <1247164809.2452.9.camel@ht.satnam> <20090709222626.GA32746@kroah.com>
-	 <1247194755.2423.7.camel@ht.satnam>  <20090710033520.GA2458@kroah.com>
-Content-Type: text/plain
-Date: Fri, 10 Jul 2009 09:20:25 +0530
-Message-Id: <1247197825.2423.18.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1750696AbZGJEBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 00:01:17 -0400
+Date: Fri, 10 Jul 2009 06:01:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1 tip] perf report: Adjust column width to the values
+	sampled
+Message-ID: <20090710040104.GB5077@elte.hu>
+References: <20090706192157.GA3320@ghostprotocols.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090706192157.GA3320@ghostprotocols.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-09 at 20:35 -0700, Greg KH wrote:
-> On Fri, Jul 10, 2009 at 08:29:15AM +0530, Jaswinder Singh Rajput wrote:
-> > Hello Greg,
-> > 
-> > On Thu, 2009-07-09 at 15:26 -0700, Greg KH wrote:
-> > > On Fri, Jul 10, 2009 at 12:10:09AM +0530, Jaswinder Singh Rajput wrote:
-> > > > Linus,
-> > > > 
-> > > > Please pull includecheck fixes, these all are clean and safe patches
-> > > > with relevant Acks.
-> > > 
-> > > Shouldn't stuff like this go through the trivial tree?  And stuff like
-> > > that is relevant for the main pre-rc1 merge, not this late in the merge
-> > > cycle, right?
-> > > 
-> > 
-> > You did not specified what is your problem ? and where was you when we
-> > discussed it earlier ?
+
+* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+
+> Example:
 > 
-> Earlier when? 
+> [acme@doppio pahole]$  perf report --sort comm,dso,symbol | head -13
+> 
+>     12.79%   pahole  /usr/lib64/libdw-0.141.so    [.] __libdw_find_attr
+>      8.90%   pahole  /lib64/libc-2.10.1.so        [.] _int_malloc
+>      8.68%   pahole  /usr/lib64/libdw-0.141.so    [.] __libdw_form_val_len
+>      8.15%   pahole  /lib64/libc-2.10.1.so        [.] __GI_strcmp
+>      6.80%   pahole  /lib64/libc-2.10.1.so        [.] __tsearch
+>      5.54%   pahole  ./build/libdwarves.so.1.0.0  [.] tag__recode_dwarf_type
+> [acme@doppio pahole]$
+> 
+> [acme@doppio pahole]$  perf report --sort comm,dso,symbol -d /lib64/libc-2.10.1.so | head -10
+> 
+>     21.92%   pahole  /lib64/libc-2.10.1.so  [.] _int_malloc
+>     20.08%   pahole  /lib64/libc-2.10.1.so  [.] __GI_strcmp
+>     16.75%   pahole  /lib64/libc-2.10.1.so  [.] __tsearch
+> [acme@doppio pahole]$
+> 
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Mike Galbraith <efault@gmx.de>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Suggested-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> ---
+>  tools/perf/builtin-report.c            |   93 ++++++++++++++++++++++++--------
+>  tools/perf/util/include/linux/kernel.h |    8 +++
+>  tools/perf/util/symbol.c               |    1 +
+>  tools/perf/util/symbol.h               |    1 +
+>  4 files changed, 80 insertions(+), 23 deletions(-)
 
-Check LKML emails of this thread, I have send half-dozen of emails to
-you earlier.
+Ok, that's certainly a nice feature.
 
-Thanks,
---
-JSR
+The only worry is that this makes it harder to post-process the 
+output via scripts. Mind eliminating this worry and completing this 
+patch by adding two other variants of this as well:
 
+  -w, --field-width=<COLS>
+
+  Force column width to <COLS>, for large terminal readability.
+
+  ( Optional: perhaps also allow for special syntax -w 10,20,10 for
+    separate width for separate columns. )
+
+  -t, --field-separator=<SEP>
+
+  Use special separator character <SEP> and dont pad with spaces, 
+  and replace all occurances of '<SEP>' in symbol names (and other 
+  output) with a '.' character.
+
+  This is for easier output parsing for scripts.
+
+	Ingo
