@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbZGJKYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751925AbZGJK0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753848AbZGJKYy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 06:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbZGJKYp
+	id S1751925AbZGJK0i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 06:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbZGJK0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 06:24:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37792 "EHLO mx2.suse.de"
+	Fri, 10 Jul 2009 06:26:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43959 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbZGJKYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 06:24:45 -0400
-Date: Fri, 10 Jul 2009 12:24:43 +0200
-From: Jan Kara <jack@suse.cz>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] isofs: fix Joliet regression
-Message-ID: <20090710102442.GE17524@duck.suse.cz>
-References: <200907081929.54372.bzolnier@gmail.com>
+	id S1750835AbZGJK0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 06:26:31 -0400
+Date: Fri, 10 Jul 2009 12:25:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] kernel.printk.c - ensure that "console enabled"
+	messages are printed on the console
+Message-ID: <20090710102547.GD5499@elte.hu>
+References: <200907040017.26921.rgetz@blackfin.uclinux.org> <200907091308.37370.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200907081929.54372.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200907091308.37370.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0006]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 08-07-09 19:29:52, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] isofs: fix Joliet regression
+
+* Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+
+> From: Robin Getz <rgetz@blackfin.uclinux.org>
 > 
-> commit 5404ac8e4418ab3d254950ee4f9bcafc1da20b4a ("isofs: cleanup mount
-> option processing") missed conversion of joliet option flag resulting
-> in non-working Joliet support.
+> Today, when a console is registered without CON_PRINTBUFFER, end 
+> users never see the announcement of it being added, and never know 
+> if they missed something, if the console is really at the start or 
+> not, and just leads to general confusion.
 > 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> This re-orders existing code, to make sure the console is added, 
+> before the "console [%s%d] enabled" is printed out - ensuring that 
+> this message is _always_ seen.
+> 
+> This has the desired/intended side effect of making sure that 
+> "console enabled:" messages are printed on the bootconsole, and 
+> the real console. This does cause the same line is printed twice 
+> if the bootconsole and real console are the same device, but if 
+> they are on different devices, the message is printed to both 
+> consoles.
+> 
+> Signed-off-by : Robin Getz <rgetz@blackfin.uclinux.org>
+> 
 > ---
-> I really want to believe that this is just the unlucky coincidence with
-> the ongoing vfat madness...
-  Thanks for the fix. I've just tracked this down as well and wanted to write
-a fix :) I'll send the patch to Linus for inclusion.
-
-									Honza
-
->  fs/isofs/inode.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> Index: b/fs/isofs/inode.c
-> ===================================================================
-> --- a/fs/isofs/inode.c
-> +++ b/fs/isofs/inode.c
-> @@ -142,6 +142,7 @@ static const struct dentry_operations is
->  
->  struct iso9660_options{
->  	unsigned int rock:1;
-> +	unsigned int joliet:1;
->  	unsigned int cruft:1;
->  	unsigned int hide:1;
->  	unsigned int showassoc:1;
-> @@ -151,7 +152,6 @@ struct iso9660_options{
->  	unsigned int gid_set:1;
->  	unsigned int utf8:1;
->  	unsigned char map;
-> -	char joliet;
->  	unsigned char check;
->  	unsigned int blocksize;
->  	mode_t fmode;
-> @@ -632,7 +632,7 @@ static int isofs_fill_super(struct super
->  			else if (isonum_711(vdp->type) == ISO_VD_SUPPLEMENTARY) {
->  				sec = (struct iso_supplementary_descriptor *)vdp;
->  				if (sec->escape[0] == 0x25 && sec->escape[1] == 0x2f) {
-> -					if (opt.joliet == 'y') {
-> +					if (opt.joliet) {
->  						if (sec->escape[2] == 0x40)
->  							joliet_level = 1;
->  						else if (sec->escape[2] == 0x43)
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+>  printk.c |   44 +++++++++++++++++++++++++++++---------------
+>  1 file changed, 29 insertions(+), 15 deletions(-)
+> 
+> patch generated for -tip
+
+Looks good, applied it to tip:core/printk for v2.6.32, thanks Robin. 
+
+i fixed a couple of small details in the patch:
+
+ - re-broke the commit log as it was too wide for nice git log 
+   output
+
+ - fixed a stray whitespace warned about by scripts/checkpatch.pl
+
+ - fixed another stray whitespace found the old fashioned way
+
+ - fixed the patch title to match the prefix used by your previous 
+   commit as well
+
+	Ingo
