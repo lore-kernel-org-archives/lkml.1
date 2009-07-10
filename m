@@ -1,80 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751935AbZGJGyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751313AbZGJHEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751935AbZGJGyu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 02:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbZGJGyn
+	id S1751313AbZGJHEm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 03:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750809AbZGJHEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 02:54:43 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54419 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750939AbZGJGym (ORCPT
+	Fri, 10 Jul 2009 03:04:32 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:34429 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbZGJHEb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 02:54:42 -0400
-Subject: Re: [patch v2] slub: add option to disable higher order debugging
- slabs
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: David Rientjes <rientjes@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <alpine.DEB.2.00.0907091620470.16817@chino.kir.corp.google.com>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
-	 <1246374095.8014.28.camel@penberg-laptop>
-	 <alpine.DEB.1.10.0906301114450.3879@gentwo.org>
-	 <alpine.DEB.2.00.0906301248000.16312@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0906301632570.22158@gentwo.org>
-	 <alpine.DEB.2.00.0906301413460.24397@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0906301722280.17682@gentwo.org>
-	 <alpine.DEB.2.00.0906301445070.26290@chino.kir.corp.google.com>
-	 <84144f020906302253n2424d4a5k3aaf124838a041df@mail.gmail.com>
-	 <alpine.DEB.2.00.0907021016380.30890@chino.kir.corp.google.com>
-	 <84144f020907030023v2d09632bt13b6c25f96c0b803@mail.gmail.com>
-	 <alpine.DEB.2.00.0907062252500.9699@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0907070013400.14978@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0907071150010.5124@gentwo.org>
-	 <alpine.DEB.2.00.0907091620470.16817@chino.kir.corp.google.com>
-Date: Fri, 10 Jul 2009 09:54:39 +0300
-Message-Id: <1247208879.19026.2.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 10 Jul 2009 03:04:31 -0400
+Message-ID: <4A56E7F9.9030405@in.ibm.com>
+Date: Fri, 10 Jul 2009 12:34:25 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: OOM with hackbench against next 0708
+References: <20090708173104.d39108bb.sfr@canb.auug.org.au> <4A5499B4.5050007@in.ibm.com> <1247066549.14309.1029.camel@nimitz>
+In-Reply-To: <1247066549.14309.1029.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Jul 2009, Christoph Lameter wrote:
-> > > + * Debugging flags that require metadata to be stored in the slab, up to
-> > > + * DEBUG_SIZE in size.
-> > > + */
-> > > +#define DEBUG_SIZE_FLAGS (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER)
-> > > +#define DEBUG_SIZE (3 * sizeof(void *) + 2 * sizeof(struct track))
-> > 
-> > There is no need for DEBUG_SIZE since slub keeps both the size of the
-> > object kmem_cache->objsize and the size with the metadata kmem_cache->size
-> > 
-> > If the order of both is different then the order would increase.
+Dave Hansen wrote:
+> This doesn't look like a kernel bug at all to me.  You're out of memory,
+> out of swap, and the thing that got killed was the thing allocating
+> memory.  You're also down to 65MB of pagecache, which is awfully low for
+> a 6GB machine.  That tells me it's also been effective in reclaiming
+> disk cache.
+>
+> There are a couple of possibilities:
+> 1. hackbench is broken, allocating too much memory and ooming, or it
+>    has been misconfigured by a user
+> 2. hackbench broke because something the kernel is telling it is wrong
+> 3. The kernel is leaking (or just plain using) some memory more than a
+>    few releases ago, and that caused the oom.
+>
+> I'd go back and carefully examine how hackbench is being run and that it
+> is consistent.  You should also double-check your finding that the
+> several-day-old -next isn't seeing this issue.
+>   
+Thanks Dave for the pointers.
 
-On Thu, 2009-07-09 at 16:26 -0700, David Rientjes wrote:
-> Without DEBUG_SIZE_FLAGS, the only way to determine what flags have 
-> increased the size is in calculate_sizes() and then disable them by 
-> default if slub_debug=O is specified.  calculate_sizes() is used by 
-> the `store', `poison', and `red_zone' callbacks, so the admin still has 
-> the ability to enable these options even though slub_debug=O was used.
-> 
-> So we can either mask off the size-increasing debug bits when the cache is 
-> created in kmem_cache_flags() like I did, or we can move the logic to 
-> calculate_sizes() with an added formal to determine whether this is from 
-> kmem_cache_open() or one of the attribute callbacks.
-> 
-> I think my solution is the cleanest and provides a single entity, 
-> DEBUG_SIZE_FLAGS, which specifies the flags that slub_debug=O clears if 
-> the minimum order increases.
+I am able to consistently recreate this issue with next 0708. hackbench
+creates 3600 tasks in my case. After starting the tests machine becomes
+unresponsive and i finally have to reboot it.
 
-Yup, agreed. I applied the patch, thanks everyone!
+The test ran successfully on next03, but unfortunately i did
+not save the config file for that run. If i use the config file from
+0708 and compile a 0703, the machine becomes unresponsive because
+of OOM's. I can't explain why the test ran successfully against
+0703 :-( in previous attempt.
 
-			Pekka
+Only data point i have at this time is the same tests runs successfully
+against 2.6.31-rc2. But may be that's not even an argument :-)
+
+Thanks
+-Sachin
+
+
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
