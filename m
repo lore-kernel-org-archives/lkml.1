@@ -1,62 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbZGJJdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbZGJJiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbZGJJdY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 05:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZGJJdR
+	id S1754212AbZGJJiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 05:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZGJJiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 05:33:17 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38727 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751323AbZGJJdQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 05:33:16 -0400
-Date: Fri, 10 Jul 2009 10:34:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Anders Larsen <al@alarsen.net>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] Fix sysrq caused USB performance regressions and
- leak
-Message-ID: <20090710103412.70152f8c@lxorguk.ukuu.org.uk>
-In-Reply-To: <1247216873l.25954l.0l@i-dmzi_al.realan.de>
-References: <1247154399l.14017l.2l@i-dmzi_al.realan.de>
-	<20090710010245.17bd0958@lxorguk.ukuu.org.uk>
-	<1247216873l.25954l.0l@i-dmzi_al.realan.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Jul 2009 05:38:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47988 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751323AbZGJJiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 05:38:03 -0400
+Date: Fri, 10 Jul 2009 11:37:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Anton Blanchard <anton@samba.org>
+Cc: a.p.zijlstra@chello.nl, paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf_counter: Add alignment-faults and
+	emulation-faults sw events
+Message-ID: <20090710093757.GG27445@elte.hu>
+References: <20090706120815.GC4391@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090706120815.GC4391@kryten>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Jul 2009 11:07:53 +0200
-Anders Larsen <al@alarsen.net> wrote:
 
-> On 2009-07-10 02:01:37, Alan Cox wrote:
-> > > shouldn't it be
-> > > +	if (likely(!port->console || !port->sysrq))
-> > > respectively
-> > > +	if (unlikely(port->console && port->sysrq)) {
-> > > 
-> > > at least for clarity?
-> > 
-> > It'll get predicted by the CPU just fine I suspect.
+* Anton Blanchard <anton@samba.org> wrote:
+
+> Add two software events that are common to many cpus:
 > 
-> I thought likely() / unlikely() were for the _compiler_ to arrange the
-> blocks more efficiently?
+> Alignment faults: When a load or store is not aligned properly and 
+> must be performed by the kernel.
+> 
+> Emulation faults: When an instruction must be emulated by the 
+> kernel.
+> 
+> Both cause a very significant slowdown (potentially 100x or 
+> worse), so identifying and fixing them is very important.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Index: linux.trees.git/include/linux/perf_counter.h
+> ===================================================================
+> --- linux.trees.git.orig/include/linux/perf_counter.h	2009-07-06 21:50:53.000000000 +1000
+> +++ linux.trees.git/include/linux/perf_counter.h	2009-07-06 21:51:18.000000000 +1000
+> @@ -102,6 +102,8 @@
+>  	PERF_COUNT_SW_CPU_MIGRATIONS		= 4,
+>  	PERF_COUNT_SW_PAGE_FAULTS_MIN		= 5,
+>  	PERF_COUNT_SW_PAGE_FAULTS_MAJ		= 6,
+> +	PERF_COUNT_SW_ALIGNMENT_FAULTS		= 7,
+> +	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
 
-Bit of both. Some systems have indicators for whether jumps are likely to
-be taken, others you do things like conditionally jump forward to a jump
-table which jumps back.
+Looks useful.
 
-gcc itself says "programmers are notoriously bad at predicting how their
-programs actually perform." 8)
+I'm wondering about the enumeration space: in other cases when some 
+simple event was further refined we went to add a new perf_type_id 
+and a separate enumeration space, with no limits to extensibility. 
+We'd have a new 'enum perf_sw_fault_id' space.
 
-Benchmarking I've not had any luck with unlikely() on a modern CPU
-(the CPU is dynamically predicting anyway). The pentium iv does add
-branch prediction hints (DS: and CS: overrides get reused) but they seem
-to make things slower in the case where the CPU will get it right anyway.
+Page faults are special anyway, because they carry a 'data' 
+(faulting address) sample as well.
 
-So I'd like to see benchmarking evidence for an unlikely on such a hot
-and predictible path.
+So i'm wondering how a good, generic enumeration of all things page 
+faults would look like. If we extend perf_sw_ids linearly we might 
+lose some structure.
 
+For example major versus minor might be a dimension (bit) in the 
+enumeration space, so we'd have:
+
+   { major | minor } x { native, unaligned, emulated }
+
+This provides an advantage already: the current 'all' page faults 
+counter would become the 'major|minor' case in the new enumeration.
+
+We could still keep around the old events as well for some time, but 
+the tools would use the new enumeration.
+
+Hm?
+
+	Ingo
