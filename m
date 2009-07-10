@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZGJPFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZGJPHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbZGJPFr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 11:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZGJPFk
+	id S1754719AbZGJPHd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 11:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZGJPH0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 11:05:40 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:39225 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751474AbZGJPFk (ORCPT
+	Fri, 10 Jul 2009 11:07:26 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39917 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbZGJPHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 11:05:40 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: EHCI, BIOS handoff warning/error?
-Date: Fri, 10 Jul 2009 10:05:35 -0500
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200907090857.47350.lkml@morethan.org> <4A567F52.1040505@gmail.com>
-In-Reply-To: <4A567F52.1040505@gmail.com>
+	Fri, 10 Jul 2009 11:07:25 -0400
+Message-ID: <4A575921.9030501@zytor.com>
+Date: Fri, 10 Jul 2009 08:07:13 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Pavel Machek <pavel@ucw.cz>
+CC: "John A. Gregor" <john.gregor@qlogic.com>, ralph.campbell@qlogic.com,
+       linux-kernel@vger.kernel.org, johng@diamond.mv.qlogic.com,
+       Hongjiu.lu@intel.com
+Subject: Re: [PATCH] x86_64/__iowrite32_copy: don't use string move for PIO
+ writes
+References: <1246907224-22758-1-git-send-email-john.gregor@qlogic.com> <4A526CE6.30200@zytor.com> <4a526e77.IPiyTZWRWfll2+00%john.gregor@qlogic.com> <4A527EE4.1080102@zytor.com> <20090709231957.GC1469@ucw.cz>
+In-Reply-To: <20090709231957.GC1469@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907101005.37228.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu July 9 2009, Robert Hancock wrote:
-> On 07/09/2009 07:57 AM, Michael S. Zick wrote:
-> > Anyone with thoughts on this one?
-> > Even a translation of the message might help.
-> >
-> > pci 0000:00:01.0: disabling DAC on VIA PCI bridge
-> > pci 0000:00:10.0: uhci_check_and_reset_hc: legsup = 0x2000
-> > pci 0000:00:10.0: Performing full reset
-> > pci 0000:00:10.1: uhci_check_and_reset_hc: legsup = 0x2000
-> > pci 0000:00:10.1: Performing full reset
-> > pci 0000:00:10.2: uhci_check_and_reset_hc: legsup = 0x2000
-> > pci 0000:00:10.2: Performing full reset
-> > pci 0000:00:10.4: EHCI: BIOS handoff
-> > pci 0000:00:10.4: EHCI: BIOS handoff failed (BIOS bug?) 01010001
-> > pci 0000:01:00.0: Boot video device
+Pavel Machek wrote:
+>> - the current code is fine as long as it doesn't cross from cached to
+>>   uncached memory, which it never should in any kind of sensible driver;
 > 
-> That would mean the BIOS failed to indicate it has given up control of 
-> the EHCI controller within the allowed time period.
->
+> Should we add a comment somewhere saying that is not permitted (and why)?
 
-Thanks.  I'll just toss that one onto the "timing fixups" stack.
+It sounds like what we should do is simply remove
+arch/x86/lib/iomap_copy_64.S, and probably add a comment to
+lib/iomap_copy.c stating that rep string instructions have been reported
+to cause anomalies when accessing WC memory, and that we rely on gcc not
+generating them due thanks to the volatiles in the implementation of
+__raw_writel().  H.J. Lu tells me that gcc will not generate string
+instructions for volatiles, and that the x86 gcc team considers that
+part of the definition for volatile.  (HJL: please correct if I got that
+incorrect.)
 
-Mike
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+	-hpa
 
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
