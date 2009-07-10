@@ -1,132 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbZGJPZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbZGJPZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbZGJPZL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 11:25:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZGJPYz
+	id S1755559AbZGJPZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 11:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbZGJPZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 11:24:55 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:36964 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751935AbZGJPYx (ORCPT
+	Fri, 10 Jul 2009 11:25:07 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:23341 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755289AbZGJPZE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 11:24:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=QWQV60GbW7O0BFXVASCaGDacEF5+5sLAM6TAMFn2bK4vSdJ4lsCACl7ujaDmhtwA2n
-         Nus0kFBkFwjuhUgghaRYPjnKrZvufoZ6yGbXYikECdSG2snA5K/51xy4FJcMfjqZW+BU
-         kF/v2FD3aaN0Y1RdILOTGZYA/9OqeiWw8UyCQ=
+	Fri, 10 Jul 2009 11:25:04 -0400
 MIME-Version: 1.0
-In-Reply-To: <200907101343.14113.elendil@planet.nl>
-References: <200907082340.07787.elendil@planet.nl> <200907090311.40205.elendil@planet.nl> 
-	<43e72e890907081907j279f48eep99e73cc2951dfdb@mail.gmail.com> 
-	<200907101343.14113.elendil@planet.nl>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 10 Jul 2009 08:24:32 -0700
-Message-ID: <43e72e890907100824o1a4116aeh6e4d28aa504b29cc@mail.gmail.com>
-Subject: Re: [regression] ath5k: Overrides regulatory domain set for cfg80211
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Message-ID: <d693761e-2f2b-4d8c-ae4f-7f22479f6c0f@default>
+Date: Fri, 10 Jul 2009 08:23:07 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
+       xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
+       alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org, kurt.hackel@oracle.com,
+       Rusty Russell <rusty@rustcorp.com.au>, dave.mccracken@oracle.com,
+       Marcelo Tosatti <mtosatti@redhat.com>, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       chris.mason@oracle.com, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: RE: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
+In-Reply-To: <4A567E3B.90609@codemonkey.ws>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.4A575D11.0157:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 4:43 AM, Frans Pop<elendil@planet.nl> wrote:
+> > But IMHO this is a corollary of the fundamental difference.  CMM2's
+> > is more the "VMware" approach which is that OS's should never have
+> > to be modified to run in a virtual environment.  (Oh, but maybe
+> > modified just slightly to make the hypervisor a little less
+> > clueless about the OS's resource utilization.)
+> 
+> While I always enjoy a good holy war, I'd like to avoid one 
+> here because 
+> I want to stay on the topic at hand.
 
->> >> For further information please also read
->> >> Documentation/feature-removal-schedule.txt. Please use a valid
->> >> ISO-3166 alpha2 country code, I also advise to abandon the usage of
->> >> the ieee80211_regdom module parameter which we do eventually intend
->> >> on deprecating and if you know anyone using that please suggest the
->> >> same.
->> >
->> > As mentioned above I do not currently have the option of abandoning
->> > it.
->>
->> Yes you do, but you don't seem to want to do anything beyond what your
->> distribution offers, which is different.
->
-> You're right :-)
-> However, I am also a Debian Developer and Debian may (just as we did for
-> Etch), at some point want to offer a newer kernel than the current .26
-> for stable (possibly .31).
+Oops, sorry, I guess that was a bit inflammatory.  What I meant to
+say is that inferring resource utilization efficiency is a very
+hard problem and VMware (and I'm sure IBM too) has done a fine job
+with it; CMM2 explicitly provides some very useful information from
+within the OS to the hypervisor so that it doesn't have to infer
+that information; but tmem is trying to go a step further by making
+the cooperation between the OS and hypervisor more explicit
+and directly beneficial to the OS.
 
-That'd be nice!
+> If there was one change to tmem that would make it more 
+> palatable, for 
+> me it would be changing the way pools are "allocated".  Instead of 
+> getting an opaque handle from the hypervisor, I would force 
+> the guest to 
+> allocate it's own memory and to tell the hypervisor that it's a tmem 
+> pool.
 
-> From that PoV it is important to ensure there
-> are no incompatibilities with what's in Debian stable.
+An interesting idea but one of the nice advantages of tmem being
+completely external to the OS is that the tmem pool may be much
+larger than the total memory available to the OS.  As an extreme
+example, assume you have one 1GB guest on a physical machine that
+has 64GB physical RAM.  The guest now has 1GB of directly-addressable
+memory and 63GB of indirectly-addressable memory through tmem.
+That 63GB requires no page structs or other data structures in the
+guest.  And in the current (external) implementation, the size
+of each pool is constantly changing, sometimes dramatically so
+the guest would have to be prepared to handle this.  I also wonder
+if this would make shared-tmem-pools more difficult.
 
-And there shouldn't be.
+I can see how it might be useful for KVM though.  Once the
+core API and all the hooks are in place, a KVM implementation of
+tmem could attempt something like this.
 
-Side note:
+> The big advantage of keeping the tmem pool part of the normal set of 
+> guest memory is that you don't introduce new challenges with 
+> respect to memory accounting.  Whether or not tmem is directly 
+> accessible from the guest, it is another memory resource.  I'm
+> certain that you'll want to do accounting of how much tmem is being
+> consumed by each guest
 
-I'd suggest to disable OLD_REG and provide crda and iw on your shiny
-new kernel. In the absence of crda you still have a really good world
-regulatory domain with good world roaming capabilities. For setting
-the regulatory domain you can look at what Fedora folks did with the
-timezone info until the desktop catches up (geoclue and whatever).
+Yes, the Xen implementation of tmem does accounting on a per-pool
+and a per-guest basis and exposes the data via a privileged
+"tmem control" hypercall.
 
-> For that reason I am very conservative when it comes to installer newer or
-> backported versions of packages.
+> and I strongly suspect that you'll want to do tmem accounting on a 
+> per-process 
+> basis.  I also suspect that doing tmem limiting for things 
+> like cgroups would be desirable.
 
-Sure.
+This can be done now if each process or cgroup creates a different
+tmem pool.  The proposed patch doesn't do this, but it certainly
+seems possible.
 
->> > That seems particularly bad in my case. For some weird reason this
->> > Trust PCMCIA card seems to have AM in its EEPROM, which is Armenia...
->> > The card was bought in the Netherlands (NL), which is also where I
->> > live.
->>
->> Yeah the short story of that is Armenia and Netherlands both have the
->> same regulatory rules, the first alpha2 that matched the same group
->> was picked up, which just so happened to be Armenia. In the future it
->> will be easier if cards are just programmed with the alpha2 country
->> code or with a world regulatory domain code, and just abandon the
->> grouping idea. That is something we will have to look forward to
->> change and promote for future device. What counts for regulatory
->> purposes is your device is complaint. The alternative was to keep all
->> the regulatory information statically in the kernel for each
->> regulatory group for Atheros devices.
->
-> Ah! I had no idea about that and I guess that this is the real issue here:
-> a simple usability problem. If I had seen the correct countrycode (NL
-> instead of AM), I probably never would have reported a regression. What
-> prompted my mail was that, from a user PoV, the country being selected
-> looked to be completely broken. How am I, as a simple user, supposed to
-> know that Armenia uses the same domain as the Netherlands and that what
-> the driver is doing is actually 100% correct (and even that my PCMCIA
-> card is not as broken as I thought)?
-
-Yeah, its a good point.
-
-> Would it be possible to improve the info presented by the kernel? Maybe
-> print an extra line with a list of countries that use the selected reg
-> domain (depends I guess on what's the max. nr. of countries that share a
-> domain). Or at least indicate that the country code is a somewhat random
-> choice.
-
-Perhaps an informative "group regulatory domain" printk may make
-sense, you're right.
-
->> > I can to some extend understand respecting hardware settings for APs,
->> > but for a wireless NIC it seems a useless limitation.
->>
->> You are right to a certain degree. The thing is wireless cards *can*
->> be used as APs on a regular desktops. Perhaps not with iwlagn, but
->> with ath5k and ath9k you can do AP, IBSS, Mesh, all of which actually
->> do start transmit with out any AP being around. For these cases you
->> *do* need to ensure proper regulatory compliance. And we haven't even
->> touched on DFS!
->
-> Well, IIUC you do know what mode the card is being used in, so in theory
-> you could distinguish between them. I'm not pushing for that though.
->
-> End conclusion is that there is no regression and no backwards
-> compatibility issue (which is good news), just a usability issue.
-
-Yup.
-
-  Luis
+Dan
