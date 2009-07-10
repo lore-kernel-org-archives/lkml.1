@@ -1,115 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZGJBJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbZGJBKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752775AbZGJBJy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Jul 2009 21:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZGJBJK
+	id S1752880AbZGJBKI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Jul 2009 21:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbZGJBJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Jul 2009 21:09:10 -0400
-Received: from sh.osrg.net ([192.16.179.4]:55330 "EHLO sh.osrg.net"
+	Thu, 9 Jul 2009 21:09:12 -0400
+Received: from sh.osrg.net ([192.16.179.4]:55335 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751215AbZGJBJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Jul 2009 21:09:06 -0400
+	id S1751487AbZGJBJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Jul 2009 21:09:07 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
        benh@kernel.crashing.org, tony.luck@intel.com, x86@kernel.org,
        fujita.tomonori@lab.ntt.co.jp, beckyb@kernel.crashing.org
-Subject: [PATCH 03/15] swiotlb: remove swiotlb_arch_range_needs_mapping
-Date: Fri, 10 Jul 2009 10:04:52 +0900
-Message-Id: <1247187904-31999-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 10/15] powerpc: remove unncesary swiotlb_arch_address_needs_mapping
+Date: Fri, 10 Jul 2009 10:04:59 +0900
+Message-Id: <1247187904-31999-11-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 10 Jul 2009 10:08:00 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 10 Jul 2009 10:08:03 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nobody uses swiotlb_arch_range_needs_mapping().
+swiotlb doesn't use swiotlb_arch_address_needs_mapping(); it uses
+dma_capalbe(). We can remove unnecessary
+swiotlb_arch_address_needs_mapping().
+
+We can remove swiotlb_addr_needs_map() and is_buffer_dma_capable() in
+swiotlb_pci_addr_needs_map() too; dma_capable() handles the features
+that both provide.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- arch/x86/kernel/pci-swiotlb.c |    5 -----
- include/linux/swiotlb.h       |    2 --
- lib/swiotlb.c                 |   15 ++-------------
- 3 files changed, 2 insertions(+), 20 deletions(-)
+ arch/powerpc/kernel/dma-swiotlb.c |   27 +--------------------------
+ 1 files changed, 1 insertions(+), 26 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index ea675cf..165bd7f 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -23,11 +23,6 @@ phys_addr_t swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
- 	return baddr;
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 41534ae..a3bbe02 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -36,28 +36,11 @@ phys_addr_t swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
  }
  
--int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
+ /*
+- * Determine if an address needs bounce buffering via swiotlb.
+- * Going forward I expect the swiotlb code to generalize on using
+- * a dma_ops->addr_needs_map, and this function will move from here to the
+- * generic swiotlb code.
+- */
+-int
+-swiotlb_arch_address_needs_mapping(struct device *hwdev, dma_addr_t addr,
+-				   size_t size)
 -{
--	return 0;
+-	struct dma_mapping_ops *dma_ops = get_dma_ops(hwdev);
+-
+-	BUG_ON(!dma_ops);
+-	return dma_ops->addr_needs_map(hwdev, addr, size);
 -}
 -
- static void *x86_swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 					dma_addr_t *dma_handle, gfp_t flags)
+-/*
+  * Determine if an address is reachable by a pci device, or if we must bounce.
+  */
+ static int
+ swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
  {
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index 6bc5094..a977da2 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -28,8 +28,6 @@ extern dma_addr_t swiotlb_phys_to_bus(struct device *hwdev,
- extern phys_addr_t swiotlb_bus_to_phys(struct device *hwdev,
- 				       dma_addr_t address);
+-	u64 mask = dma_get_mask(hwdev);
+ 	dma_addr_t max;
+ 	struct pci_controller *hose;
+ 	struct pci_dev *pdev = to_pci_dev(hwdev);
+@@ -69,16 +52,9 @@ swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
+ 	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
+ 		return 1;
  
--extern int swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size);
+-	return !is_buffer_dma_capable(mask, addr, size);
+-}
 -
- extern void
- *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 			dma_addr_t *dma_handle, gfp_t flags);
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 3c4c21c..dc1cd1f 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -141,11 +141,6 @@ int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
- 	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
+-static int
+-swiotlb_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
+-{
+-	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
++	return 0;
  }
  
--int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
--{
--	return 0;
--}
 -
- static void swiotlb_print_info(unsigned long bytes)
- {
- 	phys_addr_t pstart, pend;
-@@ -312,11 +307,6 @@ address_needs_mapping(struct device *hwdev, dma_addr_t addr, size_t size)
- 	return swiotlb_arch_address_needs_mapping(hwdev, addr, size);
- }
- 
--static inline int range_needs_mapping(phys_addr_t paddr, size_t size)
--{
--	return swiotlb_force || swiotlb_arch_range_needs_mapping(paddr, size);
--}
--
- static int is_swiotlb_buffer(char *addr)
- {
- 	return addr >= io_tlb_start && addr < io_tlb_end;
-@@ -646,8 +636,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
- 	 * we can safely return the device addr and not worry about bounce
- 	 * buffering it.
- 	 */
--	if (!address_needs_mapping(dev, dev_addr, size) &&
--	    !range_needs_mapping(phys, size))
-+	if (!address_needs_mapping(dev, dev_addr, size) && !swiotlb_force)
- 		return dev_addr;
- 
- 	/*
-@@ -810,7 +799,7 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
- 		phys_addr_t paddr = sg_phys(sg);
- 		dma_addr_t dev_addr = swiotlb_phys_to_bus(hwdev, paddr);
- 
--		if (range_needs_mapping(paddr, sg->length) ||
-+		if (swiotlb_force ||
- 		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
- 			void *map = map_single(hwdev, sg_phys(sg),
- 					       sg->length, dir);
+ /*
+  * At the moment, all platforms that use this code only require
+  * swiotlb to be used if we're operating on HIGHMEM.  Since
+@@ -94,7 +70,6 @@ struct dma_mapping_ops swiotlb_dma_ops = {
+ 	.dma_supported = swiotlb_dma_supported,
+ 	.map_page = swiotlb_map_page,
+ 	.unmap_page = swiotlb_unmap_page,
+-	.addr_needs_map = swiotlb_addr_needs_map,
+ 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
+ 	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
+ 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
 -- 
 1.6.0.6
 
