@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbZGJJT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZGJJWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754282AbZGJJT2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 05:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbZGJJTL
+	id S1753907AbZGJJWo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 05:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbZGJJWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 05:19:11 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33550 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753426AbZGJJTK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 05:19:10 -0400
-Subject: Re: [RFC][PATCH] Check write to slab memory which freed already
- using mudflap
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: David Rientjes <rientjes@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-kernel@vger.kernel.org, vegard.nossum@gmail.com,
-       graydon@redhat.com, fche@redhat.com, Nick Piggin <npiggin@suse.de>,
-       cl@linux-foundation.org
-In-Reply-To: <alpine.DEB.2.00.0907100158090.13880@chino.kir.corp.google.com>
-References: <1247156020.27671.40.camel@debian-nb>
-	 <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com>
-	 <20090710084745.GA26752@elte.hu>
-	 <alpine.DEB.2.00.0907100158090.13880@chino.kir.corp.google.com>
-Date: Fri, 10 Jul 2009 12:19:08 +0300
-Message-Id: <1247217548.771.10.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Fri, 10 Jul 2009 05:22:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34051 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751348AbZGJJWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 05:22:36 -0400
+Date: Fri, 10 Jul 2009 11:22:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Wilson <chris@chris-wilson.co.uk>, Jason Baron <jbaron@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Cc: Ben Gamari <bgamari.foss@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] perf tool: Add a trace point event parser.
+Message-ID: <20090710092225.GE27445@elte.hu>
+References: <1246869094-21237-1-git-send-email-chris@chris-wilson.co.uk> <1246869094-21237-2-git-send-email-chris@chris-wilson.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246869094-21237-2-git-send-email-chris@chris-wilson.co.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
 
-On Fri, 10 Jul 2009, Ingo Molnar wrote:
-> > > SLAB is (slowly) going away so you might want to port this to SLUB 
-> > > as well so we can merge both.
-> > 
-> > and SLQB which will replace both? :-/
+* Chris Wilson <chris@chris-wilson.co.uk> wrote:
 
-On Fri, 2009-07-10 at 02:04 -0700, David Rientjes wrote:
-> I'm not sure what the status of slqb is, although I would have expected it 
-> to have been pushed for inclusion in 2.6.31 as a slab allocator 
-> alternative.  Nick, any forecast for inclusion?
+> Accept events of the form tp=i915/i915_wait and convert those to the
+> ftrace event id by expanding the short name to
+> '/sys/kernel/debug/tracing/events/i915/i915_wait/id'. (Substituting the
+> real debugfs mount path as appropriate.)
+> 
+> Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+> ---
+>  tools/perf/util/parse-events.c |  133 +++++++++++++++++++++++++++++++++++++++-
+>  1 files changed, 131 insertions(+), 2 deletions(-)
 
-2.6.32 most likely. Nick has fixed a bunch of problems but there's still
-one ppc boot time bug that's turning out to be hard to find.
+Ok - this looks useful. Mind working with Jason Baron (Cc:-ed) who 
+incidentally posted a similar series on some joint solution?
 
-On Fri, 2009-07-10 at 02:04 -0700, David Rientjes wrote:
-> SLUB has a pretty noticeable performance degradation on benchmarks such as 
-> netperf TCP_RR with high numbers of threads (see my post about it: 
-> http://marc.info/?l=linux-kernel&m=123839191416472).  CONFIG_SLAB is the 
-> optimal configuration for workloads that share similiar slab thrashing 
-> patterns (which my patchset dealt with in an indirect way and yet still 
-> didn't match slab's performance).  I haven't yet seen data that suggests 
-> anything other than CONFIG_SLAB has parity with such a benchmark.
+Thanks,
 
-As I said before, I'm interesting in getting those patches merged. I
-think Christoph raised some issues that need to be take care of before
-we can do that, no?
-
-			Pekka
-
+	Ingo
