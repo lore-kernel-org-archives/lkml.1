@@ -1,76 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbZGJHlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751477AbZGJHpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbZGJHlp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 03:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZGJHli
+	id S1751477AbZGJHpm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 03:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbZGJHpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 03:41:38 -0400
-Received: from mga06.intel.com ([134.134.136.21]:33538 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750743AbZGJHlh (ORCPT
+	Fri, 10 Jul 2009 03:45:35 -0400
+Received: from mail-px0-f193.google.com ([209.85.216.193]:39097 "EHLO
+	mail-px0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbZGJHpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 03:41:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,377,1243839600"; 
-   d="scan'208";a="429046341"
-Subject: Re: [Bug #13726] fio sync read 4k block size 35% regression
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <20090710063730.GA23814@localhost>
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
-	 <dWkuWjWDsSB.A.lME.S0oUKB@chimera> <1246946802.2560.532.camel@ymzhang>
-	 <20090710063730.GA23814@localhost>
-Content-Type: text/plain
-Date: Fri, 10 Jul 2009 15:41:54 +0800
-Message-Id: <1247211714.2560.546.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Jul 2009 03:45:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MRfnR+PkwR8YE/lmcZmBOboNEaf6hV2wk9UJ4DLKc0btX7qUxmIxTOnLefY8hRS5aO
+         LfoOy7+btX8u7jR6TCB7KcTcv7mI81YYLhdXX3YHmCo9GTBVCUcKSutkqXKK10wt/Ebx
+         VfTY1cjYrjoOlPHXiI6jjESDl3gxB3Y1UXHXI=
+Date: Fri, 10 Jul 2009 15:47:35 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       torvalds <torvalds@linux-foundation.org>, WANG Cong <amwang@redhat.com>
+Subject: Re: [PATCH 1/2] Doc: update Documentation/exception.txt
+Message-ID: <20090710074735.GA6263@cr0.nay.redhat.com>
+References: <20090708150218.a9894e4d.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090708150218.a9894e4d.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-10 at 14:37 +0800, Wu Fengguang wrote:
-> On Tue, Jul 07, 2009 at 02:06:42PM +0800, Zhang, Yanmin wrote:
-> > On Tue, 2009-07-07 at 02:01 +0200, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.30.  Please verify if it still should be listed and let me know
-> > > (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13726
-> > > Subject		: fio sync read 4k block size 35% regression
-> > > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> > > Date		: 2009-07-01 11:25 (6 days old)
-> > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=51daa88ebd8e0d437289f589af29d4b39379ea76
-> > > References	: http://lkml.org/lkml/2009/6/30/679
-> > > Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
-> > Fengguang,
-> > 
-> > I'm still working on it now. The new testing against 2.6.31-rc2 is ongoing.
-> > fio sync/mmap read has new behavior. I did collect some data. But suddenly
-> > with new created data, the fio_sync_read_4k regression disappeared, while
-> 
-> Do you mean the fio_sync_read_4k regression disappeared because we are
-> collecting data with lots of printks?
-No. I recreated the data and the regression disappeared.
-
-> 
-> > fio_mmap_read is still there. Originally, the testing and bisect were stable.
-> > Let me check what happens firstly.
-> 
-> Thanks! What's your fio_mmap_read job file and the readahead traces?
-I dumped trace data of fio and found the sync read isn't really sequential. I
-create many processes and every process could read a group of files. The trace
-shows fio reads a record of a file, then switch to another file to read. My
-original assumption is a process reads the complete file sequentially and then
-read the 2nd file. Now I upgrade fio the latest version and add parameter
-file_service_type=random:4000000 to rerun all testing.
+On Wed, Jul 08, 2009 at 03:02:18PM -0700, Randy Dunlap wrote:
+>From: Amerigo Wang <amwang@redhat.com>
+>Subject: [RESEND Patch 1/2] Doc: update Documentation/exception.txt
+>
+>Update Documentation/exception.txt.
+>Remove trailing whitespaces in it.
+>
+>Signed-off-by: WANG Cong <amwang@redhat.com>
+>Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
 
+Thanks for resending, Randy.
+
+ping Linus...
+
+
+>---
+> Documentation/exception.txt |  202 +++++++++++++++++-----------------
+> 1 file changed, 101 insertions(+), 101 deletions(-)
+>
+>--- linux-2.6.31-rc1-git8.orig/Documentation/exception.txt
+>+++ linux-2.6.31-rc1-git8/Documentation/exception.txt
+>@@ -1,123 +1,123 @@
+>-     Kernel level exception handling in Linux 2.1.8
+>+     Kernel level exception handling in Linux
+>   Commentary by Joerg Pommnitz <joerg@raleigh.ibm.com>
+> 
+>-When a process runs in kernel mode, it often has to access user 
+>-mode memory whose address has been passed by an untrusted program. 
+>+When a process runs in kernel mode, it often has to access user
+>+mode memory whose address has been passed by an untrusted program.
+> To protect itself the kernel has to verify this address.
+> 
+>-In older versions of Linux this was done with the 
+>-int verify_area(int type, const void * addr, unsigned long size) 
+>+In older versions of Linux this was done with the
+>+int verify_area(int type, const void * addr, unsigned long size)
+> function (which has since been replaced by access_ok()).
+> 
+>-This function verified that the memory area starting at address 
+>+This function verified that the memory area starting at address
+> 'addr' and of size 'size' was accessible for the operation specified
+>-in type (read or write). To do this, verify_read had to look up the 
+>-virtual memory area (vma) that contained the address addr. In the 
+>-normal case (correctly working program), this test was successful. 
+>+in type (read or write). To do this, verify_read had to look up the
+>+virtual memory area (vma) that contained the address addr. In the
+>+normal case (correctly working program), this test was successful.
+> It only failed for a few buggy programs. In some kernel profiling
+> tests, this normally unneeded verification used up a considerable
+> amount of time.
+> 
+>-To overcome this situation, Linus decided to let the virtual memory 
+>+To overcome this situation, Linus decided to let the virtual memory
+> hardware present in every Linux-capable CPU handle this test.
+> 
+> How does this work?
+> 
+>-Whenever the kernel tries to access an address that is currently not 
+>-accessible, the CPU generates a page fault exception and calls the 
+>-page fault handler 
+>+Whenever the kernel tries to access an address that is currently not
+>+accessible, the CPU generates a page fault exception and calls the
+>+page fault handler
+> 
+> void do_page_fault(struct pt_regs *regs, unsigned long error_code)
+> 
+>-in arch/i386/mm/fault.c. The parameters on the stack are set up by 
+>-the low level assembly glue in arch/i386/kernel/entry.S. The parameter
+>-regs is a pointer to the saved registers on the stack, error_code 
+>+in arch/x86/mm/fault.c. The parameters on the stack are set up by
+>+the low level assembly glue in arch/x86/kernel/entry_32.S. The parameter
+>+regs is a pointer to the saved registers on the stack, error_code
+> contains a reason code for the exception.
+> 
+>-do_page_fault first obtains the unaccessible address from the CPU 
+>-control register CR2. If the address is within the virtual address 
+>-space of the process, the fault probably occurred, because the page 
+>-was not swapped in, write protected or something similar. However, 
+>-we are interested in the other case: the address is not valid, there 
+>-is no vma that contains this address. In this case, the kernel jumps 
+>-to the bad_area label. 
+>-
+>-There it uses the address of the instruction that caused the exception 
+>-(i.e. regs->eip) to find an address where the execution can continue 
+>-(fixup). If this search is successful, the fault handler modifies the 
+>-return address (again regs->eip) and returns. The execution will 
+>+do_page_fault first obtains the unaccessible address from the CPU
+>+control register CR2. If the address is within the virtual address
+>+space of the process, the fault probably occurred, because the page
+>+was not swapped in, write protected or something similar. However,
+>+we are interested in the other case: the address is not valid, there
+>+is no vma that contains this address. In this case, the kernel jumps
+>+to the bad_area label.
+>+
+>+There it uses the address of the instruction that caused the exception
+>+(i.e. regs->eip) to find an address where the execution can continue
+>+(fixup). If this search is successful, the fault handler modifies the
+>+return address (again regs->eip) and returns. The execution will
+> continue at the address in fixup.
+> 
+> Where does fixup point to?
+> 
+>-Since we jump to the contents of fixup, fixup obviously points 
+>-to executable code. This code is hidden inside the user access macros. 
+>-I have picked the get_user macro defined in include/asm/uaccess.h as an
+>-example. The definition is somewhat hard to follow, so let's peek at 
+>+Since we jump to the contents of fixup, fixup obviously points
+>+to executable code. This code is hidden inside the user access macros.
+>+I have picked the get_user macro defined in arch/x86/include/asm/uaccess.h
+>+as an example. The definition is somewhat hard to follow, so let's peek at
+> the code generated by the preprocessor and the compiler. I selected
+>-the get_user call in drivers/char/console.c for a detailed examination.
+>+the get_user call in drivers/char/sysrq.c for a detailed examination.
+> 
+>-The original code in console.c line 1405:
+>+The original code in sysrq.c line 587:
+>         get_user(c, buf);
+> 
+> The preprocessor output (edited to become somewhat readable):
+> 
+> (
+>-  {        
+>-    long __gu_err = - 14 , __gu_val = 0;        
+>-    const __typeof__(*( (  buf ) )) *__gu_addr = ((buf));        
+>-    if (((((0 + current_set[0])->tss.segment) == 0x18 )  || 
+>-       (((sizeof(*(buf))) <= 0xC0000000UL) && 
+>-       ((unsigned long)(__gu_addr ) <= 0xC0000000UL - (sizeof(*(buf)))))))        
+>+  {
+>+    long __gu_err = - 14 , __gu_val = 0;
+>+    const __typeof__(*( (  buf ) )) *__gu_addr = ((buf));
+>+    if (((((0 + current_set[0])->tss.segment) == 0x18 )  ||
+>+       (((sizeof(*(buf))) <= 0xC0000000UL) &&
+>+       ((unsigned long)(__gu_addr ) <= 0xC0000000UL - (sizeof(*(buf)))))))
+>       do {
+>-        __gu_err  = 0;        
+>-        switch ((sizeof(*(buf)))) {        
+>-          case 1: 
+>-            __asm__ __volatile__(        
+>-              "1:      mov" "b" " %2,%" "b" "1\n"        
+>-              "2:\n"        
+>-              ".section .fixup,\"ax\"\n"        
+>-              "3:      movl %3,%0\n"        
+>-              "        xor" "b" " %" "b" "1,%" "b" "1\n"        
+>-              "        jmp 2b\n"        
+>-              ".section __ex_table,\"a\"\n"        
+>-              "        .align 4\n"        
+>-              "        .long 1b,3b\n"        
+>+        __gu_err  = 0;
+>+        switch ((sizeof(*(buf)))) {
+>+          case 1:
+>+            __asm__ __volatile__(
+>+              "1:      mov" "b" " %2,%" "b" "1\n"
+>+              "2:\n"
+>+              ".section .fixup,\"ax\"\n"
+>+              "3:      movl %3,%0\n"
+>+              "        xor" "b" " %" "b" "1,%" "b" "1\n"
+>+              "        jmp 2b\n"
+>+              ".section __ex_table,\"a\"\n"
+>+              "        .align 4\n"
+>+              "        .long 1b,3b\n"
+>               ".text"        : "=r"(__gu_err), "=q" (__gu_val): "m"((*(struct __large_struct *)
+>-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )) ; 
+>-              break;        
+>-          case 2: 
+>+                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )) ;
+>+              break;
+>+          case 2:
+>             __asm__ __volatile__(
+>-              "1:      mov" "w" " %2,%" "w" "1\n"        
+>-              "2:\n"        
+>-              ".section .fixup,\"ax\"\n"        
+>-              "3:      movl %3,%0\n"        
+>-              "        xor" "w" " %" "w" "1,%" "w" "1\n"        
+>-              "        jmp 2b\n"        
+>-              ".section __ex_table,\"a\"\n"        
+>-              "        .align 4\n"        
+>-              "        .long 1b,3b\n"        
+>+              "1:      mov" "w" " %2,%" "w" "1\n"
+>+              "2:\n"
+>+              ".section .fixup,\"ax\"\n"
+>+              "3:      movl %3,%0\n"
+>+              "        xor" "w" " %" "w" "1,%" "w" "1\n"
+>+              "        jmp 2b\n"
+>+              ".section __ex_table,\"a\"\n"
+>+              "        .align 4\n"
+>+              "        .long 1b,3b\n"
+>               ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
+>-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )); 
+>-              break;        
+>-          case 4: 
+>-            __asm__ __volatile__(        
+>-              "1:      mov" "l" " %2,%" "" "1\n"        
+>-              "2:\n"        
+>-              ".section .fixup,\"ax\"\n"        
+>-              "3:      movl %3,%0\n"        
+>-              "        xor" "l" " %" "" "1,%" "" "1\n"        
+>-              "        jmp 2b\n"        
+>-              ".section __ex_table,\"a\"\n"        
+>-              "        .align 4\n"        "        .long 1b,3b\n"        
+>+                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  ));
+>+              break;
+>+          case 4:
+>+            __asm__ __volatile__(
+>+              "1:      mov" "l" " %2,%" "" "1\n"
+>+              "2:\n"
+>+              ".section .fixup,\"ax\"\n"
+>+              "3:      movl %3,%0\n"
+>+              "        xor" "l" " %" "" "1,%" "" "1\n"
+>+              "        jmp 2b\n"
+>+              ".section __ex_table,\"a\"\n"
+>+              "        .align 4\n"        "        .long 1b,3b\n"
+>               ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
+>-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(__gu_err)); 
+>-              break;        
+>-          default: 
+>-            (__gu_val) = __get_user_bad();        
+>-        }        
+>-      } while (0) ;        
+>-    ((c)) = (__typeof__(*((buf))))__gu_val;        
+>+                            (   __gu_addr   )) ), "i"(- 14 ), "0"(__gu_err));
+>+              break;
+>+          default:
+>+            (__gu_val) = __get_user_bad();
+>+        }
+>+      } while (0) ;
+>+    ((c)) = (__typeof__(*((buf))))__gu_val;
+>     __gu_err;
+>   }
+> );
+>@@ -127,12 +127,12 @@ see what code gcc generates:
+> 
+>  >         xorl %edx,%edx
+>  >         movl current_set,%eax
+>- >         cmpl $24,788(%eax)        
+>- >         je .L1424        
+>+ >         cmpl $24,788(%eax)
+>+ >         je .L1424
+>  >         cmpl $-1073741825,64(%esp)
+>- >         ja .L1423                
+>+ >         ja .L1423
+>  > .L1424:
+>- >         movl %edx,%eax                        
+>+ >         movl %edx,%eax
+>  >         movl 64(%esp),%ebx
+>  > #APP
+>  > 1:      movb (%ebx),%dl                /* this is the actual user access */
+>@@ -149,17 +149,17 @@ see what code gcc generates:
+>  > .L1423:
+>  >         movzbl %dl,%esi
+> 
+>-The optimizer does a good job and gives us something we can actually 
+>-understand. Can we? The actual user access is quite obvious. Thanks 
+>-to the unified address space we can just access the address in user 
+>+The optimizer does a good job and gives us something we can actually
+>+understand. Can we? The actual user access is quite obvious. Thanks
+>+to the unified address space we can just access the address in user
+> memory. But what does the .section stuff do?????
+> 
+> To understand this we have to look at the final kernel:
+> 
+>  > objdump --section-headers vmlinux
+>- > 
+>+ >
+>  > vmlinux:     file format elf32-i386
+>- > 
+>+ >
+>  > Sections:
+>  > Idx Name          Size      VMA       LMA       File off  Algn
+>  >   0 .text         00098f40  c0100000  c0100000  00001000  2**4
+>@@ -198,18 +198,18 @@ final kernel executable:
+> 
+> The whole user memory access is reduced to 10 x86 machine instructions.
+> The instructions bracketed in the .section directives are no longer
+>-in the normal execution path. They are located in a different section 
+>+in the normal execution path. They are located in a different section
+> of the executable file:
+> 
+>  > objdump --disassemble --section=.fixup vmlinux
+>- > 
+>+ >
+>  > c0199ff5 <.fixup+10b5> movl   $0xfffffff2,%eax
+>  > c0199ffa <.fixup+10ba> xorb   %dl,%dl
+>  > c0199ffc <.fixup+10bc> jmp    c017e7a7 <do_con_write+e3>
+> 
+> And finally:
+>  > objdump --full-contents --section=__ex_table vmlinux
+>- > 
+>+ >
+>  >  c01aa7c4 93c017c0 e09f19c0 97c017c0 99c017c0  ................
+>  >  c01aa7d4 f6c217c0 e99f19c0 a5e717c0 f59f19c0  ................
+>  >  c01aa7e4 080a18c0 01a019c0 0a0a18c0 04a019c0  ................
+>@@ -235,8 +235,8 @@ sections in the ELF object file. So the 
+> ended up in the .fixup section of the object file and the addresses
+>         .long 1b,3b
+> ended up in the __ex_table section of the object file. 1b and 3b
+>-are local labels. The local label 1b (1b stands for next label 1 
+>-backward) is the address of the instruction that might fault, i.e. 
+>+are local labels. The local label 1b (1b stands for next label 1
+>+backward) is the address of the instruction that might fault, i.e.
+> in our case the address of the label 1 is c017e7a5:
+> the original assembly code: > 1:      movb (%ebx),%dl
+> and linked in vmlinux     : > c017e7a5 <do_con_write+e1> movb   (%ebx),%dl
+>@@ -254,7 +254,7 @@ The assembly code
+> becomes the value pair
+>  >  c01aa7d4 c017c2f6 c0199fe9 c017e7a5 c0199ff5  ................
+>                                ^this is ^this is
+>-                               1b       3b 
+>+                               1b       3b
+> c017e7a5,c0199ff5 in the exception table of the kernel.
+> 
+> So, what actually happens if a fault from kernel mode with no suitable
+>@@ -266,9 +266,9 @@ vma occurs?
+> 3.) CPU calls do_page_fault
+> 4.) do page fault calls search_exception_table (regs->eip == c017e7a5);
+> 5.) search_exception_table looks up the address c017e7a5 in the
+>-    exception table (i.e. the contents of the ELF section __ex_table) 
+>+    exception table (i.e. the contents of the ELF section __ex_table)
+>     and returns the address of the associated fault handle code c0199ff5.
+>-6.) do_page_fault modifies its own return address to point to the fault 
+>+6.) do_page_fault modifies its own return address to point to the fault
+>     handle code and returns.
+> 7.) execution continues in the fault handling code.
+> 8.) 8a) EAX becomes -EFAULT (== -14)
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
