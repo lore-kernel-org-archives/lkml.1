@@ -1,69 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbZGJOBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbZGJOCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754967AbZGJOBa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 10:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZGJOBW
+	id S1755554AbZGJOCI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 10:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZGJOB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 10:01:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48493 "EHLO hera.kernel.org"
+	Fri, 10 Jul 2009 10:01:57 -0400
+Received: from smtp.citrix.com ([66.165.176.89]:53663 "EHLO SMTP.CITRIX.COM"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbZGJOBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 10:01:22 -0400
-Date: Fri, 10 Jul 2009 14:00:40 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, gorcunov@openvz.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, yinghai@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090705160154.GB4791@lenovo>
-References: <20090705160154.GB4791@lenovo>
-Subject: [tip:x86/cleanups] x86, ipi: Clean up safe_smp_processor_id() by using the cpu_has_apic() macro helper
-Message-ID: <tip-a1b4f1a5b7f57be2593a9f1fca465a529c95fc07@git.kernel.org>
-Git-Commit-ID: a1b4f1a5b7f57be2593a9f1fca465a529c95fc07
-X-Mailer: tip-git-log-daemon
+	id S1751120AbZGJOB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 10:01:56 -0400
+X-IronPort-AV: E=Sophos;i="4.42,378,1243828800"; 
+   d="scan'208";a="4903075"
+Subject: Re: [00/15] swiotlb cleanup
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "beckyb@kernel.crashing.org" <beckyb@kernel.crashing.org>,
+       Joerg Roedel <joerg.roedel@amd.com>
+In-Reply-To: <20090710051236.GA22218@elte.hu>
+References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <20090710051236.GA22218@elte.hu>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Fri, 10 Jul 2009 15:01:52 +0100
+Message-ID: <1247234512.4002.417.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 14:00:41 +0000 (UTC)
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a1b4f1a5b7f57be2593a9f1fca465a529c95fc07
-Gitweb:     http://git.kernel.org/tip/a1b4f1a5b7f57be2593a9f1fca465a529c95fc07
-Author:     Cyrill Gorcunov <gorcunov@openvz.org>
-AuthorDate: Sun, 5 Jul 2009 20:01:54 +0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Jul 2009 15:58:34 +0200
+On Fri, 2009-07-10 at 06:12 +0100, Ingo Molnar wrote:
+> Hm, the functions and facilities you remove here were added as part 
+> of preparatory patches for Xen guest support. You were aware of 
+> them, you were involved in discussions about those aspects with Ian 
+> and Jeremy but still you chose not to Cc: either of them and you 
+> failed to address that aspect in the changelogs.
 
-x86, ipi: Clean up safe_smp_processor_id() by using the cpu_has_apic() macro helper
+Thanks for adding me Ingo.
 
-We already use a lot of cpu_has_ helpers.
-Lets do here the same for consistency.
+> Alas, on the technical level the cleanups themselves look mostly 
+> fine to me. Ian, Jeremy, the changes will alter Xen's use of 
+> swiotlb, but can the Xen side still live with these new methods - in 
+> particular is dma_capable() sufficient as a mechanism and can the 
+> Xen side filter out DMA allocations to make them physically 
+> continuous?
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <20090705160154.GB4791@lenovo>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I've not examined the series in detail it looks OK but I don't think it
+is quite sufficient. The Xen determination of whether a buffer is
+dma_capable or not is based on the physical address while dma_capable
+takes only the dma address.
 
+I'm not sure we can "invert" our conditions to work back from dma
+address to physical since given a start dma address and a length we
+would need to check that dma_to_phys(dma+PAGE_SIZE) ==
+dma_to_phys(dma)+PAGE_SIZE etc. However dma+PAGE_SIZE might belong to a
+different domain so translating it to a physical address in isolation
+tells us nothing especially useful since it would give us the physical
+address in that other guest which is useless to us. If we could pass
+both physical and dma address to dma_capable I think that would probably
+be sufficient for our purposes.
 
----
- arch/x86/kernel/apic/ipi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+As well as that Xen needs some way to influence the allocation of the
+actual bounce buffer itself since we need to arrange for it to be
+machine address contiguous as well as physical address contiguous. This
+series explicitly removes those hooks without replacement. My most
+recent proposal was to have a new swiotlb_init variant which was given a
+preallocated buffer which this series doesn't necessarily preclude.
 
-diff --git a/arch/x86/kernel/apic/ipi.c b/arch/x86/kernel/apic/ipi.c
-index dbf5445..e6b4f51 100644
---- a/arch/x86/kernel/apic/ipi.c
-+++ b/arch/x86/kernel/apic/ipi.c
-@@ -150,7 +150,7 @@ int safe_smp_processor_id(void)
- {
- 	int apicid, cpuid;
- 
--	if (!boot_cpu_has(X86_FEATURE_APIC))
-+	if (!cpu_has_apic)
- 		return 0;
- 
- 	apicid = hard_smp_processor_id();
+The phys_to_dma and dma_to_phys translation points are the last piece
+Xen needs and seem to be preserved in this series.
+
+However Fujita's objection to all of the previous swiotlb-for-xen
+proposals was around the addition of the Xen hooks in whichever
+location. Originally these hooks were via __weak functions and later
+proposals implemented them via function pointer hooks in the x86
+implementations of the arch-abstract interfaces (phys<->dma and
+dma_capable etc). I don't think this series addresses those objections
+(fair enough -- it wasn't intended to) or leads to any new approach to
+solving the issue, although I also don't think it makes the issue any
+harder to address. I don't think it will be possible to make progress on
+Xen usage of swiotlb until a solution can be found to this conflict of
+opinion.
+
+Fujita suggested that we export the core sync_single() functionality and
+reimplemented the surrounding infrastructure in terms of that (and
+incorporating our additional requirements). I prototyped this (it is
+currently unworking, in fact it seems to have developed rather a taste
+for filesystems :-() but the diffstat of my WIP patch is:
+         arch/x86/kernel/pci-swiotlb.c |    6 
+         arch/x86/xen/pci-swiotlb.c    |    2 
+         drivers/pci/xen-iommu.c       |  385 ++++++++++++++++++++++++++++++++++++++++--
+         include/linux/swiotlb.h       |   12 +
+         lib/swiotlb.c                 |   10 -
+         5 files changed, 385 insertions(+), 30 deletions(-)
+where a fair number of the lines in xen-iommu.c are copies of functions
+from swiotlb.c with minor modifications. As I say it doesn't work yet
+but I think it's roughly indicative of what such an approach would look
+like. I don't like it much but am happy to run with it if it looks to be
+the most acceptable approach. To be honest at the moment I've
+deliberately been taking some time away from this stuff to try and gain
+a bit of perspective so I haven't looked at it in a while.
+
+Ian.
+
