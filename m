@@ -1,107 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756719AbZGJTen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbZGJTfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719AbZGJTen (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 15:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbZGJTee
+	id S1756788AbZGJTfU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 15:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZGJTfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 15:34:34 -0400
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:43588 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752302AbZGJTed convert rfc822-to-8bit (ORCPT
+	Fri, 10 Jul 2009 15:35:09 -0400
+Received: from mail-gx0-f215.google.com ([209.85.217.215]:61159 "EHLO
+	mail-gx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754761AbZGJTfI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 15:34:33 -0400
+	Fri, 10 Jul 2009 15:35:08 -0400
+X-Greylist: delayed 334 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Jul 2009 15:35:07 EDT
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=IHroLbpRXpei932McYlgNSasMHXG1uYjqyNZlhiK3enKz/bJCTGwNWMQUFK7dcP6od
-         NX1z6PnW9Ogubns9rN6+JIObsAmvwJ3/qOMhaiXoxVUgr+ibg+3FRvOGvjwTexb/0qRg
-         /4e2i4yN+Vg84Oi0PivCP5T5HJ3t5NVbQSeYw=
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=dFPL74oeJ94GssMbdRWt8gWMNV8NYz8flGoYY8vrfR4w1XPjnsiejnW57M4G9l4wty
+         zGOd39RdYvMExcQszMtr8akivwodxhnS2VlkWuMm0lapwMmQVwDCm5mUSMoBM/6eHT4X
+         vSrswyWQehQz1IWeCnEea4jdxMdKRVzHXowp0=
 MIME-Version: 1.0
-In-Reply-To: <507E3B9268%linux@youmustbejoking.demon.co.uk>
-References: <4A5716AA.5000903@ph.tum.de>
-	 <71cd59b00907100545v6f440a19xfc3668826eb1e509@mail.gmail.com>
-	 <4A5743AB.6090303@ph.tum.de>
-	 <71cd59b00907100646h5e0283fcyce5874cc4a19106b@mail.gmail.com>
-	 <4A575119.9070505@ph.tum.de>
-	 <507E3B9268%linux@youmustbejoking.demon.co.uk>
-Date: Fri, 10 Jul 2009 21:34:32 +0200
-Message-ID: <71cd59b00907101234w772dc141kff52c7393e698e17@mail.gmail.com>
-Subject: Re: [2.6.31-rc2] Writing to /sys/class/rfkill/*/state fails
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Thiemo Nagel <thiemo.nagel@ph.tum.de>,
-       Corentin Chary <corentin.chary@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       debian-eeepc-devel@lists.alioth.debian.org,
-       acpi4asus-user@lists.sourceforge.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <24988.1247155628@redhat.com>
+References: <8bd0f97a0907090104h5d4984dfkbeb82616a01128c8@mail.gmail.com> 
+	<24005.1247134018@redhat.com> <8bd0f97a0907090822g1533e9dt97c3f29ccaf4945b@mail.gmail.com> 
+	<24988.1247155628@redhat.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 10 Jul 2009 15:29:13 -0400
+Message-ID: <8bd0f97a0907101229x143bbacco7f7e716ecda0bbc3@mail.gmail.com>
+Subject: Re: truncate on MAP_SHARED files in ramfs filesystems on no-mmu
+To: David Howells <dhowells@redhat.com>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 8:57 PM, Darren
-Salt<linux@youmustbejoking.demon.co.uk> wrote:
-> [full quoting for linux-{kernel,wireless} & the perpetrator]
+On Thu, Jul 9, 2009 at 12:07, David Howells wrote:
+> Mike Frysinger wrote:
+>> you dont need a MMU (virtual memory) to protect against it. Â you only
+>> need a MPU which some systems have.
 >
-> I demand that Thiemo Nagel may or may not have written...
->
->> Corentin Chary wrote:
->>> On Fri, Jul 10, 2009 at 3:35 PM, Thiemo Nagel<thiemo.nagel@ph.tum.de>
->>> wrote:
->>>> Corentin Chary wrote:
->>>>> On Fri, Jul 10, 2009 at 12:23 PM, Thiemo
->>>>> Nagel<thiemo.nagel@ph.tum.de> wrote:
->>>>>> I just tested the new GSM rfkill in 2.6.31-rc2 and I get the following
->>>>>> on my EeePC 1000HGO:
->>>>>>   eee:/# cat /sys/class/rfkill/rfkill2/name
->>>>>>   eeepc-wwan3g
->>>>>>   eee:/# echo 0 > /sys/class/rfkill/rfkill2/state
->>>>>>   bash: echo: write error: Operation not permitted
->>>>>> What could be the reason for that?
->>>>> Reading the kernel source I can find:
->>>>>         /*
->>>>>          * The intention was that userspace can only take control over
->>>>>          * a given device when/if rfkill-input doesn't control it due
->>>>>          * to user_claim. Since user_claim is currently unsupported,
->>>>>          * we never support changing the state from userspace -- this
->>>>>          * can be implemented again later.
->>>>>          */
->>>>> It seems that rfkill should be controlled by /dev/rfkill (cf
->>>>> Documentation/rfkill.txt).
->>>>> Maybe network-manager can control that .. But I'm not sure.
->>>>> Maybe you should CC the wireless mailing list.
->>>> Thanks for the quick reply.  The interesting thing is, that the direct
->>>> access works well for eeepc-wlan and eeepc-bluetooth rfkills.  I've CC'd
->>>> debian-eeepc-devel, maybe they know something.
->>> Are you sure that it works with newer kernels ?
->>> This commit should have broken it for all rfkill.
->>>   commit 19d337dff95cbf76edd3ad95c0cee2732c3e1ec5
->>>   Author: Johannes Berg <johannes@sipsolutions.net>
->>>   Date:   Tue Jun 2 13:01:37 2009 +0200
->
->> You're right, all rfkills work with 2.6.30, but none works with 2.6.31-rc2.
->
-> This is the first that I've heard of this. I'd not noticed since I've not
-> needed Bluetooth on my 901 recently.
->
->> For the debian-eeepc folks:  2.6.31-rc2 breaks bluetooth toggling using
->> eeepc-acpi-scripts, but WLAN toggling still works.
->
-> FSVO "works" (http://bugzilla.kernel.org/show_bug.cgi?id=13390), but that's a
-> different problem.
->
-> I consider this a regression. It breaks an interface which, though flawed, is
-> ideally suited for scripting use and which eeepc-acpi-scripts uses in shell
-> scripts.
->
-> /dev/rfkill is not useful in shell scripts.
+> You may not have that either. Â FRV doesn't, for example.
 
-Maybe it would be possible with an rfkill command line tool (in C) ?
-Is there such a tool somewhere ?
+i wasnt suggesting every no-mmu architecture had one.  hence the word "some".
 
+>Â Furthermore, if you
+> have an MPU only, you can still do a lot of the missing bits of NOMMU mmap() -
+> shared writable disk or NFS files for example, so it can be argued that
+> MPU-only systems shouldn't be using mm/nommu.c.
 
--- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+perhaps, but the mmu code cant be used without virtual memory, and we
+havent reviewed all the different aspects of the nommu code which
+should be split based on MPU availability.  we have a patch locally
+that i should push for the next release that adds appropriate calls to
+the protection functions in kernel/module.c and mm/nommu.c.  basically
+enough to get us up and running with standard rwx markings.
+
+>> > This doesn't only protect the process with a mapping on that file against
+>> > its own truncate, but also other processes that have made mappings against
+>> > that file.
+>>
+>> and those too are broken
+>
+> Not necessarily. Â They may not be expecting the truncation. Â Just because the
+> first process might be incorrect doesn't mean that the other affected processes
+> are.
+
+you are correct, but in the end it's largely the same -- there is a
+bug in userspace here that someone needs to go fix
+
+>> > Whilst you can argue it either way, you need a better reason to change this
+>> > than it causes some LTP failures. Â You cannot expect all the MM-related LTP
+>> > tests to work against a NOMMU system.
+>>
+>> crappy programming is likely to crash regardless of standard functions we
+>> attempt to disable in the kernel. Â this isnt a virtual memory issue at all,
+>> it's memory protection.
+>
+> Are you actually seeing this in a real world situation? Â Or just in LTP?
+
+atm, just LTP.  but simply discarding out of hand as "it's an
+unrealistic LTP testcase" may not be appropriate.  many of the
+testcases in LTP come from real world experience and tests.  i know
+many of the tests ive added to LTP werent for fun but stripped down
+test cases of real applications failing.
+
+>> > Doing it this way also makes things simpler in the kernel and makes the
+>> > system more robust.
+>>
+>> really? Â looks like the kernel is a lot more complicated to me. Â the fix here
+>> would be to delete a whole bunch of code.
+>
+> Delete what? Â The check for ramfs_nommu_check_mappings()? Â That is not
+> sufficient. Â That might allow truncate to give the pages back to the system,
+> but the pages are still pointed to by VMAs and regions. Â NOMMU truncate, as it
+> stands, will not take care of that: unmap_mapping_range() is not implemented
+> for NOMMU as the aforementioned check renders it unnecessary.
+
+so we need to first fix the nommu vmtruncate function so that it
+actually updates the VMAs ?
+
+> It is simpler in that we simply reject a truncate that would cut down a mapping
+> rather than trying to shrink that mapping.
+>
+> It is more robust in that if one process has a file mapped, and another process
+> truncates it, then that second process isn't prevented from accessing the
+> region that has been taken away from it.
+
+it is also different behavior from mmu (i dont know what POSIX has to
+say on using truncate on a shared mmap -- this is kind of an edge
+case).  we aim to reduce functional differences at the kernel level
+rather than attempting to change behavior of every application we come
+across.
+
+>> > If a process shared mmaps a file and then wants to truncate it, it can
+>> > always munmap the excess first.
+>>
+>> sure, we could go around changing a whole bunch of things specific to no-mmu,
+>> but that's kind of the wrong way to go. Â applications shouldnt need to know
+>> they're running with different MMU features available.
+>
+> Can you point to a real world case where this is a problem?
+>
+>
+> Note that it would be very easy to add (if such does not already exist) an LTP
+> test that creates a file, expands it, maps it, shrinks it and then attempts to
+> alter the removed part of the mapping in the expectation of receiving a SIGBUS.
+>
+> As it stands, such a test will work on MMU, but go wrong on NOMMU in a
+> different way in these two cases. Â With the current behaviour, the shrink
+> request will be rejected, but the system will survive. Â With your proposed
+> behaviour, the system will potentially be wrecked.
+
+the behavior would be different, but now you're comparing two
+different things.  in the first case (truncating a shared mapping),
+all nommu hardware can support this (well, enlarging a mapping may
+fail if the memory right after it is not available, but this could
+easily happen on a mmu system too).  in the second case, nommu
+hardware that has a MPU unit would function the same as the mmu port,
+but LTP can (and does) track tests that require virtual memory or
+memory protection.  this test in question requires neither.
+-mike
