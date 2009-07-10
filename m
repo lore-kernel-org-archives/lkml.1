@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbZGJKmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZGJKnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755178AbZGJKmw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 06:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbZGJKm2
+	id S1755220AbZGJKnI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 06:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbZGJKmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 06:42:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53434 "EHLO hera.kernel.org"
+	Fri, 10 Jul 2009 06:42:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53477 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754895AbZGJKmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 06:42:25 -0400
-Date: Fri, 10 Jul 2009 10:41:39 GMT
+	id S1755052AbZGJKmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 06:42:33 -0400
+Date: Fri, 10 Jul 2009 10:41:52 GMT
 From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -20,122 +20,129 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        tzanussi@gmail.com, lizf@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com,
        fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <4A55A83C.1030005@cn.fujitsu.com>
-References: <4A55A83C.1030005@cn.fujitsu.com>
-Subject: [tip:tracing/core] tracing/filter: Remove preds from struct event_subsystem
-Message-ID: <tip-c5cb183608167c744cb28bbd85884be5a4ce875d@git.kernel.org>
-Git-Commit-ID: c5cb183608167c744cb28bbd85884be5a4ce875d
+In-Reply-To: <4A55A8BE.9010707@cn.fujitsu.com>
+References: <4A55A8BE.9010707@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing/filter: Remove empty subsystem and its directory
+Message-ID: <tip-dc82ec98a4727fd51b77e92d05fe7d2db3dcc11c@git.kernel.org>
+Git-Commit-ID: dc82ec98a4727fd51b77e92d05fe7d2db3dcc11c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 10:41:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 10:41:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c5cb183608167c744cb28bbd85884be5a4ce875d
-Gitweb:     http://git.kernel.org/tip/c5cb183608167c744cb28bbd85884be5a4ce875d
+Commit-ID:  dc82ec98a4727fd51b77e92d05fe7d2db3dcc11c
+Gitweb:     http://git.kernel.org/tip/dc82ec98a4727fd51b77e92d05fe7d2db3dcc11c
 Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Thu, 9 Jul 2009 16:20:12 +0800
+AuthorDate: Thu, 9 Jul 2009 16:22:22 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 10 Jul 2009 11:55:27 +0200
+CommitDate: Fri, 10 Jul 2009 11:55:28 +0200
 
-tracing/filter: Remove preds from struct event_subsystem
+tracing/filter: Remove empty subsystem and its directory
 
-No need to save preds to event_subsystem, because it's not used.
+Remove empty subsystem and its directory when module unload.
+
+Before patch:
+ # rmmod trace-events-sample.ko
+ # ls sample
+ enable  filter
+
+After patch:
+ # rmmod trace-events-sample.ko
+ # ls sample
+ ls: cannot access sample: No such file or directory
 
 Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 Acked-by: Tom Zanussi <tzanussi@gmail.com>
 Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4A55A83C.1030005@cn.fujitsu.com>
+LKML-Reference: <4A55A8BE.9010707@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/trace_events_filter.c |   39 +++++------------------------------
- 1 files changed, 6 insertions(+), 33 deletions(-)
+ kernel/trace/trace.h        |    1 +
+ kernel/trace/trace_events.c |   32 +++++++++++++++++++++++++++++++-
+ 2 files changed, 32 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 936c621..b9aae72 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -420,17 +420,7 @@ EXPORT_SYMBOL_GPL(init_preds);
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 52eb0d8..94305c7 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -757,6 +757,7 @@ struct event_subsystem {
+ 	const char		*name;
+ 	struct dentry		*entry;
+ 	void			*filter;
++	int			nr_events;
+ };
  
- static void filter_free_subsystem_preds(struct event_subsystem *system)
- {
--	struct event_filter *filter = system->filter;
- 	struct ftrace_event_call *call;
--	int i;
--
--	if (filter->n_preds) {
--		for (i = 0; i < filter->n_preds; i++)
--			filter_free_pred(filter->preds[i]);
--		kfree(filter->preds);
--		filter->preds = NULL;
--		filter->n_preds = 0;
--	}
+ struct filter_pred;
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index fecac13..90cf936 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -851,8 +851,10 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
  
- 	list_for_each_entry(call, &ftrace_events, list) {
- 		if (!call->define_fields)
-@@ -607,26 +597,9 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 				     struct filter_pred *pred,
- 				     char *filter_string)
- {
--	struct event_filter *filter = system->filter;
- 	struct ftrace_event_call *call;
- 	int err = 0;
+ 	/* First see if we did not already create this dir */
+ 	list_for_each_entry(system, &event_subsystems, list) {
+-		if (strcmp(system->name, name) == 0)
++		if (strcmp(system->name, name) == 0) {
++			system->nr_events++;
+ 			return system->entry;
++		}
+ 	}
  
--	if (!filter->preds) {
--		filter->preds = kzalloc(MAX_FILTER_PRED * sizeof(pred),
--					GFP_KERNEL);
--
--		if (!filter->preds)
--			return -ENOMEM;
--	}
--
--	if (filter->n_preds == MAX_FILTER_PRED) {
--		parse_error(ps, FILT_ERR_TOO_MANY_PREDS, 0);
--		return -ENOSPC;
--	}
--
--	filter->preds[filter->n_preds] = pred;
--	filter->n_preds++;
--
- 	list_for_each_entry(call, &ftrace_events, list) {
+ 	/* need to create new entry */
+@@ -871,6 +873,7 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
+ 		return d_events;
+ 	}
  
- 		if (!call->define_fields)
-@@ -1029,12 +1002,12 @@ static int replace_preds(struct event_subsystem *system,
++	system->nr_events = 1;
+ 	system->name = kstrdup(name, GFP_KERNEL);
+ 	if (!system->name) {
+ 		debugfs_remove(system->entry);
+@@ -905,6 +908,32 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
+ 	return system->entry;
+ }
  
- 		if (elt->op == OP_AND || elt->op == OP_OR) {
- 			pred = create_logical_pred(elt->op);
--			if (call) {
-+			if (call)
- 				err = filter_add_pred(ps, call, pred);
--				filter_free_pred(pred);
--			} else
-+			else
- 				err = filter_add_subsystem_pred(ps, system,
- 							pred, filter_string);
-+			filter_free_pred(pred);
- 			if (err)
- 				return err;
- 
-@@ -1048,12 +1021,12 @@ static int replace_preds(struct event_subsystem *system,
++static void remove_subsystem_dir(const char *name)
++{
++	struct event_subsystem *system;
++
++	if (strcmp(name, TRACE_SYSTEM) == 0)
++		return;
++
++	list_for_each_entry(system, &event_subsystems, list) {
++		if (strcmp(system->name, name) == 0) {
++			if (!--system->nr_events) {
++				struct event_filter *filter = system->filter;
++
++				debugfs_remove_recursive(system->entry);
++				list_del(&system->list);
++				if (filter) {
++					kfree(filter->filter_string);
++					kfree(filter);
++				}
++				kfree(system->name);
++				kfree(system);
++			}
++			break;
++		}
++	}
++}
++
+ static int
+ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 		 const struct file_operations *id,
+@@ -1079,6 +1108,7 @@ static void trace_module_remove_events(struct module *mod)
+ 			list_del(&call->list);
+ 			trace_destroy_fields(call);
+ 			destroy_preds(call);
++			remove_subsystem_dir(call->system);
  		}
- 
- 		pred = create_pred(elt->op, operand1, operand2);
--		if (call) {
-+		if (call)
- 			err = filter_add_pred(ps, call, pred);
--			filter_free_pred(pred);
--		} else
-+		else
- 			err = filter_add_subsystem_pred(ps, system, pred,
- 							filter_string);
-+		filter_free_pred(pred);
- 		if (err)
- 			return err;
+ 	}
  
