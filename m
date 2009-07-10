@@ -1,165 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbZGJTnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756452AbZGJTwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757286AbZGJTnc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 15:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbZGJTmw
+	id S1756452AbZGJTwX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 15:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbZGJTwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 15:42:52 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:27809 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757007AbZGJTmt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 15:42:49 -0400
-Subject: [PATCH 3/3] PCI Hotplug: convert acpi_pci_detect_ejectable() to take
-	an acpi_handle
-To: jbarnes@virtuousgeek.org, lenb@kernel.org
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Date: Fri, 10 Jul 2009 13:42:48 -0600
-Message-ID: <20090710194248.30165.64398.stgit@bob.kio>
-In-Reply-To: <20090710193601.30165.62311.stgit@bob.kio>
-References: <20090710193601.30165.62311.stgit@bob.kio>
-User-Agent: StGit/0.14.3.386.gb02d
+	Fri, 10 Jul 2009 15:52:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57074 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753171AbZGJTwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 15:52:14 -0400
+Date: Fri, 10 Jul 2009 21:51:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH] dma-debug: Fix the overlap() function to be correct and
+	readable
+Message-ID: <20090710195157.GA31361@elte.hu>
+References: <20090710162848.GA26862@elte.hu> <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain> <20090710193110.GA28281@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090710193110.GA28281@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-acpi_pci_detect_ejectable() goes through effort to convert its
-struct pci_bus arg to an acpi_handle, but every time we use this
-interface, we already have the handle available.
 
-So let's just use the handle instead of converting back and forth.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
+> > IOW, I think this whole function is just total crap, apparently 
+> > put together by randomly assembling characters until it 
+> > compiles. Somebody should put more effort into looking at it, 
+> > but I think it should be something like
+> > 
+> > 	static inline int overlap(void *addr, unsigned long len, void *start, void *end)
+> > 	{
+> > 		unsigned long a1 = (unsigned long) addr;
+> > 		unsigned long b1 = a1 + len;
+> > 		unsigned long a2 = (unsigned long) start;
+> > 		unsigned long b2 = (unsigned long) end;
+> 
+> At least some arguments have unsigned long natural types (they come 
+> out of page_address() for example) so the function parameters could 
+> perhaps be changed to unsigned long too as well.
+> 
+> > 	#ifdef WE_CARE_DEEPLY
+> > 		/* Overflow? */
+> > 		if (b1 < a1)
+> > 			return 1;
+> > 	#ifdef AND_ARE_ANAL
+> > 		if (b2 < a2)
+> > 			return 1;
+> > 	#endif
+> > 	#endif
+> > 		return !(b1 <= a2 || a1 >= b2);
+> > 	}
+> > 
+> > but I really migth have done soemthing wrong there. It's a 
+> > simple function, but somebody needs to double-check that I 
+> > haven't made it worse.
+> 
+> Looks correct to me.
+
+How about the patch below? Lightly tested.
+
+	Ingo
+
+------------>
+>From 35c89da82e969a2fd157478940e7ecde1e19ccc4 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 10 Jul 2009 21:38:02 +0200
+Subject: [PATCH] dma-debug: Fix the overlap() function to be correct and readable
+
+Linus noticed how unclean and buggy the overlap() function is:
+
+ - It uses convoluted (and bug-causing) positive checks for
+   range overlap - instead of using a more natural negative
+   check.
+
+ - Even the positive checks are buggy: a positive intersection
+   check has four natural cases while we checked only for three,
+   missing the (addr < start && addr2 == end) case for example.
+
+ - The variables are mis-named, making it non-obvious how the
+   check was done.
+
+ - It needlessly uses u64 instead of unsigned long. Since these
+   are kernel memory pointers and we explicitly exclude highmem
+   ranges anyway we cannot ever overflow 32 bits, even if we
+   could. (and on 64-bit it doesnt matter anyway)
+
+All in one, this function needs a total revamp. I used Linus's
+suggestions minus the paranoid checks (we cannot overflow really
+because if we get totally bad DMA ranges passed far more things
+break in the systems than just DMA debugging). I also fixed a
+few other small details i noticed.
+
+Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ lib/dma-debug.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
- drivers/pci/hotplug/acpi_pcihp.c   |    9 +++------
- drivers/pci/hotplug/acpiphp_glue.c |   32 +++++++++++---------------------
- drivers/pci/hotplug/pciehp_acpi.c  |    5 +++--
- include/linux/pci_hotplug.h        |    2 +-
- 4 files changed, 18 insertions(+), 30 deletions(-)
-
-diff --git a/drivers/pci/hotplug/acpi_pcihp.c b/drivers/pci/hotplug/acpi_pcihp.c
-index eb15958..80af75c 100644
---- a/drivers/pci/hotplug/acpi_pcihp.c
-+++ b/drivers/pci/hotplug/acpi_pcihp.c
-@@ -500,18 +500,15 @@ check_hotplug(acpi_handle handle, u32 lvl, void *context, void **rv)
- 
- /**
-  * acpi_pci_detect_ejectable - check if the PCI bus has ejectable slots
-- * @pbus - PCI bus to scan
-+ * @handle - handle of the PCI bus to scan
-  *
-  * Returns 1 if the PCI bus has ACPI based ejectable slots, 0 otherwise.
-  */
--int acpi_pci_detect_ejectable(struct pci_bus *pbus)
-+int acpi_pci_detect_ejectable(acpi_handle handle)
- {
--	acpi_handle handle;
- 	int found = 0;
- 
--	if (!(handle = acpi_pci_get_bridge_handle(pbus)))
--		return 0;
--	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
-+	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, 1,
- 			    check_hotplug, (void *)&found, NULL);
- 	return found;
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index c9187fe..02fed52 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -856,22 +856,21 @@ static void check_for_stack(struct device *dev, void *addr)
+ 				"stack [addr=%p]\n", addr);
  }
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index de4afc6..680c336 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -62,21 +62,6 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus);
- static void acpiphp_set_hpp_values(acpi_handle handle, struct pci_bus *bus);
- static void handle_hotplug_event_func(acpi_handle handle, u32 type, void *context);
  
--static struct pci_bus *pci_bus_from_handle(acpi_handle handle)
--{
--	struct pci_bus *pbus;
--
--	if (acpi_is_root_bridge(handle)) {
--		struct acpi_pci_root *root = acpi_pci_find_root(handle);
--		pbus = root->bus;
--	} else {
--		struct pci_dev *pdev = acpi_get_pci_dev(handle);
--		pbus = pdev->subordinate;
--		pci_dev_put(pdev);
--	}
--	return pbus;
--}
--
- /* callback routine to check for the existence of a pci dock device */
- static acpi_status
- is_pci_dock_device(acpi_handle handle, u32 lvl, void *context, void **rv)
-@@ -278,11 +263,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
- /* see if it's worth looking at this bridge */
- static int detect_ejectable_slots(acpi_handle handle)
+-static inline bool overlap(void *addr, u64 size, void *start, void *end)
++static inline bool overlap(void *addr, unsigned long len, void *start, void *end)
  {
--	int found;
--	struct pci_bus *pbus;
--
--	pbus = pci_bus_from_handle(handle);
--	found = acpi_pci_detect_ejectable(pbus);
-+	int found = acpi_pci_detect_ejectable(handle);
- 	if (!found) {
- 		acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
- 				    is_pci_dock_device, (void *)&found, NULL);
-@@ -1363,7 +1344,16 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus)
- /* Program resources in newly inserted bridge */
- static int acpiphp_configure_bridge (acpi_handle handle)
+-	void *addr2 = (char *)addr + size;
++	unsigned long a1 = (unsigned long)addr;
++	unsigned long b1 = a1 + len;
++	unsigned long a2 = (unsigned long)start;
++	unsigned long b2 = (unsigned long)end;
+ 
+-	return ((addr >= start && addr < end) ||
+-		(addr2 >= start && addr2 < end) ||
+-		((addr < start) && (addr2 > end)));
++	return !(b1 <= a2 || a1 >= b2);
+ }
+ 
+-static void check_for_illegal_area(struct device *dev, void *addr, u64 size)
++static void check_for_illegal_area(struct device *dev, void *addr, unsigned long len)
  {
--	struct pci_bus *bus = pci_bus_from_handle(handle);
-+	struct pci_bus *bus;
+-	if (overlap(addr, size, _text, _etext) ||
+-	    overlap(addr, size, __start_rodata, __end_rodata))
+-		err_printk(dev, NULL, "DMA-API: device driver maps "
+-				"memory from kernel text or rodata "
+-				"[addr=%p] [size=%llu]\n", addr, size);
++	if (overlap(addr, len, _text, _etext) ||
++	    overlap(addr, len, __start_rodata, __end_rodata))
++		err_printk(dev, NULL, "DMA-API: device driver maps memory from kernel text or rodata [addr=%p] [len=%lu]\n", addr, len);
+ }
+ 
+ static void check_sync(struct device *dev,
+@@ -969,7 +968,8 @@ void debug_dma_map_page(struct device *dev, struct page *page, size_t offset,
+ 		entry->type = dma_debug_single;
+ 
+ 	if (!PageHighMem(page)) {
+-		void *addr = ((char *)page_address(page)) + offset;
++		void *addr = (void *)page_address(page) + offset;
 +
-+	if (acpi_is_root_bridge(handle)) {
-+		struct acpi_pci_root *root = acpi_pci_find_root(handle);
-+		bus = root->bus;
-+	} else {
-+		struct pci_dev *pdev = acpi_get_pci_dev(handle);
-+		bus = pdev->subordinate;
-+		pci_dev_put(pdev);
-+	}
- 
- 	pci_bus_size_bridges(bus);
- 	pci_bus_assign_resources(bus);
-diff --git a/drivers/pci/hotplug/pciehp_acpi.c b/drivers/pci/hotplug/pciehp_acpi.c
-index 9604801..0c6aa99 100644
---- a/drivers/pci/hotplug/pciehp_acpi.c
-+++ b/drivers/pci/hotplug/pciehp_acpi.c
-@@ -47,7 +47,7 @@ int pciehp_acpi_slot_detection_check(struct pci_dev *dev)
- {
- 	if (slot_detection_mode != PCIEHP_DETECT_ACPI)
- 		return 0;
--	if (acpi_pci_detect_ejectable(dev->subordinate))
-+	if (acpi_pci_detect_ejectable(dev->dev.archdata.acpi_handle))
- 		return 0;
- 	return -ENODEV;
- }
-@@ -94,7 +94,8 @@ static int __init dummy_probe(struct pcie_device *dev)
- 			dup_slot_id++;
+ 		check_for_stack(dev, addr);
+ 		check_for_illegal_area(dev, addr, size);
  	}
- 	list_add_tail(&slot->slot_list, &dummy_slots);
--	if (!acpi_slot_detected && acpi_pci_detect_ejectable(pbus))
-+	if (!acpi_slot_detected &&
-+		acpi_pci_detect_ejectable(pbus->self->dev.archdata.acpi_handle))
- 		acpi_slot_detected = 1;
- 	return -ENODEV;         /* dummy driver always returns error */
- }
-diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
-index 4391741..43394fc 100644
---- a/include/linux/pci_hotplug.h
-+++ b/include/linux/pci_hotplug.h
-@@ -230,7 +230,7 @@ extern acpi_status acpi_get_hp_params_from_firmware(struct pci_bus *bus,
- 				struct hotplug_params *hpp);
- int acpi_get_hp_hw_control_from_firmware(struct pci_dev *dev, u32 flags);
- int acpi_pci_check_ejectable(struct pci_bus *pbus, acpi_handle handle);
--int acpi_pci_detect_ejectable(struct pci_bus *pbus);
-+int acpi_pci_detect_ejectable(acpi_handle handle);
- #endif
- #endif
- 
-
