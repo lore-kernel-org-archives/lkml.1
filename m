@@ -1,106 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZGJNSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbZGJNTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbZGJNSV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 09:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZGJNSJ
+	id S1755964AbZGJNTT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 09:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbZGJNTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 09:18:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:54218 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751846AbZGJNSI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 09:18:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KXj0Ivn7Z1zXESf5IK95e/sg/b/Ahpoq1HYFGxhEQhHukwOcJ22THaV3HWGbqciFBH
-         6KpepiYNtETDJ7Da+l1Kv6wyNG66nMTMWANwC8clOpmaJwnwyS5OapEa21u6GUyQoMx6
-         xKs5g7sMJKWWsGr6EZOpoNWehvfEsMCLQfvwY=
-Date: Fri, 10 Jul 2009 21:18:01 +0800
-From: Wu Fengguang <fengguang.wu@gmail.com>
-To: John Stoffel <john@stoffel.org>
-Cc: Gene Heskett <gene.heskett@verizon.net>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Minchan Kim <minchan.kim@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: OOM killer in 2.6.31-rc2
-Message-ID: <20090710131801.GA17773@localhost>
-References: <200907061056.00229.gene.heskett@verizon.net> <200907091042.38022.gene.heskett@verizon.net> <19030.22024.132029.196682@stoffel.org> <200907091703.06691.gene.heskett@verizon.net> <19031.15772.404288.544946@stoffel.org>
+	Fri, 10 Jul 2009 09:19:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56456 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754105AbZGJNTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 09:19:09 -0400
+Message-ID: <4A573FB9.2090202@kernel.org>
+Date: Fri, 10 Jul 2009 22:18:49 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19031.15772.404288.544946@stoffel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Christoph Hellwig <hch@infradead.org>
+CC: Boaz Harrosh <bharrosh@panasas.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Niel Lambrechts <niel.lambrechts@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH 2/4] block: use the same failfast bits for bio and	request
+References: <1246610898-22350-1-git-send-email-tj@kernel.org> <1246610898-22350-3-git-send-email-tj@kernel.org> <4A5071E5.8030908@panasas.com> <4A553DA4.4080408@kernel.org> <20090709133746.GA21929@infradead.org>
+In-Reply-To: <20090709133746.GA21929@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 10 Jul 2009 13:18:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 09:09:48AM -0400, John Stoffel wrote:
-> >>>>> "Gene" == Gene Heskett <gene.heskett@verizon.net> writes:
-> 
-> Gene> On Thursday 09 July 2009, John Stoffel wrote:
-> >>>>>>> "Gene" == Gene Heskett <gene.heskett@verizon.net> writes:
-> >> 
-> Gene> On Wednesday 08 July 2009, Wu Fengguang wrote:
-> >>>> On Wed, Jul 08, 2009 at 01:15:15PM +0800, Wu Fengguang wrote:
-> >>>>> On Tue, Jul 07, 2009 at 11:42:07PM -0400, Gene Heskett wrote:
-> >> 
-> Gene> [...]
-> >> 
-> >>>>> I guess your near 800MB slab cache is somehow under scanned.
-> >>>> 
-> >>>> Gene, can you run .31 with this patch? When OOM happens, it will tell
-> >>>> us whether the majority slab pages are reclaimable. Another way to
-> >>>> find things out is to run `slabtop` when your system is moderately
-> >>>> loaded.
-> >> 
-> Gene> Its been running continuously, and after 24 hours is now showing:
-> >> 
-> >> Just wondering, is this your M2N-SLI Deluxe board?
-> Gene> Yes.
-> >> I've got the same
-> >> board, with 4Gb of RAM and I haven't noticed any loss of RAM from my
-> >> looking (quickly) at top output.
-> 
-> Gene> I am short approximately 500 megs according to top:
-> Gene> Mem:   3634228k total,  3522984k used,   111244k free,   308096k buffers
-> Gene> Swap:  8385912k total,      568k used,  8385344k free,  2544716k cached
-> 
-> Gene> From dmesg:
-> Gene> [    0.000000] TOM2: 0000000120000000 aka 4608M  <what is this?
-> Gene> [...]
-> Gene> [    0.000000] 2694MB HIGHMEM available.
-> Gene> [    0.000000] 887MB LOWMEM available.
-> 
-> Gene> The bios signon does say 4092M IIRC.
-> 
-> >> But I also haven't bothered to upgrade the BIOS on this board at all
-> >> since I got it back in March of 2008.  No need in my book so far.
-> 
-> Gene> I had been running the original bios, #1502, because 1604 and
-> Gene> 1701 had very poor uptimes.  1502 caused an oops about 15 lines
-> Gene> into the boot but that triggered a remap and it was bulletproof
-> Gene> after that running a 32 bit 64G+PAE kernel.  (I haven't quite
-> Gene> made the jump to a 64 bit install, yet...)
-> 
-> Why haven't you made the laep to 64bit yet?  To me, that seems to be
-> the real solution here, not hacks like the HIGHMEM4G and HIGHMEM64G,
-> esp when your hardware is 64Bit by default.  
+Hello, Christoph.
 
-Sure 64bit kernel would be the best option for Gene :)
+Christoph Hellwig wrote:
+> On Thu, Jul 09, 2009 at 09:45:24AM +0900, Tejun Heo wrote:
+>> What's more disturbing to me is the different between RQ and BIO
+>> flags.  __REQ_* are bit positions, REQ_* are masks while BIO_* are bit
+>> positions.  Sadly it seems it's already too late to change that.  I
+>> personally an not a big fan of simple accessors or flags defined as
+>> bit positions.  They seem to obscure things without much benefit.
+> 
+> flags as bit positions generally only make sense if you use
+> test/set/clear_bit, otherwise they just confuse things.
 
-> I've made the leap and I've never looked back.  Haven't missed any
-> 32bit only apps, and if I really needed them, I'd just load the 32bit
-> libraries if need be.
+Another shortcoming of bit position flags is masking / multi flag
+operations.  It's just awful.  I think it's always better to define
+flags as masks even when it's used with test/set/clear_bit().  If such
+usages are common enough, we can easily add test/set/clear_bit_mask().
+The conversion from mask to bit would be constant most of the time and
+it's not like fls/ffs() are expensive.
 
-But for now I'd appreciate a lot if Gene can run a HIGHMEM64G kernel
-with the provided patch, so as to collect one full OOM message for us
-to analyze :) The previous OOM message missed the most important data
-from zone Normal..
+> And the accessors are pretty annoying, especially in the block
+> layer.  Trying to find the places where a BIO flag has an actual
+> effect is pretty painful due to the mix of the different flags and
+> the accessors.
 
-Thanks,
-Fengguang
+Yeap, fully agreed.
+
+Thanks.
+
+-- 
+tejun
