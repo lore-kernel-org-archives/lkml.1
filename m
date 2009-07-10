@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZGJJ3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbZGJJaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbZGJJ3a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 05:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZGJJ3X
+	id S1754141AbZGJJaj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 05:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbZGJJac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 05:29:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36342 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbZGJJ3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 05:29:22 -0400
-Date: Fri, 10 Jul 2009 11:29:21 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, Janboe Ye <yuan-bo.ye@motorola.com>,
-       linux-kernel@vger.kernel.org, vegard.nossum@gmail.com,
-       graydon@redhat.com, fche@redhat.com, cl@linux-foundation.org
-Subject: Re: [RFC][PATCH] Check write to slab memory which freed already using mudflap
-Message-ID: <20090710092921.GF14666@wotan.suse.de>
-References: <1247156020.27671.40.camel@debian-nb> <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com> <20090710084745.GA26752@elte.hu> <1247215920.32044.3.camel@penberg-laptop> <20090710090351.GD14666@wotan.suse.de> <1247217263.771.8.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247217263.771.8.camel@penberg-laptop>
-User-Agent: Mutt/1.5.9i
+	Fri, 10 Jul 2009 05:30:32 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59150 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751376AbZGJJab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 05:30:31 -0400
+Message-ID: <4A570A34.5090002@cn.fujitsu.com>
+Date: Fri, 10 Jul 2009 17:30:28 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>, Alan.Brunelle@hp.com,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] Fix blktrace unaligned memory access
+References: <20090710075339.GX23611@kernel.dk> <4A5704EA.5000807@cn.fujitsu.com> <20090710091337.GD23611@kernel.dk>
+In-Reply-To: <20090710091337.GD23611@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 12:14:23PM +0300, Pekka Enberg wrote:
-> Hi Nick,
+Jens Axboe wrote:
+> On Fri, Jul 10 2009, Li Zefan wrote:
+>> Jens Axboe wrote:
+>>> Hi,
+>>>
+>>> It seems that relay_reserve() (or the ring_buffer_event_data(), that one
+>>> still needs some love) can return unaligned memory, there's no way
+>>> around that when you have pdu lengths that aren't a nice size. This can
+>>> cause unaligned access warnings on platforms that care about alignment.
+>>>
+>> Seems relay_reserve() does nothing for alignment..On the other hand,
+>> ring_buffer_event_data() returns a ptr which is 32bit-aligned, but
+>> this still means it can cause unaligned accesses on 64bits arch, while
+>> I think it's fixable in ring buffer, it's certainly not an easy job.
 > 
-> On Fri, 2009-07-10 at 11:03 +0200, Nick Piggin wrote:
-> > > And whether SQLB will replace SLUB remains to be seen.
-> > > We're still fixing minor issues here and there in SLUB so I have no
-> > > reason to expect SLQB stabilization to happen overnight which means
-> > > we're going to have SLUB in the tree for a while anyway.
-> > 
-> > I think it's pretty good now. It was the right thing not to merge
-> > it in this window (seeing as I'd forgotten to make it the default
-> > in -next). And that flushed out a bug or two. The core logic I
-> > think is pretty solid now though.
+> Right, it's a bit nasty...
 > 
-> The long-standing PowerPC issue is still open, isnt't it? But anyway, my
 
-Yes.
+Lai Jiangshan noticed this issue long ago and had some ideas in mind
+how to fix ring buffer, but never try it out for it will probably be
+frustrating..
 
+>>> This is an RFC, perhaps we can fix this in some other way. This one takes
+>>> the simple approach, use an on-stack copy and memcpy() that to the
+>>> destination.
+>>>
+>> or get_unaligned() ?
+> 
+> put_unaligned(), you mean? The big question is then which is faster, using
+> put_unaligned() or doing the memcpy() of the structure...
+> 
 
-> main point is that we've already seen from the SLAB to SLUB transition
-> that while most of the bugs are fixed early on, there's a "fat tail" of
-> problems ranging from performance regressions to slab corruption which
-> take a long time to be discovered and fixed up.
+Ah, I meant put_unaligned().
 
-True.
-
- 
-> And I'm not trying to spread FUD on SLQB here, I'm simply stating the
-> facts from the previous "slab rewrite" and I have no reason to expect
-> this one to go any smoother. OTOH, SLQB has already had exposure in
-> linux-next which hopefully makes merging to mainline less painful
-> because 95% of the problems are ironed out. But I don't think there's
-> much we can do about the remaining 5% that only trigger on weird
-> architectures, workloads, or hardware configurations.
-
-Well hopefully most of the correctness problems are sorted out,
-but I think (like SLUB) most of the hard problems will be
-performance related and trickle in after merge. So I'm not sure
-what point we could *remove* other allocators, but for merging
-SLQB I think next window should be OK.
-
-What I would like to see is we eventualy make the hard decision
-and cull 2 of them. If SLQB is not clearly better (or, if it is
-clearly worse) than the other allocators and it can't be improved,
-then it has failed my goals for it and I would prefer to remove it
-from the tree.
-
-I guess the hard part is how to judge this, and how long to wait
-:(
+I think the patch you posted can be a workaround at least for now, and
+can be improved by detecting HAVE_EFFICIENT_UNALIGNED_ACCESS
 
