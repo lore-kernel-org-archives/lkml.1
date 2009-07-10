@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbZGJWWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbZGJWYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757591AbZGJWWZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 18:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbZGJWWQ
+	id S1757699AbZGJWYR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 18:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757343AbZGJWYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 18:22:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:57615 "EHLO mail.dvmed.net"
+	Fri, 10 Jul 2009 18:24:03 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51691 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756719AbZGJWWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 18:22:15 -0400
-Message-ID: <4A57BF06.1070601@garzik.org>
-Date: Fri, 10 Jul 2009 18:21:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       open-osd mailing-list <osd-dev@open-osd.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [GIT PULL resend] exofs/osd tree for 2.6.31-rc2
-References: <4A54666C.5010407@panasas.com>
-In-Reply-To: <4A54666C.5010407@panasas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1756425AbZGJWYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 18:24:01 -0400
+Subject: Re: 2.6.31-rc2+: Interrupts enabled after cpufreq_suspend
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Jones <davej@redhat.com>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       cpufreq@vger.kernel.org
+In-Reply-To: <20090710192511.GB6240@redhat.com>
+References: <4A561074.5080407@gmail.com>  <20090710192511.GB6240@redhat.com>
+Content-Type: text/plain
+Date: Sat, 11 Jul 2009 08:23:37 +1000
+Message-Id: <1247264617.21776.6.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> Linus
-> 
-> Please pull the following exofs/OSD changes from the git repository at:
-> 
->   git://git.open-osd.org/linux-open-osd.git for-linus
-> 
-> These are a few fixes/cleanups and mainly a new block-device driver
-> from Jeff Garzik, that can export an OSD object to block-based users
-> like filesystems.
-> 
-> Since they are all small bug fixes, the copyrights adjustment should be looked
-> at as a bug in the file ownership. (the original removal request came from IBM.)
-> And one new driver. It might be said that we do not violate -rc rules with this.
-> 
-> Boaz Harrosh (5):
->       exofs: Fix bio leak in error handling path (sync read)
->       exofs: Remove IBM copyrights
->       exofs: Avoid using file_fsync()
->       MAINTAINERS: Add osd maintained files (F:)
->       osdblk: Adjust queue limits to lower device's limits
-> 
-> Jeff Garzik (1):
->       osdblk: a Linux block device for OSD objects
+On Fri, 2009-07-10 at 15:25 -0400, Dave Jones wrote:
 
-Ping...   is there a problem with this pull?
+> The answer seems to be in 42d4dc3f4e1ec1396371aac89d0dccfdd977191b
+> which introduced all this code to work around some failure that only happens
+> on PPC...
+> 
+>     [PATCH] Add suspend method to cpufreq core
+>     
+>     In order to properly fix some issues with cpufreq vs. sleep on
+>     PowerBooks, I had to add a suspend callback to the pmac_cpufreq driver.
+>     I must force a switch to full speed before sleep and I switch back to
+>     previous speed on resume.
+> 
+> 
+> Ben, is there something better we can do here ?
+> 
+> I really don't want to add an #ifdef __powerpc__ to core code if we can help it.
+> I'd rather we didn't call into driver guts at all from the suspend path.
 
-Maybe Linus is expecting exofs stuff through James?
+Wait a minute ... having a suspend/resume method in cpufreq is one
+thing, having it muck around with SMP is another :-) The ppc code
+doesn't do that.
 
-	Jeff
+There's nothing fundamentally "fail" in requiring a switch to a given
+frequency before suspend. I don't know what kind of major FAIL the K8
+code is doing here though :-)
 
+I'm happy instead of #ifdef's however to push the logic into the ppc
+driver, or use a flag that the ppc driver sets to enable that logic.
 
+Cheers,
+Ben.
 
 
