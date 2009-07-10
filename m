@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZGJPxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZGJQAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZGJPxS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 11:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbZGJPxF
+	id S1754626AbZGJQAu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 12:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbZGJQAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 11:53:05 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:63375 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbZGJPxE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 11:53:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=ZdjnImS1q42MXY2OvPjOMw/1hddYDkZ6M5u1kL0ZtVl5ETfx8CEjA9coDdpuGnD3vv
-         homePk61iIGBGI3qXV9mqJcPscOZhq6lktzpZ4SUWscrC+lJmsoglv26shMHVJDx39F5
-         3qe0+NbC8YsIDA/5bbGKbdLsZ/hnJdCCSR6gU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [PATCH 3/3] staging/rt*: don't confuse user of rt3070 driver with rt2870 strings
-Date: Fri, 10 Jul 2009 17:58:35 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc2-next-20090708-03666-gb620e95-dirty; KDE/4.2.4; i686; ; )
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
-References: <4A54FC7E.1020902@gmail.com>
-In-Reply-To: <4A54FC7E.1020902@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Fri, 10 Jul 2009 12:00:42 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:53047 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751055AbZGJQAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 12:00:42 -0400
+Subject: Re: [PATCH] regulator: Define full constraints function with
+ REGULATOR disabled
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Haojian Zhuang <haojian.zhuang@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1247150671-23365-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1247150671-23365-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain
+Date: Fri, 10 Jul 2009 17:00:32 +0100
+Message-Id: <1247241632.4225.175.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907101758.36601.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 July 2009 22:07:26 Marcin Slusarz wrote:
-> From: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Subject: [PATCH 3/3] staging/rt*: don't confuse user of rt3070 driver with rt2870 strings
+On Thu, 2009-07-09 at 15:44 +0100, Mark Brown wrote:
+> This allows machine drivers to build without ifdefs if they have
+> full constraints. Suggested by machine drivers contributed by
+> Haojian Zhuang <haojian.zhuang@gmail.com>.
 > 
-> Original author didn't bother to change strings for rt3070 driver. Fix it.
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  include/linux/regulator/machine.h |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
 > 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Applied.
 
-for all three patches
+Thanks
 
-> Next steps could be:
-> - removal of loading configuration from kernel
-> - removal of driver "versions"
+Liam
 
-- finishing unification of rt{28,30}70sta drivers (shouldn't be difficult,
-  as it mostly requires replacing ifdefs with chipsets version checks and
-  checking the end result with the hardware)
-
-- finishing unification of rt28{6,7}0sta drivers (similar complexity)
-
-> Bart, are you preparing some patches for these drivers?
-
-Not at the moment and I would prefer to make some overdue changes
-to rtl8187se, rtl8192su and rt3090 first anyway..
