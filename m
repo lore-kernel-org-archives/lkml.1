@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbZGJNRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbZGJNRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755415AbZGJNRS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 09:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZGJNRI
+	id S1755268AbZGJNRw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 09:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZGJNRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 09:17:08 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:57626 "EHLO
+	Fri, 10 Jul 2009 09:17:45 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:57630 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751580AbZGJNRH (ORCPT
+	by vger.kernel.org with ESMTP id S1751778AbZGJNRo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 09:17:07 -0400
+	Fri, 10 Jul 2009 09:17:44 -0400
+Date: Fri, 10 Jul 2009 14:17:42 +0100
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] rtc: Convert WM8350 RTC driver to dev_pm_ops
-Date: Fri, 10 Jul 2009 14:16:59 +0100
-Message-Id: <1247231819-30431-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.3
+To: Joe Perches <joe@perches.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [PATCH 5/7] MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
+Message-ID: <20090710131742.GB8878@rakim.wolfsonmicro.main>
+References: <cover.1247032324.git.joe@perches.com>
+ <9c84258bdd3ebecd54e2bc203dbded1382af9c02.1247032324.git.joe@perches.com>
+ <84144f020907072332h4f0cdc16lfed34f6509782394@mail.gmail.com>
+ <1247035197.5124.9.camel@Joe-Laptop.home>
+ <1247035481.15919.31.camel@penberg-laptop>
+ <1247035628.5124.11.camel@Joe-Laptop.home>
+ <20090709093004.GA32655@sirena.org.uk>
+ <1247151536.12426.39.camel@Joe-Laptop.home>
+ <20090709150810.GA25112@rakim.wolfsonmicro.main>
+ <1247168139.3461.2.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247168139.3461.2.camel@Joe-Laptop.home>
+X-Cookie: Try
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/rtc/rtc-wm8350.c |   14 ++++++++++----
- 1 files changed, 10 insertions(+), 4 deletions(-)
+On Thu, Jul 09, 2009 at 12:35:39PM -0700, Joe Perches wrote:
+> On Thu, 2009-07-09 at 16:08 +0100, Mark Brown wrote:
 
-diff --git a/drivers/rtc/rtc-wm8350.c b/drivers/rtc/rtc-wm8350.c
-index c91edc5..b70702b 100644
---- a/drivers/rtc/rtc-wm8350.c
-+++ b/drivers/rtc/rtc-wm8350.c
-@@ -350,8 +350,9 @@ static const struct rtc_class_ops wm8350_rtc_ops = {
- };
- 
- #ifdef CONFIG_PM
--static int wm8350_rtc_suspend(struct platform_device *pdev, pm_message_t state)
-+static int wm8350_rtc_suspend(struct device *dev)
- {
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct wm8350 *wm8350 = dev_get_drvdata(&pdev->dev);
- 	int ret = 0;
- 	u16 reg;
-@@ -369,8 +370,9 @@ static int wm8350_rtc_suspend(struct platform_device *pdev, pm_message_t state)
- 	return ret;
- }
- 
--static int wm8350_rtc_resume(struct platform_device *pdev)
-+static int wm8350_rtc_resume(struct device *dev)
- {
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct wm8350 *wm8350 = dev_get_drvdata(&pdev->dev);
- 	int ret;
- 
-@@ -483,13 +485,17 @@ static int __devexit wm8350_rtc_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static struct dev_pm_ops wm8350_rtc_pm_ops = {
-+	.suspend = wm8350_rtc_suspend,
-+	.resume = wm8350_rtc_resume,
-+};
-+
- static struct platform_driver wm8350_rtc_driver = {
- 	.probe = wm8350_rtc_probe,
- 	.remove = __devexit_p(wm8350_rtc_remove),
--	.suspend = wm8350_rtc_suspend,
--	.resume = wm8350_rtc_resume,
- 	.driver = {
- 		.name = "wm8350-rtc",
-+		.pm = &wm8350_rtc_pm_ops,
- 	},
- };
- 
--- 
-1.6.3.3
+> > That's pretty much what I was thinking of too - tweaking the values for
+> > the log queries based on the total number of hits so people only turn up
+> > if they did a certain proportion of the commits.  It'd take some
+> > experimentation to work out what the values to use should be, I guess.
 
+> Perhaps something like this:
+
+> +    --git-min-percent => minimum percentage of commits required (default: 0)
+
+That seems reasonably effective with 5% or so as the default.  I do
+think the default should be non-zero if we're going to be encouraging
+people to use this as standard, though.
