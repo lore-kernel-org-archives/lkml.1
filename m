@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751412AbZGJJEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZGJJFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751412AbZGJJEB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 05:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbZGJJDx
+	id S1753991AbZGJJFQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 05:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751045AbZGJJFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 05:03:53 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35621 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750947AbZGJJDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 05:03:53 -0400
-Date: Fri, 10 Jul 2009 11:03:51 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>, Janboe Ye <yuan-bo.ye@motorola.com>,
+	Fri, 10 Jul 2009 05:05:04 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:46642 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbZGJJFC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 05:05:02 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=hj5CLbOYJkGh+PBo3NW6rd6WxN5Ye7o/D7xcTvzPOzHbiP9vHA9a79xcwRa3w48OT
+	N0yMFr1oZOA2GTJ7g9drQ==
+Date: Fri, 10 Jul 2009 02:04:53 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Janboe Ye <yuan-bo.ye@motorola.com>,
        linux-kernel@vger.kernel.org, vegard.nossum@gmail.com,
-       graydon@redhat.com, fche@redhat.com, cl@linux-foundation.org
-Subject: Re: [RFC][PATCH] Check write to slab memory which freed already using mudflap
-Message-ID: <20090710090351.GD14666@wotan.suse.de>
-References: <1247156020.27671.40.camel@debian-nb> <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com> <20090710084745.GA26752@elte.hu> <1247215920.32044.3.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247215920.32044.3.camel@penberg-laptop>
-User-Agent: Mutt/1.5.9i
+       graydon@redhat.com, fche@redhat.com, Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC][PATCH] Check write to slab memory which freed already
+ using mudflap
+In-Reply-To: <20090710084745.GA26752@elte.hu>
+Message-ID: <alpine.DEB.2.00.0907100158090.13880@chino.kir.corp.google.com>
+References: <1247156020.27671.40.camel@debian-nb> <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com> <20090710084745.GA26752@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 11:52:00AM +0300, Pekka Enberg wrote:
-> Hi Ingo,
+On Fri, 10 Jul 2009, Ingo Molnar wrote:
+
+> > SLAB is (slowly) going away so you might want to port this to SLUB 
+> > as well so we can merge both.
 > 
-> On Fri, 2009-07-10 at 10:47 +0200, Ingo Molnar wrote:
-> > > >  arch/arm/include/asm/elf.h |    1 +
-> > > >  arch/arm/kernel/module.c   |    1 +
-> > > >  drivers/Makefile           |    4 +-
-> > > >  include/mf-runtime.h       |   42 ++++++++++++++
-> > > >  kernel/Makefile            |    2 +-
-> > > >  kernel/mudflap.c           |  132 ++++++++++++++++++++++++++++++++++++++++++++
-> > > >  lib/Kconfig.debug          |    7 ++
-> > > >  mm/slab.c                  |   53 ++++++++++++++++++
-> > > >  8 files changed, 240 insertions(+), 2 deletions(-)
-> > > 
-> > > SLAB is (slowly) going away so you might want to port this to SLUB 
-> > > as well so we can merge both.
-> > 
-> > and SLQB which will replace both? :-/
+> and SLQB which will replace both? :-/
 > 
-> Well, I cannot really expect people to port patches to SLQB until it's
-> in mainline.
 
-I agree...
+I'm not sure what the status of slqb is, although I would have expected it 
+to have been pushed for inclusion in 2.6.31 as a slab allocator 
+alternative.  Nick, any forecast for inclusion?
 
-slab allocator's primary metric is performance, and debugging
-features can tend to be added very easily after that (because
-there is a performance hit accepted). So I have not been spending
-much time on those in SLQB.
-
-If it gets merged and decided to stay based on performance results,
-then I will do more to port over other debug features.
-
-
-> And whether SQLB will replace SLUB remains to be seen.
-> We're still fixing minor issues here and there in SLUB so I have no
-> reason to expect SLQB stabilization to happen overnight which means
-> we're going to have SLUB in the tree for a while anyway.
-
-I think it's pretty good now. It was the right thing not to merge
-it in this window (seeing as I'd forgotten to make it the default
-in -next). And that flushed out a bug or two. The core logic I
-think is pretty solid now though.
-
+SLUB has a pretty noticeable performance degradation on benchmarks such as 
+netperf TCP_RR with high numbers of threads (see my post about it: 
+http://marc.info/?l=linux-kernel&m=123839191416472).  CONFIG_SLAB is the 
+optimal configuration for workloads that share similiar slab thrashing 
+patterns (which my patchset dealt with in an indirect way and yet still 
+didn't match slab's performance).  I haven't yet seen data that suggests 
+anything other than CONFIG_SLAB has parity with such a benchmark.
