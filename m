@@ -1,107 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbZGJWKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757191AbZGJWQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757425AbZGJWKV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 18:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZGJWKL
+	id S1757191AbZGJWQH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 18:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbZGJWP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 18:10:11 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:25495 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752337AbZGJWKJ (ORCPT
+	Fri, 10 Jul 2009 18:15:57 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51268 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756584AbZGJWP4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 18:10:09 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Andreas Sundstrom <sunkan@zappa.cx>
-Subject: Re: 2.6.30 kernel panic when closing lid
-Date: Fri, 10 Jul 2009 16:10:05 -0600
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, Frans Pop <elendil@planet.nl>
-References: <4A3BF368.9090103@zappa.cx>
-In-Reply-To: <4A3BF368.9090103@zappa.cx>
+	Fri, 10 Jul 2009 18:15:56 -0400
+Message-ID: <4A57BD9B.4030405@acm.org>
+Date: Fri, 10 Jul 2009 18:15:55 -0400
+From: Wayne Pollock <pollock@acm.org>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.22) Gecko/20090605 Lightning/0.9 Thunderbird/2.0.0.22 Mnenhy/0.7.6.666
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: make xconfig fails on Fedora 10 for 2.6.30
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907101610.05884.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 19 June 2009 02:22:00 pm Andreas Sundstrom wrote:
-> My laptop has started crashing when I close the lid. This does not
-> happen with 2.6.29.4 which I was using before 2.6.30, ...
+The "make xconfig" command tried to link to "libXi.so".
+I think this is actually a kernel bug; the binary this
+make command builds should try to link to some "soname"
+such as "libXi.so.6" instead, shouldn't it?
 
-I opened a bugzilla for this regression:
-  http://bugzilla.kernel.org/show_bug.cgi?id=13751
+The work-around was to manually create the missing symlink
+for "libXi.so".  I suspect other distro's install that
+symlink automatically so maybe that's why the bug was
+not discovered.  But I believe it is correct to say all
+applications should use a soname (including the major
+version number), and not just the "linker" name (the
+name ending in ".so" with no version numbers).
 
-If either of you can test the suggestions in comment #12 of the
-bugzilla, I'd like to try to fix this oops.
+Or am I missing something?
 
-Thanks!
-  Bjorn
-
-> I have tried to catch the full output with a USB serial console, but
-> it's not able to send the full output before it dies it seems. Sometimes
-> it gets further than other times.
-> 
-> Here is one oops/panic:
-> [   31.295898] kernel tried to execute NX-protected page - exploit
-> attempt? (uid: 0)
-> [   31.296575] BUG: unable to handle kernel paging request at
-> ffff88013a891630
-> [   31.297233] IP: [<ffffffff814f6940>] fair_sched_class+0x0/0xc0
-> [   31.297594] PGD 202063 PUD b067 PMD 800000013a8001e3
-> [   31.298567] Oops: 0011 [#1] SMP
-> [   31.298569] last sysfs file:
-> /sys/devices/pci0000:00/0000:00:1c.1/0000:10:00.0/firmware/0000:10:00.0/loading
-> [   31.298572] CPU 1
-> [   31.298574] Modules linked in: iscsi_tcp libiscsi_tcp libiscsi
-> scsi_transport_iscsi sbp2 btusb sdhci_pci sdhci bluetooth psmouse
-> ricoh_mmc ohci1394 mmc_core ieee1394 pl2303
-> [   31.298585] Pid: 0, comm: swapper Not tainted 2.6.30 #9 HP Compaq
-> 6910p (GB949ET#AK8)
-> [   31.298587] RIP: c2c0:[<ffffffff814f6940>]  [<ffffffff814f6940>]
-> fair_sched_class+0x0/0xc0
-> [   31.298592] RSP: ffffffff8102e891:ffff88013b9a1b20  EFLAGS:
-> ffff88013b8c4a80
-> [   31.298594] RAX: ffffffff81030f1a RBX: ffffffff810b047b RCX:
-> ffffffff8123d135
-> [   31.298597] RDX: ffff88013b976580 RSI: 0000000000000001 RDI:
-> ffff88013b8c4a80
-> [   31.298599] RBP: ffffffff810303a2 R08: ffff88013b9a1ae0 R09:
-> ffff88002804c2c0
-> [   31.298601] R10: ffff88013b9765b8 R11: ffff88002804c328 R12:
-> ffff88013b9a1ab0
-> [   31.298603] R13: 0000000000000001 R14: 0000000000000001 R15:
-> ffff88002804c328
-> [   31.298606] FS:  000000[   31.319076] bad: scheduling from the idle
-> thread!
-> [   31.319[   31.320577] Call Trace:
-> [   31.321325] bad: scheduling from the idle thread!
-> [   31.322044] Pid: 0, comm: swapper Tainted: [   31.322805] Call Trace:
-> [   31.323568] bad: scheduling from the idle thread!
-> [   31.324318] Pid: 0, comm: swapper Tainted: G      D    2.6.30 #9
-> [   31.325028] Call Trace:
-> 
-> I did a few runs and the full output from that is here:
-> http://pastebin.com/fe18c31c
-> 
-> fair_sched_class seems to be mentioned every time from what I've seen.
-> 
-> I also tried removing "button" support from ACPI and that seems to
-> eliminate the problem, so I have a workaround.
-> Compiling "button" as a module does not seem to eliminate the problem
-> though even with the module blacklisted (and not loaded then of course).
-> 
-> This is on a HP Compaq 6910p as you might have seen in the oops/panic
-> output.
-> I don't know how to proceed on troubleshooting/debugging this.
-> 
-> Let me know if there is anything I can do to help find the issue.
-> 
-> P.S. I'm currently not subscribed so please feel free to CC me on any
-> posts regarding
-> this.
-> 
-> /Andreas Sundstrom
+-- 
+Wayne Pollock
