@@ -1,139 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbZGJXfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZGJXll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758002AbZGJXfS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 19:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbZGJXfI
+	id S1757446AbZGJXll (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 19:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbZGJXla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 19:35:08 -0400
-Received: from eta-ori.net ([91.121.142.51]:34303 "EHLO orion.eta-ori.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753185AbZGJXfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 19:35:07 -0400
-Message-ID: <4A57D024.8060700@impulze.org>
-Date: Sat, 11 Jul 2009 01:35:00 +0200
-From: Daniel Mierswa <impulze@impulze.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090628)
+	Fri, 10 Jul 2009 19:41:30 -0400
+Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:39004 "EHLO
+	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756584AbZGJXl3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 19:41:29 -0400
+Date: Sat, 11 Jul 2009 00:09:26 +0100
+From: Darren Salt <linux@youmustbejoking.demon.co.uk>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: John Linville <linville@tuxdriver.com>,
+       Thiemo Nagel <thiemo.nagel@ph.tum.de>,
+       Corentin Chary <corentin.chary@gmail.com>,
+       debian-eeepc-devel@lists.alioth.debian.org,
+       acpi4asus-user@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.31] rfkill: allow toggling soft state in sysfs again
+Message-ID: <507E529B48%linux@youmustbejoking.demon.co.uk>
+In-Reply-To: <1247262952.26071.1.camel@johannes.local>
+References: <4A5716AA.5000903@ph.tum.de> 
+ <71cd59b00907100545v6f440a19xfc3668826eb1e509@mail.gmail.com> 
+ <4A5743AB.6090303@ph.tum.de> 
+ <71cd59b00907100646h5e0283fcyce5874cc4a19106b@mail.gmail.com> 
+ <4A575119.9070505@ph.tum.de> <507E3B9268%linux@youmustbejoking.demon.co.uk> 
+ <1247254899.21972.9.camel@johannes.local> 
+ <507E47A184%linux@youmustbejoking.demon.co.uk> 
+ <1247262952.26071.1.camel@johannes.local>
+Mail-Followup-To: Johannes Berg <johannes@sipsolutions.net>, John Linville 
+ <linville@tuxdriver.com>, Thiemo Nagel <thiemo.nagel@ph.tum.de>, Corentin Chary 
+ <corentin.chary@gmail.com>, debian-eeepc-devel@lists.alioth.debian.org, 
+ acpi4asus-user@lists.sourceforge.net, linux-wireless@vger.kernel.org, 
+ linux-kernel@vger.kernel.org
+User-Agent: Messenger-Pro/2.58.5.3087 (Qt/4.5.1) (Linux-x86_64)
+X-NuLabour-Date: Sat, 8988 Dec 1984 00:09:26 +0100
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: rusty@rustcorp.com.au
-Subject: [RFC][PATCH] Remove limitations with regards to kernel commandline
- parsing
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------000002030205050402070204"
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 192.168.0.5
+X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
+X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000002030205050402070204
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+I demand that Johannes Berg may or may not have written...
 
-Currently there are limitations and imho some weird things with regards to parsing kernel command line parameters. Say if you an initramfs and you want to pass whitespace values to it you may end up with something you did not expect. Passing param="foo" to the kernel makes it (using [] notation) [param[foo]], so far so good. Passing real_root=LABEL="abc def" makes it [real_root[LABEL="abc def"]] which is not quite what you want, you'd expect [real_rooŧ[LABEL=abc def]]. Hence my patch (git f-p against master of linus.git is attached) tries to remove those limitations.
+> On Fri, 2009-07-10 at 22:09 +0100, Darren Salt wrote:
+>> I demand that Johannes Berg may or may not have written...
+[snip]
+>>> *shrug*, I don't like it, but whatever...
+>> I do. It means that we have a nice simple text-based interface for use in
+>> scripts (for now), and a binary interface which is better suited to the
+>> likes of desktop applications.
 
-> There was a limitation for kernel parameters with regards to quoting. It
-> wasn't possible to escape quotes or use quotes to form space-filled
-> values _inside_ parameters. This patch attempts to make that possible,
-> kernel parameters are now parsed as follows:
-> '"param= value"' [param= value][]
-> 'param=" value "" combination "' [param][ value  combination ]
-> 'param=" \" test"' [param][ " test]
-> '"param"=another' [param][another]
+> Indeed, and as long as you expect to only use soft toggle... problem is
+> that you won't know whether it's soft-toggled or not while it's
+> hard-blocked (off)!
 
-CC'ed rusty@rustcorp.com.au since he shows up quite frequent in git log of kernel/params.c
+Which is fine for eeepc-acpi-scripts and anything else which doesn't care
+about hard-blocking because the hardware doesn't do that.
 
+eeepc-acpi-scripts should eventually use your rfkill utility, though. (I
+intend to make sure that it does so.)
+
+[snip]
 -- 
-Mierswa, Daniel
+| Darren Salt            | linux at youmustbejoking | nr. Ashington, | Doon
+| using Debian GNU/Linux | or ds    ,demon,co,uk    | Northumberland | Army
+|   Kill all extremists!
 
-If you still don't like it, that's ok: that's why I'm boss. I simply know better than you do.
-               --- Linus Torvalds, comp.os.linux.advocacy, 1996/07/22
-
---------------000002030205050402070204
-Content-Type: text/plain;
- name="kernel.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="kernel.patch"
-
-RnJvbSBkOGI0MjcyMjQxYTRlZWMxZDQyNmZkZmNjZTdmYzRmY2ZlNjVjMjg0IE1vbiBTZXAg
-MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBEYW5pZWwgTWllcnN3YSA8aW1wdWx6ZUBpbXB1bHpl
-Lm9yZz4KRGF0ZTogVHVlLCA3IEp1bCAyMDA5IDAwOjU0OjM4ICswMjAwClN1YmplY3Q6IFtQ
-QVRDSF0gQXR0ZW1wdCB0byBoYW5kbGUgcXVvdGVzIGluIGtlcm5lbCBwYXJhbWV0ZXJzCgpU
-aGVyZSB3YXMgYSBsaW1pdGF0aW9uIGZvciBrZXJuZWwgcGFyYW1ldGVycyB3aXRoIHJlZ2Fy
-ZHMgdG8gcXVvdGluZy4gSXQKd2Fzbid0IHBvc3NpYmxlIHRvIGVzY2FwZSBxdW90ZXMgb3Ig
-dXNlIHF1b3RlcyB0byBmb3JtIHNwYWNlLWZpbGxlZAp2YWx1ZXMgX2luc2lkZV8gcGFyYW1l
-dGVycy4gVGhpcyBwYXRjaCBhdHRlbXB0cyB0byBtYWtlIHRoYXQgcG9zc2libGUsCmtlcm5l
-bCBwYXJhbWV0ZXJzIGFyZSBub3cgcGFyc2VkIGFzIGZvbGxvd3M6CicicGFyYW09IHZhbHVl
-IicgW3BhcmFtPSB2YWx1ZV1bXQoncGFyYW09IiB2YWx1ZSAiIiBjb21iaW5hdGlvbiAiJyBb
-cGFyYW1dWyB2YWx1ZSAgY29tYmluYXRpb24gXQoncGFyYW09IiBcIiB0ZXN0IicgW3BhcmFt
-XVsgIiB0ZXN0XQonInBhcmFtIj1hbm90aGVyJyBbcGFyYW1dW2Fub3RoZXJdCgpTaWduZWQt
-b2ZmLWJ5OiBEYW5pZWwgTWllcnN3YSA8aW1wdWx6ZUBpbXB1bHplLm9yZz4KLS0tCiBrZXJu
-ZWwvcGFyYW1zLmMgfCAgMTQ0ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKy0tLS0tLS0tLS0tLS0tLS0KIDEgZmlsZXMgY2hhbmdlZCwgMTAzIGluc2VydGlvbnMo
-KyksIDQxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2tlcm5lbC9wYXJhbXMuYyBiL2tl
-cm5lbC9wYXJhbXMuYwppbmRleCA3ZjY5MTJjLi5lNjA0MWMwIDEwMDY0NAotLS0gYS9rZXJu
-ZWwvcGFyYW1zLmMKKysrIGIva2VybmVsL3BhcmFtcy5jCkBAIC03Miw1OCArNzIsMTIwIEBA
-IHN0YXRpYyBpbnQgcGFyc2Vfb25lKGNoYXIgKnBhcmFtLAogCXJldHVybiAtRU5PRU5UOwog
-fQogCi0vKiBZb3UgY2FuIHVzZSAiIGFyb3VuZCBzcGFjZXMsIGJ1dCBjYW4ndCBlc2NhcGUg
-Ii4gKi8KLS8qIEh5cGhlbnMgYW5kIHVuZGVyc2NvcmVzIGVxdWl2YWxlbnQgaW4gcGFyYW1l
-dGVyIG5hbWVzLiAqLwotc3RhdGljIGNoYXIgKm5leHRfYXJnKGNoYXIgKmFyZ3MsIGNoYXIg
-KipwYXJhbSwgY2hhciAqKnZhbCkKKy8qIGhhbmRsZSBxdW90ZXMgaW4gdG9rZW5zIChwYXJh
-bWV0ZXIgYW5kIHZhbHVlcykKKyAqICciIGZvbyBiYXIgIicgPT4gJyBmb28gYmFyICcKKyAq
-ICciIGZvbyBcIiAiJyAgPT4gJyBmb28gIiAnCisgKi8KK3N0YXRpYyB2b2lkIGFkZF90b2tl
-bihjaGFyICoqIHRva2VuLCBjaGFyICogYXJncykKIHsKLQl1bnNpZ25lZCBpbnQgaSwgZXF1
-YWxzID0gMDsKLQlpbnQgaW5fcXVvdGUgPSAwLCBxdW90ZWQgPSAwOwotCWNoYXIgKm5leHQ7
-CisJY2hhciAqIGl0ZXJhdG9yLCAqIGxhc3RfcXVvdGU7CisJaW50IGluX3F1b3RlczsKIAot
-CWlmICgqYXJncyA9PSAnIicpIHsKLQkJYXJncysrOwotCQlpbl9xdW90ZSA9IDE7Ci0JCXF1
-b3RlZCA9IDE7CisJaW5fcXVvdGVzID0gMDsKKwlsYXN0X3F1b3RlID0gTlVMTDsKKworCWZv
-ciAoaXRlcmF0b3IgPSBhcmdzOyAqaXRlcmF0b3I7IGl0ZXJhdG9yKyspIHsKKwkJaWYgKCpp
-dGVyYXRvciA9PSAnXFwnICYmICooaXRlcmF0b3IgKyAxKSA9PSAnIicpIHsKKwkJCWNoYXIg
-KiBtb3ZlcjsKKworCQkJLyogbW92ZSBhbGwgY2hhcmFjdGVycyBiYWNrICovCisJCQlmb3Ig
-KG1vdmVyID0gaXRlcmF0b3I7ICptb3ZlcjsgbW92ZXIrKykgeworCQkJCSptb3ZlciA9ICoo
-bW92ZXIgKyAxKTsKKwkJCX0KKworCQkJY29udGludWU7CisJCX0KKworCQlpZiAoKml0ZXJh
-dG9yICE9ICciJykgeworCQkJY29udGludWU7CisJCX0KKworCQlpZiAoaW5fcXVvdGVzKSB7
-CisJCQljaGFyICogbW92ZXI7CisKKwkJCS8qIG1vdmUgd2hvbGUgc3RyaW5nIGJhY2sgdW50
-aWwgY3VycmVudCAiIGlzIHJlYWNoZWQgKi8KKwkJCWZvciAobW92ZXIgPSBsYXN0X3F1b3Rl
-OyBtb3ZlciAhPSBpdGVyYXRvciAtIDE7IG1vdmVyKyspIHsKKwkJCQkqbW92ZXIgPSAqKG1v
-dmVyICsgMSk7CisJCQl9CisKKwkJCS8qIGlnbm9yZSB0aGUgY3VycmVudCAiIGFuZCBtb3Zl
-IHRoZSByZXN0IG9mIHRoZSBzdHJpbmcgYmFjayAqLworCQkJd2hpbGUgKCptb3Zlcikgewor
-CQkJCSptb3ZlciA9ICoobW92ZXIgKyAyKTsKKwkJCQltb3ZlcisrOworCQkJfQorCisJCQkv
-KiBpZ25vcmVkIDIgcXVvdGVzLCBkZWNyZWFzZSB0aGUgaXRlcmF0b3IgKi8KKwkJCWl0ZXJh
-dG9yIC09IDI7CisJCQlsYXN0X3F1b3RlID0gTlVMTDsKKwkJfSBlbHNlIHsKKwkJCWxhc3Rf
-cXVvdGUgPSBpdGVyYXRvcjsKKwkJfQorCisJCWluX3F1b3RlcyA9ICFpbl9xdW90ZXM7CiAJ
-fQogCi0JZm9yIChpID0gMDsgYXJnc1tpXTsgaSsrKSB7Ci0JCWlmIChhcmdzW2ldID09ICcg
-JyAmJiAhaW5fcXVvdGUpCisJKnRva2VuID0gYXJnczsKK30KKworc3RhdGljIGNoYXIgKiBu
-ZXh0X2FyZyhjaGFyICogYXJncywgY2hhciAqKiBwYXJhbSwgY2hhciAqKiB2YWwpCit7CisJ
-Y2hhciAqIHRva2VuLCAqIG5leHQ7CisJaW50IGluX3F1b3RlcywgaXNfZXNjYXBlZDsKKwor
-CSpwYXJhbSA9ICp2YWwgPSBuZXh0ID0gTlVMTDsKKwlpbl9xdW90ZXMgPSBpc19lc2NhcGVk
-ID0gMDsKKworCS8qIHRva2VuaXplciAqLworCWZvciAodG9rZW4gPSBhcmdzOyAqdG9rZW47
-IHRva2VuKyspIHsKKwkJLyogcGFyYW1ldGVyIG9yIHZhbHVlIGlzIGZpbmlzaGVkICovCisJ
-CWlmICghaW5fcXVvdGVzICYmICp0b2tlbiA9PSAnICcpIHsKKwkJCSp0b2tlbiA9ICdcMCc7
-CisKKwkJCS8qIHRoZXJlJ3JlIHN0aWxsIGNoYXJhY3RlcnMgaW4gdGhlIHBhcmFtZXRlciBs
-aW5lICovCisJCQluZXh0ID0gdG9rZW4gKyAxOworCisJCQkvKiByZW1vdmUgdHJhaWxpbmcg
-d2hpdGVzcGFjZSAqLworCQkJd2hpbGUgKCpuZXh0ID09ICcgJykgeworCQkJCW5leHQrKzsK
-KwkJCX0KKwogCQkJYnJlYWs7Ci0JCWlmIChlcXVhbHMgPT0gMCkgewotCQkJaWYgKGFyZ3Nb
-aV0gPT0gJz0nKQotCQkJCWVxdWFscyA9IGk7CiAJCX0KLQkJaWYgKGFyZ3NbaV0gPT0gJyIn
-KQotCQkJaW5fcXVvdGUgPSAhaW5fcXVvdGU7Ci0JfQogCi0JKnBhcmFtID0gYXJnczsKLQlp
-ZiAoIWVxdWFscykKLQkJKnZhbCA9IE5VTEw7Ci0JZWxzZSB7Ci0JCWFyZ3NbZXF1YWxzXSA9
-ICdcMCc7Ci0JCSp2YWwgPSBhcmdzICsgZXF1YWxzICsgMTsKLQotCQkvKiBEb24ndCBpbmNs
-dWRlIHF1b3RlcyBpbiB2YWx1ZS4gKi8KLQkJaWYgKCoqdmFsID09ICciJykgewotCQkJKCp2
-YWwpKys7Ci0JCQlpZiAoYXJnc1tpLTFdID09ICciJykKLQkJCQlhcmdzW2ktMV0gPSAnXDAn
-OworCQkvKiBwYXJhbWV0ZXIvdmFsdWUgc3BsaXQgKi8KKwkJaWYgKCFpbl9xdW90ZXMgJiYg
-KnRva2VuID09ICc9JyAmJiAhKnBhcmFtKSB7CisJCQkqdG9rZW4gPSAnXDAnOworCQkJYWRk
-X3Rva2VuKHBhcmFtLCBhcmdzKTsKKwkJCWFyZ3MgPSB0b2tlbiArIDE7CisJCQljb250aW51
-ZTsKIAkJfQotCQlpZiAocXVvdGVkICYmIGFyZ3NbaS0xXSA9PSAnIicpCi0JCQlhcmdzW2kt
-MV0gPSAnXDAnOworCisJCWlmICghaXNfZXNjYXBlZCAmJiAqdG9rZW4gPT0gJ1xcJykgewor
-CQkJaXNfZXNjYXBlZCA9IDE7CisJCQljb250aW51ZTsKKwkJfQorCisJCWlmICgqdG9rZW4g
-PT0gJyInICYmICFpc19lc2NhcGVkKSB7CisJCQlpbl9xdW90ZXMgPSAhaW5fcXVvdGVzOwor
-CQl9CisKKwkJLyogYWx3YXlzIHJlc2V0IGVzY2FwZSB2YWx1ZSwgb25seSAiIG5lZWRzIGl0
-ICovCisJCWlzX2VzY2FwZWQgPSAwOwogCX0KIAotCWlmIChhcmdzW2ldKSB7Ci0JCWFyZ3Nb
-aV0gPSAnXDAnOwotCQluZXh0ID0gYXJncyArIGkgKyAxOwotCX0gZWxzZQotCQluZXh0ID0g
-YXJncyArIGk7CisJaWYgKCEqcGFyYW0pIHsKKwkJYWRkX3Rva2VuKHBhcmFtLCBhcmdzKTsK
-Kwl9IGVsc2UgeworCQlhZGRfdG9rZW4odmFsLCBhcmdzKTsKKwl9CisKKwkvKiB0aGVyZSdy
-ZSBwYXJhbWV0ZXJzIGxlZnQgaW4gdGhlIGNvbW1hbmQgbGluZSAqLworCWlmIChuZXh0KSB7
-CisJCXJldHVybiBuZXh0OworCX0KIAotCS8qIENoZXcgdXAgdHJhaWxpbmcgc3BhY2VzLiAq
-LwotCXdoaWxlICgqbmV4dCA9PSAnICcpCi0JCW5leHQrKzsKLQlyZXR1cm4gbmV4dDsKKwkv
-KiBlbmQgb2YgdGhlIGxpbmUgKi8KKwlyZXR1cm4gdG9rZW47CiB9CiAKIC8qIEFyZ3MgbG9v
-a3MgbGlrZSAiZm9vPWJhcixiYXIyIGJhej1mdXogd2l6Ii4gKi8KLS0gCjEuNi4zLjMKCg==
---------------000002030205050402070204--
+A large dog will have a surprising effect on your life.
