@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751541AbZGJI1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751605AbZGJIfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751541AbZGJI1y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 04:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZGJI1p
+	id S1751605AbZGJIfd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 04:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbZGJIfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 04:27:45 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48559 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750794AbZGJI1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 04:27:45 -0400
-Date: Fri, 10 Jul 2009 10:27:43 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: "Gadiyar, Anand" <gadiyar@ti.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] trivial: fix typo "for for" in multiple files
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB0305C11451@dbde02.ent.ti.com>
-Message-ID: <alpine.LNX.2.00.0907101026590.27327@wotan.suse.de>
-References: <5A47E75E594F054BAF48C5E4FC4B92AB0305C11451@dbde02.ent.ti.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 10 Jul 2009 04:35:24 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:44041 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750794AbZGJIfX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 04:35:23 -0400
+Message-ID: <4A56FD45.6060304@in.ibm.com>
+Date: Fri, 10 Jul 2009 14:05:17 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: Re: Badness at drivers/char/tty_ldisc.c:210 during shutdown
+References: <4A3A2D2B.7070704@in.ibm.com>	<4A3F281F.9000408@in.ibm.com> <1245655421.4400.78.camel@concordia> <20090622095245.38edafdd@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090622095245.38edafdd@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Jul 2009, Gadiyar, Anand wrote:
+Alan Cox wrote:
+>>> [c00000003cf6ba70] [c00000000040a3d0] .tty_ldisc_put+0xa4/0xf4 (unreliable)
+>>> [c00000003cf6bb10] [c00000000040a7c8] .tty_ldisc_reinit+0x38/0x80
+>>> [c00000003cf6bba0] [c00000000040b1d8] .tty_ldisc_hangup+0x190/0x260
+>>> [c00000003cf6bc40] [c000000000401090] .do_tty_hangup+0x188/0x4c0
+>>> [c00000003cf6bd20] [c000000000401440] .tty_vhangup_self+0x34/0x54
+>>> [c00000003cf6bdb0] [c00000000019236c] .sys_vhangup+0x38/0x58
+>>> [c00000003cf6be30] [c000000000008534] syscall_exit+0x0/0x40
+>>> Instruction dump:
+>>> 912b0088 4bcd17bd 60000000 e87e8008 7f44d378 481c04fd 60000000 801b0008 
+>>> 7c09fe70 7d200278 7c004850 54000ffe <0b000000> 7f63db78 4bd7c98d 60000000 
+>>>       
+>> Ah right, so this has check has just gone in, and the code in question
+>> has been rewritten somewhat just recently.
+>>     
+>
+> The check is to catch any cases where a line discipline is being freed up
+> but has a refcount that is non zero. I think I know what is going on here.
+>   
+This issue can be recreated with 2.6.31-rc2-git4 kernel
+(34f25476ace556263784ea2f8173e22b25557a13).
 
-> From: Anand Gadiyar <gadiyar@ti.com>
-> 
-> trivial: fix typo "for for" in multiple files
-> 
-> Signed-off-by: Anand Gadiyar <gadiyar@ti.com>
-> ---
-> - Previous version was at [1] and [2]
->   - Now folded together
-> - Rebased on current mainline git
-> 
-> [1] http://patchwork.kernel.org/patch/34236/
-> [2] http://patchwork.kernel.org/patch/34237/
+Thanks
+-Sachin
 
-Applied, thanks.
 
 -- 
-Jiri Kosina
-SUSE Labs
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
+
