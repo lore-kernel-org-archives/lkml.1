@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZGKUzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbZGKUzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZGKUzb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 16:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbZGKUxx
+	id S1756962AbZGKUzr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 16:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZGKUxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 16:53:53 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32840 "EHLO
+	Sat, 11 Jul 2009 16:53:54 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32838 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755959AbZGKUxu (ORCPT
+	with ESMTP id S1755968AbZGKUxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 11 Jul 2009 16:53:50 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Subject: [PATCH] move snirm_53c710's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 22:53:04 +0200
-Message-Id: <1247345591-22643-36-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: Chris Zankel <chris@zankel.net>, "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] move xtsonic's probe function to .devinit.text
+Date: Sat, 11 Jul 2009 22:53:11 +0200
+Message-Id: <1247345591-22643-43-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1247345591-22643-35-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1247345591-22643-42-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -59,6 +56,13 @@ References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-33-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-34-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-35-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-36-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-38-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-39-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-40-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-41-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-42-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -70,7 +74,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to snirm710_probe is passed to the core via
+A pointer to xtsonic_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -81,28 +85,26 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Chris Zankel <chris@zankel.net>
+Cc: David S. Miller <davem@davemloft.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 ---
- drivers/scsi/sni_53c710.c |    2 +-
+ drivers/net/xtsonic.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/sni_53c710.c b/drivers/scsi/sni_53c710.c
-index 37b3359..56cf0bb 100644
---- a/drivers/scsi/sni_53c710.c
-+++ b/drivers/scsi/sni_53c710.c
-@@ -64,7 +64,7 @@ static struct scsi_host_template snirm710_template = {
- 	.module		= THIS_MODULE,
- };
+diff --git a/drivers/net/xtsonic.c b/drivers/net/xtsonic.c
+index 5a4ad15..0c44135 100644
+--- a/drivers/net/xtsonic.c
++++ b/drivers/net/xtsonic.c
+@@ -239,7 +239,7 @@ out:
+  * Actually probing is superfluous but we're paranoid.
+  */
  
--static int __init snirm710_probe(struct platform_device *dev)
-+static int __devinit snirm710_probe(struct platform_device *dev)
+-int __init xtsonic_probe(struct platform_device *pdev)
++int __devinit xtsonic_probe(struct platform_device *pdev)
  {
- 	unsigned long base;
- 	struct NCR_700_Host_Parameters *hostdata;
+ 	struct net_device *dev;
+ 	struct sonic_local *lp;
 -- 
 1.6.3.1
 
