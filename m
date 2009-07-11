@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZGKOgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbZGKOiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbZGKOgn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 10:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbZGKOgf
+	id S1753584AbZGKOiy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 10:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbZGKOir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 10:36:35 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:58482 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbZGKOgf (ORCPT
+	Sat, 11 Jul 2009 10:38:47 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:62098 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211AbZGKOiq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 10:36:35 -0400
-Subject: Re: [Bug #13337] [post 2.6.29 regression] hang during suspend of
- b44/b43 modules
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jan Scholz <scholz@fias.uni-frankfurt.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Tomas Janousek <tomi@nomi.cz>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <87prc78ga9.fsf@scholz.fias.uni-frankfurt.de>
-References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera>
-	 <87k52izvd9.fsf@scholz.fias.uni-frankfurt.de>
-	 <87y6qxx50z.fsf@scholz.fias.uni-frankfurt.de>
-	 <200907092203.10294.rjw@sisk.pl> <1247171295.1905.5.camel@johannes.local>
-	 <87prc78ga9.fsf@scholz.fias.uni-frankfurt.de>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-3SkAbbMpuPMJtysSudZM"
-Date: Sat, 11 Jul 2009 16:36:25 +0200
-Message-Id: <1247322985.30647.108.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Sat, 11 Jul 2009 10:38:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=whObFga4wSlPwQvkBVy5s29l0WP5/yU6RmwsQ6Ot6xy90b204OoW/TT3AWxGWcTvqK
+         b8fUf4XCuq9OY6unIgZJfoRWhqGxnAl3KfAhaaaEMv9eOqAwphn4rJ4yjTDp2PyYig/A
+         raejV+pYY2WbcDOodCivLg0Q4HgIIOHF/p7j4=
+Message-ID: <4A58A3EB.9040006@gmail.com>
+Date: Sat, 11 Jul 2009 16:38:35 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>
+Subject: Re: 2 bugs related to suspend to disk
+References: <4A199A7A.3010705@gmail.com> <200905252331.02488.rjw@sisk.pl> <4A1D9A4C.4000600@gmail.com> <200905272247.29098.rjw@sisk.pl>
+In-Reply-To: <200905272247.29098.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki pisze:
+> On Wednesday 27 May 2009, Marcin Slusarz wrote:
+>> Rafael J. Wysocki wrote
+>>> On Monday 25 May 2009, Marcin Slusarz wrote:
+>>>> Rafael J. Wysocki wrote:
+>>>>> On Sunday 24 May 2009, Marcin Slusarz wrote:
+>>>>>> Pavel Machek wrote:
+>>>>>>> Hi!
+>>>>>>>
+>>>>>>>
+>>>>>>>> 2) "s2disk" (from suspend-0.8) suspends, but doesn't resume (and I need to mkswap && swapon -a later)
+>>>>>>>>
+>>>>>>> I'm afraid we need more details here. Is "resume" binary being ran?
+>>>>>> Excellent question ;) - I didn't know it has to. I'll try to setup
+>>>>>> initramfs tomorrow.
+>>>>>>
+>>>>>> Thanks and sorry for the noise!
+>>>>> However, the issue reported as 1) is not really a noise IMO. :-)
+>>>>>
+>>>>> Can you please attach a full dmesg output containing these messages?
+>>>> I've uploaded .config, dmesg (BUG was not saved) and 2 pictures of
+>>>> screen just before power loss to http://www.kadu.net/~joi/kernel/2009.05.25/
+>>>> (Please ignore first suspend failure (3681.078646 - 3685.514358) - I forgot
+>>>> to restore swap)
+>>> Thanks.
+>>>
+>>> Can you please test the patch sent by Sebastian Ott in this thread?
+>> BUG disappeared with this patch.
+> 
+> Thanks for testing.
+> 
+>> Is this a final fix?
+> 
+> I'm not sure yet.
 
---=-3SkAbbMpuPMJtysSudZM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2009-07-11 at 16:07 +0200, Jan Scholz wrote:
+This bug (first) is still with us as of 2.6.31-rc2-faf80d62e44dc627efb741f48db50c1858d1667c
 
-> > Jan, can you run with console_suspend=3D0 (or whatever it is now, Rafae=
-l
-> > will correct me if I'm wrong) that should work on your platform, and pu=
-t
-> > a bunch of printk calls into __ieee80211_suspend in net/mac80211/pm.c t=
-o
-> > see where in there it's hanging?
->=20
-> Did that, seems like it hangs in
->   drv_remove_interface(local, &conf);
-
-Ok, thanks! I was going to suggest doing the same in
-b43_op_remove_interface in drivers/net/wireless/b43/main.c, but I think
-the problem is just that we have an ordering problem and call drv_stop
-before drv_remove_interface. I'll try to come up with a fix soon --
-might not be able to today though, in the meantime I guess you can just
-move the drv_stop call to the end of the function and tell me if that
-works -- that would be racy but should be ok most of the time.
-
-johannes
-
---=-3SkAbbMpuPMJtysSudZM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKWKNmAAoJEODzc/N7+QmaBzEQAMZhLYf3HcNHjubUz1T3tvgN
-d6X5JoUbmIVZLPcOmaFPBhi82XJ5PFbPX3RpK136qcLbOF1FgKJwmwZUGjgZkqBZ
-WpHEbiO8SGNw0/oB16HEL4NJ3EpRVJdV6IJcNqV66yjTrLn6r8YP7UndDVHk5FAj
-ZUL9S/yhf7/A472bI/kiCX+fBrnF6H3xTClvkwt47SvXOexi8Mmx+s6Xm82L8+Kl
-MzBM4JPAWR2QAGqRZOZRgr86GxDgoOS6A0GSBVCl3dQm9j5YjD1XCRv6Uy9K63Vu
-FYjsqo9ZlAdzDeV6d3DtOciTaY88+pD37+b91qOT/+lVBpDmlHXxdVQS0TFbMX0v
-iZnKj0ZOzMRLl7zVziV2SGJNrbFFQmKi24ri4Djz0peKKUhI6sWs1cuQO5dB9N0i
-LidHvCiZgMX/Eqn0QbeFV34QmfeC8GpjURGMYOR9yhU19P4FrcU615cKD/eJR07W
-2L+h2sDt0uQZc2AvE64upuMZa8ivxTWbmpe1U21DNpCCFztH+ehEHPgCRKsmfqx7
-DYImAeJ4mLCZFyGUlZ320NnXNB8fVjDI7X9A+ij9pHeysXyZ6PnQxMNXrq+g2HFq
-kgf93DcfjxYhpBiceV0Gz29vF7qds9/cXHKPetq/VH46akgRj1k7m/dBJIUnyEEf
-PJLKqbbUGa9g25MuxNKz
-=Yx9F
------END PGP SIGNATURE-----
-
---=-3SkAbbMpuPMJtysSudZM--
-
+Marcin
