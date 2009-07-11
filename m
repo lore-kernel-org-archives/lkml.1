@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757100AbZGKU6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbZGKU7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757100AbZGKU6y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 16:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZGKUyK
+	id S1758186AbZGKU7i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 16:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbZGKUyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 16:54:10 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32867 "EHLO
+	Sat, 11 Jul 2009 16:54:14 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32963 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755996AbZGKUxw (ORCPT
+	with ESMTP id S1756082AbZGKUx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 16:53:52 -0400
+	Sat, 11 Jul 2009 16:53:58 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: Antonino Daplas <adaplas@gmail.com>,
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>, Roel Kluin <12o3l@tiscali.nl>,
+       Antonino Daplas <adaplas@pol.net>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] move q40fb's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 22:52:55 +0200
-Message-Id: <1247345591-22643-27-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH] move vga16fb's probe function to .devinit.text
+Date: Sat, 11 Jul 2009 22:53:09 +0200
+Message-Id: <1247345591-22643-41-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1247345591-22643-26-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1247345591-22643-40-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -47,6 +48,20 @@ References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-24-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-26-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-27-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-28-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-29-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-30-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-31-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-32-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-33-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-34-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-35-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-36-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-38-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-39-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-40-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -58,7 +73,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to q40fb_probe is passed to the core via
+A pointer to vga16fb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -69,25 +84,27 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Roel Kluin <12o3l@tiscali.nl>
+Cc: Antonino Daplas <adaplas@pol.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/video/q40fb.c |    2 +-
+ drivers/video/vga16fb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/q40fb.c b/drivers/video/q40fb.c
-index 4beac1d..de40a62 100644
---- a/drivers/video/q40fb.c
-+++ b/drivers/video/q40fb.c
-@@ -85,7 +85,7 @@ static struct fb_ops q40fb_ops = {
- 	.fb_imageblit	= cfb_imageblit,
- };
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 5b29389..76d8dae 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -1293,7 +1293,7 @@ static int vga16fb_setup(char *options)
+ }
+ #endif
  
--static int __init q40fb_probe(struct platform_device *dev)
-+static int __devinit q40fb_probe(struct platform_device *dev)
+-static int __init vga16fb_probe(struct platform_device *dev)
++static int __devinit vga16fb_probe(struct platform_device *dev)
  {
  	struct fb_info *info;
- 
+ 	struct vga16fb_par *par;
 -- 
 1.6.3.1
 
