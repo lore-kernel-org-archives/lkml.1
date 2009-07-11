@@ -1,112 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbZGKDgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753257AbZGKEeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758510AbZGKDgS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 23:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZGKDgJ
+	id S1753257AbZGKEeL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 00:34:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZGKEeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 23:36:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60221 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752425AbZGKDgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 23:36:08 -0400
-Date: Fri, 10 Jul 2009 20:34:59 -0700
-From: Greg KH <gregkh@suse.de>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] platform_driver_register:  warn if probe is in
- .init.text
-Message-ID: <20090711033459.GC1344@suse.de>
-References: <20090616182310.GC13048@pengutronix.de>
- <1245418939-20758-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <20090619141128.GA11506@suse.de>
- <20090619144354.GA20985@pengutronix.de>
- <20090629075535.GA20155@pengutronix.de>
+	Sat, 11 Jul 2009 00:34:00 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:47682 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbZGKEd7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 00:33:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=l5EzSDUrI41uQc2aoj7bXontowWQ0sM4w7N9kzNYe+RE8V989FnUmJ9Mf3S6AgchxZ
+         ie8oL2iKqSLdnC9UMpMNtZNw9vWGyk99/BT4XBugOIx3vac9UElHYNluIXeAJGoV/NC/
+         04btM6YLdWG+pcEEZtDv+CDMUAxx6Mv1gNF1k=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090629075535.GA20155@pengutronix.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4A55EC95.5000309@gmail.com>
+References: <4A54FB81.30302@gmail.com>
+	 <3ace41890907081449m3ad6c4fdt55781848eedaec1e@mail.gmail.com>
+	 <4A551B43.3020104@gmail.com>
+	 <3ace41890907082118h52764c98i7ebd9365bcd69b2c@mail.gmail.com>
+	 <4A5575C1.8090403@lwfinger.net>
+	 <3ace41890907090347m1f337731rb09b90327664ed5@mail.gmail.com>
+	 <4A55D123.5090802@gmail.com>
+	 <3ace41890907090540v6895e2bay8128c0d565a7a55f@mail.gmail.com>
+	 <4A55EC95.5000309@gmail.com>
+Date: Sat, 11 Jul 2009 05:33:57 +0100
+Message-ID: <3ace41890907102133r1cbcf063vb70f7cb350e813ec@mail.gmail.com>
+Subject: Re: [PATCH] wireless: fix supported cards for rtl8187
+From: Hin-Tak Leung <hintak.leung@gmail.com>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Linux wireless <linux-wireless@vger.kernel.org>,
+       Przemyslaw Kulczycki <azrael@autocom.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?Q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 09:55:35AM +0200, Uwe Kleine-König wrote:
-> Hi Greg,
-> 
-> On Fri, Jun 19, 2009 at 04:43:54PM +0200, Uwe Kleine-König wrote:
-> > On Fri, Jun 19, 2009 at 07:11:28AM -0700, Greg KH wrote:
-> > > On Fri, Jun 19, 2009 at 03:42:19PM +0200, Uwe Kleine-König wrote:
-> > > > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> > > > ---
-> > > >  drivers/base/platform.c |   42 ++++++++++++++++++++++++++++++++++++------
-> > > >  include/linux/kernel.h  |    2 ++
-> > > >  include/linux/module.h  |   12 ++++++++++++
-> > > >  kernel/extable.c        |   12 ++++++++++++
-> > > >  kernel/module.c         |   36 ++++++++++++++++++++++++++++++++++++
-> > > >  5 files changed, 98 insertions(+), 6 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-> > > > index 81cb01b..851ba84 100644
-> > > > --- a/drivers/base/platform.c
-> > > > +++ b/drivers/base/platform.c
-> > > > @@ -470,11 +470,7 @@ static void platform_drv_shutdown(struct device *_dev)
-> > > >  	drv->shutdown(dev);
-> > > >  }
-> > > >  
-> > > > -/**
-> > > > - * platform_driver_register
-> > > > - * @drv: platform driver structure
-> > > > - */
-> > > > -int platform_driver_register(struct platform_driver *drv)
-> > > > +static int __platform_driver_register(struct platform_driver *drv)
-> > > >  {
-> > > >  	drv->driver.bus = &platform_bus_type;
-> > > >  	if (drv->probe)
-> > > > @@ -489,6 +485,40 @@ int platform_driver_register(struct platform_driver *drv)
-> > > >  
-> > > >  	return driver_register(&drv->driver);
-> > > >  }
-> > > > +
-> > > > +/**
-> > > > + * platform_driver_register
-> > > > + * @drv: platform driver structure
-> > > > + */
-> > > > +int platform_driver_register(struct platform_driver *drv)
-> > > > +{
-> > > > +	int ret = __platform_driver_register(drv);
-> > > > +
-> > > > +#if defined(CONFIG_HOTPLUG)
-> > > > +	/*
-> > > > +	 * drivers that are registered by platform_driver_register
-> > > > +	 * should not have their probe function in .init.text.  The
-> > > > +	 * reason is that a probe can happen after .init.text is
-> > > > +	 * discarded which then results in an oops.  The alternatives
-> > > > +	 * are using .devinit.text for the probe function or "register"
-> > > > +	 * with platform_driver_probe.
-> > > > +	 */
-> > > 
-> > > That's not true, remember, drivers built into the system, like platform
-> > > ones, can have their probe function in .init.text, as it will be called
-> > > before we discard .init.text, and will never be called again as the
-> > > device will never be "hot added" at any future time.
-> > > 
-> > > So this could trigger a lot of false positives :(
-> > IMHO this is not a false positive.  You can still do
-> > 
-> > 	for f in unbind bind do echo $deviceid > /sys/bus/platform/drivers/$drivername/$f; done
-> > 
-> > This type of driver should use platform_driver_probe.
-> Are you conviced and took the patch or did you give up to convince me?
+2009/7/9 Marcin Slusarz <marcin.slusarz@gmail.com>:
 
-Heh, no, sorry, it got burried in my queue.
+> Look, support for Ralink chipsets is a mess. They are supported by too sets
+> of drivers - Ralink's ugly as hell but working staging drivers (rt2860,
+> rt2870, rt3070, soon rt3090) and properly developed but lagging rt2x00
+> drivers (RT2400PCI, RT2500PCI, RT61PCI, RT2500USB, RT73USB, RT2800USB).
+>
+> Theoretically my WUSB54GCv3 is supported by RT2800USB (which was added during
+> 2.6.31 merge window), but it doesn't work. With tiny patch added to rt3070
+> (just usb id) my card works. Some day rt2x00 drivers will be better than Ralink's,
+> but right now they are not.
+>
+> So I wouldn't like to encourage any of them. I just wanted to fix clearly
+> wrong help text which stated that rtl8187 (Realtek's chipset!) supports
+> all WUSB54GC cards.
 
-> I still think the patch is correct and I'd like to have it applied.
+I think you mis-read the Kconfig message. GPL clause 11:
+...PROVIDE THE PROGRAM "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE...
 
-Ok, let's test it out in the linux-next tree for a while to make sure it
-works properly.  Care to send me an updated version?
+The linux kernel never claim to cover *all* of anything, and in
+particular, the message you refers to is meant to read '*some*
+WUSB54GC are known to work', YMMV. I think adding pointers/info to v1
+and3 would be better if you want to add 'v2' to it; particularly since
+Gabor has pointed out that v1/v2/v3 all have different USB ids and a
+full set of kernel modules will bind to the different devices
+correctly, so the message is only for people who has a new/unknown
+device and want to experiment (and expect to have some failures). And
+to be honest, there is a device called rtl8187se, which isn't an
+rtl8187 at all and don't have much in common. If you start insisting
+the rtl8187 Kconfig message should have an extra 5 letters say 'not
+se', I would rather you say 'rtl8187se is covered by ..., which is in
+staging phase'. (the se driver is, the last time I heard, in staging
+and not working and nobody is working on it to make it work, which is
+worse than your situation).
 
-thanks,
-
-greg k-h
+The situation with Ralink drivers isn't that different in other
+vendors - Realtek provides a vendor driver for rtl8187 called "r8187"
+and there is a community driver rtl8187; Atheros provides a vendor
+driver for Zydas zd1211 and there is a community driver zd1211rw. I
+don't think this "wouldn't like to encourage any of them" attitude is
+helping anybody. In both of the Realtek case and the Zydas case,
+people tolerated the co-existences of both (and sometimes with
+ndiswrapper also) for many months and studied the vendor drivers (+
+ndiswrapper) and eventually improve the community driver.
+Driver codes don't grow on trees - if you 'wouldn't like to encourage
+any of them', maybe you should not be using linux at all.
