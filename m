@@ -1,115 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZGKLK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbZGKLWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbZGKLK7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 07:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbZGKLKv
+	id S1755007AbZGKLWd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 07:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZGKLWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 07:10:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56497 "EHLO mx3.mail.elte.hu"
+	Sat, 11 Jul 2009 07:22:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55262 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751903AbZGKLKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 07:10:50 -0400
-Date: Sat, 11 Jul 2009 13:10:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: -tip: block, fuse: Fix build error in fs/fuse/dev.c
-Message-ID: <20090711111040.GA20431@elte.hu>
-References: <20090711075201.GA6517@elte.hu> <20090711124326.792f3177@hyperion.delvare>
+	id S1751416AbZGKLWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 07:22:22 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [BISECTED] HP G7000 battery disappears after suspend
+Date: Sat, 11 Jul 2009 13:22:37 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com> <61b223ba0907100144g14b89e71l2dc8301d4c56f9c4@mail.gmail.com> <200907101846.16800.bzolnier@gmail.com>
+In-Reply-To: <200907101846.16800.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090711124326.792f3177@hyperion.delvare>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200907111322.37956.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jean Delvare <khali@linux-fr.org> wrote:
-
-> Hi Ingo,
+On Friday 10 July 2009, Bartlomiej Zolnierkiewicz wrote:
+> On Friday 10 July 2009 10:44:15 Alan Jenkins wrote:
+> > 2009/7/9 Rafael J. Wysocki <rjw@sisk.pl>:
+> > > On Thursday 09 July 2009, Alan Jenkins wrote:
+> > >> 2009/7/8 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>:
+> > >> > On Wednesday 08 July 2009 21:41:17 Rafael J. Wysocki wrote:
+> > >> >> On Wednesday 08 July 2009, Alan Jenkins wrote:
+> > >> >> > Hi,
+> > >> >> >
+> > >> >> > I've borrowed this laptop for a few days.  Linux works pretty well,
+> > >> >> > but I found a problem on newer kernels.  After suspend it claims the
+> > >> >> > battery has been removed.  E.g. /proc/acpi/battery/BAT0/state claims
+> > >> >> > the battery is not present (but it is).
+> > >> >> >
+> > >> >> > I've attached acpidump and dmidecode output at
+> > >> >> > <http://bugzilla.kernel.org/show_bug.cgi?id=13745>.  I still have
+> > >> >> > access to the laptop for further tests, but only until Friday.
+> > >> >> >
+> > >> >> > I bisected it to the commit below.  Manually reverting the patch fixes
+> > >> >> > the problem (in both 2.6.30 and 2.6.31-rc2).
+> > >> >>
+> > >> >> Well, the commit below can't be reverted, because that would cause the boxes
+> > >> >> it fixed to stop working.
+> > >> >>
+> > >> >> Now, the only case this patch can make any difference is when the BIOS doesn't
+> > >> >> set SCI_EN before returning control the the kernel, which quite evidently is a
+> > >> >> BIOS bug.  The fact that the battery doesn't work with this patch applied means
+> > >> >> that the BIOS not only doesn't set SCI_EN, but also expects it to remain unset,
+> > >> >> which is insane.
+> > >> >>
+> > >> >> IMO this is a "won't fix", sorry.
+> > >> >
+> > >> > Lets be pragmatic here..
+> > >> >
+> > >> > Besides this is a regression and we are already handling some such insane
+> > >> > systems in STR case.  Moreover sending SMI ACPI_ENABLE command may result in
+> > >> > some things happening behind our back and not only setting of SCI_EN bit..
+> > >> >
+> > >> > PS Looking at the set_sci_en_on_resume quirk history it seems that if we are
+> > >> > lucky we may may fix another issue (screaming IRQ one) at the same time :)
+> > >> >
+> > >> > Alan, could you try this patch?
+> > >> >
+> > >> > ---
+> > >> > debug patch (needs to have both CONFIG_SUSPEND=y & CONFIG_HIBERNATION=y)
+> > >> >
+> > >> >  drivers/acpi/sleep.c |   13 ++++++++++++-
+> > >> >  1 file changed, 12 insertions(+), 1 deletion(-)
+> > >> >
+> > >> > Index: b/drivers/acpi/sleep.c
+> > >> > ===================================================================
+> > >> > --- a/drivers/acpi/sleep.c
+> > >> > +++ b/drivers/acpi/sleep.c
+> > >> > @@ -383,6 +383,14 @@ static struct dmi_system_id __initdata a
+> > >> >                },
+> > >> >        },
+> > >> >        {
+> > >> > +       .callback = init_set_sci_en_on_resume,
+> > >> > +       .ident = "Hewlett-Packard HP G7000 Notebook PC",
+> > >> > +       .matches = {
+> > >> > +               DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+> > >> > +               DMI_MATCH(DMI_PRODUCT_NAME, "HP G7000 Notebook PC"),
+> > >> > +               },
+> > >> > +       },
+> > >> > +       {
+> > >> >        .callback = init_old_suspend_ordering,
+> > >> >        .ident = "Panasonic CF51-2L",
+> > >> >        .matches = {
+> > >>
+> > >> Thanks for coding this up for me in full.  It works, the battery now
+> > >> survives, and it does indeed remove the IRQ warning.
+> > >
+> > > Great, thanks for testing, Bart, thanks for the patch!
+> > >
+> > > Len, can you add the Bart's patch to your 2.6.31 queue, please?
+> > >
+> > >> I didn't test the hibernation hunk.  I have hibernation set up, but
+> > >> there is a different problem (not a regression).  I don't have much
+> > >> more time to investigate on this laptop, so I don't expect to get it
+> > >> fixed.  But here are some details anyway :-).
+> > >>
+> > >> When I run s2disk, it writes the image out, and then instantly
+> > >> resumes.  It doesn't seem to read the image, but neither does the
+> > >> kernel report an error:
+> > >>
+> > >> [  491.088802] ACPI: Preparing to enter system sleep state S4
+> > >> [  491.090498] PM: Saving platform NVS memory
+> > >> [  491.094638] Disabling non-boot CPUs ...
+> > >> [  491.094867] PM: Creating hibernation image:
+> > >> [  491.096015] PM: Need to copy 114990 pages
+> > >> [  491.096015] PM: Normal pages needed: 114990 + 1024 + 22, available
+> > >> pages: 144595
+> > >> [  491.096015] PM: Hibernation image created (114990 pages copied)
+> > >> [  491.096015] ACPI: Waking up from system sleep state S4
+> > >>
+> > >> It happens on 2.6.24-23-generic, 2.6.30, and 2.6.30-rc2.
+> > >
+> > > Hmm.  Interesting.
+> > >
+> > > I _guess_ this problem is ACPI-related as well.  You can try putting
+> > > 'shutdown method = shutdown' into /etc/suspend.conf (or whatever the s2disk's
+> > > configuration file is on your system).
+> > 
+> > That doesn't change anything.
+> > 
+> > > If possible, it would be interesting to see if that also happens if
+> > > 'echo disk > /sys/power/state' is used to trigger hibernation instead of
+> > > s2disk.   In particular when booted with init=/bin/bash.
+> > 
+> > That worked, even though I didn't use init=/bin/bash.
+> > 
+> > If it matters, I'm using a swap file on an NTFS partition.  [The
+> > system was installed by Ubuntu "Wubi" (i.e. using Windows partition
+> > and bootloader), but I had to set up both uswsusp and kernel swsusp
+> > myself.  pm-hibernate refuses to work; I don't think it knows about
+> > swap files].
+> > 
+> > I noticed an error message, I'm not sure if it's relevant or not.
+> > 
+> > Suspending using this method, I see two lines of ATA errors on the
+> > console when suspending.  They appear to be post-snapshot - they don't
+> > appear in the log - but it looks like the same error happens on resume
+> > too.  s2disk generates the same error on resume as well.
+> > 
+> > [  192.247475] sd 0:0:0:0: [sda] Starting disk
+> > [  192.340428] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+> > [  192.340432] ata4.00: ACPI cmd ef/03:22:00:00:00:a0 filtered out
+> > [  192.372314] ata4.00: configured for MWDMA2
+> > [  192.640075] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> > [  192.642338] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+> > [  192.644365] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+> > [  192.644381] ata1.00: configured for UDMA/100
+> > * [  192.660076] ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
+> > * [  192.660079] ata1: irq_stat 0x00400040, connection status changed
+> > [  192.663198] ata1.00: configured for UDMA/100
+> > [  192.663201] ata1: EH complete
+> > 
+> > The lines marked with * are the ones that appear on the console during
+> > suspend.  This happens on both 2.6.31-rc2 and 2.6.30.
 > 
-> On Sat, 11 Jul 2009 09:52:01 +0200, Ingo Molnar wrote:
-> > Today's upstream tree build (x86, 64-bit, allnoconfig+CONFIG_FUSE) 
-> > failed with this build error:
-> > 
-> >   fs/fuse/dev.c: In function ‘request_end’:
-> >   fs/fuse/dev.c:290: error: ‘BLK_RW_SYNC’ undeclared (first use in this function)
-> >   fs/fuse/dev.c:290: error: (Each undeclared identifier is reported only once
-> >   fs/fuse/dev.c:290: error: for each function it appears in.)
-> >   fs/fuse/dev.c:291: error: ‘BLK_RW_ASYNC’ undeclared (first use in this function)
-> > 
-> > Due to commit:
-> > 
-> >   8aa7e84: Fix congestion_wait() sync/async vs read/write confusion
-> > 
-> > Creating a dependency of BDI callbacks on the BLK_RW_* constants,
-> > while those constants are only defined if CONFIG_BLOCK is enabled.
-> > 
-> > Fix it the simplest way for now, by moving the definitions early
-> > in blkdev.h (this cannot break anything), but the real fix would
-> > be to split up blkdev.h into blkdev-types.h and blkdev-api.h and
-> > make only the API definitions/declarations dependent on
-> > CONFIG_BLOCK.
-> > 
-> > Cc: Jens Axboe <jens.axboe@oracle.com>
-> > Cc: Miklos Szeredi <mszeredi@suse.cz>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
-> >  include/linux/blkdev.h |   13 ++++++++-----
-> >  1 files changed, 8 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-> > index 49ae079..a3cdc6d 100644
-> > --- a/include/linux/blkdev.h
-> > +++ b/include/linux/blkdev.h
-> > @@ -1,6 +1,14 @@
-> >  #ifndef _LINUX_BLKDEV_H
-> >  #define _LINUX_BLKDEV_H
-> >  
-> > +/*
-> > + * Definitions used on the !CONFIG_BLOCK case too:
-> > + */
-> > +enum {
-> > +	BLK_RW_ASYNC	= 0,
-> > +	BLK_RW_SYNC	= 1,
-> > +};
-> > +
-> >  #ifdef CONFIG_BLOCK
-> >  
-> >  #include <linux/sched.h>
-> > @@ -70,11 +78,6 @@ enum rq_cmd_type_bits {
-> >  	REQ_TYPE_ATA_PC,
-> >  };
-> >  
-> > -enum {
-> > -	BLK_RW_ASYNC	= 0,
-> > -	BLK_RW_SYNC	= 1,
-> > -};
-> > -
-> >  /*
-> >   * For request of type REQ_TYPE_LINUX_BLOCK, rq->cmd[0] is the opcode being
-> >   * sent down (similar to how REQ_TYPE_BLOCK_PC means that ->cmd[] holds a
+> BTW Did you have a chance to test the second part of the original patch?
 > 
-> I have hit this build issue as well, but with CONFIG_BLOCK=y, so 
-> the patch above does NOT fix it. The problem I see is that 
-> fs/fuse/dev.c does not include <linux/blkdev.h> so it doesn't get 
-> the definitions regardless of the configuration. Same problem in 
-> fs/nfs/write.c. The patch below fixes it for me:
+> [ Rafal, what do we want to do with it?  It seems logical to have the same
+>   behavior w.r.t. SCI_EN bit both when leaving S3 and S4 but I haven't yet
+>   verified this with the spec (is the ACPI is enabled on leaving the state
+>   assumption also valid for S4 or only for S0-S3?) and the change itself
+>   would require some more time in linux-next if we decide to go this way.. ]
 
-Yes, that's a different build bug already fixed in latest upstream:
+The situation during resume from hibernation is different, because that code
+is usually run when the boot kernel has already initialized ACPI.
 
- 097041e: fuse: Fix build error
+Also, IIRC the specification implies that ACPI won't be enabled by the BIOS
+during resume from S4 at it is the responsibility of the kernel to enable ACPI
+in that case.  In fact we don't follow the specification in that respect,
+because ACPI should only be enabled by the image kernel and the boot kernel
+shouldn't touch it.
 
-	Ingo
+OTOH, I'm not sure what the behavior of the affected systems would be if the
+boot kernel didn't enable ACPI.  I'm not sure if that's worth investigating at
+the moment, though.
+
+Best,
+Rafael
