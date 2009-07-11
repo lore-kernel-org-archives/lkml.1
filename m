@@ -1,109 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758412AbZGKDZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbZGKDgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758412AbZGKDZi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 23:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZGKDZb
+	id S1758510AbZGKDgS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 23:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZGKDgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 23:25:31 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:11632 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753359AbZGKDZa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 23:25:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=E3cnw/uXPsb7ey8A0AkKN4sCWLY2nZUIuI53T6OfGN9bIAMpKuGXNc5C9ZH7cHmlxs
-         Mg10BQxEDKmQ3fDp1XQGr+C5gjwNrAwP8RXnGMLR5n1hV8ij+sMWZucGWXVZOGyiPKWI
-         OJnFDsyxn8N8ibLnSXqtqUliEWs7weCDm6Wbo=
+	Fri, 10 Jul 2009 23:36:09 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60221 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752425AbZGKDgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 23:36:08 -0400
+Date: Fri, 10 Jul 2009 20:34:59 -0700
+From: Greg KH <gregkh@suse.de>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] platform_driver_register:  warn if probe is in
+ .init.text
+Message-ID: <20090711033459.GC1344@suse.de>
+References: <20090616182310.GC13048@pengutronix.de>
+ <1245418939-20758-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <20090619141128.GA11506@suse.de>
+ <20090619144354.GA20985@pengutronix.de>
+ <20090629075535.GA20155@pengutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <20090711004339.GA6125@nowhere>
-References: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com>
-	 <20090711004339.GA6125@nowhere>
-Date: Sat, 11 Jul 2009 11:25:29 +0800
-Message-ID: <d82e647a0907102025s655a82bg11af0eb901349c31@mail.gmail.com>
-Subject: Re: [RESEND PATCH 0/11] kernel:lockdep:replace DFS with BFS
-From: Ming Lei <tom.leiming@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090629075535.GA20155@pengutronix.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/11 Frederic Weisbecker <fweisbec@gmail.com>:
-> Hi,
->
-> On Sun, Jun 28, 2009 at 11:04:35PM +0800, tom.leiming@gmail.com wrote:
->> Hi,Peter
->>
->> Currently lockdep uses recursion DFS(depth-first search) algorithm to
->> search target in checking lock circle(check_noncircular()),irq-safe
->> -> irq-unsafe(check_irq_usage()) and irq inversion when adding a new
->> lock dependency. This patches replace the current DFS with BFS, based on
->> the following consideration:
->>
->>     1,no loss of efficiency, no matter DFS or BFS, the running time
->>     are O(V+E) (V is vertex count, and E is edge count of one
->>     graph);
->>
->>     2,BFS may be easily implemented by circular queue and consumes
->>     much less kernel stack space than DFS for DFS is implemented by
->>     recursion.
->
->
->
-> Looks like a valuable argument. check_noncircular() can be called
-> in very random places in the kernel where the stack may be
-> already deep, and this recursive DFS doesn't help there.
+On Mon, Jun 29, 2009 at 09:55:35AM +0200, Uwe Kleine-König wrote:
+> Hi Greg,
+> 
+> On Fri, Jun 19, 2009 at 04:43:54PM +0200, Uwe Kleine-König wrote:
+> > On Fri, Jun 19, 2009 at 07:11:28AM -0700, Greg KH wrote:
+> > > On Fri, Jun 19, 2009 at 03:42:19PM +0200, Uwe Kleine-König wrote:
+> > > > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> > > > ---
+> > > >  drivers/base/platform.c |   42 ++++++++++++++++++++++++++++++++++++------
+> > > >  include/linux/kernel.h  |    2 ++
+> > > >  include/linux/module.h  |   12 ++++++++++++
+> > > >  kernel/extable.c        |   12 ++++++++++++
+> > > >  kernel/module.c         |   36 ++++++++++++++++++++++++++++++++++++
+> > > >  5 files changed, 98 insertions(+), 6 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> > > > index 81cb01b..851ba84 100644
+> > > > --- a/drivers/base/platform.c
+> > > > +++ b/drivers/base/platform.c
+> > > > @@ -470,11 +470,7 @@ static void platform_drv_shutdown(struct device *_dev)
+> > > >  	drv->shutdown(dev);
+> > > >  }
+> > > >  
+> > > > -/**
+> > > > - * platform_driver_register
+> > > > - * @drv: platform driver structure
+> > > > - */
+> > > > -int platform_driver_register(struct platform_driver *drv)
+> > > > +static int __platform_driver_register(struct platform_driver *drv)
+> > > >  {
+> > > >  	drv->driver.bus = &platform_bus_type;
+> > > >  	if (drv->probe)
+> > > > @@ -489,6 +485,40 @@ int platform_driver_register(struct platform_driver *drv)
+> > > >  
+> > > >  	return driver_register(&drv->driver);
+> > > >  }
+> > > > +
+> > > > +/**
+> > > > + * platform_driver_register
+> > > > + * @drv: platform driver structure
+> > > > + */
+> > > > +int platform_driver_register(struct platform_driver *drv)
+> > > > +{
+> > > > +	int ret = __platform_driver_register(drv);
+> > > > +
+> > > > +#if defined(CONFIG_HOTPLUG)
+> > > > +	/*
+> > > > +	 * drivers that are registered by platform_driver_register
+> > > > +	 * should not have their probe function in .init.text.  The
+> > > > +	 * reason is that a probe can happen after .init.text is
+> > > > +	 * discarded which then results in an oops.  The alternatives
+> > > > +	 * are using .devinit.text for the probe function or "register"
+> > > > +	 * with platform_driver_probe.
+> > > > +	 */
+> > > 
+> > > That's not true, remember, drivers built into the system, like platform
+> > > ones, can have their probe function in .init.text, as it will be called
+> > > before we discard .init.text, and will never be called again as the
+> > > device will never be "hot added" at any future time.
+> > > 
+> > > So this could trigger a lot of false positives :(
+> > IMHO this is not a false positive.  You can still do
+> > 
+> > 	for f in unbind bind do echo $deviceid > /sys/bus/platform/drivers/$drivername/$f; done
+> > 
+> > This type of driver should use platform_driver_probe.
+> Are you conviced and took the patch or did you give up to convince me?
 
-Yes,  BFS uses the preallocated queue buffer as "stack" and removes
-the recursive implementation of DFS, so does decrease kernel stack
-consume
-largely.
+Heh, no, sorry, it got burried in my queue.
 
->From this point, BFS patch is valuable.
+> I still think the patch is correct and I'd like to have it applied.
 
->
->
->
->>     3,The shortest path can be obtained by BFS if the target is
->>     found, but can't be got by DFS. By the shortest path, we can
->>     shorten the lock dependency chain and help to troubleshoot lock
->>     problem easier than before.
->
->
-> But there I don't understand your argument.
-> The shortest path finding doesn't seem to me a need.
-> Example:
->
-> Task 1 acquires: A B C
-> And Later:
-> Task 2 acquires: C B A
->
-> DFS will probably report a circular lock dependency
-> with A and C.
-> BFS will probably report a circular lock dependency
-> with B and C.
->
-> Which one is the most important? Both dependencies must be fixed
-> anyway. Once the developer will fix one of those, the remaining one
-> will be reported and so on...
->
-> Or am I missing something else?
+Ok, let's test it out in the linux-next tree for a while to make sure it
+works properly.  Care to send me an updated version?
 
-Yes, you are right.  By BFS, we can always find the shortest circle, but we
-find a random circle by DFS.   No one can say which circle is the most
-important from the point of deadlock.
+thanks,
 
-But it is easier to start troubleshooting from the shortest circle
-than a random circle , then from the next shortest circle if other
-circle still exists .
-
-Right?
-
--- 
-Lei Ming
+greg k-h
