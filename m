@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbZGKIDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbZGKII6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756864AbZGKIDV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 04:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbZGKICh
+	id S1757005AbZGKII6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 04:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZGKIIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 04:02:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40217 "EHLO hera.kernel.org"
+	Sat, 11 Jul 2009 04:08:44 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:43581 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756376AbZGKICf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 04:02:35 -0400
-Date: Sat, 11 Jul 2009 08:01:29 GMT
-From: tip-bot for Roland Dreier <roland@digitalvampire.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       roland@digitalvampire.org, torvalds@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       roland@digitalvampire.org, torvalds@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <874otjitkj.fsf@shaolin.home.digitalvampire.org>
-References: <874otjitkj.fsf@shaolin.home.digitalvampire.org>
-Subject: [tip:x86/urgent] x86: Remove spurious printk level from segfault message
-Message-ID: <tip-a1a08d1cb0ab148fd74216e4c0b4d4db18fe62c6@git.kernel.org>
-Git-Commit-ID: a1a08d1cb0ab148fd74216e4c0b4d4db18fe62c6
-X-Mailer: tip-git-log-daemon
+	id S1751825AbZGKIIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 04:08:42 -0400
+Date: Sat, 11 Jul 2009 10:06:48 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: fubar@us.ibm.com, bonding-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/net/bonding: Adjust constant name
+Message-ID: <Pine.LNX.4.64.0907111006090.29592@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 11 Jul 2009 08:01:30 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a1a08d1cb0ab148fd74216e4c0b4d4db18fe62c6
-Gitweb:     http://git.kernel.org/tip/a1a08d1cb0ab148fd74216e4c0b4d4db18fe62c6
-Author:     Roland Dreier <roland@digitalvampire.org>
-AuthorDate: Sat, 11 Jul 2009 00:10:04 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 11 Jul 2009 09:56:19 +0200
+From: Julia Lawall <julia@diku.dk>
 
-x86: Remove spurious printk level from segfault message
+AD_SHORT_TIMEOUT and AD_STATE_LACP_ACTIVITY have the same value, but
+AD_STATE_LACP_ACTIVITY better reflects the intended semantics.
 
-Since commit 5fd29d6c ("printk: clean up handling of log-levels
-and newlines"), the kernel logs segfaults like:
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-    <6>gnome-power-man[24509]: segfault at 20 ip 00007f9d4950465a sp 00007fffbb50fc70 error 4 in libgobject-2.0.so.0.2103.0[7f9d494f7000+45000]
+// <smpl>
+@@
+struct port_params p;
+@@
+* p.port_state |= AD_SHORT_TIMEOUT
+// </smpl>
 
-with the extra "<6>" being KERN_INFO.  This happens because the
-printk in show_signal_msg() started with KERN_CONT and then
-used "%s" to pass in the real level; and KERN_CONT is no longer
-an empty string, and printk only pays attention to the level at
-the very beginning of the format string.
-
-Therefore, remove the KERN_CONT from this printk, since it is
-now actively causing problems (and never really made any
-sense).
-
-Signed-off-by: Roland Dreier <roland@digitalvampire.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <874otjitkj.fsf@shaolin.home.digitalvampire.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/x86/mm/fault.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/bonding/bond_3ad.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 85307cc..bfae139 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -697,7 +697,7 @@ show_signal_msg(struct pt_regs *regs, unsigned long error_code,
- 	if (!printk_ratelimit())
- 		return;
- 
--	printk(KERN_CONT "%s%s[%d]: segfault at %lx ip %p sp %p error %lx",
-+	printk("%s%s[%d]: segfault at %lx ip %p sp %p error %lx",
- 		task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
- 		tsk->comm, task_pid_nr(tsk), address,
- 		(void *)regs->ip, (void *)regs->sp, error_code);
+diff --git a/drivers/net/bonding/bond_3ad.c b/drivers/net/bonding/bond_3ad.c
+index d4b5708..88a1446 100644
+--- a/drivers/net/bonding/bond_3ad.c
++++ b/drivers/net/bonding/bond_3ad.c
+@@ -1109,7 +1109,8 @@ static void ad_rx_machine(struct lacpdu *lacpdu, struct port *port)
+ 			//mux machine in case of EXPIRED even if LINK_DOWN didn't arrive for the port.
+ 			port->partner_oper.port_state &= ~AD_STATE_SYNCHRONIZATION;
+ 			port->sm_vars &= ~AD_PORT_MATCHED;
+-			port->partner_oper.port_state |= AD_SHORT_TIMEOUT;
++			port->partner_oper.port_state |=
++				AD_STATE_LACP_ACTIVITY;
+ 			port->sm_rx_timer_counter = __ad_timer_to_ticks(AD_CURRENT_WHILE_TIMER, (u16)(AD_SHORT_TIMEOUT));
+ 			port->actor_oper_port_state |= AD_STATE_EXPIRED;
+ 			break;
