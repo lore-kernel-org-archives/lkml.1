@@ -1,58 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbZGKLeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbZGKLsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753848AbZGKLeT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 07:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZGKLeF
+	id S1755564AbZGKLsH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 07:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZGKLr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 07:34:05 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:50803 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752083AbZGKLeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 07:34:04 -0400
-Date: Sat, 11 Jul 2009 13:32:13 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, gregkh@suse.de,
-       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 5/5] staging/otus: Move a dereference below a NULL test
-In-Reply-To: <4A587245.1080304@gmail.com>
-Message-ID: <Pine.LNX.4.64.0907111331170.31089@ask.diku.dk>
-References: <Pine.LNX.4.64.0907110950510.29592@ask.diku.dk>  <4A584A94.5010105@gmail.com>
- <1247307444.3032.2.camel@hpdv5.satnam> <4A587245.1080304@gmail.com>
+	Sat, 11 Jul 2009 07:47:56 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:65335 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912AbZGKLrz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 07:47:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Z7eIWTw5GXwGUFivx3IT5ugzy9f4Yg5gVu/TpOOTY1XdG5cuzI7/5plM3AN+yJ/2m/
+         vPePqCgH1e2lnC66AycUaenIts1+9w+x9RDgqQe/LMuvSY15rGnQ9IJxH4od1LdUKaoy
+         NU8fJ16wPP2H1z7aZm/IKaH5J6CFwR1zssjYM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4A585E9B.10509@tuffmail.co.uk>
+References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com>
+	 <200907092211.31250.rjw@sisk.pl>
+	 <61b223ba0907100144g14b89e71l2dc8301d4c56f9c4@mail.gmail.com>
+	 <200907101846.16800.bzolnier@gmail.com>
+	 <4A585E9B.10509@tuffmail.co.uk>
+Date: Sat, 11 Jul 2009 12:47:52 +0100
+Message-ID: <9b2b86520907110447o54306f96vf89f087abaa0f7f8@mail.gmail.com>
+Subject: Re: [BISECTED] HP G7000 battery disappears after suspend
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Jul 2009, Jiri Slaby wrote:
+On 7/11/09, Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+>> On Friday 10 July 2009 10:44:15 Alan Jenkins wrote:
+>>
+>>> 2009/7/9 Rafael J. Wysocki <rjw@sisk.pl>:
+>>>
+>>>> On Thursday 09 July 2009, Alan Jenkins wrote:
+>>>>
+>>>>> 2009/7/8 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>:
+>>>>>
+>>>>>> On Wednesday 08 July 2009 21:41:17 Rafael J. Wysocki wrote:
+>>>>>>
+>>>>>>> On Wednesday 08 July 2009, Alan Jenkins wrote:
+>>>>>>>
+>>>>>>>> Hi,
+>>>>>>>>
+>>>>>>>> I've borrowed this laptop for a few days.  Linux works pretty well,
+>>>>>>>> but I found a problem on newer kernels.  After suspend it claims the
+>>>>>>>> battery has been removed.  E.g. /proc/acpi/battery/BAT0/state claims
+>>>>>>>> the battery is not present (but it is).
+>>>>>>>>
+>>>>>>>> I've attached acpidump and dmidecode output at
+>>>>>>>> <http://bugzilla.kernel.org/show_bug.cgi?id=13745>.  I still have
+>>>>>>>> access to the laptop for further tests, but only until Friday.
+>>>>>>>>
+>>>>>>>> I bisected it to the commit below.  Manually reverting the patch
+>>>>>>>> fixes
+>>>>>>>> the problem (in both 2.6.30 and 2.6.31-rc2).
+>>>>>>>>
+>>>>>>> Well, the commit below can't be reverted, because that would cause
+>>>>>>> the boxes
+>>>>>>> it fixed to stop working.
+>>>>>>>
+>>>>>>> Now, the only case this patch can make any difference is when the
+>>>>>>> BIOS doesn't
+>>>>>>> set SCI_EN before returning control the the kernel, which quite
+>>>>>>> evidently is a
+>>>>>>> BIOS bug.  The fact that the battery doesn't work with this patch
+>>>>>>> applied means
+>>>>>>> that the BIOS not only doesn't set SCI_EN, but also expects it to
+>>>>>>> remain unset,
+>>>>>>> which is insane.
+>>>>>>>
+>>>>>>> IMO this is a "won't fix", sorry.
+>>>>>>>
+>>>>>> Lets be pragmatic here..
+>>>>>>
+>>>>>> Besides this is a regression and we are already handling some such
+>>>>>> insane
+>>>>>> systems in STR case.  Moreover sending SMI ACPI_ENABLE command may
+>>>>>> result in
+>>>>>> some things happening behind our back and not only setting of SCI_EN
+>>>>>> bit..
+>>>>>>
+>>>>>> PS Looking at the set_sci_en_on_resume quirk history it seems that if
+>>>>>> we are
+>>>>>> lucky we may may fix another issue (screaming IRQ one) at the same
+>>>>>> time :)
+>>>>>>
+>>>>>> Alan, could you try this patch?
+>>>>>>
+>>>>>> ---
+>>>>>> debug patch (needs to have both CONFIG_SUSPEND=y &
+>>>>>> CONFIG_HIBERNATION=y)
+>>>>>>
+>>>>>>  drivers/acpi/sleep.c |   13 ++++++++++++-
+>>>>>>  1 file changed, 12 insertions(+), 1 deletion(-)
+>>>>>>
+>>>>>> Index: b/drivers/acpi/sleep.c
+>>>>>> ===================================================================
+>>>>>> --- a/drivers/acpi/sleep.c
+>>>>>> +++ b/drivers/acpi/sleep.c
+>>>>>> @@ -383,6 +383,14 @@ static struct dmi_system_id __initdata a
+>>>>>>                },
+>>>>>>        },
+>>>>>>        {
+>>>>>> +       .callback = init_set_sci_en_on_resume,
+>>>>>> +       .ident = "Hewlett-Packard HP G7000 Notebook PC",
+>>>>>> +       .matches = {
+>>>>>> +               DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+>>>>>> +               DMI_MATCH(DMI_PRODUCT_NAME, "HP G7000 Notebook PC"),
+>>>>>> +               },
+>>>>>> +       },
+>>>>>> +       {
+>>>>>>        .callback = init_old_suspend_ordering,
+>>>>>>        .ident = "Panasonic CF51-2L",
+>>>>>>        .matches = {
+>>>>>>
+>>>>> Thanks for coding this up for me in full.  It works, the battery now
+>>>>> survives, and it does indeed remove the IRQ warning.
+>>>>>
+>>>> Great, thanks for testing, Bart, thanks for the patch!
+>>>>
+>>>> Len, can you add the Bart's patch to your 2.6.31 queue, please?
+>>>>
+>>>>
+>>>>> I didn't test the hibernation hunk.  I have hibernation set up, but
+>>>>> there is a different problem (not a regression).  I don't have much
+>>>>> more time to investigate on this laptop, so I don't expect to get it
+>>>>> fixed.  But here are some details anyway :-).
+>>>>>
+>>>>> When I run s2disk, it writes the image out, and then instantly
+>>>>> resumes.  It doesn't seem to read the image, but neither does the
+>>>>> kernel report an error:
+>>>>>
+>>>>> [  491.088802] ACPI: Preparing to enter system sleep state S4
+>>>>> [  491.090498] PM: Saving platform NVS memory
+>>>>> [  491.094638] Disabling non-boot CPUs ...
+>>>>> [  491.094867] PM: Creating hibernation image:
+>>>>> [  491.096015] PM: Need to copy 114990 pages
+>>>>> [  491.096015] PM: Normal pages needed: 114990 + 1024 + 22, available
+>>>>> pages: 144595
+>>>>> [  491.096015] PM: Hibernation image created (114990 pages copied)
+>>>>> [  491.096015] ACPI: Waking up from system sleep state S4
+>>>>>
+>>>>> It happens on 2.6.24-23-generic, 2.6.30, and 2.6.30-rc2.
+>>>>>
+>>>> Hmm.  Interesting.
+>>>>
+>>>> I _guess_ this problem is ACPI-related as well.  You can try putting
+>>>> 'shutdown method = shutdown' into /etc/suspend.conf (or whatever the
+>>>> s2disk's
+>>>> configuration file is on your system).
+>>>>
+>>> That doesn't change anything.
+>>>
+>>>
+>>>> If possible, it would be interesting to see if that also happens if
+>>>> 'echo disk > /sys/power/state' is used to trigger hibernation instead of
+>>>> s2disk.   In particular when booted with init=/bin/bash.
+>>>>
+>>> That worked, even though I didn't use init=/bin/bash.
+>>>
+>>> If it matters, I'm using a swap file on an NTFS partition.  [The
+>>> system was installed by Ubuntu "Wubi" (i.e. using Windows partition
+>>> and bootloader), but I had to set up both uswsusp and kernel swsusp
+>>> myself.  pm-hibernate refuses to work; I don't think it knows about
+>>> swap files].
+>>>
+>>> I noticed an error message, I'm not sure if it's relevant or not.
+>>>
+>>> Suspending using this method, I see two lines of ATA errors on the
+>>> console when suspending.  They appear to be post-snapshot - they don't
+>>> appear in the log - but it looks like the same error happens on resume
+>>> too.  s2disk generates the same error on resume as well.
+>>>
+>>> [  192.247475] sd 0:0:0:0: [sda] Starting disk
+>>> [  192.340428] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+>>> [  192.340432] ata4.00: ACPI cmd ef/03:22:00:00:00:a0 filtered out
+>>> [  192.372314] ata4.00: configured for MWDMA2
+>>> [  192.640075] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>>> [  192.642338] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+>>> [  192.644365] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+>>> [  192.644381] ata1.00: configured for UDMA/100
+>>> * [  192.660076] ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9
+>>> t4
+>>> * [  192.660079] ata1: irq_stat 0x00400040, connection status changed
+>>> [  192.663198] ata1.00: configured for UDMA/100
+>>> [  192.663201] ata1: EH complete
+>>>
+>>> The lines marked with * are the ones that appear on the console during
+>>> suspend.  This happens on both 2.6.31-rc2 and 2.6.30.
+>>>
+>>
+>> BTW Did you have a chance to test the second part of the original patch?
+>>
+>> [ Rafal, what do we want to do with it?  It seems logical to have the same
+>>   behavior w.r.t. SCI_EN bit both when leaving S3 and S4 but I haven't yet
+>>   verified this with the spec (is the ACPI is enabled on leaving the state
+>>   assumption also valid for S4 or only for S0-S3?) and the change itself
+>>   would require some more time in linux-next if we decide to go this way..
+>> ]
+>>
+>
+> I got hibernation working without the second part (and the battery was
+> fine).  I'll try that hunk today and see if it breaks.
 
-> On 07/11/2009 12:17 PM, Jaswinder Singh Rajput wrote:
-> > On Sat, 2009-07-11 at 10:17 +0200, Jiri Slaby wrote:
-> >> On 07/11/2009 09:51 AM, Julia Lawall wrote:
-> >>> --- a/drivers/staging/otus/wwrap.c
-> >>> +++ b/drivers/staging/otus/wwrap.c
-> >>> @@ -1016,12 +1016,13 @@ void kevent(struct work_struct *work)
-> >>>  {
-> >>>      struct usbdrv_private *macp =
-> >>>                 container_of(work, struct usbdrv_private, kevent);
-> >>> -    zdev_t *dev = macp->device;
-> >>> +    zdev_t *dev;
-> >>>  
-> >>>      if (macp == NULL)
-> >>>      {
-> >>>          return;
-> >>>      }
-> >>
-> >> The test is rather useless here.
-> >>
-> > 
-> > Why useless, it should be non-null before setting to dev.
-> 
-> Even if work was NULL, macp won't be NULL.
+It still works with the second half of the patch applied.
 
-work could be a small negative number such that calling container_of would 
-return 0.
-
-julia
+Alan
