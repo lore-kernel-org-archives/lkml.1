@@ -1,106 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbZGKVGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbZGKVJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbZGKVGl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 17:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbZGKVGd
+	id S1757190AbZGKVJU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 17:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbZGKVJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 17:06:33 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:42631 "EHLO
+	Sat, 11 Jul 2009 17:09:11 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:60853 "EHLO
 	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754597AbZGKVGc (ORCPT
+	with ESMTP id S1754582AbZGKVJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 17:06:32 -0400
+	Sat, 11 Jul 2009 17:09:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:date:from:to:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=pwIs0ZMnwgzHb6WpzRs+8+YOLhxRjXiEwXejn/P6EsYNDyScf2n7235QOIneaXOhUr
-         Oqwjv4y2VsmCM/m7E/lWCxNxkaf3V/onUa8LeqRgBRgccPGlndqKDyhrN8teceTKpVbI
-         z697pzVs6X/kbdU8pDNFuvVDgruHB7XoHs0VA=
-Date: Sun, 12 Jul 2009 00:06:25 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: linux-kernel@vger.kernel.org
-Subject: Kconfig, Makefile and ifdef: mod as yes vs. no?
-Message-ID: <20090712000625.7e1bffc2@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=BRa88EGJcSlQ5bkbau0ogF06m/fzAqJdZNpcTDT2rWgqM4qktuUGVZ/ZVQpUDmT0Bf
+         UNqFMAV/S0niTCW1d3SKMG5ExuIALIsfN3HTSgZcZ9M4QN693rdLx1ocmpxsDk1q3AYe
+         T7QKtf2KjE5DrE8diiQeO7cgBYXQhScT6bllc=
+Date: Sat, 11 Jul 2009 23:09:04 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: [RESEND PATCH 0/11] kernel:lockdep:replace DFS with BFS
+Message-ID: <20090711210902.GB6641@nowhere>
+References: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com> <20090711004339.GA6125@nowhere> <d82e647a0907102025s655a82bg11af0eb901349c31@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d82e647a0907102025s655a82bg11af0eb901349c31@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Jul 11, 2009 at 11:25:29AM +0800, Ming Lei wrote:
+> 2009/7/11 Frederic Weisbecker <fweisbec@gmail.com>:
+> > Hi,
+> >
+> > On Sun, Jun 28, 2009 at 11:04:35PM +0800, tom.leiming@gmail.com wrote:
+> >> Hi,Peter
+> >>
+> >> Currently lockdep uses recursion DFS(depth-first search) algorithm to
+> >> search target in checking lock circle(check_noncircular()),irq-safe
+> >> -> irq-unsafe(check_irq_usage()) and irq inversion when adding a new
+> >> lock dependency. This patches replace the current DFS with BFS, based on
+> >> the following consideration:
+> >>
+> >>     1,no loss of efficiency, no matter DFS or BFS, the running time
+> >>     are O(V+E) (V is vertex count, and E is edge count of one
+> >>     graph);
+> >>
+> >>     2,BFS may be easily implemented by circular queue and consumes
+> >>     much less kernel stack space than DFS for DFS is implemented by
+> >>     recursion.
+> >
+> >
+> >
+> > Looks like a valuable argument. check_noncircular() can be called
+> > in very random places in the kernel where the stack may be
+> > already deep, and this recursive DFS doesn't help there.
+> 
+> Yes,  BFS uses the preallocated queue buffer as "stack" and removes
+> the recursive implementation of DFS, so does decrease kernel stack
+> consume
+> largely.
+> 
+> From this point, BFS patch is valuable.
 
-I'm having hard time making a patch that would compile nouveau_backlight.o
-only if CONFIG_BACKLIGHT_CLASS_DEVICE is y or m, and define just stubs
-when it is n.
 
-I'm trying this in the nouveau/linux-2.6 kernel tree, which is basically
-2.6.31-rc2.
+Right!
 
-I attempted the following:
-
---- a/drivers/gpu/drm/nouveau/Makefile
-+++ b/drivers/gpu/drm/nouveau/Makefile
-@@ -8,7 +8,7 @@ nouveau-y := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
-              nouveau_sgdma.o nouveau_dma.o \
-              nouveau_bo.o nouveau_fence.o nouveau_gem.o nouveau_ttm.o \
-              nouveau_hw.o nouveau_calc.o nouveau_bios.o nouveau_i2c.o \
--            nouveau_display.o nouveau_fbcon.o nouveau_backlight.o \
-+             nouveau_display.o nouveau_fbcon.o \
-              nv04_timer.o \
-              nv04_mc.o nv40_mc.o nv50_mc.o \
-              nv04_fb.o nv10_fb.o nv40_fb.o \
-@@ -19,8 +19,9 @@ nouveau-y := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
-              nv50_crtc.o nv50_dac.o nv50_sor.o nv50_connector.o \
-              nv50_cursor.o nv50_display.o nv50_fbcon.o \
-              nv04_display.o nv04_output.o nv04_crtc.o nv04_cursor.o \
--            nv04_fbcon.o
-+             nv04_fbcon.o
  
- nouveau-$(CONFIG_COMPAT) += nouveau_ioc32.o
-+nouveau-$(CONFIG_BACKLIGHT_CLASS_DEVICE) += nouveau_backlight.o
- 
- obj-$(CONFIG_DRM_NOUVEAU)+= nouveau.o
+> >
+> >
+> >
+> >>     3,The shortest path can be obtained by BFS if the target is
+> >>     found, but can't be got by DFS. By the shortest path, we can
+> >>     shorten the lock dependency chain and help to troubleshoot lock
+> >>     problem easier than before.
+> >
+> >
+> > But there I don't understand your argument.
+> > The shortest path finding doesn't seem to me a need.
+> > Example:
+> >
+> > Task 1 acquires: A B C
+> > And Later:
+> > Task 2 acquires: C B A
+> >
+> > DFS will probably report a circular lock dependency
+> > with A and C.
+> > BFS will probably report a circular lock dependency
+> > with B and C.
+> >
+> > Which one is the most important? Both dependencies must be fixed
+> > anyway. Once the developer will fix one of those, the remaining one
+> > will be reported and so on...
+> >
+> > Or am I missing something else?
+> 
+> Yes, you are right.  By BFS, we can always find the shortest circle, but we
+> find a random circle by DFS.   No one can say which circle is the most
+> important from the point of deadlock.
+> 
+> But it is easier to start troubleshooting from the shortest circle
+> than a random circle , then from the next shortest circle if other
+> circle still exists .
+> 
+> Right?
 
---- a/drivers/gpu/drm/nouveau/nouveau_drv.h
-+++ b/drivers/gpu/drm/nouveau/nouveau_drv.h
-@@ -708,8 +708,21 @@ extern int  nouveau_dma_init(struct nouveau_channel *);
- extern int  nouveau_dma_wait(struct nouveau_channel *, int size);
- 
- /* nouveau_backlight.c */
-+#ifdef CONFIG_BACKLIGHT_CLASS_DEVICE
- extern int nouveau_backlight_init(struct drm_device *);
- extern void nouveau_backlight_exit(struct drm_device *);
-+#else
-+static inline int nouveau_backlight_init(struct drm_device *dev)
-+{
-+       (void)dev;
-+       return 0;
-+}
-+
-+static inline void nouveau_backlight_exit(struct drm_device *dev)
-+{
-+       (void)dev;
-+}
-+#endif
- 
-When CONFIG_BACKLIGHT_CLASS_DEVICE=m this behaves as if it was n, i.e.
-I get the stubs and no nouveau_backlight.o.
 
-For CONFIG_BACKLIGHT_CLASS_DEVICE=y and n I get what I want.
+I don't have a strong opinion on this. I just don't think the shortest path is
+the most important if there are many many paths.
+Whatever AB-BA is encountered, all of them must be fixed.
+What might give a degree of importance for such bad circle is the window
+in which it triggers.
 
-What is the proper way to get m behave like y in this situation?
-
-Oh, and should I use the following instead of (void)dev;?
-static inline void nouveau_backlight_exit(struct drm_device *dev __used) { }
-
-Please, Cc me.
-
-
-Thanks.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
