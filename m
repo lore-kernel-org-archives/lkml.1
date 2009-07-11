@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbZGKVAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZGKVAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758445AbZGKVAY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 17:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbZGKUyS
+	id S1757409AbZGKVAE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 17:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbZGKUyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 16:54:18 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32959 "EHLO
+	Sat, 11 Jul 2009 16:54:17 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32961 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756085AbZGKUx6 (ORCPT
+	with ESMTP id S1756084AbZGKUx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 11 Jul 2009 16:53:58 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: David Woodhouse <David.Woodhouse@intel.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] move sh_flctl's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 22:52:39 +0200
-Message-Id: <1247345591-22643-11-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Antonino Daplas <adaplas@pol.net>
+Subject: [PATCH] move hgafb's probe function to .devinit.text
+Date: Sat, 11 Jul 2009 22:52:42 +0200
+Message-Id: <1247345591-22643-14-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1247345591-22643-10-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1247345591-22643-13-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -32,6 +33,9 @@ References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-8-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-9-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-10-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-11-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-12-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-13-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -43,7 +47,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to flctl_probe is passed to the core via
+A pointer to hgafb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -54,27 +58,27 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Acked-by: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
-Cc: David Woodhouse <David.Woodhouse@intel.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Antonino Daplas <adaplas@pol.net>
 ---
- drivers/mtd/nand/sh_flctl.c |    2 +-
+ drivers/video/hgafb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mtd/nand/sh_flctl.c b/drivers/mtd/nand/sh_flctl.c
-index 2bc8966..1898423 100644
---- a/drivers/mtd/nand/sh_flctl.c
-+++ b/drivers/mtd/nand/sh_flctl.c
-@@ -769,7 +769,7 @@ static int flctl_chip_init_tail(struct mtd_info *mtd)
- 	return 0;
- }
+diff --git a/drivers/video/hgafb.c b/drivers/video/hgafb.c
+index 0129c04..db9b785 100644
+--- a/drivers/video/hgafb.c
++++ b/drivers/video/hgafb.c
+@@ -551,7 +551,7 @@ static struct fb_ops hgafb_ops = {
+ 	 *  Initialization
+ 	 */
  
--static int __init flctl_probe(struct platform_device *pdev)
-+static int __devinit flctl_probe(struct platform_device *pdev)
+-static int __init hgafb_probe(struct platform_device *pdev)
++static int __devinit hgafb_probe(struct platform_device *pdev)
  {
- 	struct resource *res;
- 	struct sh_flctl *flctl;
+ 	struct fb_info *info;
+ 
 -- 
 1.6.3.1
 
