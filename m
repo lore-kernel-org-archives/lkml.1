@@ -1,152 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZGKJlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZGKJnP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbZGKJlo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 05:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZGKJle
+	id S1753878AbZGKJnP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 05:43:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZGKJm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 05:41:34 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36093 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751559AbZGKJld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 05:41:33 -0400
-X-Authenticated: #23875046
-X-Provags-ID: V01U2FsdGVkX1/fnmY5MSrfJlMi/ZTWPp/sZS3naCO0OZVf2gvh+s
-	WwM1xLO8g2CfuG
-Message-ID: <4A585E42.4000401@fisher-privat.net>
-Date: Sat, 11 Jul 2009 11:41:22 +0200
-From: Alexey Fisher <bug-track@fisher-privat.net>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090616)
+	Sat, 11 Jul 2009 05:42:58 -0400
+Received: from ey-out-1920.google.com ([74.125.78.145]:48591 "EHLO
+	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559AbZGKJm4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 05:42:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=P6Y99ug6PWZfhITXeEqp0OrlVKFBfOdcEoqohbY8cmwETDQz42sJn40mIyiGoJOFAN
+         Mo4kSYXoHRP3oI9kT0wy7HZwoZlu04Yh7xQtMvoGmOCV51Y76DZ2mZrAF9piT7myQajX
+         NloOhJmYkzjI/L3YBEDHazEWvG28DCtOqvx38=
+Message-ID: <4A585E9B.10509@tuffmail.co.uk>
+Date: Sat, 11 Jul 2009 10:42:51 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Richard A. Holden III" <aciddeath@gmail.com>
-Subject: Re: Intel BIOS - Corrupted low memory at ffff880000004200
-References: <4A5210A2.2080301@fisher-privat.net> <4A52254F.8080103@fisher-privat.net> <20090708113949.GA8960@srcf.ucam.org> <20090710115238.GA8812@elte.hu> <4A575735.9050208@zytor.com>
-In-Reply-To: <4A575735.9050208@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [BISECTED] HP G7000 battery disappears after suspend
+References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com> <200907092211.31250.rjw@sisk.pl> <61b223ba0907100144g14b89e71l2dc8301d4c56f9c4@mail.gmail.com> <200907101846.16800.bzolnier@gmail.com>
+In-Reply-To: <200907101846.16800.bzolnier@gmail.com>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin schrieb:
-> Ingo Molnar wrote:
->> So i'd really like to know what is happening there, instead of just 
->> zapping support for 64K of RAM on the majority of Linux systems.
+Bartlomiej Zolnierkiewicz wrote:
+> On Friday 10 July 2009 10:44:15 Alan Jenkins wrote:
+>   
+>> 2009/7/9 Rafael J. Wysocki <rjw@sisk.pl>:
+>>     
+>>> On Thursday 09 July 2009, Alan Jenkins wrote:
+>>>       
+>>>> 2009/7/8 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>:
+>>>>         
+>>>>> On Wednesday 08 July 2009 21:41:17 Rafael J. Wysocki wrote:
+>>>>>           
+>>>>>> On Wednesday 08 July 2009, Alan Jenkins wrote:
+>>>>>>             
+>>>>>>> Hi,
+>>>>>>>
+>>>>>>> I've borrowed this laptop for a few days.  Linux works pretty well,
+>>>>>>> but I found a problem on newer kernels.  After suspend it claims the
+>>>>>>> battery has been removed.  E.g. /proc/acpi/battery/BAT0/state claims
+>>>>>>> the battery is not present (but it is).
+>>>>>>>
+>>>>>>> I've attached acpidump and dmidecode output at
+>>>>>>> <http://bugzilla.kernel.org/show_bug.cgi?id=13745>.  I still have
+>>>>>>> access to the laptop for further tests, but only until Friday.
+>>>>>>>
+>>>>>>> I bisected it to the commit below.  Manually reverting the patch fixes
+>>>>>>> the problem (in both 2.6.30 and 2.6.31-rc2).
+>>>>>>>               
+>>>>>> Well, the commit below can't be reverted, because that would cause the boxes
+>>>>>> it fixed to stop working.
+>>>>>>
+>>>>>> Now, the only case this patch can make any difference is when the BIOS doesn't
+>>>>>> set SCI_EN before returning control the the kernel, which quite evidently is a
+>>>>>> BIOS bug.  The fact that the battery doesn't work with this patch applied means
+>>>>>> that the BIOS not only doesn't set SCI_EN, but also expects it to remain unset,
+>>>>>> which is insane.
+>>>>>>
+>>>>>> IMO this is a "won't fix", sorry.
+>>>>>>             
+>>>>> Lets be pragmatic here..
+>>>>>
+>>>>> Besides this is a regression and we are already handling some such insane
+>>>>> systems in STR case.  Moreover sending SMI ACPI_ENABLE command may result in
+>>>>> some things happening behind our back and not only setting of SCI_EN bit..
+>>>>>
+>>>>> PS Looking at the set_sci_en_on_resume quirk history it seems that if we are
+>>>>> lucky we may may fix another issue (screaming IRQ one) at the same time :)
+>>>>>
+>>>>> Alan, could you try this patch?
+>>>>>
+>>>>> ---
+>>>>> debug patch (needs to have both CONFIG_SUSPEND=y & CONFIG_HIBERNATION=y)
+>>>>>
+>>>>>  drivers/acpi/sleep.c |   13 ++++++++++++-
+>>>>>  1 file changed, 12 insertions(+), 1 deletion(-)
+>>>>>
+>>>>> Index: b/drivers/acpi/sleep.c
+>>>>> ===================================================================
+>>>>> --- a/drivers/acpi/sleep.c
+>>>>> +++ b/drivers/acpi/sleep.c
+>>>>> @@ -383,6 +383,14 @@ static struct dmi_system_id __initdata a
+>>>>>                },
+>>>>>        },
+>>>>>        {
+>>>>> +       .callback = init_set_sci_en_on_resume,
+>>>>> +       .ident = "Hewlett-Packard HP G7000 Notebook PC",
+>>>>> +       .matches = {
+>>>>> +               DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+>>>>> +               DMI_MATCH(DMI_PRODUCT_NAME, "HP G7000 Notebook PC"),
+>>>>> +               },
+>>>>> +       },
+>>>>> +       {
+>>>>>        .callback = init_old_suspend_ordering,
+>>>>>        .ident = "Panasonic CF51-2L",
+>>>>>        .matches = {
+>>>>>           
+>>>> Thanks for coding this up for me in full.  It works, the battery now
+>>>> survives, and it does indeed remove the IRQ warning.
+>>>>         
+>>> Great, thanks for testing, Bart, thanks for the patch!
+>>>
+>>> Len, can you add the Bart's patch to your 2.6.31 queue, please?
+>>>
+>>>       
+>>>> I didn't test the hibernation hunk.  I have hibernation set up, but
+>>>> there is a different problem (not a regression).  I don't have much
+>>>> more time to investigate on this laptop, so I don't expect to get it
+>>>> fixed.  But here are some details anyway :-).
+>>>>
+>>>> When I run s2disk, it writes the image out, and then instantly
+>>>> resumes.  It doesn't seem to read the image, but neither does the
+>>>> kernel report an error:
+>>>>
+>>>> [  491.088802] ACPI: Preparing to enter system sleep state S4
+>>>> [  491.090498] PM: Saving platform NVS memory
+>>>> [  491.094638] Disabling non-boot CPUs ...
+>>>> [  491.094867] PM: Creating hibernation image:
+>>>> [  491.096015] PM: Need to copy 114990 pages
+>>>> [  491.096015] PM: Normal pages needed: 114990 + 1024 + 22, available
+>>>> pages: 144595
+>>>> [  491.096015] PM: Hibernation image created (114990 pages copied)
+>>>> [  491.096015] ACPI: Waking up from system sleep state S4
+>>>>
+>>>> It happens on 2.6.24-23-generic, 2.6.30, and 2.6.30-rc2.
+>>>>         
+>>> Hmm.  Interesting.
+>>>
+>>> I _guess_ this problem is ACPI-related as well.  You can try putting
+>>> 'shutdown method = shutdown' into /etc/suspend.conf (or whatever the s2disk's
+>>> configuration file is on your system).
+>>>       
+>> That doesn't change anything.
 >>
->> We might end up doing the same thing in the end (i.e. disable that 
->> 64k of RAM) - but it should be an informed decision, not a wild stab 
->> in the dark.
+>>     
+>>> If possible, it would be interesting to see if that also happens if
+>>> 'echo disk > /sys/power/state' is used to trigger hibernation instead of
+>>> s2disk.   In particular when booted with init=/bin/bash.
+>>>       
+>> That worked, even though I didn't use init=/bin/bash.
 >>
-> 
-> Speaking as a boot loader author, I can let you know that these kinds of
-> problems are in no wise limited to suspend/resume.
-> 
-> Pretty much any time you're executing BIOS code you're going to have
-> *some* platform which has severe memory corruption somewhere.  This is
-> particularly painful for boot loaders, obviously, because the BIOS
-> corrupts the boot loader as it is running.  In most cases, there simply
-> isn't any way to prevent the corruption, and it's simply dumb luck that
-> you will boot most of the time.
-> 
-> And no, I don't think EFI is going to magically solve anything.  EFI
-> will just spread the same class of corruption problems over the entire
-> memory map.  It will reduce the density of such bugs -- in particular it
-> will eliminiate the "right offset, wrong segment" as well as "idiot
-> coding assembly" class of problems -- but it will not confine the ones
-> that can and will happen; it's still fundamentally a super-privileged
-> flat memory space.
-> 
-> The root cause seems to be a lack of verification practices in the BIOS
-> industry in the post-DOS era.  Back when DOS was still a commercially
-> significant system, the BIOS didn't just support the running OS, it also
-> directly supported running applications.  That put a relatively high bar
-> on how broken your BIOS could be and still have a viable platform.
-> These days, it doesn't look like neither the BIOS vendors nor the OEMs
-> necessarily even know how to QA, and since the BIOS industry is
-> relatively small and highly consolidated, if there isn't sufficient OEM
-> pressure it simply won't happen since there is no money in it.
-> 
-> The HDMI case is a good example -- that probably involved SMI being
-> triggered and the SMI code then clobbering a wild pointer.
-> 
-> 	-hpa
-> 
+>> If it matters, I'm using a swap file on an NTFS partition.  [The
+>> system was installed by Ubuntu "Wubi" (i.e. using Windows partition
+>> and bootloader), but I had to set up both uswsusp and kernel swsusp
+>> myself.  pm-hibernate refuses to work; I don't think it knows about
+>> swap files].
+>>
+>> I noticed an error message, I'm not sure if it's relevant or not.
+>>
+>> Suspending using this method, I see two lines of ATA errors on the
+>> console when suspending.  They appear to be post-snapshot - they don't
+>> appear in the log - but it looks like the same error happens on resume
+>> too.  s2disk generates the same error on resume as well.
+>>
+>> [  192.247475] sd 0:0:0:0: [sda] Starting disk
+>> [  192.340428] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
+>> [  192.340432] ata4.00: ACPI cmd ef/03:22:00:00:00:a0 filtered out
+>> [  192.372314] ata4.00: configured for MWDMA2
+>> [  192.640075] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>> [  192.642338] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+>> [  192.644365] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+>> [  192.644381] ata1.00: configured for UDMA/100
+>> * [  192.660076] ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
+>> * [  192.660079] ata1: irq_stat 0x00400040, connection status changed
+>> [  192.663198] ata1.00: configured for UDMA/100
+>> [  192.663201] ata1: EH complete
+>>
+>> The lines marked with * are the ones that appear on the console during
+>> suspend.  This happens on both 2.6.31-rc2 and 2.6.30.
+>>     
+>
+> BTW Did you have a chance to test the second part of the original patch?
+>
+> [ Rafal, what do we want to do with it?  It seems logical to have the same
+>   behavior w.r.t. SCI_EN bit both when leaving S3 and S4 but I haven't yet
+>   verified this with the spec (is the ACPI is enabled on leaving the state
+>   assumption also valid for S4 or only for S0-S3?) and the change itself
+>   would require some more time in linux-next if we decide to go this way.. ]
+>   
 
-I did a memorydump of Windows Vista SP2 (with win32dd.exe -t 1 -r ) 
-before and after suspend. It has same changes/corruption on 
-ffff880000004200 like linux do. So this issue is not OS relevant. More 
-over Windows show some more changes in this area, some of them are 
-changes in the VBIOS space:
+I got hibernation working without the second part (and the battery was 
+fine).  I'll try that hunk today and see if it breaks.  Right now the 
+machine's in Windows, recovering from me letting it run out of battery :-).
 
-this is diff of the windows dump:
-linux has no changes at his place ... it looks like some artifacts from 
-windows bootmanager.
-===================================================================
-513,514c513,514
-< 0002000: e931 0300 0200 0000 00c0 d0ff 0050 1504  .1...........P..
-< 0002010: f498 3980 0000 0000 0000 0000 0000 0000  ..9.............
----
- > 0002000: e931 0300 0300 0000 00c0 d0ff 00d0 1404  .1..............
- > 0002010: 6c84 d380 0000 0000 0000 0000 0000 0000  l...............
-523,526c523,526
-< 00020a0: 0000 0000 3000 0000 2000 0000 2000 0000  ....0... ... ...
-< 00020b0: 0000 0000 0000 0000 0000 0000 0000 0000  ................
-< 00020c0: 0000 0000 0000 0000 0000 0000 b004 b381  ................
-< 00020d0: 0800 0000 8200 2000 f8ff 928a 1000 0000  ...... .........
----
- > 00020a0: 0000 0000 3000 0000 2300 0000 2300 0000  ....0...#...#...
- > 00020b0: 0000 0000 4020 b581 e04c 1385 0ca0 a281  ....@ ...L......
- > 00020c0: 6820 b581 e04c 1385 84cc 3e80 cdf5 a281  h ...L....>.....
- > 00020d0: 0800 0000 8200 0000 58cc 3e80 1000 0000  ........X.>.....
-559c559
-< 00022e0: 3b00 0080 0000 0000 0020 1200 6006 0000  ;........ ..`...
----
- > 00022e0: 3100 0180 bc89 3500 0020 1200 f906 0000  1.....5.. ......
-561,562c561,562
-< 0002300: 0000 0000 0000 0000 0000 ff03 d0b5 918a  ................
-< 0002310: 0000 ff07 d0b9 918a 2800 0000 0000 0000  ........(.......
----
- > 0002300: f00f ffff 0004 0000 0000 ff03 d085 3d80  ..............=.
- > 0002310: 0000 ff07 d089 3d80 2800 0000 0000 0000  ......=.(.......
-1057c1057
-====================================================================
-
-This issue same on windows and linux
-====================================================================
-< 0004200: 0000 0000 0000 0000 0000 0000 0000 0000  ................
----
- > 0004200: 0104 4200 0000 0000 0000 0000 0000 0000  ..B.............
-53286c53286
-====================================================================
-
-This is part of VBIOS. On linux this is unchanged and it is located on a 
-different address space.
-====================================================================
-< 00d0250: ffff ffff ffff ffff ffff ffff ffff ffff  ................
----
- > 00d0250: ffff ffff dfff ffff ffff ffff ffff ffff  ................
-53643c53643
-< 00d18a0: ffff ffff ffff ffff ffff ffff ffff ffff  ................
----
- > 00d18a0: ffff ffff ffff ffff ffdf ffff ffff ffff  ................
-54271c54271
-< 00d3fe0: ffff ffff ffff ffff ffff ffff ffff ffff  ................
----
- > 00d3fe0: ffff ffff 7fff ffff ffff ffff ffff ffff  ................
-74497,74510c74497,74510
-====================================================================
-
+Alan
