@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbZGKS0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbZGKS2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753026AbZGKS0M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 14:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbZGKS0A
+	id S1752403AbZGKS2Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 14:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbZGKS2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 14:26:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49496 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751911AbZGKSZ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 14:25:59 -0400
-Date: Sat, 11 Jul 2009 11:25:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: -tip: block, mm: Fix build error in mm/memcontrol.c
-In-Reply-To: <20090711065152.GA23336@elte.hu>
-Message-ID: <alpine.LFD.2.01.0907111125030.3552@localhost.localdomain>
-References: <20090711065152.GA23336@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sat, 11 Jul 2009 14:28:17 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:39766 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751696AbZGKS2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 14:28:17 -0400
+Date: Sat, 11 Jul 2009 20:28:11 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Greg KH <gregkh@suse.de>
+Cc: Jiri Slaby <jirislaby@gmail.com>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 5/5] staging/otus: Move a dereference below a NULL test
+In-Reply-To: <20090711170356.GA5205@suse.de>
+Message-ID: <Pine.LNX.4.64.0907112027530.1525@ask.diku.dk>
+References: <Pine.LNX.4.64.0907110950510.29592@ask.diku.dk> <4A584A94.5010105@gmail.com>
+ <20090711170356.GA5205@suse.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 11 Jul 2009, Greg KH wrote:
 
-
-On Sat, 11 Jul 2009, Ingo Molnar wrote:
+> On Sat, Jul 11, 2009 at 10:17:24AM +0200, Jiri Slaby wrote:
+> > On 07/11/2009 09:51 AM, Julia Lawall wrote:
+> > > diff -u -p a/drivers/staging/otus/wwrap.c b/drivers/staging/otus/wwrap.c
+> > > --- a/drivers/staging/otus/wwrap.c
+> > > +++ b/drivers/staging/otus/wwrap.c
+> > > @@ -1016,12 +1016,13 @@ void kevent(struct work_struct *work)
+> > >  {
+> > >      struct usbdrv_private *macp =
+> > >                 container_of(work, struct usbdrv_private, kevent);
+> > > -    zdev_t *dev = macp->device;
+> > > +    zdev_t *dev;
+> > >  
+> > >      if (macp == NULL)
+> > >      {
+> > >          return;
+> > >      }
+> > 
+> > The test is rather useless here.
 > 
-> Today's upstream tree build (x86, 64-bit, allyesconfig) failed with 
-> this build error:
+> Yes it is. 
+> 
+> Julia, if you just remove the NULL check, will that keep your scripts
+> happy from noticing such a "problem"?
 
-I merged a better fix from Trond, which should make all of this 
-unnecessary (just move BLK_RW_[A]SYNC to the header file that people need 
-anyway).
+Yes.  The trigger is the NULL test after the dereference.
 
-		Linus
+julia
