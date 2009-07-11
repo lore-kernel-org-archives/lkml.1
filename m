@@ -1,886 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbZGKJ64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbZGKKA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754960AbZGKJ64 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 05:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZGKJ6s
+	id S1755782AbZGKKA0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 06:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZGKKAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 05:58:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52143 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752040AbZGKJ6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 05:58:45 -0400
-Date: Sat, 11 Jul 2009 09:57:38 GMT
-From: tip-bot for Alan Cox <alan@linux.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, alan@linux.intel.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, alan@linux.intel.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:x86/cleanups] x86/cpu: Clean up various files a bit
-Message-ID: <tip-8bdbd962ecfcbdd96f9dbb02d780b4553afd2543@git.kernel.org>
-Git-Commit-ID: 8bdbd962ecfcbdd96f9dbb02d780b4553afd2543
-X-Mailer: tip-git-log-daemon
+	Sat, 11 Jul 2009 06:00:18 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:59714 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040AbZGKKAQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 06:00:16 -0400
+Date: Sat, 11 Jul 2009 12:00:14 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] platform_driver_register:  warn if probe is in
+	.init.text
+Message-ID: <20090711100014.GA9540@pengutronix.de>
+References: <20090616182310.GC13048@pengutronix.de> <1245418939-20758-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090619141128.GA11506@suse.de> <20090619144354.GA20985@pengutronix.de> <20090629075535.GA20155@pengutronix.de> <20090711033459.GC1344@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 11 Jul 2009 09:57:39 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090711033459.GC1344@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8bdbd962ecfcbdd96f9dbb02d780b4553afd2543
-Gitweb:     http://git.kernel.org/tip/8bdbd962ecfcbdd96f9dbb02d780b4553afd2543
-Author:     Alan Cox <alan@linux.intel.com>
-AuthorDate: Sat, 4 Jul 2009 00:35:45 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 11 Jul 2009 11:24:09 +0200
+Hi Greg,
 
-x86/cpu: Clean up various files a bit
+> > Are you conviced and took the patch or did you give up to convince me?
+> 
+> Heh, no, sorry, it got burried in my queue.
+> 
+> > I still think the patch is correct and I'd like to have it applied.
+> 
+> Ok, let's test it out in the linux-next tree for a while to make sure it
+> works properly.  Care to send me an updated version?
+I updated to latest Linus' master.  It applies to linux-next from
+Fri Jul 10 14:44:30 2009 +1000 as is.
 
-No code changes except printk levels (although some of the K6
-mtrr code might be clearer if there were a few as would
-splitting out some of the intel cache code).
+Back some time I sent a series that fixes many of these bugs.  I will
+update it later today and resend.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Best regards and thanks,
+Uwe
 
+---->8----
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Subject: [PATCH] platform_driver_register:  warn if probe is in .init.text
 
+with HOTPLUG=y it's wrong to register a platform_driver whose probe
+function lives in .init.text because the probe function can be called
+(e.g. via sysfs or by registering a device late) after the init sections
+are already discarded.  This results in an oops.
+
+So warn if such a driver is registered.
+
+Without HOTPLUG the probe function can (and should) be discarded if the
+driver is registered while the init sections are still available.
+In this case warn if the probe function isn't discarded later.  (As
+described in the comments there is a small chance for a wrong warning.
+But as HOTPLUG=n is unusual today and the situation is strage enough to
+be cleaned up anyhow, I think this is OK.)
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- arch/x86/kernel/cpu/amd.c              |   37 ++++++-----
- arch/x86/kernel/cpu/bugs.c             |   10 ++--
- arch/x86/kernel/cpu/bugs_64.c          |    2 +-
- arch/x86/kernel/cpu/common.c           |    8 +-
- arch/x86/kernel/cpu/cyrix.c            |   19 +++--
- arch/x86/kernel/cpu/hypervisor.c       |    5 +-
- arch/x86/kernel/cpu/intel.c            |   11 ++--
- arch/x86/kernel/cpu/intel_cacheinfo.c  |  116 ++++++++++++++++---------------
- arch/x86/kernel/cpu/perfctr-watchdog.c |   45 ++++++------
- arch/x86/kernel/cpu/proc.c             |    2 +-
- arch/x86/kernel/cpu/vmware.c           |   18 +++---
- 11 files changed, 144 insertions(+), 129 deletions(-)
+ drivers/base/platform.c |   42 ++++++++++++++++++++++++++++++++++++------
+ include/linux/kernel.h  |    2 ++
+ include/linux/module.h  |   12 ++++++++++++
+ kernel/extable.c        |   12 ++++++++++++
+ kernel/module.c         |   36 ++++++++++++++++++++++++++++++++++++
+ 5 files changed, 98 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 28e5f59..c6eb02e 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -2,7 +2,7 @@
- #include <linux/bitops.h>
- #include <linux/mm.h>
- 
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <asm/processor.h>
- #include <asm/apic.h>
- #include <asm/cpu.h>
-@@ -45,8 +45,8 @@ static void __cpuinit init_amd_k5(struct cpuinfo_x86 *c)
- #define CBAR_ENB	(0x80000000)
- #define CBAR_KEY	(0X000000CB)
- 	if (c->x86_model == 9 || c->x86_model == 10) {
--		if (inl (CBAR) & CBAR_ENB)
--			outl (0 | CBAR_KEY, CBAR);
-+		if (inl(CBAR) & CBAR_ENB)
-+			outl(0 | CBAR_KEY, CBAR);
- 	}
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index 81cb01b..851ba84 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -470,11 +470,7 @@ static void platform_drv_shutdown(struct device *_dev)
+ 	drv->shutdown(dev);
  }
  
-@@ -87,9 +87,10 @@ static void __cpuinit init_amd_k6(struct cpuinfo_x86 *c)
- 		d = d2-d;
- 
- 		if (d > 20*K6_BUG_LOOP)
--			printk("system stability may be impaired when more than 32 MB are used.\n");
-+			printk(KERN_CONT
-+				"system stability may be impaired when more than 32 MB are used.\n");
- 		else
--			printk("probably OK (after B9730xxxx).\n");
-+			printk(KERN_CONT "probably OK (after B9730xxxx).\n");
- 		printk(KERN_INFO "Please see http://membres.lycos.fr/poulot/k6bug.html\n");
- 	}
- 
-@@ -219,8 +220,9 @@ static void __cpuinit init_amd_k7(struct cpuinfo_x86 *c)
- 	if ((c->x86_model == 8 && c->x86_mask >= 1) || (c->x86_model > 8)) {
- 		rdmsr(MSR_K7_CLK_CTL, l, h);
- 		if ((l & 0xfff00000) != 0x20000000) {
--			printk ("CPU: CLK_CTL MSR was %x. Reprogramming to %x\n", l,
--				((l & 0x000fffff)|0x20000000));
-+			printk(KERN_INFO
-+			    "CPU: CLK_CTL MSR was %x. Reprogramming to %x\n",
-+					l, ((l & 0x000fffff)|0x20000000));
- 			wrmsr(MSR_K7_CLK_CTL, (l & 0x000fffff)|0x20000000, h);
- 		}
- 	}
-@@ -398,7 +400,7 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 		u32 level;
- 
- 		level = cpuid_eax(1);
--		if((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
-+		if ((level >= 0x0f48 && level < 0x0f50) || level >= 0x0f58)
- 			set_cpu_cap(c, X86_FEATURE_REP_GOOD);
- 	}
- 	if (c->x86 == 0x10 || c->x86 == 0x11)
-@@ -487,27 +489,30 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 		 * benefit in doing so.
- 		 */
- 		if (!rdmsrl_safe(MSR_K8_TSEG_ADDR, &tseg)) {
--		    printk(KERN_DEBUG "tseg: %010llx\n", tseg);
--		    if ((tseg>>PMD_SHIFT) <
-+			printk(KERN_DEBUG "tseg: %010llx\n", tseg);
-+			if ((tseg>>PMD_SHIFT) <
- 				(max_low_pfn_mapped>>(PMD_SHIFT-PAGE_SHIFT)) ||
--			((tseg>>PMD_SHIFT) <
-+				((tseg>>PMD_SHIFT) <
- 				(max_pfn_mapped>>(PMD_SHIFT-PAGE_SHIFT)) &&
--			 (tseg>>PMD_SHIFT) >= (1ULL<<(32 - PMD_SHIFT))))
--			set_memory_4k((unsigned long)__va(tseg), 1);
-+				(tseg>>PMD_SHIFT) >= (1ULL<<(32 - PMD_SHIFT))))
-+				set_memory_4k((unsigned long)__va(tseg), 1);
- 		}
- 	}
- #endif
- }
- 
- #ifdef CONFIG_X86_32
--static unsigned int __cpuinit amd_size_cache(struct cpuinfo_x86 *c, unsigned int size)
-+static unsigned int __cpuinit amd_size_cache(struct cpuinfo_x86 *c,
-+							unsigned int size)
+-/**
+- * platform_driver_register
+- * @drv: platform driver structure
+- */
+-int platform_driver_register(struct platform_driver *drv)
++static int __platform_driver_register(struct platform_driver *drv)
  {
- 	/* AMD errata T13 (order #21922) */
- 	if ((c->x86 == 6)) {
--		if (c->x86_model == 3 && c->x86_mask == 0)	/* Duron Rev A0 */
-+		/* Duron Rev A0 */
-+		if (c->x86_model == 3 && c->x86_mask == 0)
- 			size = 64;
-+		/* Tbird rev A1/A2 */
- 		if (c->x86_model == 4 &&
--		    (c->x86_mask == 0 || c->x86_mask == 1))	/* Tbird rev A1/A2 */
-+			(c->x86_mask == 0 || c->x86_mask == 1))
- 			size = 256;
- 	}
- 	return size;
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index c8e315f..01a2652 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -81,7 +81,7 @@ static void __init check_fpu(void)
+ 	drv->driver.bus = &platform_bus_type;
+ 	if (drv->probe)
+@@ -489,6 +485,40 @@ int platform_driver_register(struct platform_driver *drv)
  
- 	boot_cpu_data.fdiv_bug = fdiv_bug;
- 	if (boot_cpu_data.fdiv_bug)
--		printk("Hmm, FPU with FDIV bug.\n");
-+		printk(KERN_WARNING "Hmm, FPU with FDIV bug.\n");
+ 	return driver_register(&drv->driver);
+ }
++
++/**
++ * platform_driver_register
++ * @drv: platform driver structure
++ */
++int platform_driver_register(struct platform_driver *drv)
++{
++	int ret = __platform_driver_register(drv);
++
++#if defined(CONFIG_HOTPLUG)
++	/*
++	 * drivers that are registered by platform_driver_register
++	 * should not have their probe function in .init.text.  The
++	 * reason is that a probe can happen after .init.text is
++	 * discarded which then results in an oops.  The alternatives
++	 * are using .devinit.text for the probe function or "register"
++	 * with platform_driver_probe.
++	 */
++	if (drv->probe && kernel_init_text_address((unsigned long)drv->probe))
++		pr_warning("oops-warning: probe function of platform driver %s"
++			       " lives in .init.text\n", drv->driver.name);
++#else
++	/*
++	 * without HOTPLUG probe functions can be discarded after the driver is
++	 * loaded.
++	 * There is a little chance for false positives, namely if the driver is
++	 * registered after the .init sections are discarded.
++	 */
++	if (drv->probe && !kernel_init_text_address((unsigned long)drv->probe))
++		pr_info("probably the probe function of platform driver %s can"
++				" be moved to .init.text\n", drv->driver.name);
++#endif
++	return ret;
++}
+ EXPORT_SYMBOL_GPL(platform_driver_register);
+ 
+ /**
+@@ -525,7 +555,7 @@ int __init_or_module platform_driver_probe(struct platform_driver *drv,
+ 
+ 	/* temporary section violation during probe() */
+ 	drv->probe = probe;
+-	retval = code = platform_driver_register(drv);
++	retval = code = __platform_driver_register(drv);
+ 
+ 	/* Fixup that section violation, being paranoid about code scanning
+ 	 * the list of drivers in order to probe new devices.  Check to see
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index d6320a3..298e9bc 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -203,8 +203,10 @@ extern char *get_options(const char *str, int nints, int *ints);
+ extern unsigned long long memparse(const char *ptr, char **retptr);
+ 
+ extern int core_kernel_text(unsigned long addr);
++extern int core_kernel_init_text(unsigned long addr)
+ extern int __kernel_text_address(unsigned long addr);
+ extern int kernel_text_address(unsigned long addr);
++extern int kernel_init_text_address(unsigned long addr);
+ extern int func_ptr_is_kernel_text(void *ptr);
+ 
+ struct pid;
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 098bdb7..93f47c4 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -385,9 +385,11 @@ static inline int module_is_live(struct module *mod)
  }
  
- static void __init check_hlt(void)
-@@ -98,7 +98,7 @@ static void __init check_hlt(void)
- 	halt();
- 	halt();
- 	halt();
--	printk("OK.\n");
-+	printk(KERN_CONT "OK.\n");
- }
+ struct module *__module_text_address(unsigned long addr);
++struct module *__module_init_text_address(unsigned long addr);
+ struct module *__module_address(unsigned long addr);
+ bool is_module_address(unsigned long addr);
+ bool is_module_text_address(unsigned long addr);
++bool is_module_init_text_address(unsigned long addr);
  
- /*
-@@ -122,9 +122,9 @@ static void __init check_popad(void)
- 	 * CPU hard. Too bad.
- 	 */
- 	if (res != 12345678)
--		printk("Buggy.\n");
-+		printk(KERN_CONT "Buggy.\n");
- 	else
--		printk("OK.\n");
-+		printk(KERN_CONT "OK.\n");
- #endif
- }
- 
-@@ -156,7 +156,7 @@ void __init check_bugs(void)
+ static inline int within_module_core(unsigned long addr, struct module *mod)
  {
- 	identify_boot_cpu();
- #ifndef CONFIG_SMP
--	printk("CPU: ");
-+	printk(KERN_INFO "CPU: ");
- 	print_cpu_info(&boot_cpu_data);
- #endif
- 	check_config();
-diff --git a/arch/x86/kernel/cpu/bugs_64.c b/arch/x86/kernel/cpu/bugs_64.c
-index 9a3ed06..04f0fe5 100644
---- a/arch/x86/kernel/cpu/bugs_64.c
-+++ b/arch/x86/kernel/cpu/bugs_64.c
-@@ -15,7 +15,7 @@ void __init check_bugs(void)
- {
- 	identify_boot_cpu();
- #if !defined(CONFIG_SMP)
--	printk("CPU: ");
-+	printk(KERN_INFO "CPU: ");
- 	print_cpu_info(&boot_cpu_data);
- #endif
- 	alternative_instructions();
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index d6f27c9..c96ea44 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -18,8 +18,8 @@
- #include <asm/hypervisor.h>
- #include <asm/processor.h>
- #include <asm/sections.h>
--#include <asm/topology.h>
--#include <asm/cpumask.h>
-+#include <linux/topology.h>
-+#include <linux/cpumask.h>
- #include <asm/pgtable.h>
- #include <asm/atomic.h>
- #include <asm/proto.h>
-@@ -28,13 +28,13 @@
- #include <asm/desc.h>
- #include <asm/i387.h>
- #include <asm/mtrr.h>
--#include <asm/numa.h>
-+#include <linux/numa.h>
- #include <asm/asm.h>
- #include <asm/cpu.h>
- #include <asm/mce.h>
- #include <asm/msr.h>
- #include <asm/pat.h>
--#include <asm/smp.h>
-+#include <linux/smp.h>
- 
- #ifdef CONFIG_X86_LOCAL_APIC
- #include <asm/uv/uv.h>
-diff --git a/arch/x86/kernel/cpu/cyrix.c b/arch/x86/kernel/cpu/cyrix.c
-index 593171e..19807b8 100644
---- a/arch/x86/kernel/cpu/cyrix.c
-+++ b/arch/x86/kernel/cpu/cyrix.c
-@@ -3,10 +3,10 @@
- #include <linux/delay.h>
- #include <linux/pci.h>
- #include <asm/dma.h>
--#include <asm/io.h>
-+#include <linux/io.h>
- #include <asm/processor-cyrix.h>
- #include <asm/processor-flags.h>
--#include <asm/timer.h>
-+#include <linux/timer.h>
- #include <asm/pci-direct.h>
- #include <asm/tsc.h>
- 
-@@ -282,7 +282,8 @@ static void __cpuinit init_cyrix(struct cpuinfo_x86 *c)
- 		 *  The 5510/5520 companion chips have a funky PIT.
- 		 */
- 		if (vendor == PCI_VENDOR_ID_CYRIX &&
--	 (device == PCI_DEVICE_ID_CYRIX_5510 || device == PCI_DEVICE_ID_CYRIX_5520))
-+			(device == PCI_DEVICE_ID_CYRIX_5510 ||
-+					device == PCI_DEVICE_ID_CYRIX_5520))
- 			mark_tsc_unstable("cyrix 5510/5520 detected");
- 	}
- #endif
-@@ -299,7 +300,8 @@ static void __cpuinit init_cyrix(struct cpuinfo_x86 *c)
- 			 *  ?  : 0x7x
- 			 * GX1 : 0x8x          GX1  datasheet 56
- 			 */
--			if ((0x30 <= dir1 && dir1 <= 0x6f) || (0x80 <= dir1 && dir1 <= 0x8f))
-+			if ((0x30 <= dir1 && dir1 <= 0x6f) ||
-+					(0x80 <= dir1 && dir1 <= 0x8f))
- 				geode_configure();
- 			return;
- 		} else { /* MediaGX */
-@@ -427,9 +429,12 @@ static void __cpuinit cyrix_identify(struct cpuinfo_x86 *c)
- 			printk(KERN_INFO "Enabling CPUID on Cyrix processor.\n");
- 			local_irq_save(flags);
- 			ccr3 = getCx86(CX86_CCR3);
--			setCx86(CX86_CCR3, (ccr3 & 0x0f) | 0x10);       /* enable MAPEN  */
--			setCx86_old(CX86_CCR4, getCx86_old(CX86_CCR4) | 0x80);  /* enable cpuid  */
--			setCx86(CX86_CCR3, ccr3);                       /* disable MAPEN */
-+			/* enable MAPEN  */
-+			setCx86(CX86_CCR3, (ccr3 & 0x0f) | 0x10);
-+			/* enable cpuid  */
-+			setCx86_old(CX86_CCR4, getCx86_old(CX86_CCR4) | 0x80);
-+			/* disable MAPEN */
-+			setCx86(CX86_CCR3, ccr3);
- 			local_irq_restore(flags);
- 		}
- 	}
-diff --git a/arch/x86/kernel/cpu/hypervisor.c b/arch/x86/kernel/cpu/hypervisor.c
-index fb5b86a..93ba8ee 100644
---- a/arch/x86/kernel/cpu/hypervisor.c
-+++ b/arch/x86/kernel/cpu/hypervisor.c
-@@ -28,11 +28,10 @@
- static inline void __cpuinit
- detect_hypervisor_vendor(struct cpuinfo_x86 *c)
- {
--	if (vmware_platform()) {
-+	if (vmware_platform())
- 		c->x86_hyper_vendor = X86_HYPER_VENDOR_VMWARE;
--	} else {
-+	else
- 		c->x86_hyper_vendor = X86_HYPER_VENDOR_NONE;
--	}
+@@ -556,6 +558,11 @@ static inline struct module *__module_text_address(unsigned long addr)
+ 	return NULL;
  }
  
- unsigned long get_hypervisor_tsc_freq(void)
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index 3260ab0..80a722a 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -7,17 +7,17 @@
- #include <linux/sched.h>
- #include <linux/thread_info.h>
- #include <linux/module.h>
-+#include <linux/uaccess.h>
++static inline struct module *__module_init_text_address(unsigned long addr)
++{
++	return NULL;
++}
++
+ static inline bool is_module_address(unsigned long addr)
+ {
+ 	return false;
+@@ -566,6 +573,11 @@ static inline bool is_module_text_address(unsigned long addr)
+ 	return false;
+ }
  
- #include <asm/processor.h>
- #include <asm/pgtable.h>
- #include <asm/msr.h>
--#include <asm/uaccess.h>
- #include <asm/ds.h>
- #include <asm/bugs.h>
- #include <asm/cpu.h>
- 
- #ifdef CONFIG_X86_64
--#include <asm/topology.h>
-+#include <linux/topology.h>
- #include <asm/numa_64.h>
- #endif
- 
-@@ -174,7 +174,8 @@ static void __cpuinit intel_workarounds(struct cpuinfo_x86 *c)
- #ifdef CONFIG_X86_F00F_BUG
- 	/*
- 	 * All current models of Pentium and Pentium with MMX technology CPUs
--	 * have the F0 0F bug, which lets nonprivileged users lock up the system.
-+	 * have the F0 0F bug, which lets nonprivileged users lock up the
-+	 * system.
- 	 * Note that the workaround only should be initialized once...
- 	 */
- 	c->f00f_bug = 0;
-@@ -207,7 +208,7 @@ static void __cpuinit intel_workarounds(struct cpuinfo_x86 *c)
- 			printk (KERN_INFO "CPU: C0 stepping P4 Xeon detected.\n");
- 			printk (KERN_INFO "CPU: Disabling hardware prefetching (Errata 037)\n");
- 			lo |= MSR_IA32_MISC_ENABLE_PREFETCH_DISABLE;
--			wrmsr (MSR_IA32_MISC_ENABLE, lo, hi);
-+			wrmsr(MSR_IA32_MISC_ENABLE, lo, hi);
- 		}
- 	}
- 
-@@ -283,7 +284,7 @@ static int __cpuinit intel_num_cpu_cores(struct cpuinfo_x86 *c)
- 	/* Intel has a non-standard dependency on %ecx for this CPUID level. */
- 	cpuid_count(4, 0, &eax, &ebx, &ecx, &edx);
- 	if (eax & 0x1f)
--		return ((eax >> 26) + 1);
-+		return (eax >> 26) + 1;
- 	else
++static inline bool is_module_init_text_address(unsigned long addr)
++{
++	return false;
++}
++
+ /* Get/put a kernel symbol (calls should be symmetric) */
+ #define symbol_get(x) ({ extern typeof(x) x __attribute__((weak)); &(x); })
+ #define symbol_put(x) do { } while(0)
+diff --git a/kernel/extable.c b/kernel/extable.c
+index 7f8f263..bfd7bda 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -66,6 +66,11 @@ int core_kernel_text(unsigned long addr)
+ 	    addr <= (unsigned long)_etext)
  		return 1;
- }
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 789efe2..306bf0d 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -3,7 +3,7 @@
-  *
-  *	Changes:
-  *	Venkatesh Pallipadi	: Adding cache identification through cpuid(4)
-- *		Ashok Raj <ashok.raj@intel.com>: Work with CPU hotplug infrastructure.
-+ *	Ashok Raj <ashok.raj@intel.com>: Work with CPU hotplug infrastructure.
-  *	Andi Kleen / Andreas Herrmann	: CPUID4 emulation on AMD.
-  */
  
-@@ -16,7 +16,7 @@
- #include <linux/pci.h>
- 
- #include <asm/processor.h>
--#include <asm/smp.h>
-+#include <linux/smp.h>
- #include <asm/k8.h>
- 
- #define LVL_1_INST	1
-@@ -25,14 +25,15 @@
- #define LVL_3		4
- #define LVL_TRACE	5
- 
--struct _cache_table
--{
-+struct _cache_table {
- 	unsigned char descriptor;
- 	char cache_type;
- 	short size;
- };
- 
--/* all the cache descriptor types we care about (no TLB or trace cache entries) */
-+/* All the cache descriptor types we care about (no TLB or
-+   trace cache entries) */
-+
- static const struct _cache_table __cpuinitconst cache_table[] =
- {
- 	{ 0x06, LVL_1_INST, 8 },	/* 4-way set assoc, 32 byte line size */
-@@ -105,8 +106,7 @@ static const struct _cache_table __cpuinitconst cache_table[] =
- };
- 
- 
--enum _cache_type
--{
-+enum _cache_type {
- 	CACHE_TYPE_NULL	= 0,
- 	CACHE_TYPE_DATA = 1,
- 	CACHE_TYPE_INST = 2,
-@@ -170,31 +170,31 @@ unsigned short			num_cache_leaves;
-    Maybe later */
- union l1_cache {
- 	struct {
--		unsigned line_size : 8;
--		unsigned lines_per_tag : 8;
--		unsigned assoc : 8;
--		unsigned size_in_kb : 8;
-+		unsigned line_size:8;
-+		unsigned lines_per_tag:8;
-+		unsigned assoc:8;
-+		unsigned size_in_kb:8;
- 	};
- 	unsigned val;
- };
- 
- union l2_cache {
- 	struct {
--		unsigned line_size : 8;
--		unsigned lines_per_tag : 4;
--		unsigned assoc : 4;
--		unsigned size_in_kb : 16;
-+		unsigned line_size:8;
-+		unsigned lines_per_tag:4;
-+		unsigned assoc:4;
-+		unsigned size_in_kb:16;
- 	};
- 	unsigned val;
- };
- 
- union l3_cache {
- 	struct {
--		unsigned line_size : 8;
--		unsigned lines_per_tag : 4;
--		unsigned assoc : 4;
--		unsigned res : 2;
--		unsigned size_encoded : 14;
-+		unsigned line_size:8;
-+		unsigned lines_per_tag:4;
-+		unsigned assoc:4;
-+		unsigned res:2;
-+		unsigned size_encoded:14;
- 	};
- 	unsigned val;
- };
-@@ -350,7 +350,8 @@ static int __cpuinit find_num_cache_leaves(void)
- 
- unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
- {
--	unsigned int trace = 0, l1i = 0, l1d = 0, l2 = 0, l3 = 0; /* Cache sizes */
-+	/* Cache sizes */
-+	unsigned int trace = 0, l1i = 0, l1d = 0, l2 = 0, l3 = 0;
- 	unsigned int new_l1d = 0, new_l1i = 0; /* Cache sizes from cpuid(4) */
- 	unsigned int new_l2 = 0, new_l3 = 0, i; /* Cache sizes from cpuid(4) */
- 	unsigned int l2_id = 0, l3_id = 0, num_threads_sharing, index_msb;
-@@ -377,8 +378,8 @@ unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
- 
- 			retval = cpuid4_cache_lookup_regs(i, &this_leaf);
- 			if (retval >= 0) {
--				switch(this_leaf.eax.split.level) {
--				    case 1:
-+				switch (this_leaf.eax.split.level) {
-+				case 1:
- 					if (this_leaf.eax.split.type ==
- 							CACHE_TYPE_DATA)
- 						new_l1d = this_leaf.size/1024;
-@@ -386,19 +387,20 @@ unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
- 							CACHE_TYPE_INST)
- 						new_l1i = this_leaf.size/1024;
- 					break;
--				    case 2:
-+				case 2:
- 					new_l2 = this_leaf.size/1024;
- 					num_threads_sharing = 1 + this_leaf.eax.split.num_threads_sharing;
- 					index_msb = get_count_order(num_threads_sharing);
- 					l2_id = c->apicid >> index_msb;
- 					break;
--				    case 3:
-+				case 3:
- 					new_l3 = this_leaf.size/1024;
- 					num_threads_sharing = 1 + this_leaf.eax.split.num_threads_sharing;
--					index_msb = get_count_order(num_threads_sharing);
-+					index_msb = get_count_order(
-+							num_threads_sharing);
- 					l3_id = c->apicid >> index_msb;
- 					break;
--				    default:
-+				default:
- 					break;
- 				}
- 			}
-@@ -421,22 +423,21 @@ unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
- 		/* Number of times to iterate */
- 		n = cpuid_eax(2) & 0xFF;
- 
--		for ( i = 0 ; i < n ; i++ ) {
-+		for (i = 0 ; i < n ; i++) {
- 			cpuid(2, &regs[0], &regs[1], &regs[2], &regs[3]);
- 
- 			/* If bit 31 is set, this is an unknown format */
--			for ( j = 0 ; j < 3 ; j++ ) {
--				if (regs[j] & (1 << 31)) regs[j] = 0;
--			}
-+			for (j = 0 ; j < 3 ; j++)
-+				if (regs[j] & (1 << 31))
-+					regs[j] = 0;
- 
- 			/* Byte 0 is level count, not a descriptor */
--			for ( j = 1 ; j < 16 ; j++ ) {
-+			for (j = 1 ; j < 16 ; j++) {
- 				unsigned char des = dp[j];
- 				unsigned char k = 0;
- 
- 				/* look up this descriptor in the table */
--				while (cache_table[k].descriptor != 0)
--				{
-+				while (cache_table[k].descriptor != 0) {
- 					if (cache_table[k].descriptor == des) {
- 						if (only_trace && cache_table[k].cache_type != LVL_TRACE)
- 							break;
-@@ -488,14 +489,14 @@ unsigned int __cpuinit init_intel_cacheinfo(struct cpuinfo_x86 *c)
- 	}
- 
- 	if (trace)
--		printk (KERN_INFO "CPU: Trace cache: %dK uops", trace);
--	else if ( l1i )
--		printk (KERN_INFO "CPU: L1 I cache: %dK", l1i);
-+		printk(KERN_INFO "CPU: Trace cache: %dK uops", trace);
-+	else if (l1i)
-+		printk(KERN_INFO "CPU: L1 I cache: %dK", l1i);
- 
- 	if (l1d)
--		printk(", L1 D cache: %dK\n", l1d);
-+		printk(KERN_CONT ", L1 D cache: %dK\n", l1d);
- 	else
--		printk("\n");
-+		printk(KERN_CONT "\n");
- 
- 	if (l2)
- 		printk(KERN_INFO "CPU: L2 cache: %dK\n", l2);
-@@ -558,8 +559,13 @@ static void __cpuinit cache_remove_shared_cpu_map(unsigned int cpu, int index)
- 	}
- }
- #else
--static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index) {}
--static void __cpuinit cache_remove_shared_cpu_map(unsigned int cpu, int index) {}
-+static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index)
-+{
++	return core_kernel_init_text;
 +}
 +
-+static void __cpuinit cache_remove_shared_cpu_map(unsigned int cpu, int index)
++int core_kernel_init_text(unsigned long addr)
 +{
+ 	if (system_state == SYSTEM_BOOTING &&
+ 	    init_kernel_text(addr))
+ 		return 1;
+@@ -98,6 +103,13 @@ int kernel_text_address(unsigned long addr)
+ 	return is_module_text_address(addr);
+ }
+ 
++int kernel_init_text_address(unsigned long addr)
++{
++	if (core_kernel_init_text(addr))
++		return 1;
++	return is_module_init_text_address(addr);
 +}
- #endif
- 
- static void __cpuinit free_cache_attributes(unsigned int cpu)
-@@ -645,7 +651,7 @@ static DEFINE_PER_CPU(struct _index_kobject *, index_kobject);
- static ssize_t show_##file_name						\
- 			(struct _cpuid4_info *this_leaf, char *buf)	\
- {									\
--	return sprintf (buf, "%lu\n", (unsigned long)this_leaf->object + val); \
-+	return sprintf(buf, "%lu\n", (unsigned long)this_leaf->object + val); \
- }
- 
- show_one_plus(level, eax.split.level, 0);
-@@ -656,7 +662,7 @@ show_one_plus(number_of_sets, ecx.split.number_of_sets, 1);
- 
- static ssize_t show_size(struct _cpuid4_info *this_leaf, char *buf)
- {
--	return sprintf (buf, "%luK\n", this_leaf->size / 1024);
-+	return sprintf(buf, "%luK\n", this_leaf->size / 1024);
- }
- 
- static ssize_t show_shared_cpu_map_func(struct _cpuid4_info *this_leaf,
-@@ -669,7 +675,7 @@ static ssize_t show_shared_cpu_map_func(struct _cpuid4_info *this_leaf,
- 		const struct cpumask *mask;
- 
- 		mask = to_cpumask(this_leaf->shared_cpu_map);
--		n = type?
-+		n = type ?
- 			cpulist_scnprintf(buf, len-2, mask) :
- 			cpumask_scnprintf(buf, len-2, mask);
- 		buf[n++] = '\n';
-@@ -800,7 +806,7 @@ static struct _cache_attr cache_disable_0 = __ATTR(cache_disable_0, 0644,
- static struct _cache_attr cache_disable_1 = __ATTR(cache_disable_1, 0644,
- 		show_cache_disable_1, store_cache_disable_1);
- 
--static struct attribute * default_attrs[] = {
-+static struct attribute *default_attrs[] = {
- 	&type.attr,
- 	&level.attr,
- 	&coherency_line_size.attr,
-@@ -815,7 +821,7 @@ static struct attribute * default_attrs[] = {
- 	NULL
- };
- 
--static ssize_t show(struct kobject * kobj, struct attribute * attr, char * buf)
-+static ssize_t show(struct kobject *kobj, struct attribute *attr, char *buf)
- {
- 	struct _cache_attr *fattr = to_attr(attr);
- 	struct _index_kobject *this_leaf = to_object(kobj);
-@@ -828,8 +834,8 @@ static ssize_t show(struct kobject * kobj, struct attribute * attr, char * buf)
- 	return ret;
- }
- 
--static ssize_t store(struct kobject * kobj, struct attribute * attr,
--		     const char * buf, size_t count)
-+static ssize_t store(struct kobject *kobj, struct attribute *attr,
-+		     const char *buf, size_t count)
- {
- 	struct _cache_attr *fattr = to_attr(attr);
- 	struct _index_kobject *this_leaf = to_object(kobj);
-@@ -883,7 +889,7 @@ static int __cpuinit cpuid4_cache_sysfs_init(unsigned int cpu)
- 		goto err_out;
- 
- 	per_cpu(index_kobject, cpu) = kzalloc(
--	    sizeof(struct _index_kobject ) * num_cache_leaves, GFP_KERNEL);
-+	    sizeof(struct _index_kobject) * num_cache_leaves, GFP_KERNEL);
- 	if (unlikely(per_cpu(index_kobject, cpu) == NULL))
- 		goto err_out;
- 
-@@ -917,7 +923,7 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
- 	}
- 
- 	for (i = 0; i < num_cache_leaves; i++) {
--		this_object = INDEX_KOBJECT_PTR(cpu,i);
-+		this_object = INDEX_KOBJECT_PTR(cpu, i);
- 		this_object->cpu = cpu;
- 		this_object->index = i;
- 		retval = kobject_init_and_add(&(this_object->kobj),
-@@ -925,9 +931,8 @@ static int __cpuinit cache_add_dev(struct sys_device * sys_dev)
- 					      per_cpu(cache_kobject, cpu),
- 					      "index%1lu", i);
- 		if (unlikely(retval)) {
--			for (j = 0; j < i; j++) {
--				kobject_put(&(INDEX_KOBJECT_PTR(cpu,j)->kobj));
--			}
-+			for (j = 0; j < i; j++)
-+				kobject_put(&(INDEX_KOBJECT_PTR(cpu, j)->kobj));
- 			kobject_put(per_cpu(cache_kobject, cpu));
- 			cpuid4_cache_sysfs_exit(cpu);
- 			return retval;
-@@ -952,7 +957,7 @@ static void __cpuinit cache_remove_dev(struct sys_device * sys_dev)
- 	cpumask_clear_cpu(cpu, to_cpumask(cache_dev_map));
- 
- 	for (i = 0; i < num_cache_leaves; i++)
--		kobject_put(&(INDEX_KOBJECT_PTR(cpu,i)->kobj));
-+		kobject_put(&(INDEX_KOBJECT_PTR(cpu, i)->kobj));
- 	kobject_put(per_cpu(cache_kobject, cpu));
- 	cpuid4_cache_sysfs_exit(cpu);
- }
-@@ -977,8 +982,7 @@ static int __cpuinit cacheinfo_cpu_callback(struct notifier_block *nfb,
- 	return NOTIFY_OK;
- }
- 
--static struct notifier_block __cpuinitdata cacheinfo_cpu_notifier =
--{
-+static struct notifier_block __cpuinitdata cacheinfo_cpu_notifier = {
- 	.notifier_call = cacheinfo_cpu_callback,
- };
- 
-diff --git a/arch/x86/kernel/cpu/perfctr-watchdog.c b/arch/x86/kernel/cpu/perfctr-watchdog.c
-index 5c481f6..8100a29 100644
---- a/arch/x86/kernel/cpu/perfctr-watchdog.c
-+++ b/arch/x86/kernel/cpu/perfctr-watchdog.c
-@@ -68,16 +68,16 @@ static inline unsigned int nmi_perfctr_msr_to_bit(unsigned int msr)
- 	/* returns the bit offset of the performance counter register */
- 	switch (boot_cpu_data.x86_vendor) {
- 	case X86_VENDOR_AMD:
--		return (msr - MSR_K7_PERFCTR0);
-+		return msr - MSR_K7_PERFCTR0;
- 	case X86_VENDOR_INTEL:
- 		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
--			return (msr - MSR_ARCH_PERFMON_PERFCTR0);
-+			return msr - MSR_ARCH_PERFMON_PERFCTR0;
- 
- 		switch (boot_cpu_data.x86) {
- 		case 6:
--			return (msr - MSR_P6_PERFCTR0);
-+			return msr - MSR_P6_PERFCTR0;
- 		case 15:
--			return (msr - MSR_P4_BPU_PERFCTR0);
-+			return msr - MSR_P4_BPU_PERFCTR0;
- 		}
- 	}
- 	return 0;
-@@ -92,16 +92,16 @@ static inline unsigned int nmi_evntsel_msr_to_bit(unsigned int msr)
- 	/* returns the bit offset of the event selection register */
- 	switch (boot_cpu_data.x86_vendor) {
- 	case X86_VENDOR_AMD:
--		return (msr - MSR_K7_EVNTSEL0);
-+		return msr - MSR_K7_EVNTSEL0;
- 	case X86_VENDOR_INTEL:
- 		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
--			return (msr - MSR_ARCH_PERFMON_EVENTSEL0);
-+			return msr - MSR_ARCH_PERFMON_EVENTSEL0;
- 
- 		switch (boot_cpu_data.x86) {
- 		case 6:
--			return (msr - MSR_P6_EVNTSEL0);
-+			return msr - MSR_P6_EVNTSEL0;
- 		case 15:
--			return (msr - MSR_P4_BSU_ESCR0);
-+			return msr - MSR_P4_BSU_ESCR0;
- 		}
- 	}
- 	return 0;
-@@ -113,7 +113,7 @@ int avail_to_resrv_perfctr_nmi_bit(unsigned int counter)
- {
- 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
- 
--	return (!test_bit(counter, perfctr_nmi_owner));
-+	return !test_bit(counter, perfctr_nmi_owner);
- }
- 
- /* checks the an msr for availability */
-@@ -124,7 +124,7 @@ int avail_to_resrv_perfctr_nmi(unsigned int msr)
- 	counter = nmi_perfctr_msr_to_bit(msr);
- 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
- 
--	return (!test_bit(counter, perfctr_nmi_owner));
-+	return !test_bit(counter, perfctr_nmi_owner);
- }
- EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi_bit);
- 
-@@ -237,7 +237,7 @@ static unsigned int adjust_for_32bit_ctr(unsigned int hz)
- 	 */
- 	counter_val = (u64)cpu_khz * 1000;
- 	do_div(counter_val, retval);
-- 	if (counter_val > 0x7fffffffULL) {
-+	if (counter_val > 0x7fffffffULL) {
- 		u64 count = (u64)cpu_khz * 1000;
- 		do_div(count, 0x7fffffffUL);
- 		retval = count + 1;
-@@ -251,7 +251,7 @@ static void write_watchdog_counter(unsigned int perfctr_msr,
- 	u64 count = (u64)cpu_khz * 1000;
- 
- 	do_div(count, nmi_hz);
--	if(descr)
-+	if (descr)
- 		pr_debug("setting %s to -0x%08Lx\n", descr, count);
- 	wrmsrl(perfctr_msr, 0 - count);
- }
-@@ -262,7 +262,7 @@ static void write_watchdog_counter32(unsigned int perfctr_msr,
- 	u64 count = (u64)cpu_khz * 1000;
- 
- 	do_div(count, nmi_hz);
--	if(descr)
-+	if (descr)
- 		pr_debug("setting %s to -0x%08Lx\n", descr, count);
- 	wrmsr(perfctr_msr, (u32)(-count), 0);
- }
-@@ -296,7 +296,7 @@ static int setup_k7_watchdog(unsigned nmi_hz)
- 
- 	/* setup the timer */
- 	wrmsr(evntsel_msr, evntsel, 0);
--	write_watchdog_counter(perfctr_msr, "K7_PERFCTR0",nmi_hz);
-+	write_watchdog_counter(perfctr_msr, "K7_PERFCTR0", nmi_hz);
- 
- 	/* initialize the wd struct before enabling */
- 	wd->perfctr_msr = perfctr_msr;
-@@ -387,7 +387,7 @@ static int setup_p6_watchdog(unsigned nmi_hz)
- 	/* setup the timer */
- 	wrmsr(evntsel_msr, evntsel, 0);
- 	nmi_hz = adjust_for_32bit_ctr(nmi_hz);
--	write_watchdog_counter32(perfctr_msr, "P6_PERFCTR0",nmi_hz);
-+	write_watchdog_counter32(perfctr_msr, "P6_PERFCTR0", nmi_hz);
- 
- 	/* initialize the wd struct before enabling */
- 	wd->perfctr_msr = perfctr_msr;
-@@ -415,7 +415,7 @@ static void __kprobes p6_rearm(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz)
- 	apic_write(APIC_LVTPC, APIC_DM_NMI);
- 
- 	/* P6/ARCH_PERFMON has 32 bit counter write */
--	write_watchdog_counter32(wd->perfctr_msr, NULL,nmi_hz);
-+	write_watchdog_counter32(wd->perfctr_msr, NULL, nmi_hz);
- }
- 
- static const struct wd_ops p6_wd_ops = {
-@@ -490,9 +490,9 @@ static int setup_p4_watchdog(unsigned nmi_hz)
- 	if (smp_num_siblings == 2) {
- 		unsigned int ebx, apicid;
- 
--        	ebx = cpuid_ebx(1);
--	        apicid = (ebx >> 24) & 0xff;
--        	ht_num = apicid & 1;
-+		ebx = cpuid_ebx(1);
-+		apicid = (ebx >> 24) & 0xff;
-+		ht_num = apicid & 1;
- 	} else
- #endif
- 		ht_num = 0;
-@@ -544,7 +544,7 @@ static int setup_p4_watchdog(unsigned nmi_hz)
- 	}
- 
- 	evntsel = P4_ESCR_EVENT_SELECT(0x3F)
--	 	| P4_ESCR_OS
-+		| P4_ESCR_OS
- 		| P4_ESCR_USR;
- 
- 	cccr_val |= P4_CCCR_THRESHOLD(15)
-@@ -612,7 +612,7 @@ static void __kprobes p4_rearm(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz)
- {
- 	unsigned dummy;
- 	/*
-- 	 * P4 quirks:
-+	 * P4 quirks:
- 	 * - An overflown perfctr will assert its interrupt
- 	 *   until the OVF flag in its CCCR is cleared.
- 	 * - LVTPC is masked on interrupt and must be
-@@ -662,7 +662,8 @@ static int setup_intel_arch_watchdog(unsigned nmi_hz)
- 	 * NOTE: Corresponding bit = 0 in ebx indicates event present.
- 	 */
- 	cpuid(10, &(eax.full), &ebx, &unused, &unused);
--	if ((eax.split.mask_length < (ARCH_PERFMON_UNHALTED_CORE_CYCLES_INDEX+1)) ||
-+	if ((eax.split.mask_length <
-+			(ARCH_PERFMON_UNHALTED_CORE_CYCLES_INDEX+1)) ||
- 	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
- 		return 0;
- 
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index d5e3039..1e90434 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -128,7 +128,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 			if (i < ARRAY_SIZE(x86_power_flags) &&
- 			    x86_power_flags[i])
- 				seq_printf(m, "%s%s",
--					   x86_power_flags[i][0]?" ":"",
-+					   x86_power_flags[i][0] ? " " : "",
- 					   x86_power_flags[i]);
- 			else
- 				seq_printf(m, " [%d]", i);
-diff --git a/arch/x86/kernel/cpu/vmware.c b/arch/x86/kernel/cpu/vmware.c
-index 284c399..bc24f51 100644
---- a/arch/x86/kernel/cpu/vmware.c
-+++ b/arch/x86/kernel/cpu/vmware.c
-@@ -49,17 +49,17 @@ static inline int __vmware_platform(void)
- 
- static unsigned long __vmware_get_tsc_khz(void)
- {
--        uint64_t tsc_hz;
--        uint32_t eax, ebx, ecx, edx;
-+	uint64_t tsc_hz;
-+	uint32_t eax, ebx, ecx, edx;
- 
--        VMWARE_PORT(GETHZ, eax, ebx, ecx, edx);
-+	VMWARE_PORT(GETHZ, eax, ebx, ecx, edx);
- 
--        if (ebx == UINT_MAX)
--                return 0;
--        tsc_hz = eax | (((uint64_t)ebx) << 32);
--        do_div(tsc_hz, 1000);
--        BUG_ON(tsc_hz >> 32);
--        return tsc_hz;
-+	if (ebx == UINT_MAX)
-+		return 0;
-+	tsc_hz = eax | (((uint64_t)ebx) << 32);
-+	do_div(tsc_hz, 1000);
-+	BUG_ON(tsc_hz >> 32);
-+	return tsc_hz;
++
+ /*
+  * On some architectures (PPC64, IA64) function pointers
+  * are actually only tokens to some data that then holds the
+diff --git a/kernel/module.c b/kernel/module.c
+index 0a04983..f1fbeb0 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2890,6 +2890,22 @@ bool is_module_text_address(unsigned long addr)
  }
  
  /*
++ * is_module_init_text_address - is this address inside a module's .init.text
++ * section?
++ * @addr: the address to check.
++ */
++bool is_module_init_text_address(unsigned long addr)
++{
++	bool ret;
++
++	preempt_disable();
++	ret = __module_init_text_address(addr) != NULL;
++	preempt_enable();
++
++	return ret;
++}
++
++/*
+  * __module_text_address - get the module whose code contains an address.
+  * @addr: the address.
+  *
+@@ -2909,6 +2925,26 @@ struct module *__module_text_address(unsigned long addr)
+ }
+ EXPORT_SYMBOL_GPL(__module_text_address);
+ 
++/*
++ * __module_init_text_address - get the module whose .init.text contains an
++ * address.
++ * @addr: the address.
++ *
++ * Must be called with preempt disabled or module mutex held so that
++ * module doesn't get freed during this.
++ */
++struct module *__module_init_text_address(unsigned long addr)
++{
++	struct module *mod = __module_address(addr);
++	if (mod) {
++		/* Make sure it's within the .init.text section. */
++		if (!within(addr, mod->module_init, mod->init_text_size))
++			mod = NULL;
++	}
++	return mod;
++}
++EXPORT_SYMBOL_GPL(__module_init_text_address);
++
+ /* Don't grab lock, we're oopsing. */
+ void print_modules(void)
+ {
+-- 
+tg: (f00caa7..) t/platsection/warn_in_probe (depends on: linus/master)
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
