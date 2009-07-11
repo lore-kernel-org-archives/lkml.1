@@ -1,213 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZGKHbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZGKHoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZGKHbX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 03:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZGKHbN
+	id S1754847AbZGKHoY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 03:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZGKHoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 03:31:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47302 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751832AbZGKHbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 03:31:12 -0400
-Date: Sat, 11 Jul 2009 09:30:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
-Message-ID: <20090711073037.GA28414@elte.hu>
-References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com> <20090710112403.GC3760@elte.hu> <200907111537.03191.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907111537.03191.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 11 Jul 2009 03:44:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56724 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751610AbZGKHoO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 03:44:14 -0400
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090711944.448667020@firstfloor.org>
+In-Reply-To: <20090711944.448667020@firstfloor.org>
+To: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/3] x86: mce: Move most mce subsystem internal declarations into mce-internal.h
+Message-Id: <20090711074409.915701D0261@basil.firstfloor.org>
+Date: Sat, 11 Jul 2009 09:44:09 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+Move MCE subsystem internal prototypes and externs into mce-internal.h
+This way they don't pollute the global include name space (but
+are still global on the linker level).
 
-> On Fri, 10 Jul 2009 08:54:03 pm Ingo Molnar wrote:
-> > * Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
-> > >  #define ARCH_SHF_SMALL 0
-> > >  #endif
-> > >
-> > > +/* Modules' sections will be aligned on page boundaries
-> > > + * to ensure complete separation of code and data, but
-> > > + * only when CONFIG_DEBUG_RODATA=y */
-> >
-> > please use the customary comment style:
-> >
-> >   /*
-> >    * Comment .....
-> >    * ...... goes here:
-> >    */
-> 
-> Please don't.  There's one spot in that file which does it, and 
-> frankly it's a distracting waste of space.
+I didn't move all, especially not prototypes that are logically 
+not internal (like thermal setup)
 
-What are you talking about? There's _16_ places in kernel/module.c 
-that use the above standard comment style.
+No code behaviour changes.
 
-Furthermore, why do we have _five_ different, inconsisent looking 
-comment styles mixed into this same file, often mixed within the 
-_same function_.
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-It is rather distracting and annoying when code uses non-standard 
-multi-line comments like:
+---
+ arch/x86/include/asm/mce.h                |   48 +++++-------------------------
+ arch/x86/kernel/cpu/mcheck/mce-inject.c   |    2 +
+ arch/x86/kernel/cpu/mcheck/mce-internal.h |   42 ++++++++++++++++++++++++++
+ arch/x86/kernel/cpu/mcheck/mce_amd.c      |    2 +
+ arch/x86/kernel/cpu/mcheck/mce_intel.c    |    1 
+ 5 files changed, 56 insertions(+), 39 deletions(-)
 
-/* Lay out the SHF_ALLOC sections in a way not dissimilar to how ld
-   might -- code, read-only data, read-write data, small data.  Tally
-   sizes, and place the offsets into sh_entsize fields: high bit means it
-   belongs in init. */
-
-Mixed with the standard style:
-
-/*
- * Ensure that an exported symbol [global namespace] does not already exist
- * in the kernel or in some other module's exported symbol table.
- */
-
-Mixed with a weird mix of the two styles:
-
-/* Generate the signature for all relevant module structures here.
- * If these change, we don't want to try to parse the module. */
-
-Mixed with a second weird mix of these styles:
-
-        /* Now sew it into the lists so we can get lockdep and oops
-         * info during argument parsing.  Noone should access us, since
-         * strong_try_module_get() will fail.
-         * lockdep/oops can run asynchronous, so use the RCU list insertion
-         * function to insert in a way safe to concurrent readers.
-         * The mutex protects against concurrent writers.
-         */
-
-Mixed with a third weird mix of these styles:
-
-/* Format: modulename size refcount deps address
-
-   Where refcount is a number or -, and deps is a comma-separated list
-   of depends or -.
-*/
-
-I fully recognize your right to disagree with fine details in the 
-standard style rules - they _are_ partly arbitrary - but that's 
-pretty much the point: predictable looking patterns help us 
-pinpointing weird looking _structure_ in code.
-
-But that finer argument does not even apply here because you dont 
-actually use any styles consistently - you use absolutely no 
-consistent style at all in kernel/module.c! You claim that you have 
-some different comment style from what others use in the kernel - 
-yet you dont apply it consistently at all.
-
-It is not helpful at all if you lace your code with extra comment 
-noise, in five different flavors. _You_ apparently do not even 
-notice and probably you dont even care, but others like me do.
-
-It is doubly not helpful if you compound this by resisting, opposing 
-and obstructing the review activities of others who do care.
-
-And it is not helpful square two if you teach new contributors to 
-not care about clean patches.
-
-> But better is to try to stick with pithy one-line comments!
-
-Sure. My remark was limited to multi-line comments.
-
-> > > +			"  text size: %lu\n"
-> > > +			"  ro size: %lu\n"
-> > > +			"  total size: %lu\n",
-> > > +			(unsigned long)base,
-> > > +			text_size, ro_size, total_size);
-> >
-> > Please remove all DEBUGP() lines - they uglify the code.
-> 
-> I don't know if anyone ever turns them on any more, but this usage 
-> is entirely consistent with how they work at the moment: detailing 
-> the module layout.
-
-Just like you requested multi-line comments to be shortened or 
-eliminated above (because if used incorrectly they distract from 
-code readability), do i request unused in-source debugging code to 
-be removed - for exactly the same reasons.
-
-Half of this patch was debug statements that distracted me (and 
-others) from reviewing the merits of the patch.
-
-> > > +		begin_pfn = PFN_DOWN((unsigned long)base);
-> > > +		end_pfn = PFN_DOWN((unsigned long)base + ro_size);
-> >
-> > Why is base a void * then cast to unsigned long? Use the more 
-> > natural type as a parameter to avoid dangerous type-casts.
-> 
-> Because this is how PFN_DOWN works?
-
-You did not read and apparently did not understand my review 
-suggestion at all. The type of 'base' should be changed to the 
-natural type: unsigned long.
-
-This has nothing to do with how 'PFN_DOWN works', whatsoever.
-
-> > Please also fix many other instances of this.
-> 
-> Please don't.  Fix the credit comment if you want, but I've 
-> applied the current version for now.
-
-Sigh, and now you apply this incomplete and unclean patch. The thing 
-is, unpatched upstream kernel/module.c is quite a readability mess 
-right now, even on the most trivial level and beyond comments:
+Index: linux/arch/x86/include/asm/mce.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/mce.h
++++ linux/arch/x86/include/asm/mce.h
+@@ -106,9 +106,6 @@ struct mce_log {
+ #include <linux/init.h>
+ #include <asm/atomic.h>
  
- - Inconsistent function prototypes.
-
- - Mid-string broken up printks.
-
- - Code flow confusion: inconsistent checks for allocation errors
-   within the same function.
-
- - Huge functions that should be broken up. load_module() is 470
-   lines long (!).
-
- - Stuff like casting the same variable four times in 2 lines:
-
-  static void *module_alloc_update_bounds(unsigned long size)
-  {
-        void *ret = module_alloc(size);
-
-        if (ret) {
-                /* Update module bounds. */
-                if ((unsigned long)ret < module_addr_min)
-                        module_addr_min = (unsigned long)ret;
-                if ((unsigned long)ret + size > module_addr_max)
-                        module_addr_max = (unsigned long)ret + size;
-        }
-        return ret;
-  }
-
-  Can you read that function at a glance? I sure cannot.
-
-And i'm sure there's more - this is what 2 minutes of looking 
-showed. If we cannot even get the trivial stuff right how can we get 
-the more complex stuff right?
-
-_Please_ work on making it more readabe before piling more features 
-on it ...
-
-Thanks,
-
-	Ingo
+-extern int mce_disabled;
+-extern int mce_p5_enabled;
+-
+ #ifdef CONFIG_X86_MCE
+ void mcheck_init(struct cpuinfo_x86 *c);
+ #else
+@@ -127,7 +124,6 @@ static inline void enable_p5_mce(void) {
+ 
+ void mce_setup(struct mce *m);
+ void mce_log(struct mce *m);
+-DECLARE_PER_CPU(struct sys_device, mce_dev);
+ 
+ /*
+  * Maximum banks number.
+@@ -136,28 +132,6 @@ DECLARE_PER_CPU(struct sys_device, mce_d
+  */
+ #define MAX_NR_BANKS 32
+ 
+-#ifdef CONFIG_X86_MCE_INTEL
+-extern int mce_cmci_disabled;
+-extern int mce_ignore_ce;
+-void mce_intel_feature_init(struct cpuinfo_x86 *c);
+-void cmci_clear(void);
+-void cmci_reenable(void);
+-void cmci_rediscover(int dying);
+-void cmci_recheck(void);
+-#else
+-static inline void mce_intel_feature_init(struct cpuinfo_x86 *c) { }
+-static inline void cmci_clear(void) {}
+-static inline void cmci_reenable(void) {}
+-static inline void cmci_rediscover(int dying) {}
+-static inline void cmci_recheck(void) {}
+-#endif
+-
+-#ifdef CONFIG_X86_MCE_AMD
+-void mce_amd_feature_init(struct cpuinfo_x86 *c);
+-#else
+-static inline void mce_amd_feature_init(struct cpuinfo_x86 *c) { }
+-#endif
+-
+ int mce_available(struct cpuinfo_x86 *c);
+ 
+ DECLARE_PER_CPU(unsigned, mce_exception_count);
+@@ -165,22 +139,9 @@ DECLARE_PER_CPU(unsigned, mce_poll_count
+ 
+ extern atomic_t mce_entry;
+ 
+-typedef DECLARE_BITMAP(mce_banks_t, MAX_NR_BANKS);
+-DECLARE_PER_CPU(mce_banks_t, mce_poll_banks);
+-
+-enum mcp_flags {
+-	MCP_TIMESTAMP = (1 << 0),	/* log time stamp */
+-	MCP_UC = (1 << 1),		/* log uncorrected errors */
+-	MCP_DONTLOG = (1 << 2),		/* only clear, don't log */
+-};
+-void machine_check_poll(enum mcp_flags flags, mce_banks_t *b);
+-
+ int mce_notify_irq(void);
+ void mce_notify_process(void);
+ 
+-DECLARE_PER_CPU(struct mce, injectm);
+-extern struct file_operations mce_chrdev_ops;
+-
+ /*
+  * Exception handler
+  */
+@@ -204,5 +165,14 @@ void intel_init_thermal(struct cpuinfo_x
+ 
+ void mce_log_therm_throt_event(__u64 status);
+ 
++/*
++ * Intel CMCI
++ */
++#ifdef CONFIG_X86_MCE_INTEL
++void cmci_recheck(void);
++#else
++static inline void cmci_recheck(void) {}
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_X86_MCE_H */
+Index: linux/arch/x86/kernel/cpu/mcheck/mce-inject.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce-inject.c
++++ linux/arch/x86/kernel/cpu/mcheck/mce-inject.c
+@@ -20,6 +20,8 @@
+ #include <linux/smp.h>
+ #include <asm/mce.h>
+ 
++#include "mce-internal.h"
++
+ /* Update fake mce registers on current CPU. */
+ static void inject_mce(struct mce *m)
+ {
+Index: linux/arch/x86/kernel/cpu/mcheck/mce-internal.h
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce-internal.h
++++ linux/arch/x86/kernel/cpu/mcheck/mce-internal.h
+@@ -1,4 +1,5 @@
+ #include <linux/sysdev.h>
++#include <linux/percpu.h>
+ #include <asm/mce.h>
+ 
+ enum severity_level {
+@@ -24,6 +25,47 @@ struct mce_bank {
+ int mce_severity(struct mce *a, int tolerant, char **msg);
+ 
+ extern int mce_ser;
++extern int mce_ignore_ce;
+ 
+ extern struct mce_bank *mce_banks;
+ 
++extern int mce_disabled;
++extern int mce_p5_enabled;
++
++DECLARE_PER_CPU(struct sys_device, mce_dev);
++
++/*
++ * MCE corrected error support
++ */
++
++typedef DECLARE_BITMAP(mce_banks_t, MAX_NR_BANKS);
++DECLARE_PER_CPU(mce_banks_t, mce_poll_banks);
++
++enum mcp_flags {
++	MCP_TIMESTAMP = (1 << 0),	/* log time stamp */
++	MCP_UC = (1 << 1),		/* log uncorrected errors */
++	MCP_DONTLOG = (1 << 2),		/* only clear, don't log */
++};
++void machine_check_poll(enum mcp_flags flags, mce_banks_t *b);
++
++#ifdef CONFIG_X86_MCE_INTEL
++extern int mce_cmci_disabled;
++void mce_intel_feature_init(struct cpuinfo_x86 *c);
++void cmci_clear(void);
++void cmci_reenable(void);
++void cmci_rediscover(int dying);
++#else
++static inline void mce_intel_feature_init(struct cpuinfo_x86 *c) { }
++static inline void cmci_clear(void) {}
++static inline void cmci_reenable(void) {}
++static inline void cmci_rediscover(int dying) {}
++#endif
++
++#ifdef CONFIG_X86_MCE_AMD
++void mce_amd_feature_init(struct cpuinfo_x86 *c);
++#else
++static inline void mce_amd_feature_init(struct cpuinfo_x86 *c) { }
++#endif
++
++DECLARE_PER_CPU(struct mce, injectm);
++extern struct file_operations mce_chrdev_ops;
+Index: linux/arch/x86/kernel/cpu/mcheck/mce_amd.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_amd.c
++++ linux/arch/x86/kernel/cpu/mcheck/mce_amd.c
+@@ -30,6 +30,8 @@
+ #include <asm/mce.h>
+ #include <asm/msr.h>
+ 
++#include "mce-internal.h"
++
+ #define PFX               "mce_threshold: "
+ #define VERSION           "version 1.1.1"
+ #define NR_BANKS          6
+Index: linux/arch/x86/kernel/cpu/mcheck/mce_intel.c
+===================================================================
+--- linux.orig/arch/x86/kernel/cpu/mcheck/mce_intel.c
++++ linux/arch/x86/kernel/cpu/mcheck/mce_intel.c
+@@ -12,6 +12,7 @@
+ #include <asm/processor.h>
+ #include <asm/msr.h>
+ #include <asm/mce.h>
++#include "mce-internal.h"
+ 
+ /*
+  * Support for Intel Correct Machine Check Interrupts. This allows
