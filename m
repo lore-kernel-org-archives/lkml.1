@@ -1,100 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758402AbZGKDLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbZGKDQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758402AbZGKDLd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 23:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbZGKDLY
+	id S1753689AbZGKDQV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 23:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZGKDQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 23:11:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:24266 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752960AbZGKDLX convert rfc822-to-8bit (ORCPT
+	Fri, 10 Jul 2009 23:16:14 -0400
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:56631 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753045AbZGKDQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 23:11:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=Oy54oslcvOxyxGwhnlefIem6FFt6iZx9Q4NITYPn5ZlhrFgXIMW8aEpYYX89yCxKw4
-         1RcBgHDV8cqb0RY3Wukmlko0+nErtzG0aTzbQMHzIKihX7P1/2zHi3momN3x1hP/Hi3I
-         JYNjZ7OXttSSK7i2BCNXe0ACJ5As7+iBDbQf0=
-Date: Sat, 11 Jul 2009 11:11:10 +0800
-From: Ming Lei <tom.leiming@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, catalin.marinas@arm.com, dwmw2@infradead.org,
-       kay.sievers@vrfy.org
-Subject: Re: [PATCH] driver core:firmware_class:fix memory leak of page
- pointers array
-Message-ID: <20090711111110.6be67d82@linux-lm>
-In-Reply-To: <20090710173649.GB3687@kroah.com>
-References: <1247098591-4887-1-git-send-email-tom.leiming@gmail.com>
-	<d82e647a0907081720v438344fcj1b37e0e226818632@mail.gmail.com>
-	<20090710173649.GB3687@kroah.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.4; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 8BIT
+	Fri, 10 Jul 2009 23:16:13 -0400
+X-Greylist: delayed 2172 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Jul 2009 23:16:13 EDT
+Message-ID: <4A57FB7F.1020702@blueyonder.co.uk>
+Date: Sat, 11 Jul 2009 03:39:59 +0100
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] mm/memcontrol.c: Fix build error 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ÓÚ Fri, 10 Jul 2009 10:36:49 -0700
-Greg KH <greg@kroah.com> Ð´µÀ:
+--- memcontrol.c_orig   2009-07-11 03:35:04.040153659 +0100
++++ memcontrol.c        2009-07-11 03:34:08.291161442 +0100
+@@ -25,6 +25,7 @@
+  #include <linux/smp.h>
+  #include <linux/page-flags.h>
+  #include <linux/backing-dev.h>
++#include <linux/blkdev.h>
+  #include <linux/bit_spinlock.h>
+  #include <linux/rcupdate.h>
+  #include <linux/limits.h>
 
-> On Thu, Jul 09, 2009 at 08:20:48AM +0800, Ming Lei wrote:
-> > 2009/7/9  <tom.leiming@gmail.com>:
-> > > From: Ming Lei <tom.leiming@gmail.com>
-> > >
-> > > The page pointers array is allocated in fw_realloc_buffer()
-> > > called by firmware_data_write(), and should be freed in release
-> > > function of firmware device.
-> > >
-> > > Signed-off-by:Ming Lei <tom.leiming@gmail.com>
-> > > Reported-by:Catalin Marinas <catalin.marinas@arm.com>
-> > > Acked-by: David Woodhouse <David.Woodhouse@intel.com>
-> > 
-> > ---
-> > This patch is against Catalin Marinas's patch:
-> > 	[PATCH] Free struct device in fw_dev_release()
-> 
-> Hm, I never got a final version of that patch, care to send it to me?
-
-It is the latest version and now is against linus mainline.
-Thanks.
-
->From 50603673f5c68eb843584e65cc9930919910f98a Mon Sep 17 00:00:00 2001
-From: Ming Lei <tom.leiming@gmail.com>
-Date: Thu, 9 Jul 2009 07:56:52 +0800
-Subject: [PATCH] driver core:firmware_class:fix memory leak of page pointers array
-
-The page pointers array is allocated in fw_realloc_buffer() called by
-firmware_data_write(), and should be freed in release function of firmware
-device.
-
-Signed-off-by:Ming Lei <tom.leiming@gmail.com>
-Reported-by:Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: David Woodhouse <David.Woodhouse@intel.com>
----
- drivers/base/firmware_class.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index fc46653..2643366 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -180,7 +180,6 @@ static ssize_t firmware_loading_store(struct device *dev,
- 				goto err;
- 			}
- 			/* Pages will be freed by vfree() */
--			fw_priv->pages = NULL;
- 			fw_priv->page_array_size = 0;
- 			fw_priv->nr_pages = 0;
- 			complete(&fw_priv->completion);
+Regards
+Sid.
 -- 
-1.6.0.GIT
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
-
-
-
-
--- 
-Lei Ming
