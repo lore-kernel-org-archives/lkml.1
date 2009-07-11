@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbZGKAtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbZGKBBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758245AbZGKAtk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 20:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbZGKAtb
+	id S1757917AbZGKBBl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 21:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757626AbZGKBBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 20:49:31 -0400
-Received: from smtp124.mail.mud.yahoo.com ([209.191.84.227]:25764 "HELO
-	smtp124.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757429AbZGKAtb (ORCPT
+	Fri, 10 Jul 2009 21:01:31 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:61634 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757558AbZGKBBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 20:49:31 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Jul 2009 20:49:30 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.ar;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=WPBCeowm/FDgycs/rm8C7JXiQ3clCWT6R9VurNRi94zz7XSEGG2JW+Ec/j0JCJgfjF3O4sz6a/XFtclNQqHdiPGE6+I1Lgc9zU8zm/xlRneGqXNyB8ZXgJphnFSO3WL4J57cuMBtDM25UHtiRlza2iVbxZ3iEuLG6gixpXfkxoY=  ;
-X-Yahoo-SMTP: MJlmAJmswBD1ci8cgZcdLoLtCohJxg8-
-X-YMail-OSG: J1.4Qc8VM1nONNTcv15mM14COW6rrGaNjQY6yn9.TvsVzR3qHCnPZfic7Q7UkAsJiegqrqrqwd7p9ss_vY7kx7HwmuUBtZdULNFTgCi.T67KAFUYyyqszq30KCubddeGeS4Ie2_WeKAUC2CaxI4Ie3BM9E1.MgvzuC7X.OlSDMvZnWplxB6aJ2m1f7Q8jlgRtB67ookEJU46meTUioRea.FsCN_6tkH1vRR1HwW9RoBvUboQKXwk5yeUrCoZ9UCieRM6u14tLF1QP32ZHOHYXwoIIFNMSCiDYr3bk5LClIrLcSHKyiZaG81PZi_tmKwVCuJ81DcrD9mnTfSJQKGlBJarVsmyh7VKWF4-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4A57DFE2.7020309@yahoo.com.ar>
-Date: Fri, 10 Jul 2009 21:42:10 -0300
-From: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
-MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: No more vcs1 and vcsa1 in 2.6.30.N
-References: <4A57A62C.2030302@yahoo.com.ar> <1247271564.32205.2.camel@yio.site>
-In-Reply-To: <1247271564.32205.2.camel@yio.site>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 10 Jul 2009 21:01:30 -0400
+Date: Fri, 10 Jul 2009 21:01:25 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2 for 2.6.32] SFI - Simple Firmware Interface support
+In-reply-to: <20090710051848.GB22218@elte.hu>
+Message-id: <alpine.LFD.2.00.0907102059320.4088@localhost.localdomain>
+References: <1247026438-20891-1-git-send-email-lenb@kernel.org>
+ <20090710051848.GB22218@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Fri, 2009-07-10 at 17:35 -0300, Gerardo Exequiel Pozzi wrote:
->   
->> Since upgrade my system to 2.6.30[.1]. I don't have anymore
->> /sys/devices/virtual/vc/vcs1 and /sys/devices/virtual/vc/vcs1 in
->> consequence not have anymore the corresponding char devs in /dev.
->>     
->
-> Seems we missed the consoles, which are always pre-allocated, and not
-> created on demand. Does this help?
->
-> Thanks,
-> Kay
->
-> diff --git a/drivers/char/vc_screen.c b/drivers/char/vc_screen.c
-> index d94d25c..c1791a6 100644
-> --- a/drivers/char/vc_screen.c
-> +++ b/drivers/char/vc_screen.c
-> @@ -495,11 +495,15 @@ void vcs_remove_sysfs(int index)
->  
->  int __init vcs_init(void)
->  {
-> +	unsigned int i;
-> +
->  	if (register_chrdev(VCS_MAJOR, "vcs", &vcs_fops))
->  		panic("unable to get major %d for vcs device", VCS_MAJOR);
->  	vc_class = class_create(THIS_MODULE, "vc");
->  
->  	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 0), NULL, "vcs");
->  	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 128), NULL, "vcsa");
-> +	for (i = 0; i < MIN_NR_CONSOLES; i++)
-> +		vcs_make_sysfs(i);
->  	return 0;
->  }
->
->
->
->   
-Yes, the problem is solved applying this patch. Thanks for the quick fix
-Kay.
 
-Good Luck!
+> 
+> > Feng Tang (10):
+> >       SFI, x86: add CONFIG_SFI
+> >       SFI: document boot param "sfi=off"
+> >       SFI: create include/linux/sfi.h
+> >       SFI: add core support
+> >       ACPI, x86: remove ACPI dependency on some IO-APIC routines
+> >       SFI: add x86 support
+> >       SFI, x86: hook e820() for memory map initialization
+> >       SFI: Enable SFI to parse ACPI tables
+> >       SFI, PCI: Hook MMCONFIG
+> >       SFI: add boot-time initialization hooks
+> 
+> Now that commit quality is all the rage, let me point out a 
+> (trivial) detail that could be improved: patch title capitalization. 
+> 
+> In particular for commits touching arch/x86/ we try to standardize 
+> on capitalizing the word after the 'x86: ' tag. But in the above 
+> titles the capitalization is mixed-case:
+> 
+>  [aligned vertically for easier readability ]
+> 
+> >       SFI, x86:  add CONFIG_SFI
+> >       SFI:       document boot param "sfi=off"
+> >       SFI:       create include/linux/sfi.h
+> >       SFI:       add core support
+> >       ACPI, x86: remove ACPI dependency on some IO-APIC routines
+> >       SFI:       add x86 support
+> >       SFI, x86:  hook e820() for memory map initialization
+> >       SFI:       Enable SFI to parse ACPI tables
+> >       SFI, PCI:  Hook MMCONFIG
+> >       SFI:       add boot-time initialization hooks
+> 
+> So it would be more consistent to have:
+> 
+> >       SFI, x86:  Add CONFIG_SFI
+> >       SFI:       Document boot param "sfi=off"
+> >       SFI:       Create include/linux/sfi.h
+> >       SFI:       Add core support
+> >       ACPI, x86: Remove ACPI dependency on some IO-APIC routines
+> >       SFI:       Add x86 support
+> >       SFI, x86:  Hook e820() for memory map initialization
+> >       SFI:       Enable SFI to parse ACPI tables
+> >       SFI, PCI:  Hook MMCONFIG
+> >       SFI:       Add boot-time initialization hooks
+> 
+> ( Capitalizing like that has the added (minor) benefit of making it 
+>   slightly easier to read these titles - the 'real' natural language 
+>   sentence portion of the title begins with a capital letter. )
 
--- 
-Gerardo Exequiel Pozzi ( djgera )
-http://www.djgera.com.ar
-KeyID: 0x1B8C330D
-Key fingerprint = 0CAA D5D4 CD85 4434 A219  76ED 39AB 221B 1B8C 330D
+Ingo,
+While I really do appreciate your attention to detail,
+a little time off might be good for you:-)
+
+cheers,
+-Len
 
