@@ -1,55 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZGKTR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbZGKTWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbZGKTR5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 15:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752680AbZGKTRu
+	id S1754233AbZGKTWx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 15:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbZGKTWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 15:17:50 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:35059 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751959AbZGKTRu (ORCPT
+	Sat, 11 Jul 2009 15:22:46 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:30704 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752981AbZGKTWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 15:17:50 -0400
-Date: Sat, 11 Jul 2009 12:18:16 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       malware-list@dmesg.printk.net,
-       Containers <containers@lists.linux-foundation.org>
-Subject: Re: fanotify: the fscking all notification system
-Message-ID: <20090711191816.GA5222@us.ibm.com>
-References: <1246306125.754.300.camel@dhcp235-23.rdu.redhat.com> <20090701041039.GB23013@count0.beaverton.ibm.com>
+	Sat, 11 Jul 2009 15:22:45 -0400
+X-Trace: 228140659/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.87.181/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.87.181
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEADiDWEpPRVe1/2dsb2JhbACBUcpahAkF
+X-IronPort-AV: E=Sophos;i="4.42,384,1243810800"; 
+   d="scan'208";a="228140659"
+Date: Sat, 11 Jul 2009 20:22:11 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Izik Eidus <ieidus@redhat.com>
+cc: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: KSM: current madvise rollup
+In-Reply-To: <4A57C3D1.7000407@redhat.com>
+Message-ID: <Pine.LNX.4.64.0907111916001.30651@sister.anvils>
+References: <Pine.LNX.4.64.0906291419440.5078@sister.anvils>
+ <4A49E051.1080400@redhat.com> <Pine.LNX.4.64.0906301518370.967@sister.anvils>
+ <4A4A5C56.5000109@redhat.com> <Pine.LNX.4.64.0907010057320.4255@sister.anvils>
+ <4A4B317F.4050100@redhat.com> <Pine.LNX.4.64.0907082035400.10356@sister.anvils>
+ <4A57C3D1.7000407@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701041039.GB23013@count0.beaverton.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-| > struct fanotify_event_metadata {
-| >         __u32 event_len;
-| >         __s32 fd;
-| >         __u32 mask;
-| >         __u32 f_flags;
-| >         pid_t pid;
-| >         pid_t tgid;
-| >         __u64 cookie;
-| > }  __attribute__((packed));
-| 
-| Since it passes pids from the kernel to userspace via a socket I suspect
-| this needs input from the folks working on pid namespaces. The events may
-| need to be dropped if the pid namespace of the event's origin doesn't
-| match that of the destination. Otherwise the pid would be ambiguous and
-| this interface will only work for tasks in the initial pid namespace.
+On Sat, 11 Jul 2009, Izik Eidus wrote:
+>... 
+> Isnt it mean that we are "stop using the stable tree help" ?
+> It look like every item that will go into the stable tree will get flushed
+> from it in the second run, that will highly increase the ksmd cpu usage, and
+> will make it find less pages...
+> Was this what you wanted to do? or am i missed anything?
 
-If we do have the destination pid namespace, we could translate the pid
-of the process modifying the file, into the pid namespace of the process
-receiving the notification, like we do in mq_notify().
+You sorted this one out for yourself before I got around to it.
 
-So when a process in an ancestor or unrelated pid namespace modifies the
-file, the si_pid would get set to 0. 
+> 
+> Beside this one more thing i noticed while checking this code:
+> beacuse the new "Ksm shared page" is not File backed page, it isnt count in
+> top as a shared page, and i couldnt find a way to see how many pages are
+> shared for each application..
 
-Sukadev
+Hah!  I can't quite call that a neat trick, but it is amusing.
+
+Yes, checking up on where top gets SHR from, it does originate from
+file_rss, and your previous definition of PageKsm was such that those
+pages had to get counted as file_rss.
+
+If I thought for a moment that these pages really are like file pages,
+I'd immediately revert my PageKsm change, and instead make page->mapping
+point to a fictional address_space (rather like swapper_space), so that
+those pages could still be definitively identified.
+
+But they are not file pages, they are anon pages: anon pages which are
+shared (in this case shared via KSM rather than shared via fork); and
+I was fixing the accounting by making them look like anon pages again.
+And it'll be more important for them to look like anon pages when we
+get to swapping them next time around.
+
+Bundling them in with file_rss may have made some numbers stand out
+more obviously to you; but it was a masquerade, they weren't really
+the numbers you were wanting.
+
+> This is important for management tools such as a tool that will want to know
+> what Virtual Machines it want to migrate from the host into another host based
+> on the memory sharing in that specific host (Meaning how much ram it really
+> take on that specific host)
+
+Okay, I can see that you may well want such info.
+
+> 
+> So I started to prepre a patch that will show merged pages count inside
+> /proc/pid/mergedpages, But then i thought this statics lie:
+> if we will have 2 applications: application A and application B, that share
+> the same page, how should it look like?:
+> 
+> cat /proc/pid_of_A/merged_pages -> 1
+> cat /proc/pid_of_B/merged_pages -> 1
+> 
+> or:
+> 
+> cat /proc/pid_of_A/merged_pages -> 0 (beacuse this one was shared with the
+> page of B)
+> cat /proc/pid_of_B/merged_pages -> 1
+
+I happen to think that the second method, plausible though it
+starts out, ends up leading to more grief than the first.
+
+But two more important things to say.
+
+One, I'm the wrong person to be asking about this: I've little
+experience to draw on here, and my interest wanes when it comes
+to the number gathering end of this.
+
+Two, I don't think you can do it with a count like that at all.
+If you're thinking of migrating A away from B, or A and B together
+away from the rest, don't you need to know how much they're sharing
+with each other, how much they're sharing with the rest?  If A and B
+are different instances of the same app, they're likely to be sharing
+much more with each other than with the rest as a whole: and that'll
+make a huge difference to your decisions on migration.
+
+A single number (probably of that first kind) may be a nice kind
+of reassurance that things are working, and worth providing.  But
+for detailed migration/provisioning decisions, I'd have thought
+you'd need the kernel to provide a list of "id"s of KSM-shared
+pages for each process, which your management tools could then
+crunch upon (observing the different sharings of ids) to try out
+different splits; or else, doing it the other way around, a
+representation of the stable_tree itself, with pids at the nodes.
+
+Though once you got into that detail, I wonder if you'd find that
+you need such info, not just about the KSM pages, but about the
+rest as well (how much are the anon pages being shared across fork,
+for example? which of the file pages are shmem/tmpfs pages needing
+swap? how much swap is being used?).
+
+I think it becomes quite a big subject, and you may be able to
+excite other people with it.
+
+> 
+> To make the second method thing work as much as reaible as we can we would
+> want to break KsmPages that have just one mapping into them...
+
+We may want to do that anyway.  It concerned me a lot when I was
+first testing (and often saw kernel_pages_allocated greater than
+pages_shared - probably because of the original KSM's eagerness to
+merge forked pages, though I think there may have been more to it
+than that).  But seems much less of an issue now (that ratio is much
+healthier), and even less of an issue once KSM pages can be swapped.
+So I'm not bothering about it at the moment, but it may make sense.
+
+> 
+> What do you think about that? witch direction should we take for that?
+
+If nobody else volunteers in on that, I could perhaps make up an
+incriminating list of mm people who have an interest in such things!
+
+> 
+> (Other than this stuff, everything running happy and nice,
+
+Glad to hear it, yes, same at my end (I did have a hang in the cow
+breaking the night before I sent out the rollup, but included the
+fix in that, and it has stood up since).
+
+> I think cpu is
+> little bit too high beacuse the removing of the stable_tree issue)
+
+I think you've resolved that as a non-issue, but is cpu still looking
+too high to you?  It looks high to me, but then I realize that I've
+tuned it to be high anyway.  Do you have any comparison against the
+/dev/ksm KSM, or your first madvise version?
+
+Oh, something that might be making it higher, that I didn't highlight
+(and can revert if you like, it was just more straightforward this way):
+with scan_get_next_rmap skipping the non-present ptes, pages_to_scan is
+currently a limit on the _present_ pages scanned in one batch.
+
+Hugh
