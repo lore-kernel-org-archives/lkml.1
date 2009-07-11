@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbZGKSUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026AbZGKS0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753784AbZGKSUN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 14:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZGKSUC
+	id S1753026AbZGKS0M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 14:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbZGKS0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 14:20:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51898 "EHLO
+	Sat, 11 Jul 2009 14:26:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49496 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751564AbZGKSUB (ORCPT
+	by vger.kernel.org with ESMTP id S1751911AbZGKSZ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 14:20:01 -0400
-Date: Sat, 11 Jul 2009 11:19:28 -0700 (PDT)
+	Sat, 11 Jul 2009 14:25:59 -0400
+Date: Sat, 11 Jul 2009 11:25:42 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-cc: Larry Finger <Larry.Finger@lwfinger.net>, linux-kernel@vger.kernel.org
-Subject: RE: commit 097041e576ee3a50d92dd643ee8ca65bf6a62e21 (fuse: Fix build
- error)
-In-Reply-To: <1247321214.5615.6.camel@heimdal.trondhjem.org>
-Message-ID: <alpine.LFD.2.01.0907111119170.3552@localhost.localdomain>
-References: <1247321214.5615.6.camel@heimdal.trondhjem.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: -tip: block, mm: Fix build error in mm/memcontrol.c
+In-Reply-To: <20090711065152.GA23336@elte.hu>
+Message-ID: <alpine.LFD.2.01.0907111125030.3552@localhost.localdomain>
+References: <20090711065152.GA23336@elte.hu>
 User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,16 +29,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Sat, 11 Jul 2009, Trond Myklebust wrote:
+On Sat, 11 Jul 2009, Ingo Molnar wrote:
 > 
-> Please revert this commit. Instead of fixing the compile problem, it
-> adds a new dependency on CONFIG_BLOCK to both NFS and FUSE. Neither one
-> of them has such a dependency today, nor is there a reason to introduce
-> one. 
-> 
-> The correct fix should rather be to move the definitions of BLK_RW_SYNC
-> and BLK_RW_ASYNC into backing-dev.h as per the patch below.
+> Today's upstream tree build (x86, 64-bit, allyesconfig) failed with 
+> this build error:
 
-Right you are. Thanks,
+I merged a better fix from Trond, which should make all of this 
+unnecessary (just move BLK_RW_[A]SYNC to the header file that people need 
+anyway).
 
 		Linus
