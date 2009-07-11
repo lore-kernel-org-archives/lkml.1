@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbZGKRDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbZGKRVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118AbZGKRDj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 13:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZGKRDa
+	id S1753097AbZGKRVJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 13:21:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZGKRVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 13:03:30 -0400
-Received: from mx33.mail.ru ([94.100.176.47]:28512 "EHLO mx33.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751189AbZGKRD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 13:03:29 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: How to monitor Linux NFS client load?
-Date: Sat, 11 Jul 2009 21:03:23 +0400
-User-Agent: KMail/1.12.0 (Linux/2.6.31-0.rc2.5.3mdv; KDE/4.2.96; x86_64; ; )
+	Sat, 11 Jul 2009 13:21:03 -0400
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:54668 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbZGKRVC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 13:21:02 -0400
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Jan Scholz <scholz@fias.uni-frankfurt.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Tomas Janousek <tomi@nomi.cz>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [Bug #13337] [post 2.6.29 regression] hang during suspend of b44/b43 modules
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera>
+	<87k52izvd9.fsf@scholz.fias.uni-frankfurt.de>
+	<87y6qxx50z.fsf@scholz.fias.uni-frankfurt.de>
+	<200907092203.10294.rjw@sisk.pl>
+	<1247171295.1905.5.camel@johannes.local>
+	<87prc78ga9.fsf@scholz.fias.uni-frankfurt.de>
+	<1247322985.30647.108.camel@johannes.local>
+Date: Sat, 11 Jul 2009 19:20:45 +0200
+In-Reply-To: <1247322985.30647.108.camel@johannes.local> (Johannes Berg's
+	message of "Sat, 11 Jul 2009 16:36:25 +0200")
+Message-ID: <8763dznnki.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.95 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1643450.1QxvPtLl5q";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907112103.27082.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1643450.1QxvPtLl5q
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-Recently we have the case of very high latencies on NFS reads as=20
-reported by application (SAP R/3). NFS server was NetApp FAS; according=20
-to NetApp statistic, average volume read latencies were in order 10ms,=20
-while SAP stats gave 30-50ms. Systems were interconnected by dedicated=20
-1Gb/s Cisco switches (3750G) with ca. 30% max load on interfaces.
+> On Sat, 2009-07-11 at 16:07 +0200, Jan Scholz wrote:
+>
+>> > Jan, can you run with console_suspend=0 (or whatever it is now, Rafael
+>> > will correct me if I'm wrong) that should work on your platform, and put
+>> > a bunch of printk calls into __ieee80211_suspend in net/mac80211/pm.c to
+>> > see where in there it's hanging?
+>> 
+>> Did that, seems like it hangs in
+>>   drv_remove_interface(local, &conf);
+>
+> Ok, thanks! I was going to suggest doing the same in
+> b43_op_remove_interface in drivers/net/wireless/b43/main.c, but I think
+> the problem is just that we have an ordering problem and call drv_stop
+> before drv_remove_interface. I'll try to come up with a fix soon --
+> might not be able to today though, in the meantime I guess you can just
+> move the drv_stop call to the end of the function and tell me if that
+> works -- that would be racy but should be ok most of the time.
 
-On advice of my colleague we changed sunrpc.tcp_slot_table_entries from=20
-default 16 to 128 which seemed to make situation much better - without=20
-changing load pattern of filer in any visible way.
+I moved drv_stop to the end of the function (see patch below) and now
+suspend works fine.
 
-Now, I can understand, why we observed much higher latency on system and=20
-why changing (what effectively is) queue depth helped. But I am totally=20
-frustrated that there does not appear to be *any* possibility to detect=20
-this situation on Linux side and to get a real numbers of real NFS IO=20
-latencies or number of requests waiting to be executed (and I do not=20
-even dream about per-mount point stats).
+Jan
 
-I am grateful for any hints how can we monitor Linux NFS client and get=20
-real-life numbers of what happens inside. Thank you!
-
-=2Dandrey
-
---nextPart1643450.1QxvPtLl5q
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpYxdsACgkQR6LMutpd94zlhACbBrZXuthSX0JHia0msHfJx5Gp
-EHoAoJOddoM2KNJfS4yysIxWuOyRQWzf
-=Co50
------END PGP SIGNATURE-----
-
---nextPart1643450.1QxvPtLl5q--
+diff --git a/net/mac80211/pm.c b/net/mac80211/pm.c
+index 7a549f9..0ac15fb 100644
+--- a/net/mac80211/pm.c
++++ b/net/mac80211/pm.c
+@@ -58,12 +58,6 @@ int __ieee80211_suspend(struct ieee80211_hw *hw)
+ 	/* flush again, in case driver queued work */
+ 	flush_workqueue(local->hw.workqueue);
+ 
+-	/* stop hardware - this must stop RX */
+-	if (local->open_count) {
+-		ieee80211_led_radio(local, false);
+-		drv_stop(local);
+-	}
+-
+ 	/* remove STAs */
+ 	spin_lock_irqsave(&local->sta_lock, flags);
+ 	list_for_each_entry(sta, &local->sta_list, list) {
+@@ -111,6 +105,12 @@ int __ieee80211_suspend(struct ieee80211_hw *hw)
+ 		drv_remove_interface(local, &conf);
+ 	}
+ 
++	/* stop hardware - this must stop RX */
++	if (local->open_count) {
++		ieee80211_led_radio(local, false);
++		drv_stop(local);
++	}
++
+ 	local->suspended = true;
+ 	local->quiescing = false;
