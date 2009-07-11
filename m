@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZGKHvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZGKHv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbZGKHvH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 03:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbZGKHuw
+	id S1756038AbZGKHv4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 03:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbZGKHvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 03:50:52 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:58848 "EHLO mgw2.diku.dk"
+	Sat, 11 Jul 2009 03:51:48 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:59178 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754093AbZGKHuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 03:50:50 -0400
-Date: Sat, 11 Jul 2009 09:49:48 +0200 (CEST)
+	id S1752061AbZGKHvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 03:51:47 -0400
+Date: Sat, 11 Jul 2009 09:50:29 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/5] drivers/ata: Move a dereference below a NULL test
-Message-ID: <Pine.LNX.4.64.0907110949280.29592@ask.diku.dk>
+To: isdn@linux-pingi.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/5] drivers/isdn: Move a dereference below a NULL test
+Message-ID: <Pine.LNX.4.64.0907110950100.29592@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -48,23 +48,23 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/ata/pata_at91.c |    3 ++-
+ drivers/isdn/hysdn/hysdn_net.c |    3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff -u -p a/drivers/ata/pata_at91.c b/drivers/ata/pata_at91.c
---- a/drivers/ata/pata_at91.c
-+++ b/drivers/ata/pata_at91.c
-@@ -312,11 +312,12 @@ err_ide_ioremap:
- static int __devexit pata_at91_remove(struct platform_device *pdev)
+diff -u -p a/drivers/isdn/hysdn/hysdn_net.c b/drivers/isdn/hysdn/hysdn_net.c
+--- a/drivers/isdn/hysdn/hysdn_net.c
++++ b/drivers/isdn/hysdn/hysdn_net.c
+@@ -187,11 +187,12 @@ void
+ hysdn_rx_netpkt(hysdn_card * card, unsigned char *buf, unsigned short len)
  {
- 	struct ata_host *host = dev_get_drvdata(&pdev->dev);
--	struct at91_ide_info *info = host->private_data;
-+	struct at91_ide_info *info;
- 	struct device *dev = &pdev->dev;
+ 	struct net_local *lp = card->netif;
+-	struct net_device *dev = lp->dev;
++	struct net_device *dev;
+ 	struct sk_buff *skb;
  
- 	if (!host)
- 		return 0;
-+	info = host->private_data;
+ 	if (!lp)
+ 		return;		/* non existing device */
++	dev = lp->dev;
  
- 	ata_host_detach(host);
+ 	dev->stats.rx_bytes += len;
  
