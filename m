@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758335AbZGKCNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758305AbZGKCt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758335AbZGKCNa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 22:13:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbZGKCNV
+	id S1758305AbZGKCt6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 22:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZGKCts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 22:13:21 -0400
-Received: from elasmtp-masked.atl.sa.earthlink.net ([209.86.89.68]:47147 "EHLO
-	elasmtp-masked.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751123AbZGKCNV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 22:13:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=pB/nSAfYuiUDxja2EsmCvdsdft+5bVNhgdWkT8G/wtMtm+XQdmpXfIviKQW+hoMK;
-  h=Received:Message-Id:From:To:Content-Type:Content-Transfer-Encoding:Mime-Version:Subject:Date:X-Mailer:X-ELNK-Trace:X-Originating-IP;
-Message-Id: <1C11DCE4-A4EF-42AC-BFB7-5B06190482C4@earthlink.net>
-From: Mitchell Erblich <erblichs@earthlink.net>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Fri, 10 Jul 2009 22:49:48 -0400
+Received: from mail.samba.org ([66.70.73.150]:47296 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751123AbZGKCtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 22:49:47 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Suggested code code : simple : keep simple out-of-memory (oom) msg without rate_limits
-Date: Fri, 10 Jul 2009 19:13:18 -0700
-X-Mailer: Apple Mail (2.930.3)
-X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec79bf500930249c6baa44670c29e94e7187350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 98.234.127.54
+Message-ID: <19031.64942.968563.614697@samba.org>
+Date: Sat, 11 Jul 2009 12:49:18 +1000
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       Jamie Lokier <jamie@shareable.org>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org, Paul.McKenney@us.ibm.com
+Subject: VFAT patent workaround - patches and tree on kernel.org
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Group,
+Thanks to everyone for the lively debate on this patch. If nothing
+else it has served to highlight the issue of whether the Linux kernel
+should incorporate patent workarounds. The open debate on this has
+been very valuable I think.
 
+Thank you also to Hirofumi-san for taking the time to consider my
+proposed patch. It was an exhausting debate, and I appreciate the
+effort that Hirofumi-san has put in to read through such complex
+arguments.
 
-	Out of memory (oom) process killer is invoked when there is EXTREME  
-memory stress.
+I have created a directory on kernel.org containing the patch, and a
+README which documents the interoperability concerns that were raised
+during the discussion of the patch:
 
-	With the understanding that anytime we kill a process, a minimal  
-amount of information
-	about the process should be kept to be able to backtrack why a system  
-may be currently
-	be running with less than a normal level of functionality.
+  http://kernel.org/pub/linux/kernel/people/tridge/VFAT/
 
-	Thus, ./mm/oom_kill.c : oom_kill_process()
+I have also created a git tree incorporating the patch, based on the
+fatfs-2.6 tree:
 
-	This change limits the amount of printing while keeping the coarse  
-level of info
-	when a process is killed within one function. The later function  
-calls generate
-	multiple times of output than the one printk that we are keeping.
+  http://git.kernel.org/?p=linux/kernel/git/tridge/fatfs-dualnames.git
 
-	move the if (printf_ratelimit() ) { statement to after the printk  
-invoked oom-killer
+Hirofumi-san, could you look at
+04f4db5202d2d3ec9b8e780b913c1f1dd3881745 in my tree and consider that
+separately for inclusion in your tree?
 
-	2ndly, should the not / " ! "  be stated within the ratelimit check?
+The patch is also available here:
 
-	Mitchell Erblich
-	FYI: This CHANGE is one of a set of simple set of changes AND is my  
-"due-dilligence" of what was partially done
-	        for a company and due to ... was not submitted back to  
-Linux.org. The major section re-writes are not being
-	        submitted at this time.
-	
-	
+  http://git.kernel.org/?p=linux/kernel/git/tridge/fatfs-dualnames.git;a=commitdiff;h=04f4db5202d2d3ec9b8e780b913c1f1dd3881745
+
+I will continue to try to address the technical concerns that have
+been raised. I appreciate the testing that has been done by many
+people on this list, and I hope that testing will continue. 
+
+If I am able to make substantial progress on the technical issues that
+have been raised then I will re-submit the patch for consideration for
+inclusion in the upstream kernel.
+
+Cheers, Tridge
