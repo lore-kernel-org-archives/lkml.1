@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbZGKU6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757932AbZGKU6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757875AbZGKU6a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 16:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbZGKUyH
+	id S1757932AbZGKU6l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 16:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbZGKUyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 16:54:07 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32880 "EHLO
+	Sat, 11 Jul 2009 16:54:09 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32871 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756002AbZGKUxw (ORCPT
+	with ESMTP id S1755993AbZGKUxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 11 Jul 2009 16:53:52 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: Wang Chen <wangchen@cn.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Subject: [PATCH] move sgiseeq's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 22:52:59 +0200
-Message-Id: <1247345591-22643-31-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] move sharpsl-pm's probe function to .devinit.text
+Date: Sat, 11 Jul 2009 22:53:02 +0200
+Message-Id: <1247345591-22643-34-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1247345591-22643-30-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1247345591-22643-33-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -54,6 +52,9 @@ References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-28-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-29-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-30-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-31-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-32-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-33-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -65,7 +66,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to sgiseeq_probe is passed to the core via
+A pointer to sharpsl_pm_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -76,29 +77,27 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Wang Chen <wangchen@cn.fujitsu.com>
-Cc: David S. Miller <davem@davemloft.net>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Acked-by: Eric Miao <eric.miao@marvell.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeff Garzik <jgarzik@redhat.com>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
 ---
- drivers/net/sgiseeq.c |    2 +-
+ arch/arm/mach-pxa/sharpsl_pm.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/sgiseeq.c b/drivers/net/sgiseeq.c
-index 5fb88ca..53fa4f6 100644
---- a/drivers/net/sgiseeq.c
-+++ b/drivers/net/sgiseeq.c
-@@ -720,7 +720,7 @@ static const struct net_device_ops sgiseeq_netdev_ops = {
- 	.ndo_validate_addr	= eth_validate_addr,
+diff --git a/arch/arm/mach-pxa/sharpsl_pm.c b/arch/arm/mach-pxa/sharpsl_pm.c
+index 2546c06..16a3873 100644
+--- a/arch/arm/mach-pxa/sharpsl_pm.c
++++ b/arch/arm/mach-pxa/sharpsl_pm.c
+@@ -899,7 +899,7 @@ static struct platform_suspend_ops sharpsl_pm_ops = {
  };
+ #endif
  
--static int __init sgiseeq_probe(struct platform_device *pdev)
-+static int __devinit sgiseeq_probe(struct platform_device *pdev)
+-static int __init sharpsl_pm_probe(struct platform_device *pdev)
++static int __devinit sharpsl_pm_probe(struct platform_device *pdev)
  {
- 	struct sgiseeq_platform_data *pd = pdev->dev.platform_data;
- 	struct hpc3_regs *hpcregs = pd->hpc;
+ 	int ret;
+ 
 -- 
 1.6.3.1
 
