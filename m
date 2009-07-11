@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbZGKU7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbZGKU7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756527AbZGKU7u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 16:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbZGKUyP
+	id S1758072AbZGKU7K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 16:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbZGKUyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 16:54:15 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32956 "EHLO
+	Sat, 11 Jul 2009 16:54:11 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32886 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755506AbZGKUx6 (ORCPT
+	with ESMTP id S1755823AbZGKUxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 16:53:58 -0400
+	Sat, 11 Jul 2009 16:53:52 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: Paul Mundt <lethal@linux-sh.org>, Andriy Skulysh <askulysh@gmail.com>,
-       Antonino Daplas <adaplas@pol.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] move hitfb's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 22:52:43 +0200
-Message-Id: <1247345591-22643-15-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>,
+       Matthias Kaehlcke <matthias@kaehlcke.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Antonino Daplas <adaplas@gmail.com>, Pavel Machek <pavel@suse.cz>,
+       Christoph Hellwig <hch@lst.de>
+Subject: [PATCH] move sa11x0-fb's probe function to .devinit.text
+Date: Sat, 11 Jul 2009 22:52:57 +0200
+Message-Id: <1247345591-22643-29-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1247345591-22643-14-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1247345591-22643-28-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -36,6 +38,20 @@ References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-12-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-13-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-14-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-15-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-16-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-17-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-18-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-19-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-20-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-21-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-22-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-23-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-24-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-26-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-27-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-28-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -47,7 +63,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to hitfb_probe is passed to the core via
+A pointer to sa1100fb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -58,27 +74,29 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Andriy Skulysh <askulysh@gmail.com>
-Cc: Antonino Daplas <adaplas@pol.net>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Matthias Kaehlcke <matthias@kaehlcke.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Pavel Machek <pavel@suse.cz>
+Cc: Christoph Hellwig <hch@lst.de>
 ---
- drivers/video/hitfb.c |    2 +-
+ drivers/video/sa1100fb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/hitfb.c b/drivers/video/hitfb.c
-index e7116a6..3016cd2 100644
---- a/drivers/video/hitfb.c
-+++ b/drivers/video/hitfb.c
-@@ -325,7 +325,7 @@ static struct fb_ops hitfb_ops = {
- 	.fb_imageblit	= cfb_imageblit,
- };
+diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
+index 10ddad8..19c012b 100644
+--- a/drivers/video/sa1100fb.c
++++ b/drivers/video/sa1100fb.c
+@@ -1435,7 +1435,7 @@ static struct sa1100fb_info * __init sa1100fb_init_fbinfo(struct device *dev)
+ 	return fbi;
+ }
  
--static int __init hitfb_probe(struct platform_device *dev)
-+static int __devinit hitfb_probe(struct platform_device *dev)
+-static int __init sa1100fb_probe(struct platform_device *pdev)
++static int __devinit sa1100fb_probe(struct platform_device *pdev)
  {
- 	unsigned short lcdclor, ldr3, ldvndr;
- 	struct fb_info *info;
+ 	struct sa1100fb_info *fbi;
+ 	int ret, irq;
 -- 
 1.6.3.1
 
