@@ -1,216 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZGKQIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbZGKRDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbZGKQIv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 12:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZGKQIY
+	id S1753118AbZGKRDj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 13:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZGKRDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 12:08:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:40904 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753743AbZGKQIX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 12:08:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=MM/f8oAgJZpz5rVKjjTKxmkRXJmh4F8vATtEXDxaxPuCVcwhXcd9eW6bvl9hlb8QHi
-         6LhT0vRZzI9xXD9LNqAolepUNP8YwIOlY/kCnB2UjyhM0XDrlEhSQCqTmLvzs6V50bbT
-         8lTvlGiWM3T7speov5yzFVyWMTHI3krqj2PCI=
-From: tom.leiming@gmail.com
-To: linux@arm.linux.org.uk, joerg.roedel@amd.com
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH 3/3] ARM:dma-mapping:Support DMA-API debugging facility on ARM
-Date: Sun, 12 Jul 2009 00:07:47 +0800
-Message-Id: <1247328467-24985-4-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
-In-Reply-To: <1247328467-24985-3-git-send-email-tom.leiming@gmail.com>
-References: <1247328467-24985-1-git-send-email-tom.leiming@gmail.com>
- <1247328467-24985-2-git-send-email-tom.leiming@gmail.com>
- <1247328467-24985-3-git-send-email-tom.leiming@gmail.com>
+	Sat, 11 Jul 2009 13:03:30 -0400
+Received: from mx33.mail.ru ([94.100.176.47]:28512 "EHLO mx33.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751189AbZGKRD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 13:03:29 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: How to monitor Linux NFS client load?
+Date: Sat, 11 Jul 2009 21:03:23 +0400
+User-Agent: KMail/1.12.0 (Linux/2.6.31-0.rc2.5.3mdv; KDE/4.2.96; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1643450.1QxvPtLl5q";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907112103.27082.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+--nextPart1643450.1QxvPtLl5q
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
+Recently we have the case of very high latencies on NFS reads as=20
+reported by application (SAP R/3). NFS server was NetApp FAS; according=20
+to NetApp statistic, average volume read latencies were in order 10ms,=20
+while SAP stats gave 30-50ms. Systems were interconnected by dedicated=20
+1Gb/s Cisco switches (3750G) with ca. 30% max load on interfaces.
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- arch/arm/Kconfig                   |    1 +
- arch/arm/include/asm/dma-mapping.h |   38 ++++++++++++++++++++++++++++++-----
- arch/arm/mm/dma-mapping.c          |   11 ++++++++++
- 3 files changed, 44 insertions(+), 6 deletions(-)
+On advice of my colleague we changed sunrpc.tcp_slot_table_entries from=20
+default 16 to 128 which seemed to make situation much better - without=20
+changing load pattern of filer in any visible way.
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index a91da50..867e7c1 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -18,6 +18,7 @@ config ARM
- 	select HAVE_KRETPROBES if (HAVE_KPROBES)
- 	select HAVE_FUNCTION_TRACER if (!XIP_KERNEL)
- 	select HAVE_GENERIC_DMA_COHERENT
-+	select HAVE_DMA_API_DEBUG
- 	help
- 	  The ARM series is a line of low-power-consumption RISC chip designs
- 	  licensed by ARM Ltd and targeted at embedded applications and
-diff --git a/arch/arm/include/asm/dma-mapping.h b/arch/arm/include/asm/dma-mapping.h
-index 86f2964..a288bab 100644
---- a/arch/arm/include/asm/dma-mapping.h
-+++ b/arch/arm/include/asm/dma-mapping.h
-@@ -5,7 +5,7 @@
- 
- #include <linux/mm_types.h>
- #include <linux/scatterlist.h>
--
-+#include <linux/dma-debug.h>
- #include <asm-generic/dma-coherent.h>
- #include <asm/memory.h>
- 
-@@ -146,7 +146,11 @@ extern void __dma_free_coherent(struct device *, size_t, void *, dma_addr_t);
- static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- 	dma_addr_t *handle, gfp_t gfp)
- {
--	return __dma_alloc_coherent(dev, size, handle, gfp);
-+	void *mem;
-+
-+	mem = __dma_alloc_coherent(dev, size, handle, gfp);
-+	debug_dma_alloc_coherent(dev, size, *handle, mem);
-+	return mem;
- }
- 
- /**
-@@ -165,6 +169,7 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
- static inline void dma_free_coherent(struct device *dev, size_t size,
- 	void *cpu_addr, dma_addr_t handle)
- {
-+	debug_dma_free_coherent(dev, size, cpu_addr, handle);
- 	__dma_free_coherent(dev, size, cpu_addr, handle);
- }
- 
-@@ -333,8 +338,14 @@ static inline void __dma_unmap_single(struct device *dev, dma_addr_t handle,
- static inline dma_addr_t dma_map_single(struct device *dev, void *cpu_addr,
- 		size_t size, enum dma_data_direction dir)
- {
-+	dma_addr_t addr;
- 	BUG_ON(!valid_dma_direction(dir));
--	return __dma_map_single(dev, cpu_addr, size, dir);
-+
-+	addr = __dma_map_single(dev, cpu_addr, size, dir);
-+	debug_dma_map_page(dev, virt_to_page(cpu_addr),
-+			   (unsigned long)cpu_addr & ~PAGE_MASK, size,
-+			   dir, addr, true);
-+	return addr;
- }
- 
- /**
-@@ -354,8 +365,12 @@ static inline dma_addr_t dma_map_single(struct device *dev, void *cpu_addr,
- static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
- 	     unsigned long offset, size_t size, enum dma_data_direction dir)
- {
-+	dma_addr_t addr;
- 	BUG_ON(!valid_dma_direction(dir));
--	return __dma_map_page(dev, page, offset, size, dir);
-+
-+	addr = __dma_map_page(dev, page, offset, size, dir);
-+	debug_dma_map_page(dev, page, offset, size, dir, addr, false);
-+	return addr;
- }
- 
- /**
-@@ -376,6 +391,7 @@ static inline void dma_unmap_single(struct device *dev, dma_addr_t handle,
- 		size_t size, enum dma_data_direction dir)
- {
- 	__dma_unmap_single(dev, handle, size, dir);
-+	debug_dma_unmap_page(dev, handle, size, dir, true);
- }
- 
- /**
-@@ -395,7 +411,8 @@ static inline void dma_unmap_single(struct device *dev, dma_addr_t handle,
- static inline void dma_unmap_page(struct device *dev, dma_addr_t handle,
- 		size_t size, enum dma_data_direction dir)
- {
--	dma_unmap_single(dev, handle, size, dir);
-+	__dma_unmap_single(dev, handle, size, dir);
-+	debug_dma_unmap_page(dev, handle, size, dir, false);
- }
- 
- /**
-@@ -422,6 +439,7 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
- {
- 	BUG_ON(!valid_dma_direction(dir));
- 
-+	debug_dma_sync_single_range_for_cpu(dev, handle, offset, size, dir);
- 	dmabounce_sync_for_cpu(dev, handle, offset, size, dir);
- }
- 
-@@ -431,6 +449,8 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
- {
- 	BUG_ON(!valid_dma_direction(dir));
- 
-+	debug_dma_sync_single_range_for_device(dev, handle, offset, size, dir);
-+
- 	if (!dmabounce_sync_for_device(dev, handle, offset, size, dir))
- 		return;
- 
-@@ -465,11 +485,15 @@ extern void __dma_sync_sg_for_device(struct device *, struct scatterlist *, int,
- static inline int dma_map_sg(struct device *dev, struct scatterlist *sg,
- 		int nents, enum dma_data_direction dir)
- {
--	return __dma_map_sg(dev, sg, nents, dir);
-+	int ents;
-+	ents = __dma_map_sg(dev, sg, nents, dir);
-+	debug_dma_map_sg(dev, sg, nents, ents, dir);
-+	return ents;
- }
- static inline void dma_unmap_sg(struct device *dev, struct scatterlist *sg,
- 		int nents, enum dma_data_direction dir)
- {
-+	debug_dma_unmap_sg(dev, sg, nents, dir);
- 	 __dma_unmap_sg(dev, sg, nents, dir);
- }
- static inline void dma_sync_sg_for_cpu(struct device *dev,
-@@ -477,12 +501,14 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
- 		enum dma_data_direction dir)
- {
- 	 __dma_sync_sg_for_cpu(dev, sg, nents, dir);
-+	debug_dma_sync_sg_for_cpu(dev, sg, nents, dir);
- }
- static inline void dma_sync_sg_for_device(struct device *dev,
- 		struct scatterlist *sg, int nents,
- 		enum dma_data_direction dir)
- {
- 	 __dma_sync_sg_for_device(dev, sg, nents, dir);
-+	debug_dma_sync_sg_for_device(dev, sg, nents, dir);
- }
- 
- #endif /* __KERNEL__ */
-diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
-index 654cd82..64e5d82 100644
---- a/arch/arm/mm/dma-mapping.c
-+++ b/arch/arm/mm/dma-mapping.c
-@@ -16,6 +16,7 @@
- #include <linux/list.h>
- #include <linux/init.h>
- #include <linux/device.h>
-+#include <linux/dma-debug.h>
- #include <linux/dma-mapping.h>
- 
- #include <asm/memory.h>
-@@ -688,3 +689,13 @@ void __dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
- 	}
- }
- EXPORT_SYMBOL(__dma_sync_sg_for_device);
-+
-+#define PREALLOC_DMA_DEBUG_ENTRIES             8192
-+
-+static int __init dma_debug_init_arm(void)
-+{
-+       dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
-+       return 0;
-+}
-+fs_initcall(dma_debug_init_arm);
-+
--- 
-1.6.0.GIT
+Now, I can understand, why we observed much higher latency on system and=20
+why changing (what effectively is) queue depth helped. But I am totally=20
+frustrated that there does not appear to be *any* possibility to detect=20
+this situation on Linux side and to get a real numbers of real NFS IO=20
+latencies or number of requests waiting to be executed (and I do not=20
+even dream about per-mount point stats).
 
+I am grateful for any hints how can we monitor Linux NFS client and get=20
+real-life numbers of what happens inside. Thank you!
+
+=2Dandrey
+
+--nextPart1643450.1QxvPtLl5q
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpYxdsACgkQR6LMutpd94zlhACbBrZXuthSX0JHia0msHfJx5Gp
+EHoAoJOddoM2KNJfS4yysIxWuOyRQWzf
+=Co50
+-----END PGP SIGNATURE-----
+
+--nextPart1643450.1QxvPtLl5q--
