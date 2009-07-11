@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbZGKWuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbZGKXFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752144AbZGKWuI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 18:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZGKWt5
+	id S1753097AbZGKXFe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 19:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbZGKXFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 18:49:57 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:55610 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751426AbZGKWt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 18:49:56 -0400
-Subject: Re: How to monitor Linux NFS client load?
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1247352267.7281.2.camel@heimdal.trondhjem.org>
-References: <200907112103.27082.arvidjaar@mail.ru>
-	 <1247352267.7281.2.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Sat, 11 Jul 2009 18:49:52 -0400
-Message-Id: <1247352592.7281.6.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 2 sum rcpts/h 8 sum msgs/h 2 total rcpts 835 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=_URIID_)
-X-UiO-Scanned: D5421599BFB128DA03E5DBEBA53C622C787D5C85
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 2 total 43 max/h 5 blacklist 0 greylist 0 ratelimit 0
+	Sat, 11 Jul 2009 19:05:25 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44412 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbZGKXFY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 19:05:24 -0400
+Date: Sun, 12 Jul 2009 01:05:09 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: greg@kroah.com, swetland@google.com, malchev@google.com,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: HTC Dream: qdsp support for staging
+Message-ID: <20090711230509.GA4705@elf.ucw.cz>
+References: <20090710083709.GA6418@elf.ucw.cz> <1247246757.7146.33.camel@desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247246757.7146.33.camel@desktop>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-07-11 at 18:44 -0400, Trond Myklebust wrote:
-> On Sat, 2009-07-11 at 21:03 +0400, Andrey Borzenkov wrote:
-> > I am grateful for any hints how can we monitor Linux NFS client and get 
-> > real-life numbers of what happens inside. Thank you!
+On Fri 2009-07-10 10:25:57, Daniel Walker wrote:
+> On Fri, 2009-07-10 at 10:37 +0200, Pavel Machek wrote:
+> > From: Iliyan Malchev <ibm@android.com>
+> > 
+> > QDSP code is neccessarry for communication with some hardware
+> > components on HTC Dream, including camera hardware. It also drives DSP
+> > coproccessor.
+> > 
+> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
 > 
-> See the nfs-iostat utility in the nfs-utils package:
-> 
-> http://git.linux-nfs.org/?p=steved/nfs-utils.git;a=blob;f=tools/nfs-iostat/nfs-iostat.py;h=9626d42609b9485c7fda0c9ef69d698f9fa929fd;hb=HEAD
+> You don't want to break it up into multiple patches? I'll do it if you
+> don't want too ..
 
-Oh, and recent versions of 'sar' (from the 'sysstat' package) should
-also have support for NFS monitoring.
+I don't know how much sense it makes to split it further... yes, I
+could probably split it per file or something but...
 
-Trond
-
+(Notice that this is going to be rewriten in staging, anyway, before
+merging into kernel proper...)
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
