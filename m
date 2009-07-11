@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZGKEnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbZGKFLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbZGKEnc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 00:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZGKEnW
+	id S1753837AbZGKFLU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 01:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZGKFLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 00:43:22 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:58348 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbZGKEnW (ORCPT
+	Sat, 11 Jul 2009 01:11:10 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:55004 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbZGKFLJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 00:43:22 -0400
-Date: Sat, 11 Jul 2009 00:41:07 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Andrew Price <andy@andrewprice.me.uk>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: once again, what's with "drivers/char/vr41xx_giu.c"?
-In-Reply-To: <20090711013212.GA1252@sucs.org>
-Message-ID: <alpine.LFD.2.00.0907110038560.25337@localhost>
-References: <alpine.LFD.2.00.0907100505400.11274@localhost> <20090711013212.GA1252@sucs.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 11 Jul 2009 01:11:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=yIGLkelUH98E7QMYdanN+/UwFmJe/sMNgYDjXEVjRB08kadrAP06AnSwkqXjgifoLO
+         CW/W8PqeJRmspwaeccxj++zNSlt2Bmwyn2v0X0nWs2r3eur+dYAc7vPwBVmgTfMgMl60
+         wG59nFwH3pfBXeaf62fwYaaQHLKYLRe+Wtzbo=
+Message-ID: <4A581F49.9090601@gmail.com>
+Date: Fri, 10 Jul 2009 23:12:41 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Wayne Pollock <pollock@acm.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: make xconfig fails on Fedora 10 for 2.6.30
+References: <4A57BD9B.4030405@acm.org>
+In-Reply-To: <4A57BD9B.4030405@acm.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Jul 2009, Andrew Price wrote:
+On 07/10/2009 04:15 PM, Wayne Pollock wrote:
+> The "make xconfig" command tried to link to "libXi.so".
+> I think this is actually a kernel bug; the binary this
+> make command builds should try to link to some "soname"
+> such as "libXi.so.6" instead, shouldn't it?
 
-> Hi Robert,
+No, applications are generally supposed to link to the plain name, and 
+the resulting binary will end up linked to the version-specific name 
+because of the symlink. Applications don't generally need to know what 
+version of the library they're linking against, if they care they can 
+usually figure it out from the headers they are including.
+
 >
-> On Fri, Jul 10, 2009 at 05:06:49AM -0400, Robert P. J. Day wrote:
-> >
-> >   on an occasional basis (after pulls), i get:
-> >
-> > $ git diff
-> > diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
-> > deleted file mode 100644
-> > index e69de29..0000000
-> > $
-> >
-> > not the first time i've seen that, either.  methinks that file got
-> > itself into a funny state.
+> The work-around was to manually create the missing symlink
+> for "libXi.so".  I suspect other distro's install that
+> symlink automatically so maybe that's why the bug was
+> not discovered.  But I believe it is correct to say all
+> applications should use a soname (including the major
+> version number), and not just the "linker" name (the
+> name ending in ".so" with no version numbers).
 >
-> No need to panic, ...
+> Or am I missing something?
 
-i never panic -- i always know where my towel is.
-
-> it just looks like somebody left an empty file without 'git rm'ing
-> it. When you run 'make distclean' for example, it removes all empty
-> files and leaves you with an unclean checkout. You can get the
-> (empty) file back by 'git checkout'ing the file. But yes, you
-> shouldn't have to. Anyway, CCing Linus to bring it to his attention.
-
-  i knew it was something like that as i recall whining about
-*exactly* this happening many months ago with a different file, i just
-couldn't remember the cause.
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-"Kernel Newbie Corner" column @ linux.com:          http://cli.gs/WG6WYX
-========================================================================
+Not a bug, the symlink is supposed to be there. (Could be you need to 
+install some devel package to get it..)
