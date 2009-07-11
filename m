@@ -1,88 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbZGKAny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbZGKAtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbZGKAny (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 20:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbZGKAnq
+	id S1758245AbZGKAtk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 20:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbZGKAtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 20:43:46 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:47296 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757429AbZGKAnp (ORCPT
+	Fri, 10 Jul 2009 20:49:31 -0400
+Received: from smtp124.mail.mud.yahoo.com ([209.191.84.227]:25764 "HELO
+	smtp124.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757429AbZGKAtb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 20:43:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bWhLBCiBZL+Hc8eFMhzK2YbdYZ+iGuf8R8swvf1RevPE167tSmGzdj/SjNjRtoqBGw
-         tv5AuyFY9gKEMwxsE9lEyT29hdwNEc7e5Pg9832DNzKvnlx26f9Wyg6iNGbq6Rcg8lUG
-         RDQ8HptZU6y64qyaO5q0CBgGekEcVxAcgwhso=
-Date: Sat, 11 Jul 2009 02:43:42 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: tom.leiming@gmail.com
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [RESEND PATCH 0/11] kernel:lockdep:replace DFS with BFS
-Message-ID: <20090711004339.GA6125@nowhere>
-References: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com>
+	Fri, 10 Jul 2009 20:49:31 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 10 Jul 2009 20:49:30 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.ar;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=WPBCeowm/FDgycs/rm8C7JXiQ3clCWT6R9VurNRi94zz7XSEGG2JW+Ec/j0JCJgfjF3O4sz6a/XFtclNQqHdiPGE6+I1Lgc9zU8zm/xlRneGqXNyB8ZXgJphnFSO3WL4J57cuMBtDM25UHtiRlza2iVbxZ3iEuLG6gixpXfkxoY=  ;
+X-Yahoo-SMTP: MJlmAJmswBD1ci8cgZcdLoLtCohJxg8-
+X-YMail-OSG: J1.4Qc8VM1nONNTcv15mM14COW6rrGaNjQY6yn9.TvsVzR3qHCnPZfic7Q7UkAsJiegqrqrqwd7p9ss_vY7kx7HwmuUBtZdULNFTgCi.T67KAFUYyyqszq30KCubddeGeS4Ie2_WeKAUC2CaxI4Ie3BM9E1.MgvzuC7X.OlSDMvZnWplxB6aJ2m1f7Q8jlgRtB67ookEJU46meTUioRea.FsCN_6tkH1vRR1HwW9RoBvUboQKXwk5yeUrCoZ9UCieRM6u14tLF1QP32ZHOHYXwoIIFNMSCiDYr3bk5LClIrLcSHKyiZaG81PZi_tmKwVCuJ81DcrD9mnTfSJQKGlBJarVsmyh7VKWF4-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4A57DFE2.7020309@yahoo.com.ar>
+Date: Fri, 10 Jul 2009 21:42:10 -0300
+From: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: No more vcs1 and vcsa1 in 2.6.30.N
+References: <4A57A62C.2030302@yahoo.com.ar> <1247271564.32205.2.camel@yio.site>
+In-Reply-To: <1247271564.32205.2.camel@yio.site>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Kay Sievers wrote:
+> On Fri, 2009-07-10 at 17:35 -0300, Gerardo Exequiel Pozzi wrote:
+>   
+>> Since upgrade my system to 2.6.30[.1]. I don't have anymore
+>> /sys/devices/virtual/vc/vcs1 and /sys/devices/virtual/vc/vcs1 in
+>> consequence not have anymore the corresponding char devs in /dev.
+>>     
+>
+> Seems we missed the consoles, which are always pre-allocated, and not
+> created on demand. Does this help?
+>
+> Thanks,
+> Kay
+>
+> diff --git a/drivers/char/vc_screen.c b/drivers/char/vc_screen.c
+> index d94d25c..c1791a6 100644
+> --- a/drivers/char/vc_screen.c
+> +++ b/drivers/char/vc_screen.c
+> @@ -495,11 +495,15 @@ void vcs_remove_sysfs(int index)
+>  
+>  int __init vcs_init(void)
+>  {
+> +	unsigned int i;
+> +
+>  	if (register_chrdev(VCS_MAJOR, "vcs", &vcs_fops))
+>  		panic("unable to get major %d for vcs device", VCS_MAJOR);
+>  	vc_class = class_create(THIS_MODULE, "vc");
+>  
+>  	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 0), NULL, "vcs");
+>  	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 128), NULL, "vcsa");
+> +	for (i = 0; i < MIN_NR_CONSOLES; i++)
+> +		vcs_make_sysfs(i);
+>  	return 0;
+>  }
+>
+>
+>
+>   
+Yes, the problem is solved applying this patch. Thanks for the quick fix
+Kay.
 
-On Sun, Jun 28, 2009 at 11:04:35PM +0800, tom.leiming@gmail.com wrote:
-> Hi,Peter
-> 
-> Currently lockdep uses recursion DFS(depth-first search) algorithm to
-> search target in checking lock circle(check_noncircular()),irq-safe
-> -> irq-unsafe(check_irq_usage()) and irq inversion when adding a new
-> lock dependency. This patches replace the current DFS with BFS, based on
-> the following consideration:
-> 
->     1,no loss of efficiency, no matter DFS or BFS, the running time
->     are O(V+E) (V is vertex count, and E is edge count of one
->     graph);
-> 
->     2,BFS may be easily implemented by circular queue and consumes
->     much less kernel stack space than DFS for DFS is implemented by
->     recursion.
+Good Luck!
 
-
-
-Looks like a valuable argument. check_noncircular() can be called
-in very random places in the kernel where the stack may be
-already deep, and this recursive DFS doesn't help there.
-
-
-
->     3,The shortest path can be obtained by BFS if the target is
->     found, but can't be got by DFS. By the shortest path, we can
->     shorten the lock dependency chain and help to troubleshoot lock
->     problem easier than before.
-
-
-But there I don't understand your argument.
-The shortest path finding doesn't seem to me a need.
-Example:
-
-Task 1 acquires: A B C
-And Later:
-Task 2 acquires: C B A
-
-DFS will probably report a circular lock dependency
-with A and C.
-BFS will probably report a circular lock dependency
-with B and C.
-
-Which one is the most important? Both dependencies must be fixed
-anyway. Once the developer will fix one of those, the remaining one
-will be reported and so on...
-
-Or am I missing something else?
+-- 
+Gerardo Exequiel Pozzi ( djgera )
+http://www.djgera.com.ar
+KeyID: 0x1B8C330D
+Key fingerprint = 0CAA D5D4 CD85 4434 A219  76ED 39AB 221B 1B8C 330D
 
