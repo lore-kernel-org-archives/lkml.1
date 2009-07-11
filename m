@@ -1,93 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbZGKRVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752123AbZGKRYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753097AbZGKRVJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 13:21:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZGKRVD
+	id S1752123AbZGKRYD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 13:24:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZGKRXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 13:21:03 -0400
-Received: from fias.uni-frankfurt.de ([141.2.248.1]:54668 "EHLO
-	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbZGKRVC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 13:21:02 -0400
-From: Jan Scholz <scholz@fias.uni-frankfurt.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Jan Scholz <scholz@fias.uni-frankfurt.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Tomas Janousek <tomi@nomi.cz>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [Bug #13337] [post 2.6.29 regression] hang during suspend of b44/b43 modules
-References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera>
-	<87k52izvd9.fsf@scholz.fias.uni-frankfurt.de>
-	<87y6qxx50z.fsf@scholz.fias.uni-frankfurt.de>
-	<200907092203.10294.rjw@sisk.pl>
-	<1247171295.1905.5.camel@johannes.local>
-	<87prc78ga9.fsf@scholz.fias.uni-frankfurt.de>
-	<1247322985.30647.108.camel@johannes.local>
-Date: Sat, 11 Jul 2009 19:20:45 +0200
-In-Reply-To: <1247322985.30647.108.camel@johannes.local> (Johannes Berg's
-	message of "Sat, 11 Jul 2009 16:36:25 +0200")
-Message-ID: <8763dznnki.fsf@scholz.fias.uni-frankfurt.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.95 (gnu/linux)
+	Sat, 11 Jul 2009 13:23:52 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43304 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751477AbZGKRXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 13:23:51 -0400
+Date: Sat, 11 Jul 2009 10:03:56 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Julia Lawall <julia@diku.dk>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 5/5] staging/otus: Move a dereference below a NULL test
+Message-ID: <20090711170356.GA5205@suse.de>
+References: <Pine.LNX.4.64.0907110950510.29592@ask.diku.dk>
+ <4A584A94.5010105@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A584A94.5010105@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Berg <johannes@sipsolutions.net> writes:
+On Sat, Jul 11, 2009 at 10:17:24AM +0200, Jiri Slaby wrote:
+> On 07/11/2009 09:51 AM, Julia Lawall wrote:
+> > diff -u -p a/drivers/staging/otus/wwrap.c b/drivers/staging/otus/wwrap.c
+> > --- a/drivers/staging/otus/wwrap.c
+> > +++ b/drivers/staging/otus/wwrap.c
+> > @@ -1016,12 +1016,13 @@ void kevent(struct work_struct *work)
+> >  {
+> >      struct usbdrv_private *macp =
+> >                 container_of(work, struct usbdrv_private, kevent);
+> > -    zdev_t *dev = macp->device;
+> > +    zdev_t *dev;
+> >  
+> >      if (macp == NULL)
+> >      {
+> >          return;
+> >      }
+> 
+> The test is rather useless here.
 
-> On Sat, 2009-07-11 at 16:07 +0200, Jan Scholz wrote:
->
->> > Jan, can you run with console_suspend=0 (or whatever it is now, Rafael
->> > will correct me if I'm wrong) that should work on your platform, and put
->> > a bunch of printk calls into __ieee80211_suspend in net/mac80211/pm.c to
->> > see where in there it's hanging?
->> 
->> Did that, seems like it hangs in
->>   drv_remove_interface(local, &conf);
->
-> Ok, thanks! I was going to suggest doing the same in
-> b43_op_remove_interface in drivers/net/wireless/b43/main.c, but I think
-> the problem is just that we have an ordering problem and call drv_stop
-> before drv_remove_interface. I'll try to come up with a fix soon --
-> might not be able to today though, in the meantime I guess you can just
-> move the drv_stop call to the end of the function and tell me if that
-> works -- that would be racy but should be ok most of the time.
+Yes it is. 
 
-I moved drv_stop to the end of the function (see patch below) and now
-suspend works fine.
+Julia, if you just remove the NULL check, will that keep your scripts
+happy from noticing such a "problem"?
 
-Jan
+thanks,
 
-diff --git a/net/mac80211/pm.c b/net/mac80211/pm.c
-index 7a549f9..0ac15fb 100644
---- a/net/mac80211/pm.c
-+++ b/net/mac80211/pm.c
-@@ -58,12 +58,6 @@ int __ieee80211_suspend(struct ieee80211_hw *hw)
- 	/* flush again, in case driver queued work */
- 	flush_workqueue(local->hw.workqueue);
- 
--	/* stop hardware - this must stop RX */
--	if (local->open_count) {
--		ieee80211_led_radio(local, false);
--		drv_stop(local);
--	}
--
- 	/* remove STAs */
- 	spin_lock_irqsave(&local->sta_lock, flags);
- 	list_for_each_entry(sta, &local->sta_list, list) {
-@@ -111,6 +105,12 @@ int __ieee80211_suspend(struct ieee80211_hw *hw)
- 		drv_remove_interface(local, &conf);
- 	}
- 
-+	/* stop hardware - this must stop RX */
-+	if (local->open_count) {
-+		ieee80211_led_radio(local, false);
-+		drv_stop(local);
-+	}
-+
- 	local->suspended = true;
- 	local->quiescing = false;
+greg k-h
