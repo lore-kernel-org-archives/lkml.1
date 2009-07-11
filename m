@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbZGKSyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbZGKTDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753016AbZGKSyh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 14:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbZGKSya
+	id S1753784AbZGKTDZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 15:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZGKTDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 14:54:30 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:41390 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbZGKSy3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 14:54:29 -0400
-Subject: Re: rfkill rework in 2.6.31-rc, hal/dbus access changes?
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Norbert Preining <preining@logic.at>
-Cc: linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <20090711091427.GB14367@gamma.logic.tuwien.ac.at>
-References: <20090711091427.GB14367@gamma.logic.tuwien.ac.at>
-Content-Type: text/plain
-Date: Sat, 11 Jul 2009 11:54:33 -0700
-Message-Id: <1247338473.9709.107.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Sat, 11 Jul 2009 15:03:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42888 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752605AbZGKTDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 15:03:17 -0400
+Date: Sat, 11 Jul 2009 21:03:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: -tip: block, mm: Fix build error in mm/memcontrol.c
+Message-ID: <20090711190303.GB15163@elte.hu>
+References: <20090711065152.GA23336@elte.hu> <alpine.LFD.2.01.0907111125030.3552@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0907111125030.3552@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Norbert,
 
-> I have written a Gnome applet for turning off and on the various
-> hardware items using the rfkill interface. It was working very well on
-> up to 2.6.30. With 2.6.31-rc that infrastructure has been changed, and
-> now no access mode I know of still works.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Sat, 11 Jul 2009, Ingo Molnar wrote:
+> > 
+> > Today's upstream tree build (x86, 64-bit, allyesconfig) failed 
+> > with this build error:
 > 
-> - formerly writing 0 or 1 to /sys/class/rfkill/rfkillN/state worked, now
->   it returns access denied.
+> I merged a better fix from Trond, which should make all of this 
+> unnecessary (just move BLK_RW_[A]SYNC to the header file that 
+> people need anyway).
 
-actually Johannes sent a patch to fix this. It will still return an
-error if the RFKILL switch is hard-blocked btw.
+ok, that's better. I think if in addition to that we also did what i 
+suggested:
 
-> - access via Hal/Dbus (what I am doing) stopped working, too
+> Fix it the simplest way for now, by moving the definitions early 
+> in blkdev.h (this cannot break anything), but the real fix would 
+> be to split up blkdev.h into blkdev-types.h and blkdev-api.h and 
+> make only the API definitions/declarations dependent on 
+> CONFIG_BLOCK.
 
-Not the first time HAL broke in this area, because its RFKILL support is
-a bunch of hacked up scripts. Send a patch to the HAL mailing list.
+would be one step cleaner.
 
-> In the Documentation I only see reference to /dev/rfkill, which isn't a
-> usefull access method because for the applet to work for every user
-> (based on the permissions of hal) we need hal/dbus access.
+We could then include blkdev-types.h in backing-dev.h so that it 
+picks up the constants. Right now having BLK_RW_[A]SYNC in 
+backing-dev.h looks a bit weird. No strong opinion though.
 
-You could just go ahead and work on fixing HAL.
-
-> Is this intended behaviour? Is there any other documentation but the
-> very short rfkill.txt in the kernel's Documentation?
-
-Changing RFKILL soft-block via the state file got fixed, but it is still
-a total broken interface. If you rely on it (directly or via HAL) your
-application is useless. And if you are polling the state of the RFKILL
-switches via HAL, then your application is even worse. You need to
-wake-up too often to actually see RFKILL state changes.
-
-The /dev/rfkill interface is the only way to get a proper interface with
-all RFKILL switches in your system. And this includes enumeration, async
-notification and changing states on a per technology basis.
-
-Regards
-
-Marcel
-
-
+	Ingo
