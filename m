@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZGKFy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbZGKGF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752961AbZGKFy7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 01:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZGKFyw
+	id S1752512AbZGKGF4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 02:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZGKGFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 01:54:52 -0400
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:35893 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbZGKFyv (ORCPT
+	Sat, 11 Jul 2009 02:05:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:3937 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751388AbZGKGFq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 01:54:51 -0400
-Date: Sat, 11 Jul 2009 11:24:43 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/8] ksym_tracer: various fixes
-Message-ID: <20090711055443.GA6666@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <4A52E291.1020408@cn.fujitsu.com> <20090707231835.GA7514@nowhere>
+	Sat, 11 Jul 2009 02:05:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=t/fAxCSIjK4wm2X7JB/QazfWKAt9ESchFx6AkAB1DjA4HV7iyUgtYNQrXvM3RjwqxQ
+         WGuUSI4McRclIgk5xkYHvmocRajgZAsItp5cjvZz5AmKHBeiu6d7o9U8HdyPY8Rmgys3
+         66UNE50MQV/HkUgWIvIbquzt1RZeerbiDYJ/o=
+From: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [git pull] drm/i915 fixes for 2.6.30-rc2
+Date: Sat, 11 Jul 2009 08:05:42 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc2; KDE/4.2.96; x86_64; ; )
+Cc: Eric Anholt <eric@anholt.net>
+References: <1247263673.4678.10.camel@gaiman.anholt.net>
+In-Reply-To: <1247263673.4678.10.camel@gaiman.anholt.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090707231835.GA7514@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200907110805.42273.a.miskiewicz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 08, 2009 at 01:18:37AM +0200, Frederic Weisbecker wrote:
-> On Tue, Jul 07, 2009 at 01:52:17PM +0800, Li Zefan wrote:
-> > Here are some fixes for ksym_tracer.
-> > 
-> > [PATCH 1/8] ksym_tracer: Extract trace entry from struct trace_ksym
-> > [PATCH 2/8] ksym_tracer: Rewrite ksym_trace_filter_read()
-> > [PATCH 3/8] ksym_tracer: Fix validation of access type
-> > [PATCH 4/8] ksym_tracer: Fix validation of length of access type
-> > [PATCH 5/8] ksym_tracer: NIL-terminate user input filter
-> > [PATCH 6/8] ksym_tracer: Report error when failed to re-register hbp
-> > [PATCH 7/8] ksym_tracer: Fix memory leak
-> > [PATCH 8/8] ksym_tracer: Fix the output of stat tracing
-> > ---
-> >  kernel/trace/trace_ksym.c |  161 ++++++++++++++++++++++-----------------------
-> >  1 files changed, 78 insertions(+), 83 deletions(-)
-> > 
-> 
-> For the whole series:
-> 
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-> 
-> Thanks a lot!
-> 
-> Prasad, any objection?
+On Saturday 11 of July 2009, Eric Anholt wrote:
+> The following changes since commit
+> c2cc49a2f8a479dde96a599646d30b6cc9dbed78: Linus Torvalds (1):
+>         Merge git://git.kernel.org/.../sfrench/cifs-2.6
 >
+> are available in the git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel
+> drm-intel-next
 
-Hi,
-	Sorry for the delayed response (just back from a week-long
-vacation)..the patches do a fine-job of fixing the issues that escaped
-attention during development.
 
-Thanks for the patchset!
+[   23.723011] [drm:intel_dp_i2c_init] *ERROR* i2c_init DPDDC-D
 
--- K.Prasad
 
+Could tihs be silenced? I don't have DisplayPort in Thinkpad t400.
+
+
+-- 
+Arkadiusz Mi¶kiewicz        PLD/Linux Team
+arekm / maven.pl            http://ftp.pld-linux.org/
