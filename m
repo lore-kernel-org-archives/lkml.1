@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbZGKW14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbZGKW3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753029AbZGKW14 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 18:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbZGKW1t
+	id S1751828AbZGKW3a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 18:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbZGKW3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 18:27:49 -0400
-Received: from n18.bullet.mail.mud.yahoo.com ([68.142.206.145]:31327 "HELO
-	n18.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751276AbZGKW1s (ORCPT
+	Sat, 11 Jul 2009 18:29:23 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:27883 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751370AbZGKW3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 18:27:48 -0400
-X-Yahoo-Newman-Id: 772233.91361.bm@omp422.mail.mud.yahoo.com
+	Sat, 11 Jul 2009 18:29:22 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=FJojgAHQ7P4k4vN99o4hICHl4bef6LegEKpHRdOkDLNK/Im7phVh4Ss1DHKSM3CFpEPD2AW6sB52m5r8kT9ca4xUv59Fxs+OJdoyJtw9NIPCLW7VWWTit714ObzXFw5Gu9bi2YXVzPn+TcGRwaM8/jvATXcsDXpK8W7NQmzTdh4=  ;
-X-YMail-OSG: ycLTyBcVM1lTIKn93_5teYJeFFZa60aRbgnyJWhX8yi7Era_aRvyRdF5MKXt8WiQRM5M2BKfUtb3C4iPpy30N285q9UCxPIT1KmWVG0Jz0r.J5NoFPlC0V62UiLbsG8o6CrR6XOehdcnmUbAYdOTdzu3FUAHMafKX2cSRmTXUCgJU5GNhLtkCl1r4JAVggd2RMwMeCsPVQicqq3IZMTuvC55GGQuLVCCUPdrQ9qTfLWGsKRREVSWJ4AbhK4YBwOkLoSMaH0KVKZ2aFzB
+  b=oHgb1u/WX9tKgYAsH92EFgAICK5WnTbcrdejU+iuitxaC3g1xAJqM0PikBk/ulo9KpEvPjAhBEVgqVdcWgBFBhU+etbRzJ0lX1yFsTGKtWWAdpcOPtBJhDYoJvwieSev4OPb2qHIG2wltsMpeBvdqCyBRPqUjgq0XUviydpeeTQ=  ;
+X-YMail-OSG: ITTMo1sVM1lw40rZkO4_5Oq51gvsrNGqpN.Upi0PVFW6isvlCMnaQIfIhsMgUbrKCmfaoF0C8r0OeBB4KiWnN5e8XpB4FEz.8ATX7nMgi1zhZN0weSBjkN20hXPO1dxVI6__qjQ6LOXWM5dJOgP1_5yznTdr3fnqwtfi4q5MaWqfZcBg9vt66aLedKfgB7j7zA4eNv8yh.N3LC4pmXTWNoZB8Xm.FkE1GK5xzGv5Octot45w2irGrlpT_bbFno4Zh3mpaZHNmpqU28BM
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
 To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
 	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] move at91_ether's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 15:27:46 -0700
+Subject: Re: [PATCH] move mmci-omap-hs's probe function to .devinit.text
+Date: Sat, 11 Jul 2009 15:29:20 -0700
 User-Agent: KMail/1.9.10
 Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <linux@maxim.org.za>,
-       Roel Kluin <12o3l@tiscali.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20090711170548.GC5205@suse.de> <1247345591-22643-3-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-4-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1247345591-22643-4-git-send-email-u.kleine-koenig@pengutronix.de>
+       Jean Pihet <jpihet@mvista.com>, Tony Lindgren <tony@atomide.com>,
+       Pierre Ossman <drzeus@drzeus.cx>, Andy Lowe <alowe@mvista.com>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>
+References: <20090711170548.GC5205@suse.de> <1247345591-22643-24-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200907111527.46441.david-b@pacbell.net>
+Message-Id: <200907111529.21165.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -48,8 +45,10 @@ On Saturday 11 July 2009, Uwe Kleine-König wrote:
 > platform_driver_register plus removing the pointer to the probe function
 > from the struct platform_driver.
 
-And that's the preferred fix I was expecting to see.
+And that's the preferred fix ... NAK on this one.
 
-NAK on this version.
+In fact its quite rare for any SoC device to be hotpluggable,
+so your default stance in such cases should be to switch over
+to platform_driver_probe() instead of doing like this.
 
 
