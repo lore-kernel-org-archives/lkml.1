@@ -1,194 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbZGKLWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbZGKLXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755007AbZGKLWd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 07:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZGKLWX
+	id S1753430AbZGKLXR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 07:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZGKLXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 07:22:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55262 "EHLO ogre.sisk.pl"
+	Sat, 11 Jul 2009 07:23:04 -0400
+Received: from ozlabs.org ([203.10.76.45]:44087 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751416AbZGKLWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 07:22:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [BISECTED] HP G7000 battery disappears after suspend
-Date: Sat, 11 Jul 2009 13:22:37 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com> <61b223ba0907100144g14b89e71l2dc8301d4c56f9c4@mail.gmail.com> <200907101846.16800.bzolnier@gmail.com>
-In-Reply-To: <200907101846.16800.bzolnier@gmail.com>
+	id S1752485AbZGKLXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 07:23:03 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
+Date: Sat, 11 Jul 2009 20:52:56 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com> <200907111537.03191.rusty@rustcorp.com.au> <20090711073037.GA28414@elte.hu>
+In-Reply-To: <20090711073037.GA28414@elte.hu>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200907111322.37956.rjw@sisk.pl>
+Message-Id: <200907112052.57174.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 July 2009, Bartlomiej Zolnierkiewicz wrote:
-> On Friday 10 July 2009 10:44:15 Alan Jenkins wrote:
-> > 2009/7/9 Rafael J. Wysocki <rjw@sisk.pl>:
-> > > On Thursday 09 July 2009, Alan Jenkins wrote:
-> > >> 2009/7/8 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>:
-> > >> > On Wednesday 08 July 2009 21:41:17 Rafael J. Wysocki wrote:
-> > >> >> On Wednesday 08 July 2009, Alan Jenkins wrote:
-> > >> >> > Hi,
-> > >> >> >
-> > >> >> > I've borrowed this laptop for a few days.  Linux works pretty well,
-> > >> >> > but I found a problem on newer kernels.  After suspend it claims the
-> > >> >> > battery has been removed.  E.g. /proc/acpi/battery/BAT0/state claims
-> > >> >> > the battery is not present (but it is).
-> > >> >> >
-> > >> >> > I've attached acpidump and dmidecode output at
-> > >> >> > <http://bugzilla.kernel.org/show_bug.cgi?id=13745>.  I still have
-> > >> >> > access to the laptop for further tests, but only until Friday.
-> > >> >> >
-> > >> >> > I bisected it to the commit below.  Manually reverting the patch fixes
-> > >> >> > the problem (in both 2.6.30 and 2.6.31-rc2).
-> > >> >>
-> > >> >> Well, the commit below can't be reverted, because that would cause the boxes
-> > >> >> it fixed to stop working.
-> > >> >>
-> > >> >> Now, the only case this patch can make any difference is when the BIOS doesn't
-> > >> >> set SCI_EN before returning control the the kernel, which quite evidently is a
-> > >> >> BIOS bug.  The fact that the battery doesn't work with this patch applied means
-> > >> >> that the BIOS not only doesn't set SCI_EN, but also expects it to remain unset,
-> > >> >> which is insane.
-> > >> >>
-> > >> >> IMO this is a "won't fix", sorry.
-> > >> >
-> > >> > Lets be pragmatic here..
-> > >> >
-> > >> > Besides this is a regression and we are already handling some such insane
-> > >> > systems in STR case.  Moreover sending SMI ACPI_ENABLE command may result in
-> > >> > some things happening behind our back and not only setting of SCI_EN bit..
-> > >> >
-> > >> > PS Looking at the set_sci_en_on_resume quirk history it seems that if we are
-> > >> > lucky we may may fix another issue (screaming IRQ one) at the same time :)
-> > >> >
-> > >> > Alan, could you try this patch?
-> > >> >
-> > >> > ---
-> > >> > debug patch (needs to have both CONFIG_SUSPEND=y & CONFIG_HIBERNATION=y)
-> > >> >
-> > >> >  drivers/acpi/sleep.c |   13 ++++++++++++-
-> > >> >  1 file changed, 12 insertions(+), 1 deletion(-)
-> > >> >
-> > >> > Index: b/drivers/acpi/sleep.c
-> > >> > ===================================================================
-> > >> > --- a/drivers/acpi/sleep.c
-> > >> > +++ b/drivers/acpi/sleep.c
-> > >> > @@ -383,6 +383,14 @@ static struct dmi_system_id __initdata a
-> > >> >                },
-> > >> >        },
-> > >> >        {
-> > >> > +       .callback = init_set_sci_en_on_resume,
-> > >> > +       .ident = "Hewlett-Packard HP G7000 Notebook PC",
-> > >> > +       .matches = {
-> > >> > +               DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-> > >> > +               DMI_MATCH(DMI_PRODUCT_NAME, "HP G7000 Notebook PC"),
-> > >> > +               },
-> > >> > +       },
-> > >> > +       {
-> > >> >        .callback = init_old_suspend_ordering,
-> > >> >        .ident = "Panasonic CF51-2L",
-> > >> >        .matches = {
-> > >>
-> > >> Thanks for coding this up for me in full.  It works, the battery now
-> > >> survives, and it does indeed remove the IRQ warning.
-> > >
-> > > Great, thanks for testing, Bart, thanks for the patch!
-> > >
-> > > Len, can you add the Bart's patch to your 2.6.31 queue, please?
-> > >
-> > >> I didn't test the hibernation hunk.  I have hibernation set up, but
-> > >> there is a different problem (not a regression).  I don't have much
-> > >> more time to investigate on this laptop, so I don't expect to get it
-> > >> fixed.  But here are some details anyway :-).
-> > >>
-> > >> When I run s2disk, it writes the image out, and then instantly
-> > >> resumes.  It doesn't seem to read the image, but neither does the
-> > >> kernel report an error:
-> > >>
-> > >> [  491.088802] ACPI: Preparing to enter system sleep state S4
-> > >> [  491.090498] PM: Saving platform NVS memory
-> > >> [  491.094638] Disabling non-boot CPUs ...
-> > >> [  491.094867] PM: Creating hibernation image:
-> > >> [  491.096015] PM: Need to copy 114990 pages
-> > >> [  491.096015] PM: Normal pages needed: 114990 + 1024 + 22, available
-> > >> pages: 144595
-> > >> [  491.096015] PM: Hibernation image created (114990 pages copied)
-> > >> [  491.096015] ACPI: Waking up from system sleep state S4
-> > >>
-> > >> It happens on 2.6.24-23-generic, 2.6.30, and 2.6.30-rc2.
-> > >
-> > > Hmm.  Interesting.
-> > >
-> > > I _guess_ this problem is ACPI-related as well.  You can try putting
-> > > 'shutdown method = shutdown' into /etc/suspend.conf (or whatever the s2disk's
-> > > configuration file is on your system).
-> > 
-> > That doesn't change anything.
-> > 
-> > > If possible, it would be interesting to see if that also happens if
-> > > 'echo disk > /sys/power/state' is used to trigger hibernation instead of
-> > > s2disk.   In particular when booted with init=/bin/bash.
-> > 
-> > That worked, even though I didn't use init=/bin/bash.
-> > 
-> > If it matters, I'm using a swap file on an NTFS partition.  [The
-> > system was installed by Ubuntu "Wubi" (i.e. using Windows partition
-> > and bootloader), but I had to set up both uswsusp and kernel swsusp
-> > myself.  pm-hibernate refuses to work; I don't think it knows about
-> > swap files].
-> > 
-> > I noticed an error message, I'm not sure if it's relevant or not.
-> > 
-> > Suspending using this method, I see two lines of ATA errors on the
-> > console when suspending.  They appear to be post-snapshot - they don't
-> > appear in the log - but it looks like the same error happens on resume
-> > too.  s2disk generates the same error on resume as well.
-> > 
-> > [  192.247475] sd 0:0:0:0: [sda] Starting disk
-> > [  192.340428] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
-> > [  192.340432] ata4.00: ACPI cmd ef/03:22:00:00:00:a0 filtered out
-> > [  192.372314] ata4.00: configured for MWDMA2
-> > [  192.640075] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> > [  192.642338] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
-> > [  192.644365] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
-> > [  192.644381] ata1.00: configured for UDMA/100
-> > * [  192.660076] ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
-> > * [  192.660079] ata1: irq_stat 0x00400040, connection status changed
-> > [  192.663198] ata1.00: configured for UDMA/100
-> > [  192.663201] ata1: EH complete
-> > 
-> > The lines marked with * are the ones that appear on the console during
-> > suspend.  This happens on both 2.6.31-rc2 and 2.6.30.
-> 
-> BTW Did you have a chance to test the second part of the original patch?
-> 
-> [ Rafal, what do we want to do with it?  It seems logical to have the same
->   behavior w.r.t. SCI_EN bit both when leaving S3 and S4 but I haven't yet
->   verified this with the spec (is the ACPI is enabled on leaving the state
->   assumption also valid for S4 or only for S0-S3?) and the change itself
->   would require some more time in linux-next if we decide to go this way.. ]
+On Sat, 11 Jul 2009 05:00:37 pm Ingo Molnar wrote:
+> Sigh, and now you apply this incomplete and unclean patch. The thing
+> is, unpatched upstream kernel/module.c is quite a readability mess
+> right now, even on the most trivial level and beyond comments:
 
-The situation during resume from hibernation is different, because that code
-is usually run when the boot kernel has already initialized ACPI.
+Hi Ingo!
 
-Also, IIRC the specification implies that ACPI won't be enabled by the BIOS
-during resume from S4 at it is the responsibility of the kernel to enable ACPI
-in that case.  In fact we don't follow the specification in that respect,
-because ACPI should only be enabled by the image kernel and the boot kernel
-shouldn't touch it.
+    First, thanks for reading this code.  Always useful to annoy you into 
+reading my stuff :)
 
-OTOH, I'm not sure what the behavior of the affected systems would be if the
-boot kernel didn't enable ACPI.  I'm not sure if that's worth investigating at
-the moment, though.
+TBH most of those things don't worry me enough to reject patches.  If there 
+were other problems, I might ask someone to fix those up too, but I try not to 
+post feedback like the one you gave.
 
-Best,
-Rafael
+>  - Code flow confusion: inconsistent checks for allocation errors
+>    within the same function.
+
+Which one were you thinking?
+
+>  - Huge functions that should be broken up. load_module() is 470
+>    lines long (!).
+
+It is, but unfortunately there's not a clear point to break it.  Pulling 
+unrelated ops into a separate function just to reduce function size is worse 
+than the disease (see init/main.c's do_basic_setup() for an example, though 
+that file is not as bad as I remember).
+
+>         if (ret) {
+>                 /* Update module bounds. */
+>                 if ((unsigned long)ret < module_addr_min)
+>                         module_addr_min = (unsigned long)ret;
+>                 if ((unsigned long)ret + size > module_addr_max)
+>                         module_addr_max = (unsigned long)ret + size;
+>         }
+>         return ret;
+>   }
+>
+>   Can you read that function at a glance? I sure cannot.
+
+Yep, for me this is ugly but clear.
+
+I prefer accessible addresses to be held in void *; the module code is a bit 
+borderline, but originally void * was less casts than unsigned long (that may 
+well have changed in the last few years tho).
+
+> And i'm sure there's more - this is what 2 minutes of looking
+> showed. If we cannot even get the trivial stuff right how can we get
+> the more complex stuff right?
+>
+> _Please_ work on making it more readabe before piling more features
+> on it ...
+
+I'm not happy with the module.c code, but not for these reasons.  It just does 
+lots of little, bitsy things to load and set up a module, many of which are 
+arch-specific hooks, and/or config conditional.
+
+eg. I'd like to split load_module() where it says "Module has moved": this 
+would be clean, because before that point "mod" is pointing to the temporary 
+version.  But trying it quickly reveals it to be worse than the current code.
+
+Small cleanups are possible, but they're not the ones which would make this 
+code really straightforward.
+
+Cheers,
+Rusty.
