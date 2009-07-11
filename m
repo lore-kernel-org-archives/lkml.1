@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbZGKHuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZGKHvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752624AbZGKHuw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 03:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbZGKHun
+	id S1755754AbZGKHvH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 03:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbZGKHuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 03:50:43 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:39102 "EHLO mgw1.diku.dk"
+	Sat, 11 Jul 2009 03:50:52 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:58848 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751868AbZGKHum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 03:50:42 -0400
-Date: Sat, 11 Jul 2009 09:50:09 +0200 (CEST)
+	id S1754093AbZGKHuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 03:50:50 -0400
+Date: Sat, 11 Jul 2009 09:49:48 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: airlied@linux.ie, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/5] drivers/gpu: Move a dereference below a NULL test
-Message-ID: <Pine.LNX.4.64.0907110949490.29592@ask.diku.dk>
+To: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] drivers/ata: Move a dereference below a NULL test
+Message-ID: <Pine.LNX.4.64.0907110949280.29592@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -48,26 +48,23 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/gpu/drm/drm_stub.c |    3 ++-
+ drivers/ata/pata_at91.c |    3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff -u -p a/drivers/gpu/drm/drm_stub.c b/drivers/gpu/drm/drm_stub.c
---- a/drivers/gpu/drm/drm_stub.c
-+++ b/drivers/gpu/drm/drm_stub.c
-@@ -489,7 +489,7 @@ int drm_put_minor(struct drm_minor **min
-  */
- void drm_put_dev(struct drm_device *dev)
+diff -u -p a/drivers/ata/pata_at91.c b/drivers/ata/pata_at91.c
+--- a/drivers/ata/pata_at91.c
++++ b/drivers/ata/pata_at91.c
+@@ -312,11 +312,12 @@ err_ide_ioremap:
+ static int __devexit pata_at91_remove(struct platform_device *pdev)
  {
--	struct drm_driver *driver = dev->driver;
-+	struct drm_driver *driver;
- 	struct drm_map_list *r_list, *list_temp;
+ 	struct ata_host *host = dev_get_drvdata(&pdev->dev);
+-	struct at91_ide_info *info = host->private_data;
++	struct at91_ide_info *info;
+ 	struct device *dev = &pdev->dev;
  
- 	DRM_DEBUG("\n");
-@@ -498,6 +498,7 @@ void drm_put_dev(struct drm_device *dev)
- 		DRM_ERROR("cleanup called no dev\n");
- 		return;
- 	}
-+	driver = dev->driver;
+ 	if (!host)
+ 		return 0;
++	info = host->private_data;
  
- 	drm_vblank_cleanup(dev);
+ 	ata_host_detach(host);
  
