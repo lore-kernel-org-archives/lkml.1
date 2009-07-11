@@ -1,100 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbZGKLXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbZGKLZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430AbZGKLXR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 07:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZGKLXE
+	id S1754416AbZGKLZN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 07:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZGKLZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 07:23:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:44087 "EHLO ozlabs.org"
+	Sat, 11 Jul 2009 07:25:03 -0400
+Received: from office.pov.lt ([195.182.77.65]:59304 "EHLO mail.pov.lt"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752485AbZGKLXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 07:23:03 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
-Date: Sat, 11 Jul 2009 20:52:56 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
-Cc: Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com> <200907111537.03191.rusty@rustcorp.com.au> <20090711073037.GA28414@elte.hu>
-In-Reply-To: <20090711073037.GA28414@elte.hu>
+	id S1751929AbZGKLZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 07:25:01 -0400
+X-Greylist: delayed 476 seconds by postgrey-1.27 at vger.kernel.org; Sat, 11 Jul 2009 07:25:00 EDT
+Date: Sat, 11 Jul 2009 14:16:59 +0300
+From: Marius Gedminas <marius@gedmin.as>
+To: xorg@lists.freedesktop.org
+Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: SIGQUIT from tty layer
+Message-ID: <20090711111659.GD31623@platonas>
+Mail-Followup-To: xorg@lists.freedesktop.org,
+	Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20090709143141.GA17551@ben-laptop> <20090709150047.GE5328@const.famille.thibault.fr> <20090709171816.GA6046@ben-laptop> <20090710183346.GA7699@const.famille.thibault.fr>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="6WlEvdN9Dv0WHSBl"
 Content-Disposition: inline
-Message-Id: <200907112052.57174.rusty@rustcorp.com.au>
+In-Reply-To: <20090710183346.GA7699@const.famille.thibault.fr>
+X-GPG-Fingerprint: 8121 AD32 F00A 8094 748A  6CD0 9157 445D E7A6 D78F
+X-GPG-Key: http://gedmin.as/mg-pgp-key.txt
+X-URL: http://gedmin.as/
+X-Message-Flag: If you do not see this message correctly, stop using
+	Outlook.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Jul 2009 05:00:37 pm Ingo Molnar wrote:
-> Sigh, and now you apply this incomplete and unclean patch. The thing
-> is, unpatched upstream kernel/module.c is quite a readability mess
-> right now, even on the most trivial level and beyond comments:
 
-Hi Ingo!
+--6WlEvdN9Dv0WHSBl
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-    First, thanks for reading this code.  Always useful to annoy you into 
-reading my stuff :)
+On Fri, Jul 10, 2009 at 08:33:46PM +0200, Samuel Thibault wrote:
+> Ben Gamari, le Thu 09 Jul 2009 13:18:16 -0400, a =E9crit :
+> > On Thu, Jul 09, 2009 at 05:00:47PM +0200, Samuel Thibault wrote:
+> > > SIGQUIT is sent to the X server if the controling tty of the X server
+> > > (probably its VT) receives the QUIT character (usually control-\, i.e.
+> > > 0x1c)
+> >=20
+> > This, however, would imply that something is sending the character and
+> > this something is certainly not me. Where else might this character come
+> > from? How might I trace who's writing to the tty?
+>=20
+> Not writing to the tty, but producing input for the tty.  Are you
+> using evdev or the legacy kbd driver? 0x1c is the keycode of the enter
+> key, maybe your workload happens to restart the keyboard driver, which
+> temporarily re-enables signal keys.
+>=20
+> Or maybe it's on another tty, do you have anything beyond /dev/mem,
+> /dev/null, /dev/tty7, /dev/agpgart and /dev/dri/card* in
+> lsof -p $(pidof Xorg) | grep CHR
+> ?
 
-TBH most of those things don't worry me enough to reject patches.  If there 
-were other problems, I might ask someone to fix those up too, but I try not to 
-post feedback like the one you gave.
+This sounds familiar:
 
->  - Code flow confusion: inconsistent checks for allocation errors
->    within the same function.
+  "a set of 'stty' calls in the init scripts, that (amazingly) reset the
+   isig flag on the current vt (which in our case is the X vt). For
+   anyone ignorant of the vile mess of consequences that means
+   (obviously) your X server gets a SIGQUIT when you press enter."
+        -- http://www.gnome.org/~michael/blog/2009-05-29.html
 
-Which one were you thinking?
+Marius Gedminas
+--=20
+I'm sure it would be possible to speed apport up a lot, after we're done
+making boot and login instantaneous.
+                -- Lars Wirzenius
 
->  - Huge functions that should be broken up. load_module() is 470
->    lines long (!).
+--6WlEvdN9Dv0WHSBl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-It is, but unfortunately there's not a clear point to break it.  Pulling 
-unrelated ops into a separate function just to reduce function size is worse 
-than the disease (see init/main.c's do_basic_setup() for an example, though 
-that file is not as bad as I remember).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
->         if (ret) {
->                 /* Update module bounds. */
->                 if ((unsigned long)ret < module_addr_min)
->                         module_addr_min = (unsigned long)ret;
->                 if ((unsigned long)ret + size > module_addr_max)
->                         module_addr_max = (unsigned long)ret + size;
->         }
->         return ret;
->   }
->
->   Can you read that function at a glance? I sure cannot.
+iD8DBQFKWHSrkVdEXeem148RAh1AAJ9q44BM77onANWsxBoU0MRwHtWcZQCcCDAm
+OVlCkAFrmPGd5TJlCOzW08E=
+=J1VB
+-----END PGP SIGNATURE-----
 
-Yep, for me this is ugly but clear.
-
-I prefer accessible addresses to be held in void *; the module code is a bit 
-borderline, but originally void * was less casts than unsigned long (that may 
-well have changed in the last few years tho).
-
-> And i'm sure there's more - this is what 2 minutes of looking
-> showed. If we cannot even get the trivial stuff right how can we get
-> the more complex stuff right?
->
-> _Please_ work on making it more readabe before piling more features
-> on it ...
-
-I'm not happy with the module.c code, but not for these reasons.  It just does 
-lots of little, bitsy things to load and set up a module, many of which are 
-arch-specific hooks, and/or config conditional.
-
-eg. I'd like to split load_module() where it says "Module has moved": this 
-would be clean, because before that point "mod" is pointing to the temporary 
-version.  But trying it quickly reveals it to be worse than the current code.
-
-Small cleanups are possible, but they're not the ones which would make this 
-code really straightforward.
-
-Cheers,
-Rusty.
+--6WlEvdN9Dv0WHSBl--
