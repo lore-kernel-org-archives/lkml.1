@@ -1,200 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZGKJnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbZGKJzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbZGKJnP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 05:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZGKJm6
+	id S1754154AbZGKJzI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 05:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZGKJy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 05:42:58 -0400
-Received: from ey-out-1920.google.com ([74.125.78.145]:48591 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbZGKJm4 (ORCPT
+	Sat, 11 Jul 2009 05:54:56 -0400
+Received: from elasmtp-dupuy.atl.sa.earthlink.net ([209.86.89.62]:43028 "EHLO
+	elasmtp-dupuy.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752491AbZGKJyz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 05:42:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=P6Y99ug6PWZfhITXeEqp0OrlVKFBfOdcEoqohbY8cmwETDQz42sJn40mIyiGoJOFAN
-         Mo4kSYXoHRP3oI9kT0wy7HZwoZlu04Yh7xQtMvoGmOCV51Y76DZ2mZrAF9piT7myQajX
-         NloOhJmYkzjI/L3YBEDHazEWvG28DCtOqvx38=
-Message-ID: <4A585E9B.10509@tuffmail.co.uk>
-Date: Sat, 11 Jul 2009 10:42:51 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [BISECTED] HP G7000 battery disappears after suspend
-References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com> <200907092211.31250.rjw@sisk.pl> <61b223ba0907100144g14b89e71l2dc8301d4c56f9c4@mail.gmail.com> <200907101846.16800.bzolnier@gmail.com>
-In-Reply-To: <200907101846.16800.bzolnier@gmail.com>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+	Sat, 11 Jul 2009 05:54:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=FNcQ1uL2S+7jWfAbjuEOMzPvlb+OOwuJY3SEjbpI0e/ttwPXewLHwqT9QRhYGf8a;
+  h=Received:Cc:Message-Id:From:To:In-Reply-To:Content-Type:Content-Transfer-Encoding:Mime-Version:Subject:Date:References:X-Mailer:X-ELNK-Trace:X-Originating-IP;
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <C7739469-5CD4-478A-AD68-BD38D01FCD59@earthlink.net>
+From: Mitchell Erblich <erblichs@earthlink.net>
+To: Chris Snook <chris.snook@gmail.com>
+In-Reply-To: <13a12eea0907110116g62bd0aa1n6f1d35a067351ff1@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: Suggested code change : Simple : Scale pdflush threads from  desktop to server
+Date: Sat, 11 Jul 2009 02:54:52 -0700
+References: <F4B972C6-3FAB-49DB-A409-36B5EF2A7684@earthlink.net> <13a12eea0907110116g62bd0aa1n6f1d35a067351ff1@mail.gmail.com>
+X-Mailer: Apple Mail (2.930.3)
+X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec796e8e351988fadb1415ff62dc43851671350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 98.234.127.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> On Friday 10 July 2009 10:44:15 Alan Jenkins wrote:
->   
->> 2009/7/9 Rafael J. Wysocki <rjw@sisk.pl>:
->>     
->>> On Thursday 09 July 2009, Alan Jenkins wrote:
->>>       
->>>> 2009/7/8 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>:
->>>>         
->>>>> On Wednesday 08 July 2009 21:41:17 Rafael J. Wysocki wrote:
->>>>>           
->>>>>> On Wednesday 08 July 2009, Alan Jenkins wrote:
->>>>>>             
->>>>>>> Hi,
->>>>>>>
->>>>>>> I've borrowed this laptop for a few days.  Linux works pretty well,
->>>>>>> but I found a problem on newer kernels.  After suspend it claims the
->>>>>>> battery has been removed.  E.g. /proc/acpi/battery/BAT0/state claims
->>>>>>> the battery is not present (but it is).
->>>>>>>
->>>>>>> I've attached acpidump and dmidecode output at
->>>>>>> <http://bugzilla.kernel.org/show_bug.cgi?id=13745>.  I still have
->>>>>>> access to the laptop for further tests, but only until Friday.
->>>>>>>
->>>>>>> I bisected it to the commit below.  Manually reverting the patch fixes
->>>>>>> the problem (in both 2.6.30 and 2.6.31-rc2).
->>>>>>>               
->>>>>> Well, the commit below can't be reverted, because that would cause the boxes
->>>>>> it fixed to stop working.
->>>>>>
->>>>>> Now, the only case this patch can make any difference is when the BIOS doesn't
->>>>>> set SCI_EN before returning control the the kernel, which quite evidently is a
->>>>>> BIOS bug.  The fact that the battery doesn't work with this patch applied means
->>>>>> that the BIOS not only doesn't set SCI_EN, but also expects it to remain unset,
->>>>>> which is insane.
->>>>>>
->>>>>> IMO this is a "won't fix", sorry.
->>>>>>             
->>>>> Lets be pragmatic here..
->>>>>
->>>>> Besides this is a regression and we are already handling some such insane
->>>>> systems in STR case.  Moreover sending SMI ACPI_ENABLE command may result in
->>>>> some things happening behind our back and not only setting of SCI_EN bit..
->>>>>
->>>>> PS Looking at the set_sci_en_on_resume quirk history it seems that if we are
->>>>> lucky we may may fix another issue (screaming IRQ one) at the same time :)
->>>>>
->>>>> Alan, could you try this patch?
->>>>>
->>>>> ---
->>>>> debug patch (needs to have both CONFIG_SUSPEND=y & CONFIG_HIBERNATION=y)
->>>>>
->>>>>  drivers/acpi/sleep.c |   13 ++++++++++++-
->>>>>  1 file changed, 12 insertions(+), 1 deletion(-)
->>>>>
->>>>> Index: b/drivers/acpi/sleep.c
->>>>> ===================================================================
->>>>> --- a/drivers/acpi/sleep.c
->>>>> +++ b/drivers/acpi/sleep.c
->>>>> @@ -383,6 +383,14 @@ static struct dmi_system_id __initdata a
->>>>>                },
->>>>>        },
->>>>>        {
->>>>> +       .callback = init_set_sci_en_on_resume,
->>>>> +       .ident = "Hewlett-Packard HP G7000 Notebook PC",
->>>>> +       .matches = {
->>>>> +               DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
->>>>> +               DMI_MATCH(DMI_PRODUCT_NAME, "HP G7000 Notebook PC"),
->>>>> +               },
->>>>> +       },
->>>>> +       {
->>>>>        .callback = init_old_suspend_ordering,
->>>>>        .ident = "Panasonic CF51-2L",
->>>>>        .matches = {
->>>>>           
->>>> Thanks for coding this up for me in full.  It works, the battery now
->>>> survives, and it does indeed remove the IRQ warning.
->>>>         
->>> Great, thanks for testing, Bart, thanks for the patch!
->>>
->>> Len, can you add the Bart's patch to your 2.6.31 queue, please?
->>>
->>>       
->>>> I didn't test the hibernation hunk.  I have hibernation set up, but
->>>> there is a different problem (not a regression).  I don't have much
->>>> more time to investigate on this laptop, so I don't expect to get it
->>>> fixed.  But here are some details anyway :-).
->>>>
->>>> When I run s2disk, it writes the image out, and then instantly
->>>> resumes.  It doesn't seem to read the image, but neither does the
->>>> kernel report an error:
->>>>
->>>> [  491.088802] ACPI: Preparing to enter system sleep state S4
->>>> [  491.090498] PM: Saving platform NVS memory
->>>> [  491.094638] Disabling non-boot CPUs ...
->>>> [  491.094867] PM: Creating hibernation image:
->>>> [  491.096015] PM: Need to copy 114990 pages
->>>> [  491.096015] PM: Normal pages needed: 114990 + 1024 + 22, available
->>>> pages: 144595
->>>> [  491.096015] PM: Hibernation image created (114990 pages copied)
->>>> [  491.096015] ACPI: Waking up from system sleep state S4
->>>>
->>>> It happens on 2.6.24-23-generic, 2.6.30, and 2.6.30-rc2.
->>>>         
->>> Hmm.  Interesting.
->>>
->>> I _guess_ this problem is ACPI-related as well.  You can try putting
->>> 'shutdown method = shutdown' into /etc/suspend.conf (or whatever the s2disk's
->>> configuration file is on your system).
->>>       
->> That doesn't change anything.
->>
->>     
->>> If possible, it would be interesting to see if that also happens if
->>> 'echo disk > /sys/power/state' is used to trigger hibernation instead of
->>> s2disk.   In particular when booted with init=/bin/bash.
->>>       
->> That worked, even though I didn't use init=/bin/bash.
->>
->> If it matters, I'm using a swap file on an NTFS partition.  [The
->> system was installed by Ubuntu "Wubi" (i.e. using Windows partition
->> and bootloader), but I had to set up both uswsusp and kernel swsusp
->> myself.  pm-hibernate refuses to work; I don't think it knows about
->> swap files].
->>
->> I noticed an error message, I'm not sure if it's relevant or not.
->>
->> Suspending using this method, I see two lines of ATA errors on the
->> console when suspending.  They appear to be post-snapshot - they don't
->> appear in the log - but it looks like the same error happens on resume
->> too.  s2disk generates the same error on resume as well.
->>
->> [  192.247475] sd 0:0:0:0: [sda] Starting disk
->> [  192.340428] ata4.00: ACPI cmd ef/03:0c:00:00:00:a0 filtered out
->> [  192.340432] ata4.00: ACPI cmd ef/03:22:00:00:00:a0 filtered out
->> [  192.372314] ata4.00: configured for MWDMA2
->> [  192.640075] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
->> [  192.642338] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
->> [  192.644365] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
->> [  192.644381] ata1.00: configured for UDMA/100
->> * [  192.660076] ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
->> * [  192.660079] ata1: irq_stat 0x00400040, connection status changed
->> [  192.663198] ata1.00: configured for UDMA/100
->> [  192.663201] ata1: EH complete
->>
->> The lines marked with * are the ones that appear on the console during
->> suspend.  This happens on both 2.6.31-rc2 and 2.6.30.
->>     
->
-> BTW Did you have a chance to test the second part of the original patch?
->
-> [ Rafal, what do we want to do with it?  It seems logical to have the same
->   behavior w.r.t. SCI_EN bit both when leaving S3 and S4 but I haven't yet
->   verified this with the spec (is the ACPI is enabled on leaving the state
->   assumption also valid for S4 or only for S0-S3?) and the change itself
->   would require some more time in linux-next if we decide to go this way.. ]
->   
+Chris, et al, inline,
 
-I got hibernation working without the second part (and the battery was 
-fine).  I'll try that hunk today and see if it breaks.  Right now the 
-machine's in Windows, recovering from me letting it run out of battery :-).
+	Initial bottom line is to add some minimal server scalability and KISS.
+	
+	This is a heads up and says "have you considered this"?
 
-Alan
+	Yes, these are sensible changes and have no possible regressions
+	except wrt the printk and an alternative rate limiting is suggested.
+
+	Mitchell Erblich
+	===============
+	
+On Jul 11, 2009, at 1:16 AM, Chris Snook wrote:
+
+> On Fri, Jul 10, 2009 at 9:25 PM, Mitchell Erblich<erblichs@earthlink.net 
+> > wrote:
+>> Group,
+>>
+>>                pdflush threads clean dirty pages
+>>
+>>          Under the past simple assumption that a greater number of
+>>          page daemon threads will have the TENDENCY to clean
+>>          the pages faster.
+>>
+>>        Another assumption is that a server will have at least 2x /  
+>> 4x the
+>>        number of drives and memory, so allocating more pdflush()  
+>> threads
+>>        makes sense.
+>
+> That's a rather sweeping generalization.
+
+	Not really, the current  default desktop system will have 1 drive
+	and 2 to 4GB of physical memory.
+
+	A normal server will have at least 2 drives so the min
+	of PDFLUSH gets increased to 2x. This is a fairly
+	conservative increase.
+>
+>
+>>        Relying on a recent change, code base on whether the system is
+>>        a desktop or a server, scale the number of pdthreads() which  
+>> would
+>>        result in the below code change.
+>>
+>>        The suggestion is to double the MIN number of threads and  
+>> set the
+>>        MAX number to 4x.
+>>
+>>        ./mm/pdflush.c
+>>        /* Scale for a server */
+>>        #define MIN_PDFLUSH_THREADS     4               /* 2x  
+>> desktop value
+>> */
+>>        #define MAX_PDFLUSH_THREADS     32              /* 4x  
+>> desktop value
+>> */
+>
+> So, you're taking a well-established and empirically validated set of
+> constants, and changing it only in the case where users are least
+> tolerant of change?  I agree that the existing pdflush tuning is a bit
+> of a kludge, but this just adds more noise to the data we need to
+> analyze and optimize pdflush.
+
+	The MAX gets changed and ONLY gets bumped based on the
+	assumption of non-idle PDFLUSH threads. Just because we
+	may set a higher POSSIBLE MAX thread value, does not mean
+	that the MAX number will be allocated.
+
+	Since the normal user will be a desktop, then that system has no
+	change in functionality.
+
+	If the system is a server, then only two additional; THREADS will
+	be waiting without a lag.
+
+	And yes, CFS has at least one tuneable based on interactiveness
+	AND is to be set whether you are a DESKTOP OR SERVER in
+	behaviour.
+	
+>
+>
+>>        /*
+>>         * secondary suggestion is to add a DEBUG type /var/log/system
+>> messages that
+>>         * will rate limit independent of desktop or server.
+>>         */
+>>
+>>        else if (nr_pdflush_threads == MAX_PDFLUSH_THREADS) {
+>>                   /* optional PDFLUSH msg */
+>>                   if (printk_ratelimit() {
+>>                                                    printk(KERN_INFO
+>> "MAX_PDFLUSH_THREADS Limited\n");
+>>                   }
+>>         }
+>
+> Log messages, even at debug level, for normal conditions are a  
+> really bad idea.
+
+	This is SUGGESTED with PARANOIA, (see triple events for msg)
+	First, I really think I need a if NOT rate limit then print msg.
+	And yes, sent a followup msg on that.
+
+	However, this code is best executed every sec if their are MAX  
+pdflush()
+	threads and none are idle.
+	
+	And is then reason for rate limiting. So, the output is limited via  
+three
+	limiting events. (every sec, rate limit, and MAX threads).
+	FYI: this else is not creating another pdflush thread where the if  
+"is".
+	May want to do something with jiffies, for a more restrictive limiting,
+	  so it is at most executed every X secs, if nr_pdflush_threads stays  
+at MAX,
+
+	So, knowing that the system would
+	be NORMALLY creating more pdthreads, may generate some minimal
+	reason for write congestion even when hardware is capable of more.
+
+	Some more knowledgeable users may want to see if they periodicly
+	bump into the MAX value.
+>
+> pdflush definitely needs work, but twiddling constants will, at best,
+> optimize it for a small subset of the user base for a brief period of
+> time.  We really need patches that do intelligent things based on
+> system resources and load, and we need data to support them.
+
+	First, if a simple change gets us a 90% solution, then
+	what is wrong with that?
+
+	pdflush() in my opinion needs some level of feedback on
+	how much is in the write queues per fs, the latency
+	of them being served,  write congestion, etc, but
+	a KISS approach is to accept that default desktop will have
+	a lower I/O capacity and that a server with a higher I/O
+	capacity should have a higher CAPABLE number of pdthreads.
+	
+	Also, a earlier Suggested changeby me also allows pdflush threads
+	to be created more freq when their is write load.
+
+	
+>
+>
+> -- Chris
+
