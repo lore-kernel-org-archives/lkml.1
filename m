@@ -1,514 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZGKBtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbZGKCDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbZGKBtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 21:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZGKBtF
+	id S1752966AbZGKCDv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 22:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbZGKCDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 21:49:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38604 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751534AbZGKBtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 21:49:03 -0400
-Date: Fri, 10 Jul 2009 22:47:28 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1 tip] perf report: Adjust column width to the values
-	sampled
-Message-ID: <20090711014728.GH3452@ghostprotocols.net>
-References: <20090706192157.GA3320@ghostprotocols.net> <20090710040104.GB5077@elte.hu>
+	Fri, 10 Jul 2009 22:03:40 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:57606 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751090AbZGKCDj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 10 Jul 2009 22:03:39 -0400
+Date: Sat, 11 Jul 2009 03:03:24 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: tridge@samba.org
+Cc: Martin Steigerwald <Martin@lichtvoll.de>,
+       Jan Engelhardt <jengelh@medozas.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org, James.Bottomley@hansenpartnership.com
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+Message-ID: <20090711020324.GA6545@shareable.org>
+References: <19013.8005.541836.436991@samba.org> <200907072356.51553.Martin@lichtvoll.de> <19028.3736.892828.352905@samba.org> <200907081339.59815.Martin@lichtvoll.de> <19029.28240.995268.850038@samba.org> <20090710212853.GB30322@shareable.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090710040104.GB5077@elte.hu>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090710212853.GB30322@shareable.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Jul 10, 2009 at 06:01:04AM +0200, Ingo Molnar escreveu:
+Jamie Lokier wrote:
+> I don't know what code base is used for Windows CE.  CE is still used,
+> on phones, PDAs and media players among other things.  Has there been
+> any testing against CE - current versions and old versions?
 
-<SNIP>
- 
->   This is for easier output parsing for scripts.
+Found something about Windows CE:
 
-Like this?
+    On WinCE, long filenames do not need to be generated if the filename
+    is 8.3 compatible: it must contain all uppercase characters, no
+    unicode characters, and be no longer than 8 characters long with no
+    more than a 3 character extension. For example, FILENAME.TXT would not
+    generate a long filename and uses only one directory
+    entry. FileName.Txt, filename.txt, and FILENAME0.TXT would all
+    genenerate a long filename.
 
->From 6a05acf56a0db29286a444d65eb61bf011dca8dd Mon Sep 17 00:00:00 2001
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-Date: Fri, 10 Jul 2009 22:43:34 -0300
-Subject: [PATCH] perf report: Adjust column width to the values sampled
+    From: http://blogs.msdn.com/medmedia/archive/2007/01/04/fat-filesystem-performance-issues.aspx
 
-Example:
+In other words, Windows CE uses the same algorithm as Windows 9x when
+deciding whether to _create_ a long filename, corresponding to
+shortname=mixed.
 
-[acme@doppio pahole]$  perf report --sort comm,dso,symbol | head -13
+That post is from 2007, so likely to be what goes on recent CE devices.
 
-    12.79%   pahole  /usr/lib64/libdw-0.141.so    [.] __libdw_find_attr
-     8.90%   pahole  /lib64/libc-2.10.1.so        [.] _int_malloc
-     8.68%   pahole  /usr/lib64/libdw-0.141.so    [.] __libdw_form_val_len
-     8.15%   pahole  /lib64/libc-2.10.1.so        [.] __GI_strcmp
-     6.80%   pahole  /lib64/libc-2.10.1.so        [.] __tsearch
-     5.54%   pahole  ./build/libdwarves.so.1.0.0  [.] tag__recode_dwarf_type
-[acme@doppio pahole]$
+I don't know if that means it _reads_ FAT the same way as Windows 9x,
+or if they decided to do the same as shortname=mixed for maximum
+compatibility with everything.  Has anyone ever checked if
+shortname=winnt is what NT-derivatives like XP and Vista still do?
 
-[acme@doppio pahole]$  perf report --sort comm,dso,symbol -d /lib64/libc-2.10.1.so | head -10
+Obviously we care about how CE reads FAT, not when it creates long
+names.  This is just a little clue that it might be the same as Windows 9x.
 
-    21.92%   pahole  /lib64/libc-2.10.1.so  [.] _int_malloc
-    20.08%   pahole  /lib64/libc-2.10.1.so  [.] __GI_strcmp
-    16.75%   pahole  /lib64/libc-2.10.1.so  [.] __tsearch
-[acme@doppio pahole]$
-
-Also add these extra options to control the new behaviour:
-
--w, --field-width
-
-Force each column width to the provided list, for large terminal
-readability.
-
--t, --field-separator:
-
-Use a special separator character and don't pad with spaces, replacing
-all occurances of this separator in symbol names (and other output) with
-a '.' character, that thus it's the only non valid separator.
-
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Suggested-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/Documentation/perf-report.txt |   12 ++
- tools/perf/builtin-report.c              |  174 ++++++++++++++++++++++++------
- tools/perf/util/include/linux/kernel.h   |    8 ++
- tools/perf/util/symbol.c                 |    1 +
- tools/perf/util/symbol.h                 |    1 +
- 5 files changed, 164 insertions(+), 32 deletions(-)
-
-diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
-index 8aa3f8c..05774df 100644
---- a/tools/perf/Documentation/perf-report.txt
-+++ b/tools/perf/Documentation/perf-report.txt
-@@ -33,6 +33,18 @@ OPTIONS
- 	Only consider these symbols. CSV that understands
- 	file://filename entries.
- 
-+-w::
-+--field-width=::
-+	Force each column width to the provided list, for large terminal
-+	readability.
-+
-+-t::
-+--field-separator=::
-+
-+	Use a special separator character and don't pad with spaces, replacing
-+	all occurances of this separator in symbol names (and other output)
-+	with a '.' character, that thus it's the only non valid separator.
-+
- SEE ALSO
- --------
- linkperf:perf-stat[1]
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 4e5cc26..740da43 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -33,8 +33,10 @@ static char		*vmlinux = NULL;
- 
- static char		default_sort_order[] = "comm,dso";
- static char		*sort_order = default_sort_order;
--static char		*dso_list_str, *comm_list_str, *sym_list_str;
-+static char		*dso_list_str, *comm_list_str, *sym_list_str,
-+			*col_width_list_str;
- static struct strlist	*dso_list, *comm_list, *sym_list;
-+static char		*field_sep;
- 
- static int		input;
- static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
-@@ -129,6 +131,33 @@ typedef union event_union {
- 	struct read_event		read;
- } event_t;
- 
-+static int repsep_fprintf(FILE *fp, const char *fmt, ...)
-+{
-+	int n;
-+	va_list ap;
-+
-+	va_start(ap, fmt);
-+	if (!field_sep)
-+		n = vfprintf(fp, fmt, ap);
-+	else {
-+		char *bf = NULL;
-+		n = vasprintf(&bf, fmt, ap);
-+		if (n > 0) {
-+			char *sep = bf;
-+			while (1) {
-+				sep = strchr(sep, *field_sep);
-+				if (sep == NULL)
-+					break;
-+				*sep = '.';
-+			}
-+		}
-+		fputs(bf, fp);
-+		free(bf);
-+	}
-+	va_end(ap);
-+	return n;
-+}
-+
- static LIST_HEAD(dsos);
- static struct dso *kernel_dso;
- static struct dso *vdso;
-@@ -360,12 +389,28 @@ static struct thread *thread__new(pid_t pid)
- 	return self;
- }
- 
-+static unsigned int dsos__col_width,
-+		    comms__col_width,
-+		    threads__col_width;
-+
- static int thread__set_comm(struct thread *self, const char *comm)
- {
- 	if (self->comm)
- 		free(self->comm);
- 	self->comm = strdup(comm);
--	return self->comm ? 0 : -ENOMEM;
-+	if (!self->comm)
-+		return -ENOMEM;
-+
-+	if (!col_width_list_str && !field_sep &&
-+	    (!comm_list || strlist__has_entry(comm_list, comm))) {
-+		unsigned int slen = strlen(comm);
-+		if (slen > comms__col_width) {
-+			comms__col_width = slen;
-+			threads__col_width = slen + 6;
-+		}
-+	}
-+
-+	return 0;
- }
- 
- static size_t thread__fprintf(struct thread *self, FILE *fp)
-@@ -536,7 +581,8 @@ struct sort_entry {
- 
- 	int64_t (*cmp)(struct hist_entry *, struct hist_entry *);
- 	int64_t (*collapse)(struct hist_entry *, struct hist_entry *);
--	size_t	(*print)(FILE *fp, struct hist_entry *);
-+	size_t	(*print)(FILE *fp, struct hist_entry *, unsigned int width);
-+	unsigned int *width;
- };
- 
- static int64_t cmp_null(void *l, void *r)
-@@ -558,15 +604,17 @@ sort__thread_cmp(struct hist_entry *left, struct hist_entry *right)
- }
- 
- static size_t
--sort__thread_print(FILE *fp, struct hist_entry *self)
-+sort__thread_print(FILE *fp, struct hist_entry *self, unsigned int width)
- {
--	return fprintf(fp, "%16s:%5d", self->thread->comm ?: "", self->thread->pid);
-+	return repsep_fprintf(fp, "%*s:%5d", width - 6,
-+			      self->thread->comm ?: "", self->thread->pid);
- }
- 
- static struct sort_entry sort_thread = {
--	.header = "         Command:  Pid",
-+	.header = "Command:  Pid",
- 	.cmp	= sort__thread_cmp,
- 	.print	= sort__thread_print,
-+	.width	= &threads__col_width,
- };
- 
- /* --sort comm */
-@@ -590,16 +638,17 @@ sort__comm_collapse(struct hist_entry *left, struct hist_entry *right)
- }
- 
- static size_t
--sort__comm_print(FILE *fp, struct hist_entry *self)
-+sort__comm_print(FILE *fp, struct hist_entry *self, unsigned int width)
- {
--	return fprintf(fp, "%16s", self->thread->comm);
-+	return repsep_fprintf(fp, "%*s", width, self->thread->comm);
- }
- 
- static struct sort_entry sort_comm = {
--	.header		= "         Command",
-+	.header		= "Command",
- 	.cmp		= sort__comm_cmp,
- 	.collapse	= sort__comm_collapse,
- 	.print		= sort__comm_print,
-+	.width		= &comms__col_width,
- };
- 
- /* --sort dso */
-@@ -617,18 +666,19 @@ sort__dso_cmp(struct hist_entry *left, struct hist_entry *right)
- }
- 
- static size_t
--sort__dso_print(FILE *fp, struct hist_entry *self)
-+sort__dso_print(FILE *fp, struct hist_entry *self, unsigned int width)
- {
- 	if (self->dso)
--		return fprintf(fp, "%-25s", self->dso->name);
-+		return repsep_fprintf(fp, "%-*s", width, self->dso->name);
- 
--	return fprintf(fp, "%016llx         ", (u64)self->ip);
-+	return repsep_fprintf(fp, "%*llx", width, (u64)self->ip);
- }
- 
- static struct sort_entry sort_dso = {
--	.header = "Shared Object            ",
-+	.header = "Shared Object",
- 	.cmp	= sort__dso_cmp,
- 	.print	= sort__dso_print,
-+	.width	= &dsos__col_width,
- };
- 
- /* --sort symbol */
-@@ -648,22 +698,23 @@ sort__sym_cmp(struct hist_entry *left, struct hist_entry *right)
- }
- 
- static size_t
--sort__sym_print(FILE *fp, struct hist_entry *self)
-+sort__sym_print(FILE *fp, struct hist_entry *self, unsigned int width __used)
- {
- 	size_t ret = 0;
- 
- 	if (verbose)
--		ret += fprintf(fp, "%#018llx  ", (u64)self->ip);
-+		ret += repsep_fprintf(fp, "%#018llx  ", (u64)self->ip);
- 
- 	if (self->sym) {
--		ret += fprintf(fp, "[%c] %s",
-+		ret += repsep_fprintf(fp, "[%c] %s",
- 			self->dso == kernel_dso ? 'k' :
- 			self->dso == hypervisor_dso ? 'h' : '.', self->sym->name);
- 
- 		if (self->sym->module)
--			ret += fprintf(fp, "\t[%s]", self->sym->module->name);
-+			ret += repsep_fprintf(fp, "\t[%s]",
-+					     self->sym->module->name);
- 	} else {
--		ret += fprintf(fp, "%#016llx", (u64)self->ip);
-+		ret += repsep_fprintf(fp, "%#016llx", (u64)self->ip);
- 	}
- 
- 	return ret;
-@@ -690,19 +741,19 @@ sort__parent_cmp(struct hist_entry *left, struct hist_entry *right)
- }
- 
- static size_t
--sort__parent_print(FILE *fp, struct hist_entry *self)
-+sort__parent_print(FILE *fp, struct hist_entry *self, unsigned int width)
- {
--	size_t ret = 0;
--
--	ret += fprintf(fp, "%-20s", self->parent ? self->parent->name : "[other]");
--
--	return ret;
-+	return repsep_fprintf(fp, "%-*s", width,
-+			      self->parent ? self->parent->name : "[other]");
- }
- 
-+static unsigned int parent_symbol__col_width;
-+
- static struct sort_entry sort_parent = {
--	.header = "Parent symbol       ",
-+	.header = "Parent symbol",
- 	.cmp	= sort__parent_cmp,
- 	.print	= sort__parent_print,
-+	.width	= &parent_symbol__col_width,
- };
- 
- static int sort__need_collapse = 0;
-@@ -967,17 +1018,18 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, u64 total_samples)
- 		return 0;
- 
- 	if (total_samples)
--		ret = percent_color_fprintf(fp, "   %6.2f%%",
--				(self->count * 100.0) / total_samples);
-+		ret = percent_color_fprintf(fp,
-+					    field_sep ? "%.2f" : "   %6.2f%%",
-+					(self->count * 100.0) / total_samples);
- 	else
--		ret = fprintf(fp, "%12Ld ", self->count);
-+		ret = fprintf(fp, field_sep ? "%lld" : "%12lld ", self->count);
- 
- 	list_for_each_entry(se, &hist_entry__sort_list, list) {
- 		if (exclude_other && (se == &sort_parent))
- 			continue;
- 
--		fprintf(fp, "  ");
--		ret += se->print(fp, self);
-+		fprintf(fp, "%s", field_sep ?: "  ");
-+		ret += se->print(fp, self, se->width ? *se->width : 0);
- 	}
- 
- 	ret += fprintf(fp, "\n");
-@@ -992,6 +1044,18 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, u64 total_samples)
-  *
-  */
- 
-+static void dso__calc_col_width(struct dso *self)
-+{
-+	if (!col_width_list_str && !field_sep &&
-+	    (!dso_list || strlist__has_entry(dso_list, self->name))) {
-+		unsigned int slen = strlen(self->name);
-+		if (slen > dsos__col_width)
-+			dsos__col_width = slen;
-+	}
-+
-+	self->slen_calculated = 1;
-+}
-+
- static struct symbol *
- resolve_symbol(struct thread *thread, struct map **mapp,
- 	       struct dso **dsop, u64 *ipp)
-@@ -1011,6 +1075,14 @@ resolve_symbol(struct thread *thread, struct map **mapp,
- 
- 	map = thread__find_map(thread, ip);
- 	if (map != NULL) {
-+		/*
-+		 * We have to do this here as we may have a dso
-+		 * with no symbol hit that has a name longer than
-+		 * the ones with symbols sampled.
-+		 */
-+		if (!map->dso->slen_calculated)
-+			dso__calc_col_width(map->dso);
-+
- 		if (mapp)
- 			*mapp = map;
- got_map:
-@@ -1282,6 +1354,8 @@ static size_t output__fprintf(FILE *fp, u64 total_samples)
- 	struct sort_entry *se;
- 	struct rb_node *nd;
- 	size_t ret = 0;
-+	unsigned int width;
-+	char *col_width = col_width_list_str;
- 
- 	fprintf(fp, "\n");
- 	fprintf(fp, "#\n");
-@@ -1292,10 +1366,29 @@ static size_t output__fprintf(FILE *fp, u64 total_samples)
- 	list_for_each_entry(se, &hist_entry__sort_list, list) {
- 		if (exclude_other && (se == &sort_parent))
- 			continue;
--		fprintf(fp, "  %s", se->header);
-+		if (field_sep) {
-+			fprintf(fp, "%c%s", *field_sep, se->header);
-+			continue;
-+		}
-+		width = strlen(se->header);
-+		if (se->width) {
-+			if (col_width_list_str) {
-+				if (col_width) {
-+					*se->width = atoi(col_width);
-+					col_width = strchr(col_width, ',');
-+					if (col_width)
-+						++col_width;
-+				}
-+			}
-+			width = *se->width = max(*se->width, width);
-+		}
-+		fprintf(fp, "  %*s", width, se->header);
- 	}
- 	fprintf(fp, "\n");
- 
-+	if (field_sep)
-+		goto print_entries;
-+
- 	fprintf(fp, "# ........");
- 	list_for_each_entry(se, &hist_entry__sort_list, list) {
- 		unsigned int i;
-@@ -1304,13 +1397,18 @@ static size_t output__fprintf(FILE *fp, u64 total_samples)
- 			continue;
- 
- 		fprintf(fp, "  ");
--		for (i = 0; i < strlen(se->header); i++)
-+		if (se->width)
-+			width = *se->width;
-+		else
-+			width = strlen(se->header);
-+		for (i = 0; i < width; i++)
- 			fprintf(fp, ".");
- 	}
- 	fprintf(fp, "\n");
- 
- 	fprintf(fp, "#\n");
- 
-+print_entries:
- 	for (nd = rb_first(&output_hists); nd; nd = rb_next(nd)) {
- 		pos = rb_entry(nd, struct hist_entry, rb_node);
- 		ret += hist_entry__fprintf(fp, pos, total_samples);
-@@ -1900,6 +1998,12 @@ static const struct option options[] = {
- 		   "only consider symbols in these comms"),
- 	OPT_STRING('S', "symbols", &sym_list_str, "symbol[,symbol...]",
- 		   "only consider these symbols"),
-+	OPT_STRING('w', "column-widths", &col_width_list_str,
-+		   "width[,width...]",
-+		   "don't try to adjust column width, use these fixed values"),
-+	OPT_STRING('t', "field-separator", &field_sep, "separator",
-+		   "separator for columns, no spaces will be added between "
-+		   "columns '.' is reserved."),
- 	OPT_END()
- };
- 
-@@ -1956,6 +2060,12 @@ int cmd_report(int argc, const char **argv, const char *prefix __used)
- 	setup_list(&comm_list, comm_list_str, "comm");
- 	setup_list(&sym_list, sym_list_str, "symbol");
- 
-+	if (field_sep && *field_sep == '.') {
-+		fputs("'.' is the only non valid --field-separator argument\n",
-+		      stderr);
-+		exit(129);
-+	}
-+
- 	setup_pager();
- 
- 	return __cmd_report();
-diff --git a/tools/perf/util/include/linux/kernel.h b/tools/perf/util/include/linux/kernel.h
-index 99c1b3d..a6b8739 100644
---- a/tools/perf/util/include/linux/kernel.h
-+++ b/tools/perf/util/include/linux/kernel.h
-@@ -18,4 +18,12 @@
- 	(type *)((char *)__mptr - offsetof(type, member)); })
- #endif
- 
-+#ifndef max
-+#define max(x, y) ({				\
-+	typeof(x) _max1 = (x);			\
-+	typeof(y) _max2 = (y);			\
-+	(void) (&_max1 == &_max2);		\
-+	_max1 > _max2 ? _max1 : _max2; })
-+#endif
-+
- #endif
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 4683b67..8efe7e4 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -65,6 +65,7 @@ struct dso *dso__new(const char *name, unsigned int sym_priv_size)
- 		self->syms = RB_ROOT;
- 		self->sym_priv_size = sym_priv_size;
- 		self->find_symbol = dso__find_symbol;
-+		self->slen_calculated = 0;
- 	}
- 
- 	return self;
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index 7918cff..2f92b21 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -25,6 +25,7 @@ struct dso {
- 	struct symbol    *(*find_symbol)(struct dso *, u64 ip);
- 	unsigned int	 sym_priv_size;
- 	unsigned char	 adjust_symbols;
-+	unsigned char	 slen_calculated;
- 	char		 name[0];
- };
- 
--- 
-1.6.2.5
-
+-- Jamie
