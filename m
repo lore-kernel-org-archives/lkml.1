@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbZGLLEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbZGLLEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbZGLLEW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 07:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbZGLLEO
+	id S1752803AbZGLLEi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 07:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZGLLE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 07:04:14 -0400
-Received: from ey-out-1920.google.com ([74.125.78.145]:62575 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751683AbZGLLEO (ORCPT
+	Sun, 12 Jul 2009 07:04:28 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49548 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752367AbZGLLE2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 07:04:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=E1GPHvLPsV2Ymqe5F3kSNhXGFNPlZrvuEiCQoGXxtEp03GCxOuBeBlJUVGZ38gv+qh
-         uWwoSJgyFQAfLcKGXHyCA8OSvp9Ql9i81x9C2e0OO9UHX8jo8OaUOCLw2wUGLAmNC41N
-         fCbnMU1SolZlCfcwJC6mNH62+8CedeXZWq8mg=
+	Sun, 12 Jul 2009 07:04:28 -0400
+Date: Sat, 11 Jul 2009 23:30:18 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: David Howells <dhowells@redhat.com>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, rgetz@blackfin.uclinux.org,
+       lethal@linux-sh.org, gerg@uclinux.org,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FDPIC: Ignore the loader's PT_GNU_STACK when
+	calculating the stack size
+Message-ID: <20090711213018.GA1425@ucw.cz>
+References: <20090709101930.GJ10937@elf.ucw.cz> <20090704024606.GE1345@ucw.cz> <20090701120814.30741.10146.stgit@warthog.procyon.org.uk> <24530.1247050900@redhat.com> <20090704033429.GA1799@ucw.cz> <8bd0f97a0907081148vc716eeepfdaf8178b1ecbce1@mail.gmail.com> <24280.1247137151@redhat.com>
 MIME-Version: 1.0
-Date: Sun, 12 Jul 2009 17:04:12 +0600
-Message-ID: <b9df5fa10907120404k6279a10ch5e9682432272706f@mail.gmail.com>
-Subject: [PATCH] x86: Fix false positive section mismatch in es7000_32.c
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <24280.1247137151@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Impact: Fix false positive warning
+On Thu 2009-07-09 11:59:11, David Howells wrote:
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > > i really dont think this is realistic.  there is exactly one ldso that
+> > > everyone uses under FDPIC ELF, and it needs a very minuscule stack.
+> > 
+> > Not very realistic; but that argues that the patch is NOP.
+> >
+> > And if it _is_ realistic, the patch adds a bug.
+> 
+> No, it doesn't.  The problem is that the loader, when it is linked, is given a
+> sillyly large default stack size, and this causes the application to be given a
+> much larger stack than is strictly necessary - a stack that is drawn from a
+> limited pool of non-pageable RAM and that must be allocated as a contiguous
+> lump.
 
-The variable apic_es7000_cluster references the function __cpuinit
-wakeup_secondary_cpu_via_mip() from a noninit section. So we've been
-warned by the following warning. To avoid possible collision between
-init/noninit, its best to mark the variable as __refdata.
-
- We were warned by the followin warning:
-
- LD      arch/x86/kernel/apic/built-in.o
-WARNING: arch/x86/kernel/apic/built-in.o(.data+0x198c): Section
-mismatch in reference from the variable apic_es7000_cluster to the
-function .cpuinit.text:wakeup_secondary_cpu_via_mip()
-The variable apic_es7000_cluster references
-the function __cpuinit wakeup_secondary_cpu_via_mip()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
----
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-
---- linus/arch/x86/kernel/apic/es7000_32.c	2009-07-10 12:30:10.000000000 +0600
-+++ rakib/arch/x86/kernel/apic/es7000_32.c	2009-07-12 11:21:10.000000000 +0600
-@@ -652,7 +652,8 @@ static int es7000_mps_oem_check_cluster(
- 	return ret && es7000_apic_is_cluster();
- }
-
--struct apic apic_es7000_cluster = {
-+/* We've been warned by a false positive warning.Use __refdata to keep calm. */
-+struct apic __refdata apic_es7000_cluster = {
-
- 	.name				= "es7000",
- 	.probe				= probe_es7000,
+Fix the loader to only request as big stack as it needs?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
