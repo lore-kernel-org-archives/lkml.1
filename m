@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZGLL1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbZGLLg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbZGLL1W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 07:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbZGLL1M
+	id S1752904AbZGLLg1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 07:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbZGLLgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 07:27:12 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58647 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbZGLL1L (ORCPT
+	Sun, 12 Jul 2009 07:36:20 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42144 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751238AbZGLLgT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 07:27:11 -0400
-Date: Sun, 12 Jul 2009 13:27:09 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: =?UTF-8?Q?J=C3=B6rn_Engel?= <joern@logfs.org>
-cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Martin Steigerwald <Martin@lichtvoll.de>,
-       David Newall <davidn@davidnewall.com>,
-       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       tridge@samba.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Pavel Machek <pavel@ucw.cz>, john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <20090712112114.GA3059@logfs.org>
-Message-ID: <alpine.LSU.2.00.0907121324340.13127@fbirervta.pbzchgretzou.qr>
-References: <20090708110451.1092afa7@lxorguk.ukuu.org.uk> <200907102049.12427.Martin@lichtvoll.de> <20090710133127.6839dc87@bike.lwn.net> <200907102240.15773.bzolnier@gmail.com> <20090712112114.GA3059@logfs.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Sun, 12 Jul 2009 07:36:19 -0400
+Date: Sun, 12 Jul 2009 00:02:11 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Len Brown <lenb@kernel.org>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, sfi-devel@simplefirmware.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 2.6.32] Simple Firmware Interface (SFI): initial
+	support
+Message-ID: <20090711220211.GA1670@ucw.cz>
+References: <1245741246-6503-1-git-send-email-lenb@kernel.org> <20090623183153.GB12814@srcf.ucam.org> <alpine.LFD.2.00.0906231438190.23079@localhost.localdomain> <20090622194303.GC2284@ucw.cz> <alpine.LFD.2.00.0906241645250.20716@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0906241645250.20716@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed 2009-06-24 17:13:18, Len Brown wrote:
+> On Mon, 22 Jun 2009, Pavel Machek wrote:
+> 
+> > On Tue 2009-06-23 14:41:28, Len Brown wrote:
+> 
+> > > Please let me know if your questions are not thoroughly answered here:
+> > > http://simplefirmware.org/faq
+> > 
+> > It really tells us nothing. I don't think flash got so expensive that
+> > this is justified. ACPI can already do the job, right? and operating
+> > systems already have to support ACPI. So what are the reasons to
+> > reinvent the wheel?
+> 
+> The price of flash, and the amount consumed, is not relevent
+> to the decision whether a platform should support SFI or ACPI.
+> 
+> The Moorestown platform doesn't use ACPI because its chip-set
+> fundamentally does not support it.  Not only is the required
+> register set missing, *all* IO accesses are missing, and there is
+> no SMM support present to emuate it.
+> 
+> Yes, the ACPI specification could have been edited to replace
+> every "must" with "could", "shall" with "may", and "required" with 
+> "optional" resulting in "ACPI compliance" for your toaster.
+> But doing so would have been a dis-service to the
+> platforms supporting ACPI, and would have made the
+> already hard job of supporting ACPI from the OS significantly harder.
 
-On Sunday 2009-07-12 13:21, Jörn Engel wrote:
->[ Ignoring all legal and moral aspects...]
->
->On Fri, 10 July 2009 22:40:14 +0200, Bartlomiej Zolnierkiewicz wrote:
->> 
->> Microsoft having patents on their *obsolete* filesystem should be *their*
->
->FAT is far from obsolete.  It is practically always the filesystem of
->choice and often the only filesystem when trying to move data from one
->system to another.  The next best alternatives are isofs and ext2.  And
->I don't know a single digital camera, mp3 player or cellphone that
->speaks either.
-
-The next best would probably be UDF, which is already used on DVDs
-and thus is implemented in a number of devices - though probably
-only disc-reading ones.
-There's your market hole, dear vendors.
+Well, you should have just selected subset of ACPI, documenting that
+and implementing that. You would not have 'acpi compliant' logo, and
+windows XP would not boot on that, but at least you would not have
+created one more bios standard for people to support.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
