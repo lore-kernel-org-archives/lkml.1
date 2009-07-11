@@ -1,279 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbZGKR0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbZGKR0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752824AbZGKR0e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 13:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbZGKR0C
+	id S1755278AbZGKR0p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 13:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbZGKR0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 13:26:02 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39243 "EHLO hera.kernel.org"
+	Sat, 11 Jul 2009 13:26:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39256 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753884AbZGKRZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 13:25:59 -0400
-Date: Sat, 11 Jul 2009 17:25:31 GMT
+	id S1754570AbZGKR0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 13:26:18 -0400
+Date: Sat, 11 Jul 2009 17:25:43 GMT
 From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
        linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1247325517-12272-4-git-send-email-acme@redhat.com>
-References: <1247325517-12272-4-git-send-email-acme@redhat.com>
-Subject: [tip:perfcounters/core] perf_counter tools: PLT info is stripped in -debuginfo packages
-Message-ID: <tip-a25e46c46311316cd1b3f27f8bb036df1693c032@git.kernel.org>
-Git-Commit-ID: a25e46c46311316cd1b3f27f8bb036df1693c032
+In-Reply-To: <1247325517-12272-5-git-send-email-acme@redhat.com>
+References: <1247325517-12272-5-git-send-email-acme@redhat.com>
+Subject: [tip:perfcounters/core] perf report: Introduce -n/--show-nr-samples
+Message-ID: <tip-e3d7e183dc276df2fcaf02af173a49ad119ba9f9@git.kernel.org>
+Git-Commit-ID: e3d7e183dc276df2fcaf02af173a49ad119ba9f9
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 11 Jul 2009 17:25:32 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 11 Jul 2009 17:25:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a25e46c46311316cd1b3f27f8bb036df1693c032
-Gitweb:     http://git.kernel.org/tip/a25e46c46311316cd1b3f27f8bb036df1693c032
+Commit-ID:  e3d7e183dc276df2fcaf02af173a49ad119ba9f9
+Gitweb:     http://git.kernel.org/tip/e3d7e183dc276df2fcaf02af173a49ad119ba9f9
 Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Sat, 11 Jul 2009 12:18:36 -0300
+AuthorDate: Sat, 11 Jul 2009 12:18:37 -0300
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 11 Jul 2009 19:20:26 +0200
+CommitDate: Sat, 11 Jul 2009 19:20:27 +0200
 
-perf_counter tools: PLT info is stripped in -debuginfo packages
+perf report: Introduce -n/--show-nr-samples
 
-So we need to get the richer .symtab from the debuginfo
-packages but the PLT info from the original DSO where we have
-just the leaner .dynsym symtab.
-
-Example:
-
-| [acme@doppio pahole]$ perf report --sort comm,dso,symbol > before
-| [acme@doppio pahole]$ perf report --sort comm,dso,symbol > after
-| [acme@doppio pahole]$ diff -U1 before after
-| --- before	2009-07-11 11:04:22.688595741 -0300
-| +++ after	2009-07-11 11:04:33.380595676 -0300
-| @@ -80,3 +80,2 @@
-|       0.07%  pahole ./build/pahole              [.] pahole_stealer
-| -     0.06%  pahole /usr/lib64/libdw-0.141.so   [.] 0x00000000007140
-|       0.06%  pahole /usr/lib64/libdw-0.141.so   [.] __libdw_getabbrev
-| @@ -91,2 +90,3 @@
-|       0.06%  pahole [kernel]                    [k] free_hot_cold_page
-| +     0.06%  pahole /usr/lib64/libdw-0.141.so   [.] tfind@plt
-|       0.05%  pahole ./build/libdwarves.so.1.0.0 [.] ftype__add_parameter
-| @@ -242,2 +242,3 @@
-|       0.01%  pahole [kernel]                    [k] account_group_user_time
-| +     0.01%  pahole /usr/lib64/libdw-0.141.so   [.] strlen@plt
-|       0.01%  pahole ./build/pahole              [.] strcmp@plt
-| [acme@doppio pahole]$
+[acme@doppio pahole]$ perf report -ns comm,dso,symbol -d /lib64/libc-2.10.1.so -C pahole | head -17
+    21.94%      32101  [.] _int_malloc
+    20.10%      29402  [.] __GI_strcmp
+    16.77%      24533  [.] __tsearch
+    12.61%      18450  [.] malloc_consolidate
+     6.42%       9394  [.] _int_free
+     6.28%       9191  [.] __tfind
+     4.56%       6678  [.] __GI___libc_free
+     4.46%       6520  [.] _IO_vfprintf_internal
+     2.59%       3786  [.] __malloc
+     1.17%       1716  [.] __GI_memcpy
+[acme@doppio pahole]$
 
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <1247325517-12272-4-git-send-email-acme@redhat.com>
+LKML-Reference: <1247325517-12272-5-git-send-email-acme@redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/util/symbol.c |  116 ++++++++++++++++++++++++++--------------------
- 1 files changed, 65 insertions(+), 51 deletions(-)
+ tools/perf/Documentation/perf-report.txt |    3 +++
+ tools/perf/builtin-report.c              |   18 ++++++++++++++++++
+ 2 files changed, 21 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 8efe7e4..f40266b 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -374,36 +374,61 @@ static Elf_Scn *elf_section_by_name(Elf *elf, GElf_Ehdr *ep,
- 	     idx < nr_entries; \
- 	     ++idx, pos = gelf_getrela(reldata, idx, &pos_mem))
+diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
+index 05774df..e72e931 100644
+--- a/tools/perf/Documentation/perf-report.txt
++++ b/tools/perf/Documentation/perf-report.txt
+@@ -24,6 +24,9 @@ OPTIONS
+ --dsos=::
+ 	Only consider symbols in these dsos. CSV that understands
+ 	file://filename entries.
++-n
++--show-nr-samples
++	Show the number of samples for each symbol
+ -C::
+ --comms=::
+ 	Only consider symbols in these comms. CSV that understands
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index f342212..430a195 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -51,6 +51,7 @@ static int		verbose;
+ static int		modules;
  
--static int dso__synthesize_plt_symbols(struct  dso *self, Elf *elf,
--				       GElf_Ehdr *ehdr, Elf_Scn *scn_dynsym,
--				       GElf_Shdr *shdr_dynsym,
--				       size_t dynsym_idx, int verbose)
-+/*
-+ * We need to check if we have a .dynsym, so that we can handle the
-+ * .plt, synthesizing its symbols, that aren't on the symtabs (be it
-+ * .dynsym or .symtab).
-+ * And always look at the original dso, not at debuginfo packages, that
-+ * have the PLT data stripped out (shdr_rel_plt.sh_type == SHT_NOBITS).
-+ */
-+static int dso__synthesize_plt_symbols(struct  dso *self, int verbose)
- {
- 	uint32_t nr_rel_entries, idx;
- 	GElf_Sym sym;
- 	u64 plt_offset;
- 	GElf_Shdr shdr_plt;
- 	struct symbol *f;
--	GElf_Shdr shdr_rel_plt;
-+	GElf_Shdr shdr_rel_plt, shdr_dynsym;
- 	Elf_Data *reldata, *syms, *symstrs;
--	Elf_Scn *scn_plt_rel, *scn_symstrs;
-+	Elf_Scn *scn_plt_rel, *scn_symstrs, *scn_dynsym;
-+	size_t dynsym_idx;
-+	GElf_Ehdr ehdr;
- 	char sympltname[1024];
--	int nr = 0, symidx;
-+	Elf *elf;
-+	int nr = 0, symidx, fd, err = 0;
-+
-+	fd = open(self->name, O_RDONLY);
-+	if (fd < 0)
-+		goto out;
-+
-+	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-+	if (elf == NULL)
-+		goto out_close;
-+
-+	if (gelf_getehdr(elf, &ehdr) == NULL)
-+		goto out_elf_end;
-+
-+	scn_dynsym = elf_section_by_name(elf, &ehdr, &shdr_dynsym,
-+					 ".dynsym", &dynsym_idx);
-+	if (scn_dynsym == NULL)
-+		goto out_elf_end;
+ static int		full_paths;
++static int		show_nr_samples;
  
--	scn_plt_rel = elf_section_by_name(elf, ehdr, &shdr_rel_plt,
-+	scn_plt_rel = elf_section_by_name(elf, &ehdr, &shdr_rel_plt,
- 					  ".rela.plt", NULL);
- 	if (scn_plt_rel == NULL) {
--		scn_plt_rel = elf_section_by_name(elf, ehdr, &shdr_rel_plt,
-+		scn_plt_rel = elf_section_by_name(elf, &ehdr, &shdr_rel_plt,
- 						  ".rel.plt", NULL);
- 		if (scn_plt_rel == NULL)
--			return 0;
-+			goto out_elf_end;
- 	}
+ static unsigned long	page_size;
+ static unsigned long	mmap_window = 32;
+@@ -1024,6 +1025,13 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, u64 total_samples)
+ 	else
+ 		ret = fprintf(fp, field_sep ? "%lld" : "%12lld ", self->count);
  
-+	err = -1;
-+
- 	if (shdr_rel_plt.sh_link != dynsym_idx)
--		return 0;
-+		goto out_elf_end;
- 
--	if (elf_section_by_name(elf, ehdr, &shdr_plt, ".plt", NULL) == NULL)
--		return 0;
-+	if (elf_section_by_name(elf, &ehdr, &shdr_plt, ".plt", NULL) == NULL)
-+		goto out_elf_end;
- 
- 	/*
- 	 * Fetch the relocation section to find the indexes to the GOT
-@@ -411,19 +436,19 @@ static int dso__synthesize_plt_symbols(struct  dso *self, Elf *elf,
- 	 */
- 	reldata = elf_getdata(scn_plt_rel, NULL);
- 	if (reldata == NULL)
--		return -1;
-+		goto out_elf_end;
- 
- 	syms = elf_getdata(scn_dynsym, NULL);
- 	if (syms == NULL)
--		return -1;
-+		goto out_elf_end;
- 
--	scn_symstrs = elf_getscn(elf, shdr_dynsym->sh_link);
-+	scn_symstrs = elf_getscn(elf, shdr_dynsym.sh_link);
- 	if (scn_symstrs == NULL)
--		return -1;
-+		goto out_elf_end;
- 
- 	symstrs = elf_getdata(scn_symstrs, NULL);
- 	if (symstrs == NULL)
--		return -1;
-+		goto out_elf_end;
- 
- 	nr_rel_entries = shdr_rel_plt.sh_size / shdr_rel_plt.sh_entsize;
- 	plt_offset = shdr_plt.sh_offset;
-@@ -442,7 +467,7 @@ static int dso__synthesize_plt_symbols(struct  dso *self, Elf *elf,
- 			f = symbol__new(plt_offset, shdr_plt.sh_entsize,
- 					sympltname, self->sym_priv_size, 0, verbose);
- 			if (!f)
--				return -1;
-+				goto out_elf_end;
- 
- 			dso__insert_symbol(self, f);
- 			++nr;
-@@ -460,19 +485,25 @@ static int dso__synthesize_plt_symbols(struct  dso *self, Elf *elf,
- 			f = symbol__new(plt_offset, shdr_plt.sh_entsize,
- 					sympltname, self->sym_priv_size, 0, verbose);
- 			if (!f)
--				return -1;
-+				goto out_elf_end;
- 
- 			dso__insert_symbol(self, f);
- 			++nr;
- 		}
--	} else {
--		/*
--		 * TODO: There are still one more shdr_rel_plt.sh_type
--		 * I have to investigate, but probably should be ignored.
--		 */
- 	}
- 
--	return nr;
-+	err = 0;
-+out_elf_end:
-+	elf_end(elf);
-+out_close:
-+	close(fd);
-+
-+	if (err == 0)
-+		return nr;
-+out:
-+	fprintf(stderr, "%s: problems reading %s PLT info.\n",
-+		__func__, self->name);
-+	return 0;
- }
- 
- static int dso__load_sym(struct dso *self, int fd, const char *name,
-@@ -486,9 +517,8 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
- 	GElf_Shdr shdr;
- 	Elf_Data *syms;
- 	GElf_Sym sym;
--	Elf_Scn *sec, *sec_dynsym, *sec_strndx;
-+	Elf_Scn *sec, *sec_strndx;
- 	Elf *elf;
--	size_t dynsym_idx;
- 	int nr = 0;
- 
- 	elf = elf_begin(fd, ELF_C_READ_MMAP, NULL);
-@@ -505,32 +535,11 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
- 		goto out_elf_end;
- 	}
- 
--	/*
--	 * We need to check if we have a .dynsym, so that we can handle the
--	 * .plt, synthesizing its symbols, that aren't on the symtabs (be it
--	 * .dynsym or .symtab)
--	 */
--	sec_dynsym = elf_section_by_name(elf, &ehdr, &shdr,
--					 ".dynsym", &dynsym_idx);
--	if (sec_dynsym != NULL) {
--		nr = dso__synthesize_plt_symbols(self, elf, &ehdr,
--						 sec_dynsym, &shdr,
--						 dynsym_idx, verbose);
--		if (nr < 0)
--			goto out_elf_end;
--	}
--
--	/*
--	 * But if we have a full .symtab (that is a superset of .dynsym) we
--	 * should add the symbols not in the .dynsyn
--	 */
- 	sec = elf_section_by_name(elf, &ehdr, &shdr, ".symtab", NULL);
- 	if (sec == NULL) {
--		if (sec_dynsym == NULL)
-+		sec = elf_section_by_name(elf, &ehdr, &shdr, ".dynsym", NULL);
-+		if (sec == NULL)
- 			goto out_elf_end;
--
--		sec = sec_dynsym;
--		gelf_getshdr(sec, &shdr);
- 	}
- 
- 	syms = elf_getdata(sec, NULL);
-@@ -669,6 +678,11 @@ more:
- 	if (!ret)
- 		goto more;
- 
-+	if (ret > 0) {
-+		int nr_plt = dso__synthesize_plt_symbols(self, verbose);
-+		if (nr_plt > 0)
-+			ret += nr_plt;
++	if (show_nr_samples) {
++		if (field_sep)
++			fprintf(fp, "%c%lld", *field_sep, self->count);
++		else
++			fprintf(fp, "%11lld", self->count);
 +	}
- out:
- 	free(name);
- 	return ret;
++
+ 	list_for_each_entry(se, &hist_entry__sort_list, list) {
+ 		if (se->elide)
+ 			continue;
+@@ -1361,6 +1369,12 @@ static size_t output__fprintf(FILE *fp, u64 total_samples)
+ 	fprintf(fp, "#\n");
+ 
+ 	fprintf(fp, "# Overhead");
++	if (show_nr_samples) {
++		if (field_sep)
++			fprintf(fp, "%cSamples", *field_sep);
++		else
++			fputs("  Samples  ", fp);
++	}
+ 	list_for_each_entry(se, &hist_entry__sort_list, list) {
+ 		if (se->elide)
+ 			continue;
+@@ -1388,6 +1402,8 @@ static size_t output__fprintf(FILE *fp, u64 total_samples)
+ 		goto print_entries;
+ 
+ 	fprintf(fp, "# ........");
++	if (show_nr_samples)
++		fprintf(fp, " ..........");
+ 	list_for_each_entry(se, &hist_entry__sort_list, list) {
+ 		unsigned int i;
+ 
+@@ -1979,6 +1995,8 @@ static const struct option options[] = {
+ 	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
+ 	OPT_BOOLEAN('m', "modules", &modules,
+ 		    "load module symbols - WARNING: use only with -k and LIVE kernel"),
++	OPT_BOOLEAN('n', "show-nr-samples", &show_nr_samples,
++		    "Show a column with the number of samples"),
+ 	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
+ 		   "sort by key(s): pid, comm, dso, symbol, parent"),
+ 	OPT_BOOLEAN('P', "full-paths", &full_paths,
