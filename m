@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbZGJX6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbZGKAFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbZGJX6g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 10 Jul 2009 19:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757511AbZGJX63
+	id S1757724AbZGKAFz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 10 Jul 2009 20:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbZGKAFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 10 Jul 2009 19:58:29 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:28559 "EHLO
+	Fri, 10 Jul 2009 20:05:47 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:8597 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757494AbZGJX62 (ORCPT
+	with ESMTP id S1755769AbZGKAFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 10 Jul 2009 19:58:28 -0400
+	Fri, 10 Jul 2009 20:05:47 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=Bbl1SMO6Y3lvcSiOD7RU42kHGqaWtyJS93UYCoPtZvU70JK4Sr/O7CsqPTZZA7rl/
-	a3rfrS47t0ROvujeJDyfA==
+	h=date:from:to:subject:message-id:user-agent:mime-version:content-type;
+	b=X7XUNS7mvSZ7Xje/OpOBfuomnHopSsOjiG+Vi6sq4iH6nNCm5XDlIAh2g0PpOhZ01
+	T4yTXfr245BOuTkujOMYA==
+Date: Fri, 10 Jul 2009 17:05:16 -0700 (PDT)
+From: Paul Turner <pjt@google.com>
+To: peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: Bug in SCHED_IDLE interaction with group scheduling?
+Message-ID: <alpine.DEB.1.00.0907101649570.29914@kitami.corp.google.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-In-Reply-To: <20090705063850.GX11273@balbir.in.ibm.com>
-References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
-	 <20090705063850.GX11273@balbir.in.ibm.com>
-Date: Fri, 10 Jul 2009 16:58:23 -0700
-Message-ID: <6599ad830907101658i13e4046br70377a487dd6b49b@mail.gmail.com>
-Subject: Re: [PATCH 0/2] CGroups: cgroup member list enhancement/fix
-From: Paul Menage <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Cc: lizf@cn.fujitzu.com, serue@us.ibm.com, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, bblum@google.com,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 4, 2009 at 11:38 PM, Balbir Singh<balbir@linux.vnet.ibm.com> wrote:
->
-> Paul, I don't see an interface to migrate all procs or at-least I
-> can't read it in the changelog. As discussed in the containers
-> mini-summit in 2008, it would be a nice thing to have (I've not looked
-> at the implementation yet).
->
+Hi Peter,
 
-We're still working on that bit.
+It seems like there's an assumption in the sched_idle policy check in 
+place_entity that the sched_entity we are looking at belongs to a task?
 
-We want to provide the guarantee that if you write a tgid to the procs
-file, all its threads get migrated even if you race with a clone()
-call, and are trying to figure out a nice way to do that without
-introducing unnecessary overhead/synchronization in the fork path.
+- Paul
 
-Paul
+--
+
+sched: bug in SCHED_IDLE interaction with group scheduling
+
+One of the isolation modifications for SCHED_IDLE is the unitization of sleeper
+credit.  However the check for this assumes that the sched_entity we're placing
+always belongs to a task.
+
+This is potentially not true with group scheduling and leaves us rummaging
+randomly when we try to pull the policy.
+
+Signed-off-by: Paul Turner <pjt@google.com>
+---
+ kernel/sched_fair.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index ba7fd6e..7c248dc 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -687,7 +687,8 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
+ 			 * all of which have the same weight.
+ 			 */
+ 			if (sched_feat(NORMALIZED_SLEEPER) &&
+-					task_of(se)->policy != SCHED_IDLE)
++					(!entity_is_task(se) ||
++					 task_of(se)->policy != SCHED_IDLE))
+ 				thresh = calc_delta_fair(thresh, se);
+ 
+ 			vruntime -= thresh;
+-- 
+1.5.4.3
+
