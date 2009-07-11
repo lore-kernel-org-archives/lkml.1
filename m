@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbZGKLIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751929AbZGKLJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbZGKLIl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 07:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZGKLId
+	id S1751929AbZGKLJr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 07:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbZGKLJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 07:08:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55206 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751784AbZGKLIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 07:08:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
-Subject: Re: [linux-pm] [RFC][PATCH] PM: Introduce core framework for run-time PM of I/O devices (rev. 8)
-Date: Sat, 11 Jul 2009 13:08:42 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Magnus Damm <magnus.damm@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-References: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8@mail.gmail.com> <aec7e5c30907090831y180b0972o6dcb961dd292a3c0@mail.gmail.com> <175E0F9A9EFCEA46A65F5552BB057298BB5F3EA2@bgsmsx502.gar.corp.intel.com>
-In-Reply-To: <175E0F9A9EFCEA46A65F5552BB057298BB5F3EA2@bgsmsx502.gar.corp.intel.com>
+	Sat, 11 Jul 2009 07:09:40 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:48397 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751730AbZGKLJk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 07:09:40 -0400
+Date: Sat, 11 Jul 2009 07:07:23 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: what means "module_param(channel_mask, channel_mask, 0644)"?
+In-Reply-To: <alpine.LFD.2.00.0907110658370.4257@localhost>
+Message-ID: <alpine.LFD.2.00.0907110704540.4491@localhost>
+References: <alpine.LFD.2.00.0907110658370.4257@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907111308.44388.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 July 2009, Mahalingam, Nithish wrote:
-> Hi,
+On Sat, 11 Jul 2009, Robert P. J. Day wrote:
 
-Hi,
+>   researching my next newbie column about module parameters and i
+> ran across the following:
+>
+> drivers/input/misc/ati_remote2.c:module_param(channel_mask, channel_mask, 0644);
+> drivers/input/misc/ati_remote2.c:module_param(mode_mask, mode_mask, 0644);
+>
+> i have no idea what it means to have the second (type) field of
+> module_param() simply repeat the name of the parameter.  is this
+> some strange magic?  those two names don't *appear* to be typedef'ed
+> anywhere i can see.
 
-> I am newbee to this mailing list. Please excuse me if I am talking nonsense here.
-> 
-> 
-> 
-> On Thu, Jul 9, 2009 at 10:48 PM, Alan Stern<stern@rowland.harvard.edu> wrote:
-> >> On Thu, 9 Jul 2009, Magnus Damm wrote:
-> >>
-> >>> Clocks should be stopped as soon as possible without any delay. The
-> >>> clock stopping is very cheap performance wise. Also, the clock
-> >> stopping is done on bus level without invoking any driver callbacks.
-> >>> Delaying the clock stopping does not make any sense to me.
-> >>
-> >> In that case the device driver or bus subsystem should manage the
-> >> device's clock directly.  There's no need to tie it in with the runtime
-> >> PM framework.  Simply start the clock before each I/O operation and
-> >> stop it afterward.
-> 
-> > It's not that easy. The clock needs to be enabled to let the hardware
-> > device perform device specific stuff. For instance, the clock for the
-> > LCD controller needs to be on to redraw the screen. When the driver
-> > knows that it's done with the clock it can notify the bus using
-> > Runtime PM.
-> 
-> Is there any plan to look into the "Clock Framework" that was developed as
-> part of OMAP and extending this to make it generic for all platforms?
+  i should have added that the reason i ran across this was that i was
+curious if anyone was using User Defined Parameter Types as explained
+here:
 
-I don't have any plan to do that and I heaven't heard of anyone planning to do
-it.
+http://docs.blackfin.uclinux.org/doku.php?id=linux-kernel:module_parameters
 
-Best,
-Rafael
+so i did a quick grep for any invocations of module_param() whose type
+wasn't one of the standard int, boot, short, ... etc ... and those two
+hits above showed up, which confused me.
+
+  so ... *is* anyone taking advantage of user-defined module parameter
+types?  not as i can tell, but maybe i just missed it.
+
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+"Kernel Newbie Corner" column @ linux.com:          http://cli.gs/WG6WYX
+========================================================================
