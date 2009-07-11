@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbZGKU4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZGKU45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757306AbZGKU4p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 16:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbZGKUx6
+	id S1757404AbZGKU45 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 16:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbZGKUyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 16:53:58 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32846 "EHLO
+	Sat, 11 Jul 2009 16:54:00 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32852 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755638AbZGKUxu (ORCPT
+	with ESMTP id S1755646AbZGKUxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 11 Jul 2009 16:53:50 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: Frans Pop <elendil@planet.nl>, Antonino Daplas <adaplas@gmail.com>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>,
+Cc: Philipp Zabel <philipp.zabel@gmail.com>, Ian Molton <spyro@f2s.com>,
+       Richard Purdie <rpurdie@rpsys.net>, Antonino Daplas <adaplas@gmail.com>,
+       Alberto Mardegan <mardy@users.sourceforge.net>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] move vfb's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 22:53:08 +0200
-Message-Id: <1247345591-22643-40-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH] move w100fb's probe function to .devinit.text
+Date: Sat, 11 Jul 2009 22:53:10 +0200
+Message-Id: <1247345591-22643-42-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1247345591-22643-39-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1247345591-22643-41-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -61,6 +62,8 @@ References: <20090711170548.GC5205@suse.de>
  <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-38-git-send-email-u.kleine-koenig@pengutronix.de>
  <1247345591-22643-39-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-40-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-41-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -72,7 +75,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to vfb_probe is passed to the core via
+A pointer to w100fb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -83,27 +86,29 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Frans Pop <elendil@planet.nl>
+Cc: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: Ian Molton <spyro@f2s.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>
 Cc: Antonino Daplas <adaplas@gmail.com>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Alberto Mardegan <mardy@users.sourceforge.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/video/vfb.c |    2 +-
+ drivers/video/w100fb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
-index 050d432..b8ab995 100644
---- a/drivers/video/vfb.c
-+++ b/drivers/video/vfb.c
-@@ -479,7 +479,7 @@ static int __init vfb_setup(char *options)
-      *  Initialisation
-      */
+diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
+index 2376f68..5d22395 100644
+--- a/drivers/video/w100fb.c
++++ b/drivers/video/w100fb.c
+@@ -628,7 +628,7 @@ static int w100fb_resume(struct platform_device *dev)
+ #endif
  
--static int __init vfb_probe(struct platform_device *dev)
-+static int __devinit vfb_probe(struct platform_device *dev)
+ 
+-int __init w100fb_probe(struct platform_device *pdev)
++int __devinit w100fb_probe(struct platform_device *pdev)
  {
- 	struct fb_info *info;
- 	int retval = -ENOMEM;
+ 	int err = -EIO;
+ 	struct w100fb_mach_info *inf;
 -- 
 1.6.3.1
 
