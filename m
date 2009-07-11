@@ -1,27 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZGKU4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbZGKU4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbZGKU4N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 16:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZGKUx4
+	id S1756001AbZGKU4c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 16:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbZGKUx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 16:53:56 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32847 "EHLO
+	Sat, 11 Jul 2009 16:53:57 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32850 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755563AbZGKUxu (ORCPT
+	with ESMTP id S1755506AbZGKUxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 11 Jul 2009 16:53:50 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@lst.de>, Antonino Daplas <adaplas@pol.net>,
-       linux-fbdev-devel@lists.sourceforge.net,
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] move acornfb's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 22:52:29 +0200
-Message-Id: <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH] move jornada_ssp's probe function to .devinit.text
+Date: Sat, 11 Jul 2009 22:52:47 +0200
+Message-Id: <1247345591-22643-19-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <20090711170548.GC5205@suse.de>
+In-Reply-To: <1247345591-22643-18-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <20090711170548.GC5205@suse.de>
+ <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-3-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-4-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-5-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-6-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-7-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-8-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-9-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-10-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-11-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-12-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-13-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-14-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-15-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-16-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-17-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1247345591-22643-18-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -33,7 +50,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to acornfb_probe is passed to the core via
+A pointer to jornada_ssp_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -44,27 +61,26 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Antonino Daplas <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Acked-by: Kristoffer Ericson <Kristoffer.Ericson@gmail.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/video/acornfb.c |    2 +-
+ arch/arm/mach-sa1100/jornada720_ssp.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
-index 0bcc59e..43d7d50 100644
---- a/drivers/video/acornfb.c
-+++ b/drivers/video/acornfb.c
-@@ -1221,7 +1221,7 @@ free_unused_pages(unsigned int virtual_start, unsigned int virtual_end)
- 	printk("acornfb: freed %dK memory\n", mb_freed);
- }
+diff --git a/arch/arm/mach-sa1100/jornada720_ssp.c b/arch/arm/mach-sa1100/jornada720_ssp.c
+index 506a5e5..9b6dee5 100644
+--- a/arch/arm/mach-sa1100/jornada720_ssp.c
++++ b/arch/arm/mach-sa1100/jornada720_ssp.c
+@@ -130,7 +130,7 @@ void jornada_ssp_end(void)
+ };
+ EXPORT_SYMBOL(jornada_ssp_end);
  
--static int __init acornfb_probe(struct platform_device *dev)
-+static int __devinit acornfb_probe(struct platform_device *dev)
+-static int __init jornada_ssp_probe(struct platform_device *dev)
++static int __devinit jornada_ssp_probe(struct platform_device *dev)
  {
- 	unsigned long size;
- 	u_int h_sync, v_sync;
+ 	int ret;
+ 
 -- 
 1.6.3.1
 
