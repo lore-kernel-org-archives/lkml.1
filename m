@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbZGKR1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZGKRka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755415AbZGKR1y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 13:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZGKR1r
+	id S1754112AbZGKRka (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 13:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbZGKRkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 13:27:47 -0400
-Received: from mail-vw0-f199.google.com ([209.85.212.199]:62391 "EHLO
-	mail-vw0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbZGKR1q (ORCPT
+	Sat, 11 Jul 2009 13:40:20 -0400
+Received: from fmailhost06.isp.att.net ([204.127.217.106]:43637 "EHLO
+	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751420AbZGKRkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 13:27:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:content-type
-         :content-transfer-encoding;
-        b=il56OcS7oEomyJlGq7P00iA+EMR6ST8USlgy1ClYCCLAALNYaInllxopbZodJ0az2V
-         t1A1xWMfC2stLUoEV8iIe2oO22qy/YB3/0ij5VKhE0tZsA6dcd7orbGFWetiuCptPWAj
-         upfuQofb8bsMvVcdNhY2vuFerp1pL1neLcaFo=
+	Sat, 11 Jul 2009 13:40:20 -0400
+X-Originating-IP: [65.28.94.183]
+Message-ID: <4A58CE90.2070301@lwfinger.net>
+Date: Sat, 11 Jul 2009 12:40:32 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-From: Fernando Silveira <fsilveira@gmail.com>
-Date: Sat, 11 Jul 2009 14:27:25 -0300
-Message-ID: <6afc6d4a0907111027w76234c8fv11ab77864515fdb0@mail.gmail.com>
-Subject: I/O and pdflush
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: commit 097041e576ee3a50d92dd643ee8ca65bf6a62e21 (fuse: Fix build
+ error)
+References: <1247321214.5615.6.camel@heimdal.trondhjem.org>
+In-Reply-To: <1247321214.5615.6.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Trond Myklebust wrote:
+> Hi Linus
+> 
+> Please revert this commit. Instead of fixing the compile problem, it
+> adds a new dependency on CONFIG_BLOCK to both NFS and FUSE. Neither one
+> of them has such a dependency today, nor is there a reason to introduce
+> one. 
+> 
+> The correct fix should rather be to move the definitions of BLK_RW_SYNC
+> and BLK_RW_ASYNC into backing-dev.h as per the patch below.
+> 
+> Cheers
+>   Trond
 
-I'm having a hard time with an application that writes sequentially
-250GB of non-stop data directly to a solid state disk (OCZ SSD CORE
-v2) device and I hope you can help me. The command "dd if=/dev/zero
-of=/dev/sdc bs=4M" reproduces the same symptoms I'm having and writes
-exactly as that application does.
+I understand that my "fix" was wrong. I'm sure that Linus is on top of
+this, but your patch must be added before reverting 097071e5,
+otherwise a new build failure is introduced that might be encountered
+when bisecting. Why not undo my changes and add yours in a single patch?
 
-The problem is that after some time of data writing at 70MB/s, it
-eventually falls down to about 25MB/s and does not get up again until
-a loooong time has passed (from 1 to 30 minutes). This happens much
-more often when "vm.dirty_*" settings are default (30 secs to expire,
-5 secs for writeback, 10% and 40% for background and normal ratio),
-and when I set them to 1 second or even 0, the problem happens much
-less often and the sticking period of 25MB/s is much lower.
+Larry
 
-In one of my experiences, I could see that writing some blocks of of
-data (aprox. 48 blocks of 4MB each time) at a random position of the
-"disk" increases the chances of decreasing the writing rate to 25MB/s.
-You can see at this graph[1] that after the 7th random big write (at
-66 GB) it falls down to 25MB/s. The writes happened at the following
-positions (in GB): 10, 20, 30, 39, 48, 57, 66, 73, 80, 90, 100, 109,
-118, 128, 137, 147, and 156 GB.
-
-As I don't know much about kernel internals, IMHO it might be the SSD
-might be "hiccuping" and some kind of kernel I/O scheduler or pdflush
-decreases its rate to avoid write errors, I don't know.
-
-Could somebody tell me how could I debug the kernel and any of its
-modules to understand exactly why the writing is behaving this way?
-Maybe I could do it just by logging write errors or something, I don't
-know. Telling me which part I should start analyzing would be a huge
-hint, seriously.
-
-Thanks.
-
-1. http://rootshell.be/~swrh/ssd-tests/ssd-no_dirty_buffer_with_random_192mb_writes.png
-
-PS: This is used with two A/D converters which provide 25MB/s of data
-each, leading my writing software to need at least 50MB/s of
-sequential writing rate.
-
--- 
-Fernando Silveira <fsilveira@gmail.com>
