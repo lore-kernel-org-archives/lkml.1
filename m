@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbZGKW3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZGKW3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751828AbZGKW3a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 18:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbZGKW3X
+	id S1752814AbZGKW3o (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 18:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZGKW3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 18:29:23 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:27883 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751370AbZGKW3W (ORCPT
+	Sat, 11 Jul 2009 18:29:35 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:60262 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751979AbZGKW3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 18:29:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=oHgb1u/WX9tKgYAsH92EFgAICK5WnTbcrdejU+iuitxaC3g1xAJqM0PikBk/ulo9KpEvPjAhBEVgqVdcWgBFBhU+etbRzJ0lX1yFsTGKtWWAdpcOPtBJhDYoJvwieSev4OPb2qHIG2wltsMpeBvdqCyBRPqUjgq0XUviydpeeTQ=  ;
-X-YMail-OSG: ITTMo1sVM1lw40rZkO4_5Oq51gvsrNGqpN.Upi0PVFW6isvlCMnaQIfIhsMgUbrKCmfaoF0C8r0OeBB4KiWnN5e8XpB4FEz.8ATX7nMgi1zhZN0weSBjkN20hXPO1dxVI6__qjQ6LOXWM5dJOgP1_5yznTdr3fnqwtfi4q5MaWqfZcBg9vt66aLedKfgB7j7zA4eNv8yh.N3LC4pmXTWNoZB8Xm.FkE1GK5xzGv5Octot45w2irGrlpT_bbFno4Zh3mpaZHNmpqU28BM
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] move mmci-omap-hs's probe function to .devinit.text
-Date: Sat, 11 Jul 2009 15:29:20 -0700
-User-Agent: KMail/1.9.10
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Jean Pihet <jpihet@mvista.com>, Tony Lindgren <tony@atomide.com>,
-       Pierre Ossman <drzeus@drzeus.cx>, Andy Lowe <alowe@mvista.com>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>
-References: <20090711170548.GC5205@suse.de> <1247345591-22643-24-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de>
+	Sat, 11 Jul 2009 18:29:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=H32NTV5MWvNba4guWkHOM4jRuKmvyYZ8BASvZeuki1qJrHk5r7y1TyJW+KB5sEGkN+
+         XE1NVvi0Y7u1HY6ipBwT5Re/jcMsbnpfmSQeN1iPeEQonQ1bIzMvctUirpZ7hkU2E1mO
+         oolKCch+4dxIe3v53FeBlEYJ6xBszyNjyEdj4=
+Date: Sun, 12 Jul 2009 00:29:30 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [rfc -tip] lib,rb-tree - introduce rb_for_each helper
+Message-ID: <20090711222928.GD6641@nowhere>
+References: <20090711220009.GA16028@lenovo>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907111529.21165.david-b@pacbell.net>
+In-Reply-To: <20090711220009.GA16028@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 11 July 2009, Uwe Kleine-König wrote:
-> An alternative to this patch is using platform_driver_probe instead of
-> platform_driver_register plus removing the pointer to the probe function
-> from the struct platform_driver.
+On Sun, Jul 12, 2009 at 02:00:09AM +0400, Cyrill Gorcunov wrote:
+> perftools already use a number of opencoded
+> for() iterators over rbtree. The patch introduce
+> rb_for_each helper for this purpose.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> ---
+> 
+> The real conversion for this macro usage should be
+> done later.
+> 
+> Also I think having rb_for_each_entry for being used
+> with container_of inbetween could be convinient as
+> well.
+> 
+> Anyway if we don't need such a helper -- just drop
+> the patch.
+> 
+>  include/linux/rbtree.h |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6.git/include/linux/rbtree.h
+> =====================================================================
+> --- linux-2.6.git.orig/include/linux/rbtree.h
+> +++ linux-2.6.git/include/linux/rbtree.h
+> @@ -145,6 +145,9 @@ extern struct rb_node *rb_prev(const str
+>  extern struct rb_node *rb_first(const struct rb_root *);
+>  extern struct rb_node *rb_last(const struct rb_root *);
+>  
+> +#define rb_for_each(nd, root) \
+> +	for (nd = rb_first((root)); nd; nd = rb_next(nd))
+> +
+>  /* Fast replacement of a single node without remove/rebalance/add/rebalance */
+>  extern void rb_replace_node(struct rb_node *victim, struct rb_node *new, 
+>  			    struct rb_root *root);
 
-And that's the preferred fix ... NAK on this one.
 
-In fact its quite rare for any SoC device to be hotpluggable,
-so your default stance in such cases should be to switch over
-to platform_driver_probe() instead of doing like this.
+Nice idea!
+This pattern is often taken in perfcounter tools.
+Also to complete this pattern, an abstract container retrieval
+would be also useful as an iterator:
+
+#define rb_for_each_entry(tpos, pos, root, memb) \
+	for (pos = rb_first(root); pos && tpos = rb_entry(pos, typeof(*tpos), memb); \
+	     pos = rb_next(pos->memb, typeof(*pos), memb))
+
+Or something like that...
 
 
