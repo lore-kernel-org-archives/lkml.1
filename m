@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZGKHwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbZGKHwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbZGKHwX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 03:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbZGKHwJ
+	id S1757527AbZGKHwp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 03:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbZGKHwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 03:52:09 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:39555 "EHLO mgw1.diku.dk"
+	Sat, 11 Jul 2009 03:52:15 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:59339 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752467AbZGKHwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 03:52:07 -0400
-Date: Sat, 11 Jul 2009 09:51:14 +0200 (CEST)
+	id S1756478AbZGKHwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 11 Jul 2009 03:52:13 -0400
+Date: Sat, 11 Jul 2009 09:50:49 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/5] staging/otus: Move a dereference below a NULL test
-Message-ID: <Pine.LNX.4.64.0907110950510.29592@ask.diku.dk>
+To: maxk@qualcomm.com, vtun@office.satix.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/5] drivers/net: Move a dereference below a NULL test
+Message-ID: <Pine.LNX.4.64.0907110950300.29592@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -48,24 +48,23 @@ statement S;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/staging/otus/wwrap.c |    3 ++-
+ drivers/net/tun.c |    3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff -u -p a/drivers/staging/otus/wwrap.c b/drivers/staging/otus/wwrap.c
---- a/drivers/staging/otus/wwrap.c
-+++ b/drivers/staging/otus/wwrap.c
-@@ -1016,12 +1016,13 @@ void kevent(struct work_struct *work)
+diff -u -p a/drivers/net/tun.c b/drivers/net/tun.c
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -486,11 +486,12 @@ static unsigned int tun_chr_poll(struct 
  {
-     struct usbdrv_private *macp =
-                container_of(work, struct usbdrv_private, kevent);
--    zdev_t *dev = macp->device;
-+    zdev_t *dev;
+ 	struct tun_file *tfile = file->private_data;
+ 	struct tun_struct *tun = __tun_get(tfile);
+-	struct sock *sk = tun->sk;
++	struct sock *sk;
+ 	unsigned int mask = 0;
  
-     if (macp == NULL)
-     {
-         return;
-     }
-+    dev = macp->device;
+ 	if (!tun)
+ 		return POLLERR;
++	sk = tun->sk;
  
-     if (test_and_set_bit(0, (void *)&smp_kevent_Lock))
-     {
+ 	DBG(KERN_INFO "%s: tun_chr_poll\n", tun->dev->name);
+ 
