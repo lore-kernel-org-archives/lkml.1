@@ -1,193 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753929AbZGKTIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbZGKSyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753929AbZGKTIM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 15:08:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZGKTH6
+	id S1753016AbZGKSyh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 14:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbZGKSya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 15:07:58 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:59843 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbZGKTH5 (ORCPT
+	Sat, 11 Jul 2009 14:54:30 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:41390 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751931AbZGKSy3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 15:07:57 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: uhci_hcd fails to off-line device/hub on error condition
-Date: Sat, 11 Jul 2009 14:07:51 -0500
-User-Agent: KMail/1.9.9
-Cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <Pine.LNX.4.44L0.0907071513380.8221-100000@iolanthe.rowland.org> <200907081130.07370.lkml@morethan.org> <200907081138.39211.lkml@morethan.org>
-In-Reply-To: <200907081138.39211.lkml@morethan.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sat, 11 Jul 2009 14:54:29 -0400
+Subject: Re: rfkill rework in 2.6.31-rc, hal/dbus access changes?
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Norbert Preining <preining@logic.at>
+Cc: linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <20090711091427.GB14367@gamma.logic.tuwien.ac.at>
+References: <20090711091427.GB14367@gamma.logic.tuwien.ac.at>
+Content-Type: text/plain
+Date: Sat, 11 Jul 2009 11:54:33 -0700
+Message-Id: <1247338473.9709.107.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907111407.54152.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed July 8 2009, Michael S. Zick wrote:
-> On Wed July 8 2009, Michael S. Zick wrote:
-> > On Wed July 8 2009, Michael S. Zick wrote:
-> > > On Tue July 7 2009, Alan Stern wrote:
-> > > > On Tue, 7 Jul 2009, Michael S. Zick wrote:
-> > > > 
-> > > > > On Tue July 7 2009, Alan Stern wrote:
-> > > > > > On Tue, 7 Jul 2009, Michael S. Zick wrote:
-> > > > > > 
-> > > > > > > > It looks like there's a serious problem in your UHCI hardware.  
-> > > > > > > > According to the log you posted, it's not working at all.
-> > > > > > > > 
-> > > > > > > 
-> > > > > > > I am using the x86-generic drivers - -
-> > > > > > 
-> > > > > > Not a problem with the drivers, a problem in the hardware.
-> > > > > > 
-> > > > > 
-> > > > > Or hardware that works as the manufacturer intended, but differently
-> > > > > than expected.  Same difference as "broken" when compared to "standard".
-> > > > 
-> > > > No, hardware that doesn't work at all.  As in "all reads return
-> > > > 0xffffffff" -- that's just a guess but something like it would account
-> > > > for what you saw.
-> > > > 
-> 
-> I tried to combine the addition of the diagnostic print (BUG())
-> statements and the potential fix - -
-> This is what I put into the code for today's testing:
-> 
-> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-> index be86ae3..d686f1d 100644
-> --- a/drivers/usb/core/hub.c
-> +++ b/drivers/usb/core/hub.c
-> @@ -160,8 +160,10 @@ static inline char *portspeed(int portstatus)
->  }
-> 
->  /* Note that hdev or one of its children must be locked! */
-> -static inline struct usb_hub *hdev_to_hub(struct usb_device *hdev)
-> +static struct usb_hub *hdev_to_hub(struct usb_device *hdev)
->  {
-> +       if (!hdev || !hdev->actconfig)
-> +               return NULL;
->         return usb_get_intfdata(hdev->actconfig->interface[0]);
->  }
-> 
-> @@ -369,11 +371,16 @@ static void kick_khubd(struct usb_hub *hub)
->  {
->         unsigned long   flags;
-> 
-> -       /* Suppress autosuspend until khubd runs */
-> -       to_usb_interface(hub->intfdev)->pm_usage_cnt = 1;
-> +       if (!hub) {
-> +               BUG();
-> +               return;
-> +       }
-> 
->         spin_lock_irqsave(&hub_event_lock, flags);
->         if (!hub->disconnected && list_empty(&hub->event_list)) {
-> +               /* Suppress autosuspend until khubd runs */
-> +               to_usb_interface(hub->intfdev)->pm_usage_cnt = 1;
-> +
->                 list_add_tail(&hub->event_list, &hub_event_list);
->                 wake_up(&khubd_wait);
->         }
-> @@ -382,8 +389,19 @@ static void kick_khubd(struct usb_hub *hub)
-> 
->  void usb_kick_khubd(struct usb_device *hdev)
->  {
-> -       /* FIXME: What if hdev isn't bound to the hub driver? */
-> -       kick_khubd(hdev_to_hub(hdev));
-> +       struct usb_hub *hub;
-> +
-> +       if (!hdev) {
-> +               BUG();
-> +               return;
-> +       }
-> +       hub = hdev_to_hub(hdev);
-> +       if (hub) {
-> +               kick_khubd(hub);
-> +       } else {
-> +               BUG();
-> +               return;
-> +       }
->  }
->
+Hi Norbert,
 
-- - Megabytes of the same snipped - -
-uhci_hcd 0000:00:10.2: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.1: host system error, PCI problems?
-uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.2: host system error, PCI problems?
-uhci_hcd 0000:00:10.2: host controller process error, something bad happened!
-
-- - driver can detect unexpected behavior sufficent to post the messages - -
-
-uhci_hcd 0000:00:10.1: host system error, PCI problems?
-uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
-
-- - but never does anything about it - other than bitch - -
-- - insert external action: rmmod uhci_hcd here - -
-
-uhci_hcd 0000:00:10.2: remove, state 1
-uhci_hcd 0000:00:10.2: roothub graceful disconnect
-usb usb4: USB disconnect, address 1
-usb usb4: unregistering device
-usb usb4: usb_disable_device nuking all URBs
-usb usb4: unregistering interface 4-0:1.0
-uhci_hcd 0000:00:10.2: host system error, PCI problems?
-uhci_hcd 0000:00:10.2: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.1: host system error, PCI problems?
-uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.1: host system error, PCI problems?
-uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.2: host system error, PCI problems?
-uhci_hcd 0000:00:10.2: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.1: host system error, PCI problems?
-uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.2: host system error, PCI problems?
-uhci_hcd 0000:00:10.2: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.1: host system error, PCI problems?
-uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.2: host system error, PCI problems?
-uhci_hcd 0000:00:10.2: host controller process error, something bad happened!
-uhci_hcd 0000:00:10.1: host system error, PCI problems?
-uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
-usb 4-0:1.0: uevent
-usb usb4: uevent
-uhci_hcd 0000:00:10.2: USB bus 4 deregistered
-uhci_hcd 0000:00:10.1: remove, state 1
-uhci_hcd 0000:00:10.1: roothub graceful disconnect
-usb usb3: USB disconnect, address 1
-usb usb3: unregistering device
-usb usb3: usb_disable_device nuking all URBs
-usb usb3: unregistering interface 3-0:1.0
-usb 3-0:1.0: uevent
-usb usb3: uevent
-uhci_hcd 0000:00:10.1: USB bus 3 deregistered
-uhci_hcd 0000:00:10.0: remove, state 0
-uhci_hcd 0000:00:10.0: roothub graceful disconnect
-usb usb2: USB disconnect, address 1
-usb usb2: unregistering device
-usb usb2: usb_disable_device nuking all URBs
-usb usb2: unregistering interface 2-0:1.0
-usb 2-0:1.0: uevent
-usb usb2: uevent
-uhci_hcd 0000:00:10.0: USB bus 2 deregistered
- 
-- - end event - - (with apologies to China Syndrome)
-
-Mike
-> Mike
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I have written a Gnome applet for turning off and on the various
+> hardware items using the rfkill interface. It was working very well on
+> up to 2.6.30. With 2.6.31-rc that infrastructure has been changed, and
+> now no access mode I know of still works.
 > 
-> 
+> - formerly writing 0 or 1 to /sys/class/rfkill/rfkillN/state worked, now
+>   it returns access denied.
+
+actually Johannes sent a patch to fix this. It will still return an
+error if the RFKILL switch is hard-blocked btw.
+
+> - access via Hal/Dbus (what I am doing) stopped working, too
+
+Not the first time HAL broke in this area, because its RFKILL support is
+a bunch of hacked up scripts. Send a patch to the HAL mailing list.
+
+> In the Documentation I only see reference to /dev/rfkill, which isn't a
+> usefull access method because for the applet to work for every user
+> (based on the permissions of hal) we need hal/dbus access.
+
+You could just go ahead and work on fixing HAL.
+
+> Is this intended behaviour? Is there any other documentation but the
+> very short rfkill.txt in the kernel's Documentation?
+
+Changing RFKILL soft-block via the state file got fixed, but it is still
+a total broken interface. If you rely on it (directly or via HAL) your
+application is useless. And if you are polling the state of the RFKILL
+switches via HAL, then your application is even worse. You need to
+wake-up too often to actually see RFKILL state changes.
+
+The /dev/rfkill interface is the only way to get a proper interface with
+all RFKILL switches in your system. And this includes enumeration, async
+notification and changing states on a per technology basis.
+
+Regards
+
+Marcel
 
 
