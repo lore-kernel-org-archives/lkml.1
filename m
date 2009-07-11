@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbZGKWAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752762AbZGKWYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752466AbZGKWAZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 18:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZGKWAO
+	id S1752762AbZGKWYb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 18:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZGKWYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 18:00:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:40789 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751194AbZGKWAN (ORCPT
+	Sat, 11 Jul 2009 18:24:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48390 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751413AbZGKWYW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 18:00:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=TwpkbiVqZ8pgRMCOHoW/BeVhPHZ0I3Yk7BusXy3Mn5MlBCq+4V8lzE/zwLozE/du0+
-         dVCSX7b+GsA0/SqtbClM2CIqok62ZOUDETfPp1Q6ybVXhPGglIVr/2zsTZnG+WR/G4bG
-         pPXxIdYW6vQLqKXesCSUmgGAWHqYI+bHGCvKI=
-Date: Sun, 12 Jul 2009 02:00:09 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Subject: [rfc -tip] lib,rb-tree - introduce rb_for_each helper
-Message-ID: <20090711220009.GA16028@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 11 Jul 2009 18:24:22 -0400
+Date: Sat, 11 Jul 2009 23:24:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Cc: Alan Cox <alan@linux.intel.com>, Alan Cox <alan@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: possible regression with pty.c commit
+Message-ID: <20090711232452.4dc7c1ba@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090711191556.GA3845@localdomain.by>
+References: <20090711191556.GA3845@localdomain.by>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-perftools already use a number of opencoded
-for() iterators over rbtree. The patch introduce
-rb_for_each helper for this purpose.
+On Sat, 11 Jul 2009 22:15:56 +0300
+Sergey Senozhatsky <sergey.senozhatsky@mail.by> wrote:
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
+> Hello,
+> commit d945cb9cce20ac7143c2de8d88b187f62db99bdc ("pty: Rework the pty layer to use the normal buffering logic")
+> seems to brake kdesu.
 
-The real conversion for this macro usage should be
-done later.
+This looks like a timing bug in kdesu at first glance but it may be more
+complex.
 
-Also I think having rb_for_each_entry for being used
-with container_of inbetween could be convinient as
-well.
+> close(11)                               = 0
 
-Anyway if we don't need such a helper -- just drop
-the patch.
+We close one side of the pty/tty pair
 
- include/linux/rbtree.h |    3 +++
- 1 file changed, 3 insertions(+)
+> write(10, "stop", 4)                    = 4
+> write(10, "\n", 1)                      = 1
+> fcntl64(10, F_GETFL)                    = 0x2 (flags O_RDWR)
+> read(10, 0xbf840858, 255)               = -1 EIO (Input/output error)		<<<<<<<<<
 
-Index: linux-2.6.git/include/linux/rbtree.h
-=====================================================================
---- linux-2.6.git.orig/include/linux/rbtree.h
-+++ linux-2.6.git/include/linux/rbtree.h
-@@ -145,6 +145,9 @@ extern struct rb_node *rb_prev(const str
- extern struct rb_node *rb_first(const struct rb_root *);
- extern struct rb_node *rb_last(const struct rb_root *);
- 
-+#define rb_for_each(nd, root) \
-+	for (nd = rb_first((root)); nd; nd = rb_next(nd))
-+
- /* Fast replacement of a single node without remove/rebalance/add/rebalance */
- extern void rb_replace_node(struct rb_node *victim, struct rb_node *new, 
- 			    struct rb_root *root);
+At this point the other side is closed, we have a hangup and the read
+correctly I think gets -EIO.
+
+I will have a look at kdesu on Monday, I've got Fedora setups here so
+hopefully I can reproduce it simply.
