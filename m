@@ -1,37 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZGLHk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752132AbZGLHn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346AbZGLHk1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 03:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZGLHkS
+	id S1752132AbZGLHn2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 03:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbZGLHnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 03:40:18 -0400
-Received: from mailfilter6.ihug.co.nz ([203.109.136.6]:15171 "EHLO
-	mailfilter6.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247AbZGLHkR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 03:40:17 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApAXAKcwWUpV1pUj/2dsb2JhbACBUI1KiQCCCYVzE6oqgikHgVkFhiqDCQI
-X-IronPort-AV: E=Sophos;i="4.42,386,1243771200"; 
-   d="scan'208";a="111440586"
+	Sun, 12 Jul 2009 03:43:18 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:52325 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751247AbZGLHnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 03:43:17 -0400
+Date: Sun, 12 Jul 2009 09:42:47 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: jkosina@suse.cz, linux-input@vger.kernel.org, gregkh@suse.de,
+       jirislaby@gmail.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/3] drivers/hid: Drop NULL test on list_entry result
+Message-ID: <Pine.LNX.4.64.0907120942070.17416@ask.diku.dk>
 MIME-Version: 1.0
-Date: Sun, 12 Jul 2009 19:40:14 +1200
-From: Camelot <info@cgl.com>
-To: undisclosed-recipients:;
-Subject: Call Derek For Confirmation +4470359 60751
-Reply-To: claimsdomain@9.cn
-Message-ID: <98c176e17988a762833ad23c8c5c4e75@vodafone.co.nz>
-SenderIP: 85.214.149.35
-User-Agent: Vodafone Webmail
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-REF NO.REF:UKL/74-A0802742009
-Congrats in our Uk monthly online award bonanza by sending your
-Name,Add,Age,Tel to(claimsdomain@9.cn) for 891,934GBP.send your data for
-more details.Choose your claims option.
-(1)Courier Delivery
-(2)Bank Transfer
+From: Julia Lawall <julia@diku.dk>
+
+list_entry, which is an alias for container_of, cannot return NULL, as
+there is no way to add a NULL value to a doubly linked list.
+
+A simplified version of the semantic match that findds this problem is as
+follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@r@
+expression x,E;
+statement S1,S2;
+position p,p1;
+@@
+
+*x = list_entry@p(...)
+... when != x = E
+*if@p1 (x == NULL) S1 else S2
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/hid/hid-lgff.c              |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/hid/hid-lgff.c b/drivers/hid/hid-lgff.c
+index 95835ea..987abeb 100644
+--- a/drivers/hid/hid-lgff.c
++++ b/drivers/hid/hid-lgff.c
+@@ -151,11 +151,6 @@ int lgff_init(struct hid_device* hid)
+ 
+ 	/* Check that the report looks ok */
+ 	report = list_entry(report_list->next, struct hid_report, list);
+-	if (!report) {
+-		err_hid("NULL output report");
+-		return -1;
+-	}
+-
+ 	field = report->field[0];
+ 	if (!field) {
+ 		err_hid("NULL field");
