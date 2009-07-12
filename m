@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbZGLWqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbZGLWqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbZGLWqk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 18:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZGLWqa
+	id S1754725AbZGLWqw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 18:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbZGLWqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 18:46:30 -0400
-Received: from kroah.org ([198.145.64.141]:33487 "EHLO coco.kroah.org"
+	Sun, 12 Jul 2009 18:46:32 -0400
+Received: from kroah.org ([198.145.64.141]:33493 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751691AbZGLWqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 18:46:30 -0400
+	id S1754475AbZGLWqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 18:46:31 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Tejun Heo <tj@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, stable <stable@kernel.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/9] devres: WARN() and return, don't crash on device_del() of uninitialized device
-Date: Sun, 12 Jul 2009 15:45:58 -0700
-Message-Id: <1247438766-17266-1-git-send-email-gregkh@suse.de>
+Subject: [PATCH 2/9] partitions: fix broken uevent_suppress conversion
+Date: Sun, 12 Jul 2009 15:45:59 -0700
+Message-Id: <1247438766-17266-2-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090712223717.GB16600@kroah.com>
 References: <20090712223717.GB16600@kroah.com>
@@ -25,37 +23,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-I just debugged an obscure crash caused by a device_del() of a all NULL'd
-out struct device (in usb-serial) and found that a patch like this one would
-have saved me time (in addition to improved chances of a bug report from
-users hitting similar driver bugs).
+git commit f67f129e "Driver core: implement uevent suppress in kobject"
+contains this chunk for fs/partitions/check.c:
 
-[akpm@linux-foundation.org: cleanup]
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Tejun Heo <tj@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+ 	/* suppress uevent if the disk supresses it */
+-	if (!ddev->uevent_suppress)
++	if (!dev_get_uevent_suppress(pdev))
+ 		kobject_uevent(&pdev->kobj, KOBJ_ADD);
+
+However that should have been
+
+-	if (!ddev->uevent_suppress)
++	if (!dev_get_uevent_suppress(ddev))
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Acked-by: Ming Lei <tom.leiming@gmail.com>
+Cc: stable <stable@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/devres.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ fs/partitions/check.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/base/devres.c b/drivers/base/devres.c
-index e8beb8e..05dd307 100644
---- a/drivers/base/devres.c
-+++ b/drivers/base/devres.c
-@@ -428,6 +428,9 @@ int devres_release_all(struct device *dev)
- {
- 	unsigned long flags;
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 1a9c787..ea4e6cb 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -436,7 +436,7 @@ struct hd_struct *add_partition(struct gendisk *disk, int partno,
+ 	rcu_assign_pointer(ptbl->part[partno], p);
  
-+	/* Looks like an uninitialized device structure */
-+	if (WARN_ON(dev->devres_head.next == NULL))
-+		return -ENODEV;
- 	spin_lock_irqsave(&dev->devres_lock, flags);
- 	return release_nodes(dev, dev->devres_head.next, &dev->devres_head,
- 			     flags);
+ 	/* suppress uevent if the disk supresses it */
+-	if (!dev_get_uevent_suppress(pdev))
++	if (!dev_get_uevent_suppress(ddev))
+ 		kobject_uevent(&pdev->kobj, KOBJ_ADD);
+ 
+ 	return p;
 -- 
 1.6.3.2
 
