@@ -1,99 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZGLPcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbZGLQWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbZGLPcb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 11:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbZGLPcX
+	id S1754745AbZGLQWU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 12:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZGLQWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 11:32:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43718 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754334AbZGLPcV (ORCPT
+	Sun, 12 Jul 2009 12:22:11 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:26443 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754083AbZGLQWK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 11:32:21 -0400
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Douglas Niehaus <niehaus@ittc.ku.edu>
-Cc: Henrik Austad <henrik@austad.us>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       "James H. Anderson" <anderson@cs.unc.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>
-In-Reply-To: <4A594D2D.3080101@ittc.ku.edu>
-References: <200907102350.47124.henrik@austad.us>
-	 <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>
-Content-Type: text/plain
-Date: Sun, 12 Jul 2009 17:31:48 +0200
-Message-Id: <1247412708.6704.105.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Jul 2009 12:22:10 -0400
+MIME-Version: 1.0
+Message-ID: <a09e4489-a755-46e7-a569-a0751e0fc39f@default>
+Date: Sun, 12 Jul 2009 09:20:22 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       npiggin@suse.de, akpm@osdl.org, jeremy@goop.org,
+       xen-devel@lists.xensource.com, tmem-devel@oss.oracle.com,
+       alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org, kurt.hackel@oracle.com,
+       Rusty Russell <rusty@rustcorp.com.au>, dave.mccracken@oracle.com,
+       Marcelo Tosatti <mtosatti@redhat.com>, sunil.mushran@oracle.com,
+       Avi Kivity <avi@redhat.com>, Schwidefsky <schwidefsky@de.ibm.com>,
+       chris.mason@oracle.com, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: RE: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
+In-Reply-To: <4A59E502.1020008@codemonkey.ws>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.4A5A0D7F.0094:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-07-11 at 21:40 -0500, Douglas Niehaus wrote:
-> Peter:
->     Perhaps you could expand on what you meant when you said:
+> > that information; but tmem is trying to go a step further by making
+> > the cooperation between the OS and hypervisor more explicit
+> > and directly beneficial to the OS.
 > 
-> 	Thing is, both BWI and PEP seems to work brilliantly on Uni-Processor
-> 	but SMP leaves things to be desired. Dhaval is currently working on a
-> 	PEP implementation that will migrate all the blocked tasks to the
-> 	owner's cpu, basically reducing it to the UP problem.
+> KVM definitely falls into the camp of trying to minimize 
+> modification to the guest.
+
+No argument there.  Well, maybe one :-) Yes, but KVM
+also heavily encourages unmodified guests.  Tmem is
+philosophically in favor of finding a balance between
+things that work well with no changes to any OS (and
+thus work just fine regardless of whether the OS is
+running in a virtual environment or not), and things
+that could work better if the OS is knowledgable that
+it is running in a virtual environment.
+
+For those that believe virtualization is a flash-in-
+the-pan, no modifications to the OS is the right answer.
+For those that believe it will be pervasive in the
+future, finding the right balance is a critical step
+in operating system evolution.
+
+(Sorry for the Sunday morning evangelizing :-)
+
+> >> If there was one change to tmem that would make it more 
+> >> palatable, for 
+> >> me it would be changing the way pools are "allocated".  Instead of 
+> >> getting an opaque handle from the hypervisor, I would force 
+> >> the guest to 
+> >> allocate it's own memory and to tell the hypervisor that 
+> it's a tmem 
+> >> pool.
+> >
+> > I can see how it might be useful for KVM though.  Once the
+> > core API and all the hooks are in place, a KVM implementation of
+> > tmem could attempt something like this.
 > 
-> What is left to be desired with PEP on SMP? I am not saying it is 
-> perfect, as I can think of a few things I would like to improve or 
-> understand better, but I am curious what you have in mind.
+> It's the core API that is really the issue.  The semantics of tmem 
+> (external memory pool with copy interface) is really what is 
+> problematic.
+> The basic concept, notifying the VMM about memory that can be 
+> recreated 
+> by the guest to avoid the VMM having to swap before reclaim, is great 
+> and I'd love to see Linux support it in some way.
 
-Right, please don't take this as a critism against PEP, any scheme I
-know of has enormous complications on SMP ;-)
+Is it the tmem API or the precache/preswap API layered on
+top of it that is problematic?  Both currently assume copying
+but perhaps the precache/preswap API could, with minor
+modifications, meet KVM's needs better?
 
-But the thing that concerns me most, there seem to be a few O(n)
-consequences. Suppose that for each resource (or lock) R_i, there is a
-block graph G_i, which consists of n nodes and would be m deep.
+> > Yes, the Xen implementation of tmem does accounting on a per-pool
+> > and a per-guest basis and exposes the data via a privileged
+> > "tmem control" hypercall.
+> 
+> I was talking about accounting within the guest.  It's not 
+> just a matter 
+> of accounting within the mm, it's also about accounting in 
+> userspace.  A 
+> lot of software out there depends on getting detailed statistics from 
+> Linux about how much memory is in use in order to determine 
+> things like 
+> memory pressure.  If you introduce a new class of memory, you 
+> need a new 
+> class of statistics to expose to userspace and all those tools need 
+> updating.
 
-Functionally (generalized) PIP and PEP are identical, their big
-difference is that PIP uses waitqueues to encode the block graph G,
-whereas PEP leaves everybody on the runqueue and uses the proxy field to
-encode the block graph G.
+OK, I see.
 
-The downside of PIP is that the waitqueue needs to re-implement the full
-schedule function in order to evaluate the highest prio task on the
-waitqueue. Ttraditionally this was rather easy, since you'd only
-consider the limited SCHED_FIFO static prio range, leaving you with a
-O(1) evaluation, when you add more complex scheduling functions things
-get considerably more involved. Let's call this cost S.
+Well, first, tmem's very name means memory that is "beyond the
+range of normal perception".  This is certainly not the first class
+of memory in use in data centers that can't be accounted at
+process granularity.  I'm thinking disk array caches as the
+primary example.  Also lots of tools that work great in a
+non-virtualized OS are worthless or misleading in a virtual
+environment.
 
-So for PIP you get O(m*S) evaluations whenever you get a change to the
-block graph.
-
-Now for PEP, you get an increased O(m) cost on schedule, which can be
-compared to the PIP cost.
-
-However PEP on SMP needs to ensure all n tasks in G_i are on the same
-cpu, because otherwise we can end up wanting to execute the resource
-owner on multiple cpus at the same time, which is bad.
-
-This can of course be amortized, but you end up having to migrate the
-task (or an avatar thereof) to the owner's cpu (if you'd want to migrate
-the owner to the blocker's cpu, then you're quickly into trouble when
-there's multiple blockers), but any way around this ends up being O(n).
-
-Also, when the owner gets blocked on something that doesn't have an
-owner (io completion, or a traditional semaphore), you have to take all
-n tasks from the runqueue (and back again when they do become runnable).
-
-PIP doesn't suffer this, but does suffer the pain from having to
-reimplement the full schedule function on the waitqueues, which when you
-have hierarchical scheduling means you have to replicate the full
-hierarchy per waitqueue.
-
-Furthermore we cannot assume locked sections are short, and we must
-indeed assume that its any resource in the kernel associated with any
-service which can be used by any thread, worse, it can be any odd
-userspace resource/thread too, since we expose the block graph to
-userspace processes through PI-futexes.
+Second, CPUs are getting much more complicated with massive
+pipelines, many layers of caches each with different characteristics,
+etc, and its getting increasingly impossible to accurately and
+reproducibly measure performance at a very fine granularity.
+One could only expect that other resources, such as memory,
+would move in that direction.
 
