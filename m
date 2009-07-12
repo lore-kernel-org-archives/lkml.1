@@ -1,88 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbZGLROe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZGLRQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754563AbZGLROe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 13:14:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbZGLROZ
+	id S1754637AbZGLRQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 13:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbZGLRQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 13:14:25 -0400
-Received: from mail-vw0-f199.google.com ([209.85.212.199]:34900 "EHLO
-	mail-vw0-f199.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753912AbZGLROZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 13:14:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=eGdGCDQeG8Oo7sMhie8D7wwv4Jc6+l8iRDyMDy5eWOxGI3dFFdvxg6Pic7VlGfaoei
-         WO9oOy6YqviAwUtnNPk4hudfxGdFd0UYbM9hdM0A+NSIzZswqLMPXvh1CBkIZe4Gtkd7
-         7xD98yMg6WuSknEhQQNaqpmWA59bISrj3fJWE=
+	Sun, 12 Jul 2009 13:16:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46268 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753912AbZGLRQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 13:16:19 -0400
+Message-ID: <4A5A1A51.2080301@redhat.com>
+Date: Sun, 12 Jul 2009 20:16:01 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Reply-To: crquan@gmail.com
-In-Reply-To: <19033.46146.685018.240686@pilspetsen.it.uu.se>
-References: <1247386308-19628-1-git-send-email-crq@kernel.org>
-	 <1247386308-19628-2-git-send-email-crq@kernel.org>
-	 <19033.46146.685018.240686@pilspetsen.it.uu.se>
-Date: Sun, 12 Jul 2009 17:14:23 +0000
-X-Google-Sender-Auth: 4e6d0732a8ff112b
-Message-ID: <91b13c310907121014r4ab3d37p9477030bb0e3b7d2@mail.gmail.com>
-Subject: Re: [PATCH 1/6] add symbol value to help find the real depend
-From: Cheng Renquan <crq@kernel.org>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, npiggin@suse.de, akpm@osdl.org,
+       jeremy@goop.org, xen-devel@lists.xensource.com,
+       tmem-devel@oss.oracle.com, alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org,
+       kurt.hackel@oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
+       dave.mccracken@oracle.com, Marcelo Tosatti <mtosatti@redhat.com>,
+       sunil.mushran@oracle.com, Schwidefsky <schwidefsky@de.ibm.com>,
+       chris.mason@oracle.com, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
+References: <a09e4489-a755-46e7-a569-a0751e0fc39f@default>
+In-Reply-To: <a09e4489-a755-46e7-a569-a0751e0fc39f@default>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 12, 2009 at 10:00 AM, Mikael Pettersson<mikpe@it.uu.se> wrote:
-[...]
-> I like this concept, but I'd like to see it supported with make oldconfig.
+On 07/12/2009 07:20 PM, Dan Magenheimer wrote:
+>>> that information; but tmem is trying to go a step further by making
+>>> the cooperation between the OS and hypervisor more explicit
+>>> and directly beneficial to the OS.
+>>>        
+>> KVM definitely falls into the camp of trying to minimize
+>> modification to the guest.
+>>      
+>
+> No argument there.  Well, maybe one :-) Yes, but KVM
+> also heavily encourages unmodified guests.  Tmem is
+> philosophically in favor of finding a balance between
+> things that work well with no changes to any OS (and
+> thus work just fine regardless of whether the OS is
+> running in a virtual environment or not), and things
+> that could work better if the OS is knowledgable that
+> it is running in a virtual environment.
+>    
 
-'make oldconfig' uses the same 'scripts/kconfig/conf' program as the
-'make config' does, which is supported already in this series of
-patches,
 
-> Let's say I copy a .config from kernel X into kernel Y (Y>X) and make oldconfig.
-> Sometimes the new kernel will enable some previously disabled option, and
-> it would be very useful to see WHY.
->
-> To take a concrete example, in my 2.6.30 .config I had:
->
-> CONFIG_DRM=m
-> CONFIG_DRM_RADEON=m
-> # CONFIG_FB is not set
->
-> which when oldconfig'd in 2.6.31-rc changed to
->
-> CONFIG_DRM=m
-> CONFIG_DRM_RADEON=m
-> CONFIG_FB=m
-> (+ some more FB stuff)
->
-> In this case it would have been nice to get an explanation that DRM_RADEON
-> was responsible for (wrongly, IMO) selecting FB. Something like
->
-> # CONFIG_FB was selected by CONFIG_DRM_RADEON
-> CONFIG_FB=m
->
-> These comments should only be emitted for options added by select that
-> previously were absent or 'is not set'.
+CMM2 and tmem are not any different in this regard; both require OS 
+modification, and both make information available to the hypervisor.  In 
+fact CMM2 is much more intrusive (but on the other hand provides much 
+more information).
 
-The conf system is not so smart to find the recent changes (you may
-try scripts/diffconfig to diff two .config),
+> For those that believe virtualization is a flash-in-
+> the-pan, no modifications to the OS is the right answer.
+> For those that believe it will be pervasive in the
+> future, finding the right balance is a critical step
+> in operating system evolution.
+>    
 
-Anyway, if you don't like CONFIG_FB and have no idea why it is
-selected, you can navigate to CONFIG_FB in
-menuconfig/gconfig/xconfig/config, and find out the real dependency
-reason from its help message,
+You're arguing for CMM2 here IMO.
 
+> Is it the tmem API or the precache/preswap API layered on
+> top of it that is problematic?  Both currently assume copying
+> but perhaps the precache/preswap API could, with minor
+> modifications, meet KVM's needs better?
 >
-> /Mikael
->
+>    
 
---
-Cheng Renquan (程任全), from Shenzhen, China
+My take on this is that precache (predecache?) / preswap can be 
+implemented even without tmem by using write-through backing for the 
+virtual disk.  For swap this is actually slight;y more efficient than 
+tmem preswap, for preuncache slightly less efficient (since there will 
+be some double caching).  So I'm more interested in other use cases of 
+tmem/CMM2.Well, first, tmem's very name means memory that is "beyond the
+> range of normal perception".  This is certainly not the first class
+> of memory in use in data centers that can't be accounted at
+> process granularity.  I'm thinking disk array caches as the
+> primary example.  Also lots of tools that work great in a
+> non-virtualized OS are worthless or misleading in a virtual
+> environment.
+>
+>    
+
+Right, the transient uses of tmem when applied to disk objects 
+(swap/pagecache) are very similar to disk caches.  Which is why you can 
+get a very similar effect when caching your virtual disks; this can be 
+done without any guest modification.
+
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
