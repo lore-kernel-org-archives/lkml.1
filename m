@@ -1,84 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZGLUsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbZGLUyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601AbZGLUsR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 16:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbZGLUsI
+	id S1754315AbZGLUyq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 16:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbZGLUyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 16:48:08 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49463 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbZGLUsH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 16:48:07 -0400
-Date: Sun, 12 Jul 2009 22:48:03 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: David Brownell <david-b@pacbell.net>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Lindgren <tony@atomide.com>, Russell King <rmk@arm.linux.org.uk>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH] move omap_udc's probe function to .devinit.text
-Message-ID: <20090712204803.GA27454@pengutronix.de>
-References: <20090711170548.GC5205@suse.de> <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-38-git-send-email-u.kleine-koenig@pengutronix.de> <200907111530.44736.david-b@pacbell.net>
+	Sun, 12 Jul 2009 16:54:35 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:32853 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751297AbZGLUyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 16:54:33 -0400
+Date: Sun, 12 Jul 2009 22:47:44 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: moinejf@free.fr, linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/media/video/gspca: Add kmalloc NULL tests
+Message-ID: <Pine.LNX.4.64.0907122247090.22658@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200907111530.44736.david-b@pacbell.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 11, 2009 at 03:30:44PM -0700, David Brownell wrote:
-> On Saturday 11 July 2009, Uwe Kleine-König wrote:
-> > An alternative to this patch is using platform_driver_probe instead of
-> > platform_driver_register plus removing the pointer to the probe function
-> > from the struct platform_driver.
-> 
-> Repeat -- NAK on this.  Use platform_driver_probe() instead.
-Oh, I just noticed that this patch is a relict.  The driver was changed
-to use platform_driver_probe in
-864e28b4f24106b799e991fa136fa6fa2b638a68.
+From: Julia Lawall <julia@diku.dk>
 
-As my old patch just applied anyhow I didn't notice that.
+Check that the result of kmalloc is not NULL before passing it to other
+functions.
 
-And I just found another similar problem.
-E.g. clevo_mail_led_probe is defined to live in .init.text and uses
-platform_driver_probe, but as it's referenced in the driver struct my
-script matched this file.
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-(Is it wrong (wrong as in "worth to be fixed") to reference the probe
-function in the driver struct when platform_driver_probe is used?  If so
-at least
+// <smpl>
+@@
+expression *x;
+identifier f;
+constant char *C;
+@@
 
-	drivers/serial/msm_serial.c
-	drivers/i2c/busses/i2c-imx.c
-
-are effected, too.  Patches at
-
-	http://news.gmane.org/find-root.php?group=gmane.linux.ports.arm.kernel&article=62319
-
+x = \(kmalloc\|kcalloc\|kzalloc\)(...);
+... when != x == NULL
+    when != x != NULL
+    when != (x || ...)
+(
+kfree(x)
+|
+f(...,C,...,x,...)
+|
+*f(...,x,...)
+|
+*x->f
 )
+// </smpl>
 
-The other patches are not affected.
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-@Greg:  Please just drop these two patches:
+---
+ drivers/media/video/gspca/conex.c   |    2 ++
+ drivers/media/video/gspca/mars.c    |    2 ++
+ drivers/media/video/gspca/sonixj.c  |    2 ++
+ drivers/media/video/gspca/spca500.c |    2 ++
+ drivers/media/video/gspca/stk014.c  |    2 ++
+ drivers/media/video/gspca/sunplus.c |    2 ++
+ drivers/media/video/gspca/zc3xx.c   |    2 ++
+ 7 files changed, 14 insertions(+)
 
-	[PATCH] move omap_udc's probe function to .devinit.text
-	[PATCH] move leds-clevo-mail's probe function to .devinit.text
-
-Sorry for the unconvenience.
-
-Best regards
-Uwe
-
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+diff --git a/drivers/media/video/gspca/conex.c b/drivers/media/video/gspca/conex.c
+index 219cfa6..8d48ea1 100644
+--- a/drivers/media/video/gspca/conex.c
++++ b/drivers/media/video/gspca/conex.c
+@@ -846,6 +846,8 @@ static int sd_start(struct gspca_dev *gspca_dev)
+ 
+ 	/* create the JPEG header */
+ 	sd->jpeg_hdr = kmalloc(JPEG_HDR_SZ, GFP_KERNEL);
++	if (!sd->jpeg_hdr)
++		return -ENOMEM;
+ 	jpeg_define(sd->jpeg_hdr, gspca_dev->height, gspca_dev->width,
+ 			0x22);		/* JPEG 411 */
+ 	jpeg_set_qual(sd->jpeg_hdr, sd->quality);
+diff --git a/drivers/media/video/gspca/mars.c b/drivers/media/video/gspca/mars.c
+index 75e8d14..de769ca 100644
+--- a/drivers/media/video/gspca/mars.c
++++ b/drivers/media/video/gspca/mars.c
+@@ -201,6 +201,8 @@ static int sd_start(struct gspca_dev *gspca_dev)
+ 
+ 	/* create the JPEG header */
+ 	sd->jpeg_hdr = kmalloc(JPEG_HDR_SZ, GFP_KERNEL);
++	if (!sd->jpeg_hdr)
++		return -ENOMEM;
+ 	jpeg_define(sd->jpeg_hdr, gspca_dev->height, gspca_dev->width,
+ 			0x21);		/* JPEG 422 */
+ 	jpeg_set_qual(sd->jpeg_hdr, sd->quality);
+diff --git a/drivers/media/video/gspca/sonixj.c b/drivers/media/video/gspca/sonixj.c
+index 0d02f41..db425cc 100644
+--- a/drivers/media/video/gspca/sonixj.c
++++ b/drivers/media/video/gspca/sonixj.c
+@@ -1735,6 +1735,8 @@ static int sd_start(struct gspca_dev *gspca_dev)
+ 
+ 	/* create the JPEG header */
+ 	sd->jpeg_hdr = kmalloc(JPEG_HDR_SZ, GFP_KERNEL);
++	if (!sd->jpeg_hdr)
++		return -ENOMEM;
+ 	jpeg_define(sd->jpeg_hdr, gspca_dev->height, gspca_dev->width,
+ 			0x21);		/* JPEG 422 */
+ 	jpeg_set_qual(sd->jpeg_hdr, sd->quality);
+diff --git a/drivers/media/video/gspca/spca500.c b/drivers/media/video/gspca/spca500.c
+index 8806b2f..fab7ef8 100644
+--- a/drivers/media/video/gspca/spca500.c
++++ b/drivers/media/video/gspca/spca500.c
+@@ -670,6 +670,8 @@ static int sd_start(struct gspca_dev *gspca_dev)
+ 
+ 	/* create the JPEG header */
+ 	sd->jpeg_hdr = kmalloc(JPEG_HDR_SZ, GFP_KERNEL);
++	if (!sd->jpeg_hdr)
++		return -ENOMEM;
+ 	jpeg_define(sd->jpeg_hdr, gspca_dev->height, gspca_dev->width,
+ 			0x22);		/* JPEG 411 */
+ 	jpeg_set_qual(sd->jpeg_hdr, sd->quality);
+diff --git a/drivers/media/video/gspca/stk014.c b/drivers/media/video/gspca/stk014.c
+index f25be20..4762896 100644
+--- a/drivers/media/video/gspca/stk014.c
++++ b/drivers/media/video/gspca/stk014.c
+@@ -333,6 +333,8 @@ static int sd_start(struct gspca_dev *gspca_dev)
+ 
+ 	/* create the JPEG header */
+ 	sd->jpeg_hdr = kmalloc(JPEG_HDR_SZ, GFP_KERNEL);
++	if (!sd->jpeg_hdr)
++		return -ENOMEM;
+ 	jpeg_define(sd->jpeg_hdr, gspca_dev->height, gspca_dev->width,
+ 			0x22);		/* JPEG 411 */
+ 	jpeg_set_qual(sd->jpeg_hdr, sd->quality);
+diff --git a/drivers/media/video/gspca/sunplus.c b/drivers/media/video/gspca/sunplus.c
+index 9623f29..5127bbf 100644
+--- a/drivers/media/video/gspca/sunplus.c
++++ b/drivers/media/video/gspca/sunplus.c
+@@ -973,6 +973,8 @@ static int sd_start(struct gspca_dev *gspca_dev)
+ 
+ 	/* create the JPEG header */
+ 	sd->jpeg_hdr = kmalloc(JPEG_HDR_SZ, GFP_KERNEL);
++	if (!sd->jpeg_hdr)
++		return -ENOMEM;
+ 	jpeg_define(sd->jpeg_hdr, gspca_dev->height, gspca_dev->width,
+ 			0x22);		/* JPEG 411 */
+ 	jpeg_set_qual(sd->jpeg_hdr, sd->quality);
+diff --git a/drivers/media/video/gspca/zc3xx.c b/drivers/media/video/gspca/zc3xx.c
+index 08422d3..3d2756f 100644
+--- a/drivers/media/video/gspca/zc3xx.c
++++ b/drivers/media/video/gspca/zc3xx.c
+@@ -7243,6 +7243,8 @@ static int sd_start(struct gspca_dev *gspca_dev)
+ 
+ 	/* create the JPEG header */
+ 	sd->jpeg_hdr = kmalloc(JPEG_HDR_SZ, GFP_KERNEL);
++	if (!sd->jpeg_hdr)
++		return -ENOMEM;
+ 	jpeg_define(sd->jpeg_hdr, gspca_dev->height, gspca_dev->width,
+ 			0x21);		/* JPEG 422 */
+ 	jpeg_set_qual(sd->jpeg_hdr, sd->quality);
