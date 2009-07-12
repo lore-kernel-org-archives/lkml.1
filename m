@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbZGLJyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbZGLJ6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbZGLJyK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 05:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZGLJxw
+	id S1754137AbZGLJ6p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 05:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbZGLJ6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 05:53:52 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:5125
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751602AbZGLJxv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 05:53:51 -0400
-Message-ID: <4A59B2AB.9010900@panasas.com>
-Date: Sun, 12 Jul 2009 12:53:47 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Sun, 12 Jul 2009 05:58:37 -0400
+Received: from ozlabs.org ([203.10.76.45]:37748 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751628AbZGLJ6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 05:58:36 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
+Date: Sun, 12 Jul 2009 19:28:27 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Siarhei Liakh <sliakh.lkml@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-cris-kernel@axis.com
+References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com> <200907121410.39874.rusty@rustcorp.com.au> <20090712004524.2f0c4e57@infradead.org>
+In-Reply-To: <20090712004524.2f0c4e57@infradead.org>
 MIME-Version: 1.0
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-CC: Al Viro <viro@ZenIV.linux.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH v3 04/18] EXOFS: do not manipulate s_dirt directly
-References: <20090709084822.12122.79749.sendpatchset@localhost.localdomain> <20090709084849.12122.23929.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090709084849.12122.23929.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jul 2009 09:53:49.0717 (UTC) FILETIME=[A7EE9C50:01CA02D6]
+Content-Disposition: inline
+Message-Id: <200907121928.28887.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/09/2009 11:48 AM, Artem Bityutskiy wrote:
-> ... use new VFS helpers instead.
-> 
-> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> Acked-by: Boaz Harrosh <bharrosh@panasas.com>
+On Sun, 12 Jul 2009 05:15:24 pm Arjan van de Ven wrote:
+> Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > (I like the idea of trying kmalloc and falling back, simply because
+> > it reduces TLB pressure, but that's probably best done after
+> > unification).
+>
+> or using a non-power-of-two get_free_pages() thing...
+>
+> some architectures will need to know that memory needs to be executable
+> at allocation time so that it can be put in an executable address range
+> etc...
 
-Hi Artem.
+Yes, maybe that's better than kmalloc.  On my laptop I have 105 modules 
+loaded, with 3778464 total length: I'm wasting 206944 bytes on unused tails of 
+pages.  But that's only 0.06% of my memory.
 
-Linus has pulled the exofs tree for 2.6.31-rc3 if you sync
-with it you'll find one more simple call site for is_sb_dirty(sb).
-(See below)
-
-Thanks
-Boaz
-
----
-git diff --stat -p fs/exofs/file.c
- fs/exofs/file.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/exofs/file.c b/fs/exofs/file.c
-index 839b9dc..be38834 100644
---- a/fs/exofs/file.c
-+++ b/fs/exofs/file.c
-@@ -58,7 +58,7 @@ static int exofs_file_fsync(struct file *filp, struct dentry *dentry,
- 	/* This is a good place to write the sb */
- 	/* TODO: Sechedule an sb-sync on create */
- 	sb = inode->i_sb;
--	if (sb->s_dirt)
-+	if (is_sb_dirty(sb))
- 		exofs_sync_fs(sb, 1);
- 
- 	return ret;
+Thanks,
+Rusty.
