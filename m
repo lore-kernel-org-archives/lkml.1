@@ -1,135 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZGLUNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZGLUOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbZGLUNN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 16:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbZGLUM7
+	id S1754391AbZGLUOa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 16:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbZGLUOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 16:12:59 -0400
-Received: from ns1.siteground211.com ([209.62.36.12]:42454 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752170AbZGLUM7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 16:12:59 -0400
-Date: Sun, 12 Jul 2009 23:12:53 +0300
-From: Felipe Balbi <me@felipebalbi.com>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [rfc/patch 14/15] power: bq27200: add time to empty/full
-Message-ID: <20090712201252.GB11865@gandalf>
-Reply-To: me@felipebalbi.com
-References: <1247422177-7329-5-git-send-email-me@felipebalbi.com> <1247422177-7329-6-git-send-email-me@felipebalbi.com> <1247422177-7329-7-git-send-email-me@felipebalbi.com> <1247422177-7329-8-git-send-email-me@felipebalbi.com> <1247422177-7329-9-git-send-email-me@felipebalbi.com> <1247422177-7329-10-git-send-email-me@felipebalbi.com> <1247422177-7329-11-git-send-email-me@felipebalbi.com> <1247422177-7329-12-git-send-email-me@felipebalbi.com> <1247422177-7329-13-git-send-email-me@felipebalbi.com> <1247422177-7329-14-git-send-email-me@felipebalbi.com>
+	Sun, 12 Jul 2009 16:14:22 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:58866 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751241AbZGLUOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 16:14:21 -0400
+Date: Sun, 12 Jul 2009 22:05:03 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: isdn@linux-pingi.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/5] drivers/isdn: Drop unnecessary NULL test
+Message-ID: <Pine.LNX.4.64.0907122204140.22658@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="UFHRwCdBEJvubb2X"
-Content-Disposition: inline
-In-Reply-To: <1247422177-7329-14-git-send-email-me@felipebalbi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Julia Lawall <julia@diku.dk>
 
---UFHRwCdBEJvubb2X
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The result of container_of should not be NULL.  In particular, in this case
+the argument to the enclosing function has passed though INIT_WORK, which
+dereferences it, implying that its container cannot be NULL.
 
-Hi,
+A simplified version of the semantic patch that makes this change is as
+follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-On Sun, Jul 12, 2009 at 09:09:36PM +0300, Felipe Balbi wrote:
-> @@ -207,6 +235,13 @@ static int bq27200_get_property(struct power_supply *psy,
->  		break;
->  	case POWER_SUPPLY_PROP_POWER_AVG:
->  		val->intval = bq27200_power(bq);
-> +		break;
+// <smpl>
+@@
+identifier fn,work,x,fld;
+type T;
+expression E1,E2;
+statement S;
+@@
 
-this break doesn't belong here. Updated patch attached.
+static fn(struct work_struct *work) {
+  ... when != work = E1
+  x = container_of(work,T,fld)
+  ... when != x = E2
+- if (x == NULL) S
+  ...
+}
+// </smpl>
 
--- 
-balbi
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
---UFHRwCdBEJvubb2X
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="0014-power-bq27200-add-time-to-empty-full.diff"
-
->From 6b84f9b12f449df2131bf446f4f1e1f12148ef2f Mon Sep 17 00:00:00 2001
-From: Felipe Balbi <me@felipebalbi.com>
-Date: Wed, 8 Jul 2009 13:45:02 +0300
-Subject: [PATCH 14/15] power: bq27200: add time to empty/full
-
-the chip reports time to empty and time to full
-in minutes, so we multiply the result by 60 to get
-it in seconds as requested by power_supply interface.
-
-Signed-off-by: Felipe Balbi <me@felipebalbi.com>
 ---
- drivers/power/bq27200_battery.c |   34 ++++++++++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
+ drivers/isdn/hisax/amd7930_fn.c |    2 --
+ drivers/isdn/hisax/hfc_pci.c    |    2 --
+ drivers/isdn/hisax/hfc_sx.c     |    2 --
+ drivers/isdn/hisax/icc.c        |    2 --
+ drivers/isdn/hisax/isac.c       |    2 --
+ drivers/isdn/hisax/w6692.c      |    2 --
+ 6 files changed, 12 deletions(-)
 
-diff --git a/drivers/power/bq27200_battery.c b/drivers/power/bq27200_battery.c
-index 442d81a..26ef2be 100644
---- a/drivers/power/bq27200_battery.c
-+++ b/drivers/power/bq27200_battery.c
-@@ -75,6 +75,8 @@ static enum power_supply_property bq27200_props[] = {
- 	POWER_SUPPLY_PROP_CAPACITY,
- 	POWER_SUPPLY_PROP_TEMP,
- 	POWER_SUPPLY_PROP_POWER_AVG,
-+	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
-+	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
- };
+diff --git a/drivers/isdn/hisax/amd7930_fn.c b/drivers/isdn/hisax/amd7930_fn.c
+index 341faf5..bf526a7 100644
+--- a/drivers/isdn/hisax/amd7930_fn.c
++++ b/drivers/isdn/hisax/amd7930_fn.c
+@@ -238,8 +238,6 @@ Amd7930_bh(struct work_struct *work)
+ 		container_of(work, struct IsdnCardState, tqueue);
+         struct PStack *stptr;
  
- /*
-@@ -181,6 +183,32 @@ static int bq27200_power(struct bq27200 *bq)
- 	return (ret * BQ27200_POWER_CONSTANT) / BQ27200_SENSING_RESISTOR;
- }
+-	if (!cs)
+-		return;
+ 	if (test_and_clear_bit(D_CLEARBUSY, &cs->event)) {
+                 if (cs->debug)
+ 			debugl1(cs, "Amd7930: bh, D-Channel Busy cleared");
+diff --git a/drivers/isdn/hisax/hfc_pci.c b/drivers/isdn/hisax/hfc_pci.c
+index 3d337d9..d110a77 100644
+--- a/drivers/isdn/hisax/hfc_pci.c
++++ b/drivers/isdn/hisax/hfc_pci.c
+@@ -1506,8 +1506,6 @@ hfcpci_bh(struct work_struct *work)
+ 	u_long	flags;
+ //      struct PStack *stptr;
  
-+static int bq27200_time_to_empty(struct bq27200 *bq)
-+{
-+	int ret;
-+
-+	ret = bq27200_readw(bq, BQ27200_REG_TTE);
-+	if (ret < 0) {
-+		dev_err(&bq->client->dev, "error reading time to empty\n");
-+		return ret;
-+	}
-+
-+	return ret * 60;
-+}
-+
-+static int bq27200_time_to_full(struct bq27200 *bq)
-+{
-+	int ret;
-+
-+	ret = bq27200_readw(bq, BQ27200_REG_TTF);
-+	if (ret < 0) {
-+		dev_err(&bq->client->dev, "error reading time to full\n");
-+		return ret;
-+	}
-+
-+	return ret * 60;
-+}
-+
- static int bq27200_get_property(struct power_supply *psy,
- 		enum power_supply_property psp, union power_supply_propval *val)
- {
-@@ -208,6 +236,12 @@ static int bq27200_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_POWER_AVG:
- 		val->intval = bq27200_power(bq);
- 		break;
-+	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
-+		val->intval = bq27200_time_to_empty(bq);
-+		break;
-+	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
-+		val->intval = bq27200_time_to_full(bq);
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
--- 
-1.6.4.rc0.17.gd9eb0
-
-
---UFHRwCdBEJvubb2X--
+-	if (!cs)
+-		return;
+ 	if (test_and_clear_bit(D_L1STATECHANGE, &cs->event)) {
+ 		if (!cs->hw.hfcpci.nt_mode)
+ 			switch (cs->dc.hfcpci.ph_state) {
+diff --git a/drivers/isdn/hisax/hfc_sx.c b/drivers/isdn/hisax/hfc_sx.c
+index d92e8d6..419f87c 100644
+--- a/drivers/isdn/hisax/hfc_sx.c
++++ b/drivers/isdn/hisax/hfc_sx.c
+@@ -1255,8 +1255,6 @@ hfcsx_bh(struct work_struct *work)
+ 		container_of(work, struct IsdnCardState, tqueue);
+ 	u_long flags;
+ 
+-	if (!cs)
+-		return;
+ 	if (test_and_clear_bit(D_L1STATECHANGE, &cs->event)) {
+ 		if (!cs->hw.hfcsx.nt_mode)
+ 			switch (cs->dc.hfcsx.ph_state) {
+diff --git a/drivers/isdn/hisax/icc.c b/drivers/isdn/hisax/icc.c
+index 682cac3..9aba646 100644
+--- a/drivers/isdn/hisax/icc.c
++++ b/drivers/isdn/hisax/icc.c
+@@ -83,8 +83,6 @@ icc_bh(struct work_struct *work)
+ 		container_of(work, struct IsdnCardState, tqueue);
+ 	struct PStack *stptr;
+ 	
+-	if (!cs)
+-		return;
+ 	if (test_and_clear_bit(D_CLEARBUSY, &cs->event)) {
+ 		if (cs->debug)
+ 			debugl1(cs, "D-Channel Busy cleared");
+diff --git a/drivers/isdn/hisax/isac.c b/drivers/isdn/hisax/isac.c
+index 07b1673..a19354d 100644
+--- a/drivers/isdn/hisax/isac.c
++++ b/drivers/isdn/hisax/isac.c
+@@ -86,8 +86,6 @@ isac_bh(struct work_struct *work)
+ 		container_of(work, struct IsdnCardState, tqueue);
+ 	struct PStack *stptr;
+ 	
+-	if (!cs)
+-		return;
+ 	if (test_and_clear_bit(D_CLEARBUSY, &cs->event)) {
+ 		if (cs->debug)
+ 			debugl1(cs, "D-Channel Busy cleared");
+diff --git a/drivers/isdn/hisax/w6692.c b/drivers/isdn/hisax/w6692.c
+index bb1c8dd..c4d862c 100644
+--- a/drivers/isdn/hisax/w6692.c
++++ b/drivers/isdn/hisax/w6692.c
+@@ -105,8 +105,6 @@ W6692_bh(struct work_struct *work)
+ 		container_of(work, struct IsdnCardState, tqueue);
+ 	struct PStack *stptr;
+ 
+-	if (!cs)
+-		return;
+ 	if (test_and_clear_bit(D_CLEARBUSY, &cs->event)) {
+ 		if (cs->debug)
+ 			debugl1(cs, "D-Channel Busy cleared");
