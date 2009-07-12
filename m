@@ -1,94 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbZGLR6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZGLR7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755010AbZGLR6m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 13:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbZGLR6d
+	id S1754804AbZGLR7w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 13:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZGLR7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 13:58:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42299 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754155AbZGLR6c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 13:58:32 -0400
-Date: Sun, 12 Jul 2009 10:58:21 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Frans Pop <elendil@planet.nl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
-       barryn@pobox.com, bugme-daemon@bugzilla.kernel.org,
-       Ian Lance Taylor <iant@google.com>
-Subject: Re: [Bug 13012] 2.6.28.9 causes init to segfault on Debian etch;
- 2.6.28.8 OK
-In-Reply-To: <200907101659.31813.elendil@planet.nl>
-Message-ID: <alpine.LFD.2.01.0907121058040.3552@localhost.localdomain>
-References: <200907100928.07369.elendil@planet.nl> <200907101659.31813.elendil@planet.nl>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sun, 12 Jul 2009 13:59:44 -0400
+Received: from eta-ori.net ([91.121.142.51]:59712 "EHLO orion.eta-ori.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754322AbZGLR7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 13:59:44 -0400
+Message-ID: <4A5A248B.1070606@impulze.org>
+Date: Sun, 12 Jul 2009 19:59:39 +0200
+From: Daniel Mierswa <impulze@impulze.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090628)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Re: Parsing kernel parameters and escaping "
+References: <4A50B09B.9030901@impulze.org> <4A5282B4.8070302@impulze.org> <4A529CBA.4030408@impulze.org> <200907121911.58333.rusty@rustcorp.com.au>
+In-Reply-To: <200907121911.58333.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------050008090408070104050009"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------050008090408070104050009
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
+Rusty Russell wrote:
+>    Yes, we've never had the ability to escape quotes (and you're the first to
+> ask), so when I wrote this code I kept it simple.  You can have spaced out
+> values, but you need to quote the whole thing "param=some value with spaces".
+True, but that would leave quotes where they are instead of removing them.
 
-On Fri, 10 Jul 2009, Frans Pop wrote:
+>    We have to be careful not to break existing cmdlines tho: I don't know
+> if anyone uses \ currently, but simply interpreting \" is probably safe.
+Yes, the only way that compatibility seems to break is that now \" in a quoted
+string is replaced by a single ".
+
+> add_token is a weird name for this.  It actually mangles the argument, and it
+> really should return the char *.
+Fixed.
+
+> How about something like:
+> 	static unsigned int pull_token(char *args, const char *delim)
+Fixed.
+
+> Which unescapes and returns the length of the token, or zero if it simply
+> swallowed delimeters?  Assuming it always nul terminates, then the caller can
+> simply do:
+> [...]
+Fixed.
+
+> Important cases to test are:
+> 	x			param = "x", val = NULL
+> 	x=			param = "x", val = ""
+> 	x=y=1		param = "x", val = "y=1"
 > 
-> Prompted by the same suggestion from Ben Hutchings I checked this too, 
-> but -fno-strict-overflow was only introduced in gcc 4.2.
-> So using it instead of -fwrapv *would* fix the problem for gcc 4.1, but 
-> *only* because it would effectively do the same as the patch I proposed: 
-> not add an option at all for gcc 4.1.
-> 
-> So that change seems illogical unless there are other reasons to 
-> prefer -fno-strict-overflow over -fwrapv (well, it would avoid the
-> gcc version check).
->
-> It does however make it somewhat more logical to change the test in my 
-> proposed patch to also allow -fwrapv for gcc 4.2.
+> Plus all variations where x and y contain quotes.
+Tested:
 
-Hmm. It all really makes me suspect that we should really be using
--fno-strict-overflow instead.
+|param| => [param[(none)]]
+|param=| => [param[]]
+|param=value| => [param[value]]
+|param=value=withequal | => [param[value=withequal]]
+|param="value with spaces" | => [param[value with spaces]]
+|param="value with spaces and quotes \"" | => [param[value with spaces and quotes "]]
+|param=\"foo\" | => [param[\"foo" ]]
+|"param = value" | => [param = value[(none)]]
 
-That not only apparently avoids the unnecessary gcc version check (by 
-virtue of the option only existing in compilers that don't have the 
-problem), but qutie frankly, one of the core people involved with the 
-whole thing (Ian Lance Taylor) seems to think it's the better option.
+> Cheers,
+> Rusty.
 
-See for example
+Thanks for your kind feedback, I'm willing to put more effort into this when needed. I really
+first wanted to check if patches for this are welcomed.
 
-	http://www.airs.com/blog/archives/120
+-- 
+Mierswa, Daniel
 
-on how gcc actually generates better code with -fno-strict-overflow.
+If you still don't like it, that's ok: that's why I'm boss. I simply know better than you do.
+               --- Linus Torvalds, comp.os.linux.advocacy, 1996/07/22
 
-I added Ian to the cc.
+--------------050008090408070104050009
+Content-Type: text/plain;
+ name="kernel2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="kernel2.patch"
 
-Ian: we generally do try to be careful and use explicit unsigned types for 
-code that cares about overflow, but we use -fwrapv because there have been 
-some cases where we didn't (and used pointer comparisons or signed 
-integers).
+>From 21402346a295eb539a111b777ee54f3dd5263b6f Mon Sep 17 00:00:00 2001
+From: Daniel Mierswa <impulze@impulze.org>
+Date: Tue, 7 Jul 2009 00:54:38 +0200
+Subject: [PATCH] Attempt to handle quotes in kernel parameters
 
-The problem is that apparently gcc-4.1.x was literally generating buggy 
-code with -fwrapv. So now the choice for us is between switching to an 
-explicit version test:
+There was a limitation for kernel parameters with regards to quoting. It
+wasn't possible to escape quotes or use quotes to form space-filled
+values _inside_ parameters. This patch attempts to make that possible,
+kernel parameters are now parsed as follows:
+'"param= value"' [param= value][]
+'param=" value "" combination "' [param][ value  combination ]
+'param=" \" test"' [param][ " test]
+'"param"=another' [param][another]
 
-	-KBUILD_CFLAGS  += $(call cc-option,-fwrapv)
-	+KBUILD_CFLAGS  += $(shell if [ $(call cc-version) -ge 0402 ]; then \
-	+                   echo $(call cc-option,-fwrapv); fi ;)
+Signed-off-by: Daniel Mierswa <impulze@impulze.org>
+---
+ kernel/params.c |  128 +++++++++++++++++++++++++++++++++++--------------------
+ 1 files changed, 82 insertions(+), 46 deletions(-)
 
-or just switching to -fno-strict-overflow instead:
+diff --git a/kernel/params.c b/kernel/params.c
+index 7f6912c..5f9709d 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -72,58 +72,98 @@ static int parse_one(char *param,
+ 	return -ENOENT;
+ }
+ 
+-/* You can use " around spaces, but can't escape ". */
+-/* Hyphens and underscores equivalent in parameter names. */
+-static char *next_arg(char *args, char **param, char **val)
++/* modifies args with handled quotes
++ * [" foo bar "] => [ foo bar ]
++ * [" foo \" "]  => [ foo " ]
++ * [\"foo]       => [\"foo]
++ * [\"foo\" ]    => [\"foo" ]
++ */
++static size_t pull_token(char *args, char const *delim)
+ {
+-	unsigned int i, equals = 0;
+-	int in_quote = 0, quoted = 0;
+-	char *next;
++	size_t length = 0;
++	char *iterator = NULL, *last_quote = NULL;
++
++	for (iterator = args; *iterator; iterator++, length++) {
++		if (*iterator == '"') {
++			if (last_quote) {
++				char *mover = last_quote;
++
++				/* move whole string back until current " is reached */
++				while (mover != iterator - 1) {
++					*mover = *(mover + 1);
++					mover++;
++				}
++
++				/* ignore the current " and move the rest of the string back */
++				while (*mover) {
++					*mover = *(mover + 2);
++					mover++;
++				}
++
++				/* ignored 2 quotes, decrease the iterator and length */
++				length -= 2;
++				iterator -= 2;
++				last_quote = NULL;
++			} else {
++				last_quote = iterator;
++			}
+ 
+-	if (*args == '"') {
+-		args++;
+-		in_quote = 1;
+-		quoted = 1;
+-	}
++			continue;
++		}
+ 
+-	for (i = 0; args[i]; i++) {
+-		if (args[i] == ' ' && !in_quote)
+-			break;
+-		if (equals == 0) {
+-			if (args[i] == '=')
+-				equals = i;
++		if (last_quote) {
++			/* escaped quote */
++			if (*iterator == '\\' && *(iterator + 1) == '"') {
++				char *mover = NULL;
++
++				/* move all characters back */
++				for (mover = iterator; *mover; mover++) {
++					*mover = *(mover + 1);
++				}
++			}
++
++			continue;
++		}
++
++		{
++			/* check for delimiter */
++			char const *delim_iterator = NULL;
++			for (delim_iterator = delim; *delim_iterator; delim_iterator++) {
++				if (*iterator == *delim_iterator) {
++					return length;
++				}
++			}
+ 		}
+-		if (args[i] == '"')
+-			in_quote = !in_quote;
+ 	}
+ 
++	return length;
++}
++
++static char *next_arg(char *args, char **param, char **val)
++{
++	size_t len;
++
++	/* Chew leading spaces */
++	while (*args == ' ')
++		args++;
++
++	len = pull_token(args, " \t\n=");
+ 	*param = args;
+-	if (!equals)
++	args += len;
++
++	if (*args == '=') {
++		(*param)[len] = '\0';
++		args++;
++		len = pull_token(args, " \t\n");
++		*val = args;
++		args += len;
++		(*val)[len] = '\0';
++	} else {
++		(*param)[len] = '\0';
+ 		*val = NULL;
+-	else {
+-		args[equals] = '\0';
+-		*val = args + equals + 1;
+-
+-		/* Don't include quotes in value. */
+-		if (**val == '"') {
+-			(*val)++;
+-			if (args[i-1] == '"')
+-				args[i-1] = '\0';
+-		}
+-		if (quoted && args[i-1] == '"')
+-			args[i-1] = '\0';
+ 	}
+ 
+-	if (args[i]) {
+-		args[i] = '\0';
+-		next = args + i + 1;
+-	} else
+-		next = args + i;
+-
+-	/* Chew up trailing spaces. */
+-	while (*next == ' ')
+-		next++;
+-	return next;
++	return args + 1;
+ }
+ 
+ /* Args looks like "foo=bar,bar2 baz=fuz wiz". */
+@@ -137,10 +177,6 @@ int parse_args(const char *name,
+ 
+ 	DEBUGP("Parsing ARGS: %s\n", args);
+ 
+-	/* Chew leading spaces */
+-	while (*args == ' ')
+-		args++;
+-
+ 	while (*args) {
+ 		int ret;
+ 		int irq_was_disabled;
+-- 
+1.6.3.3
 
-	-KBUILD_CFLAGS  += $(call cc-option,-fwrapv)
-	+KBUILD_CFLAGS  += $(call cc-option,-fno-strict-overflow)
 
-which avoids the buggy gcc versions because it's simply not even supported 
-by gcc-4.1.x (and even if that wasn't the case, possibly because only 
-'wrapv' is the problematic case - apparently the difference _does_ 
-matter to gcc).
-
->From everything I have been able to find, I really prefer the second 
-version. Not only is the patch cleaner, but it looks like code generation 
-is better too (for some inexplicable reason, but I suspect it's because 
--fno-strict-overflow is just saner).
-
-		Linus
+--------------050008090408070104050009--
