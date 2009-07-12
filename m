@@ -1,69 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZGLReV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbZGLR6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbZGLReV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 13:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbZGLReL
+	id S1755010AbZGLR6m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 13:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbZGLR6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 13:34:11 -0400
-Received: from kroah.org ([198.145.64.141]:45834 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754403AbZGLReK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 13:34:10 -0400
-Date: Sun, 12 Jul 2009 10:33:29 -0700
-From: Greg KH <greg@kroah.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-cris-kernel@axis.com
-Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
-Message-ID: <20090712173329.GB12054@kroah.com>
-References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com>
- <200907121410.39874.rusty@rustcorp.com.au>
- <20090712004524.2f0c4e57@infradead.org>
- <200907121928.28887.rusty@rustcorp.com.au>
- <20090712083227.39939849@infradead.org>
+	Sun, 12 Jul 2009 13:58:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42299 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754155AbZGLR6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 13:58:32 -0400
+Date: Sun, 12 Jul 2009 10:58:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Frans Pop <elendil@planet.nl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
+       barryn@pobox.com, bugme-daemon@bugzilla.kernel.org,
+       Ian Lance Taylor <iant@google.com>
+Subject: Re: [Bug 13012] 2.6.28.9 causes init to segfault on Debian etch;
+ 2.6.28.8 OK
+In-Reply-To: <200907101659.31813.elendil@planet.nl>
+Message-ID: <alpine.LFD.2.01.0907121058040.3552@localhost.localdomain>
+References: <200907100928.07369.elendil@planet.nl> <200907101659.31813.elendil@planet.nl>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090712083227.39939849@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 12, 2009 at 08:32:27AM -0700, Arjan van de Ven wrote:
-> On Sun, 12 Jul 2009 19:28:27 +0930
-> Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+
+On Fri, 10 Jul 2009, Frans Pop wrote:
 > 
-> > On Sun, 12 Jul 2009 05:15:24 pm Arjan van de Ven wrote:
-> > > Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > > > (I like the idea of trying kmalloc and falling back, simply
-> > > > because it reduces TLB pressure, but that's probably best done
-> > > > after unification).
-> > >
-> > > or using a non-power-of-two get_free_pages() thing...
-> > >
-> > > some architectures will need to know that memory needs to be
-> > > executable at allocation time so that it can be put in an
-> > > executable address range etc...
-> > 
-> > Yes, maybe that's better than kmalloc.  On my laptop I have 105
-> > modules loaded, with 3778464 total length: I'm wasting 206944 bytes
-> > on unused tails of pages.  But that's only 0.06% of my memory.
-> >
+> Prompted by the same suggestion from Ben Hutchings I checked this too, 
+> but -fno-strict-overflow was only introduced in gcc 4.2.
+> So using it instead of -fwrapv *would* fix the problem for gcc 4.1, but 
+> *only* because it would effectively do the same as the patch I proposed: 
+> not add an option at all for gcc 4.1.
 > 
-> 105 is also a sign that you picked a somewhat suboptimal config...
-> that's of course your choice but it's a choice that has a small price,
-> if you don't want to pay that price, changing the config to not be
-> entirely insane is a good answer as well ;-)
+> So that change seems illogical unless there are other reasons to 
+> prefer -fno-strict-overflow over -fwrapv (well, it would avoid the
+> gcc version check).
+>
+> It does however make it somewhat more logical to change the test in my 
+> proposed patch to also allow -fwrapv for gcc 4.2.
 
-But this is the "common" case in the world of Linux where the distros
-are forced to build everything as modules.  So it should be considered
-as a very valid case, and not merely dismissed out of hand.
+Hmm. It all really makes me suspect that we should really be using
+-fno-strict-overflow instead.
 
-thanks,
+That not only apparently avoids the unnecessary gcc version check (by 
+virtue of the option only existing in compilers that don't have the 
+problem), but qutie frankly, one of the core people involved with the 
+whole thing (Ian Lance Taylor) seems to think it's the better option.
 
-greg k-h
+See for example
+
+	http://www.airs.com/blog/archives/120
+
+on how gcc actually generates better code with -fno-strict-overflow.
+
+I added Ian to the cc.
+
+Ian: we generally do try to be careful and use explicit unsigned types for 
+code that cares about overflow, but we use -fwrapv because there have been 
+some cases where we didn't (and used pointer comparisons or signed 
+integers).
+
+The problem is that apparently gcc-4.1.x was literally generating buggy 
+code with -fwrapv. So now the choice for us is between switching to an 
+explicit version test:
+
+	-KBUILD_CFLAGS  += $(call cc-option,-fwrapv)
+	+KBUILD_CFLAGS  += $(shell if [ $(call cc-version) -ge 0402 ]; then \
+	+                   echo $(call cc-option,-fwrapv); fi ;)
+
+or just switching to -fno-strict-overflow instead:
+
+	-KBUILD_CFLAGS  += $(call cc-option,-fwrapv)
+	+KBUILD_CFLAGS  += $(call cc-option,-fno-strict-overflow)
+
+which avoids the buggy gcc versions because it's simply not even supported 
+by gcc-4.1.x (and even if that wasn't the case, possibly because only 
+'wrapv' is the problematic case - apparently the difference _does_ 
+matter to gcc).
+
+>From everything I have been able to find, I really prefer the second 
+version. Not only is the patch cleaner, but it looks like code generation 
+is better too (for some inexplicable reason, but I suspect it's because 
+-fno-strict-overflow is just saner).
+
+		Linus
