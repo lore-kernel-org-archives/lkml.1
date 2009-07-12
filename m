@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZGLUOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZGLUPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbZGLUOt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 16:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbZGLUOh
+	id S1754769AbZGLUPG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 16:15:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbZGLUOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 16:14:37 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:58964 "EHLO mgw2.diku.dk"
+	Sun, 12 Jul 2009 16:14:55 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:59064 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752170AbZGLUOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 16:14:36 -0400
-Date: Sun, 12 Jul 2009 22:05:33 +0200 (CEST)
+	id S1753251AbZGLUOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 16:14:54 -0400
+Date: Sun, 12 Jul 2009 22:06:00 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: yi.zhu@intel.com, jketreno@linux.intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
+To: samuel@sortiz.org, irda-users@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/5] drivers/net: Drop unnecessary NULL test
-Message-ID: <Pine.LNX.4.64.0907122205060.22658@ask.diku.dk>
+Subject: [PATCH 5/5] net/irda: Drop unnecessary NULL test
+Message-ID: <Pine.LNX.4.64.0907122205340.22658@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -52,20 +51,19 @@ static fn(struct work_struct *work) {
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/wireless/ipw2x00/ipw2200.c         |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ net/irda/irnet/irnet_irda.c         |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c b/drivers/net/wireless/ipw2x00/ipw2200.c
-index d726b3c..2dc1cdb 100644
---- a/drivers/net/wireless/ipw2x00/ipw2200.c
-+++ b/drivers/net/wireless/ipw2x00/ipw2200.c
-@@ -7250,9 +7250,6 @@ static void ipw_bg_qos_activate(struct work_struct *work)
- 	struct ipw_priv *priv =
- 		container_of(work, struct ipw_priv, qos_activate);
+diff --git a/net/irda/irnet/irnet_irda.c b/net/irda/irnet/irnet_irda.c
+index cf9a4b5..49ed80d 100644
+--- a/net/irda/irnet/irnet_irda.c
++++ b/net/irda/irnet/irnet_irda.c
+@@ -21,8 +21,6 @@ static void irnet_ppp_disconnect(struct work_struct *work)
+ 	irnet_socket * self =
+ 		container_of(work, irnet_socket, disconnect_work);
  
--	if (priv == NULL)
+-	if (self == NULL)
 -		return;
--
- 	mutex_lock(&priv->mutex);
- 
- 	if (priv->status & STATUS_ASSOCIATED)
+ 	/*
+ 	 * If we were connected, cleanup & close the PPP
+ 	 * channel, which will kill pppd (hangup) and the rest.
