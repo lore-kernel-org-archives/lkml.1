@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbZGLK63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbZGLLEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752193AbZGLK63 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 06:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbZGLK6V
+	id S1753302AbZGLLEW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 07:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbZGLLEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 06:58:21 -0400
-Received: from ey-out-1920.google.com ([74.125.78.144]:52320 "EHLO
+	Sun, 12 Jul 2009 07:04:14 -0400
+Received: from ey-out-1920.google.com ([74.125.78.145]:62575 "EHLO
 	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbZGLK6V (ORCPT
+	with ESMTP id S1751683AbZGLLEO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 06:58:21 -0400
+	Sun, 12 Jul 2009 07:04:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:date:message-id:subject:from:to:cc:content-type
          :content-transfer-encoding;
-        b=j9KS9bWR74Ow6hn+Ejg7XKI+fB6pFuoeWZYIqT0FilYGIaWoEzrvrsxkuYGlElc7d2
-         np9rVKm71hs+uBUSfopFC4jfmR/RywuWgn5X2Xs4q/MNrf63XKKiKU8wFE+hO2snXDqo
-         sjAxjIGTUgl1SAYHHQ3yGj1HwJvGwc59BR0qU=
+        b=E1GPHvLPsV2Ymqe5F3kSNhXGFNPlZrvuEiCQoGXxtEp03GCxOuBeBlJUVGZ38gv+qh
+         uWwoSJgyFQAfLcKGXHyCA8OSvp9Ql9i81x9C2e0OO9UHX8jo8OaUOCLw2wUGLAmNC41N
+         fCbnMU1SolZlCfcwJC6mNH62+8CedeXZWq8mg=
 MIME-Version: 1.0
-Date: Sun, 12 Jul 2009 16:58:18 +0600
-Message-ID: <b9df5fa10907120358t7101511cle30e025c3adcbe54@mail.gmail.com>
-Subject: [PATCH] ftrace: Add missing __init in ftrace_profile_debugfs()
+Date: Sun, 12 Jul 2009 17:04:12 +0600
+Message-ID: <b9df5fa10907120404k6279a10ch5e9682432272706f@mail.gmail.com>
+Subject: [PATCH] x86: Fix false positive section mismatch in es7000_32.c
 From: Rakib Mullick <rakib.mullick@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Impact: Fix section mismatch.
+ Impact: Fix false positive warning
 
-The function ftrace_profile_debugfs() references a variable placed in
-.init.data section. Thus causes a section mismatch warning. Since
-ftrace_profile_debugfs() has been called from only
-ftrace_init_debugfs, so we can safely mark ftrace_profile_debugfs as
-init. Also it contains a trivial style fix, __init should be placed
-between function type and function name (ftrace_init_debugfs).
+The variable apic_es7000_cluster references the function __cpuinit
+wakeup_secondary_cpu_via_mip() from a noninit section. So we've been
+warned by the following warning. To avoid possible collision between
+init/noninit, its best to mark the variable as __refdata.
 
-We were warned by the following warning:
+ We were warned by the followin warning:
 
- LD      kernel/trace/libftrace.o
-WARNING: kernel/trace/libftrace.o(.text+0xff0): Section mismatch in
-reference from the function ftrace_profile_debugfs() to the variable
-.init.data:function_stats
-The function ftrace_profile_debugfs() references
-the variable __initdata function_stats.
-This is often because ftrace_profile_debugfs lacks a __initdata
-annotation or the annotation of function_stats is wrong.
-
+ LD      arch/x86/kernel/apic/built-in.o
+WARNING: arch/x86/kernel/apic/built-in.o(.data+0x198c): Section
+mismatch in reference from the variable apic_es7000_cluster to the
+function .cpuinit.text:wakeup_secondary_cpu_via_mip()
+The variable apic_es7000_cluster references
+the function __cpuinit wakeup_secondary_cpu_via_mip()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
 
 ---
 Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 
---- linus/kernel/trace/ftrace.c	2009-07-11 20:54:13.000000000 +0600
-+++ rakib/kernel/trace/ftrace.c	2009-07-12 12:21:54.000000000 +0600
-@@ -768,7 +768,7 @@ static struct tracer_stat function_stats
- 	.stat_show	= function_stat_show
- };
-
--static void ftrace_profile_debugfs(struct dentry *d_tracer)
-+static void __init ftrace_profile_debugfs(struct dentry *d_tracer)
- {
- 	struct ftrace_profile_stat *stat;
- 	struct dentry *entry;
-@@ -813,7 +813,7 @@ static void ftrace_profile_debugfs(struc
+--- linus/arch/x86/kernel/apic/es7000_32.c	2009-07-10 12:30:10.000000000 +0600
++++ rakib/arch/x86/kernel/apic/es7000_32.c	2009-07-12 11:21:10.000000000 +0600
+@@ -652,7 +652,8 @@ static int es7000_mps_oem_check_cluster(
+ 	return ret && es7000_apic_is_cluster();
  }
 
- #else /* CONFIG_FUNCTION_PROFILER */
--static void ftrace_profile_debugfs(struct dentry *d_tracer)
-+static void __init ftrace_profile_debugfs(struct dentry *d_tracer)
- {
- }
- #endif /* CONFIG_FUNCTION_PROFILER */
-@@ -3068,7 +3068,7 @@ static const struct file_operations ftra
- 	.write = ftrace_pid_write,
- };
+-struct apic apic_es7000_cluster = {
++/* We've been warned by a false positive warning.Use __refdata to keep calm. */
++struct apic __refdata apic_es7000_cluster = {
 
--static __init int ftrace_init_debugfs(void)
-+static int __init ftrace_init_debugfs(void)
- {
- 	struct dentry *d_tracer;
+ 	.name				= "es7000",
+ 	.probe				= probe_es7000,
