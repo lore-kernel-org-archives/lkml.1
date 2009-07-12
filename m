@@ -1,32 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZGLAhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbZGLAmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbZGLAhM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 20:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZGLAhB
+	id S1752299AbZGLAmE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 20:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZGLAlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 20:37:01 -0400
-Received: from eddie.linux-mips.org ([78.24.191.182]:56452 "EHLO
+	Sat, 11 Jul 2009 20:41:55 -0400
+Received: from eddie.linux-mips.org ([78.24.191.182]:38255 "EHLO
 	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbZGLAhA (ORCPT
+	with ESMTP id S1751718AbZGLAlz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 20:37:00 -0400
-Date: Sun, 12 Jul 2009 01:36:56 +0100 (BST)
+	Sat, 11 Jul 2009 20:41:55 -0400
+Date: Sun, 12 Jul 2009 01:41:54 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Weiwei Wang <weiwei.wang@windriver.com>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] move sb1250-mac's probe function to .devinit.text
-In-Reply-To: <1247345591-22643-30-git-send-email-u.kleine-koenig@pengutronix.de>
-Message-ID: <alpine.LFD.2.00.0907120135500.13862@eddie.linux-mips.org>
-References: <20090711170548.GC5205@suse.de> <1247345591-22643-18-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-19-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-20-git-send-email-u.kleine-koenig@pengutronix.de>
- <1247345591-22643-21-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-22-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-23-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-24-git-send-email-u.kleine-koenig@pengutronix.de>
- <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-26-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-27-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-28-git-send-email-u.kleine-koenig@pengutronix.de>
- <1247345591-22643-29-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-30-git-send-email-u.kleine-koenig@pengutronix.de>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC -tip] x86,apic - set cpu_has_apic for discrete apic
+In-Reply-To: <20090711212929.GG5325@lenovo>
+Message-ID: <alpine.LFD.2.00.0907120141020.13862@eddie.linux-mips.org>
+References: <20090711212929.GG5325@lenovo>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -34,31 +27,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 11 Jul 2009, Uwe Kleine-K?nig wrote:
+On Sun, 12 Jul 2009, Cyrill Gorcunov wrote:
 
-> A pointer to sbmac_probe is passed to the core via
-> platform_driver_register and so the function must not disappear when the
-> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-> unbinding and binding a device to the driver via sysfs will result in an
-> oops as does a device being registered late.
+> In case of discrete apic (due to hardware or firmware reason)
+> cpuid may not retrieve cpu_has_apic bit. So for SMP
+> compiled kernels instead of long check we may set "fake"
+> cpu_has_apic bit and check only the bit in further code
+> flow.
 > 
-> An alternative to this patch is using platform_driver_probe instead of
-> platform_driver_register plus removing the pointer to the probe function
-> from the struct platform_driver.
-> 
-> Signed-off-by: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
-> Cc: Weiwei Wang <weiwei.wang@windriver.com>
-> Cc: Jeff Garzik <jgarzik@redhat.com>
-> Cc: David S. Miller <davem@davemloft.net>
-> Cc: Stephen Hemminger <shemminger@vyatta.com>
-> Cc: Maciej W. Rozycki <macro@linux-mips.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
 > ---
->  drivers/net/sb1250-mac.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> Please review carefully.
 
-Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
-
- Fine by me, thanks.
+ Sure: how did you test it or plan to do so?
 
   Maciej
