@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbZGLUK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752754AbZGLUKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753097AbZGLUK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 16:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZGLUKS
+	id S1752754AbZGLUKj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 16:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZGLUK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 16:10:18 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:40644 "EHLO mgw1.diku.dk"
+	Sun, 12 Jul 2009 16:10:28 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:40701 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbZGLUKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 16:10:17 -0400
-Date: Sun, 12 Jul 2009 22:03:42 +0200 (CEST)
+	id S1752803AbZGLUK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 16:10:26 -0400
+Date: Sun, 12 Jul 2009 22:04:13 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/5] drivers/char/hvc_console.c: Drop unnecessary NULL test
-Message-ID: <Pine.LNX.4.64.0907122203060.22658@ask.diku.dk>
+To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/5] drivers/char: Drop unnecessary NULL test
+Message-ID: <Pine.LNX.4.64.0907122203430.22658@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -51,19 +50,50 @@ static fn(struct work_struct *work) {
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/char/hvc_console.c          |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/char/pcmcia/synclink_cs.c |    3 ---
+ drivers/char/synclink.c           |    3 ---
+ drivers/char/synclinkmp.c         |    3 ---
+ 3 files changed, 9 deletions(-)
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index 94e7e3c..e367630 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -516,8 +516,6 @@ static void hvc_set_winsz(struct work_struct *work)
- 	struct winsize ws;
+diff --git a/drivers/char/pcmcia/synclink_cs.c b/drivers/char/pcmcia/synclink_cs.c
+index 77b3648..376d423 100644
+--- a/drivers/char/pcmcia/synclink_cs.c
++++ b/drivers/char/pcmcia/synclink_cs.c
+@@ -825,9 +825,6 @@ static void bh_handler(struct work_struct *work)
+ 	struct tty_struct *tty;
+ 	int action;
  
- 	hp = container_of(work, struct hvc_struct, tty_resize);
--	if (!hp)
+-	if (!info)
 -		return;
+-
+ 	if (debug_level >= DEBUG_LEVEL_BH)
+ 		printk( "%s(%d):bh_handler(%s) entry\n",
+ 			__FILE__,__LINE__,info->device_name);
+diff --git a/drivers/char/synclink.c b/drivers/char/synclink.c
+index afded3a..5368560 100644
+--- a/drivers/char/synclink.c
++++ b/drivers/char/synclink.c
+@@ -1062,9 +1062,6 @@ static void mgsl_bh_handler(struct work_struct *work)
+ 		container_of(work, struct mgsl_struct, task);
+ 	int action;
  
- 	spin_lock_irqsave(&hp->lock, hvc_flags);
- 	if (!hp->tty) {
+-	if (!info)
+-		return;
+-		
+ 	if ( debug_level >= DEBUG_LEVEL_BH )
+ 		printk( "%s(%d):mgsl_bh_handler(%s) entry\n",
+ 			__FILE__,__LINE__,info->device_name);
+diff --git a/drivers/char/synclinkmp.c b/drivers/char/synclinkmp.c
+index 6f727e3..67633dd 100644
+--- a/drivers/char/synclinkmp.c
++++ b/drivers/char/synclinkmp.c
+@@ -2014,9 +2014,6 @@ static void bh_handler(struct work_struct *work)
+ 	SLMP_INFO *info = container_of(work, SLMP_INFO, task);
+ 	int action;
+ 
+-	if (!info)
+-		return;
+-
+ 	if ( debug_level >= DEBUG_LEVEL_BH )
+ 		printk( "%s(%d):%s bh_handler() entry\n",
+ 			__FILE__,__LINE__,info->device_name);
