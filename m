@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZGLSsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbZGLS5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbZGLSsK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 14:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbZGLSr5
+	id S1755228AbZGLS5o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 14:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbZGLS5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 14:47:57 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:41811 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754639AbZGLSr5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 14:47:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=hKO6aRNohANq7FYETIjbH9k2o/lzjy5RiqaLFC88LSgYbbXNiCLZdLWlWse4zL1A3p
-         n5HK/YzUN14dbmKsFYjTgeEr6m/wIxjl0R9j3YjpY8PLXdtX513D0z1WQmidfAYQaR8R
-         RHgmgkTlz9lolUhbqdSJaeG8BriHJJsRPs+1c=
-MIME-Version: 1.0
-In-Reply-To: <1247422177-7329-2-git-send-email-me@felipebalbi.com>
-References: <1247422177-7329-1-git-send-email-me@felipebalbi.com>
-	 <1247422177-7329-2-git-send-email-me@felipebalbi.com>
-Date: Sun, 12 Jul 2009 20:47:53 +0200
-Message-ID: <63386a3d0907121147x5065be43tf9d19e9e33f0ffbd@mail.gmail.com>
-Subject: Re: [rfc/patch 02/15] power: bq27200: this is an i2c device
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Jul 2009 14:57:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60183 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754288AbZGLS5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 14:57:33 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Cc: nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       vgoyal@redhat.com
+Subject: [PATCH 1/2] cfq-iosched: Introduce an ioscheduler tunable "fairness"
+Date: Sun, 12 Jul 2009 14:57:09 -0400
+Message-Id: <1247425030-25344-2-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1247425030-25344-1-git-send-email-vgoyal@redhat.com>
+References: <1247425030-25344-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/12 Felipe Balbi <me@felipebalbi.com>:
+o Introduce a tunable "fairness" for CFQ ioscheduler. If this is set, CFQ will
+  try to focus more on fairness and disable some of the hooks geared towards
+  throughput at the expense of fairness.
 
-> ... with hardcoded device address so i2c subsystem won't
-> talk to more than one of those.
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/cfq-iosched.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-So you remove support for multiple instances of this driver, OK.
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 87276eb..658ea7b 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -185,6 +185,7 @@ struct cfq_data {
+ 	 * Fallback dummy cfqq for extreme OOM conditions
+ 	 */
+ 	struct cfq_queue oom_cfqq;
++	unsigned int cfq_fairness;
+ };
+ 
+ enum cfqq_state_flags {
+@@ -2495,6 +2496,7 @@ static void *cfq_init_queue(struct request_queue *q)
+ 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
+ 	cfqd->cfq_slice_idle = cfq_slice_idle;
+ 	cfqd->hw_tag = 1;
++	cfqd->cfq_fairness = 0;
+ 
+ 	return cfqd;
+ }
+@@ -2563,6 +2565,7 @@ SHOW_FUNCTION(cfq_slice_idle_show, cfqd->cfq_slice_idle, 1);
+ SHOW_FUNCTION(cfq_slice_sync_show, cfqd->cfq_slice[1], 1);
+ SHOW_FUNCTION(cfq_slice_async_show, cfqd->cfq_slice[0], 1);
+ SHOW_FUNCTION(cfq_slice_async_rq_show, cfqd->cfq_slice_async_rq, 0);
++SHOW_FUNCTION(cfq_fairness_show, cfqd->cfq_fairness, 0);
+ #undef SHOW_FUNCTION
+ 
+ #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
+@@ -2594,6 +2597,7 @@ STORE_FUNCTION(cfq_slice_sync_store, &cfqd->cfq_slice[1], 1, UINT_MAX, 1);
+ STORE_FUNCTION(cfq_slice_async_store, &cfqd->cfq_slice[0], 1, UINT_MAX, 1);
+ STORE_FUNCTION(cfq_slice_async_rq_store, &cfqd->cfq_slice_async_rq, 1,
+ 		UINT_MAX, 0);
++STORE_FUNCTION(cfq_fairness_store, &cfqd->cfq_fairness, 0, 1, 0);
+ #undef STORE_FUNCTION
+ 
+ #define CFQ_ATTR(name) \
+@@ -2609,6 +2613,7 @@ static struct elv_fs_entry cfq_attrs[] = {
+ 	CFQ_ATTR(slice_async),
+ 	CFQ_ATTR(slice_async_rq),
+ 	CFQ_ATTR(slice_idle),
++	CFQ_ATTR(fairness),
+ 	__ATTR_NULL
+ };
+ 
+-- 
+1.6.0.6
 
-But theoretically, what happens if you have two different I2C busses
-on your system with a battery driver on each?
-
-Can you confirm that that will never happen?
-
-Linus Walleij
