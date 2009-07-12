@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752785AbZGLIpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753556AbZGLIsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752785AbZGLIpp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 04:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbZGLIpd
+	id S1753556AbZGLIsl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 04:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbZGLIse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 04:45:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35769 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753297AbZGLIpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 04:45:22 -0400
-Message-ID: <4A59A34F.3040206@redhat.com>
-Date: Sun, 12 Jul 2009 11:48:15 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Sun, 12 Jul 2009 04:48:34 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36044 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751776AbZGLIsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 04:48:33 -0400
+Date: Sun, 12 Jul 2009 09:47:34 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: David Brownell <david-b@pacbell.net>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Philipp Zabel <philipp.zabel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Lindgren <tony@atomide.com>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH] move omap_udc's probe function to .devinit.text
+Message-ID: <20090712084734.GA944@flint.arm.linux.org.uk>
+References: <20090711170548.GC5205@suse.de> <1247345591-22643-37-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-38-git-send-email-u.kleine-koenig@pengutronix.de> <200907111530.44736.david-b@pacbell.net> <20090712083510.GA24424@pengutronix.de>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mst@redhat.com
-Subject: Re: [KVM PATCH v10 0/2] ioeventfd (formerly iosignalfd)
-References: <20090707210023.21953.22087.stgit@dev.haskins.net>
-In-Reply-To: <20090707210023.21953.22087.stgit@dev.haskins.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090712083510.GA24424@pengutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/08/2009 12:08 AM, Gregory Haskins wrote:
-> (Applies to kvm.git/master:3abaf217)
->
-> This is v10 of the series.  For more details, please see the header to
-> patch 2/2.
->
-> This series has been tested against the kvm-eventfd unit test, and
-> appears to be functioning properly.  You can download this test here:
->
-> ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
->
-> (Note: unit test has been updated to accomodate new feature-set)
->
-> Please consider for inclusion to kvm.git
->
->    
+On Sun, Jul 12, 2009 at 10:35:10AM +0200, Uwe Kleine-König wrote:
+> Hello David,
+> 
+> On Sat, Jul 11, 2009 at 03:30:44PM -0700, David Brownell wrote:
+> > On Saturday 11 July 2009, Uwe Kleine-König wrote:
+> > > An alternative to this patch is using platform_driver_probe instead of
+> > > platform_driver_register plus removing the pointer to the probe function
+> > > from the struct platform_driver.
+> > 
+> > Repeat -- NAK on this.  Use platform_driver_probe() instead.
+> > 
+> > I really don't like this series of patches.  It's just adding
+> > bloat to kernels, in chunks of up to a page per patch.
+> I'm aware that in some cases platform_driver_probe is better.  But as I
+> don't have access to most of the affected platforms I consider it saver.
+> That's why I choosed this way.  The problem with platform_driver_probe
+> is that if a device is added only after the driver is probed the
+> device isn't bound.
 
-Applied, thanks.
+Your approach is perfectly fine, and safe.  You're not adding any
+additional bloat which isn't already there.  If it were adding any
+bloat (which it isn't), it certainly is not "in chunks of up to a
+page per patch".
+
+Overall, this patch is an improvement, so all these get my ack, and
+they should be applied as is.
+
+Using platform_driver_probe() does allow you to reduce the kernel
+footprint still further, but that requires knowledge of the platforms
+affected (knowing that the platform devices are present before the
+drivers get probed.)
+
+I'll apply the ones for drivers I look after later today.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
