@@ -1,104 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZGLIxB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbZGLI4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZGLIxB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 04:53:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbZGLIwv
+	id S1753708AbZGLI4G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 04:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZGLIzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 04:52:51 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:46902 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbZGLIwt (ORCPT
+	Sun, 12 Jul 2009 04:55:55 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:3977
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751656AbZGLIzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 04:52:49 -0400
-Message-ID: <4A59A45D.4030407@davidnewall.com>
-Date: Sun, 12 Jul 2009 18:22:45 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Sun, 12 Jul 2009 04:55:54 -0400
+Message-ID: <4A59A517.1080605@panasas.com>
+Date: Sun, 12 Jul 2009 11:55:51 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Martin Steigerwald <Martin@lichtvoll.de>
-CC: Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       tridge@samba.org, Jan Engelhardt <jengelh@medozas.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-References: <20090708110451.1092afa7@lxorguk.ukuu.org.uk> <200907100023.48039.Martin@lichtvoll.de> <4A569D36.3060707@davidnewall.com> (sfid-20090710_091245_389167_A9F855BE) <200907102049.12427.Martin@lichtvoll.de>
-In-Reply-To: <200907102049.12427.Martin@lichtvoll.de>
+To: Nick Piggin <npiggin@suse.de>
+CC: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
+References: <20090707144823.GE2714@wotan.suse.de> <20090707145820.GA9976@infradead.org> <20090707150257.GG2714@wotan.suse.de> <20090707150758.GA18075@infradead.org> <20090707154809.GH2714@wotan.suse.de> <20090707163042.GA14947@infradead.org> <20090708063225.GL2714@wotan.suse.de> <20090708104701.GA31419@infradead.org> <20090708123412.GQ2714@wotan.suse.de> <4A54C435.1000503@panasas.com> <20090709075100.GU2714@wotan.suse.de>
+In-Reply-To: <20090709075100.GU2714@wotan.suse.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Jul 2009 08:55:53.0762 (UTC) FILETIME=[9019F820:01CA02CE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Steigerwald wrote:
-> The FAT patents have not yet been tested. 
-> They might easily just be void and invalid.
->   
+On 07/09/2009 10:51 AM, Nick Piggin wrote:
+> On Wed, Jul 08, 2009 at 07:07:17PM +0300, Boaz Harrosh wrote:
+>> On 07/08/2009 03:34 PM, Nick Piggin wrote:
+>>> On Wed, Jul 08, 2009 at 06:47:01AM -0400, Christoph Hellwig wrote:
+>>> Index: linux-2.6/fs/attr.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/fs/attr.c
+>>> +++ linux-2.6/fs/attr.c
+>>> @@ -112,7 +112,12 @@ int inode_setattr(struct inode * inode,
+>>>  
+>>>  	if (ia_valid & ATTR_SIZE &&
+>>>  	    attr->ia_size != i_size_read(inode)) {
+>>> -		int error = vmtruncate(inode, attr->ia_size);
+>>> +		int error;
+>>> +
+>>> +		if (inode->i_op->new_truncate)
+>>> +			error = simple_setsize(inode, attr->ia_size);
+>> I don't understand this branch.
+>> If a filesystem has been converted to set "i_op->new_truncate=true"
+>> then it must have been converted to intersect ->setattr and has set
+>> the i_size (And needs to clear ATTR_SIZE, why?)
+>>
+>> All other cases of systems not converted, or systems that do not have
+>> ->truncate will fall to the "else" part.
+>>
+>> before the removal of i_op->new_truncate you will need to do something
+>> with the systems that do not have ->truncate which will be a 
+>> .setattr = simple_setattr or something
+>>
+>> So I don't understand this conditional
+> 
+> inode_setattr *is* our "simple_setattr".
+> 
 
-It might be invalid, but it would take a lot of money to get just the US
-Patent invalidated.  Since it's probably also patented in Australia, UK,
-Japan, Germany and so on, you'd need to invalidate it there, too, to
-wipe out the problem, and a US decision to revoke wouldn't help much.
+I wish you would split it.
 
-Don't worry about whether the patent is valid, because we can't fight
-that.  Tom Tom chose not to fight the patent, which let's you know how
-big we could be and still be unable to fight it.  Instead, think of ways
-to side-step it.
+one - helper to be called by converted file systems
+      (Which just ignores the ATTR_SIZE)
+second - to be set into .setattr which does the simple_setsize + above.
 
+More clear for FS users like me (and that ugly unmask of ATTR_SIZE)
 
+or it's just me?
 
-> But going the way you outline would be giving in to the patent claim 
-> *before* it has even been tried and tested for validity. And thus IMHO 
-> this strengthens the patent and it holder. If you change the upstream 
-> kernel Microsoft can always say: "Look Linux kernel developers think that 
-> the kernel infringed our patents." 
->   
-
-Working around a patent in no way strengthens the patent claims.  Even
-if it did, if we come up with an alternative that gives long and short
-file names without going through the steps that Microsoft described in
-their patent, then we wouldn't be violating their patent.  Remember
-this: Microsoft did not patent a file system with long and short file
-names.  I understand that is not even a patentable matter.  Microsoft
-patented a *method* for creating long and short files, and if we don't
-follow their method then their patent doesn't cover what we do.
-
-Let's find a solution that Microsoft haven't patented, and then give
-that to the world.  While it might still look like a duck, walk like a
-duck and quack like a duck, we need only put the feathers on *before*
-the feet, and then it isn't a duck under patent law.
-
-
->> I think you're right that Microsoft does not want their patent tested
->> in court, but as they have more money than anyone, they could keep a
->> patent case in court forever, costing both them and those they sue more
->> and more money.  If the other party keeps fighting they stand a real
->> chance of running out of money (and thus out of business); or they
->> could settle, as Tom Tom did.
->>     
->
-> I think you omit that doing this would cost Microsoft really lots of 
-> reputation. I believe that Microsoft fears testing the patent in trial and 
-> having a long trial just as much if not more than the company it sues.
->   
-
-You think Microsoft fear testing in court, yet we know otherwise because
-they already did initiate action against Tom Tom.  Think what you like,
-but I will stick, unimaginative thought it might be, to the real world.
-
-> Would you buy a Unix or something else from SCO?
-Let me put it this way: going back only a few years, we had no choice
-over who provided local calls.  Even though almost everybody agreed they
-were expensive, unfriendly and disinterested in their customers' needs,
-we still bought from them.
-
-
-One thing I suspect none of us would deny is that the patent system is
-seriously flawed.  Sadly, that's completely irrelevant.  It's long been
-accepted that the Law is an ass, but it's still the law and if you
-disobey it it will slap you so hard and quickly your head will spin.
+Thanks
+Boaz
