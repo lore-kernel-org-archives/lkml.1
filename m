@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZGLUOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZGLUOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbZGLUOa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 16:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbZGLUOW
+	id S1754541AbZGLUOt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 16:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbZGLUOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 16:14:22 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:58866 "EHLO mgw2.diku.dk"
+	Sun, 12 Jul 2009 16:14:37 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:58964 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbZGLUOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 16:14:21 -0400
-Date: Sun, 12 Jul 2009 22:05:03 +0200 (CEST)
+	id S1752170AbZGLUOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 16:14:36 -0400
+Date: Sun, 12 Jul 2009 22:05:33 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: isdn@linux-pingi.de, isdn4linux@listserv.isdn4linux.de,
+To: yi.zhu@intel.com, jketreno@linux.intel.com, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org, ipw2100-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/5] drivers/isdn: Drop unnecessary NULL test
-Message-ID: <Pine.LNX.4.64.0907122204140.22658@ask.diku.dk>
+Subject: [PATCH 4/5] drivers/net: Drop unnecessary NULL test
+Message-ID: <Pine.LNX.4.64.0907122205060.22658@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -51,89 +52,20 @@ static fn(struct work_struct *work) {
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/isdn/hisax/amd7930_fn.c |    2 --
- drivers/isdn/hisax/hfc_pci.c    |    2 --
- drivers/isdn/hisax/hfc_sx.c     |    2 --
- drivers/isdn/hisax/icc.c        |    2 --
- drivers/isdn/hisax/isac.c       |    2 --
- drivers/isdn/hisax/w6692.c      |    2 --
- 6 files changed, 12 deletions(-)
+ drivers/net/wireless/ipw2x00/ipw2200.c         |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/isdn/hisax/amd7930_fn.c b/drivers/isdn/hisax/amd7930_fn.c
-index 341faf5..bf526a7 100644
---- a/drivers/isdn/hisax/amd7930_fn.c
-+++ b/drivers/isdn/hisax/amd7930_fn.c
-@@ -238,8 +238,6 @@ Amd7930_bh(struct work_struct *work)
- 		container_of(work, struct IsdnCardState, tqueue);
-         struct PStack *stptr;
+diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c b/drivers/net/wireless/ipw2x00/ipw2200.c
+index d726b3c..2dc1cdb 100644
+--- a/drivers/net/wireless/ipw2x00/ipw2200.c
++++ b/drivers/net/wireless/ipw2x00/ipw2200.c
+@@ -7250,9 +7250,6 @@ static void ipw_bg_qos_activate(struct work_struct *work)
+ 	struct ipw_priv *priv =
+ 		container_of(work, struct ipw_priv, qos_activate);
  
--	if (!cs)
+-	if (priv == NULL)
 -		return;
- 	if (test_and_clear_bit(D_CLEARBUSY, &cs->event)) {
-                 if (cs->debug)
- 			debugl1(cs, "Amd7930: bh, D-Channel Busy cleared");
-diff --git a/drivers/isdn/hisax/hfc_pci.c b/drivers/isdn/hisax/hfc_pci.c
-index 3d337d9..d110a77 100644
---- a/drivers/isdn/hisax/hfc_pci.c
-+++ b/drivers/isdn/hisax/hfc_pci.c
-@@ -1506,8 +1506,6 @@ hfcpci_bh(struct work_struct *work)
- 	u_long	flags;
- //      struct PStack *stptr;
+-
+ 	mutex_lock(&priv->mutex);
  
--	if (!cs)
--		return;
- 	if (test_and_clear_bit(D_L1STATECHANGE, &cs->event)) {
- 		if (!cs->hw.hfcpci.nt_mode)
- 			switch (cs->dc.hfcpci.ph_state) {
-diff --git a/drivers/isdn/hisax/hfc_sx.c b/drivers/isdn/hisax/hfc_sx.c
-index d92e8d6..419f87c 100644
---- a/drivers/isdn/hisax/hfc_sx.c
-+++ b/drivers/isdn/hisax/hfc_sx.c
-@@ -1255,8 +1255,6 @@ hfcsx_bh(struct work_struct *work)
- 		container_of(work, struct IsdnCardState, tqueue);
- 	u_long flags;
- 
--	if (!cs)
--		return;
- 	if (test_and_clear_bit(D_L1STATECHANGE, &cs->event)) {
- 		if (!cs->hw.hfcsx.nt_mode)
- 			switch (cs->dc.hfcsx.ph_state) {
-diff --git a/drivers/isdn/hisax/icc.c b/drivers/isdn/hisax/icc.c
-index 682cac3..9aba646 100644
---- a/drivers/isdn/hisax/icc.c
-+++ b/drivers/isdn/hisax/icc.c
-@@ -83,8 +83,6 @@ icc_bh(struct work_struct *work)
- 		container_of(work, struct IsdnCardState, tqueue);
- 	struct PStack *stptr;
- 	
--	if (!cs)
--		return;
- 	if (test_and_clear_bit(D_CLEARBUSY, &cs->event)) {
- 		if (cs->debug)
- 			debugl1(cs, "D-Channel Busy cleared");
-diff --git a/drivers/isdn/hisax/isac.c b/drivers/isdn/hisax/isac.c
-index 07b1673..a19354d 100644
---- a/drivers/isdn/hisax/isac.c
-+++ b/drivers/isdn/hisax/isac.c
-@@ -86,8 +86,6 @@ isac_bh(struct work_struct *work)
- 		container_of(work, struct IsdnCardState, tqueue);
- 	struct PStack *stptr;
- 	
--	if (!cs)
--		return;
- 	if (test_and_clear_bit(D_CLEARBUSY, &cs->event)) {
- 		if (cs->debug)
- 			debugl1(cs, "D-Channel Busy cleared");
-diff --git a/drivers/isdn/hisax/w6692.c b/drivers/isdn/hisax/w6692.c
-index bb1c8dd..c4d862c 100644
---- a/drivers/isdn/hisax/w6692.c
-+++ b/drivers/isdn/hisax/w6692.c
-@@ -105,8 +105,6 @@ W6692_bh(struct work_struct *work)
- 		container_of(work, struct IsdnCardState, tqueue);
- 	struct PStack *stptr;
- 
--	if (!cs)
--		return;
- 	if (test_and_clear_bit(D_CLEARBUSY, &cs->event)) {
- 		if (cs->debug)
- 			debugl1(cs, "D-Channel Busy cleared");
+ 	if (priv->status & STATUS_ASSOCIATED)
