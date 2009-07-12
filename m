@@ -1,85 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbZGLG5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752070AbZGLHYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbZGLG5K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 02:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZGLG46
+	id S1752070AbZGLHYE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 03:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbZGLHXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 02:56:58 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:61696 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbZGLG45 (ORCPT
+	Sun, 12 Jul 2009 03:23:53 -0400
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:64307 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbZGLHXw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 02:56:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fCJIQdod9CShQlmdCT4UwNqvT402ElkYW9FOyHOCx+P5CQyBQ8nNVL8lTuA0QyCSNG
-         HbfZ8FvGb5v3je3vC1x//ZTrp8zQw1/ZWunoibqvrgwc6gGv6LON9wu07gX96KfLAShZ
-         0GjxGZwT1AZ/vg2IaA9HFYPHz2ueu0b68vwjg=
-MIME-Version: 1.0
-Date: Sun, 12 Jul 2009 14:56:56 +0800
-Message-ID: <2674af740907112356s36caba0dw1c92728ff684b4b3@mail.gmail.com>
-Subject: [PATCH] gianfar: keep vlan related state when reenabled
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: galak@kernel.crashing.org
-Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Sun, 12 Jul 2009 03:23:52 -0400
+Date: Sun, 12 Jul 2009 16:23:37 +0900 (JST)
+Message-Id: <20090712.162337.287595819039280884.mitake@dcl.info.waseda.ac.jp>
+To: a.p.zijlstra@chello.nl
+Cc: andi@firstfloor.org, fweisbec@gmail.com, mingo@elte.hu, acme@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
+ how many spinlocks to schedstat
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <1247230336.7529.34.camel@twins>
+References: <20090706115451.GA29715@one.firstfloor.org>
+	<20090710.214547.34380852.mitake@dcl.info.waseda.ac.jp>
+	<1247230336.7529.34.camel@twins>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If vlan has been enabled. ifdown followed by ifup will lost hardware
-related state.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+Date: Fri, 10 Jul 2009 14:52:16 +0200
 
-remove duplicated operation in gfar_vlan_rx_register().
+> On Fri, 2009-07-10 at 21:45 +0900, mitake@dcl.info.waseda.ac.jp wrote:
+> > From: Andi Kleen <andi@firstfloor.org>
+> > Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+> > Date: Mon, 6 Jul 2009 13:54:51 +0200
+> > 
+> > Thank you for your replying, Peter and Andi.
+> > 
+> > > > Maybe re-use the LOCK_CONTENDED macros for this, but I'm not sure we
+> > > > want to go there and put code like this on the lock hot-paths for !debug
+> > > > kernels.
+> > > 
+> > > My concern was similar.
+> > > 
+> > > I suspect it would be in theory ok for the slow spinning path, but I am 
+> > > somewhat concerned about the additional cache miss for checking
+> > > the global flag even in this case. This could hurt when
+> > > the kernel is running fully cache hold, in that the cache miss
+> > > might be far more expensive that  short spin.
+> > 
+> > Yes, there will be overhead. This is certain.
+> > But there's the radical way to ignore this,
+> > adding subcategory to Kconfig for measuring spinlocks and #ifdef to spinlock.c.
+> > So people who wants to avoid this overhead can disable measurement of spinlocks completely.
+> > 
+> > And there's another way to avoid the overhead of measurement.
+> > Making _spin_lock variable of function pointer.
+> > When you don't want to measure spinlocks,
+> > assign _spin_lock_raw() which is equals to current _spin_lock().
+> > When you want to measure spinlocks,
+> > assign _spin_lock_perf() which locks and measures.
+> > This way will banish the cache miss problem you said.
+> > I think this may be useful for avoiding problem of recursion.
+> 
+> We already have that, its called CONFIG_LOCKDEP && CONFIG_EVENT_TRACING
+> && CONFIG_EVENT_PROFILE, with those enabled you get tracepoints on every
+> lock acquire and lock release, and perf can already use those as event
+> sources.
+> 
+> 
+> 
+> 
 
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
----
- drivers/net/gianfar.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+Thanks, I understood your advice. Using infrastructure of ftrace is good idea, so I'll use it.
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 4ae1d25..9cc6dd3 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -942,6 +942,7 @@ int startup_gfar(struct net_device *dev)
- 	struct gfar __iomem *regs = priv->regs;
- 	int err = 0;
- 	u32 rctrl = 0;
-+	u32 tctrl = 0;
- 	u32 attrs = 0;
+But I have a question.
+I can't enable CONFIG_EVENT_PROFILE because it depends on CONFIG_EVENT_TRACER.
+And CONFIG_EVENT_TRACER seems something never enabled.
 
- 	gfar_write(&regs->imask, IMASK_INIT_CLEAR);
-@@ -1117,11 +1118,19 @@ int startup_gfar(struct net_device *dev)
- 		rctrl |= RCTRL_PADDING(priv->padding);
- 	}
+% git grep EVENT_TRACER
+arch/arm/configs/cm_x300_defconfig:# CONFIG_EVENT_TRACER is not set
+arch/arm/configs/davinci_all_defconfig:# CONFIG_EVENT_TRACER is not set
+arch/arm/configs/ep93xx_defconfig:# CONFIG_EVENT_TRACER is not set
+...
+arch/x86/configs/i386_defconfig:# CONFIG_EVENT_TRACER is not set
+arch/x86/configs/x86_64_defconfig:# CONFIG_EVENT_TRACER is not set
+init/Kconfig:   depends on PERF_COUNTERS && EVENT_TRACER
 
-+	/* keep vlan related bits if it's enabled */
-+	if (priv->vlgrp) {
-+		rctrl |= RCTRL_VLEX | RCTRL_PRSDEP_INIT;
-+		tctrl |= TCTRL_VLINS;
-+	}
-+
- 	/* Init rctrl based on our settings */
- 	gfar_write(&priv->regs->rctrl, rctrl);
+In addition, this is the output of searching this on menuconfig
+    Symbol: EVENT_TRACER [=EVENT_TRACER]          
+and, there is a log in git
 
- 	if (dev->features & NETIF_F_IP_CSUM)
--		gfar_write(&priv->regs->tctrl, TCTRL_INIT_CSUM);
-+		tctrl |= TCTRL_INIT_CSUM;
-+
-+	gfar_write(&priv->regs->tctrl, tctrl);
+commit a7abe97fd8e7a6ccabba5a04a9f17be9211d418c
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Mon Apr 20 10:59:34 2009 -0400
 
- 	/* Set the extraction length and index */
- 	attrs = ATTRELI_EL(priv->rx_stash_size) |
-@@ -1456,7 +1465,6 @@ static void gfar_vlan_rx_register(struct net_device *dev,
+    tracing: rename EVENT_TRACER config to ENABLE_EVENT_TRACING
 
- 		/* Enable VLAN tag extraction */
- 		tempval = gfar_read(&priv->regs->rctrl);
--		tempval |= RCTRL_VLEX;
- 		tempval |= (RCTRL_VLEX | RCTRL_PRSDEP_INIT);
- 		gfar_write(&priv->regs->rctrl, tempval);
- 	} else {
--- 
-1.6.0.4
+    Currently we have two configs: EVENT_TRACING and EVENT_TRACER.
+    All tracers enable EVENT_TRACING. The EVENT_TRACER is only a
+    convenience to enable the EVENT_TRACING when no other tracers
+    are enabled.
+
+Does EVENT_TRACER make any sense?
+If doesn't, can I remove dependency of CONFIG_EVENT_PROFILE?
