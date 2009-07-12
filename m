@@ -1,97 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbZGLEiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751238AbZGLEkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752269AbZGLEiV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 00:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZGLEiL
+	id S1751238AbZGLEkz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 00:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZGLEkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 00:38:11 -0400
-Received: from mx30.mail.ru ([94.100.176.44]:16803 "EHLO mx30.mail.ru"
+	Sun, 12 Jul 2009 00:40:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:33501 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750831AbZGLEiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 00:38:10 -0400
-X-Greylist: delayed 41681 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Jul 2009 00:38:10 EDT
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: How to monitor Linux NFS client load?
-Date: Sun, 12 Jul 2009 08:38:02 +0400
-User-Agent: KMail/1.12.0 (Linux/2.6.31-0.rc2.5.3mdv; KDE/4.2.96; x86_64; ; )
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200907112103.27082.arvidjaar@mail.ru> <1247352267.7281.2.camel@heimdal.trondhjem.org>
-In-Reply-To: <1247352267.7281.2.camel@heimdal.trondhjem.org>
+	id S1750831AbZGLEkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 00:40:46 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
+Date: Sun, 12 Jul 2009 14:10:39 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Siarhei Liakh <sliakh.lkml@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-cris-kernel@axis.com
+References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com> <200907111821.47769.rusty@rustcorp.com.au> <20090711084958.69ff9196@infradead.org>
+In-Reply-To: <20090711084958.69ff9196@infradead.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4227050.kbD4j8JChD";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907120838.06766.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+Content-Disposition: inline
+Message-Id: <200907121410.39874.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4227050.kbD4j8JChD
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-On Sunday 12 of July 2009 02:44:27 Trond Myklebust wrote:
-> On Sat, 2009-07-11 at 21:03 +0400, Andrey Borzenkov wrote:
-> > Recently we have the case of very high latencies on NFS reads as
-> > reported by application (SAP R/3). NFS server was NetApp FAS;
-> > according to NetApp statistic, average volume read latencies were
-> > in order 10ms, while SAP stats gave 30-50ms. Systems were
-> > interconnected by dedicated 1Gb/s Cisco switches (3750G) with ca.
-> > 30% max load on interfaces.
-> >
-> > On advice of my colleague we changed sunrpc.tcp_slot_table_entries
-> > from default 16 to 128 which seemed to make situation much better -
-> > without changing load pattern of filer in any visible way.
-> >
-> > Now, I can understand, why we observed much higher latency on
-> > system and why changing (what effectively is) queue depth helped.
-> > But I am totally frustrated that there does not appear to be *any*
-> > possibility to detect this situation on Linux side and to get a
-> > real numbers of real NFS IO latencies or number of requests waiting
-> > to be executed (and I do not even dream about per-mount point
-> > stats).
-> >
-> > I am grateful for any hints how can we monitor Linux NFS client and
-> > get real-life numbers of what happens inside. Thank you!
+On Sun, 12 Jul 2009 01:19:58 am Arjan van de Ven wrote:
+> Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > I have a question about this patch though: I think it's unsafe in
+> > general to mark the last partial page as NX (we asked for executable
+> > pages, this could remove executable from some unrelated allocation).
 >
-> See the nfs-iostat utility in the nfs-utils package:
->
-> http://git.linux-nfs.org/?p=steved/nfs-utils.git;a=blob;f=tools/nfs-i
->ostat/nfs-iostat.py;h=9626d42609b9485c7fda0c9ef69d698f9fa929fd;hb=HEAD
->
+> we vmalloc / g_f_p modules right? so we don't share the last page.
 
-This looks exactly like what is required, except ...
+Historically yes, but I don't think we should be counting on it.  It makes 
+sense to kmalloc for small modules, and it's arch specific code.
 
-cn1:~ # ./nfs-iostat.py 2
-Traceback (most recent call last):
-  File "./nfs-iostat.py", line 559, in ?
-    iostat_command(prog)
-  File "./nfs-iostat.py", line 464, in iostat_command
-    mountstats = parse_stats_file('/proc/self/mountstats')
-  File "./nfs-iostat.py", line 434, in parse_stats_file
-    f = file(filename)
-IOError: [Errno 2] No such file or directory: '/proc/self/mountstats'
+OTOH, a quick grep shows currently only cris does kmalloc, and that's a config 
+option.
 
-Which minimum kernel version is required for it?
+It might be time to unify this code.  If we rename MODULE_START to 
+MODULE_VADDR on MIPS, then ignoring CRIS there's only two real variants; 
+vmalloc and __vmalloc.
 
-Thank you!
+(I like the idea of trying kmalloc and falling back, simply because it reduces 
+TLB pressure, but that's probably best done after unification).
 
---nextPart4227050.kbD4j8JChD
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpZaKoACgkQR6LMutpd94wFiwCfY3lVJRKaejUoj5rQZBSkOQhd
-8F4AoKUIm+ZyHFdo0caRzC6aCaAmn5FZ
-=6Z4A
------END PGP SIGNATURE-----
-
---nextPart4227050.kbD4j8JChD--
+Thoughts?
+Rusty.
