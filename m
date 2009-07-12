@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbZGLWPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbZGLWVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047AbZGLWPX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 18:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZGLWPL
+	id S1754525AbZGLWVm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 18:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZGLWVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 18:15:11 -0400
-Received: from kroah.org ([198.145.64.141]:55158 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751420AbZGLWPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 18:15:10 -0400
-Date: Sun, 12 Jul 2009 15:14:30 -0700
-From: Greg KH <greg@kroah.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-cris-kernel@axis.com
-Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
-Message-ID: <20090712221430.GA16151@kroah.com>
-References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com>
- <200907121410.39874.rusty@rustcorp.com.au>
- <20090712004524.2f0c4e57@infradead.org>
- <200907121928.28887.rusty@rustcorp.com.au>
- <20090712083227.39939849@infradead.org>
- <20090712173329.GB12054@kroah.com>
- <20090712145804.2f1fce98@infradead.org>
+	Sun, 12 Jul 2009 18:21:33 -0400
+Received: from n70.bullet.mail.sp1.yahoo.com ([98.136.44.38]:37337 "HELO
+	n70.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751470AbZGLWVc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 18:21:32 -0400
+X-Yahoo-Newman-Id: 139103.22236.bm@omp416.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=g7G9D8ssPtq/J/XHfAfBWoI/GiC66wCo89uwTumS9nQZBbW0UCRlWAdWkKlgwzTuGbLuXdXC9/i6rYO3/oUUtnm7PrBeRTMR1MxaYIM8zZR2PfUd/NXcfOs/i/JBH5lKgrF0gArigoRkirROp5SZQOmHcaIlA/o/nnymbcpEa7w=  ;
+X-YMail-OSG: yVT0d0IVM1mDI480U_GNUYkwuGrz7lpEiwb1BwekffOAedidVWVCfxIhILWiqoSRz7znjyS8CQaZOkwXisW9zywEc7UGpz_NxM00P86ucxA.XaTaMzHkLIhCkbb_exf0Yx2WTrv.cPXIfOBj3CgxQ92prF3qRMZRwbwiiSvnSzpOORNs0Zvs8eaQo_GuVGZZxINeF5n0jiYk.J4Bc9BjwhMRmIJFO.D02kDgpezhQnq3gW6obWpRTyVsplILJfM0aNE6neBQlcYP2.ZaFwjgS.4dn3lWnY7lMAT7puB4gFBZ74Zf.sta
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH] move omap_udc's probe function to .devinit.text
+Date: Sun, 12 Jul 2009 15:21:30 -0700
+User-Agent: KMail/1.9.10
+Cc: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
+	<u.kleine-koenig@pengutronix.de>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Philipp Zabel <philipp.zabel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Lindgren <tony@atomide.com>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+References: <20090711170548.GC5205@suse.de> <20090712084734.GA944@flint.arm.linux.org.uk> <20090712131732.GA4406@flint.arm.linux.org.uk>
+In-Reply-To: <20090712131732.GA4406@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20090712145804.2f1fce98@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200907121521.31188.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 12, 2009 at 02:58:04PM -0700, Arjan van de Ven wrote:
-> On Sun, 12 Jul 2009 10:33:29 -0700
-> Greg KH <greg@kroah.com> wrote:
-> 
-> > > 
-> > > 105 is also a sign that you picked a somewhat suboptimal config...
-> > > that's of course your choice but it's a choice that has a small
-> > > price, if you don't want to pay that price, changing the config to
-> > > not be entirely insane is a good answer as well ;-)
-> > 
-> > But this is the "common" case in the world of Linux where the distros
-> > are forced to build everything as modules. 
-> 
-> who's holding the stick?
-> Really.
+On Sunday 12 July 2009, Russell King wrote:
+> 	 David's approach is an enhancement whereas your patches
+> are a bug fix.
 
-Stick?
+Not an enhancement.  Uwe's current approach causes regressions
+in terms of kernel runtime footprint.  That is, pages will newly
+be made to sit around doing *nothing* forever, when they could
+have been used to get Real Work done.  And, pre-patches, they
+would have been getting Real Work done.
 
-> I've seen some of these case, where the distro kernel has something as
-> a module, but the other parts of the distro the unconditionally load
-> that module always. That makes no sense.
-> If you have 105 different real devices in your system, that have
-> different drivers, sure, I'll buy 105. Somehow I doubt Rusty's box has
-> 105 ;)
+If it weren't a regression I wouldn't have objected.
 
-Sure, and I agree that some distros do modularize stuff too much, and am
-personally changing this on a distro that I can change.  But even then,
-I expect a "normal" system will end up with about 20-50 different
-modules, due to a variety of good reasons (legacy system and ability to
-handle wierd configurations better being both of them.)
+A few years back, I measured the impact of having probe() and
+friends in a section -- init{,data} vs devinit{,data} -- that gets
+removed.  Most drivers were in the 1K-2K range.  $SUBJECT was
+larger than most, but there were some with even more discardable
+init logic.
 
-thanks,
+All that adds up.  There's no point to commiting patches that
+do things wrong *and* waste space, then need to fix things up
+again later when it's easy to do it right in the first place.
 
-greg k-h
+
