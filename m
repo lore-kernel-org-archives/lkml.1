@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZGLWrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbZGLWrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117AbZGLWrH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 18:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbZGLWqc
+	id S1755193AbZGLWrX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 18:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbZGLWqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 18:46:32 -0400
-Received: from kroah.org ([198.145.64.141]:33496 "EHLO coco.kroah.org"
+	Sun, 12 Jul 2009 18:46:33 -0400
+Received: from kroah.org ([198.145.64.141]:33501 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754563AbZGLWqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 18:46:32 -0400
+	id S1754633AbZGLWqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 18:46:33 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 3/9] sparc: remove driver-core BUS_ID_SIZE
-Date: Sun, 12 Jul 2009 15:46:00 -0700
-Message-Id: <1247438766-17266-3-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 4/9] Driver Core: remove BUS_ID_SIZE
+Date: Sun, 12 Jul 2009 15:46:01 -0700
+Message-Id: <1247438766-17266-4-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090712223717.GB16600@kroah.com>
 References: <20090712223717.GB16600@kroah.com>
@@ -26,34 +24,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kay Sievers <kay.sievers@vrfy.org>
 
-The name size limit is gone from the driver-core, the BUS_ID_SIZE
-value will be removed.
+The name size limit is gone from the driver-core, this is
+the removal of the last left-over.
 
-Cc: David S. Miller <davem@davemloft.net>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/sparc/kernel/vio.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+ include/linux/device.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/arch/sparc/kernel/vio.c b/arch/sparc/kernel/vio.c
-index 753d128..c28c714 100644
---- a/arch/sparc/kernel/vio.c
-+++ b/arch/sparc/kernel/vio.c
-@@ -224,7 +224,12 @@ static struct vio_dev *vio_create_one(struct mdesc_handle *hp, u64 mp,
- 	if (!strcmp(type, "domain-services-port"))
- 		bus_id_name = "ds";
+diff --git a/include/linux/device.h b/include/linux/device.h
+index ed4e39f..aebb810 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -25,8 +25,6 @@
+ #include <asm/atomic.h>
+ #include <asm/device.h>
  
--	if (strlen(bus_id_name) >= BUS_ID_SIZE - 4) {
-+	/*
-+	 * 20 char is the old driver-core name size limit, which is no more.
-+	 * This check can probably be removed after review and possible
-+	 * adaption of the vio users name length handling.
-+	 */
-+	if (strlen(bus_id_name) >= 20 - 4) {
- 		printk(KERN_ERR "VIO: bus_id_name [%s] is too long.\n",
- 		       bus_id_name);
- 		return NULL;
+-#define BUS_ID_SIZE		20
+-
+ struct device;
+ struct device_private;
+ struct device_driver;
 -- 
 1.6.3.2
 
