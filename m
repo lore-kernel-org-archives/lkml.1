@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbZGLWqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZGLWrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbZGLWqw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 18:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbZGLWqc
+	id S1755117AbZGLWrH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 18:47:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbZGLWqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 12 Jul 2009 18:46:32 -0400
-Received: from kroah.org ([198.145.64.141]:33493 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:33496 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754475AbZGLWqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 18:46:31 -0400
+	id S1754563AbZGLWqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 18:46:32 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, stable <stable@kernel.org>,
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 2/9] partitions: fix broken uevent_suppress conversion
-Date: Sun, 12 Jul 2009 15:45:59 -0700
-Message-Id: <1247438766-17266-2-git-send-email-gregkh@suse.de>
+Subject: [PATCH 3/9] sparc: remove driver-core BUS_ID_SIZE
+Date: Sun, 12 Jul 2009 15:46:00 -0700
+Message-Id: <1247438766-17266-3-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090712223717.GB16600@kroah.com>
 References: <20090712223717.GB16600@kroah.com>
@@ -23,42 +24,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-git commit f67f129e "Driver core: implement uevent suppress in kobject"
-contains this chunk for fs/partitions/check.c:
+The name size limit is gone from the driver-core, the BUS_ID_SIZE
+value will be removed.
 
- 	/* suppress uevent if the disk supresses it */
--	if (!ddev->uevent_suppress)
-+	if (!dev_get_uevent_suppress(pdev))
- 		kobject_uevent(&pdev->kobj, KOBJ_ADD);
-
-However that should have been
-
--	if (!ddev->uevent_suppress)
-+	if (!dev_get_uevent_suppress(ddev))
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Acked-by: Ming Lei <tom.leiming@gmail.com>
-Cc: stable <stable@kernel.org>
+Cc: David S. Miller <davem@davemloft.net>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/partitions/check.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/sparc/kernel/vio.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 1a9c787..ea4e6cb 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -436,7 +436,7 @@ struct hd_struct *add_partition(struct gendisk *disk, int partno,
- 	rcu_assign_pointer(ptbl->part[partno], p);
+diff --git a/arch/sparc/kernel/vio.c b/arch/sparc/kernel/vio.c
+index 753d128..c28c714 100644
+--- a/arch/sparc/kernel/vio.c
++++ b/arch/sparc/kernel/vio.c
+@@ -224,7 +224,12 @@ static struct vio_dev *vio_create_one(struct mdesc_handle *hp, u64 mp,
+ 	if (!strcmp(type, "domain-services-port"))
+ 		bus_id_name = "ds";
  
- 	/* suppress uevent if the disk supresses it */
--	if (!dev_get_uevent_suppress(pdev))
-+	if (!dev_get_uevent_suppress(ddev))
- 		kobject_uevent(&pdev->kobj, KOBJ_ADD);
- 
- 	return p;
+-	if (strlen(bus_id_name) >= BUS_ID_SIZE - 4) {
++	/*
++	 * 20 char is the old driver-core name size limit, which is no more.
++	 * This check can probably be removed after review and possible
++	 * adaption of the vio users name length handling.
++	 */
++	if (strlen(bus_id_name) >= 20 - 4) {
+ 		printk(KERN_ERR "VIO: bus_id_name [%s] is too long.\n",
+ 		       bus_id_name);
+ 		return NULL;
 -- 
 1.6.3.2
 
