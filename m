@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbZGLJSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753725AbZGLJYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753342AbZGLJSg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 05:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbZGLJS1
+	id S1753725AbZGLJYu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 05:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZGLJYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 05:18:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38439 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751058AbZGLJS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 05:18:26 -0400
-Message-ID: <4A59AAF1.1030102@redhat.com>
-Date: Sun, 12 Jul 2009 12:20:49 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Sun, 12 Jul 2009 05:24:41 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58664 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbZGLJYl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 05:24:41 -0400
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-cris-kernel@axis.com
+Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
+From: Andi Kleen <andi@firstfloor.org>
+References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com>
+	<200907111821.47769.rusty@rustcorp.com.au>
+	<20090711084958.69ff9196@infradead.org>
+	<200907121410.39874.rusty@rustcorp.com.au>
+Date: Sun, 12 Jul 2009 11:24:37 +0200
+In-Reply-To: <200907121410.39874.rusty@rustcorp.com.au> (Rusty Russell's message of "Sun, 12 Jul 2009 14:10:39 +0930")
+Message-ID: <87skh29ru2.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Dan Magenheimer <dan.magenheimer@oracle.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, npiggin@suse.de, akpm@osdl.org,
-       jeremy@goop.org, xen-devel@lists.xensource.com,
-       tmem-devel@oss.oracle.com, alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org,
-       kurt.hackel@oracle.com, Rusty Russell <rusty@rustcorp.com.au>,
-       dave.mccracken@oracle.com, Marcelo Tosatti <mtosatti@redhat.com>,
-       sunil.mushran@oracle.com, Schwidefsky <schwidefsky@de.ibm.com>,
-       chris.mason@oracle.com, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/4] (Take 2): transcendent memory ("tmem") for Linux
-References: <d693761e-2f2b-4d8c-ae4f-7f22479f6c0f@default>
-In-Reply-To: <d693761e-2f2b-4d8c-ae4f-7f22479f6c0f@default>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/10/2009 06:23 PM, Dan Magenheimer wrote:
->> If there was one change to tmem that would make it more
->> palatable, for
->> me it would be changing the way pools are "allocated".  Instead of
->> getting an opaque handle from the hypervisor, I would force
->> the guest to
->> allocate it's own memory and to tell the hypervisor that it's a tmem
->> pool.
->>      
+Rusty Russell <rusty@rustcorp.com.au> writes:
 >
-> An interesting idea but one of the nice advantages of tmem being
-> completely external to the OS is that the tmem pool may be much
-> larger than the total memory available to the OS.  As an extreme
-> example, assume you have one 1GB guest on a physical machine that
-> has 64GB physical RAM.  The guest now has 1GB of directly-addressable
-> memory and 63GB of indirectly-addressable memory through tmem.
-> That 63GB requires no page structs or other data structures in the
-> guest.  And in the current (external) implementation, the size
-> of each pool is constantly changing, sometimes dramatically so
-> the guest would have to be prepared to handle this.  I also wonder
-> if this would make shared-tmem-pools more difficult.
->    
+> (I like the idea of trying kmalloc and falling back, simply because it reduces 
+> TLB pressure,
 
-Having no struct pages is also a downside; for example this guest cannot 
-have more than 1GB of anonymous memory without swapping like mad.  
-Swapping to tmem is fast but still a lot slower than having the memory 
-available.
+I implemented this for 32bit in 2.4, but I always had second thoughts
+if that was really reducing TLB pressure.
 
-tmem makes life a lot easier to the hypervisor and to the guest, but 
-also gives up a lot of flexibility.  There's a difference between memory 
-and a very fast synchronous backing store.
+x86 CPUs have separated TLBs for 2MB and 4K and they all have much
+more 4K entries. So it might actually be worse to use the 2MB TLBs for
+this.
 
-> I can see how it might be useful for KVM though.  Once the
-> core API and all the hooks are in place, a KVM implementation of
-> tmem could attempt something like this.
->    
+> but that's probably best done after unification).
 
-My worry is that tmem for kvm leaves a lot of niftiness on the table, 
-since it was designed for a hypervisor with much simpler memory 
-management.  kvm can already use spare memory for backing guest swap, 
-and can already convert unused guest memory to free memory (by swapping 
-it).  tmem doesn't really integrate well with these capabilities.
+Trying kmalloc doesn't work on x86-64
 
+-Andi
 
 -- 
-error compiling committee.c: too many arguments to function
-
+ak@linux.intel.com -- Speaking for myself only.
