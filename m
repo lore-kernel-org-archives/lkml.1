@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbZGLPH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbZGLPQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbZGLPH3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 11:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZGLPHU
+	id S1754155AbZGLPQm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 11:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbZGLPQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 11:07:20 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:62373 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753804AbZGLPHT (ORCPT
+	Sun, 12 Jul 2009 11:16:32 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:37978 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753804AbZGLPQc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 11:07:19 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Subject: Re: compat ioctl32 for /dev/snapshot?
-Date: Sun, 12 Jul 2009 17:07:10 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.95; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, "Linux-kernel" <linux-kernel@vger.kernel.org>
-References: <49FEB572.4010909@msgid.tls.msk.ru> <20090710162105.GA1469@ucw.cz> <4A592C09.8060104@msgid.tls.msk.ru>
-In-Reply-To: <4A592C09.8060104@msgid.tls.msk.ru>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sun, 12 Jul 2009 11:16:32 -0400
+Date: Sun, 12 Jul 2009 11:16:30 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Michael S. Zick" <lkml@morethan.org>
+cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: uhci_hcd fails to off-line device/hub on error condition
+In-Reply-To: <200907111407.54152.lkml@morethan.org>
+Message-ID: <Pine.LNX.4.44L0.0907121104360.17691-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907121707.11152.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/rREjVwJ8JNMBPKdc5GHajRuupHi4WlVH1hDn
- RC+hZmqO/HuoUi8Isdnz657N0efOYUZkhmU40sUOpDvq9E2z5i
- 3HfTTIbab6RYpw3KylSuw==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 July 2009, Michael Tokarev wrote:
-> As I mentioned in my first email, I'm not the right person to
-> do the patch.  But regardless, I spent about a day understanding
-> this stuff (or trying to, anyway) - 100% useless day - and when
-> I thought I have a patch someone else spoken up and said this
-> way (compat_ioctl) is the wrong approach now.  And sent another,
-> also trivial patch, adding compat calls right to the proper
-> place in kernel/power.c.  Which (the patch) has been ignored
-> too.
+On Sat, 11 Jul 2009, Michael S. Zick wrote:
 
-I never got a reply from you saying whether or not the patch
-I sent actually worked. If you or someone else can confirm it,
-I'll resend with the fixes you mentioned.
+> - - Megabytes of the same snipped - -
+> uhci_hcd 0000:00:10.2: host controller process error, something bad happened!
+> uhci_hcd 0000:00:10.1: host system error, PCI problems?
+> uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
+> uhci_hcd 0000:00:10.2: host system error, PCI problems?
+> uhci_hcd 0000:00:10.2: host controller process error, something bad happened!
+> 
+> - - driver can detect unexpected behavior sufficent to post the messages - -
+> 
+> uhci_hcd 0000:00:10.1: host system error, PCI problems?
+> uhci_hcd 0000:00:10.1: host controller process error, something bad happened!
+> 
+> - - but never does anything about it - other than bitch - -
 
-	Arnd <><
+Yep.  The problem identified by those messages is supposed to be very
+rare -- they mean that the PCI bus is overloaded and consequently the
+USB controller wasn't able to transfer the data it needed sufficiently
+rapidly.  (Except in your case, where they really mean that something
+is wrong with the hardware.  But how can the kernel be expected to
+realize this?)
+
+The driver doesn't do anything about it because there's nothing to be
+done.  Bus overloads are very rare and quickly go away by themselves.  
+It isn't a fatal error.
+
+Now, I suppose we could add a test for badly misbehaving hardware.  
+You can do it yourself: In drivers/usb/host/uhci-hcd.c, find the big
+"if" statement in uhci_irq() that tests for any unexpected bits in
+the "status" variable.  Try printing out the value of status; if it
+turns out to be 0xffff then we can detect your problem and take the
+controller offline.
+
+Alan Stern
+
