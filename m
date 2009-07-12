@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbZGLUHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbZGLUK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753097AbZGLUHP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 16:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbZGLUHE
+	id S1753097AbZGLUK2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 16:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZGLUKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 16:07:04 -0400
-Received: from n26.bullet.mail.mud.yahoo.com ([68.142.206.221]:46244 "HELO
-	n26.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751241AbZGLUHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 16:07:03 -0400
-X-Yahoo-Newman-Id: 307731.60581.bm@omp402.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=LhizeH8xA4olCCjD/HVCn1gpkWYgS/nDqL0FZlEZnD7/VfZFVMsnEta3Kr4haKYSymD30+IAoDOrUd38RnL5b7waaJiRpNgStnhDqXf86QbUtkeL8+TIOiR0XEVmkL18/uvevW/KpIyxv4WFHrfZWSyrABWC6DUgwSEoldYewUI=  ;
-X-YMail-OSG: RNI.RD8VM1lvK2TwDEaN.0koY42qxQhVBz9ftTDPB5vPolVrv70ciabgcyaGelYz4tku2xCCVB6CY8mKxDUd.ktnTPkyRjqco5UTeV.LhpXNDY0Cc4Sj.VIjFh1L7lnxThS8FrOTpqHHbUTWGoVPLzp3STjPC.2atTuDodq78OUU69c1Ys6n8WIOIqtKkqYMZ26dA7HKFcsWZoF0MtMW3aUxZp0dPZhxkBmC2jTJkuuc0QFU6ENHd6Su1U99no5hXMuTMad9BoDQ0hOq67wxVQ6ZaA9PtVsSTSs1.tXWB4qIBNoUKJU-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] move omap_udc's probe function to .devinit.text
-Date: Sun, 12 Jul 2009 13:07:00 -0700
-User-Agent: KMail/1.9.10
-Cc: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
-	<u.kleine-koenig@pengutronix.de>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Lindgren <tony@atomide.com>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-References: <20090711170548.GC5205@suse.de> <20090712084734.GA944@flint.arm.linux.org.uk> <20090712131732.GA4406@flint.arm.linux.org.uk>
-In-Reply-To: <20090712131732.GA4406@flint.arm.linux.org.uk>
+	Sun, 12 Jul 2009 16:10:18 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:40644 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751241AbZGLUKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 16:10:17 -0400
+Date: Sun, 12 Jul 2009 22:03:42 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] drivers/char/hvc_console.c: Drop unnecessary NULL test
+Message-ID: <Pine.LNX.4.64.0907122203060.22658@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907121307.01216.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 July 2009, Russell King wrote:
-> Here is the effect of applying the am79c961 patch:
+From: Julia Lawall <julia@diku.dk>
 
-Observe:  $SUBJECT is an entirely separate patch.
+The result of container_of should not be NULL.  In particular, in this case
+the argument to the enclosing function has passed though INIT_WORK, which
+dereferences it, implying that its container cannot be NULL.
 
-My NAKs were quite specific.
+A simplified version of the semantic patch that makes this change is as
+follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
+// <smpl>
+@@
+identifier fn,work,x,fld;
+type T;
+expression E1,E2;
+statement S;
+@@
+
+static fn(struct work_struct *work) {
+  ... when != work = E1
+  x = container_of(work,T,fld)
+  ... when != x = E2
+- if (x == NULL) S
+  ...
+}
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/char/hvc_console.c          |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 94e7e3c..e367630 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -516,8 +516,6 @@ static void hvc_set_winsz(struct work_struct *work)
+ 	struct winsize ws;
+ 
+ 	hp = container_of(work, struct hvc_struct, tty_resize);
+-	if (!hp)
+-		return;
+ 
+ 	spin_lock_irqsave(&hp->lock, hvc_flags);
+ 	if (!hp->tty) {
