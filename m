@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbZGLV1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZGLVvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753016AbZGLV1j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 17:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZGLV1a
+	id S1753225AbZGLVvZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 17:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZGLVvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 17:27:30 -0400
-Received: from mail-px0-f185.google.com ([209.85.216.185]:63688 "EHLO
-	mail-px0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751297AbZGLV1a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 17:27:30 -0400
-X-Greylist: delayed 451 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Jul 2009 17:27:29 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=d5QSMLHP1AqXMLCEYgFMjzDhs0lDsf66gf88+CeYliOXbgyGkLOXmh7tImOejUkkPK
-         qCjHssFR60ukLEBTMtq4ZqFv1u0ofJSyezDNcbevYHwRvR/aEYkY37yEWl9EI8WHSt2u
-         qUKx0TUzD3UEsWec/Btqpt1cRrriMjp+KdMWc=
-Date: Sun, 12 Jul 2009 17:19:50 -0400
-From: Celejar <celejar@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: suspend to disk now broken
-Message-Id: <20090712171950.4d493cac.celejar@gmail.com>
-In-Reply-To: <200907122256.01663.rjw@sisk.pl>
-References: <20090712151947.25446ceb.celejar@gmail.com>
-	<200907122219.53116.rjw@sisk.pl>
-	<20090712162635.0e451001.celejar@gmail.com>
-	<200907122256.01663.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 12 Jul 2009 17:51:15 -0400
+Received: from hall.aurel32.net ([88.191.82.174]:54207 "EHLO hall.aurel32.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750965AbZGLVvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 17:51:14 -0400
+X-Greylist: delayed 2387 seconds by postgrey-1.27 at vger.kernel.org; Sun, 12 Jul 2009 17:51:14 EDT
+Date: Sun, 12 Jul 2009 17:58:33 +0200
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Revert "Neither asm/types.h nor linux/types.h is required
+	for arch/ia64/include/asm/fpu.h"
+Message-ID: <20090712155833.GB12923@volta.aurel32.net>
+Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
+	Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+X-Mailer: Mutt 1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Jul 2009 22:56:01 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+asm/fpu.h uses the __IA64_UL macro which is declared in asm/types.h, so
+this include is really required. Without it, GNU libc fails to build.
 
-> On Sunday 12 July 2009, Celejar wrote:
-> > On Sun, 12 Jul 2009 22:19:52 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > On Sunday 12 July 2009, Celejar wrote:
-> > > > Hi,
-> > > > 
-> > > > A recent change to the kernel has apparently broken suspend to disk on
-> > > > my machine.  It still works fine in 2.6.30.1, but hangs during the
-> > > > 'devices' phase of suspension with 2.6.31-rc2.  [I originally saw the
+This reverts commit 2678c07b07ac2076675e5d57653bdf02e9af1950.
+---
+ arch/ia64/include/asm/fpu.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-...
+diff --git a/arch/ia64/include/asm/fpu.h b/arch/ia64/include/asm/fpu.h
+index 0c26157..b6395ad 100644
+--- a/arch/ia64/include/asm/fpu.h
++++ b/arch/ia64/include/asm/fpu.h
+@@ -6,6 +6,8 @@
+  *	David Mosberger-Tang <davidm@hpl.hp.com>
+  */
+ 
++#include <linux/types.h>
++
+ /* floating point status register: */
+ #define FPSR_TRAP_VD	(1 << 0)	/* invalid op trap disabled */
+ #define FPSR_TRAP_DD	(1 << 1)	/* denormal trap disabled */
+-- 
+1.6.1.3
 
-> Please try to boot with init=/bin/bash and use the 'echo ...' method.
-
-Still fails, as before.
-
-Celejar
---
-mailmin.sourceforge.net - remote access via secure (OpenPGP) email
-ssuds.sourceforge.net - A Simple Sudoku Solver and Generator
-
+-- 
+Aurelien Jarno	                        GPG: 1024D/F1BCDB73
+aurelien@aurel32.net                 http://www.aurel32.net
