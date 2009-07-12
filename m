@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbZGLGe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZGLGsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752249AbZGLGe4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 02:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbZGLGet
+	id S1753319AbZGLGsG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 02:48:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZGLGrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 02:34:49 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:46531 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbZGLGet (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 02:34:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=EQ+sIJfOv7b/dH73kBIoFjQZMNUpaMZq/MHE8sCZezfhef+mjTZbTZUT+j5Pc5JwC1
-         SKTX4MTNopSDsvpSJMiLe/rUI9g2Us/RTvmEUM2KLk5uC2HUSEQL2KvWtuXxFS76htA3
-         jN39kljbouw45/2Z+p85cJDmLrFbUJbfuJcBs=
-Date: Sun, 12 Jul 2009 10:34:45 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC -tip] x86,apic - set cpu_has_apic for discrete apic
-Message-ID: <20090712063445.GC4782@lenovo>
-References: <20090711212929.GG5325@lenovo> <alpine.LFD.2.00.0907120141020.13862@eddie.linux-mips.org> <20090712055200.GB4782@lenovo> <alpine.LFD.2.00.0907120709220.13862@eddie.linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0907120709220.13862@eddie.linux-mips.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 12 Jul 2009 02:47:55 -0400
+Received: from home.keithp.com ([63.227.221.253]:46010 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751246AbZGLGrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 02:47:55 -0400
+From: keithp@keithp.com
+To: rui.zhang@intel.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       keithp@keithp.com
+Subject: [PATCH 1/2] acpi: don't free non-existant backlight in acpi video module
+Date: Sat, 11 Jul 2009 23:47:31 -0700
+Message-Id: <1247381251-27031-1-git-send-email-keithp@keithp.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Sun, Jul 12, 2009 at 07:31:44AM +0100]
-| On Sun, 12 Jul 2009, Cyrill Gorcunov wrote:
-| 
-| >   Well, I've been using code reading. No real hardware test.
-| > I just don't have such a hardware.
-| 
-|  Then simulate it!  Proofreading is not enough -- the APIC code is too 
-| twisted.  Be imaginative -- for example you can clear the APIC bit at the 
-| time CPUID flags are saved for later use with cpu_has_apic() and see if 
-| the code behaves as expected.  Sprinkle printk()s here and there to see if 
-| variables are set correctly, whether the right code paths are taken, etc.  
-| Tedious?  Well, who said kernel debugging was going to be a piece of cake?
-| 
-|  Most of the APIC support code I have written has been run-time tested 
-| like this -- one change at a time.  Do you think I have an infinite number 
-| of SMP configurations too?  All the clean-ups I worked on last year were 
-| tested with one laptop.  I didn't even have a serial port for console 
-| dumps back then.
-| 
-|  NAK from me until you've tested it, sorry.
+From: Keith Packard <keithp@keithp.com>
 
-Started to... hope to publish results today!
-Thanks Maciej!
+acpi_video_put_one_device was attempting to remove sysfs entries and
+unregister a backlight device without first checking that said backlight
+device structure had been created.
 
-| 
-|   Maciej
-| 
-	-- Cyrill
+Signed-off-by: Keith Packard <keithp@keithp.com>
+---
+ drivers/acpi/video.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 8851315..60ea984 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -2004,8 +2004,11 @@ static int acpi_video_bus_put_one_device(struct acpi_video_device *device)
+ 	status = acpi_remove_notify_handler(device->dev->handle,
+ 					    ACPI_DEVICE_NOTIFY,
+ 					    acpi_video_device_notify);
+-	sysfs_remove_link(&device->backlight->dev.kobj, "device");
+-	backlight_device_unregister(device->backlight);
++	if (device->backlight) {
++		sysfs_remove_link(&device->backlight->dev.kobj, "device");
++		backlight_device_unregister(device->backlight);
++		device->backlight = NULL;
++	}
+ 	if (device->cdev) {
+ 		sysfs_remove_link(&device->dev->dev.kobj,
+ 				  "thermal_cooling");
+-- 
+1.6.3.3
+
