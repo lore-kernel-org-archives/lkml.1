@@ -1,121 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbZGLHod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752748AbZGLH56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753959AbZGLHod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 03:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZGLHoQ
+	id S1752748AbZGLH56 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 03:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZGLH5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 03:44:16 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:46756 "EHLO mgw1.diku.dk"
+	Sun, 12 Jul 2009 03:57:49 -0400
+Received: from relay.atmel.no ([80.232.32.139]:56602 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753656AbZGLHoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 03:44:15 -0400
-Date: Sun, 12 Jul 2009 09:43:52 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: dahlmann.thomas@arcor.de, linux-geode@lists.infradead.org, gregkh@suse.de,
-       jirislaby@gmail.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/3] drivers/usb/gadget: Drop NULL test on list_entry result
-Message-ID: <Pine.LNX.4.64.0907120943230.17416@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751339AbZGLH5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 03:57:49 -0400
+Date: Sun, 12 Jul 2009 09:57:31 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linux-mm@kvack.org,
+       kernel@avr32linux.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.30] Bad page map in process
+Message-ID: <20090712095731.3090ef56@siona>
+In-Reply-To: <Pine.LNX.4.64.0907101900570.27223@sister.anvils>
+References: <Pine.LNX.4.64.0907081250110.15633@axis700.grange>
+	<Pine.LNX.4.64.0907101900570.27223@sister.anvils>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.2; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Fri, 10 Jul 2009 19:34:06 +0100 (BST)
+Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
 
-list_entry, which is an alias for container_of, cannot return NULL, as
-there is no way to add a NULL value to a doubly linked list.
+> I've not looked up avr32 pte layout, is 13f26ed4 good or bad?
+> I hope avr32 people can tell more about the likely cause.
 
-A simplified version of the semantic match that findds this problem is as
-follows:
-(http://www.emn.fr/x-info/coccinelle/)
+It looks OK for a user mapping, assuming you have at least 64MB of
+SDRAM (the SDRAM starts at 0x10000000) -- all the normal userspace flags
+are set and all the kernel-only flags are unset. It's marked as
+executable, so it could be that the segfault was caused by the CPU
+executing the wrong code.
 
-// <smpl>
-@r@
-expression x,E;
-statement S1,S2;
-position p,p1;
-@@
+The virtual address 0x4377f876 is a bit higher than what you normally
+see on avr32 systems, but there's not necessarily anything wrong with
+it -- userspace goes up to 0x80000000.
 
-*x = list_entry@p(...)
-... when != x = E
-*if@p1 (x == NULL) S1 else S2
-// </smpl>
+Btw, is preempt enabled when you see this?
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/usb/gadget/amd5536udc.c     |   56 +++++++++-----------
- 1 files changed, 25 insertions(+), 31 deletions(-)
-
-diff --git a/drivers/usb/gadget/amd5536udc.c b/drivers/usb/gadget/amd5536udc.c
-index 826f3ad..85f7aa9 100644
---- a/drivers/usb/gadget/amd5536udc.c
-+++ b/drivers/usb/gadget/amd5536udc.c
-@@ -2379,40 +2379,34 @@ static irqreturn_t udc_data_in_isr(struct udc *dev, int ep_ix)
- 		if (!ep->cancel_transfer && !list_empty(&ep->queue)) {
- 			req = list_entry(ep->queue.next,
- 					struct udc_request, queue);
--			if (req) {
--				/*
--				 * length bytes transfered
--				 * check dma done of last desc. in PPBDU mode
--				 */
--				if (use_dma_ppb_du) {
--					td = udc_get_last_dma_desc(req);
--					if (td) {
--						dma_done =
--							AMD_GETBITS(td->status,
--							UDC_DMA_IN_STS_BS);
--						/* don't care DMA done */
--						req->req.actual =
--							req->req.length;
--					}
--				} else {
--					/* assume all bytes transferred */
-+			/*
-+			 * length bytes transfered
-+			 * check dma done of last desc. in PPBDU mode
-+			 */
-+			if (use_dma_ppb_du) {
-+				td = udc_get_last_dma_desc(req);
-+				if (td) {
-+					dma_done =
-+						AMD_GETBITS(td->status,
-+						UDC_DMA_IN_STS_BS);
-+					/* don't care DMA done */
- 					req->req.actual = req->req.length;
- 				}
-+			} else {
-+				/* assume all bytes transferred */
-+				req->req.actual = req->req.length;
-+			}
- 
--				if (req->req.actual == req->req.length) {
--					/* complete req */
--					complete_req(ep, req, 0);
--					req->dma_going = 0;
--					/* further request available ? */
--					if (list_empty(&ep->queue)) {
--						/* disable interrupt */
--						tmp = readl(
--							&dev->regs->ep_irqmsk);
--						tmp |= AMD_BIT(ep->num);
--						writel(tmp,
--							&dev->regs->ep_irqmsk);
--					}
--
-+			if (req->req.actual == req->req.length) {
-+				/* complete req */
-+				complete_req(ep, req, 0);
-+				req->dma_going = 0;
-+				/* further request available ? */
-+				if (list_empty(&ep->queue)) {
-+					/* disable interrupt */
-+					tmp = readl(&dev->regs->ep_irqmsk);
-+					tmp |= AMD_BIT(ep->num);
-+					writel(tmp, &dev->regs->ep_irqmsk);
- 				}
- 			}
- 		}
+Haavard
