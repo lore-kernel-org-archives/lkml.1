@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZGLWuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbZGLXWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755273AbZGLWuP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 18:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZGLWuE
+	id S1754055AbZGLXWP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 19:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZGLXWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 18:50:04 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:39813 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261AbZGLWuC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 18:50:02 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=fzfHsZ92AT8WhNkMyLMmssFF14b1HzODEnD51SGwKpwErVTnOIgULnc/4Eqjf/CHb
-	CC5/SGbWR/FROfDY2z3OA==
-Date: Sun, 12 Jul 2009 15:49:49 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Greg KH <greg@kroah.com>
-cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] STAGING fixes for 2.6.31-rc2-git tree
-In-Reply-To: <20090712223726.GC16600@kroah.com>
-Message-ID: <alpine.DEB.2.00.0907121543130.8327@chino.kir.corp.google.com>
-References: <20090712223726.GC16600@kroah.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 12 Jul 2009 19:22:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:40456 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751037AbZGLXWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 19:22:04 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
+Date: Mon, 13 Jul 2009 08:51:55 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Siarhei Liakh <sliakh.lkml@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-cris-kernel@axis.com
+References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com> <200907121928.28887.rusty@rustcorp.com.au> <20090712083227.39939849@infradead.org>
+In-Reply-To: <20090712083227.39939849@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907130851.56161.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 12 Jul 2009, Greg KH wrote:
+On Mon, 13 Jul 2009 01:02:27 am Arjan van de Ven wrote:
+> Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > Yes, maybe that's better than kmalloc.  On my laptop I have 105
+> > modules loaded, with 3778464 total length: I'm wasting 206944 bytes
+> > on unused tails of pages.  But that's only 0.06% of my memory.
+>
+> 105 is also a sign that you picked a somewhat suboptimal config...
+> that's of course your choice but it's a choice that has a small price,
+> if you don't want to pay that price, changing the config to not be
+> entirely insane is a good answer as well ;-)
 
-> Here are a few patches for the drivers/staging/ section of the kernel,
-> for your git tree.
-> 
-> The majority are fixes for things that people have reported, and now
-> there should not be any build errors for this portion of the tree.  If
-> anyone still has any problems, please let me know.
-> 
+To be clear: I run distro kernels on my laptop (Ubuntu in this case).  I think 
+this is what we should be optimizing for, or we should offer the distros 
+something better than modules.
 
-I do, the patch entitled "Staging: android: lowmemorykiller.c: fix it for 
-'oom: move oom_adj value from task_struct to mm_struct'" was added to 
-gregkh-2.6 on July 2 and still hasn't made it to Linus' tree.  That has 
-caused a CONFIG_ANDROID_LOW_MEMORY_KILLER build failure for the last month 
-which I explicitly warned about over two months ago:
+Cheers,
+Rusty.
 
-	http://marc.info/?l=linux-kernel&m=124207736216807
+
+
+
