@@ -1,66 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbZGLWVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180AbZGLWYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754525AbZGLWVm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 18:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZGLWVd
+	id S1752180AbZGLWYW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 18:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZGLWYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 18:21:33 -0400
-Received: from n70.bullet.mail.sp1.yahoo.com ([98.136.44.38]:37337 "HELO
-	n70.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751470AbZGLWVc (ORCPT
+	Sun, 12 Jul 2009 18:24:15 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:47268 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751676AbZGLWYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 18:21:32 -0400
-X-Yahoo-Newman-Id: 139103.22236.bm@omp416.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=g7G9D8ssPtq/J/XHfAfBWoI/GiC66wCo89uwTumS9nQZBbW0UCRlWAdWkKlgwzTuGbLuXdXC9/i6rYO3/oUUtnm7PrBeRTMR1MxaYIM8zZR2PfUd/NXcfOs/i/JBH5lKgrF0gArigoRkirROp5SZQOmHcaIlA/o/nnymbcpEa7w=  ;
-X-YMail-OSG: yVT0d0IVM1mDI480U_GNUYkwuGrz7lpEiwb1BwekffOAedidVWVCfxIhILWiqoSRz7znjyS8CQaZOkwXisW9zywEc7UGpz_NxM00P86ucxA.XaTaMzHkLIhCkbb_exf0Yx2WTrv.cPXIfOBj3CgxQ92prF3qRMZRwbwiiSvnSzpOORNs0Zvs8eaQo_GuVGZZxINeF5n0jiYk.J4Bc9BjwhMRmIJFO.D02kDgpezhQnq3gW6obWpRTyVsplILJfM0aNE6neBQlcYP2.ZaFwjgS.4dn3lWnY7lMAT7puB4gFBZ74Zf.sta
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] move omap_udc's probe function to .devinit.text
-Date: Sun, 12 Jul 2009 15:21:30 -0700
-User-Agent: KMail/1.9.10
-Cc: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
-	<u.kleine-koenig@pengutronix.de>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Lindgren <tony@atomide.com>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-References: <20090711170548.GC5205@suse.de> <20090712084734.GA944@flint.arm.linux.org.uk> <20090712131732.GA4406@flint.arm.linux.org.uk>
-In-Reply-To: <20090712131732.GA4406@flint.arm.linux.org.uk>
+	Sun, 12 Jul 2009 18:24:14 -0400
+Date: Sun, 12 Jul 2009 18:23:33 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@vinegar-pot.mit.edu
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       David Howells <dhowells@redhat.com>,
+       Anders Kaseorg <andersk@ksplice.com>
+Subject: [PATCH] Restructure BSS linker script macros.
+Message-ID: <alpine.DEB.1.10.0907121820360.23364@vinegar-pot.mit.edu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200907121521.31188.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 July 2009, Russell King wrote:
-> 	 David's approach is an enhancement whereas your patches
-> are a bug fix.
+The BSS section macros in vmlinux.lds.h currently place the .sbss
+input section outside the bounds of [__bss_start, __bss_end].  On all
+architectures except for microblaze that handle both .sbss and
+__bss_start/__bss_end, this is wrong: the .sbss input section is
+within the range [__bss_start, __bss_end].  Relatedly, the example
+code at the top of the file actually has __bss_start/__bss_end defined
+twice; I believe the right fix here is to define them in the
+BSS_SECTION macro but not in the BSS macro.
 
-Not an enhancement.  Uwe's current approach causes regressions
-in terms of kernel runtime footprint.  That is, pages will newly
-be made to sit around doing *nothing* forever, when they could
-have been used to get Real Work done.  And, pre-patches, they
-would have been getting Real Work done.
+Another problem with the current macros is that several
+architectures have an ALIGN(4) or some other small number just before
+__bss_stop in their linker scripts.  The BSS_SECTION macro currently
+hardcodes this to 4; while it should really be an argument.  It also
+ignores its sbss_align argument; fix that.
 
-If it weren't a regression I wouldn't have objected.
+mn10300 is the only user at present of any of the macros touched by
+this patch.  It looks like mn10300 actually was incorrectly converted
+to use the new BSS() macro (the alignment of 4 prior to conversion was
+a __bss_stop alignment, but the argument to the BSS macro is a start
+alignment).  So fix this as well.
 
-A few years back, I measured the impact of having probe() and
-friends in a section -- init{,data} vs devinit{,data} -- that gets
-removed.  Most drivers were in the 1K-2K range.  $SUBJECT was
-larger than most, but there were some with even more discardable
-init logic.
+I'd like acks from Sam and David on this one.  Also CCing Paul, since
+he has a patch from me which will need to be updated to use
+BSS_SECTION(0, PAGE_SIZE, 4) once this gets merged.
 
-All that adds up.  There's no point to commiting patches that
-do things wrong *and* waste space, then need to fix things up
-again later when it's easy to do it right in the first place.
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: David Howells <dhowells@redhat.com>
+---
+ arch/mn10300/kernel/vmlinux.lds.S |    2 +-
+ include/asm-generic/vmlinux.lds.h |   19 +++++++++----------
+ 2 files changed, 10 insertions(+), 11 deletions(-)
 
-
+diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
+index c96ba3d..f4aa079 100644
+--- a/arch/mn10300/kernel/vmlinux.lds.S
++++ b/arch/mn10300/kernel/vmlinux.lds.S
+@@ -107,7 +107,7 @@ SECTIONS
+   __init_end = .;
+   /* freed after init ends here */
+ 
+-  BSS(4)
++  BSS_SECTION(0, PAGE_SIZE, 4)
+ 
+   _end = . ;
+ 
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index a553f10..6ad76bf 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -30,9 +30,7 @@
+  *	EXCEPTION_TABLE(...)
+  *	NOTES
+  *
+- *	__bss_start = .;
+- *	BSS_SECTION(0, 0)
+- *	__bss_stop = .;
++ *	BSS_SECTION(0, 0, 0)
+  *	_end = .;
+  *
+  *	/DISCARD/ : {
+@@ -489,7 +487,8 @@
+  * bss (Block Started by Symbol) - uninitialized data
+  * zeroed during startup
+  */
+-#define SBSS								\
++#define SBSS(sbss_align)						\
++	. = ALIGN(sbss_align);						\
+ 	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
+ 		*(.sbss)						\
+ 		*(.scommon)						\
+@@ -498,12 +497,10 @@
+ #define BSS(bss_align)							\
+ 	. = ALIGN(bss_align);						\
+ 	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {				\
+-		VMLINUX_SYMBOL(__bss_start) = .;			\
+ 		*(.bss.page_aligned)					\
+ 		*(.dynbss)						\
+ 		*(.bss)							\
+ 		*(COMMON)						\
+-		VMLINUX_SYMBOL(__bss_stop) = .;				\
+ 	}
+ 
+ /*
+@@ -735,8 +732,10 @@
+ 		INIT_RAM_FS						\
+ 	}
+ 
+-#define BSS_SECTION(sbss_align, bss_align)				\
+-	SBSS								\
++#define BSS_SECTION(sbss_align, bss_align, stop_align)			\
++	. = ALIGN(sbss_align);						\
++	VMLINUX_SYMBOL(__bss_start) = .;				\
++	SBSS(sbss_align)						\
+ 	BSS(bss_align)							\
+-	. = ALIGN(4);
+-
++	. = ALIGN(stop_align);						\
++	VMLINUX_SYMBOL(__bss_stop) = .;
+-- 
+1.6.3.3
