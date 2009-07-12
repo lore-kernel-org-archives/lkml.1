@@ -1,82 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZGLCF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbZGLC3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbZGLCF2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 11 Jul 2009 22:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZGLCFS
+	id S1753740AbZGLC3X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 11 Jul 2009 22:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZGLC3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 11 Jul 2009 22:05:18 -0400
-Received: from mga02.intel.com ([134.134.136.20]:13829 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751879AbZGLCFR convert rfc822-to-8bit (ORCPT
+	Sat, 11 Jul 2009 22:29:13 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:29143 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbZGLC3N convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 11 Jul 2009 22:05:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,385,1243839600"; 
-   d="scan'208";a="532048245"
-From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Magnus Damm <magnus.damm@gmail.com>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Date: Sun, 12 Jul 2009 07:35:07 +0530
-Subject: RE: [linux-pm] [RFC][PATCH] PM: Introduce core framework for
- run-time PM of I/O devices (rev. 8)
-Thread-Topic: [linux-pm] [RFC][PATCH] PM: Introduce core framework for
- run-time PM of I/O devices (rev. 8)
-Thread-Index: AcoCF/SFOnfcuPOtSaGB+VA3eNH6TwAfFxHQ
-Message-ID: <175E0F9A9EFCEA46A65F5552BB057298BB5F43F0@bgsmsx502.gar.corp.intel.com>
-References: <aec7e5c30907081952t4b88f1ccjeec6ab11b1d913b8@mail.gmail.com>
- <aec7e5c30907090831y180b0972o6dcb961dd292a3c0@mail.gmail.com>
- <175E0F9A9EFCEA46A65F5552BB057298BB5F3EA2@bgsmsx502.gar.corp.intel.com>
- <200907111308.44388.rjw@sisk.pl>
-In-Reply-To: <200907111308.44388.rjw@sisk.pl>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sat, 11 Jul 2009 22:29:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Bdixk/93klruHNljvzfAByHgOn+6CAvyIXtoGd/FkTWZ+Rv60gpy7ObR6w81P20R5m
+         vGoi29jH0BMZnc9PrRpAPuYYGwilHzdKMcUyLhzLmMx6dbntAZlBU93A4bBpIO9BQIrE
+         99w14nvcwt1GGSfLYm8jvT3SvwPD9vcQMCq4c=
 MIME-Version: 1.0
+In-Reply-To: <20090711210902.GB6641@nowhere>
+References: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com>
+	 <20090711004339.GA6125@nowhere>
+	 <d82e647a0907102025s655a82bg11af0eb901349c31@mail.gmail.com>
+	 <20090711210902.GB6641@nowhere>
+Date: Sun, 12 Jul 2009 10:29:11 +0800
+Message-ID: <d82e647a0907111929u72ebe4b5t7cf638568e195adc@mail.gmail.com>
+Subject: Re: [RESEND PATCH 0/11] kernel:lockdep:replace DFS with BFS
+From: Ming Lei <tom.leiming@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Hi,
+2009/7/12 Frederic Weisbecker <fweisbec@gmail.com>:
+> On Sat, Jul 11, 2009 at 11:25:29AM +0800, Ming Lei wrote:
+>> 2009/7/11 Frederic Weisbecker <fweisbec@gmail.com>:
+
+>> >>     3,The shortest path can be obtained by BFS if the target is
+>> >>     found, but can't be got by DFS. By the shortest path, we can
+>> >>     shorten the lock dependency chain and help to troubleshoot lock
+>> >>     problem easier than before.
+>> >
+>> >
+>> > But there I don't understand your argument.
+>> > The shortest path finding doesn't seem to me a need.
+>> > Example:
+>> >
+>> > Task 1 acquires: A B C
+>> > And Later:
+>> > Task 2 acquires: C B A
+>> >
+>> > DFS will probably report a circular lock dependency
+>> > with A and C.
+>> > BFS will probably report a circular lock dependency
+>> > with B and C.
+>> >
+>> > Which one is the most important? Both dependencies must be fixed
+>> > anyway. Once the developer will fix one of those, the remaining one
+>> > will be reported and so on...
+>> >
+>> > Or am I missing something else?
+>>
+>> Yes, you are right.  By BFS, we can always find the shortest circle, but we
+>> find a random circle by DFS.   No one can say which circle is the most
+>> important from the point of deadlock.
+>>
+>> But it is easier to start troubleshooting from the shortest circle
+>> than a random circle , then from the next shortest circle if other
+>> circle still exists .
+>>
+>> Right?
 >
->> I am newbee to this mailing list. Please excuse me if I am talking nonsense here.
->> 
->> 
->> 
->> On Thu, Jul 9, 2009 at 10:48 PM, Alan Stern<stern@rowland.harvard.edu> wrote:
->>>> On Thu, 9 Jul 2009, Magnus Damm wrote:
->>>>
->>>> Clocks should be stopped as soon as possible without any delay. The
->>>> clock stopping is very cheap performance wise. Also, the clock
->>>> stopping is done on bus level without invoking any driver callbacks.
->>>>> Delaying the clock stopping does not make any sense to me.
->>>>
->>>> In that case the device driver or bus subsystem should manage the
->>>> device's clock directly.  There's no need to tie it in with the runtime
->>>> PM framework.  Simply start the clock before each I/O operation and
->>>> stop it afterward.
->> 
->>> It's not that easy. The clock needs to be enabled to let the hardware
->>> device perform device specific stuff. For instance, the clock for the
->>> LCD controller needs to be on to redraw the screen. When the driver
->>> knows that it's done with the clock it can notify the bus using
->>> Runtime PM.
->> 
->> Is there any plan to look into the "Clock Framework" that was developed as
->> part of OMAP and extending this to make it generic for all platforms?
+>
+> I don't have a strong opinion on this. I just don't think the shortest path is
+> the most important if there are many many paths.
+> Whatever AB-BA is encountered, all of them must be fixed.
+> What might give a degree of importance for such bad circle is the window
+> in which it triggers.
 
->I don't have any plan to do that and I heaven't heard of anyone planning to do
->it.
+The shortest path is just a characteristic of BFS, and we do not need
+to pay extra
+work for it.  So finding the shortest circle have not any bad effect at least.
 
-Thanks for the reply Rafael. I felt if we are talking about controlling a device clock from a runtime PM framework we should look at extending the Clock framework rather than re-inventing things.
+IMHO, troubleshooting from the shortest circle is easier than from other circle.
 
-Regards,
-Nithish Mahalingam
+-- 
+Lei Ming
