@@ -1,44 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbZGMKEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbZGMKGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755283AbZGMKEi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 06:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbZGMKEh
+	id S1755306AbZGMKGD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 06:06:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZGMKGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 06:04:37 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:53685 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754664AbZGMKEg (ORCPT
+	Mon, 13 Jul 2009 06:06:02 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:18080 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755259AbZGMKGB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 06:04:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=kFd4e0JIHY3qyYq70WjELm0kyFlnhhiuH8cI1NmCixHX4efoR6VxS370M4Tc6bySpJ
-         HkowHm0KlWZhMOvw6b+cYNRbZD2Cv0H/QYFfGdHcBdj+pBEKI3Eozs4y8tabWqMQGNr0
-         SJl0CO1IX8vI8YVaxqyb2zKEbl6vgEEIF4pk0=
+	Mon, 13 Jul 2009 06:06:01 -0400
+X-IronPort-AV: E=Sophos;i="4.42,389,1243828800"; 
+   d="scan'208";a="58188706"
+Subject: Re: [00/15] swiotlb cleanup
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: <mingo@elte.hu>, <jeremy@goop.org>, <linux-kernel@vger.kernel.org>,
+       <linux-ia64@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+       <benh@kernel.crashing.org>, <tony.luck@intel.com>, <x86@kernel.org>,
+       <beckyb@kernel.crashing.org>, <joerg.roedel@amd.com>
+In-Reply-To: <20090713185247W.fujita.tomonori@lab.ntt.co.jp>
+References: <1247234520.4002.418.camel@zakaz.uk.xensource.com>
+	 <20090713131859N.fujita.tomonori@lab.ntt.co.jp>
+	 <1247478029.11668.10.camel@zakaz.uk.xensource.com>
+	 <20090713185247W.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Mon, 13 Jul 2009 11:05:57 +0100
+Message-ID: <1247479557.11668.30.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Date: Mon, 13 Jul 2009 15:34:35 +0530
-Message-ID: <241b8f7b0907130304h3a3eec06w26fe8a2edfc3866e@mail.gmail.com>
-Subject: Kernel Config Promt disabling
-From: Prabhu Chawandi <prabhu.chavandi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 2009-07-13 at 18:53 +0900, FUJITA Tomonori wrote:
+> On Mon, 13 Jul 2009 10:40:29 +0100
+> Ian Campbell <Ian.Campbell@eu.citrix.com> wrote:
+> 
+> > On Mon, 2009-07-13 at 05:20 +0100, FUJITA Tomonori wrote:
+> > > On Fri, 10 Jul 2009 15:02:00 +0100
+> > > Ian Campbell <Ian.Campbell@citrix.com> wrote:
+> > > 
+> > > > On Fri, 2009-07-10 at 14:35 +0900, FUJITA Tomonori wrote:
+> > > > > I don't think that we need to take account of dom0 support; we don't
+> > > > > have a clear idea about an acceptable dom0 design (it needs to use
+> > > > > swiotlb code? I don't know yet), we don't even know we will have dom0
+> > > > > support in mainline. That's why I didn't CC this patchset to Xen
+> > > > > camp.
+> > > > 
+> > > > The core domain 0 patches which were the subject of the discussions a
+> > > > few week back are completely orthogonal to the swiotlb side of things
+> > > 
+> > > ? If we don't merge dom0 patch, we don't need dom0 changes to
+> > > swiotlb. We don't know we would have dom0 support in mainline. Or I
+> > > overlooked something?
+> > [...]
+> > > As far as I know, you have not posted anything about changes to
+> > > swiotlb for domU. I can't discuss it. If you want, please send
+> > > patches.
+> > 
+> > There are no separate domU swiotlb patches -- the exact the same patches
+> > as we have already been discussing are useful and necessary for both
+> > domU and dom0.
+> 
+> Hmm, you guys introduced the swiotlb hooks by saying that it's for
+> only dom0.
 
-  I am getting config promt to select options  all the time I build it.
+That was just sloppy wording on our part. domain 0 is the major usecase
+today so there is a tendency to think in those terms but the changes are
+actually relevant to any domain with access to a physical device that
+can do DMA, this includes domU via PCI passthrough.
 
-How can I disable this prompting and telling it to take the status
-from current .config file ?
+> I don't see any comments like 'this is useful to dom0 too'. I'm still
+                                                      ^U?
+> not sure what exactly part is useful to domU.
 
+All of it...
 
-Any ways I can do that ?
+Ian.
 
-
-Many Thanks
-Prabhu
