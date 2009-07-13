@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbZGMJBN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbZGMJBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbZGMJBN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 05:01:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbZGMJBN
+	id S1755048AbZGMJBq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 05:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZGMJBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 05:01:13 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:32786 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755023AbZGMJBM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 05:01:12 -0400
-Date: Mon, 13 Jul 2009 11:01:06 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Eric Miao <eric.miao@marvell.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Paul Sokolovsky <pmiscml@gmail.com>, Richard Purdie <rpurdie@rpsys.net>,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] move corgi-ssp's probe function to .devinit.text
-Message-ID: <20090713090106.GB10549@pengutronix.de>
-References: <20090711170548.GC5205@suse.de> <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-3-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-4-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-5-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-6-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-7-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-8-git-send-email-u.kleine-koenig@pengutronix.de> <4A5AF3D1.7080802@gmail.com>
+	Mon, 13 Jul 2009 05:01:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56081 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754982AbZGMJBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 05:01:45 -0400
+Date: Mon, 13 Jul 2009 11:01:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] ftrace: Add missing __init in ftrace_profile_debugfs()
+Message-ID: <20090713090139.GD6757@elte.hu>
+References: <b9df5fa10907120358t7101511cle30e025c3adcbe54@mail.gmail.com> <4A5A8430.7050300@cn.fujitsu.com> <b9df5fa10907122058s3edc4c81t670aed7b7160cf82@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A5AF3D1.7080802@gmail.com>
+In-Reply-To: <b9df5fa10907122058s3edc4c81t670aed7b7160cf82@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 04:44:01PM +0800, Eric Miao wrote:
-> Uwe Kleine-König wrote:
-> > A pointer to corgi_ssp_probe is passed to the core via
-> > platform_driver_register and so the function must not disappear when the
-> > .init sections are discarded.  Otherwise (when having HOTPLUG=y)
-> > unbinding and binding a device to the driver via sysfs will result in an
-> > oops as does a device being registered late.
-> > 
-> > An alternative to this patch is using platform_driver_probe instead of
-> > platform_driver_register plus removing the pointer to the probe function
-> > from the struct platform_driver.
-> > 
+
+* Rakib Mullick <rakib.mullick@gmail.com> wrote:
+
+> On Mon, Jul 13, 2009 at 6:47 AM, Li Zefan<lizf@cn.fujitsu.com> wrote:
 > 
-> This corgi_ssp.c and corgi_lcd.c will be obsoleted soon, the only user
-> corgi_ts.c has been marked as deprecated, and will be remove once the
-> ssp cleanup work is done, so further fixes to these files are pointless.
-OK, dropped.  I hope that either the drivers will be gone when I respin
-this series or I still remember having dropped the patches :-)
+> > Thanks. It has been fixed by commit
+> > 9d9949ce45b42be7a8157ea00fff2b1005ed844a in tip tree
+> >
+> Ah, sorry for noice.
 
-Best regards
-Uwe
+that commit was queued up for .32 - i've cherry-picked it over into 
+the .31 queue of commits.
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+	Ingo
