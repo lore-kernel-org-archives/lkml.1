@@ -1,106 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbZGMGpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZGMGtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753873AbZGMGpc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 02:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbZGMGp2
+	id S1754180AbZGMGtx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 02:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbZGMGts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 02:45:28 -0400
-Received: from elasmtp-scoter.atl.sa.earthlink.net ([209.86.89.67]:51197 "EHLO
-	elasmtp-scoter.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752322AbZGMGp2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 02:45:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=jH3FZ8+9S8fWPIvJCAHKPiH5HqNRfhsOddBbia7OWmMVei/amwj6RDBVqVIIFjkZ;
-  h=Received:Message-Id:From:To:Content-Type:Content-Transfer-Encoding:Mime-Version:Subject:Date:X-Mailer:X-ELNK-Trace:X-Originating-IP;
-Message-Id: <23666D7E-F36B-432E-A134-AFB826E996EA@earthlink.net>
-From: Mitchell Erblich <erblichs@earthlink.net>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Suggested code change: slab.c : Moderately simple : reap based on last access time and show LAST access AGE
-Date: Sun, 12 Jul 2009 23:45:26 -0700
-X-Mailer: Apple Mail (2.930.3)
-X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec7948af9e6e812430b5d0f0c5d6accc71eb350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 98.234.127.54
+	Mon, 13 Jul 2009 02:49:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39617 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750753AbZGMGtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 02:49:47 -0400
+Date: Mon, 13 Jul 2009 06:49:00 GMT
+From: tip-bot for Daniel Qarras <dqarras@yahoo.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dqarras@yahoo.com, hpa@zytor.com,
+       mingo@redhat.com, eranian@googlemail.com, a.p.zijlstra@chello.nl,
+       vince@deater.net, tglx@linutronix.de, mingo@elte.hu
+Reply-To: vince@deater.net, mingo@redhat.com, hpa@zytor.com, dqarras@yahoo.com,
+       linux-kernel@vger.kernel.org, eranian@googlemail.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter, x86: Extend perf_counter Pentium M support
+Message-ID: <tip-f1c6a58121f9846ac665b0fbd3cbab90ce8bcbac@git.kernel.org>
+Git-Commit-ID: f1c6a58121f9846ac665b0fbd3cbab90ce8bcbac
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Jul 2009 06:49:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  f1c6a58121f9846ac665b0fbd3cbab90ce8bcbac
+Gitweb:     http://git.kernel.org/tip/f1c6a58121f9846ac665b0fbd3cbab90ce8bcbac
+Author:     Daniel Qarras <dqarras@yahoo.com>
+AuthorDate: Sun, 12 Jul 2009 04:32:40 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 13 Jul 2009 08:46:51 +0200
 
-	* The basis of the below changes deal with STANDARD rules that caches
-	are time dependent when dealing with their objects. We assume re-use
-	shortly after frees and as time moves forward a lower percentage of  
-objects
-	will be re-used.
+perf_counter, x86: Extend perf_counter Pentium M support
 
-	If I understand the Linux SLAB implementation then ..
+I've attached a patch to remove the Pentium M special casing of
+EMON and as noticed at least with my Pentium M the hardware PMU
+now works:
 
-	SLAB Caches IMO should NORMALLY be reaped ONLY after X time has  
-passed after
-	the last object is freed and movement of the slab to the freelist.
+ Performance counter stats for '/bin/ls /var/tmp':
 
-	It is logical that on a freq alloc/free/alloc repeated sequences that a
-	reasonable time has NOT passed and the drain_freelist() will release
-	a slab that would be re-used for the next alloc.
+       1.809988  task-clock-msecs         #      0.125 CPUs
+              1  context-switches         #      0.001 M/sec
+              0  CPU-migrations           #	 0.000 M/sec
+            224  page-faults              #	 0.124 M/sec
+        1425648  cycles                   #    787.656 M/sec
+         912755  instructions             #	 0.640 IPC
 
-	Secondly, if and when CERTAIN events are pending (ie: extremely low  
-free memory)
-	then the time since should be ignored and all available free slabs  
-should be
-	re-used / slab_destroy().
+Vince suggested that this code was trying to address erratum
+Y17 in Pentium-M's:
 
-	Suggested something like code:
+  http://download.intel.com/support/processors/mobile/pm/sb/25266532.pdf
 
-	To add flexibility : add a /proc variable for "X time"
-	OR
-	#define   FREE_SLAB_AFTER 10	/*secs */
+But that erratum (related to IA32_MISC_ENABLES.7) does not
+affect perfcounters as we dont use this toggle to disable RDPMC
+and WRMSR/RDMSR access to performance counters. We keep cr4's
+bit 8 (X86_CR4_PCE) clear so unprivileged RDPMC access is not
+allowed anyway.
 
-	Thus ..
-
-		in struct slab : add an entry : unsigned long went_free;   /* time  
-slab went free */
-		Use ALSO as last object inuse changes
-		
-
-	drain_freelist():
-
-		Add a boolean arg to drain_freelist() FREE_SOME_EMPTYS or  
-FREE_ALL_EMPTYS
-		and FUNCTION_CALLERS
-		and convert the tofree to the boolean
-	
-		
-		/* After X secs have passed or FREE_ALL_EMPTYS, then destroy/re-use */
-		if (  (! (time_after(jiffies, slabp->went_free ) &&  
-(FREE_SOME_EMPTYS)))
-		    continue;
+Cc: Vince Weaver <vince@deater.net>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Stephane Eranian <eranian@googlemail.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-	TODO:   set jiffy time ONLY when it when it changes  (slabp->inuse =  
-0;) and ++ / --
-		       slabp->went_free = jiffies;
-		alloc_slabmgt();
-		slab_get_object();
-		slab_put_object();
+---
+ arch/x86/kernel/cpu/perf_counter.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-
-	/* By adding a jiffies slab struct item */
-	/* Adding debug set of the jiffies anytime the SLAB is accessed and a  
-like drain
-		function looking for leaks say every hour could be done.
-	Locating these slabs could then SET WARNings, as it indicates a  
-MEMORY LEAK?
-	Could be done in check_slabp for age greater than 1 hr
-
-	and s_show() can print the age of the slab .. convert jiffies...
-	SHOWS age and last usage..
-
-	Mitchell Erblich
-	
-
-
-
-	
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index bed1c4c..7e346d4 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -1583,10 +1583,8 @@ static int p6_pmu_init(void)
+ 		break;
+ 	case 9:
+ 	case 13:
+-		/* for Pentium M, we need to check if PMU exist */
+-		rdmsr(MSR_IA32_MISC_ENABLE, low, high);
+-		if (low & MSR_IA32_MISC_ENABLE_EMON)
+-			break;
++		/* Pentium M */
++		break;
+ 	default:
+ 		pr_cont("unsupported p6 CPU model %d ",
+ 			boot_cpu_data.x86_model);
