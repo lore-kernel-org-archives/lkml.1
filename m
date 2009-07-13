@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbZGMRcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbZGMReO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756746AbZGMRcm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbZGMRcl
+	id S1756727AbZGMReO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528AbZGMReO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:32:41 -0400
-Received: from smtp.mppmu.mpg.de ([134.107.24.58]:49892 "EHLO
-	smtp.mppmu.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756703AbZGMRck (ORCPT
+	Mon, 13 Jul 2009 13:34:14 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:32042 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753597AbZGMReN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:32:40 -0400
-Date: Mon, 13 Jul 2009 19:05:19 +0200 (CEST)
-From: Peter Breitenlohner <peb@mppmu.mpg.de>
-To: Karel Zak <kzak@redhat.com>
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng v2.16-rc2 -- a small patch
-In-Reply-To: <20090702181031.GB4122@nb.net.home>
-Message-ID: <alpine.LNX.2.00.0907131900290.31109@pcl321.mppmu.mpg.de>
-References: <20090702181031.GB4122@nb.net.home>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1803957763-1937402321-1247504719=:31109"
+	Mon, 13 Jul 2009 13:34:13 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [perfmon2] I.1 - System calls - ioctl
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: perfmon2-devel@lists.sourceforge.net,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
+       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <200907131930.23840.arnd@arndb.de>
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
+	 <20090622125837.GA9429@infradead.org> <1247482393.7529.74.camel@twins>
+	 <200907131930.23840.arnd@arndb.de>
+Content-Type: text/plain
+Date: Mon, 13 Jul 2009 19:34:00 +0200
+Message-Id: <1247506440.7500.43.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, 2009-07-13 at 19:30 +0200, Arnd Bergmann wrote:
+> On Monday 13 July 2009, Peter Zijlstra wrote:
+> > On Mon, 2009-06-22 at 08:58 -0400, Christoph Hellwig wrote:
+> > > But talking about syscalls the sys_perf_counter_open prototype is
+> > > really ugly - it uses either the pid or cpu argument which is a pretty
+> > > clear indicator it should actually be two sys calls.
+> > 
+> > Would something like the below be any better?
+> > 
+> > It would allow us to later add something like PERF_TARGET_SOCKET and
+> > things like that.
+> 
+> I don't think it helps on the ugliness side. You basically make the
+> two arguments a union, but instead of adding another flag and directly
+> passing a union, you also add interface complexity.
+> 
+> A strong indication for the complexity is that you got it wrong ;-) :
+> 
+> > +struct perf_counter_target {
+> > +	__u32			id;
+> > +	__u64			val;
+> > +};
+> 
+> This structure is not compatible between 32 and 64 bit user space on x86,
+> because everything except i386 adds implicit padding between id and val.
 
---1803957763-1937402321-1247504719=:31109
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Humm, __u64 doesn't have natural alignment? That would break more than
+just this I think -- it sure surprises me.
 
-On Thu, 2 Jul 2009, Karel Zak wrote:
+> Other than that, making it extensible sounds reasonable. How about just
+> using a '__u64 *target' and a bit in the 'flags' argument?
 
-> The second util-linux-ng 2.16 release candidate is available at
->
->   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
->
-> Feedback and bug reports, as always, are welcomed.
+Would there still be a point in having it a pointer in that case?, but
+yeah, that might work too?
 
-Hi Karel,
-
-I just tried to build util-linux-ng-2.16-rc2 (i686/x86_64 linux-gnu
-with gcc-3.4.6, libc-2.3.6), but in order to succeed I had to apply the
-attached patch (#include <stdarg.h> from shlibs/blkid/src/blkidP.h).
-
-Regards
-Peter
---1803957763-1937402321-1247504719=:31109
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=util-linux-ng-2.16-rc2-patch
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.LNX.2.00.0907131905190.31109@pcl321.mppmu.mpg.de>
-Content-Description: 
-Content-Disposition: attachment; filename=util-linux-ng-2.16-rc2-patch
-
-ZGlmZiAtdXIgLXggTWFrZWZpbGUuaW4gLXggJyoubTQnIC14IGNvbmZpZ3Vy
-ZSAteCBhdXRvbTR0ZS5jYWNoZSAteCBNYWtldmFycy50ZW1wbGF0ZSAteCAn
-Ki5nbW8nIHV0aWwtbGludXgtbmctMi4xNi1yYzIub3JpZy9zaGxpYnMvYmxr
-aWQvc3JjL2Jsa2lkUC5oIHV0aWwtbGludXgtbmctMi4xNi1yYzIvc2hsaWJz
-L2Jsa2lkL3NyYy9ibGtpZFAuaA0KLS0tIHV0aWwtbGludXgtbmctMi4xNi1y
-YzIub3JpZy9zaGxpYnMvYmxraWQvc3JjL2Jsa2lkUC5oCTIwMDktMDctMDEg
-MTc6MTk6NTQuMDAwMDAwMDAwICswMjAwDQorKysgdXRpbC1saW51eC1uZy0y
-LjE2LXJjMi9zaGxpYnMvYmxraWQvc3JjL2Jsa2lkUC5oCTIwMDktMDctMTMg
-MTg6NTM6NTMuMDAwMDAwMDAwICswMjAwDQpAQCAtMTgsNiArMTgsNyBAQA0K
-IA0KICNpbmNsdWRlIDxzeXMvdHlwZXMuaD4NCiAjaW5jbHVkZSA8c3RkaW8u
-aD4NCisjaW5jbHVkZSA8c3RkYXJnLmg+DQogDQogI2luY2x1ZGUgImJpdG9w
-cy5oIgkvKiAkKHRvcF9zcmNkaXIpL2luY2x1ZGUvICovDQogI2luY2x1ZGUg
-ImJsa2lkLmgiDQo=
-
---1803957763-1937402321-1247504719=:31109--
