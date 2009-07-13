@@ -1,68 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbZGMOxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbZGMOzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbZGMOxI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 10:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbZGMOxI
+	id S1756099AbZGMOzS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 10:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZGMOzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 10:53:08 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:57662
-	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756053AbZGMOxH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 10:53:07 -0400
-X-SpamScore: -18
-X-BigFish: VPS-18(zz1432R98dN1805Mzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KMQ6O8-04-GBA-01
-Date: Mon, 13 Jul 2009 16:52:56 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [GIT PULL] core kernel fixes
-Message-ID: <20090713145256.GI19087@amd.com>
-References: <20090710162848.GA26862@elte.hu>
- <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 13 Jul 2009 10:55:18 -0400
+Received: from cmpxchg.org ([85.214.51.133]:59450 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756071AbZGMOzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 10:55:17 -0400
+Date: Mon, 13 Jul 2009 16:54:51 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix vc_screenbuf leak via con_init()
+Message-ID: <20090713145451.GA2265@cmpxchg.org>
+References: <20090713130921.6441.17011.stgit@pc1117.cambridge.arm.com> <1247493898.14968.0.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Sitz=3A_Dornach=2C_Gemeinde_Aschheim=2C_Land?=
-	=?iso-8859-1?Q?kreis_M=FCnchen=2C_Registergericht_M=FCnchen?=
-	=?iso-8859-1?Q?=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 13 Jul 2009 14:52:57.0272 (UTC) FILETIME=[9BEBEB80:01CA03C9]
+In-Reply-To: <1247493898.14968.0.camel@penberg-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 12:06:23PM -0700, Linus Torvalds wrote:
-> What am I missing (apart from the fact that all those variables are 
-> horribly badly named)?
+Hi Pekka,
+
+On Mon, Jul 13, 2009 at 05:04:58PM +0300, Pekka Enberg wrote:
+> On Mon, 2009-07-13 at 14:12 +0100, Catalin Marinas wrote:
+> > Commit a5f4f52e replaced the alloc_bootmem() with kzalloc() but didn't
+> > set vc_kmalloced to 1 and the memory block is later leaked. The
+> > corresponding kmemleak trace:
+> > 
+> > unreferenced object 0xdf828000 (size 8192):
+> >   comm "swapper", pid 0, jiffies 4294937296
+> >   backtrace:
+> >     [<c006d473>] __save_stack_trace+0x17/0x1c
+> >     [<c000d869>] log_early+0x55/0x84
+> >     [<c01cfa4b>] kmemleak_alloc+0x33/0x3c
+> >     [<c006c013>] __kmalloc+0xd7/0xe4
+> >     [<c00108c7>] con_init+0xbf/0x1b8
+> >     [<c0010149>] console_init+0x11/0x20
+> >     [<c0008797>] start_kernel+0x137/0x1e4
+> > 
+> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> Also, the tests make no sense. That's not how you are supposed to check 
-> for overlap to begin with.
-
-The tests made sense in my brain when I wrote that function ;-) My code
-checked for possible overlap scenarios. I havn't thought about doing it
-much much simpler...
-
+> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> Isn't it easier to test for _not_ overlapping?
+> > ---
+> > 
+> > (note that detecting this requires additional kmemleak patches for early
+> > log stack traces which are planned for the next merging window)
+> > 
+> >  drivers/char/vt.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+> > index 7947bd1..f6ac4c2 100644
+> > --- a/drivers/char/vt.c
+> > +++ b/drivers/char/vt.c
+> > @@ -2881,7 +2881,7 @@ static int __init con_init(void)
+> >  		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+> >  		visual_init(vc, currcons, 1);
+> >  		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
+> > -		vc->vc_kmalloced = 0;
+> > +		vc->vc_kmalloced = 1;
+> >  		vc_init(vc, vc->vc_rows, vc->vc_cols,
+> >  			currcons || !vc->vc_sw->con_save_screen);
+> >  	}
+> > 
 > 
-> 	/* range1 is fully before range2 */
-> 	(end1 <= start2 || 
-> 	/* range1 is fully after range2 */
-> 	start1 >= end2)
+> We can probably get rid of ->vc_kmalloced completely now that the
+> bootmem allocator is no longer used by the driver.
 
-... by checking for non-overlap and negating the result. But now I know
-better :-)
+That's what I thought, too.  Copied Alan.  Patch as follows:
 
-	Joerg
+---
+>From 4df0a75bdc567c9f2203dc4b0337d77a26715654 Mon Sep 17 00:00:00 2001
+From: Johannes Weiner <hannes@cmpxchg.org>
+Date: Mon, 13 Jul 2009 16:39:46 +0200
+Subject: [patch] vt: drop bootmem/slab memory distinction
 
+Bootmem is not used for the vt screen buffer anymore as slab is now
+available at the time the console is initialized.
+
+Get rid of the now superfluous distinction between slab and bootmem,
+it's always slab.
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+---
+ drivers/char/vt.c              |   12 +++---------
+ include/linux/console_struct.h |    1 -
+ 2 files changed, 3 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index d9113b4..bdb9c60 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -769,14 +769,12 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ 	    visual_init(vc, currcons, 1);
+ 	    if (!*vc->vc_uni_pagedir_loc)
+ 		con_set_default_unimap(vc);
+-	    if (!vc->vc_kmalloced)
+-		vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size, GFP_KERNEL);
++	    vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size, GFP_KERNEL);
+ 	    if (!vc->vc_screenbuf) {
+ 		kfree(vc);
+ 		vc_cons[currcons].d = NULL;
+ 		return -ENOMEM;
+ 	    }
+-	    vc->vc_kmalloced = 1;
+ 	    vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
+ 	    vcs_make_sysfs(currcons);
+ 	    atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
+@@ -912,10 +910,8 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
+ 	if (new_scr_end > new_origin)
+ 		scr_memsetw((void *)new_origin, vc->vc_video_erase_char,
+ 			    new_scr_end - new_origin);
+-	if (vc->vc_kmalloced)
+-		kfree(vc->vc_screenbuf);
++	kfree(vc->vc_screenbuf);
+ 	vc->vc_screenbuf = newscreen;
+-	vc->vc_kmalloced = 1;
+ 	vc->vc_screenbuf_size = new_screen_size;
+ 	set_origin(vc);
+ 
+@@ -994,8 +990,7 @@ void vc_deallocate(unsigned int currcons)
+ 		vc->vc_sw->con_deinit(vc);
+ 		put_pid(vc->vt_pid);
+ 		module_put(vc->vc_sw->owner);
+-		if (vc->vc_kmalloced)
+-			kfree(vc->vc_screenbuf);
++		kfree(vc->vc_screenbuf);
+ 		if (currcons >= MIN_NR_CONSOLES)
+ 			kfree(vc);
+ 		vc_cons[currcons].d = NULL;
+@@ -2880,7 +2875,6 @@ static int __init con_init(void)
+ 		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+ 		visual_init(vc, currcons, 1);
+ 		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
+-		vc->vc_kmalloced = 0;
+ 		vc_init(vc, vc->vc_rows, vc->vc_cols,
+ 			currcons || !vc->vc_sw->con_save_screen);
+ 	}
+diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
+index d71f7c0..38fe59d 100644
+--- a/include/linux/console_struct.h
++++ b/include/linux/console_struct.h
+@@ -89,7 +89,6 @@ struct vc_data {
+ 	unsigned int	vc_need_wrap	: 1;
+ 	unsigned int	vc_can_do_color	: 1;
+ 	unsigned int	vc_report_mouse : 2;
+-	unsigned int	vc_kmalloced	: 1;
+ 	unsigned char	vc_utf		: 1;	/* Unicode UTF-8 encoding */
+ 	unsigned char	vc_utf_count;
+ 		 int	vc_utf_char;
+-- 
+1.6.3
 
