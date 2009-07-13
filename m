@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbZGMLCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbZGMLNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbZGMLCL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 07:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbZGMLCL
+	id S1755391AbZGMLNR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 07:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZGMLNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 07:02:11 -0400
-Received: from krynn.se.axis.com ([193.13.178.10]:56720 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755235AbZGMLCK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 07:02:10 -0400
-Date: Mon, 13 Jul 2009 12:59:49 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Siarhei Liakh <sliakh.lkml@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-security-module@vger.kernel.org" 
-	<linux-security-module@vger.kernel.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-cris-kernel <linux-cris-kernel@axis.com>
-Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
-Message-ID: <20090713105948.GI12383@axis.com>
-References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com> <200907111821.47769.rusty@rustcorp.com.au> <20090711084958.69ff9196@infradead.org> <200907121410.39874.rusty@rustcorp.com.au>
+	Mon, 13 Jul 2009 07:13:16 -0400
+Received: from kazi.fit.vutbr.cz ([147.229.8.12]:63143 "EHLO kazi.fit.vutbr.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755246AbZGMLNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 07:13:15 -0400
+Date: Mon, 13 Jul 2009 13:12:15 +0200
+From: Kasparek Tomas <kasparek@fit.vutbr.cz>
+To: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: NFS client packet storm on 2.6.27.x
+Message-ID: <20090713111214.GC30754@fit.vutbr.cz>
+References: <20090113152201.GD47559@fit.vutbr.cz> <20090116104802.GF47559@fit.vutbr.cz> <20090118130835.GH47559@fit.vutbr.cz> <20090120150301.GG47559@fit.vutbr.cz> <1232465547.7055.3.camel@heimdal.trondhjem.org> <20090303120848.GV89843@fit.vutbr.cz> <1236089767.9631.4.camel@heimdal.trondhjem.org> <20090418051739.GL64731@fit.vutbr.cz> <20090422172707.GC57877@fit.vutbr.cz> <20090625055532.GC50277@fit.vutbr.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200907121410.39874.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090625055532.GC50277@fit.vutbr.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 12, 2009 at 06:40:39AM +0200, Rusty Russell wrote:
-> On Sun, 12 Jul 2009 01:19:58 am Arjan van de Ven wrote:
-> > Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > > I have a question about this patch though: I think it's unsafe in
-> > > general to mark the last partial page as NX (we asked for executable
-> > > pages, this could remove executable from some unrelated allocation).
-> >
-> > we vmalloc / g_f_p modules right? so we don't share the last page.
+On Thu, Jun 25, 2009 at 07:55:32AM +0200, Kasparek Tomas wrote:
+> http://www.linux-nfs.org/Linux-2.6.x/2.6.27/
 > 
-> Historically yes, but I don't think we should be counting on it.  It makes 
-> sense to kmalloc for small modules, and it's arch specific code.
+> .../fixups_4/linux-2.6.27-001-respond_promptly_to_socket_errors.dif
+> .../fixups_4/linux-2.6.27-002-respond_promptly_to_socket_errors_2.dif
 > 
-> OTOH, a quick grep shows currently only cris does kmalloc, and that's a config
-> option.
+> ...
+> Together with tcp_linger patch it seems to improve the situation a lot to
+> state when it is possible for me to use 2.6.27.x kernels.
+> 
+> Trond, will it be possible to get tcp_linger and the upper twho patches to
+> 2.6.27.x stable queue so others get these fixes?
 
-...which is a not often used debug option.
+I got no response so far, is there someone who could advise me what to do
+to get above patches to 2.6.27.x stable? Or is there some reason, why this
+is not possible at all?
 
-> It might be time to unify this code.  If we rename MODULE_START to 
-> MODULE_VADDR on MIPS, then ignoring CRIS there's only two real variants; 
-> vmalloc and __vmalloc.
-> 
-> (I like the idea of trying kmalloc and falling back, simply because it reduces 
-> TLB pressure, but that's probably best done after unification).
-> 
-> Thoughts?
-> Rusty.
+Thanks for advice and/or suggestions.
 
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+--   
+
+  Tomas Kasparek, PhD student  E-mail: kasparek@fit.vutbr.cz
+  CVT FIT VUT Brno, L127       Web:    http://www.fit.vutbr.cz/~kasparek
+  Bozetechova 1, 612 66        Fax:    +420 54114-1270
+  Brno, Czech Republic         Phone:  +420 54114-1220
+
+  jabber: tomas.kasparek@jabber.cz
+  GPG: 2F1E 1AAF FD3B CFA3 1537  63BD DCBE 18FF A035 53BC
+
