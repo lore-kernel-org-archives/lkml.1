@@ -1,402 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbZGMQFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbZGMQG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756439AbZGMQFn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 12:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbZGMQFm
+	id S1756463AbZGMQG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 12:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756409AbZGMQG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 12:05:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57100 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756333AbZGMQFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 12:05:41 -0400
-Date: Mon, 13 Jul 2009 12:03:52 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH] io-controller: implement per group request allocation
-	limitation
-Message-ID: <20090713160352.GA3714@redhat.com>
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <4A569FC5.7090801@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A569FC5.7090801@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 13 Jul 2009 12:06:26 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:38672 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756296AbZGMQG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 12:06:26 -0400
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+From: Raistlin <raistlin@linux.it>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Henrik Austad <henrik@austad.us>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       "James H. Anderson" <anderson@cs.unc.edu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Ted Baker <baker@cs.fsu.edu>,
+       Dhaval Giani <dhaval.giani@gmail.com>
+In-Reply-To: <1247480080.7529.66.camel@twins>
+References: <200907102350.47124.henrik@austad.us>
+	 <1247336891.9978.32.camel@laptop>  <1247478955.8107.24.camel@Palantir>
+	 <1247480080.7529.66.camel@twins>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-ryIXLi2tO2mV3Uj8JAon"
+Date: Mon, 13 Jul 2009 18:06:22 +0200
+Message-Id: <1247501182.8107.572.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 09:56:21AM +0800, Gui Jianfeng wrote:
-> Hi Vivek,
-> 
-> This patch exports a cgroup based per group request limits interface.
-> and removes the global one. Now we can use this interface to perform
-> different request allocation limitation for different groups. 
-> 
 
-Thanks Gui. Few points come to mind.
+--=-ryIXLi2tO2mV3Uj8JAon
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-- You seem to be making this as per cgroup limit on all devices. I guess
-  that different devices in the system can have different settings of
-  q->nr_requests and hence will probably want different per group limit.
-  So we might have to make it per cgroup per device limit.
+On Mon, 2009-07-13 at 12:14 +0200, Peter Zijlstra wrote:
+> > Nice... Only one question, doesn't this impact with task affinity
+> > related issues?
+>=20
+> No :-), well maybe.
+>=20
+:-D
 
-- There does not seem to be any checks for making sure that children
-  cgroups don't have more request descriptors allocated than parent group.
+> Since the task is blocked and will this not actually run, we can place
+> it on any CPU, only once it becomes runnable again should we take care
+> to place it on a CPU that's part of its affinity mask.
+>=20
+Well, it's difficult to find an argument against this! :-)
 
-- I am re-thinking that what's the advantage of configuring request
-  descriptors also through cgroups. It does bring in additional complexity
-  with it and it should justfiy the advantages. Can you think of some?
+Anyway, maybe if, on some architecture, for some kind of application,
+the affinity may have been set to preserve some kind actual cache or
+memory locality for the task access pattern, maybe this could be an
+issue, couldn't it? :-)
+I mean, in some case where being sure of having a task running on a
+particular CPU is somehow of paramount importance...
 
-  Until and unless we can come up with some significant advantages, I will
-  prefer to continue to use per group limit through q->nr_group_requests
-  interface instead of cgroup. Once things stablize, we can revisit it and
-  see how this interface can be improved.
+Anyway, I know, I'm just wandering around, I'm not that "affinity
+expert" and I'm far from having a real example of the scenario I tried
+to describe! :-(
 
-Thanks
-Vivek
+> Of course, underlying this is the question of what to do for
+> 'partitioned' tasks sharing a resource. I think we've talked about this
+> a few times.
+>
+Yes, there is a lot of chatting about partitioned task sets where
+resource sharing crosses the partition in the literature...
 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/blk-core.c     |   23 ++++++++++--
->  block/blk-settings.c |    1 -
->  block/blk-sysfs.c    |   43 -----------------------
->  block/elevator-fq.c  |   94 ++++++++++++++++++++++++++++++++++++++++++++++---
->  block/elevator-fq.h  |    4 ++
->  5 files changed, 111 insertions(+), 54 deletions(-)
-> 
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index 79fe6a9..7010b76 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -722,13 +722,20 @@ static void ioc_set_batching(struct request_queue *q, struct io_context *ioc)
->  static void __freed_request(struct request_queue *q, int sync,
->  					struct request_list *rl)
->  {
-> +	struct io_group *iog;
-> +	unsigned long nr_group_requests;
-> +
->  	if (q->rq_data.count[sync] < queue_congestion_off_threshold(q))
->  		blk_clear_queue_congested(q, sync);
->  
->  	if (q->rq_data.count[sync] + 1 <= q->nr_requests)
->  		blk_clear_queue_full(q, sync);
->  
-> -	if (rl->count[sync] + 1 <= q->nr_group_requests) {
-> +	iog = rl_iog(rl);
-> +
-> +	nr_group_requests = get_group_requests(q, iog);
-> +
-> +	if (nr_group_requests && rl->count[sync] + 1 <= nr_group_requests) {
->  		if (waitqueue_active(&rl->wait[sync]))
->  			wake_up(&rl->wait[sync]);
->  	}
-> @@ -828,6 +835,8 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
->  	const bool is_sync = rw_is_sync(rw_flags) != 0;
->  	int may_queue, priv;
->  	int sleep_on_global = 0;
-> +	struct io_group *iog;
-> +	unsigned long nr_group_requests;
->  
->  	may_queue = elv_may_queue(q, rw_flags);
->  	if (may_queue == ELV_MQUEUE_NO)
-> @@ -843,7 +852,12 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
->  	if (q->rq_data.count[is_sync]+1 >= q->nr_requests)
->  		blk_set_queue_full(q, is_sync);
->  
-> -	if (rl->count[is_sync]+1 >= q->nr_group_requests) {
-> +	iog = rl_iog(rl);
-> +
-> +	nr_group_requests = get_group_requests(q, iog);
-> +
-> +	if (nr_group_requests &&
-> +	    rl->count[is_sync]+1 >= nr_group_requests) {
->  		ioc = current_io_context(GFP_ATOMIC, q->node);
->  		/*
->  		 * The queue request descriptor group will fill after this
-> @@ -852,7 +866,7 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
->  		 * This process will be allowed to complete a batch of
->  		 * requests, others will be blocked.
->  		 */
-> -		if (rl->count[is_sync] <= q->nr_group_requests)
-> +		if (rl->count[is_sync] <= nr_group_requests)
->  			ioc_set_batching(q, ioc);
->  		else {
->  			if (may_queue != ELV_MQUEUE_MUST
-> @@ -898,7 +912,8 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
->  	 * from per group request list
->  	 */
->  
-> -	if (rl->count[is_sync] >= (3 * q->nr_group_requests / 2))
-> +	if (nr_group_requests &&
-> +	    rl->count[is_sync] >= (3 * nr_group_requests / 2))
->  		goto out;
->  
->  	rl->starved[is_sync] = 0;
-> diff --git a/block/blk-settings.c b/block/blk-settings.c
-> index 78b8aec..bd582a7 100644
-> --- a/block/blk-settings.c
-> +++ b/block/blk-settings.c
-> @@ -148,7 +148,6 @@ void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
->  	 * set defaults
->  	 */
->  	q->nr_requests = BLKDEV_MAX_RQ;
-> -	q->nr_group_requests = BLKDEV_MAX_GROUP_RQ;
->  
->  	q->make_request_fn = mfn;
->  	blk_queue_dma_alignment(q, 511);
-> diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-> index 92b9f25..706d852 100644
-> --- a/block/blk-sysfs.c
-> +++ b/block/blk-sysfs.c
-> @@ -78,40 +78,8 @@ queue_requests_store(struct request_queue *q, const char *page, size_t count)
->  	return ret;
->  }
->  #ifdef CONFIG_GROUP_IOSCHED
-> -static ssize_t queue_group_requests_show(struct request_queue *q, char *page)
-> -{
-> -	return queue_var_show(q->nr_group_requests, (page));
-> -}
-> -
->  extern void elv_io_group_congestion_threshold(struct request_queue *q,
->  					      struct io_group *iog);
-> -
-> -static ssize_t
-> -queue_group_requests_store(struct request_queue *q, const char *page,
-> -					size_t count)
-> -{
-> -	struct hlist_node *n;
-> -	struct io_group *iog;
-> -	struct elv_fq_data *efqd;
-> -	unsigned long nr;
-> -	int ret = queue_var_store(&nr, page, count);
-> -
-> -	if (nr < BLKDEV_MIN_RQ)
-> -		nr = BLKDEV_MIN_RQ;
-> -
-> -	spin_lock_irq(q->queue_lock);
-> -
-> -	q->nr_group_requests = nr;
-> -
-> -	efqd = &q->elevator->efqd;
-> -
-> -	hlist_for_each_entry(iog, n, &efqd->group_list, elv_data_node) {
-> -		elv_io_group_congestion_threshold(q, iog);
-> -	}
-> -
-> -	spin_unlock_irq(q->queue_lock);
-> -	return ret;
-> -}
->  #endif
->  
->  static ssize_t queue_ra_show(struct request_queue *q, char *page)
-> @@ -278,14 +246,6 @@ static struct queue_sysfs_entry queue_requests_entry = {
->  	.store = queue_requests_store,
->  };
->  
-> -#ifdef CONFIG_GROUP_IOSCHED
-> -static struct queue_sysfs_entry queue_group_requests_entry = {
-> -	.attr = {.name = "nr_group_requests", .mode = S_IRUGO | S_IWUSR },
-> -	.show = queue_group_requests_show,
-> -	.store = queue_group_requests_store,
-> -};
-> -#endif
-> -
->  static struct queue_sysfs_entry queue_ra_entry = {
->  	.attr = {.name = "read_ahead_kb", .mode = S_IRUGO | S_IWUSR },
->  	.show = queue_ra_show,
-> @@ -360,9 +320,6 @@ static struct queue_sysfs_entry queue_iostats_entry = {
->  
->  static struct attribute *default_attrs[] = {
->  	&queue_requests_entry.attr,
-> -#ifdef CONFIG_GROUP_IOSCHED
-> -	&queue_group_requests_entry.attr,
-> -#endif
->  	&queue_ra_entry.attr,
->  	&queue_max_hw_sectors_entry.attr,
->  	&queue_max_sectors_entry.attr,
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 29392e7..bfb0210 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -59,6 +59,35 @@ elv_release_ioq(struct elevator_queue *eq, struct io_queue **ioq_ptr);
->  #define for_each_entity_safe(entity, parent) \
->  	for (; entity && ({ parent = entity->parent; 1; }); entity = parent)
->  
-> +unsigned short get_group_requests(struct request_queue *q,
-> +				  struct io_group *iog)
-> +{
-> +	struct cgroup_subsys_state *css;
-> +	struct io_cgroup *iocg;
-> +	unsigned long nr_group_requests;
-> +
-> +	if (!iog)
-> +		return q->nr_requests;
-> +
-> +	rcu_read_lock();
-> +
-> +	if (!iog->iocg_id) {
-> +		nr_group_requests = 0;
-> +		goto out;
-> +	}
-> +
-> +	css = css_lookup(&io_subsys, iog->iocg_id);
-> +	if (!css) {
-> +		nr_group_requests = 0;
-> +		goto out;
-> +	}
-> +
-> +	iocg = container_of(css, struct io_cgroup, css);
-> +	nr_group_requests = iocg->nr_group_requests;
-> +out:
-> +	rcu_read_unlock();
-> +	return nr_group_requests;
-> +}
->  
->  static struct io_entity *bfq_lookup_next_entity(struct io_sched_data *sd,
->  						 int extract);
-> @@ -1257,14 +1286,17 @@ void elv_io_group_congestion_threshold(struct request_queue *q,
->  						struct io_group *iog)
->  {
->  	int nr;
-> +	unsigned long nr_group_requests;
->  
-> -	nr = q->nr_group_requests - (q->nr_group_requests / 8) + 1;
-> -	if (nr > q->nr_group_requests)
-> -		nr = q->nr_group_requests;
-> +	nr_group_requests = get_group_requests(q, iog);
-> +
-> +	nr = nr_group_requests - (nr_group_requests / 8) + 1;
-> +	if (nr > nr_group_requests)
-> +		nr = nr_group_requests;
->  	iog->nr_congestion_on = nr;
->  
-> -	nr = q->nr_group_requests - (q->nr_group_requests / 8)
-> -			- (q->nr_group_requests / 16) - 1;
-> +	nr = nr_group_requests - (nr_group_requests / 8)
-> +			- (nr_group_requests / 16) - 1;
->  	if (nr < 1)
->  		nr = 1;
->  	iog->nr_congestion_off = nr;
-> @@ -1283,6 +1315,7 @@ int elv_io_group_congested(struct request_queue *q, struct page *page, int sync)
->  {
->  	struct io_group *iog;
->  	int ret = 0;
-> +	unsigned long nr_group_requests;
->  
->  	rcu_read_lock();
->  
-> @@ -1300,10 +1333,11 @@ int elv_io_group_congested(struct request_queue *q, struct page *page, int sync)
->  	}
->  
->  	ret = elv_is_iog_congested(q, iog, sync);
-> +	nr_group_requests = get_group_requests(q, iog);
->  	if (ret)
->  		elv_log_iog(&q->elevator->efqd, iog, "iog congested=%d sync=%d"
->  			" rl.count[sync]=%d nr_group_requests=%d",
-> -			ret, sync, iog->rl.count[sync], q->nr_group_requests);
-> +			ret, sync, iog->rl.count[sync], nr_group_requests);
->  	rcu_read_unlock();
->  	return ret;
->  }
-> @@ -1549,6 +1583,48 @@ free_buf:
->  	return ret;
->  }
->  
-> +static u64 io_cgroup_nr_requests_read(struct cgroup *cgroup,
-> +				       struct cftype *cftype)
-> +{
-> +	struct io_cgroup *iocg;
-> +	u64 ret;
-> +
-> +	if (!cgroup_lock_live_group(cgroup))
-> +		return -ENODEV;
-> +
-> +	iocg = cgroup_to_io_cgroup(cgroup);
-> +	spin_lock_irq(&iocg->lock);
-> +	ret = iocg->nr_group_requests;
-> +	spin_unlock_irq(&iocg->lock);
-> +
-> +	cgroup_unlock();
-> +
-> +	return ret;
-> +}
-> +
-> +static int io_cgroup_nr_requests_write(struct cgroup *cgroup,
-> +					struct cftype *cftype,
-> +					u64 val)
-> +{
-> +	struct io_cgroup *iocg;
-> +
-> +	if (val < BLKDEV_MIN_RQ)
-> +		val = BLKDEV_MIN_RQ;
-> +
-> +	if (!cgroup_lock_live_group(cgroup))
-> +		return -ENODEV;
-> +
-> +	iocg = cgroup_to_io_cgroup(cgroup);
-> +
-> +	spin_lock_irq(&iocg->lock);
-> +	iocg->nr_group_requests = (unsigned long)val;
-> +	spin_unlock_irq(&iocg->lock);
-> +
-> +	cgroup_unlock();
-> +
-> +	return 0;
-> +}
-> +
->  #define SHOW_FUNCTION(__VAR)						\
->  static u64 io_cgroup_##__VAR##_read(struct cgroup *cgroup,		\
->  				       struct cftype *cftype)		\
-> @@ -1735,6 +1811,11 @@ static int io_cgroup_disk_dequeue_read(struct cgroup *cgroup,
->  
->  struct cftype bfqio_files[] = {
->  	{
-> +		.name = "nr_group_requests",
-> +		.read_u64 = io_cgroup_nr_requests_read,
-> +		.write_u64 = io_cgroup_nr_requests_write,
-> +	},
-> +	{
->  		.name = "policy",
->  		.read_seq_string = io_cgroup_policy_read,
->  		.write_string = io_cgroup_policy_write,
-> @@ -1790,6 +1871,7 @@ static struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
->  
->  	spin_lock_init(&iocg->lock);
->  	INIT_HLIST_HEAD(&iocg->group_data);
-> +	iocg->nr_group_requests = BLKDEV_MAX_GROUP_RQ;
->  	iocg->weight = IO_DEFAULT_GRP_WEIGHT;
->  	iocg->ioprio_class = IO_DEFAULT_GRP_CLASS;
->  	INIT_LIST_HEAD(&iocg->policy_list);
-> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-> index f089a55..df077d0 100644
-> --- a/block/elevator-fq.h
-> +++ b/block/elevator-fq.h
-> @@ -308,6 +308,7 @@ struct io_cgroup {
->  	unsigned int weight;
->  	unsigned short ioprio_class;
->  
-> +	unsigned long nr_group_requests;
->  	/* list of io_policy_node */
->  	struct list_head policy_list;
->  
-> @@ -386,6 +387,9 @@ struct elv_fq_data {
->  	unsigned int fairness;
->  };
->  
-> +extern unsigned short get_group_requests(struct request_queue *q,
-> +					 struct io_group *iog);
-> +
->  /* Logging facilities. */
->  #ifdef CONFIG_DEBUG_GROUP_IOSCHED
->  #define elv_log_ioq(efqd, ioq, fmt, args...) \
-> -- 
-> 1.5.4.rc3 
+> Since these 'partitioned' tasks do share a resource, they're not really
+> all that partitioned,=20
+... and I definitely agree with you on that: where's partitioning?
+Anyway, I also think that, if that is true, e.g., for user-space
+locks/resources, there are resources that two tasks _have_ to share,
+even if being partitioned, e.g., when they come to compete, in kernel
+space, e.g., for a lock on the virtual terminal... And that's the only
+situation where such a problem make sense.
+
+These just to point out one more reason why we are trying something
+different (as explained in the other message), and light year far from
+saying that the approach you proposed is not the good one!
+
+On the contrary, I think all this make the problem even more
+interesting! :-)
+
+Regards,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-ryIXLi2tO2mV3Uj8JAon
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpbW3cACgkQk4XaBE3IOsSw1QCfVsFqPAJLQitaiqI1jxWovZNy
+SOQAn1mEaatC2VvlANiURnYBGm8aasbf
+=T0ia
+-----END PGP SIGNATURE-----
+
+--=-ryIXLi2tO2mV3Uj8JAon--
+
