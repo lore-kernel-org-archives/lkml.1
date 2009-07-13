@@ -1,88 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZGMNvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbZGMNwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbZGMNvO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 09:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZGMNvN
+	id S1755991AbZGMNwW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 09:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZGMNwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 09:51:13 -0400
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:64992 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754471AbZGMNvM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 09:51:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SifkGgq9foawgP8bQdBRxU4MNt1NtrNTACsb/AGj7bYN0FB9WraRlK7sb7zeYZiBlU
-         cg3LjOnpV9ODa6g6FLOBwgoJrWLgPWjVkvO2n5tjPZwHsTmLFt1WrJzaL5BBTiHJMcSd
-         7RaDcSGwAZC5a6FAxYMObfVaIoPcRcMBDddrk=
+	Mon, 13 Jul 2009 09:52:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51697 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755911AbZGMNwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 09:52:21 -0400
+Message-ID: <4A5B3BEF.1020207@redhat.com>
+Date: Mon, 13 Jul 2009 09:51:43 -0400
+From: Peter Jones <pjones@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <20090713070110.GA28499@elte.hu>
-References: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com>
-	 <1246201486-7308-2-git-send-email-tom.leiming@gmail.com>
-	 <20090711213028.GC6641@nowhere>
-	 <d82e647a0907111942o1cf22batb204c38bfbd43c03@mail.gmail.com>
-	 <20090713070110.GA28499@elte.hu>
-Date: Mon, 13 Jul 2009 21:51:12 +0800
-Message-ID: <d82e647a0907130651s37799190gff9acc1fe4622a5b@mail.gmail.com>
-Subject: Re: [RESEND PATCH 01/11] kernel:lockdep:print the shortest dependency 
-	chain if finding a circle
-From: Ming Lei <tom.leiming@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
+	<u.kleine-koenig@pengutronix.de>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       Huang Ying <ying.huang@intel.com>
+Subject: Re: [PATCH] move efifb's probe function to .devinit.text
+References: <20090711170548.GC5205@suse.de> <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-3-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-4-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-5-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-6-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-7-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-8-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-9-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1247345591-22643-9-git-send-email-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/13 Ingo Molnar <mingo@elte.hu>:
->
-> * Ming Lei <tom.leiming@gmail.com> wrote:
->> No, as you said, the shortest circle is not very important, and it
->> is just a byproduct and we have no reason to reject it.
->
-> It's a nice byproduct, beyond the primary advantage of not being a
-> stack based recursion check.
->
-> I think this patch-set is great, and there's just one more step
-> needed to make it round: it would be nice to remove the limitation
-> of maximum number of locks held per task. (MAX_LOCK_DEPTH)
+On 07/11/2009 04:52 PM, Uwe Kleine-KÃ¶nig wrote:
+> A pointer to efifb_probe is passed to the core via
+> platform_driver_register and so the function must not disappear when the
+> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> unbinding and binding a device to the driver via sysfs will result in an
+> oops as does a device being registered late.
 
-IMHO,  it seems that removing the MAX_LOCK_DEPTH limitation is another
-topic,  and is nothing to do with this patch-set.  We may still make it round
-with the limitation like before.
+Looks good to me:
 
-Can we plan to remove the limitation of MAX_LOCK_DEPTH after merging
-the patch-set?
+Acked-by: Peter Jones <pjones@redhat.com>
 
-Thanks.
+> 
+> An alternative to this patch is using platform_driver_probe instead of
+> platform_driver_register plus removing the pointer to the probe function
+> from the struct platform_driver.
+> 
+> Signed-off-by: Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
+> Cc: Peter Jones <pjones@redhat.com>
+> Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+> Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Maciej W. Rozycki <macro@linux-mips.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Chandramouli Narayanan <mouli@linux.intel.com>
+> Cc: Huang Ying <ying.huang@intel.com>
+> ---
+>  drivers/video/efifb.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/efifb.c b/drivers/video/efifb.c
+> index eb12182..2161f21 100644
+> --- a/drivers/video/efifb.c
+> +++ b/drivers/video/efifb.c
+> @@ -201,7 +201,7 @@ static int __init efifb_setup(char *options)
+>  	return 0;
+>  }
+>  
+> -static int __init efifb_probe(struct platform_device *dev)
+> +static int __devinit efifb_probe(struct platform_device *dev)
+>  {
+>  	struct fb_info *info;
+>  	int err;
 
->
-> The way we could do it is to split out this bit of struct task:
->
-> #ifdef CONFIG_LOCKDEP
-> # define MAX_LOCK_DEPTH 48UL
->        u64 curr_chain_key;
->        int lockdep_depth;
->        unsigned int lockdep_recursion;
->        struct held_lock held_locks[MAX_LOCK_DEPTH];
->        gfp_t lockdep_reclaim_gfp;
-> #endif
->
-> into a separate 'struct lockdep_state' structure, and allocate it
-> dynamically during fork with a initial pre-set size of say 64 locks
-> depth. If we hit that limit, we'd double the allocation threshold,
-> which would cause a larger structure to be allocated for all newly
-> allocated tasks.
->
-> ( This means that the task that hits this threshold needs to have
->  lockdep disabled until it exits - but that's OK. )
->
->        Ingo
->
 
 -- 
-Lei Ming
+        Peter
+
+In computer science, about the only thing we can prove is that traveling
+salesmen can't find their way from one place to another effeciently, and
+that unix hackers can't really decode 40-bit keys by harnessing all the
+computers in the lab.  And the hackers do it anyway, and the salesmen still
+make their rounds.
+		-- Ron Jeffries, WikiWikiWeb
