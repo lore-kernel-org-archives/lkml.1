@@ -1,105 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZGMIzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZGMJA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971AbZGMIzH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 04:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbZGMIzG
+	id S1754990AbZGMJA7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 05:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754962AbZGMJA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 04:55:06 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:48746 "EHLO mgw1.diku.dk"
+	Mon, 13 Jul 2009 05:00:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46596 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754905AbZGMIzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 04:55:03 -0400
-Date: Mon, 13 Jul 2009 10:55:00 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: vapier@gentoo.org, uclinux-dist-devel@blackfin.uclinux.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] arch/blackfin: Add kmalloc NULL tests
-Message-ID: <Pine.LNX.4.64.0907131054390.6808@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754923AbZGMJA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 05:00:57 -0400
+Date: Mon, 13 Jul 2009 11:00:56 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
+Message-ID: <20090713090056.GA3452@wotan.suse.de>
+References: <20090707163042.GA14947@infradead.org> <20090708063225.GL2714@wotan.suse.de> <20090708104701.GA31419@infradead.org> <20090708123412.GQ2714@wotan.suse.de> <4A54C435.1000503@panasas.com> <20090709075100.GU2714@wotan.suse.de> <4A59A517.1080605@panasas.com> <20090712144717.GA18163@infradead.org> <20090713065917.GO14666@wotan.suse.de> <4A5AF637.3090405@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A5AF637.3090405@panasas.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Mon, Jul 13, 2009 at 11:54:15AM +0300, Boaz Harrosh wrote:
+> On 07/13/2009 09:59 AM, Nick Piggin wrote:
+> > On Sun, Jul 12, 2009 at 10:47:18AM -0400, Christoph Hellwig wrote:
+> >> On Sun, Jul 12, 2009 at 11:55:51AM +0300, Boaz Harrosh wrote:
+> >>> I wish you would split it.
+> >>>
+> >>> one - helper to be called by converted file systems
+> >>>       (Which just ignores the ATTR_SIZE)
+> >>> second - to be set into .setattr which does the simple_setsize + above.
+> >>>
+> >>> More clear for FS users like me (and that ugly unmask of ATTR_SIZE)
+> >>>
+> >>> or it's just me?
+> >> Yeah, that seems be a lot cleaner.  But let's wait until we got
+> >> rid of ->truncate for all filesystems to have the bigger picture.
+> > 
+> > Agreed, if it is a common sequence / requirement for filesystems
+> > then of course I will not object to a helper to make things clearer
+> > or share code.
+> > 
+> > I would like to see inode_setattr renamed into simple_setattr, and
+> > then also .setattr made mandatory, so I don't like to cut code out
+> > of inode_setattr which makes it unable to be the simple_setattr
+> > after the old truncate code is removed.
+> > 
+> 
+> I thought you meant inode_setattr will go away. There will
+> only be simple_setattr() and inode_setattr_nosize()
+> 
+> For the time been simple_setattr() will also take care
+> of old ->truncate FSs. And in the absence of .setattr
+> simple_setattr() is called. Have I miss-understood?
+> 
+> again please tell me when all this is in effect I want
+> to do the conversion in exofs.
 
-Check that the result of kmalloc is not NULL before passing it to other
-functions.
+AFAIKS inode_setattr basically is simple_setattr, so I think at some
+point it should just get renamed to simple_setattr. Adding
+simple_setattr_nosize or similar helper would be fine too. I don't
+care much about the exact details... But anyway these things are not
+so important to this truncate patchset at the moment.
 
-In the first two cases, the new code returns -ENOMEM, which seems
-compatible with what is done for similar functions for other architectures.
 
-In the last two cases, the new code fails silently, ie just returns,
-because the function has void return type.
+> [BTW these changes are a life saver for me in regard to
+> the kind of things I need to do for pNFS-exports]
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+You mean the truncate patches? Well that's nice to know. I
+guess it has always been possible just to redefine your own
+setattr, but now it should be a bit nicer with the truncate
+helpers...
 
-// <smpl>
-@@
-expression *x;
-identifier f;
-constant char *C;
-@@
-
-x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-... when != x == NULL
-    when != x != NULL
-    when != (x || ...)
-(
-kfree(x)
-|
-f(...,C,...,x,...)
-|
-*f(...,x,...)
-|
-*x->f
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- arch/blackfin/mach-common/smp.c     |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/arch/blackfin/mach-common/smp.c b/arch/blackfin/mach-common/smp.c
-index 6184005..10dd298 100644
---- a/arch/blackfin/mach-common/smp.c
-+++ b/arch/blackfin/mach-common/smp.c
-@@ -211,6 +211,8 @@ int smp_call_function(void (*func)(void *info), void *info, int wait)
- 		return 0;
- 
- 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	if (!msg)
-+		return -ENOMEM;
- 	INIT_LIST_HEAD(&msg->list);
- 	msg->call_struct.func = func;
- 	msg->call_struct.info = info;
-@@ -252,6 +254,8 @@ int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
- 	cpu_set(cpu, callmap);
- 
- 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	if (!msg)
-+		return -ENOMEM;
- 	INIT_LIST_HEAD(&msg->list);
- 	msg->call_struct.func = func;
- 	msg->call_struct.info = info;
-@@ -287,6 +291,8 @@ void smp_send_reschedule(int cpu)
- 		return;
- 
- 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	if (!msg)
-+		return;
- 	memset(msg, 0, sizeof(msg));
- 	INIT_LIST_HEAD(&msg->list);
- 	msg->type = BFIN_IPI_RESCHEDULE;
-@@ -314,6 +320,8 @@ void smp_send_stop(void)
- 		return;
- 
- 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	if (!msg)
-+		return;
- 	memset(msg, 0, sizeof(msg));
- 	INIT_LIST_HEAD(&msg->list);
- 	msg->type = BFIN_IPI_CPU_STOP;
+Thanks,
+Nick
