@@ -1,88 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbZGMWPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757154AbZGMWUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbZGMWPy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 18:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbZGMWPx
+	id S1757154AbZGMWUI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 18:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZGMWUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 18:15:53 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:16689 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752986AbZGMWPw (ORCPT
+	Mon, 13 Jul 2009 18:20:08 -0400
+Received: from ru.mvista.com ([213.79.90.228]:64568 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751932AbZGMWUH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 18:15:52 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=UrJwEaqrfOG4yeUWKK1E4GWnkaseGpZPeSGqa/WZCaulr5Rnl0xvHAoXo6y/LJz2X
-	hUHrsqRYl7pNxO8UJdtcg==
+	Mon, 13 Jul 2009 18:20:07 -0400
+Date: Tue, 14 Jul 2009 02:20:05 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/2] Setting GPIOs simultaneously
+Message-ID: <20090713222005.GA19859@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
+ <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
+ <20090713173455.GA9866@oksana.dev.rtsoft.ru>
+ <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
 MIME-Version: 1.0
-In-Reply-To: <20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1239660512-25468-1-git-send-email-dan@embeddedalley.com>
-	 <1246998310-16764-1-git-send-email-vbuzov@embeddedalley.com>
-	 <1246998310-16764-2-git-send-email-vbuzov@embeddedalley.com>
-	 <20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 13 Jul 2009 15:15:45 -0700
-Message-ID: <6599ad830907131515h3c9622b5v309cf8f13d272bab@mail.gmail.com>
-Subject: Re: [PATCH 1/1] Memory usage limit notification addition to memcg
-From: Paul Menage <menage@google.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Vladislav Buzov <vbuzov@embeddedalley.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers Mailing List 
-	<containers@lists.linux-foundation.org>,
-       Dan Malek <dan@embeddedalley.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 7, 2009 at 5:56 PM, KAMEZAWA
-Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->
-> I know people likes to wait for file descriptor to get notification in these days.
-> Can't we have "event" file descriptor in cgroup layer and make it reusable for
-> other purposes ?
+On Mon, Jul 13, 2009 at 09:59:54PM +0200, Joakim Tjernlund wrote:
+[...]
+> > > While being at it, the reason for me needing this is that the spi_mpc83xx driver
+> > > was recently converted to a OF only driver so I have no way of defining my own
+> > > CS function anymore. While OF is good I don't feel that OF drivers should
+> > block the native
+> > > method, OF should be a layer on top of the native methods.
+> >
+> > Um, I don't get it. You have a mux, which is a sort of GPIO controller.
+> > All you need to do is to write "of-gpio-mux" driver, that will get all
+> > the needed gpios from the underlaying GPIO controller.
+> 
+> Well, I already have a mux controller that is using the native spi methods. I
+> don't want to write a new one, far more complicated than what I got now.
+> While the OF system is very powerful and flexible I still think that
+> one should be able to use native SPI methods too. Why can they not
+> co-exist?
 
-I agree - rather than having to add a separate "wait for value to
-cross X threshold" file for each numeric usage value that people might
-be concerned about, it would be better to have a generic way to do it
-for any file. Given that this is a userspace API, it would be better
-to work out at least the generic API first, even if the initial
-implementation isn't generic.
+I strongly believe that they can. You just need to post patches
+so that we could see them, and maybe discuss how to do things
+more generic. But if making things generic will be too hard (see
+below), I don't think anybody will object applying a non-generic
+solution (even permitting "legacy" bindings in the spi_8xxx driver).
 
-Properties that it should support include:
+But any users of the legacy bindings should be in-tree.
 
-- notification when a value crosses above or below a given threshold
-(which would include binary cases such as OOM notification where the
-value cross from "not-OOM" to "OOM"
+> > In the device tree it'll look like this:
+> 
+> I must admit that I just started to look at the GPIO subsystem, but
+> I do wonder if mpc83xx_spi_cs_control() can do this muxing
+> without any change.
+> 
+> Very good example BTW.
 
-- independent thresholds for different waiters
+Well, there is one caveat: the "GPIOs" aren't independent,
+so thinking about it more, I believe we should now discuss
+"chip-select framework", not gpio controllers (it could be
+that using gpio controllers for this purpose wasn't that
+good idea).
 
-- epoll support (by using eventfd?)
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg34738.html
+^^^ I'm dreaming about this framework. I.e. true addressing
+    for chip-selects. :-)
 
-- automatic wakeup when a cgroup is removed
-
-- maybe optional wakeup when a thread attach occurs?
-
-- not require more than read permissions on the file containing the
-value being monitored
-
-I guess there are a few possible ways this could be exposed to userspace:
-
-1) new ioctl on cgroups files. simple but probably not popular
-
-2) new system call. maybe the cleanest, but involves changing every
-arch and is hard to script
-
-3) new per-cgroup file to control these e.g:
-  - create an eventfd
-  - open the control file to be monitored
-  - write the "<event_fd>, <control_fd> <threshold> to
-cgroup.event_control to link them together
-flexible and scriptable but maybe a clumsy interface in general
-
-Paul
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
