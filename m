@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbZGMTwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756685AbZGMTzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558AbZGMTwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 15:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbZGMTwe
+	id S1756685AbZGMTzJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 15:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZGMTzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 15:52:34 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:49455 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755678AbZGMTwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 15:52:33 -0400
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: ocfs2-devel@oss.oracle.com, Mark Fasheh <mfasheh@suse.com>,
-       Joel Becker <joel.becker@oracle.com>
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       David Howells <dhowells@redhat.com>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Tue, 14 Jul 2009 01:19:31 +0530
-Message-Id: <20090713194928.32372.56679.sendpatchset@subratamodak.linux.ibm.com>
-Subject: [PATCH] Fix compilation warning for fs/ocfs2/xattr.c
+	Mon, 13 Jul 2009 15:55:09 -0400
+Received: from smtp.df.ru ([195.42.160.16]:58314 "EHLO smtp.df.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755584AbZGMTzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 15:55:08 -0400
+Date: Mon, 13 Jul 2009 23:55:58 +0400
+From: Alexey Vlasov <renton@renton.name>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: Counters in df, du
+Message-ID: <20090713195558.GC5569@beaver.vrungel.ru>
+References: <20090713081106.GA5569@beaver.vrungel.ru> <87fxd19cfq.fsf@basil.nowhere.org> <20090713113252.GB5569@beaver.vrungel.ru> <3e8340490907130654i3d00aa6dt9118004c2fd94689@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <3e8340490907130654i3d00aa6dt9118004c2fd94689@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jul 13, 2009 at 09:54:22AM -0400, Bryan Donlan wrote:
+> >> Alexey Vlasov <renton@renton.name> writes:
+> >> >
+> >> > I know that df, du can show different values if some files were deleted,
+> >> > but the processes which opened these files are still acting.
+> >>
+> >> You can check for that by doing ls -l /proc/*/fd | grep deleted
+> >>
+> >> It won't tell you the file size though.
+> >
+> > There comes a big list, like this:
+> >
+> > lowx------ 1 root root 64 Jul 13 14:58 1763 -> /tmp/ZCUDXqiMTp (deleted)
+> >
+> > The most interesting is that the /tmp size constantly grows.
+> 
+> lsof -n | grep deleted
 
-gcc 4.4.1 generates the following build warning on i386:
+# lsof -n /tmp | awk '/deleted/ {if ($7 != 0) print$0}'
 
-CC [M]  fs/ocfs2/xattr.o
-fs/ocfs2/xattr.c: In function ‘ocfs2_xattr_block_get’:
-fs/ocfs2/xattr.c:1055: warning: ‘block_off’ may be used uninitialized in this function
+mysqld    22905                          mysql    6u   REG
+0,13    20 663938322 /tmp/ib1oZTSZ (deleted)
+mysqld    22905                          mysql    8u   REG
+0,13 84773 663938424 /tmp/ibRcarbD (deleted)
 
-The following fix is based on a similar approach by David Howells
-few days back: http://lkml.org/lkml/2009/7/9/109,
+# df -h /tmp
+Filesystem            Size  Used Avail Use% Mounted on
+tmpfs                 4.1G  3.4G  630M  85% /tmp
 
-Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>,
----
+It will soon be up to 100% full and I'll have to remount.
 
---- a/fs/ocfs2/xattr.c	2009-06-17 17:47:21.000000000 +0530
-+++ b/fs/ocfs2/xattr.c	2009-07-14 01:02:22.000000000 +0530
-@@ -1052,7 +1052,8 @@ static int ocfs2_xattr_block_get(struct 
- 	struct ocfs2_xattr_block *xb;
- 	struct ocfs2_xattr_value_root *xv;
- 	size_t size;
--	int ret = -ENODATA, name_offset, name_len, block_off, i;
-+	int ret = -ENODATA, name_offset, name_len, i;
-+	int uninitialized_var(block_off);
- 
- 	xs->bucket = ocfs2_xattr_bucket_new(inode);
- 	if (!xs->bucket) {
-
----
-Regards--
-Subrata
-
+-- 
+BRGDS. Alexey Vlasov.
