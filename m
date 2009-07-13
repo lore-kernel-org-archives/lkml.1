@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757614AbZGMWph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZGMXGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757614AbZGMWph (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 18:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbZGMWpg
+	id S1753897AbZGMXGz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 19:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbZGMXGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 18:45:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38292 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753151AbZGMWpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 18:45:36 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Celejar <celejar@gmail.com>
-Subject: Re: suspend to disk now broken
-Date: Tue, 14 Jul 2009 00:45:52 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc2-rjw; KDE/4.2.4; x86_64; ; )
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <20090712151947.25446ceb.celejar@gmail.com> <200907130339.35003.rjw@sisk.pl> <20090712220721.ff14e2fe.celejar@gmail.com>
-In-Reply-To: <20090712220721.ff14e2fe.celejar@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 13 Jul 2009 19:06:54 -0400
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:42317 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753684AbZGMXGx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 19:06:53 -0400
+Subject: Re: Floppy constantly accessed in 2.6.31-rc2
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <h3ehgd$mti$1@ger.gmane.org>
+References: <h3ehgd$mti$1@ger.gmane.org>
+Content-Type: text/plain
+Date: Tue, 14 Jul 2009 01:06:51 +0200
+Message-Id: <1247526411.5220.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.27.3 (2.27.3-3.kb.1.fc12) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907140045.52764.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 July 2009, Celejar wrote:
-> On Mon, 13 Jul 2009 03:39:34 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sun, 2009-07-12 at 23:44 -0600, Robert Hancock wrote:
+> On 2.6.31-rc2 (actually current git as of today) the floppy drive is 
+> constantly being accessed with these messages being reported:
 > 
-> > On Sunday 12 July 2009, Celejar wrote:
-> > > On Sun, 12 Jul 2009 22:56:01 +0200
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > On Sunday 12 July 2009, Celejar wrote:
-> > > > > On Sun, 12 Jul 2009 22:19:52 +0200
-> > > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > > 
-> > > > > > On Sunday 12 July 2009, Celejar wrote:
-> > > > > > > Hi,
-> > > > > > > 
-> > > > > > > A recent change to the kernel has apparently broken suspend to disk on
-> > > > > > > my machine.  It still works fine in 2.6.30.1, but hangs during the
-> > > > > > > 'devices' phase of suspension with 2.6.31-rc2.  [I originally saw the
+> Platform driver 'floppy' needs updating - please use dev_pm_ops
+> Floppy drive(s): fd0 is 1.44M
+> FDC 0 is a post-1991 82077
+> end_request: I/O error, dev fd0, sector 0
+> end_request: I/O error, dev fd0, sector 0
+> end_request: I/O error, dev fd0, sector 0
+> end_request: I/O error, dev fd0, sector 0
+> end_request: I/O error, dev fd0, sector 0
+> end_request: I/O error, dev fd0, sector 0
+> end_request: I/O error, dev fd0, sector 0
 > 
-> ...
-> 
-> > Do you use IDE drivers?
-> 
-> Yes.  The system uses IDE/PATA drivers (PIIX).
+> lsof reports no process with /dev/fd0 open so it is not clear what is 
+> causing this activity. It looks like the access starts when I log in to 
+> X, but doesn't stop when I log out. I'm guessing HAL or something checks 
+> the floppy drive and then the kernel somehow gets stuck in a loop 
+> retrying the request..
 
-If they are of the "old IDE" flavor, there've been some fixes merged recently.
-Please check 2.6.31-rc3 when it's out (or the current mainline).
+That does look a bit like
+https://bugzilla.redhat.com/show_bug.cgi?id=489083 (and its duplicate
+https://bugzilla.redhat.com/show_bug.cgi?id=496586 ).
 
-Best,
-Rafael
+Regards,
+
+
+Paul Bolle
+
