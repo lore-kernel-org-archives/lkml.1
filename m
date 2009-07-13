@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbZGMWUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbZGMWaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbZGMWUq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 18:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757495AbZGMWUq
+	id S1757585AbZGMWaV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 18:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZGMWaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 18:20:46 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:37214 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752866AbZGMWUp (ORCPT
+	Mon, 13 Jul 2009 18:30:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51019 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752697AbZGMWaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 18:20:45 -0400
-Date: Mon, 13 Jul 2009 23:20:13 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jonathan Corbet <corbet@lwn.net>,
-       Martin Steigerwald <Martin@lichtvoll.de>,
-       David Newall <davidn@davidnewall.com>,
-       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       tridge@samba.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Pavel Machek <pavel@ucw.cz>, john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-Message-ID: <20090713222013.GB28136@shareable.org>
-References: <20090708110451.1092afa7@lxorguk.ukuu.org.uk> <200907102049.12427.Martin@lichtvoll.de> <20090710133127.6839dc87@bike.lwn.net> <200907102240.15773.bzolnier@gmail.com> <20090712112114.GA3059@logfs.org> <alpine.LSU.2.00.0907121324340.13127@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LSU.2.00.0907121324340.13127@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 13 Jul 2009 18:30:20 -0400
+Date: Mon, 13 Jul 2009 15:29:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
+       linux-mm@kvack.org, fengguang.wu@intel.com, cl@linux-foundation.org,
+       riel@redhat.com
+Subject: Re: [PATCH 3/4][resend]  Show kernel stack usage in /proc/meminfo
+ and OOM log output
+Message-Id: <20090713152952.9b1f6388.akpm@linux-foundation.org>
+In-Reply-To: <20090713150114.6260.A69D9226@jp.fujitsu.com>
+References: <20090713144924.6257.A69D9226@jp.fujitsu.com>
+	<20090713150114.6260.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> 
-> On Sunday 2009-07-12 13:21, Jörn Engel wrote:
-> >[ Ignoring all legal and moral aspects...]
-> >
-> >On Fri, 10 July 2009 22:40:14 +0200, Bartlomiej Zolnierkiewicz wrote:
-> >> 
-> >> Microsoft having patents on their *obsolete* filesystem should be *their*
-> >
-> >FAT is far from obsolete.  It is practically always the filesystem of
-> >choice and often the only filesystem when trying to move data from one
-> >system to another.  The next best alternatives are isofs and ext2.  And
-> >I don't know a single digital camera, mp3 player or cellphone that
-> >speaks either.
-> 
-> The next best would probably be UDF, which is already used on DVDs
-> and thus is implemented in a number of devices - though probably
-> only disc-reading ones.
-> There's your market hole, dear vendors.
+On Mon, 13 Jul 2009 15:02:25 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-UDF has already been mentioned on this thread, next to "looks usable
-in theory, now try it and find out it isn't".
+> ChangeLog
+>   Since v1
+>    - Rewrote the descriptin (Thanks Christoph!)
+> 
+> =====================
+> Subject: [PATCH] Show kernel stack usage in /proc/meminfo and OOM log output
+> 
+> The amount of memory allocated to kernel stacks can become significant and
+> cause OOM conditions. However, we do not display the amount of memory
+> consumed by stacks.
+> 
+> Add code to display the amount of memory used for stacks in /proc/meminfo.
+> 
+> ...
+>  
+> +static void account_kernel_stack(struct thread_info *ti, int account)
+> +{
+> +	struct zone *zone = page_zone(virt_to_page(ti));
+> +
+> +	mod_zone_page_state(zone, NR_KERNEL_STACK, account);
+> +}
+> +
+>  void free_task(struct task_struct *tsk)
+>  {
+>  	prop_local_destroy_single(&tsk->dirties);
+> +	account_kernel_stack(tsk->stack, -1);
 
--- Jamie
+But surely there are other less expensive ways of calculating this. 
+The number we want is small-known-constant * number-of-tasks.
+
+number-of-tasks probably isn't tracked, but can be calculated along the
+lines of nr_running(), nr_uninterruptible() and nr_iowait().
+
+number-of-tasks is also equal to number-of-task_structs and
+number-of_thread_infos which can be obtained from slab (if the arch
+implemented these via slab - uglier).
+
+
