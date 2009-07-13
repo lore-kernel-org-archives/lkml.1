@@ -1,164 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbZGMRaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbZGMRba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbZGMRaA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbZGMR37
+	id S1756722AbZGMRba (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756703AbZGMRba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:29:59 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:60335 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756619AbZGMR36 (ORCPT
+	Mon, 13 Jul 2009 13:31:30 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:49426 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756656AbZGMRb3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:29:58 -0400
-Message-ID: <4A5B6F12.6030101@gmail.com>
-Date: Mon, 13 Jul 2009 19:29:54 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Mon, 13 Jul 2009 13:31:29 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: perfmon2-devel@lists.sourceforge.net
+Subject: Re: [perfmon2] I.1 - System calls - ioctl
+Date: Mon, 13 Jul 2009 19:30:23 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.96; x86_64; ; )
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
+       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622125837.GA9429@infradead.org> <1247482393.7529.74.camel@twins>
+In-Reply-To: <1247482393.7529.74.camel@twins>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Teck Choon Giam <giamteckchoon@gmail.com>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: linux-2.6.30.1 with gcc-3.4.6 compile error
-References: <9b5c9bb30907130944l3624870ck507f5a9f0f79452b@mail.gmail.com>
-In-Reply-To: <9b5c9bb30907130944l3624870ck507f5a9f0f79452b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 13 Jul 2009 19:29:55 +0200 (CEST)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907131930.23840.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+DeNcU6AqgiPw10SJfcBEnlPbGvUB+VXQnj5W
+ ol/YAlESXCtPvym4lOyoOktIzr7H97MFbJPGQF1zrrf5NqC23O
+ xWfIBANrzgVd+sVJmWGxw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Teck Choon Giam a écrit :
-> Hi,
+On Monday 13 July 2009, Peter Zijlstra wrote:
+> On Mon, 2009-06-22 at 08:58 -0400, Christoph Hellwig wrote:
+> > But talking about syscalls the sys_perf_counter_open prototype is
+> > really ugly - it uses either the pid or cpu argument which is a pretty
+> > clear indicator it should actually be two sys calls.
 > 
-> Anyone encounter the below error while compiling linux-2.6.30.1 with gcc-3.4.6?
+> Would something like the below be any better?
 > 
-> drivers/net/igb/igb_main.c: In function `igb_up':
-> drivers/net/igb/igb_main.c:130: sorry, unimplemented: inlining failed
-> in call to 'igb_set_rah_pool': function body not available
-> drivers/net/igb/igb_main.c:938: sorry, unimplemented: called from here
-> drivers/net/igb/igb_main.c:133: sorry, unimplemented: inlining failed
-> in call to 'igb_set_vmolr': function body not available
-> drivers/net/igb/igb_main.c:939: sorry, unimplemented: called from here
-> make[3]: *** [drivers/net/igb/igb_main.o] Error 1
-> make[2]: *** [drivers/net/igb] Error 2
-> make[1]: *** [drivers/net] Error 2
-> make: *** [drivers] Error 2
-> 
-> This is CentOS 4.x system.  While using same configuration to compile
-> in CentOS 5.x systems with gcc-4.1.2 do not encounter such error and
-> my guess is gcc version issue?  Any idea?
-> 
+> It would allow us to later add something like PERF_TARGET_SOCKET and
+> things like that.
 
-You are right, this driver cannot compile with gcc-3.4.6 and needs
-following patch.
+I don't think it helps on the ugliness side. You basically make the
+two arguments a union, but instead of adding another flag and directly
+passing a union, you also add interface complexity.
 
-[PATCH] igb: gcc-3.4.6 fix
+A strong indication for the complexity is that you got it wrong ;-) :
 
-forward declaration of inline function should be avoided, or
-old gcc cannot compile.
+> +struct perf_counter_target {
+> +	__u32			id;
+> +	__u64			val;
+> +};
 
-Reported-by: Teck Choon Giam <giamteckchoon@gmail.com>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
----
+This structure is not compatible between 32 and 64 bit user space on x86,
+because everything except i386 adds implicit padding between id and val.
 
-diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-index be48029..adb09d3 100644
---- a/drivers/net/igb/igb_main.c
-+++ b/drivers/net/igb/igb_main.c
-@@ -127,14 +127,48 @@ static void igb_restore_vlan(struct igb_adapter *);
- static void igb_ping_all_vfs(struct igb_adapter *);
- static void igb_msg_task(struct igb_adapter *);
- static int igb_rcv_msg_from_vf(struct igb_adapter *, u32);
--static inline void igb_set_rah_pool(struct e1000_hw *, int , int);
- static void igb_set_mc_list_pools(struct igb_adapter *, int, u16);
- static void igb_vmm_control(struct igb_adapter *);
--static inline void igb_set_vmolr(struct e1000_hw *, int);
--static inline int igb_set_vf_rlpml(struct igb_adapter *, int, int);
- static int igb_set_vf_mac(struct igb_adapter *adapter, int, unsigned char *);
- static void igb_restore_vf_multicasts(struct igb_adapter *adapter);
- 
-+static inline void igb_set_vmolr(struct e1000_hw *hw, int vfn)
-+{
-+	u32 reg_data;
-+
-+	reg_data = rd32(E1000_VMOLR(vfn));
-+	reg_data |= E1000_VMOLR_BAM |	 /* Accept broadcast */
-+	            E1000_VMOLR_ROPE |   /* Accept packets matched in UTA */
-+	            E1000_VMOLR_ROMPE |  /* Accept packets matched in MTA */
-+	            E1000_VMOLR_AUPE |   /* Accept untagged packets */
-+	            E1000_VMOLR_STRVLAN; /* Strip vlan tags */
-+	wr32(E1000_VMOLR(vfn), reg_data);
-+}
-+
-+static inline int igb_set_vf_rlpml(struct igb_adapter *adapter, int size,
-+                                 int vfn)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 vmolr;
-+
-+	vmolr = rd32(E1000_VMOLR(vfn));
-+	vmolr &= ~E1000_VMOLR_RLPML_MASK;
-+	vmolr |= size | E1000_VMOLR_LPE;
-+	wr32(E1000_VMOLR(vfn), vmolr);
-+
-+	return 0;
-+}
-+
-+static inline void igb_set_rah_pool(struct e1000_hw *hw, int pool, int entry)
-+{
-+	u32 reg_data;
-+
-+	reg_data = rd32(E1000_RAH(entry));
-+	reg_data &= ~E1000_RAH_POOL_MASK;
-+	reg_data |= E1000_RAH_POOL_1 << pool;;
-+	wr32(E1000_RAH(entry), reg_data);
-+}
-+
- #ifdef CONFIG_PM
- static int igb_suspend(struct pci_dev *, pm_message_t);
- static int igb_resume(struct pci_dev *);
-@@ -5418,43 +5452,6 @@ static void igb_io_resume(struct pci_dev *pdev)
- 	igb_get_hw_control(adapter);
- }
- 
--static inline void igb_set_vmolr(struct e1000_hw *hw, int vfn)
--{
--	u32 reg_data;
--
--	reg_data = rd32(E1000_VMOLR(vfn));
--	reg_data |= E1000_VMOLR_BAM |	 /* Accept broadcast */
--	            E1000_VMOLR_ROPE |   /* Accept packets matched in UTA */
--	            E1000_VMOLR_ROMPE |  /* Accept packets matched in MTA */
--	            E1000_VMOLR_AUPE |   /* Accept untagged packets */
--	            E1000_VMOLR_STRVLAN; /* Strip vlan tags */
--	wr32(E1000_VMOLR(vfn), reg_data);
--}
--
--static inline int igb_set_vf_rlpml(struct igb_adapter *adapter, int size,
--                                 int vfn)
--{
--	struct e1000_hw *hw = &adapter->hw;
--	u32 vmolr;
--
--	vmolr = rd32(E1000_VMOLR(vfn));
--	vmolr &= ~E1000_VMOLR_RLPML_MASK;
--	vmolr |= size | E1000_VMOLR_LPE;
--	wr32(E1000_VMOLR(vfn), vmolr);
--
--	return 0;
--}
--
--static inline void igb_set_rah_pool(struct e1000_hw *hw, int pool, int entry)
--{
--	u32 reg_data;
--
--	reg_data = rd32(E1000_RAH(entry));
--	reg_data &= ~E1000_RAH_POOL_MASK;
--	reg_data |= E1000_RAH_POOL_1 << pool;;
--	wr32(E1000_RAH(entry), reg_data);
--}
--
- static void igb_set_mc_list_pools(struct igb_adapter *adapter,
- 				  int entry_count, u16 total_rar_filters)
- {
+Other than that, making it extensible sounds reasonable. How about just
+using a '__u64 *target' and a bit in the 'flags' argument?
+
+	Arnd <><
