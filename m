@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbZGMRRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZGMRW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639AbZGMRRg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbZGMRRf
+	id S1756648AbZGMRW7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756631AbZGMRW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:17:35 -0400
-Received: from gw1.transmode.se ([213.115.205.20]:38133 "EHLO gw1.transmode.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756632AbZGMRRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:17:34 -0400
-In-Reply-To: <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@LocalDomain>
-References: <20090713151911.GA28114@oksana.dev.rtsoft.ru> <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@LocalDomain>
-Subject: Re: [PATCH 0/2] Setting GPIOs simultaneously
-X-KeepSent: 8C0227E0:BF13DCDF-C12575F2:005EA83F;
- type=4; name=$KeepSent
-To: avorontsov@ru.mvista.com
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-X-Mailer: Lotus Notes Release 8.5 December 05, 2008
-Message-ID: <OF8C0227E0.BF13DCDF-ONC12575F2.005EA83F-C12575F2.005EFD2C@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Mon, 13 Jul 2009 19:17:31 +0200
-X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5 HF407|May 07, 2009) at
- 2009-07-13 19:17:32
+	Mon, 13 Jul 2009 13:22:59 -0400
+Received: from smtp.mppmu.mpg.de ([134.107.24.58]:51263 "EHLO
+	smtp.mppmu.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756536AbZGMRW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 13:22:57 -0400
+X-Greylist: delayed 1052 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Jul 2009 13:22:57 EDT
+Date: Mon, 13 Jul 2009 19:22:51 +0200 (CEST)
+From: Peter Breitenlohner <peb@mppmu.mpg.de>
+To: Karel Zak <kzak@redhat.com>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng v2.16-rc2 -- shlib versions
+In-Reply-To: <alpine.LNX.2.00.0907131900290.31109@pcl321.mppmu.mpg.de>
+Message-ID: <alpine.LNX.2.00.0907131913010.31109@pcl321.mppmu.mpg.de>
+References: <20090702181031.GB4122@nb.net.home> <alpine.LNX.2.00.0907131900290.31109@pcl321.mppmu.mpg.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joakim Tjernlund/Transmode wrote on 13/07/2009 18:01:02:
+On Mon, 13 Jul 2009, Peter Breitenlohner wrote:
+
+> On Thu, 2 Jul 2009, Karel Zak wrote:
 >
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 13/07/2009 17:19:11:
-> >
-> > Hi all,
-> >
-> > I've been sitting on these patches for some time, but now it appears
-> > that the set_sync() feature is needed elsewhere. So here are the
-> > patches.
-> >
-> > Joakim, I think this is what you need.
+>> The second util-linux-ng 2.16 release candidate is available at
+>>
+>>   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
+>> 
+>> Feedback and bug reports, as always, are welcomed.
+>
+> Hi Karel,
+>
+> I just tried to build util-linux-ng-2.16-rc2 (i686/x86_64 linux-gnu
+> with gcc-3.4.6, libc-2.3.6), but in order to succeed I had to apply the
+> attached patch (#include <stdarg.h> from shlibs/blkid/src/blkidP.h).
 
-> Yes, it sure looks so :) I will have to look closer later as
-> I will be traveling the next few days.
+The choice of shared library versions from util-linux-ng-2.16-rc2:
+ 	libblkid.so.1 -> libblkid.so.1.0.0
+ 	libuuid.so.1 -> libuuid.so.1.0.0
+is somewhat unfortunate, because e2fsprogs-1.41.3 has:
+ 	libblkid.so.1 -> libblkid.so.1.0
+ 	libuuid.so.1 -> libuuid.so.1.2
+with the consequence that as long as the older e2fsprogs libraries are not
+removed, ldconfig will create a symlink to the older libuuid from e2fsprogs
+(I am not sure about the symlink for libblkid).
 
-hmm, one must define a new OF syntax (and update the spi_mpc83xx driver) to
-use this(I think). Have you given this any thought?
+This problem could safely be avoided if util-linux-ng were to choose at
+least libuuid.so.1.2.0 or maybe even better to be absolutely safe
+libblkid.so.1.1.0 and libuuid.so.1.3.0.
 
- Jocke
-
+Regards
+Peter
