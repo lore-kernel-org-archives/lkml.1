@@ -1,69 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbZGMAyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbZGMA4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753421AbZGMAyR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 20:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZGMAyH
+	id S1752962AbZGMA4T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 20:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZGMA4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 20:54:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48648 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbZGMAyG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 20:54:06 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 13 Jul 2009 09:52:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Vladislav D. Buzov" <vbuzov@embeddedalley.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers Mailing List 
-	<containers@lists.linux-foundation.org>,
-       Dan Malek <dan@embeddedalley.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org
-Subject: Re: [PATCH 1/1] Memory usage limit notification addition to memcg
-Message-Id: <20090713095209.d8b6e566.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4A554B54.3080903@embeddedalley.com>
-References: <1239660512-25468-1-git-send-email-dan@embeddedalley.com>
-	<1246998310-16764-1-git-send-email-vbuzov@embeddedalley.com>
-	<1246998310-16764-2-git-send-email-vbuzov@embeddedalley.com>
-	<20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A554B54.3080903@embeddedalley.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Sun, 12 Jul 2009 20:56:08 -0400
+Received: from mga01.intel.com ([192.55.52.88]:38537 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751426AbZGMA4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 20:56:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,387,1243839600"; 
+   d="scan'208";a="707179042"
+Subject: Re: [PATCH 4/5] drivers/net: Drop unnecessary NULL test
+From: Zhu Yi <yi.zhu@intel.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: "jketreno@linux.intel.com" <jketreno@linux.intel.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw2100-devel@lists.sourceforge.net" 
+	<ipw2100-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0907122205060.22658@ask.diku.dk>
+References: <Pine.LNX.4.64.0907122205060.22658@ask.diku.dk>
+Content-Type: text/plain
+Date: Mon, 13 Jul 2009 08:56:01 +0800
+Message-Id: <1247446561.26347.10.camel@debian>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Jul 2009 18:43:48 -0700
-"Vladislav D. Buzov" <vbuzov@embeddedalley.com> wrote:
-
-> KAMEZAWA Hiroyuki wrote:
-
-> > 2 points.
-> >  - Do we have to check this always we account ?
-> >   
-> What are the options? Every N pages? How to select N?
+On Mon, 2009-07-13 at 04:05 +0800, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-I think you can reuse Balbir's softlimit event counter. (see v9.)
-
-
-> > If this is true, "set limit" should be checked to guarantee this.
-> > plz allow minus this for avoiding mess.
-> Setting the memory controller cgroup limit and the notification
-> threshold are two separate operations. There isn't any "mess," just some
-> validation testing for reporting back to the source of the request. When
-> changing the memory controller limit, we ensure the threshold limit is
-> never allowed "negative." At most, the threshold limit will be equal the
-> memory controller cgroup limit. Otherwise, the arithmetic and
-> conditional tests during the operational part of the software becomes
-> more complex, which we don't want.
+> The result of container_of should not be NULL.  In particular, in this case
+> the argument to the enclosing function has passed though INIT_WORK, which
+> dereferences it, implying that its container cannot be NULL.
 > 
-Hmm, then, plz this interface put under "set_limit_mutex".
+> A simplified version of the semantic patch that makes this change is as
+> follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> identifier fn,work,x,fld;
+> type T;
+> expression E1,E2;
+> statement S;
+> @@
+> 
+> static fn(struct work_struct *work) {
+>   ... when != work = E1
+>   x = container_of(work,T,fld)
+>   ... when != x = E2
+> - if (x == NULL) S
+>   ...
+> }
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+
+Acked-by: Zhu Yi <yi.zhu@intel.com>
 
 Thanks,
--Kame
+-yi
+> ---
+>  drivers/net/wireless/ipw2x00/ipw2200.c         |    3 ---
+>  1 files changed, 0 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c b/drivers/net/wireless/ipw2x00/ipw2200.c
+> index d726b3c..2dc1cdb 100644
+> --- a/drivers/net/wireless/ipw2x00/ipw2200.c
+> +++ b/drivers/net/wireless/ipw2x00/ipw2200.c
+> @@ -7250,9 +7250,6 @@ static void ipw_bg_qos_activate(struct work_struct *work)
+>  	struct ipw_priv *priv =
+>  		container_of(work, struct ipw_priv, qos_activate);
+>  
+> -	if (priv == NULL)
+> -		return;
+> -
+>  	mutex_lock(&priv->mutex);
+>  
+>  	if (priv->status & STATUS_ASSOCIATED)
 
