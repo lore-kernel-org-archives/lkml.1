@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbZGMUFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbZGMUGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756917AbZGMUFe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 16:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbZGMUFe
+	id S1756743AbZGMUGP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 16:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbZGMUGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 16:05:34 -0400
-Received: from mail.tpi.com ([70.99.223.143]:4006 "EHLO mail.tpi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754942AbZGMUFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 16:05:33 -0400
-X-Greylist: delayed 1627 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Jul 2009 16:05:33 EDT
-Message-ID: <4A5B9388.4030208@tpi.com>
-Date: Mon, 13 Jul 2009 14:05:28 -0600
-From: Tim Gardner <timg@tpi.com>
-Reply-To: timg@tpi.com
-User-Agent: Thunderbird 2.0.0.22 (X11/20090710)
+	Mon, 13 Jul 2009 16:06:15 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:6272 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756755AbZGMUGO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 16:06:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vowx2g1C5ewWj6+fVPV2opO+4ijQh37gQa3SpXrvSEXQ+Z8j6WyXR2JO4fP2yWKXiO
+         KpSJJ5l9yVgO7EZ5s9H77FTjhqGE9Gaxk4kPHeSp2E7Kw5LcdVSllEobdKmm1kvTaUWd
+         OG8CW1kfyQ/7Qdt0HRmkbkcSilDh4HddHvO7I=
+Date: Tue, 14 Jul 2009 00:38:04 +0430
+From: Ali Gholami Rudi <ali@rudi.ir>
+To: Greg KH <gregkh@suse.de>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Righi <righi.andrea@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Philippe De Muyter <phdm@macqel.be>, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] fbdev: add fillrect and copyarea ioctls
+Message-ID: <20090713200804.GB1280@lilem.mirepesht>
+References: <20090713151709.GA1297@lilem.mirepesht>
+ <20090713163530.GA22251@suse.de>
 MIME-Version: 1.0
-To: reinette chatre <reinette.chatre@intel.com>
-CC: "Zhu, Yi" <yi.zhu@intel.com>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH] iwlwifi 3945: Fix IWL_SCAN compile error
-References: <20090713190803.9A70BF8D2C@sepang.rtg.net> <1247515401.17896.1630.camel@rc-desk>
-In-Reply-To: <1247515401.17896.1630.camel@rc-desk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090713163530.GA22251@suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-26)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-reinette chatre wrote:
-> Hi Tim,
+Greg KH <gregkh@suse.de> wrote:
+> On Mon, Jul 13, 2009 at 07:47:09PM +0430, Ali Gholami Rudi wrote:
+> > Is there any reason for not adding these ioctls to fbdev?  I searched
+> > the net and couldn't any.  Anyway, these patches simply implement those
+> > ioctls.
 > 
-> On Mon, 2009-07-13 at 12:08 -0700, Tim Gardner wrote:
->> From 2c7c806570ad72f5af2e778f2fe71aae7d727e02 Mon Sep 17 00:00:00 2001
->> From: Tim Gardner <tim.gardner@canonical.com>
->> Date: Mon, 13 Jul 2009 12:53:32 -0600
->> Subject: [PATCH] iwlwifi 3945: Fix IWL_DEBUG_SCAN compile
->>
->> Added a missing parameter in the macro invocation to correct a
->> compile error when CONFIG_IWLWIFI_DEBUG is enabled.
->>
->> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
->> ---
->>  drivers/net/wireless/iwlwifi/iwl3945-base.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
->> index 2564288..67332fb 100644
->> --- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
->> +++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
->> @@ -2962,7 +2962,7 @@ static void iwl3945_bg_request_scan(struct work_struct *data)
->>  	}
->>  
->>  	if (scan->channel_count == 0) {
->> -		IWL_DEBUG_SCAN("channel count %d\n", scan->channel_count);
->> +		IWL_DEBUG_SCAN(priv,"channel count %d\n", scan->channel_count);
->>  		goto done;
->>  	}
->>  
-> 
-> On which code did you base this patch?
-> 
-> Reinette
-> 
-> 
+> Have you also added the needed 32 vs. 64 bit handlers for these ioctls?
 
-Head of Linus' tree, but I see that its already fixed in
-wireless-testing. I guess I pulled the trigger too soon.
+I guess Arnd's patch will do.
 
-rtg
--- 
-Tim Gardner timg@tpi.com www.tpi.com
-OR 503-601-0234 x102 MT 406-443-5357
+By the way, it should check for overflows, too?  I mean should I change
+this:
+
+> +       if (copy->dx + copy->width > info->var.xres ||
+> +           copy->sx + copy->width > info->var.xres ||
+> +           copy->dy + copy->height > info->var.yres ||
+> +           copy->sy + copy->height > info->var.yres) {
+
+#define ISSUMLESSTHAN(a, b, s)	(((a) <= (s)) && ((b) <= (s)) && \
+				 ((a) + (b) <= (s)))
+
+if (!ISSUMLESSTHAN(copy->dx, copy->width, info->var.xres) || ...
+
+	Ali
