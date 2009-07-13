@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZGMMQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZGMMTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755630AbZGMMQE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 08:16:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbZGMMQC
+	id S1755652AbZGMMTO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 08:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbZGMMTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 08:16:02 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:40346 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755591AbZGMMQB (ORCPT
+	Mon, 13 Jul 2009 08:19:13 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49623 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755562AbZGMMTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 08:16:01 -0400
-Date: Mon, 13 Jul 2009 17:41:38 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: lizf@cn.fujitzu.com, bblum@google.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       libcg-devel <libcg-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 0/2] CGroups: cgroup member list enhancement/fix
-Message-ID: <20090713121138.GC5051@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com> <20090705063850.GX11273@balbir.in.ibm.com> <6599ad830907101658i13e4046br70377a487dd6b49b@mail.gmail.com>
+	Mon, 13 Jul 2009 08:19:13 -0400
+Date: Mon, 13 Jul 2009 14:19:11 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: linux-kernel@vger.kernel.org, akpm@osdl.org
+Cc: rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Subject: [PATCH] Remove some very outdated recommendations in
+	Documentation/memory.txt
+Message-ID: <20090713121911.GA31442@basil.fritz.box>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830907101658i13e4046br70377a487dd6b49b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* menage@google.com <menage@google.com> [2009-07-10 16:58:23]:
+Remove some very outdated recommendations in Documentation/memory.txt
 
-> On Sat, Jul 4, 2009 at 11:38 PM, Balbir Singh<balbir@linux.vnet.ibm.com> wrote:
-> >
-> > Paul, I don't see an interface to migrate all procs or at-least I
-> > can't read it in the changelog. As discussed in the containers
-> > mini-summit in 2008, it would be a nice thing to have (I've not looked
-> > at the implementation yet).
-> >
-> 
-> We're still working on that bit.
-> 
-> We want to provide the guarantee that if you write a tgid to the procs
-> file, all its threads get migrated even if you race with a clone()
-> call, and are trying to figure out a nice way to do that without
-> introducing unnecessary overhead/synchronization in the fork path.
->
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-How about lazy migration? Mark a group as to move when the kernel sees
-it next for scheduling. We'll still need synchronization, but we can
-amortize the cost. I've not tried it yet. BTW, we have quite a bit of
-logic in libcgroup to deal with migration problems, specially during
-classification, which Kenichi has added. We needed timestamping to get
-correct migration working during classification.
+---
+ Documentation/memory.txt |   31 ++-----------------------------
+ 1 file changed, 2 insertions(+), 29 deletions(-)
 
--- 
-	Balbir
+Index: linux-2.6.31-rc1-ak/Documentation/memory.txt
+===================================================================
+--- linux-2.6.31-rc1-ak.orig/Documentation/memory.txt
++++ linux-2.6.31-rc1-ak/Documentation/memory.txt
+@@ -1,18 +1,7 @@
+ There are several classic problems related to memory on Linux
+ systems.
+ 
+-	1) There are some buggy motherboards which cannot properly 
+-	   deal with the memory above 16MB.  Consider exchanging
+-	   your motherboard.
+-
+-	2) You cannot do DMA on the ISA bus to addresses above
+-	   16M.  Most device drivers under Linux allow the use
+-           of bounce buffers which work around this problem.  Drivers
+-	   that don't use bounce buffers will be unstable with
+-	   more than 16M installed.  Drivers that use bounce buffers
+-	   will be OK, but may have slightly higher overhead.
+-	
+-	3) There are some motherboards that will not cache above
++	1) There are some motherboards that will not cache above
+ 	   a certain quantity of memory.  If you have one of these
+ 	   motherboards, your system will be SLOWER, not faster
+ 	   as you add more memory.  Consider exchanging your 
+@@ -24,7 +13,7 @@ It can also tell Linux to use less memor
+ If you use "mem=" on a machine with PCI, consider using "memmap=" to avoid
+ physical address space collisions.
+ 
+-See the documentation of your boot loader (LILO, loadlin, etc.) about
++See the documentation of your boot loader (LILO, grub, loadlin, etc.) about
+ how to pass options to the kernel.
+ 
+ There are other memory problems which Linux cannot deal with.  Random
+@@ -42,19 +31,3 @@ Try:
+ 	  with the vendor. Consider testing it with memtest86 yourself.
+ 	
+ 	* Exchanging your CPU, cache, or motherboard for one that works.
+-
+-	* Disabling the cache from the BIOS.
+-
+-	* Try passing the "mem=4M" option to the kernel to limit
+-	  Linux to using a very small amount of memory. Use "memmap="-option
+-	  together with "mem=" on systems with PCI to avoid physical address
+-	  space collisions.
+-
+-
+-Other tricks:
+-
+-	* Try passing the "no-387" option to the kernel to ignore
+-	  a buggy FPU.
+-
+-	* Try passing the "no-hlt" option to disable the potentially
+-          buggy HLT instruction in your CPU.
