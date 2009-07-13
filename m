@@ -1,349 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZGMJCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbZGMJCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbZGMJCU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 05:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbZGMJCS
+	id S1755164AbZGMJCF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 05:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZGMJCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 05:02:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39962 "EHLO hera.kernel.org"
+	Mon, 13 Jul 2009 05:02:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39948 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755149AbZGMJCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 05:02:14 -0400
-Date: Mon, 13 Jul 2009 09:01:32 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+	id S1755137AbZGMJCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 05:02:01 -0400
+Date: Mon, 13 Jul 2009 09:01:06 GMT
+From: tip-bot for Chris Wilson <chris@chris-wilson.co.uk>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, lizf@cn.fujitsu.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A5A9CF1.2010007@cn.fujitsu.com>
-References: <4A5A9CF1.2010007@cn.fujitsu.com>
-Subject: [tip:tracing/urgent] tracing/events: Move TRACE_SYSTEM outside of include guard
-Message-ID: <tip-d0b6e04a4cd8360e3c9c419f7c30a3081a0c142a@git.kernel.org>
-Git-Commit-ID: d0b6e04a4cd8360e3c9c419f7c30a3081a0c142a
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, rostedt@goodmis.org, bgamari.foss@gmail.com,
+       tglx@linutronix.de, jbaron@redhat.com, chris@chris-wilson.co.uk,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, bgamari.foss@gmail.com, rostedt@goodmis.org,
+       jbaron@redhat.com, tglx@linutronix.de, chris@chris-wilson.co.uk,
+       mingo@elte.hu
+In-Reply-To: <1246869094-21237-1-git-send-email-chris@chris-wilson.co.uk>
+References: <1246869094-21237-1-git-send-email-chris@chris-wilson.co.uk>
+Subject: [tip:perfcounters/urgent] perf_counter: Fix the tracepoint channel to perfcounters
+Message-ID: <tip-d4d7d0b9545721d3cabb19d15163bbc66b797707@git.kernel.org>
+Git-Commit-ID: d4d7d0b9545721d3cabb19d15163bbc66b797707
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Jul 2009 09:01:33 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Jul 2009 09:01:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d0b6e04a4cd8360e3c9c419f7c30a3081a0c142a
-Gitweb:     http://git.kernel.org/tip/d0b6e04a4cd8360e3c9c419f7c30a3081a0c142a
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Mon, 13 Jul 2009 10:33:21 +0800
+Commit-ID:  d4d7d0b9545721d3cabb19d15163bbc66b797707
+Gitweb:     http://git.kernel.org/tip/d4d7d0b9545721d3cabb19d15163bbc66b797707
+Author:     Chris Wilson <chris@chris-wilson.co.uk>
+AuthorDate: Mon, 6 Jul 2009 09:31:33 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 13 Jul 2009 10:59:55 +0200
+CommitDate: Mon, 13 Jul 2009 09:23:10 +0200
 
-tracing/events: Move TRACE_SYSTEM outside of include guard
+perf_counter: Fix the tracepoint channel to perfcounters
 
-If TRACE_INCLDUE_FILE is defined, <trace/events/TRACE_INCLUDE_FILE.h>
-will be included and compiled, otherwise it will be
-<trace/events/TRACE_SYSTEM.h>
+Fix a missed rename in EVENT_PROFILE support so that it gets
+built and allows tracepoint tracing from the 'perf' tool.
 
-So TRACE_SYSTEM should be defined outside of #if proctection,
-just like TRACE_INCLUDE_FILE.
+Fix a typo in the (never before built & enabled) portion in
+perf_counter.c as well, and update that code to the
+attr.config changes as well.
 
-Imaging this scenario:
-
- #include <trace/events/foo.h>
-    -> TRACE_SYSTEM == foo
- ...
- #include <trace/events/bar.h>
-    -> TRACE_SYSTEM == bar
- ...
- #define CREATE_TRACE_POINTS
- #include <trace/events/foo.h>
-    -> TRACE_SYSTEM == bar !!!
-
-and then bar.h will be included and compiled.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Cc: Ben Gamari <bgamari.foss@gmail.com>
+Cc: Jason Baron <jbaron@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <4A5A9CF1.2010007@cn.fujitsu.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1246869094-21237-1-git-send-email-chris@chris-wilson.co.uk>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- fs/gfs2/trace_gfs2.h                       |    8 +++---
- include/trace/events/block.h               |    6 ++--
- include/trace/events/ext4.h                |    6 ++--
- include/trace/events/irq.h                 |    6 ++--
- include/trace/events/jbd2.h                |    6 ++--
- include/trace/events/kmem.h                |    6 ++--
- include/trace/events/lockdep.h             |    6 ++--
- include/trace/events/sched.h               |    6 ++--
- include/trace/events/skb.h                 |    6 ++--
- include/trace/events/workqueue.h           |    6 ++--
- samples/trace_events/trace-events-sample.h |   37 +++++++++++++++-------------
- 11 files changed, 51 insertions(+), 48 deletions(-)
+ init/Kconfig          |    2 +-
+ kernel/perf_counter.c |   10 +++-------
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/fs/gfs2/trace_gfs2.h b/fs/gfs2/trace_gfs2.h
-index 98d6ef1..148d55c 100644
---- a/fs/gfs2/trace_gfs2.h
-+++ b/fs/gfs2/trace_gfs2.h
-@@ -1,12 +1,11 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM gfs2
-+
- #if !defined(_TRACE_GFS2_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_GFS2_H
+diff --git a/init/Kconfig b/init/Kconfig
+index 1ce05a4..cb2c092 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -962,7 +962,7 @@ config PERF_COUNTERS
  
- #include <linux/tracepoint.h>
+ config EVENT_PROFILE
+ 	bool "Tracepoint profile sources"
+-	depends on PERF_COUNTERS && EVENT_TRACER
++	depends on PERF_COUNTERS && EVENT_TRACING
+ 	default y
  
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM gfs2
--#define TRACE_INCLUDE_FILE trace_gfs2
+ endmenu
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index d55a50d..c6c38fb 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -3671,7 +3671,7 @@ static const struct pmu perf_ops_task_clock = {
+ void perf_tpcounter_event(int event_id)
+ {
+ 	struct perf_sample_data data = {
+-		.regs = get_irq_regs();
++		.regs = get_irq_regs(),
+ 		.addr = 0,
+ 	};
+ 
+@@ -3687,16 +3687,12 @@ extern void ftrace_profile_disable(int);
+ 
+ static void tp_perf_counter_destroy(struct perf_counter *counter)
+ {
+-	ftrace_profile_disable(perf_event_id(&counter->attr));
++	ftrace_profile_disable(counter->attr.config);
+ }
+ 
+ static const struct pmu *tp_perf_counter_init(struct perf_counter *counter)
+ {
+-	int event_id = perf_event_id(&counter->attr);
+-	int ret;
 -
- #include <linux/fs.h>
- #include <linux/buffer_head.h>
- #include <linux/dlmconstants.h>
-@@ -403,5 +402,6 @@ TRACE_EVENT(gfs2_block_alloc,
- /* This part must be outside protection */
- #undef TRACE_INCLUDE_PATH
- #define TRACE_INCLUDE_PATH .
-+#define TRACE_INCLUDE_FILE trace_gfs2
- #include <trace/define_trace.h>
+-	ret = ftrace_profile_enable(event_id);
+-	if (ret)
++	if (ftrace_profile_enable(counter->attr.config))
+ 		return NULL;
  
-diff --git a/include/trace/events/block.h b/include/trace/events/block.h
-index d6b05f4..9a74b46 100644
---- a/include/trace/events/block.h
-+++ b/include/trace/events/block.h
-@@ -1,3 +1,6 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM block
-+
- #if !defined(_TRACE_BLOCK_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_BLOCK_H
- 
-@@ -5,9 +8,6 @@
- #include <linux/blkdev.h>
- #include <linux/tracepoint.h>
- 
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM block
--
- TRACE_EVENT(block_rq_abort,
- 
- 	TP_PROTO(struct request_queue *q, struct request *rq),
-diff --git a/include/trace/events/ext4.h b/include/trace/events/ext4.h
-index acf4cc9..8eb82cc 100644
---- a/include/trace/events/ext4.h
-+++ b/include/trace/events/ext4.h
-@@ -1,9 +1,9 @@
--#if !defined(_TRACE_EXT4_H) || defined(TRACE_HEADER_MULTI_READ)
--#define _TRACE_EXT4_H
--
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM ext4
- 
-+#if !defined(_TRACE_EXT4_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_EXT4_H
-+
- #include <linux/writeback.h>
- #include "../../../fs/ext4/ext4.h"
- #include "../../../fs/ext4/mballoc.h"
-diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-index b0c7ede..1cb0c3a 100644
---- a/include/trace/events/irq.h
-+++ b/include/trace/events/irq.h
-@@ -1,12 +1,12 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM irq
-+
- #if !defined(_TRACE_IRQ_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_IRQ_H
- 
- #include <linux/tracepoint.h>
- #include <linux/interrupt.h>
- 
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM irq
--
- #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
- #define show_softirq_name(val)			\
- 	__print_symbolic(val,			\
-diff --git a/include/trace/events/jbd2.h b/include/trace/events/jbd2.h
-index 845b0b4..10813fa 100644
---- a/include/trace/events/jbd2.h
-+++ b/include/trace/events/jbd2.h
-@@ -1,12 +1,12 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM jbd2
-+
- #if !defined(_TRACE_JBD2_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_JBD2_H
- 
- #include <linux/jbd2.h>
- #include <linux/tracepoint.h>
- 
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM jbd2
--
- TRACE_EVENT(jbd2_checkpoint,
- 
- 	TP_PROTO(journal_t *journal, int result),
-diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-index 9baba50..1493c54 100644
---- a/include/trace/events/kmem.h
-+++ b/include/trace/events/kmem.h
-@@ -1,12 +1,12 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM kmem
-+
- #if !defined(_TRACE_KMEM_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_KMEM_H
- 
- #include <linux/types.h>
- #include <linux/tracepoint.h>
- 
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM kmem
--
- /*
-  * The order of these masks is important. Matching masks will be seen
-  * first and the left over flags will end up showing by themselves.
-diff --git a/include/trace/events/lockdep.h b/include/trace/events/lockdep.h
-index 0e956c9..bcf1d20 100644
---- a/include/trace/events/lockdep.h
-+++ b/include/trace/events/lockdep.h
-@@ -1,12 +1,12 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM lockdep
-+
- #if !defined(_TRACE_LOCKDEP_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_LOCKDEP_H
- 
- #include <linux/lockdep.h>
- #include <linux/tracepoint.h>
- 
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM lockdep
--
- #ifdef CONFIG_LOCKDEP
- 
- TRACE_EVENT(lock_acquire,
-diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
-index 24ab5bc..8949bb7 100644
---- a/include/trace/events/sched.h
-+++ b/include/trace/events/sched.h
-@@ -1,12 +1,12 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM sched
-+
- #if !defined(_TRACE_SCHED_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_SCHED_H
- 
- #include <linux/sched.h>
- #include <linux/tracepoint.h>
- 
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM sched
--
- /*
-  * Tracepoint for calling kthread_stop, performed to end a kthread:
-  */
-diff --git a/include/trace/events/skb.h b/include/trace/events/skb.h
-index 1e8fabb..e499863 100644
---- a/include/trace/events/skb.h
-+++ b/include/trace/events/skb.h
-@@ -1,12 +1,12 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM skb
-+
- #if !defined(_TRACE_SKB_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_SKB_H
- 
- #include <linux/skbuff.h>
- #include <linux/tracepoint.h>
- 
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM skb
--
- /*
-  * Tracepoint for free an sk_buff:
-  */
-diff --git a/include/trace/events/workqueue.h b/include/trace/events/workqueue.h
-index 035f1bf..fcfd9a1 100644
---- a/include/trace/events/workqueue.h
-+++ b/include/trace/events/workqueue.h
-@@ -1,3 +1,6 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM workqueue
-+
- #if !defined(_TRACE_WORKQUEUE_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_WORKQUEUE_H
- 
-@@ -5,9 +8,6 @@
- #include <linux/sched.h>
- #include <linux/tracepoint.h>
- 
--#undef TRACE_SYSTEM
--#define TRACE_SYSTEM workqueue
--
- TRACE_EVENT(workqueue_insertion,
- 
- 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
-diff --git a/samples/trace_events/trace-events-sample.h b/samples/trace_events/trace-events-sample.h
-index 9977a75..f24ae37 100644
---- a/samples/trace_events/trace-events-sample.h
-+++ b/samples/trace_events/trace-events-sample.h
-@@ -1,21 +1,4 @@
- /*
-- * Notice that this file is not protected like a normal header.
-- * We also must allow for rereading of this file. The
-- *
-- *  || defined(TRACE_HEADER_MULTI_READ)
-- *
-- * serves this purpose.
-- */
--#if !defined(_TRACE_EVENT_SAMPLE_H) || defined(TRACE_HEADER_MULTI_READ)
--#define _TRACE_EVENT_SAMPLE_H
--
--/*
-- * All trace headers should include tracepoint.h, until we finally
-- * make it into a standard header.
-- */
--#include <linux/tracepoint.h>
--
--/*
-  * If TRACE_SYSTEM is defined, that will be the directory created
-  * in the ftrace directory under /debugfs/tracing/events/<system>
-  *
-@@ -34,11 +17,31 @@
-  * #define TRACE_INCLUDE_FILE trace-events-sample
-  *
-  * As we do an the bottom of this file.
-+ *
-+ * Notice that TRACE_SYSTEM should be defined outside of #if
-+ * protection, just like TRACE_INCLUDE_FILE.
-  */
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM sample
- 
- /*
-+ * Notice that this file is not protected like a normal header.
-+ * We also must allow for rereading of this file. The
-+ *
-+ *  || defined(TRACE_HEADER_MULTI_READ)
-+ *
-+ * serves this purpose.
-+ */
-+#if !defined(_TRACE_EVENT_SAMPLE_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_EVENT_SAMPLE_H
-+
-+/*
-+ * All trace headers should include tracepoint.h, until we finally
-+ * make it into a standard header.
-+ */
-+#include <linux/tracepoint.h>
-+
-+/*
-  * The TRACE_EVENT macro is broken up into 5 parts.
-  *
-  * name: name of the trace point. This is also how to enable the tracepoint.
+ 	counter->destroy = tp_perf_counter_destroy;
