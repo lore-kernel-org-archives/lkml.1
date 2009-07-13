@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZGMUsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234AbZGMUuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbZGMUsf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 16:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757117AbZGMUse
+	id S1757234AbZGMUuP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 16:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbZGMUuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 16:48:34 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:42661 "EHLO mgw2.diku.dk"
+	Mon, 13 Jul 2009 16:50:15 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:34437 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754919AbZGMUsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 16:48:33 -0400
-Date: Mon, 13 Jul 2009 22:48:31 +0200 (CEST)
+	id S1757197AbZGMUuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 16:50:13 -0400
+Date: Mon, 13 Jul 2009 22:44:32 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: chris.mason@oracle.com, linux-btrfs@vger.kernel.org,
+To: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/4] fs/btrfs: adjust NULL test
-Message-ID: <Pine.LNX.4.64.0907132244330.12374@ask.diku.dk>
+Subject: [PATCH 3/4] drivers/scsi: adjust NULL test
+Message-ID: <Pine.LNX.4.64.0907132244090.12374@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,7 +23,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Move the call to BUG_ON to before the dereference of the tested value.
+Due to the preceding dereference, cmnd cannot be NULL at the point of the
+WARN_ON.  Furthermore, it was earlier tested whether cmnd was NULL and the
+function was exited if that was the case.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -48,20 +50,18 @@ position p1,p2;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- fs/btrfs/inode.c                    |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/scsi/initio.c               |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
-index 7ffa3d3..8cc6025 100644
---- a/fs/btrfs/inode.c
-+++ b/fs/btrfs/inode.c
-@@ -2604,8 +2604,8 @@ noinline int btrfs_truncate_inode_items(struct btrfs_trans_handle *trans,
- 	if (root->ref_cows)
- 		btrfs_drop_extent_cache(inode, new_size & (~mask), (u64)-1, 0);
- 	path = btrfs_alloc_path();
--	path->reada = -1;
- 	BUG_ON(!path);
-+	path->reada = -1;
+diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
+index 89a5948..359de22 100644
+--- a/drivers/scsi/initio.c
++++ b/drivers/scsi/initio.c
+@@ -2817,7 +2817,6 @@ static void i91uSCBPost(u8 * host_mem, u8 * cblk_mem)
+ 	}
  
- 	/* FIXME, add redo link to tree so we don't leak on crash */
- 	key.objectid = inode->i_ino;
+ 	cmnd->result = cblk->tastat | (cblk->hastat << 16);
+-	WARN_ON(cmnd == NULL);
+ 	i91u_unmap_scb(host->pci_dev, cmnd);
+ 	cmnd->scsi_done(cmnd);	/* Notify system DONE           */
+ 	initio_release_scb(host, cblk);	/* Release SCB for current channel */
