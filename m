@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZGMRkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbZGMRpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZGMRkZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZGMRkY
+	id S1755388AbZGMRpL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZGMRpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:40:24 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:49286 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468AbZGMRkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:40:24 -0400
-Subject: Re: [stable] NFS client packet storm on 2.6.27.x
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Greg KH <greg@kroah.com>
-Cc: Kasparek Tomas <kasparek@fit.vutbr.cz>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-In-Reply-To: <20090713172001.GA22775@kroah.com>
-References: <20090116104802.GF47559@fit.vutbr.cz>
-	 <20090118130835.GH47559@fit.vutbr.cz> <20090120150301.GG47559@fit.vutbr.cz>
-	 <1232465547.7055.3.camel@heimdal.trondhjem.org>
-	 <20090303120848.GV89843@fit.vutbr.cz>
-	 <1236089767.9631.4.camel@heimdal.trondhjem.org>
-	 <20090418051739.GL64731@fit.vutbr.cz> <20090422172707.GC57877@fit.vutbr.cz>
-	 <20090625055532.GC50277@fit.vutbr.cz> <20090713111214.GC30754@fit.vutbr.cz>
-	 <20090713172001.GA22775@kroah.com>
-Content-Type: text/plain
-Date: Mon, 13 Jul 2009 13:40:17 -0400
-Message-Id: <1247506817.14524.25.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 13 Jul 2009 13:45:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:47758 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753329AbZGMRpJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 13:45:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=qXf5DzwKkjel1nnWR0xfMqqqPBxFDu63SvVcOmgX1dzp9+v0ENTFcB+sL10YvwhBZM
+         iTTVR2pWCRs7b6Ef5IJnjURnV1X8nU0/l9KP30UYv2/RvcaaDAjjOf5tH/ybhqPYn7Q6
+         k0cIdfcpgmbORY2fwGv1GyLX7aKCL8MD4kMO0=
+Message-ID: <4A5B72A1.5090605@gmail.com>
+Date: Mon, 13 Jul 2009 19:45:05 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
+MIME-Version: 1.0
+To: Thomas Meyer <thomas@m3y3r.de>
+CC: Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org,
+       sds@tycho.nsa.gov, jmorris@namei.org, eparis@parisplace.org,
+       cpufreq@vger.kernel.org
+Subject: Re: 2.6.31-rc2: BUG: unable to handle kernel NULL pointer dereference
+References: <1247410030.1095.1.camel@localhost>	 <loom.20090712T172408-520@post.gmane.org>  <4A5A46ED.7010907@gmail.com> <1247504406.5437.3.camel@localhost>
+In-Reply-To: <1247504406.5437.3.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 7 sum msgs/h 1 total rcpts 847 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=_URIID_)
-X-UiO-Scanned: 3F4D7A9A0BE6D58F35399DE7BF985FDB97042DA2
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 46 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-13 at 10:20 -0700, Greg KH wrote:
-> On Mon, Jul 13, 2009 at 01:12:15PM +0200, Kasparek Tomas wrote:
-> > On Thu, Jun 25, 2009 at 07:55:32AM +0200, Kasparek Tomas wrote:
-> > > http://www.linux-nfs.org/Linux-2.6.x/2.6.27/
-> > > 
-> > > .../fixups_4/linux-2.6.27-001-respond_promptly_to_socket_errors.dif
-> > > .../fixups_4/linux-2.6.27-002-respond_promptly_to_socket_errors_2.dif
-> > > 
-> > > ...
-> > > Together with tcp_linger patch it seems to improve the situation a lot to
-> > > state when it is possible for me to use 2.6.27.x kernels.
-> > > 
-> > > Trond, will it be possible to get tcp_linger and the upper twho patches to
-> > > 2.6.27.x stable queue so others get these fixes?
-> > 
-> > I got no response so far, is there someone who could advise me what to do
-> > to get above patches to 2.6.27.x stable? Or is there some reason, why this
-> > is not possible at all?
+On 07/13/2009 07:00 PM, Thomas Meyer wrote:
+>> What warning tainted the kernel before this oops is still interesting...
 > 
-> Can you backport them and send them to stable@kernel.org with the git
-> commit ids of the orignal patches?
+> There seems to be no OOPS before that BUG. Does a WARNING also set the G
+> flag? 
 
-When testing at a customer site, we recently found that we actually need
-4 patches in order to completely fix the storming problem in 2.6.27.y,
-and ensure a timely socket reconnect.
+No, W is set by warning. G means no proprietary modules loaded.
 
-commit 15f081ca8ddfe150fb639c591b18944a539da0fc (SUNRPC: Avoid an
-unnecessary task reschedule on ENOTCONN)
+> Something like that:
+> 
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004] ------------[ cut here ]------------
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004] WARNING: at lib/kref.c:43 kref_get+0x2f/0x4c()
 
-commit 670f94573104b4a25525d3fcdcd6496c678df172 (SUNRPC: Ensure we set
-XPRT_CLOSING only after we've sent a tcp FIN...)
+It tried to get a reference of a structure which was already "freed".
+Its reference count already had lowered to 0.
 
-commit 40d2549db5f515e415894def98b49db7d4c56714 (SUNRPC: Don't
-disconnect if a connection is still in progress.)
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004] Hardware name: MS-7250
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004] Modules linked in: rndis_wlan floppy olympic forcedeth [last unloaded: scsi_wait_scan]
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004] Pid: 27483, comm: pm-suspend Tainted: G        W  2.6.31-rc2 #79
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004] Call Trace:
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff8106c1c6>] ? warn_slowpath_common+0x84/0xb2
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff8134876b>] ? kref_get+0x2f/0x4c
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff813476b2>] ? kobject_get+0x26/0x44
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff815a344f>] ? cpufreq_cpu_get+0x74/0xca
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff815a3675>] ? cpufreq_suspend+0x5f/0x16f
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff81044a4f>] ? disable_local_APIC+0x2d/0x6d
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff81449b54>] ? sysdev_suspend+0xa7/0x28d
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff810a1229>] ? suspend_devices_and_enter+0x11c/0x1e6
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff810a13d8>] ? enter_state+0xe5/0x14c
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff810a0841>] ? state_store+0xc1/0xf6
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff81178bb8>] ? sysfs_write_file+0xe6/0x137
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff81117d03>] ? vfs_write+0xb4/0x126
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff81117e5d>] ? sys_write+0x55/0x90
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004]  [<ffffffff8102bf2b>] ? system_call_fastpath+0x16/0x1b
+> Jul 12 16:42:34 localhost kernel: [ 6179.647004] ---[ end trace f7a4d612974b9b3e ]---
+> 
+> Btw this seems also to be new in 2.6.31-rc2:
 
-and finally
+This is unrelated I think. I met it many times.
 
-commit f75e6745aa3084124ae1434fd7629853bdaf6798 (SUNRPC: Fix the problem
-of EADDRNOTAVAIL syslog floods on reconnect)
-
-The first three need to be applied to kernels 2.6.27.y to 2.6.29.y,
-while the last needs to be applied to 2.6.27.y to 2.6.30.y.
-
-I'll ensure the patches get sent to stable@kernel.org...
-
-   Trond
-
+> Jul 12 16:42:34 localhost kernel: [ 6187.256748] sd 2:0:0:0: [sdb] Starting disk
+> Jul 12 16:42:34 localhost kernel: [ 6190.318012] 
+> Jul 12 16:42:34 localhost kernel: [ 6190.318128] floppy driver state
+> Jul 12 16:42:34 localhost kernel: [ 6190.318244] -------------------
+> Jul 12 16:42:34 localhost kernel: [ 6190.320684] now=4300857616 last interrupt=4294760495 diff=6097121 last called handler=ffffffffa00263ea
+> Jul 12 16:42:34 localhost kernel: [ 6190.320896] timeout_message=lock fdc
