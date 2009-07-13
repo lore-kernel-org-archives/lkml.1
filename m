@@ -1,76 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbZGMSUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbZGMSZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867AbZGMSUw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 14:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756825AbZGMSUv
+	id S1756891AbZGMSZN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 14:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbZGMSZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 14:20:51 -0400
-Received: from mail-01.cse.ucsc.edu ([128.114.48.32]:57991 "EHLO
-	mail-01.cse.ucsc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756587AbZGMSUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 14:20:51 -0400
-X-Greylist: delayed 375 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Jul 2009 14:20:50 EDT
-In-Reply-To: <1247505941.7500.39.camel@twins>
-References: <200907102350.47124.henrik@austad.us> <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu> <1247412708.6704.105.camel@laptop>  <1247499843.8107.548.camel@Palantir> <1247505941.7500.39.camel@twins>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5B78D181-E446-4266-B9DD-AC0A2629C638@soe.ucsc.edu>
-Cc: Raistlin <raistlin@linux.it>, Douglas Niehaus <niehaus@ittc.ku.edu>,
-       Henrik Austad <henrik@austad.us>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       "James H. Anderson" <anderson@cs.unc.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>
+	Mon, 13 Jul 2009 14:25:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58474 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756579AbZGMSZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 14:25:11 -0400
+Message-ID: <4A5B7CC5.4030908@redhat.com>
+Date: Mon, 13 Jul 2009 21:28:21 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: KSM: current madvise rollup
+References: <Pine.LNX.4.64.0906291419440.5078@sister.anvils> <4A49E051.1080400@redhat.com> <Pine.LNX.4.64.0906301518370.967@sister.anvils> <4A4A5C56.5000109@redhat.com> <Pine.LNX.4.64.0907010057320.4255@sister.anvils> <4A4B317F.4050100@redhat.com> <Pine.LNX.4.64.0907082035400.10356@sister.anvils> <4A57C3D1.7000407@redhat.com> <Pine.LNX.4.64.0907111916001.30651@sister.anvils> <20090712002219.502540d2@woof.woof> <Pine.LNX.4.64.0907121459150.7417@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0907121459150.7417@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Noah Watkins <jayhawk@soe.ucsc.edu>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-Date: Mon, 13 Jul 2009 11:14:30 -0700
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think you can extend PIP to include things like bandwidth  
-> inheritance
-> too. Instead of simply propagating the priority through the waitqueue
-> hierarchy, you can pass the actual task around, and having this  
-> task you
-> can indeed consume its bandwidth etc..
+Hugh Dickins wrote:
+> On Sun, 12 Jul 2009, Izik Eidus wrote:
+>   
+>> On Sat, 11 Jul 2009 20:22:11 +0100 (BST)
+>> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+>>     
+>>> We may want to do that anyway.  It concerned me a lot when I was
+>>> first testing (and often saw kernel_pages_allocated greater than
+>>> pages_shared - probably because of the original KSM's eagerness to
+>>> merge forked pages, though I think there may have been more to it
+>>> than that).  But seems much less of an issue now (that ratio is much
+>>> healthier), and even less of an issue once KSM pages can be swapped.
+>>> So I'm not bothering about it at the moment, but it may make sense.
+>>>       
+>
+> I realized since writing that with the current statistics you really
+> cannot tell how big an issue the orphaned (count 1) KSM pages are -
+> good sharing of a few will completely hide non-sharing of many.
+>
+> But I've hacked in more stats (not something I'd care to share yet!),
+> and those confirm that for my loads at least, the orphaned KSM pages
+> are few compared with the shared ones.
+>
+>   
+>> We could add patch like the below, but I think we should leave it as it
+>> is now,
+>>     
+>
+> I agree we should leave it as is for now.  My guess is that we'll
+> prefer to leave them around, until approaching max_kernel_pages_alloc,
+> pruning them only at that stage (rather as we free swap more aggressively
+> when it's 50% full).  There may be benefit in not removing them too soon,
+> there may be benefit in holding on to stable pages for longer (holding a
+> reference in the stable tree for a while).  Or maybe not, just an idea.
+>   
 
-I think I understand what you are suggesting by "pass the actual task  
-around". If not, this message might seem out of place.
+Well, I personaly dont see any real soultion to this problem without 
+real swapping support,
+So for now I dont mind not to deal with it at all (as long as the admin 
+can decide how many unswappable pages he allow)
+But, If you have a stronger opnion than me for that case, I really dont 
+care to change it.
 
-Consider this locking chain/graph:
+>   
+>> and solve it all (like you have said) with the ksm pages
+>> swapping support in next kernel release.
+>> (Right now ksm can limit itself with max_kernel_pages_alloc)
+>>
+>> diff --git a/mm/ksm.c b/mm/ksm.c
+>> index a0fbdb2..ee80861 100644
+>> --- a/mm/ksm.c
+>> +++ b/mm/ksm.c
+>> @@ -1261,8 +1261,13 @@ static void ksm_do_scan(unsigned int scan_npages)
+>>  		rmap_item = scan_get_next_rmap_item(&page);
+>>  		if (!rmap_item)
+>>  			return;
+>> -		if (!PageKsm(page) || !in_stable_tree(rmap_item))
+>> +		if (!PageKsm(page) || !in_stable_tree(rmap_item)) {
+>>  			cmp_and_merge_page(page, rmap_item);
+>> +		} else if (page_mapcount(page) == 0) {
+>>     
+>
+> If we did that (but we agree not for now), shouldn't it be
+> 			   page_mapcount(page) == 1
+> ?  The mapcount 0 ones already got freed by the zap/unmap code.
+>   
 
-A-->L1-->B-->L2-->C
-D-->L3-->E-->L2
+Yea, I dont know what i thought when i compare it to zero..., 1 is the 
+right value here indeed.
 
-The way I understand what you are suggesting is that tasks A,B,D,E  
-(or some representation of them) can be passed around such that when  
-C executes it consumes some resource associated with the the tasks it  
-is blocking (A,B,D,E). Obviously which tasks and what quantities are  
-dependent on scheduling semantics and configuration.
+>   
+>> +			break_cow(rmap_item->mm,
+>> +				  rmap_item->address & PAGE_MASK);
+>>     
+>
+> Just a note on that " & PAGE_MASK": it's unnecessary there and
+> almost everywhere else.  One of the pleasures of putting flags into
+> the bottom bits of the address, in code concerned with faulting, is
+> that the faulting address can be anywhere within the page, so we
+> don't have to bother to mask off the flags.
+>
+>   
+>> +			remove_rmap_item_from_tree(rmap_item);
+>> +		}
+>>  		put_page(page);
+>>  	}
+>>  }
+>>
+>>     
+>>> Oh, something that might be making it higher, that I didn't highlight
+>>> (and can revert if you like, it was just more straightforward this
+>>> way): with scan_get_next_rmap skipping the non-present ptes,
+>>> pages_to_scan is currently a limit on the _present_ pages scanned in
+>>> one batch.
+>>>       
+>> You mean that now when you say: pages_to_scan = 512, it wont count the
+>> none present ptes as part of the counter, so if we have 500 not present
+>> ptes in the begining and then 512 ptes later, before it used to call
+>> cmp_and_merge_page() only for 12 pages while now it will get called on
+>> 512 pages?
+>>     
+>
+> If I understand you right, yes, before it would do those 500 absent then
+> 512 present in two batches, first 512 (of which only 12 present) then 500;
+> whereas now it'll skip the 500 absent without counting them, and handle
+> the 512 present in that same one batch.
+>
+>   
+>> If yes, then I liked this change, it is more logical from cpu
+>> consumption point of view,
+>>     
+>
+> Yes, although it does spend a little time on the absent ones, it should
+> be much less time than it spends comparing or checksumming on present ones.
+>   
 
-The biggest implementation hurdle we have encountered is that as  
-tasks are passed forward along a locking chain knowledge about the  
-structure of the locking chain is lost. For example, as C releases  
-L2, C must be able to distinguish between A and D as having been  
-passed to C's location through B or E, respectively.
+Yea, compare to the other stuff it is minor...
 
-Keeping a representation of the locking chain as a full graph is the  
-solution we have used. Another solution is to allow A and D to re- 
-block and walk the locking chain again, but obviously some thundering- 
-hurd issues arise.
+>   
+>> and in addition we have that cond_reched()
+>> so I dont see a problem with this.
+>>     
+>
+> Right, that cond_resched() is vital in this case.
+>
+> By the way, something else I didn't highlight, a significant benefit
+> from avoiding get_user_pages(): that was doing a mark_page_accessed()
+> on every present pte that it found, interfering with pageout decisions.
+>   
 
-noah
+That is a great value, i didn't even thought about that...
 
-
-
+> Hugh
+>   
 
