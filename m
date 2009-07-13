@@ -1,226 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbZGMICu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbZGMIFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752992AbZGMICu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 04:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbZGMICt
+	id S1753493AbZGMIFe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 04:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbZGMIFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 04:02:49 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:2099 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752523AbZGMICs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 04:02:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LgdsU+P2U10cfcYWRjXdxSwjYSX82kZb79gYgD6GK7EdW9Ysfzxv7iKHQqMuJpjV8p
-         adtkNSzQCM7TGNkR3Flj8n5UYkUV5DnLQvuF523zPWEgUQ+BRJHFGmnQ1UQjpdo83+ve
-         jTxf0RgcId4rv5T9aaIgtnS1JSs/qbuhghOdw=
-Date: Mon, 13 Jul 2009 16:02:05 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: tom.leiming@gmail.com
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [RESEND PATCH 04/11] kernel:lockdep:implement
-	check_noncircular() by BFS
-Message-ID: <20090713080205.GA2187@darkstar>
-References: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com> <1246201486-7308-2-git-send-email-tom.leiming@gmail.com> <1246201486-7308-3-git-send-email-tom.leiming@gmail.com> <1246201486-7308-4-git-send-email-tom.leiming@gmail.com> <1246201486-7308-5-git-send-email-tom.leiming@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246201486-7308-5-git-send-email-tom.leiming@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 13 Jul 2009 04:05:33 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48170 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751964AbZGMIFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 04:05:32 -0400
+Date: Mon, 13 Jul 2009 18:05:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for July 13
+Message-Id: <20090713180524.72f613dc.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__13_Jul_2009_18_05_24_+1000_T3UnZ03Vuxh4RdFW"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 28, 2009 at 11:04:39PM +0800, tom.leiming@gmail.com wrote:
-> From: Ming Lei <tom.leiming@gmail.com>
-> 
-> This patch uses BFS to implement check_noncircular() and
-> prints the generated shortest circle if exists.
-> 
-> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> ---
->  kernel/lockdep.c |   89 ++++++++++++++++++++++-------------------------------
->  1 files changed, 37 insertions(+), 52 deletions(-)
-> 
-> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-> index ce6d09e..f740088 100644
-> --- a/kernel/lockdep.c
-> +++ b/kernel/lockdep.c
-> @@ -985,12 +985,7 @@ static inline int __bfs_backward(struct lock_list *src_entry,
->   * Recursive, forwards-direction lock-dependency checking, used for
->   * both noncyclic checking and for hardirq-unsafe/softirq-unsafe
->   * checking.
-> - *
-> - * (to keep the stackframe of the recursive functions small we
-> - *  use these global variables, and we also mark various helper
-> - *  functions as noinline.)
->   */
-> -static struct held_lock *check_source, *check_target;
->  
->  /*
->   * Print a dependency chain entry (this is only done when a deadlock
-> @@ -1014,7 +1009,9 @@ print_circular_bug_entry(struct lock_list *target, unsigned int depth)
->   * header first:
->   */
->  static noinline int
-> -print_circular_bug_header(struct lock_list *entry, unsigned int depth)
-> +print_circular_bug_header(struct lock_list *entry, unsigned int depth,
-> +			struct held_lock *check_src,
-> +			struct held_lock *check_tgt)
->  {
->  	struct task_struct *curr = current;
->  
-> @@ -1027,9 +1024,9 @@ print_circular_bug_header(struct lock_list *entry, unsigned int depth)
->  	printk(  "-------------------------------------------------------\n");
->  	printk("%s/%d is trying to acquire lock:\n",
->  		curr->comm, task_pid_nr(curr));
-> -	print_lock(check_source);
-> +	print_lock(check_src);
->  	printk("\nbut task is already holding lock:\n");
-> -	print_lock(check_target);
-> +	print_lock(check_tgt);
->  	printk("\nwhich lock already depends on the new lock.\n\n");
->  	printk("\nthe existing dependency chain (in reverse order) is:\n");
->  
-> @@ -1043,36 +1040,24 @@ static inline int class_equal(struct lock_list *entry, void *data)
->  	return entry->class == data;
->  }
->  
-> -static noinline int print_circular_bug(void)
-> +static noinline int print_circular_bug(struct lock_list *this,
+--Signature=_Mon__13_Jul_2009_18_05_24_+1000_T3UnZ03Vuxh4RdFW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Shouldn't be 'static noinline int' here? Same question to following ones.
+Hi all,
 
-> +				struct lock_list *target,
-> +				struct held_lock *check_src,
-> +				struct held_lock *check_tgt)
->  {
->  	struct task_struct *curr = current;
-> -	struct lock_list this;
-> -	struct lock_list *target;
->  	struct lock_list *parent;
-> -	int result;
->  	unsigned long depth;
->  
->  	if (!debug_locks_off_graph_unlock() || debug_locks_silent)
->  		return 0;
->  
-> -	this.class = hlock_class(check_source);
-> -	this.parent = NULL;
-> -	if (!save_trace(&this.trace))
-> +	if (!save_trace(&this->trace))
->  		return 0;
->  
-> -	result = __bfs_forward(&this,
-> -			hlock_class(check_target),
-> -			class_equal,
-> -			&target);
-> -	if (result) {
-> -		printk("\n%s:search shortest path failed:%d\n", __func__,
-> -			result);
-> -		return 0;
-> -	}
-> -
->  	depth = get_lock_depth(target);
->  
-> -	print_circular_bug_header(target, depth);
-> +	print_circular_bug_header(target, depth, check_src, check_tgt);
->  
->  	parent = get_lock_parent(target);
->  
-> @@ -1090,6 +1075,16 @@ static noinline int print_circular_bug(void)
->  	return 0;
->  }
->  
-> +static int noinline print_bfs_bug(int ret)
-> +{
-> +	if (!debug_locks_off_graph_unlock())
-> +		return 0;
-> +
-> +	WARN(1, "lockdep bfs error:%d\n", ret);
-> +
-> +	return 0;
-> +}
-> +
->  #define RECURSION_LIMIT 40
->  
->  static int noinline print_infinite_recursion_bug(void)
-> @@ -1168,31 +1163,17 @@ unsigned long lockdep_count_backward_deps(struct lock_class *class)
->   * lead to <target>. Print an error and return 0 if it does.
->   */
->  static noinline int
-> -check_noncircular(struct lock_class *source, unsigned int depth)
-> +check_noncircular(struct lock_list *root, struct lock_class *target,
-> +		struct lock_list **target_entry)
->  {
-> -	struct lock_list *entry;
-> +	int result;
->  
-> -	if (lockdep_dependency_visit(source, depth))
-> -		return 1;
-> +	debug_atomic_inc(&nr_cyclic_checks);
->  
-> -	debug_atomic_inc(&nr_cyclic_check_recursions);
-> -	if (depth > max_recursion_depth)
-> -		max_recursion_depth = depth;
-> -	if (depth >= RECURSION_LIMIT)
-> -		return print_infinite_recursion_bug();
-> -	/*
-> -	 * Check this lock's dependency list:
-> -	 */
-> -	list_for_each_entry(entry, &source->locks_after, entry) {
-> -		if (entry->class == hlock_class(check_target))
-> -			return 2;
-> -		debug_atomic_inc(&nr_cyclic_checks);
-> -		if (check_noncircular(entry->class, depth+1) == 2)
-> -			return 2;
-> -	}
-> -	return 1;
-> -}
-> +	result = __bfs_forward(root, target, class_equal, target_entry);
->  
-> +	return result;
-> +}
->  
->  #if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_PROVE_LOCKING)
->  /*
-> @@ -1586,6 +1567,8 @@ check_prev_add(struct task_struct *curr, struct held_lock *prev,
->  {
->  	struct lock_list *entry;
->  	int ret;
-> +	struct lock_list this;
-> +	struct lock_list *uninitialized_var(target_entry);
->  
->  	/*
->  	 * Prove that the new <prev> -> <next> dependency would not
-> @@ -1596,11 +1579,13 @@ check_prev_add(struct task_struct *curr, struct held_lock *prev,
->  	 * We are using global variables to control the recursion, to
->  	 * keep the stackframe size of the recursive functions low:
->  	 */
-> -	check_source = next;
-> -	check_target = prev;
-> -
-> -	if (check_noncircular(hlock_class(next), 0) == 2)
-> -		return print_circular_bug();
-> +	this.class = hlock_class(next);
-> +	this.parent = NULL;
-> +	ret = check_noncircular(&this, hlock_class(prev), &target_entry);
-> +	if (unlikely(!ret))
-> +		return print_circular_bug(&this, target_entry, next, prev);
-> +	else if (unlikely(ret < 0))
-> +		return print_bfs_bug(ret);
->  
->  	if (!check_prev_add_irq(curr, prev, next))
->  		return 0;
-> -- 
-> 1.6.0.GIT
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Changes since 20090710:
+
+Changed trees: ia64 (now under the care of Fenghua Yu)
+
+This tree fails to build for powerpc allyesconfig (final link problem).
+
+The resierfs-bkl tree gained a conflict against Linus' tree.
+
+The net tree gained a conflict against the net-current tree.
+
+The wireless tree lost its conflicts.
+
+The rr tree lost its conflicts.
+
+The ttydev tree lost a conflict.
+
+The percpu tree gained a conflict against the sh tree.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 132 trees (counting Linus' and 19 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+CONFLICT (content): Merge conflict in fs/configfs/dir.c
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
+CONFLICT (content): Merge conflict in fs/reiserfs/journal.c
+CONFLICT (content): Merge conflict in fs/reiserfs/super.c
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/orinoco/main.c
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+CONFLICT (content): Merge conflict in include/linux/personality.h
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/usb/serial/generic.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/pl2303.c
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging edac-amd/for-next
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in drivers/oprofile/oprofile_stats.c
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/perf_counter.c
+CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq_ondemand.c
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Mon__13_Jul_2009_18_05_24_+1000_T3UnZ03Vuxh4RdFW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpa6sQACgkQjjKRsyhoI8xUJwCghMhH+e1yJFmY0P3OMwYNtiOg
+6koAnifFzDyXhLerObrcnO4I52sqNgIl
+=sY8A
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__13_Jul_2009_18_05_24_+1000_T3UnZ03Vuxh4RdFW--
