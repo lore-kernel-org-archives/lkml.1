@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZGMNxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZGMNyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbZGMNxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 09:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755930AbZGMNxa
+	id S1756006AbZGMNyp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 09:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbZGMNyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 09:53:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53726 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755764AbZGMNx3 (ORCPT
+	Mon, 13 Jul 2009 09:54:44 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:33678 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755803AbZGMNyo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 09:53:29 -0400
-Date: Mon, 13 Jul 2009 09:53:24 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>, Boaz Harrosh <bharrosh@panasas.com>,
-       linux-fsdevel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
-Message-ID: <20090713135324.GB3685@infradead.org>
-References: <20090707154809.GH2714@wotan.suse.de> <20090707163042.GA14947@infradead.org> <20090708063225.GL2714@wotan.suse.de> <20090708104701.GA31419@infradead.org> <20090708123412.GQ2714@wotan.suse.de> <4A54C435.1000503@panasas.com> <20090709075100.GU2714@wotan.suse.de> <4A59A517.1080605@panasas.com> <20090712144717.GA18163@infradead.org> <20090713065917.GO14666@wotan.suse.de>
+	Mon, 13 Jul 2009 09:54:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=gtfphM0bCV6xEypkJuQlODyZVZVxdR4CUCw66weCscIdpWfOv/2w5DvCZWBOpgQvi6
+         nKiuTakPY7EtZ+q+ZYUxmEbhZ0EeHLs8w99Ci6hjZf2qSNIEKPUZWoSliYLOObz8nIJh
+         Plfgbe0YNx9QPCTfUlOqpRQak94G91GkhMh0Y=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090713065917.GO14666@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20090713113252.GB5569@beaver.vrungel.ru>
+References: <20090713081106.GA5569@beaver.vrungel.ru> <87fxd19cfq.fsf@basil.nowhere.org> 
+	<20090713113252.GB5569@beaver.vrungel.ru>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Mon, 13 Jul 2009 09:54:22 -0400
+Message-ID: <3e8340490907130654i3d00aa6dt9118004c2fd94689@mail.gmail.com>
+Subject: Re: Counters in df, du
+To: Alexey Vlasov <renton@renton.name>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 08:59:17AM +0200, Nick Piggin wrote:
-> Agreed, if it is a common sequence / requirement for filesystems
-> then of course I will not object to a helper to make things clearer
-> or share code.
-> 
-> I would like to see inode_setattr renamed into simple_setattr, and
-> then also .setattr made mandatory, so I don't like to cut code out
-> of inode_setattr which makes it unable to be the simple_setattr
-> after the old truncate code is removed.
+2009/7/13 Alexey Vlasov <renton@renton.name>:
+> On Mon, Jul 13, 2009 at 11:09:29AM +0200, Andi Kleen wrote:
+>> Alexey Vlasov <renton@renton.name> writes:
+>> >
+>> > I know that df, du can show different values if some files were deleted,
+>> > but the processes which opened these files are still acting.
+>>
+>> You can check for that by doing ls -l /proc/*/fd | grep deleted
+>>
+>> It won't tell you the file size though.
+>
+> There comes a big list, like this:
+>
+> lowx------ 1 root root 64 Jul 13 14:58 1763 -> /tmp/ZCUDXqiMTp (deleted)
+> lrwx------ 1 root root 64 Jul 13 14:58 1763 -> /tmp/ZCUDXqiMTp (deleted)
+> lrwx------ 1 root root 64 Jul 13 14:58 1763 -> /tmp/ZCUDXqiMTp (deleted)
+> [cut]
+> lrwx------ 1 root root 64 Jul 13 15:29 317 -> /tmp/ZCUDXiOHCk (deleted)
+> lrwx------ 1 root root 64 Jul 13 15:29 317 -> /tmp/ZCUDXiOHCk (deleted)
+> lrwx------ 1 root root 64 Jul 13 15:29 317 -> /tmp/ZCUDXiOHCk (deleted)
+>
+> But you can see the file date, these are new files and by next search
+> you won't see them any more.
+>
+> The most interesting is that the /tmp size constantly grows.
 
-But inode_setattr isn't anything like simple_setattr.  Except for
-the truncate special case it's really just a helper to copy values
-into the inode.  It doesn't even even have the same prototype as
-->setattr.
+Try:
 
-A simple_setattr would look like the following:
+lsof -n | grep deleted
 
-int simple_setattr(struct dentry *dentry, struct iattr *iattr)
-{
-	struct inode *inode = dentry->d_inode;
-	int error;
-
-	error = inode_change_ok(inode, iattr);
-        if (error)
-                return error;
-
-	if ((iattr->ia_valid & ATTR_UID && iattr->ia_uid != inode->i_uid) ||
-	    (iattr->ia_valid & ATTR_GID && iattr->ia_gid != inode->i_gid)) {
-		if (vfs_dq_transfer(inode, iattr))
-			return -EDQUOT;
-	}
-
-	if (iattr->ia_valid & ATTR_ATTR_SIZE &&
-	    iattr->ia_size !== i_size_read(inode) &&
-	    inode->i_op->new_truncate) {
-		error = simple_setsize(inode, attr->ia_size);
-		if (error)
-			return error;
-	}
-
-	return inode_setattr(inode, attr);
-}
-
+This will show the process holding them more easily, and the file size
+(in the seventh column). It won't show the date they were opened
+though.
