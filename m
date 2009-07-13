@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932097AbZGMVlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbZGMVog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932097AbZGMVlL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 17:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbZGMVlK
+	id S1757493AbZGMVog (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 17:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZGMVof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 17:41:10 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:49298 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbZGMVlJ (ORCPT
+	Mon, 13 Jul 2009 17:44:35 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:42668 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752066AbZGMVof (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 17:41:09 -0400
+	Mon, 13 Jul 2009 17:44:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=K97IIxH2LZExCJjxCIzKJe/9UOy26xkdW+kpaYbUBXZpK6BN+ecR7l4KjzyfIV8e/J
+         HsH7uy352Q+w5ymnAk/ATLsBDejAEita73JbPZ/rITMN7uvtJHCS21oRW8m05QK5pl+s
+         yVAewBAxrKzJaRn7LAK4pwm9XToelI5rFLW1k=
+Message-ID: <4A5BAABF.9020708@gmail.com>
+Date: Mon, 13 Jul 2009 23:44:31 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
+MIME-Version: 1.0
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
 Subject: Re: [PATCH] wireless: wl12xx, fix lock imbalance
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1247520266-32007-1-git-send-email-jirislaby@gmail.com>
-References: <1247520266-32007-1-git-send-email-jirislaby@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-13ACftGP5XaoLA7RK+nY"
-Date: Mon, 13 Jul 2009 23:40:34 +0200
-Message-Id: <1247521235.7178.1.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+References: <1247520266-32007-1-git-send-email-jirislaby@gmail.com> <1247521235.7178.1.camel@johannes.local>
+In-Reply-To: <1247521235.7178.1.camel@johannes.local>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/13/2009 11:40 PM, Johannes Berg wrote:
+> On Mon, 2009-07-13 at 23:24 +0200, Jiri Slaby wrote:
+>> Add omitted mutex_unlock to one of wl12xx_op_start fail paths (when
+>> wl12xx_chip_wakeup fails).
+> 
+> By the way, are you using some tool to find these?
 
---=-13ACftGP5XaoLA7RK+nY
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yup, it's called stanse[1], but we still work on that to make it stable.
 
-On Mon, 2009-07-13 at 23:24 +0200, Jiri Slaby wrote:
-> Add omitted mutex_unlock to one of wl12xx_op_start fail paths (when
-> wl12xx_chip_wakeup fails).
+> I've had local hacks
+> many times to make sparse aware of mutexes, is there a reason they are
+> not annotated with __acquire(s)/__release(s) like spinlocks etc.?
 
-By the way, are you using some tool to find these? I've had local hacks
-many times to make sparse aware of mutexes, is there a reason they are
-not annotated with __acquire(s)/__release(s) like spinlocks etc.?
+Mutexes are often locked/unlocked interprocedural which I think sparse
+can't do much about.
 
-johannes
-
---=-13ACftGP5XaoLA7RK+nY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKW6nPAAoJEODzc/N7+QmasZMP/jbrXC0ly2wGR/AqAU6sl8Ac
-ZXz7l48xA7u1bUYpP3rKJt+l5aizy7y2N7LH1kuAFZH1EFDo8+C6rKquOjuP5czO
-DrDshe7TNHhI6ijzdcn9i9N5ZXDI1dV7+GVniOWFCPhvQXoyNyVHMrXhDxYxPdpi
-6YgAMT3q0WWCe8xXHJMrZMxQPJy4ytUyaPyrZh8aY1v+TIFlNA6M8irder27dPlW
-SqkjhyAcPZoe+tpkfbM+l6DIQL0SzrGu7J5hRuZ8A5OJVQQ6szrHs9e4yqZPhabG
-CXOBZ5Qq8IpHQ4klsaMTSFpsla6qTgffGQLhghKiy7VhMTcwSPz3nRD+C7NvMEhS
-glIOsOo6xYvoNGGOgaafz2cqoCFd3Qywrwk+ODhAMnlsf5LLgkPFajHZGFBNUT6n
-We5YPqrWsk96BsXQkc7DuL+jPbrdV8Hec7uQ4cgvjoRWVX5H1Kw4f6xajNZ4jjpD
-rAmeVSxdRaSB/TPI5drmOX27BQuIDvMfFg43ak4ZZgRK2d6DRLVmgbFN8aoOl+Fr
-P3rTXpLyKHUEj0Qzlf+EaaMocEFce1GF/cMlBkdo/qjiPlN7+nsmDwaypa+ZHAPi
-oJgd1TKq1RzUggTkfve+a1wrixMq50SCG1OHOSakQPqYsJ/mu4VTvxma+2S26vFy
-4DwXaeLnuQ7yq14czgQd
-=IWuC
------END PGP SIGNATURE-----
-
---=-13ACftGP5XaoLA7RK+nY--
-
+[1] http://iti.fi.muni.cz/stanse/
