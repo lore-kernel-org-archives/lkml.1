@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZGMIKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZGMILq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbZGMIKW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 04:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbZGMIKV
+	id S1754490AbZGMILq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 04:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZGMILo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 04:10:21 -0400
-Received: from smtp.df.ru ([195.42.160.16]:38591 "EHLO smtp.df.ru"
+	Mon, 13 Jul 2009 04:11:44 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34570 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366AbZGMIKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 04:10:20 -0400
-Date: Mon, 13 Jul 2009 12:11:06 +0400
-From: Alexey Vlasov <renton@renton.name>
-To: linux-kernel@vger.kernel.org
-Subject: Counters in df, du
-Message-ID: <20090713081106.GA5569@beaver.vrungel.ru>
+	id S1751376AbZGMILm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 04:11:42 -0400
+Message-ID: <4A5AEC3C.2060608@suse.cz>
+Date: Mon, 13 Jul 2009 10:11:40 +0200
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="xHFwDpU9dbj6ez1V"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jan Beulich <JBeulich@novell.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       tony.luck@intel.com, Jon Masters <jonathan@jonmasters.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-modules@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: [PATCH] reduce export symbol CRC table size on 64-bit	 archs
+References: <4A4A18780200007800008345@vpn.id2.novell.com> <4A4E671C.2090201@suse.cz> <4A51C71B0200007800008EE2@vpn.id2.novell.com> <200907092044.22108.rusty@rustcorp.com.au> <4A57089B0200007800009C0E@vpn.id2.novell.com>
+In-Reply-To: <4A57089B0200007800009C0E@vpn.id2.novell.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Beulich napsal(a):
+> Actually I meanwhile think that module-init-tools can easily detect the changed
+> layout without any further kernel side adjustments: Since it is known that a
+> CRC always is a 32-bit value, simply checking whether the so-far-used 64-bit
+> value has more than 32 significant bits should suffice: If so, the new layout
+> is being used (with the symbol name starting at offset 4), else the old one is
+> in effect (name at offset 8). This ought to be a pretty trivial change to that
+> code.
 
---xHFwDpU9dbj6ez1V
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
+But old module-init-tools will continue reading garbage in this case.
 
-Hi.
-
-Periodically there is an overflow on /tmp on my boxes, and I can't find
-the reaason why. May be it isn't a bug in tmpfs and you can help me find
-the reason, and if it is an error, I hope you will help me to eliminate
-it.
-
-I know that df, du can show different values if some files were deleted,
-but the processes which opened these files are still acting.
-
-Well now I see this picture on one of my boxes. Below I post the results
-of how I was trying to find what was /tmp full of.
-
-# df -h /tmp
-Filesystem            Size  Used Avail Use% Mounted on
-tmpfs                 4.1G  3.3G  762M  82% /tmp
-
-# du -hs /tmp
-518M    /tmp
-
-# lsof /tmp | awk '{if ($7 != 0) print$0}'
-(in attach)
-
-I still don't see any files taking 3G. Now I know only one solution
-mount/remount /tmp.
-
--- 
-BRGDS. Alexey Vlasov.
-
---xHFwDpU9dbj6ez1V
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: attachment; filename="tmp.lsof"
-
-# lsof /tmp | awk '{if ($7 != 0) print$0}'
-COMMAND     PID                           USER   FD   TYPE             DEVICE  SIZE      NODE NAME
-authdaemo  6555                           root    5u  unix 0xffff81030b8c2840       281375180 /var/lib/courier/authdaemon/socket.tmp
-authdaemo  6558                           root    5u  unix 0xffff81030b8c2840       281375180 /var/lib/courier/authdaemon/socket.tmp
-authdaemo  6559                           root    5u  unix 0xffff81030b8c2840       281375180 /var/lib/courier/authdaemon/socket.tmp
-authdaemo  6560                           root    5u  unix 0xffff81030b8c2840       281375180 /var/lib/courier/authdaemon/socket.tmp
-authdaemo  6561                           root    5u  unix 0xffff81030b8c2840       281375180 /var/lib/courier/authdaemon/socket.tmp
-authdaemo  6562                           root    5u  unix 0xffff81030b8c2840       281375180 /var/lib/courier/authdaemon/socket.tmp
-mysqld    22905                          mysql    6u   REG               0,13    20 663938322 /tmp/ib1oZTSZ (deleted)
-mysqld    22905                          mysql    8u   REG               0,13 84773 663938424 /tmp/ibRcarbD (deleted)
-
---xHFwDpU9dbj6ez1V--
+Michal
