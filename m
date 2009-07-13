@@ -1,213 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbZGMGFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZGMGGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753131AbZGMGFT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 02:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbZGMGFO
+	id S1753316AbZGMGGb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 02:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZGMGG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 02:05:14 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41741 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752571AbZGMGFM (ORCPT
+	Mon, 13 Jul 2009 02:06:27 -0400
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:59340 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752571AbZGMGG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 02:05:12 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/4][resend]  add shmem vmstat
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <20090713144924.6257.A69D9226@jp.fujitsu.com>
-References: <20090713144924.6257.A69D9226@jp.fujitsu.com>
-Message-Id: <20090713150226.6263.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 13 Jul 2009 02:06:26 -0400
+Date: Mon, 13 Jul 2009 15:06:12 +0900 (JST)
+Message-Id: <20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp>
+To: a.p.zijlstra@chello.nl
+Cc: andi@firstfloor.org, fweisbec@gmail.com, mingo@elte.hu, acme@redhat.com,
+       linux-kernel@vger.kernel.org, Jason Baron <jbaron@redhat.com>
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
+ how many spinlocks to schedstat
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <1247405045.6733.2.camel@laptop>
+References: <1247230336.7529.34.camel@twins>
+	<20090712.162337.287595819039280884.mitake@dcl.info.waseda.ac.jp>
+	<1247405045.6733.2.camel@laptop>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 13 Jul 2009 15:05:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ChangeLog
-  Since v2
-   - Rewrote the description
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+Date: Sun, 12 Jul 2009 15:24:05 +0200
 
-  Since v1
-   - Fixed misaccounting bug on page migration
+> On Sun, 2009-07-12 at 16:23 +0900, Hitoshi Mitake wrote:
+> 
+> > Thanks, I understood your advice. Using infrastructure of ftrace is good idea, so I'll use it.
+> > 
+> > But I have a question.
+> > I can't enable CONFIG_EVENT_PROFILE because it depends on CONFIG_EVENT_TRACER.
+> > And CONFIG_EVENT_TRACER seems something never enabled.
+> > 
+> > % git grep EVENT_TRACER
+> > arch/arm/configs/cm_x300_defconfig:# CONFIG_EVENT_TRACER is not set
+> > arch/arm/configs/davinci_all_defconfig:# CONFIG_EVENT_TRACER is not set
+> > arch/arm/configs/ep93xx_defconfig:# CONFIG_EVENT_TRACER is not set
+> > ....
+> > arch/x86/configs/i386_defconfig:# CONFIG_EVENT_TRACER is not set
+> > arch/x86/configs/x86_64_defconfig:# CONFIG_EVENT_TRACER is not set
+> > init/Kconfig:   depends on PERF_COUNTERS && EVENT_TRACER
+> > 
+> > In addition, this is the output of searching this on menuconfig
+> >     Symbol: EVENT_TRACER [=EVENT_TRACER]          
+> > and, there is a log in git
+> > 
+> > commit a7abe97fd8e7a6ccabba5a04a9f17be9211d418c
+> > Author: Steven Rostedt <srostedt@redhat.com>
+> > Date:   Mon Apr 20 10:59:34 2009 -0400
+> > 
+> >     tracing: rename EVENT_TRACER config to ENABLE_EVENT_TRACING
+> > 
+> >     Currently we have two configs: EVENT_TRACING and EVENT_TRACER.
+> >     All tracers enable EVENT_TRACING. The EVENT_TRACER is only a
+> >     convenience to enable the EVENT_TRACING when no other tracers
+> >     are enabled.
+> > 
+> > Does EVENT_TRACER make any sense?
+> > If doesn't, can I remove dependency of CONFIG_EVENT_PROFILE?
+> 
+> Yeah, steve broke it, but then Jason fixed it again, but his patches
+> might not have made it in yet.
+> 
+>   http://lkml.org/lkml/2009/7/6/313
+> 
+> 
 
-========================
-Subject: [PATCH] add shmem vmstat
+Wow! I can obtain lock_acquire with Jason's patch,
 
-Recently we encountered OOM problems due to memory use of the GEM cache.
-Generally a large amuont of Shmem/Tmpfs pages tend to create a memory
-shortage problem.
+% perf stat -e lockdep:lock_acquire sleep 1
 
-We often use the following calculation to determine the amount of shmem
-pages:
+ Performance counter stats for 'sleep 1':
 
-shmem = NR_ACTIVE_ANON + NR_INACTIVE_ANON - NR_ANON_PAGES
+           1420  lockdep:lock_acquire
 
-however the expression does not consider isoalted and mlocked pages.
+    1.004953591  seconds time elapsed
 
-This patch adds explicit accounting for pages used by shmem and tmpfs.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/base/node.c    |    2 ++
- fs/proc/meminfo.c      |    2 ++
- include/linux/mmzone.h |    1 +
- mm/filemap.c           |    4 ++++
- mm/migrate.c           |    5 ++++-
- mm/page_alloc.c        |    5 ++++-
- mm/vmstat.c            |    2 +-
- 7 files changed, 18 insertions(+), 3 deletions(-)
-
-Index: b/drivers/base/node.c
-===================================================================
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -85,6 +85,7 @@ static ssize_t node_read_meminfo(struct 
- 		       "Node %d FilePages:      %8lu kB\n"
- 		       "Node %d Mapped:         %8lu kB\n"
- 		       "Node %d AnonPages:      %8lu kB\n"
-+		       "Node %d Shmem:          %8lu kB\n"
- 		       "Node %d KernelStack:    %8lu kB\n"
- 		       "Node %d PageTables:     %8lu kB\n"
- 		       "Node %d NFS_Unstable:   %8lu kB\n"
-@@ -117,6 +118,7 @@ static ssize_t node_read_meminfo(struct 
- 		       nid, K(node_page_state(nid, NR_FILE_PAGES)),
- 		       nid, K(node_page_state(nid, NR_FILE_MAPPED)),
- 		       nid, K(node_page_state(nid, NR_ANON_PAGES)),
-+		       nid, K(node_page_state(nid, NR_SHMEM)),
- 		       nid, node_page_state(nid, NR_KERNEL_STACK) *
- 				THREAD_SIZE / 1024,
- 		       nid, K(node_page_state(nid, NR_PAGETABLE)),
-Index: b/fs/proc/meminfo.c
-===================================================================
---- a/fs/proc/meminfo.c
-+++ b/fs/proc/meminfo.c
-@@ -81,6 +81,7 @@ static int meminfo_proc_show(struct seq_
- 		"Writeback:      %8lu kB\n"
- 		"AnonPages:      %8lu kB\n"
- 		"Mapped:         %8lu kB\n"
-+		"Shmem:          %8lu kB\n"
- 		"Slab:           %8lu kB\n"
- 		"SReclaimable:   %8lu kB\n"
- 		"SUnreclaim:     %8lu kB\n"
-@@ -125,6 +126,7 @@ static int meminfo_proc_show(struct seq_
- 		K(global_page_state(NR_WRITEBACK)),
- 		K(global_page_state(NR_ANON_PAGES)),
- 		K(global_page_state(NR_FILE_MAPPED)),
-+		K(global_page_state(NR_SHMEM)),
- 		K(global_page_state(NR_SLAB_RECLAIMABLE) +
- 				global_page_state(NR_SLAB_UNRECLAIMABLE)),
- 		K(global_page_state(NR_SLAB_RECLAIMABLE)),
-Index: b/include/linux/mmzone.h
-===================================================================
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -100,6 +100,7 @@ enum zone_stat_item {
- 	NR_BOUNCE,
- 	NR_VMSCAN_WRITE,
- 	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
-+	NR_SHMEM,		/* shmem pages (included tmpfs/GEM pages) */
- #ifdef CONFIG_NUMA
- 	NUMA_HIT,		/* allocated in intended node */
- 	NUMA_MISS,		/* allocated in non intended node */
-Index: b/mm/filemap.c
-===================================================================
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -120,6 +120,8 @@ void __remove_from_page_cache(struct pag
- 	page->mapping = NULL;
- 	mapping->nrpages--;
- 	__dec_zone_page_state(page, NR_FILE_PAGES);
-+	if (PageSwapBacked(page))
-+		__dec_zone_page_state(page, NR_SHMEM);
- 	BUG_ON(page_mapped(page));
- 
- 	/*
-@@ -476,6 +478,8 @@ int add_to_page_cache_locked(struct page
- 		if (likely(!error)) {
- 			mapping->nrpages++;
- 			__inc_zone_page_state(page, NR_FILE_PAGES);
-+			if (PageSwapBacked(page))
-+				__inc_zone_page_state(page, NR_SHMEM);
- 			spin_unlock_irq(&mapping->tree_lock);
- 		} else {
- 			page->mapping = NULL;
-Index: b/mm/vmstat.c
-===================================================================
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -644,7 +644,7 @@ static const char * const vmstat_text[] 
- 	"nr_bounce",
- 	"nr_vmscan_write",
- 	"nr_writeback_temp",
--
-+	"nr_shmem",
- #ifdef CONFIG_NUMA
- 	"numa_hit",
- 	"numa_miss",
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2120,7 +2120,7 @@ void show_free_areas(void)
- 		" unevictable:%lu"
- 		" dirty:%lu writeback:%lu unstable:%lu buffer:%lu\n"
- 		" free:%lu slab_reclaimable:%lu slab_unreclaimable:%lu\n"
--		" mapped:%lu pagetables:%lu bounce:%lu\n",
-+		" mapped:%lu shmem:%lu pagetables:%lu bounce:%lu\n",
- 		global_page_state(NR_ACTIVE_ANON),
- 		global_page_state(NR_ACTIVE_FILE),
- 		global_page_state(NR_INACTIVE_ANON),
-@@ -2134,6 +2134,7 @@ void show_free_areas(void)
- 		global_page_state(NR_SLAB_RECLAIMABLE),
- 		global_page_state(NR_SLAB_UNRECLAIMABLE),
- 		global_page_state(NR_FILE_MAPPED),
-+		global_page_state(NR_SHMEM),
- 		global_page_state(NR_PAGETABLE),
- 		global_page_state(NR_BOUNCE));
- 
-@@ -2156,6 +2157,7 @@ void show_free_areas(void)
- 			" dirty:%lukB"
- 			" writeback:%lukB"
- 			" mapped:%lukB"
-+			" shmem:%lukB"
- 			" slab_reclaimable:%lukB"
- 			" slab_unreclaimable:%lukB"
- 			" kernel_stack:%lukB"
-@@ -2181,6 +2183,7 @@ void show_free_areas(void)
- 			K(zone_page_state(zone, NR_FILE_DIRTY)),
- 			K(zone_page_state(zone, NR_WRITEBACK)),
- 			K(zone_page_state(zone, NR_FILE_MAPPED)),
-+			K(zone_page_state(zone, NR_SHMEM)),
- 			K(zone_page_state(zone, NR_SLAB_RECLAIMABLE)),
- 			K(zone_page_state(zone, NR_SLAB_UNRECLAIMABLE)),
- 			zone_page_state(zone, NR_KERNEL_STACK) *
-Index: b/mm/migrate.c
-===================================================================
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -312,7 +312,10 @@ static int migrate_page_move_mapping(str
- 	 */
- 	__dec_zone_page_state(page, NR_FILE_PAGES);
- 	__inc_zone_page_state(newpage, NR_FILE_PAGES);
--
-+	if (PageSwapBacked(page)) {
-+		__dec_zone_page_state(page, NR_SHMEM);
-+		__inc_zone_page_state(newpage, NR_SHMEM);
-+	}
- 	spin_unlock_irq(&mapping->tree_lock);
- 
- 	return 0;
-
-
+I wanted this.
+So I don't have nothing to do.., but thanks Jason!
