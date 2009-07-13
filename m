@@ -1,144 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZGMPIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZGMPRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbZGMPIh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 11:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZGMPIh
+	id S1756146AbZGMPRz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 11:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbZGMPRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 11:08:37 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:33041 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755848AbZGMPIg convert rfc822-to-8bit (ORCPT
+	Mon, 13 Jul 2009 11:17:54 -0400
+Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:61255 "EHLO
+	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755973AbZGMPRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 11:08:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=YK5gT1FGmnXhiqiOzETa5jI/6Fl5FWK1fxtStLxKffSi/+RN9Ms4JLekbra/rw5Fft
-         SBhW5CDX2OapxXUz8ldqb2Xl3hGVfA9FFf7HmoeX6PKPAN34yUrnTbhtg++9PsJINzo0
-         gu/DajGKRoxthOeDBJoJcgwiG7JSVAIekmrkY=
-MIME-Version: 1.0
-In-Reply-To: <20090713145451.GA2265@cmpxchg.org>
-References: <20090713130921.6441.17011.stgit@pc1117.cambridge.arm.com>
-	 <1247493898.14968.0.camel@penberg-laptop>
-	 <20090713145451.GA2265@cmpxchg.org>
-Date: Mon, 13 Jul 2009 18:08:32 +0300
-X-Google-Sender-Auth: d374a0b13f2a90b3
-Message-ID: <84144f020907130808u6f349d18jddf7528a3ea0f63e@mail.gmail.com>
-Subject: Re: [PATCH] Fix vc_screenbuf leak via con_init()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 13 Jul 2009 11:17:53 -0400
+Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on
+ sysfs files, directories, and symlinks.
+From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Greg KH <gregkh@suse.de>, jmorris@namei.org, sds@tycho.nsa.gov,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+In-Reply-To: <4A56B4B3.2030400@schaufler-ca.com>
+References: <1247074106-23405-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <4A554B95.6070709@schaufler-ca.com> <1247160404.4398.218.camel@localhost>
+	 <20090709175049.GA26378@suse.de> <1247167976.4398.231.camel@localhost>
+	 <4A56B4B3.2030400@schaufler-ca.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 13 Jul 2009 11:07:35 -0400
+Message-Id: <1247497655.4398.248.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Johannes,
+On Thu, 2009-07-09 at 20:25 -0700, Casey Schaufler wrote:
+> David P. Quigley wrote:
+> > On Thu, 2009-07-09 at 10:50 -0700, Greg KH wrote:
+> >   
+> >> On Thu, Jul 09, 2009 at 01:26:44PM -0400, David P. Quigley wrote:
+> >>     
+> >>> I just read over Casey's comments again and I'm pretty sure we have a
+> >>> big misunderstanding here. From his initial response it seems that he
+> >>> thinks that I am exposing the secids to userspace as the way for setting
+> >>> the labels on files. That isn't true. We are still using the full string
+> >>> based labels for the userspace interface what the secid is used for is
+> >>> to allow the kernel to keep track of changes until the sysfs_dirent is
+> >>> destroyed. 
+> >>>       
+> >> Ok, if Casey and others agree that this is the best solution, I'll take
+> >> it.
+> >>
+> >> thanks,
+> >>
+> >> greg k-h
+> >>     
+> >
+> >
+> > I haven't heard from Casey since his last email so I'd hold off on
+> > taking this until we come to an agreement.
+> 
+> Yeah. Pardon the day job.
+> 
+> >  It seems though from your
+> > comments in another mail that putting the persistent data into the
+> > sysfs_dirent is the proper approach and we just need to figure out what
+> > to put there.
+> >   
+> 
+> Now that I've really had a chance to review the patches carefully
+> my worst fears have been put to rest. I don't doubt that what you've
+> got will work any longer. I do object to using a secid, but I've had
+> to give in on that before.
+> 
+> If your secid is valid at any given time you have a context (which
+> is a text string) available at the same time that you can point to.
+> If this were not true a call to security_xattr_to_secid() could
+> not be counted on to succeed. You could define
+> security_xattr_to_secctx() and have it return the Smack value for
+> Smack and the context for SELinux instead of security_xattr_to_secid().
+> Sure, you've got a string to maintain, but it had better not be going
+> away in SELinux, because if it does the secid is going with it. Unless
+> I recall incorrectly (always a possibility) it has been some time
+> since the avc could really be considered a cache. I am willing to
+> bet beers that you could safely point to a mapping somewhere and
+> not worry much about it.
+> 
+> If not, you've got other performance issues in SELinux.
 
-On Mon, Jul 13, 2009 at 5:54 PM, Johannes Weiner<hannes@cmpxchg.org> wrote:
->> We can probably get rid of ->vc_kmalloced completely now that the
->> bootmem allocator is no longer used by the driver.
->
-> That's what I thought, too.  Copied Alan.  Patch as follows:
->
-> ---
-> From 4df0a75bdc567c9f2203dc4b0337d77a26715654 Mon Sep 17 00:00:00 2001
-> From: Johannes Weiner <hannes@cmpxchg.org>
-> Date: Mon, 13 Jul 2009 16:39:46 +0200
-> Subject: [patch] vt: drop bootmem/slab memory distinction
->
-> Bootmem is not used for the vt screen buffer anymore as slab is now
-> available at the time the console is initialized.
->
-> Get rid of the now superfluous distinction between slab and bootmem,
-> it's always slab.
->
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
+Sorry for the late reply but I was out of work on Friday. I'm not really
+sure that I see the point of the xattr_to_secctx considering in theory
+they should be the same exact thing. The patch was originally Steve's so
+I don't know the full history of why it was done this way and
+unfortunately he isn't around at the moment to comment on it. With your
+hook what would you be storing in the sysfs_dirent? Are we back to
+storing a string there?
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Dave
 
-> ---
->  drivers/char/vt.c              |   12 +++---------
->  include/linux/console_struct.h |    1 -
->  2 files changed, 3 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-> index d9113b4..bdb9c60 100644
-> --- a/drivers/char/vt.c
-> +++ b/drivers/char/vt.c
-> @@ -769,14 +769,12 @@ int vc_allocate(unsigned int currcons)    /* return 0 on success */
->            visual_init(vc, currcons, 1);
->            if (!*vc->vc_uni_pagedir_loc)
->                con_set_default_unimap(vc);
-> -           if (!vc->vc_kmalloced)
-> -               vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size, GFP_KERNEL);
-> +           vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size, GFP_KERNEL);
->            if (!vc->vc_screenbuf) {
->                kfree(vc);
->                vc_cons[currcons].d = NULL;
->                return -ENOMEM;
->            }
-> -           vc->vc_kmalloced = 1;
->            vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
->            vcs_make_sysfs(currcons);
->            atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
-> @@ -912,10 +910,8 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
->        if (new_scr_end > new_origin)
->                scr_memsetw((void *)new_origin, vc->vc_video_erase_char,
->                            new_scr_end - new_origin);
-> -       if (vc->vc_kmalloced)
-> -               kfree(vc->vc_screenbuf);
-> +       kfree(vc->vc_screenbuf);
->        vc->vc_screenbuf = newscreen;
-> -       vc->vc_kmalloced = 1;
->        vc->vc_screenbuf_size = new_screen_size;
->        set_origin(vc);
->
-> @@ -994,8 +990,7 @@ void vc_deallocate(unsigned int currcons)
->                vc->vc_sw->con_deinit(vc);
->                put_pid(vc->vt_pid);
->                module_put(vc->vc_sw->owner);
-> -               if (vc->vc_kmalloced)
-> -                       kfree(vc->vc_screenbuf);
-> +               kfree(vc->vc_screenbuf);
->                if (currcons >= MIN_NR_CONSOLES)
->                        kfree(vc);
->                vc_cons[currcons].d = NULL;
-> @@ -2880,7 +2875,6 @@ static int __init con_init(void)
->                INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
->                visual_init(vc, currcons, 1);
->                vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
-
-We can make that GFP_KERNEL, actually.
-
-> -               vc->vc_kmalloced = 0;
->                vc_init(vc, vc->vc_rows, vc->vc_cols,
->                        currcons || !vc->vc_sw->con_save_screen);
->        }
-> diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-> index d71f7c0..38fe59d 100644
-> --- a/include/linux/console_struct.h
-> +++ b/include/linux/console_struct.h
-> @@ -89,7 +89,6 @@ struct vc_data {
->        unsigned int    vc_need_wrap    : 1;
->        unsigned int    vc_can_do_color : 1;
->        unsigned int    vc_report_mouse : 2;
-> -       unsigned int    vc_kmalloced    : 1;
->        unsigned char   vc_utf          : 1;    /* Unicode UTF-8 encoding */
->        unsigned char   vc_utf_count;
->                 int    vc_utf_char;
-> --
-> 1.6.3
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
