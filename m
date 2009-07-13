@@ -1,69 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbZGMVuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932113AbZGMVvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbZGMVuW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 17:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756737AbZGMVuW
+	id S932113AbZGMVvG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 17:51:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757179AbZGMVvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 17:50:22 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:39351 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755196AbZGMVuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 17:50:21 -0400
-Subject: Re: [PATCH] wireless: wl12xx, fix lock imbalance
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4A5BAABF.9020708@gmail.com>
-References: <1247520266-32007-1-git-send-email-jirislaby@gmail.com>
-	 <1247521235.7178.1.camel@johannes.local>  <4A5BAABF.9020708@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-HY1yIggbYFRVe2sOKxGi"
-Date: Mon, 13 Jul 2009 23:49:49 +0200
-Message-Id: <1247521789.7178.2.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Mon, 13 Jul 2009 17:51:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:48853 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756737AbZGMVvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 17:51:04 -0400
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+       galak@kernel.crashing.org, linux-kernel@vger.kernel.org
+Message-Id: <B6C36B32-6861-4FD9-B8A3-E8C328687E0F@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090710104706I.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: removing addr_needs_map in struct dma_mapping_ops
+Date: Mon, 13 Jul 2009 16:50:43 -0500
+References: <20090710104706I.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-HY1yIggbYFRVe2sOKxGi
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Jul 9, 2009, at 8:47 PM, FUJITA Tomonori wrote:
 
-On Mon, 2009-07-13 at 23:44 +0200, Jiri Slaby wrote:
+> I'm trying to convert POWERPC to use asm-generic/dma-mapping-common.h.
+>
+> POWERPC needs addr_needs_map() in struct dma_mapping_ops for SWIOTLB
+> support but I want to avoid add addr_needs_map() in struct
+> dma_map_ops. IIRC, you guys think it as a temporary solution and
 
-> > I've had local hacks
-> > many times to make sparse aware of mutexes, is there a reason they are
-> > not annotated with __acquire(s)/__release(s) like spinlocks etc.?
->=20
-> Mutexes are often locked/unlocked interprocedural which I think sparse
-> can't do much about.
+That is correct - I was planning to update when the iotlb folks had  
+decided on a final scheme for this.  We don't like the additional  
+indirection we're getting with the current implementation.
 
-Well, you annotate those functions too, of course.
+>
+> talked about defining something like struct dma_data. Then we could
+>
+> struct dev_archdata {
+>      ...
+>
+>      struct dma_data *ddata;
+> };
+>
+> or
+>
+> struct dev_archdata {
+>      ...
+>
+>      struct dma_data ddata;
+> };
+>
+>
+> struct dma_data needs dma_direct_offset, iommu_table, dma_base, and
+> dma_window_size, anything else?
 
-johannes
+IIRC, what we had talked about was simpler - we talked about changing  
+the current dev_archdata from this:
 
---=-HY1yIggbYFRVe2sOKxGi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+struct dev_archdata {
+        struct device_node      *of_node;
+        struct dma_mapping_ops  *dma_ops;
+        void                    *dma_data;
+};
 
------BEGIN PGP SIGNATURE-----
+to this:
 
-iQIcBAABAgAGBQJKW6v6AAoJEODzc/N7+Qma+N0QAJOukofKxwMxY8C4WvWXVffs
-kqU1EUXRpKhv6jecdC85XMNBmRU7TPrppgYzysruREpgEYPwxkz7gPLbllLXz+X/
-4wsZuaXBRBGaLPVxFAZm7rzMxinqLPMHAWEcjCb+REm8iCV+CQfICAQc2v14Zcej
-cjTBDzfKnORtlqagYYOOFS0ISgEQle65YnlKHLHS0XjrSXZ8ca2BFLONLYQo5I9J
-zxUYbH+YzBhniJbbrMagbEOV0W9xjy988CPwAXDRjRZBk/Fr/AqIbc0yMBRzZ3ck
-8DmpVAzKLfM3EXJLbXFUh9MPM1afbHeznN7HsQyY3ROG1wuQci8VLwcffqOGQMxX
-uZop+lechGW5vn895Ku0Zc4Uy3dJopEsFdPnjml/EQ3NkKJfC6HhquO0Frfg3mG6
-aPId3uYbwa3ECIUkh23I4Dg+pr+A/DqmW/pMtmhp2zds67+cuWMWVK+XknIPEOLV
-gebyCh+aJFarEUGwYP1KhUvwyWs4dUZzNALsTumZEB8Km56y0gZ4YCvOvmL92fil
-jg04jBjma9vdSlu+Qk7WTiunDcGd759G+/S6VLujFndZt2oDpp/dFWGuF+fO1YXy
-rz1otZY3Xuvqo88EL7eyck5sS16Npqp/jICZxXu97FqCaM10uIpnES58YtZenyhe
-kxS7eoNSC6ogrF99qxsH
-=Jt+X
------END PGP SIGNATURE-----
+struct dev_archdata {
+	struct device_node *of_node;
+	struct dma_mapping_ops *dma_ops;
+	unsigned long long dma_data;
+#ifdef CONFIG_SWIOTLB
+	dma_addr_t max_direct_dma_addr;
+#endif
+};
 
---=-HY1yIggbYFRVe2sOKxGi--
+Where max_direct_dma_addr is the address beyond which a specific  
+device must use swiotlb, and dma_data is the offset like it is now  
+(but wider on 32-bit systems than void *). I believe Ben had mentioned  
+wanting to make the max_direct_dma_addr part conditional so we don't  
+bloat archdata on platforms that don't ever bounce.
+
+The change to the type of dma_data is actually in preparation for an  
+optimization I have planned for 64-bit PCI devices (and which probably  
+requires more discussion), so that doesn't need to happen now -  just  
+leave it as a void *, and I can post a followup patch.
+
+Let me know if I can help or do any testing - I've been meaning to  
+look into switching to dma_map_ops for a while now but it hasn't  
+managed to pop off my todo stack.
+
+Cheers,
+Becky
 
