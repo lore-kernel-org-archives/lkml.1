@@ -1,75 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZGMRyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbZGMRy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbZGMRyY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755769AbZGMRyY
+	id S1756332AbZGMRy5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbZGMRy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:54:24 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:54984 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755755AbZGMRyW (ORCPT
+	Mon, 13 Jul 2009 13:54:56 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:56224 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755762AbZGMRyx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:54:22 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [perfmon2] I.1 - System calls - ioctl
-Date: Mon, 13 Jul 2009 19:53:45 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.96; x86_64; ; )
-Cc: perfmon2-devel@lists.sourceforge.net,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
-       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <200907131930.23840.arnd@arndb.de> <1247506440.7500.43.camel@twins>
-In-Reply-To: <1247506440.7500.43.camel@twins>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907131953.45786.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19viJykIL8B060Q6fRakSXoqbJYP0/c1Pe5rq4
- z0wU2g9ywTxw/3VT+sa84gERhs4yDcoMQlaf1AlFGJOKumGxV9
- qjdj03dnq3Fg4MqSuLjgg==
+	Mon, 13 Jul 2009 13:54:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=bKw93iYAa7Vb53/CphM6az1jDR4sadYJYQdiF0gxZPfOJKMW/MAX3in7x619gd//sC
+         DpriA6JWIlfuI955wplGe//95RAw/dhjysqWhjIc3Yx1cKKZAMVqUnBqPJtgD4THvJ8e
+         U5WTP4zcADb7DhJ7VrCwn1ujiiRBmprQ0X8vs=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 13 Jul 2009 20:01:31 +0200
+Message-Id: <20090713180131.15985.16709.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090713180112.15985.88819.sendpatchset@localhost.localdomain>
+References: <20090713180112.15985.88819.sendpatchset@localhost.localdomain>
+Subject: [PATCH 03/10] Staging: rtl8187se/ieee80211: remove NOT_YET ifdefs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 July 2009, Peter Zijlstra wrote:
-> On Mon, 2009-07-13 at 19:30 +0200, Arnd Bergmann wrote:
-> > > +struct perf_counter_target {
-> > > +	__u32			id;
-> > > +	__u64			val;
-> > > +};
-> > 
-> > This structure is not compatible between 32 and 64 bit user space on x86,
-> > because everything except i386 adds implicit padding between id and val.
-> 
-> Humm, __u64 doesn't have natural alignment? That would break more than
-> just this I think -- it sure surprises me.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] Staging: rtl8187se/ieee80211: remove NOT_YET ifdefs
 
-Yes, nobody expects this, so it is a frequent source of bugs in the ABI.
-Look for compat_u64 and __packed in the definition of compat ioctl and
-syscall interfaces for how we had to work around this elsewhere.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c |  190 ---------------------
+ 1 file changed, 190 deletions(-)
 
-> > Other than that, making it extensible sounds reasonable. How about just
-> > using a '__u64 *target' and a bit in the 'flags' argument?
-> 
-> Would there still be a point in having it a pointer in that case?, but
-> yeah, that might work too?
-
-passing u64 bit arguments directly to system calls is a bit complicated,
-because some 32 bit architectures can only pass them in certain
-register pairs, see the trouble we go through for llseek, sync_file_range
-or preadv.
-
-If you can directly pass an 'unsigned long' instead, that would work fine
-though.
-
-	Arnd <><
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+@@ -237,51 +237,6 @@ ieee80211_rx_frame_mgmt(struct ieee80211
+ 
+ 	return 0;
+ 
+-	#ifdef NOT_YET
+-	if (ieee->iw_mode == IW_MODE_MASTER) {
+-		printk(KERN_DEBUG "%s: Master mode not yet suppported.\n",
+-		       ieee->dev->name);
+-		return 0;
+-/*
+-  hostap_update_sta_ps(ieee, (struct hostap_ieee80211_hdr *)
+-  skb->data);*/
+-	}
+-
+-	if (ieee->hostapd && type == IEEE80211_TYPE_MGMT) {
+-		if (stype == WLAN_FC_STYPE_BEACON &&
+-		    ieee->iw_mode == IW_MODE_MASTER) {
+-			struct sk_buff *skb2;
+-			/* Process beacon frames also in kernel driver to
+-			 * update STA(AP) table statistics */
+-			skb2 = skb_clone(skb, GFP_ATOMIC);
+-			if (skb2)
+-				hostap_rx(skb2->dev, skb2, rx_stats);
+-		}
+-
+-		/* send management frames to the user space daemon for
+-		 * processing */
+-		ieee->apdevstats.rx_packets++;
+-		ieee->apdevstats.rx_bytes += skb->len;
+-		prism2_rx_80211(ieee->apdev, skb, rx_stats, PRISM2_RX_MGMT);
+-		return 0;
+-	}
+-
+-	    if (ieee->iw_mode == IW_MODE_MASTER) {
+-		if (type != WLAN_FC_TYPE_MGMT && type != WLAN_FC_TYPE_CTRL) {
+-			printk(KERN_DEBUG "%s: unknown management frame "
+-			       "(type=0x%02x, stype=0x%02x) dropped\n",
+-			       skb->dev->name, type, stype);
+-			return -1;
+-		}
+-
+-		hostap_rx(skb->dev, skb, rx_stats);
+-		return 0;
+-	}
+-
+-	printk(KERN_DEBUG "%s: hostap_rx_frame_mgmt: management frame "
+-	       "received in non-Host AP mode\n", skb->dev->name);
+-	return -1;
+-	#endif
+ }
+ 
+ 
+@@ -527,14 +482,6 @@ int ieee80211_rx(struct ieee80211_device
+ 	unsigned int frag;
+ 	u8 *payload;
+ 	u16 ethertype;
+-#ifdef NOT_YET
+-	struct net_device *wds = NULL;
+-	struct sk_buff *skb2 = NULL;
+-	struct net_device *wds = NULL;
+-	int frame_authorized = 0;
+-	int from_assoc_ap = 0;
+-	void *sta = NULL;
+-#endif
+ //	u16 QOS_ctl = 0;
+ 	u8 dst[ETH_ALEN];
+ 	u8 src[ETH_ALEN];
+@@ -578,22 +525,6 @@ int ieee80211_rx(struct ieee80211_device
+ 
+ 	hdrlen = ieee80211_get_hdrlen(fc);
+ 
+-#ifdef NOT_YET
+-	/* Put this code here so that we avoid duplicating it in all
+-	 * Rx paths. - Jean II */
+-#ifdef IW_WIRELESS_SPY		/* defined in iw_handler.h */
+-	/* If spy monitoring on */
+-	if (iface->spy_data.spy_number > 0) {
+-		struct iw_quality wstats;
+-		wstats.level = rx_stats->signal;
+-		wstats.noise = rx_stats->noise;
+-		wstats.updated = 6;	/* No qual value */
+-		/* Update spy records */
+-		wireless_spy_update(dev, hdr->addr2, &wstats);
+-	}
+-#endif /* IW_WIRELESS_SPY */
+-	hostap_update_rx_stats(local->ap, hdr, rx_stats);
+-#endif
+ 
+ 	if (ieee->iw_mode == IW_MODE_MONITOR) {
+ 		ieee80211_monitor_rx(ieee, skb, rx_stats);
+@@ -607,20 +538,6 @@ int ieee80211_rx(struct ieee80211_device
+ 		if (skb->len >= hdrlen + 3)
+ 			idx = skb->data[hdrlen + 3] >> 6;
+ 		crypt = ieee->crypt[idx];
+-#ifdef NOT_YET
+-		sta = NULL;
+-
+-		/* Use station specific key to override default keys if the
+-		 * receiver address is a unicast address ("individual RA"). If
+-		 * bcrx_sta_key parameter is set, station specific key is used
+-		 * even with broad/multicast targets (this is against IEEE
+-		 * 802.11, but makes it easier to use different keys with
+-		 * stations that do not support WEP key mapping). */
+-
+-		if (!(hdr->addr1[0] & 0x01) || local->bcrx_sta_key)
+-			(void) hostap_handle_sta_crypto(local, hdr, &crypt,
+-							&sta);
+-#endif
+ 
+ 		/* allow NULL decrypt to indicate an station specific override
+ 		 * for default encryption */
+@@ -682,46 +599,9 @@ int ieee80211_rx(struct ieee80211_device
+ 		break;
+ 	}
+ 
+-#ifdef NOT_YET
+-	if (hostap_rx_frame_wds(ieee, hdr, fc, &wds))
+-		goto rx_dropped;
+-	if (wds) {
+-		skb->dev = dev = wds;
+-		stats = hostap_get_stats(dev);
+-	}
+-
+-	if (ieee->iw_mode == IW_MODE_MASTER && !wds &&
+-	    (fc & (IEEE80211_FCTL_TODS | IEEE80211_FCTL_FROMDS)) == IEEE80211_FCTL_FROMDS &&
+-	    ieee->stadev &&
+-	    memcmp(hdr->addr2, ieee->assoc_ap_addr, ETH_ALEN) == 0) {
+-		/* Frame from BSSID of the AP for which we are a client */
+-		skb->dev = dev = ieee->stadev;
+-		stats = hostap_get_stats(dev);
+-		from_assoc_ap = 1;
+-	}
+-#endif
+ 
+ 	dev->last_rx = jiffies;
+ 
+-#ifdef NOT_YET
+-	if ((ieee->iw_mode == IW_MODE_MASTER ||
+-	     ieee->iw_mode == IW_MODE_REPEAT) &&
+-	    !from_assoc_ap) {
+-		switch (hostap_handle_sta_rx(ieee, dev, skb, rx_stats,
+-					     wds != NULL)) {
+-		case AP_RX_CONTINUE_NOT_AUTHORIZED:
+-			frame_authorized = 0;
+-			break;
+-		case AP_RX_CONTINUE:
+-			frame_authorized = 1;
+-			break;
+-		case AP_RX_DROP:
+-			goto rx_dropped;
+-		case AP_RX_EXIT:
+-			goto rx_exit;
+-		}
+-	}
+-#endif
+ 
+ 	/* Nullfunc frames may have PS-bit set, so they must be passed to
+ 	 * hostap_handle_sta_rx() before being dropped here. */
+@@ -864,31 +744,6 @@ int ieee80211_rx(struct ieee80211_device
+ 	payload = skb->data + hdrlen;
+ 	ethertype = (payload[6] << 8) | payload[7];
+ 
+-#ifdef NOT_YET
+-	/* If IEEE 802.1X is used, check whether the port is authorized to send
+-	 * the received frame. */
+-	if (ieee->ieee802_1x && ieee->iw_mode == IW_MODE_MASTER) {
+-		if (ethertype == ETH_P_PAE) {
+-			printk(KERN_DEBUG "%s: RX: IEEE 802.1X frame\n",
+-			       dev->name);
+-			if (ieee->hostapd && ieee->apdev) {
+-				/* Send IEEE 802.1X frames to the user
+-				 * space daemon for processing */
+-				prism2_rx_80211(ieee->apdev, skb, rx_stats,
+-						PRISM2_RX_MGMT);
+-				ieee->apdevstats.rx_packets++;
+-				ieee->apdevstats.rx_bytes += skb->len;
+-				goto rx_exit;
+-			}
+-		} else if (!frame_authorized) {
+-			printk(KERN_DEBUG "%s: dropped frame from "
+-			       "unauthorized port (IEEE 802.1X): "
+-			       "ethertype=0x%04x\n",
+-			       dev->name, ethertype);
+-			goto rx_dropped;
+-		}
+-	}
+-#endif
+ 
+ 	/* convert hdr + possible LLC headers into Ethernet header */
+ 	if (skb->len - hdrlen >= 8 &&
+@@ -910,51 +765,10 @@ int ieee80211_rx(struct ieee80211_device
+ 		memcpy(skb_push(skb, ETH_ALEN), dst, ETH_ALEN);
+ 	}
+ 
+-#ifdef NOT_YET
+-	if (wds && ((fc & (IEEE80211_FCTL_TODS | IEEE80211_FCTL_FROMDS)) ==
+-		    IEEE80211_FCTL_TODS) &&
+-	    skb->len >= ETH_HLEN + ETH_ALEN) {
+-		/* Non-standard frame: get addr4 from its bogus location after
+-		 * the payload */
+-		memcpy(skb->data + ETH_ALEN,
+-		       skb->data + skb->len - ETH_ALEN, ETH_ALEN);
+-		skb_trim(skb, skb->len - ETH_ALEN);
+-	}
+-#endif
+ 
+ 	stats->rx_packets++;
+ 	stats->rx_bytes += skb->len;
+ 
+-#ifdef NOT_YET
+-	if (ieee->iw_mode == IW_MODE_MASTER && !wds &&
+-	    ieee->ap->bridge_packets) {
+-		if (dst[0] & 0x01) {
+-			/* copy multicast frame both to the higher layers and
+-			 * to the wireless media */
+-			ieee->ap->bridged_multicast++;
+-			skb2 = skb_clone(skb, GFP_ATOMIC);
+-			if (skb2 == NULL)
+-				printk(KERN_DEBUG "%s: skb_clone failed for "
+-				       "multicast frame\n", dev->name);
+-		} else if (hostap_is_sta_assoc(ieee->ap, dst)) {
+-			/* send frame directly to the associated STA using
+-			 * wireless media and not passing to higher layers */
+-			ieee->ap->bridged_unicast++;
+-			skb2 = skb;
+-			skb = NULL;
+-		}
+-	}
+-
+-	if (skb2 != NULL) {
+-		/* send to wireless media */
+-		skb2->protocol = __constant_htons(ETH_P_802_3);
+-		skb2->mac.raw = skb2->nh.raw = skb2->data;
+-		/* skb2->nh.raw = skb2->data + ETH_HLEN; */
+-		skb2->dev = dev;
+-		dev_queue_xmit(skb2);
+-	}
+-
+-#endif
+ 	if (skb) {
+ 		skb->protocol = eth_type_trans(skb, dev);
+ 		memset(skb->cb, 0, sizeof(skb->cb));
+@@ -965,10 +779,6 @@ int ieee80211_rx(struct ieee80211_device
+ 	}
+ 
+  rx_exit:
+-#ifdef NOT_YET
+-	if (sta)
+-		hostap_handle_sta_release(sta);
+-#endif
+ 	return 1;
+ 
+  rx_dropped:
