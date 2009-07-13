@@ -1,94 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbZGMSIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbZGMSHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbZGMSIw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 14:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756701AbZGMSHa
+	id S1756828AbZGMSHl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 14:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbZGMSHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 14:07:30 -0400
+	Mon, 13 Jul 2009 14:07:40 -0400
 Received: from mail-fx0-f218.google.com ([209.85.220.218]:57004 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755797AbZGMSHS (ORCPT
+	with ESMTP id S1756802AbZGMSHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 14:07:18 -0400
+	Mon, 13 Jul 2009 14:07:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=KuJNs3XyTUYDt8G4gXVP2Td3/BTjmytz3pb21jN5fHVOl1Pdy9XBEoZrY8p41F7gee
-         LxrYgiAVK42K1a6VypEs4IZdFmmt9qOIj3+Tx1usp4Bn6KCUL6r/FRV9pWwsfB7f36k/
-         7Uxqd7xeMEHpt6WuPPmd5K4vWF/cZldh++Kz8=
+        b=BIE7CZs3TLUcQgGk6rO3OE9+oC88tSG+93CNnRFtdeTq4vXcTXmG61UXXZF7vfmKYU
+         T9zQjQUW90KXDnz9GpoFwaoMFDRxPrmF252QlzZvNd0UOD33nQVndKh7VgTx6VFbtDuh
+         2otwg5C/CnUH3SjU7fMa6eS+aDZRHCQc5y3UE=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 13 Jul 2009 20:13:55 +0200
-Message-Id: <20090713181355.16765.15642.sendpatchset@localhost.localdomain>
+Date: Mon, 13 Jul 2009 20:14:15 +0200
+Message-Id: <20090713181415.16765.33382.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090713181329.16765.68428.sendpatchset@localhost.localdomain>
 References: <20090713181329.16765.68428.sendpatchset@localhost.localdomain>
-Subject: [PATCH 03/10] Staging: rtl8192su: remove JOHN_DUMP[_TXDESC] ifdefs
+Subject: [PATCH 06/10] Staging: rtl8192su: remove NOT_YET ifdefs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8192su: remove JOHN_DUMP[_TXDESC] ifdefs
+Subject: [PATCH] Staging: rtl8192su: remove NOT_YET ifdefs
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8192su/TODO                             |    1 -
- drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c |   12 ------------
- drivers/staging/rtl8192su/r8192U_core.c                    |    8 --------
- 3 files changed, 21 deletions(-)
+ drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c |  124 ---------------------
+ drivers/staging/rtl8192su/r8192S_firmware.c        |    5 
+ drivers/staging/rtl8192su/r8192S_phy.c             |   23 ---
+ 3 files changed, 152 deletions(-)
 
-Index: b/drivers/staging/rtl8192su/TODO
+Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
 ===================================================================
---- a/drivers/staging/rtl8192su/TODO
-+++ b/drivers/staging/rtl8192su/TODO
-@@ -1,6 +1,5 @@
- TODO:
- - prepare private ieee80211 stack for merge with rtl8187se's version:
--  - remove JOHN_DUMP[_DESC] ifdefs
-   - remove [IN]_OPENSUSE_SLED definitions
-   - remove superflous container_of definition from ieee80211.h
-   - remove rtl8192su's specific dead code
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-@@ -502,18 +502,6 @@ static int ieee80211_tkip_decrypt(struct
- 	skb_pull(skb, 8);
- 	skb_trim(skb, skb->len - 4);
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
+@@ -236,51 +236,6 @@ ieee80211_rx_frame_mgmt(struct ieee80211
  
--//john's test
--#ifdef JOHN_DUMP
--if( ((u16*)skb->data)[0] & 0x4000){
--        printk("@@ rx decrypted skb->data");
--        int i;
--        for(i=0;i<skb->len;i++){
--                if( (i%24)==0 ) printk("\n");
--                printk("%2x ", ((u8*)skb->data)[i]);
--        }
--        printk("\n");
--}
--#endif /*JOHN_DUMP*/
- 	return keyidx;
+ 	return 0;
+ 
+-	#ifdef NOT_YET
+-	if (ieee->iw_mode == IW_MODE_MASTER) {
+-		printk(KERN_DEBUG "%s: Master mode not yet suppported.\n",
+-		       ieee->dev->name);
+-		return 0;
+-/*
+-  hostap_update_sta_ps(ieee, (struct hostap_ieee80211_hdr_4addr *)
+-  skb->data);*/
+-	}
+-
+-	if (ieee->hostapd && type == IEEE80211_TYPE_MGMT) {
+-		if (stype == WLAN_FC_STYPE_BEACON &&
+-		    ieee->iw_mode == IW_MODE_MASTER) {
+-			struct sk_buff *skb2;
+-			/* Process beacon frames also in kernel driver to
+-			 * update STA(AP) table statistics */
+-			skb2 = skb_clone(skb, GFP_ATOMIC);
+-			if (skb2)
+-				hostap_rx(skb2->dev, skb2, rx_stats);
+-		}
+-
+-		/* send management frames to the user space daemon for
+-		 * processing */
+-		ieee->apdevstats.rx_packets++;
+-		ieee->apdevstats.rx_bytes += skb->len;
+-		prism2_rx_80211(ieee->apdev, skb, rx_stats, PRISM2_RX_MGMT);
+-		return 0;
+-	}
+-
+-	    if (ieee->iw_mode == IW_MODE_MASTER) {
+-		if (type != WLAN_FC_TYPE_MGMT && type != WLAN_FC_TYPE_CTRL) {
+-			printk(KERN_DEBUG "%s: unknown management frame "
+-			       "(type=0x%02x, stype=0x%02x) dropped\n",
+-			       skb->dev->name, type, stype);
+-			return -1;
+-		}
+-
+-		hostap_rx(skb->dev, skb, rx_stats);
+-		return 0;
+-	}
+-
+-	printk(KERN_DEBUG "%s: hostap_rx_frame_mgmt: management frame "
+-	       "received in non-Host AP mode\n", skb->dev->name);
+-	return -1;
+-	#endif
  }
  
-Index: b/drivers/staging/rtl8192su/r8192U_core.c
-===================================================================
---- a/drivers/staging/rtl8192su/r8192U_core.c
-+++ b/drivers/staging/rtl8192su/r8192U_core.c
-@@ -1967,14 +1967,6 @@ short rtl8192SU_tx_cmd(struct net_device
- 	idx_pipe = txqueue2outpipe(priv,queue_index);
- 	//printk("=============>%s queue_index:%d, outpipe:%d\n", __func__,queue_index,priv->RtOutPipes[idx_pipe]);
  
--#ifdef JOHN_DUMP_TXDESC
--	int i;
--	printk("Len = %d\n", skb->len);
--	for (i = 0; i < 8; i++)
--		printk("%2.2x ", *((u8*)skb->data+i));
--	printk("\n");
+@@ -923,14 +878,6 @@ int ieee80211_rx(struct ieee80211_device
+ 	PRX_TS_RECORD pTS = NULL;
+ 	//bool bIsAggregateFrame = false;
+ 	//added by amy for reorder
+-#ifdef NOT_YET
+-	struct net_device *wds = NULL;
+-	struct sk_buff *skb2 = NULL;
+-	struct net_device *wds = NULL;
+-	int frame_authorized = 0;
+-	int from_assoc_ap = 0;
+-	void *sta = NULL;
 -#endif
+ //	u16 qos_ctl = 0;
+ 	u8 dst[ETH_ALEN];
+ 	u8 src[ETH_ALEN];
+@@ -967,22 +914,6 @@ int ieee80211_rx(struct ieee80211_device
+ 	}
+ 
+ 	//IEEE80211_DEBUG_DATA(IEEE80211_DL_DATA, skb->data, skb->len);
+-#ifdef NOT_YET
+-	/* Put this code here so that we avoid duplicating it in all
+-	 * Rx paths. - Jean II */
+-#ifdef IW_WIRELESS_SPY		/* defined in iw_handler.h */
+-	/* If spy monitoring on */
+-	if (iface->spy_data.spy_number > 0) {
+-		struct iw_quality wstats;
+-		wstats.level = rx_stats->rssi;
+-		wstats.noise = rx_stats->noise;
+-		wstats.updated = 6;	/* No qual value */
+-		/* Update spy records */
+-		wireless_spy_update(dev, hdr->addr2, &wstats);
+-	}
+-#endif /* IW_WIRELESS_SPY */
+-	hostap_update_rx_stats(local->ap, hdr, rx_stats);
+-#endif
+ 
+ 	if (ieee->iw_mode == IW_MODE_MONITOR) {
+ 		ieee80211_monitor_rx(ieee, skb, rx_stats);
+@@ -996,20 +927,6 @@ int ieee80211_rx(struct ieee80211_device
+ 		if (skb->len >= hdrlen + 3)
+ 			idx = skb->data[hdrlen + 3] >> 6;
+ 		crypt = ieee->crypt[idx];
+-#ifdef NOT_YET
+-		sta = NULL;
 -
- 	usb_fill_bulk_urb(tx_urb,
- 	                            priv->udev,
- 	                            usb_sndbulkpipe(priv->udev,priv->RtOutPipes[idx_pipe]),
+-		/* Use station specific key to override default keys if the
+-		 * receiver address is a unicast address ("individual RA"). If
+-		 * bcrx_sta_key parameter is set, station specific key is used
+-		 * even with broad/multicast targets (this is against IEEE
+-		 * 802.11, but makes it easier to use different keys with
+-		 * stations that do not support WEP key mapping). */
+-
+-		if (!(hdr->addr1[0] & 0x01) || local->bcrx_sta_key)
+-			(void) hostap_handle_sta_crypto(local, hdr, &crypt,
+-							&sta);
+-#endif
+ 
+ 		/* allow NULL decrypt to indicate an station specific override
+ 		 * for default encryption */
+@@ -1108,46 +1025,9 @@ int ieee80211_rx(struct ieee80211_device
+ 		break;
+ 	}
+ 
+-#ifdef NOT_YET
+-	if (hostap_rx_frame_wds(ieee, hdr, fc, &wds))
+-		goto rx_dropped;
+-	if (wds) {
+-		skb->dev = dev = wds;
+-		stats = hostap_get_stats(dev);
+-	}
+-
+-	if (ieee->iw_mode == IW_MODE_MASTER && !wds &&
+-	    (fc & (IEEE80211_FCTL_TODS | IEEE80211_FCTL_FROMDS)) == IEEE80211_FCTL_FROMDS &&
+-	    ieee->stadev &&
+-	    memcmp(hdr->addr2, ieee->assoc_ap_addr, ETH_ALEN) == 0) {
+-		/* Frame from BSSID of the AP for which we are a client */
+-		skb->dev = dev = ieee->stadev;
+-		stats = hostap_get_stats(dev);
+-		from_assoc_ap = 1;
+-	}
+-#endif
+ 
+ 	dev->last_rx = jiffies;
+ 
+-#ifdef NOT_YET
+-	if ((ieee->iw_mode == IW_MODE_MASTER ||
+-	     ieee->iw_mode == IW_MODE_REPEAT) &&
+-	    !from_assoc_ap) {
+-		switch (hostap_handle_sta_rx(ieee, dev, skb, rx_stats,
+-					     wds != NULL)) {
+-		case AP_RX_CONTINUE_NOT_AUTHORIZED:
+-			frame_authorized = 0;
+-			break;
+-		case AP_RX_CONTINUE:
+-			frame_authorized = 1;
+-			break;
+-		case AP_RX_DROP:
+-			goto rx_dropped;
+-		case AP_RX_EXIT:
+-			goto rx_exit;
+-		}
+-	}
+-#endif
+ 	//IEEE80211_DEBUG_DATA(IEEE80211_DL_DATA, skb->data, skb->len);
+ 	/* Nullfunc frames may have PS-bit set, so they must be passed to
+ 	 * hostap_handle_sta_rx() before being dropped here. */
+@@ -1389,10 +1269,6 @@ int ieee80211_rx(struct ieee80211_device
+ #endif
+ 
+  rx_exit:
+-#ifdef NOT_YET
+-	if (sta)
+-		hostap_handle_sta_release(sta);
+-#endif
+ 	return 1;
+ 
+  rx_dropped:
+Index: b/drivers/staging/rtl8192su/r8192S_firmware.c
+===================================================================
+--- a/drivers/staging/rtl8192su/r8192S_firmware.c
++++ b/drivers/staging/rtl8192su/r8192S_firmware.c
+@@ -291,11 +291,6 @@ FirmwareCheckReady(struct net_device *de
+ 
+ 		RT_TRACE(COMP_FIRMWARE, "FirmwareCheckReady(): Current RCR settings(%#x)\n", tmpU4b);
+ 
+-#ifdef NOT_YET   //YJ,TMP
+-		priv->TransmitConfig = read_nic_dword(dev, TCR);
+-		RT_TRACE(COMP_FIRMWARE, "FirmwareCheckReady(): Current TCR settings(%x)\n", priv->TransmitConfig);
+-		pHalData->FwRsvdTxPageCfg = read_nic_byte(dev, FW_RSVD_PG_CRTL);
+-#endif
+ 
+ 		// Set to normal mode.
+ 		write_nic_byte(dev, LBKMD_SEL, LBK_NORMAL);
+Index: b/drivers/staging/rtl8192su/r8192S_phy.c
+===================================================================
+--- a/drivers/staging/rtl8192su/r8192S_phy.c
++++ b/drivers/staging/rtl8192su/r8192S_phy.c
+@@ -1696,29 +1696,6 @@ static bool phy_SetRFPowerState8192SU(st
+ 			case eRfOff:
+ 			  	if (priv->ieee80211->eRFPowerState == eRfSleep || priv->ieee80211->eRFPowerState == eRfOff)
+ 						break;
+-#ifdef NOT_YET
+-				// Make sure BusyQueue is empty befor turn off RFE pwoer.
+-				for(QueueID = 0, i = 0; QueueID < MAX_TX_QUEUE; )
+-				{
+-					if(RTIsListEmpty(&Adapter->TcbBusyQueue[QueueID]))
+-					{
+-						QueueID++;
+-						continue;
+-					}
+-					else
+-					{
+-						RT_TRACE(COMP_POWER, "eRf Off/Sleep: %d times TcbBusyQueue[%d] !=0 before doze!\n", (i+1), QueueID);
+-						udelay(10);
+-						i++;
+-					}
+-
+-					if(i >= MAX_DOZE_WAITING_TIMES_9x)
+-					{
+-						RT_TRACE(COMP_POWER, "\n\n\n SetZebraRFPowerState8185B(): eRfOff: %d times TcbBusyQueue[%d] != 0 !!!\n\n\n", MAX_DOZE_WAITING_TIMES_9x, QueueID);
+-						break;
+-					}
+-				}
+-#endif
+ 				//
+ 				//RF Off/Sleep sequence. Designed/tested from SD4 Scott, SD1 Grent and Jonbon.
+ 				// Added by Bruce, 2008-11-22.
