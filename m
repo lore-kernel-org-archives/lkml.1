@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbZGMVQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZGMVPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757381AbZGMVQl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 17:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757323AbZGMVPG
+	id S1757341AbZGMVPJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 17:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbZGMVPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 17:15:06 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4008 "EHLO
+	Mon, 13 Jul 2009 17:15:07 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4010 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756949AbZGMVPE (ORCPT
+	with ESMTP id S1757230AbZGMVPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 13 Jul 2009 17:15:04 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 02/16] MAINTAINERS: Remove ivtv-user lists, add CX18 url
-Date: Mon, 13 Jul 2009 14:14:48 -0700
-Message-Id: <9d7d10ffd0e69e5b6e519d5c86682b03725c7dee.1247517374.git.joe@perches.com>
+Subject: [PATCH 04/16] MAINTAINERS: Use tabs in ACER ASPIRE ONE
+Date: Mon, 13 Jul 2009 14:14:50 -0700
+Message-Id: <949f87f06f3f317ccc9d78f2e62a6fedd24a6ca3.1247517374.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1247517373.git.joe@perches.com>
 References: <cover.1247517373.git.joe@perches.com>
@@ -25,33 +25,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- MAINTAINERS |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ MAINTAINERS |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 326c07e..ff4cd3b 100644
+index d8ade8d..5fc8219 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1721,10 +1721,10 @@ M:	hverkuil@xs4all.nl
- P:	Andy Walls
- M:	awalls@radix.net
- L:	ivtv-devel@ivtvdriver.org
--L:	ivtv-users@ivtvdriver.org
- L:	linux-media@vger.kernel.org
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
- W:	http://linuxtv.org
-+W:	http://www.ivtvdriver.org/index.php/Cx18
- S:	Maintained
- F:	Documentation/video4linux/cx18.txt
- F:	drivers/media/video/cx18/
-@@ -3276,7 +3276,6 @@ IVTV VIDEO4LINUX DRIVER
- P:	Hans Verkuil
- M:	hverkuil@xs4all.nl
- L:	ivtv-devel@ivtvdriver.org
--L:	ivtv-users@ivtvdriver.org
- L:	linux-media@vger.kernel.org
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
- W:	http://www.ivtvdriver.org
+@@ -231,11 +231,11 @@ S:	Maintained
+ F:	drivers/net/acenic*
+ 
+ ACER ASPIRE ONE TEMPERATURE AND FAN DRIVER
+-P: Peter Feuerer
+-M: peter@piie.net
+-W: http://piie.net/?section=acerhdf
+-S: Maintained
+-F: drivers/platform/x86/acerhdf.c
++P:	Peter Feuerer
++M:	peter@piie.net
++W:	http://piie.net/?section=acerhdf
++S:	Maintained
++F:	drivers/platform/x86/acerhdf.c
+ 
+ ACER WMI LAPTOP EXTRAS
+ P:	Carlos Corbacho
 -- 
 1.6.3.1.10.g659a0.dirty
 
