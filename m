@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbZGMRAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZGMRCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756616AbZGMRAl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbZGMRAk
+	id S1756600AbZGMRCj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZGMRCi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:00:40 -0400
-Received: from mail.atheros.com ([12.36.123.2]:10263 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755614AbZGMRAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:00:40 -0400
-Date: Mon, 13 Jul 2009 10:00:38 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       Julia Lawall <julia@diku.dk>, "gregkh@suse.de" <gregkh@suse.de>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Subject: Re: [PATCH 5/5] staging/otus: Move a dereference below a NULL test
-Message-ID: <20090713170038.GA12919@mosca>
-References: <Pine.LNX.4.64.0907110950510.29592@ask.diku.dk>
- <4A584A94.5010105@gmail.com>
- <1247307444.3032.2.camel@hpdv5.satnam>
- <1247308323.3032.5.camel@hpdv5.satnam>
- <4A5872FD.8040500@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <4A5872FD.8040500@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 13 Jul 2009 13:02:38 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:31671 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753426AbZGMRCh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 13:02:37 -0400
+Date: Mon, 13 Jul 2009 10:02:42 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Greg KH <gregkh@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org
+Subject: Re: linux-next: Tree for July 13 (staging/usbip)
+Message-Id: <20090713100242.f09c044b.randy.dunlap@oracle.com>
+In-Reply-To: <20090713093443.4d3ecfb1.randy.dunlap@oracle.com>
+References: <20090713180524.72f613dc.sfr@canb.auug.org.au>
+	<20090713085915.6bbd4879.randy.dunlap@oracle.com>
+	<20090713162511.GB22074@suse.de>
+	<20090713093443.4d3ecfb1.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4A5B68A2.01DA:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 11, 2009 at 04:09:49AM -0700, Jiri Slaby wrote:
-> On 07/11/2009 12:32 PM, Jaswinder Singh Rajput wrote:
-> > And more funny thing is that all functions are global in this file.
-> >
-> > Greg, can you please check the scope of these function, why all are
-> > global.
+On Mon, 13 Jul 2009 09:34:43 -0700 Randy Dunlap wrote:
+
+> On Mon, 13 Jul 2009 09:25:11 -0700 Greg KH wrote:
 > 
-> Why don't you do that? I think patches are welcome :).
+> > On Mon, Jul 13, 2009 at 08:59:15AM -0700, Randy Dunlap wrote:
+> > > On Mon, 13 Jul 2009 18:05:24 +1000 Stephen Rothwell wrote:
+> > > 
+> > > > Hi all,
+> > > > 
+> > > > Changes since 20090710:
+> > > 
+> > > 
+> > > drivers/staging/usbip/usbip_common.c: In function 'usbip_thread':
+> > > drivers/staging/usbip/usbip_common.c:386: error: implicit declaration of function 'lock_kernel'
+> > > drivers/staging/usbip/usbip_common.c:390: error: implicit declaration of function 'unlock_kernel'
+> > > 
+> > > config attached.
+> > 
+> > Odd, that code has not changed at all.
+> > 
+> > Did we just loose the big kernel lock somehow?
+> 
+> I dunno.  Probably some header file cleanup thing.  :(
+> 
+> Looks like only linux/smp_lock.h #defines it, but a driver shouldn't
+> need to #include that file IMHO.
 
-I will note Otus has a replacement ar9170 driver already upstream,
-as soon as it gets aggregation support otus will be dropped. Better
-focus on ar9170 instead if you are looking to spend some cycles on
-driver help.
+Adding
+#include <linux/smp_lock.h>
+does fix the build error, but I don't like it.
 
-  Luis
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
