@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756965AbZGMU3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbZGMUdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756965AbZGMU3M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 16:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbZGMU3L
+	id S1757141AbZGMUdK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 16:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbZGMUdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 16:29:11 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53658 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754817AbZGMU3L (ORCPT
+	Mon, 13 Jul 2009 16:33:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:52658 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757116AbZGMUdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 16:29:11 -0400
-Date: Mon, 13 Jul 2009 22:27:20 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: Arve Hj??nnev??g <arve@google.com>, Iliyan Malchev <malchev@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: HTC Dream camera support for staging
-Message-ID: <20090713202720.GD2569@elf.ucw.cz>
-References: <20090629114339.GA25552@elf.ucw.cz> <20090629121023.GD28046@google.com> <20090630102457.GA25802@elf.ucw.cz> <a55d774e0906300338l7743d566k5b463eed3efd1ea1@mail.gmail.com> <20090709101315.GF10937@elf.ucw.cz> <a55d774e0907090406u5e91b5c9r2303b098d0e44988@mail.gmail.com>
+	Mon, 13 Jul 2009 16:33:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Dnm68hnB+qZcOA0XymEUNTbUSa99LGJDPvwJtClvuQsDZz8IFJNcWOOFr7x82bHfl9
+         ePeLshNspMG0HqZxXoRPhfqc+utnoL4n8VSsJsV8yr7A2A/UQwFYPKy2nnc68gQwvGh2
+         PNeOu1r1nZMtgNMo7pQO6PExWA1Uul4g1aKlU=
+Message-ID: <4A5B99FD.5030505@gmail.com>
+Date: Mon, 13 Jul 2009 22:33:01 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a55d774e0907090406u5e91b5c9r2303b098d0e44988@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: reinette chatre <reinette.chatre@intel.com>
+CC: "Zhu, Yi" <yi.zhu@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: iwl: potential deadlock?
+References: <4A5B8C60.9000600@gmail.com> <1247516320.17896.1640.camel@rc-desk>
+In-Reply-To: <1247516320.17896.1640.camel@rc-desk>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-07-09 04:06:35, Brian Swetland wrote:
-> (arve -- see below about matrix driver)
-
-Arve, can you help?
-
-> On Thu, Jul 9, 2009 at 3:13 AM, Pavel Machek<pavel@ucw.cz> wrote:
-> >>
-> >> The NAND and USB support is much more contained.
-> >
-> > Well.. NAND scares me a bit -- and I'm happy with SD card for now.
+On 07/13/2009 10:18 PM, reinette chatre wrote:
+> On Mon, 2009-07-13 at 12:34 -0700, Jiri Slaby wrote:
+>> we found a potential deadlock in iwl code by our tool.
 > 
-> Well, you actually can't overwrite the bootloader with the way the
-> NAND partitions are protected and made visible to the arm11, and the
-> bootloader can reflash the boot/recovery/system/user partitions via
-> usb using fastboot.
+> What tool is this?
 
-Ok, good to know.
+It's called stanse[1], we still work on it.
 
-> > USB support seems complex because it duplicates USB gadget framework :-(.
+>> iwl_update_tkip_key()
+>> -> spin_lock_irqsave(&priv->sta_lock)
+>> -> iwl_send_add_sta()
 > 
-> Actually we have both.  We did the function framework before the
-> gadget framework had multifunction/composite support, but we're now
-> moving away from that since the necessary functionality is in gadget
-> now.  The latest 2.6.29 tree on our side has a gadget driver for the
-> USB client controller and an "android" gadget that handles the adb
-> protocol function and ums function.
-
-ums == mass storage? What is adb? ... aha, adb is the debugger.
-
-> > gpio_matrix: I thought in-tree zaurus keypad driver has recently
-> > became generic enough to almost replace this?
+> iwl_send_add_sta() is called here with flags = CMD_ASYNC
 > 
-> Looping Arve in.  I think he had issues with lack of phantom key
-> detection, etc with that.
+> In iwl_send_add_sta() we have:
+> 	if (ret || (flags & CMD_ASYNC))
+> 		return ret;
 
-Arve, can you help?
+Yes, you're right, indeed. Thanks for the explanation.
 
-> > +config TOUCHSCREEN_ELAN_I2C_8232
-> > /
-> > +config TOUCHSCREEN_SYNAPTICS_I2C_RMI
-> >
-> > ...which one is it on Dream?
-> 
-> Both, possibly.  HTC used elan as a second source, so some devices
-> will use elan, some use synaptics.
-
-Is there easy way to tell the machines apart? Are there any hardware
-differences (besides case color and touchscreen chip)?
-
-> Dream is definitely not the last Android device with a keyboard.
-
-Cool.
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+[1] http://iti.fi.muni.cz/stanse/
