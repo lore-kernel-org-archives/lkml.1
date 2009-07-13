@@ -1,95 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZGMLSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbZGMLV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbZGMLSG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 07:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZGMLSD
+	id S1755446AbZGMLV0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 07:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbZGMLVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 07:18:03 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:28681
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755339AbZGMLSC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 07:18:02 -0400
-Message-ID: <4A5B17E3.3070908@panasas.com>
-Date: Mon, 13 Jul 2009 14:17:55 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Mon, 13 Jul 2009 07:21:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40167 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755339AbZGMLVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 07:21:23 -0400
+Date: Mon, 13 Jul 2009 13:21:15 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: Mark Lord <lkml@rtr.ca>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: Input driver for Twinhan USB 6253:0100 remote control
+In-Reply-To: <20090713113157.701ba027@neptune.home>
+Message-ID: <alpine.LNX.2.00.0907131316420.10476@wotan.suse.de>
+References: <20090408072935.GA27920@dtor-d630.eng.vmware.com> <200904131931.24009.dmitry.torokhov@gmail.com> <49E4B678.9030508@rtr.ca> <200904140945.14652.dmitry.torokhov@gmail.com> <49E4C9CF.5060504@rtr.ca> <alpine.LNX.2.00.0904151022170.13028@wotan.suse.de>
+ <49E5EAD7.7000309@rtr.ca> <alpine.LNX.2.00.0904161123180.13028@wotan.suse.de> <20090712182026.7a09c736@neptune.home> <alpine.LNX.2.00.0907131048110.10476@wotan.suse.de> <20090713113157.701ba027@neptune.home>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
-References: <20090707163042.GA14947@infradead.org> <20090708063225.GL2714@wotan.suse.de> <20090708104701.GA31419@infradead.org> <20090708123412.GQ2714@wotan.suse.de> <4A54C435.1000503@panasas.com> <20090709075100.GU2714@wotan.suse.de> <4A59A517.1080605@panasas.com> <20090712144717.GA18163@infradead.org> <20090713065917.GO14666@wotan.suse.de> <4A5AF637.3090405@panasas.com> <20090713090056.GA3452@wotan.suse.de>
-In-Reply-To: <20090713090056.GA3452@wotan.suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Jul 2009 11:17:57.0969 (UTC) FILETIME=[93567C10:01CA03AB]
+Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-1772455402-1247483934=:10476"
+Content-ID: <alpine.LNX.2.00.0907131319470.10476@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/13/2009 12:00 PM, Nick Piggin wrote:
-> On Mon, Jul 13, 2009 at 11:54:15AM +0300, Boaz Harrosh wrote:
->> On 07/13/2009 09:59 AM, Nick Piggin wrote:
->>> On Sun, Jul 12, 2009 at 10:47:18AM -0400, Christoph Hellwig wrote:
->>>> On Sun, Jul 12, 2009 at 11:55:51AM +0300, Boaz Harrosh wrote:
->>>>> I wish you would split it.
->>>>>
->>>>> one - helper to be called by converted file systems
->>>>>       (Which just ignores the ATTR_SIZE)
->>>>> second - to be set into .setattr which does the simple_setsize + above.
->>>>>
->>>>> More clear for FS users like me (and that ugly unmask of ATTR_SIZE)
->>>>>
->>>>> or it's just me?
->>>> Yeah, that seems be a lot cleaner.  But let's wait until we got
->>>> rid of ->truncate for all filesystems to have the bigger picture.
->>> Agreed, if it is a common sequence / requirement for filesystems
->>> then of course I will not object to a helper to make things clearer
->>> or share code.
->>>
->>> I would like to see inode_setattr renamed into simple_setattr, and
->>> then also .setattr made mandatory, so I don't like to cut code out
->>> of inode_setattr which makes it unable to be the simple_setattr
->>> after the old truncate code is removed.
->>>
->> I thought you meant inode_setattr will go away. There will
->> only be simple_setattr() and inode_setattr_nosize()
->>
->> For the time been simple_setattr() will also take care
->> of old ->truncate FSs. And in the absence of .setattr
->> simple_setattr() is called. Have I miss-understood?
->>
->> again please tell me when all this is in effect I want
->> to do the conversion in exofs.
-> 
-> AFAIKS inode_setattr basically is simple_setattr, so I think at some
-> point it should just get renamed to simple_setattr. Adding
-> simple_setattr_nosize or similar helper would be fine too. I don't
-> care much about the exact details... But anyway these things are not
-> so important to this truncate patchset at the moment.
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I see. So what is the schedule? when are we to convert all FSs?
+--168427776-1772455402-1247483934=:10476
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.LNX.2.00.0907131319471.10476@wotan.suse.de>
 
+On Mon, 13 Jul 2009, Bruno Prémont wrote:
+
+> > > +	// set_bit(EV_REP, hi->input->evbit);
+> > Why is this commented out?
+> That was a remaining line from basing on hid-gyration.c Don't know what 
+> it does, looks like related to key repeating but I've not read enough of 
+> HID/Input code to find out. (all my tests were run with it commented 
+> out, so I will drop it unless there is a good reason to uncomment it)
+
+Yes, EV_REP is a flag which signals whether the keys produced by the 
+device in question should be auto-repreated.
+
+> With my patch it seems the mappings don't show up for EVIOCGKEYCODE:
 > 
->> [BTW these changes are a life saver for me in regard to
->> the kind of things I need to do for pNFS-exports]
+> int codes[2];
+> for (codes[0] = 0; codes[0] < 1024; codes[0]++)
+>   if (ioctl(evdev, EVIOCGKEYCODE, codes) >= 0) {
+>     // display
+>   } else
+>     break;
 > 
-> You mean the truncate patches? Well that's nice to know. I
-> guess it has always been possible just to redefine your own
-> setattr, but now it should be a bit nicer with the truncate
-> helpers...
+> Code block above only displays for codes[0] == 0:
+>  codes = { 0, 388 /* KEY_TEXT */ }
 > 
+> For all other values of codes[0] ioctl returns EINVAL.
+> 
+> Is this expected or should complete mapping table be returned
+> as it is for generic PS2 PC keyboard (if so, what changes does the
+> patch need for it)?
 
-OK, yes redefine .setattr, do the right thing in write_begin/end
-and the helpers do help a lot, to the point that it was not safe to
-open-code all this work. The situation is much better after your
-patchset.
+The HID core's perception of scancode is the actual HID usage as reported 
+by the device, inlcuding the page number.
 
-> Thanks,
-> Nick
+I.e. for your device, the usages would be in 0x70004 - 0x70052 range, not 
+0-1024 (which is what your current code is checking for).
 
-Thanks
-Boaz
+Also, looking at the patch again -- could you please keep the usage 
+numbers sorted in the switch-case in twinhan_input_mapping(), so that it's 
+more readable and compatible with other drivers?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
+--168427776-1772455402-1247483934=:10476--
