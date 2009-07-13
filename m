@@ -1,33 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZGMJKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZGMJMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbZGMJKm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 05:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZGMJKl
+	id S1754978AbZGMJMt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 05:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbZGMJMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 05:10:41 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56284 "EHLO
+	Mon, 13 Jul 2009 05:12:48 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:55952 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbZGMJKk (ORCPT
+	with ESMTP id S1754877AbZGMJMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 05:10:40 -0400
-Date: Mon, 13 Jul 2009 11:10:34 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	Mon, 13 Jul 2009 05:12:47 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
-To: David Brownell <david-b@pacbell.net>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Philipp Zabel <philipp.zabel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Lindgren <tony@atomide.com>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH] move omap_udc's probe function to .devinit.text
-Message-ID: <20090713091034.GC10549@pengutronix.de>
-References: <20090711170548.GC5205@suse.de> <20090712084734.GA944@flint.arm.linux.org.uk> <20090712131732.GA4406@flint.arm.linux.org.uk> <200907121521.31188.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200907121521.31188.david-b@pacbell.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Cc: =?utf-8?q?M=C3=A1rton=20N=C3=A9meth?= <nm127@freemail.hu>,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: [PATCH] don't add clevo_mail_led_driver's probe function to the driver struct
+Date: Mon, 13 Jul 2009 11:12:37 +0200
+Message-Id: <1247476357-24920-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <20090712204803.GA27454@pengutronix.de>
+References: <20090712204803.GA27454@pengutronix.de>
 X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
 X-SA-Exim-Mail-From: ukl@pengutronix.de
 X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
@@ -36,37 +29,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
+clevo_mail_led_driver is registered using platform_driver_probe which
+takes care for the probe function itself.  So don't pass it in the
+driver struct, too.
 
-On Sun, Jul 12, 2009 at 03:21:30PM -0700, David Brownell wrote:
-> On Sunday 12 July 2009, Russell King wrote:
-> > 	 David's approach is an enhancement whereas your patches
-> > are a bug fix.
-> 
-> Not an enhancement.  Uwe's current approach causes regressions
-> in terms of kernel runtime footprint.  That is, pages will newly
-> be made to sit around doing *nothing* forever, when they could
-> have been used to get Real Work done.  And, pre-patches, they
-> would have been getting Real Work done.
-> 
-> If it weren't a regression I wouldn't have objected.
-IMHO my patches primarily fix possible oopses.  I see your point that
-platform_driver_probe has some advantages, but I consider it too
-time-consuming to check for each of the initially 60+ patches when the
-respecting devices are registered.
+Signed-off-by: Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
+Cc: MÃ¡rton NÃ©meth <nm127@freemail.hu>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+---
+Hello,
 
-My intention is to point out a problem plus provide a safe fix.
+I'm a bit uncertain if this patch is really useful.  There is no
+difference in runtime behaviour because platform_driver_probe just
+overwrites the .probe member.  Nevertheless it's a section violation
+that hurts my eye and triggers a false positive for my script that finds
+drivers using probe functions in .init.text and
+platform_driver_register.
 
-> All that adds up.  There's no point to commiting patches that
-> do things wrong *and* waste space, then need to fix things up
-> again later when it's easy to do it right in the first place.
-
-Obviously it's arguable if it's wrong or not.  I consider it at least
-better than doing nothing.
+Care?  Don't care?
 
 Best regards
 Uwe
 
+ drivers/leds/leds-clevo-mail.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/leds/leds-clevo-mail.c b/drivers/leds/leds-clevo-mail.c
+index 1813c84..5b36ae2 100644
+--- a/drivers/leds/leds-clevo-mail.c
++++ b/drivers/leds/leds-clevo-mail.c
+@@ -157,7 +157,6 @@ static int clevo_mail_led_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver clevo_mail_led_driver = {
+-	.probe		= clevo_mail_led_probe,
+ 	.remove		= clevo_mail_led_remove,
+ 	.driver		= {
+ 		.name		= KBUILD_MODNAME,
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+tg: (7638d53..) t/noprobecbforplatformdriverprobe/clevo_mail_led_driver (depends on: linus/master)
