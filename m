@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbZGMRXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672AbZGMRZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756692AbZGMRXd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbZGMRXd
+	id S1756672AbZGMRZv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbZGMRZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:23:33 -0400
-Received: from kroah.org ([198.145.64.141]:52283 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756635AbZGMRXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:23:31 -0400
-Date: Mon, 13 Jul 2009 10:20:01 -0700
-From: Greg KH <greg@kroah.com>
-To: Kasparek Tomas <kasparek@fit.vutbr.cz>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] NFS client packet storm on 2.6.27.x
-Message-ID: <20090713172001.GA22775@kroah.com>
-References: <20090116104802.GF47559@fit.vutbr.cz>
- <20090118130835.GH47559@fit.vutbr.cz>
- <20090120150301.GG47559@fit.vutbr.cz>
- <1232465547.7055.3.camel@heimdal.trondhjem.org>
- <20090303120848.GV89843@fit.vutbr.cz>
- <1236089767.9631.4.camel@heimdal.trondhjem.org>
- <20090418051739.GL64731@fit.vutbr.cz>
- <20090422172707.GC57877@fit.vutbr.cz>
- <20090625055532.GC50277@fit.vutbr.cz>
- <20090713111214.GC30754@fit.vutbr.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090713111214.GC30754@fit.vutbr.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 13 Jul 2009 13:25:51 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:42247 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756389AbZGMRZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 13:25:50 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Raistlin <raistlin@linux.it>
+Cc: Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       "James H. Anderson" <anderson@cs.unc.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Noah Watkins <jayhawk@soe.ucsc.edu>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>
+In-Reply-To: <1247499843.8107.548.camel@Palantir>
+References: <200907102350.47124.henrik@austad.us>
+	 <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>
+	 <1247412708.6704.105.camel@laptop>  <1247499843.8107.548.camel@Palantir>
+Content-Type: text/plain
+Date: Mon, 13 Jul 2009 19:25:41 +0200
+Message-Id: <1247505941.7500.39.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 01:12:15PM +0200, Kasparek Tomas wrote:
-> On Thu, Jun 25, 2009 at 07:55:32AM +0200, Kasparek Tomas wrote:
-> > http://www.linux-nfs.org/Linux-2.6.x/2.6.27/
+On Mon, 2009-07-13 at 17:44 +0200, Raistlin wrote:
+> > PIP doesn't suffer this, but does suffer the pain from having to
+> > reimplement the full schedule function on the waitqueues, which when you
+> > have hierarchical scheduling means you have to replicate the full
+> > hierarchy per waitqueue.
 > > 
-> > .../fixups_4/linux-2.6.27-001-respond_promptly_to_socket_errors.dif
-> > .../fixups_4/linux-2.6.27-002-respond_promptly_to_socket_errors_2.dif
-> > 
-> > ...
-> > Together with tcp_linger patch it seems to improve the situation a lot to
-> > state when it is possible for me to use 2.6.27.x kernels.
-> > 
-> > Trond, will it be possible to get tcp_linger and the upper twho patches to
-> > 2.6.27.x stable queue so others get these fixes?
-> 
-> I got no response so far, is there someone who could advise me what to do
-> to get above patches to 2.6.27.x stable? Or is there some reason, why this
-> is not possible at all?
+> And, further than this, at least from my point of view, if you have
+> server/group based scheduling, and in general some kind of budgeting or
+> bandwidth enforcing mechanism in place, PIP is far from being a
+> solution...
 
-Can you backport them and send them to stable@kernel.org with the git
-commit ids of the orignal patches?
+I think you can extend PIP to include things like bandwidth inheritance
+too. Instead of simply propagating the priority through the waitqueue
+hierarchy, you can pass the actual task around, and having this task you
+can indeed consume its bandwidth etc..
 
-thanks,
+But sure, hierarchical scheduling and things really complicate the
+waitqueue implementation.
 
-greg k-h
