@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZGMKKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZGMKOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbZGMKKi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 06:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301AbZGMKKh
+	id S1755367AbZGMKOt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 06:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301AbZGMKOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 06:10:37 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:55083 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755322AbZGMKKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 06:10:36 -0400
-Date: Mon, 13 Jul 2009 12:10:32 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: samuel@sortiz.org, irda-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/2] net/irda/ircomm: Drop unnecessary NULL test
-Message-ID: <Pine.LNX.4.64.0907131210070.6808@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 13 Jul 2009 06:14:47 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:57113 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755278AbZGMKOr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 06:14:47 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Raistlin <raistlin@linux.it>
+Cc: Henrik Austad <henrik@austad.us>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       "James H. Anderson" <anderson@cs.unc.edu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Ted Baker <baker@cs.fsu.edu>,
+       Dhaval Giani <dhaval.giani@gmail.com>
+In-Reply-To: <1247478955.8107.24.camel@Palantir>
+References: <200907102350.47124.henrik@austad.us>
+	 <1247336891.9978.32.camel@laptop>  <1247478955.8107.24.camel@Palantir>
+Content-Type: text/plain
+Date: Mon, 13 Jul 2009 12:14:40 +0200
+Message-Id: <1247480080.7529.66.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Mon, 2009-07-13 at 11:55 +0200, Raistlin wrote:
+> > Thing is, both BWI and PEP seems to work brilliantly on Uni-Processor
+> > but SMP leaves things to be desired. Dhaval is currently working on a
+> > PEP implementation that will migrate all the blocked tasks to the
+> > owner's cpu, basically reducing it to the UP problem.
+> > 
+> Nice... Only one question, doesn't this impact with task affinity
+> related issues?
 
-The result of container_of should not be NULL.  In particular, in this case
-the argument to the enclosing function has passed though INIT_WORK,
-which dereferences it, implying that its container cannot be NULL.
+No :-), well maybe.
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+Since the task is blocked and will this not actually run, we can place
+it on any CPU, only once it becomes runnable again should we take care
+to place it on a CPU that's part of its affinity mask.
 
-// <smpl>
-@@
-expression x,e;
-@@
+Of course, underlying this is the question of what to do for
+'partitioned' tasks sharing a resource. I think we've talked about this
+a few times.
 
-x = container_of(...)
-... when != x = e
-* x == NULL
-// </smpl>
+Since these 'partitioned' tasks do share a resource, they're not really
+all that partitioned, and I think the best way to keep the system going
+is to simply Inherit/Donate/Proxy right through the partition.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+~ Peter
 
----
- net/irda/ircomm/ircomm_tty.c        |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/irda/ircomm/ircomm_tty.c b/net/irda/ircomm/ircomm_tty.c
-index 811984d..6306c19 100644
---- a/net/irda/ircomm/ircomm_tty.c
-+++ b/net/irda/ircomm/ircomm_tty.c
-@@ -609,7 +609,7 @@ static void ircomm_tty_do_softint(struct work_struct *work)
- 
- 	IRDA_DEBUG(2, "%s()\n", __func__ );
- 
--	if (!self || self->magic != IRCOMM_TTY_MAGIC)
-+	if (self->magic != IRCOMM_TTY_MAGIC)
- 		return;
- 
- 	tty = self->tty;
