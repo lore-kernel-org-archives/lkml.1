@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZGMJMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZGMJPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbZGMJMt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 05:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbZGMJMs
+	id S1755027AbZGMJPJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 05:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbZGMJPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 05:12:48 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:55952 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754877AbZGMJMr (ORCPT
+	Mon, 13 Jul 2009 05:15:09 -0400
+Received: from viefep15-int.chello.at ([62.179.121.35]:13149 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754702AbZGMJPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 05:12:47 -0400
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: =?utf-8?q?M=C3=A1rton=20N=C3=A9meth?= <nm127@freemail.hu>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: [PATCH] don't add clevo_mail_led_driver's probe function to the driver struct
-Date: Mon, 13 Jul 2009 11:12:37 +0200
-Message-Id: <1247476357-24920-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <20090712204803.GA27454@pengutronix.de>
-References: <20090712204803.GA27454@pengutronix.de>
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 13 Jul 2009 05:15:08 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [RESEND PATCH 01/11] kernel:lockdep:print the shortest
+ dependency chain if finding a circle
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ming Lei <tom.leiming@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20090713070110.GA28499@elte.hu>
+References: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com>
+	 <1246201486-7308-2-git-send-email-tom.leiming@gmail.com>
+	 <20090711213028.GC6641@nowhere>
+	 <d82e647a0907111942o1cf22batb204c38bfbd43c03@mail.gmail.com>
+	 <20090713070110.GA28499@elte.hu>
+Content-Type: text/plain
+Date: Mon, 13 Jul 2009 11:14:58 +0200
+Message-Id: <1247476498.7529.54.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clevo_mail_led_driver is registered using platform_driver_probe which
-takes care for the probe function itself.  So don't pass it in the
-driver struct, too.
+On Mon, 2009-07-13 at 09:01 +0200, Ingo Molnar wrote:
+> 
+> It's a nice byproduct, beyond the primary advantage of not being a 
+> stack based recursion check.
+> 
+> I think this patch-set is great, and there's just one more step 
+> needed to make it round: it would be nice to remove the limitation 
+> of maximum number of locks held per task. (MAX_LOCK_DEPTH)
+> 
+> The way we could do it is to split out this bit of struct task:
+> 
+> #ifdef CONFIG_LOCKDEP
+> # define MAX_LOCK_DEPTH 48UL
+>         u64 curr_chain_key;
+>         int lockdep_depth;
+>         unsigned int lockdep_recursion;
+>         struct held_lock held_locks[MAX_LOCK_DEPTH];
+>         gfp_t lockdep_reclaim_gfp;
+> #endif
+> 
+> into a separate 'struct lockdep_state' structure, and allocate it 
+> dynamically during fork with a initial pre-set size of say 64 locks 
+> depth. If we hit that limit, we'd double the allocation threshold, 
+> which would cause a larger structure to be allocated for all newly 
+> allocated tasks.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Márton Németh <nm127@freemail.hu>
-Cc: Richard Purdie <rpurdie@rpsys.net>
----
-Hello,
+Right, except allocating stuff while in the middle of lockdep is very
+hard since it involves taking more locks :-)
 
-I'm a bit uncertain if this patch is really useful.  There is no
-difference in runtime behaviour because platform_driver_probe just
-overwrites the .probe member.  Nevertheless it's a section violation
-that hurts my eye and triggers a false positive for my script that finds
-drivers using probe functions in .init.text and
-platform_driver_register.
+I've tried it several times but never quite managed it in a way that I
+felt comfortable with.
 
-Care?  Don't care?
+It would require having a reserve and serializing over that reserve.
 
-Best regards
-Uwe
-
- drivers/leds/leds-clevo-mail.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/leds/leds-clevo-mail.c b/drivers/leds/leds-clevo-mail.c
-index 1813c84..5b36ae2 100644
---- a/drivers/leds/leds-clevo-mail.c
-+++ b/drivers/leds/leds-clevo-mail.c
-@@ -157,7 +157,6 @@ static int clevo_mail_led_remove(struct platform_device *pdev)
- }
- 
- static struct platform_driver clevo_mail_led_driver = {
--	.probe		= clevo_mail_led_probe,
- 	.remove		= clevo_mail_led_remove,
- 	.driver		= {
- 		.name		= KBUILD_MODNAME,
--- 
-tg: (7638d53..) t/noprobecbforplatformdriverprobe/clevo_mail_led_driver (depends on: linus/master)
