@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbZGMQxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbZGMQ6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312AbZGMQxn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 12:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZGMQxm
+	id S1756471AbZGMQ6R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 12:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZGMQ6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 12:53:42 -0400
-Received: from hall.aurel32.net ([88.191.82.174]:47512 "EHLO hall.aurel32.net"
+	Mon, 13 Jul 2009 12:58:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36623 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753597AbZGMQxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 12:53:42 -0400
-Date: Mon, 13 Jul 2009 18:53:35 +0200
-From: Aurelien Jarno <aurelien@aurel32.net>
-To: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] Revert "Neither asm/types.h nor linux/types.h is
-	required for arch/ia64/include/asm/fpu.h"
-Message-ID: <20090713165335.GA29702@volta.aurel32.net>
-Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
-	Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090712155833.GB12923@volta.aurel32.net>
+	id S1752905AbZGMQ6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 12:58:15 -0400
+Date: Mon, 13 Jul 2009 16:57:41 GMT
+From: tip-bot for Rakib Mullick <rakib.mullick@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rakib.mullick@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rakib.mullick@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <b9df5fa10907120404k6279a10ch5e9682432272706f@mail.gmail.com>
+References: <b9df5fa10907120404k6279a10ch5e9682432272706f@mail.gmail.com>
+Subject: [tip:x86/urgent] x86: Fix false positive section mismatch in es7000_32.c
+Message-ID: <tip-151586d0f70405d99324d89aea13706cf6d7f993@git.kernel.org>
+Git-Commit-ID: 151586d0f70405d99324d89aea13706cf6d7f993
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090712155833.GB12923@volta.aurel32.net>
-X-Mailer: Mutt 1.5.18 (2008-05-17)
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Jul 2009 16:57:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry forget to add a S-o-B tag. Please find a new version below.
+Commit-ID:  151586d0f70405d99324d89aea13706cf6d7f993
+Gitweb:     http://git.kernel.org/tip/151586d0f70405d99324d89aea13706cf6d7f993
+Author:     Rakib Mullick <rakib.mullick@gmail.com>
+AuthorDate: Sun, 12 Jul 2009 17:04:12 +0600
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 13 Jul 2009 11:03:26 +0200
 
+x86: Fix false positive section mismatch in es7000_32.c
 
-asm/fpu.h uses the __IA64_UL macro which is declared in asm/types.h, so
-this include is really required. Without it, GNU libc fails to build.
+The variable apic_es7000_cluster references the function __cpuinit
+wakeup_secondary_cpu_via_mip() from a noninit section. So we've been
+warned by the following warning. To avoid possible collision between
+init/noninit, its best to mark the variable as __refdata.
 
-This reverts commit 2678c07b07ac2076675e5d57653bdf02e9af1950.
+We were warned by the following warning:
 
-Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
+  LD      arch/x86/kernel/apic/built-in.o
+  WARNING: arch/x86/kernel/apic/built-in.o(.data+0x198c): Section
+  mismatch in reference from the variable apic_es7000_cluster to the
+  function .cpuinit.text:wakeup_secondary_cpu_via_mip()
+
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+LKML-Reference: <b9df5fa10907120404k6279a10ch5e9682432272706f@mail.gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
 
 ---
- arch/ia64/include/asm/fpu.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/x86/kernel/apic/es7000_32.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/ia64/include/asm/fpu.h b/arch/ia64/include/asm/fpu.h
-index 0c26157..b6395ad 100644
---- a/arch/ia64/include/asm/fpu.h
-+++ b/arch/ia64/include/asm/fpu.h
-@@ -6,6 +6,8 @@
-  *	David Mosberger-Tang <davidm@hpl.hp.com>
-  */
+diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
+index 69328ac..8952a58 100644
+--- a/arch/x86/kernel/apic/es7000_32.c
++++ b/arch/x86/kernel/apic/es7000_32.c
+@@ -652,7 +652,8 @@ static int es7000_mps_oem_check_cluster(struct mpc_table *mpc, char *oem,
+ 	return ret && es7000_apic_is_cluster();
+ }
  
-+#include <linux/types.h>
-+
- /* floating point status register: */
- #define FPSR_TRAP_VD	(1 << 0)	/* invalid op trap disabled */
- #define FPSR_TRAP_DD	(1 << 1)	/* denormal trap disabled */
--- 
-1.6.1.3
-
--- 
-Aurelien Jarno	                        GPG: 1024D/F1BCDB73
-aurelien@aurel32.net                 http://www.aurel32.net
+-struct apic apic_es7000_cluster = {
++/* We've been warned by a false positive warning.Use __refdata to keep calm. */
++struct apic __refdata apic_es7000_cluster = {
+ 
+ 	.name				= "es7000",
+ 	.probe				= probe_es7000,
