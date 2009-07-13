@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbZGMH2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbZGMHiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754410AbZGMH2l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 03:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbZGMH2j
+	id S1754377AbZGMHiG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 03:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZGMHiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 03:28:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46728 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752773AbZGMH2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 03:28:38 -0400
-Date: Mon, 13 Jul 2009 17:28:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: linux-next: driver-core tree build warning
-Message-Id: <20090713172831.8875ac2c.sfr@canb.auug.org.au>
-In-Reply-To: <20090713172646.55b9acee.sfr@canb.auug.org.au>
-References: <20090713172646.55b9acee.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__13_Jul_2009_17_28_31_+1000_8cBMSrHo8n.FuXCg"
+	Mon, 13 Jul 2009 03:38:03 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:64341 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752441AbZGMHiC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 03:38:02 -0400
+Message-ID: <4A5AB903.6090204@mxs.nes.nec.co.jp>
+Date: Mon, 13 Jul 2009 13:33:07 +0900
+From: "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+CC: kexec-ml <kexec@lists.infradead.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH-v2] kdump: Enable kdump if 2nd-kernel is loaded.
+References: <4A55A4AE.3000206@mxs.nes.nec.co.jp> <4A56E069.5040907@jp.fujitsu.com>
+In-Reply-To: <4A56E069.5040907@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__13_Jul_2009_17_28_31_+1000_8cBMSrHo8n.FuXCg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Greg,
+Hi,
 
-On Mon, 13 Jul 2009 17:26:46 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Today's linux-next build (x86_64 allmodconfig) produced this warning:
->=20
-> drivers/firewire/core-device.c: In function 'init_fw_attribute_group':
-> drivers/firewire/core-device.c:315: warning: assignment from incompatible=
- pointer type
->=20
-> Introduced by commit 025a6a26b70e5dc12ab9333ea43d70c735f459ac ("driver
-> model: constify attribute groups").
+This patch is a new version by Seto-san's comment.
 
-Also:
 
-drivers/mtd/mtdcore.c:227: warning: initialization from incompatible pointe=
-r type
+Changelog since v1:
+* Remove the check code other than kexec_crash_image from kexec_should_crash()
+  because a kexec cannot crash if there is no image.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__13_Jul_2009_17_28_31_+1000_8cBMSrHo8n.FuXCg
-Content-Type: application/pgp-signature
+This patch enables a kdump if 2nd-kernel is loaded.
+(The patch is based on linux-2.6.31-rc2.)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Now, a kdump on oops is enabled if a kernel parameter "oops=panic"
+is specified and 2nd-kernel is loaded. I think that a kdump should
+be enabled regardless of "oops=panic" if 2nd-kernel is loaded,
+because a system administrator loads 2nd-kernel for enabling a kdump.
 
-iEYEARECAAYFAkpa4h8ACgkQjjKRsyhoI8xb4ACfXYgZtlRAWAMYmZBT7qt9w1UJ
-L9oAmwdpjtPzpEubbu21og3+gqr3hdRI
-=fFZe
------END PGP SIGNATURE-----
 
---Signature=_Mon__13_Jul_2009_17_28_31_+1000_8cBMSrHo8n.FuXCg--
+* Reference
+  The discussion about this patch
+  http://lists.infradead.org/pipermail/kexec/2009-July/003417.html
+  http://lists.infradead.org/pipermail/kexec/2009-July/003433.html
+
+
+Thanks
+Ken'ichi Ohmichi
+
+Signed-off-by: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+Acked-by: Simon Horman <horms@verge.net.au>
+---
+--- a/kernel/kexec.c	2009-07-08 12:30:26.000000000 +0900
++++ b/kernel/kexec.c	2009-07-13 13:49:03.000000000 +0900
+@@ -57,7 +57,7 @@ struct resource crashk_res = {
+ 
+ int kexec_should_crash(struct task_struct *p)
+ {
+-	if (in_interrupt() || !p->pid || is_global_init(p) || panic_on_oops)
++	if (kexec_crash_image)
+ 		return 1;
+ 	return 0;
+ }
