@@ -1,553 +1,976 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZGMSHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbZGMSIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZGMSHa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 14:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbZGMSH2
+	id S1756909AbZGMSIJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 14:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbZGMSII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 14:07:28 -0400
+	Mon, 13 Jul 2009 14:08:08 -0400
 Received: from mail-fx0-f218.google.com ([209.85.220.218]:57004 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755860AbZGMSHL (ORCPT
+	with ESMTP id S1756106AbZGMSIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 14:07:11 -0400
+	Mon, 13 Jul 2009 14:08:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=WN4W6lQ+QRnLCCWyUSeun6gzsmm9nQu/Rjd5VYPwDHvshXEI1eJluUN7gCpYxNnRNM
-         /uCnxiq0xsptG0BEVnuXC7K35+I853+pI62NWRZcePVVQqe+/D3mexdTOcUdA5jbJs4E
-         yNqEtz98wSI+xNzqeJ1UALSvrmbYXS4Aqvpf0=
+        b=TNiVHv6S6orGD7OVCFb09n4W/LKKXB2bhmg6uNmxfag+GuziyNUIT747Hau7YSqcvF
+         SmvgLEAAAxJu2nUtX+L2l5I5bzegdp+UafwLaQafVJaK3xhujG62Vc6uAAwqmW7e9ALR
+         K2mwAaxrjjFNZi87R/qtVxD+UbtboQGgjMlTo=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 13 Jul 2009 20:13:49 +0200
-Message-Id: <20090713181349.16765.47234.sendpatchset@localhost.localdomain>
+Date: Mon, 13 Jul 2009 20:14:41 +0200
+Message-Id: <20090713181441.16765.84035.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090713181329.16765.68428.sendpatchset@localhost.localdomain>
 References: <20090713181329.16765.68428.sendpatchset@localhost.localdomain>
-Subject: [PATCH 02/10] Staging: rtl8192su: make private ieee80211 stack really private
+Subject: [PATCH 10/10] Staging: rtl8192su/ieee80211: move rtl8192su specific code out from ieee80211.h
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8192su: make private ieee80211 stack really private
+Subject: [PATCH] Staging: rtl8192su/ieee80211: move rtl8192su specific code out from ieee80211.h
 
-* rename ieee80211_{init,exit}() to ieee80211_debug_{init,exit}()
-* make private ieee80211 stack really private
-* cleanup Makefile
-* remove superfluous ieee80211_* defines
-* remove superfluous EXPORT_SYMBOLs
+Move rtl8192su specific code out from ieee80211.h to ieee80211_r8192s.h.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8192su/Makefile                         |   15 --
- drivers/staging/rtl8192su/TODO                             |    2 
- drivers/staging/rtl8192su/ieee80211/dot11d.c               |    9 -
- drivers/staging/rtl8192su/ieee80211/ieee80211.h            |   72 -------------
- drivers/staging/rtl8192su/ieee80211/ieee80211_crypt.c      |   17 ---
- drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_ccmp.c |   11 -
- drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c |   10 -
- drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_wep.c  |   10 -
- drivers/staging/rtl8192su/ieee80211/ieee80211_module.c     |   11 -
- drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c         |    3 
- drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c    |   22 ---
- drivers/staging/rtl8192su/ieee80211/ieee80211_softmac_wx.c |   19 ---
- drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c         |    2 
- drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c         |    9 -
- drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c       |    2 
- drivers/staging/rtl8192su/ieee80211/rtl819x_TSProc.c       |    2 
- drivers/staging/rtl8192su/r8192U_core.c                    |   55 +++++++++
- 17 files changed, 70 insertions(+), 201 deletions(-)
+ drivers/staging/rtl8192su/ieee80211/ieee80211.h        |  433 ----------------
+ drivers/staging/rtl8192su/ieee80211/ieee80211_r8192s.h |  436 +++++++++++++++++
+ 2 files changed, 437 insertions(+), 432 deletions(-)
 
-Index: b/drivers/staging/rtl8192su/Makefile
-===================================================================
---- a/drivers/staging/rtl8192su/Makefile
-+++ b/drivers/staging/rtl8192su/Makefile
-@@ -21,9 +21,11 @@ r8192s_usb-objs :=		\
- 	r8192S_firmware.o	\
- 	r8192S_Efuse.o		\
- 	r8192U_core.o		\
--	r8192U_pm.o
--
--ieee80211-rsl-objs :=			\
-+	r8192U_pm.o		\
-+	ieee80211/ieee80211_crypt.o		\
-+	ieee80211/ieee80211_crypt_tkip.o	\
-+	ieee80211/ieee80211_crypt_ccmp.o	\
-+	ieee80211/ieee80211_crypt_wep.o		\
- 	ieee80211/ieee80211_rx.o	\
- 	ieee80211/ieee80211_softmac.o	\
- 	ieee80211/ieee80211_tx.o	\
-@@ -36,10 +38,3 @@ ieee80211-rsl-objs :=			\
- 	ieee80211/dot11d.o
- 
- obj-$(CONFIG_RTL8192SU) += r8192s_usb.o
--obj-$(CONFIG_RTL8192SU) += ieee80211-rsl.o
--obj-$(CONFIG_RTL8192SU) += ieee80211/ieee80211_crypt.o
--obj-$(CONFIG_RTL8192SU) += ieee80211/ieee80211_crypt_tkip.o
--obj-$(CONFIG_RTL8192SU) += ieee80211/ieee80211_crypt_ccmp.o
--obj-$(CONFIG_RTL8192SU) += ieee80211/ieee80211_crypt_wep.o
--
--
-Index: b/drivers/staging/rtl8192su/TODO
-===================================================================
---- a/drivers/staging/rtl8192su/TODO
-+++ b/drivers/staging/rtl8192su/TODO
-@@ -1,10 +1,8 @@
- TODO:
--- make ieee80211 stack private (may conflict with libipw currently)
- - prepare private ieee80211 stack for merge with rtl8187se's version:
-   - remove JOHN_DUMP[_DESC] ifdefs
-   - remove [IN]_OPENSUSE_SLED definitions
-   - remove superflous container_of definition from ieee80211.h
--  - remove superfluous ieee80211_* definitions from ieee80211.h
-   - remove rtl8192su's specific dead code
-   - cleanup ieee80211.h
-   - move rtl8192su's specific code out from ieee80211.h
-Index: b/drivers/staging/rtl8192su/ieee80211/dot11d.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/dot11d.c
-+++ b/drivers/staging/rtl8192su/ieee80211/dot11d.c
-@@ -214,12 +214,3 @@ int ToLegalChannel(
- 
- 	return default_chn;
- }
--
--EXPORT_SYMBOL(Dot11d_Init);
--EXPORT_SYMBOL(Dot11d_Reset);
--EXPORT_SYMBOL(Dot11d_UpdateCountryIe);
--EXPORT_SYMBOL(DOT11D_GetMaxTxPwrInDbm);
--EXPORT_SYMBOL(DOT11D_ScanComplete);
--EXPORT_SYMBOL(IsLegalChannel);
--EXPORT_SYMBOL(ToLegalChannel);
--
 Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
 ===================================================================
 --- a/drivers/staging/rtl8192su/ieee80211/ieee80211.h
 +++ b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
-@@ -265,78 +265,6 @@ typedef struct cb_desc {
+@@ -45,135 +45,6 @@
+ #define KEY_TYPE_CCMP		0x4
+ #define KEY_TYPE_WEP104		0x5
  
- #define MAX_IE_LEN  0xff
+-/* added for rtl819x tx procedure */
+-#define MAX_QUEUE_SIZE		0x10
+-
+-/* 8190 queue mapping */
+-enum {
+-	BK_QUEUE	= 0,
+-	BE_QUEUE	= 1,
+-	VI_QUEUE	= 2,
+-	VO_QUEUE	= 3,
+-	HCCA_QUEUE	= 4,
+-	TXCMD_QUEUE	= 5,
+-	MGNT_QUEUE	= 6,
+-	HIGH_QUEUE	= 7,
+-	BEACON_QUEUE	= 8,
+-
+-	LOW_QUEUE	= BE_QUEUE,
+-	NORMAL_QUEUE	= MGNT_QUEUE
+-};
+-
+-#define SWRF_TIMEOUT				50
+-
+-/* LEAP related */
+-/* Flag byte: byte 8, numbered from 0. */
+-#define IE_CISCO_FLAG_POSITION		0x08
+-#define SUPPORT_CKIP_MIC		0x08	/* bit3 */
+-#define SUPPORT_CKIP_PK			0x10	/* bit4 */
+-
+-/* defined for skb cb field, at most 28 byte */
+-typedef struct cb_desc {
+-        /* Tx Desc Related flags (8-9) */
+-	u8 bLastIniPkt:1;
+-	u8 bCmdOrInit:1;
+-        u8 bFirstSeg:1;
+-        u8 bLastSeg:1;
+-        u8 bEncrypt:1;
+-        u8 bTxDisableRateFallBack:1;
+-        u8 bTxUseDriverAssingedRate:1;
+-	u8 bHwSec:1; /* indicate whether use Hw security */
+-
+-        u8 reserved1;
+-
+-        /* Tx Firmware Relaged flags (10-11)*/
+-        u8 bCTSEnable:1;
+-        u8 bRTSEnable:1;
+-        u8 bUseShortGI:1;
+-        u8 bUseShortPreamble:1;
+-        u8 bTxEnableFwCalcDur:1;
+-        u8 bAMPDUEnable:1;
+-        u8 bRTSSTBC:1;
+-        u8 RTSSC:1;
+-
+-        u8 bRTSBW:1;
+-        u8 bPacketBW:1;
+-	u8 bRTSUseShortPreamble:1;
+-	u8 bRTSUseShortGI:1;
+-	u8 bMulticast:1;
+-	u8 bBroadcast:1;
+-        u8 drv_agg_enable:1;
+-        u8 reserved2:1;
+-
+-        /* Tx Desc related element(12-19) */
+-        u8 rata_index;
+-        u8 queue_index;
+-        u16 txbuf_size;
+-	u8 RATRIndex;
+-        u8 reserved6;
+-        u8 reserved7;
+-        u8 reserved8;
+-
+-        /* Tx firmware related element(20-27) */
+-        u8 data_rate;
+-        u8 rts_rate;
+-        u8 ampdu_factor;
+-        u8 ampdu_density;
+-        u8 DrvAggrNum;
+-	u16 pkt_size;
+-        u8 reserved12;
+-} cb_desc, *pcb_desc;
+-
+-enum {
+-	MGN_1M		= 0x02,
+-	MGN_2M		= 0x04,
+-	MGN_5_5M	= 0x0b,
+-	MGN_11M		= 0x16,
+-
+-	MGN_6M		= 0x0c,
+-	MGN_9M		= 0x12,
+-	MGN_12M		= 0x18,
+-	MGN_18M		= 0x24,
+-	MGN_24M		= 0x30,
+-	MGN_36M		= 0x48,
+-	MGN_48M		= 0x60,
+-	MGN_54M		= 0x6c,
+-
+-	MGN_MCS0	= 0x80,
+-	MGN_MCS1	= 0x81,
+-	MGN_MCS2	= 0x82,
+-	MGN_MCS3	= 0x83,
+-	MGN_MCS4	= 0x84,
+-	MGN_MCS5	= 0x85,
+-	MGN_MCS6	= 0x86,
+-	MGN_MCS7	= 0x87,
+-	MGN_MCS8	= 0x88,
+-	MGN_MCS9	= 0x89,
+-	MGN_MCS10	= 0x8a,
+-	MGN_MCS11	= 0x8b,
+-	MGN_MCS12	= 0x8c,
+-	MGN_MCS13	= 0x8d,
+-	MGN_MCS14	= 0x8e,
+-	MGN_MCS15	= 0x8f,
+-
+-	MGN_MCS0_SG	= 0x90,
+-	MGN_MCS1_SG	= 0x91,
+-	MGN_MCS2_SG	= 0x92,
+-	MGN_MCS3_SG	= 0x93,
+-	MGN_MCS4_SG	= 0x94,
+-	MGN_MCS5_SG	= 0x95,
+-	MGN_MCS6_SG	= 0x96,
+-	MGN_MCS7_SG	= 0x97,
+-	MGN_MCS8_SG	= 0x98,
+-	MGN_MCS9_SG	= 0x99,
+-	MGN_MCS10_SG	= 0x9a,
+-	MGN_MCS11_SG	= 0x9b,
+-	MGN_MCS12_SG	= 0x9c,
+-	MGN_MCS13_SG	= 0x9d,
+-	MGN_MCS14_SG	= 0x9e,
+-	MGN_MCS15_SG	= 0x9f,
+-};
+-
+ #define aSifsTime (((priv->ieee80211->current_network.mode == IEEE_A) || \
+ 		    (priv->ieee80211->current_network.mode == IEEE_N_24G) || \
+ 		    (priv->ieee80211->current_network.mode == IEEE_N_5G)) \
+@@ -296,62 +167,6 @@ typedef struct ieee_param {
+ /* QOS control */
+ #define IEEE80211_QCTL_TID              0x000F
  
--// added for kernel conflict
--#define ieee80211_crypt_deinit_entries 	ieee80211_crypt_deinit_entries_rsl
--#define ieee80211_crypt_deinit_handler 	ieee80211_crypt_deinit_handler_rsl
--#define ieee80211_crypt_delayed_deinit 	ieee80211_crypt_delayed_deinit_rsl
--#define ieee80211_register_crypto_ops  	ieee80211_register_crypto_ops_rsl
--#define ieee80211_unregister_crypto_ops ieee80211_unregister_crypto_ops_rsl
--#define ieee80211_get_crypto_ops 	ieee80211_get_crypto_ops_rsl
+-#define FC_QOS_BIT			BIT7
 -
--#define ieee80211_ccmp_null		ieee80211_ccmp_null_rsl
+-#define IsDataFrame(pdu)	(((pdu[0] & 0x0C) == 0x08) ? true : false)
+-#define IsLegacyDataFrame(pdu)	(IsDataFrame(pdu) && (!(pdu[0] & FC_QOS_BIT)))
+-#define IsQoSDataFrame(pframe) \
+-	((*(u16 *)pframe & (IEEE80211_STYPE_QOS_DATA | IEEE80211_FTYPE_DATA)) \
+-	 == (IEEE80211_STYPE_QOS_DATA | IEEE80211_FTYPE_DATA))
 -
--#define ieee80211_tkip_null		ieee80211_tkip_null_rsl
+-#define Frame_Order(pframe)	(*(u16 *)pframe & IEEE80211_FCTL_ORDER)
 -
--#define ieee80211_wep_null		ieee80211_wep_null_rsl
+-#define SN_LESS(a, b)		(((a - b) & 0x800) != 0)
+-#define SN_EQUAL(a, b)		(a == b)
 -
--#define free_ieee80211          	free_ieee80211_rsl
--#define alloc_ieee80211        		alloc_ieee80211_rsl
+-#define MAX_DEV_ADDR_SIZE 8
 -
--#define ieee80211_rx 			ieee80211_rx_rsl
--#define ieee80211_rx_mgt		ieee80211_rx_mgt_rsl
+-enum {
+-	/* ACT_CATEGORY */
+-	ACT_CAT_QOS	= 1,
+-	ACT_CAT_DLS	= 2,
+-	ACT_CAT_BA	= 3,
+-	ACT_CAT_HT	= 7,
+-	ACT_CAT_WMM	= 17,
 -
--#define ieee80211_get_beacon		ieee80211_get_beacon_rsl
--#define ieee80211_wake_queue		ieee80211_wake_queue_rsl
--#define ieee80211_stop_queue		ieee80211_stop_queue_rsl
--#define ieee80211_reset_queue		ieee80211_reset_queue_rsl
--#define ieee80211_softmac_stop_protocol	ieee80211_softmac_stop_protocol_rsl
--#define ieee80211_softmac_start_protocol ieee80211_softmac_start_protocol_rsl
--#define ieee80211_is_shortslot		ieee80211_is_shortslot_rsl
--#define ieee80211_is_54g		ieee80211_is_54g_rsl
--#define ieee80211_wpa_supplicant_ioctl	ieee80211_wpa_supplicant_ioctl_rsl
--#define ieee80211_ps_tx_ack		ieee80211_ps_tx_ack_rsl
--#define ieee80211_softmac_xmit		ieee80211_softmac_xmit_rsl
--#define ieee80211_stop_send_beacons	ieee80211_stop_send_beacons_rsl
--#define notify_wx_assoc_event		notify_wx_assoc_event_rsl
--#define SendDisassociation		SendDisassociation_rsl
--#define ieee80211_disassociate		ieee80211_disassociate_rsl
--#define ieee80211_start_send_beacons	ieee80211_start_send_beacons_rsl
--#define ieee80211_stop_scan		ieee80211_stop_scan_rsl
--#define ieee80211_send_probe_requests	ieee80211_send_probe_requests_rsl
--#define ieee80211_softmac_scan_syncro	ieee80211_softmac_scan_syncro_rsl
--#define ieee80211_start_scan_syncro	ieee80211_start_scan_syncro_rsl
+-	/* TS_ACTION */
+-	ACT_ADDTSREQ	= 0,
+-	ACT_ADDTSRSP	= 1,
+-	ACT_DELTS	= 2,
+-	ACT_SCHEDULE	= 3,
 -
--#define ieee80211_wx_get_essid		ieee80211_wx_get_essid_rsl
--#define ieee80211_wx_set_essid		ieee80211_wx_set_essid_rsl
--#define ieee80211_wx_set_rate		ieee80211_wx_set_rate_rsl
--#define ieee80211_wx_get_rate		ieee80211_wx_get_rate_rsl
--#define ieee80211_wx_set_wap		ieee80211_wx_set_wap_rsl
--#define ieee80211_wx_get_wap		ieee80211_wx_get_wap_rsl
--#define ieee80211_wx_set_mode		ieee80211_wx_set_mode_rsl
--#define ieee80211_wx_get_mode		ieee80211_wx_get_mode_rsl
--#define ieee80211_wx_set_scan		ieee80211_wx_set_scan_rsl
--#define ieee80211_wx_get_freq		ieee80211_wx_get_freq_rsl
--#define ieee80211_wx_set_freq		ieee80211_wx_set_freq_rsl
--#define ieee80211_wx_set_rawtx		ieee80211_wx_set_rawtx_rsl
--#define ieee80211_wx_get_name		ieee80211_wx_get_name_rsl
--#define ieee80211_wx_set_power		ieee80211_wx_set_power_rsl
--#define ieee80211_wx_get_power		ieee80211_wx_get_power_rsl
--#define ieee80211_wlan_frequencies	ieee80211_wlan_frequencies_rsl
--#define ieee80211_wx_set_rts		ieee80211_wx_set_rts_rsl
--#define ieee80211_wx_get_rts		ieee80211_wx_get_rts_rsl
+-	/* BA_ACTION */
+-	ACT_ADDBAREQ	= 0,
+-	ACT_ADDBARSP	= 1,
+-	ACT_DELBA	= 2,
+-};
 -
--#define ieee80211_txb_free		ieee80211_txb_free_rsl
+-/* InitialGainOpType */
+-enum {
+-	IG_Backup = 0,
+-	IG_Restore,
+-	IG_Max
+-};
 -
--#define ieee80211_wx_set_gen_ie		ieee80211_wx_set_gen_ie_rsl
--#define ieee80211_wx_get_scan		ieee80211_wx_get_scan_rsl
--#define ieee80211_wx_set_encode		ieee80211_wx_set_encode_rsl
--#define ieee80211_wx_get_encode		ieee80211_wx_get_encode_rsl
+-typedef enum _LED_CTL_MODE {
+-	LED_CTL_POWER_ON	 = 1,
+-	LED_CTL_LINK		 = 2,
+-	LED_CTL_NO_LINK		 = 3,
+-	LED_CTL_TX		 = 4,
+-	LED_CTL_RX		 = 5,
+-	LED_CTL_SITE_SURVEY	 = 6,
+-	LED_CTL_POWER_OFF	 = 7,
+-	LED_CTL_START_TO_LINK	 = 8,
+-	LED_CTL_START_WPS	 = 9,
+-	LED_CTL_STOP_WPS	 = 10,
+-	LED_CTL_START_WPS_BOTTON = 11,
+-} LED_CTL_MODE;
 -
--#define ieee80211_wx_set_mlme		ieee80211_wx_set_mlme_rsl
--#define ieee80211_wx_set_auth		ieee80211_wx_set_auth_rsl
--#define ieee80211_wx_set_encode_ext	ieee80211_wx_set_encode_ext_rsl
--#define ieee80211_wx_get_encode_ext	ieee80211_wx_get_encode_ext_rsl
--
- typedef struct ieee_param {
- 	u32 cmd;
- 	u8 sta_addr[ETH_ALEN];
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt.c
-@@ -204,8 +204,7 @@ static struct ieee80211_crypto_ops ieee8
- 	.owner			= THIS_MODULE,
- };
+ /* debug macros */
+ #define CONFIG_IEEE80211_DEBUG
+ #ifdef CONFIG_IEEE80211_DEBUG
+@@ -918,18 +733,6 @@ struct ieee80211_rxb {
+ 	u8 src[ETH_ALEN];
+ }__attribute__((packed));
  
+-typedef union _frameqos {
+-	u16 shortdata;
+-	u8  chardata[2];
+-	struct {
+-		u16 tid:4;
+-		u16 eosp:1;
+-		u16 ack_policy:2;
+-		u16 reserved:1;
+-		u16 txop:8;
+-	}field;
+-} frameqos;
 -
--static int __init ieee80211_crypto_init(void)
-+int __init ieee80211_crypto_init(void)
- {
- 	int ret = -ENOMEM;
- 
-@@ -226,8 +225,7 @@ out:
- 	return ret;
+ /* SWEEP TABLE ENTRIES NUMBER */
+ #define MAX_SWEEP_TAB_ENTRIES		  42
+ #define MAX_SWEEP_TAB_ENTRIES_PER_PACKET  7
+@@ -1066,16 +869,6 @@ static inline const char *eap_get_type(i
+ 	return ((u32)type >= ARRAY_SIZE(eap_types)) ? "Unknown" : eap_types[type];
  }
  
+-static inline u8 Frame_QoSTID(u8 *buf)
+-{
+-	struct ieee80211_hdr_3addr *hdr = (struct ieee80211_hdr_3addr *)buf;
+-	u16 fc = le16_to_cpu(hdr->frame_ctl);
 -
--static void __exit ieee80211_crypto_deinit(void)
-+void __exit ieee80211_crypto_deinit(void)
- {
- 	struct list_head *ptr, *n;
- 
-@@ -246,14 +244,3 @@ static void __exit ieee80211_crypto_dein
- 
- 	kfree(hcrypt);
- }
+-	return (u8)((frameqos *)(buf +
+-		(((fc & IEEE80211_FCTL_TODS) &&
+-		  (fc & IEEE80211_FCTL_FROMDS)) ? 30 : 24)))->field.tid;
+-}
 -
--EXPORT_SYMBOL(ieee80211_crypt_deinit_entries);
--EXPORT_SYMBOL(ieee80211_crypt_deinit_handler);
--EXPORT_SYMBOL(ieee80211_crypt_delayed_deinit);
--
--EXPORT_SYMBOL(ieee80211_register_crypto_ops);
--EXPORT_SYMBOL(ieee80211_unregister_crypto_ops);
--EXPORT_SYMBOL(ieee80211_get_crypto_ops);
--
--module_init(ieee80211_crypto_init);
--module_exit(ieee80211_crypto_deinit);
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_ccmp.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_ccmp.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_ccmp.c
-@@ -473,19 +473,12 @@ static struct ieee80211_crypto_ops ieee8
- 	.owner			= THIS_MODULE,
- };
- 
--
--static int __init ieee80211_crypto_ccmp_init(void)
-+int __init ieee80211_crypto_ccmp_init(void)
- {
- 	return ieee80211_register_crypto_ops(&ieee80211_crypt_ccmp);
- }
- 
--
--static void __exit ieee80211_crypto_ccmp_exit(void)
-+void __exit ieee80211_crypto_ccmp_exit(void)
- {
- 	ieee80211_unregister_crypto_ops(&ieee80211_crypt_ccmp);
- }
--
--EXPORT_SYMBOL(ieee80211_ccmp_null);
--
--module_init(ieee80211_crypto_ccmp_init);
--module_exit(ieee80211_crypto_ccmp_exit);
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_tkip.c
-@@ -779,14 +779,12 @@ static struct ieee80211_crypto_ops ieee8
- 	.owner		        = THIS_MODULE,
- };
- 
--
--static int __init ieee80211_crypto_tkip_init(void)
-+int __init ieee80211_crypto_tkip_init(void)
- {
- 	return ieee80211_register_crypto_ops(&ieee80211_crypt_tkip);
- }
- 
--
--static void __exit ieee80211_crypto_tkip_exit(void)
-+void __exit ieee80211_crypto_tkip_exit(void)
- {
- 	ieee80211_unregister_crypto_ops(&ieee80211_crypt_tkip);
- }
-@@ -796,7 +794,3 @@ void ieee80211_tkip_null(void)
- //    printk("============>%s()\n", __FUNCTION__);
-         return;
- }
--EXPORT_SYMBOL(ieee80211_tkip_null);
--
--module_init(ieee80211_crypto_tkip_init);
--module_exit(ieee80211_crypto_tkip_exit);
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_wep.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_wep.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_crypt_wep.c
-@@ -283,14 +283,12 @@ static struct ieee80211_crypto_ops ieee8
- 	.owner			= THIS_MODULE,
- };
- 
--
--static int __init ieee80211_crypto_wep_init(void)
-+int __init ieee80211_crypto_wep_init(void)
- {
- 	return ieee80211_register_crypto_ops(&ieee80211_crypt_wep);
- }
- 
--
--static void __exit ieee80211_crypto_wep_exit(void)
-+void __exit ieee80211_crypto_wep_exit(void)
- {
- 	ieee80211_unregister_crypto_ops(&ieee80211_crypt_wep);
- }
-@@ -300,7 +298,3 @@ void ieee80211_wep_null(void)
- //	printk("============>%s()\n", __FUNCTION__);
-         return;
- }
--EXPORT_SYMBOL(ieee80211_wep_null);
--
--module_init(ieee80211_crypto_wep_init);
--module_exit(ieee80211_crypto_wep_exit);
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
-@@ -287,7 +287,7 @@ static int store_debug_level(struct file
- 	return strnlen(buf, count);
- }
- 
--static int __init ieee80211_init(void)
-+int __init ieee80211_debug_init(void)
- {
- 	struct proc_dir_entry *e;
- 
-@@ -313,7 +313,7 @@ static int __init ieee80211_init(void)
- 	return 0;
- }
- 
--static void __exit ieee80211_exit(void)
-+void __exit ieee80211_debug_exit(void)
- {
- 	if (ieee80211_proc) {
- 		remove_proc_entry("debug_level", ieee80211_proc);
-@@ -325,11 +325,4 @@ static void __exit ieee80211_exit(void)
- #include <linux/moduleparam.h>
- module_param(debug, int, 0444);
- MODULE_PARM_DESC(debug, "debug output mask");
--
--
--module_exit(ieee80211_exit);
--module_init(ieee80211_init);
+ struct eapol {
+ 	u8 snap[6];
+ 	u16 ethertype;
+@@ -1196,12 +989,6 @@ struct	ether_header {
+ #define	ETHERTYPE_IP	0x0800		/* IP protocol */
  #endif
--
--EXPORT_SYMBOL(alloc_ieee80211);
--EXPORT_SYMBOL(free_ieee80211);
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
-@@ -2703,6 +2703,3 @@ void ieee80211_rx_mgt(struct ieee80211_d
  
- 	}
- }
+-enum {
+-	ERP_NonERPpresent	= 1,
+-	ERP_UseProtection	= 2,
+-	ERP_BarkerPreambleMode	= 4,
+-};
 -
--EXPORT_SYMBOL(ieee80211_rx_mgt);
--EXPORT_SYMBOL(ieee80211_rx);
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-@@ -3240,25 +3240,3 @@ void notify_wx_assoc_event(struct ieee80
- 		memset(wrqu.ap_addr.sa_data, 0, ETH_ALEN);
- 	wireless_send_event(ieee->dev, SIOCGIWAP, &wrqu, NULL);
- }
--
--EXPORT_SYMBOL(ieee80211_get_beacon);
--EXPORT_SYMBOL(ieee80211_wake_queue);
--EXPORT_SYMBOL(ieee80211_stop_queue);
--EXPORT_SYMBOL(ieee80211_reset_queue);
--EXPORT_SYMBOL(ieee80211_softmac_stop_protocol);
--EXPORT_SYMBOL(ieee80211_softmac_start_protocol);
--EXPORT_SYMBOL(ieee80211_is_shortslot);
--EXPORT_SYMBOL(ieee80211_is_54g);
--EXPORT_SYMBOL(ieee80211_wpa_supplicant_ioctl);
--EXPORT_SYMBOL(ieee80211_ps_tx_ack);
--EXPORT_SYMBOL(ieee80211_softmac_xmit);
--EXPORT_SYMBOL(ieee80211_stop_send_beacons);
--EXPORT_SYMBOL(notify_wx_assoc_event);
--EXPORT_SYMBOL(SendDisassociation);
--EXPORT_SYMBOL(ieee80211_disassociate);
--EXPORT_SYMBOL(ieee80211_start_send_beacons);
--EXPORT_SYMBOL(ieee80211_stop_scan);
--EXPORT_SYMBOL(ieee80211_send_probe_requests);
--EXPORT_SYMBOL(ieee80211_softmac_scan_syncro);
--EXPORT_SYMBOL(ieee80211_start_scan_syncro);
--//EXPORT_SYMBOL(ieee80211_sta_ps_send_null_frame);
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac_wx.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac_wx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac_wx.c
-@@ -623,22 +623,3 @@ exit:
- 	return ret;
+ struct ieee80211_network {
+ 	/* These entries are used to identify a unique network */
+ 	u8 bssid[ETH_ALEN];
+@@ -1337,129 +1124,6 @@ typedef struct tx_pending_t{
+ 	struct ieee80211_txb *txb;
+ }tx_pending_t;
  
- }
+-struct bandwidth_autoswitch {
+-	long threshold_20Mhzto40Mhz;
+-	long threshold_40Mhzto20Mhz;
+-	bool bforced_tx20Mhz;
+-	bool bautoswitch_enable;
+-};
 -
--EXPORT_SYMBOL(ieee80211_wx_get_essid);
--EXPORT_SYMBOL(ieee80211_wx_set_essid);
--EXPORT_SYMBOL(ieee80211_wx_set_rate);
--EXPORT_SYMBOL(ieee80211_wx_get_rate);
--EXPORT_SYMBOL(ieee80211_wx_set_wap);
--EXPORT_SYMBOL(ieee80211_wx_get_wap);
--EXPORT_SYMBOL(ieee80211_wx_set_mode);
--EXPORT_SYMBOL(ieee80211_wx_get_mode);
--EXPORT_SYMBOL(ieee80211_wx_set_scan);
--EXPORT_SYMBOL(ieee80211_wx_get_freq);
--EXPORT_SYMBOL(ieee80211_wx_set_freq);
--EXPORT_SYMBOL(ieee80211_wx_set_rawtx);
--EXPORT_SYMBOL(ieee80211_wx_get_name);
--EXPORT_SYMBOL(ieee80211_wx_set_power);
--EXPORT_SYMBOL(ieee80211_wx_get_power);
--EXPORT_SYMBOL(ieee80211_wlan_frequencies);
--EXPORT_SYMBOL(ieee80211_wx_set_rts);
--EXPORT_SYMBOL(ieee80211_wx_get_rts);
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c
-@@ -927,5 +927,3 @@ int ieee80211_xmit(struct sk_buff *skb, 
- 	return 1;
+-#define REORDER_WIN_SIZE	128
+-#define REORDER_ENTRY_NUM	128
+-typedef struct _RX_REORDER_ENTRY
+-{
+-	struct list_head	List;
+-	u16			SeqNum;
+-	struct ieee80211_rxb* prxb;
+-} RX_REORDER_ENTRY, *PRX_REORDER_ENTRY;
+-
+-typedef enum _Fsync_State{
+-	Default_Fsync,
+-	HW_Fsync,
+-	SW_Fsync
+-} Fsync_State;
+-
+-/* Power save mode configured. */
+-typedef enum _RT_PS_MODE {
+-	eActive,	/* Active/Continuous access. */
+-	eMaxPs,		/* Max power save mode. */
+-	eFastPs		/* Fast power save mode. */
+-} RT_PS_MODE;
+-
+-typedef enum _IPS_CALLBACK_FUNCION {
+-	IPS_CALLBACK_NONE = 0,
+-	IPS_CALLBACK_MGNT_LINK_REQUEST = 1,
+-	IPS_CALLBACK_JOIN_REQUEST = 2,
+-} IPS_CALLBACK_FUNCION;
+-
+-typedef enum _RT_JOIN_ACTION {
+-	RT_JOIN_INFRA = 1,
+-	RT_JOIN_IBSS  = 2,
+-	RT_START_IBSS = 3,
+-	RT_NO_ACTION  = 4,
+-} RT_JOIN_ACTION;
+-
+-struct ibss_parms {
+-	u16 atimWin;
+-};
+-
+-/* Max num of support rates element: 8,  Max num of ext. support rate: 255. */
+-#define MAX_NUM_RATES	264
+-
+-typedef enum _RT_RF_POWER_STATE {
+-	eRfOn,
+-	eRfSleep,
+-	eRfOff
+-} RT_RF_POWER_STATE;
+-
+-struct rt_power_save_control {
+-	/* Inactive Power Save (IPS): disable RF when disconnected */
+-	bool			bInactivePs;
+-	bool			bIPSModeBackup;
+-	bool			bHaltAdapterClkRQ;
+-	bool			bSwRfProcessing;
+-	RT_RF_POWER_STATE	eInactivePowerState;
+-	struct work_struct 	InactivePsWorkItem;
+-	struct timer_list	InactivePsTimer;
+-
+-	/* return point for join action */
+-	IPS_CALLBACK_FUNCION	ReturnPoint;
+-
+-	/* Recored Parameters for rescheduled JoinRequest */
+-	bool			bTmpBssDesc;
+-	RT_JOIN_ACTION		tmpJoinAction;
+-	struct ieee80211_network tmpBssDesc;
+-
+-	/* Recored Parameters for rescheduled MgntLinkRequest */
+-	bool			bTmpScanOnly;
+-	bool			bTmpActiveScan;
+-	bool			bTmpFilterHiddenAP;
+-	bool			bTmpUpdateParms;
+-	u8			tmpSsidBuf[33];
+-	OCTET_STRING		tmpSsid2Scan;
+-	bool			bTmpSsid2Scan;
+-	u8			tmpNetworkType;
+-	u8			tmpChannelNumber;
+-	u16			tmpBcnPeriod;
+-	u8			tmpDtimPeriod;
+-	u16			tmpmCap;
+-	OCTET_STRING		tmpSuppRateSet;
+-	u8			tmpSuppRateBuf[MAX_NUM_RATES];
+-	bool			bTmpSuppRate;
+-	struct ibss_parms	tmpIbpm;
+-	bool			bTmpIbpm;
+-
+-	/* Leisre Poswer Save: disable RF if connected but traffic isn't busy */
+-	bool			bLeisurePs;
+-	u32			PowerProfile;
+-	u8			LpsIdleCount;
+-	u8			RegMaxLPSAwakeIntvl;
+-	u8			LPSAwakeIntvl;
+-
+-	/* RF OFF Level */
+-	u32			CurPsLevel;
+-	u32			RegRfPsLevel;
+-
+-	/* Fw Control LPS */
+-	bool			bFwCtrlLPS;
+-	u8			FWCtrlPSMode;
+-
+-	/* Record if there is a link request in IPS RF off progress. */
+-	bool			LinkReqInIPSRFOffPgs;
+-	/*
+-	 * To make sure that connect info should be executed, so we set the
+-	 * bit to filter the link info which comes after the connect info.
+-	 */
+-	bool			BufConnectinfoBefore;
+-};
+-
+-enum {
+-	RF_CHANGE_BY_SW		= BIT31,
+-	RF_CHANGE_BY_HW		= BIT30,
+-	RF_CHANGE_BY_PS		= BIT29,
+-	RF_CHANGE_BY_IPS	= BIT28,
+-};
+-
+ enum {
+ 	COUNTRY_CODE_FCC = 0,
+ 	COUNTRY_CODE_IC = 1,
+@@ -1474,47 +1138,7 @@ enum {
+ 	COUNTRY_CODE_GLOBAL_DOMAIN
+ };
  
- }
+-/* Firmware related CMD IO. */
+-typedef enum _FW_CMD_IO_TYPE {
+-	FW_CMD_DIG_ENABLE = 0,		/* for DIG DM */
+-	FW_CMD_DIG_DISABLE = 1,
+-	FW_CMD_DIG_HALT = 2,
+-	FW_CMD_DIG_RESUME = 3,
+-	FW_CMD_HIGH_PWR_ENABLE = 4,	/* for High Power DM */
+-	FW_CMD_HIGH_PWR_DISABLE = 5,
+-	FW_CMD_RA_RESET = 6,		/* for Rate adaptive DM */
+-	FW_CMD_RA_ACTIVE = 7,
+-	FW_CMD_RA_REFRESH_N = 8,
+-	FW_CMD_RA_REFRESH_BG = 9,
+-	FW_CMD_IQK_ENABLE = 10,		/* for FW supported IQK */
+-	FW_CMD_TXPWR_TRACK_ENABLE = 11,	/* Tx power tracking switch */
+-	FW_CMD_TXPWR_TRACK_DISABLE = 12,/* Tx power tracking switch */
+-	FW_CMD_PAUSE_DM_BY_SCAN = 13,
+-	FW_CMD_RESUME_DM_BY_SCAN = 14,
+-	FW_CMD_MID_HIGH_PWR_ENABLE = 15,
+-	/* indicate firmware that driver enters LPS, for PS-Poll hardware bug */
+-	FW_CMD_LPS_ENTER = 16,
+-	/* indicate firmware that driver leave LPS */
+-	FW_CMD_LPS_LEAVE = 17,
+-} FW_CMD_IO_TYPE;
 -
--EXPORT_SYMBOL(ieee80211_txb_free);
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_wx.c
-@@ -851,12 +851,3 @@ int ieee80211_wx_set_gen_ie(struct ieee8
+-#define RT_MAX_LD_SLOT_NUM	10
+-struct rt_link_detect {
+-	u32	NumRecvBcnInPeriod;
+-	u32	NumRecvDataInPeriod;
+-
+-	/* number of Rx beacon / CheckForHang_period to determine link status */
+-	u32	RxBcnNum[RT_MAX_LD_SLOT_NUM];
+-	/* number of Rx data / CheckForHang_period to determine link status */
+-	u32	RxDataNum[RT_MAX_LD_SLOT_NUM];
+-	/* number of CheckForHang period to determine link status */
+-	u16	SlotNum;
+-	u16	SlotIndex;
+-
+-	u32	NumTxOkInPeriod;
+-	u32	NumRxOkInPeriod;
+-	bool	bBusyTraffic;
+-};
++#include "ieee80211_r8192s.h"
  
- }
- #endif
--
--EXPORT_SYMBOL(ieee80211_wx_set_gen_ie);
--EXPORT_SYMBOL(ieee80211_wx_set_mlme);
--EXPORT_SYMBOL(ieee80211_wx_set_auth);
--EXPORT_SYMBOL(ieee80211_wx_set_encode_ext);
--EXPORT_SYMBOL(ieee80211_wx_get_encode_ext);
--EXPORT_SYMBOL(ieee80211_wx_get_scan);
--EXPORT_SYMBOL(ieee80211_wx_set_encode);
--EXPORT_SYMBOL(ieee80211_wx_get_encode);
-Index: b/drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c
-+++ b/drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c
-@@ -1760,5 +1760,3 @@ void HTSetConnectBwModeCallback(struct i
+ struct ieee80211_device {
+ 	struct net_device *dev;
+@@ -2241,61 +1865,6 @@ extern int ieee80211_wx_get_rts(struct i
+ 			     struct iw_request_info *info,
+ 			     union iwreq_data *wrqu, char *extra);
  
- 	pHTInfo->bSwBwInProgress = false;
- }
+-/* HT */
+-#define MAX_RECEIVE_BUFFER_SIZE 9100
+-extern void HTDebugHTCapability(u8 *CapIE, u8 *TitleString);
+-extern void HTDebugHTInfo(u8 *InfoIE, u8 *TitleString);
 -
--EXPORT_SYMBOL(HTUpdateSelfAndPeerSetting);
-Index: b/drivers/staging/rtl8192su/ieee80211/rtl819x_TSProc.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/rtl819x_TSProc.c
-+++ b/drivers/staging/rtl8192su/ieee80211/rtl819x_TSProc.c
-@@ -633,5 +633,3 @@ void TsStartAddBaProcess(struct ieee8021
- 	else
- 		IEEE80211_DEBUG(IEEE80211_DL_ERR, "%s()==>BA timer is already added\n", __FUNCTION__);
- }
+-extern void HTSetConnectBwMode(struct ieee80211_device *ieee,
+-			       HT_CHANNEL_WIDTH Bandwidth,
+-			       HT_EXTCHNL_OFFSET Offset);
+-extern void HTUpdateDefaultSetting(struct ieee80211_device *ieee);
+-extern void HTConstructCapabilityElement(struct ieee80211_device *ieee,
+-					 u8 *posHTCap, u8 *len, u8 isEncrypt);
+-extern void HTConstructInfoElement(struct ieee80211_device *ieee,
+-				   u8 *posHTInfo, u8 *len, u8 isEncrypt);
+-extern void HTConstructRT2RTAggElement(struct ieee80211_device *ieee,
+-				       u8 *posRT2RTAgg, u8 *len);
+-extern void HTOnAssocRsp(struct ieee80211_device *ieee);
+-extern void HTInitializeHTInfo(struct ieee80211_device *ieee);
+-extern void HTInitializeBssDesc(PBSS_HT pBssHT);
+-extern void HTResetSelfAndSavePeerSetting(struct ieee80211_device *ieee,
+-					  struct ieee80211_network *pNetwork);
+-extern void HTUpdateSelfAndPeerSetting(struct ieee80211_device *ieee,
+-				       struct ieee80211_network *pNetwork);
+-extern u8 HTGetHighestMCSRate(struct ieee80211_device *ieee, u8 *pMCSRateSet,
+-			      u8 *pMCSFilter);
+-extern u8 MCS_FILTER_ALL[];
+-extern u16 MCS_DATA_RATE[2][2][77] ;
+-extern u8 HTCCheck(struct ieee80211_device *ieee, u8 *pFrame);
+-extern void HTResetIOTSetting(PRT_HIGH_THROUGHPUT pHTInfo);
+-extern bool IsHTHalfNmodeAPs(struct ieee80211_device *ieee);
+-extern u16 HTHalfMcsToDataRate(struct ieee80211_device *ieee, u8 nMcsRate);
+-extern u16 HTMcsToDataRate(struct ieee80211_device *ieee, u8 nMcsRate);
+-extern u16  TxCountToDataRate(struct ieee80211_device *ieee, u8 nDataRate);
+-extern int ieee80211_rx_ADDBAReq(struct ieee80211_device *ieee,
+-				 struct sk_buff *skb);
+-extern int ieee80211_rx_ADDBARsp(struct ieee80211_device *ieee,
+-				 struct sk_buff *skb);
+-extern int ieee80211_rx_DELBA(struct ieee80211_device *ieee,
+-			      struct sk_buff *skb);
+-extern void TsInitAddBA(struct ieee80211_device *ieee, PTX_TS_RECORD pTS,
+-			u8 Policy, u8 bOverwritePending);
+-extern void TsInitDelBA(struct ieee80211_device *ieee,
+-			PTS_COMMON_INFO pTsCommonInfo, TR_SELECT TxRxSelect);
+-extern void BaSetupTimeOut(unsigned long data);
+-extern void TxBaInactTimeout(unsigned long data);
+-extern void RxBaInactTimeout(unsigned long data);
+-extern void ResetBaEntry( PBA_RECORD pBA);
+-extern bool GetTs(struct ieee80211_device *ieee, PTS_COMMON_INFO *ppTS,
+-		  u8 *Addr, u8 TID, TR_SELECT TxRxSelect,  /* Rx:1, Tx:0 */
+-		  bool bAddNewTs);
+-extern void TSInitialize(struct ieee80211_device *ieee);
+-extern void TsStartAddBaProcess(struct ieee80211_device *ieee,
+-				PTX_TS_RECORD pTxTS);
+-extern void RemovePeerTS(struct ieee80211_device *ieee, u8 *Addr);
+-extern void RemoveAllTS(struct ieee80211_device *ieee);
 -
--EXPORT_SYMBOL(RemovePeerTS);
-Index: b/drivers/staging/rtl8192su/r8192U_core.c
-===================================================================
---- a/drivers/staging/rtl8192su/r8192U_core.c
-+++ b/drivers/staging/rtl8192su/r8192U_core.c
-@@ -7548,8 +7548,55 @@ static void __devexit rtl8192_usb_discon
- 	RT_TRACE(COMP_DOWN, "wlan driver removed\n");
- }
+ extern void ieee80211_softmac_scan_syncro(struct ieee80211_device *ieee);
  
-+/* fun with the built-in ieee80211 stack... */
-+extern int ieee80211_debug_init(void);
-+extern void ieee80211_debug_exit(void);
-+extern int ieee80211_crypto_init(void);
-+extern void ieee80211_crypto_deinit(void);
-+extern int ieee80211_crypto_tkip_init(void);
-+extern void ieee80211_crypto_tkip_exit(void);
-+extern int ieee80211_crypto_ccmp_init(void);
-+extern void ieee80211_crypto_ccmp_exit(void);
-+extern int ieee80211_crypto_wep_init(void);
-+extern void ieee80211_crypto_wep_exit(void);
+ extern const long ieee80211_wlan_frequencies[];
+Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_r8192s.h
+===================================================================
+--- /dev/null
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_r8192s.h
+@@ -0,0 +1,436 @@
++#ifndef __IEEE80211_R8192S_H
++#define __IEEE80211_R8192S_H
 +
- static int __init rtl8192_usb_module_init(void)
- {
-+	int ret;
++/* added for rtl819x tx procedure */
++#define MAX_QUEUE_SIZE		0x10
 +
-+#ifdef CONFIG_IEEE80211_DEBUG
-+	ret = ieee80211_debug_init();
-+	if (ret) {
-+		printk(KERN_ERR "ieee80211_debug_init() failed %d\n", ret);
-+		return ret;
-+	}
-+#endif
-+	ret = ieee80211_crypto_init();
-+	if (ret) {
-+		printk(KERN_ERR "ieee80211_crypto_init() failed %d\n", ret);
-+		return ret;
-+	}
++/* 8190 queue mapping */
++enum {
++	BK_QUEUE	= 0,
++	BE_QUEUE	= 1,
++	VI_QUEUE	= 2,
++	VO_QUEUE	= 3,
++	HCCA_QUEUE	= 4,
++	TXCMD_QUEUE	= 5,
++	MGNT_QUEUE	= 6,
++	HIGH_QUEUE	= 7,
++	BEACON_QUEUE	= 8,
 +
-+	ret = ieee80211_crypto_tkip_init();
-+	if (ret) {
-+		printk(KERN_ERR "ieee80211_crypto_tkip_init() failed %d\n",
-+			ret);
-+		return ret;
-+	}
++	LOW_QUEUE	= BE_QUEUE,
++	NORMAL_QUEUE	= MGNT_QUEUE
++};
 +
-+	ret = ieee80211_crypto_ccmp_init();
-+	if (ret) {
-+		printk(KERN_ERR "ieee80211_crypto_ccmp_init() failed %d\n",
-+			ret);
-+		return ret;
-+	}
++#define SWRF_TIMEOUT		50
 +
-+	ret = ieee80211_crypto_wep_init();
-+	if (ret) {
-+		printk(KERN_ERR "ieee80211_crypto_wep_init() failed %d\n", ret);
-+		return ret;
-+	}
++/* LEAP related */
++/* Flag byte: byte 8, numbered from 0. */
++#define IE_CISCO_FLAG_POSITION		0x08
++#define SUPPORT_CKIP_MIC		0x08	/* bit3 */
++#define SUPPORT_CKIP_PK			0x10	/* bit4 */
 +
- 	printk(KERN_INFO "\nLinux kernel driver for RTL8192 based WLAN cards\n");
- 	printk(KERN_INFO "Copyright (c) 2007-2008, Realsil Wlan\n");
- 	RT_TRACE(COMP_INIT, "Initializing module");
-@@ -7565,6 +7612,14 @@ static void __exit rtl8192_usb_module_ex
- 
- 	RT_TRACE(COMP_DOWN, "Exiting");
- 	rtl8192_proc_module_remove();
++/* defined for skb cb field, at most 28 byte */
++typedef struct cb_desc {
++	/* Tx Desc Related flags (8-9) */
++	u8 bLastIniPkt:1;
++	u8 bCmdOrInit:1;
++	u8 bFirstSeg:1;
++	u8 bLastSeg:1;
++	u8 bEncrypt:1;
++	u8 bTxDisableRateFallBack:1;
++	u8 bTxUseDriverAssingedRate:1;
++	u8 bHwSec:1; /* indicate whether use Hw security */
 +
-+	ieee80211_crypto_tkip_exit();
-+	ieee80211_crypto_ccmp_exit();
-+	ieee80211_crypto_wep_exit();
-+	ieee80211_crypto_deinit();
-+#ifdef CONFIG_IEEE80211_DEBUG
-+	ieee80211_debug_exit();
-+#endif
- }
- 
- 
++	u8 reserved1;
++
++	/* Tx Firmware Relaged flags (10-11) */
++	u8 bCTSEnable:1;
++	u8 bRTSEnable:1;
++	u8 bUseShortGI:1;
++	u8 bUseShortPreamble:1;
++	u8 bTxEnableFwCalcDur:1;
++	u8 bAMPDUEnable:1;
++	u8 bRTSSTBC:1;
++	u8 RTSSC:1;
++
++	u8 bRTSBW:1;
++	u8 bPacketBW:1;
++	u8 bRTSUseShortPreamble:1;
++	u8 bRTSUseShortGI:1;
++	u8 bMulticast:1;
++	u8 bBroadcast:1;
++	u8 drv_agg_enable:1;
++	u8 reserved2:1;
++
++	/* Tx Desc related element(12-19) */
++	u8 rata_index;
++	u8 queue_index;
++	u16 txbuf_size;
++	u8 RATRIndex;
++	u8 reserved6;
++	u8 reserved7;
++	u8 reserved8;
++
++	/* Tx firmware related element(20-27) */
++	u8 data_rate;
++	u8 rts_rate;
++	u8 ampdu_factor;
++	u8 ampdu_density;
++	u8 DrvAggrNum;
++	u16 pkt_size;
++	u8 reserved12;
++} cb_desc, *pcb_desc;
++
++enum {
++	MGN_1M		= 0x02,
++	MGN_2M		= 0x04,
++	MGN_5_5M	= 0x0b,
++	MGN_11M		= 0x16,
++
++	MGN_6M		= 0x0c,
++	MGN_9M		= 0x12,
++	MGN_12M		= 0x18,
++	MGN_18M		= 0x24,
++	MGN_24M		= 0x30,
++	MGN_36M		= 0x48,
++	MGN_48M		= 0x60,
++	MGN_54M		= 0x6c,
++
++	MGN_MCS0	= 0x80,
++	MGN_MCS1	= 0x81,
++	MGN_MCS2	= 0x82,
++	MGN_MCS3	= 0x83,
++	MGN_MCS4	= 0x84,
++	MGN_MCS5	= 0x85,
++	MGN_MCS6	= 0x86,
++	MGN_MCS7	= 0x87,
++	MGN_MCS8	= 0x88,
++	MGN_MCS9	= 0x89,
++	MGN_MCS10	= 0x8a,
++	MGN_MCS11	= 0x8b,
++	MGN_MCS12	= 0x8c,
++	MGN_MCS13	= 0x8d,
++	MGN_MCS14	= 0x8e,
++	MGN_MCS15	= 0x8f,
++
++	MGN_MCS0_SG	= 0x90,
++	MGN_MCS1_SG	= 0x91,
++	MGN_MCS2_SG	= 0x92,
++	MGN_MCS3_SG	= 0x93,
++	MGN_MCS4_SG	= 0x94,
++	MGN_MCS5_SG	= 0x95,
++	MGN_MCS6_SG	= 0x96,
++	MGN_MCS7_SG	= 0x97,
++	MGN_MCS8_SG	= 0x98,
++	MGN_MCS9_SG	= 0x99,
++	MGN_MCS10_SG	= 0x9a,
++	MGN_MCS11_SG	= 0x9b,
++	MGN_MCS12_SG	= 0x9c,
++	MGN_MCS13_SG	= 0x9d,
++	MGN_MCS14_SG	= 0x9e,
++	MGN_MCS15_SG	= 0x9f,
++};
++
++#define FC_QOS_BIT		BIT7
++
++#define IsDataFrame(pdu)	(((pdu[0] & 0x0C) == 0x08) ? true : false)
++#define IsLegacyDataFrame(pdu)	(IsDataFrame(pdu) && (!(pdu[0] & FC_QOS_BIT)))
++#define IsQoSDataFrame(pframe) \
++	((*(u16 *)pframe & (IEEE80211_STYPE_QOS_DATA | IEEE80211_FTYPE_DATA)) \
++	 == (IEEE80211_STYPE_QOS_DATA | IEEE80211_FTYPE_DATA))
++
++#define Frame_Order(pframe)	(*(u16 *)pframe & IEEE80211_FCTL_ORDER)
++
++#define SN_LESS(a, b)		(((a - b) & 0x800) != 0)
++#define SN_EQUAL(a, b)		(a == b)
++
++#define MAX_DEV_ADDR_SIZE 8
++
++enum {
++	/* ACT_CATEGORY */
++	ACT_CAT_QOS	= 1,
++	ACT_CAT_DLS	= 2,
++	ACT_CAT_BA	= 3,
++	ACT_CAT_HT	= 7,
++	ACT_CAT_WMM	= 17,
++
++	/* TS_ACTION */
++	ACT_ADDTSREQ	= 0,
++	ACT_ADDTSRSP	= 1,
++	ACT_DELTS	= 2,
++	ACT_SCHEDULE	= 3,
++
++	/* BA_ACTION */
++	ACT_ADDBAREQ	= 0,
++	ACT_ADDBARSP	= 1,
++	ACT_DELBA	= 2,
++};
++
++/* InitialGainOpType */
++enum {
++	IG_Backup = 0,
++	IG_Restore,
++	IG_Max
++};
++
++typedef enum _LED_CTL_MODE {
++	LED_CTL_POWER_ON	 = 1,
++	LED_CTL_LINK		 = 2,
++	LED_CTL_NO_LINK		 = 3,
++	LED_CTL_TX		 = 4,
++	LED_CTL_RX		 = 5,
++	LED_CTL_SITE_SURVEY	 = 6,
++	LED_CTL_POWER_OFF	 = 7,
++	LED_CTL_START_TO_LINK	 = 8,
++	LED_CTL_START_WPS	 = 9,
++	LED_CTL_STOP_WPS	 = 10,
++	LED_CTL_START_WPS_BOTTON = 11,
++} LED_CTL_MODE;
++
++typedef union _frameqos {
++	u16 shortdata;
++	u8  chardata[2];
++	struct {
++		u16 tid:4;
++		u16 eosp:1;
++		u16 ack_policy:2;
++		u16 reserved:1;
++		u16 txop:8;
++	} field;
++} frameqos;
++
++static inline u8 Frame_QoSTID(u8 *buf)
++{
++	struct ieee80211_hdr_3addr *hdr = (struct ieee80211_hdr_3addr *)buf;
++	u16 fc = le16_to_cpu(hdr->frame_ctl);
++
++	return (u8)((frameqos *)(buf +
++		(((fc & IEEE80211_FCTL_TODS) &&
++		  (fc & IEEE80211_FCTL_FROMDS)) ? 30 : 24)))->field.tid;
++}
++
++enum {
++	ERP_NonERPpresent	= 1,
++	ERP_UseProtection	= 2,
++	ERP_BarkerPreambleMode	= 4,
++};
++
++struct bandwidth_autoswitch {
++	long threshold_20Mhzto40Mhz;
++	long threshold_40Mhzto20Mhz;
++	bool bforced_tx20Mhz;
++	bool bautoswitch_enable;
++};
++
++#define REORDER_WIN_SIZE	128
++#define REORDER_ENTRY_NUM	128
++typedef struct _RX_REORDER_ENTRY {
++	struct list_head	List;
++	u16			SeqNum;
++	struct ieee80211_rxb	*prxb;
++} RX_REORDER_ENTRY, *PRX_REORDER_ENTRY;
++
++typedef enum _Fsync_State{
++	Default_Fsync,
++	HW_Fsync,
++	SW_Fsync
++} Fsync_State;
++
++/* Power save mode configured. */
++typedef enum _RT_PS_MODE {
++	eActive,	/* Active/Continuous access. */
++	eMaxPs,		/* Max power save mode. */
++	eFastPs		/* Fast power save mode. */
++} RT_PS_MODE;
++
++typedef enum _IPS_CALLBACK_FUNCION {
++	IPS_CALLBACK_NONE = 0,
++	IPS_CALLBACK_MGNT_LINK_REQUEST = 1,
++	IPS_CALLBACK_JOIN_REQUEST = 2,
++} IPS_CALLBACK_FUNCION;
++
++typedef enum _RT_JOIN_ACTION {
++	RT_JOIN_INFRA = 1,
++	RT_JOIN_IBSS  = 2,
++	RT_START_IBSS = 3,
++	RT_NO_ACTION  = 4,
++} RT_JOIN_ACTION;
++
++struct ibss_parms {
++	u16 atimWin;
++};
++
++/* Max num of support rates element: 8,  Max num of ext. support rate: 255. */
++#define MAX_NUM_RATES	264
++
++typedef enum _RT_RF_POWER_STATE {
++	eRfOn,
++	eRfSleep,
++	eRfOff
++} RT_RF_POWER_STATE;
++
++struct rt_power_save_control {
++	/* Inactive Power Save (IPS): disable RF when disconnected */
++	bool			bInactivePs;
++	bool			bIPSModeBackup;
++	bool			bHaltAdapterClkRQ;
++	bool			bSwRfProcessing;
++	RT_RF_POWER_STATE	eInactivePowerState;
++	struct work_struct 	InactivePsWorkItem;
++	struct timer_list	InactivePsTimer;
++
++	/* return point for join action */
++	IPS_CALLBACK_FUNCION	ReturnPoint;
++
++	/* Recored Parameters for rescheduled JoinRequest */
++	bool			bTmpBssDesc;
++	RT_JOIN_ACTION		tmpJoinAction;
++	struct ieee80211_network tmpBssDesc;
++
++	/* Recored Parameters for rescheduled MgntLinkRequest */
++	bool			bTmpScanOnly;
++	bool			bTmpActiveScan;
++	bool			bTmpFilterHiddenAP;
++	bool			bTmpUpdateParms;
++	u8			tmpSsidBuf[33];
++	OCTET_STRING		tmpSsid2Scan;
++	bool			bTmpSsid2Scan;
++	u8			tmpNetworkType;
++	u8			tmpChannelNumber;
++	u16			tmpBcnPeriod;
++	u8			tmpDtimPeriod;
++	u16			tmpmCap;
++	OCTET_STRING		tmpSuppRateSet;
++	u8			tmpSuppRateBuf[MAX_NUM_RATES];
++	bool			bTmpSuppRate;
++	struct ibss_parms	tmpIbpm;
++	bool			bTmpIbpm;
++
++	/* Leisre Poswer Save: disable RF if connected but traffic isn't busy */
++	bool			bLeisurePs;
++	u32			PowerProfile;
++	u8			LpsIdleCount;
++	u8			RegMaxLPSAwakeIntvl;
++	u8			LPSAwakeIntvl;
++
++	/* RF OFF Level */
++	u32			CurPsLevel;
++	u32			RegRfPsLevel;
++
++	/* Fw Control LPS */
++	bool			bFwCtrlLPS;
++	u8			FWCtrlPSMode;
++
++	/* Record if there is a link request in IPS RF off progress. */
++	bool			LinkReqInIPSRFOffPgs;
++	/*
++	 * To make sure that connect info should be executed, so we set the
++	 * bit to filter the link info which comes after the connect info.
++	 */
++	bool			BufConnectinfoBefore;
++};
++
++enum {
++	RF_CHANGE_BY_SW		= BIT31,
++	RF_CHANGE_BY_HW		= BIT30,
++	RF_CHANGE_BY_PS		= BIT29,
++	RF_CHANGE_BY_IPS	= BIT28,
++};
++
++/* Firmware related CMD IO. */
++typedef enum _FW_CMD_IO_TYPE {
++	FW_CMD_DIG_ENABLE = 0,		/* for DIG DM */
++	FW_CMD_DIG_DISABLE = 1,
++	FW_CMD_DIG_HALT = 2,
++	FW_CMD_DIG_RESUME = 3,
++	FW_CMD_HIGH_PWR_ENABLE = 4,	/* for High Power DM */
++	FW_CMD_HIGH_PWR_DISABLE = 5,
++	FW_CMD_RA_RESET = 6,		/* for Rate adaptive DM */
++	FW_CMD_RA_ACTIVE = 7,
++	FW_CMD_RA_REFRESH_N = 8,
++	FW_CMD_RA_REFRESH_BG = 9,
++	FW_CMD_IQK_ENABLE = 10,		/* for FW supported IQK */
++	FW_CMD_TXPWR_TRACK_ENABLE = 11,	/* Tx power tracking switch */
++	FW_CMD_TXPWR_TRACK_DISABLE = 12,/* Tx power tracking switch */
++	FW_CMD_PAUSE_DM_BY_SCAN = 13,
++	FW_CMD_RESUME_DM_BY_SCAN = 14,
++	FW_CMD_MID_HIGH_PWR_ENABLE = 15,
++	/* indicate firmware that driver enters LPS, for PS-Poll hardware bug */
++	FW_CMD_LPS_ENTER = 16,
++	/* indicate firmware that driver leave LPS */
++	FW_CMD_LPS_LEAVE = 17,
++} FW_CMD_IO_TYPE;
++
++#define RT_MAX_LD_SLOT_NUM	10
++struct rt_link_detect {
++	u32	NumRecvBcnInPeriod;
++	u32	NumRecvDataInPeriod;
++
++	/* number of Rx beacon / CheckForHang_period to determine link status */
++	u32	RxBcnNum[RT_MAX_LD_SLOT_NUM];
++	/* number of Rx data / CheckForHang_period to determine link status */
++	u32	RxDataNum[RT_MAX_LD_SLOT_NUM];
++	/* number of CheckForHang period to determine link status */
++	u16	SlotNum;
++	u16	SlotIndex;
++
++	u32	NumTxOkInPeriod;
++	u32	NumRxOkInPeriod;
++	bool	bBusyTraffic;
++};
++
++/* HT */
++#define MAX_RECEIVE_BUFFER_SIZE 9100
++extern void HTDebugHTCapability(u8 *CapIE, u8 *TitleString);
++extern void HTDebugHTInfo(u8 *InfoIE, u8 *TitleString);
++
++extern void HTSetConnectBwMode(struct ieee80211_device *ieee,
++			       HT_CHANNEL_WIDTH Bandwidth,
++			       HT_EXTCHNL_OFFSET Offset);
++extern void HTUpdateDefaultSetting(struct ieee80211_device *ieee);
++extern void HTConstructCapabilityElement(struct ieee80211_device *ieee,
++					 u8 *posHTCap, u8 *len, u8 isEncrypt);
++extern void HTConstructInfoElement(struct ieee80211_device *ieee,
++				   u8 *posHTInfo, u8 *len, u8 isEncrypt);
++extern void HTConstructRT2RTAggElement(struct ieee80211_device *ieee,
++				       u8 *posRT2RTAgg, u8 *len);
++extern void HTOnAssocRsp(struct ieee80211_device *ieee);
++extern void HTInitializeHTInfo(struct ieee80211_device *ieee);
++extern void HTInitializeBssDesc(PBSS_HT pBssHT);
++extern void HTResetSelfAndSavePeerSetting(struct ieee80211_device *ieee,
++					  struct ieee80211_network *pNetwork);
++extern void HTUpdateSelfAndPeerSetting(struct ieee80211_device *ieee,
++				       struct ieee80211_network *pNetwork);
++extern u8 HTGetHighestMCSRate(struct ieee80211_device *ieee, u8 *pMCSRateSet,
++			      u8 *pMCSFilter);
++extern u8 MCS_FILTER_ALL[];
++extern u16 MCS_DATA_RATE[2][2][77] ;
++extern u8 HTCCheck(struct ieee80211_device *ieee, u8 *pFrame);
++extern void HTResetIOTSetting(PRT_HIGH_THROUGHPUT pHTInfo);
++extern bool IsHTHalfNmodeAPs(struct ieee80211_device *ieee);
++extern u16 HTHalfMcsToDataRate(struct ieee80211_device *ieee, u8 nMcsRate);
++extern u16 HTMcsToDataRate(struct ieee80211_device *ieee, u8 nMcsRate);
++extern u16  TxCountToDataRate(struct ieee80211_device *ieee, u8 nDataRate);
++extern int ieee80211_rx_ADDBAReq(struct ieee80211_device *ieee,
++				 struct sk_buff *skb);
++extern int ieee80211_rx_ADDBARsp(struct ieee80211_device *ieee,
++				 struct sk_buff *skb);
++extern int ieee80211_rx_DELBA(struct ieee80211_device *ieee,
++			      struct sk_buff *skb);
++extern void TsInitAddBA(struct ieee80211_device *ieee, PTX_TS_RECORD pTS,
++			u8 Policy, u8 bOverwritePending);
++extern void TsInitDelBA(struct ieee80211_device *ieee,
++			PTS_COMMON_INFO pTsCommonInfo, TR_SELECT TxRxSelect);
++extern void BaSetupTimeOut(unsigned long data);
++extern void TxBaInactTimeout(unsigned long data);
++extern void RxBaInactTimeout(unsigned long data);
++extern void ResetBaEntry(PBA_RECORD pBA);
++extern bool GetTs(struct ieee80211_device *ieee, PTS_COMMON_INFO *ppTS,
++		  u8 *Addr, u8 TID, TR_SELECT TxRxSelect,  /* Rx:1, Tx:0 */
++		  bool bAddNewTs);
++extern void TSInitialize(struct ieee80211_device *ieee);
++extern void TsStartAddBaProcess(struct ieee80211_device *ieee,
++				PTX_TS_RECORD pTxTS);
++extern void RemovePeerTS(struct ieee80211_device *ieee, u8 *Addr);
++extern void RemoveAllTS(struct ieee80211_device *ieee);
++
++#endif /* __IEEE80211_R8192S_H */
