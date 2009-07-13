@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbZGMQdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbZGMQej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756451AbZGMQdt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 12:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbZGMQds
+	id S1756561AbZGMQej (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 12:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbZGMQej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 12:33:48 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:55112 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755870AbZGMQds (ORCPT
+	Mon, 13 Jul 2009 12:34:39 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:45760 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756365AbZGMQei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 12:33:48 -0400
-Message-ID: <4A5B61DF.8090101@nortel.com>
-Date: Mon, 13 Jul 2009 10:33:35 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Raistlin <raistlin@linux.it>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       "James H. Anderson" <anderson@cs.unc.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-References: <200907102350.47124.henrik@austad.us>	 <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>	 <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>
-In-Reply-To: <1247499843.8107.548.camel@Palantir>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 13 Jul 2009 12:34:38 -0400
+Date: Mon, 13 Jul 2009 09:34:43 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for July 13 (staging/usbip)
+Message-Id: <20090713093443.4d3ecfb1.randy.dunlap@oracle.com>
+In-Reply-To: <20090713162511.GB22074@suse.de>
+References: <20090713180524.72f613dc.sfr@canb.auug.org.au>
+	<20090713085915.6bbd4879.randy.dunlap@oracle.com>
+	<20090713162511.GB22074@suse.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Jul 2009 16:33:37.0005 (UTC) FILETIME=[ABE209D0:01CA03D7]
+X-Source-IP: abhmt005.oracle.com [141.146.116.14]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A5B6213.00A4:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Raistlin wrote:
+On Mon, 13 Jul 2009 09:25:11 -0700 Greg KH wrote:
 
-> Very basically: from the analysis point of view one easy and effective
-> solution would be to have the blocked-running tasks --i.e., the tasks
-> blocked on some lock that have been left on the rq to proxy-execute the
-> lock owner-- busy waiting while the lock owner is running. This allows
-> for retaining a lot of nice properties BWI already has, as far as
-> analyzability is concerned.
+> On Mon, Jul 13, 2009 at 08:59:15AM -0700, Randy Dunlap wrote:
+> > On Mon, 13 Jul 2009 18:05:24 +1000 Stephen Rothwell wrote:
+> > 
+> > > Hi all,
+> > > 
+> > > Changes since 20090710:
+> > 
+> > 
+> > drivers/staging/usbip/usbip_common.c: In function 'usbip_thread':
+> > drivers/staging/usbip/usbip_common.c:386: error: implicit declaration of function 'lock_kernel'
+> > drivers/staging/usbip/usbip_common.c:390: error: implicit declaration of function 'unlock_kernel'
+> > 
+> > config attached.
 > 
-> On the other hand, from the practical end efficiency point of view, it
-> would be not that difficult to block these otherwise-spinning tasks, in
-> order to avoid wasting CPU time too much... The only important thing is
-> to properly account the budget of the correct server/group (which
-> probably must be the otherwise-spinning task's one), or the analysis is
-> gone again! :-O
+> Odd, that code has not changed at all.
+> 
+> Did we just loose the big kernel lock somehow?
 
-Could you elaborate on this "proper accounting"?
+I dunno.  Probably some header file cleanup thing.  :(
 
-If task A is blocked waiting for a lock (held by a task B on another
-cpu) and we run task C instead, how would you propose that the
-accounting be handled?
+Looks like only linux/smp_lock.h #defines it, but a driver shouldn't
+need to #include that file IMHO.
 
-Chris
+
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
