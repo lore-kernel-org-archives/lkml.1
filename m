@@ -1,84 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbZGMLV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZGMLaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbZGMLV0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 07:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbZGMLVX
+	id S1755454AbZGMLaV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 07:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbZGMLaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 07:21:23 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40167 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755339AbZGMLVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 07:21:23 -0400
-Date: Mon, 13 Jul 2009 13:21:15 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: Mark Lord <lkml@rtr.ca>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Subject: Re: Input driver for Twinhan USB 6253:0100 remote control
-In-Reply-To: <20090713113157.701ba027@neptune.home>
-Message-ID: <alpine.LNX.2.00.0907131316420.10476@wotan.suse.de>
-References: <20090408072935.GA27920@dtor-d630.eng.vmware.com> <200904131931.24009.dmitry.torokhov@gmail.com> <49E4B678.9030508@rtr.ca> <200904140945.14652.dmitry.torokhov@gmail.com> <49E4C9CF.5060504@rtr.ca> <alpine.LNX.2.00.0904151022170.13028@wotan.suse.de>
- <49E5EAD7.7000309@rtr.ca> <alpine.LNX.2.00.0904161123180.13028@wotan.suse.de> <20090712182026.7a09c736@neptune.home> <alpine.LNX.2.00.0907131048110.10476@wotan.suse.de> <20090713113157.701ba027@neptune.home>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Mon, 13 Jul 2009 07:30:20 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:48757 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbZGMLaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 07:30:19 -0400
+Date: Mon, 13 Jul 2009 12:30:18 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] mfd: Allow multiple MFD cells with the same name
+Message-ID: <20090713113017.GB24783@sirena.org.uk>
+References: <1246550798-9936-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-1772455402-1247483934=:10476"
-Content-ID: <alpine.LNX.2.00.0907131319470.10476@wotan.suse.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246550798-9936-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Cookie: Everyone is entitled to my opinion.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---168427776-1772455402-1247483934=:10476
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-Content-ID: <alpine.LNX.2.00.0907131319471.10476@wotan.suse.de>
-
-On Mon, 13 Jul 2009, Bruno Prémont wrote:
-
-> > > +	// set_bit(EV_REP, hi->input->evbit);
-> > Why is this commented out?
-> That was a remaining line from basing on hid-gyration.c Don't know what 
-> it does, looks like related to key repeating but I've not read enough of 
-> HID/Input code to find out. (all my tests were run with it commented 
-> out, so I will drop it unless there is a good reason to uncomment it)
-
-Yes, EV_REP is a flag which signals whether the keys produced by the 
-device in question should be auto-repreated.
-
-> With my patch it seems the mappings don't show up for EVIOCGKEYCODE:
+On Thu, Jul 02, 2009 at 05:06:38PM +0100, Mark Brown wrote:
+> Provide basic support for MFDs having multiple cells of a given
+> type with different IDs by adding an id to the mfd_cell structure
+> and then adding that to the id passed in to mfd_add_devices().
 > 
-> int codes[2];
-> for (codes[0] = 0; codes[0] < 1024; codes[0]++)
->   if (ioctl(evdev, EVIOCGKEYCODE, codes) >= 0) {
->     // display
->   } else
->     break;
+> As it stands this approach requires that MFDs using this feature
+> deal with ensuring that there aren't any ID collisions resulting
+> from multiple MFDs of the same type being instantiated. This needs
+> to happen with the existing code too, but with this approach there
+> is a knock on effect on the IDs for non-duplicated devices.
 > 
-> Code block above only displays for codes[0] == 0:
->  codes = { 0, 388 /* KEY_TEXT */ }
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+
+Samuel, do you have any thoughts on this patch?  As I said...
+
+> I'm not 100% convinced that this is the best way to do this but I can't
+> think of anything better
+
+...but it'd be really helpful to get some idea if this approach is going
+to be viable for some code I'm currently working on.
+
 > 
-> For all other values of codes[0] ioctl returns EINVAL.
+>  drivers/mfd/mfd-core.c   |    2 +-
+>  include/linux/mfd/core.h |    1 +
+>  2 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> Is this expected or should complete mapping table be returned
-> as it is for generic PS2 PC keyboard (if so, what changes does the
-> patch need for it)?
-
-The HID core's perception of scancode is the actual HID usage as reported 
-by the device, inlcuding the page number.
-
-I.e. for your device, the usages would be in 0x70004 - 0x70052 range, not 
-0-1024 (which is what your current code is checking for).
-
-Also, looking at the patch again -- could you please keep the usage 
-numbers sorted in the switch-case in twinhan_input_mapping(), so that it's 
-more readable and compatible with other drivers?
-
-Thanks,
+> diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
+> index 54ddf37..ae15e49 100644
+> --- a/drivers/mfd/mfd-core.c
+> +++ b/drivers/mfd/mfd-core.c
+> @@ -25,7 +25,7 @@ static int mfd_add_device(struct device *parent, int id,
+>  	int ret = -ENOMEM;
+>  	int r;
+>  
+> -	pdev = platform_device_alloc(cell->name, id);
+> +	pdev = platform_device_alloc(cell->name, id + cell->id);
+>  	if (!pdev)
+>  		goto fail_alloc;
+>  
+> diff --git a/include/linux/mfd/core.h b/include/linux/mfd/core.h
+> index 49ef857..11d740b 100644
+> --- a/include/linux/mfd/core.h
+> +++ b/include/linux/mfd/core.h
+> @@ -23,6 +23,7 @@
+>   */
+>  struct mfd_cell {
+>  	const char		*name;
+> +	int			id;
+>  
+>  	int			(*enable)(struct platform_device *dev);
+>  	int			(*disable)(struct platform_device *dev);
+> -- 
+> 1.6.3.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
 -- 
-Jiri Kosina
-SUSE Labs
---168427776-1772455402-1247483934=:10476--
+"You grabbed my hand and we fell into it, like a daydream - or a fever."
