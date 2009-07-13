@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbZGMVb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbZGMVdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757485AbZGMVb7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 17:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757362AbZGMVb7
+	id S1757544AbZGMVdN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 17:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbZGMVdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 17:31:59 -0400
-Received: from smtp102.sbc.mail.gq1.yahoo.com ([67.195.15.61]:36244 "HELO
-	smtp102.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757322AbZGMVb6 (ORCPT
+	Mon, 13 Jul 2009 17:33:10 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:52904 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757463AbZGMVdH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 17:31:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=DGtwQ3sUcuASlNfBaJ/65EZkKKYkQGUec8ds0P3nmrLbRsangn+DcUUtOcZYLYXYqUMKRqBKHLsxL22oQcPJgyHVUx/tcJI+jq7D3lnZ6CcJSgtDUp9RdgjUJFe4PfPlSlKRmnHRZLZDmJg77mqlE1snDdp5TGLEeu+h4AdQOKc=  ;
-X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
-X-YMail-OSG: 86du5U8VM1n9M5VfFweZOwFRw7zjaNiCS.475zCRUQzyn5PSzK0xlORbQwoEqwKuhFtAODm5qBZDpEEDCqXhGDSl81rP4NUDHYny3sqlgaE8t32VitfB4mogPSx1f2meuK7r7i.sTSv.eVjq1tkYMCYZZhfVcjMAfgLUtNlSk_VEedO_N6ROsCkrFKt_s93usJbyBLoaKfZfxpRLUKngSJ6TmWrKZGRYmZd_sFxvStvckosi6faf50h9eXvIH34C26KfvBk7Sp4bd3oi
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] move omap_udc's probe function to .devinit.text
-Date: Mon, 13 Jul 2009 14:31:54 -0700
-User-Agent: KMail/1.9.10
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Philipp Zabel <philipp.zabel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Lindgren <tony@atomide.com>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-References: <20090711170548.GC5205@suse.de> <200907121521.31188.david-b@pacbell.net> <20090713091034.GC10549@pengutronix.de>
-In-Reply-To: <20090713091034.GC10549@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200907131431.54233.david-b@pacbell.net>
+	Mon, 13 Jul 2009 17:33:07 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 2/2] NET: sungem, use spin_trylock_irqsave
+Date: Mon, 13 Jul 2009 23:23:40 +0200
+Message-Id: <1247520220-31960-2-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3.2
+In-Reply-To: <1247520220-31960-1-git-send-email-jirislaby@gmail.com>
+References: <1247520220-31960-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 July 2009, Uwe Kleine-König wrote:
-> > If it weren't a regression I wouldn't have objected.
-> 
-> IMHO my patches primarily fix possible oopses.  I see your point that
-> platform_driver_probe has some advantages, 
+Use spin_trylock_irqsave instead of open-coded
+local_irq_save+spin_trylock.
 
-The point is that your specific change caused a type
-of regresssion ... I said nothing about "advantages",
-just that your approach creates footprint regressions.
+Impact: cleanup
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/net/sungem.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-> 			but I consider it too
-> time-consuming to check for each of the initially 60+ patches when the
-> respecting devices are registered.
-
-As a rule, preventing regressions is part of the task
-description for any patch series.
-
-Now, accidents do happen.  But you had *ALREADY* gotten
-NAKs for many of these patches, specifically on the
-basis that they were causing these regressions.  You
-saved zero time by re-submitting known-broken patches.
+diff --git a/drivers/net/sungem.c b/drivers/net/sungem.c
+index d2dfe0a..22474a8 100644
+--- a/drivers/net/sungem.c
++++ b/drivers/net/sungem.c
+@@ -1032,10 +1032,8 @@ static int gem_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 			(csum_stuff_off << 21));
+ 	}
+ 
+-	local_irq_save(flags);
+-	if (!spin_trylock(&gp->tx_lock)) {
++	if (!spin_trylock_irqsave(&gp->tx_lock)) {
+ 		/* Tell upper layer to requeue */
+-		local_irq_restore(flags);
+ 		return NETDEV_TX_LOCKED;
+ 	}
+ 	/* We raced with gem_do_stop() */
+-- 
+1.6.3.2
 
