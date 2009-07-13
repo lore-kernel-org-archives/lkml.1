@@ -1,570 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZGMRzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbZGMRzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbZGMRzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756810AbZGMRzi
+	id S1755762AbZGMRzR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756455AbZGMRzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:55:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:11369 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756821AbZGMRze (ORCPT
+	Mon, 13 Jul 2009 13:55:16 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:56224 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756769AbZGMRzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:55:34 -0400
+	Mon, 13 Jul 2009 13:55:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=rfiKTFn8/mO2hn+SV6yGoz1RlRNTmqPMpsSIS3qQT5rzW0Sk0dz28PcYQsrf9O9k6m
-         KHWGICqG50FrTDFHiVuK+ETd0jQyuhAtmNVOZDAmukUzK0jSIr5ml+OyWsqPPF8VTzFc
-         rJv8qpchZeraQz06Uk8+3jD8TBumui3/dj7zA=
+        b=oe2PnEcfdkncfxcKiidCSEqD9oW/PFcOOoDy/cLLk9LAdZscuEyZC1yAYw1k9+LL+J
+         l8z+UJ1JTz0V8qNx0DKFYRWVjhzWzgGG23nIILKJQbPfrQVKzIUUd8VHKffiz7ttMIz2
+         r3zlHC1J5A6+GZwEsYkex+mJVYkvcPHV4w55Y=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 13 Jul 2009 20:02:10 +0200
-Message-Id: <20090713180210.15985.67637.sendpatchset@localhost.localdomain>
+Date: Mon, 13 Jul 2009 20:01:51 +0200
+Message-Id: <20090713180151.15985.12457.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090713180112.15985.88819.sendpatchset@localhost.localdomain>
 References: <20090713180112.15985.88819.sendpatchset@localhost.localdomain>
-Subject: [PATCH 09/10] Staging: rtl8187se/ieee80211: ieee80211.h reorderings
+Subject: [PATCH 06/10] Staging: rtl8187se: rename struct ieee80211_hdr_3addr_qos to struct ieee80211_hdr_3addrqos
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8187se/ieee80211: ieee80211.h reorderings
+Subject: [PATCH] Staging: rtl8187se: rename struct ieee80211_hdr_3addr_qos to struct ieee80211_hdr_3addrqos
 
-Reorder the code in ieee80211.h for easier comparisions with
-rtl8192su's version of the file.
-
-While at it:
-* use IEEE80211_4ADDR_LEN for IEEE80211_LEN definition
-* remove unused country_code_type_t typedef
-* make some minor coding style fixes
+Rename struct ieee80211_hdr_3addr_QOS to struct ieee80211_hdr_3addrqos
+and QOS_ctl field to qos_ctl (to match the naming used by rtl8192su).
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/ieee80211/ieee80211.h |  391 +++++++++++-------------
- 1 file changed, 193 insertions(+), 198 deletions(-)
+ drivers/staging/rtl8187se/TODO                     |    1 -
+ drivers/staging/rtl8187se/ieee80211/ieee80211.h    |    4 ++--
+ drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c |   20 +++++++++-----------
+ drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c |   21 +++++++++++----------
+ 4 files changed, 22 insertions(+), 24 deletions(-)
 
+Index: b/drivers/staging/rtl8187se/TODO
+===================================================================
+--- a/drivers/staging/rtl8187se/TODO
++++ b/drivers/staging/rtl8187se/TODO
+@@ -1,6 +1,5 @@
+ TODO:
+ - prepare private ieee80211 stack for merge with rtl8192su's version:
+-  - rename struct ieee80211_hdr_3addr_QOS to struct ieee80211_hdr_3addrqos
+   - rename struct ieee80211_hdr_QOS to struct ieee80211_hdr_4addrqos
+   - add hwsec_active flag to struct ieee80211_device
+   - add bHwSec flag to cb_desc structure
 Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
 ===================================================================
 --- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
 +++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
-@@ -133,102 +133,14 @@ typedef struct ieee_param {
-    represents the 2304 bytes of real data, plus a possible 8 bytes of
-    WEP IV and ICV. (this interpretation suggested by Ramiro Barreiro) */
+@@ -200,14 +200,14 @@ struct ieee80211_hdr_3addr {
+ 	u16 seq_ctl;
+ } __attribute__ ((packed));
  
--
--#define IEEE80211_HLEN			30
--#define IEEE80211_FRAME_LEN		(IEEE80211_DATA_LEN + IEEE80211_HLEN)
--
--/* this is stolen and modified from the madwifi driver*/
--#define IEEE80211_FC0_TYPE_MASK		0x0c
--#define IEEE80211_FC0_TYPE_DATA		0x08
--#define IEEE80211_FC0_SUBTYPE_MASK	0xB0
--#define IEEE80211_FC0_SUBTYPE_QOS	0x80
--
--#define IEEE80211_QOS_HAS_SEQ(fc) \
--	(((fc) & (IEEE80211_FC0_TYPE_MASK | IEEE80211_FC0_SUBTYPE_MASK)) == \
--	 (IEEE80211_FC0_TYPE_DATA | IEEE80211_FC0_SUBTYPE_QOS))
--
--/* this is stolen from ipw2200 driver */
--#define IEEE_IBSS_MAC_HASH_SIZE 31
--struct ieee_ibss_seq {
--	u8 mac[ETH_ALEN];
--	u16 seq_num[17];
--	u16 frag_num[17];
--	unsigned long packet_time[17];
--	struct list_head list;
--};
--
--struct ieee80211_hdr_4addr {
--	u16 frame_ctl;
--	u16 duration_id;
--	u8 addr1[ETH_ALEN];
--	u8 addr2[ETH_ALEN];
--	u8 addr3[ETH_ALEN];
--	u16 seq_ctl;
--	u8 addr4[ETH_ALEN];
--} __attribute__ ((packed));
--
--struct ieee80211_hdr_4addrqos {
--	u16 frame_ctl;
--	u16 duration_id;
--	u8 addr1[ETH_ALEN];
--	u8 addr2[ETH_ALEN];
--	u8 addr3[ETH_ALEN];
--	u16 seq_ctl;
--	u8 addr4[ETH_ALEN];
--	u16 qos_ctl;
--} __attribute__ ((packed));
--
--struct ieee80211_hdr_3addr {
--	u16 frame_ctl;
--	u16 duration_id;
--	u8 addr1[ETH_ALEN];
--	u8 addr2[ETH_ALEN];
--	u8 addr3[ETH_ALEN];
--	u16 seq_ctl;
--} __attribute__ ((packed));
--
--struct ieee80211_hdr_3addrqos {
--	u16 frame_ctl;
--	u16 duration_id;
--	u8 addr1[ETH_ALEN];
--	u8 addr2[ETH_ALEN];
--	u8 addr3[ETH_ALEN];
--	u16 seq_ctl;
--	u16 qos_ctl;
--} __attribute__ ((packed));
--
--enum eap_type {
--	EAP_PACKET = 0,
--	EAPOL_START,
--	EAPOL_LOGOFF,
--	EAPOL_KEY,
--	EAPOL_ENCAP_ASF_ALERT
--};
--
--static const char *eap_types[] = {
--	[EAP_PACKET]		= "EAP-Packet",
--	[EAPOL_START]		= "EAPOL-Start",
--	[EAPOL_LOGOFF]		= "EAPOL-Logoff",
--	[EAPOL_KEY]		= "EAPOL-Key",
--	[EAPOL_ENCAP_ASF_ALERT]	= "EAPOL-Encap-ASF-Alert"
--};
--
--static inline const char *eap_get_type(int type)
--{
--	return (type >= ARRAY_SIZE(eap_types)) ? "Unknown" : eap_types[type];
--}
--
--struct eapol {
--	u8 snap[6];
--	u16 ethertype;
--	u8 version;
--	u8 type;
--	u16 length;
--} __attribute__ ((packed));
--
- #define IEEE80211_3ADDR_LEN 24
- #define IEEE80211_4ADDR_LEN 30
- #define IEEE80211_FCS_LEN    4
-+#define IEEE80211_HLEN			IEEE80211_4ADDR_LEN
-+#define IEEE80211_FRAME_LEN		(IEEE80211_DATA_LEN + IEEE80211_HLEN)
-+#define IEEE80211_MGMT_HDR_LEN 24
-+#define IEEE80211_DATA_HDR3_LEN 24
-+#define IEEE80211_DATA_HDR4_LEN 30
- 
- #define MIN_FRAG_THRESHOLD     256U
- #define	MAX_FRAG_THRESHOLD     2346U
-@@ -249,6 +161,10 @@ do { if (ieee80211_debug_level & (level)
- #define IEEE80211_DEBUG(level, fmt, args...) do {} while (0)
- #endif	/* CONFIG_IEEE80211_DEBUG */
- 
-+#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
-+#define MAC_ARG(x) ((u8 *)(x))[0], ((u8 *)(x))[1], ((u8 *)(x))[2], \
-+		   ((u8 *)(x))[3], ((u8 *)(x))[4], ((u8 *)(x))[5]
-+
- /*
-  * To use the debug system;
-  *
-@@ -344,11 +260,6 @@ struct ieee80211_snap_hdr {
- #define WLAN_CAPABILITY_BSS (1<<0)
- #define WLAN_CAPABILITY_SHORT_SLOT (1<<10)
- 
--#define IEEE80211_MGMT_HDR_LEN 24
--#define IEEE80211_DATA_HDR3_LEN 24
--#define IEEE80211_DATA_HDR4_LEN 30
--
--
- #define IEEE80211_STATMASK_SIGNAL (1<<0)
- #define IEEE80211_STATMASK_RSSI (1<<1)
- #define IEEE80211_STATMASK_NOISE (1<<2)
-@@ -415,8 +326,25 @@ struct ieee80211_snap_hdr {
- #define IEEE80211_NUM_CCK_RATES	            4
- #define IEEE80211_OFDM_SHIFT_MASK_A         4
- 
-+/* this is stolen and modified from the madwifi driver*/
-+#define IEEE80211_FC0_TYPE_MASK		0x0c
-+#define IEEE80211_FC0_TYPE_DATA		0x08
-+#define IEEE80211_FC0_SUBTYPE_MASK	0xB0
-+#define IEEE80211_FC0_SUBTYPE_QOS	0x80
- 
-+#define IEEE80211_QOS_HAS_SEQ(fc) \
-+	(((fc) & (IEEE80211_FC0_TYPE_MASK | IEEE80211_FC0_SUBTYPE_MASK)) == \
-+	 (IEEE80211_FC0_TYPE_DATA | IEEE80211_FC0_SUBTYPE_QOS))
- 
-+/* this is stolen from ipw2200 driver */
-+#define IEEE_IBSS_MAC_HASH_SIZE 31
-+struct ieee_ibss_seq {
-+	u8 mac[ETH_ALEN];
-+	u16 seq_num[17];
-+	u16 frag_num[17];
-+	unsigned long packet_time[17];
-+	struct list_head list;
-+};
- 
- /* NOTE: This data is for statistical purposes; not all hardware provides this
-  *       information for frames received.  Not setting these will not cause
-@@ -475,26 +403,6 @@ struct ieee80211_stats {
- 	unsigned int rx_message_in_bad_msg_fragments;
- };
- 
--struct ieee80211_softmac_stats{
--	unsigned int rx_ass_ok;
--	unsigned int rx_ass_err;
--	unsigned int rx_probe_rq;
--	unsigned int tx_probe_rs;
--	unsigned int tx_beacons;
--	unsigned int rx_auth_rq;
--	unsigned int rx_auth_rs_ok;
--	unsigned int rx_auth_rs_err;
--	unsigned int tx_auth_rq;
--	unsigned int no_auth_rs;
--	unsigned int no_ass_rs;
--	unsigned int tx_ass_rq;
--	unsigned int rx_ass_rq;
--	unsigned int tx_probe_rq;
--	unsigned int reassoc;
--	unsigned int swtxstop;
--	unsigned int swtxawake;
--};
--
- struct ieee80211_device;
- 
- #include "ieee80211_crypt.h"
-@@ -548,17 +456,6 @@ Total: 28-2340 bytes
- 
- */
- 
--struct ieee80211_header_data {
--	u16 frame_ctl;
--	u16 duration_id;
--	u8 addr1[6];
--	u8 addr2[6];
--	u8 addr3[6];
--	u16 seq_ctrl;
--};
--
--#define BEACON_PROBE_SSID_ID_POSITION 12
--
- /* Management Frame Information Element Types */
- #define MFIE_TYPE_SSID       0
- #define MFIE_TYPE_RATES      1
-@@ -574,20 +471,54 @@ struct ieee80211_header_data {
- #define MFIE_TYPE_RATES_EX   50
- #define MFIE_TYPE_GENERIC    221
- 
--typedef enum
--{
--	COUNTRY_CODE_FCC = 0,
--	COUNTRY_CODE_IC = 1,
--	COUNTRY_CODE_ETSI = 2,
--	COUNTRY_CODE_SPAIN = 3,
--	COUNTRY_CODE_FRANCE = 4,
--	COUNTRY_CODE_MKK = 5,
--	COUNTRY_CODE_MKK1 = 6,
--	COUNTRY_CODE_ISRAEL = 7,
--	COUNTRY_CODE_TELEC = 8,
--	COUNTRY_CODE_GLOBAL_DOMAIN = 9,
--	COUNTRY_CODE_WORLD_WIDE_13_INDEX = 10
--}country_code_type_t;
-+struct ieee80211_header_data {
-+	u16 frame_ctl;
-+	u16 duration_id;
-+	u8 addr1[6];
-+	u8 addr2[6];
-+	u8 addr3[6];
-+	u16 seq_ctrl;
-+};
-+
-+struct ieee80211_hdr_3addr {
-+	u16 frame_ctl;
-+	u16 duration_id;
-+	u8 addr1[ETH_ALEN];
-+	u8 addr2[ETH_ALEN];
-+	u8 addr3[ETH_ALEN];
-+	u16 seq_ctl;
-+} __attribute__ ((packed));
-+
-+struct ieee80211_hdr_4addr {
-+	u16 frame_ctl;
-+	u16 duration_id;
-+	u8 addr1[ETH_ALEN];
-+	u8 addr2[ETH_ALEN];
-+	u8 addr3[ETH_ALEN];
-+	u16 seq_ctl;
-+	u8 addr4[ETH_ALEN];
-+} __attribute__ ((packed));
-+
+-struct ieee80211_hdr_3addr_QOS {
 +struct ieee80211_hdr_3addrqos {
-+	u16 frame_ctl;
-+	u16 duration_id;
-+	u8 addr1[ETH_ALEN];
-+	u8 addr2[ETH_ALEN];
-+	u8 addr3[ETH_ALEN];
-+	u16 seq_ctl;
+ 	u16 frame_ctl;
+ 	u16 duration_id;
+ 	u8 addr1[ETH_ALEN];
+ 	u8 addr2[ETH_ALEN];
+ 	u8 addr3[ETH_ALEN];
+ 	u16 seq_ctl;
+-	u16 QOS_ctl;
 +	u16 qos_ctl;
-+} __attribute__ ((packed));
-+
-+struct ieee80211_hdr_4addrqos {
-+	u16 frame_ctl;
-+	u16 duration_id;
-+	u8 addr1[ETH_ALEN];
-+	u8 addr2[ETH_ALEN];
-+	u8 addr3[ETH_ALEN];
-+	u16 seq_ctl;
-+	u8 addr4[ETH_ALEN];
-+	u16 qos_ctl;
-+} __attribute__ ((packed));
- 
- struct ieee80211_info_element_hdr {
- 	u8 id;
-@@ -600,26 +531,6 @@ struct ieee80211_info_element {
- 	u8 data[0];
  } __attribute__ ((packed));
  
--/*
-- * These are the data types that can make up management packets
-- *
--	u16 auth_algorithm;
--	u16 auth_sequence;
--	u16 beacon_interval;
--	u16 capability;
--	u8 current_ap[ETH_ALEN];
--	u16 listen_interval;
--	struct {
--		u16 association_id:14, reserved:2;
--	} __attribute__ ((packed));
--	u32 time_stamp[2];
--	u16 reason;
--	u16 status;
--*/
--
--#define IEEE80211_DEFAULT_TX_ESSID "Penguin"
--#define IEEE80211_DEFAULT_BASIC_RATE 10
--
- struct ieee80211_authentication {
- 	struct ieee80211_header_data header;
- 	u16 algorithm;
-@@ -628,6 +539,15 @@ struct ieee80211_authentication {
- 	//struct ieee80211_info_element_hdr info_element;
- } __attribute__ ((packed));
+ enum eap_type {
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+@@ -104,7 +104,7 @@ ieee80211_frag_cache_get(struct ieee8021
+ 	unsigned int frag = WLAN_GET_SEQ_FRAG(sc);
+ 	unsigned int seq = WLAN_GET_SEQ_SEQ(sc);
+ 	struct ieee80211_frag_entry *entry;
+-	struct ieee80211_hdr_3addr_QOS *hdr_3addr_QoS;
++	struct ieee80211_hdr_3addrqos *hdr_3addrqos;
+ 	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
+ 	u8 tid;
  
-+struct ieee80211_disassoc_frame {
-+	struct ieee80211_hdr_3addr header;
-+	u16    reasoncode;
-+} __attribute__ ((packed));
-+
-+struct ieee80211_probe_request {
-+	struct ieee80211_header_data header;
-+	/* struct ieee80211_info_element info_element; */
-+} __attribute__ ((packed));
+@@ -114,8 +114,8 @@ ieee80211_frag_cache_get(struct ieee8021
+ 	  tid = UP2AC(tid);
+ 	  tid ++;
+ 	} else if (IEEE80211_QOS_HAS_SEQ(fc)) {
+-	  hdr_3addr_QoS = (struct ieee80211_hdr_3addr_QOS *)hdr;
+-	  tid = le16_to_cpu(hdr_3addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
++	  hdr_3addrqos = (struct ieee80211_hdr_3addrqos *)hdr;
++	  tid = le16_to_cpu(hdr_3addrqos->qos_ctl) & IEEE80211_QOS_TID;
+ 	  tid = UP2AC(tid);
+ 	  tid ++;
+ 	} else {
+@@ -171,7 +171,7 @@ static int ieee80211_frag_cache_invalida
+ 	u16 sc = le16_to_cpu(hdr->seq_ctl);
+ 	unsigned int seq = WLAN_GET_SEQ_SEQ(sc);
+ 	struct ieee80211_frag_entry *entry;
+-	struct ieee80211_hdr_3addr_QOS *hdr_3addr_QoS;
++	struct ieee80211_hdr_3addrqos *hdr_3addrqos;
+ 	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
+ 	u8 tid;
  
- struct ieee80211_probe_response {
- 	struct ieee80211_header_data header;
-@@ -637,11 +557,6 @@ struct ieee80211_probe_response {
- 	struct ieee80211_info_element info_element;
- } __attribute__ ((packed));
+@@ -181,8 +181,8 @@ static int ieee80211_frag_cache_invalida
+ 	  tid = UP2AC(tid);
+ 	  tid ++;
+ 	} else if (IEEE80211_QOS_HAS_SEQ(fc)) {
+-	  hdr_3addr_QoS = (struct ieee80211_hdr_3addr_QOS *)hdr;
+-	  tid = le16_to_cpu(hdr_3addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
++	  hdr_3addrqos = (struct ieee80211_hdr_3addrqos *)hdr;
++	  tid = le16_to_cpu(hdr_3addrqos->qos_ctl) & IEEE80211_QOS_TID;
+ 	  tid = UP2AC(tid);
+ 	  tid ++;
+ 	} else {
+@@ -377,7 +377,7 @@ static int is_duplicate_packet(struct ie
+ 	u16 frag = WLAN_GET_SEQ_FRAG(sc);
+ 	u16 *last_seq, *last_frag;
+ 	unsigned long *last_time;
+-	struct ieee80211_hdr_3addr_QOS *hdr_3addr_QoS;
++	struct ieee80211_hdr_3addrqos *hdr_3addrqos;
+ 	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
+ 	u8 tid;
  
--struct ieee80211_probe_request {
--	struct ieee80211_header_data header;
--	/*struct ieee80211_info_element info_element;*/
--} __attribute__ ((packed));
--
- struct ieee80211_assoc_request_frame {
- 	struct ieee80211_hdr_3addr header;
- 	u16 capability;
-@@ -658,11 +573,6 @@ struct ieee80211_assoc_response_frame {
- 	struct ieee80211_info_element info_element; /* supported rates */
- } __attribute__ ((packed));
+@@ -388,8 +388,8 @@ static int is_duplicate_packet(struct ie
+ 	  tid = UP2AC(tid);
+ 	  tid ++;
+ 	} else if(IEEE80211_QOS_HAS_SEQ(fc)) { //QoS
+-	  hdr_3addr_QoS = (struct ieee80211_hdr_3addr_QOS*)header;
+-	  tid = le16_to_cpu(hdr_3addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
++	  hdr_3addrqos = (struct ieee80211_hdr_3addrqos *)header;
++	  tid = le16_to_cpu(hdr_3addrqos->qos_ctl) & IEEE80211_QOS_TID;
+ 	  tid = UP2AC(tid);
+ 	  tid ++;
+ 	} else { // no QoS
+@@ -476,7 +476,6 @@ int ieee80211_rx(struct ieee80211_device
+ 	struct net_device *dev = ieee->dev;
+ 	//struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+ 	struct ieee80211_hdr_4addr *hdr;
+-	//struct ieee80211_hdr_3addr_QOS *hdr;
  
--struct ieee80211_disassoc_frame{
--        struct ieee80211_hdr_3addr header;
--        u16    reasoncode;
--}__attribute__ ((packed));
--
- struct ieee80211_txb {
- 	u8 nr_frags;
- 	u8 encrypted;
-@@ -672,6 +582,32 @@ struct ieee80211_txb {
- 	struct sk_buff *fragments[0];
- };
+ 	size_t hdrlen;
+ 	u16 fc, type, stype, sc;
+@@ -484,7 +483,6 @@ int ieee80211_rx(struct ieee80211_device
+ 	unsigned int frag;
+ 	u8 *payload;
+ 	u16 ethertype;
+-//	u16 QOS_ctl = 0;
+ 	u8 dst[ETH_ALEN];
+ 	u8 src[ETH_ALEN];
+ 	u8 bssid[ETH_ALEN];
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
+@@ -310,17 +310,17 @@ int ieee80211_xmit(struct sk_buff *skb,
+ {
+ 	struct ieee80211_device *ieee = netdev_priv(dev);
+ 	struct ieee80211_txb *txb = NULL;
+-	struct ieee80211_hdr_3addr_QOS *frag_hdr;
++	struct ieee80211_hdr_3addrqos *frag_hdr;
+ 	int i, bytes_per_frag, nr_frags, bytes_last_frag, frag_size;
+ 	unsigned long flags;
+ 	struct net_device_stats *stats = &ieee->stats;
+ 	int ether_type, encrypt;
+-	int bytes, fc, QOS_ctl, hdr_len;
++	int bytes, fc, qos_ctl, hdr_len;
+ 	struct sk_buff *skb_frag;
+-	struct ieee80211_hdr_3addr_QOS header = { /* Ensure zero initialized */
++	struct ieee80211_hdr_3addrqos header = { /* Ensure zero initialized */
+ 		.duration_id = 0,
+ 		.seq_ctl = 0,
+-		.QOS_ctl = 0
++		.qos_ctl = 0
+ 	};
+ 	u8 dest[ETH_ALEN], src[ETH_ALEN];
  
-+/* SWEEP TABLE ENTRIES NUMBER */
-+#define MAX_SWEEP_TAB_ENTRIES			42
-+#define MAX_SWEEP_TAB_ENTRIES_PER_PACKET	7
-+
-+/* MAX_RATES_LENGTH needs to be 12.  The spec says 8, and many APs
-+ * only use 8, and then use extended rates for the remaining supported
-+ * rates.  Other APs, however, stick all of their supported rates on the
-+ * main rates information element... */
-+#define MAX_RATES_LENGTH			((u8)12)
-+#define MAX_RATES_EX_LENGTH			((u8)16)
-+
-+#define MAX_NETWORK_COUNT			128
-+
-+#define MAX_CHANNEL_NUMBER			165
-+
-+#define IEEE80211_SOFTMAC_SCAN_TIME		100 /* (HZ / 2) */
-+#define IEEE80211_SOFTMAC_ASSOC_RETRY_TIME	(HZ * 2)
-+
-+#define CRC_LENGTH	4U
-+
-+#define MAX_WPA_IE_LEN	64
-+
-+#define NETWORK_EMPTY_ESSID	(1 << 0)
-+#define NETWORK_HAS_OFDM	(1 << 1)
-+#define NETWORK_HAS_CCK		(1 << 2)
-+
- struct ieee80211_wmm_ac_param {
- 	u8 ac_aci_acm_aifsn;
- 	u8 ac_ecwmin_ecwmax;
-@@ -703,23 +639,82 @@ struct ieee80211_wmm_tspec_elem {
- 	u16 medium_time;
- }__attribute__((packed));
+@@ -419,22 +419,23 @@ int ieee80211_xmit(struct sk_buff *skb,
+ 		if (is_multicast_ether_addr(header.addr1) ||
+ 		is_broadcast_ether_addr(header.addr1)) {
+ 			frag_size = MAX_FRAG_THRESHOLD;
+-			QOS_ctl = QOS_CTL_NOTCONTAIN_ACK;
++			qos_ctl = QOS_CTL_NOTCONTAIN_ACK;
+ 		}
+ 		else {
+ 			//printk(KERN_WARNING "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&frag_size = %d\n", frag_size);
+ 			frag_size = ieee->fts;//default:392
+-			QOS_ctl = 0;
++			qos_ctl = 0;
+ 		}
  
-+enum eap_type {
-+	EAP_PACKET = 0,
-+	EAPOL_START,
-+	EAPOL_LOGOFF,
-+	EAPOL_KEY,
-+	EAPOL_ENCAP_ASF_ALERT
-+};
+ 		if (ieee->current_network.QoS_Enable)	{
+ 			hdr_len = IEEE80211_3ADDR_LEN + 2;
+-			QOS_ctl |= skb->priority; //set in the ieee80211_classify
+-			header.QOS_ctl = cpu_to_le16(QOS_ctl);
++			/* skb->priority is set in the ieee80211_classify() */
++			qos_ctl |= skb->priority;
++			header.qos_ctl = cpu_to_le16(qos_ctl);
+ 		} else {
+ 			hdr_len = IEEE80211_3ADDR_LEN;
+ 		}
+-		//printk(KERN_WARNING "header size = %d, QOS_ctl = %x\n", hdr_len,QOS_ctl);
 +
-+static const char *eap_types[] = {
-+	[EAP_PACKET]		= "EAP-Packet",
-+	[EAPOL_START]		= "EAPOL-Start",
-+	[EAPOL_LOGOFF]		= "EAPOL-Logoff",
-+	[EAPOL_KEY]		= "EAPOL-Key",
-+	[EAPOL_ENCAP_ASF_ALERT]	= "EAPOL-Encap-ASF-Alert"
-+};
-+
-+static inline const char *eap_get_type(int type)
-+{
-+	return (type >= ARRAY_SIZE(eap_types)) ? "Unknown" : eap_types[type];
-+}
-+
-+struct eapol {
-+	u8 snap[6];
-+	u16 ethertype;
-+	u8 version;
-+	u8 type;
-+	u16 length;
-+} __attribute__ ((packed));
-+
-+struct ieee80211_softmac_stats {
-+	unsigned int rx_ass_ok;
-+	unsigned int rx_ass_err;
-+	unsigned int rx_probe_rq;
-+	unsigned int tx_probe_rs;
-+	unsigned int tx_beacons;
-+	unsigned int rx_auth_rq;
-+	unsigned int rx_auth_rs_ok;
-+	unsigned int rx_auth_rs_err;
-+	unsigned int tx_auth_rq;
-+	unsigned int no_auth_rs;
-+	unsigned int no_ass_rs;
-+	unsigned int tx_ass_rq;
-+	unsigned int rx_ass_rq;
-+	unsigned int tx_probe_rq;
-+	unsigned int reassoc;
-+	unsigned int swtxstop;
-+	unsigned int swtxawake;
-+};
-+
-+#define BEACON_PROBE_SSID_ID_POSITION 12
-+
-+/*
-+ * These are the data types that can make up management packets
-+ *
-+	u16 auth_algorithm;
-+	u16 auth_sequence;
-+	u16 beacon_interval;
-+	u16 capability;
-+	u8 current_ap[ETH_ALEN];
-+	u16 listen_interval;
-+	struct {
-+		u16 association_id:14, reserved:2;
-+	} __attribute__ ((packed));
-+	u32 time_stamp[2];
-+	u16 reason;
-+	u16 status;
-+*/
-+
-+#define IEEE80211_DEFAULT_TX_ESSID "Penguin"
-+#define IEEE80211_DEFAULT_BASIC_RATE 10
-+
- enum {WMM_all_frame, WMM_two_frame, WMM_four_frame, WMM_six_frame};
- #define MAX_SP_Len  (WMM_all_frame << 4)
- #define IEEE80211_QOS_TID 0x0f
- #define QOS_CTL_NOTCONTAIN_ACK (0x01 << 5)
+ 		/* Determine amount of payload per fragment.  Regardless of if
+ 		* this stack is providing the full 802.11 header, one will
+ 		* eventually be affixed to this fragment -- so we must account for
+@@ -477,7 +478,7 @@ int ieee80211_xmit(struct sk_buff *skb,
+ 			if (encrypt)
+ 				skb_reserve(skb_frag, crypt->ops->extra_prefix_len);
  
--/* SWEEP TABLE ENTRIES NUMBER*/
--#define MAX_SWEEP_TAB_ENTRIES		  42
--#define MAX_SWEEP_TAB_ENTRIES_PER_PACKET  7
--/* MAX_RATES_LENGTH needs to be 12.  The spec says 8, and many APs
-- * only use 8, and then use extended rates for the remaining supported
-- * rates.  Other APs, however, stick all of their supported rates on the
-- * main rates information element... */
--#define MAX_RATES_LENGTH                  ((u8)12)
--#define MAX_RATES_EX_LENGTH               ((u8)16)
--#define MAX_NETWORK_COUNT                  128
--//#define MAX_CHANNEL_NUMBER                 161
--#define MAX_CHANNEL_NUMBER                 165 //YJ,modified,080625
- #define MAX_IE_LEN						0xFF //+YJ,080625
+-			frag_hdr = (struct ieee80211_hdr_3addr_QOS *)skb_put(skb_frag, hdr_len);
++			frag_hdr = (struct ieee80211_hdr_3addrqos *)skb_put(skb_frag, hdr_len);
+ 			memcpy(frag_hdr, &header, hdr_len);
  
- typedef struct _CHANNEL_LIST{
-@@ -727,23 +722,12 @@ typedef struct _CHANNEL_LIST{
- 	u8	Len;
- }CHANNEL_LIST, *PCHANNEL_LIST;
- 
--#define IEEE80211_SOFTMAC_SCAN_TIME	  100//400
--//(HZ / 2)
- //by amy for ps
- #define IEEE80211_WATCH_DOG_TIME    2000
- //by amy for ps
- //by amy for antenna
- #define ANTENNA_DIVERSITY_TIMER_PERIOD		1000 // 1000 m
- //by amy for antenna
--#define IEEE80211_SOFTMAC_ASSOC_RETRY_TIME (HZ * 2)
--
--#define CRC_LENGTH                 4U
--
--#define MAX_WPA_IE_LEN 64
--
--#define NETWORK_EMPTY_ESSID (1<<0)
--#define NETWORK_HAS_OFDM    (1<<1)
--#define NETWORK_HAS_CCK     (1<<2)
- 
- #define IEEE80211_DTIM_MBCAST 4
- #define IEEE80211_DTIM_UCAST 2
-@@ -882,8 +866,6 @@ enum ieee80211_state {
- 
- #define DEFAULT_MAX_SCAN_AGE (15 * HZ)
- #define DEFAULT_FTS 2346
--#define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
--#define MAC_ARG(x) ((u8*)(x))[0],((u8*)(x))[1],((u8*)(x))[2],((u8*)(x))[3],((u8*)(x))[4],((u8*)(x))[5]
- 
- #define CFG_IEEE80211_RESERVE_FCS (1<<0)
- #define CFG_IEEE80211_COMPUTE_FCS (1<<1)
-@@ -893,6 +875,19 @@ typedef struct tx_pending_t{
- 	struct ieee80211_txb *txb;
- }tx_pending_t;
- 
-+enum {
-+	COUNTRY_CODE_FCC = 0,
-+	COUNTRY_CODE_IC = 1,
-+	COUNTRY_CODE_ETSI = 2,
-+	COUNTRY_CODE_SPAIN = 3,
-+	COUNTRY_CODE_FRANCE = 4,
-+	COUNTRY_CODE_MKK = 5,
-+	COUNTRY_CODE_MKK1 = 6,
-+	COUNTRY_CODE_ISRAEL = 7,
-+	COUNTRY_CODE_TELEC = 8,
-+	COUNTRY_CODE_GLOBAL_DOMAIN = 9,
-+	COUNTRY_CODE_WORLD_WIDE_13_INDEX = 10
-+};
- 
- struct ieee80211_device {
- 	struct net_device *dev;
+ 			/* If this is not the last fragment, then add the MOREFRAGS
