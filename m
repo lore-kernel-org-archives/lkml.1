@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751461AbZGMEWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751400AbZGMF2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751461AbZGMEWB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 00:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZGMEV4
+	id S1751400AbZGMF2k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 01:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbZGMF2g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 00:21:56 -0400
-Received: from sh.osrg.net ([192.16.179.4]:58427 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750958AbZGMEVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 00:21:55 -0400
-Date: Mon, 13 Jul 2009 13:20:22 +0900
-To: mingo@elte.hu
-Cc: Ian.Campbell@eu.citrix.com, fujita.tomonori@lab.ntt.co.jp, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, tony.luck@intel.com,
-       x86@kernel.org, beckyb@kernel.crashing.org, joerg.roedel@amd.com
-Subject: Re: [00/15] swiotlb cleanup
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090710141248.GE26264@elte.hu>
-References: <20090710051236.GA22218@elte.hu>
-	<1247234512.4002.417.camel@zakaz.uk.xensource.com>
-	<20090710141248.GE26264@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 13 Jul 2009 01:28:36 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64832 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750753AbZGMF2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 01:28:35 -0400
+Message-ID: <4A5AC5F5.5050206@cn.fujitsu.com>
+Date: Mon, 13 Jul 2009 13:28:21 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Alan Stern <stern@rowland.harvard.edu>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] hw_breakpoint: remove sample code from hw_breakpoint.h
+References: <4A52DFBB.7040800@cn.fujitsu.com> <20090707210410.GG6184@nowhere>
+In-Reply-To: <20090707210410.GG6184@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090713131157V.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 13 Jul 2009 13:20:25 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 10 Jul 2009 16:12:48 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+(sorry for the late reply, I didn't see this mail..)
 
-> > functionality and reimplemented the surrounding infrastructure in 
-> > terms of that (and incorporating our additional requirements). I 
-> > prototyped this (it is currently unworking, in fact it seems to 
-> > have developed rather a taste for filesystems :-() but the 
-> > diffstat of my WIP patch is:
-> >
-> >          arch/x86/kernel/pci-swiotlb.c |    6 
-> >          arch/x86/xen/pci-swiotlb.c    |    2 
-> >          drivers/pci/xen-iommu.c       |  385 ++++++++++++++++++++++++++++++++++++++++--
-> >          include/linux/swiotlb.h       |   12 +
-> >          lib/swiotlb.c                 |   10 -
-> >          5 files changed, 385 insertions(+), 30 deletions(-)
-> >
-> > where a fair number of the lines in xen-iommu.c are copies of 
-> > functions from swiotlb.c with minor modifications. As I say it 
-> > doesn't work yet but I think it's roughly indicative of what such 
-> > an approach would look like. I don't like it much but am happy to 
-> > run with it if it looks to be the most acceptable approach. [...]
+Frederic Weisbecker wrote:
+> On Tue, Jul 07, 2009 at 01:40:11PM +0800, Li Zefan wrote:
+>> The sample code is a bit out-dated, and there's already a
+>> sample in sample/hw_breakpoint/.
 > 
-> +400 lines of code to avoid much fewer lines of generic code impact 
-> on the lib/swiotlb.c side sounds like a bad technical choice to me. 
+> 
+> IMHO these bits of comments are useful and don't overlap the role
+> of the samples in sample/
+> They only stand there as a quick summup.
+> 
+> No?
+> 
 
-The amount of code is not the point. The way to impact on the
-lib/swiotlb.c is totally wrong from the perspective of the kernel
-design; it uses architecture code in the very original (xen) way.
+The sample here sets a breakpoint on pid_max, which is what the sample
+in sample/ does.
+
+And the code here is out-dated (and incomplete). We can fix it, but
+whenver someone changes the APIs, he may forget to update the comments.
+We know comments never catch up with code.
+
+So I inclined to delete it, and add a link to sample/.
 
 
-> It makes the swiotlb code less useful and basically forks a random 
-> implementation of it in drivers/pci/xen-iommu.c.
 
-I don't think so. We always have the reasonable amount of duplication
-rather than integration in a dirty way (at least about IOMMU
-code).
-
-
-> Fujita-san, can you think of a solution that avoids the whole-sale 
-> copying of hundreds of lines of code?
-
-Ian didn't give a pointer to his code in a public place so I'm not
-sure his claim is valid. But if his code does the right thing and
-the duplication is less than 400 lines, it doesn't sound that bad to
-me.
