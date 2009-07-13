@@ -1,72 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbZGMPuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbZGMPxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756297AbZGMPuW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 11:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbZGMPuV
+	id S1756336AbZGMPxR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 11:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756262AbZGMPxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 11:50:21 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:51582 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756174AbZGMPuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 11:50:21 -0400
-X-Greylist: delayed 353 seconds by postgrey-1.27 at vger.kernel.org; Mon, 13 Jul 2009 11:50:20 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Uzt7UZDaKUulLkFe6OY269hgnovvfDqWIA8lKiwQN5RcpMrABLe9e2552DroUdm9rk
-         ko1LxBSrcNKq1XKM6AfMIC49txqhGQAbcgzAfd8Ufa6pUrqq5brm3u2xW6fbRvwHxodH
-         JLHL3X5S/9hJ8nz/F3CObtXP3wTZZEY5GZdN0=
-Message-ID: <4A5B5640.2050308@googlemail.com>
-Date: Mon, 13 Jul 2009 17:44:00 +0200
-From: Dirk Behme <dirk.behme@googlemail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Sudeep K N <sudeepholla.maillist@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, drzeus-mmc@drzeus.cx,
+	Mon, 13 Jul 2009 11:53:17 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:34676 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756213AbZGMPxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 11:53:16 -0400
+Date: Mon, 13 Jul 2009 21:23:10 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
        linux-kernel@vger.kernel.org
-Subject: Re: Rootfs in eMMC: Kernel panic ...Attempted to kill init!
-References: <20090622164604.GG29188@n2100.arm.linux.org.uk> <1245767657.16488.38.camel@pc1117.cambridge.arm.com>
-In-Reply-To: <1245767657.16488.38.camel@pc1117.cambridge.arm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [RFC][PATCH] taskstats: Fix CGROUPSTATS_TYPE_CGROUP_STATS
+	having same value as TASKSTATS_TYPE_PID
+Message-ID: <20090713155310.GE5051@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <200907131831.12994.knikanth@suse.de> <20090713134158.GD5051@balbir.in.ibm.com> <200907132107.37850.knikanth@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <200907132107.37850.knikanth@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Catalin,
+* Nikanth Karthikesan <knikanth@suse.de> [2009-07-13 21:07:37]:
 
-Catalin Marinas wrote:
-> On Mon, 2009-06-22 at 17:46 +0100, Russell King - ARM Linux wrote:
->> On Mon, Jun 22, 2009 at 05:13:16PM +0100, Catalin Marinas wrote:
->>> In my case (ext2 over pata_platform), there is no flush_dcache_page()
->>> call after the page was written with data from the CompactFlash (neither
->>> the driver nor the VFS layer do this and we used hardware tracing to
->>> double-check). When the page is mapped into user space,
->>> update_mmu_cache() is called but the page hasn't been marked as dirty
->>> and no D-cache flushing occurs. Calling flush_dcache_page() in
->>> mpage_end_io_read() works around this issue.
->> As already covered, there's no chance of adding such a call to the
->> generic kernel.  It's the responsibility of the drivers to ensure that
->> data they read in hits the underlying page - in the same way that DMA
->> does.
+> On Monday 13 July 2009 19:11:58 Balbir Singh wrote:
+> > * Nikanth Karthikesan <knikanth@suse.de> [2009-07-13 18:31:12]:
+> > > Hi
+> > >
+> > > Currently we never get message from kernel to userspace of type
+> > > TASKSTATS_TYPE_PID. Otherwise this could have been spotted earlier.
+> > >
+> > > I was trying to add a new taskstat command that would return response of
+> > > type TASKSTATS_TYPE_PID.
+> > >
+> > > Having the same values would restrict one not to use the same netlink
+> > > socket for a command that would return response of type
+> > > TASKSTATS_TYPE_PID and the CGROUPSTATS_CMD_GET command.
+> > >
+> > > Should we fix it by using values after __TASKSTATS_TYPE_MAX.
+> > >
+> > > Changing this now might break pre-built binaries. Or is this intended,
+> > > and the application is not supposed to use CGROUPSTATS and TASKSTATS on
+> > > the same socket?
+> >
+> > Ideally they are supposed to be on different sockets, but nothing
+> > really is hard and fast in terms of rules.
+> >
 > 
-> The patch below appears to solve the problem with CompactFlash using
-> pata_platform (I cc'ed linux-ide since the patch changes their code).
-> The patch only handles the read case but similarly it may need to handle
-> the write case if D-cache aliasing between user and kernel mappings
-> exists.
+> IMHO, If we are adding CGROUPSTATS_CMD_GET to the same netlink family of 
+> TASKSTATS, we should allow both the commands in the same socket.
 > 
-> For the USB mass storage, I haven't yet figured out the best place to
-> call flush_dcache_page().
+> > > Thanks
+> > > Nikanth
+> > >
+> > > Currently we never get message from kernel to userspace of type
+> > > TASKSTATS_TYPE_PID. Otherwise this could have been spotted earlier.
+> > > Having the values in the same range would restrict one not to use the
+> > > same netlink socket for a command that would return response of type
+> > > TASKSTATS_TYPE_PID and the CGROUPSTATS_CMD_GET command. Fix it by using
+> > > values after
+> > > __TASKSTATS_TYPE_MAX.
+> > >
+> > > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> > >
+> > > ---
+> > >
+> > >
+> > > diff --git a/include/linux/cgroupstats.h b/include/linux/cgroupstats.h
+> > > index 3753c33..87b31f0 100644
+> > > --- a/include/linux/cgroupstats.h
+> > > +++ b/include/linux/cgroupstats.h
+> > > @@ -53,7 +53,7 @@ enum {
+> > >  #define CGROUPSTATS_CMD_MAX (__CGROUPSTATS_CMD_MAX - 1)
+> > >
+> > >  enum {
+> > > -	CGROUPSTATS_TYPE_UNSPEC = 0,	/* Reserved */
+> > > +	CGROUPSTATS_TYPE_UNSPEC = __TASKSTATS_TYPE_MAX,	/* Reserved */
+> > >  	CGROUPSTATS_TYPE_CGROUP_STATS,	/* contains name + stats */
+> > >  	__CGROUPSTATS_TYPE_MAX,
+> > >  };
+> >
+> > This seems like the correct fix
+> >
+> > Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> But this would break applications every time a new item is added to the enums 
+> in taskstat.h
+>
 
-Any news regarding USB mass storage on ARM MPCore? Else this would 
-mean that USB mass storage (USB stick, USB disk) formatted with 
-ext2/3/4 wouldn't work with MPCore?
 
-Many thanks and best regards
+Yes, correct and the expectation, we will bump the version number (see
+version field) or ignore the fix and send a strong recommendation that
+we should use different sockets for cgroupstats and taskstats.
+ 
+> The correct fix would be to add all the CGROUPSTATS_* enums, as part of the 
+> same enum in taskstat.h. So that when new members are added to enum's in 
+> taskstat.h, the cgroup stat enum's values won't change and applications need 
+> not be re-built. If you agree, I would send a patch to do that.
+>
 
-Dirk
+I wanted to keep the separate to avoid #ifdef's around the code. One
+other generic fix would be to use different starting bases. We could
+for example use a bit (say bit 63) to indicate the type - taskstats or
+cgroupstats, but we might be too late for that.
+
+Please remember to bump the version field, lets try your suggested
+approach of integration and if that can be done cleanly, I have no
+objection.
+
+-- 
+	Balbir
