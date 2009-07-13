@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751586AbZGMFaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751306AbZGMFlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751586AbZGMFaE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 01:30:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbZGMFaC
+	id S1751306AbZGMFlH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 01:41:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbZGMFlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 01:30:02 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:3781 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750801AbZGMFaB (ORCPT
+	Mon, 13 Jul 2009 01:41:01 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40587 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbZGMFlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 01:30:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=to:cc:subject:references:from:date:in-reply-to:message-id:
-	user-agent:mime-version:content-type:x-system-of-record;
-	b=HXlp9jK3qKwxgODfsQt36jWIZAKNIXBfqzX24xetTScbnAoYVzRlyuH3CPfoQ3BtS
-	FyjSRFPG8CuEnLqlsuyBA==
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frans Pop <elendil@planet.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
-       barryn@pobox.com, bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 13012] 2.6.28.9 causes init to segfault on Debian etch; 2.6.28.8 OK
-References: <200907100928.07369.elendil@planet.nl>
-	<200907101659.31813.elendil@planet.nl>
-	<alpine.LFD.2.01.0907121058040.3552@localhost.localdomain>
-From: Ian Lance Taylor <iant@google.com>
-Date: Sun, 12 Jul 2009 22:29:50 -0700
-In-Reply-To: <alpine.LFD.2.01.0907121058040.3552@localhost.localdomain> (Linus Torvalds's message of "Sun\, 12 Jul 2009 10\:58\:21 -0700 \(PDT\)")
-Message-ID: <m3k52d1775.fsf@google.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-System-Of-Record: true
+	Mon, 13 Jul 2009 01:41:00 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 13 Jul 2009 14:38:57 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "mel@csn.ul.ie" <mel@csn.ul.ie>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] switch free memory back to MIGRATE_MOVABLE
+Message-Id: <20090713143857.07e81cb1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090713031801.GA4778@sli10-desk.sh.intel.com>
+References: <20090713115803.b78a4f4f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090713030444.GA2582@sli10-desk.sh.intel.com>
+	<20090713120549.6252.A69D9226@jp.fujitsu.com>
+	<20090713031801.GA4778@sli10-desk.sh.intel.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Mon, 13 Jul 2009 11:18:01 +0800
+Shaohua Li <shaohua.li@intel.com> wrote:
 
-> Ian: we generally do try to be careful and use explicit unsigned types for 
-> code that cares about overflow, but we use -fwrapv because there have been 
-> some cases where we didn't (and used pointer comparisons or signed 
-> integers).
->
-> The problem is that apparently gcc-4.1.x was literally generating buggy 
-> code with -fwrapv. So now the choice for us is between switching to an 
-> explicit version test:
->
-> 	-KBUILD_CFLAGS  += $(call cc-option,-fwrapv)
-> 	+KBUILD_CFLAGS  += $(shell if [ $(call cc-version) -ge 0402 ]; then \
-> 	+                   echo $(call cc-option,-fwrapv); fi ;)
->
-> or just switching to -fno-strict-overflow instead:
->
-> 	-KBUILD_CFLAGS  += $(call cc-option,-fwrapv)
-> 	+KBUILD_CFLAGS  += $(call cc-option,-fno-strict-overflow)
->
-> which avoids the buggy gcc versions because it's simply not even supported 
-> by gcc-4.1.x (and even if that wasn't the case, possibly because only 
-> 'wrapv' is the problematic case - apparently the difference _does_ 
-> matter to gcc).
+> On Mon, Jul 13, 2009 at 11:08:14AM +0800, KOSAKI Motohiro wrote:
+> > > On Mon, Jul 13, 2009 at 10:58:03AM +0800, KAMEZAWA Hiroyuki wrote:
+> > > > On Mon, 13 Jul 2009 11:47:46 +0900 (JST)
+> > > > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > > > 
+> > > > > > When page is back to buddy and its order is bigger than pageblock_order, we can
+> > > > > > switch its type to MIGRATE_MOVABLE. This can reduce fragmentation. The patch
+> > > > > > has obvious effect when read a block device and then drop caches.
+> > > > > > 
+> > > > > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > > > > 
+> > > > > This patch change hot path, but there is no performance mesurement description.
+> > > > > Also, I don't like modification buddy core for only drop caches.
+> > > > > 
+> > > > Li, does this patch imply fallback of migration type doesn't work well ?
+> > > > What is the bad case ?
+> > > The page is initialized as migrate_movable, and then switch to reclaimable or
+> > > something else when fallback occurs, but its type remains even the page gets
+> > > freed. When the page gets freed, its type actually can be switch back to movable,
+> > > this is what the patch does.
+> > 
+> > This answer is not actual answer.
+> > Why do you think __rmqueue_fallback() doesn't works well? Do you have
+> > any test-case or found a bug by review?
+> I never said __rmqueue_fallback() doesn't work well. The page is already freed, switching
+> back the pageblock to movable might make next page allocation (non-movable) skip this
+> pageblock. So this could potentially reduce fragmentation and improve memory offline.
+> But your guys are right, I have no number if this will impact performance.
+> 
+If this is for memory offlining, plz mention that at first ;)
+IIUC, if this can be a problem, fixing memory offline itself is better. No ?
+At implementing memory unplug, I had no problems because I assumes ZONE_MOVABLE.
+But ok, I welcome enhances to memory unplug.
 
-My instinctive advice is that y'all should track down and fix the cases
-where the program relies on signed overflow being defined.  However, if
-that is difficult--and it is--then I agree that -fno-strict-overflow is
-preferable when using a compiler which supports it (gcc 4.2.0 and
-later).
+If this part is bad for you.
+4714         /*
+4715          * In future, more migrate types will be able to be isolation target.
+4716          */
+4717         if (get_pageblock_migratetype(page) != MIGRATE_MOVABLE)
+4718                 goto out;
 
-(The gcc 4.2 and later option -Wstrict-overflow=N can help find the
-cases where a program relies on defined signed overflow, but only if
-somebody is patient enough to wade through all the false positives.)
+plz fix this to do more precise work for zid != ZONE_MOVABLE zones.
+As I wrote in comments. My codes assumes ZONE_MOVABLE in many parts because I want
+100%-success memory offline. 
 
-Ian
+Thanks,
+-Kame
+
