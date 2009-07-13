@@ -1,50 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbZGMAYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752339AbZGMAiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754212AbZGMAYb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 20:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZGMAYV
+	id S1752339AbZGMAiG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 20:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZGMAhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 20:24:21 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:42002 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbZGMAYV (ORCPT
+	Sun, 12 Jul 2009 20:37:54 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54995 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbZGMAhy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 20:24:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=w/aMyi4H2saShhB9Ra9TQOJtW3BnsybeqHqnIUhDpatXyNjVU7v0ndwOt3m7xrJr31
-         fAsgI+nQmqXi/PlWkzVGnRmwGaG80ZYH7StRDFKsNf2VOIckgm62EEwBN+xU/x2z5o8S
-         L0NhtaogX8DXdCnGXhGaU4UK8ZSpTf1YwfzFw=
-Message-ID: <4A5A7F0B.4070106@gmail.com>
-Date: Mon, 13 Jul 2009 02:25:47 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sun, 12 Jul 2009 20:37:54 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Subject: Re: [RFC PATCH 2/2] Don't continue reclaim if the system have plenty  free memory
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>
+In-Reply-To: <28c262360907090358q7cdbd067y22b7312c489e7598@mail.gmail.com>
+References: <20090709140234.239F.A69D9226@jp.fujitsu.com> <28c262360907090358q7cdbd067y22b7312c489e7598@mail.gmail.com>
+Message-Id: <20090713092428.6249.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Keep index within event_type_descriptors[]
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 13 Jul 2009 09:37:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keep index within event_type_descriptors[]
+> On Thu, Jul 9, 2009 at 2:08 PM, KOSAKI
+> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+> >> Hi, Kosaki.
+> >>
+> >> On Tue, Jul 7, 2009 at 6:48 PM, KOSAKI
+> >> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+> >> > Subject: [PATCH] Don't continue reclaim if the system have plenty free memory
+> >> >
+> >> > On concurrent reclaim situation, if one reclaimer makes OOM, maybe other
+> >> > reclaimer can stop reclaim because OOM killer makes enough free memory.
+> >> >
+> >> > But current kernel doesn't have its logic. Then, we can face following accidental
+> >> > 2nd OOM scenario.
+> >> >
+> >> > 1. System memory is used by only one big process.
+> >> > 2. memory shortage occur and concurrent reclaim start.
+> >> > 3. One reclaimer makes OOM and OOM killer kill above big process.
+> >> > 4. Almost reclaimable page will be freed.
+> >> > 5. Another reclaimer can't find any reclaimable page because those pages are
+> >> > ? already freed.
+> >> > 6. Then, system makes accidental and unnecessary 2nd OOM killer.
+> >> >
+> >>
+> >> Did you see the this situation ?
+> >> Why I ask is that we have already a routine for preventing parallel
+> >> OOM killing in __alloc_pages_may_oom.
+> >>
+> >> Couldn't it protect your scenario ?
+> >
+> > Can you please see actual code of this patch?
+> 
+> I mean follow as,
+> 
+> static inline struct page *
+> __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
+>         struct zonelist *zonelist, enum zone_type high_zoneidx,
+> ...
+> <snip>
+> 
+>         /*
+>          * Go through the zonelist yet one more time, keep very high watermark
+>          * here, this is only to catch a parallel oom killing, we must fail if
+>          * we're still under heavy pressure.
+>          */
+>         page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask,
+>                 order, zonelist, high_zoneidx,
+>                 ALLOC_WMARK_HIGH|ALLOC_CPUSET,
+>                 preferred_zone, migratetype);
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 518a33a..d18c98e 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -436,7 +436,7 @@ void print_events(void)
- 
- 	for (i = 0; i < ARRAY_SIZE(event_symbols); i++, syms++) {
- 		type = syms->type + 1;
--		if (type > ARRAY_SIZE(event_type_descriptors))
-+		if (type >= ARRAY_SIZE(event_type_descriptors))
- 			type = 0;
- 
- 		if (type != prev_type)
+Thanks, I catch your point.
+Yes, the issue explained my description only happen old distro kernel.
+I haven't notice this issue was already fixed. very thanks.
+
+but above fix doesn't make sense. it mean
+ - concurrent reclaim can drop too many usable memory
+ - but only gurantee it doesn't cause oom
+
+Then, I'll fix my patch description.
+
+
+
+> > Those two patches fix different problem.
+> >
+> > 1/2 fixes the issue of that concurrent direct reclaimer makes
+> > too many isolated pages.
+> > 2/2 fixes the issue of that reclaim and exit race makes accidental oom.
+> >
+> >
+> >> If it can't, Could you explain the scenario in more detail ?
+> >
+> > __alloc_pages_may_oom() check don't effect the threads of already
+> > entered reclaim. it's obvious.
+> 
+> Threads which are entered into direct reclaim mode will call
+> __alloc_pages_may_oom before out_of_memory.
+> At that time, if one big process is killed a while ago,
+> get_page_from_freelist in __alloc_pages_may_oom will be succeeded at
+> last. So I think it doesn't occur OOM.
+> 
+> But in that case, we suffered from unnecessary page scanning per each
+> priority(12~0). So in this case, your patch is good to me. then you
+> would be better to change log. :)
+
+
+
+
+
+
