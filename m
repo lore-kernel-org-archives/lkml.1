@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbZGMRba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbZGMRcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756722AbZGMRba (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756703AbZGMRba
+	id S1756746AbZGMRcm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbZGMRcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:31:30 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:49426 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756656AbZGMRb3 (ORCPT
+	Mon, 13 Jul 2009 13:32:41 -0400
+Received: from smtp.mppmu.mpg.de ([134.107.24.58]:49892 "EHLO
+	smtp.mppmu.mpg.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756703AbZGMRck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:31:29 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: perfmon2-devel@lists.sourceforge.net
-Subject: Re: [perfmon2] I.1 - System calls - ioctl
-Date: Mon, 13 Jul 2009 19:30:23 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.96; x86_64; ; )
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
-       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622125837.GA9429@infradead.org> <1247482393.7529.74.camel@twins>
-In-Reply-To: <1247482393.7529.74.camel@twins>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 13 Jul 2009 13:32:40 -0400
+Date: Mon, 13 Jul 2009 19:05:19 +0200 (CEST)
+From: Peter Breitenlohner <peb@mppmu.mpg.de>
+To: Karel Zak <kzak@redhat.com>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng v2.16-rc2 -- a small patch
+In-Reply-To: <20090702181031.GB4122@nb.net.home>
+Message-ID: <alpine.LNX.2.00.0907131900290.31109@pcl321.mppmu.mpg.de>
+References: <20090702181031.GB4122@nb.net.home>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907131930.23840.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+DeNcU6AqgiPw10SJfcBEnlPbGvUB+VXQnj5W
- ol/YAlESXCtPvym4lOyoOktIzr7H97MFbJPGQF1zrrf5NqC23O
- xWfIBANrzgVd+sVJmWGxw==
+Content-Type: MULTIPART/MIXED; BOUNDARY="1803957763-1937402321-1247504719=:31109"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 July 2009, Peter Zijlstra wrote:
-> On Mon, 2009-06-22 at 08:58 -0400, Christoph Hellwig wrote:
-> > But talking about syscalls the sys_perf_counter_open prototype is
-> > really ugly - it uses either the pid or cpu argument which is a pretty
-> > clear indicator it should actually be two sys calls.
-> 
-> Would something like the below be any better?
-> 
-> It would allow us to later add something like PERF_TARGET_SOCKET and
-> things like that.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I don't think it helps on the ugliness side. You basically make the
-two arguments a union, but instead of adding another flag and directly
-passing a union, you also add interface complexity.
+--1803957763-1937402321-1247504719=:31109
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
-A strong indication for the complexity is that you got it wrong ;-) :
+On Thu, 2 Jul 2009, Karel Zak wrote:
 
-> +struct perf_counter_target {
-> +	__u32			id;
-> +	__u64			val;
-> +};
+> The second util-linux-ng 2.16 release candidate is available at
+>
+>   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
+>
+> Feedback and bug reports, as always, are welcomed.
 
-This structure is not compatible between 32 and 64 bit user space on x86,
-because everything except i386 adds implicit padding between id and val.
+Hi Karel,
 
-Other than that, making it extensible sounds reasonable. How about just
-using a '__u64 *target' and a bit in the 'flags' argument?
+I just tried to build util-linux-ng-2.16-rc2 (i686/x86_64 linux-gnu
+with gcc-3.4.6, libc-2.3.6), but in order to succeed I had to apply the
+attached patch (#include <stdarg.h> from shlibs/blkid/src/blkidP.h).
 
-	Arnd <><
+Regards
+Peter
+--1803957763-1937402321-1247504719=:31109
+Content-Type: TEXT/PLAIN; charset=US-ASCII; name=util-linux-ng-2.16-rc2-patch
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.LNX.2.00.0907131905190.31109@pcl321.mppmu.mpg.de>
+Content-Description: 
+Content-Disposition: attachment; filename=util-linux-ng-2.16-rc2-patch
+
+ZGlmZiAtdXIgLXggTWFrZWZpbGUuaW4gLXggJyoubTQnIC14IGNvbmZpZ3Vy
+ZSAteCBhdXRvbTR0ZS5jYWNoZSAteCBNYWtldmFycy50ZW1wbGF0ZSAteCAn
+Ki5nbW8nIHV0aWwtbGludXgtbmctMi4xNi1yYzIub3JpZy9zaGxpYnMvYmxr
+aWQvc3JjL2Jsa2lkUC5oIHV0aWwtbGludXgtbmctMi4xNi1yYzIvc2hsaWJz
+L2Jsa2lkL3NyYy9ibGtpZFAuaA0KLS0tIHV0aWwtbGludXgtbmctMi4xNi1y
+YzIub3JpZy9zaGxpYnMvYmxraWQvc3JjL2Jsa2lkUC5oCTIwMDktMDctMDEg
+MTc6MTk6NTQuMDAwMDAwMDAwICswMjAwDQorKysgdXRpbC1saW51eC1uZy0y
+LjE2LXJjMi9zaGxpYnMvYmxraWQvc3JjL2Jsa2lkUC5oCTIwMDktMDctMTMg
+MTg6NTM6NTMuMDAwMDAwMDAwICswMjAwDQpAQCAtMTgsNiArMTgsNyBAQA0K
+IA0KICNpbmNsdWRlIDxzeXMvdHlwZXMuaD4NCiAjaW5jbHVkZSA8c3RkaW8u
+aD4NCisjaW5jbHVkZSA8c3RkYXJnLmg+DQogDQogI2luY2x1ZGUgImJpdG9w
+cy5oIgkvKiAkKHRvcF9zcmNkaXIpL2luY2x1ZGUvICovDQogI2luY2x1ZGUg
+ImJsa2lkLmgiDQo=
+
+--1803957763-1937402321-1247504719=:31109--
