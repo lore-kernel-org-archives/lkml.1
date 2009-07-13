@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZGMJA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbZGMJBN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbZGMJA7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 05:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754962AbZGMJA6
+	id S1755057AbZGMJBN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 05:01:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbZGMJBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 05:00:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46596 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754923AbZGMJA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 05:00:57 -0400
-Date: Mon, 13 Jul 2009 11:00:56 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: [rfc][patch 3/4] fs: new truncate sequence
-Message-ID: <20090713090056.GA3452@wotan.suse.de>
-References: <20090707163042.GA14947@infradead.org> <20090708063225.GL2714@wotan.suse.de> <20090708104701.GA31419@infradead.org> <20090708123412.GQ2714@wotan.suse.de> <4A54C435.1000503@panasas.com> <20090709075100.GU2714@wotan.suse.de> <4A59A517.1080605@panasas.com> <20090712144717.GA18163@infradead.org> <20090713065917.GO14666@wotan.suse.de> <4A5AF637.3090405@panasas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Jul 2009 05:01:13 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32786 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755023AbZGMJBM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 05:01:12 -0400
+Date: Mon, 13 Jul 2009 11:01:06 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Eric Miao <eric.miao@marvell.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Paul Sokolovsky <pmiscml@gmail.com>, Richard Purdie <rpurdie@rpsys.net>,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] move corgi-ssp's probe function to .devinit.text
+Message-ID: <20090713090106.GB10549@pengutronix.de>
+References: <20090711170548.GC5205@suse.de> <1247345591-22643-1-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-2-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-3-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-4-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-5-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-6-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-7-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-8-git-send-email-u.kleine-koenig@pengutronix.de> <4A5AF3D1.7080802@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4A5AF637.3090405@panasas.com>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A5AF3D1.7080802@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 11:54:15AM +0300, Boaz Harrosh wrote:
-> On 07/13/2009 09:59 AM, Nick Piggin wrote:
-> > On Sun, Jul 12, 2009 at 10:47:18AM -0400, Christoph Hellwig wrote:
-> >> On Sun, Jul 12, 2009 at 11:55:51AM +0300, Boaz Harrosh wrote:
-> >>> I wish you would split it.
-> >>>
-> >>> one - helper to be called by converted file systems
-> >>>       (Which just ignores the ATTR_SIZE)
-> >>> second - to be set into .setattr which does the simple_setsize + above.
-> >>>
-> >>> More clear for FS users like me (and that ugly unmask of ATTR_SIZE)
-> >>>
-> >>> or it's just me?
-> >> Yeah, that seems be a lot cleaner.  But let's wait until we got
-> >> rid of ->truncate for all filesystems to have the bigger picture.
+On Mon, Jul 13, 2009 at 04:44:01PM +0800, Eric Miao wrote:
+> Uwe Kleine-König wrote:
+> > A pointer to corgi_ssp_probe is passed to the core via
+> > platform_driver_register and so the function must not disappear when the
+> > .init sections are discarded.  Otherwise (when having HOTPLUG=y)
+> > unbinding and binding a device to the driver via sysfs will result in an
+> > oops as does a device being registered late.
 > > 
-> > Agreed, if it is a common sequence / requirement for filesystems
-> > then of course I will not object to a helper to make things clearer
-> > or share code.
-> > 
-> > I would like to see inode_setattr renamed into simple_setattr, and
-> > then also .setattr made mandatory, so I don't like to cut code out
-> > of inode_setattr which makes it unable to be the simple_setattr
-> > after the old truncate code is removed.
+> > An alternative to this patch is using platform_driver_probe instead of
+> > platform_driver_register plus removing the pointer to the probe function
+> > from the struct platform_driver.
 > > 
 > 
-> I thought you meant inode_setattr will go away. There will
-> only be simple_setattr() and inode_setattr_nosize()
-> 
-> For the time been simple_setattr() will also take care
-> of old ->truncate FSs. And in the absence of .setattr
-> simple_setattr() is called. Have I miss-understood?
-> 
-> again please tell me when all this is in effect I want
-> to do the conversion in exofs.
+> This corgi_ssp.c and corgi_lcd.c will be obsoleted soon, the only user
+> corgi_ts.c has been marked as deprecated, and will be remove once the
+> ssp cleanup work is done, so further fixes to these files are pointless.
+OK, dropped.  I hope that either the drivers will be gone when I respin
+this series or I still remember having dropped the patches :-)
 
-AFAIKS inode_setattr basically is simple_setattr, so I think at some
-point it should just get renamed to simple_setattr. Adding
-simple_setattr_nosize or similar helper would be fine too. I don't
-care much about the exact details... But anyway these things are not
-so important to this truncate patchset at the moment.
+Best regards
+Uwe
 
-
-> [BTW these changes are a life saver for me in regard to
-> the kind of things I need to do for pNFS-exports]
-
-You mean the truncate patches? Well that's nice to know. I
-guess it has always been possible just to redefine your own
-setattr, but now it should be a bit nicer with the truncate
-helpers...
-
-Thanks,
-Nick
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
