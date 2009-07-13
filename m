@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbZGMTjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbZGMTlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbZGMTjz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 15:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZGMTjy
+	id S1755503AbZGMTlq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 15:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbZGMTlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 15:39:54 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:54323 "EHLO
+	Mon, 13 Jul 2009 15:41:45 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:54345 "EHLO
 	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754813AbZGMTjx (ORCPT
+	with ESMTP id S1754817AbZGMTlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 15:39:53 -0400
+	Mon, 13 Jul 2009 15:41:45 -0400
 From: John Stoffel <john@stoffel.org>
 To: James.Bottomley@HansenPartnership.com
 Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
        John Stoffel <john@stoffel.org>
-Subject: [PATCH 5/5] Make SCSI SG v4 driver enabled by default and remove EXPERIMENTAL dependency, since udev depends on BSG.
-Date: Mon, 13 Jul 2009 15:39:33 -0400
-Message-Id: <1247513973-24899-1-git-send-email-john@stoffel.org>
+Subject: [PATCH] Make SCSI SG v4 driver enabled by default and remove EXPERIMENTAL dependency, since udev depends on BSG.
+Date: Mon, 13 Jul 2009 15:41:39 -0400
+Message-Id: <1247514099-25031-1-git-send-email-john@stoffel.org>
 X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Make Block Layer SG support v4 the default, since recent udev versions 
+depend on this to access serial numbers and other low level info properly.
+
 
 Signed-off-by: John Stoffel <john@stoffel.org>
 ---
