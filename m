@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbZGMOZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbZGMOxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbZGMOZW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 10:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbZGMOZU
+	id S1756087AbZGMOxI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 10:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbZGMOxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 10:25:20 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:57768 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754845AbZGMOZU (ORCPT
+	Mon, 13 Jul 2009 10:53:08 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:57662
+	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756053AbZGMOxH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 10:25:20 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH V2] score: add regset support
-Date: Mon, 13 Jul 2009 16:24:28 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.96; x86_64; ; )
-Cc: Christoph Hellwig <hch@infradead.org>, linux-arch@vger.kernel.org,
-       linux-arch-owner@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <OF43365008.5559F266-ON482575F2.001F17EE-482575F2.00212259@sunplusct.com>
-In-Reply-To: <OF43365008.5559F266-ON482575F2.001F17EE-482575F2.00212259@sunplusct.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?gb2312?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2E?=
- =?gb2312?q?a=5E3zb?=)
- =?gb2312?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?gb2312?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 13 Jul 2009 10:53:07 -0400
+X-SpamScore: -18
+X-BigFish: VPS-18(zz1432R98dN1805Mzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KMQ6O8-04-GBA-01
+Date: Mon, 13 Jul 2009 16:52:56 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [GIT PULL] core kernel fixes
+Message-ID: <20090713145256.GI19087@amd.com>
+References: <20090710162848.GA26862@elte.hu>
+ <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="gb2312"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907131624.28286.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+STbBD8IzRaH3qS458loGcvKS6eLkzg5zT+bI
- WCJqQ80Wq1YvFVhpdbMMD0237iTgfjXPK01uJ8Unq0Lgy5Jbpt
- rlCt2ZUCOBbv4tLjIhQYw==
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Sitz=3A_Dornach=2C_Gemeinde_Aschheim=2C_Land?=
+	=?iso-8859-1?Q?kreis_M=FCnchen=2C_Registergericht_M=FCnchen?=
+	=?iso-8859-1?Q?=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 13 Jul 2009 14:52:57.0272 (UTC) FILETIME=[9BEBEB80:01CA03C9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 13 July 2009, liqin.chen@sunplusct.com wrote:
+On Fri, Jul 10, 2009 at 12:06:23PM -0700, Linus Torvalds wrote:
+> What am I missing (apart from the fact that all those variables are 
+> horribly badly named)?
 > 
-> unsigned long pad0[6];
+> Also, the tests make no sense. That's not how you are supposed to check 
+> for overlap to begin with.
+
+The tests made sense in my brain when I wrote that function ;-) My code
+checked for possible overlap scenarios. I havn't thought about doing it
+much much simpler...
+
 > 
-> was place at the start of pt_regs use 
-> to hold the arguments from userland.
-> caller(exception handler) not need to
-> change stack pointer.
->
-> unsigned long orig_r4;
-> unsigned long orig_r7;
-> move to end of the pt_regs haven't 
-> problem.
+> Isn't it easier to test for _not_ overlapping?
+> 
+> 	/* range1 is fully before range2 */
+> 	(end1 <= start2 || 
+> 	/* range1 is fully after range2 */
+> 	start1 >= end2)
 
-Ok, I see.
+... by checking for non-overlap and negating the result. But now I know
+better :-)
 
-Maybe to get a nicer layout, you can define separate
-structures then:
+	Joerg
 
-struct user_regs_struct {
-        unsigned long regs[32];
 
-        unsigned long cel;
-        unsigned long ceh;
- 
-        unsigned long sr0;      /* cnt */
-        unsigned long sr1;      /* lcr */
-        unsigned long sr2;      /* scr */
- 
-        unsigned long cp0_epc;
-        unsigned long cp0_ema;
-        unsigned long cp0_psr;
-        unsigned long cp0_ecr;
-        unsigned long cp0_condition;
-
-	unsigned long reserved[6]; /* future extensions */
-};
-
-#ifdef __KERNEL__
-struct pt_regs {
-	/* stack arguments */
-        unsigned long pad0[6];
-
-	/* internal use */
-        unsigned long orig_r4;
-        unsigned long orig_r7;
-        long is_syscall;
-
-	/* saved registers */
-	struct user_regs_struct uregs;
-};
-#endif
-
-That would keep the user struct relatively clean.
-
-	Arnd <><
