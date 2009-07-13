@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751217AbZGMEFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751800AbZGMEWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751217AbZGMEFj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 00:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZGMEFe
+	id S1751800AbZGMEWQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 00:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZGMEV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 00:05:34 -0400
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:42126 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbZGMEFd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 00:05:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Rq8hS7aaX7rkTMgWuJ70UJFFlibVMyufj1TtGjvE+c2I383aoss5Qnl82Aclb6X3db
-         KyTqgBAWUCyTSCu7RwOCZcW0DfDQkZyBrdSEuU/i+mIRXW3FWYnzFCpFgF+f/NjwA/BA
-         jM2Ts9TTTwIYOBr10CIkpiNodnktEuD9MSLpY=
-Date: Sun, 12 Jul 2009 21:05:29 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, rjw@sisk.pl, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [regression] 2.6.30 leaking keys on console switch
-Message-ID: <20090713040528.GH10819@dtor-d630.eng.vmware.com>
-References: <87eiss7uhb.fsf@basil.nowhere.org> <alpine.LNX.2.00.0907071048210.4994@wotan.suse.de> <20090708065325.GE3309@dtor-d630.eng.vmware.com> <alpine.LNX.2.00.0907091319480.27327@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0907091319480.27327@wotan.suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 13 Jul 2009 00:21:58 -0400
+Received: from sh.osrg.net ([192.16.179.4]:58428 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751084AbZGMEVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 00:21:55 -0400
+Date: Mon, 13 Jul 2009 13:20:26 +0900
+To: Ian.Campbell@citrix.com
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, tony.luck@intel.com,
+       x86@kernel.org, beckyb@kernel.crashing.org, joerg.roedel@amd.com
+Subject: Re: [00/15] swiotlb cleanup
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1247234520.4002.418.camel@zakaz.uk.xensource.com>
+References: <20090710051236.GA22218@elte.hu>
+	<20090710143408A.fujita.tomonori@lab.ntt.co.jp>
+	<1247234520.4002.418.camel@zakaz.uk.xensource.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090713131859N.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 13 Jul 2009 13:20:26 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 09, 2009 at 01:20:56PM +0200, Jiri Kosina wrote:
-> On Tue, 7 Jul 2009, Dmitry Torokhov wrote:
-> 
-> > > Are you seeing with a specific keyboard type(s), or is this a general 
-> > > problem? Could you confirm whether it is specific either to PS2 or USB 
-> > > keyboards only, or it does happen for both?
-> > Can't think of any input chnages in this timeftrame that would cause
-> > such effect. Maybe TTY changes?
-> 
-> By the way, if I understand it correctly, Andi is able to see the very 
-> same effect even inside X, so tty can be possibly ruled out, right?
-> 
+On Fri, 10 Jul 2009 15:02:00 +0100
+Ian Campbell <Ian.Campbell@citrix.com> wrote:
 
-Umm, doesn't SuSE still use legacy keyboard driver instead of evdev in
-X? Thomas mentioned recently it still did...
+> On Fri, 2009-07-10 at 14:35 +0900, FUJITA Tomonori wrote:
+> > I don't think that we need to take account of dom0 support; we don't
+> > have a clear idea about an acceptable dom0 design (it needs to use
+> > swiotlb code? I don't know yet), we don't even know we will have dom0
+> > support in mainline. That's why I didn't CC this patchset to Xen
+> > camp.
+> 
+> The core domain 0 patches which were the subject of the discussions a
+> few week back are completely orthogonal to the swiotlb side of things
 
--- 
-Dmitry
+? If we don't merge dom0 patch, we don't need dom0 changes to
+swiotlb. We don't know we would have dom0 support in mainline. Or I
+overlooked something?
+
+
+> and whatever form they eventually take I do not think it will have any
+> impact on the shape of the solution which we arrive at for swiotlb. I
+> don't think that assuming that domain 0 can never be done in a way which
+> everyone finds acceptable and therefore discounting all consideration of
+> it is a useful way to make progress with these issues.
+> 
+> The DMA use case is much more tightly tied to the paravirtualized MMU
+> (which is already in the kernel for domU purposes) than it is to "the
+> domain 0" patches anyway. Although domain 0 is probably the main use
+> case, at least today, swiotlb support is also used in a Xen domU as part
+> of the support for direct assignment of PCI devices to paravirtualised
+> guests (pci passthrough).
+> 
+> The pci frontend driver depends on some bits of the domain 0 physical
+> interrupt patches as well as swiotlb which is why I/we haven't tried to
+> upstream that particular series yet.
+
+As far as I know, you have not posted anything about changes to
+swiotlb for domU. I can't discuss it. If you want, please send
+patches.
