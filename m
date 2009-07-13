@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbZGMDr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbZGMD7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbZGMDr5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 23:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZGMDrx
+	id S1753640AbZGMD7H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 23:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZGMD7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 23:47:53 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:59026 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752697AbZGMDrw (ORCPT
+	Sun, 12 Jul 2009 23:59:00 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:61853 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752592AbZGMD7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 23:47:52 -0400
+	Sun, 12 Jul 2009 23:59:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=k2Gqxbt/LP7itLG81bu2zKqWpmk2qa9Bfjoy7Pk6zLfOeXacie8Ev3tovR5bdn8C/0
-         NFPGTdYX2MrlrK8cg2hY6Jb455j2vSsUDxuFXkYSBAcOch7qPvJHXrDBt0PQ/Lwcj+Iw
-         lI9zsYNaYPQaqmiFUI36DZwyJDtoVHtYQwtvA=
-Date: Sun, 12 Jul 2009 20:47:47 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, nico@cam.org
-Subject: Re: [PATCH] trivial: ucb1400_ts: Fix a misleading function name
-Message-ID: <20090713034747.GE10819@dtor-d630.eng.vmware.com>
-References: <20090709144620.GC3646@local>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=A6iFvWJMNORXumh9sjbCtc9REt4/+du4h2Iz2xify6tQGCc7XNiMGNX/z8/RriLTeg
+         GW4kQz5cAmqCH4M/Ab3ro6u8thEH1JXS5HaZMg4Nqxi1qGzUHzRE2KWN5L1BTOjkSf6X
+         pyBMDN2Y9USmBE+QjB8E/YHVRGu1efeFPQ1LE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090709144620.GC3646@local>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4A5A8430.7050300@cn.fujitsu.com>
+References: <b9df5fa10907120358t7101511cle30e025c3adcbe54@mail.gmail.com>
+	 <4A5A8430.7050300@cn.fujitsu.com>
+Date: Mon, 13 Jul 2009 09:58:58 +0600
+Message-ID: <b9df5fa10907122058s3edc4c81t670aed7b7160cf82@mail.gmail.com>
+Subject: Re: [PATCH] ftrace: Add missing __init in ftrace_profile_debugfs()
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 09, 2009 at 04:46:21PM +0200, Hans J. Koch wrote:
-> The driver for UCB1400 touchscreen controllers contains a function named
-> ucb1400_ts_pen_down(), but it returns 0 if the pen is down and 1 if it's up.
-> This causes confusion, especially since it's used as a boolean truth value
-> later in the code. This patch renames it.
-> 
-> Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-> 
+On Mon, Jul 13, 2009 at 6:47 AM, Li Zefan<lizf@cn.fujitsu.com> wrote:
 
-Applied to 'next;' branch, thank you Hans.
+> Thanks. It has been fixed by commit
+> 9d9949ce45b42be7a8157ea00fff2b1005ed844a in tip tree
+>
+Ah, sorry for noice.
 
--- 
-Dmitry
+>> init. Also it contains a trivial style fix, __init should be placed
+>> between function type and function name (ftrace_init_debugfs).
+>>
+>
+> I think both styles are Ok.
+
+Yes, but I think we need to be consistent with one style.
+>
+>
