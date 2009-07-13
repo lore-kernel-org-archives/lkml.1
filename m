@@ -1,208 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZGMRzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZGMRzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756822AbZGMRzd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756810AbZGMRza
+	id S1756809AbZGMRzY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbZGMRzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:55:30 -0400
+	Mon, 13 Jul 2009 13:55:22 -0400
 Received: from mail-bw0-f228.google.com ([209.85.218.228]:60894 "EHLO
 	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756411AbZGMRz0 (ORCPT
+	with ESMTP id S1756798AbZGMRzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:55:26 -0400
+	Mon, 13 Jul 2009 13:55:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=OGzC3od+H8RRThEFUMHmXTsVbw1UW5YR79qFspLBrg9rLZo4hmU5lcrKnGPfIQmMiO
-         5A6VoYgN6pslDqCrWbBIs9fSeU4LLuX14GaX0cxb4FG5ssCwiKl0xzwgv0MCGF9PjEAu
-         hKPqHiBNAHtGXiCBCIEM9CrXX96qhzCpOELH4=
+        b=NRrF2MVL+4opvksOwVHLu4gSlMLDOw9ekO3c7Uj+V8BbTuQ8XkuacXDo+vI7GjebEG
+         vRzeIslKNYQmGreK06BEFBVlVvIx6V4c77nyv9iH1QTq5g+C7fY6+3QB3Shm//N7fPgV
+         xC87ilO9bgz3vz+DW+40AR425eCruzpGk65Io=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 13 Jul 2009 20:02:04 +0200
-Message-Id: <20090713180204.15985.24411.sendpatchset@localhost.localdomain>
+Date: Mon, 13 Jul 2009 20:01:57 +0200
+Message-Id: <20090713180157.15985.29900.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090713180112.15985.88819.sendpatchset@localhost.localdomain>
 References: <20090713180112.15985.88819.sendpatchset@localhost.localdomain>
-Subject: [PATCH 08/10] Staging: rtl8187se/ieee80211: switch to use <linux/ieee80211.h>
+Subject: [PATCH 07/10] Staging: rtl8187se: rename struct ieee80211_hdr_QOS to struct ieee80211_hdr_4addrqos
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8187se/ieee80211: switch to use <linux/ieee80211.h>
+Subject: [PATCH] Staging: rtl8187se: rename struct ieee80211_hdr_QOS to struct ieee80211_hdr_4addrqos
 
-While at it:
-* remove some commented out code
-* remove some unused definitions
+Rename struct ieee80211_hdr_QOS to struct ieee80211_hdr_4addrqos
+and QOS_ctl field to qos_ctl (to match the naming used by rtl8192su).
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/TODO                  |    1 
- drivers/staging/rtl8187se/ieee80211/ieee80211.h |  122 ------------------------
- 2 files changed, 1 insertion(+), 122 deletions(-)
+ drivers/staging/rtl8187se/TODO                     |    1 -
+ drivers/staging/rtl8187se/ieee80211/ieee80211.h    |    4 ++--
+ drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c |   18 +++++++++---------
+ 3 files changed, 11 insertions(+), 12 deletions(-)
 
 Index: b/drivers/staging/rtl8187se/TODO
 ===================================================================
 --- a/drivers/staging/rtl8187se/TODO
 +++ b/drivers/staging/rtl8187se/TODO
-@@ -2,7 +2,6 @@ TODO:
+@@ -1,6 +1,5 @@
+ TODO:
  - prepare private ieee80211 stack for merge with rtl8192su's version:
+-  - rename struct ieee80211_hdr_QOS to struct ieee80211_hdr_4addrqos
    - add hwsec_active flag to struct ieee80211_device
    - add bHwSec flag to cb_desc structure
--  - switch ieee80211.h to use <linux/ieee80211.h>
- - switch to use shared "librtl" instead of private ieee80211 stack
- - switch to use LIB80211
- - switch to use MAC80211
+   - switch ieee80211.h to use <linux/ieee80211.h>
 Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
 ===================================================================
 --- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
 +++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
-@@ -30,20 +30,7 @@
- #include <linux/timer.h>
- #include <linux/sched.h>
- #include <linux/wireless.h>
--
--/*
--#ifndef bool
--#define bool int
--#endif
--
--#ifndef true
--#define true   1
--#endif
--
--#ifndef false
--#define false  0
--#endif
--*/
-+#include <linux/ieee80211.h>
+@@ -180,7 +180,7 @@ struct ieee80211_hdr_4addr {
+ 	u8 addr4[ETH_ALEN];
+ } __attribute__ ((packed));
  
- #define KEY_TYPE_NA		0x0
- #define KEY_TYPE_WEP40 		0x1
-@@ -247,61 +234,8 @@ struct eapol {
- #define	MAX_FRAG_THRESHOLD     2346U
+-struct ieee80211_hdr_QOS {
++struct ieee80211_hdr_4addrqos {
+ 	u16 frame_ctl;
+ 	u16 duration_id;
+ 	u8 addr1[ETH_ALEN];
+@@ -188,7 +188,7 @@ struct ieee80211_hdr_QOS {
+ 	u8 addr3[ETH_ALEN];
+ 	u16 seq_ctl;
+ 	u8 addr4[ETH_ALEN];
+-	u16 QOS_ctl;
++	u16 qos_ctl;
+ } __attribute__ ((packed));
  
- /* Frame control field constants */
--#define IEEE80211_FCTL_VERS		0x0002
--#define IEEE80211_FCTL_FTYPE		0x000c
--#define IEEE80211_FCTL_STYPE		0x00f0
--#define IEEE80211_FCTL_TODS		0x0100
--#define IEEE80211_FCTL_FROMDS		0x0200
- #define IEEE80211_FCTL_DSTODS		0x0300 //added by david
--#define IEEE80211_FCTL_MOREFRAGS	0x0400
--#define IEEE80211_FCTL_RETRY		0x0800
--#define IEEE80211_FCTL_PM		0x1000
--#define IEEE80211_FCTL_MOREDATA	0x2000
- #define IEEE80211_FCTL_WEP		0x4000
--#define IEEE80211_FCTL_ORDER		0x8000
--
--#define IEEE80211_FTYPE_MGMT		0x0000
--#define IEEE80211_FTYPE_CTL		0x0004
--#define IEEE80211_FTYPE_DATA		0x0008
--
--/* management */
--#define IEEE80211_STYPE_ASSOC_REQ	0x0000
--#define IEEE80211_STYPE_ASSOC_RESP 	0x0010
--#define IEEE80211_STYPE_REASSOC_REQ	0x0020
--#define IEEE80211_STYPE_REASSOC_RESP	0x0030
--#define IEEE80211_STYPE_PROBE_REQ	0x0040
--#define IEEE80211_STYPE_PROBE_RESP	0x0050
--#define IEEE80211_STYPE_BEACON		0x0080
--#define IEEE80211_STYPE_ATIM		0x0090
--#define IEEE80211_STYPE_DISASSOC	0x00A0
--#define IEEE80211_STYPE_AUTH		0x00B0
--#define IEEE80211_STYPE_DEAUTH		0x00C0
--#define IEEE80211_STYPE_MANAGE_ACT	0x00D0
--
--/* control */
--#define IEEE80211_STYPE_PSPOLL		0x00A0
--#define IEEE80211_STYPE_RTS		0x00B0
--#define IEEE80211_STYPE_CTS		0x00C0
--#define IEEE80211_STYPE_ACK		0x00D0
--#define IEEE80211_STYPE_CFEND		0x00E0
--#define IEEE80211_STYPE_CFENDACK	0x00F0
--
--/* data */
--#define IEEE80211_STYPE_DATA		0x0000
--#define IEEE80211_STYPE_DATA_CFACK	0x0010
--#define IEEE80211_STYPE_DATA_CFPOLL	0x0020
--#define IEEE80211_STYPE_DATA_CFACKPOLL	0x0030
--#define IEEE80211_STYPE_NULLFUNC	0x0040
--#define IEEE80211_STYPE_CFACK		0x0050
--#define IEEE80211_STYPE_CFPOLL		0x0060
--#define IEEE80211_STYPE_CFACKPOLL	0x0070
--#define IEEE80211_STYPE_QOS_DATA	0x0080 //added for WMM 2006/8/2
--#define IEEE80211_STYPE_QOS_NULL	0x00C0
--
--
--#define IEEE80211_SCTL_FRAG		0x000F
--#define IEEE80211_SCTL_SEQ		0xFFF0
--
+ struct ieee80211_hdr_3addr {
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+@@ -105,12 +105,12 @@ ieee80211_frag_cache_get(struct ieee8021
+ 	unsigned int seq = WLAN_GET_SEQ_SEQ(sc);
+ 	struct ieee80211_frag_entry *entry;
+ 	struct ieee80211_hdr_3addrqos *hdr_3addrqos;
+-	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
++	struct ieee80211_hdr_4addrqos *hdr_4addrqos;
+ 	u8 tid;
  
- /* debug macros */
+ 	if (((fc & IEEE80211_FCTL_DSTODS) == IEEE80211_FCTL_DSTODS)&&IEEE80211_QOS_HAS_SEQ(fc)) {
+-	  hdr_4addr_QoS = (struct ieee80211_hdr_QOS *)hdr;
+-	  tid = le16_to_cpu(hdr_4addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
++	  hdr_4addrqos = (struct ieee80211_hdr_4addrqos *)hdr;
++	  tid = le16_to_cpu(hdr_4addrqos->qos_ctl) & IEEE80211_QOS_TID;
+ 	  tid = UP2AC(tid);
+ 	  tid ++;
+ 	} else if (IEEE80211_QOS_HAS_SEQ(fc)) {
+@@ -172,12 +172,12 @@ static int ieee80211_frag_cache_invalida
+ 	unsigned int seq = WLAN_GET_SEQ_SEQ(sc);
+ 	struct ieee80211_frag_entry *entry;
+ 	struct ieee80211_hdr_3addrqos *hdr_3addrqos;
+-	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
++	struct ieee80211_hdr_4addrqos *hdr_4addrqos;
+ 	u8 tid;
  
-@@ -407,63 +341,9 @@ struct ieee80211_snap_hdr {
- #define WLAN_GET_SEQ_FRAG(seq) ((seq) & IEEE80211_SCTL_FRAG)
- #define WLAN_GET_SEQ_SEQ(seq)  ((seq) & IEEE80211_SCTL_SEQ)
+ 	if(((fc & IEEE80211_FCTL_DSTODS) == IEEE80211_FCTL_DSTODS)&&IEEE80211_QOS_HAS_SEQ(fc)) {
+-	  hdr_4addr_QoS = (struct ieee80211_hdr_QOS *)hdr;
+-	  tid = le16_to_cpu(hdr_4addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
++	  hdr_4addrqos = (struct ieee80211_hdr_4addrqos *)hdr;
++	  tid = le16_to_cpu(hdr_4addrqos->qos_ctl) & IEEE80211_QOS_TID;
+ 	  tid = UP2AC(tid);
+ 	  tid ++;
+ 	} else if (IEEE80211_QOS_HAS_SEQ(fc)) {
+@@ -378,13 +378,13 @@ static int is_duplicate_packet(struct ie
+ 	u16 *last_seq, *last_frag;
+ 	unsigned long *last_time;
+ 	struct ieee80211_hdr_3addrqos *hdr_3addrqos;
+-	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
++	struct ieee80211_hdr_4addrqos *hdr_4addrqos;
+ 	u8 tid;
  
--/* Authentication algorithms */
--#define WLAN_AUTH_OPEN 0
--#define WLAN_AUTH_SHARED_KEY 1
--
--#define WLAN_AUTH_CHALLENGE_LEN 128
--
- #define WLAN_CAPABILITY_BSS (1<<0)
--#define WLAN_CAPABILITY_IBSS (1<<1)
--#define WLAN_CAPABILITY_CF_POLLABLE (1<<2)
--#define WLAN_CAPABILITY_CF_POLL_REQUEST (1<<3)
--#define WLAN_CAPABILITY_PRIVACY (1<<4)
--#define WLAN_CAPABILITY_SHORT_PREAMBLE (1<<5)
--#define WLAN_CAPABILITY_PBCC (1<<6)
--#define WLAN_CAPABILITY_CHANNEL_AGILITY (1<<7)
- #define WLAN_CAPABILITY_SHORT_SLOT (1<<10)
- 
--/* Status codes */
--#define WLAN_STATUS_SUCCESS 0
--#define WLAN_STATUS_UNSPECIFIED_FAILURE 1
--#define WLAN_STATUS_CAPS_UNSUPPORTED 10
--#define WLAN_STATUS_REASSOC_NO_ASSOC 11
--#define WLAN_STATUS_ASSOC_DENIED_UNSPEC 12
--#define WLAN_STATUS_NOT_SUPPORTED_AUTH_ALG 13
--#define WLAN_STATUS_UNKNOWN_AUTH_TRANSACTION 14
--#define WLAN_STATUS_CHALLENGE_FAIL 15
--#define WLAN_STATUS_AUTH_TIMEOUT 16
--#define WLAN_STATUS_AP_UNABLE_TO_HANDLE_NEW_STA 17
--#define WLAN_STATUS_ASSOC_DENIED_RATES 18
--/* 802.11b */
--#define WLAN_STATUS_ASSOC_DENIED_NOSHORT 19
--#define WLAN_STATUS_ASSOC_DENIED_NOPBCC 20
--#define WLAN_STATUS_ASSOC_DENIED_NOAGILITY 21
--
--/* Reason codes */
--#define WLAN_REASON_UNSPECIFIED 1
--#define WLAN_REASON_PREV_AUTH_NOT_VALID 2
--#define WLAN_REASON_DEAUTH_LEAVING 3
--#define WLAN_REASON_DISASSOC_DUE_TO_INACTIVITY 4
--#define WLAN_REASON_DISASSOC_AP_BUSY 5
--#define WLAN_REASON_CLASS2_FRAME_FROM_NONAUTH_STA 6
--#define WLAN_REASON_CLASS3_FRAME_FROM_NONASSOC_STA 7
--#define WLAN_REASON_DISASSOC_STA_HAS_LEFT 8
--#define WLAN_REASON_STA_REQ_ASSOC_WITHOUT_AUTH 9
--
--
--/* Information Element IDs */
--#define WLAN_EID_SSID 0
--#define WLAN_EID_SUPP_RATES 1
--#define WLAN_EID_FH_PARAMS 2
--#define WLAN_EID_DS_PARAMS 3
--#define WLAN_EID_CF_PARAMS 4
--#define WLAN_EID_TIM 5
--#define WLAN_EID_IBSS_PARAMS 6
--#define WLAN_EID_CHALLENGE 16
--#define WLAN_EID_RSN 48
--#define WLAN_EID_GENERIC 221
--
- #define IEEE80211_MGMT_HDR_LEN 24
- #define IEEE80211_DATA_HDR3_LEN 24
- #define IEEE80211_DATA_HDR4_LEN 30
+ 	//TO2DS and QoS
+ 	if(((fc & IEEE80211_FCTL_DSTODS) == IEEE80211_FCTL_DSTODS)&&IEEE80211_QOS_HAS_SEQ(fc)) {
+-	  hdr_4addr_QoS = (struct ieee80211_hdr_QOS *)header;
+-	  tid = le16_to_cpu(hdr_4addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
++	  hdr_4addrqos = (struct ieee80211_hdr_4addrqos *)header;
++	  tid = le16_to_cpu(hdr_4addrqos->qos_ctl) & IEEE80211_QOS_TID;
+ 	  tid = UP2AC(tid);
+ 	  tid ++;
+ 	} else if(IEEE80211_QOS_HAS_SEQ(fc)) { //QoS
