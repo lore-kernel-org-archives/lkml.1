@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbZGMKV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbZGMKjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338AbZGMKV2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 06:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZGMKV1
+	id S1755397AbZGMKjX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 06:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbZGMKjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 06:21:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38815 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750843AbZGMKV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 06:21:26 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1245850216-31653-5-git-send-email-tj@kernel.org>
-References: <1245850216-31653-5-git-send-email-tj@kernel.org> <1245850216-31653-1-git-send-email-tj@kernel.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, mingo@elte.hu, andi@firstfloor.org,
-       hpa@zytor.com, tglx@linutronix.de, cl@linux-foundation.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 04/10] percpu: make 4k first chunk allocator map memory
-Date: Mon, 13 Jul 2009 11:12:53 +0100
-Message-ID: <24253.1247479973@redhat.com>
+	Mon, 13 Jul 2009 06:39:20 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:14094 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755350AbZGMKjU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 06:39:20 -0400
+Date: Mon, 13 Jul 2009 12:39:05 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] Fix staging drivers after smp_lock.h redux
+Message-ID: <20090713123905.0cb257e5@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> wrote:
+Commit 405f55712dfe464b3240d7816cc4fe4174831be2 ("headers: smp_lock.h
+redux") broke the build of two staging drivers. Fix them.
 
-> +	pr_info("PERCPU: %d 4k pages per cpu, static data %zu bytes\n",
-> +		pcpu4k_unit_pages, static_size);
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+---
+ drivers/staging/go7007/s2250-loader.c |    1 +
+ drivers/staging/usbip/usbip_common.c  |    1 +
+ 2 files changed, 2 insertions(+)
 
-It occurs to me that this is may include a bad assumption.  Page size need not
-be 4K.  I don't know that it matters, but looking at this:
+--- linux-2.6.31-rc2.orig/drivers/staging/go7007/s2250-loader.c	2009-06-10 05:05:27.000000000 +0200
++++ linux-2.6.31-rc2/drivers/staging/go7007/s2250-loader.c	2009-07-13 11:38:39.000000000 +0200
+@@ -17,6 +17,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/init.h>
++#include <linux/smp_lock.h>
+ #include <linux/usb.h>
+ #include <dvb-usb.h>
+ 
+--- linux-2.6.31-rc2.orig/drivers/staging/usbip/usbip_common.c	2009-06-10 05:05:27.000000000 +0200
++++ linux-2.6.31-rc2/drivers/staging/usbip/usbip_common.c	2009-07-13 12:31:18.000000000 +0200
+@@ -18,6 +18,7 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <linux/smp_lock.h>
+ #include <linux/file.h>
+ #include <linux/tcp.h>
+ #include <linux/in.h>
 
-> +	vm.size = num_possible_cpus() * pcpu4k_unit_pages << PAGE_SHIFT;
-> +	vm_area_register_early(&vm, PAGE_SIZE);
 
-It might.
-
-David
+-- 
+Jean Delvare
