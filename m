@@ -1,73 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZGMJ4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZGMJ4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbZGMJ4G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 05:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbZGMJ4G
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 05:56:06 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:36492 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755154AbZGMJ4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755270AbZGMJ4E (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 13 Jul 2009 05:56:04 -0400
-Date: Mon, 13 Jul 2009 10:56:03 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] switch free memory back to MIGRATE_MOVABLE
-Message-ID: <20090713095602.GA996@csn.ul.ie>
-References: <20090713023030.GA27269@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090713023030.GA27269@sli10-desk.sh.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbZGMJ4C
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 13 Jul 2009 05:56:02 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:53176 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752197AbZGMJ4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 05:56:00 -0400
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+From: Raistlin <raistlin@linux.it>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Henrik Austad <henrik@austad.us>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       "James H. Anderson" <anderson@cs.unc.edu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Ted Baker <baker@cs.fsu.edu>,
+       Dhaval Giani <dhaval.giani@gmail.com>
+In-Reply-To: <1247336891.9978.32.camel@laptop>
+References: <200907102350.47124.henrik@austad.us>
+	 <1247336891.9978.32.camel@laptop>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-+4spjaKWxCIlYZtLbDkP"
+Date: Mon, 13 Jul 2009 11:55:55 +0200
+Message-Id: <1247478955.8107.24.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 10:30:30AM +0800, Shaohua Li wrote:
-> When page is back to buddy and its order is bigger than pageblock_order, we can
-> switch its type to MIGRATE_MOVABLE. This can reduce fragmentation. The patch
-> has obvious effect when read a block device and then drop caches.
-> 
-> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 
-NAK.
+--=-+4spjaKWxCIlYZtLbDkP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-There is no point making this check in the free path, it can be left at
-whatever type it is. rmqueue fallback will already find blocks like this and
-switch the type again if necessary. The only time you might care is memory
-off-lining and at that point, you can check if a free page spans the
-pageblock and if so, ignore the existing migrate type.
+On Sat, 2009-07-11 at 20:28 +0200, Peter Zijlstra wrote:=20
+> > There are still some issues left to solve, for instance how to best
+> > handle sporadic tasks, and whether or not deadline-miss should be allow=
+,
+> > or just 'bounded deadline tardiness'. Either way, EFF should be able to
+> > handle it. Then, there are problems concerning blocking of tasks. One
+> > solution would be BWI or PEP, but I have not had the time to read
+> > properly through those, but from what I've gathered a combination of BW=
+I
+> > and PEP looks promising (anyone with good info about BWI and PEP - feel
+> > free to share! (-: ).
+>=20
+> Our SSSUP friends have a BWI paper here:
+>=20
+>   http://retis.sssup.it/~tommaso/publications/OSPERT-2008.pdf
+>=20
+And here we are! :-)
 
-> ---
->  mm/page_alloc.c |    9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> Index: linux/mm/page_alloc.c
-> ===================================================================
-> --- linux.orig/mm/page_alloc.c	2009-07-10 11:36:07.000000000 +0800
-> +++ linux/mm/page_alloc.c	2009-07-13 09:25:21.000000000 +0800
-> @@ -475,6 +475,15 @@ static inline void __free_one_page(struc
->  		order++;
->  	}
->  	set_page_order(page, order);
-> +
-> +	if (order >= pageblock_order && migratetype != MIGRATE_MOVABLE) {
-> +		int i;
-> +
-> +		migratetype = MIGRATE_MOVABLE;
-> +		for (i = 0; i < (1 << (order - pageblock_order)); i++)
-> +			set_pageblock_migratetype(page +
-> +				i * pageblock_nr_pages, MIGRATE_MOVABLE);
-> +	}
->  	list_add(&page->lru,
->  		&zone->free_area[order].free_list[migratetype]);
->  	zone->free_area[order].nr_free++;
-> 
+The paper Peter pointed you to mainly describes the work I did some
+months ago to implement BandWidth Inheritance inside one real-time Linux
+variant of us (ReTiS Lab, in Pisa, Italy)... Feel free to ask anything
+related to it directly to me.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+It is exactly implemented as a "proxy execution" protocol and things
+were easy there, since --for now-- the framework I was talking about is
+UP-only! :-(
+
+Now we are back on work on it, especially thinking on how to extend the
+protocol to SMP architectures...
+
+> Thing is, both BWI and PEP seems to work brilliantly on Uni-Processor
+> but SMP leaves things to be desired. Dhaval is currently working on a
+> PEP implementation that will migrate all the blocked tasks to the
+> owner's cpu, basically reducing it to the UP problem.
+>=20
+Nice... Only one question, doesn't this impact with task affinity
+related issues?
+
+regards,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-+4spjaKWxCIlYZtLbDkP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpbBKQACgkQk4XaBE3IOsRNpACglOdL6qHSJA9hwycAfqM8SDxP
+hh8An0mU67WmrweuEaoCN6dYe6eFpdeZ
+=uE15
+-----END PGP SIGNATURE-----
+
+--=-+4spjaKWxCIlYZtLbDkP--
+
