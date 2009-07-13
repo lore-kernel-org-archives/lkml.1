@@ -1,140 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbZGMWJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbZGMWPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932139AbZGMWJa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 18:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbZGMWJ3
+	id S1757504AbZGMWPy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 18:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbZGMWPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 18:09:29 -0400
-Received: from mga09.intel.com ([134.134.136.24]:34497 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752858AbZGMWJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 18:09:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,393,1243839600"; 
-   d="scan'208";a="532464704"
-From: Tomas Winkler <tomas.winkler@intel.com>
-To: drzeus-list@drzeus.cx, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Tomas Winkler <tomas.winkler@intel.com>
-Subject: [PATCH] imwc3200: move iwmc3200 SDIO ids to sdio_ids.h
-Date: Tue, 14 Jul 2009 01:09:13 +0300
-Message-Id: <1247522953-12702-1-git-send-email-tomas.winkler@intel.com>
-X-Mailer: git-send-email 1.6.0.6
+	Mon, 13 Jul 2009 18:15:53 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:16689 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752986AbZGMWPw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 18:15:52 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=UrJwEaqrfOG4yeUWKK1E4GWnkaseGpZPeSGqa/WZCaulr5Rnl0xvHAoXo6y/LJz2X
+	hUHrsqRYl7pNxO8UJdtcg==
+MIME-Version: 1.0
+In-Reply-To: <20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1239660512-25468-1-git-send-email-dan@embeddedalley.com>
+	 <1246998310-16764-1-git-send-email-vbuzov@embeddedalley.com>
+	 <1246998310-16764-2-git-send-email-vbuzov@embeddedalley.com>
+	 <20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 13 Jul 2009 15:15:45 -0700
+Message-ID: <6599ad830907131515h3c9622b5v309cf8f13d272bab@mail.gmail.com>
+Subject: Re: [PATCH 1/1] Memory usage limit notification addition to memcg
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers Mailing List 
+	<containers@lists.linux-foundation.org>,
+       Dan Malek <dan@embeddedalley.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. add intel's sdio vendor id to sdio_ids.h
-2. move iwmc3200 sdio devices ids to sdio_ids.h
+On Tue, Jul 7, 2009 at 5:56 PM, KAMEZAWA
+Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>
+> I know people likes to wait for file descriptor to get notification in these days.
+> Can't we have "event" file descriptor in cgroup layer and make it reusable for
+> other purposes ?
 
-This patch is against 2.6.31-rc2
-7638d5322bd89d49e013a03fe2afaeb6d214fabd
+I agree - rather than having to add a separate "wait for value to
+cross X threshold" file for each numeric usage value that people might
+be concerned about, it would be better to have a generic way to do it
+for any file. Given that this is a userspace API, it would be better
+to work out at least the generic API first, even if the initial
+implementation isn't generic.
 
-Cc:inaky.perez-gonzalez@intel.com
-Cc:cindy.h.kao@intel.com
-Cc:samuel.ortiz@intel.com
-Cc:yi.zhu@intel.com
-Cc:drzeus-list@drzeus.cx
-Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
----
- drivers/net/wimax/i2400m/sdio.c          |   10 ++++------
- drivers/net/wireless/iwmc3200wifi/sdio.c |    4 +++-
- drivers/net/wireless/iwmc3200wifi/sdio.h |    3 ---
- include/linux/mmc/sdio_ids.h             |    5 +++++
- 4 files changed, 12 insertions(+), 10 deletions(-)
+Properties that it should support include:
 
-diff --git a/drivers/net/wimax/i2400m/sdio.c b/drivers/net/wimax/i2400m/sdio.c
-index 2538825..3dc1990 100644
---- a/drivers/net/wimax/i2400m/sdio.c
-+++ b/drivers/net/wimax/i2400m/sdio.c
-@@ -58,6 +58,7 @@
-  */
- 
- #include <linux/debugfs.h>
-+#include <linux/mmc/sdio_ids.h>
- #include <linux/mmc/sdio.h>
- #include <linux/mmc/sdio_func.h>
- #include "i2400m-sdio.h"
-@@ -501,14 +502,11 @@ void i2400ms_remove(struct sdio_func *func)
- 	d_fnend(3, dev, "SDIO func %p\n", func);
- }
- 
--enum {
--	I2400MS_INTEL_VID = 0x89,
--};
--
- static
- const struct sdio_device_id i2400ms_sdio_ids[] = {
--	/* Intel: i2400m WiMAX over SDIO */
--	{ SDIO_DEVICE(I2400MS_INTEL_VID, 0x1402) },
-+	/* Intel: i2400m WiMAX (iwm3200) over SDIO */
-+	{ SDIO_DEVICE(SDIO_VENDOR_ID_INTEL,
-+	  SDIO_DEVICE_ID_INTEL_IWMC3200WIMAX) },
- 	{ }, 			/* end: all zeroes */
- };
- MODULE_DEVICE_TABLE(sdio, i2400ms_sdio_ids);
-diff --git a/drivers/net/wireless/iwmc3200wifi/sdio.c b/drivers/net/wireless/iwmc3200wifi/sdio.c
-index 9166818..995a3f6 100644
---- a/drivers/net/wireless/iwmc3200wifi/sdio.c
-+++ b/drivers/net/wireless/iwmc3200wifi/sdio.c
-@@ -65,6 +65,7 @@
- #include <linux/kernel.h>
- #include <linux/netdevice.h>
- #include <linux/debugfs.h>
-+#include <linux/mmc/sdio_ids.h>
- #include <linux/mmc/sdio.h>
- #include <linux/mmc/sdio_func.h>
- 
-@@ -492,7 +493,8 @@ static void iwm_sdio_remove(struct sdio_func *func)
- }
- 
- static const struct sdio_device_id iwm_sdio_ids[] = {
--	{ SDIO_DEVICE(SDIO_VENDOR_ID_INTEL, SDIO_DEVICE_ID_IWM) },
-+	{ SDIO_DEVICE(SDIO_VENDOR_ID_INTEL,
-+	  SDIO_DEVICE_ID_INTEL_IWMC3200WIFI) },
- 	{ /* end: all zeroes */	},
- };
- MODULE_DEVICE_TABLE(sdio, iwm_sdio_ids);
-diff --git a/drivers/net/wireless/iwmc3200wifi/sdio.h b/drivers/net/wireless/iwmc3200wifi/sdio.h
-index b3c156b..aab6b68 100644
---- a/drivers/net/wireless/iwmc3200wifi/sdio.h
-+++ b/drivers/net/wireless/iwmc3200wifi/sdio.h
-@@ -39,9 +39,6 @@
- #ifndef __IWM_SDIO_H__
- #define __IWM_SDIO_H__
- 
--#define SDIO_VENDOR_ID_INTEL 0x89
--#define SDIO_DEVICE_ID_IWM   0x1403
--
- #define IWM_SDIO_DATA_ADDR           0x0
- #define IWM_SDIO_INTR_ENABLE_ADDR    0x14
- #define IWM_SDIO_INTR_STATUS_ADDR    0x13
-diff --git a/include/linux/mmc/sdio_ids.h b/include/linux/mmc/sdio_ids.h
-index 39751c8..b46a57a 100644
---- a/include/linux/mmc/sdio_ids.h
-+++ b/include/linux/mmc/sdio_ids.h
-@@ -22,6 +22,11 @@
- /*
-  * Vendors and devices.  Sort key: vendor first, device next.
-  */
-+#define SDIO_VENDOR_ID_INTEL			0x0089
-+#define SDIO_DEVICE_ID_INTEL_IWMC3200WIMAX	0x1402
-+#define SDIO_DEVICE_ID_INTEL_IWMC3200WIFI	0x1403
-+#define SDIO_DEVICE_ID_INTEL_IWMC3200TOP        0x1404
-+#define SDIO_DEVICE_ID_INTEL_IWMC3200BT		0x1406
- 
- #define SDIO_VENDOR_ID_MARVELL			0x02df
- #define SDIO_DEVICE_ID_MARVELL_LIBERTAS		0x9103
--- 
-1.6.0.6
+- notification when a value crosses above or below a given threshold
+(which would include binary cases such as OOM notification where the
+value cross from "not-OOM" to "OOM"
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+- independent thresholds for different waiters
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+- epoll support (by using eventfd?)
 
+- automatic wakeup when a cgroup is removed
+
+- maybe optional wakeup when a thread attach occurs?
+
+- not require more than read permissions on the file containing the
+value being monitored
+
+I guess there are a few possible ways this could be exposed to userspace:
+
+1) new ioctl on cgroups files. simple but probably not popular
+
+2) new system call. maybe the cleanest, but involves changing every
+arch and is hard to script
+
+3) new per-cgroup file to control these e.g:
+  - create an eventfd
+  - open the control file to be monitored
+  - write the "<event_fd>, <control_fd> <threshold> to
+cgroup.event_control to link them together
+flexible and scriptable but maybe a clumsy interface in general
+
+Paul
