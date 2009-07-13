@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbZGMMUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbZGMMYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755706AbZGMMUy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 08:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbZGMMUx
+	id S1755708AbZGMMYt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 08:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbZGMMYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 08:20:53 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:34636 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755625AbZGMMUx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 08:20:53 -0400
-Subject: Re: inotify regression, missing events
-From: Scott James Remnant <scott@ubuntu.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1247313019.2791.1.camel@localhost>
-References: <1247328127.4003.6.camel@wing-commander>
-	 <1247313019.2791.1.camel@localhost>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-1Ceq/iMJJ8SiD8HNtIRC"
-Date: Mon, 13 Jul 2009 13:21:09 +0100
-Message-Id: <1247487669.14981.18.camel@quest>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 13 Jul 2009 08:24:49 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:42346 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755461AbZGMMYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 08:24:48 -0400
+Date: Mon, 13 Jul 2009 14:22:30 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: mmcclell@bigfoot.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/media/video: remove null dereference and unnecessary
+ test
+Message-ID: <Pine.LNX.4.64.0907131422000.6808@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Julia Lawall <julia@diku.dk>
 
---=-1Ceq/iMJJ8SiD8HNtIRC
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+In the first part of the patch, if ov is NULL, the previous call to
+mutex_lock would have failed.
 
-On Sat, 2009-07-11 at 07:50 -0400, Eric Paris wrote:
+In the second part of the patch, a non-NULL test is removed, since if the
+value is NULL, the line before would have failed.
 
-> On Sat, 2009-07-11 at 17:02 +0100, Scott James Remnant wrote:
-> > Looks like there's a regression with inotify since the rewrite to use
-> > fanotify.  Events are simply missing and not being delivered to
-> > userspace.
-> >=20
-> > Here's a simple test case, just compile and run it:
->=20
-> I bet I know exactly what it is (notification.c tail merge code isn't
-> comparing filename only inode+mask) but I'm walking out of the house.
-> I'll try my theory later tonight and post a patch.
->=20
-> Stupid Eric, Stupid.
->=20
-In other words, when the second deleted-file-in-a-directory event comes
-through, it gets ignored because there's already a
-"deleted-file-in-a-directory" event for that directory?
+Near the end of this function there is an initialization of ov to NULL
+after a kfree, even though no further reference to this variable is
+possible.  Perhaps this is considered good style, and thus I have left it
+as is.
 
-Scott
---=20
-Scott James Remnant
-scott@ubuntu.com
+The first problem was detected using the following semantic match
+(http://www.emn.fr/x-info/coccinelle/)
 
---=-1Ceq/iMJJ8SiD8HNtIRC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+// <smpl>
+@@
+expression E, E1;
+identifier f;
+statement S1,S2,S3;
+@@
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+* if (E == NULL)
+{
+  ... when != if (E == NULL) S1 else S2
+      when != E = E1
+* E->f
+  ... when any
+  return ...;
+}
+else S3
+// </smpl>
 
-iEYEABECAAYFAkpbJrUACgkQSnQiFMl4yK5hFQCffwSCIwTQSgoLdRIH7f7Zxt7P
-W5oAn21Z1GZSXGuO84oOc9OBhPYaarXv
-=cqGt
------END PGP SIGNATURE-----
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
---=-1Ceq/iMJJ8SiD8HNtIRC--
+---
+ drivers/media/video/ov511.c         |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/media/video/ov511.c b/drivers/media/video/ov511.c
+index 0bc2cf5..7c1f186 100644
+--- a/drivers/media/video/ov511.c
++++ b/drivers/media/video/ov511.c
+@@ -5914,14 +5914,12 @@ ov51x_disconnect(struct usb_interface *intf)
+ 
+ 	PDEBUG(3, "");
+ 
++	if (!ov)
++		return;
++
+ 	mutex_lock(&ov->lock);
+ 	usb_set_intfdata (intf, NULL);
+ 
+-	if (!ov) {
+-		mutex_unlock(&ov->lock);
+-		return;
+-	}
+-
+ 	/* Free device number */
+ 	ov511_devused &= ~(1 << ov->nr);
+ 
+@@ -5946,7 +5944,7 @@ ov51x_disconnect(struct usb_interface *intf)
+ 	ov->dev = NULL;
+ 
+ 	/* Free the memory */
+-	if (ov && !ov->user) {
++	if (!ov->user) {
+ 		mutex_lock(&ov->cbuf_lock);
+ 		kfree(ov->cbuf);
+ 		ov->cbuf = NULL;
