@@ -1,81 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZGMPGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZGMPIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbZGMPGw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 11:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbZGMPGw
+	id S1756128AbZGMPIh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 11:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZGMPIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 11:06:52 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35077 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756027AbZGMPGv (ORCPT
+	Mon, 13 Jul 2009 11:08:37 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:33041 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755848AbZGMPIg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 11:06:51 -0400
-Date: Mon, 13 Jul 2009 08:08:22 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Fix markup_oops to work with 32-bit userspace on a
- 64-bit kernel
-Message-ID: <20090713080822.60e3eb3a@infradead.org>
-In-Reply-To: <20090713141819.GG24310@parisc-linux.org>
-References: <20090713141819.GG24310@parisc-linux.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 13 Jul 2009 11:08:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=YK5gT1FGmnXhiqiOzETa5jI/6Fl5FWK1fxtStLxKffSi/+RN9Ms4JLekbra/rw5Fft
+         SBhW5CDX2OapxXUz8ldqb2Xl3hGVfA9FFf7HmoeX6PKPAN34yUrnTbhtg++9PsJINzo0
+         gu/DajGKRoxthOeDBJoJcgwiG7JSVAIekmrkY=
+MIME-Version: 1.0
+In-Reply-To: <20090713145451.GA2265@cmpxchg.org>
+References: <20090713130921.6441.17011.stgit@pc1117.cambridge.arm.com>
+	 <1247493898.14968.0.camel@penberg-laptop>
+	 <20090713145451.GA2265@cmpxchg.org>
+Date: Mon, 13 Jul 2009 18:08:32 +0300
+X-Google-Sender-Auth: d374a0b13f2a90b3
+Message-ID: <84144f020907130808u6f349d18jddf7528a3ea0f63e@mail.gmail.com>
+Subject: Re: [PATCH] Fix vc_screenbuf leak via con_init()
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Jul 2009 08:18:19 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
+Hi Johannes,
 
-> 
-> A 32-bit perl can't handle 64-bit addresses without using the BigInt
-> package.
-> 
-> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+On Mon, Jul 13, 2009 at 5:54 PM, Johannes Weiner<hannes@cmpxchg.org> wrote:
+>> We can probably get rid of ->vc_kmalloced completely now that the
+>> bootmem allocator is no longer used by the driver.
+>
+> That's what I thought, too.  Copied Alan.  Patch as follows:
+>
+> ---
+> From 4df0a75bdc567c9f2203dc4b0337d77a26715654 Mon Sep 17 00:00:00 2001
+> From: Johannes Weiner <hannes@cmpxchg.org>
+> Date: Mon, 13 Jul 2009 16:39:46 +0200
+> Subject: [patch] vt: drop bootmem/slab memory distinction
+>
+> Bootmem is not used for the vt screen buffer anymore as slab is now
+> available at the time the console is initialized.
+>
+> Get rid of the now superfluous distinction between slab and bootmem,
+> it's always slab.
+>
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
 
-looks sane enuogh to me
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
+> ---
+>  drivers/char/vt.c              |   12 +++---------
+>  include/linux/console_struct.h |    1 -
+>  2 files changed, 3 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+> index d9113b4..bdb9c60 100644
+> --- a/drivers/char/vt.c
+> +++ b/drivers/char/vt.c
+> @@ -769,14 +769,12 @@ int vc_allocate(unsigned int currcons)    /* return 0 on success */
+>            visual_init(vc, currcons, 1);
+>            if (!*vc->vc_uni_pagedir_loc)
+>                con_set_default_unimap(vc);
+> -           if (!vc->vc_kmalloced)
+> -               vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size, GFP_KERNEL);
+> +           vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size, GFP_KERNEL);
+>            if (!vc->vc_screenbuf) {
+>                kfree(vc);
+>                vc_cons[currcons].d = NULL;
+>                return -ENOMEM;
+>            }
+> -           vc->vc_kmalloced = 1;
+>            vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
+>            vcs_make_sysfs(currcons);
+>            atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
+> @@ -912,10 +910,8 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
+>        if (new_scr_end > new_origin)
+>                scr_memsetw((void *)new_origin, vc->vc_video_erase_char,
+>                            new_scr_end - new_origin);
+> -       if (vc->vc_kmalloced)
+> -               kfree(vc->vc_screenbuf);
+> +       kfree(vc->vc_screenbuf);
+>        vc->vc_screenbuf = newscreen;
+> -       vc->vc_kmalloced = 1;
+>        vc->vc_screenbuf_size = new_screen_size;
+>        set_origin(vc);
+>
+> @@ -994,8 +990,7 @@ void vc_deallocate(unsigned int currcons)
+>                vc->vc_sw->con_deinit(vc);
+>                put_pid(vc->vt_pid);
+>                module_put(vc->vc_sw->owner);
+> -               if (vc->vc_kmalloced)
+> -                       kfree(vc->vc_screenbuf);
+> +               kfree(vc->vc_screenbuf);
+>                if (currcons >= MIN_NR_CONSOLES)
+>                        kfree(vc);
+>                vc_cons[currcons].d = NULL;
+> @@ -2880,7 +2875,6 @@ static int __init con_init(void)
+>                INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+>                visual_init(vc, currcons, 1);
+>                vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
 
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+We can make that GFP_KERNEL, actually.
 
-
-Andrew, can you pull this into -mm patch-logistics wise please?
-
-
-> 
-> diff --git a/scripts/markup_oops.pl b/scripts/markup_oops.pl
-> index 528492b..8977401 100644
-> --- a/scripts/markup_oops.pl
-> +++ b/scripts/markup_oops.pl
-> @@ -1,6 +1,7 @@
->  #!/usr/bin/perl
->  
->  use File::Basename;
-> +use Math::BigInt;
->  
->  # Copyright 2008, Intel Corporation
->  #
-> @@ -172,8 +173,8 @@ while (<STDIN>) {
->  	parse_x86_regs($line);
->  }
->  
-> -my $decodestart = hex($target) - hex($func_offset);
-> -my $decodestop = hex($target) + 8192;
-> +my $decodestart = Math::BigInt->from_hex("0x$target") -
-> Math::BigInt->from_hex("0x$func_offset"); +my $decodestop =
-> Math::BigInt->from_hex("0x$target") + 8192; if ($target eq "0") {
->  	print "No oops found!\n";
->  	print "Usage: \n";
-> 
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> -               vc->vc_kmalloced = 0;
+>                vc_init(vc, vc->vc_rows, vc->vc_cols,
+>                        currcons || !vc->vc_sw->con_save_screen);
+>        }
+> diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
+> index d71f7c0..38fe59d 100644
+> --- a/include/linux/console_struct.h
+> +++ b/include/linux/console_struct.h
+> @@ -89,7 +89,6 @@ struct vc_data {
+>        unsigned int    vc_need_wrap    : 1;
+>        unsigned int    vc_can_do_color : 1;
+>        unsigned int    vc_report_mouse : 2;
+> -       unsigned int    vc_kmalloced    : 1;
+>        unsigned char   vc_utf          : 1;    /* Unicode UTF-8 encoding */
+>        unsigned char   vc_utf_count;
+>                 int    vc_utf_char;
+> --
+> 1.6.3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
