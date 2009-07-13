@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbZGMUnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZGMUoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757132AbZGMUnp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 16:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbZGMUnp
+	id S1757184AbZGMUoN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 16:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbZGMUoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 16:43:45 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:53515 "EHLO mgw2.diku.dk"
+	Mon, 13 Jul 2009 16:44:12 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:41149 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751371AbZGMUno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 16:43:44 -0400
-Date: Mon, 13 Jul 2009 22:43:41 +0200 (CEST)
+	id S1756996AbZGMUoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 16:44:11 -0400
+Date: Mon, 13 Jul 2009 22:44:08 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/4] drivers/block: adjust NULL test
-Message-ID: <Pine.LNX.4.64.0907132243110.12374@ask.diku.dk>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/4] drivers/net/wireless: adjust NULL test
+Message-ID: <Pine.LNX.4.64.0907132243420.12374@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -22,8 +23,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-dtp is derefenced on the lines above the test !dtp, and so it cannot be
-NULL at this point.
+Clearly bss cannot be NULL at the point of the test.  The just allocated
+bss->bss is more appropriate to test at this point.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -48,19 +49,19 @@ position p1,p2;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/block/ataflop.c             |    2 +-
+ drivers/net/wireless/iwmc3200wifi/rx.c         |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/block/ataflop.c b/drivers/block/ataflop.c
-index f5e7180..3ff0294 100644
---- a/drivers/block/ataflop.c
-+++ b/drivers/block/ataflop.c
-@@ -1627,7 +1627,7 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode,
- 				drive, dtp->blocks, dtp->spt, dtp->stretch);
+diff --git a/drivers/net/wireless/iwmc3200wifi/rx.c b/drivers/net/wireless/iwmc3200wifi/rx.c
+index 3909477..453fcb2 100644
+--- a/drivers/net/wireless/iwmc3200wifi/rx.c
++++ b/drivers/net/wireless/iwmc3200wifi/rx.c
+@@ -698,7 +698,7 @@ static int iwm_mlme_update_bss_table(struct iwm_priv *iwm, u8 *buf,
+ 	}
  
- 		/* sanity check */
--		if (!dtp || setprm.track != dtp->blocks/dtp->spt/2 ||
-+		if (setprm.track != dtp->blocks/dtp->spt/2 ||
- 		    setprm.head != 2) {
- 			redo_fd_request();
- 			return -EINVAL;
+ 	bss->bss = kzalloc(bss_len, GFP_KERNEL);
+-	if (!bss) {
++	if (!bss->bss) {
+ 		kfree(bss);
+ 		IWM_ERR(iwm, "Couldn't allocate bss\n");
+ 		return -ENOMEM;
