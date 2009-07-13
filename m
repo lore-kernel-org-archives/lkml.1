@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbZGMQ6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZGMQ7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbZGMQ6Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 12:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756558AbZGMQ6X
+	id S1756584AbZGMQ7I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 12:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755698AbZGMQ7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 12:58:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36626 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756537AbZGMQ6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 12:58:20 -0400
-Date: Mon, 13 Jul 2009 16:57:53 GMT
-From: tip-bot for Rakib Mullick <rakib.mullick@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rakib.mullick@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rakib.mullick@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <b9df5fa10907120407p6b4f67dtf4d563155488188a@mail.gmail.com>
-References: <b9df5fa10907120407p6b4f67dtf4d563155488188a@mail.gmail.com>
-Subject: [tip:x86/urgent] x86, apic: Fix false positive section mismatch in numaq_32.c
-Message-ID: <tip-7473727be884293c8171775a148e1d174d1606e6@git.kernel.org>
-Git-Commit-ID: 7473727be884293c8171775a148e1d174d1606e6
-X-Mailer: tip-git-log-daemon
+	Mon, 13 Jul 2009 12:59:07 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:64338 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbZGMQ7G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 12:59:06 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEALMEW0qrR7O6/2dsb2JhbAC4WYgjjmQFhAk
+X-IronPort-AV: E=Sophos;i="4.42,391,1243814400"; 
+   d="scan'208";a="176454785"
+From: Roland Dreier <rdreier@cisco.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-cris-kernel@axis.com
+Subject: Re: [PATCH v5] RO/NX protection for loadable kernel modules
+References: <817ecb6f0907081610p6d60341cudbee42685eac1347@mail.gmail.com>
+	<200907111821.47769.rusty@rustcorp.com.au>
+	<20090711084958.69ff9196@infradead.org>
+	<200907121410.39874.rusty@rustcorp.com.au>
+	<87skh29ru2.fsf@basil.nowhere.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 13 Jul 2009 09:59:04 -0700
+In-Reply-To: <87skh29ru2.fsf@basil.nowhere.org> (Andi Kleen's message of "Sun,
+	12 Jul 2009 11:24:37 +0200")
+Message-ID: <adaskh0v7s7.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 13 Jul 2009 16:57:54 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 13 Jul 2009 16:59:04.0545 (UTC) FILETIME=[3A5E2510:01CA03DB]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7473727be884293c8171775a148e1d174d1606e6
-Gitweb:     http://git.kernel.org/tip/7473727be884293c8171775a148e1d174d1606e6
-Author:     Rakib Mullick <rakib.mullick@gmail.com>
-AuthorDate: Sun, 12 Jul 2009 17:07:19 +0600
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 13 Jul 2009 11:03:27 +0200
 
-x86, apic: Fix false positive section mismatch in numaq_32.c
+ > > (I like the idea of trying kmalloc and falling back, simply because it reduces 
+ > > TLB pressure,
+ > 
+ > I implemented this for 32bit in 2.4, but I always had second thoughts
+ > if that was really reducing TLB pressure.
 
-The variable apic_numaq placed in noninit section references the
-function wakeup_secondary_cpu_via_nmi(), which is in __cpuinit
-section. Thus causes a section mismatch warning. To avoid such
-mismatch we mark apic_numaq as __refdata.
+Certainly for non-x86 it can be very worthwhile.  A long time ago I
+worked on an embedded product that used PowerPC 440, which has only 64
+(software-loaded) TLB entries.  On PPC 440, Linux has a pinned TLB entry
+for the kernel mapping, and modifying how the module loader allocated
+space to load modules into that mapping vs. one that had dynamic TLB
+entries was worth a factor of 2 in performance -- ie the TLB miss
+handling for .text was literally taking half the CPU time of the module
+code!
 
-We were warned by the following warning:
-
-  WARNING: arch/x86/kernel/built-in.o(.data+0x932c): Section mismatch in
-  reference from the variable apic_numaq to the function
-  .cpuinit.text:wakeup_secondary_cpu_via_nmi()
-
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-LKML-Reference: <b9df5fa10907120407p6b4f67dtf4d563155488188a@mail.gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/apic/numaq_32.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/numaq_32.c b/arch/x86/kernel/apic/numaq_32.c
-index 533e59c..ca96e68 100644
---- a/arch/x86/kernel/apic/numaq_32.c
-+++ b/arch/x86/kernel/apic/numaq_32.c
-@@ -493,7 +493,8 @@ static void numaq_setup_portio_remap(void)
- 		(u_long) xquad_portio, (u_long) num_quads*XQUAD_PORTIO_QUAD);
- }
- 
--struct apic apic_numaq = {
-+/* Use __refdata to keep false positive warning calm.	*/
-+struct apic __refdata apic_numaq = {
- 
- 	.name				= "NUMAQ",
- 	.probe				= probe_numaq,
+ - R.
