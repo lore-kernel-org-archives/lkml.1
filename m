@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZGMCLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbZGMCam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbZGMCLU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 12 Jul 2009 22:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZGMCLJ
+	id S1754212AbZGMCam (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 12 Jul 2009 22:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZGMCad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 12 Jul 2009 22:11:09 -0400
-Received: from kroah.org ([198.145.64.141]:35943 "EHLO coco.kroah.org"
+	Sun, 12 Jul 2009 22:30:33 -0400
+Received: from mga09.intel.com ([134.134.136.24]:32599 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752185AbZGMCLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 12 Jul 2009 22:11:07 -0400
-Date: Sun, 12 Jul 2009 19:10:34 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: linux-next: usb.current tree build warnings
-Message-ID: <20090713021034.GA19267@kroah.com>
-References: <20090713113826.073e7bb4.sfr@canb.auug.org.au>
+	id S1752099AbZGMCac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 12 Jul 2009 22:30:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,388,1243839600"; 
+   d="scan'208";a="532203543"
+Date: Mon, 13 Jul 2009 10:30:30 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: mel@csn.ul.ie, akpm@linux-foundation.org
+Subject: [PATCH] switch free memory back to MIGRATE_MOVABLE
+Message-ID: <20090713023030.GA27269@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090713113826.073e7bb4.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 11:38:26AM +1000, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> Today's linux-next build (x86_64 allmodconfig) produced this warning:
-> 
-> drivers/usb/serial/option.c: In function 'option_instat_callback':
-> drivers/usb/serial/option.c:834: warning: unused variable 'serial'
-> drivers/usb/serial/option.c: In function 'option_open':
-> drivers/usb/serial/option.c:930: warning: unused variable 'serial'
-> 
-> Introduced by commit d9860b9ea060492b9ce239c6317f65db1d96ffb9 ("USB:
-> option: remove unnecessary and erroneous code").
+When page is back to buddy and its order is bigger than pageblock_order, we can
+switch its type to MIGRATE_MOVABLE. This can reduce fragmentation. The patch
+has obvious effect when read a block device and then drop caches.
 
-Hm, I thought I had fixed that up in a later patch.  But you are right,
-it should be addressed in this patch, I'll look at it tomorrow morning.
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+---
+ mm/page_alloc.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-thanks,
-
-greg k-h
+Index: linux/mm/page_alloc.c
+===================================================================
+--- linux.orig/mm/page_alloc.c	2009-07-10 11:36:07.000000000 +0800
++++ linux/mm/page_alloc.c	2009-07-13 09:25:21.000000000 +0800
+@@ -475,6 +475,15 @@ static inline void __free_one_page(struc
+ 		order++;
+ 	}
+ 	set_page_order(page, order);
++
++	if (order >= pageblock_order && migratetype != MIGRATE_MOVABLE) {
++		int i;
++
++		migratetype = MIGRATE_MOVABLE;
++		for (i = 0; i < (1 << (order - pageblock_order)); i++)
++			set_pageblock_migratetype(page +
++				i * pageblock_nr_pages, MIGRATE_MOVABLE);
++	}
+ 	list_add(&page->lru,
+ 		&zone->free_area[order].free_list[migratetype]);
+ 	zone->free_area[order].nr_free++;
