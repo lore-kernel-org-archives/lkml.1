@@ -1,133 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbZGMRe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZGMRkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbZGMRe5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756632AbZGMRe5
+	id S1755451AbZGMRkZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZGMRkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:34:57 -0400
-Received: from ru.mvista.com ([213.79.90.228]:63836 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756559AbZGMRe4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:34:56 -0400
-Date: Mon, 13 Jul 2009 21:34:55 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/2] Setting GPIOs simultaneously
-Message-ID: <20090713173455.GA9866@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090713151911.GA28114@oksana.dev.rtsoft.ru>
- <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 13 Jul 2009 13:40:24 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:49286 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752468AbZGMRkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 13:40:24 -0400
+Subject: Re: [stable] NFS client packet storm on 2.6.27.x
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Greg KH <greg@kroah.com>
+Cc: Kasparek Tomas <kasparek@fit.vutbr.cz>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+In-Reply-To: <20090713172001.GA22775@kroah.com>
+References: <20090116104802.GF47559@fit.vutbr.cz>
+	 <20090118130835.GH47559@fit.vutbr.cz> <20090120150301.GG47559@fit.vutbr.cz>
+	 <1232465547.7055.3.camel@heimdal.trondhjem.org>
+	 <20090303120848.GV89843@fit.vutbr.cz>
+	 <1236089767.9631.4.camel@heimdal.trondhjem.org>
+	 <20090418051739.GL64731@fit.vutbr.cz> <20090422172707.GC57877@fit.vutbr.cz>
+	 <20090625055532.GC50277@fit.vutbr.cz> <20090713111214.GC30754@fit.vutbr.cz>
+	 <20090713172001.GA22775@kroah.com>
+Content-Type: text/plain
+Date: Mon, 13 Jul 2009 13:40:17 -0400
+Message-Id: <1247506817.14524.25.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 7 sum msgs/h 1 total rcpts 847 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=_URIID_)
+X-UiO-Scanned: 3F4D7A9A0BE6D58F35399DE7BF985FDB97042DA2
+X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 46 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 06:01:02PM +0200, Joakim Tjernlund wrote:
+On Mon, 2009-07-13 at 10:20 -0700, Greg KH wrote:
+> On Mon, Jul 13, 2009 at 01:12:15PM +0200, Kasparek Tomas wrote:
+> > On Thu, Jun 25, 2009 at 07:55:32AM +0200, Kasparek Tomas wrote:
+> > > http://www.linux-nfs.org/Linux-2.6.x/2.6.27/
+> > > 
+> > > .../fixups_4/linux-2.6.27-001-respond_promptly_to_socket_errors.dif
+> > > .../fixups_4/linux-2.6.27-002-respond_promptly_to_socket_errors_2.dif
+> > > 
+> > > ...
+> > > Together with tcp_linger patch it seems to improve the situation a lot to
+> > > state when it is possible for me to use 2.6.27.x kernels.
+> > > 
+> > > Trond, will it be possible to get tcp_linger and the upper twho patches to
+> > > 2.6.27.x stable queue so others get these fixes?
+> > 
+> > I got no response so far, is there someone who could advise me what to do
+> > to get above patches to 2.6.27.x stable? Or is there some reason, why this
+> > is not possible at all?
 > 
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 13/07/2009 17:19:11:
-> >
-> > Hi all,
-> >
-> > I've been sitting on these patches for some time, but now it appears
-> > that the set_sync() feature is needed elsewhere. So here are the
-> > patches.
-> >
-> > Joakim, I think this is what you need.
-> 
-> Yes, it sure looks so :) I will have to look closer later as
-> I will be traveling the next few days.
-> 
-> Question though, have you considered using a bitmask instead of
-> an array:
-> static void qe_gpio_set_sync(struct gpio_chip *gc, unsigned int num,
-> 	 		      unsigned int gpio_mask, unsigned int vals)
-> If you want to set bit 0, 3 and 8 you would set positions 0, 3 and 8 in gpio_mask
-> to ones. Similarly in vals, set bit positions 0, 3 and 8 to requested value.
+> Can you backport them and send them to stable@kernel.org with the git
+> commit ids of the orignal patches?
 
-Yeah, I thought about it. We could do the u64 masks (to handle up
-to 64 bits parallel IO buses).
+When testing at a customer site, we recently found that we actually need
+4 patches in order to completely fix the storming problem in 2.6.27.y,
+and ensure a timely socket reconnect.
 
-It's all easy with dumb memory-mapped GPIO controllers, because
-we have a 8/16/32/64 bits registers with linear bit<->gpio mapping.
+commit 15f081ca8ddfe150fb639c591b18944a539da0fc (SUNRPC: Avoid an
+unnecessary task reschedule on ENOTCONN)
 
-But some gpio controllers aren't that easy. I know at least one
-(FPGA-based) gpio controller that won't change any GPIO lines
-for real unless changes are "commited". The controller has several
-banks (registers) of PIOs (total count > 64 bits), but you can commit
-all the changes to the banks at once (synchronously). This isn't
-because the controller is uber-cool, it's just the controller has
-sequential IO. So with masks approach you won't able to use _sync()
-calls that easily for all GPIOs range.
+commit 670f94573104b4a25525d3fcdcd6496c678df172 (SUNRPC: Ensure we set
+XPRT_CLOSING only after we've sent a tcp FIN...)
 
-But OK, if we throw away the special cases, I can't imagine any
-clear api for this approach, all I can think of is something
-along these lines:
+commit 40d2549db5f515e415894def98b49db7d4c56714 (SUNRPC: Don't
+disconnect if a connection is still in progress.)
 
-int num = 3;
-u32 gpios[3];
-u64 shifts[3];
+and finally
 
-/* this implies checks whether we can use _sync() */
-if (!gpio_get_shifts(num, gpios, shifts))
-	return -EINVAL;
+commit f75e6745aa3084124ae1434fd7629853bdaf6798 (SUNRPC: Fix the problem
+of EADDRNOTAVAIL syslog floods on reconnect)
 
-gpio_set_values_sync(chip, 1 << shifts[0] | 1 << shifts[1],
-		     val0 << shifts[0] | val1 << shifts[1]).
+The first three need to be applied to kernels 2.6.27.y to 2.6.29.y,
+while the last needs to be applied to 2.6.27.y to 2.6.30.y.
 
-We can implement it, if that's acceptable. But that's a bit
-ugly, I think.
+I'll ensure the patches get sent to stable@kernel.org...
 
-> While being at it, the reason for me needing this is that the spi_mpc83xx driver
-> was recently converted to a OF only driver so I have no way of defining my own
-> CS function anymore. While OF is good I don't feel that OF drivers should block the native
-> method, OF should be a layer on top of the native methods.
+   Trond
 
-Um, I don't get it. You have a mux, which is a sort of GPIO controller.
-All you need to do is to write "of-gpio-mux" driver, that will get all
-the needed gpios from the underlaying GPIO controller.
-
-In the device tree it'll look like this:
-
-muxed_gpio: gpio-controller {
-	#gpio-cells = <2>;
-	compatible = "board-gpio-mux", "generic-gpio-mux";
-	gpios = <&qe_pio_d  2 0   /* AD0 */
-		 &qe_pio_d 17 0   /* AD1 */
-		 &qe_pio_d  5 0>; /* AD2 */
-	gpio-controller;
-};
-
-spi-controller {
-	gpios = <&muxed_gpio 0 0
-		 &muxed_gpio 1 0
-		 &muxed_gpio 2 0
-		 &muxed_gpio 3 0
-		 &muxed_gpio 4 0
-		 &muxed_gpio 5 0
-		 &muxed_gpio 6 0
-		 &muxed_gpio 7 0>;
-
-	spi-device@0 {
-		reg = <0>;
-	};
-	...
-	spi-device@7 {
-		reg = <0>;
-	};
-};
-
-So you don't have to modify the spi driver.
-
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
