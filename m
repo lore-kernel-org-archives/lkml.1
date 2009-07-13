@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752231AbZGMGBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbZGMGCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752231AbZGMGBT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 02:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbZGMGBQ
+	id S1752385AbZGMGCd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 02:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZGMGCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 02:01:16 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56036 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750753AbZGMGBP (ORCPT
+	Mon, 13 Jul 2009 02:02:30 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34830 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbZGMGC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 02:01:15 -0400
+	Mon, 13 Jul 2009 02:02:29 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/4][resend] add buffer cache information to show_free_areas()
+Subject: [PATCH 3/4][resend]  Show kernel stack usage in /proc/meminfo and OOM log output
 Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Wu Fengguang <fengguang.wu@intel.com>,
@@ -21,63 +21,165 @@ Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
        Rik van Riel <riel@redhat.com>
 In-Reply-To: <20090713144924.6257.A69D9226@jp.fujitsu.com>
 References: <20090713144924.6257.A69D9226@jp.fujitsu.com>
-Message-Id: <20090713150021.625D.A69D9226@jp.fujitsu.com>
+Message-Id: <20090713150114.6260.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 13 Jul 2009 15:01:12 +0900 (JST)
+Date: Mon, 13 Jul 2009 15:02:25 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 ChangeLog
-  Since v3
+  Since v1
    - Rewrote the descriptin (Thanks Christoph!)
 
-  Since v2
-   - Changed display order, now, "buffer" field display right after unstable
+=====================
+Subject: [PATCH] Show kernel stack usage in /proc/meminfo and OOM log output
 
-  Since v1
-   - Fixed showing the number with kilobyte unit issue
+The amount of memory allocated to kernel stacks can become significant and
+cause OOM conditions. However, we do not display the amount of memory
+consumed by stacks.
 
-================
-Subject: [PATCH] add buffer cache information to show_free_areas()
-
-It is often useful to know the statistics for all pages that are handled
-like page cache pages when looking at OOM log output.
-
-Therefore show_free_areas() should also display buffer cache statistics.
+Add code to display the amount of memory used for stacks in /proc/meminfo.
 
 
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 Reviewed-by: Rik van Riel <riel@redhat.com>
 ---
- mm/page_alloc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/base/node.c    |    3 +++
+ fs/proc/meminfo.c      |    2 ++
+ include/linux/mmzone.h |    3 ++-
+ kernel/fork.c          |   11 +++++++++++
+ mm/page_alloc.c        |    3 +++
+ mm/vmstat.c            |    1 +
+ 6 files changed, 22 insertions(+), 1 deletion(-)
 
+Index: b/fs/proc/meminfo.c
+===================================================================
+--- a/fs/proc/meminfo.c
++++ b/fs/proc/meminfo.c
+@@ -84,6 +84,7 @@ static int meminfo_proc_show(struct seq_
+ 		"Slab:           %8lu kB\n"
+ 		"SReclaimable:   %8lu kB\n"
+ 		"SUnreclaim:     %8lu kB\n"
++		"KernelStack:    %8lu kB\n"
+ 		"PageTables:     %8lu kB\n"
+ #ifdef CONFIG_QUICKLIST
+ 		"Quicklists:     %8lu kB\n"
+@@ -128,6 +129,7 @@ static int meminfo_proc_show(struct seq_
+ 				global_page_state(NR_SLAB_UNRECLAIMABLE)),
+ 		K(global_page_state(NR_SLAB_RECLAIMABLE)),
+ 		K(global_page_state(NR_SLAB_UNRECLAIMABLE)),
++		global_page_state(NR_KERNEL_STACK) * THREAD_SIZE / 1024,
+ 		K(global_page_state(NR_PAGETABLE)),
+ #ifdef CONFIG_QUICKLIST
+ 		K(quicklist_total_size()),
+Index: b/include/linux/mmzone.h
+===================================================================
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -94,10 +94,11 @@ enum zone_stat_item {
+ 	NR_SLAB_RECLAIMABLE,
+ 	NR_SLAB_UNRECLAIMABLE,
+ 	NR_PAGETABLE,		/* used for pagetables */
++	NR_KERNEL_STACK,
++	/* Second 128 byte cacheline */
+ 	NR_UNSTABLE_NFS,	/* NFS unstable pages */
+ 	NR_BOUNCE,
+ 	NR_VMSCAN_WRITE,
+-	/* Second 128 byte cacheline */
+ 	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
+ #ifdef CONFIG_NUMA
+ 	NUMA_HIT,		/* allocated in intended node */
+Index: b/kernel/fork.c
+===================================================================
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -137,9 +137,17 @@ struct kmem_cache *vm_area_cachep;
+ /* SLAB cache for mm_struct structures (tsk->mm) */
+ static struct kmem_cache *mm_cachep;
+ 
++static void account_kernel_stack(struct thread_info *ti, int account)
++{
++	struct zone *zone = page_zone(virt_to_page(ti));
++
++	mod_zone_page_state(zone, NR_KERNEL_STACK, account);
++}
++
+ void free_task(struct task_struct *tsk)
+ {
+ 	prop_local_destroy_single(&tsk->dirties);
++	account_kernel_stack(tsk->stack, -1);
+ 	free_thread_info(tsk->stack);
+ 	rt_mutex_debug_task_free(tsk);
+ 	ftrace_graph_exit_task(tsk);
+@@ -255,6 +263,9 @@ static struct task_struct *dup_task_stru
+ 	tsk->btrace_seq = 0;
+ #endif
+ 	tsk->splice_pipe = NULL;
++
++	account_kernel_stack(ti, 1);
++
+ 	return tsk;
+ 
+ out:
 Index: b/mm/page_alloc.c
 ===================================================================
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -2118,7 +2118,7 @@ void show_free_areas(void)
- 	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
- 		" inactive_file:%lu"
- 		" unevictable:%lu"
--		" dirty:%lu writeback:%lu unstable:%lu\n"
-+		" dirty:%lu writeback:%lu unstable:%lu buffer:%lu\n"
- 		" free:%lu slab_reclaimable:%lu slab_unreclaimable:%lu\n"
- 		" mapped:%lu pagetables:%lu bounce:%lu\n",
- 		global_page_state(NR_ACTIVE_ANON),
-@@ -2129,6 +2129,7 @@ void show_free_areas(void)
- 		global_page_state(NR_FILE_DIRTY),
- 		global_page_state(NR_WRITEBACK),
- 		global_page_state(NR_UNSTABLE_NFS),
-+		nr_blockdev_pages(),
- 		global_page_state(NR_FREE_PAGES),
- 		global_page_state(NR_SLAB_RECLAIMABLE),
- 		global_page_state(NR_SLAB_UNRECLAIMABLE),
+@@ -2158,6 +2158,7 @@ void show_free_areas(void)
+ 			" mapped:%lukB"
+ 			" slab_reclaimable:%lukB"
+ 			" slab_unreclaimable:%lukB"
++			" kernel_stack:%lukB"
+ 			" pagetables:%lukB"
+ 			" unstable:%lukB"
+ 			" bounce:%lukB"
+@@ -2182,6 +2183,8 @@ void show_free_areas(void)
+ 			K(zone_page_state(zone, NR_FILE_MAPPED)),
+ 			K(zone_page_state(zone, NR_SLAB_RECLAIMABLE)),
+ 			K(zone_page_state(zone, NR_SLAB_UNRECLAIMABLE)),
++			zone_page_state(zone, NR_KERNEL_STACK) *
++				THREAD_SIZE / 1024,
+ 			K(zone_page_state(zone, NR_PAGETABLE)),
+ 			K(zone_page_state(zone, NR_UNSTABLE_NFS)),
+ 			K(zone_page_state(zone, NR_BOUNCE)),
+Index: b/mm/vmstat.c
+===================================================================
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -639,6 +639,7 @@ static const char * const vmstat_text[] 
+ 	"nr_slab_reclaimable",
+ 	"nr_slab_unreclaimable",
+ 	"nr_page_table_pages",
++	"nr_kernel_stack",
+ 	"nr_unstable",
+ 	"nr_bounce",
+ 	"nr_vmscan_write",
+Index: b/drivers/base/node.c
+===================================================================
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -85,6 +85,7 @@ static ssize_t node_read_meminfo(struct 
+ 		       "Node %d FilePages:      %8lu kB\n"
+ 		       "Node %d Mapped:         %8lu kB\n"
+ 		       "Node %d AnonPages:      %8lu kB\n"
++		       "Node %d KernelStack:    %8lu kB\n"
+ 		       "Node %d PageTables:     %8lu kB\n"
+ 		       "Node %d NFS_Unstable:   %8lu kB\n"
+ 		       "Node %d Bounce:         %8lu kB\n"
+@@ -116,6 +117,8 @@ static ssize_t node_read_meminfo(struct 
+ 		       nid, K(node_page_state(nid, NR_FILE_PAGES)),
+ 		       nid, K(node_page_state(nid, NR_FILE_MAPPED)),
+ 		       nid, K(node_page_state(nid, NR_ANON_PAGES)),
++		       nid, node_page_state(nid, NR_KERNEL_STACK) *
++				THREAD_SIZE / 1024,
+ 		       nid, K(node_page_state(nid, NR_PAGETABLE)),
+ 		       nid, K(node_page_state(nid, NR_UNSTABLE_NFS)),
+ 		       nid, K(node_page_state(nid, NR_BOUNCE)),
 
 
