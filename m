@@ -1,164 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbZGMOzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZGMO7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbZGMOzS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 10:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZGMOzS
+	id S1756113AbZGMO7z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 10:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbZGMO7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 10:55:18 -0400
-Received: from cmpxchg.org ([85.214.51.133]:59450 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756071AbZGMOzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 10:55:17 -0400
-Date: Mon, 13 Jul 2009 16:54:51 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix vc_screenbuf leak via con_init()
-Message-ID: <20090713145451.GA2265@cmpxchg.org>
-References: <20090713130921.6441.17011.stgit@pc1117.cambridge.arm.com> <1247493898.14968.0.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247493898.14968.0.camel@penberg-laptop>
+	Mon, 13 Jul 2009 10:59:55 -0400
+Received: from mail-gx0-f215.google.com ([209.85.217.215]:40783 "EHLO
+	mail-gx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756057AbZGMO7y convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 10:59:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CkdNTWFKV5ORHDfWHUlUXIDg4mYghAtFnRID4YRKNfsyTMLE5xgHbfoR8e8ON1pm/W
+         rCe7314VKtB8qg3MWZOKUHyY9G2PsCH8tGAyj+Uy6XeHAyPuHsdRmwmFi7OhgI3jrS+y
+         7udbGx3Gj7+WOFAGiVG6lZWnMCtvc8vfjHfyE=
+MIME-Version: 1.0
+In-Reply-To: <20090713115158.0a4892b0@mjolnir.ossman.eu>
+References: <20090713115158.0a4892b0@mjolnir.ossman.eu>
+Date: Mon, 13 Jul 2009 23:59:52 +0900
+Message-ID: <28c262360907130759w29c84117w635b21408090a06c@mail.gmail.com>
+Subject: Re: Page allocation failures in guest
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: avi@redhat.com, kvm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pekka,
+On Mon, Jul 13, 2009 at 6:51 PM, Pierre Ossman<drzeus-list@drzeus.cx> wrote:
+> I upgraded my Fedora 10 host to 2.6.29 a few days ago and since then
+> one of the guests keeps getting page allocation failures after a few
+> hours. I've upgraded the kernel in the guest from 2.6.27 to 2.6.29
+> without any change. There are also a few other guests running on the
+> machine that aren't having any issues.
+>
+> The only noticable thing that dies for me is the network. The machine
+> still logs properly and I can attach to the local console and reboot it.
+>
+> This is what I see in dmesg/logs:
+>
+> Jul 12 23:04:54 loki kernel: sshd: page allocation failure. order:0, mode:0x4020
 
-On Mon, Jul 13, 2009 at 05:04:58PM +0300, Pekka Enberg wrote:
-> On Mon, 2009-07-13 at 14:12 +0100, Catalin Marinas wrote:
-> > Commit a5f4f52e replaced the alloc_bootmem() with kzalloc() but didn't
-> > set vc_kmalloced to 1 and the memory block is later leaked. The
-> > corresponding kmemleak trace:
-> > 
-> > unreferenced object 0xdf828000 (size 8192):
-> >   comm "swapper", pid 0, jiffies 4294937296
-> >   backtrace:
-> >     [<c006d473>] __save_stack_trace+0x17/0x1c
-> >     [<c000d869>] log_early+0x55/0x84
-> >     [<c01cfa4b>] kmemleak_alloc+0x33/0x3c
-> >     [<c006c013>] __kmalloc+0xd7/0xe4
-> >     [<c00108c7>] con_init+0xbf/0x1b8
-> >     [<c0010149>] console_init+0x11/0x20
-> >     [<c0008797>] start_kernel+0x137/0x1e4
-> > 
-> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> > Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> > ---
-> > 
-> > (note that detecting this requires additional kmemleak patches for early
-> > log stack traces which are planned for the next merging window)
-> > 
-> >  drivers/char/vt.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-> > index 7947bd1..f6ac4c2 100644
-> > --- a/drivers/char/vt.c
-> > +++ b/drivers/char/vt.c
-> > @@ -2881,7 +2881,7 @@ static int __init con_init(void)
-> >  		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
-> >  		visual_init(vc, currcons, 1);
-> >  		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
-> > -		vc->vc_kmalloced = 0;
-> > +		vc->vc_kmalloced = 1;
-> >  		vc_init(vc, vc->vc_rows, vc->vc_cols,
-> >  			currcons || !vc->vc_sw->con_save_screen);
-> >  	}
-> > 
-> 
-> We can probably get rid of ->vc_kmalloced completely now that the
-> bootmem allocator is no longer used by the driver.
+GFP_ATOMIC.
+We don't have a many thing for reclaiming.
 
-That's what I thought, too.  Copied Alan.  Patch as follows:
+> Jul 12 23:04:54 loki kernel: Pid: 1682, comm: sshd Not tainted 2.6.29.5-84.fc10.x86_64 #1
+> Jul 12 23:04:54 loki kernel: Call Trace:
+> Jul 12 23:04:54 loki kernel: <IRQ>  [<ffffffff810a1896>] __alloc_pages_internal+0x42f/0x451
+> Jul 12 23:04:54 loki kernel: [<ffffffff810c52f8>] alloc_pages_current+0xb9/0xc2
+> Jul 12 23:04:54 loki kernel: [<ffffffff810c926c>] alloc_slab_page+0x19/0x69
+> Jul 12 23:04:54 loki kernel: [<ffffffff810c931f>] new_slab+0x63/0x1cb
+> Jul 12 23:04:54 loki kernel: [<ffffffff810c99fd>] __slab_alloc+0x23d/0x3ac
+> Jul 12 23:04:54 loki kernel: [<ffffffff812d49f2>] ? __netdev_alloc_skb+0x31/0x4d
+> Jul 12 23:04:54 loki kernel: [<ffffffff810cac1b>] __kmalloc_node_track_caller+0xbb/0x11f
+> Jul 12 23:04:54 loki kernel: [<ffffffff812d49f2>] ? __netdev_alloc_skb+0x31/0x4d
+> Jul 12 23:04:54 loki kernel: [<ffffffff812d3dfc>] __alloc_skb+0x6f/0x130
+> Jul 12 23:04:54 loki kernel: [<ffffffff812d49f2>] __netdev_alloc_skb+0x31/0x4d
+> Jul 12 23:04:54 loki kernel: [<ffffffffa002e668>] try_fill_recv_maxbufs+0x5a/0x20d [virtio_net]
+> Jul 12 23:04:54 loki kernel: [<ffffffffa002e83d>] try_fill_recv+0x22/0x17e [virtio_net]
+> Jul 12 23:04:54 loki kernel: [<ffffffff812d9c74>] ? netif_receive_skb+0x40a/0x42f
+> Jul 12 23:04:54 loki kernel: [<ffffffffa002f4b9>] virtnet_poll+0x57f/0x5ee [virtio_net]
+> Jul 12 23:04:54 loki kernel: [<ffffffff81374b45>] ? _spin_lock_irq+0x21/0x26
+> Jul 12 23:04:54 loki kernel: [<ffffffff812d8372>] net_rx_action+0xb3/0x1af
+> Jul 12 23:04:54 loki kernel: [<ffffffff8104d9f0>] __do_softirq+0x94/0x150
+> Jul 12 23:04:54 loki kernel: [<ffffffff8101274c>] call_softirq+0x1c/0x30
+> Jul 12 23:04:54 loki kernel: <EOI>  [<ffffffff81013869>] do_softirq+0x4d/0xb4
+> Jul 12 23:04:54 loki kernel: [<ffffffff812cf149>] ? release_sock+0xb0/0xbb
+> Jul 12 23:04:54 loki kernel: [<ffffffff8104d86f>] _local_bh_enable_ip+0xc5/0xe5
+> Jul 12 23:04:54 loki kernel: [<ffffffff8104d898>] local_bh_enable_ip+0x9/0xb
+> Jul 12 23:04:54 loki kernel: [<ffffffff81374954>] _spin_unlock_bh+0x13/0x15
+> Jul 12 23:04:54 loki kernel: [<ffffffff812cf149>] release_sock+0xb0/0xbb
+> Jul 12 23:04:54 loki kernel: [<ffffffff812d2f38>] ? __kfree_skb+0x82/0x86
+> Jul 12 23:04:54 loki kernel: [<ffffffff8130f088>] tcp_recvmsg+0x974/0xa99
+> Jul 12 23:04:54 loki kernel: [<ffffffff812ce566>] sock_common_recvmsg+0x32/0x47
+> Jul 12 23:04:54 loki kernel: [<ffffffff812cc5a1>] __sock_recvmsg+0x6d/0x7a
+> Jul 12 23:04:54 loki kernel: [<ffffffff812cc69c>] sock_aio_read+0xee/0xfe
+> Jul 12 23:04:54 loki kernel: [<ffffffff810d1ecb>] do_sync_read+0xe7/0x12d
+> Jul 12 23:04:54 loki kernel: [<ffffffff811867ba>] ? rb_erase+0x278/0x2a0
+> Jul 12 23:04:54 loki kernel: [<ffffffff8105bdc8>] ? autoremove_wake_function+0x0/0x38
+> Jul 12 23:04:54 loki kernel: [<ffffffff81374845>] ? _spin_lock+0x9/0xc
+> Jul 12 23:04:54 loki kernel: [<ffffffff811502e8>] ? security_file_permission+0x11/0x13
+> Jul 12 23:04:54 loki kernel: [<ffffffff810d2884>] vfs_read+0xbb/0x102
+> Jul 12 23:04:54 loki kernel: [<ffffffff810d298f>] sys_read+0x47/0x6e
+> Jul 12 23:04:54 loki kernel: [<ffffffff8101133a>] system_call_fastpath+0x16/0x1b
+> Jul 12 23:04:54 loki kernel: Mem-Info:
+> Jul 12 23:04:54 loki kernel: Node 0 DMA per-cpu:
+> Jul 12 23:04:54 loki kernel: CPU    0: hi:    0, btch:   1 usd:   0
+> Jul 12 23:04:54 loki kernel: Node 0 DMA32 per-cpu:
+> Jul 12 23:04:54 loki kernel: CPU    0: hi:  186, btch:  31 usd: 119
+> Jul 12 23:04:54 loki kernel: Active_anon:14065 active_file:87384 inactive_anon:37480
+> Jul 12 23:04:54 loki kernel: inactive_file:95821 unevictable:4 dirty:8 writeback:0 unstable:0
+> Jul 12 23:04:54 loki kernel: free:1344 slab:7113 mapped:4283 pagetables:5656 bounce:0
+> Jul 12 23:04:54 loki kernel: Node 0 DMA free:3988kB min:24kB low:28kB high:36kB active_anon:0kB inactive_anon:0kB active_file:3532kB inactive_file:1032kB unevictable:0kB present:6840kB pages_scanned:0 all_un
 
----
->From 4df0a75bdc567c9f2203dc4b0337d77a26715654 Mon Sep 17 00:00:00 2001
-From: Johannes Weiner <hannes@cmpxchg.org>
-Date: Mon, 13 Jul 2009 16:39:46 +0200
-Subject: [patch] vt: drop bootmem/slab memory distinction
+I don't know why present is bigger than free + [in]active anon ?
+Who know this ?
 
-Bootmem is not used for the vt screen buffer anymore as slab is now
-available at the time the console is initialized.
+There are 258 pages in inactive file.
+Unfortunately, it seems we don't have any discardable pages.
+The reclaimer can't sync dirty pages to reclaim them, too.
+That's because we are going on GFP_ATOMIC as I mentioned.
 
-Get rid of the now superfluous distinction between slab and bootmem,
-it's always slab.
+> reclaimable? no
+> Jul 12 23:04:54 loki kernel: lowmem_reserve[]: 0 994 994 994
+> Jul 12 23:04:54 loki kernel: Node 0 DMA32 free:1388kB min:4020kB low:5024kB high:6028kB active_anon:56260kB inactive_anon:149920kB active_file:346004kB inactive_file:382252kB unevictable:16kB present:1018016
 
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
----
- drivers/char/vt.c              |   12 +++---------
- include/linux/console_struct.h |    1 -
- 2 files changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index d9113b4..bdb9c60 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -769,14 +769,12 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
- 	    visual_init(vc, currcons, 1);
- 	    if (!*vc->vc_uni_pagedir_loc)
- 		con_set_default_unimap(vc);
--	    if (!vc->vc_kmalloced)
--		vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size, GFP_KERNEL);
-+	    vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size, GFP_KERNEL);
- 	    if (!vc->vc_screenbuf) {
- 		kfree(vc);
- 		vc_cons[currcons].d = NULL;
- 		return -ENOMEM;
- 	    }
--	    vc->vc_kmalloced = 1;
- 	    vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
- 	    vcs_make_sysfs(currcons);
- 	    atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
-@@ -912,10 +910,8 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
- 	if (new_scr_end > new_origin)
- 		scr_memsetw((void *)new_origin, vc->vc_video_erase_char,
- 			    new_scr_end - new_origin);
--	if (vc->vc_kmalloced)
--		kfree(vc->vc_screenbuf);
-+	kfree(vc->vc_screenbuf);
- 	vc->vc_screenbuf = newscreen;
--	vc->vc_kmalloced = 1;
- 	vc->vc_screenbuf_size = new_screen_size;
- 	set_origin(vc);
- 
-@@ -994,8 +990,7 @@ void vc_deallocate(unsigned int currcons)
- 		vc->vc_sw->con_deinit(vc);
- 		put_pid(vc->vt_pid);
- 		module_put(vc->vc_sw->owner);
--		if (vc->vc_kmalloced)
--			kfree(vc->vc_screenbuf);
-+		kfree(vc->vc_screenbuf);
- 		if (currcons >= MIN_NR_CONSOLES)
- 			kfree(vc);
- 		vc_cons[currcons].d = NULL;
-@@ -2880,7 +2875,6 @@ static int __init con_init(void)
- 		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
- 		visual_init(vc, currcons, 1);
- 		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
--		vc->vc_kmalloced = 0;
- 		vc_init(vc, vc->vc_rows, vc->vc_cols,
- 			currcons || !vc->vc_sw->con_save_screen);
- 	}
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-index d71f7c0..38fe59d 100644
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -89,7 +89,6 @@ struct vc_data {
- 	unsigned int	vc_need_wrap	: 1;
- 	unsigned int	vc_can_do_color	: 1;
- 	unsigned int	vc_report_mouse : 2;
--	unsigned int	vc_kmalloced	: 1;
- 	unsigned char	vc_utf		: 1;	/* Unicode UTF-8 encoding */
- 	unsigned char	vc_utf_count;
- 		 int	vc_utf_char;
+free : 1388KB min : 4020KB. In addtion, now GFP_HIGH. so calculation
+is as follow for zone_watermark_ok.
+
+1388 < (4020 / 2)
+
+So failed it in zone_watermark_ok.
+AFAIU, it's fairy OOM problem.
+
+> kB pages_scanned:96 all_unreclaimable? no
+> Jul 12 23:04:54 loki kernel: lowmem_reserve[]: 0 0 0 0
+> Jul 12 23:04:54 loki kernel: Node 0 DMA: 1*4kB 0*8kB 1*16kB 0*32kB 0*64kB 1*128kB 1*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 3988kB
+> Jul 12 23:04:54 loki kernel: Node 0 DMA32: 4*4kB 77*8kB 3*16kB 0*32kB 1*64kB 1*128kB 0*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 1384kB
+> Jul 12 23:04:54 loki kernel: 183936 total pagecache pages
+> Jul 12 23:04:54 loki kernel: 0 pages in swap cache
+> Jul 12 23:04:54 loki kernel: Swap cache stats: add 0, delete 0, find 0/0
+> Jul 12 23:04:54 loki kernel: Free swap  = 1015800kB
+> Jul 12 23:04:54 loki kernel: Total swap = 1015800kB
+> Jul 12 23:04:54 loki kernel: 262128 pages RAM
+> Jul 12 23:04:54 loki kernel: 8339 pages reserved
+> Jul 12 23:04:54 loki kernel: 34783 pages shared
+> Jul 12 23:04:54 loki kernel: 245277 pages non-shared
+>
+> It doesn't look like it's out of memory to me, so I'm not sure what is
+> going on.
+>
+> Rgds
+> --
+>     -- Pierre Ossman
+>
+>  Linux kernel, MMC maintainer        http://www.kernel.org
+>  rdesktop, core developer          http://www.rdesktop.org
+>  TigerVNC, core developer          http://www.tigervnc.org
+>
+>  WARNING: This correspondence is being monitored by the
+>  Swedish government. Make sure your server uses encryption
+>  for SMTP traffic and consider using PGP for end-to-end
+>  encryption.
+>
+
+
+
 -- 
-1.6.3
-
+Kind regards,
+Minchan Kim
