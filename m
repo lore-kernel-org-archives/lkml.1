@@ -1,63 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbZGMNuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZGMNvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755986AbZGMNuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 09:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbZGMNuU
+	id S1755972AbZGMNvO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 09:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZGMNvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 09:50:20 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:39641 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755947AbZGMNuR (ORCPT
+	Mon, 13 Jul 2009 09:51:13 -0400
+Received: from mail-pz0-f197.google.com ([209.85.222.197]:64992 "EHLO
+	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754471AbZGMNvM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 09:50:17 -0400
-From: Abhishek Kulkarni <adkulkar@umail.iu.edu>
-To: linux-kernel@vger.kernel.org
-Cc: ericvh@gmail.com, Abhishek Kulkarni <adkulkar@umail.iu.edu>,
-       v9fs-developer@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: [PATCH] [net/9p]: default 9p transport module fix
-Date: Mon, 13 Jul 2009 07:49:51 -0600
-Message-Id: <1247492991-26009-2-git-send-email-adkulkar@umail.iu.edu>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1247492991-26009-1-git-send-email-adkulkar@umail.iu.edu>
-References: <1247492991-26009-1-git-send-email-adkulkar@umail.iu.edu>
+	Mon, 13 Jul 2009 09:51:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SifkGgq9foawgP8bQdBRxU4MNt1NtrNTACsb/AGj7bYN0FB9WraRlK7sb7zeYZiBlU
+         cg3LjOnpV9ODa6g6FLOBwgoJrWLgPWjVkvO2n5tjPZwHsTmLFt1WrJzaL5BBTiHJMcSd
+         7RaDcSGwAZC5a6FAxYMObfVaIoPcRcMBDddrk=
+MIME-Version: 1.0
+In-Reply-To: <20090713070110.GA28499@elte.hu>
+References: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com>
+	 <1246201486-7308-2-git-send-email-tom.leiming@gmail.com>
+	 <20090711213028.GC6641@nowhere>
+	 <d82e647a0907111942o1cf22batb204c38bfbd43c03@mail.gmail.com>
+	 <20090713070110.GA28499@elte.hu>
+Date: Mon, 13 Jul 2009 21:51:12 +0800
+Message-ID: <d82e647a0907130651s37799190gff9acc1fe4622a5b@mail.gmail.com>
+Subject: Re: [RESEND PATCH 01/11] kernel:lockdep:print the shortest dependency 
+	chain if finding a circle
+From: Ming Lei <tom.leiming@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The default 9p transport module is not chosen unless an option parameter (any)
-is passed to mount, which thus returns a ENOPROTOSUPPORT. This fix moves the
-check out of parse_opts into p9_client_create.
+2009/7/13 Ingo Molnar <mingo@elte.hu>:
+>
+> * Ming Lei <tom.leiming@gmail.com> wrote:
+>> No, as you said, the shortest circle is not very important, and it
+>> is just a byproduct and we have no reason to reject it.
+>
+> It's a nice byproduct, beyond the primary advantage of not being a
+> stack based recursion check.
+>
+> I think this patch-set is great, and there's just one more step
+> needed to make it round: it would be nice to remove the limitation
+> of maximum number of locks held per task. (MAX_LOCK_DEPTH)
 
-Signed-off-by: Abhishek Kulkarni <adkulkar@umail.iu.edu>
----
-:100644 100644 cc25e63... 787ccdd... M	net/9p/client.c
- net/9p/client.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+IMHO,  it seems that removing the MAX_LOCK_DEPTH limitation is another
+topic,  and is nothing to do with this patch-set.  We may still make it round
+with the limitation like before.
 
-diff --git a/net/9p/client.c b/net/9p/client.c
-index cc25e63..787ccdd 100644
---- a/net/9p/client.c
-+++ b/net/9p/client.c
-@@ -117,9 +117,6 @@ static int parse_opts(char *opts, struct p9_client *clnt)
- 		}
- 	}
- 
--	if (!clnt->trans_mod)
--		clnt->trans_mod = v9fs_get_default_trans();
--
- 	kfree(options);
- 	return ret;
- }
-@@ -689,6 +686,9 @@ struct p9_client *p9_client_create(const char *dev_name, char *options)
- 	if (err < 0)
- 		goto error;
- 
-+	if (!clnt->trans_mod)
-+		clnt->trans_mod = v9fs_get_default_trans();
-+
- 	if (clnt->trans_mod == NULL) {
- 		err = -EPROTONOSUPPORT;
- 		P9_DPRINTK(P9_DEBUG_ERROR,
+Can we plan to remove the limitation of MAX_LOCK_DEPTH after merging
+the patch-set?
+
+Thanks.
+
+>
+> The way we could do it is to split out this bit of struct task:
+>
+> #ifdef CONFIG_LOCKDEP
+> # define MAX_LOCK_DEPTH 48UL
+>        u64 curr_chain_key;
+>        int lockdep_depth;
+>        unsigned int lockdep_recursion;
+>        struct held_lock held_locks[MAX_LOCK_DEPTH];
+>        gfp_t lockdep_reclaim_gfp;
+> #endif
+>
+> into a separate 'struct lockdep_state' structure, and allocate it
+> dynamically during fork with a initial pre-set size of say 64 locks
+> depth. If we hit that limit, we'd double the allocation threshold,
+> which would cause a larger structure to be allocated for all newly
+> allocated tasks.
+>
+> ( This means that the task that hits this threshold needs to have
+>  lockdep disabled until it exits - but that's OK. )
+>
+>        Ingo
+>
+
 -- 
-1.6.0.4
-
+Lei Ming
