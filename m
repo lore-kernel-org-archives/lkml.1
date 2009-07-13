@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755762AbZGMRzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbZGMRzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755762AbZGMRzR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 13:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756455AbZGMRzQ
+	id S1756787AbZGMRzM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 13:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbZGMRzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 13:55:16 -0400
+	Mon, 13 Jul 2009 13:55:10 -0400
 Received: from mail-fx0-f218.google.com ([209.85.220.218]:56224 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756769AbZGMRzN (ORCPT
+	with ESMTP id S1756766AbZGMRzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 13:55:13 -0400
+	Mon, 13 Jul 2009 13:55:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=oe2PnEcfdkncfxcKiidCSEqD9oW/PFcOOoDy/cLLk9LAdZscuEyZC1yAYw1k9+LL+J
-         l8z+UJ1JTz0V8qNx0DKFYRWVjhzWzgGG23nIILKJQbPfrQVKzIUUd8VHKffiz7ttMIz2
-         r3zlHC1J5A6+GZwEsYkex+mJVYkvcPHV4w55Y=
+        b=MlpAjBMiXklqYeif9KKEh1TzyWRgSdFQSdmDeaqIqyxFpYlnZPMVmUTWQQnFiYYXBR
+         uQ3NczgQynOBD/Dft+oiIGnZ0ILk/aaX4o0qUSJipyY7qbQ+dn7/Lzj+nR+cRES6No2d
+         FAndDk/mGnII/alzqBcgKpOaVGfolKgM4VN8o=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 13 Jul 2009 20:01:51 +0200
-Message-Id: <20090713180151.15985.12457.sendpatchset@localhost.localdomain>
+Date: Mon, 13 Jul 2009 20:01:44 +0200
+Message-Id: <20090713180144.15985.29639.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090713180112.15985.88819.sendpatchset@localhost.localdomain>
 References: <20090713180112.15985.88819.sendpatchset@localhost.localdomain>
-Subject: [PATCH 06/10] Staging: rtl8187se: rename struct ieee80211_hdr_3addr_qos to struct ieee80211_hdr_3addrqos
+Subject: [PATCH 05/10] Staging: rtl8187se: rename struct ieee80211_hdr to struct ieee80211_hdr_4addr
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8187se: rename struct ieee80211_hdr_3addr_qos to struct ieee80211_hdr_3addrqos
+Subject: [PATCH] Staging: rtl8187se: rename struct ieee80211_hdr to struct ieee80211_hdr_4addr
 
-Rename struct ieee80211_hdr_3addr_QOS to struct ieee80211_hdr_3addrqos
-and QOS_ctl field to qos_ctl (to match the naming used by rtl8192su).
+ieee80211_hdr name is too generic so use ieee80211_hdr_4addr one instead
+(which matches the naming used by rtl8192su driver).
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/TODO                     |    1 -
- drivers/staging/rtl8187se/ieee80211/ieee80211.h    |    4 ++--
- drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c |   20 +++++++++-----------
- drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c |   21 +++++++++++----------
- 4 files changed, 22 insertions(+), 24 deletions(-)
+ drivers/staging/rtl8187se/TODO                             |    1 
+ drivers/staging/rtl8187se/ieee80211/ieee80211.h            |    4 -
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c |   10 +--
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c |   26 ++++----
+ drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c         |   42 ++++++-------
+ drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c         |    8 --
+ drivers/staging/rtl8187se/r8180_core.c                     |    4 -
+ 7 files changed, 46 insertions(+), 49 deletions(-)
 
 Index: b/drivers/staging/rtl8187se/TODO
 ===================================================================
@@ -50,172 +53,399 @@ Index: b/drivers/staging/rtl8187se/TODO
 @@ -1,6 +1,5 @@
  TODO:
  - prepare private ieee80211 stack for merge with rtl8192su's version:
--  - rename struct ieee80211_hdr_3addr_QOS to struct ieee80211_hdr_3addrqos
+-  - rename struct ieee80211_hdr to struct ieee80211_hdr_4addr
+   - rename struct ieee80211_hdr_3addr_QOS to struct ieee80211_hdr_3addrqos
    - rename struct ieee80211_hdr_QOS to struct ieee80211_hdr_4addrqos
    - add hwsec_active flag to struct ieee80211_device
-   - add bHwSec flag to cb_desc structure
 Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
 ===================================================================
 --- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
 +++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
-@@ -200,14 +200,14 @@ struct ieee80211_hdr_3addr {
- 	u16 seq_ctl;
- } __attribute__ ((packed));
+@@ -170,7 +170,7 @@ struct ieee_ibss_seq {
+ 	struct list_head list;
+ };
  
--struct ieee80211_hdr_3addr_QOS {
-+struct ieee80211_hdr_3addrqos {
+-struct ieee80211_hdr {
++struct ieee80211_hdr_4addr {
  	u16 frame_ctl;
  	u16 duration_id;
  	u8 addr1[ETH_ALEN];
- 	u8 addr2[ETH_ALEN];
- 	u8 addr3[ETH_ALEN];
- 	u16 seq_ctl;
--	u16 QOS_ctl;
-+	u16 qos_ctl;
- } __attribute__ ((packed));
+@@ -1450,7 +1450,7 @@ extern void ieee80211_txb_free(struct ie
+ extern int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
+ 			struct ieee80211_rx_stats *rx_stats);
+ extern void ieee80211_rx_mgt(struct ieee80211_device *ieee,
+-			     struct ieee80211_hdr *header,
++			     struct ieee80211_hdr_4addr *header,
+ 			     struct ieee80211_rx_stats *stats);
  
- enum eap_type {
+ /* ieee80211_wx.c */
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
+@@ -114,7 +114,7 @@ static inline void xor_block(u8 *b, u8 *
+ }
+ 
+ static void ccmp_init_blocks(struct crypto_tfm *tfm,
+-			     struct ieee80211_hdr *hdr,
++			     struct ieee80211_hdr_4addr *hdr,
+ 			     u8 *pn, size_t dlen, u8 *b0, u8 *auth,
+ 			     u8 *s0)
+ {
+@@ -196,7 +196,7 @@ static int ieee80211_ccmp_encrypt(struct
+ 	struct ieee80211_ccmp_data *key = priv;
+ 	int data_len, i;
+ 	u8 *pos;
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 	int blocks, last, len;
+ 	u8 *mic;
+ 	u8 *b0 = key->tx_b0;
+@@ -232,7 +232,7 @@ static int ieee80211_ccmp_encrypt(struct
+ 	*pos++ = key->tx_pn[1];
+ 	*pos++ = key->tx_pn[0];
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 	//mic is moved to here by john
+ 	mic = skb_put(skb, CCMP_MIC_LEN);
+ 
+@@ -265,7 +265,7 @@ static int ieee80211_ccmp_decrypt(struct
+ {
+ 	struct ieee80211_ccmp_data *key = priv;
+ 	u8 keyidx, *pos;
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 	u8 pn[6];
+ 	size_t data_len = skb->len - hdr_len - CCMP_HDR_LEN - CCMP_MIC_LEN;
+ 	u8 *mic = skb->data + skb->len - CCMP_MIC_LEN;
+@@ -279,7 +279,7 @@ static int ieee80211_ccmp_decrypt(struct
+ 		return -1;
+ 	}
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 	pos = skb->data + hdr_len;
+ 	keyidx = pos[3];
+ 	if (!(keyidx & (1 << 5))) {
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
+@@ -310,7 +310,7 @@ static int ieee80211_tkip_encrypt(struct
+         struct blkcipher_desc desc = {.tfm = tkey->tx_tfm_arc4};
+ 	int len;
+ 	u8  *pos;
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 	u8 rc4key[16],*icv;
+ 	u32 crc;
+ 	struct scatterlist sg;
+@@ -321,7 +321,7 @@ static int ieee80211_tkip_encrypt(struct
+ 	    skb->len < hdr_len)
+ 		return -1;
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 
+ 	if (!tkey->tx_phase1_done) {
+ 		tkip_mixing_phase1(tkey->tx_ttak, tkey->key, hdr->addr2,
+@@ -369,7 +369,7 @@ static int ieee80211_tkip_decrypt(struct
+ 	u8 keyidx, *pos;
+ 	u32 iv32;
+ 	u16 iv16;
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 	u8 icv[4];
+ 	u32 crc;
+ 	struct scatterlist sg;
+@@ -379,7 +379,7 @@ static int ieee80211_tkip_decrypt(struct
+ 	if (skb->len < hdr_len + 8 + 4)
+ 		return -1;
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 	pos = skb->data + hdr_len;
+ 	keyidx = pos[3];
+ 	if (!(keyidx & (1 << 5))) {
+@@ -494,9 +494,9 @@ static int michael_mic(struct crypto_has
+ 
+ static void michael_mic_hdr(struct sk_buff *skb, u8 *hdr)
+ {
+-	struct ieee80211_hdr *hdr11;
++	struct ieee80211_hdr_4addr *hdr11;
+ 
+-	hdr11 = (struct ieee80211_hdr *) skb->data;
++	hdr11 = (struct ieee80211_hdr_4addr *)skb->data;
+ 	switch (le16_to_cpu(hdr11->frame_ctl) &
+ 		(IEEE80211_FCTL_FROMDS | IEEE80211_FCTL_TODS)) {
+ 	case IEEE80211_FCTL_TODS:
+@@ -527,9 +527,9 @@ static int ieee80211_michael_mic_add(str
+ {
+ 	struct ieee80211_tkip_data *tkey = priv;
+ 	u8 *pos;
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 
+ 	if (skb_tailroom(skb) < 8 || skb->len < hdr_len) {
+ 		printk(KERN_DEBUG "Invalid packet for Michael MIC add "
+@@ -556,7 +556,7 @@ static int ieee80211_michael_mic_add(str
+ }
+ 
+ static void ieee80211_michael_mic_failure(struct net_device *dev,
+-				       struct ieee80211_hdr *hdr,
++				       struct ieee80211_hdr_4addr *hdr,
+ 				       int keyidx)
+ {
+ 	union iwreq_data wrqu;
+@@ -581,9 +581,9 @@ static int ieee80211_michael_mic_verify(
+ {
+ 	struct ieee80211_tkip_data *tkey = priv;
+ 	u8 mic[8];
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 
+ 	if (!tkey->key_set)
+ 		return -1;
+@@ -601,8 +601,8 @@ static int ieee80211_michael_mic_verify(
+ 		return -1;
+ 
+ 	if (memcmp(mic, skb->data + skb->len - 8, 8) != 0) {
+-		struct ieee80211_hdr *hdr;
+-		hdr = (struct ieee80211_hdr *) skb->data;
++		struct ieee80211_hdr_4addr *hdr;
++		hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 		printk(KERN_DEBUG "%s: Michael MIC verification failed for "
+ 		       "MSDU from " MAC_FMT " keyidx=%d\n",
+ 		       skb->dev ? skb->dev->name : "N/A", MAC_ARG(hdr->addr2),
 Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
 +++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-@@ -104,7 +104,7 @@ ieee80211_frag_cache_get(struct ieee8021
- 	unsigned int frag = WLAN_GET_SEQ_FRAG(sc);
- 	unsigned int seq = WLAN_GET_SEQ_SEQ(sc);
- 	struct ieee80211_frag_entry *entry;
--	struct ieee80211_hdr_3addr_QOS *hdr_3addr_QoS;
-+	struct ieee80211_hdr_3addrqos *hdr_3addrqos;
- 	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
- 	u8 tid;
+@@ -49,7 +49,8 @@ static inline void ieee80211_monitor_rx(
+ 					struct sk_buff *skb,
+ 					struct ieee80211_rx_stats *rx_stats)
+ {
+-	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
++	struct ieee80211_hdr_4addr *hdr =
++		(struct ieee80211_hdr_4addr *)skb->data;
+ 	u16 fc = le16_to_cpu(hdr->frame_ctl);
  
-@@ -114,8 +114,8 @@ ieee80211_frag_cache_get(struct ieee8021
- 	  tid = UP2AC(tid);
- 	  tid ++;
- 	} else if (IEEE80211_QOS_HAS_SEQ(fc)) {
--	  hdr_3addr_QoS = (struct ieee80211_hdr_3addr_QOS *)hdr;
--	  tid = le16_to_cpu(hdr_3addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
-+	  hdr_3addrqos = (struct ieee80211_hdr_3addrqos *)hdr;
-+	  tid = le16_to_cpu(hdr_3addrqos->qos_ctl) & IEEE80211_QOS_TID;
- 	  tid = UP2AC(tid);
- 	  tid ++;
- 	} else {
-@@ -171,7 +171,7 @@ static int ieee80211_frag_cache_invalida
+ 	skb->dev = ieee->dev;
+@@ -95,7 +96,7 @@ ieee80211_frag_cache_find(struct ieee802
+ /* Called only as a tasklet (software IRQ) */
+ static struct sk_buff *
+ ieee80211_frag_cache_get(struct ieee80211_device *ieee,
+-			 struct ieee80211_hdr *hdr)
++			 struct ieee80211_hdr_4addr *hdr)
+ {
+ 	struct sk_buff *skb = NULL;
+ 	u16 fc = le16_to_cpu(hdr->frame_ctl);
+@@ -124,7 +125,7 @@ ieee80211_frag_cache_get(struct ieee8021
+ 	if (frag == 0) {
+ 		/* Reserve enough space to fit maximum frame length */
+ 		skb = dev_alloc_skb(ieee->dev->mtu +
+-				    sizeof(struct ieee80211_hdr) +
++				    sizeof(struct ieee80211_hdr_4addr) +
+ 				    8 /* LLC */ +
+ 				    2 /* alignment */ +
+ 				    8 /* WEP */ +
+@@ -164,7 +165,7 @@ ieee80211_frag_cache_get(struct ieee8021
+ 
+ /* Called only as a tasklet (software IRQ) */
+ static int ieee80211_frag_cache_invalidate(struct ieee80211_device *ieee,
+-					   struct ieee80211_hdr *hdr)
++					   struct ieee80211_hdr_4addr *hdr)
+ {
+ 	u16 fc = le16_to_cpu(hdr->frame_ctl);
  	u16 sc = le16_to_cpu(hdr->seq_ctl);
- 	unsigned int seq = WLAN_GET_SEQ_SEQ(sc);
- 	struct ieee80211_frag_entry *entry;
--	struct ieee80211_hdr_3addr_QOS *hdr_3addr_QoS;
-+	struct ieee80211_hdr_3addrqos *hdr_3addrqos;
- 	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
- 	u8 tid;
+@@ -214,17 +215,18 @@ ieee80211_rx_frame_mgmt(struct ieee80211
+ 			struct ieee80211_rx_stats *rx_stats, u16 type,
+ 			u16 stype)
+ {
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
  
-@@ -181,8 +181,8 @@ static int ieee80211_frag_cache_invalida
- 	  tid = UP2AC(tid);
- 	  tid ++;
- 	} else if (IEEE80211_QOS_HAS_SEQ(fc)) {
--	  hdr_3addr_QoS = (struct ieee80211_hdr_3addr_QOS *)hdr;
--	  tid = le16_to_cpu(hdr_3addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
-+	  hdr_3addrqos = (struct ieee80211_hdr_3addrqos *)hdr;
-+	  tid = le16_to_cpu(hdr_3addrqos->qos_ctl) & IEEE80211_QOS_TID;
- 	  tid = UP2AC(tid);
- 	  tid ++;
- 	} else {
-@@ -377,7 +377,7 @@ static int is_duplicate_packet(struct ie
- 	u16 frag = WLAN_GET_SEQ_FRAG(sc);
- 	u16 *last_seq, *last_frag;
- 	unsigned long *last_time;
--	struct ieee80211_hdr_3addr_QOS *hdr_3addr_QoS;
-+	struct ieee80211_hdr_3addrqos *hdr_3addrqos;
- 	struct ieee80211_hdr_QOS *hdr_4addr_QoS;
- 	u8 tid;
+ 	// cheat the the hdr type
+-	hdr = (struct ieee80211_hdr *)skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
  
-@@ -388,8 +388,8 @@ static int is_duplicate_packet(struct ie
- 	  tid = UP2AC(tid);
- 	  tid ++;
- 	} else if(IEEE80211_QOS_HAS_SEQ(fc)) { //QoS
--	  hdr_3addr_QoS = (struct ieee80211_hdr_3addr_QOS*)header;
--	  tid = le16_to_cpu(hdr_3addr_QoS->QOS_ctl) & IEEE80211_QOS_TID;
-+	  hdr_3addrqos = (struct ieee80211_hdr_3addrqos *)header;
-+	  tid = le16_to_cpu(hdr_3addrqos->qos_ctl) & IEEE80211_QOS_TID;
- 	  tid = UP2AC(tid);
- 	  tid ++;
- 	} else { // no QoS
-@@ -476,7 +476,6 @@ int ieee80211_rx(struct ieee80211_device
+ 	/* On the struct stats definition there is written that
+ 	 * this is not mandatory.... but seems that the probe
+ 	 * response parser uses it
+ 	 */
+ 	rx_stats->len = skb->len;
+-	ieee80211_rx_mgt(ieee,(struct ieee80211_hdr *)skb->data,rx_stats);
++	ieee80211_rx_mgt(ieee, (struct ieee80211_hdr_4addr *)skb->data,
++			 rx_stats);
+ 
+ 	if((ieee->state == IEEE80211_LINKED)&&(memcmp(hdr->addr3,ieee->current_network.bssid,ETH_ALEN))) {
+ 		dev_kfree_skb_any(skb);
+@@ -256,13 +258,13 @@ static int ieee80211_is_eapol_frame(stru
+ {
+ 	struct net_device *dev = ieee->dev;
+ 	u16 fc, ethertype;
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 	u8 *pos;
+ 
+ 	if (skb->len < 24)
+ 		return 0;
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 	fc = le16_to_cpu(hdr->frame_ctl);
+ 
+ 	/* check that the frame is unicast frame to us */
+@@ -296,13 +298,13 @@ static inline int
+ ieee80211_rx_frame_decrypt(struct ieee80211_device* ieee, struct sk_buff *skb,
+ 			   struct ieee80211_crypt_data *crypt)
+ {
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 	int res, hdrlen;
+ 
+ 	if (crypt == NULL || crypt->ops->decrypt_mpdu == NULL)
+ 		return 0;
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 	hdrlen = ieee80211_get_hdrlen(le16_to_cpu(hdr->frame_ctl));
+ 
+ #ifdef CONFIG_IEEE80211_CRYPT_TKIP
+@@ -341,13 +343,13 @@ static inline int
+ ieee80211_rx_frame_decrypt_msdu(struct ieee80211_device* ieee, struct sk_buff *skb,
+ 			     int keyidx, struct ieee80211_crypt_data *crypt)
+ {
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 	int res, hdrlen;
+ 
+ 	if (crypt == NULL || crypt->ops->decrypt_msdu == NULL)
+ 		return 0;
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 	hdrlen = ieee80211_get_hdrlen(le16_to_cpu(hdr->frame_ctl));
+ 
+ 	atomic_inc(&crypt->refcnt);
+@@ -367,7 +369,7 @@ ieee80211_rx_frame_decrypt_msdu(struct i
+ /* this function is stolen from ipw2200 driver*/
+ #define IEEE_PACKET_RETRY_TIME (5*HZ)
+ static int is_duplicate_packet(struct ieee80211_device *ieee,
+-				      struct ieee80211_hdr *header)
++				      struct ieee80211_hdr_4addr *header)
+ {
+ 	u16 fc = le16_to_cpu(header->frame_ctl);
+ 	u16 sc = le16_to_cpu(header->seq_ctl);
+@@ -473,7 +475,7 @@ int ieee80211_rx(struct ieee80211_device
+ {
  	struct net_device *dev = ieee->dev;
  	//struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
- 	struct ieee80211_hdr_4addr *hdr;
--	//struct ieee80211_hdr_3addr_QOS *hdr;
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 	//struct ieee80211_hdr_3addr_QOS *hdr;
  
  	size_t hdrlen;
- 	u16 fc, type, stype, sc;
-@@ -484,7 +483,6 @@ int ieee80211_rx(struct ieee80211_device
- 	unsigned int frag;
- 	u8 *payload;
- 	u16 ethertype;
--//	u16 QOS_ctl = 0;
- 	u8 dst[ETH_ALEN];
- 	u8 src[ETH_ALEN];
- 	u8 bssid[ETH_ALEN];
+@@ -490,7 +492,7 @@ int ieee80211_rx(struct ieee80211_device
+ 	int keyidx = 0;
+ 
+ 	// cheat the the hdr type
+-	hdr = (struct ieee80211_hdr *)skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 	stats = &ieee->stats;
+ 
+ 	if (skb->len < 10) {
+@@ -631,7 +633,7 @@ int ieee80211_rx(struct ieee80211_device
+ 	    (keyidx = ieee80211_rx_frame_decrypt(ieee, skb, crypt)) < 0)
+ 		goto rx_dropped;
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 
+ 	/* skb: hdr + (possibly fragmented) plaintext payload */
+ 	// PR: FIXME: hostap has additional conditions in the "if" below:
+@@ -684,7 +686,7 @@ int ieee80211_rx(struct ieee80211_device
+ 		/* this was the last fragment and the frame will be
+ 		 * delivered, so remove skb from fragment cache */
+ 		skb = frag_skb;
+-		hdr = (struct ieee80211_hdr *) skb->data;
++		hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 		ieee80211_frag_cache_invalidate(ieee, hdr);
+ 	}
+ 
+@@ -694,7 +696,7 @@ int ieee80211_rx(struct ieee80211_device
+ 	    ieee80211_rx_frame_decrypt_msdu(ieee, skb, keyidx, crypt))
+ 		goto rx_dropped;
+ 
+-	hdr = (struct ieee80211_hdr *) skb->data;
++	hdr = (struct ieee80211_hdr_4addr *)skb->data;
+ 	if (crypt && !(fc & IEEE80211_FCTL_WEP) && !ieee->open_wep) {
+ 		if (/*ieee->ieee802_1x &&*/
+ 		    ieee80211_is_eapol_frame(ieee, skb, hdrlen)) {
+@@ -1525,7 +1527,7 @@ inline void ieee80211_process_probe_resp
+ }
+ 
+ void ieee80211_rx_mgt(struct ieee80211_device *ieee,
+-		      struct ieee80211_hdr *header,
++		      struct ieee80211_hdr_4addr *header,
+ 		      struct ieee80211_rx_stats *stats)
+ {
+ 	switch (WLAN_FC_GET_STYPE(header->frame_ctl)) {
 Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
 +++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
-@@ -310,17 +310,17 @@ int ieee80211_xmit(struct sk_buff *skb,
- {
- 	struct ieee80211_device *ieee = netdev_priv(dev);
- 	struct ieee80211_txb *txb = NULL;
--	struct ieee80211_hdr_3addr_QOS *frag_hdr;
-+	struct ieee80211_hdr_3addrqos *frag_hdr;
- 	int i, bytes_per_frag, nr_frags, bytes_last_frag, frag_size;
- 	unsigned long flags;
- 	struct net_device_stats *stats = &ieee->stats;
+@@ -192,11 +192,11 @@ int ieee80211_encrypt_fragment(
+         return -1;
+ 
+ #ifdef CONFIG_IEEE80211_CRYPT_TKIP
+-	struct ieee80211_hdr *header;
++	struct ieee80211_hdr_4addr *header;
+ 
+ 	if (ieee->tkip_countermeasures &&
+ 	    crypt && crypt->ops && strcmp(crypt->ops->name, "TKIP") == 0) {
+-		header = (struct ieee80211_hdr *) frag->data;
++		header = (struct ieee80211_hdr_4addr *)frag->data;
+ 		if (net_ratelimit()) {
+ 			printk(KERN_DEBUG "%s: TKIP countermeasures: dropped "
+ 			       "TX packet to " MAC_FMT "\n",
+@@ -317,10 +317,6 @@ int ieee80211_xmit(struct sk_buff *skb,
  	int ether_type, encrypt;
--	int bytes, fc, QOS_ctl, hdr_len;
-+	int bytes, fc, qos_ctl, hdr_len;
+ 	int bytes, fc, QOS_ctl, hdr_len;
  	struct sk_buff *skb_frag;
--	struct ieee80211_hdr_3addr_QOS header = { /* Ensure zero initialized */
-+	struct ieee80211_hdr_3addrqos header = { /* Ensure zero initialized */
+-	//struct ieee80211_hdr header = { /* Ensure zero initialized */
+-	//	.duration_id = 0,
+-	//	.seq_ctl = 0
+-	//};
+ 	struct ieee80211_hdr_3addr_QOS header = { /* Ensure zero initialized */
  		.duration_id = 0,
  		.seq_ctl = 0,
--		.QOS_ctl = 0
-+		.qos_ctl = 0
- 	};
- 	u8 dest[ETH_ALEN], src[ETH_ALEN];
+Index: b/drivers/staging/rtl8187se/r8180_core.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_core.c
++++ b/drivers/staging/rtl8187se/r8180_core.c
+@@ -1540,7 +1540,7 @@ void rtl8180_rx(struct net_device *dev)
+ 	u8	LNA=0, BB=0;
+ 	u8 	LNA_gain[4]={02, 17, 29, 39};
+ 	u8  Antenna = 0;
+-	struct ieee80211_hdr *hdr;
++	struct ieee80211_hdr_4addr *hdr;
+ 	u16 fc,type;
+ 	u8 bHwError = 0,bCRC = 0,bICV = 0;
+ 	bool	bCckRate = false;
+@@ -1736,7 +1736,7 @@ void rtl8180_rx(struct net_device *dev)
+ 			| (((*(priv->rxringtail))& (0x08000000)) != 0 )| (((~(*(priv->rxringtail)))& (0x10000000)) != 0 )| (((~(*(priv->rxringtail)))& (0x20000000)) != 0 );
+ 		bCRC = ((*(priv->rxringtail)) & (0x00002000)) >> 13;
+ 		bICV = ((*(priv->rxringtail)) & (0x00001000)) >> 12;
+-            hdr = (struct ieee80211_hdr *)priv->rxbuffer->buf;
++		hdr = (struct ieee80211_hdr_4addr *)priv->rxbuffer->buf;
+ 		    fc = le16_to_cpu(hdr->frame_ctl);
+ 	        type = WLAN_FC_GET_TYPE(fc);
  
-@@ -419,22 +419,23 @@ int ieee80211_xmit(struct sk_buff *skb,
- 		if (is_multicast_ether_addr(header.addr1) ||
- 		is_broadcast_ether_addr(header.addr1)) {
- 			frag_size = MAX_FRAG_THRESHOLD;
--			QOS_ctl = QOS_CTL_NOTCONTAIN_ACK;
-+			qos_ctl = QOS_CTL_NOTCONTAIN_ACK;
- 		}
- 		else {
- 			//printk(KERN_WARNING "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&frag_size = %d\n", frag_size);
- 			frag_size = ieee->fts;//default:392
--			QOS_ctl = 0;
-+			qos_ctl = 0;
- 		}
- 
- 		if (ieee->current_network.QoS_Enable)	{
- 			hdr_len = IEEE80211_3ADDR_LEN + 2;
--			QOS_ctl |= skb->priority; //set in the ieee80211_classify
--			header.QOS_ctl = cpu_to_le16(QOS_ctl);
-+			/* skb->priority is set in the ieee80211_classify() */
-+			qos_ctl |= skb->priority;
-+			header.qos_ctl = cpu_to_le16(qos_ctl);
- 		} else {
- 			hdr_len = IEEE80211_3ADDR_LEN;
- 		}
--		//printk(KERN_WARNING "header size = %d, QOS_ctl = %x\n", hdr_len,QOS_ctl);
-+
- 		/* Determine amount of payload per fragment.  Regardless of if
- 		* this stack is providing the full 802.11 header, one will
- 		* eventually be affixed to this fragment -- so we must account for
-@@ -477,7 +478,7 @@ int ieee80211_xmit(struct sk_buff *skb,
- 			if (encrypt)
- 				skb_reserve(skb_frag, crypt->ops->extra_prefix_len);
- 
--			frag_hdr = (struct ieee80211_hdr_3addr_QOS *)skb_put(skb_frag, hdr_len);
-+			frag_hdr = (struct ieee80211_hdr_3addrqos *)skb_put(skb_frag, hdr_len);
- 			memcpy(frag_hdr, &header, hdr_len);
- 
- 			/* If this is not the last fragment, then add the MOREFRAGS
