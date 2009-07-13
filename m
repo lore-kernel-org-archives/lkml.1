@@ -1,185 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbZGMGCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbZGMGDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752385AbZGMGCd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 02:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZGMGCa
+	id S1752637AbZGMGDO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 02:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZGMGDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 02:02:30 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34830 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbZGMGC3 (ORCPT
+	Mon, 13 Jul 2009 02:03:09 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:58668 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751757AbZGMGDI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 02:02:29 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/4][resend]  Show kernel stack usage in /proc/meminfo and OOM log output
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <20090713144924.6257.A69D9226@jp.fujitsu.com>
-References: <20090713144924.6257.A69D9226@jp.fujitsu.com>
-Message-Id: <20090713150114.6260.A69D9226@jp.fujitsu.com>
+	Mon, 13 Jul 2009 02:03:08 -0400
+In-Reply-To: <200907101449.45286.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-arch@vger.kernel.org,
+       linux-arch-owner@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 13 Jul 2009 15:02:25 +0900 (JST)
+Subject: Re: [PATCH V2] score: add regset support
+X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
+Message-ID: <OF43365008.5559F266-ON482575F2.001F17EE-482575F2.00212259@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Mon, 13 Jul 2009 13:56:22 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/07/13 ?? 01:56:23,
+	Serialize complete at 2009/07/13 ?? 01:56:23
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6D63aXx000762
 
-ChangeLog
-  Since v1
-   - Rewrote the descriptin (Thanks Christoph!)
+linux-arch-owner@vger.kernel.org –¥”⁄ 2009-07-10 20:49:44:
 
-=====================
-Subject: [PATCH] Show kernel stack usage in /proc/meminfo and OOM log output
+> struct pt_regs {
+>        unsigned long pad0[6];
+>        unsigned long orig_r4;
+>        unsigned long orig_r7;
+>        unsigned long regs[32];
+> 
+>        unsigned long cel;
+>        unsigned long ceh;
+> 
+>        unsigned long sr0;      /* cnt */
+>        unsigned long sr1;      /* lcr */
+>        unsigned long sr2;      /* scr */
+> 
+>        unsigned long cp0_epc;
+>        unsigned long cp0_ema;
+>        unsigned long cp0_psr;
+>        unsigned long cp0_ecr;
+>        unsigned long cp0_condition;
+> 
+>        long is_syscall;
+> };
+> 
+> to
+> 
+> struct pt_regs {
+>        unsigned long regs[32];
+> 
+>        unsigned long cel;
+>        unsigned long ceh;
+> 
+>        unsigned long sr0;      /* cnt */
+>        unsigned long sr1;      /* lcr */
+>        unsigned long sr2;      /* scr */
+> 
+>        unsigned long cp0_epc;
+>        unsigned long cp0_ema;
+>        unsigned long cp0_psr;
+>        unsigned long cp0_ecr;
+>        unsigned long cp0_condition;
+> #ifdef __KERNEL__
+>        unsigned long orig_r4;
+>        unsigned long orig_r7;
+>        long is_syscall;
+>        unsigned long pad0[3];
+> #else
+>        unsigned long pad0[6];
+> #endif
+> };
+> 
 
-The amount of memory allocated to kernel stacks can become significant and
-cause OOM conditions. However, we do not display the amount of memory
-consumed by stacks.
+unsigned long pad0[6];
 
-Add code to display the amount of memory used for stacks in /proc/meminfo.
+was place at the start of pt_regs use 
+to hold the arguments from userland.
+caller(exception handler) not need to
+change stack pointer.
 
+unsigned long orig_r4;
+unsigned long orig_r7;
+move to end of the pt_regs haven't 
+problem.
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-Reviewed-by: Rik van Riel <riel@redhat.com>
----
- drivers/base/node.c    |    3 +++
- fs/proc/meminfo.c      |    2 ++
- include/linux/mmzone.h |    3 ++-
- kernel/fork.c          |   11 +++++++++++
- mm/page_alloc.c        |    3 +++
- mm/vmstat.c            |    1 +
- 6 files changed, 22 insertions(+), 1 deletion(-)
+Thanks,
+Liqin
 
-Index: b/fs/proc/meminfo.c
-===================================================================
---- a/fs/proc/meminfo.c
-+++ b/fs/proc/meminfo.c
-@@ -84,6 +84,7 @@ static int meminfo_proc_show(struct seq_
- 		"Slab:           %8lu kB\n"
- 		"SReclaimable:   %8lu kB\n"
- 		"SUnreclaim:     %8lu kB\n"
-+		"KernelStack:    %8lu kB\n"
- 		"PageTables:     %8lu kB\n"
- #ifdef CONFIG_QUICKLIST
- 		"Quicklists:     %8lu kB\n"
-@@ -128,6 +129,7 @@ static int meminfo_proc_show(struct seq_
- 				global_page_state(NR_SLAB_UNRECLAIMABLE)),
- 		K(global_page_state(NR_SLAB_RECLAIMABLE)),
- 		K(global_page_state(NR_SLAB_UNRECLAIMABLE)),
-+		global_page_state(NR_KERNEL_STACK) * THREAD_SIZE / 1024,
- 		K(global_page_state(NR_PAGETABLE)),
- #ifdef CONFIG_QUICKLIST
- 		K(quicklist_total_size()),
-Index: b/include/linux/mmzone.h
-===================================================================
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -94,10 +94,11 @@ enum zone_stat_item {
- 	NR_SLAB_RECLAIMABLE,
- 	NR_SLAB_UNRECLAIMABLE,
- 	NR_PAGETABLE,		/* used for pagetables */
-+	NR_KERNEL_STACK,
-+	/* Second 128 byte cacheline */
- 	NR_UNSTABLE_NFS,	/* NFS unstable pages */
- 	NR_BOUNCE,
- 	NR_VMSCAN_WRITE,
--	/* Second 128 byte cacheline */
- 	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
- #ifdef CONFIG_NUMA
- 	NUMA_HIT,		/* allocated in intended node */
-Index: b/kernel/fork.c
-===================================================================
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -137,9 +137,17 @@ struct kmem_cache *vm_area_cachep;
- /* SLAB cache for mm_struct structures (tsk->mm) */
- static struct kmem_cache *mm_cachep;
- 
-+static void account_kernel_stack(struct thread_info *ti, int account)
-+{
-+	struct zone *zone = page_zone(virt_to_page(ti));
-+
-+	mod_zone_page_state(zone, NR_KERNEL_STACK, account);
-+}
-+
- void free_task(struct task_struct *tsk)
- {
- 	prop_local_destroy_single(&tsk->dirties);
-+	account_kernel_stack(tsk->stack, -1);
- 	free_thread_info(tsk->stack);
- 	rt_mutex_debug_task_free(tsk);
- 	ftrace_graph_exit_task(tsk);
-@@ -255,6 +263,9 @@ static struct task_struct *dup_task_stru
- 	tsk->btrace_seq = 0;
- #endif
- 	tsk->splice_pipe = NULL;
-+
-+	account_kernel_stack(ti, 1);
-+
- 	return tsk;
- 
- out:
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2158,6 +2158,7 @@ void show_free_areas(void)
- 			" mapped:%lukB"
- 			" slab_reclaimable:%lukB"
- 			" slab_unreclaimable:%lukB"
-+			" kernel_stack:%lukB"
- 			" pagetables:%lukB"
- 			" unstable:%lukB"
- 			" bounce:%lukB"
-@@ -2182,6 +2183,8 @@ void show_free_areas(void)
- 			K(zone_page_state(zone, NR_FILE_MAPPED)),
- 			K(zone_page_state(zone, NR_SLAB_RECLAIMABLE)),
- 			K(zone_page_state(zone, NR_SLAB_UNRECLAIMABLE)),
-+			zone_page_state(zone, NR_KERNEL_STACK) *
-+				THREAD_SIZE / 1024,
- 			K(zone_page_state(zone, NR_PAGETABLE)),
- 			K(zone_page_state(zone, NR_UNSTABLE_NFS)),
- 			K(zone_page_state(zone, NR_BOUNCE)),
-Index: b/mm/vmstat.c
-===================================================================
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -639,6 +639,7 @@ static const char * const vmstat_text[] 
- 	"nr_slab_reclaimable",
- 	"nr_slab_unreclaimable",
- 	"nr_page_table_pages",
-+	"nr_kernel_stack",
- 	"nr_unstable",
- 	"nr_bounce",
- 	"nr_vmscan_write",
-Index: b/drivers/base/node.c
-===================================================================
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -85,6 +85,7 @@ static ssize_t node_read_meminfo(struct 
- 		       "Node %d FilePages:      %8lu kB\n"
- 		       "Node %d Mapped:         %8lu kB\n"
- 		       "Node %d AnonPages:      %8lu kB\n"
-+		       "Node %d KernelStack:    %8lu kB\n"
- 		       "Node %d PageTables:     %8lu kB\n"
- 		       "Node %d NFS_Unstable:   %8lu kB\n"
- 		       "Node %d Bounce:         %8lu kB\n"
-@@ -116,6 +117,8 @@ static ssize_t node_read_meminfo(struct 
- 		       nid, K(node_page_state(nid, NR_FILE_PAGES)),
- 		       nid, K(node_page_state(nid, NR_FILE_MAPPED)),
- 		       nid, K(node_page_state(nid, NR_ANON_PAGES)),
-+		       nid, node_page_state(nid, NR_KERNEL_STACK) *
-+				THREAD_SIZE / 1024,
- 		       nid, K(node_page_state(nid, NR_PAGETABLE)),
- 		       nid, K(node_page_state(nid, NR_UNSTABLE_NFS)),
- 		       nid, K(node_page_state(nid, NR_BOUNCE)),
-
-
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
