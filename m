@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbZGNGrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbZGNGtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932068AbZGNGrb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 02:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbZGNGra
+	id S1753865AbZGNGtZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 02:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZGNGtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 02:47:30 -0400
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:64179 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753733AbZGNGra (ORCPT
+	Tue, 14 Jul 2009 02:49:24 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:62234 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbZGNGtY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 02:47:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=iCzkSvu8fzVlk6o5Ggx4oyWyezz3SHW7Zjz978w/hta+2nCIkAnz9UISLq5KoWlm66
-         sQ25075TUG+P+Mzq32h5As0w50hlf13sofK/egsvB/AKCnZNvrlXbWt80qDoeaezqAcw
-         1wM0xD6WYkRP9nsq6yByKhvQi78hFfX8bZ770=
+	Tue, 14 Jul 2009 02:49:24 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=gLXWr65klG8rLIq9IujFEvYLHdZVS4/8l3aJ3MzZwfmzM7ugZMbtiHivbKmVycyIw
+	QEu6oatbR/U4IIZpoQHZQ==
 MIME-Version: 1.0
-In-Reply-To: <1247536087.31854.39.camel@desktop>
-References: <20090710084323.GA6522@elf.ucw.cz>
-	 <a55d774e0907100155m25366994pe9ec5d0f5f868818@mail.gmail.com>
-	 <20090710103243.GB7789@elf.ucw.cz>
-	 <a55d774e0907100431j3fdc4671i6b185019594367fa@mail.gmail.com>
-	 <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz>
-	 <20090713220726.GA28375@elf.ucw.cz>
-	 <1247536087.31854.39.camel@desktop>
-Date: Tue, 14 Jul 2009 12:17:29 +0530
-Message-ID: <5d5443650907132347r82e73cy7177f0c43d1821c0@mail.gmail.com>
-Subject: Re: HTC: touchscreen driver
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090714055638.GI5051@balbir.in.ibm.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	 <20090705063850.GX11273@balbir.in.ibm.com>
+	 <6599ad830907101658i13e4046br70377a487dd6b49b@mail.gmail.com>
+	 <20090713121138.GC5051@balbir.in.ibm.com>
+	 <6599ad830907130926v7788af12hdcd76e4ccb3ab6de@mail.gmail.com>
+	 <20090714055638.GI5051@balbir.in.ibm.com>
+Date: Mon, 13 Jul 2009 23:49:16 -0700
+Message-ID: <6599ad830907132349u6cf52060t4fafb6637cbe4ed1@mail.gmail.com>
+Subject: Re: [PATCH 0/2] CGroups: cgroup member list enhancement/fix
+From: Paul Menage <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Cc: lizf@cn.fujitzu.com, bblum@google.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       libcg-devel <libcg-devel@lists.sourceforge.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
-
-On Tue, Jul 14, 2009 at 7:18 AM, Daniel Walker<dwalker@fifo99.com> wrote:
-> On Tue, 2009-07-14 at 00:07 +0200, Pavel Machek wrote:
->> On Mon 2009-07-13 22:57:49, Pavel Machek wrote:
->> > Hi!
->> >
->> > I'm looking at synaptic touchscreen driver... who should be listed as
->> > an author?
->> >
->> > Changes I have so far are...
->> >
->> > checkpatch only has minor complains -- lines over 80 characters -- but
->> > the code is _way_ too deeply nested with way too little functions.
+On Mon, Jul 13, 2009 at 10:56 PM, Balbir Singh<balbir@linux.vnet.ibm.com> wrote:
 >>
->> Here's better cleanup. But... some functions are still _way_ too big.
->>
+>> Waiting for the next scheduling point might be too long, since a
+>> thread can block for arbitrary amounts of time and keeping the marker
+>> around for arbitrary time (unless we add a new task_struct field)
+>> would be tricky. Marking the cgroup or tgid as being migrated which
+>> then triggers the extra synchronization in the fork path (but which
+>> isn't needed at other times) is probably where we'll end up.
 >
-> I'd put the nesting removal into another patch .. It makes reviewing
-> more clear, your first patch was already fairly busy .. It would also
-> make a bisect more fine grained if it lands on one of your patches.
+>
+> Hmm... but we would not need that information till we schedule the
+> tasks, adding a field to task_struct is what I had in mind.
 
-Please keep linux-input ML for any updates or when you have single
-patch ready to submit for review.
+Waiting until schedule to move the threads would result in them still
+showing up in the old "tasks" file until they next ran, which would be
+confusing and misleading.
 
+As a first cut, we were planning to add an rwsem that gets taken for
+read in cgroup_fork(), released in cgroup_post_fork(), and taken for
+write when moving an entire process to a new cgroup; not ideal
+performance-wise, but safe.
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+If adding a field to task_struct is an option, then the rwsem could be
+per thread-group leader, which would reduce contention.
+
+Paul
