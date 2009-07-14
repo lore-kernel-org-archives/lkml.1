@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbZGNFcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753486AbZGNFoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753453AbZGNFcN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 01:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbZGNFcM
+	id S1753486AbZGNFoX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 01:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZGNFoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 01:32:12 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:14080 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752570AbZGNFcL (ORCPT
+	Tue, 14 Jul 2009 01:44:22 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:59741 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752796AbZGNFoV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 01:32:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=c2xaKpO7rfW5J2X87iSnv2qRTqJndsKwSaTy8nu2EuH9DE0GHf52jzpl3i/2R5uCU9
-         VxkB4TTZ6g5uY/tqOVrUuQr+7fbxN2r3N2UE9V7nQa46g3NXdC5nt5To+rW1maEu44el
-         uh0skQcvnul6RBOTvNB+cHlPykxNSOj+EKw5I=
-Date: Tue, 14 Jul 2009 01:32:02 -0400
-From: Celejar <celejar@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: suspend to disk now broken
-Message-Id: <20090714013202.55c0c575.celejar@gmail.com>
-In-Reply-To: <200907140045.52764.rjw@sisk.pl>
-References: <20090712151947.25446ceb.celejar@gmail.com>
-	<200907130339.35003.rjw@sisk.pl>
-	<20090712220721.ff14e2fe.celejar@gmail.com>
-	<200907140045.52764.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 14 Jul 2009 01:44:21 -0400
+Message-ID: <4A5C1B22.3040701@nokia.com>
+Date: Tue, 14 Jul 2009 08:44:02 +0300
+From: Luciano Coelho <luciano.coelho@nokia.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: ext Jiri Slaby <jirislaby@gmail.com>
+CC: "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] wireless: wl12xx, fix lock imbalance
+References: <1247520266-32007-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1247520266-32007-1-git-send-email-jirislaby@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Jul 2009 05:44:08.0182 (UTC) FILETIME=[1B114960:01CA0446]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Jul 2009 00:45:52 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+ext Jiri Slaby wrote:
+> Add omitted mutex_unlock to one of wl12xx_op_start fail paths (when
+> wl12xx_chip_wakeup fails).
+>   
 
-> On Monday 13 July 2009, Celejar wrote:
-> > On Mon, 13 Jul 2009 03:39:34 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > On Sunday 12 July 2009, Celejar wrote:
-> > > > On Sun, 12 Jul 2009 22:56:01 +0200
-> > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > 
-> > > > > On Sunday 12 July 2009, Celejar wrote:
-> > > > > > On Sun, 12 Jul 2009 22:19:52 +0200
-> > > > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > > > 
-> > > > > > > On Sunday 12 July 2009, Celejar wrote:
-> > > > > > > > Hi,
-> > > > > > > > 
-> > > > > > > > A recent change to the kernel has apparently broken suspend to disk on
-> > > > > > > > my machine.  It still works fine in 2.6.30.1, but hangs during the
-> > > > > > > > 'devices' phase of suspension with 2.6.31-rc2.  [I originally saw the
-> > 
-> > ...
-> > 
-> > > Do you use IDE drivers?
-> > 
-> > Yes.  The system uses IDE/PATA drivers (PIIX).
-> 
-> If they are of the "old IDE" flavor, there've been some fixes merged recently.
-> Please check 2.6.31-rc3 when it's out (or the current mainline).
+Cool, very nice catch.  We actually just fixed this bug in our wl1271 
+code (which I will hopefully send upstream this week), but we hadn't 
+fixed it in the wl1251-specific code yet.
 
-I built what I think is mainline:
+> Not sure if the device should be powered off?
+>   
 
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+You should.  If the chip cannot be booted, why should it remain powered 
+on? In some rare cases, the chip might fail to initialize, but can 
+recover if powered off and on again, so turning it off at this point is 
+the right thing to do.
 
-and it works.
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> ---
+>   
+>  drivers/net/wireless/wl12xx/main.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/wireless/wl12xx/main.c b/drivers/net/wireless/wl12xx/main.c
+> index 603d611..d241e4a 100644
+> --- a/drivers/net/wireless/wl12xx/main.c
+> +++ b/drivers/net/wireless/wl12xx/main.c
+>   
+> @@ -336,7 +336,7 @@ static int wl12xx_op_start(struct ieee80211_hw *hw)
+>  
+>  	ret = wl12xx_chip_wakeup(wl);
+>  	if (ret < 0)
+> -		return ret;
+> +		goto unlock;
+>   
 
-Thanks!
+Here you can just "goto out;" so that the chip is powered off before we 
+return.
 
-Celejar
---
-mailmin.sourceforge.net - remote access via secure (OpenPGP) email
-ssuds.sourceforge.net - A Simple Sudoku Solver and Generator
+>  
+>  	ret = wl->chip.op_boot(wl);
+>  	if (ret < 0)
+> @@ -357,7 +357,7 @@ static int wl12xx_op_start(struct ieee80211_hw *hw)
+>  out:
+>  	if (ret < 0)
+>  		wl12xx_power_off(wl);
+> -
+> +unlock:
+>  	mutex_unlock(&wl->mutex);
+>  
+>  	return ret;
+>   
+
+Thanks a lot for your patch!
+
+-- 
+Cheers,
+Luca.
 
