@@ -1,82 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZGNRNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbZGNRO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbZGNRNb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 13:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbZGNRNa
+	id S1755285AbZGNRO2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 13:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZGNRO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 13:13:30 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:53867 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754283AbZGNRN3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 13:13:29 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: access_ok macor
-Date: Tue, 14 Jul 2009 19:13:20 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.96; x86_64; ; )
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>
-References: <4A5C8068.6020203@monstr.eu> <200907141843.05629.arnd@arndb.de> <4A5CB8B4.7050108@monstr.eu>
-In-Reply-To: <4A5CB8B4.7050108@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907141913.21240.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18bQnuRaJdHRlpQ37ITcklJnX+mGdG87lNc6z0
- XlLPoFz2c1BAsMkkjCKuXZvq2hC/DbDLwwdzYawsD62rbalSAr
- wsWC98rNygLDy/wZDqhBA==
+	Tue, 14 Jul 2009 13:14:27 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:59962 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754687AbZGNRO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 13:14:27 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: uclinux-dist-devel@blackfin.uclinux.org,
+       Bernd Schmidt <bernds_cb1@t-online.de>, Bryan Wu <cooloney@kernel.org>,
+       David Howells <dhowells@redhat.com>
+Subject: [PATCH v2] NOMMU: add support for Memory Protection Units (MPU)
+Date: Tue, 14 Jul 2009 13:14:25 -0400
+Message-Id: <1247591665-12000-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <20090714161416.GA19147@cmpxchg.org>
+References: <20090714161416.GA19147@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 14 July 2009, Michal Simek wrote:
-> when the code tried to read/write from unaligned address (and in cpu is turn on unaligned exception)
-> then is caused unaligned exception and asm code assemble/return value which is on that unaligned
-> address. (Assemble it that read/write every byte separately). That will be harder to prevent all
-> this cases because unaligned exception is in generic code.
-> What do you mean add __range_ok? Range checking is ok. The problem is when in case get_user kernel
-> try to load unaligned addr - unaligned exception is perform and try to load that value separately.
-> If that page is not there, page fault handler is called and not find it, it is performed search
-> from exception table and that address is not there of course - because address in pc is generic
-> unaligned code. I think that handling this needs more code.
-> Maybe if the address with from unaligned exception handler (there are some address which can caused
-> it) and find out which aligned address is there and find out proper fixup for it.
-> I think that this could work.
-> 
-> What do you think?
+From: Bernd Schmidt <bernds_cb1@t-online.de>
 
-I think the key point is that the kernel should never try an unaligned
-access. Other architectures already rely on this, so you can too.
-Instead of doing an aligned access from the unaligned exception handler,
-you should not access the data at all when you come from kernel mode
-but only search the fixup table to see if you should continue anyway.
+Some architectures (like the Blackfin arch) implement some of the
+"simpler" features that one would expect out of a MMU such as memory
+protection.  In our case, we actually get read/write/exec protection
+down to the page boundary so processes can't stomp on each other let
+alone the kernel.  There is a performance decrease (which depends greatly
+on the workload) however as the hardware/software interaction was not
+optimized at design time.
 
-Sorry for adding confusion by mentioning the __range_ok, which is addressing
-a separate problem. I should have made that clearer.
+Signed-off-by: Bernd Schmidt <bernds_cb1@t-online.de>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+CC: David Howells <dhowells@redhat.com>
+---
+v2
+	- unify mpu code in nommu.c to simplify things
 
-In pseudo-code, I think you should do:
+ kernel/module.c |    5 +++++
+ mm/nommu.c      |   21 +++++++++++++++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
-void unaligned_exception(struct pt_regs *regs, unsigned long address)
-{
-	if (kernel_mode(regs)) {
-		/*
-		 * unaligned access not allowed in kernel,
-		 * but search exception table.
-		 */
-		bad_page_fault(regs, address, 0);
-	} else {
-		if (!access_ok(address, 4))
-			force_sig(SIGBUS, current);
-		else
-			fixup_unaligned_access(regs);
-	}
-}
+diff --git a/kernel/module.c b/kernel/module.c
+index e797812..80036bc 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -46,6 +46,7 @@
+ #include <linux/rculist.h>
+ #include <asm/uaccess.h>
+ #include <asm/cacheflush.h>
++#include <asm/mmu_context.h>
+ #include <linux/license.h>
+ #include <asm/sections.h>
+ #include <linux/tracepoint.h>
+@@ -1506,6 +1507,10 @@ static void free_module(struct module *mod)
+ 
+ 	/* Finally, free the core (containing the module structure) */
+ 	module_free(mod, mod->module_core);
++
++#ifdef CONFIG_MPU
++	update_protections(current->mm);
++#endif
+ }
+ 
+ void *__symbol_get(const char *symbol)
+diff --git a/mm/nommu.c b/mm/nommu.c
+index b571ef7..e7c3bbe 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -33,6 +33,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/tlb.h>
+ #include <asm/tlbflush.h>
++#include <asm/mmu_context.h>
+ #include "internal.h"
+ 
+ static inline __attribute__((format(printf, 1, 2)))
+@@ -608,6 +609,22 @@ static void put_nommu_region(struct vm_region *region)
+ }
+ 
+ /*
++ * update protection on a vma
++ */
++static void protect_vma(struct vm_area_struct *vma, unsigned long flags)
++{
++#ifdef CONFIG_MPU
++	struct mm_struct *mm = vma->vm_mm;
++	long start = vma->vm_start & PAGE_MASK;
++	while (start < vma->vm_end) {
++		protect_page(mm, start, flags);
++		start += PAGE_SIZE;
++	}
++	update_protections(mm);
++#endif
++}
++
++/*
+  * add a VMA into a process's mm_struct in the appropriate place in the list
+  * and tree and add to the address space's page tree also if not an anonymous
+  * page
+@@ -626,6 +643,8 @@ static void add_vma_to_mm(struct mm_struct *mm, struct vm_area_struct *vma)
+ 	mm->map_count++;
+ 	vma->vm_mm = mm;
+ 
++	protect_vma(vma, vma->vm_flags);
++
+ 	/* add the VMA to the mapping */
+ 	if (vma->vm_file) {
+ 		mapping = vma->vm_file->f_mapping;
+@@ -688,6 +707,8 @@ static void delete_vma_from_mm(struct vm_area_struct *vma)
+ 
+ 	kenter("%p", vma);
+ 
++	protect_vma(vma, 0);
++
+ 	mm->map_count--;
+ 	if (mm->mmap_cache == vma)
+ 		mm->mmap_cache = NULL;
+-- 
+1.6.3.3
 
-	Arnd <><
