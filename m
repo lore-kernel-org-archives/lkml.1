@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbZGNBsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbZGNBxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752859AbZGNBsM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 21:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZGNBsL
+	id S1752892AbZGNBxb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 21:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbZGNBxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 21:48:11 -0400
-Received: from fifo99.com ([67.223.236.141]:37688 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752749AbZGNBsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 21:48:11 -0400
-Subject: Re: HTC: touchscreen driver
-From: Daniel Walker <dwalker@fifo99.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090713220726.GA28375@elf.ucw.cz>
-References: <20090710084323.GA6522@elf.ucw.cz>
-	 <a55d774e0907100155m25366994pe9ec5d0f5f868818@mail.gmail.com>
-	 <20090710103243.GB7789@elf.ucw.cz>
-	 <a55d774e0907100431j3fdc4671i6b185019594367fa@mail.gmail.com>
-	 <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz>
-	 <20090713220726.GA28375@elf.ucw.cz>
-Content-Type: text/plain
-Date: Mon, 13 Jul 2009 18:48:07 -0700
-Message-Id: <1247536087.31854.39.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 13 Jul 2009 21:53:30 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:60004 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbZGNBxa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 21:53:30 -0400
+Date: Tue, 14 Jul 2009 02:53:26 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: ykzhao <yakui.zhao@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "rpurdie@rpsys.net" <rpurdie@rpsys.net>,
+       "lenb@kernel.org" <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>,
+       "corentincj@iksaif.net" <corentincj@iksaif.net>
+Subject: Re: [PATCH 1/3] backlight: Allow drivers to update the core, and
+	generate events on changes
+Message-ID: <20090714015326.GA9044@srcf.ucam.org>
+References: <1247517685-7719-1-git-send-email-mjg@redhat.com> <1247533128.3704.9.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247533128.3704.9.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-14 at 00:07 +0200, Pavel Machek wrote:
-> On Mon 2009-07-13 22:57:49, Pavel Machek wrote:
-> > Hi!
-> > 
-> > I'm looking at synaptic touchscreen driver... who should be listed as
-> > an author?
-> > 
-> > Changes I have so far are...
-> > 
-> > checkpatch only has minor complains -- lines over 80 characters -- but
-> > the code is _way_ too deeply nested with way too little functions.
-> 
-> Here's better cleanup. But... some functions are still _way_ too big.
-> 
+On Tue, Jul 14, 2009 at 08:58:48AM +0800, ykzhao wrote:
 
-I'd put the nesting removal into another patch .. It makes reviewing
-more clear, your first patch was already fairly busy .. It would also
-make a bisect more fine grained if it lands on one of your patches.
+> It will be better to send the event to user space only when the
+> brightness is updated successfully.
 
-Daniel
+That guarantees that we have to read back the brightness, which may be 
+expensive on some hardware.
 
+> It seems that the acpi video driver will send the ACPI event to user
+> space when updating the brightness. 
+> Is it necessary to send the udev-event again?
+
+Yes. There's no reason to special-case the ACPI driver.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
