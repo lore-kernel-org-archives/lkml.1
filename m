@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZGNKRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbZGNKSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbZGNKRQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 06:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbZGNKRP
+	id S1754566AbZGNKSt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 06:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZGNKSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 06:17:15 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:51457 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754432AbZGNKRP (ORCPT
+	Tue, 14 Jul 2009 06:18:48 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:8935 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754433AbZGNKSr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 06:17:15 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=NgnNa4BYe58A:10 a=w4iE+TBsmj5y1WloLYF40w==:17
- a=mNOX19dFcVHLgXfqMbcA:9 a=cKy0DWkD-H2CPApk5gEA:7
- a=xyi4UKUvTanFX2mArvRP5ROYGcIA:4
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: linux-kernel@vger.kernel.org
-Subject: Re: Possible Suspend to Ram bug?
-Date: Tue, 14 Jul 2009 04:17:12 -0600
-User-Agent: KMail/1.12.90 (Linux/2.6.29-2-amd64; KDE/4.3.60; x86_64; svn-990302; 2009-06-30)
-References: <200907100458.27410.tfjellstrom@shaw.ca>
-In-Reply-To: <200907100458.27410.tfjellstrom@shaw.ca>
+	Tue, 14 Jul 2009 06:18:47 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=iheeiLsX44x3IDcjZkADSSMgiaKCFHlmUor2FJCPJ9ai0UpnKhEZNjIMv67Icavi8
+	X5dOGSri9zUh3dmegSCzw==
+Date: Tue, 14 Jul 2009 03:18:39 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove initialization of page_table in
+ one_page_table_init()
+In-Reply-To: <4A5C488A.90204@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0907140317001.22788@chino.kir.corp.google.com>
+References: <4A5C488A.90204@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907140417.12847.tfjellstrom@shaw.ca>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri July 10 2009, Thomas Fjellstrom wrote:
-> I've recently gotten a new OCZ Vertex 30G SSD and have noticed that it will
-> flip out the second time linux wakes up from "suspend to ram".
->
-> The system will run fine for days or weeks, so long as it isn't waking up a
-> second StR.
->
-> Here is an example error that I get from the device (my root / device):
->
-> [42018.455204] sd 0:0:0:0: [sda] Unhandled error code
-> [42018.455208] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET
-> driverbyte=DRIVER_OK,SUGGEST_OK
-> [42018.455215] end_request: I/O error, dev sda, sector 12583031
-> [42018.455221] EXT3-fs error (device sda2): ext3_get_inode_loc: unable to
-> read inode block - inode=391005, block=1572871
->
-> At that point using my / fs is pretty much impossible. Every single app
-> fails to launch with an I/O Error, about the only command I can run in that
-> state is "dmesg" in an existing konsole.
->
-> I'm currently using 2.6.29-2-amd64 from debian, and am running on a
-> Gigabyte MA790FXT-UD5P, with a AMD Phenom II X4 810 cpu, and 4G ram.
->
-> One interesting thing to note, the file system on the Vertex SSD reports as
-> clean to fsck on the next boot, while my /home which is on a Seagate
-> 7200.12 drive reports with several orphaned inodes (every single time). And
-> that's regardless if I use ALT+SYSRQ+S/U to try and sync everything. Also,
-> ALT+SYSRQ+B doesn't work at that point, only ALT+SYSRQ+O or using the
-> system power/reset buttons will work.
->
-> I'm attaching the full log I was able to save from dmesg (over nfs, luckily
-> that worked).
+On Tue, 14 Jul 2009, Zhaolei wrote:
 
-Anyone have a clue what might be wrong?
+> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+> index 3cd7711..55da09b 100644
+> --- a/arch/x86/mm/init_32.c
+> +++ b/arch/x86/mm/init_32.c
+> @@ -108,13 +108,13 @@ static pmd_t * __init one_md_table_init(pgd_t *pgd)
+> static pte_t * __init one_page_table_init(pmd_t *pmd)
+> {
+>     if (!(pmd_val(*pmd) & _PAGE_PRESENT)) {
+> -        pte_t *page_table = NULL;
+> +        pte_t *page_table;
+> 
+>         if (after_bootmem) {
+> #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
+>             page_table = (pte_t *) alloc_bootmem_pages(PAGE_SIZE);
+> -#endif
+>             if (!page_table)
+> +#endif
+>                 page_table =
+>                 (pte_t *)alloc_bootmem_low_pages(PAGE_SIZE);
+>         } else
 
--- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+Nack, gcc will already optimize the branch out for configs without 
+CONFIG_DEBUG_PAGEALLOC and CONFIG_KMEMCHECK.  The only thing this change 
+does is make the code less readable.
