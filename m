@@ -1,150 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZGNIEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbZGNIJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbZGNIEa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 04:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZGNIE3
+	id S1753840AbZGNIJy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 04:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZGNIJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 04:04:29 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63325 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751080AbZGNIE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 04:04:28 -0400
-Message-ID: <4A5C3C22.8030707@cn.fujitsu.com>
-Date: Tue, 14 Jul 2009 16:04:50 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 14 Jul 2009 04:09:53 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:36095 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751789AbZGNIJw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 04:09:52 -0400
+Date: Tue, 14 Jul 2009 10:09:47 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Nicolas Pitre <nico@marvell.com>
+Cc: Greg KH <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Lennert Buijtenhek <buytenh@marvell.com>,
+       Saeed Bishara <saeed@marvell.com>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] move orion_nand's probe function to .devinit.text
+Message-ID: <20090714080947.GA2896@pengutronix.de>
+References: <1247345591-22643-18-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-19-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-20-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-21-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-22-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-23-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-24-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-26-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0907131536070.3138@xanadu.home>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] fs/fat: Use common localtime/gmtime in fat_time_unix2fat()
-References: <4A5C3BC0.6020701@cn.fujitsu.com>
-In-Reply-To: <4A5C3BC0.6020701@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.0907131536070.3138@xanadu.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is not necessary to write custom code for convert calendar time
-to broken-down time.
-localtime()/gmtime() is more generic to do that.
+Hi Nicolas,
 
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- fs/fat/misc.c |   62 
-++++++++++++++++++--------------------------------------
- 1 files changed, 20 insertions(+), 42 deletions(-)
+On Mon, Jul 13, 2009 at 03:37:23PM -0400, Nicolas Pitre wrote:
+> On Sat, 11 Jul 2009, Uwe Kleine-König wrote:
+> 
+> > A pointer to orion_nand_probe is passed to the core via
+> > platform_driver_register and so the function must not disappear when the
+> > .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> > unbinding and binding a device to the driver via sysfs will result in an
+> > oops as does a device being registered late.
+> > 
+> > An alternative to this patch is using platform_driver_probe instead of
+> > platform_driver_register plus removing the pointer to the probe function
+> > from the struct platform_driver.
+> 
+> For those kind of platform devices I'd prefer the alternative.
+Can I interpret that as your intend to implement and test it?
 
-diff --git a/fs/fat/misc.c b/fs/fat/misc.c
-index a6c2047..d9b6552 100644
---- a/fs/fat/misc.c
-+++ b/fs/fat/misc.c
-@@ -9,6 +9,7 @@
- #include <linux/module.h>
- #include <linux/fs.h>
- #include <linux/buffer_head.h>
-+#include <linux/time.h>
- #include "fat.h"
- 
- /*
-@@ -155,10 +156,6 @@ extern struct timezone sys_tz;
- #define SECS_PER_MIN    60
- #define SECS_PER_HOUR    (60 * 60)
- #define SECS_PER_DAY    (SECS_PER_HOUR * 24)
--#define UNIX_SECS_1980    315532800L
--#if BITS_PER_LONG == 64
--#define UNIX_SECS_2108    4354819200L
--#endif
- /* days between 1.1.70 and 1.1.80 (2 leap days) */
- #define DAYS_DELTA    (365 * 10 + 2)
- /* 120 (2100 - 1980) isn't leap year */
-@@ -211,58 +208,40 @@ void fat_time_fat2unix(struct msdos_sb_info *sbi, 
-struct timespec *ts,
- void fat_time_unix2fat(struct msdos_sb_info *sbi, struct timespec *ts,
-                __le16 *time, __le16 *date, u8 *time_cs)
- {
--    time_t second = ts->tv_sec;
--    time_t day, leap_day, month, year;
--
--    if (!sbi->options.tz_utc)
--        second -= sys_tz.tz_minuteswest * SECS_PER_MIN;
-+    unsigned int year, mon, mday, hour, min, sec;
-+    if (sbi->options.tz_utc) {
-+        gmtime(ts->tv_sec,
-+               &year, &mon, &mday, &hour, &min, &sec, NULL, NULL);
-+    } else {
-+        localtime(ts->tv_sec,
-+               &year, &mon, &mday, &hour, &min, &sec, NULL, NULL);
-+    }
- 
--    /* Jan 1 GMT 00:00:00 1980. But what about another time zone? */
--    if (second < UNIX_SECS_1980) {
-+    /*  FAT can only support year between 1980 to 2107 */
-+    if (year < 1980 - 1900) {
-         *time = 0;
-         *date = cpu_to_le16((0 << 9) | (1 << 5) | 1);
-         if (time_cs)
-             *time_cs = 0;
-         return;
-     }
--#if BITS_PER_LONG == 64
--    if (second >= UNIX_SECS_2108) {
-+    if (year > 2107 - 1900) {
-         *time = cpu_to_le16((23 << 11) | (59 << 5) | 29);
-         *date = cpu_to_le16((127 << 9) | (12 << 5) | 31);
-         if (time_cs)
-             *time_cs = 199;
-         return;
-     }
--#endif
- 
--    day = second / SECS_PER_DAY - DAYS_DELTA;
--    year = day / 365;
--    leap_day = (year + 3) / 4;
--    if (year > YEAR_2100)        /* 2100 isn't leap year */
--        leap_day--;
--    if (year * 365 + leap_day > day)
--        year--;
--    leap_day = (year + 3) / 4;
--    if (year > YEAR_2100)        /* 2100 isn't leap year */
--        leap_day--;
--    day -= year * 365 + leap_day;
-+    /* from 1900 -> from 1980 */
-+    year -= 80;
-+    /* 0~11 -> 1~12 */
-+    mon++;
-+    /* 0~59 -> 0~29(2sec counts) */
-+    sec >>= 1;
- 
--    if (IS_LEAP_YEAR(year) && day == days_in_year[3]) {
--        month = 2;
--    } else {
--        if (IS_LEAP_YEAR(year) && day > days_in_year[3])
--            day--;
--        for (month = 1; month < 12; month++) {
--            if (days_in_year[month + 1] > day)
--                break;
--        }
--    }
--    day -= days_in_year[month];
--
--    *time = cpu_to_le16(((second / SECS_PER_HOUR) % 24) << 11
--                | ((second / SECS_PER_MIN) % 60) << 5
--                | (second % SECS_PER_MIN) >> 1);
--    *date = cpu_to_le16((year << 9) | (month << 5) | (day + 1));
-+    *time = cpu_to_le16(hour << 11 | min << 5 | sec);
-+    *date = cpu_to_le16(year << 9 | mon << 5 | mday);
-     if (time_cs)
-         *time_cs = (ts->tv_sec & 1) * 100 + ts->tv_nsec / 10000000;
- }
-@@ -283,4 +262,3 @@ int fat_sync_bhs(struct buffer_head **bhs, int nr_bhs)
-     }
-     return err;
- }
--
+Best regards
+Uwe
+
 -- 
-1.5.5.3
-
-
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
