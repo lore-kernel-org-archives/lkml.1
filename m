@@ -1,262 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbZGNAgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751995AbZGNAos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751933AbZGNAgr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 20:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZGNAgq
+	id S1751995AbZGNAos (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 20:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZGNAos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 20:36:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:31345 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbZGNAgp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 20:36:45 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=w4yO+NHAf1/DEYcye+FHIOeG3Neesk4pFt0FqUGrqWiE7tfAz6wAhcH4boSyBwhLM
-	AfCIV6YItcHV73nIg5+Zg==
-MIME-Version: 1.0
-In-Reply-To: <1247530581-31416-2-git-send-email-vbuzov@embeddedalley.com>
-References: <1246998310-16764-1-git-send-email-vbuzov@embeddedalley.com>
-	 <1247530581-31416-1-git-send-email-vbuzov@embeddedalley.com>
-	 <1247530581-31416-2-git-send-email-vbuzov@embeddedalley.com>
-Date: Mon, 13 Jul 2009 17:36:40 -0700
-Message-ID: <6599ad830907131736w4397d336xad733f274c812690@mail.gmail.com>
-Subject: Re: [PATCH 1/2] Resource usage threshold notification addition to 
-	res_counter (v3)
-From: Paul Menage <menage@google.com>
-To: Vladislav Buzov <vbuzov@embeddedalley.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers Mailing List 
-	<containers@lists.linux-foundation.org>,
-       Linux memory management list <linux-mm@kvack.org>,
-       Dan Malek <dan@embeddedalley.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Mon, 13 Jul 2009 20:44:48 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50483 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751372AbZGNAor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 20:44:47 -0400
+Date: Tue, 14 Jul 2009 10:44:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: David Brownell <david-b@pacbell.net>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: driver-core tree build warning
+Message-Id: <20090714104442.4921e2a8.sfr@canb.auug.org.au>
+In-Reply-To: <20090713213614.GA16674@kroah.com>
+References: <20090713172646.55b9acee.sfr@canb.auug.org.au>
+	<20090713175106.d2efbd60.sfr@canb.auug.org.au>
+	<20090713171802.GB22728@kroah.com>
+	<200907131423.59963.david-b@pacbell.net>
+	<20090713213614.GA16674@kroah.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__14_Jul_2009_10_44_42_+1000_exzCSOkQtc9XHbdk"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As I mentioned in another thread, I think that associating the
-threshold with the res_counter rather than with each individual waiter
-is a mistake, since it creates global state and makes it hard to have
-multiple waiters on the same cgroup.
+--Signature=_Tue__14_Jul_2009_10_44_42_+1000_exzCSOkQtc9XHbdk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Paul
+On Mon, 13 Jul 2009 14:36:14 -0700 Greg KH <greg@kroah.com> wrote:
+>
+> On Mon, Jul 13, 2009 at 02:23:59PM -0700, David Brownell wrote:
+> > On Monday 13 July 2009, Greg KH wrote:
+> > > David, care to send patches fixing these warnings?
+> >=20
+> > Here's a single patch:
+>=20
+> Now merged and pushed out.  Stephen, this should be now resolved in your
+> builds for the next -next tree.
 
-On Mon, Jul 13, 2009 at 5:16 PM, Vladislav
-Buzov<vbuzov@embeddedalley.com> wrote:
-> This patch updates the Resource Counter to add a configurable resource usage
-> threshold notification mechanism.
->
-> Signed-off-by: Vladislav Buzov <vbuzov@embeddedalley.com>
-> Signed-off-by: Dan Malek <dan@embeddedalley.com>
-> ---
->  Documentation/cgroups/resource_counter.txt |   21 ++++++++-
->  include/linux/res_counter.h                |   69 ++++++++++++++++++++++++++++
->  kernel/res_counter.c                       |    7 +++
->  3 files changed, 95 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/cgroups/resource_counter.txt b/Documentation/cgroups/resource_counter.txt
-> index 95b24d7..1369dff 100644
-> --- a/Documentation/cgroups/resource_counter.txt
-> +++ b/Documentation/cgroups/resource_counter.txt
-> @@ -39,7 +39,20 @@ to work with it.
->        The failcnt stands for "failures counter". This is the number of
->        resource allocation attempts that failed.
->
-> - c. spinlock_t lock
-> + e. unsigned long long threshold
-> +
-> +       The resource usage threshold to notify the resouce controller. This is
-> +       the minimal difference between the resource limit and current usage
-> +       to fire a notification.
-> +
-> + f. void (*threshold_notifier)(struct res_counter *counter)
-> +
-> +       The threshold notification callback installed by the resource
-> +       controller. Called when the usage reaches or exceeds the threshold.
-> +       Should be fast and not sleep because called when interrupts are
-> +       disabled.
-> +
-> + g. spinlock_t lock
->
->        Protects changes of the above values.
->
-> @@ -140,6 +153,7 @@ counter fields. They are recommended to adhere to the following rules:
->        usage           usage_in_<unit_of_measurement>
->        max_usage       max_usage_in_<unit_of_measurement>
->        limit           limit_in_<unit_of_measurement>
-> +       threshold       notify_threshold_in_<unit_of_measurement>
->        failcnt         failcnt
->        lock            no file :)
->
-> @@ -153,9 +167,12 @@ counter fields. They are recommended to adhere to the following rules:
->        usage           prohibited
->        max_usage       reset to usage
->        limit           set the limit
-> +       threshold       set the threshold
->        failcnt         reset to zero
->
-> -
-> + d. Notification is enabled by installing the threshold notifier callback. It
-> +    is up to the resouce controller to communicate the notification to user
-> +    space tasks.
->
->  5. Usage example
->
-> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
-> index 511f42f..5ec98d7 100644
-> --- a/include/linux/res_counter.h
-> +++ b/include/linux/res_counter.h
-> @@ -9,6 +9,11 @@
->  *
->  * Author: Pavel Emelianov <xemul@openvz.org>
->  *
-> + * Resouce usage threshold notification update
-> + * Copyright 2009 CE Linux Forum and Embedded Alley Solutions, Inc.
-> + * Author: Dan Malek <dan@embeddedalley.com>
-> + * Author: Vladislav Buzov <vbuzov@embeddedalley.com>
-> + *
->  * See Documentation/cgroups/resource_counter.txt for more
->  * info about what this counter is.
->  */
-> @@ -35,6 +40,19 @@ struct res_counter {
->         */
->        unsigned long long limit;
->        /*
-> +        * the resource usage threshold to notify the resouce controller. This
-> +        * is the minimal difference between the resource limit and current
-> +        * usage to fire a notification.
-> +        */
-> +       unsigned long long threshold;
-> +       /*
-> +        * the threshold notification callback installed by the resource
-> +        * controller. Called when the usage reaches or exceeds the threshold.
-> +        * Should be fast and not sleep because called when interrupts are
-> +        * disabled.
-> +        */
-> +       void (*threshold_notifier)(struct res_counter *counter);
-> +       /*
->         * the number of unsuccessful attempts to consume the resource
->         */
->        unsigned long long failcnt;
-> @@ -87,6 +105,7 @@ enum {
->        RES_MAX_USAGE,
->        RES_LIMIT,
->        RES_FAILCNT,
-> +       RES_THRESHOLD,
->  };
->
->  /*
-> @@ -132,6 +151,21 @@ static inline bool res_counter_limit_check_locked(struct res_counter *cnt)
->        return false;
->  }
->
-> +static inline bool res_counter_threshold_check_locked(struct res_counter *cnt)
-> +{
-> +       if (cnt->usage + cnt->threshold < cnt->limit)
-> +               return true;
-> +
-> +       return false;
-> +}
-> +
-> +static inline void res_counter_threshold_notify_locked(struct res_counter *cnt)
-> +{
-> +       if (!res_counter_threshold_check_locked(cnt) &&
-> +           cnt->threshold_notifier)
-> +               cnt->threshold_notifier(cnt);
-> +}
-> +
->  /*
->  * Helper function to detect if the cgroup is within it's limit or
->  * not. It's currently called from cgroup_rss_prepare()
-> @@ -147,6 +181,21 @@ static inline bool res_counter_check_under_limit(struct res_counter *cnt)
->        return ret;
->  }
->
-> +/*
-> + * Helper function to detect if the cgroup usage is under it's threshold or
-> + * not.
-> + */
-> +static inline bool res_counter_check_under_threshold(struct res_counter *cnt)
-> +{
-> +       bool ret;
-> +       unsigned long flags;
-> +
-> +       spin_lock_irqsave(&cnt->lock, flags);
-> +       ret = res_counter_threshold_check_locked(cnt);
-> +       spin_unlock_irqrestore(&cnt->lock, flags);
-> +       return ret;
-> +}
-> +
->  static inline void res_counter_reset_max(struct res_counter *cnt)
->  {
->        unsigned long flags;
-> @@ -174,6 +223,26 @@ static inline int res_counter_set_limit(struct res_counter *cnt,
->        spin_lock_irqsave(&cnt->lock, flags);
->        if (cnt->usage <= limit) {
->                cnt->limit = limit;
-> +               if (limit <= cnt->threshold)
-> +                       cnt->threshold = 0;
-> +               else
-> +                       res_counter_threshold_notify_locked(cnt);
-> +               ret = 0;
-> +       }
-> +       spin_unlock_irqrestore(&cnt->lock, flags);
-> +       return ret;
-> +}
-> +
-> +static inline int res_counter_set_threshold(struct res_counter *cnt,
-> +               unsigned long long threshold)
-> +{
-> +       unsigned long flags;
-> +       int ret = -EINVAL;
-> +
-> +       spin_lock_irqsave(&cnt->lock, flags);
-> +       if (cnt->limit > threshold) {
-> +               cnt->threshold = threshold;
-> +               res_counter_threshold_notify_locked(cnt);
->                ret = 0;
->        }
->        spin_unlock_irqrestore(&cnt->lock, flags);
-> diff --git a/kernel/res_counter.c b/kernel/res_counter.c
-> index e1338f0..9b36748 100644
-> --- a/kernel/res_counter.c
-> +++ b/kernel/res_counter.c
-> @@ -5,6 +5,10 @@
->  *
->  * Author: Pavel Emelianov <xemul@openvz.org>
->  *
-> + * Resouce usage threshold notification update
-> + * Copyright 2009 CE Linux Forum and Embedded Alley Solutions, Inc.
-> + * Author: Dan Malek <dan@embeddedalley.com>
-> + * Author: Vladislav Buzov <vbuzov@embeddedalley.com>
->  */
->
->  #include <linux/types.h>
-> @@ -32,6 +36,7 @@ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
->        counter->usage += val;
->        if (counter->usage > counter->max_usage)
->                counter->max_usage = counter->usage;
-> +       res_counter_threshold_notify_locked(counter);
->        return 0;
->  }
->
-> @@ -101,6 +106,8 @@ res_counter_member(struct res_counter *counter, int member)
->                return &counter->limit;
->        case RES_FAILCNT:
->                return &counter->failcnt;
-> +       case RES_THRESHOLD:
-> +               return &counter->threshold;
->        };
->
->        BUG();
-> --
-> 1.5.6.3
->
->
+Thanks all.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__14_Jul_2009_10_44_42_+1000_exzCSOkQtc9XHbdk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpb1PoACgkQjjKRsyhoI8zB5ACdE4706A2oTfFBtn6XcFIk7sEj
+JZsAnjFBmaIUGSeJlQgBInw51/0Zr5jA
+=Bf2W
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__14_Jul_2009_10_44_42_+1000_exzCSOkQtc9XHbdk--
