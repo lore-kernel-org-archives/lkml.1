@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbZGNSaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZGNSag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbZGNSaA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 14:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbZGNS37
+	id S1755494AbZGNSag (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 14:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755290AbZGNSaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 14:29:59 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:62658 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754230AbZGNS36 convert rfc822-to-8bit (ORCPT
+	Tue, 14 Jul 2009 14:30:35 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:51755 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755176AbZGNSae convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 14:29:58 -0400
+	Tue, 14 Jul 2009 14:30:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=bUhRPVuj3LHrJ0sv+jV3AFrg7k66MwPFEDPsz+AAXjvv1k1zR6d8Lk9vS+xyS3UWQE
-         bcG6GsX9sO7GslIpvRZrQ3buFGWQfeYbn/xc1X4EBb0PvsnbiDPwvKDLXRdc0Uy/5aCq
-         0Q46TI9Qz6bx4Hea+KIh6zRoibOPF0oEF3Zps=
+        b=Q+gs+otO5XoFpQO3evyLEQoNZLSnf2Oml0JDuquZUbJIQ95ycAGZcslFkR5IDIZAX3
+         /cuxzxD9BxLCfOqAq3HZ+KitvhI66KKLluyQPbsEG0ynf2jAXl2PHX1t6lE4U9rBPLML
+         Pd8aSbQGCFMtlfhUr0hnVLl7QLrSOYNH6a674=
 MIME-Version: 1.0
-In-Reply-To: <1247492991-26009-1-git-send-email-adkulkar@umail.iu.edu>
-References: <1247492991-26009-1-git-send-email-adkulkar@umail.iu.edu>
-Date: Tue, 14 Jul 2009 13:29:57 -0500
-Message-ID: <a4e6962a0907141129r7c7fd19jb6da6ff229433a13@mail.gmail.com>
-Subject: Re: [PATCH] [net/9p] Possible regression in p9_client_stat
+In-Reply-To: <1246474254-10401-1-git-send-email-adkulkar@umail.iu.edu>
+References: <1246474254-10401-1-git-send-email-adkulkar@umail.iu.edu>
+Date: Tue, 14 Jul 2009 13:30:33 -0500
+Message-ID: <a4e6962a0907141130h5dedd444i8f1eaf99b20ed34@mail.gmail.com>
+Subject: Re: [V9fs-developer] [9P PATCH 1/2] 9p: Fix incorrect parameters to 
+	v9fs_file_readn.
 From: Eric Van Hensbergen <ericvh@gmail.com>
 To: Abhishek Kulkarni <adkulkar@umail.iu.edu>
-Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
-       netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, v9fs-developer@lists.sourceforge.net
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,51 +35,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 applied v9fs-devel
 
-On Mon, Jul 13, 2009 at 8:49 AM, Abhishek Kulkarni<adkulkar@umail.iu.edu> wrote:
-> Fix a possible regression with p9_client_stat where it can try to kfree an ERR_PTR
-> after an erroneous p9pdu_readf. Also remove an unnecessary data buffer increment
-> in p9_client_read.
+On Wed, Jul 1, 2009 at 1:50 PM, Abhishek Kulkarni<adkulkar@umail.iu.edu> wrote:
+> Fix v9fs_vfs_readpage. The offset and size parameters to v9fs_file_readn
+> were interchanged and hence passed incorrectly.
 >
 > Signed-off-by: Abhishek Kulkarni <adkulkar@umail.iu.edu>
 > ---
-> :100644 100644 dd43a82... cc25e63... M  net/9p/client.c
->  net/9p/client.c |    7 ++-----
->  1 files changed, 2 insertions(+), 5 deletions(-)
+> :100644 100644 6fcb1e7... 9282828... M  fs/9p/vfs_addr.c
+>  fs/9p/vfs_addr.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 >
-> diff --git a/net/9p/client.c b/net/9p/client.c
-> index dd43a82..cc25e63 100644
-> --- a/net/9p/client.c
-> +++ b/net/9p/client.c
-> @@ -1098,7 +1098,6 @@ p9_client_read(struct p9_fid *fid, char *data, char __user *udata, u64 offset,
+> diff --git a/fs/9p/vfs_addr.c b/fs/9p/vfs_addr.c
+> index 6fcb1e7..9282828 100644
+> --- a/fs/9p/vfs_addr.c
+> +++ b/fs/9p/vfs_addr.c
+> @@ -57,7 +57,7 @@ static int v9fs_vfs_readpage(struct file *filp, struct page *page)
+>        buffer = kmap(page);
+>        offset = page_offset(page);
 >
->        if (data) {
->                memmove(data, dataptr, count);
-> -               data += count;
->        }
+> -       retval = v9fs_file_readn(filp, buffer, NULL, offset, PAGE_CACHE_SIZE);
+> +       retval = v9fs_file_readn(filp, buffer, NULL, PAGE_CACHE_SIZE, offset);
+>        if (retval < 0)
+>                goto done;
 >
->        if (udata) {
-> @@ -1192,9 +1191,9 @@ struct p9_wstat *p9_client_stat(struct p9_fid *fid)
->
->        err = p9pdu_readf(req->rc, clnt->dotu, "wS", &ignored, ret);
->        if (err) {
-> -               ret = ERR_PTR(err);
->                p9pdu_dump(1, req->rc);
-> -               goto free_and_error;
-> +               p9_free_req(clnt, req);
-> +               goto error;
->        }
->
->        P9_DPRINTK(P9_DEBUG_9P,
-> @@ -1211,8 +1210,6 @@ struct p9_wstat *p9_client_stat(struct p9_fid *fid)
->        p9_free_req(clnt, req);
->        return ret;
->
-> -free_and_error:
-> -       p9_free_req(clnt, req);
->  error:
->        kfree(ret);
->        return ERR_PTR(err);
 > --
-> 1.6.0.4
+> 1.6.3.3
 >
+>
+> ------------------------------------------------------------------------------
+> _______________________________________________
+> V9fs-developer mailing list
+> V9fs-developer@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/v9fs-developer
 >
