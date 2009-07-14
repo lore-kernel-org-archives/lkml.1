@@ -1,133 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750984AbZGNKzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751323AbZGNKz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750984AbZGNKzI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 06:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZGNKzI
+	id S1751323AbZGNKz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 06:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbZGNKz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 06:55:08 -0400
-Received: from mail.open.by ([193.232.92.17]:58496 "EHLO post.open.by"
+	Tue, 14 Jul 2009 06:55:27 -0400
+Received: from attila.bofh.it ([213.92.8.2]:49512 "EHLO attila.bofh.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750768AbZGNKzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 06:55:06 -0400
-X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
-X-SpamTest-Group-ID: 00000000
-X-SpamTest-Info: Profiles 9022 [Jul 14 2009]
-X-SpamTest-Info: {relay has no DNS name}
-X-SpamTest-Method: none
-X-SpamTest-Rate: 55
-X-SpamTest-SPF: softfail
-X-SpamTest-Status: Not detected
-X-SpamTest-Status-Extended: not_detected
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
-Date: Tue, 14 Jul 2009 13:57:11 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: kmemleak hexdump proposal
-Message-ID: <20090714105709.GB2929@localdomain.by>
-References: <20090629201014.GA5414@localdomain.by>
- <1247566033.28240.46.camel@pc1117.cambridge.arm.com>
- <20090714103356.GA2929@localdomain.by>
- <1247567641.28240.51.camel@pc1117.cambridge.arm.com>
+	id S1751142AbZGNKz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 06:55:26 -0400
+X-Greylist: delayed 647 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Jul 2009 06:55:26 EDT
+Date: Tue, 14 Jul 2009 12:44:41 +0200
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Jan Beulich <JBeulich@novell.com>, Michal Marek <mmarek@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, tony.luck@intel.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-modules@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: [PATCH] reduce export symbol CRC table size on 64-bit  archs
+Message-ID: <20090714104440.GA2113@bongo.bofh.it>
+References: <4A4A18780200007800008345@vpn.id2.novell.com> <4A4E671C.2090201@suse.cz> <4A51C71B0200007800008EE2@vpn.id2.novell.com> <200907092044.22108.rusty@rustcorp.com.au> <4A57089B0200007800009C0E@vpn.id2.novell.com> <4A5AEC3C.2060608@suse.cz> <4A5B101E020000780000A284@vpn.id2.novell.com> <1247567372.31188.229.camel@perihelion.bos.jonmasters.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="i9LlY+UWpKt15+FH"
+	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
 Content-Disposition: inline
-In-Reply-To: <1247567641.28240.51.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1247567372.31188.229.camel@perihelion.bos.jonmasters.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: md@Linux.IT (Marco d'Itri)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---i9LlY+UWpKt15+FH
+--dDRMvlgZJXvWKvBx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On (07/14/09 11:34), Catalin Marinas wrote:
-> On Tue, 2009-07-14 at 13:33 +0300, Sergey Senozhatsky wrote:
-> > On (07/14/09 11:07), Catalin Marinas wrote:
-> > Am I understand correct that no way for user to on/off hexdump?
-> > /* no need for atomic_t kmemleak_hex_dump */
->=20
-> Yes. Two lines aren't really too much so we can always have them
-> displayed.
->
-Agree.
+On Jul 14, Jon Masters <jonathan@jonmasters.org> wrote:
 
+> Most of the distros can fix that with a dependency on the kernel package
+> in the absolute worst case, not that I love that idea, but it happens. I
+FYI, Debian cannot do this.
 
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 5aabd41..f7b74ac 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -161,6 +161,15 @@ struct kmemleak_object {
- /* flag set on newly allocated objects */
- #define OBJECT_NEW		(1 << 3)
-=20
-+/* number of bytes to print per line; must be 16 or 32 */
-+#define HEX_ROW_SIZE		16
-+/* number of bytes to print at a time (1, 2, 4, 8) */
-+#define HEX_GROUP_SIZE		1
-+/* include ASCII after the hex output */
-+#define HEX_ASCII		1
-+/* max number of lines to be printed */
-+#define HEX_MAX_LINES		2
-+
- /* the list of all allocated objects */
- static LIST_HEAD(object_list);
- /* the list of gray-colored objects (see color_gray comment below) */
-@@ -254,6 +263,35 @@ static void kmemleak_disable(void);
- 	kmemleak_disable();		\
- } while (0)
-=20
-+
-+/*
-+ * Printing of the objects hex dump to the seq file. The number on lines
-+ * to be printed is limited to HEX_MAX_LINES to prevent seq file spamming.
-+ * The actual number of printed bytes depends on HEX_ROW_SIZE.
-+ * It must be called with the object->lock held.
-+ */
-+static void hex_dump_object(struct seq_file *seq,
-+				struct kmemleak_object *object)
-+{
-+	const u8 *ptr =3D (const u8 *)object->pointer;
-+	/* Limit the number of lines to HEX_MAX_LINES. */
-+	int len =3D min(object->size, (size_t)(HEX_MAX_LINES * HEX_ROW_SIZE));
-+	int i, remaining =3D len;
-+	unsigned char linebuf[200];
-+
-+	seq_printf(seq, "  hex dump (first %d bytes):\n", len);
-+
-+	for (i =3D 0; i < len; i +=3D HEX_ROW_SIZE) {
-+		int linelen =3D min(remaining, HEX_ROW_SIZE);
-+		remaining -=3D HEX_ROW_SIZE;
-+		hex_dump_to_buffer(ptr + i, linelen, HEX_ROW_SIZE,
-+						   HEX_GROUP_SIZE, linebuf,
-+						   sizeof(linebuf), HEX_ASCII);
-+
-+		seq_printf(seq, "    %s\n", linebuf);
-+	}
-+}
-+
- /*
-  * Object colors, encoded with count and min_count:
-  * - white - orphan object, not enough references to it (count < min_count)
-@@ -304,6 +342,9 @@ static void print_unreferenced(struct seq_file *seq,
- 		   object->pointer, object->size);
- 	seq_printf(seq, "  comm \"%s\", pid %d, jiffies %lu\n",
- 		   object->comm, object->pid, object->jiffies);
-+
-+	hex_dump_object(seq, object);
-+
- 	seq_printf(seq, "  backtrace:\n");
-=20
- 	for (i =3D 0; i < object->trace_len; i++) {
+--=20
+ciao,
+Marco
 
-
---i9LlY+UWpKt15+FH
+--dDRMvlgZJXvWKvBx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 Content-Disposition: inline
@@ -135,11 +56,9 @@ Content-Disposition: inline
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iJwEAQECAAYFAkpcZIUACgkQfKHnntdSXjQqDwP+OLAZ3uj0XluD6A5BUFoKSSS+
-xNNMsNNKlS2cwxVlAdVGmBoUBUOmD2Sq+FksMDyZdRnG2TL5LcUokfcL//LbSo8h
-hOIssNyv9URqV4PaMIR45E40DBk/rOrz9w6CNCVi8PxeGc5nZjponrwZJq2PCzUg
-06KxkqiQ9W215baNQDg=
-=PwYQ
+iEYEARECAAYFAkpcYZgACgkQFGfw2OHuP7FG3QCgop6K0zGmrfxAysZPMTIBtekN
+j2YAoIhEPx0CgeKJoc8aE1ti81wr40Dc
+=+0pl
 -----END PGP SIGNATURE-----
 
---i9LlY+UWpKt15+FH--
+--dDRMvlgZJXvWKvBx--
