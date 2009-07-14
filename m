@@ -1,62 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675AbZGNKaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZGNKbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675AbZGNKaz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 06:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbZGNKaz
+	id S1754683AbZGNKbt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 06:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbZGNKbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 06:30:55 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:34755 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754562AbZGNKax (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 06:30:53 -0400
-Subject: Re: [PATCH] reduce export symbol CRC table size on 64-bit	 archs
-From: Jon Masters <jonathan@jonmasters.org>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Michal Marek <mmarek@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       tony.luck@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-modules@vger.kernel.org,
-       hpa@zytor.com
-In-Reply-To: <4A5B101E020000780000A284@vpn.id2.novell.com>
-References: <4A4A18780200007800008345@vpn.id2.novell.com>
-	 <4A4E671C.2090201@suse.cz> <4A51C71B0200007800008EE2@vpn.id2.novell.com>
-	 <200907092044.22108.rusty@rustcorp.com.au>
-	 <4A57089B0200007800009C0E@vpn.id2.novell.com> <4A5AEC3C.2060608@suse.cz>
-	 <4A5B101E020000780000A284@vpn.id2.novell.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Tue, 14 Jul 2009 06:29:32 -0400
-Message-Id: <1247567372.31188.229.camel@perihelion.bos.jonmasters.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Tue, 14 Jul 2009 06:31:49 -0400
+Received: from mail.open.by ([193.232.92.17]:56510 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754523AbZGNKbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 06:31:48 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 9022 [Jul 14 2009]
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Info: {UDS BL}
+X-SpamTest-Method: probable
+X-SpamTest-Rate: 65
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Probable Spam
+X-SpamTest-Status-Extended: probable_spam
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Tue, 14 Jul 2009 13:33:56 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: kmemleak hexdump proposal
+Message-ID: <20090714103356.GA2929@localdomain.by>
+References: <20090629201014.GA5414@localdomain.by>
+ <1247566033.28240.46.camel@pc1117.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
+Content-Disposition: inline
+In-Reply-To: <1247566033.28240.46.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-13 at 09:44 +0100, Jan Beulich wrote:
-> >>> Michal Marek <mmarek@suse.cz> 13.07.09 10:11 >>>
-> >Jan Beulich napsal(a):
-> >> Actually I meanwhile think that module-init-tools can easily detect the changed
-> >> layout without any further kernel side adjustments: Since it is known that a
-> >> CRC always is a 32-bit value, simply checking whether the so-far-used 64-bit
-> >> value has more than 32 significant bits should suffice: If so, the new layout
-> >> is being used (with the symbol name starting at offset 4), else the old one is
-> >> in effect (name at offset 8). This ought to be a pretty trivial change to that
-> >> code.
-> >
-> >But old module-init-tools will continue reading garbage in this case.
 
-Most of the distros can fix that with a dependency on the kernel package
-in the absolute worst case, not that I love that idea, but it happens. I
-assume for now we are going with detecting the two possibilities because
-it doesn't really hurt in any case to have this support.
+--sdtB3X0nJg68CQEu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Jon.
+On (07/14/09 11:07), Catalin Marinas wrote:
+> Hi,
+>=20
+Hello Catalin,
+
+> On Mon, 2009-06-29 at 21:10 +0100, Sergey Senozhatsky wrote:
+> > This is actually draft. We'll discuss details during next merge window =
+(or earlier).
+>=20
+> Better earlier (I plan to get some more kmemleak patches into
+> linux-next).
+>=20
+> > hex dump prints not more than HEX_MAX_LINES lines by HEX_ROW_SIZE (16 o=
+r 32) bytes.
+> > ( min(object->size, HEX_MAX_LINES * HEX_ROW_SIZE) ).
+> >=20
+> > Example (HEX_ROW_SIZE 16):
+> >=20
+> > unreferenced object 0xf68b59b8 (size 32):
+> >   comm "swapper", pid 1, jiffies 4294877610
+> >   hex dump (first 32 bytes):
+> >     70 6e 70 20 30 30 3a 30 31 00 5a 5a 5a 5a 5a 5a  pnp 00:01.ZZZZZZ
+> >     5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a a5  ZZZZZZZZZZZZZZZ.
+>=20
+> That's my preferred as I do not want to go beyond column 80.
+>=20
+Same with me.
+
+> > diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+> > index 5063873..65c5d74 100644
+> > --- a/mm/kmemleak.c
+> > +++ b/mm/kmemleak.c
+> > @@ -160,6 +160,15 @@ struct kmemleak_object {
+> >  /* flag set to not scan the object */
+> >  #define OBJECT_NO_SCAN         (1 << 2)
+> >=20
+> > +/* number of bytes to print per line; must be 16 or 32 */
+> > +#define HEX_ROW_SIZE           32
+>=20
+> 16 here.
+>=20
+OK.
+
+[...]
+> > @@ -303,6 +343,11 @@ static void print_unreferenced(struct seq_file *se=
+q,
+> >                    object->pointer, object->size);
+> >         seq_printf(seq, "  comm \"%s\", pid %d, jiffies %lu\n",
+> >                    object->comm, object->pid, object->jiffies);
+> > +
+> > +       /* check whether hex dump should be printed */
+> > +       if (atomic_read(&kmemleak_hex_dump))
+> > +               hex_dump_object(seq, object);
+>=20
+> No need for this check, just leave it in all cases (as we now only read
+> the reports via the debug/kmemleak file.
+>
+=20
+> > @@ -1269,6 +1314,10 @@ static ssize_t kmemleak_write(struct file *file,=
+ const char __user *user_buf,
+> >                 start_scan_thread();
+> >         else if (strncmp(buf, "scan=3Doff", 8) =3D=3D 0)
+> >                 stop_scan_thread();
+> > +       else if (strncmp(buf, "hexdump=3Don", 10) =3D=3D 0)
+> > +               atomic_set(&kmemleak_hex_dump, 1);
+> > +       else if (strncmp(buf, "hexdump=3Doff", 11) =3D=3D 0)
+> > +               atomic_set(&kmemleak_hex_dump, 0);
+>=20
+> Same here.
+>=20
+
+Am I understand correct that no way for user to on/off hexdump?
+/* no need for atomic_t kmemleak_hex_dump */
 
 
+> Thanks.
+>=20
+> --=20
+> Catalin
+>=20
+
+	Sergey
+--sdtB3X0nJg68CQEu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkpcXxQACgkQfKHnntdSXjSnbgP/QgKQWeO54QO1z0vZniCMHy+F
+vvljrpBvko4oBImeMHbqpEs9YYJ+G6jlArmtJs8X+pXFEfzpg2w14/D+S8G+RiW/
+l5m/2GwKpRoMPLAXzgTV0nTAZr0MsiJfPxZwwHcVk7WTroUPwYjrAwRGismBAx3X
+Ml47AqcK5IebUzo8GF4=
+=rYNT
+-----END PGP SIGNATURE-----
+
+--sdtB3X0nJg68CQEu--
