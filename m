@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbZGNDTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbZGNDmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260AbZGNDTR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 23:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZGNDTQ
+	id S1753290AbZGNDmK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 23:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZGNDmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 23:19:16 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45037 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752886AbZGNDTQ (ORCPT
+	Mon, 13 Jul 2009 23:42:09 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:59046 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752916AbZGNDmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 23:19:16 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4A5BF922.2000503@jp.fujitsu.com>
-Date: Tue, 14 Jul 2009 12:18:58 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Mon, 13 Jul 2009 23:42:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=i6E0vUVuQBEng6M8cAjJVx9fCWqMl8G2Yfl1eCK0c4s2tRd0h8ru3dCQQLu36401cK
+         e66nKiwnlzUJ0y5zYrKXcDQzXuBaRxl0KleGAFJicCHr9P19KqQMKGTX9Ub+Vy1XXMPh
+         /bmajjOrKeZUv68kN1hqLMas1xVLz1I0lh5S8=
+Date: Tue, 14 Jul 2009 08:13:53 +0430
+From: Ali Gholami Rudi <ali@rudi.ir>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       fbdev <linux-fbdev-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Righi <righi.andrea@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Philippe De Muyter <phdm@macqel.be>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] fbdev: add fillrect and copyarea ioctls
+Message-ID: <20090714034353.GA1280@lilem.mirepesht>
+References: <20090713151709.GA1297@lilem.mirepesht>
+ <20090713084058.547e88f0@infradead.org>
+ <20090713162559.GA1279@lilem.mirepesht>
+ <21d7e9970907131746q4f1a34efw9d3e6efaa78aea34@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, kexec-ml <kexec@lists.infradead.org>
-Subject: [PATCH] kexec: Fix omitting offset in extended crashkernel syntax
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <21d7e9970907131746q4f1a34efw9d3e6efaa78aea34@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-26)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Setting
- "crashkernel=512M-2G:64M,2G-:128M"
-does not work but it turns to work if it has a trailing-whitespace,
-like
- "crashkernel=512M-2G:64M,2G-:128M ".
+Dave Airlie <airlied@gmail.com> wrote:
+> On Tue, Jul 14, 2009 at 2:25 AM, Ali Gholami Rudi<ali@rudi.ir> wrote:
+> > Arjan van de Ven <arjan@infradead.org> wrote:
+> >> can we turn this around, is there a reason to add them?
+> >> or in other words, how / where would these be used ?
+> >
+> > User-space programs that use framebuffer directly can use them.  I was
+> > writing a simple framebuffer virtual terminal (using libfreetype for
+> > fonts; like fbterm); scrolling and painting boxes would be faster if
+> > there was someway of using hardware accelerated operations.  I think
+> > other similar programs can benefit, too.
+> 
+> The general opinion is we should keep acceleration in userspace if at
+> all possible.
 
-It was because of a bug in the parser, running over the cmdline.
+I see.  The line between user- and kernel-space for graphic applications
+is very blurred to me :-)
 
-This patch adds a check of the termination.
+> Not all hw can implement these usefully in the kernel, directfb
 
-Reported-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Tested-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
----
- kernel/kexec.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+AFAICT, many major ones like intelfb, radeonfb and nv implement them and
+those that can't, use a software implementation.  You mean they are
+unreliable or that there is little performance improvement because of
+the way those operations are implemented in the kernel?
 
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index ae1c352..f336e21 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -1228,7 +1228,7 @@ static int __init parse_crashkernel_mem(char 			*cmdline,
- 	} while (*cur++ == ',');
- 
- 	if (*crash_size > 0) {
--		while (*cur != ' ' && *cur != '@')
-+		while (*cur && *cur != ' ' && *cur != '@')
- 			cur++;
- 		if (*cur == '@') {
- 			cur++;
--- 
-1.6.0
+> already does some
+> things for this.
 
+Sometime ago I did try running directfb on a radeon r300 and it failed.
+I didn't try hard to see what's wrong but I got the impression that
+userspace apps are not good at using the hardware directly.
+
+	Ali
