@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbZGNIJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752958AbZGNIUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbZGNIJy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 04:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZGNIJx
+	id S1752958AbZGNIUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 04:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZGNIUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 04:09:53 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:36095 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbZGNIJw (ORCPT
+	Tue, 14 Jul 2009 04:20:34 -0400
+Received: from proxy1.bredband.net ([195.54.101.71]:35772 "EHLO
+	proxy1.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbZGNIUc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 04:09:52 -0400
-Date: Tue, 14 Jul 2009 10:09:47 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Nicolas Pitre <nico@marvell.com>
-Cc: Greg KH <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Lennert Buijtenhek <buytenh@marvell.com>,
-       Saeed Bishara <saeed@marvell.com>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] move orion_nand's probe function to .devinit.text
-Message-ID: <20090714080947.GA2896@pengutronix.de>
-References: <1247345591-22643-18-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-19-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-20-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-21-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-22-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-23-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-24-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-25-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-26-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.LFD.2.00.0907131536070.3138@xanadu.home>
+	Tue, 14 Jul 2009 04:20:32 -0400
+X-Greylist: delayed 1223 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Jul 2009 04:20:32 EDT
+X-SMTPAUTH-B2: 
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhB6AGfXW0pV5H3UPGdsb2JhbACBUZdRAQEBATe0XoQIBQ
+X-IronPort-AV: E=Sophos;i="4.42,396,1243807200"; 
+   d="scan'208";a="28851998"
+Message-ID: <4A5C3B06.7020207@mocean-labs.com>
+Date: Tue, 14 Jul 2009 10:00:06 +0200
+From: =?UTF-8?B?UmljaGFyZCBSw7ZqZm9ycw==?= 
+	<richard.rojfors.ext@mocean-labs.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+To: Thierry Reding <thierry.reding@avionic-design.de>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kwangwoo.lee@gmail.com, Trilok Soni <soni.trilok@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] tsc2007: remove HR timer
+References: <4A40C288.2060702@mocean-labs.com> <20090714044957.GD2822@dtor-d630.eng.vmware.com> <20090714070806.GA1619@avionic-design.de>
+In-Reply-To: <20090714070806.GA1619@avionic-design.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.0907131536070.3138@xanadu.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nicolas,
+On 7/14/09 9:08 AM, Thierry Reding wrote:
+> * Dmitry Torokhov wrote:
+>> Hi Richard,
+>>
+>> On Tue, Jun 23, 2009 at 01:54:48PM +0200, Richard RÃ¶jfors wrote:
+> [...]
+>> +static void tsc2007_free_irq(struct tsc2007 *ts)
+>> +{
+>> +	free_irq(ts->irq, ts);
+>> +	if (cancel_delayed_work_sync(&ts->work)) {
+>> +		/*
+>> +		 * Work was pending, therefore we need to enable
+>> +		 * IRQ here to balance the disable_irq() done in the
+>> +		 * interrupt handler.
+>> +		 */
+>> +		enable_irq(ts->irq);
+>> +	}
+>> +}
+> [...]
+>> -static int tsc2007_remove(struct i2c_client *client)
+>> +static int __devexit tsc2007_remove(struct i2c_client *client)
+>>   {
+>>   	struct tsc2007	*ts = i2c_get_clientdata(client);
+>> -	struct tsc2007_platform_data *pdata;
+>> +	struct tsc2007_platform_data *pdata = client->dev.platform_data;
+>>
+>> -	cancel_delayed_work_sync(&ts->work);
+>> +	free_irq(ts->irq, ts);
+>> +	if (cancel_delayed_work_sync(&ts->work)) {
+>> +		/*
+>> +		 * Work was pending, therefore we need to enable
+>> +		 * IRQ here to balance the disabel done in the
+>> +		 * interrupt handler.
+>> +		 */
+>> +		enable_irq(ts->irq);
+>> +	}
+>
+> Shouldn't this be tsc2007_free_irq(ts) as well?
 
-On Mon, Jul 13, 2009 at 03:37:23PM -0400, Nicolas Pitre wrote:
-> On Sat, 11 Jul 2009, Uwe Kleine-König wrote:
-> 
-> > A pointer to orion_nand_probe is passed to the core via
-> > platform_driver_register and so the function must not disappear when the
-> > .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-> > unbinding and binding a device to the driver via sysfs will result in an
-> > oops as does a device being registered late.
-> > 
-> > An alternative to this patch is using platform_driver_probe instead of
-> > platform_driver_register plus removing the pointer to the probe function
-> > from the struct platform_driver.
-> 
-> For those kind of platform devices I'd prefer the alternative.
-Can I interpret that as your intend to implement and test it?
+Is this really good enough? The work function might re-enable the IRQ.
 
-Best regards
-Uwe
+Isn't it better to look at penstate, we know that the IRQ is enabled if 
+the state is UP, else the IRQ is disabled.
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+--Richard
