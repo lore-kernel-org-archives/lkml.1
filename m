@@ -1,126 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755697AbZGNQsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZGNQyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755697AbZGNQsi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 12:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbZGNQsi
+	id S1755650AbZGNQyf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 12:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbZGNQye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 12:48:38 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:36711 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755607AbZGNQsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 12:48:37 -0400
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-From: Raistlin <raistlin@linux.it>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       "James H. Anderson" <anderson@cs.unc.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>
-In-Reply-To: <4A5C9ABA.9070909@nortel.com>
-References: <200907102350.47124.henrik@austad.us>
-	 <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>
-	 <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>
-	 <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir>
-	 <4A5C9ABA.9070909@nortel.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-a3XbtIbHgMooya90Thxg"
-Date: Tue, 14 Jul 2009 18:48:32 +0200
-Message-Id: <1247590112.9086.936.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 14 Jul 2009 12:54:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38002 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755163AbZGNQye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 12:54:34 -0400
+Date: Tue, 14 Jul 2009 18:55:08 +0200
+From: Kurt Garloff <garloff@suse.de>
+To: Erik Jacobson <erikj@sgi.com>,
+       Linux kernel list <linux-kernel@vger.kernel.org>
+Cc: Norbert Eicker <N.Eicker@fz-juelich.de>,
+       Greg Kroah-Hartman <GregKH@suse.de>,
+       Alexey Starikovskiy <AStarikovskiy@suse.cz>,
+       Len Brown <LenB@kernel.org>
+Subject: [PATCH 0/3] Resend: Discard reserved PXM bits for SRAT v1
+Message-ID: <20090714165508.GD31657@tpkurt2.suse.de>
+Mail-Followup-To: Kurt Garloff <garloff@suse.de>,
+	Erik Jacobson <erikj@sgi.com>,
+	Linux kernel list <linux-kernel@vger.kernel.org>,
+	Norbert Eicker <N.Eicker@fz-juelich.de>,
+	Greg Kroah-Hartman <GregKH@suse.de>,
+	Alexey Starikovskiy <AStarikovskiy@suse.cz>,
+	Len Brown <LenB@kernel.org>
+References: <20090518093352.GC15531@tpkurt2.garloff.de> <20090622140522.GA5378@sgi.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="0IvGJv3f9h+YhkrH"
+Content-Disposition: inline
+In-Reply-To: <20090622140522.GA5378@sgi.com>
+X-Operating-System: Linux 2.6.27.23-0.1-default x86_64
+X-PGP-Info: on http://www.garloff.de/kurt/mykeys.pgp
+X-PGP-Key: 1024D/1C98774E
+Organization: SUSE Linux Products GmbH (a Novell company), Nuernberg, GF:
+	Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-a3XbtIbHgMooya90Thxg
-Content-Type: text/plain
+--0IvGJv3f9h+YhkrH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2009-07-14 at 08:48 -0600, Chris Friesen wrote:
-> Let's call the highest priority task A, while the task holding the lock
-> (that A wants) is called B.  Suppose we're on an dual-cpu system.
+Erik,
+
+On Mon, Jun 22, 2009 at 09:05:22AM -0500, Erik Jacobson wrote:
+> I just wanted to post in to the thread that this patch set solved both
+> the node numbering (where there was a node0 and a node2) and the issue
+> where all CPUs were showing up one the first node.
 >=20
-Ok.
-
-> According to your proposal above we would have A busy-waiting while B
-> runs with A's priority.  When B gives up the lock it gets downgraded and
-> A acquires it and continues to run.
+> I applied the three patches against 2.6.30-git14.
 >=20
-Yes. The first part of my proposal --the "theoretically safe" one.
+> We look forward to seeing the changes integrated.
 
-> Alternately, we could have A blocked waiting for the lock, a separate
-> task C running, and B runs with A's priority on the other cpu.  When B
-> gives up the lock it gets downgraded and A acquires it and continues to r=
-un.
+So do I.
+The patches are obviously already in SUSE kernels, I'd like to see them
+in mainline too.
+
+> On this 2-socket Intel 5500 based system (Nehalem), the /sys stuff looks
+> good:
 >=20
-Right. And this is in my proposal as well.
-
-I'm just saying that the analysis gets more complicated, that some of
-the nice properties may be lost, and suggested a first draft of idea to
-turn it back to be easy again... With, unfortunately, a lot of flaws in
-there yet. :-(
-
-In fact, I'm suggesting that, in the scenario you described, C should be
-able to run, but B's budget have to be affected somehow.
-
-> From an overall system perspective we allowed C to make additional
-> forward progress, increasing the throughput.
-As said, I agre with this from the very beginning of the whole
-thing! :-)
-
->  On the other hand, there
-> is a small window where A isn't running and it theoretically should be.
->   If we can bound it, would this window really cause so much difficulty
-> to the schedulability analysis?
+> $ ls /sys/devices/system/node/node?
+> /sys/devices/system/node/node0:
+> cpu0  cpu2  cpulist  distance  numastat
+> cpu1  cpu3  cpumap   meminfo   scan_unevictable_pages
 >=20
-Well, I'm not sure right now... I would need to do some math to be!
+> /sys/devices/system/node/node1:
+> cpu4  cpu6  cpulist  distance  numastat
+> cpu5  cpu7  cpumap   meminfo   scan_unevictable_pages
+>=20
+>=20
+> Where as, before, it looked like this (non-ordered, all CPUs showing up
+> in node 0).
+>=20
+> # ls -ld /sys/devices/system/node/node*
+> drwxr-xr-x 2 root root 0 2009-06-18 09:30 /sys/devices/system/node/node0
+> drwxr-xr-x 2 root root 0 2009-06-18 09:30 /sys/devices/system/node/node2
+>=20
+> [root@cct201 ~]# ls /sys/devices/system/node/node0
+> cpu0  cpu2  cpu4  cpu6  cpulist  distance  numastat
+> cpu1  cpu3  cpu5  cpu7  cpumap   meminfo   scan_unevictable_pages
+>=20
+>=20
+> System details:
+> - SGI Altix XE 270
+> - Supermicro X8DTN v 1.1 mainboard
+> - 2 sockets of Xeon X5570
+=20
+OK, you really observe the same here as did FZJ.
+Thanks for reporting!
 
-Remember that all my points are concerned with budgets, i.e., a scenario
-where you have some mean to limit the capability of a task to ask for
-CPU time over some kind of period.
-And here it is where the problem comes since running C instead of having
-A busy waiting means:
-- that A is actually blocked, as said before;
-- that A's budget is not diminished.
-And this certainly improves system throughput but may affect its
-predictability and, in this particular case, task's isolation among each
-other...
+So let me resend the patches, rediffed against current 2.6.31rc git
+in followup mails.
 
-Anyway, if you are saying that this could be a possible theory-practice
-compromise, well, could be... And I'm open and ready to (try to)
-contribute even in a discussion of such kind. :-)
+Len, Linus, please adopt.
 
-Regards,
-Dario
-
+Best,
 --=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+Kurt Garloff, VP OPS Partner Engineering -- Novell Inc.
 
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
-
---=-a3XbtIbHgMooya90Thxg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+--0IvGJv3f9h+YhkrH
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEYEABECAAYFAkpcttoACgkQk4XaBE3IOsSXXQCfXH6qWxbjttUGo5TIwFBeanhS
-WYMAn1+blGt2ZWRTfI3Jp2dITKv6ogIi
-=idP9
+iD8DBQFKXLhsxmLh6hyYd04RAnZrAKDSz89T9ZtzcP0JiAoWZxpTkMaoGgCfRBri
+Pyy+VVok1ud4S3Uh5a7ulCI=
+=C1d/
 -----END PGP SIGNATURE-----
 
---=-a3XbtIbHgMooya90Thxg--
-
+--0IvGJv3f9h+YhkrH--
