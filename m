@@ -1,40 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbZGNOHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbZGNOcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbZGNOHL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 10:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbZGNOHK
+	id S1754937AbZGNOcw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 10:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZGNOcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 10:07:10 -0400
-Received: from ru.mvista.com ([213.79.90.228]:2390 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753811AbZGNOHJ (ORCPT
+	Tue, 14 Jul 2009 10:32:52 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45366 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753895AbZGNOcv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 10:07:09 -0400
-Date: Tue, 14 Jul 2009 18:07:06 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Anton Vorontsov <cbouatmailru@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power_supply: Implement charge type property for
- WM835x battery
-Message-ID: <20090714140706.GA1954@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1247239713-1910-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1247239713-1910-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 14 Jul 2009 10:32:51 -0400
+Subject: Re: [PATCH/RFC] NOMMU: drop page cache whenever any alloc fails
+ due to low memory
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Sonic Zhang <sonic.zhang@analog.com>,
+       David Howells <dhowells@redhat.com>
+In-Reply-To: <1247581357-20068-1-git-send-email-vapier@gentoo.org>
+References: <1247581357-20068-1-git-send-email-vapier@gentoo.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 14 Jul 2009 16:30:38 +0200
+Message-Id: <1247581838.7500.98.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 04:28:33PM +0100, Mark Brown wrote:
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
+On Tue, 2009-07-14 at 10:22 -0400, Mike Frysinger wrote:
+> From: Sonic Zhang <sonic.zhang@analog.com>
+> 
+> Since no-mmu systems tend to be memory constrained, we want to drop all
+> of the page cache whenever memory gets low.  The only other option is to
+> invoke the oom killer, and clearly that's not ideal.
 
-Applied, thanks!
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Uhm,.. normally reclaim will already try to drop pagecache.
