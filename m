@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbZGNUKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZGNULf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756242AbZGNUKH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 16:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755526AbZGNUKH
+	id S1756254AbZGNULf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 16:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755886AbZGNULf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 16:10:07 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55794 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752193AbZGNUKG (ORCPT
+	Tue, 14 Jul 2009 16:11:35 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51126 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752253AbZGNULe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 16:10:06 -0400
-Date: Tue, 14 Jul 2009 13:35:33 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] MAINTAINERS: Coalesce name and email address lines
-Message-ID: <20090714113532.GA1477@ucw.cz>
-References: <cover.1247517373.git.joe@perches.com> <1247522300.4008.37.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247522300.4008.37.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Jul 2009 16:11:34 -0400
+Date: Tue, 14 Jul 2009 21:12:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: [GIT]: Networking
+Message-ID: <20090714211226.6d653016@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090714.123405.181074517.davem@davemloft.net>
+References: <20090714.122704.21107059.davem@davemloft.net>
+	<20090714203123.0ab1f7b8@lxorguk.ukuu.org.uk>
+	<20090714.123405.181074517.davem@davemloft.net>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-07-13 14:58:19, Joe Perches wrote:
-> On Mon, 2009-07-13 at 14:14 -0700, Joe Perches wrote:
-> > A collection of cleanup patches to MAINTAINERS
-> 
-> I ran the script I submitted awhile back on MAINTAINERS
-> after these [0/16] patches are applied.
-> 
-> http://lkml.org/lkml/2009/6/1/275
-> 
-> I think the result is useful for people that rely
-> on copy and paste of email addresses.
+On Tue, 14 Jul 2009 12:34:05 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-ACK... and thanks!
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date: Tue, 14 Jul 2009 20:31:23 +0100
+> 
+> >> 8) Locking fix in TTY based networking drivers, from Ralf Baechle.
+> > 
+> > I thought we had established that this one was wrong following further
+> > discussion. The tty drivers that were calling up from IRQ handlers have
+> > been fixed by the cull of bogus tty->low_latency setting.
+> 
+> Where was this change made?
+> 
+> At a minimum it likely needs to be added to the -stable trees.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+No - the fix that needs to be in the stable trees is the one removing the
+bogus tty->low_latency settings. The standard tty layer blows up in all
+sorts of other ways with these driver bugs and I thought they'd been
+pushed back into -stable. Will check with GregKH as I think they went via
+his tree.
