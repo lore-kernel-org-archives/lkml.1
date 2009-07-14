@@ -1,991 +1,970 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbZGNB34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbZGNBiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752674AbZGNB34 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 21:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZGNB3z
+	id S1752684AbZGNBiM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 21:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZGNBiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 21:29:55 -0400
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:52414 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbZGNB3x convert rfc822-to-8bit (ORCPT
+	Mon, 13 Jul 2009 21:38:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52912 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752427AbZGNBiK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 21:29:53 -0400
+	Mon, 13 Jul 2009 21:38:10 -0400
+Date: Mon, 13 Jul 2009 18:38:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.31-rc3
+Message-ID: <alpine.LFD.2.01.0907131823140.13838@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-In-Reply-To: <20090713220726.GA28375@elf.ucw.cz>
-References: <20090710084323.GA6522@elf.ucw.cz>
-	 <a55d774e0907100155m25366994pe9ec5d0f5f868818@mail.gmail.com>
-	 <20090710103243.GB7789@elf.ucw.cz>
-	 <a55d774e0907100431j3fdc4671i6b185019594367fa@mail.gmail.com>
-	 <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz>
-	 <20090713220726.GA28375@elf.ucw.cz>
-Date: Mon, 13 Jul 2009 18:29:52 -0700
-Message-ID: <d6200be20907131829o77bce3d8w8f238bc079478368@mail.gmail.com>
-Subject: Re: HTC: touchscreen driver
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 3:07 PM, Pavel Machek<pavel@ucw.cz> wrote:
-> On Mon 2009-07-13 22:57:49, Pavel Machek wrote:
->> Hi!
->>
->> I'm looking at synaptic touchscreen driver... who should be listed as
->> an author?
->>
->> Changes I have so far are...
->>
->> checkpatch only has minor complains -- lines over 80 characters -- but
->> the code is _way_ too deeply nested with way too little functions.
->
-> Here's better cleanup. But... some functions are still _way_ too big.
->
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
-> index 339083e..fa3404f 100644
-> --- a/drivers/input/touchscreen/Kconfig
-> +++ b/drivers/input/touchscreen/Kconfig
-> @@ -94,6 +94,9 @@ config TOUCHSCREEN_GUNZE
->  config TOUCHSCREEN_ELAN_I2C_8232
->        tristate "Elan 8232 I2C touchscreen"
->        depends on I2C
-> +       help
-> +         This enables support for Elan over I2C based touchscreens.
-> +         Such touchscreen is used in HTC Dream.
->
 
-Why is this here? This driver is not related to elan touchscreens.
+Another week, another -rc.
 
->  config TOUCHSCREEN_ELO
->        tristate "Elo serial touchscreens"
-> @@ -215,6 +218,8 @@ config TOUCHSCREEN_SYNAPTICS_I2C_RMI
->        depends on I2C
->        help
->          This enables support for Synaptics RMI over I2C based touchscreens.
-> +         Such touchscreen is used in HTC Dream.
-> +
->
->  config TOUCHSCREEN_TOUCHRIGHT
->        tristate "Touchright serial touchscreen"
-> diff --git a/drivers/input/touchscreen/synaptics_i2c_rmi.c b/drivers/input/touchscreen/synaptics_i2c_rmi.c
-> index a45634b..f582582 100644
-> --- a/drivers/input/touchscreen/synaptics_i2c_rmi.c
-> +++ b/drivers/input/touchscreen/synaptics_i2c_rmi.c
-> @@ -1,4 +1,5 @@
-> -/* drivers/input/keyboard/synaptics_i2c_rmi.c
-> +/*
-> + * Support for synaptics touchscreen.
->  *
->  * Copyright (C) 2007 Google, Inc.
->  *
-> @@ -15,7 +16,6 @@
->
->  #include <linux/module.h>
->  #include <linux/delay.h>
-> -#include <linux/earlysuspend.h>
->  #include <linux/hrtimer.h>
->  #include <linux/i2c.h>
->  #include <linux/input.h>
-> @@ -24,18 +24,16 @@
->  #include <linux/platform_device.h>
->  #include <linux/synaptics_i2c_rmi.h>
->
-> -#define swap(x, y) do { typeof(x) z = x; x = y; y = z; } while (0)
-> -
->  static struct workqueue_struct *synaptics_wq;
->
->  struct synaptics_ts_data {
-> -       uint16_t addr;
-> +       u16 addr;
+As I mentioned last time, I really wish things would calm down. And to 
+_some_ degree they have. In other areas? Not so much.
 
-What is the point of this change?
+That said, the single biggest patch here is actually a revert - a removal 
+of the Langwell USB OTG driver that wasn't ready and needed infrastructure 
+that isn't going to happen in 2.6.31.
 
->        struct i2c_client *client;
->        struct input_dev *input_dev;
->        int use_irq;
->        struct hrtimer timer;
->        struct work_struct  work;
-> -       uint16_t max[2];
-> +       u16 max[2];
->        int snap_state[2][2];
->        int snap_down_on[2];
->        int snap_down_off[2];
-> @@ -43,164 +41,142 @@ struct synaptics_ts_data {
->        int snap_up_off[2];
->        int snap_down[2];
->        int snap_up[2];
-> -       uint32_t flags;
-> +       u32 flags;
->        int (*power)(int on);
-> -       struct early_suspend early_suspend;
->  };
->
-> -#ifdef CONFIG_HAS_EARLYSUSPEND
-> -static void synaptics_ts_early_suspend(struct early_suspend *h);
-> -static void synaptics_ts_late_resume(struct early_suspend *h);
-> -#endif
-> -
->  static int synaptics_init_panel(struct synaptics_ts_data *ts)
->  {
->        int ret;
->
-> -       ret = i2c_smbus_write_byte_data(ts->client, 0xff, 0x10); /* page select = 0x10 */
-> +       /* page select = 0x10 */
-> +       ret = i2c_smbus_write_byte_data(ts->client, 0xff, 0x10);
->        if (ret < 0) {
-> -               printk(KERN_ERR "i2c_smbus_write_byte_data failed for page select\n");
-> +               printk(KERN_ERR "smbus write failed for page select\n");
->                goto err_page_select_failed;
->        }
-> -       ret = i2c_smbus_write_byte_data(ts->client, 0x41, 0x04); /* Set "No Clip Z" */
-> +
-> +       /* Set "No Clip Z" */
-> +       ret = i2c_smbus_write_byte_data(ts->client, 0x41, 0x04);
->        if (ret < 0)
-> -               printk(KERN_ERR "i2c_smbus_write_byte_data failed for No Clip Z\n");
-> +               printk(KERN_ERR "smbus write failed for No Clip Z\n");
->
->  err_page_select_failed:
-> -       ret = i2c_smbus_write_byte_data(ts->client, 0xff, 0x04); /* page select = 0x04 */
-> +       /* page select = 0x04 */
-> +       ret = i2c_smbus_write_byte_data(ts->client, 0xff, 0x04);
->        if (ret < 0)
-> -               printk(KERN_ERR "i2c_smbus_write_byte_data failed for page select\n");
-> -       ret = i2c_smbus_write_byte_data(ts->client, 0xf0, 0x81); /* normal operation, 80 reports per second */
-> +               printk(KERN_ERR "smbus write failed for page select\n");
-> +       /* normal operation, 80 reports per second */
-> +       ret = i2c_smbus_write_byte_data(ts->client, 0xf0, 0x81);
->        if (ret < 0)
-> -               printk(KERN_ERR "synaptics_ts_resume: i2c_smbus_write_byte_data failed\n");
-> +               printk(KERN_ERR "smbus write failed for 80/second\n");
->        return ret;
->  }
->
-> +static void decode_report(struct synaptics_ts_data *ts, u8 *buf)
-> +{
-> +       int pos[2][2];
-> +       int f, a;
-> +       int base = 2;
-> +       int z = buf[1];
-> +       int w = buf[0] >> 4;
-> +       int finger = buf[0] & 7;
-> +       int finger2_pressed;
-> +
-> +       for (f = 0; f < 2; f++) {
-> +               u32 flip_flag = SYNAPTICS_FLIP_X;
-> +               for (a = 0; a < 2; a++) {
-> +                       int p = buf[base + 1];
-> +                       p |= (u16)(buf[base] & 0x1f) << 8;
-> +                       if (ts->flags & flip_flag)
-> +                               p = ts->max[a] - p;
-> +                       if (ts->flags & SYNAPTICS_SNAP_TO_INACTIVE_EDGE) {
-> +                               if (ts->snap_state[f][a]) {
-> +                                       if (p <= ts->snap_down_off[a])
-> +                                               p = ts->snap_down[a];
-> +                                       else if (p >= ts->snap_up_off[a])
-> +                                               p = ts->snap_up[a];
-> +                                       else
-> +                                               ts->snap_state[f][a] = 0;
-> +                               } else {
-> +                                       if (p <= ts->snap_down_on[a]) {
-> +                                               p = ts->snap_down[a];
-> +                                               ts->snap_state[f][a] = 1;
-> +                                       } else if (p >= ts->snap_up_on[a]) {
-> +                                               p = ts->snap_up[a];
-> +                                               ts->snap_state[f][a] = 1;
-> +                                       }
-> +                               }
-> +                       }
-> +                       pos[f][a] = p;
-> +                       base += 2;
-> +                       flip_flag <<= 1;
-> +               }
-> +               base += 2;
-> +               if (ts->flags & SYNAPTICS_SWAP_XY)
-> +                       swap(pos[f][0], pos[f][1]);
-> +       }
-> +       if (z) {
-> +               input_report_abs(ts->input_dev, ABS_X, pos[0][0]);
-> +               input_report_abs(ts->input_dev, ABS_Y, pos[0][1]);
-> +       }
-> +       input_report_abs(ts->input_dev, ABS_PRESSURE, z);
-> +       input_report_abs(ts->input_dev, ABS_TOOL_WIDTH, w);
-> +       input_report_key(ts->input_dev, BTN_TOUCH, finger);
-> +       finger2_pressed = finger > 1 && finger != 7;
-> +       input_report_key(ts->input_dev, BTN_2, finger2_pressed);
-> +       if (finger2_pressed) {
-> +               input_report_abs(ts->input_dev, ABS_HAT0X, pos[1][0]);
-> +               input_report_abs(ts->input_dev, ABS_HAT0Y, pos[1][1]);
-> +       }
-> +       input_sync(ts->input_dev);
-> +}
-> +
->  static void synaptics_ts_work_func(struct work_struct *work)
->  {
->        int i;
->        int ret;
->        int bad_data = 0;
->        struct i2c_msg msg[2];
-> -       uint8_t start_reg;
-> -       uint8_t buf[15];
-> -       struct synaptics_ts_data *ts = container_of(work, struct synaptics_ts_data, work);
-> +       u8 start_reg = 0;
-> +       u8 buf[15];
-> +       struct synaptics_ts_data *ts =
-> +               container_of(work, struct synaptics_ts_data, work);
->
->        msg[0].addr = ts->client->addr;
->        msg[0].flags = 0;
->        msg[0].len = 1;
->        msg[0].buf = &start_reg;
-> -       start_reg = 0x00;
->        msg[1].addr = ts->client->addr;
->        msg[1].flags = I2C_M_RD;
->        msg[1].len = sizeof(buf);
->        msg[1].buf = buf;
->
-> -       /* printk("synaptics_ts_work_func\n"); */
->        for (i = 0; i < ((ts->use_irq && !bad_data) ? 1 : 10); i++) {
->                ret = i2c_transfer(ts->client->adapter, msg, 2);
->                if (ret < 0) {
-> -                       printk(KERN_ERR "synaptics_ts_work_func: i2c_transfer failed\n");
-> +                       printk(KERN_ERR "ts_work: i2c_transfer failed\n");
+But other than that, there's a fair chunk of changes to the 'perf' utility 
+(which obviously isn't going to cause kernel regressions), but also to 
+things like cifs, video drivers (both of the DVB kind and and for DRM with 
+more i915 KMS updates). 
 
-This will make it harder to read the kernel logs since the driver is
-no longer specified.
+There are also the usual arch updates (although perhaps unusually, it's 
+actually more removal than additions - mostly thanks to microblaze taking 
+advantage of the generic includes, I suspect).
 
->                        bad_data = 1;
-> -               } else {
-> -                       /* printk("synaptics_ts_work_func: %x %x %x %x %x %x" */
-> -                       /*        " %x %x %x %x %x %x %x %x %x, ret %d\n", */
-> -                       /*        buf[0], buf[1], buf[2], buf[3], */
-> -                       /*        buf[4], buf[5], buf[6], buf[7], */
-> -                       /*        buf[8], buf[9], buf[10], buf[11], */
-> -                       /*        buf[12], buf[13], buf[14], ret); */
-> -                       if ((buf[14] & 0xc0) != 0x40) {
-> -                               printk(KERN_WARNING "synaptics_ts_work_func:"
-> -                                      " bad read %x %x %x %x %x %x %x %x %x"
-> -                                      " %x %x %x %x %x %x, ret %d\n",
-> -                                      buf[0], buf[1], buf[2], buf[3],
-> -                                      buf[4], buf[5], buf[6], buf[7],
-> -                                      buf[8], buf[9], buf[10], buf[11],
-> -                                      buf[12], buf[13], buf[14], ret);
-> -                               if (bad_data)
-> -                                       synaptics_init_panel(ts);
-> -                               bad_data = 1;
-> -                               continue;
-> -                       }
-> -                       bad_data = 0;
-> -                       if ((buf[14] & 1) == 0) {
-> -                               /* printk("read %d coordinates\n", i); */
-> -                               break;
-> -                       } else {
-> -                               int pos[2][2];
-> -                               int f, a;
-> -                               int base;
-> -                               /* int x = buf[3] | (uint16_t)(buf[2] & 0x1f) << 8; */
-> -                               /* int y = buf[5] | (uint16_t)(buf[4] & 0x1f) << 8; */
-> -                               int z = buf[1];
-> -                               int w = buf[0] >> 4;
-> -                               int finger = buf[0] & 7;
-> -
-> -                               /* int x2 = buf[3+6] | (uint16_t)(buf[2+6] & 0x1f) << 8; */
-> -                               /* int y2 = buf[5+6] | (uint16_t)(buf[4+6] & 0x1f) << 8; */
-> -                               /* int z2 = buf[1+6]; */
-> -                               /* int w2 = buf[0+6] >> 4; */
-> -                               /* int finger2 = buf[0+6] & 7; */
-> -
-> -                               /* int dx = (int8_t)buf[12]; */
-> -                               /* int dy = (int8_t)buf[13]; */
-> -                               int finger2_pressed;
-> -
-> -                               /* printk("x %4d, y %4d, z %3d, w %2d, F %d, 2nd: x %4d, y %4d, z %3d, w %2d, F %d, dx %4d, dy %4d\n", */
-> -                               /*      x, y, z, w, finger, */
-> -                               /*      x2, y2, z2, w2, finger2, */
-> -                               /*      dx, dy); */
-> -
-> -                               base = 2;
-> -                               for (f = 0; f < 2; f++) {
-> -                                       uint32_t flip_flag = SYNAPTICS_FLIP_X;
-> -                                       for (a = 0; a < 2; a++) {
-> -                                               int p = buf[base + 1];
-> -                                               p |= (uint16_t)(buf[base] & 0x1f) << 8;
-> -                                               if (ts->flags & flip_flag)
-> -                                                       p = ts->max[a] - p;
-> -                                               if (ts->flags & SYNAPTICS_SNAP_TO_INACTIVE_EDGE) {
-> -                                                       if (ts->snap_state[f][a]) {
-> -                                                               if (p <= ts->snap_down_off[a])
-> -                                                                       p = ts->snap_down[a];
-> -                                                               else if (p >= ts->snap_up_off[a])
-> -                                                                       p = ts->snap_up[a];
-> -                                                               else
-> -                                                                       ts->snap_state[f][a] = 0;
-> -                                                       } else {
-> -                                                               if (p <= ts->snap_down_on[a]) {
-> -                                                                       p = ts->snap_down[a];
-> -                                                                       ts->snap_state[f][a] = 1;
-> -                                                               } else if (p >= ts->snap_up_on[a]) {
-> -                                                                       p = ts->snap_up[a];
-> -                                                                       ts->snap_state[f][a] = 1;
-> -                                                               }
-> -                                                       }
-> -                                               }
-> -                                               pos[f][a] = p;
-> -                                               base += 2;
-> -                                               flip_flag <<= 1;
-> -                                       }
-> -                                       base += 2;
-> -                                       if (ts->flags & SYNAPTICS_SWAP_XY)
-> -                                               swap(pos[f][0], pos[f][1]);
-> -                               }
-> -                               if (z) {
-> -                                       input_report_abs(ts->input_dev, ABS_X, pos[0][0]);
-> -                                       input_report_abs(ts->input_dev, ABS_Y, pos[0][1]);
-> -                               }
-> -                               input_report_abs(ts->input_dev, ABS_PRESSURE, z);
-> -                               input_report_abs(ts->input_dev, ABS_TOOL_WIDTH, w);
-> -                               input_report_key(ts->input_dev, BTN_TOUCH, finger);
-> -                               finger2_pressed = finger > 1 && finger != 7;
-> -                               input_report_key(ts->input_dev, BTN_2, finger2_pressed);
-> -                               if (finger2_pressed) {
-> -                                       input_report_abs(ts->input_dev, ABS_HAT0X, pos[1][0]);
-> -                                       input_report_abs(ts->input_dev, ABS_HAT0Y, pos[1][1]);
-> -                               }
-> -                               input_sync(ts->input_dev);
-> -                       }
-> +                       continue;
-> +               }
-> +               if ((buf[14] & 0xc0) != 0x40) {
-> +                       printk(KERN_WARNING "synaptics_ts_work_func:"
-> +                              " bad read %x %x %x %x %x %x %x %x %x"
-> +                              " %x %x %x %x %x %x, ret %d\n",
-> +                              buf[0], buf[1], buf[2], buf[3],
-> +                              buf[4], buf[5], buf[6], buf[7],
-> +                              buf[8], buf[9], buf[10], buf[11],
-> +                              buf[12], buf[13], buf[14], ret);
-> +                       if (bad_data)
-> +                               synaptics_init_panel(ts);
-> +                       bad_data = 1;
-> +                       continue;
->                }
-> +               bad_data = 0;
-> +               if ((buf[14] & 1) == 0)
-> +                       break;
-> +
-> +               decode_report(ts, buf);
->        }
->        if (ts->use_irq)
->                enable_irq(ts->client->irq);
-> @@ -208,8 +184,8 @@ static void synaptics_ts_work_func(struct work_struct *work)
->
->  static enum hrtimer_restart synaptics_ts_timer_func(struct hrtimer *timer)
->  {
-> -       struct synaptics_ts_data *ts = container_of(timer, struct synaptics_ts_data, timer);
-> -       /* printk("synaptics_ts_timer_func\n"); */
-> +       struct synaptics_ts_data *ts =
-> +               container_of(timer, struct synaptics_ts_data, timer);
->
->        queue_work(synaptics_wq, &ts->work);
->
-> @@ -221,36 +197,145 @@ static irqreturn_t synaptics_ts_irq_handler(int irq, void *dev_id)
->  {
->        struct synaptics_ts_data *ts = dev_id;
->
-> -       /* printk("synaptics_ts_irq_handler\n"); */
->        disable_irq(ts->client->irq);
->        queue_work(synaptics_wq, &ts->work);
->        return IRQ_HANDLED;
->  }
->
-> +static int detect(struct synaptics_ts_data *ts, u32 *panel_version)
-> +{
-> +       int ret;
-> +       int retry = 10;
-> +
-> +       /* device command = reset */
-> +       ret = i2c_smbus_write_byte_data(ts->client, 0xf4, 0x01);
-> +       if (ret < 0) {
-> +               printk(KERN_ERR "i2c_smbus_write_byte_data failed\n");
-> +               /* fail? */
-> +       }
-> +
-> +       while (retry-- > 0) {
-> +               ret = i2c_smbus_read_byte_data(ts->client, 0xe4);
-> +               if (ret >= 0)
-> +                       break;
-> +               msleep(100);
-> +       }
-> +       if (ret < 0) {
-> +               printk(KERN_ERR "i2c_smbus_read_byte_data failed\n");
-> +               return ret;
-> +       }
-> +
-> +       printk(KERN_INFO "synaptics_ts_probe: Product Major Version %x\n", ret);
-> +       *panel_version = ret << 8;
-> +       ret = i2c_smbus_read_byte_data(ts->client, 0xe5);
-> +       if (ret < 0) {
-> +               printk(KERN_ERR "i2c_smbus_read_byte_data failed\n");
-> +               return ret;
-> +       }
-> +       printk(KERN_INFO "synaptics_ts_probe: Product Minor Version %x\n", ret);
-> +       *panel_version |= ret;
-> +
-> +       ret = i2c_smbus_read_byte_data(ts->client, 0xe3);
-> +       if (ret < 0) {
-> +               printk(KERN_ERR "i2c_smbus_read_byte_data failed\n");
-> +               return ret;
-> +       }
-> +       printk(KERN_INFO "synaptics_ts_probe: product property %x\n", ret);
-> +       return 0;
-> +}
-> +
-> +static void compute_areas(struct synaptics_ts_data *ts,
-> +                         struct synaptics_i2c_rmi_platform_data *pdata,
-> +                         u16 max_x, u16 max_y)
-> +{
-> +       u32 inactive_area_left;
-> +       u32 inactive_area_right;
-> +       u32 inactive_area_top;
-> +       u32 inactive_area_bottom;
-> +       u32 snap_left_on;
-> +       u32 snap_left_off;
-> +       u32 snap_right_on;
-> +       u32 snap_right_off;
-> +       u32 snap_top_on;
-> +       u32 snap_top_off;
-> +       u32 snap_bottom_on;
-> +       u32 snap_bottom_off;
-> +       u32 fuzz_x;
-> +       u32 fuzz_y;
-> +       int fuzz_p;
-> +       int fuzz_w;
-> +
-> +       inactive_area_left = pdata->inactive_left;
-> +       inactive_area_right = pdata->inactive_right;
-> +       inactive_area_top = pdata->inactive_top;
-> +       inactive_area_bottom = pdata->inactive_bottom;
-> +       snap_left_on = pdata->snap_left_on;
-> +       snap_left_off = pdata->snap_left_off;
-> +       snap_right_on = pdata->snap_right_on;
-> +       snap_right_off = pdata->snap_right_off;
-> +       snap_top_on = pdata->snap_top_on;
-> +       snap_top_off = pdata->snap_top_off;
-> +       snap_bottom_on = pdata->snap_bottom_on;
-> +       snap_bottom_off = pdata->snap_bottom_off;
-> +       fuzz_x = pdata->fuzz_x;
-> +       fuzz_y = pdata->fuzz_y;
-> +       fuzz_p = pdata->fuzz_p;
-> +       fuzz_w = pdata->fuzz_w;
-> +
-> +       inactive_area_left = inactive_area_left * max_x / 0x10000;
-> +       inactive_area_right = inactive_area_right * max_x / 0x10000;
-> +       inactive_area_top = inactive_area_top * max_y / 0x10000;
-> +       inactive_area_bottom = inactive_area_bottom * max_y / 0x10000;
-> +       snap_left_on = snap_left_on * max_x / 0x10000;
-> +       snap_left_off = snap_left_off * max_x / 0x10000;
-> +       snap_right_on = snap_right_on * max_x / 0x10000;
-> +       snap_right_off = snap_right_off * max_x / 0x10000;
-> +       snap_top_on = snap_top_on * max_y / 0x10000;
-> +       snap_top_off = snap_top_off * max_y / 0x10000;
-> +       snap_bottom_on = snap_bottom_on * max_y / 0x10000;
-> +       snap_bottom_off = snap_bottom_off * max_y / 0x10000;
-> +       fuzz_x = fuzz_x * max_x / 0x10000;
-> +       fuzz_y = fuzz_y * max_y / 0x10000;
-> +
-> +       ts->snap_down[!!(ts->flags & SYNAPTICS_SWAP_XY)] = -inactive_area_left;
-> +       ts->snap_up[!!(ts->flags & SYNAPTICS_SWAP_XY)] = max_x + inactive_area_right;
-> +       ts->snap_down[!(ts->flags & SYNAPTICS_SWAP_XY)] = -inactive_area_top;
-> +       ts->snap_up[!(ts->flags & SYNAPTICS_SWAP_XY)] = max_y + inactive_area_bottom;
-> +       ts->snap_down_on[!!(ts->flags & SYNAPTICS_SWAP_XY)] = snap_left_on;
-> +       ts->snap_down_off[!!(ts->flags & SYNAPTICS_SWAP_XY)] = snap_left_off;
-> +       ts->snap_up_on[!!(ts->flags & SYNAPTICS_SWAP_XY)] = max_x - snap_right_on;
-> +       ts->snap_up_off[!!(ts->flags & SYNAPTICS_SWAP_XY)] = max_x - snap_right_off;
-> +       ts->snap_down_on[!(ts->flags & SYNAPTICS_SWAP_XY)] = snap_top_on;
-> +       ts->snap_down_off[!(ts->flags & SYNAPTICS_SWAP_XY)] = snap_top_off;
-> +       ts->snap_up_on[!(ts->flags & SYNAPTICS_SWAP_XY)] = max_y - snap_bottom_on;
-> +       ts->snap_up_off[!(ts->flags & SYNAPTICS_SWAP_XY)] = max_y - snap_bottom_off;
-> +       printk(KERN_INFO "synaptics_ts_probe: max_x %d, max_y %d\n", max_x, max_y);
-> +       printk(KERN_INFO "synaptics_ts_probe: inactive_x %d %d, inactive_y %d %d\n",
-> +              inactive_area_left, inactive_area_right,
-> +              inactive_area_top, inactive_area_bottom);
-> +       printk(KERN_INFO "synaptics_ts_probe: snap_x %d-%d %d-%d, snap_y %d-%d %d-%d\n",
-> +              snap_left_on, snap_left_off, snap_right_on, snap_right_off,
-> +              snap_top_on, snap_top_off, snap_bottom_on, snap_bottom_off);
-> +
-> +       input_set_abs_params(ts->input_dev, ABS_X, -inactive_area_left, max_x + inactive_area_right, fuzz_x, 0);
-> +       input_set_abs_params(ts->input_dev, ABS_Y, -inactive_area_top, max_y + inactive_area_bottom, fuzz_y, 0);
-> +       input_set_abs_params(ts->input_dev, ABS_PRESSURE, 0, 255, fuzz_p, 0);
-> +       input_set_abs_params(ts->input_dev, ABS_TOOL_WIDTH, 0, 15, fuzz_w, 0);
-> +       input_set_abs_params(ts->input_dev, ABS_HAT0X, -inactive_area_left, max_x + inactive_area_right, fuzz_x, 0);
-> +       input_set_abs_params(ts->input_dev, ABS_HAT0Y, -inactive_area_top, max_y + inactive_area_bottom, fuzz_y, 0);
-> +}
-> +
->  static int synaptics_ts_probe(
->        struct i2c_client *client, const struct i2c_device_id *id)
->  {
->        struct synaptics_ts_data *ts;
-> -       uint8_t buf0[4];
-> -       uint8_t buf1[8];
-> +       u8 buf0[4];
-> +       u8 buf1[8];
->        struct i2c_msg msg[2];
->        int ret = 0;
-> -       uint16_t max_x, max_y;
-> -       int fuzz_x, fuzz_y, fuzz_p, fuzz_w;
->        struct synaptics_i2c_rmi_platform_data *pdata;
-> -       int inactive_area_left;
-> -       int inactive_area_right;
-> -       int inactive_area_top;
-> -       int inactive_area_bottom;
-> -       int snap_left_on;
-> -       int snap_left_off;
-> -       int snap_right_on;
-> -       int snap_right_off;
-> -       int snap_top_on;
-> -       int snap_top_off;
-> -       int snap_bottom_on;
-> -       int snap_bottom_off;
-> -       uint32_t panel_version;
-> +       u32 panel_version = 0;
-> +       u16 max_x, max_y;
->
->        if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
->                printk(KERN_ERR "synaptics_ts_probe: need I2C_FUNC_I2C\n");
-> @@ -269,6 +354,9 @@ static int synaptics_ts_probe(
->        pdata = client->dev.platform_data;
->        if (pdata)
->                ts->power = pdata->power;
-> +       else
-> +               pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
-> +
+That said, apart from a few things like that, that are move visible thanks 
+to their bulk, _most_ of the changes really are small stuff. A lot of 
+one-liners etc. The shortlog (appended) gives a reasonable view.
 
-Where do you free this?
+		Linus
 
->        if (ts->power) {
->                ret = ts->power(1);
->                if (ret < 0) {
-> @@ -277,81 +365,16 @@ static int synaptics_ts_probe(
->                }
->        }
->
-> -       ret = i2c_smbus_write_byte_data(ts->client, 0xf4, 0x01); /* device command = reset */
-> -       if (ret < 0) {
-> -               printk(KERN_ERR "i2c_smbus_write_byte_data failed\n");
-> -               /* fail? */
-> -       }
-> -       {
-> -               int retry = 10;
-> -               while (retry-- > 0) {
-> -                       ret = i2c_smbus_read_byte_data(ts->client, 0xe4);
-> -                       if (ret >= 0)
-> -                               break;
-> -                       msleep(100);
-> -               }
-> -       }
-> -       if (ret < 0) {
-> -               printk(KERN_ERR "i2c_smbus_read_byte_data failed\n");
-> -               goto err_detect_failed;
-> -       }
-> -       printk(KERN_INFO "synaptics_ts_probe: Product Major Version %x\n", ret);
-> -       panel_version = ret << 8;
-> -       ret = i2c_smbus_read_byte_data(ts->client, 0xe5);
-> -       if (ret < 0) {
-> -               printk(KERN_ERR "i2c_smbus_read_byte_data failed\n");
-> -               goto err_detect_failed;
-> -       }
-> -       printk(KERN_INFO "synaptics_ts_probe: Product Minor Version %x\n", ret);
-> -       panel_version |= ret;
-> -
-> -       ret = i2c_smbus_read_byte_data(ts->client, 0xe3);
-> -       if (ret < 0) {
-> -               printk(KERN_ERR "i2c_smbus_read_byte_data failed\n");
-> +       ret = detect(ts, &panel_version);
-> +       if (ret)
->                goto err_detect_failed;
-> -       }
-> -       printk(KERN_INFO "synaptics_ts_probe: product property %x\n", ret);
->
-> -       if (pdata) {
-> -               while (pdata->version > panel_version)
-> -                       pdata++;
-> -               ts->flags = pdata->flags;
-> -               inactive_area_left = pdata->inactive_left;
-> -               inactive_area_right = pdata->inactive_right;
-> -               inactive_area_top = pdata->inactive_top;
-> -               inactive_area_bottom = pdata->inactive_bottom;
-> -               snap_left_on = pdata->snap_left_on;
-> -               snap_left_off = pdata->snap_left_off;
-> -               snap_right_on = pdata->snap_right_on;
-> -               snap_right_off = pdata->snap_right_off;
-> -               snap_top_on = pdata->snap_top_on;
-> -               snap_top_off = pdata->snap_top_off;
-> -               snap_bottom_on = pdata->snap_bottom_on;
-> -               snap_bottom_off = pdata->snap_bottom_off;
-> -               fuzz_x = pdata->fuzz_x;
-> -               fuzz_y = pdata->fuzz_y;
-> -               fuzz_p = pdata->fuzz_p;
-> -               fuzz_w = pdata->fuzz_w;
-> -       } else {
-> -               inactive_area_left = 0;
-> -               inactive_area_right = 0;
-> -               inactive_area_top = 0;
-> -               inactive_area_bottom = 0;
-> -               snap_left_on = 0;
-> -               snap_left_off = 0;
-> -               snap_right_on = 0;
-> -               snap_right_off = 0;
-> -               snap_top_on = 0;
-> -               snap_top_off = 0;
-> -               snap_bottom_on = 0;
-> -               snap_bottom_off = 0;
-> -               fuzz_x = 0;
-> -               fuzz_y = 0;
-> -               fuzz_p = 0;
-> -               fuzz_w = 0;
-> -       }
-> +       while (pdata->version > panel_version)
-> +               pdata++;
-> +       ts->flags = pdata->flags;
->
->        ret = i2c_smbus_read_byte_data(ts->client, 0xf0);
-> +
->        if (ret < 0) {
->                printk(KERN_ERR "i2c_smbus_read_byte_data failed\n");
->                goto err_detect_failed;
-> @@ -427,46 +450,10 @@ static int synaptics_ts_probe(
->        set_bit(BTN_TOUCH, ts->input_dev->keybit);
->        set_bit(BTN_2, ts->input_dev->keybit);
->        set_bit(EV_ABS, ts->input_dev->evbit);
-> -       inactive_area_left = inactive_area_left * max_x / 0x10000;
-> -       inactive_area_right = inactive_area_right * max_x / 0x10000;
-> -       inactive_area_top = inactive_area_top * max_y / 0x10000;
-> -       inactive_area_bottom = inactive_area_bottom * max_y / 0x10000;
-> -       snap_left_on = snap_left_on * max_x / 0x10000;
-> -       snap_left_off = snap_left_off * max_x / 0x10000;
-> -       snap_right_on = snap_right_on * max_x / 0x10000;
-> -       snap_right_off = snap_right_off * max_x / 0x10000;
-> -       snap_top_on = snap_top_on * max_y / 0x10000;
-> -       snap_top_off = snap_top_off * max_y / 0x10000;
-> -       snap_bottom_on = snap_bottom_on * max_y / 0x10000;
-> -       snap_bottom_off = snap_bottom_off * max_y / 0x10000;
-> -       fuzz_x = fuzz_x * max_x / 0x10000;
-> -       fuzz_y = fuzz_y * max_y / 0x10000;
-> -       ts->snap_down[!!(ts->flags & SYNAPTICS_SWAP_XY)] = -inactive_area_left;
-> -       ts->snap_up[!!(ts->flags & SYNAPTICS_SWAP_XY)] = max_x + inactive_area_right;
-> -       ts->snap_down[!(ts->flags & SYNAPTICS_SWAP_XY)] = -inactive_area_top;
-> -       ts->snap_up[!(ts->flags & SYNAPTICS_SWAP_XY)] = max_y + inactive_area_bottom;
-> -       ts->snap_down_on[!!(ts->flags & SYNAPTICS_SWAP_XY)] = snap_left_on;
-> -       ts->snap_down_off[!!(ts->flags & SYNAPTICS_SWAP_XY)] = snap_left_off;
-> -       ts->snap_up_on[!!(ts->flags & SYNAPTICS_SWAP_XY)] = max_x - snap_right_on;
-> -       ts->snap_up_off[!!(ts->flags & SYNAPTICS_SWAP_XY)] = max_x - snap_right_off;
-> -       ts->snap_down_on[!(ts->flags & SYNAPTICS_SWAP_XY)] = snap_top_on;
-> -       ts->snap_down_off[!(ts->flags & SYNAPTICS_SWAP_XY)] = snap_top_off;
-> -       ts->snap_up_on[!(ts->flags & SYNAPTICS_SWAP_XY)] = max_y - snap_bottom_on;
-> -       ts->snap_up_off[!(ts->flags & SYNAPTICS_SWAP_XY)] = max_y - snap_bottom_off;
-> -       printk(KERN_INFO "synaptics_ts_probe: max_x %d, max_y %d\n", max_x, max_y);
-> -       printk(KERN_INFO "synaptics_ts_probe: inactive_x %d %d, inactive_y %d %d\n",
-> -              inactive_area_left, inactive_area_right,
-> -              inactive_area_top, inactive_area_bottom);
-> -       printk(KERN_INFO "synaptics_ts_probe: snap_x %d-%d %d-%d, snap_y %d-%d %d-%d\n",
-> -              snap_left_on, snap_left_off, snap_right_on, snap_right_off,
-> -              snap_top_on, snap_top_off, snap_bottom_on, snap_bottom_off);
-> -       input_set_abs_params(ts->input_dev, ABS_X, -inactive_area_left, max_x + inactive_area_right, fuzz_x, 0);
-> -       input_set_abs_params(ts->input_dev, ABS_Y, -inactive_area_top, max_y + inactive_area_bottom, fuzz_y, 0);
-> -       input_set_abs_params(ts->input_dev, ABS_PRESSURE, 0, 255, fuzz_p, 0);
-> -       input_set_abs_params(ts->input_dev, ABS_TOOL_WIDTH, 0, 15, fuzz_w, 0);
-> -       input_set_abs_params(ts->input_dev, ABS_HAT0X, -inactive_area_left, max_x + inactive_area_right, fuzz_x, 0);
-> -       input_set_abs_params(ts->input_dev, ABS_HAT0Y, -inactive_area_top, max_y + inactive_area_bottom, fuzz_y, 0);
-> -       /* ts->input_dev->name = ts->keypad_info->name; */
-> +
-> +       compute_areas(ts, pdata, max_x, max_y);
-> +
-> +
->        ret = input_register_device(ts->input_dev);
->        if (ret) {
->                printk(KERN_ERR "synaptics_ts_probe: Unable to register %s input device\n", ts->input_dev->name);
-> @@ -489,33 +476,27 @@ static int synaptics_ts_probe(
->                ts->timer.function = synaptics_ts_timer_func;
->                hrtimer_start(&ts->timer, ktime_set(1, 0), HRTIMER_MODE_REL);
->        }
-> -#ifdef CONFIG_HAS_EARLYSUSPEND
-> -       ts->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN + 1;
-> -       ts->early_suspend.suspend = synaptics_ts_early_suspend;
-> -       ts->early_suspend.resume = synaptics_ts_late_resume;
-> -       register_early_suspend(&ts->early_suspend);
-> -#endif
->
->        printk(KERN_INFO "synaptics_ts_probe: Start touchscreen %s in %s mode\n", ts->input_dev->name, ts->use_irq ? "interrupt" : "polling");
->
->        return 0;
->
-> -err_input_register_device_failed:
-> + err_input_register_device_failed:
->        input_free_device(ts->input_dev);
->
-> -err_input_dev_alloc_failed:
-> -err_detect_failed:
-> -err_power_failed:
-> + err_input_dev_alloc_failed:
-> + err_detect_failed:
-> + err_power_failed:
->        kfree(ts);
-> -err_alloc_data_failed:
-> -err_check_functionality_failed:
-> + err_alloc_data_failed:
-> + err_check_functionality_failed:
->        return ret;
->  }
->
->  static int synaptics_ts_remove(struct i2c_client *client)
->  {
->        struct synaptics_ts_data *ts = i2c_get_clientdata(client);
-> -       unregister_early_suspend(&ts->early_suspend);
-> +
->        if (ts->use_irq)
->                free_irq(client->irq, ts);
->        else
-> @@ -525,72 +506,6 @@ static int synaptics_ts_remove(struct i2c_client *client)
->        return 0;
->  }
->
-> -static int synaptics_ts_suspend(struct i2c_client *client, pm_message_t mesg)
-> -{
-> -       int ret;
-> -       struct synaptics_ts_data *ts = i2c_get_clientdata(client);
-> -
-> -       if (ts->use_irq)
-> -               disable_irq(client->irq);
-> -       else
-> -               hrtimer_cancel(&ts->timer);
-> -       ret = cancel_work_sync(&ts->work);
-> -       if (ret && ts->use_irq) /* if work was pending disable-count is now 2 */
-> -               enable_irq(client->irq);
-> -       ret = i2c_smbus_write_byte_data(ts->client, 0xf1, 0); /* disable interrupt */
-> -       if (ret < 0)
-> -               printk(KERN_ERR "synaptics_ts_suspend: i2c_smbus_write_byte_data failed\n");
-> -
-> -       ret = i2c_smbus_write_byte_data(client, 0xf0, 0x86); /* deep sleep */
-> -       if (ret < 0)
-> -               printk(KERN_ERR "synaptics_ts_suspend: i2c_smbus_write_byte_data failed\n");
-> -       if (ts->power) {
-> -               ret = ts->power(0);
-> -               if (ret < 0)
-> -                       printk(KERN_ERR "synaptics_ts_resume power off failed\n");
-> -       }
-> -       return 0;
-> -}
-> -
-> -static int synaptics_ts_resume(struct i2c_client *client)
-> -{
-> -       int ret;
-> -       struct synaptics_ts_data *ts = i2c_get_clientdata(client);
-> -
-> -       if (ts->power) {
-> -               ret = ts->power(1);
-> -               if (ret < 0)
-> -                       printk(KERN_ERR "synaptics_ts_resume power on failed\n");
-> -       }
-> -
-> -       synaptics_init_panel(ts);
-> -
-> -       if (ts->use_irq)
-> -               enable_irq(client->irq);
-> -
-> -       if (!ts->use_irq)
-> -               hrtimer_start(&ts->timer, ktime_set(1, 0), HRTIMER_MODE_REL);
-> -       else
-> -               i2c_smbus_write_byte_data(ts->client, 0xf1, 0x01); /* enable abs int */
-> -
-> -       return 0;
-> -}
+---
+Abhishek Kulkarni (1):
+      net/9p: Fix crash due to bad mount parameters.
 
-Why did you remove suspend and resume?
+Adrian Hunter (4):
+      UBIFS: fix integer overflow warning
+      UBIFS: fix 64-bit divisions in debug print
+      UBIFS: minor spelling and grammar fixes
+      UBI: add image sequence number to EC header
 
-> -
-> -#ifdef CONFIG_HAS_EARLYSUSPEND
-> -static void synaptics_ts_early_suspend(struct early_suspend *h)
-> -{
-> -       struct synaptics_ts_data *ts;
-> -       ts = container_of(h, struct synaptics_ts_data, early_suspend);
-> -       synaptics_ts_suspend(ts->client, PMSG_SUSPEND);
-> -}
-> -
-> -static void synaptics_ts_late_resume(struct early_suspend *h)
-> -{
-> -       struct synaptics_ts_data *ts;
-> -       ts = container_of(h, struct synaptics_ts_data, early_suspend);
-> -       synaptics_ts_resume(ts->client);
-> -}
-> -#endif
->
->  static const struct i2c_device_id synaptics_ts_id[] = {
->        { SYNAPTICS_I2C_RMI_NAME, 0 },
-> @@ -600,10 +515,6 @@ static const struct i2c_device_id synaptics_ts_id[] = {
->  static struct i2c_driver synaptics_ts_driver = {
->        .probe          = synaptics_ts_probe,
->        .remove         = synaptics_ts_remove,
-> -#ifndef CONFIG_HAS_EARLYSUSPEND
-> -       .suspend        = synaptics_ts_suspend,
-> -       .resume         = synaptics_ts_resume,
-> -#endif
+Ajay Kumar Gupta (1):
+      USB: otg: fix module reinsert issue
 
-Remove #ifndef only, not the content.
+Akinobu Mita (1):
+      x86: fix usage of bios intcall()
 
+Alan Cox (7):
+      PCI: More PATA quirks for not entering D3
+      pty: Rework the pty layer to use the normal buffering logic
+      tty: maintainers data was edited wrongly by someone
+      tty: Sort out the USB sysrq changes that wrecked performance
+      tty: Fix USB kref leak
+      tty: Fix the PL2303 private methods for sysrq
+      Staging: vt6655: compile fix
 
->        .id_table       = synaptics_ts_id,
->        .driver = {
->                .name   = SYNAPTICS_I2C_RMI_NAME,
-> diff --git a/include/linux/synaptics_i2c_rmi.h b/include/linux/synaptics_i2c_rmi.h
-> index ca51b2f..73e1de7 100644
-> --- a/include/linux/synaptics_i2c_rmi.h
-> +++ b/include/linux/synaptics_i2c_rmi.h
-> @@ -1,5 +1,5 @@
->  /*
-> - * include/linux/synaptics_i2c_rmi.h - platform data structure for f75375s sensor
-> + * synaptics_i2c_rmi.h - platform data structure for f75375s sensor
->  *
->  * Copyright (C) 2008 Google, Inc.
->  *
-> @@ -27,25 +27,25 @@ enum {
->  };
->
->  struct synaptics_i2c_rmi_platform_data {
-> -       uint32_t version;       /* Use this entry for panels with */
-> +       u32 version;    /* Use this entry for panels with */
->                                /* (major << 8 | minor) version or above. */
->                                /* If non-zero another array entry follows */
->        int (*power)(int on);   /* Only valid in first array entry */
-> -       uint32_t flags;
-> -       uint32_t inactive_left; /* 0x10000 = screen width */
-> -       uint32_t inactive_right; /* 0x10000 = screen width */
-> -       uint32_t inactive_top; /* 0x10000 = screen height */
-> -       uint32_t inactive_bottom; /* 0x10000 = screen height */
-> -       uint32_t snap_left_on; /* 0x10000 = screen width */
-> -       uint32_t snap_left_off; /* 0x10000 = screen width */
-> -       uint32_t snap_right_on; /* 0x10000 = screen width */
-> -       uint32_t snap_right_off; /* 0x10000 = screen width */
-> -       uint32_t snap_top_on; /* 0x10000 = screen height */
-> -       uint32_t snap_top_off; /* 0x10000 = screen height */
-> -       uint32_t snap_bottom_on; /* 0x10000 = screen height */
-> -       uint32_t snap_bottom_off; /* 0x10000 = screen height */
-> -       uint32_t fuzz_x; /* 0x10000 = screen width */
-> -       uint32_t fuzz_y; /* 0x10000 = screen height */
-> +       u32 flags;
-> +       u32 inactive_left; /* 0x10000 = screen width */
-> +       u32 inactive_right; /* 0x10000 = screen width */
-> +       u32 inactive_top; /* 0x10000 = screen height */
-> +       u32 inactive_bottom; /* 0x10000 = screen height */
-> +       u32 snap_left_on; /* 0x10000 = screen width */
-> +       u32 snap_left_off; /* 0x10000 = screen width */
-> +       u32 snap_right_on; /* 0x10000 = screen width */
-> +       u32 snap_right_off; /* 0x10000 = screen width */
-> +       u32 snap_top_on; /* 0x10000 = screen height */
-> +       u32 snap_top_off; /* 0x10000 = screen height */
-> +       u32 snap_bottom_on; /* 0x10000 = screen height */
-> +       u32 snap_bottom_off; /* 0x10000 = screen height */
-> +       u32 fuzz_x; /* 0x10000 = screen width */
-> +       u32 fuzz_y; /* 0x10000 = screen height */
+Alan Stern (9):
+      USB: EHCI: update toggle state for linked QHs
+      USB: fix the clear_tt_buffer interface
+      USB: EHCI: use the new clear_tt_buffer interface
+      USB: EHCI: check for STALL before other errors
+      USB: Sierra: fix oops upon device close
+      USB: cypress_m8: remove invalid Clear-Halt
+      USB: option: remove unnecessary and erroneous code
+      USB: EHCI: report actual_length for iso transfers
+      USB: handle zero-length usbfs submissions correctly
 
-I prefer the existing C99 types.
+Alexander Beregalov (3):
+      wm97xx_batery: replace driver_data with dev_get_drvdata()
+      Staging: comedi: jr3_pci.c: add required includes
+      Staging: stlc45xx: convert config_interface to bss_info_changed, fixing a build error
 
->        int fuzz_p;
->        int fuzz_w;
->  };
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Alexander Duyck (2):
+      if_ether: add define for 1588 aka Timesync
+      igb: set lan id prior to configuring phy
 
-This driver only supports a subset of Synaptics' devices so a more
-generic driver will eventually be needed. The patch below adds support
-for a more recent but similar panel.
+Alexey Dobriyan (2):
+      headers: mnt_namespace.h redux
+      headers: smp_lock.h redux
 
--- 
-Arve Hjønnevåg
+Alexey Zaytsev (1):
+      PCI: make pci_name() take const argument
 
-----
+Alistair John Strachan (1):
+      hwmon: (abituguru3) DMI probing for AB9, AB9 QuadQT and IX38 QuadGT
 
-commit 22d8c831554b8bec6e9fbac9d6bf972c775ee128
-Author: Arve Hjønnevåg <arve@android.com>
-Date:   Wed Jul 8 21:32:06 2009 -0700
+Amerigo Wang (2):
+      Doc: update Documentation/exception.txt
+      Doc: move Documentation/exception.txt into x86 subdir
 
-    Input: synaptics_i2c_rmi: Add support for panels with
-has-no-relative-data property.
+Amit Kucheria (1):
+      USB: Serial: Add support for Arkham Technology adapters
 
-    Signed-off-by: Arve Hjønnevåg <arve@android.com>
+Andiry Brienza (1):
+      ALSA: hda - Disable AMD SB600 64bit address support only
 
-diff --git a/drivers/input/touchscreen/synaptics_i2c_rmi.c
-b/drivers/input/touchscreen/synaptics_i2c_rmi.c
-index a45634b..88c8e4a 100644
---- a/drivers/input/touchscreen/synaptics_i2c_rmi.c
-+++ b/drivers/input/touchscreen/synaptics_i2c_rmi.c
-@@ -33,6 +33,7 @@ struct synaptics_ts_data {
-        struct i2c_client *client;
-        struct input_dev *input_dev;
-        int use_irq;
-+       bool has_relative_report;
-        struct hrtimer timer;
-        struct work_struct  work;
-        uint16_t max[2];
-@@ -85,6 +86,7 @@ static void synaptics_ts_work_func(struct work_struct *work)
-        uint8_t start_reg;
-        uint8_t buf[15];
-        struct synaptics_ts_data *ts = container_of(work, struct
-synaptics_ts_data, work);
-+       int buf_len = ts->has_relative_report ? 15 : 13;
+Andrey Yurovsky (1):
+      mac80211: fix allocation in mesh_queue_preq
 
-        msg[0].addr = ts->client->addr;
-        msg[0].flags = 0;
-@@ -93,7 +95,7 @@ static void synaptics_ts_work_func(struct work_struct *work)
-        start_reg = 0x00;
-        msg[1].addr = ts->client->addr;
-        msg[1].flags = I2C_M_RD;
--       msg[1].len = sizeof(buf);
-+       msg[1].len = buf_len;
-        msg[1].buf = buf;
+Andy Walls (5):
+      V4L/DVB (12167): tuner-xc2028: Fix 7 MHz DVB-T
+      V4L/DVB (12180): cx18: Update Yuan MPC-718 card entry with better information and guesses
+      V4L/DVB (12181): get_dvb_firmware: Add Yuan MPC718 MT352 DVB-T "firmware" extraction
+      V4L/DVB (12182): cx18: Add DVB-T support for Yuan MPC-718 cards with an MT352 or ZL10353
+      V4L/DVB (12206): get_dvb_firmware: Correct errors in MPC718 firmware extraction logic
 
-        /* printk("synaptics_ts_work_func\n"); */
-@@ -109,7 +111,7 @@ static void synaptics_ts_work_func(struct work_struct *work)
-                        /*        buf[4], buf[5], buf[6], buf[7], */
-                        /*        buf[8], buf[9], buf[10], buf[11], */
-                        /*        buf[12], buf[13], buf[14], ret); */
--                       if ((buf[14] & 0xc0) != 0x40) {
-+                       if ((buf[buf_len - 1] & 0xc0) != 0x40) {
-                                printk(KERN_WARNING "synaptics_ts_work_func:"
-                                       " bad read %x %x %x %x %x %x %x %x %x"
-                                       " %x %x %x %x %x %x, ret %d\n",
-@@ -123,7 +125,7 @@ static void synaptics_ts_work_func(struct work_struct *work)
-                                continue;
-                        }
-                        bad_data = 0;
--                       if ((buf[14] & 1) == 0) {
-+                       if ((buf[buf_len - 1] & 1) == 0) {
-                                /* printk("read %d coordinates\n", i); */
-                                break;
-                        } else {
-@@ -394,6 +396,13 @@ static int synaptics_ts_probe(
-                printk(KERN_ERR "i2c_smbus_write_byte_data failed for
-page select\n");
-                goto err_detect_failed;
-        }
-+       ret = i2c_smbus_read_word_data(ts->client, 0x02);
-+       if (ret < 0) {
-+               printk(KERN_ERR "i2c_smbus_read_word_data failed\n");
-+               goto err_detect_failed;
-+       }
-+       ts->has_relative_report = !(ret & 0x100);
-+       printk(KERN_INFO "synaptics_ts_probe: Sensor properties %x\n", ret);
-        ret = i2c_smbus_read_word_data(ts->client, 0x04);
-        if (ret < 0) {
-                printk(KERN_ERR "i2c_smbus_read_word_data failed\n");
+Andy Whitcroft (1):
+      drm/i915: fix up a raw 64bit divide
+
+Aneesh Kumar K.V (5):
+      ext4: Calculate required journal credits for inserting an extent properly
+      ext4: Don't look at buffer_heads outside i_size.
+      ext4: Fix mmap/truncate race when blocksize < pagesize && delayed allocation
+      ext4: Fix mmap/truncate race when blocksize < pagesize && !nodellaoc
+      ext4: Move __ext4_journalled_writepage() to avoid forward declaration
+
+Anssi Hannula (1):
+      USB: option.c: add A-Link 3GU device id
+
+Anton Blanchard (7):
+      perf report: Fix -z option
+      perf_counter tools: Remove zlib dependency
+      perf top: Move skip symbols to an array
+      perf top: Add ppc64 specific skip symbols and strip ppc64 . prefix
+      perf report: Fix reporting of hypervisor
+      perf report: Add hypervisor dso
+      powerpc/perf_counter: Enable alternate PR/HV bits for POWER7
+
+Anton Vorontsov (2):
+      powerpc: Don't use alloc_bootmem() in init_IRQ() path
+      netpoll: Fix carrier detection for drivers that are using phylib
+
+Arnaldo Carvalho de Melo (3):
+      perf_counter tools: Share rbtree.with the kernel
+      perf_counter tools: Share list.h with the kernel
+      perf_counter tools: Adjust symbols in ET_EXEC files too
+
+Arnd Bergmann (5):
+      microblaze: fall back on generic header files for the ABI
+      microblaze: clean up signal handling
+      microblaze: use generic syscalls.h
+      signals: declare sys_rt_tgsigqueueinfo in syscalls.h
+      USB: buildfix ppc randconfig
+
+Arseniy Lartsev (1):
+      USB: cdc-acm: work around some broken devices
+
+Artem Bityutskiy (16):
+      UBIFS: improve debugging messaged
+      UBIFS: slightly optimize write-buffer timer usage
+      UBIFS: set write-buffer timout to 3-5 seconds
+      UBIFS: few spelling fixes
+      UBIFS: fix assertion warning
+      MAINTAINERS: update ahunter's e-mail address
+      UBI: add empty eraseblocks verification
+      UBI: remove bogus debugging checks
+      UBI: nicify image sequence number handling
+      UBI: fix NOR flash recovery
+      UBI: fix compilation warnings
+      UBIFS: dump a little more in case of corruptions
+      UBIFS: small amendments in the LEB scanning code
+      UBIFS: clean up free space checking
+      UBIFS: fix corruption dump
+      AFS: Fix compilation warning
+
+Bartlomiej Zolnierkiewicz (2):
+      isofs: fix Joliet regression
+      Staging: rtl8192su: convert to net_device_ops
+
+Ben Gamari (3):
+      drm/i915: Remove gtt_bound from drm_i915_gem_object
+      drm/i915: Add gtt_offset to gem object list debugfs output
+      drm/i915: Move lock to more reasonable location
+
+Benjamin Herrenschmidt (1):
+      devres: WARN() and return, don't crash on device_del() of uninitialized device
+
+Bill Pemberton (2):
+      Staging: serqt_usb2: fix qt_close parameters in serqt_usb2
+      Staging: serqt_usb2: declare qt_open static in serqt_usb2
+
+Boaz Harrosh (5):
+      exofs: Fix bio leak in error handling path (sync read)
+      exofs: Remove IBM copyrights
+      exofs: Avoid using file_fsync()
+      MAINTAINERS: Add osd maintained files (F:)
+      osdblk: Adjust queue limits to lower device's limits
+
+Brad Lu (1):
+      USB: option.c to support Qisda H21/H20 usb modem
+
+Brian Haley (1):
+      IPv6: preferred lifetime of address not getting updated
+
+Bruce Allan (6):
+      e1000e: PHY loopback broken on 82578
+      e1000e: delay after LCD reset and proper checks for PHY configuration done
+      e1000e: do not write SmartSpeed register bits on parts without support
+      e1000e: prevent NVM corruption on sectors larger than 4K
+      e1000e: delay second read of PHY_STATUS register on failure of first read
+      e1000e: disable K1 at 1000Mbps for 82577/82578
+
+Catalin Marinas (11):
+      kmemleak: Renice the scanning thread to +10
+      kmemleak: Add more cond_resched() calls in the scanning thread
+      kmemleak: Remove the reported leaks number limitation
+      kmemleak: Do not acquire scan_mutex in kmemleak_open()
+      kmemleak: Scan objects allocated during a scanning episode
+      kmemleak: Trace the kmalloc_large* functions in slub
+      kmemleak: Allow partial freeing of memory blocks
+      kmemleak: Add callbacks to the bootmem allocator
+      Free the memory allocated by memdup_user() in fs/sysfs/bin.c
+      Free struct device in fw_dev_release()
+      kmemleak: Remove alloc_bootmem annotations introduced in the past
+
+Chris Wilson (1):
+      drm/i915: Refactor calls to unmap_mapping_range
+
+Christian Borntraeger (1):
+      [S390] improve suspend/resume error messages
+
+Clyde McPherson (2):
+      b43: Add support for 4318E
+      ssb: Add support for 4318E
+
+Curt Wohlgemuth (1):
+      ext4: Fix buffer head reference leak in no-journal mode
+
+Dan Aloni (2):
+      Staging: prevent rtl8187se from crashing dev_ioctl() in SIOCGIWNAME
+      Staging: prevent rtl8192su from crashing dev_ioctl in SIOCGIWNAME
+
+Dan Williams (1):
+      USB: option: add Novatel Ovation MC760
+
+Daniel Mack (2):
+      UBIFS: allow more than one volume to be mounted
+      USB: fix LANGID=0 regression
+
+Darren Salt (1):
+      ALSA: hda - Missing volume controls for Intel HDA (ALC269/EeePC)
+
+Dave Jones (2):
+      [CPUFREQ] Fix compile failure in cpufreq.c
+      Fix compile error in bmac.c
+
+Dave Kleikamp (1):
+      update JFS entry in MAINTAINERS
+
+David Brownell (5):
+      Input: dm355evm_keys - fix kconfig symbol names
+      USB: musb: davinci dm355 updates (remainder)
+      USB: gadget: pxa25x compiler warning fix
+      USB: musb: silence "suspend as a_wait_vrise is_active" msgs
+      USB: RNDIS gadget, fix issues talking from PXA
+
+David Heidelberger (1):
+      ALSA: hda - targa and targa-2ch fix
+
+David S. Miller (2):
+      Revert "ide: improve handling of Power Management requests"
+      Revert "p54: Use SKB list handling helpers instead of by-hand code."
+
+David Woodhouse (8):
+      intel-iommu: Fix dma vs. mm page confusion with aligned_nrpages()
+      intel-iommu: Don't set identity mapping for bypassed graphics devices
+      intel-iommu: Fix reattaching of devices to identity mapping domain
+      intel-iommu: Add iommu_should_identity_map() function
+      intel-iommu: Restore DMAR_BROKEN_GFX_WA option for broken graphics drivers
+      intel-iommu: No mapping for non-PCI devices
+      intel-iommu: Use iommu_should_identity_map() at startup time too.
+      intel-iommu: Don't use identity mapping for PCI devices behind bridges
+
+Devin Heitmueller (1):
+      V4L/DVB (12156): em28xx: Fix tuning for Terratec Cinergy T XS USB (zl10353 version)
+
+Dhananjay Phadke (2):
+      netxen: fix the version code macro
+      netxen: avoid frequent firmware reset
+
+Dmitry Torokhov (1):
+      Input: arrange keyboards alphabetically
+
+Don Skidmore (3):
+      ixgbe: fix issues with failing to detect insert of unsupported module
+      ixgbe: fix regression on some 82598 adapters
+      ixgbe: fix inconsistent SFP/SFP+ failure results.
+
+Eilon Greenstein (2):
+      bnx2x: Disable HC coalescing when setting timeout to zero.
+      bnx2x: Fix the maximal values of coalescing timeouts.
+
+Elina Pasheva (1):
+      USB: serial: sierra driver id_table additions
+
+Eric Anholt (3):
+      drm/i915: Disable GEM when a broken video BIOS takes up the whole aperture.
+      drm/i915: Fix harmless warning from patch merged after i2c rework.
+      drm/i915: Zap the GTT mapping when transitioning from untiled to tiled.
+
+Eric Dumazet (6):
+      x86: atomic64: The atomic64_t data type should be 8 bytes aligned on 32-bit too
+      x86: atomic64: Improve atomic64_read()
+      x86: atomic64: Improve cmpxchg8b()
+      x86: atomic64: Improve atomic64_read()
+      x86: atomic64: Inline atomic64_read() again
+      forcedeth: Fix NAPI race.
+
+Eric Miao (1):
+      Input: add support for generic GPIO-based matrix keypad
+
+Eric Sandeen (2):
+      ext4: mark several more functions in mballoc.c as noinline
+      ext4: naturally align struct ext4_allocation_request
+
+FUJITA Tomonori (2):
+      block: call blk_scsi_ioctl_init()
+      block: fix sg SG_DXFER_TO_FROM_DEV regression
+
+Fernando Luis Vázquez Cao (1):
+      PCI: remove pci_dac_dma_... APIs on mn10300
+
+Florian Fainelli (3):
+      vlynq: fix typo in Kconfig to enable debugging
+      r6040: restore MIER register correctly when IRQ line is shared
+      r6040: bump driver version to 0.24 and date to 08 July 2009
+
+Folkert van Heusden (1):
+      USB: serial: FTDI with product code FB80 and vendor id 0403
+
+Frank Munzert (1):
+      [S390] shutdown actions: save/return rc from init function
+
+Frans Pop (1):
+      USB: add missing class descriptions used in usb/devices file
+
+Frederic Weisbecker (16):
+      perf_counter tools: Fix storage size allocation of callchain list
+      perf_counter tools: Resolve symbols in callchains
+      perf_counter tools: Various fixes for callchains
+      perf_counter: Ignore the nmi call frames in the x86-64 backtraces
+      perf stat: Handle pipe read failures in perf stat
+      perf_counter tools: Create new chain_for_each_child() iterator
+      perf_counter tools: Add new OPT_CALLBACK_DEFAULT option
+      perf report: Add support for callchain graph output
+      perf_counter tools: Set the minimum percent for callchains to be displayed
+      perf_counter tools: Provide helper to print percents color
+      perf_counter tools: Display percents of hits in callchain with overhead colors
+      perf report: Warn on callchain output request from non-callchain file
+      perf report: Use a modifiable string for default callchain options
+      perf report: Change default callchain parameters
+      perf_counter tools: callchains: Manage the cumul hits on the fly
+      perf report: Add "Fractal" mode output - support callchains with relative overhead rate
+
+Gianpaolo Cugola (1):
+      USB: pl2303: New vendor and product id for the prolific driver
+
+Grant Likely (3):
+      ASoC: Fix mpc5200-psc-ac97 to ensure the data ready bit is cleared
+      ASoC: add locking to mpc5200-psc-ac97 driver
+      powerpc: Fix spin_event_timeout() to be robust over context switches
+
+Greg Kroah-Hartman (7):
+      Sound: remove direct access of driver_data
+      omap: video: remove direct access of driver_data
+      Staging: meilhaus: add email address to TODO
+      Revert "USB: Add Intel Langwell USB OTG Transceiver Drive"
+      USB: gadget: audio: provide correct device id
+      USB: ti_usb_3410_5052: fix duplicate device ids.
+      Revert USB: usbfs: deprecate and hide option for !embedded
+
+Greg Ungerer (2):
+      fec: remove extra ";" from definition names
+      fec: fix definition of 5272 version of FEC_X_DES_ACTIVE register
+
+Guennadi Liakhovetski (1):
+      V4L/DVB (12160): soc-camera: fix missing clean up on error path
+
+Hans Verkuil (1):
+      V4L/DVB (12153): ttpci: config TTPCI_EEPROM depends on I2C
+
+Heiko Carstens (7):
+      [S390] sclp: fix compile error for !SCLP_CONSOLE
+      [S390] monreader: fix dev_set_drvdata conversion
+      [S390] udelay: disable lockdep to avoid false positives
+      [S390] perf_counter build fix
+      [S390] add __ucmpdi2() helper function
+      [S390] add generic atomic64 support for 31 bit
+      partitions: fix broken uevent_suppress conversion
+
+Herbert Xu (1):
+      tun: Fix device unregister race
+
+Herton Ronaldo Krzesinski (2):
+      ALSA: hda - move 8086:fb30 quirk (stac9205) to the proper section
+      Staging: comedi: s626: use subvendor:subdevice ids for SAA7146 board
+
+Hidetoshi Seto (4):
+      PCI MSI: Return if alloc_msi_entry for MSI-X failed
+      PCI MSI: shorten PCI_MSIX_ENTRY_* symbol names
+      PCI MSI: Unmask MSI if setup failed
+      PCI MSI: Fix restoration of MSI/MSI-X mask states in suspend/resume
+
+Hin-Tak Leung (1):
+      zd1211rw: adding SONY IFU-WLM2 (054c:0257) as a zd1211b device
+
+Huang Weiyi (2):
+      powerpc/perf_counter: Remove duplicated #include
+      mn10300: remove duplicated #include
+
+Hui Zhu (1):
+      elf: fix multithreaded program core dumping on arm
+
+InKi Dae (1):
+      drivers/video/s3c-fb.c: fix clock setting for Samsung SoC Framebuffer
+
+Ingo Molnar (15):
+      dma-debug: Put all hash-chain locks into the same lock class
+      ia64/PCI: adjust section annotation for pcibios_setup()
+      perf report: Fix HV bit mismerge
+      perf_counter tools: Add more warnings and fix/annotate them
+      x86: Fix printk call in print_local_apic()
+      perf report: Annotate variable initialization
+      x86: atomic64: Move the 32-bit atomic64_t implementation to a .c file
+      x86: atomic64: Improve atomic64_add_return()
+      x86: atomic64: Reduce size of functions
+      x86: atomic64: Make atomic_read() type-safe
+      x86: atomic64: Fix unclean type use in atomic64_xchg()
+      x86: atomic64: Export APIs to modules
+      x86: atomic64: Improve atomic64_xchg()
+      x86: atomic64: Clean up atomic64_sub_and_test() and atomic64_add_negative()
+      dma-debug: Fix the overlap() function to be correct and readable
+
+Jan Beulich (1):
+      x86: Fix fixmap ordering
+
+Jan Capek (1):
+      USB: ftdi_sio - product ID's for CCS PIC programmers
+
+Jan Kara (2):
+      jbd2: Fix a race between checkpointing code and journal_get_write_access()
+      ext4: Fix truncation of symlinks after failed write
+
+Jani Nikula (2):
+      Input: gpio-keys - revert 'change timer to workqueue'
+      Input: gpio-keys - avoid possibility of sleeping in timer function
+
+Jarek Poplawski (1):
+      ipv4: Fix fib_trie rebalancing, part 4 (root thresholds)
+
+Jason Wessel (1):
+      USB: console: Fix regression in usb console on kernel boot
+
+Jaswinder Singh Rajput (8):
+      perf stat: Define MATCH_EVENT for easy attr checking
+      x86: Remove double declaration of MSR_P6_EVNTSEL0 and MSR_P6_EVNTSEL1
+      perf list: Add cache events
+      x86: Mark device_nb as static and fix NULL noise
+      x86: Declare check_efer() before it gets used
+      x86: Remove unused variable disable_x2apic
+      x86: Remove unused function lapic_watchdog_ok()
+      includecheck fix: include/linux, rfkill.h
+
+Jay Sternberg (1):
+      Atheros Kconfig needs to be dependent on WLAN_80211
+
+Jean Delvare (1):
+      Fix staging drivers after smp_lock.h redux
+
+Jeff Garzik (1):
+      osdblk: a Linux block device for OSD objects
+
+Jeff Layton (9):
+      cifs: add new cifs_iget function and convert unix codepath to use it
+      cifs: fix regression with O_EXCL creates and optimize away lookup
+      cifs: add pid of initiating process to spnego upcall info
+      cifs: rename CIFSSMBUnixSetInfo to CIFSSMBUnixSetPathInfo
+      cifs: make a separate function for filling out FILE_UNIX_BASIC_INFO
+      cifs: add and use CIFSSMBUnixSetFileInfo for setattr calls
+      cifs: convert cifs_get_inode_info and non-posix readdir to use cifs_iget
+      cifs: remove cifsInodeInfo->inUse counter
+      cifs: when ATTR_READONLY is set, only clear write bits on non-directories
+
+Jens Axboe (1):
+      Fix congestion_wait() sync/async vs read/write confusion
+
+Jesper Dangaard Brouer (1):
+      ext4: Use rcu_barrier() on module unload.
+
+Jesse Barnes (1):
+      drm/i915: enable error detection & state collection
+
+Jiaying Zhang (1):
+      quota: Fix possible deadlock during parallel quotaon and quotaoff
+
+Jiri Olsa (2):
+      net: adding memory barrier to the poll and receive callbacks
+      memory barrier: adding smp_mb__after_lock
+
+Jiri Slaby (7):
+      V4L/DVB (12202): em28xx, fix lock imbalance
+      V4L/DVB (12203): radio-si470x: fix lock imbalance
+      rtc: ds1374, fix lock imbalance
+      Wireless: nl80211, fix lock imbalance
+      [WATCHDOG] w83697ug, fix lock imbalance
+      hwmon: (max6650) Fix lock imbalance
+      Firmware: firmware_class, fix lock imbalance
+
+Jiro SEKIBA (1):
+      nilfs2: fix disorder in cp count on error during deleting checkpoints
+
+Joe Perches (5):
+      PCI ECRC: Remove unnecessary semicolons
+      powerpc: Remove unnecessary semicolons
+      Remove multiple KERN_ prefixes from printk formats
+      [WATCHDOG] drivers/watchdog/bcm47xx_wdt.c: Remove unnecessary semicolons
+      hwmon: (sht15) Remove unnecessary semicolon
+
+Joerg Roedel (3):
+      dma-debug: fix off-by-one error in overlap function
+      amd-iommu: handle alias entries correctly in init code
+      amd-iommu: set evt_buf_size correctly
+
+Johann Lombardi (1):
+      ext4: Fix goal inum check in the inode allocator
+
+Johannes Berg (4):
+      hp-wmi: fix rfkill bug
+      cfg80211: fix refcount leak
+      mac80211_hwsim: avoid NULL access
+      mac80211: fix docbook
+
+Jonathan McDowell (1):
+      USB: Fix option_ms regression in 2.6.31-rc2
+
+Jorrit Schippers (1):
+      Staging: rt2870: Add USB ID for Sitecom WL-608
+
+Josef Bacik (1):
+      mm: mark page accessed before we write_end()
+
+Josh Boyer (1):
+      powerpc/44x: Fix build error with -Werror for Warp platform
+
+Julia Lawall (1):
+      drivers/net/smsc911x.c: Fix resource size off by 1 error
+
+Julien Tinnes (1):
+      personality: fix PER_CLEAR_ON_SETID
+
+Kai Engert (1):
+      USB: option.c: add Qualcomm/Option iCON 210 modem
+
+Kay Sievers (2):
+      sparc: remove driver-core BUS_ID_SIZE
+      Driver Core: remove BUS_ID_SIZE
+
+Keith Packard (2):
+      drm/i915: Make driver less chatty
+      drm/i915: Adjust DisplayPort clocks to use 96MHz reference
+
+Ken Kawasaki (1):
+      pcnet_cs: add new id
+
+Kevin Cernekee (1):
+      Fix virt_to_phys() warnings
+
+Kevin Hilman (1):
+      USB: musb: davinci dm6446evm GPIO renumbering
+
+Krzysztof Halasa (1):
+      USB serial: Add ID for Turtelizer, an FT2232L-based JTAG/RS-232 adapter.
+
+Krzysztof Helt (10):
+      sisfb: fix regression with uninitalized fb_info->mm_lock mutex
+      i810fb: fix regression with uninitalized fb_info->mm_lock mutex
+      atafb: fix regression with uninitalized fb_info->mm_lock mutex
+      w100fb: fix regression with uninitalized fb_info->mm_lock mutex
+      matroxfb: fix regression with uninitalized fb_info->mm_lock mutex
+      matroxfb: fix regression with uninitalized fb_info->mm_lock mutex (second head)
+      fsl-diu-fb: fix regression with uninitalized fb_info->mm_lock mutex
+      atmel_lcdfb: fix regression with uninitalized fb_info->mm_lock mutex
+      sm501fb: fix regression with uninitalized fb_info->mm_lock mutex
+      mx3fb: fix regression with uninitalized fb_info->mm_lock mutex
+
+Lai Jiangshan (1):
+      trace_export: Repair missed fields
+
+Larry Finger (3):
+      b43/b43legacy: fix radio LED initialization
+      p54: tx refused but queue active
+      fuse: Fix build error
+
+Lars-Peter Clausen (1):
+      ASoC: Fix wm8753 register cache size and initialization
+
+Li Zefan (2):
+      tracing: Fix stack tracer sysctl handling
+      tracing/fastboot: Document the need of initcall_debug
+
+Linus Torvalds (4):
+      Revert "fb: Initialize fb_info mutexes in framebuffer_alloc()"
+      Revert "fuse: Fix build error" as unnecessary
+      Don't use '-fwrapv' compiler option: it's buggy in gcc-4.1.x
+      Linux 2.6.31-rc3
+
+Linus Walleij (2):
+      [ARM] 5579/1: Updated U300 defconfig
+      [ARM] 5581/1: U300 clock updates
+
+Luciano Coelho (1):
+      mac80211: minstrel: avoid accessing negative indices in rix_to_ndx()
+
+Magnus Damm (3):
+      sh-sci: update receive error handling for muxed irqs
+      usb: allow sh7724 to enable on-chip r8a66597
+      sh: add r8a66597 usb0 host to the se7724 board
+
+Mallikarjuna R Chilakala (1):
+      ixgbe: Not allow 8259x unsupported wol options change from ethtool
+
+Mariusz Kozlowski (1):
+      tun/tap: Fix crashes if open() /dev/net/tun and then poll() it.
+
+Mark Brown (1):
+      ASoC: Fix register cache initialisation for WM8753
+
+Mark Langsdorf (1):
+      [CPUFREQ] Powernow-k8: support family 0xf with 2 low p-states
+
+Martin Geleynse (1):
+      USB: ftdi: support NDI devices
+
+Martin Schwidefsky (2):
+      [S390] set SCHED_OMIT_FRAME_POINTER for s390
+      [S390] define KTIME_SCALAR for 32-bit s390
+
+Masami Hiramatsu (1):
+      kprobes: No need to unlock kprobe_insn_mutex
+
+Mathieu Desnoyers (2):
+      x86: Fix fixmap page order for FIX_TEXT_POKE0,1
+      [CPUFREQ] fix (utter) cpufreq_add_dev mess
+
+Matthew Wilcox (1):
+      PCI: Fix IRQ swizzling for ARI-enabled devices
+
+Matthias Kaehlcke (1):
+      [ARM] 5576/1: Update kb9202_defconfig
+
+Mauro Carvalho Chehab (12):
+      V4L/DVB (12134): vivi: bug: don't assume that S_STD will be called before streaming
+      V4L/DVB (12148): move V4L2_PIX_FMT_SGRBG8 to the proper place
+      V4L/DVB (12135): Add a driver for mt9v011 sensor
+      V4L/DVB (12136): mt9v011: Some fixes at the register initialization table
+      V4L/DVB (12137): mt9v011: CodingStyle fixes
+      V4L/DVB (12173): mt9v011: properly calculate image resolution registers
+      V4L/DVB (12174): mt9v011: let's stick with datasheet values where it works
+      V4L/DVB (12138): em28xx: add support for Silvercrest Webcam
+      V4L/DVB (12139): em28xx: add other video formats
+      V4L/DVB (12169): em28xx-video: fix VIDIOC_G_FMT and VIDIOC_ENUMFMT with webcams
+      V4L/DVB (12171): em28xx: fix webcam usage with different output formats
+      V4L/DVB (12172): em28xx: Add autodetection code for Silvercrest 1.3 mpix
+
+Maynard Johnson (1):
+      oprofile: reset bt_lost_no_mapping with other stats
+
+Michael Ellerman (7):
+      powerpc/pseries: Use pr_devel() in pseries LPAR HPTE routines
+      powerpc/pseries: Use pr_devel() in xics.c
+      powerpc: Use pr_devel() in arch/powerpc/mm/mmu_context_nohash.c
+      powerpc: Cleanup & use pr_devel() in arch/powerpc/mm/slb.c
+      powerpc: Use pr_devel() in arch/powerpc/mm/gup.c
+      powerpc/cell: Use pr_devel() in axon_msi.c
+      powerpc: Use pr_devel() in do_dcache_icache_coherency()
+
+Michael Krufky (2):
+      V4L/DVB (12165): cx23885: override set_frontend to allow rf input path switching on the HVR1275
+      V4L/DVB (12166): cx23885: add FIXME comment above set_frontend override
+
+Michal Simek (2):
+      microblaze: Wire up new syscalls
+      microblaze: Fix cast warning for init.c
+
+Mike Frysinger (1):
+      USB: isp1760: use __devexit_p() for remove function
+
+Mike Galbraith (6):
+      x86: Fix symbol annotation for arch/x86/lib/clear_page_64.S::clear_page_c
+      perf_counter tools: Make symbol loading consistently return number of loaded symbols
+      perf_counter tools: Add infrastructure to support loading of kernel module symbols
+      perf_counter tools: Connect module support infrastructure to symbol loading infrastructure
+      perf_counter tools: Enable kernel module symbol loading in tools
+      x86: Add missing annotation to arch/x86/lib/copy_user_64.S::copy_to_user
+
+Oleg Nesterov (1):
+      cred_guard_mutex: do not return -EINTR to user-space
+
+Oliver Neukum (4):
+      USB: fix memory leak in usbtmc
+      USB: fix uninitialised variable in ti_do_download
+      USB: fix memleak in usbfs
+      USB: fix race leading to a write after kfree in usbfs
+
+Pablo Bitton (1):
+      davinci_emac: fix kernel oops when changing MAC address while interface is down
+
+Parag Warudkar (1):
+      elfcore.h : Fix UML build breakage
+
+Pascal Terjan (1):
+      zd1211rw: 07b8:6001 is a ZD1211B
+
+Paul E. McKenney (2):
+      rcu: Mark Hierarchical RCU no longer experimental
+      fix RCU-callback-after-kmem_cache_destroy problem in sl[aou]b
+
+Paul Mackerras (2):
+      perf_counter tools: Rework event string parsing/syntax
+      x86: atomic64: Code atomic(64)_read and atomic(64)_set in C not CPP
+
+Paul Mundt (5):
+      sh: define PERF_COUNTER_INDEX_OFFSET.
+      fb: Initialize fb_info mutexes in framebuffer_alloc()
+      video: sh_mobile_lcdcfb: Convert to framebuffer_alloc().
+      video: hitfb: Convert to framebuffer_alloc().
+      video: hitfb: Move over to dev_pm_ops.
+
+Paul Vojta (1):
+      ALSA: hda - fix beep tone calculation for IDT/STAC codecs
+
+Paulius Zaleckas (1):
+      USB: gadget: fix imx_udc entry in Kconfig
+
+Pekka Enberg (2):
+      SLAB: Fix lockdep annotations
+      xen: Use kcalloc() in xen_init_IRQ()
+
+Peng Tao (1):
+      ext4: fix null handler of ioctls in no journal mode
+
+Pete Zaitcev (1):
+      Staging: rspiusb: use NULL virtual address instead of a bogus one
+
+Peter Chubb (1):
+      x86: Fix resume from suspend when CONFIG_CC_STACKPROTECTOR
+
+Peter Oberparleiter (1):
+      gcov: exclude code operating in userspace from profiling
+
+Peter Zijlstra (2):
+      sched: INIT_PREEMPT_COUNT
+      sched: optimize cond_resched()
+
+Philipp Zabel (1):
+      USB: gadget: pxa25x uses gpio_is_valid
+
+Ping Cheng (1):
+      Input: wacom - add DTF720a support and fix rotation on Intuos3
+
+Qiuping Chen (1):
+      USB: gadget: rndis conformance tweak
+
+Rakib Mullick (1):
+      x86, kvm: Fix section mismatches in kvm.c
+
+Randy Dunlap (3):
+      PCI: fix kernel-doc warnings
+      USB: usb.h: fix kernel-doc notation
+      USB: gadget audio: select SND_PCM
+
+Raphael Assenat (1):
+      [WATCHDOG] SA1100 watchdog maximum timeout
+
+Remis Lima Baima (2):
+      microblaze: use the generic lib/checksum.c
+      microblaze: convert all simple headers to use asm-generic
+
+Robert P. J. Day (1):
+      vlynq: correct typo of missing "CONFIG_" prefix in ifdef
+
+Robert Richter (1):
+      x86/oprofile: rename kernel parameter for architectural perfmon to arch_perfmon
+
+Roel Kluin (1):
+      USB: fhci: mutually exclusive port_status
+
+Roland Dreier (2):
+      fealnx: Fix build breakage -- PR_CONT should be KERN_CONT
+      cxgb3: Fix crash caused by stashing wrong netdev_queue
+
+Ron Mercer (8):
+      qlge: Expand coverage of hw lock for config register.
+      qlge: Clear frame to queue routing before reset.
+      qlge: Fix carrier on condition.
+      qlge: Fix redundant call to free resources.
+      qlge: Fix tx byte counter.
+      qlge: Fix MAC address bonding issue.
+      qlge: Add/use function for link up/down.
+      qlge: Fix sizeof usage.
+
+Russell King (4):
+      [ARM] export __cpu_flush_dcache_page
+      [ARM] pgtable: swp pte layout documentation, definitions, and check
+      [ARM] pgtable: file pte layout documentation
+      [ARM] amba: fix amba device resources
+
+Ryusuke Konishi (4):
+      nilfs2: remove unlikely directive causing mis-conversion of error code
+      nilfs2: fix hang problem of log writer which occurs after write failures
+      nilfs2: fix incorrect KERN_CRIT messages in case of write failures
+      nilfs2: fix lockdep warning between regular file and inode file
+
+SUGIOKA Toshinobu (1):
+      serial: sh-sci: fix sci interrupt handler
+
+Saeed Bishara (1):
+      Input: gpio_mouse - use standard driver registration method
+
+Samuel Ortiz (1):
+      iwmc3200wifi: add Kconfig help
+
+Sathya Perla (1):
+      be2net: fix spurious interrupt handling in intx mode
+
+Sean MacLennan (2):
+      powerpc/44x: Update Warp defconfig
+      powerpc/4xx: Have Warp take advantage of GPIO LEDs default-state = keep
+
+Sebastian Ott (1):
+      PM: Clear -EAGAIN in dpm_prepare
+
+Sergei Shtylyov (1):
+      USB: musb_host: undo incorrect change in musb_advance_schedule()
+
+Shaohua Li (1):
+      drm/i915: add FIFO watermark support
+
+Sheng Yang (1):
+      intel-iommu: Fix intel_iommu_unmap_range() with size 0
+
+Slobodan Tomiæ (1):
+      [WATCHDOG] w83627hf_wdt.c: add support for the W83627EHF support
+
+Stefan Haberland (1):
+      [S390] dasd: correct debugfeature sense dump
+
+Stefan Herbrechtsmeier (1):
+      V4L/DVB (12159): soc_camera: Fix debug output of supported formats count
+
+Stefan Richter (3):
+      firewire: core: do not DMA-map stack addresses
+      firewire: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
+      ieee1394: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
+
+Stephane Contri (1):
+      dsa: fix 88e6xxx statistics counter snapshotting
+
+Steve French (1):
+      [CIFS] update cifs version number
+
+Takashi Iwai (5):
+      ALSA: hda - Fix error path in the sanity check in azx_pcm_open()
+      ALSA: hda - Clean up VT170x dig-in initialization code
+      ALSA: hda - Add missing EAPD initialization for VIA codecs
+      ALSA: hda - Fix capture source selection in patch_via.c
+      ALSA: hda - Check widget types while parsing capture source in patch_via.c
+
+Thadeu Lima de Souza Cascardo (1):
+      Input: mark serio and i8042 as suspended when hibernating too
+
+Theodore Ts'o (5):
+      ext4: Fix type warning on 64-bit platforms in tracing events header
+      jbd2: Remove GFP_ATOMIC kmalloc from inside spinlock critical region
+      ext4: Fix potential reclaim deadlock when truncating partial block
+      ext4: fix no journal corruption with locale-gen
+      ext4: Fix ext4_mb_initialize_context() to initialize all fields
+
+Tilman Schmidt (2):
+      gigaset: accept connection establishment messages in any order
+      gigaset: drop pointless check
+
+Tobias Doerffel (1):
+      linux/sysrq.h needs linux/errno.h
+
+Trond Myklebust (1):
+      Fix compile error due to congestion_wait() changes
+
+Vasanthakumar Thiagarajan (1):
+      ath9k: Fix leak in tx descriptor
+
+Vivek Goyal (1):
+      cfq-iosched: reset oom_cfqq in cfq_set_request()
+
+Wade Farnsworth (1):
+      phylib: fixes for PHY_RESUMING state changes
+
+Wei Yongjun (3):
+      xfrm4: fix the ports decode of sctp protocol
+      xfrm6: fix the proto and ports decode of sctp protocol
+      sctp: fix warning at inet_sock_destruct() while release sctp socket
+
+Xiao Guangrong (1):
+      tracing: Fix trace_print_seq()
+
+Yan Li (1):
+      Input: i8042 - more reset quirks for MSI Wind-clone netbooks
+
+Yi Zou (1):
+      ixgbe: Fix coexistence of FCoE and Flow Director in 82599
+
+Yinghai Lu (3):
+      x86/PCI: fix boundary checking when using root CRS
+      x86/PCI: get root CRS before scanning children
+      x86: don't clear nodes_states[N_NORMAL_MEMORY] when numa is not compiled in
+
+Yu Zhao (1):
+      PCI: check if bus has a proper bridge device before triggering SBR
+
+Zhang, Yanmin (1):
+      sys_sync(): fix 16% performance regression in ffsb create_4k test
+
+Zhao Yakui (4):
+      drm/i915: Check the LID device to decide whether the LVDS should be initialized
+      drm/i915: Restore the KMS modeset for every activated CRTC
+      drm: Disable the unused connectors explicitly when resuming with KMS.
+      drm/i915: Avoid saving/restore the modesetting registers twice in KMS mode
+
+Zhenyu Wang (2):
+      drm/i915: Don't update display FIFO watermark on IGDNG
+      drm/i915: Fix for LVDS VBT change on IGDNG
+
+dingdinghua (1):
+      jbd2: fix race between write_metadata_buffer and get_write_access
+
+ling.ma@intel.com (4):
+      drm/i915: Set SSC frequency for 8xx chips correctly
+      drm/i915: enable sdvo lvds scaling function.
+      drm/i915: crt fetch EDID by DVI-I converter on G4x platform
+      drm/i915: Disable VGA output when doing DRM_MODE_DPMS_OFF.
+
+venkatesh.pallipadi@intel.com (4):
+      [CPUFREQ] Eliminate the recent lockdep warnings in cpufreq
+      [CPUFREQ] Mark policy_rwsem as going static in cpufreq.c wont be exported
+      [CPUFREQ] Cleanup locking in ondemand governor
+      [CPUFREQ] Cleanup locking in conservative governor
+
+vibi sreenivasan (1):
+      driver model: fix show/store prototypes in doc.
+
