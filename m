@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZGNHih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbZGNHlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZGNHih (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 03:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbZGNHig
+	id S1754051AbZGNHlc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 03:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZGNHlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 03:38:36 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50838 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753932AbZGNHig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 03:38:36 -0400
-Message-ID: <4A5C35D7.1040502@cn.fujitsu.com>
-Date: Tue, 14 Jul 2009 15:37:59 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Tue, 14 Jul 2009 03:41:32 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:48411 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753976AbZGNHlb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 03:41:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FdIyIRhywHwv4tHp/v5iDkQ7AjfSucd6XBAUFSthLMM41oNr5G3bxegZ+4VV0KVXpj
+         yysb19LTNpgPuiHjVg3FtO5GjXiMpmDEsu/4woJhBs/Yw7iQgCyDLyNkueDqRK9lLU6m
+         WIDR8jgG563ZaYALvwOq1bfS8Jo2bGGLeUGXg=
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH] io-controller: implement per group request allocation
- limitation
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <4A569FC5.7090801@cn.fujitsu.com> <20090713160352.GA3714@redhat.com>
-In-Reply-To: <20090713160352.GA3714@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090710140654.32132bcb@jbarnes-g45>
+References: <20090710104419.0032be7b@jbarnes-g45> <4A57A1FE.30609@kernel.org>
+	 <20090710132249.1a032cfb@jbarnes-g45>
+	 <20090710140654.32132bcb@jbarnes-g45>
+Date: Tue, 14 Jul 2009 00:41:30 -0700
+Message-ID: <4807377b0907140041y6c9da555lf3e1dba0775cfe7c@mail.gmail.com>
+Subject: Re: [PATCH] x86/PCI: initialize PCI bus node numbers early
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
+       NetDEV list <netdev@vger.kernel.org>, ak@linux.intel.com,
+       matthew@wil.cx
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Fri, Jul 10, 2009 at 09:56:21AM +0800, Gui Jianfeng wrote:
->> Hi Vivek,
->>
->> This patch exports a cgroup based per group request limits interface.
->> and removes the global one. Now we can use this interface to perform
->> different request allocation limitation for different groups. 
->>
-> 
-> Thanks Gui. Few points come to mind.
-> 
-> - You seem to be making this as per cgroup limit on all devices. I guess
->   that different devices in the system can have different settings of
->   q->nr_requests and hence will probably want different per group limit.
->   So we might have to make it per cgroup per device limit.
+On Fri, Jul 10, 2009 at 2:06 PM, Jesse Barnes<jbarnes@virtuousgeek.org> wrote:
+> From 2b51fba93f7b2dabf453a74923a9a217611ebc1a Mon Sep 17 00:00:00 2001
+> From: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Date: Fri, 10 Jul 2009 14:04:30 -0700
+> Subject: [PATCH] x86/PCI: initialize PCI bus node numbers early
+>
+> The current mp_bus_to_node array is initialized only by AMD specific
+> code, since AMD platforms have registers that can be used for
+> determining mode numbers.  On new Intel platforms it's necessary to
+> initialize this array as well though, otherwise all PCI node numbers
+> will be 0, when in fact they should be -1 (indicating that I/O isn't
+> tied to any particular node).
+>
+> So move the mp_bus_to_node code into the common PCI code, and
+> initialize it early with a default value of -1.  This may be overridden
+> later by arch code (e.g. the AMD code).
+>
+> With this change, PCI consistent memory and other node specific
+> allocations (e.g. skbuff allocs) should occur on the "current" node.
+> If, for performance reasons, applications want to be bound to specific
+> nodes, they should open their devices only after being pinned to the
+> CPU where they'll run, for maximum locality.
+>
+> Acked-by: Yinghai Lu <yinghai@kernel.org>
+> Tested-by: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-  Yes, per cgroup per device limitation seems more reasonable. I'll see what
-  i can do.
+I can confirm this works, aside from the MSI-X interrupt migration
+instability (panics) that I believe are unrelated since they happen
+without this patch.
 
-> 
-> - There does not seem to be any checks for making sure that children
->   cgroups don't have more request descriptors allocated than parent group.
+I also see a pretty nice performance boost by running with this change
+on a 5520 motherboard, with an 82599 10GbE forwarding packets, esp
+with interrupt affinity set correctly.
 
-  Do we really need to make it hierarchical? IMHO, maintaining this limitation
-  for cgroups independently is enough.
-
-> 
-> - I am re-thinking that what's the advantage of configuring request
->   descriptors also through cgroups. It does bring in additional complexity
->   with it and it should justfiy the advantages. Can you think of some?
-
-  I'll try, but at least, this feature lets us be able to do more accurate
-  limitation. :)
-
-> 
->   Until and unless we can come up with some significant advantages, I will
->   prefer to continue to use per group limit through q->nr_group_requests
->   interface instead of cgroup. Once things stablize, we can revisit it and
->   see how this interface can be improved.
-
-  I agree.
-
--- 
-Regards
-Gui Jianfeng
-
+I'd like to see this applied if at all possible, I think it is really
+hampering I/O traffic performance due to limiting all network (among
+others) memory allocation to one of the two numa nodes.
