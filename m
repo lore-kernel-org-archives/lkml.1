@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbZGNRfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbZGNRjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbZGNRfi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 13:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbZGNRfh
+	id S1753946AbZGNRjv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 13:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZGNRju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 13:35:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48825 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752531AbZGNRfg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 13:35:36 -0400
-Date: Tue, 14 Jul 2009 13:35:35 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Li Zefan <lizf@cn.fujitsu.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, Alan.Brunelle@hp.com,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] Fix blktrace unaligned memory access
-In-Reply-To: <20090710093601.GF23611@kernel.dk>
-Message-ID: <alpine.DEB.2.00.0907141332060.32740@gandalf.stny.rr.com>
-References: <20090710075339.GX23611@kernel.dk> <4A5704EA.5000807@cn.fujitsu.com> <20090710091337.GD23611@kernel.dk> <4A570A34.5090002@cn.fujitsu.com> <20090710093601.GF23611@kernel.dk>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 14 Jul 2009 13:39:50 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:42717 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752080AbZGNRju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 13:39:50 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH] libata: pata_bf54x: handle portmuxing of pins through GPIO PORTs
+Date: Tue, 14 Jul 2009 13:39:47 -0400
+Message-Id: <1247593187-26570-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Sonic Zhang <sonic.zhang@analog.com>
 
+By default, the PATA pins are routed to the async address lines in which
+case, no peripheral muxing needs to be done.  However, if the pins get
+routed through the GPIO PORTs pins, we need to make sure to request them
+so that the muxing is properly set up.
 
-On Fri, 10 Jul 2009, Jens Axboe wrote:
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+Andrew: could you pick this up ?  it was posted over a month ago to the
+Linux/IDE list w/no feedback.
 
-> On Fri, Jul 10 2009, Li Zefan wrote:
-> > Jens Axboe wrote:
-> > > On Fri, Jul 10 2009, Li Zefan wrote:
-> > >> Jens Axboe wrote:
-> > >>> Hi,
-> > >>>
-> > >>> It seems that relay_reserve() (or the ring_buffer_event_data(), that one
-> > >>> still needs some love) can return unaligned memory, there's no way
-> > >>> around that when you have pdu lengths that aren't a nice size. This can
-> > >>> cause unaligned access warnings on platforms that care about alignment.
-> > >>>
-> > >> Seems relay_reserve() does nothing for alignment..On the other hand,
-> > >> ring_buffer_event_data() returns a ptr which is 32bit-aligned, but
-> > >> this still means it can cause unaligned accesses on 64bits arch, while
-> > >> I think it's fixable in ring buffer, it's certainly not an easy job.
+ drivers/ata/pata_bf54x.c |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
 
-Correct, this is only needed if the data is bigger than 32 bits.
-
-
-> > > 
-> > > Right, it's a bit nasty...
-> > > 
-> > 
-> > Lai Jiangshan noticed this issue long ago and had some ideas in mind
-> > how to fix ring buffer, but never try it out for it will probably be
-> > frustrating..
-
-Perhaps we can make an attribute for the ring buffer itself that would 
-allow the user to give an alignment. Would anything ever need a bigger 
-than 64bit (8 byte) alignment? We can set a flag that says, make all 
-entries 8 bytes aligned.
-
--- Steve
+diff --git a/drivers/ata/pata_bf54x.c b/drivers/ata/pata_bf54x.c
+index c4b47a3..02c81f1 100644
+--- a/drivers/ata/pata_bf54x.c
++++ b/drivers/ata/pata_bf54x.c
+@@ -1557,6 +1557,25 @@ static unsigned short atapi_io_port[] = {
+ 	P_ATAPI_DMARQ,
+ 	P_ATAPI_INTRQ,
+ 	P_ATAPI_IORDY,
++	P_ATAPI_D0A,
++	P_ATAPI_D1A,
++	P_ATAPI_D2A,
++	P_ATAPI_D3A,
++	P_ATAPI_D4A,
++	P_ATAPI_D5A,
++	P_ATAPI_D6A,
++	P_ATAPI_D7A,
++	P_ATAPI_D8A,
++	P_ATAPI_D9A,
++	P_ATAPI_D10A,
++	P_ATAPI_D11A,
++	P_ATAPI_D12A,
++	P_ATAPI_D13A,
++	P_ATAPI_D14A,
++	P_ATAPI_D15A,
++	P_ATAPI_A0A,
++	P_ATAPI_A1A,
++	P_ATAPI_A2A,
+ 	0
+ };
+ 
+-- 
+1.6.3.3
 
