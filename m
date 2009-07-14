@@ -1,127 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZGNOW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZGNOWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbZGNOW2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 10:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbZGNOWW
+	id S1754855AbZGNOWj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 10:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZGNOWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 10:22:22 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:33481 "EHLO smtp.gentoo.org"
+	Tue, 14 Jul 2009 10:22:39 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:33555 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753601AbZGNOWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 10:22:21 -0400
+	id S1754673AbZGNOWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 10:22:38 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org,
-       Bernd Schmidt <bernds_cb1@t-online.de>, Bryan Wu <cooloney@kernel.org>,
+       Sonic Zhang <sonic.zhang@analog.com>,
        David Howells <dhowells@redhat.com>
-Subject: [PATCH] NOMMU: add support for Memory Protection Units (MPU)
-Date: Tue, 14 Jul 2009 10:22:20 -0400
-Message-Id: <1247581340-20031-1-git-send-email-vapier@gentoo.org>
+Subject: [PATCH/RFC] NOMMU: drop page cache whenever any alloc fails due to low memory
+Date: Tue, 14 Jul 2009 10:22:37 -0400
+Message-Id: <1247581357-20068-1-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bernd Schmidt <bernds_cb1@t-online.de>
+From: Sonic Zhang <sonic.zhang@analog.com>
 
-Some architectures (like the Blackfin arch) implement some of the
-"simpler" features that one would expect out of a MMU such as memory
-protection.  In our case, we actually get read/write/exec protection
-down to the page boundary so processes can't stomp on each other let
-alone the kernel.  There is a performance decrease (which depends greatly
-on the workload) however as the hardware/software interaction was not
-optimized at design time.
+Since no-mmu systems tend to be memory constrained, we want to drop all
+of the page cache whenever memory gets low.  The only other option is to
+invoke the oom killer, and clearly that's not ideal.
 
-Signed-off-by: Bernd Schmidt <bernds_cb1@t-online.de>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 CC: David Howells <dhowells@redhat.com>
 ---
- kernel/module.c |    5 +++++
- mm/nommu.c      |   25 +++++++++++++++++++++++++
- 2 files changed, 30 insertions(+), 0 deletions(-)
+ fs/drop_caches.c   |    2 +-
+ include/linux/mm.h |    1 +
+ mm/page_alloc.c    |    4 ++++
+ 3 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 0a04983..e1a3dfc 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -47,6 +47,7 @@
- #include <linux/rculist.h>
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-+#include <asm/mmu_context.h>
- #include <linux/license.h>
- #include <asm/sections.h>
- #include <linux/tracepoint.h>
-@@ -1519,6 +1520,10 @@ static void free_module(struct module *mod)
- 
- 	/* Finally, free the core (containing the module structure) */
- 	module_free(mod, mod->module_core);
-+
-+#ifdef CONFIG_MPU
-+	update_protections(current->mm);
-+#endif
+diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+index a2edb79..51f097d 100644
+--- a/fs/drop_caches.c
++++ b/fs/drop_caches.c
+@@ -33,7 +33,7 @@ static void drop_pagecache_sb(struct super_block *sb)
+ 	iput(toput_inode);
  }
  
- void *__symbol_get(const char *symbol)
-diff --git a/mm/nommu.c b/mm/nommu.c
-index 53cab10..a0269e5 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -33,6 +33,7 @@
- #include <asm/uaccess.h>
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
-+#include <asm/mmu_context.h>
- #include "internal.h"
+-static void drop_pagecache(void)
++void drop_pagecache(void)
+ {
+ 	struct super_block *sb;
  
- static inline __attribute__((format(printf, 1, 2)))
-@@ -640,11 +641,23 @@ static void add_vma_to_mm(struct mm_struct *mm, struct vm_area_struct *vma)
- 	struct vm_area_struct *pvma, **pp;
- 	struct address_space *mapping;
- 	struct rb_node **p, *parent;
-+#ifdef CONFIG_MPU
-+	long start;
-+#endif
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index ba3a7cb..46084c4 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1293,6 +1293,7 @@ int drop_caches_sysctl_handler(struct ctl_table *, int, struct file *,
+ 					void __user *, size_t *, loff_t *);
+ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+ 			unsigned long lru_pages);
++void drop_pagecache(void);
  
- 	kenter(",%p", vma);
+ #ifndef CONFIG_MMU
+ #define randomize_va_space 0
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index caa9268..246d381 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1772,6 +1772,10 @@ restart:
+ 		goto got_pg;
  
- 	BUG_ON(!vma->vm_region);
- 
-+#ifdef CONFIG_MPU
-+	start = vma->vm_start & PAGE_MASK;
-+	while (start < vma->vm_end) {
-+		protect_page(mm, start, vma->vm_flags);
-+		start += PAGE_SIZE;
-+	}
-+	update_protections(mm);
+ rebalance:
++#ifndef CONFIG_MMU
++	drop_pagecache();
 +#endif
 +
- 	mm->map_count++;
- 	vma->vm_mm = mm;
- 
-@@ -707,9 +720,21 @@ static void delete_vma_from_mm(struct vm_area_struct *vma)
- 	struct vm_area_struct **pp;
- 	struct address_space *mapping;
- 	struct mm_struct *mm = vma->vm_mm;
-+#ifdef CONFIG_MPU
-+	long start;
-+#endif
- 
- 	kenter("%p", vma);
- 
-+#ifdef CONFIG_MPU
-+	start = vma->vm_start & PAGE_MASK;
-+	while (start < vma->vm_end) {
-+		protect_page(mm, start, 0);
-+		start += PAGE_SIZE;
-+	}
-+	update_protections(mm);
-+#endif
-+
- 	mm->map_count--;
- 	if (mm->mmap_cache == vma)
- 		mm->mmap_cache = NULL;
+ 	/* Allocate without watermarks if the context allows */
+ 	if (alloc_flags & ALLOC_NO_WATERMARKS) {
+ 		page = __alloc_pages_high_priority(gfp_mask, order,
 -- 
 1.6.3.3
 
