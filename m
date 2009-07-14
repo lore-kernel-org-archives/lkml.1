@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbZGNGiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932068AbZGNGrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753805AbZGNGiR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 02:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZGNGiR
+	id S932068AbZGNGrb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 02:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbZGNGra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 02:38:17 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:25530
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753705AbZGNGiQ (ORCPT
+	Tue, 14 Jul 2009 02:47:30 -0400
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:64179 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753733AbZGNGra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 02:38:16 -0400
-Message-ID: <4A5C27D4.5040204@panasas.com>
-Date: Tue, 14 Jul 2009 09:38:12 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Tue, 14 Jul 2009 02:47:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=iCzkSvu8fzVlk6o5Ggx4oyWyezz3SHW7Zjz978w/hta+2nCIkAnz9UISLq5KoWlm66
+         sQ25075TUG+P+Mzq32h5As0w50hlf13sofK/egsvB/AKCnZNvrlXbWt80qDoeaezqAcw
+         1wM0xD6WYkRP9nsq6yByKhvQi78hFfX8bZ770=
 MIME-Version: 1.0
-To: John Stoffel <john@stoffel.org>
-CC: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 5/5] Make SCSI SG v4 driver enabled by default and remove
- EXPERIMENTAL dependency, since udev depends on BSG.
-References: <1247513973-24899-1-git-send-email-john@stoffel.org> <19035.36432.181354.977939@stoffel.org>
-In-Reply-To: <19035.36432.181354.977939@stoffel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1247536087.31854.39.camel@desktop>
+References: <20090710084323.GA6522@elf.ucw.cz>
+	 <a55d774e0907100155m25366994pe9ec5d0f5f868818@mail.gmail.com>
+	 <20090710103243.GB7789@elf.ucw.cz>
+	 <a55d774e0907100431j3fdc4671i6b185019594367fa@mail.gmail.com>
+	 <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz>
+	 <20090713220726.GA28375@elf.ucw.cz>
+	 <1247536087.31854.39.camel@desktop>
+Date: Tue, 14 Jul 2009 12:17:29 +0530
+Message-ID: <5d5443650907132347r82e73cy7177f0c43d1821c0@mail.gmail.com>
+Subject: Re: HTC: touchscreen driver
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jul 2009 06:38:15.0797 (UTC) FILETIME=[AACC0250:01CA044D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/13/2009 10:43 PM, John Stoffel wrote:
->>>>>> "John" == John Stoffel <john@stoffel.org> writes:
-> 
-> Dammit, I messed up here sending this patch.  I've just edited the
-> subject line and re-sent it with a bit more description.  I think this
-> patch is perfectly good to go into 2.6.31 right now, esp since it's
-> not changing code, just whether the code is turned on by default from
-> now on.
-> 
+Hi Pavel,
 
-I would like it if you'd also CC stable@kernel.org on this patch. As this
-condition is already true for distros in the field.
+On Tue, Jul 14, 2009 at 7:18 AM, Daniel Walker<dwalker@fifo99.com> wrote:
+> On Tue, 2009-07-14 at 00:07 +0200, Pavel Machek wrote:
+>> On Mon 2009-07-13 22:57:49, Pavel Machek wrote:
+>> > Hi!
+>> >
+>> > I'm looking at synaptic touchscreen driver... who should be listed as
+>> > an author?
+>> >
+>> > Changes I have so far are...
+>> >
+>> > checkpatch only has minor complains -- lines over 80 characters -- but
+>> > the code is _way_ too deeply nested with way too little functions.
+>>
+>> Here's better cleanup. But... some functions are still _way_ too big.
+>>
+>
+> I'd put the nesting removal into another patch .. It makes reviewing
+> more clear, your first patch was already fairly busy .. It would also
+> make a bisect more fine grained if it lands on one of your patches.
 
-[Though distros have enabled it for years and every one is using the distro's
- .config when compiling their own Kernel, right?]
+Please keep linux-input ML for any updates or when you have single
+patch ready to submit for review.
 
-> Thanks,
-> John
-> 
-> 
 
-Thanks
-Boaz
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
