@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbZGNNva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbZGNNxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279AbZGNNva (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 09:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZGNNv3
+	id S1754168AbZGNNxv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 09:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbZGNNxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 09:51:29 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42610 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753910AbZGNNv3 (ORCPT
+	Tue, 14 Jul 2009 09:53:50 -0400
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:35556 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbZGNNxu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 09:51:29 -0400
-Date: Tue, 14 Jul 2009 09:51:20 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       eranian@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: I.1 - System calls - ioctl
-Message-ID: <20090714135120.GA5445@infradead.org>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622114931.GB24366@elte.hu> <20090622125837.GA9429@infradead.org> <1247482393.7529.74.camel@twins>
+	Tue, 14 Jul 2009 09:53:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xifr0rjJkr3lim0cN/46WmBoHjpLdYqrx1fesP/r9XY5AlSYypuyKMIeDLVdfjM7M5
+         kVwEpHg9PwNtQMNQbx0wJDVVwPGGgBPJjRfhOVH/tJCG7uw9iHbbiWfre4uzAcrx+S53
+         tI3gk0fq2uxkT0oIouOKoK28WA3nEEH8OEQKA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247482393.7529.74.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1247572618-24073-1-git-send-email-dfeng@redhat.com>
+References: <1247572618-24073-1-git-send-email-dfeng@redhat.com>
+Date: Tue, 14 Jul 2009 21:53:49 +0800
+Message-ID: <2375c9f90907140653n3d689416jac8fbff43237fc15@mail.gmail.com>
+Subject: Re: [PATCH] block: sysfs fix mismatched queue_var_{store,show} in 
+	64bit kernel
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Xiaotian Feng <dfeng@redhat.com>
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 12:53:13PM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-06-22 at 08:58 -0400, Christoph Hellwig wrote:
-> > But talking about syscalls the sys_perf_counter_open prototype is
-> > really ugly - it uses either the pid or cpu argument which is a pretty
-> > clear indicator it should actually be two sys calls.
-> 
-> Would something like the below be any better?
-> 
-> It would allow us to later add something like PERF_TARGET_SOCKET and
-> things like that.
-> 
-> (utterly untested)
+On Tue, Jul 14, 2009 at 7:56 PM, Xiaotian Feng<dfeng@redhat.com> wrote:
+> In blk-sysfs.c, queue_var_store uses unsigned long to store data,
+> but queue_var_show uses unsigned int to show data. This causes,
+>
+>        # echo 70000000000 > /sys/block/<dev>/queue/read_ahead_kb
+>        # cat /sys/block/<dev>/queue/read_ahead_kb => get wrong value
+>
+> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+> ---
+>  block/blk-sysfs.c |   13 +++++++------
+>  1 files changed, 7 insertions(+), 6 deletions(-)
+>
+> diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+> index b1cd040..e177eb3 100644
+> --- a/block/blk-sysfs.c
+> +++ b/block/blk-sysfs.c
+> @@ -16,9 +16,9 @@ struct queue_sysfs_entry {
+>  };
+>
+>  static ssize_t
+> -queue_var_show(unsigned int var, char *page)
+> +queue_var_show(unsigned long var, char *page)
+>  {
+> -       return sprintf(page, "%d\n", var);
+> +       return sprintf(page, "lu\n", var);
 
-And makes the code a couple of magnitudes more ugly..  If you really
-add a completely new targer adding a new system call wouldn't be a big
-issue.  Altough a socket seems like a pretty logical flag extension to
-the cpu syscall (or sub-syscall currently), as it would still be
-specified as trace the whole cpu socket for this given cpuid.
 
+%lu
+
+>  }
+>
+>  static ssize_t
+> @@ -77,7 +77,8 @@ queue_requests_store(struct request_queue *q, const char *page, size_t count)
+>
+>  static ssize_t queue_ra_show(struct request_queue *q, char *page)
+>  {
+> -       int ra_kb = q->backing_dev_info.ra_pages << (PAGE_CACHE_SHIFT - 10);
+> +       unsigned long ra_kb = q->backing_dev_info.ra_pages <<
+> +                                       (PAGE_CACHE_SHIFT - 10);
+
+
+It looks like that your email client replaces tab's with spaces.
