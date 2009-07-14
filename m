@@ -1,82 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbZGNOkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbZGNOpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923AbZGNOkL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 10:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbZGNOkL
+	id S1755038AbZGNOpB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 10:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZGNOpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 10:40:11 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33322 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751267AbZGNOkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 10:40:10 -0400
-Date: Tue, 14 Jul 2009 16:40:08 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl
-Subject: Re: [PATCH] Fix congestion_wait() sync/async vs read/write
-	confusion
-Message-ID: <20090714144008.GC17633@duck.suse.cz>
-References: <20090708184703.GW23611@kernel.dk> <20090708191238.GE18008@think> <20090714114419.GA17633@duck.suse.cz> <20090714131215.GF3783@think>
+	Tue, 14 Jul 2009 10:45:00 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:60986 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754975AbZGNOo7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 10:44:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MbvhS1DEv5zXHazh2sk+F/yYXndBW9BQTNC4ioF3zep3zW/0YemoK9dEAvnX0gN3eH
+         oPmg5Zmi/hXtt5aE+fgpDJvvUx08/UhLJdoQPyjmNvEQjANE6vn9bl2aKBLir4S6sUkp
+         ubHj22Rli3xLm2QN4H8VPvbwqSYq73dSBS0Dk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090714131215.GF3783@think>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090709233447.GA1770@ucw.cz>
+References: <200907081556.34682.czoccolo@gmail.com>
+	 <20090708161052.GA20951@srcf.ucam.org>
+	 <4e5e476b0907081041g5561a8b2s1bc393809a09b78b@mail.gmail.com>
+	 <20090709233447.GA1770@ucw.cz>
+Date: Tue, 14 Jul 2009 16:44:57 +0200
+Message-ID: <4e5e476b0907140744qb2cf9cajc1c5dbbeba2ab66d@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: ondemand: Introduces stepped frequency increase
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg@redhat.com>, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 14-07-09 09:12:15, Chris Mason wrote:
-> On Tue, Jul 14, 2009 at 01:44:19PM +0200, Jan Kara wrote:
-> > On Wed 08-07-09 15:12:38, Chris Mason wrote:
-> > > On Wed, Jul 08, 2009 at 08:47:03PM +0200, Jens Axboe wrote:
-> > > > Hi,
-> > > > 
-> > > > This one isn't great, we currently have broken congestion wait logic in
-> > > > the kernel. 2.6.30 is impacted as well, so this patch should go to
-> > > > stable too once it's in -git. I'll let this one simmer until tomorrow,
-> > > > then ask Linus to pull it. The offending commit breaking this is
-> > > > 1faa16d22877f4839bd433547d770c676d1d964c.
-> > > > 
-> > > > Meanwhile, it could potentially cause buffered writeout slowdowns in the
-> > > > kernel. Perhaps the 2.6.30 regression in that area is caused by this?
-> > > > Would be interesting if the submitter could test. I can't find the list,
-> > > > CC'ing Rafael.
-> > > 
-> > > Even if this does slow down some workloads, the bug is not in using the
-> > > correct flag ;) So, I'd ack this one.
-> > > 
-> > > Jan Kara was able to reproduce the tiobench 2.6.30 regression, so I've
-> > > cc'd him and kept the patch below.
-> >   Thanks for the patch Chris. I've remeasured tiobench with the 2.6.30 +
-> > the fix but it didn't help (which is not too surprising as what I observe
-> > is most likely CFQ related as there's no regression with NOOP scheduler).
-> >   Just to recall:
-> >     2.6.29 (CFQ)           Avg    StdDev
-> > 8   38.01 40.26 39.69 ->  39.32  0.955092
-> > 16  40.09 38.18 40.05 ->  39.44  0.891104
-> > 
-> >     2.6.30-rc8 (CFQ)
-> > 8   36.67 36.81 38.20 ->  37.23  0.69062
-> > 16  37.45 36.47 37.46 ->  37.13  0.464351
-> > 
-> >     2.6.30-rc8+fix (CFQ)
-> > 8   37.56 37.38 37.98 ->  37.64  0.251396
-> > 16  38.11 36.71 37.18 ->  37.33  0.581741
-> > 
-> >   So with the fix there's no statistically significant difference and we
-> > are still below 2.6.29 results. I'm now going to retest with the WRITE_SYNC
-> > changes reverted.
-> 
-> Well, its good the patch didn't make things worse ;)  I didn't have the
-> highest hopes that it would resolve the regression, but thanks for
-> testing!
-  I've now tried to revert everything which looked WRITE_SYNC related but
-it didn't help either. Now, I'm trying to basically bisect CFQ changes and
-I'll see whether it goes somewhere...
+On Fri, Jul 10, 2009 at 1:34 AM, Pavel Machek<pavel@ucw.cz> wrote:
+> On Wed 2009-07-08 19:41:23, Corrado Zoccolo wrote:
+>> Hi Matthew,
+>>
+>> On Wed, Jul 8, 2009 at 6:10 PM, Matthew Garrett<mjg@redhat.com> wrote:
+>> > On Wed, Jul 08, 2009 at 03:56:33PM +0200, Corrado Zoccolo wrote:
+>> >> The patch introduces a new sysfs tunable cpufreq/ondemand/freq_step,
+>> >> as found in conservative governor, to chose the frequency increase step,
+>> >> expressed as percentage (default = 100 is previous behaviour).
+>> >>
+>> >> This allows fine tuning powersaving on mobile CPUs, since smaller steps will allow to:
+>> >> * absorb punctual load spikes
+>> >> * stabilize at the needed frequency, without passing for more power consuming states, and
+>> >
+>> > Is this a measured powersaving? The ondemand model is based on the
+>> > assumption that the idle state is disproportionately lower in power than
+>> > any running state, and therefore it's more sensible to run flat out for
+>> > short periods of time than run at half speed for longer. Is this
+>> > inherently flawed, or is it an artifact of differences in your processor
+>> > design?
+>
+> Different processors behave differently -- that assumption is wrong at
+> least for old athlon64s... Those have power-hungry idle states, and 4x
+> power consumption at 2x frequency....
+>
+> (Original Intel speedstep was similar iirc).
 
-									Honza
+Actually, I think that if the assumption was completely fulfilled by
+some hardware, the 'performance' governor would be better than
+cpufreq, since it would have less latency, and reach idle faster.
+However, even for recent hardware, at least states C1/C2 drain more
+power at higher frequencies, so cpufreq is actually useful, and
+avoiding unnecessary peaks (as this patch intends to do) can be useful
+as well.
+
+Moreover. as I said before, for some processors, the performances are
+not directly proportional to the core frequency, but depend on the
+workload.
+
+For example: on Pentium M (banias), with frequency ranging from 600 to 1300MHz,
+the following program, compiled with -O3 -funroll-loops:
+#include <stdlib.h>
+#define SIZE 16*1024*1024
+#define TYPE long
+int main() {
+  TYPE * memory=(TYPE*)calloc(SIZE,sizeof(TYPE));
+  int i, j;
+  for (j=0; j<20; ++j)
+    for (i=1; i<SIZE-1; ++i)
+      memory[i] += memory[i-1] + memory[i+1];
+
+  return 0;
+}
+
+achieves:
+[root@localhost hd]# echo powersave >
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+[root@localhost hd]# time ./time_me
+3.19user 0.11system 0:03.36elapsed 98%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+16506minor)pagefaults 0swaps
+[root@localhost hd]# echo performance >
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+[root@localhost hd]# time ./time_me
+3.06user 0.07system 0:03.18elapsed 98%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+16506minor)pagefaults 0swaps
+[root@localhost hd]# echo  ondemand >
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+[root@localhost hd]# echo 5 >
+/sys/devices/system/cpu/cpu0/cpufreq/ondemand/freq_step
+[root@localhost hd]# sleep 5; time ./time_me
+2.90user 0.11system 0:03.18elapsed 94%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+16506minor)pagefaults 0swaps
+
+it has only 9% performance decrease passing from 1300MHz to 600MHz,
+and the difference between performance and ondemand with
+(freq_step=5%) is not measurable.
+
+The same program on an Atom doesn't show the same effect. It seems
+that Atoms scale also the FSB frequency together with core frequency.
+
+Corrado
+
+>
+>                                                                Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
+
+
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
