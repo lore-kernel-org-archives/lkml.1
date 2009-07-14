@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbZGNSYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZGNSYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbZGNSYi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 14:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZGNSYi
+	id S1755255AbZGNSYz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 14:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbZGNSYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 14:24:38 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:59136 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753987AbZGNSYh (ORCPT
+	Tue, 14 Jul 2009 14:24:54 -0400
+Received: from moutng.kundenserver.de ([212.227.17.10]:50777 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755115AbZGNSYx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 14:24:37 -0400
-Message-ID: <4A5CCD5A.80108@nortel.com>
-Date: Tue, 14 Jul 2009 12:24:26 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Tue, 14 Jul 2009 14:24:53 -0400
+Message-ID: <4A5CCD78.6090709@vlnb.net>
+Date: Tue, 14 Jul 2009 22:24:56 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Raistlin <raistlin@linux.it>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       "James H. Anderson" <anderson@cs.unc.edu>,
-       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-References: <200907102350.47124.henrik@austad.us>	 <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>	 <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>	 <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir>	 <4A5C9ABA.9070909@nortel.com> <1247590112.9086.936.camel@Palantir>
-In-Reply-To: <1247590112.9086.936.camel@Palantir>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-scsi@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Tejun Heo <tj@kernel.org>, Boaz Harrosh <bharrosh@panasas.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>, Joe Eykholt <jeykholt@cisco.com>
+Subject: Re: [PATCH v2]: New implementation of scsi_execute_async()
+References: <4A563368.5040407@vlnb.net> <4A5CAFB5.1000901@vlnb.net>
+In-Reply-To: <4A5CAFB5.1000901@vlnb.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jul 2009 18:24:28.0983 (UTC) FILETIME=[532F1470:01CA04B0]
+X-Provags-ID: V01U2FsdGVkX1+CPySPF9tRwItLn89vlu0d2XciFrOB2wLIpew
+ DQLI1qLEJeARczponeUHRmCinNaK5WBAZTybLiITXVu46UwFxI
+ tc+geFI4YOer+iC2Ztvtw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Raistlin wrote:
+Vladislav Bolkhovitin, on 07/14/2009 08:17 PM wrote:
+> This patch reimplements scsi_execute_async(). In the new version it's a lot less
+> hackish and also has additional features. Namely:
+> 
+> 1. Possibility to insert commands both in tail and in head of the queue.
+> 
+> 2. Possibility to explicitly specify if the last SG element has space for padding.
+> 
+> This patch based on the previous patches posted by Tejun Heo. Comparing to them
+> it has the following improvements:
+> 
+> 1. It uses BIOs chaining instead of kmalloc()ing the whole bio.
+> 
+> 2. It uses SGs chaining instead of kmalloc()ing one big SG in case if direct
+> mapping failed (e.g. because of DMA alignment or padding).
+> 
+> 3. If direct mapping failed, if possible, it copies only the last SG element,
+> not the whole SG.
+> 
+> 4. When needed, copy_page() is used instead of memcpy() to copy the whole pages.
+> 
+> Also this patch adds and exports functions sg_copy() and sg_copy_elem(), which
+> cop one SG to another and one SG element to another respectively.
+> 
+> At the moment SCST is the only user of this functionality. It needs it, because
+> its target drivers, which are, basically, SCSI drivers, can deal only with SGs,
+> not with BIOs. But, according the latest discussions, there are other potential
+> users for of this functionality, so I'm sending this patch in a hope that it will be
+> also useful for them and eventually will be merged in the mainline kernel.
+> 
+> This patch requires previously sent patch with subject "[PATCH]: Rename REQ_COPY_USER
+> to more descriptive REQ_HAS_TAIL_SPACE_FOR_PADDING".
+> 
+> It's against 2.6.30.1, but if necessary, I can update it to any necessary
+> kernel version.
+> 
+> Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+> 
+>  block/blk-map.c             |  408 ++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/scsi/scsi_lib.c     |  108 +++++++++++
+>  include/linux/blkdev.h      |    3 
+>  include/linux/scatterlist.h |    7 
+>  include/scsi/scsi_device.h  |   11 +
+>  lib/scatterlist.c           |  147 +++++++++++++++
+>  6 files changed, 683 insertions(+), 1 deletion(-)
 
-> Remember that all my points are concerned with budgets, i.e., a scenario
-> where you have some mean to limit the capability of a task to ask for
-> CPU time over some kind of period.
-> And here it is where the problem comes since running C instead of having
-> A busy waiting means:
-> - that A is actually blocked, as said before;
+Oops, sorry, forgot to write the change log from v1. V2 has fixes 
+according to comments made by Joe Eykholt and Boaz Harrosh.
 
-Why does it make any difference that A is blocked rather than busy
-waiting?  In either case A cannot make forward progress.
+Vlad
 
-> - that A's budget is not diminished.
-
-If we're running B with A's priority, presumably it will get some amount
-of cpu time above and beyond what it would normally have gotten during a
-particular scheduling interval.  Perhaps it would make sense to charge B
-what it would normally have gotten, and charge the excess amount to A?
-
-Chris
