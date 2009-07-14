@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZGNP5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbZGNQAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbZGNP5h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 11:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbZGNP5h
+	id S1755208AbZGNQAx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 12:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbZGNQAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 11:57:37 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:55217 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754800AbZGNP5g (ORCPT
+	Tue, 14 Jul 2009 12:00:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54455
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751267AbZGNQAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 11:57:36 -0400
-Message-ID: <4A5CAA9F.1050302@linux.vnet.ibm.com>
-Date: Tue, 14 Jul 2009 17:56:15 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
-MIME-Version: 1.0
-To: gregkh@suse.de
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sysfs: fix hardlink count on device_move
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 14 Jul 2009 12:00:51 -0400
+Date: Tue, 14 Jul 2009 09:00:55 -0700 (PDT)
+Message-Id: <20090714.090055.56906831.davem@davemloft.net>
+To: tglx@linutronix.de
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, kaber@trash.net,
+       peterz@infradead.org
+Subject: Re: [patch 1/3] net: serialize hrtimer callback in sched_cbq
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0907141040350.2777@localhost.localdomain>
+References: <20090709215606.526259917@linutronix.de>
+	<20090712.135555.207096388.davem@davemloft.net>
+	<alpine.LFD.2.00.0907141040350.2777@localhost.localdomain>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 14 Jul 2009 10:55:14 +0200 (CEST)
 
-Update directory hardlink count when moving kobjects to a new parent.
-Fixes the following problem which occurs when several devices are
-moved to the same parent and then unregistered:
+> David,
+> 
+> On Sun, 12 Jul 2009, David Miller wrote:
+> 
+>> What should probably happen is that the hrtimer merely fires off work
+>> at software interrupt context (perhaps a tasklet or similar), and that
+>> software interrupt code take the qdisc's root lock throughout it's
+>> execution.
+> 
+> Sigh, I almost expected that the removal of the callback modes will
+> fire back some day.
 
-> ls -laF /sys/devices/css0/defunct/
-> total 0
-> drwxr-xr-x 4294967295 root root    0 2009-07-14 17:02 ./
-> drwxr-xr-x        114 root root    0 2009-07-14 17:02 ../
-> drwxr-xr-x          2 root root    0 2009-07-14 17:01 power/
-> -rw-r--r--          1 root root 4096 2009-07-14 17:01 uevent
+Well this makes hrtimers decidedly less useful for networking and we
+have a ton of bugs right now, basically in every hrtimer used by the
+networking currently.
 
-Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
----
- fs/sysfs/dir.c |    2 ++
- 1 file changed, 2 insertions(+)
+The only way we can use them, as things currently stand, is as
+triggers for softirq work.
 
-Index: linux-2.6.31-rc3/fs/sysfs/dir.c
-===================================================================
---- linux-2.6.31-rc3.orig/fs/sysfs/dir.c
-+++ linux-2.6.31-rc3/fs/sysfs/dir.c
-@@ -939,8 +939,10 @@ again:
- 	/* Remove from old parent's list and insert into new parent's list. */
- 	sysfs_unlink_sibling(sd);
- 	sysfs_get(new_parent_sd);
-+	drop_nlink(old_parent->d_inode);
- 	sysfs_put(sd->s_parent);
- 	sd->s_parent = new_parent_sd;
-+	inc_nlink(new_parent->d_inode);
- 	sysfs_link_sibling(sd);
- 
-  out_unlock:
-
+Is it really that troublesome to provide this kind of facility
+generically, rather than having various subsystems replicate such code
+where they want to use hrtimers and are restricted to softirqs?
