@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZGNWlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbZGNWnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbZGNWlN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 18:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbZGNWlM
+	id S1756713AbZGNWnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 18:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756688AbZGNWnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 18:41:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46521 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755469AbZGNWlL (ORCPT
+	Tue, 14 Jul 2009 18:43:41 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41387 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756250AbZGNWnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 18:41:11 -0400
-Date: Tue, 14 Jul 2009 15:40:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       sam@ravnborg.org, pavel@ucw.cz, randy.dunlap@oracle.com
-Subject: Re: [PATCH] MAINTAINERS: Coalesce name and email address lines
-Message-Id: <20090714154021.a8b0dfb7.akpm@linux-foundation.org>
-In-Reply-To: <1247522300.4008.37.camel@Joe-Laptop.home>
-References: <cover.1247517373.git.joe@perches.com>
-	<1247522300.4008.37.camel@Joe-Laptop.home>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 14 Jul 2009 18:43:41 -0400
+Date: Tue, 14 Jul 2009 18:43:40 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] ring_buffer: fix warning
+In-Reply-To: <20090714141544.GA5728@nowhere>
+Message-ID: <alpine.DEB.2.00.0907141841440.32740@gandalf.stny.rr.com>
+References: <4A5C3549.7000905@cn.fujitsu.com> <20090714141544.GA5728@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Jul 2009 14:58:19 -0700
-Joe Perches <joe@perches.com> wrote:
 
-> On Mon, 2009-07-13 at 14:14 -0700, Joe Perches wrote:
-> > A collection of cleanup patches to MAINTAINERS
-> 
-> I ran the script I submitted awhile back on MAINTAINERS
-> after these [0/16] patches are applied.
-> 
-> http://lkml.org/lkml/2009/6/1/275
-> 
-> I think the result is useful for people that rely
-> on copy and paste of email addresses.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
->  MAINTAINERS | 2722 ++++++++++++++++++++---------------------------------------
->  1 files changed, 908 insertions(+), 1814 deletions(-)
 
-I don't think I want to have to maintain this patch for more than eight
-minutes.  
+On Tue, 14 Jul 2009, Frederic Weisbecker wrote:
 
-Please send me a copy of that script so I can regenerate the patch when
-it breaks.  I'll include it in the changelog of the patch, because
-there's a decent chance that the patch will get broken during just the
-several-hour lag between me pulling Linus's tree and sending patches at
-him.
+> On Tue, Jul 14, 2009 at 03:35:37PM +0800, Lai Jiangshan wrote:
+> > 
+> > kernel/trace/ring_buffer.c: In function 'rb_tail_page_update':
+> > kernel/trace/ring_buffer.c:849: warning: value computed is not used
+> > kernel/trace/ring_buffer.c:850: warning: value computed is not used
+> > 
+> > Add a "(void)" to fix this warning.
+> > 
+> > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> > ---
+> > diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> > index e648ba4..d371279 100644
+> > --- a/kernel/trace/ring_buffer.c
+> > +++ b/kernel/trace/ring_buffer.c
+> > @@ -846,8 +846,8 @@ static int rb_tail_page_update(struct ring_buffer_per_cpu *cpu_buffer,
+> >  		 * not come in and change it. In which case, we
+> >  		 * do not want to modify it.
+> >  		 */
+> > -		local_cmpxchg(&next_page->write, old_write, val);
+> > -		local_cmpxchg(&next_page->entries, old_entries, eval);
+> > +		(void)local_cmpxchg(&next_page->write, old_write, val);
+> > +		(void)local_cmpxchg(&next_page->entries, old_entries, eval);
+> >  
+> >  		/*
+> >  		 * No need to worry about races with clearing out the commit.
+> 
+> 
+> Looks good. Indeed the rest of the path remains the same, whether the
+> interrupts have already won the race or not.
 
-I could maintain these 17-odd patches until 2.6.32 opens, but there's
-nothing to be gained by that so I think I'll hose them all Linuswards
-later this week.
+Yes, but it needs a comment:
+
+	/*
+	 * We add (void) to let the compiler know that we do not care 
+	 * about the return value of these functions. We use the
+	 * cmpxchg to only update if an interrupt did not already
+	 * do it for us. If the cmpxchg fails, we don't care.
+	 */
+
+Then you can have my:
+
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
+
+> 
+> Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
+> 
+> 
