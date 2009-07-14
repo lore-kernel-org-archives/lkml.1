@@ -1,125 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750830AbZGNKxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750984AbZGNKzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750830AbZGNKxj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 06:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbZGNKxi
+	id S1750984AbZGNKzI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 06:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZGNKzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 06:53:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52913 "EHLO hera.kernel.org"
+	Tue, 14 Jul 2009 06:55:08 -0400
+Received: from mail.open.by ([193.232.92.17]:58496 "EHLO post.open.by"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbZGNKxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 06:53:38 -0400
-Subject: Re: [PATCH] dma-debug: Fix the overlap() function to be correct
- and readable
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joerg Roedel <joerg.roedel@amd.com>
-In-Reply-To: <1247567822.2473.21.camel@ht.satnam>
-References: <20090710162848.GA26862@elte.hu>
-	 <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain>
-	 <20090710193110.GA28281@elte.hu>  <20090710195157.GA31361@elte.hu>
-	 <1247566542.2473.18.camel@ht.satnam>  <1247567822.2473.21.camel@ht.satnam>
-Content-Type: text/plain
-Date: Tue, 14 Jul 2009 16:22:15 +0530
-Message-Id: <1247568735.2473.26.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1750768AbZGNKzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 06:55:06 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 9022 [Jul 14 2009]
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Tue, 14 Jul 2009 13:57:11 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: kmemleak hexdump proposal
+Message-ID: <20090714105709.GB2929@localdomain.by>
+References: <20090629201014.GA5414@localdomain.by>
+ <1247566033.28240.46.camel@pc1117.cambridge.arm.com>
+ <20090714103356.GA2929@localdomain.by>
+ <1247567641.28240.51.camel@pc1117.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="i9LlY+UWpKt15+FH"
+Content-Disposition: inline
+In-Reply-To: <1247567641.28240.51.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-14 at 16:07 +0530, Jaswinder Singh Rajput wrote:
-> On Tue, 2009-07-14 at 15:45 +0530, Jaswinder Singh Rajput wrote:
-> > > >From 35c89da82e969a2fd157478940e7ecde1e19ccc4 Mon Sep 17 00:00:00 2001
-> > > From: Ingo Molnar <mingo@elte.hu>
-> > > Date: Fri, 10 Jul 2009 21:38:02 +0200
-> > > Subject: [PATCH] dma-debug: Fix the overlap() function to be correct and readable
-> > > 
-> > > Linus noticed how unclean and buggy the overlap() function is:
-> > > 
-> > >  - It uses convoluted (and bug-causing) positive checks for
-> > >    range overlap - instead of using a more natural negative
-> > >    check.
-> > > 
-> > >  - Even the positive checks are buggy: a positive intersection
-> > >    check has four natural cases while we checked only for three,
-> > >    missing the (addr < start && addr2 == end) case for example.
-> > > 
-> > >  - The variables are mis-named, making it non-obvious how the
-> > >    check was done.
-> > > 
-> > >  - It needlessly uses u64 instead of unsigned long. Since these
-> > >    are kernel memory pointers and we explicitly exclude highmem
-> > >    ranges anyway we cannot ever overflow 32 bits, even if we
-> > >    could. (and on 64-bit it doesnt matter anyway)
-> > > 
-> > > All in one, this function needs a total revamp. I used Linus's
-> > > suggestions minus the paranoid checks (we cannot overflow really
-> > > because if we get totally bad DMA ranges passed far more things
-> > > break in the systems than just DMA debugging). I also fixed a
-> > > few other small details i noticed.
-> > > 
-> > > Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
-> > > Cc: Joerg Roedel <joerg.roedel@amd.com>
-> > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > > ---
-> > >  lib/dma-debug.c |   24 ++++++++++++------------
-> > >  1 files changed, 12 insertions(+), 12 deletions(-)
-> > > 
-> > > diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-> > > index c9187fe..02fed52 100644
-> > > --- a/lib/dma-debug.c
-> > > +++ b/lib/dma-debug.c
-> > > @@ -856,22 +856,21 @@ static void check_for_stack(struct device *dev, void *addr)
-> > >  				"stack [addr=%p]\n", addr);
-> > >  }
-> > >  
-> > > -static inline bool overlap(void *addr, u64 size, void *start, void *end)
-> > > +static inline bool overlap(void *addr, unsigned long len, void *start, void *end)
-> > >  {
-> > > -	void *addr2 = (char *)addr + size;
-> > > +	unsigned long a1 = (unsigned long)addr;
-> > > +	unsigned long b1 = a1 + len;
-> > > +	unsigned long a2 = (unsigned long)start;
-> > > +	unsigned long b2 = (unsigned long)end;
-> > >  
-> > > -	return ((addr >= start && addr < end) ||
-> > > -		(addr2 >= start && addr2 < end) ||
-> > > -		((addr < start) && (addr2 > end)));
-> > > +	return !(b1 <= a2 || a1 >= b2);
-> > >  }
-> > >  
-> > 
-> > If b1 = a2 (overlap) then this function will say 0
-> > If a1 = b2 (overlap) then this function will say 0
-> > 
-> > if b1 > (a2 + infinite) which is not overlap this function will say 1
-> > 
-> > I think we need to test both edges.
-> > 
-> > So it should be :
-> > 
-> > 	return ((a2 <= b1 && b2 >= a1) || (a1 <= b2 && a2 <= b1));
-> > 
-> 
-> We can make it more beautiful like :
-> 
-> 	return ((a2 <= b1 && b2 >= a1) || (a1 <= b2 && b1 >= a2));
-> 
 
-In above case I tested overlapping on both side : left and right.
+--i9LlY+UWpKt15+FH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-but result is same so (x || x) = x, so in simplified version we can
-write :
+On (07/14/09 11:34), Catalin Marinas wrote:
+> On Tue, 2009-07-14 at 13:33 +0300, Sergey Senozhatsky wrote:
+> > On (07/14/09 11:07), Catalin Marinas wrote:
+> > Am I understand correct that no way for user to on/off hexdump?
+> > /* no need for atomic_t kmemleak_hex_dump */
+>=20
+> Yes. Two lines aren't really too much so we can always have them
+> displayed.
+>
+Agree.
 
-	return a1 <= b2 && b1 >= a2;
 
-Thanks,
---
-JSR
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 5aabd41..f7b74ac 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -161,6 +161,15 @@ struct kmemleak_object {
+ /* flag set on newly allocated objects */
+ #define OBJECT_NEW		(1 << 3)
+=20
++/* number of bytes to print per line; must be 16 or 32 */
++#define HEX_ROW_SIZE		16
++/* number of bytes to print at a time (1, 2, 4, 8) */
++#define HEX_GROUP_SIZE		1
++/* include ASCII after the hex output */
++#define HEX_ASCII		1
++/* max number of lines to be printed */
++#define HEX_MAX_LINES		2
++
+ /* the list of all allocated objects */
+ static LIST_HEAD(object_list);
+ /* the list of gray-colored objects (see color_gray comment below) */
+@@ -254,6 +263,35 @@ static void kmemleak_disable(void);
+ 	kmemleak_disable();		\
+ } while (0)
+=20
++
++/*
++ * Printing of the objects hex dump to the seq file. The number on lines
++ * to be printed is limited to HEX_MAX_LINES to prevent seq file spamming.
++ * The actual number of printed bytes depends on HEX_ROW_SIZE.
++ * It must be called with the object->lock held.
++ */
++static void hex_dump_object(struct seq_file *seq,
++				struct kmemleak_object *object)
++{
++	const u8 *ptr =3D (const u8 *)object->pointer;
++	/* Limit the number of lines to HEX_MAX_LINES. */
++	int len =3D min(object->size, (size_t)(HEX_MAX_LINES * HEX_ROW_SIZE));
++	int i, remaining =3D len;
++	unsigned char linebuf[200];
++
++	seq_printf(seq, "  hex dump (first %d bytes):\n", len);
++
++	for (i =3D 0; i < len; i +=3D HEX_ROW_SIZE) {
++		int linelen =3D min(remaining, HEX_ROW_SIZE);
++		remaining -=3D HEX_ROW_SIZE;
++		hex_dump_to_buffer(ptr + i, linelen, HEX_ROW_SIZE,
++						   HEX_GROUP_SIZE, linebuf,
++						   sizeof(linebuf), HEX_ASCII);
++
++		seq_printf(seq, "    %s\n", linebuf);
++	}
++}
++
+ /*
+  * Object colors, encoded with count and min_count:
+  * - white - orphan object, not enough references to it (count < min_count)
+@@ -304,6 +342,9 @@ static void print_unreferenced(struct seq_file *seq,
+ 		   object->pointer, object->size);
+ 	seq_printf(seq, "  comm \"%s\", pid %d, jiffies %lu\n",
+ 		   object->comm, object->pid, object->jiffies);
++
++	hex_dump_object(seq, object);
++
+ 	seq_printf(seq, "  backtrace:\n");
+=20
+ 	for (i =3D 0; i < object->trace_len; i++) {
 
+
+--i9LlY+UWpKt15+FH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkpcZIUACgkQfKHnntdSXjQqDwP+OLAZ3uj0XluD6A5BUFoKSSS+
+xNNMsNNKlS2cwxVlAdVGmBoUBUOmD2Sq+FksMDyZdRnG2TL5LcUokfcL//LbSo8h
+hOIssNyv9URqV4PaMIR45E40DBk/rOrz9w6CNCVi8PxeGc5nZjponrwZJq2PCzUg
+06KxkqiQ9W215baNQDg=
+=PwYQ
+-----END PGP SIGNATURE-----
+
+--i9LlY+UWpKt15+FH--
