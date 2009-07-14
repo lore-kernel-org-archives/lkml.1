@@ -1,196 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbZGNW5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbZGNXCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbZGNW5f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 18:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbZGNW5f
+	id S1756779AbZGNXCN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 19:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbZGNXCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 18:57:35 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:59124 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756678AbZGNW5e (ORCPT
+	Tue, 14 Jul 2009 19:02:12 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:61408 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756620AbZGNXCM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 18:57:34 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuYEAJ6qXEpMQWU3/2dsb2JhbACBUdBlgkCBSAU
-Date: Tue, 14 Jul 2009 18:57:30 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Robert Wisniewski <bob@watson.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: LTTng 0.146, adds extra read-side sub-buffer for flight
-	recorder
-Message-ID: <20090714225730.GA19199@Krystal>
-References: <20090713071440.GA32730@Krystal> <alpine.DEB.2.00.0907141824200.32740@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0907141824200.32740@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:46:41 up 136 days, 19:12,  3 users,  load average: 0.00, 0.03,
-	0.06
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Jul 2009 19:02:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=aMl3ajgnOwCdyGOD8J5XjqVqiUUiTstoCJGCIGlieDytNZPCcZdvxPgo9lbLJv9hNF
+         OLLlM6yQZA8+NlGRnv3gAbKd370yYmbupHAUKC1rslYlT5/vw+CBZ0mAuG4dScx/CasM
+         kdfQ4j5lL8Agqtzy+0iCmFMhJUIEYbuYEh8vo=
+MIME-Version: 1.0
+In-Reply-To: <4A5CD77C.6070701@garzik.org>
+References: <1247593187-26570-1-git-send-email-vapier@gentoo.org> 
+	<4A5CD77C.6070701@garzik.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 14 Jul 2009 19:01:50 -0400
+Message-ID: <8bd0f97a0907141601v64bb911ci4234ce845b48de50@mail.gmail.com>
+Subject: Re: [PATCH] libata: pata_bf54x: handle portmuxing of pins through 
+	GPIO PORTs
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> 
-> On Mon, 13 Jul 2009, Mathieu Desnoyers wrote:
-> 
-> > Hi,
-> > 
-> > So, I needed a weekend break from writing my thesis (It's almost over!) ;)
-> > and I had the great idea to try to come up with a way to ensure that
-> > LTTng flight recorder mode permits to have a read-side that never sees
-> > corrupted data.
-> > 
-> > Basically, this is the main thing Steven have been asking me for a
-> > while. And it looks like I just figured out a way to do it.
-> > 
-> > So for flight recorder tracing, this new LTTng version allocates an
-> > extra subbuffer which gets exchanged by the reader with the writer
-> > subbuffer before it gets read.
-> > 
-> > Normal tracing does not need this extra subbuffer, because the
-> > write-side just drops events when the buffer is full. So we don't
-> > allocate it and we don't perform any exchange. The space
-> > reservation/commit code plays nicely with both flight recorder and
-> > normal tracing schemes.
-> > 
-> > Here is how I did it:
-> > 
-> > No modification was required to the buffer space reservation/commit
-> > algorithm. I just had to do the following at the backend level
-> > (responsible for writing data to/reader data from the buffer):
-> > 
-> > I am using an array of pointers (one pointer for each subbuffer), plus a
-> > pointer to the reader subbuffer. Each of these pointers are pointing to
-> > an array of pages, which are all the pages that constitute a subbuffer.
-> > Reads/writes from/to the buffer are done by accessors which pick up the
-> > right page location within this page table. By modifying the top-level
-> > subbuffer pointer, we can swap a whole subbuffer in a single operation.
-> > 
-> > There is a trick to deal with concurrency between writer and reader.
-> > When the top-level subbuffer pointers are not used (no writer is
-> > currently writing into it, no reader is reading from its subbuffer), we
-> > set a RCHAN_NOREF_FLAG (value: 0x1) which indicates that no reference is
-> > currently taken to this subbuffer. As long as this flag is set in the
-> > pointer, it is safe for the reader to exchange it. When the writer needs
-> > to access this subbuffer for writing, it clears the flag, and sets it
-> > back after committing the last piece of data to it.
-> > 
-> > When the reader figures out that the write-side subbuffer it is trying
-> > to exchange has a reference, it fails with -EAGAIN.
-> > 
-> > Nice things about the way I do it here:
-> > 
-> > - I keep the separation between the space reservation layer and back-end
-> >   buffer layer. The extra reader subbuffer exchange is done at the
-> >   back-end layer. The reason why it took me so long to try to come up
-> >   with something is that I tried to do it at the space reservation
-> >   layer, which was not fitting well the space reservation semantics.
-> > 
-> > - Keeping space reservation and physical buffer management separate
-> >   helps splitting complexity into sub-layers easier to verify.
-> > 
-> > - Given the space reservation/commit is separate from the subbuffer
-> >   exchange per se, I don't need any special-cases for "if the tail
-> >   pointer is in the reader page".... these things never happen because
-> >   the reserve, commit and consumed counts are completely unrelated to
-> >   the pointers to physical subbuffers.
-> 
-> I don't yet have time to read the patches (not this week, anyway), but I'm 
-> assuming that you can only get the new page (swap) while a writer is not 
-> writing to it. Thus if it is not a full page, then you must either copy 
-> the data, or swap out a non full page. Not complaining here, just trying 
-> to understand it :-)
+On Tue, Jul 14, 2009 at 15:07, Jeff Garzik wrote:
+> Mike Frysinger wrote:
+>> From: Sonic Zhang <sonic.zhang@analog.com>
+>>
+>> By default, the PATA pins are routed to the async address lines in which
+>> case, no peripheral muxing needs to be done.  However, if the pins get
+>> routed through the GPIO PORTs pins, we need to make sure to request them
+>> so that the muxing is properly set up.
+>>
+>> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+>> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+>> ---
+>> Andrew: could you pick this up ?  it was posted over a month ago to the
+>> Linux/IDE list w/no feedback.
+>
+> Although it is disappointing that your patch was missed -- our apologies --
+> I don't think the best response was to elide linux-ide and the libata
+> maintainer, in favor of a higher noise list.  :)
 
-Yep, it's a requirement that when a subbuffer is being written to, it's
-not possible for the reader to exchange it, so it's impossible to read
-it. It simplifies a lot of things.
+the assumption was that linux-ide was dead rather than missed as is
+the cases with some sections and Andrew can pick up simple things.
+i'll make sure to send to you in the future as well.
 
-> 
-> Thus the trick is that you have a series of pointers to the data, and you 
-> swap out the data and not the list?  Hmm, actually the ring buffer is 
-> already like that and I probably could do the same.
+> I have the patch queued, now.
 
-There is no list involved per se. I exchange the pointers to these
-structures, not the data itself.
-
-Let's say I have 2 sub-buffers for the writer and one extra sub-buffer
-for the reader. I would have:
-
-- An array of 2 pointers to sub-buffer structures. (owned by the writer)
-- 1 pointer to subbuffer structure (owned by the reader).
-
-> 
-> Here's another thing that the ring buffer does (and makes things a little 
-> complex too) is that it keeps track of the number of entries in the buffer 
-> as well as the number of overruns. The number of entries in the page is 
-> kept in the list data and not the data page itself.
-
-I could add these counters to the "sub-buffer structure". They are not
-part of the data itself. When I exchange the top-level pointers to these
-structures, the counters, which are part of these structures, will
-follow.
-
-> 
-> Using a special flag to switch out the data instead of breaking the link 
-> list may make things much simpler.
-
-Yeah :) That's why I've chosen to use such flag. And using a linked list
-seems like overly complex compared to the simple 2-levels page table I
-use here.
-
-> 
-> Hmm, I'll take a round to make the ring buffer closer to what you have 
-> done. At this rate, we may finally merge the two to handle things that we 
-> both need ;-)
-
-Hopefully :) Please don't hesitate for more info if you need some.
-
-I'll have to go back to my thesis next week, but hopefully within 2 more
-weeks I should be almost done and more available.
-
-Mathieu
-
-> 
-> -- Steve
-> 
-> 
-> > 
-> > As always, the tree is available at:
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/compudj/linux-2.6-lttng.git
-> > git://git.kernel.org/pub/scm/linux/kernel/git/compudj/linux-2.6-lttng.git
-> > 
-> > The commits implementing this the extra reader page for the lockless
-> > scheme are:
-> > 
-> > lttng-relay-per-subbuffer-index.patch
-> > lttng-relay-per-subbuffer-index-low-bit-noref.patch
-> > lttng-relay-lockless-writer-use-noref-flag.patch
-> > lttng-relay-default-sb-index-to-noref.patch
-> > lttng-relay-lockless-exchange-reader-writer-pages.patch
-> > 
-> > Comments are welcome,
-> > 
-> > Thanks,
-> > 
-> > Mathieu
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+thanks
+-miek
