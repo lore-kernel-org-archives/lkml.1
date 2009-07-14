@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZGNJqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbZGNJtH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbZGNJqy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 05:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbZGNJqx
+	id S1754272AbZGNJtH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 05:49:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbZGNJtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 05:46:53 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38816 "EHLO
+	Tue, 14 Jul 2009 05:49:06 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42923 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754272AbZGNJqx (ORCPT
+	with ESMTP id S1753619AbZGNJtF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 05:46:53 -0400
-Date: Tue, 14 Jul 2009 11:46:46 +0200
+	Tue, 14 Jul 2009 05:49:05 -0400
+Date: Tue, 14 Jul 2009 11:47:39 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Joe Perches <joe@perches.com>
-Cc: Arve Hj?nnev?g <arve@android.com>, Brian Swetland <swetland@google.com>,
+To: Brian Swetland <swetland@google.com>
+Cc: Arve Hj??nnev??g <arve@android.com>,
        kernel list <linux-kernel@vger.kernel.org>
 Subject: Re: HTC: touchscreen driver
-Message-ID: <20090714094646.GC2076@elf.ucw.cz>
-References: <20090710084323.GA6522@elf.ucw.cz> <a55d774e0907100155m25366994pe9ec5d0f5f868818@mail.gmail.com> <20090710103243.GB7789@elf.ucw.cz> <a55d774e0907100431j3fdc4671i6b185019594367fa@mail.gmail.com> <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz> <20090713220726.GA28375@elf.ucw.cz> <d6200be20907131829o77bce3d8w8f238bc079478368@mail.gmail.com> <1247535863.16528.6.camel@Joe-Laptop.home>
+Message-ID: <20090714094739.GD2076@elf.ucw.cz>
+References: <20090710084323.GA6522@elf.ucw.cz> <a55d774e0907100155m25366994pe9ec5d0f5f868818@mail.gmail.com> <20090710103243.GB7789@elf.ucw.cz> <a55d774e0907100431j3fdc4671i6b185019594367fa@mail.gmail.com> <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz> <a55d774e0907131717x3df8f9bal679994a552b864de@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1247535863.16528.6.camel@Joe-Laptop.home>
+In-Reply-To: <a55d774e0907131717x3df8f9bal679994a552b864de@mail.gmail.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-07-13 18:44:23, Joe Perches wrote:
-> On Mon, 2009-07-13 at 18:29 -0700, Arve Hj??nnev??g wrote:
-> > On Mon, Jul 13, 2009 at 3:07 PM, Pavel Machek<pavel@ucw.cz> wrote:
-> > > -                       printk(KERN_ERR "synaptics_ts_work_func: i2c_transfer failed\n");
-> > > +                       printk(KERN_ERR "ts_work: i2c_transfer failed\n");
-> > This will make it harder to read the kernel logs since the driver is 
-> > no longer specified.
+On Mon 2009-07-13 17:17:58, Brian Swetland wrote:
+> On Mon, Jul 13, 2009 at 1:57 PM, Pavel Machek<pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> > I'm looking at synaptic touchscreen driver... who should be listed as
+> > an author?
 > 
-> How about converting to:
+> Arve.
 > 
-> #define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
-> or
-> #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> 
-> and pr_<level>()
+> Arve -- You'll want to look at Pavel's revised synaptics driver, sent to lkml.
 
-Good idea, thanks.
+Ok, I have problem here. How to spell Arve's second name in us-ascii?
+(That's unfortunately all my consoles can do...)
+
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
