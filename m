@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbZGNImW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZGNIqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752472AbZGNImW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 04:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZGNImV
+	id S1752590AbZGNIqe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 04:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbZGNIqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 04:42:21 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:19277 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbZGNImU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 04:42:20 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Raistlin <raistlin@linux.it>
-Cc: Henrik Austad <henrik@austad.us>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       "James H. Anderson" <anderson@cs.unc.edu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Ted Baker <baker@cs.fsu.edu>,
-       Dhaval Giani <dhaval.giani@gmail.com>
-In-Reply-To: <1247501182.8107.572.camel@Palantir>
-References: <200907102350.47124.henrik@austad.us>
-	 <1247336891.9978.32.camel@laptop>  <1247478955.8107.24.camel@Palantir>
-	 <1247480080.7529.66.camel@twins>  <1247501182.8107.572.camel@Palantir>
-Content-Type: text/plain
-Date: Tue, 14 Jul 2009 10:42:15 +0200
-Message-Id: <1247560935.7500.48.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 14 Jul 2009 04:46:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49901 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751578AbZGNIqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 04:46:33 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Document /proc/TGID /proc/TID readdir weirdness
+Date: Tue, 14 Jul 2009 14:18:12 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907141418.12484.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-13 at 18:06 +0200, Raistlin wrote:
-> Anyway, maybe if, on some architecture, for some kind of application,
-> the affinity may have been set to preserve some kind actual cache or
-> memory locality for the task access pattern, maybe this could be an
-> issue, couldn't it? :-)
-> I mean, in some case where being sure of having a task running on a
-> particular CPU is somehow of paramount importance...
+readdir() on /proc returns only one directory per TGID, i.e., /proc/<TGID>
+But if you, try to read a directory /proc/<TID>/ where there is no TGID == TID,
+it would succeed.
 
-Right, and you answered your own question :-), its _running_ that is
-important, so as long as its blocked (not running), you're free to place
-the task on another cpu if that helps out with something.
+For example,
+$ ls /proc
+There is no directory by name /proc/6375
+
+$ ls /proc/6373/task
+6373  6375
+
+$ ls /proc/6375/
+attr        cmdline          environ  io        maps ...
+/proc/6375/ exists!
+
+I tried changing this behaviour to disallow reads using /proc/<TID>/, but it
+breaks, a lot of user-space applications and scripts that depend on this
+behaviour. So let us make this a documented behaviour.
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+
+---
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index fad18f9..ae79898 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -137,8 +137,14 @@ Table 1-1: Process specific entries in /proc
+  stack		Report full stack trace, enable via CONFIG_STACKTRACE
+  smaps		a extension based on maps, showing the memory consumption of
+ 		each mapping
++ task		Contains directories for each thread in this thread group. Each
++		of those directory contain similar information specific for
++		those threads. /proc/<TGID>/task/<TID>
+ ..............................................................................
+ 
++NOTE: Even though readdir() on /proc returns only one directory per TGID it is
++possible to open and read /proc/<TID>/ directly, using any TID as well.
++
+ For example, to get the status information of a process, all you have to do is
+ read the file /proc/PID/status:
+ 
 
 
 
