@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZGNMzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZGNM4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752775AbZGNMzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 08:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZGNMzN
+	id S1752832AbZGNM4N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 08:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZGNM4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 08:55:13 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:57710 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752406AbZGNMzM (ORCPT
+	Tue, 14 Jul 2009 08:56:13 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:34260 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752466AbZGNM4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 08:55:12 -0400
-Date: Tue, 14 Jul 2009 13:55:07 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org,
-       rui.zhang@intel.com, corentincj@iksaif.net
-Subject: Re: [PATCH 1/3] backlight: Allow drivers to update the core, and
-	generate events on changes
-Message-ID: <20090714125507.GA21992@srcf.ucam.org>
-References: <1247517685-7719-1-git-send-email-mjg@redhat.com> <1247574573.23871.8.camel@dax.rpnet.com>
+	Tue, 14 Jul 2009 08:56:12 -0400
+Message-ID: <4A5C8068.6020203@monstr.eu>
+Date: Tue, 14 Jul 2009 14:56:08 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247574573.23871.8.camel@dax.rpnet.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, LTP <ltp-list@lists.sourceforge.net>
+Subject: access_ok macor
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 01:29:33PM +0100, Richard Purdie wrote:
+Hi,
 
-> My main concern is that we don't start getting bug reports of 'missing'
-> events and have clearly defined expectations of when we see what kind of
-> events. For example, should an event be emitted when low battery causes
-> the backlight to be limited? How about console blanking events turning
-> off the backlight? Are there any other occasions we should be emitting
-> change events and do we need to audit other drivers?
+I am trying to solve one thing around access_ok macro.
+Microblaze memory map is below
+Text address for user app is 0x1000 0000
+for library 0x4800 0000
+and stack below 0xc000 0000
 
-These are all good questions. I'm working through the drivers now, and 
-there's definitely a few more that need doing.
 
-> Also, are "userspace" and "kernel" as meaningful as they could be? Would
-> "sysfs" and "hwkeys" make more sense and allow for other future hardware
-> differences? Perhaps someone will tie the backlight to an ambient light
-> sensor for example...
+# cat /proc/1/maps
+10000000-10106000 r-xp 00000000 00:01 379        /bin/busybox
+10106000-10107000 rw-p 00106000 00:01 379        /bin/busybox
+10107000-1012a000 rwxp 00000000 00:00 0          [heap]
+48000000-4801c000 r-xp 00000000 00:01 400        /lib/ld-2.3.3.so
+4801c000-4801e000 rw-p 0001b000 00:01 400        /lib/ld-2.3.3.so
+4801e000-480ec000 r-xp 00000000 00:01 396        /lib/libm-2.3.3.so
+480ec000-480ee000 rw-p 000ce000 00:01 396        /lib/libm-2.3.3.so
+480ee000-4824c000 r-xp 00000000 00:01 390        /lib/libc-2.3.3.so
+4824c000-4824f000 r--p 0015d000 00:01 390        /lib/libc-2.3.3.so
+4824f000-48251000 rw-p 00160000 00:01 390        /lib/libc-2.3.3.so
+48251000-48255000 rw-p 00000000 00:00 0
+bfa38000-bfa4d000 rwxp 00000000 00:00 0          [stack]
+#
 
-Yes, though we'd need to extend the interface slightly in that case to 
-allow the information to be provided. The ALS case is a good one - if 
-that ends up happening in-kernel then there probably shouldn't be a 
-UI update.
+I found that I can setup text base in binutils/ld/emulparam/elf32mb_linux.sh
+
+The problem which I have is that if I run socketpair, getsockname, getpeername LTP
+tests with invalid salen pointer there are addresses close to 0x0. Microblaze
+has no text there and the sigsegv fault is generated.
+
+This fault could be fixed by changed access_ok macro where I check bottom limit
+at 0x1000 0000 too. After this change the LTP program not failed but I am not sure
+if is the right solution because none arch do it. All archs just check upper limit
+not lower.
+
+What is the correct solution for it? Moving .text base to 0x0 or is there any other
+elegant solution?
+
+Thanks,
+Michal
+
+
+
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
