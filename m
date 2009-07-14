@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbZGNLod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752066AbZGNLo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752185AbZGNLod (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 07:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZGNLo1
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1752066AbZGNLo1 (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 14 Jul 2009 07:44:27 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54582 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751964AbZGNLoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZGNLo0
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 14 Jul 2009 07:44:26 -0400
+Received: from rtitmf2.realtek.com ([60.250.210.236]:3992 "EHLO
+	mf2.realtek.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751932AbZGNLoY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Jul 2009 07:44:24 -0400
-Date: Tue, 14 Jul 2009 13:44:19 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, rjw@sisk.pl, jack@suse.cz
-Subject: Re: [PATCH] Fix congestion_wait() sync/async vs read/write
-	confusion
-Message-ID: <20090714114419.GA17633@duck.suse.cz>
-References: <20090708184703.GW23611@kernel.dk> <20090708191238.GE18008@think>
+X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Jul 2009 07:44:23 EDT
+Message-ID: <48F90369174947C98F6AE82888FA60C5@realtek.com.tw>
+From: =?big5?B?qkyr2KZ3?= <colin@realtek.com.tw>
+To: <linux-kernel@vger.kernel.org>
+Subject: jiffies got lost because of printk
+Date: Tue, 14 Jul 2009 19:39:03 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090708191238.GE18008@think>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; format=flowed; charset="big5"; reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 08-07-09 15:12:38, Chris Mason wrote:
-> On Wed, Jul 08, 2009 at 08:47:03PM +0200, Jens Axboe wrote:
-> > Hi,
-> > 
-> > This one isn't great, we currently have broken congestion wait logic in
-> > the kernel. 2.6.30 is impacted as well, so this patch should go to
-> > stable too once it's in -git. I'll let this one simmer until tomorrow,
-> > then ask Linus to pull it. The offending commit breaking this is
-> > 1faa16d22877f4839bd433547d770c676d1d964c.
-> > 
-> > Meanwhile, it could potentially cause buffered writeout slowdowns in the
-> > kernel. Perhaps the 2.6.30 regression in that area is caused by this?
-> > Would be interesting if the submitter could test. I can't find the list,
-> > CC'ing Rafael.
-> 
-> Even if this does slow down some workloads, the bug is not in using the
-> correct flag ;) So, I'd ack this one.
-> 
-> Jan Kara was able to reproduce the tiobench 2.6.30 regression, so I've
-> cc'd him and kept the patch below.
-  Thanks for the patch Chris. I've remeasured tiobench with the 2.6.30 +
-the fix but it didn't help (which is not too surprising as what I observe
-is most likely CFQ related as there's no regression with NOOP scheduler).
-  Just to recall:
-    2.6.29 (CFQ)           Avg    StdDev
-8   38.01 40.26 39.69 ->  39.32  0.955092
-16  40.09 38.18 40.05 ->  39.44  0.891104
 
-    2.6.30-rc8 (CFQ)
-8   36.67 36.81 38.20 ->  37.23  0.69062
-16  37.45 36.47 37.46 ->  37.13  0.464351
+Hi there,
+We found that system time is not synced with RTC time on our embedded 
+system.
+This is because sometimes we print too many chars to console.
+For these lines in the function, release_console_sem, of printk.c,
+        for ( ; ; ) {
+                spin_lock_irqsave(&logbuf_lock, flags);
+                wake_klogd |= log_start - log_end;
+                if (con_start == log_end)
+                        break;                  /* Nothing to print */
+                _con_start = con_start;
+                _log_end = log_end;
+                con_start = log_end;            /* Flush */
+                spin_unlock(&logbuf_lock);
+                call_console_drivers(_con_start, _log_end);
+                local_irq_restore(flags);
+        }
 
-    2.6.30-rc8+fix (CFQ)
-8   37.56 37.38 37.98 ->  37.64  0.251396
-16  38.11 36.71 37.18 ->  37.33  0.581741
+Interrupt will be disabled before calling call_console_drivers and enabled 
+after call_console_drivers finishes.
+For the setting of com port baud rate 115200 and HZ 100, if there are more 
+than 115200/8/100 bytes waiting for output,
+interrupt will be disabled for more than 1 HZ and timer interrupt will be 
+lost.
+I know that printing too much in kernel level is not proper. But for 1000HZ, 
+interrupt may be lost even just output 15 chars.
+Any idea?
 
-  So with the fix there's no statistically significant difference and we
-are still below 2.6.29 results. I'm now going to retest with the WRITE_SYNC
-changes reverted.
+Regards,
+Colin
 
-									Honza
---
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+
