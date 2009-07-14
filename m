@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZGNOWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbZGNOYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbZGNOWj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 10:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbZGNOWj
+	id S1754813AbZGNOYe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 10:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZGNOYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 10:22:39 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:33555 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754673AbZGNOWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 10:22:38 -0400
-From: Mike Frysinger <vapier@gentoo.org>
+	Tue, 14 Jul 2009 10:24:33 -0400
+Received: from frankvm.xs4all.nl ([80.126.170.174]:45195 "EHLO
+	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753986AbZGNOYc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 10:24:32 -0400
+X-Greylist: delayed 1502 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Jul 2009 10:24:32 EDT
+Date: Tue, 14 Jul 2009 15:59:28 +0200
+From: Frank van Maarseveen <frankvm@frankvm.com>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org,
-       Sonic Zhang <sonic.zhang@analog.com>,
-       David Howells <dhowells@redhat.com>
-Subject: [PATCH/RFC] NOMMU: drop page cache whenever any alloc fails due to low memory
-Date: Tue, 14 Jul 2009 10:22:37 -0400
-Message-Id: <1247581357-20068-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.3
+Subject: VFS/ext3: 2.6.29.4 nested mutex lockup
+Message-ID: <20090714135928.GA3760@janus>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+------------[ cut here ]------------ 
+WARNING: at kernel/mutex.c:135 mutex_lock_nested+0x28a/0x2e0() 
+Hardware name: Dell DXP051                   
+Modules linked in:
+ vmthrottle
+ 
+Pid: 29131, comm: make Not tainted 2.6.29.4-x202 #1 
+Call Trace: 
+ [<c065bc3f>] ? printk+0x18/0x1a 
+ [<c0149bd3>] warn_slowpath+0x73/0xd0 
+ [<c020b703>] ? ext3_find_entry+0x5c3/0x6e0 
+ [<c01adc9c>] ? slab_pad_check+0x3c/0x120 
+ [<c065d7da>] mutex_lock_nested+0x28a/0x2e0 
+ [<c01bbc4c>] ? do_lookup+0xdc/0x1e0 
+ [<c01c51e9>] ? dput+0x89/0x140 
+ [<c01bba60>] ? __follow_mount+0x20/0x80 
+ [<c01bbc4c>] do_lookup+0xdc/0x1e0 
+ [<c01bd290>] __link_path_walk+0x2f0/0xd50 
+ [<c01afa1e>] ? __slab_alloc+0x13e/0x620 
+ [<c01bdea4>] path_walk+0x54/0xb0 
+ [<c01bdfec>] do_path_lookup+0x8c/0x170 
+ [<c01bec3a>] user_path_at+0x4a/0x80 
+ [<c01b7014>] ? cp_new_stat64+0xe4/0x100 
+ [<c01b7361>] vfs_stat_fd+0x21/0x50 
+ [<c01b7431>] vfs_stat+0x11/0x20 
+ [<c01b7454>] sys_stat64+0x14/0x30 
+ [<c0121276>] ? syscall_exit+0x8/0x1a 
+ [<c012126a>] syscall_call+0x7/0xb 
+---[ end trace 92b87b1c7643c599 ]--- 
+BUG: NMI Watchdog detected LOCKUP
 
-Since no-mmu systems tend to be memory constrained, we want to drop all
-of the page cache whenever memory gets low.  The only other option is to
-invoke the oom killer, and clearly that's not ideal.
-
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-CC: David Howells <dhowells@redhat.com>
----
- fs/drop_caches.c   |    2 +-
- include/linux/mm.h |    1 +
- mm/page_alloc.c    |    4 ++++
- 3 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-index a2edb79..51f097d 100644
---- a/fs/drop_caches.c
-+++ b/fs/drop_caches.c
-@@ -33,7 +33,7 @@ static void drop_pagecache_sb(struct super_block *sb)
- 	iput(toput_inode);
- }
- 
--static void drop_pagecache(void)
-+void drop_pagecache(void)
- {
- 	struct super_block *sb;
- 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index ba3a7cb..46084c4 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1293,6 +1293,7 @@ int drop_caches_sysctl_handler(struct ctl_table *, int, struct file *,
- 					void __user *, size_t *, loff_t *);
- unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
- 			unsigned long lru_pages);
-+void drop_pagecache(void);
- 
- #ifndef CONFIG_MMU
- #define randomize_va_space 0
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index caa9268..246d381 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1772,6 +1772,10 @@ restart:
- 		goto got_pg;
- 
- rebalance:
-+#ifndef CONFIG_MMU
-+	drop_pagecache();
-+#endif
-+
- 	/* Allocate without watermarks if the context allows */
- 	if (alloc_flags & ALLOC_NO_WATERMARKS) {
- 		page = __alloc_pages_high_priority(gfp_mask, order,
 -- 
-1.6.3.3
-
+Frank
