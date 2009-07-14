@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbZGNOp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbZGNOsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755047AbZGNOp4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 10:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbZGNOpz
+	id S1755025AbZGNOsk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 10:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZGNOsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 10:45:55 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:50314 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754982AbZGNOpy (ORCPT
+	Tue, 14 Jul 2009 10:48:40 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:39055 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753815AbZGNOsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 10:45:54 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: access_ok macor
-Date: Tue, 14 Jul 2009 16:45:48 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.96; x86_64; ; )
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>
-References: <4A5C8068.6020203@monstr.eu> <200907141521.47719.arnd@arndb.de> <4A5C8BF2.8020505@monstr.eu>
-In-Reply-To: <4A5C8BF2.8020505@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 14 Jul 2009 10:48:39 -0400
+Message-ID: <4A5C9ABA.9070909@nortel.com>
+Date: Tue, 14 Jul 2009 08:48:26 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Raistlin <raistlin@linux.it>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       "James H. Anderson" <anderson@cs.unc.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Noah Watkins <jayhawk@soe.ucsc.edu>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+References: <200907102350.47124.henrik@austad.us>	 <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>	 <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>	 <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir>
+In-Reply-To: <1247568455.9086.115.camel@Palantir>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907141645.48833.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+aDOT3BI330/vDPu583lut43U8tdRzWeTZ2Vf
- Pj9Z+YPE7xR27G0G5zblGVVPfW0dTriIrslAUL/wEEu6k2qXP+
- UybcyjEzdqFEYnPtyS+2Q==
+X-OriginalArrivalTime: 14 Jul 2009 14:48:29.0187 (UTC) FILETIME=[268B2530:01CA0492]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 14 July 2009, Michal Simek wrote:
-> Arnd Bergmann wrote:
-> Look at
-> http://developer.petalogix.com/git/gitweb.cgi?p=ltp-microblaze.git;a=commitdiff;h=45f4cd783ce8b94f1267bb87c0c46e8536f62eca
-> 
-> There are three affected tests and my quick fixes which I am trying to solve now.
-> 
+Raistlin wrote:
 
-ok, I see.
- 
-> int move_addr_to_user(struct sockaddr *kaddr, int klen, void __user *uaddr,
-> 		      int __user *ulen)
-> {
-> 	int err;
-> 	int len;
-> 
-> 	err = get_user(len, ulen);
-> 	if (err)
-> 		return err;
-> 
+> Now, all the above is true on UP setups. Extending to SMP (m CPUs) and
+> considering the first part of my draft proposal, i.e., having the
+> proxying tasks busy waiting (would say "spinning", but that busy wait is
+> interruptible, preemptable, etc.) on some CPU while their proxy is being
+> scheduled, we are back to the case of having the m highest entity
+> running... And thus we are happy!
 
-So the code looks something like
 
-                        "1:     lw      %1, %2, r0;                     \
-                                addk    %0, r0, r0;                     \
-                        2:                                              \
-                        .section .fixup,\"ax\";                         \
-                        3:      brid    2b;                             \
-                                addik   %0, r0, %3;                     \
-                        .previous;                                      \
-                        .section ,\"a\";                      		\
-                        .word   1b,3b;                                  \
-                        .previous;"                                     \
+> Well, so and so. I fact, if you want (and we want! :-D) to go a step
+> further, and consider how to remove the --possibly quite log on Linux as
+> Peter said-- wasting of CPU time due to busy waiting, what you can do is
+> to actually block a proxying task, instead of having it "spinning", so
+> that some other task in some other group, which may not be one of the m
+> highest prio ones, can reclaim that bandwidth... But... Ladies and
+> gentlemen, here it is: BLOCKING. Again!! :-(
 
-Not much that can go wrong there. First of all, I'd check that the
-code actually looks the same in the binary. I assume that the 'addik'
-gets executed when the brid branches, right?
+Let's call the highest priority task A, while the task holding the lock
+(that A wants) is called B.  Suppose we're on an dual-cpu system.
 
-I would guess that some of the logic in do_page_fault might be
-broken and does not actually call the fixup.
+According to your proposal above we would have A busy-waiting while B
+runs with A's priority.  When B gives up the lock it gets downgraded and
+A acquires it and continues to run.
 
-	Arnd <><
+Alternately, we could have A blocked waiting for the lock, a separate
+task C running, and B runs with A's priority on the other cpu.  When B
+gives up the lock it gets downgraded and A acquires it and continues to run.
+
+>From an overall system perspective we allowed C to make additional
+forward progress, increasing the throughput.  On the other hand, there
+is a small window where A isn't running and it theoretically should be.
+  If we can bound it, would this window really cause so much difficulty
+to the schedulability analysis?
+
+Chris
