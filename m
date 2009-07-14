@@ -1,52 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbZGNUag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbZGNUco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756362AbZGNUag (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 16:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbZGNUag
+	id S1756382AbZGNUco (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 16:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756354AbZGNUcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 16:30:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40511 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756094AbZGNUaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 16:30:35 -0400
-Date: Tue, 14 Jul 2009 16:30:12 -0400
-From: Valerie Aurora <vaurora@redhat.com>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jan Blunck <jblunck@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] VFS: Add read-only users count to superblock
-Message-ID: <20090714203011.GG27582@shell>
+	Tue, 14 Jul 2009 16:32:43 -0400
+Received: from outbound-mail-116.bluehost.com ([69.89.22.16]:41128 "HELO
+	outbound-mail-116.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756349AbZGNUcm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 16:32:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=U2QCYLjBOzfbvwq9zorW3gT+jZOgLgWMRrULnQvRXX2P9yX1Nk60pqwO4BuCwn2FKFj/WW5NRTjIa7diWIHSLf+spBW0BoP9pDnUYiIJXRR627GA+Z8VaHobvSdYiiFs;
+Date: Tue, 14 Jul 2009 13:32:39 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: lenb@kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/3] ACPI/PCI Hotplug: acpiphp cleanup
+Message-ID: <20090714133239.070e976c@jbarnes-g45>
+In-Reply-To: <20090714200431.GC15021@ldl.fc.hp.com>
+References: <20090710193601.30165.62311.stgit@bob.kio>
+	<20090714122731.1ebea158@jbarnes-g45>
+	<20090714200431.GC15021@ldl.fc.hp.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907141818.n6EIIiA7014311@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 02:18:44PM -0400, Erez Zadok wrote:
-> In message <20090713192743.GA27582@shell>, Valerie Aurora writes:
-> > During the last FS summit, Al Viro suggested creating a superblock
-> > level read-only marker so that union mounts could guarantee that the
-> > underlying fs would not become writable.  This patch implements the
-> > VFS support, but doesn't add any users.  The patch making union mounts
-> > use the support is in our union mounts tree.  I think we also need
-> > some way to pass this through NFS mounts, since a read-only NFS mount
-> > for the bottom layer of a union mount is a common use case.
-> > 
-> > -VAL
-> [...]
+On Tue, 14 Jul 2009 14:04:31 -0600
+Alex Chiang <achiang@hp.com> wrote:
+
+> * Jesse Barnes <jbarnes@virtuousgeek.org>:
+> > Haven't heard from Len yet, but I'm a bit nervous about adding this
+> > to for-linus.  We already have a fix upstream for the
+> > acpi_get_pci_dev issue right?  So there's no hurry on this set of
+> > (nice) cleanups is there?
 > 
-> Val, I've often wondered if a generic readonly superblock solution will
-> obviate the need for the sb->s_vfs_rename_mutex "kludge" (as commented in
-> fs.h) and the whole way directory-renames are done wrt locking.  Can the
-> rename code be the first user of such patch, or the patch isn't quite ready
-> for this?
+> The problem is that I introduced an assumption in
+> acpiphp_configure_bridge, which calls acpi_get_pci_dev. That call may
+> fail on systems with non-materialized PCI root bridges.
+> 
+> Fixing that assumption was addressed by this hunk in patch 2/3:
+> 
+> @@ -1387,16 +1363,7 @@ static void acpiphp_sanitize_bus(struct
+> pci_bus *bus) /* Program resources in newly inserted bridge */
+>  static int acpiphp_configure_bridge (acpi_handle handle)
+>  {
+> -       struct pci_dev *dev;
+> -       struct pci_bus *bus;
+> -
+> -       dev = acpi_get_pci_dev(handle);
+> -       if (!dev) {
+> -               err("cannot get PCI domain and bus number for
+> bridge\n");
+> -               return -EINVAL;
+> -       }
+> -
+> -       bus = dev->bus;
+> +       struct pci_bus *bus = pci_bus_from_handle(handle);
+> 
+>         pci_bus_size_bridges(bus);
+>         pci_bus_assign_resources(bus);
+> 
+> Now, my systems cannot do PCI root bridge hotplug, so that line
+> where we call acpi_get_pci_dev() won't cause us to fail, but I'm
+> concerned about machines in the wild that:
+> 
+> 	a) can do PCI root bridge hotplug
+> 	b) have non-materialized PCI root bridges
+> 
+> Maybe that is a small set of machines...
+> 
+> I agree that this series is on the large side for -rc4 and
+> beyond, but I'd prefer to fix it now.
+> 
+> The thing is, a "minimal" fix wouldn't save us that much, since
+> we'd still have to export acpi_pci_root stuff. We could maybe
+> drop patch 3/3 which makes the final diffstat look like this:
+> 
+>  drivers/acpi/pci_root.c            |   17 +-----
+>  include/acpi/acpi_bus.h            |   14 +++++
+>  drivers/pci/hotplug/acpiphp_glue.c |  108
+> ++++++++++++------------------------ 3 files changed, 53
+> insertions(+), 86 deletions(-)
+> 
+> Hm, actually, I can actually make that even smaller by separating
+> out the interface change.
+> 
+> Would you like me to do that and resubmit? I'd still need an ACK
+> from Len re: acpi_pci_root...
+> 
+> Thanks.
+> 
+> /ac
+> 
+> 
 
-I'm afraid not!  With this patch, you can only mark the superblock
-(and all associated mounts) read-only if no files are open for writing
-- not exactly the common case during a directory rename.  So no, it
-can't replace the rename mutex, at least in its current form.
 
--VAL
+-- 
+Jesse Barnes, Intel Open Source Technology Center
