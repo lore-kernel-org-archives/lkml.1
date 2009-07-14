@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbZGNQmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbZGNQnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755539AbZGNQmv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 12:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbZGNQmv
+	id S1755578AbZGNQnW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 12:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbZGNQnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 12:42:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47298 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754800AbZGNQmu (ORCPT
+	Tue, 14 Jul 2009 12:43:21 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:59770 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755265AbZGNQnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 12:42:50 -0400
-Date: Tue, 14 Jul 2009 09:42:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: David Miller <davem@davemloft.net>, tglx@linutronix.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, kaber@trash.net
-Subject: Re: [patch 1/3] net: serialize hrtimer callback in sched_cbq
-In-Reply-To: <1247588890.7500.186.camel@twins>
-Message-ID: <alpine.LFD.2.01.0907140940440.13838@localhost.localdomain>
-References: <20090709215606.526259917@linutronix.de>  <20090712.135555.207096388.davem@davemloft.net>  <alpine.LFD.2.00.0907141040350.2777@localhost.localdomain>  <20090714.090055.56906831.davem@davemloft.net> <1247588890.7500.186.camel@twins>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 14 Jul 2009 12:43:20 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: access_ok macor
+Date: Tue, 14 Jul 2009 18:43:05 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.96; x86_64; ; )
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       LTP <ltp-list@lists.sourceforge.net>
+References: <4A5C8068.6020203@monstr.eu> <200907141652.59049.arnd@arndb.de> <4A5CAEFF.9080206@monstr.eu>
+In-Reply-To: <4A5CAEFF.9080206@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907141843.05629.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18yCWut4FgRdRI6YJfKYJ55V5bBFb2Z6Crlo+Y
+ GNbGy3JaEtjT4OO83ahhXuZSifj4BlvTdkFvfGMCSW996KZL9e
+ 8w/jue4NcL+02L0v05qHw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 14 July 2009, Michal Simek wrote:
+> Arnd Bergmann wrote:
 
-
-On Tue, 14 Jul 2009, Peter Zijlstra wrote:
+> >>  r29=00000000, r30=00000000, r31=CE9759A4, rPC=C000123C
+> >>  msr=800045AE, ear=00000001, esr=000000B2, fsr=000080D0
+> >> Segmentation fault
+> >>
+> > 
+> > I guess then you should check if 0xc000123c is in your
+> > exception table, or why it is not.
 > 
-> Linus really hated the softirq mode, which is what prompted me to change
-> that.
+> on that address is load instruction for unaligned exception because addr is odd number
+> that's why is called unaligned exception handler and from this function
+> is called load instruction which failed. :-(
 > 
-> Now, it might be he only hated the particular interface and the
-> resulting code, but I think to remember he simply thought the whole
-> thing daft.
+> Currently this make more sense why that tests failed. If that pointers are
+> even number exception is not taken and exception sure don't have fixup for it because
+> this is generic code. :-(
+> 
+> That's the problem because we are looking for regs->pc but this point to unaligned exception
+> handler.
 
-Yes. And I hated the bugs it had. 
+Ok, that makes a lot of sense.
 
-Don't make something as core as timers any more complicated. Don't take 
-locks in timers and then complain about deadlocks. If your locking is 
-broken, don't make the core timers be idiotically broken.
+The solution then is to handle fixups from the unaligned exception handler
+if you come from the kernel. That should fix the three text cases.
 
-Because it was. The code was a total mess to follow, and had bugs.
+I don't fully understand your exception handling there, but I think you
+also need to add code checking for __range_ok() to your unaligned handler,
+to prevent malicious user space code from accessing the kernel through
+unaligned pointers.
 
-		Linus
+	Arnd <><
