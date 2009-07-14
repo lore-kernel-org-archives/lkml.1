@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbZGNU0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbZGNUag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbZGNU0q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 16:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbZGNU0p
+	id S1756362AbZGNUag (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 16:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbZGNUag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 16:26:45 -0400
-Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:62552 "EHLO
-	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755752AbZGNU0p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 16:26:45 -0400
-Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on
- sysfs files, directories, and symlinks.
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: Greg KH <gregkh@suse.de>
-Cc: jmorris@namei.org, sds@tycho.nsa.gov, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-In-Reply-To: <20090714175007.GA9428@suse.de>
-References: <1247074106-23405-1-git-send-email-dpquigl@tycho.nsa.gov>
-	 <20090709151803.GB24302@suse.de> <1247159613.4398.215.camel@localhost>
-	 <20090709175250.GB26378@suse.de> <1247167738.4398.229.camel@localhost>
-	 <20090709201257.GB27124@suse.de> <1247170786.4398.242.camel@localhost>
-	 <20090709204128.GA27638@suse.de> <1247589459.4398.372.camel@localhost>
-	 <20090714175007.GA9428@suse.de>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 14 Jul 2009 16:16:06 -0400
-Message-Id: <1247602566.4398.376.camel@localhost>
+	Tue, 14 Jul 2009 16:30:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40511 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756094AbZGNUaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 16:30:35 -0400
+Date: Tue, 14 Jul 2009 16:30:12 -0400
+From: Valerie Aurora <vaurora@redhat.com>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jan Blunck <jblunck@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] VFS: Add read-only users count to superblock
+Message-ID: <20090714203011.GG27582@shell>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907141818.n6EIIiA7014311@agora.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-14 at 10:50 -0700, Greg KH wrote:
-> On Tue, Jul 14, 2009 at 12:37:39PM -0400, David P. Quigley wrote:
-> > So, I've been looking through the sysfs code and I can't find a
-> > reference to netlink in there. I am assuming that it is other parts of
-> > the kernel which make use of netlink which are calling the sysfs_*
-> > functions. Any suggestions for where to look on how this is being used
-> > and what the important users are?
+On Tue, Jul 14, 2009 at 02:18:44PM -0400, Erez Zadok wrote:
+> In message <20090713192743.GA27582@shell>, Valerie Aurora writes:
+> > During the last FS summit, Al Viro suggested creating a superblock
+> > level read-only marker so that union mounts could guarantee that the
+> > underlying fs would not become writable.  This patch implements the
+> > VFS support, but doesn't add any users.  The patch making union mounts
+> > use the support is in our union mounts tree.  I think we also need
+> > some way to pass this through NFS mounts, since a read-only NFS mount
+> > for the bottom layer of a union mount is a common use case.
+> > 
+> > -VAL
+> [...]
 > 
-> The netlink messages are coming from the kobject uevent code, look in
-> lib/kobject_uevent.c for the code that creates and sends them out.  This
-> happens for every sysfs directory that is created that corresponds with
-> a kobject.
-> 
-> thanks,
-> 
-> greg k-h
+> Val, I've often wondered if a generic readonly superblock solution will
+> obviate the need for the sb->s_vfs_rename_mutex "kludge" (as commented in
+> fs.h) and the whole way directory-renames are done wrt locking.  Can the
+> rename code be the first user of such patch, or the patch isn't quite ready
+> for this?
 
-It is unclear to me what if anything we need to do to the kobject_uevent
-code for these changes. Do you have a particular use case in mind? Is
-there some sort of notification that should be sent up to user space
-when the label is changed on a file?
+I'm afraid not!  With this patch, you can only mark the superblock
+(and all associated mounts) read-only if no files are open for writing
+- not exactly the common case during a directory rename.  So no, it
+can't replace the rename mutex, at least in its current form.
 
-Dave
-
+-VAL
