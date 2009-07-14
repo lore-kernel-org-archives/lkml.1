@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751553AbZGNEKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752328AbZGNEKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751553AbZGNEKQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 00:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbZGNEKP
+	id S1752328AbZGNEKk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 00:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZGNEKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 00:10:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34527 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbZGNEKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 00:10:14 -0400
-Date: Tue, 14 Jul 2009 14:10:03 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: ttydev tree build failure
-Message-Id: <20090714141003.cdc11a47.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__14_Jul_2009_14_10_03_+1000_H1g4u5vlQYvQycxb"
+	Tue, 14 Jul 2009 00:10:39 -0400
+Received: from vms173011pub.verizon.net ([206.46.173.11]:48632 "EHLO
+	vms173011pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbZGNEKi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 00:10:38 -0400
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: Wu Fengguang <fengguang.wu@gmail.com>
+Subject: Re: OOM killer in 2.6.31-rc2
+Date: Tue, 14 Jul 2009 00:10:25 -0400
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc2; KDE/4.2.4; i686; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+References: <200907061056.00229.gene.heskett@verizon.net>
+ <200907110819.30337.gene.heskett@verizon.net> <20090712051441.GA7903@localhost>
+In-reply-to: <20090712051441.GA7903@localhost>
+MIME-version: 1.0
+Content-type: Text/Plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200907140010.25643.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__14_Jul_2009_14_10_03_+1000_H1g4u5vlQYvQycxb
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sunday 12 July 2009, Wu Fengguang wrote:
 
-Hi Alan,
+>> This 18 hours of uptime is a record by at least 3x what I've ever gotten
+>> from this bios before.  On the one hand I am pleased, on the other the
+>> lack of results so far has to be somewhat disappointing.
+>
+>Don't be in a hurry. Just enjoy the current good state until OOM revisits :)
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+Its been about 3d 10h of uptime now, and its been boringly stable.  Darn it.
 
-drivers/serial/serial_core.c: In function 'uart_close':
-drivers/serial/serial_core.c:1341: error: 'struct tty_port' has no member n=
-amed 'cons'
-drivers/serial/serial_core.c:1341: error: 'struct tty_port' has no member n=
-amed 'cons'
-drivers/serial/serial_core.c:1341: error: 'struct tty_port' has no member n=
-amed 'line'
+Memory usage ack to htop has about doubled (to 828 megs from 385 or so 
+originally), and its 24MB into swap, so I'd assume there is a small leak 
+somewhere.  At this rate it will take weeks to trigger this again.
 
-Caused by commit 85325e93e9473dd779e8378c1365f9d8a11f9b9e
-("serial-port-portptr").
+I've now built 2.6.31-rc3 with pretty much the same options re: memory, and 
+will probably reboot to it in the morning as its approaching the witching hour 
+here.  Any objections?
 
-I have used the version of the ttydev tree from next-20090713 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>Thanks,
+>Fengguang
 
---Signature=_Tue__14_Jul_2009_14_10_03_+1000_H1g4u5vlQYvQycxb
-Content-Type: application/pgp-signature
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The NRA is offering FREE Associate memberships to anyone who wants them.
+<https://www.nrahq.org/nrabonus/accept-membership.asp>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Q:	Why haven't you graduated yet?
+A:	Well, Dad, I could have finished years ago, but I wanted
+	my dissertation to rhyme.
 
-iEYEARECAAYFAkpcBRsACgkQjjKRsyhoI8xH6gCeNmIoAcoEsa4yk/OHdxCWgpsu
-h+oAnRBdxWTrx52cw54PL6OP7eJ11MSs
-=/jHI
------END PGP SIGNATURE-----
-
---Signature=_Tue__14_Jul_2009_14_10_03_+1000_H1g4u5vlQYvQycxb--
