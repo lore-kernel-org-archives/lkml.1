@@ -1,270 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752244AbZGNAuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbZGNA4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752244AbZGNAuL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 20:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZGNAuJ
+	id S1752217AbZGNA4i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 20:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZGNA4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 20:50:09 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54830 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751990AbZGNAuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 20:50:06 -0400
-Date: Tue, 14 Jul 2009 09:49:55 +0900
-To: beckyb@kernel.crashing.org
-Cc: fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@lists.ozlabs.org,
-       benh@kernel.crashing.org, galak@kernel.crashing.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: removing addr_needs_map in struct dma_mapping_ops
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <B6C36B32-6861-4FD9-B8A3-E8C328687E0F@kernel.crashing.org>
-References: <20090710104706I.fujita.tomonori@lab.ntt.co.jp>
-	<B6C36B32-6861-4FD9-B8A3-E8C328687E0F@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 13 Jul 2009 20:56:38 -0400
+Received: from pop-tawny.atl.sa.earthlink.net ([207.69.195.67]:33166 "EHLO
+	pop-tawny.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752025AbZGNA4h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 20:56:37 -0400
+Message-ID: <4A5BD7B5.1010904@earthlink.net>
+Date: Mon, 13 Jul 2009 20:56:21 -0400
+From: Robert Reif <reif@earthlink.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15 (Ubuntu-1.1.15+nobinonly-0ubuntu2)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: davem@davemloft.net, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, x86@kernel.org, tony.luck@intel.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH v2 0/8] sparc: use asm-generic/dma-mapping-common.h and
+ pci-dma-compat.h
+References: <1247466360-13330-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1247466360-13330-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090714094919V.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 14 Jul 2009 09:49:56 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Jul 2009 16:50:43 -0500
-Becky Bruce <beckyb@kernel.crashing.org> wrote:
+FUJITA Tomonori wrote:
+> This is the second version of the patchset to convert SPARC to
+> asm-generic/dma-mapping-common.h and pci-dma-compat.h:
+>
+>   
+I still get the same runtime warning with this patch set at boot time.
 
-> > talked about defining something like struct dma_data. Then we could
-> >
-> > struct dev_archdata {
-> >      ...
-> >
-> >      struct dma_data *ddata;
-> > };
-> >
-> > or
-> >
-> > struct dev_archdata {
-> >      ...
-> >
-> >      struct dma_data ddata;
-> > };
-> >
-> >
-> > struct dma_data needs dma_direct_offset, iommu_table, dma_base, and
-> > dma_window_size, anything else?
-> 
-> IIRC, what we had talked about was simpler - we talked about changing  
-> the current dev_archdata from this:
-> 
-> struct dev_archdata {
->         struct device_node      *of_node;
->         struct dma_mapping_ops  *dma_ops;
->         void                    *dma_data;
-> };
-> 
-> to this:
-> 
-> struct dev_archdata {
-> 	struct device_node *of_node;
-> 	struct dma_mapping_ops *dma_ops;
-> 	unsigned long long dma_data;
-> #ifdef CONFIG_SWIOTLB
-> 	dma_addr_t max_direct_dma_addr;
-> #endif
-> };
-> 
-> Where max_direct_dma_addr is the address beyond which a specific  
-> device must use swiotlb, and dma_data is the offset like it is now  
-> (but wider on 32-bit systems than void *). I believe Ben had mentioned  
-> wanting to make the max_direct_dma_addr part conditional so we don't  
-> bloat archdata on platforms that don't ever bounce.
+The bad address is within the kernel so it looks like
+it's catching a real bug.
 
-Only maximum address is enough? The minimum (dma_window_base_cur in
-swiotlb_pci_addr_needs_map) is not necessary?
+cat kallsyms | grep f0007000
+f0007000 T trapbase_cpu3
 
+WARNING: at lib/dma-debug.c:873 check_for_illegal_area+0xc8/0x100()
+esp ffd7ba30: DMA-API: device driver maps memory from kernel text or 
+rodata [addr=f0007000] [len=4096]
+Modules linked in: ext3 jbd sd_mod sun_esp esp_scsi scsi_transport_spi 
+scsi_mod
+[f011ffa0 : check_for_illegal_area+0xc8/0x100 ]
+[f0120b1c : debug_dma_map_sg+0x158/0x1c4 ]
+[fe6946d0 : sbus_esp_map_sg+0xec/0xfc [sun_esp] ]
+[fe684454 : esp_maybe_execute_command+0x1f0/0x6f8 [esp_scsi] ]
+[fe6849e4 : esp_queuecommand+0x88/0x98 [esp_scsi] ]
+[fe638c00 : scsi_dispatch_cmd+0x200/0x2a8 [scsi_mod] ]
+[fe63f038 : scsi_request_fn+0x3f4/0x52c [scsi_mod] ]
+[f00f6d64 : __generic_unplug_device+0x40/0x50 ]
+[f00f6d90 : generic_unplug_device+0x1c/0x38 ]
+[f00f4be4 : blk_unplug+0x14/0x24 ]
+[f00ade1c : sync_buffer+0x48/0x60 ]
+[f01f6d58 : __wait_on_bit+0x4c/0xa4 ]
+[f01f6e60 : out_of_line_wait_on_bit+0xb0/0xc0 ]
+[fe709320 : __ext3_get_inode_loc+0x3bc/0x418 [ext3] ]
+[fe7093b4 : ext3_iget+0x38/0x65c [ext3] ]
+[fe712c70 : ext3_get_journal+0xc/0xd4 [ext3] ]
 
-> The change to the type of dma_data is actually in preparation for an  
-> optimization I have planned for 64-bit PCI devices (and which probably  
-> requires more discussion), so that doesn't need to happen now -  just  
-> leave it as a void *, and I can post a followup patch.
-> 
-> Let me know if I can help or do any testing - I've been meaning to  
-> look into switching to dma_map_ops for a while now but it hasn't  
-> managed to pop off my todo stack.
-
-Ok, how about this? I'm not familiar with POWERPC so I might
-misunderstand something.
-
-
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index 7d2277c..0086f8d 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -16,6 +16,9 @@ struct dev_archdata {
- 	/* DMA operations on that device */
- 	struct dma_mapping_ops	*dma_ops;
- 	void			*dma_data;
-+#ifdef CONFIG_SWIOTLB
-+	dma_addr_t		max_direct_dma_addr;
-+#endif
- };
- 
- static inline void dev_archdata_set_node(struct dev_archdata *ad,
-diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
-index 30891d6..b23a4f1 100644
---- a/arch/powerpc/include/asm/swiotlb.h
-+++ b/arch/powerpc/include/asm/swiotlb.h
-@@ -24,4 +24,6 @@ static inline void dma_mark_clean(void *addr, size_t size) {}
- extern unsigned int ppc_swiotlb_enable;
- int __init swiotlb_setup_bus_notifier(void);
- 
-+extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
-+
- #endif /* __ASM_SWIOTLB_H */
-diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-index 68ccf11..e21359e 100644
---- a/arch/powerpc/kernel/dma-swiotlb.c
-+++ b/arch/powerpc/kernel/dma-swiotlb.c
-@@ -56,39 +56,16 @@ swiotlb_arch_address_needs_mapping(struct device *hwdev, dma_addr_t addr,
- 				   size_t size)
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(hwdev);
-+	struct dev_archdata *sd = &hwdev->archdata;
- 
- 	BUG_ON(!dma_ops);
--	return dma_ops->addr_needs_map(hwdev, addr, size);
--}
- 
--/*
-- * Determine if an address is reachable by a pci device, or if we must bounce.
-- */
--static int
--swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
--{
--	u64 mask = dma_get_mask(hwdev);
--	dma_addr_t max;
--	struct pci_controller *hose;
--	struct pci_dev *pdev = to_pci_dev(hwdev);
--
--	hose = pci_bus_to_host(pdev->bus);
--	max = hose->dma_window_base_cur + hose->dma_window_size;
--
--	/* check that we're within mapped pci window space */
--	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
-+	if (sd->max_direct_dma_addr && addr + size > sd->max_direct_dma_addr)
- 		return 1;
- 
--	return !is_buffer_dma_capable(mask, addr, size);
--}
--
--static int
--swiotlb_addr_needs_map(struct device *hwdev, dma_addr_t addr, size_t size)
--{
- 	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
- }
- 
--
- /*
-  * At the moment, all platforms that use this code only require
-  * swiotlb to be used if we're operating on HIGHMEM.  Since
-@@ -104,7 +81,6 @@ struct dma_mapping_ops swiotlb_dma_ops = {
- 	.dma_supported = swiotlb_dma_supported,
- 	.map_page = swiotlb_map_page,
- 	.unmap_page = swiotlb_unmap_page,
--	.addr_needs_map = swiotlb_addr_needs_map,
- 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
- 	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
- 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
-@@ -119,13 +95,23 @@ struct dma_mapping_ops swiotlb_pci_dma_ops = {
- 	.dma_supported = swiotlb_dma_supported,
- 	.map_page = swiotlb_map_page,
- 	.unmap_page = swiotlb_unmap_page,
--	.addr_needs_map = swiotlb_pci_addr_needs_map,
- 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
- 	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
- 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
- 	.sync_sg_for_device = swiotlb_sync_sg_for_device
- };
- 
-+void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
-+{
-+	struct pci_controller *hose;
-+	struct dev_archdata *sd;
-+
-+	hose = pci_bus_to_host(pdev->bus);
-+	sd = &pdev->dev.archdata;
-+	sd->max_direct_dma_addr =
-+		hose->dma_window_base_cur + hose->dma_window_size;
-+}
-+
- static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
- 				  unsigned long action, void *data)
- {
-diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-index 055ff41..401751b 100644
---- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-@@ -136,6 +136,7 @@ define_machine(mpc8536_ds) {
- 	.init_IRQ		= mpc8536_ds_pic_init,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
- #endif
- 	.get_irq		= mpic_get_irq,
- 	.restart		= fsl_rstcr_restart,
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 849c0ac..1ba8e38 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -277,6 +277,7 @@ define_machine(mpc8544_ds) {
- 	.init_IRQ		= mpc85xx_ds_pic_init,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
- #endif
- 	.get_irq		= mpic_get_irq,
- 	.restart		= fsl_rstcr_restart,
-@@ -291,6 +292,7 @@ define_machine(mpc8572_ds) {
- 	.init_IRQ		= mpc85xx_ds_pic_init,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
- #endif
- 	.get_irq		= mpic_get_irq,
- 	.restart		= fsl_rstcr_restart,
-@@ -305,6 +307,7 @@ define_machine(p2020_ds) {
- 	.init_IRQ		= mpc85xx_ds_pic_init,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
- #endif
- 	.get_irq		= mpic_get_irq,
- 	.restart		= fsl_rstcr_restart,
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 60ed9c0..165a2de 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -356,6 +356,7 @@ define_machine(mpc8568_mds) {
- 	.progress	= udbg_progress,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
- #endif
- };
- 
-@@ -377,5 +378,6 @@ define_machine(mpc8569_mds) {
- 	.progress	= udbg_progress,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
- #endif
- };
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 6632702..d1878f3 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -187,5 +187,6 @@ define_machine(mpc86xx_hpcn) {
- 	.progress		= udbg_progress,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
- #endif
- };
