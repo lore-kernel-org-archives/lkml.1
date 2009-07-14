@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbZGNVSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932121AbZGNVS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932089AbZGNVSt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 17:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbZGNVSs
+	id S932121AbZGNVS5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 17:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932100AbZGNVSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 17:18:48 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:39458 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755520AbZGNVSr (ORCPT
+	Tue, 14 Jul 2009 17:18:53 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:41312 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755965AbZGNVSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 17:18:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=sSyY1pz+OlkHpwm3oNZhwMwTBzclt4fjXOlE+n8JHJvQxq+WyazlQ+Su+AqGRVc6ch
-         1oXdKKhL5ngTqy6we+5J9t48dXY/BkujsfLC4vJbBFed/zoIKiPFI8YLyHsMKNAs7bxn
-         ZA3YjuLtxiBCbPn/W6iuoWrFkdaeTWK4tkY0A=
-Message-ID: <4A5CF632.7080105@gmail.com>
-Date: Tue, 14 Jul 2009 23:18:42 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
+	Tue, 14 Jul 2009 17:18:51 -0400
+Message-ID: <4A5CF62F.6020102@nortel.com>
+Date: Tue, 14 Jul 2009 15:18:39 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] NET: sungem, use spin_trylock_irqsave
-References: <1247520220-31960-1-git-send-email-jirislaby@gmail.com>	<1247520220-31960-2-git-send-email-jirislaby@gmail.com> <20090714.141020.34896663.davem@davemloft.net>
-In-Reply-To: <20090714.141020.34896663.davem@davemloft.net>
-X-Enigmail-Version: 0.96a
+To: linuxppc-dev@ozlabs.org, Linux kernel <linux-kernel@vger.kernel.org>
+Subject: proper way to reserve a chunk of memory at the top of the kernel?
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Jul 2009 21:18:40.0731 (UTC) FILETIME=[A8E942B0:01CA04C8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/14/2009 11:10 PM, David Miller wrote:
->> -	if (!spin_trylock(&gp->tx_lock)) {
->> +	if (!spin_trylock_irqsave(&gp->tx_lock)) {
-> 
-> (hint: type 'make' before you send patches!!!!)
+I have a powerpc board with 512BM of memory.  The BIOS has a chunk of
+memory at the top end of physical memory which it does not zero out over
+a reboot.
 
-Grr, I did but my bash_history shows that I built wrong subtree. My
-apologies.
+What's the proper way to tell linux that this chunk of physical memory
+should be ignored (so that we can access it later without worrying that
+Linux will try to allocate it)?  Should I be calling
+
+lmb_reserve(lmb_end_of_DRAM() - size, size);
+
+in early_reserve_mem() or is there a better mechanism?
+
+For comparison, in an older kernel this was done in set_phys_avail(), by
+calling mem_pieces_remove(&phys_avail, total_lowmem - size, size, 1);
+
+Thanks,
+
+Chris
