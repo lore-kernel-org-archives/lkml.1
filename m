@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbZGNShY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZGNSnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755885AbZGNShY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 14:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbZGNShY
+	id S1755967AbZGNSnA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 14:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937AbZGNSm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 14:37:24 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:37548 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbZGNShX convert rfc822-to-8bit (ORCPT
+	Tue, 14 Jul 2009 14:42:59 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:55179 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755196AbZGNSm7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 14:37:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Crncx1ykKJnLmNcPPH9IKgSA6bHci2+HPdwcC+alOeF50+tkJFce2h5CEoaqyWxoB+
-         LQtVsQ6GE756I+WS4hfJOG3e+ru1pOejz87rZPRLUtxrYb28A3Yfqze4ReCkMm/cqpFN
-         OZSsNFcgE/XInLBzwwekbz6lgGizSV38giDVQ=
-MIME-Version: 1.0
-In-Reply-To: <20090714.113348.155881037.davem@davemloft.net>
-References: <cb0375e10904010840n1543a890w9039465d0f80ffcc@mail.gmail.com>
-	 <20090404.170539.148727646.davem@davemloft.net>
-	 <ce0170d90907141017h732c2cd7ja5990303093b6edd@mail.gmail.com>
-	 <20090714.113348.155881037.davem@davemloft.net>
-Date: Tue, 14 Jul 2009 15:37:22 -0300
-Message-ID: <ce0170d90907141137o6bcc9cc6iacbb82e5bbc28753@mail.gmail.com>
-Subject: Re: [PATCH 1/1] Tell linkwatch about new interfaces
-From: Sergio Luis <eeeesti@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: amluto@gmail.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 14 Jul 2009 14:42:59 -0400
+X-Greylist: delayed 1435 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Jul 2009 14:42:58 EDT
+Date: Tue, 14 Jul 2009 14:18:44 -0400
+Message-Id: <200907141818.n6EIIiA7014311@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Jan Blunck <jblunck@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] VFS: Add read-only users count to superblock 
+In-reply-to: Your message of "Mon, 13 Jul 2009 15:27:44 EDT."
+             <20090713192743.GA27582@shell> 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 3:33 PM, David Miller<davem@davemloft.net> wrote:
-> From: Sergio Luis <eeeesti@gmail.com>
-> Date: Tue, 14 Jul 2009 14:17:21 -0300
->
->> is this patch incorrect, though? with the linkwatch_fire_event() call,
->> the rfc2863 operstate will be set for everyone at device register
->> time.
->
-> The issue is dumb drivers that do not manage their link state
-> at all.  We want them to always have their links up, from the
-> moment they are registered.
->
-> This is especially important for virtual devices.
->
+In message <20090713192743.GA27582@shell>, Valerie Aurora writes:
+> During the last FS summit, Al Viro suggested creating a superblock
+> level read-only marker so that union mounts could guarantee that the
+> underlying fs would not become writable.  This patch implements the
+> VFS support, but doesn't add any users.  The patch making union mounts
+> use the support is in our union mounts tree.  I think we also need
+> some way to pass this through NFS mounts, since a read-only NFS mount
+> for the bottom layer of a union mount is a common use case.
+> 
+> -VAL
+[...]
 
-I see. I will try to take a look at the driver in question, then. Thanks.
+Val, I've often wondered if a generic readonly superblock solution will
+obviate the need for the sb->s_vfs_rename_mutex "kludge" (as commented in
+fs.h) and the whole way directory-renames are done wrt locking.  Can the
+rename code be the first user of such patch, or the patch isn't quite ready
+for this?
+
+I realize that marking a whole superblock readonly during a directory rename
+can hurt performance in some cases, as compared to the current way of doing
+things, using lock_rename() to lock a subtree of the namespace.  But I
+suspect that many concurrent directory renames are an exception, and thus
+practical performance won't be hurt much with such a patch -- but result in
+major benefits of code simplicity for several file systems (esp. for
+unioning layers).
+
+Erez.
