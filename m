@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbZGNQnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbZGNQop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbZGNQnW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 12:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbZGNQnV
+	id S1755583AbZGNQop (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 12:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbZGNQoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 12:43:21 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:59770 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755265AbZGNQnU (ORCPT
+	Tue, 14 Jul 2009 12:44:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50572 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754863AbZGNQon (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 12:43:20 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: access_ok macor
-Date: Tue, 14 Jul 2009 18:43:05 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.96; x86_64; ; )
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>
-References: <4A5C8068.6020203@monstr.eu> <200907141652.59049.arnd@arndb.de> <4A5CAEFF.9080206@monstr.eu>
-In-Reply-To: <4A5CAEFF.9080206@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 14 Jul 2009 12:44:43 -0400
+Message-ID: <4A5CB5B3.2060002@zytor.com>
+Date: Tue, 14 Jul 2009 12:43:31 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Jon Masters <jonathan@jonmasters.org>
+CC: Jan Beulich <JBeulich@novell.com>, Michal Marek <mmarek@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, tony.luck@intel.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-modules@vger.kernel.org
+Subject: Re: [PATCH] reduce export symbol CRC table size on 64-bit	 archs
+References: <4A4A18780200007800008345@vpn.id2.novell.com>	 <4A4E671C.2090201@suse.cz> <4A51C71B0200007800008EE2@vpn.id2.novell.com>	 <200907092044.22108.rusty@rustcorp.com.au>	 <4A57089B0200007800009C0E@vpn.id2.novell.com> <4A5AEC3C.2060608@suse.cz>	 <4A5B101E020000780000A284@vpn.id2.novell.com> <1247567372.31188.229.camel@perihelion.bos.jonmasters.org>
+In-Reply-To: <1247567372.31188.229.camel@perihelion.bos.jonmasters.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907141843.05629.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18yCWut4FgRdRI6YJfKYJ55V5bBFb2Z6Crlo+Y
- GNbGy3JaEtjT4OO83ahhXuZSifj4BlvTdkFvfGMCSW996KZL9e
- 8w/jue4NcL+02L0v05qHw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 14 July 2009, Michal Simek wrote:
-> Arnd Bergmann wrote:
-
-> >>  r29=00000000, r30=00000000, r31=CE9759A4, rPC=C000123C
-> >>  msr=800045AE, ear=00000001, esr=000000B2, fsr=000080D0
-> >> Segmentation fault
-> >>
-> > 
-> > I guess then you should check if 0xc000123c is in your
-> > exception table, or why it is not.
+Jon Masters wrote:
+> On Mon, 2009-07-13 at 09:44 +0100, Jan Beulich wrote:
+>>>>> Michal Marek <mmarek@suse.cz> 13.07.09 10:11 >>>
+>>> Jan Beulich napsal(a):
+>>>> Actually I meanwhile think that module-init-tools can easily detect the changed
+>>>> layout without any further kernel side adjustments: Since it is known that a
+>>>> CRC always is a 32-bit value, simply checking whether the so-far-used 64-bit
+>>>> value has more than 32 significant bits should suffice: If so, the new layout
+>>>> is being used (with the symbol name starting at offset 4), else the old one is
+>>>> in effect (name at offset 8). This ought to be a pretty trivial change to that
+>>>> code.
+>>> But old module-init-tools will continue reading garbage in this case.
 > 
-> on that address is load instruction for unaligned exception because addr is odd number
-> that's why is called unaligned exception handler and from this function
-> is called load instruction which failed. :-(
+> Most of the distros can fix that with a dependency on the kernel package
+> in the absolute worst case, not that I love that idea, but it happens. I
+> assume for now we are going with detecting the two possibilities because
+> it doesn't really hurt in any case to have this support.
 > 
-> Currently this make more sense why that tests failed. If that pointers are
-> even number exception is not taken and exception sure don't have fixup for it because
-> this is generic code. :-(
-> 
-> That's the problem because we are looking for regs->pc but this point to unaligned exception
-> handler.
 
-Ok, that makes a lot of sense.
+It would seem to me that reading garbage is worse than reading nothing, 
+unless I'm missing something fundamental.
 
-The solution then is to handle fixups from the unaligned exception handler
-if you come from the kernel. That should fix the three text cases.
+	-hpa
 
-I don't fully understand your exception handling there, but I think you
-also need to add code checking for __range_ok() to your unaligned handler,
-to prevent malicious user space code from accessing the kernel through
-unaligned pointers.
-
-	Arnd <><
