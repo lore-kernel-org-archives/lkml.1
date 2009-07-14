@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751995AbZGNAos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085AbZGNAqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751995AbZGNAos (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 20:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZGNAos
+	id S1752085AbZGNAqP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 20:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZGNAqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 20:44:48 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50483 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751372AbZGNAor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 20:44:47 -0400
-Date: Tue, 14 Jul 2009 10:44:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: David Brownell <david-b@pacbell.net>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: driver-core tree build warning
-Message-Id: <20090714104442.4921e2a8.sfr@canb.auug.org.au>
-In-Reply-To: <20090713213614.GA16674@kroah.com>
-References: <20090713172646.55b9acee.sfr@canb.auug.org.au>
-	<20090713175106.d2efbd60.sfr@canb.auug.org.au>
-	<20090713171802.GB22728@kroah.com>
-	<200907131423.59963.david-b@pacbell.net>
-	<20090713213614.GA16674@kroah.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__14_Jul_2009_10_44_42_+1000_exzCSOkQtc9XHbdk"
+	Mon, 13 Jul 2009 20:46:14 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:58960 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751372AbZGNAqN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 20:46:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XFmZyyLm2bDO064C/WzrZJ92oW9QE1AmZiqE20iEhP6rwH+UtWq5o7Yj8xxkafkNiR
+         7l0IzJ68+C1/Dc1imQaDBxFciRift/J3zMDhogfOq/W/WwMLhT0cni5P+sf4Yp8nDfEA
+         cxKO4y5Y92jYwmtrYm5CcyZo9hMY5iSQWD9qk=
+MIME-Version: 1.0
+In-Reply-To: <20090713162559.GA1279@lilem.mirepesht>
+References: <20090713151709.GA1297@lilem.mirepesht>
+	 <20090713084058.547e88f0@infradead.org>
+	 <20090713162559.GA1279@lilem.mirepesht>
+Date: Tue, 14 Jul 2009 10:46:12 +1000
+Message-ID: <21d7e9970907131746q4f1a34efw9d3e6efaa78aea34@mail.gmail.com>
+Subject: Re: [PATCH 0/2] fbdev: add fillrect and copyarea ioctls
+From: Dave Airlie <airlied@gmail.com>
+To: Ali Gholami Rudi <ali@rudi.ir>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       fbdev <linux-fbdev-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Righi <righi.andrea@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Philippe De Muyter <phdm@macqel.be>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__14_Jul_2009_10_44_42_+1000_exzCSOkQtc9XHbdk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 13 Jul 2009 14:36:14 -0700 Greg KH <greg@kroah.com> wrote:
+On Tue, Jul 14, 2009 at 2:25 AM, Ali Gholami Rudi<ali@rudi.ir> wrote:
+> Arjan van de Ven <arjan@infradead.org> wrote:
+>> On Mon, 13 Jul 2009 19:47:09 +0430
+>> Ali Gholami Rudi <ali@rudi.ir> wrote:
+>> > Is there any reason for not adding these ioctls to fbdev?  I searched
+>> > the net and couldn't any.  Anyway, these patches simply implement
+>> > those ioctls.
+>> >
+>>
+>> can we turn this around, is there a reason to add them?
+>> or in other words, how / where would these be used ?
 >
-> On Mon, Jul 13, 2009 at 02:23:59PM -0700, David Brownell wrote:
-> > On Monday 13 July 2009, Greg KH wrote:
-> > > David, care to send patches fixing these warnings?
-> >=20
-> > Here's a single patch:
->=20
-> Now merged and pushed out.  Stephen, this should be now resolved in your
-> builds for the next -next tree.
+> User-space programs that use framebuffer directly can use them.  I was
+> writing a simple framebuffer virtual terminal (using libfreetype for
+> fonts; like fbterm); scrolling and painting boxes would be faster if
+> there was someway of using hardware accelerated operations.  I think
+> other similar programs can benefit, too.
 
-Thanks all.
+The general opinion is we should keep acceleration in userspace if at
+all possible.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Not all hw can implement these usefully in the kernel, directfb
+already does some
+things for this.
 
---Signature=_Tue__14_Jul_2009_10_44_42_+1000_exzCSOkQtc9XHbdk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpb1PoACgkQjjKRsyhoI8zB5ACdE4706A2oTfFBtn6XcFIk7sEj
-JZsAnjFBmaIUGSeJlQgBInw51/0Zr5jA
-=Bf2W
------END PGP SIGNATURE-----
-
---Signature=_Tue__14_Jul_2009_10_44_42_+1000_exzCSOkQtc9XHbdk--
+Dave.
