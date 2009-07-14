@@ -1,69 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085AbZGNAqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752046AbZGNAsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752085AbZGNAqP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 20:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZGNAqO
+	id S1752046AbZGNAsR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 20:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZGNAsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 20:46:14 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:58960 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbZGNAqN convert rfc822-to-8bit (ORCPT
+	Mon, 13 Jul 2009 20:48:16 -0400
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:56457 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751793AbZGNAsQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 20:46:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XFmZyyLm2bDO064C/WzrZJ92oW9QE1AmZiqE20iEhP6rwH+UtWq5o7Yj8xxkafkNiR
-         7l0IzJ68+C1/Dc1imQaDBxFciRift/J3zMDhogfOq/W/WwMLhT0cni5P+sf4Yp8nDfEA
-         cxKO4y5Y92jYwmtrYm5CcyZo9hMY5iSQWD9qk=
-MIME-Version: 1.0
-In-Reply-To: <20090713162559.GA1279@lilem.mirepesht>
-References: <20090713151709.GA1297@lilem.mirepesht>
-	 <20090713084058.547e88f0@infradead.org>
-	 <20090713162559.GA1279@lilem.mirepesht>
-Date: Tue, 14 Jul 2009 10:46:12 +1000
-Message-ID: <21d7e9970907131746q4f1a34efw9d3e6efaa78aea34@mail.gmail.com>
-Subject: Re: [PATCH 0/2] fbdev: add fillrect and copyarea ioctls
-From: Dave Airlie <airlied@gmail.com>
-To: Ali Gholami Rudi <ali@rudi.ir>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       fbdev <linux-fbdev-devel@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Righi <righi.andrea@gmail.com>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Philippe De Muyter <phdm@macqel.be>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 13 Jul 2009 20:48:16 -0400
+Date: Tue, 14 Jul 2009 09:48:04 +0900 (JST)
+Message-Id: <20090714.094804.869026176829743314.mitake@dcl.info.waseda.ac.jp>
+To: mingo@elte.hu
+Cc: a.p.zijlstra@chello.nl, andi@firstfloor.org, fweisbec@gmail.com,
+       acme@redhat.com, linux-kernel@vger.kernel.org, jbaron@redhat.com
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
+ how many spinlocks to schedstat
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <20090713085119.GA6757@elte.hu>
+References: <1247405045.6733.2.camel@laptop>
+	<20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp>
+	<20090713085119.GA6757@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 2:25 AM, Ali Gholami Rudi<ali@rudi.ir> wrote:
-> Arjan van de Ven <arjan@infradead.org> wrote:
->> On Mon, 13 Jul 2009 19:47:09 +0430
->> Ali Gholami Rudi <ali@rudi.ir> wrote:
->> > Is there any reason for not adding these ioctls to fbdev?  I searched
->> > the net and couldn't any.  Anyway, these patches simply implement
->> > those ioctls.
->> >
->>
->> can we turn this around, is there a reason to add them?
->> or in other words, how / where would these be used ?
->
-> User-space programs that use framebuffer directly can use them.  I was
-> writing a simple framebuffer virtual terminal (using libfreetype for
-> fonts; like fbterm); scrolling and painting boxes would be faster if
-> there was someway of using hardware accelerated operations.  I think
-> other similar programs can benefit, too.
+From: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+Date: Mon, 13 Jul 2009 10:51:19 +0200
 
-The general opinion is we should keep acceleration in userspace if at
-all possible.
+> X-Mew-Uidl: 4144 3205
+> Return-Path: <mingo@elte.hu>
+> Received: from murder ([unix socket])
+> 	 by ns.dcl.info.waseda.ac.jp (Cyrus v2.3.8-OS X Server 10.5:	9F33) with LMTPA;
+> 	 Mon, 13 Jul 2009 17:51:35 +0900
+> X-Sieve: CMU Sieve 2.3
+> Received: from localhost (localhost [127.0.0.1])
+> 	by ns.dcl.info.waseda.ac.jp (Postfix) with ESMTP id 418376729D2
+> 	for <mitake@dcl.info.waseda.ac.jp>; Mon, 13 Jul 2009 17:51:35 +0900 (JST)
+> X-Virus-Scanned: amavisd-new at dcl.info.waseda.ac.jp
+> Received: from ns.dcl.info.waseda.ac.jp ([127.0.0.1])
+> 	by localhost (ns.dcl.info.waseda.ac.jp [127.0.0.1]) (amavisd-new, port 10024)
+> 	with ESMTP id 4VNvZ6jG1jE9 for <mitake@dcl.info.waseda.ac.jp>;
+> 	Mon, 13 Jul 2009 17:51:34 +0900 (JST)
+> Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+> 	by ns.dcl.info.waseda.ac.jp (Postfix) with ESMTP id C08246729C2
+> 	for <mitake@dcl.info.waseda.ac.jp>; Mon, 13 Jul 2009 17:51:33 +0900 (JST)
+> Received: from elvis.elte.hu ([157.181.1.14])
+> 	by mx3.mail.elte.hu with esmtp (Exim)
+> 	id 1MQHFr-0003wM-HT
+> 	from <mingo@elte.hu>; Mon, 13 Jul 2009 10:51:28 +0200
+> Received: by elvis.elte.hu (Postfix, from userid 1004)
+> 	id 115B83E22CE; Mon, 13 Jul 2009 10:51:21 +0200 (CEST)
+> Message-ID: <20090713085119.GA6757@elte.hu>
+> References: <1247230336.7529.34.camel@twins> <20090712.162337.287595819039280884.mitake@dcl.info.waseda.ac.jp> <1247405045.6733.2.camel@laptop> <20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp>
+> MIME-Version: 1.0
+> In-Reply-To: <20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp>
+> X-ELTE-SpamScore: -1.5
+> X-ELTE-SpamLevel: 
+> X-ELTE-SpamCheck: no
+> X-ELTE-SpamVersion: ELTE 2.0 
+> X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%	[score: 0.0000]
+> Content-Type: text/plain; charset=us-ascii
+> Content-Disposition: inline
+> Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+> From: Ingo Molnar <mingo@elte.hu>
+> To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+> Cc: a.p.zijlstra@chello.nl, andi@firstfloor.org, fweisbec@gmail.com,
+> 	acme@redhat.com, linux-kernel@vger.kernel.org,
+> 	Jason Baron <jbaron@redhat.com>
+> Date: Mon, 13 Jul 2009 10:51:19 +0200
+> User-Agent: Mutt/1.5.18 (2008-05-17)
+> Received-SPF: neutral (mx3: 157.181.1.14 is neither permitted nor denied by domain of elte.hu) client-ip=157.181.1.14; envelope-from=mingo@elte.hu; helo=elvis.elte.hu;
+> X-Mew: tab/spc characters on Subject: are simplified.
+> 
+> 
+> * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+> 
+> > > Yeah, steve broke it, but then Jason fixed it again, but his 
+> > > patches might not have made it in yet.
+> > > 
+> > >   http://lkml.org/lkml/2009/7/6/313
+> > 
+> > Wow! I can obtain lock_acquire with Jason's patch,
+> > 
+> > % perf stat -e lockdep:lock_acquire sleep 1
+> > 
+> >  Performance counter stats for 'sleep 1':
+> > 
+> >            1420  lockdep:lock_acquire
+> > 
+> >     1.004953591  seconds time elapsed
+> > 
+> > I wanted this.
+> > So I don't have nothing to do.., but thanks Jason!
+> 
+> I gave some review feedback about those patches, see:
+> 
+>    http://lkml.org/lkml/2009/7/13/360
+> 
+> Once they are addressed we can try them in -tip.
 
-Not all hw can implement these usefully in the kernel, directfb
-already does some
-things for this.
+Thanks! I'll try new features of perfcounters. It's interesting.
+But I told "not found" by lkml.org.
+Is the post you attempted to point http://lkml.org/lkml/2009/7/13/36 ?
 
-Dave.
