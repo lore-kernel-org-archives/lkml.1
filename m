@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZGNQdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbZGNQfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbZGNQdP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 12:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZGNQdO
+	id S1755530AbZGNQfs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 12:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755515AbZGNQfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 12:33:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46186 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbZGNQdO (ORCPT
+	Tue, 14 Jul 2009 12:35:48 -0400
+Received: from moutng.kundenserver.de ([212.227.17.10]:52617 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754906AbZGNQfr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 12:33:14 -0400
-Subject: Re: [patch 1/3] net: serialize hrtimer callback in sched_cbq
-From: Peter Zijlstra <peterz@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: tglx@linutronix.de, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kaber@trash.net, Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090714.090055.56906831.davem@davemloft.net>
-References: <20090709215606.526259917@linutronix.de>
-	 <20090712.135555.207096388.davem@davemloft.net>
-	 <alpine.LFD.2.00.0907141040350.2777@localhost.localdomain>
-	 <20090714.090055.56906831.davem@davemloft.net>
-Content-Type: text/plain
+	Tue, 14 Jul 2009 12:35:47 -0400
+Message-ID: <4A5CB3A3.6000407@vlnb.net>
+Date: Tue, 14 Jul 2009 20:34:43 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH]: Rename REQ_COPY_USER to more descriptive REQ_HAS_TAIL_SPACE_FOR_PADDING
+References: <4A563259.5000601@vlnb.net> <20090709181713.GQ23611@kernel.dk> <4A56373C.4050409@vlnb.net>
+In-Reply-To: <4A56373C.4050409@vlnb.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 14 Jul 2009 18:28:10 +0200
-Message-Id: <1247588890.7500.186.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Provags-ID: V01U2FsdGVkX1/ObjGN1UPknJ3TrFQf26v5UrOVBxKpo930JUG
+ SWY8ZDgWKUPnA5HmdJqHe8OFQPdCgngSBdPVY3rzLVqWiaAq1q
+ elNXLLOWkmSKZ+dp1q5dg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-14 at 09:00 -0700, David Miller wrote:
-> From: Thomas Gleixner <tglx@linutronix.de>
-> Date: Tue, 14 Jul 2009 10:55:14 +0200 (CEST)
-
-> > On Sun, 12 Jul 2009, David Miller wrote:
-> > 
-> >> What should probably happen is that the hrtimer merely fires off work
-> >> at software interrupt context (perhaps a tasklet or similar), and that
-> >> software interrupt code take the qdisc's root lock throughout it's
-> >> execution.
-> > 
-> > Sigh, I almost expected that the removal of the callback modes will
-> > fire back some day.
+Vladislav Bolkhovitin, on 07/09/2009 10:30 PM wrote:
+> Jens Axboe, on 07/09/2009 10:17 PM wrote:
+>> On Thu, Jul 09 2009, Vladislav Bolkhovitin wrote:
+>>> Currently names of REQ_COPY_USER and __REQ_COPY_USER constants are confusing,
+>>> because they actually mean that the buffer for the corresponding requests
+>>> has space in the tail for padding in case of DMA padding restrictions.
+>> No, that's not what it means, the fact that there's padding room is a
+>> side effect of the map type. So I'd suggest adding a comment above that
+>> if {} in blk_rq_map_sg(), something that should have been there from the
+>> beginning.
 > 
-> Well this makes hrtimers decidedly less useful for networking and we
-> have a ton of bugs right now, basically in every hrtimer used by the
-> networking currently.
+> Can you elaborate a bit more about what REQ_COPY_USER should mean, please?
 > 
-> The only way we can use them, as things currently stand, is as
-> triggers for softirq work.
-> 
-> Is it really that troublesome to provide this kind of facility
-> generically, rather than having various subsystems replicate such code
-> where they want to use hrtimers and are restricted to softirqs?
+> As far as I can see from the sources, currently it's used to only to 
+> determine if there is the padding space. Maybe, the original meaning 
+> doesn't make sense anymore?
 
-Linus really hated the softirq mode, which is what prompted me to change
-that.
+Jens,
 
-Now, it might be he only hated the particular interface and the
-resulting code, but I think to remember he simply thought the whole
-thing daft.
+Sorry for bothering you, but with use of the kernel-generated buffers, 
+like in the patch I sent in 
+http://groups.google.com/group/linux.kernel/browse_thread/thread/b5127eeadbef934e/5da7ec7b424d2f36?lnk=raot 
+name REQ_COPY_USER becomes quite misleading.
 
-I can look into adding it back if we can agree on the interface and code
-impact, but looking at:
+For instance, for blk_rq_map_kern_sg() usage of REQ_COPY_USER the 
+buffers neither copied, nor from user. Plus, as I wrote above, in 2.6.30 
+REQ_COPY_USER used only to determine if there is the padding space in 
+the end. Hence, I suggested the rename.
 
-# git grep hrtimer_init net/ | sort -u
-net/can/bcm.c:          hrtimer_init(&op->thrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-net/can/bcm.c:          hrtimer_init(&op->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-net/sched/sch_api.c:    hrtimer_init(&wd->timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-net/sched/sch_cbq.c:    hrtimer_init(&q->delay_timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-
-I wonder if its worth the impact on the core kernel code, or whether its
-better for these few timers to kick off a tasklet or the like.
-
-Further, I don't think a lot of subsystems would need this, as the
-general trend is away from softirqs/tasklets and towards
-threads/workqueues as most people want to schedule. And for those
-hardirq hrtimers are good enough as a wakeup source.
-
-
+Thanks,
+Vlad
