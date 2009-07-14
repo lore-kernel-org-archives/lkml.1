@@ -1,70 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbZGNH1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbZGNHba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753970AbZGNH1q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 03:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbZGNH1p
+	id S1753981AbZGNHba (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 03:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbZGNHb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 03:27:45 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:41472 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752744AbZGNH1o (ORCPT
+	Tue, 14 Jul 2009 03:31:29 -0400
+Received: from n12.bullet.mail.mud.yahoo.com ([209.191.125.209]:31817 "HELO
+	n12.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753678AbZGNHb3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 03:27:44 -0400
-Message-ID: <4A5C3361.70007@nortel.com>
-Date: Tue, 14 Jul 2009 01:27:29 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Tue, 14 Jul 2009 03:31:29 -0400
+X-Yahoo-Newman-Id: 708799.14560.bm@omp412.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=rgcx80YnLOR1hXgZHRB40Vo/NAs9yiXEWI59u2y3KxzJtxXEZeLSMxv5khc7KVghOG01NKqvRGVmaNw2kpEA93VaLthoJ4heB8KxXmEyD0dmI2QiTZO0jYitrY1lqhgSe26GOFPcPIpikFV43Go5+A5Dyn4lw5KmMcMWq2bguxA=  ;
+X-YMail-OSG: 2SgYmgQVM1lcTQdkHPr4kK0T2fDJVUalDoA4AcKyNIqYxmTQSVjcAiowLpodAQroRrl348rSvtnsMrJQTuuwfsW.PJMgts81_HP2Rv8kYIoMi5FEepbPbalG6IQtsGKhmsbl0Q4wOUvf1Uqk0tVEhrvtL0kDEKNhV3pYXaxEB3duevaISrROH_BuCtbKRc2ea2D4CoEOzZ5dj_5UdLNYvbSeR8Wz3zeVnZjFoof6L0lhvnM2n_RRcM5xnUntpVFfCXAzfkzLuvLBEEaDkvBSfNFjF7VVvjfka97UBucrqPmY36hLwx.rpPHQfhX89FC.SfvHxJiVX3EUeZuN1FyHOTTW
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: driver-core tree build failure
+Date: Tue, 14 Jul 2009 00:31:27 -0700
+User-Agent: KMail/1.9.10
+Cc: Greg KH <greg@kroah.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20090714163309.f2ee320d.sfr@canb.auug.org.au>
+In-Reply-To: <20090714163309.f2ee320d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Douglas Niehaus <niehaus@ittc.ku.edu>
-CC: Ted & Syauchen Baker <baker.tlh@comcast.net>,
-       "'Peter Zijlstra'" <a.p.zijlstra@chello.nl>,
-       "'Henrik Austad'" <henrik@austad.us>,
-       "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Bill Huey'" <billh@gnuppy.monkey.org>,
-       "'Linux RT'" <linux-rt-users@vger.kernel.org>,
-       "'Fabio Checconi'" <fabio@gandalf.sssup.it>,
-       "'James H. Anderson'" <anderson@cs.unc.edu>,
-       "'Thomas Gleixner'" <tglx@linutronix.de>,
-       "'Ted Baker'" <baker@cs.fsu.edu>,
-       "'Dhaval Giani'" <dhaval.giani@gmail.com>,
-       "'Noah Watkins'" <jayhawk@soe.ucsc.edu>,
-       "'KUSP Google Group'" <kusp@googlegroups.com>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-References: <200907102350.47124.henrik@austad.us> <1247336891.9978.32.camel@laptop> <4A594D2D.3080101@ittc.ku.edu> <002301ca0403$47f9d9d0$d7ed8d70$@tlh@comcast.net> <4A5BC7AB.4020703@ittc.ku.edu>
-In-Reply-To: <4A5BC7AB.4020703@ittc.ku.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jul 2009 07:27:31.0938 (UTC) FILETIME=[8CCB5420:01CA0454]
+Content-Disposition: inline
+Message-Id: <200907140031.27979.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Douglas Niehaus wrote:
-
->      (1.1) Will the use of system services (system calls) by RT threads 
-> need to be explicitly supported by, perhaps, explicitly making the 
-> schedulers of *other* threads also using those system calls aware of 
-> that and take it into account to make those other tasks non-preemptible 
-> while holding system call related locks.
+On Monday 13 July 2009, Stephen Rothwell wrote:
+> Hi Greg,
 > 
->      (1.2) Can Linux SMP ever support this in an acceptable manner since 
-> locks associated with systems services are shared across CPU boundaries. 
-> THus, I can isolate a set of RT tasks on a CPU easily, and they are well 
-> isolated and can run under strict predictability, *until they use a 
-> system call that uses a lock*. Then, the system call is an interaction 
-> channel with every other thread on the system using the same system call.
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> drivers/mtd/mtdcore.c:220: error: expected '{' before 'const'
+> drivers/mtd/mtdcore.c:227: error: 'mtd_groups' undeclared here (not in a function)
+> 
+> Caused by the update to commit ba87b739a1f5dd545679d886b8d193cdede991cf
+> ("driver model: constify attribute groups").
+> 
+> I have applied the patch below for today.
+
+That's a good patch, go with it.  Sorry; I guess this wasn't
+the version I had test-built.  My eyes were reporting "static"
+as the (expected) initial keyword there; they lied!
 
 
-This may be a terminology issue, but I think it would be more correct to
-say that the lock is the interaction channel, not the system call, and
-it is an interaction channel with every other entity on the system using
-the same lock.  Depending on the specific lock, this could be other
-userspace tasks, kernel threads, or even hardware interrupt handlers.
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Tue, 14 Jul 2009 16:29:39 +1000
+> Subject: [PATCH] driver-core: fix for mtd typo
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  drivers/mtd/mtdcore.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+> index 93e6731..05a16be 100644
+> --- a/drivers/mtd/mtdcore.c
+> +++ b/drivers/mtd/mtdcore.c
+> @@ -217,7 +217,7 @@ struct attribute_group mtd_group = {
+>  	.attrs		= mtd_attrs,
+>  };
+>  
+> -struct const attribute_group *mtd_groups[] = {
+> +const struct attribute_group *mtd_groups[] = {
+>  	&mtd_group,
+>  	NULL,
+>  };
+> -- 
+> 1.6.3.3
+> 
+> 
 
-This goes back to your first question of which system services an RT
-task can use while maintaining schedulability analysis.  Unfortunately
-this may be a moving target, since the exact answer depends on what
-locks are taken in the underlying kernel implementation.
 
-Chris
+
