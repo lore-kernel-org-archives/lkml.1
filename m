@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZGNOPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZGNORZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbZGNOPy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 10:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbZGNOPy
+	id S1754747AbZGNORZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 10:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZGNORZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 10:15:54 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:55484 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754631AbZGNOPx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 10:15:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=f2ocY2kI69VEcsK46WLw78mC2SzQQqbXmDL6RSrf14FbHSXk4miJs42dUHjn9PbNc0
-         i0Jlj0zXO/HPaPWU1jK65SGwL1krlG58OTTx6iXV7qWqHjbbyTAQ9tvIF4TObPyE5dQ9
-         zyr2b0yc7IrvEbaQSZ6CVmhjHIQe7MuQIB09Y=
-Date: Tue, 14 Jul 2009 16:15:47 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] ring_buffer: fix warning
-Message-ID: <20090714141544.GA5728@nowhere>
-References: <4A5C3549.7000905@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5C3549.7000905@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Jul 2009 10:17:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50336 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751398AbZGNORY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 10:17:24 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1247579382.11921.7.camel@ht.satnam>
+References: <1247579382.11921.7.camel@ht.satnam> <1247561931.2473.2.camel@ht.satnam> <20090709094430.23882.46013.stgit@warthog.procyon.org.uk> <1247561220.2473.0.camel@ht.satnam> <4131.1247577044@redhat.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: dhowells@redhat.com, Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-afs@lists.infradead.org
+Subject: Re: [PATCH] AFS: Fix compilation warning
+Date: Tue, 14 Jul 2009 15:16:07 +0100
+Message-ID: <4563.1247580967@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 03:35:37PM +0800, Lai Jiangshan wrote:
+Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> > I don't see an 80-column wrap problem that you've removed.
+> > 
 > 
-> kernel/trace/ring_buffer.c: In function 'rb_tail_page_update':
-> kernel/trace/ring_buffer.c:849: warning: value computed is not used
-> kernel/trace/ring_buffer.c:850: warning: value computed is not used
+> ok here it is :
 > 
-> Add a "(void)" to fix this warning.
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index e648ba4..d371279 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -846,8 +846,8 @@ static int rb_tail_page_update(struct ring_buffer_per_cpu *cpu_buffer,
->  		 * not come in and change it. In which case, we
->  		 * do not want to modify it.
->  		 */
-> -		local_cmpxchg(&next_page->write, old_write, val);
-> -		local_cmpxchg(&next_page->entries, old_entries, eval);
-> +		(void)local_cmpxchg(&next_page->write, old_write, val);
-> +		(void)local_cmpxchg(&next_page->entries, old_entries, eval);
->  
->  		/*
->  		 * No need to worry about races with clearing out the commit.
+> -               if (fid.vnode != vnode->fid.vnode) {
+> -                       _debug("%s: dirent changed [%u != %u]",
+> -                              dentry->d_name.name, fid.vnode,
+> -                              vnode->fid.vnode);
 
+Ah, I see.  I thought you meant there was a line of >80 chars that got fixed.
 
-Looks good. Indeed the rest of the path remains the same, whether the
-interrupts have already won the race or not.
-
-Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
-
+David
