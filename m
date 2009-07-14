@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbZGNXRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbZGNX2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756595AbZGNXRk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 19:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbZGNXRj
+	id S1756424AbZGNX2Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 19:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbZGNX2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 19:17:39 -0400
-Received: from smtp.it4linux.de ([212.112.238.121]:54201 "EHLO
-	smtp.it4linux.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755238AbZGNXRi (ORCPT
+	Tue, 14 Jul 2009 19:28:15 -0400
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:40456 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756290AbZGNX2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 19:17:38 -0400
-X-Greylist: delayed 865 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Jul 2009 19:17:38 EDT
-Message-ID: <4A5D0D49.60402@pirsoft.de>
-Date: Wed, 15 Jul 2009 00:57:13 +0200
-From: Pierre Willenbrock <pierre@pirsoft.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de-AT; rv:1.8.1.21) Gecko/20090517 SeaMonkey/1.1.16 Mnenhy/0.7.6.666
+	Tue, 14 Jul 2009 19:28:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=cO0IxwxEkpeAC9n5zrUI7CAC5d/QjZM2cre0NupR0jwo+xxUidRAJaQxwRn3T5fQN7
+         eXiHdXNV9fKD7p/OJTAv+OSFbzdtu1LW3MTCG24KnlqHqNBtgeUfENg8Xi+MpWF+aNOj
+         MGjeqBtSkOgBr7jG3o4co9tAO5OVfjwfxa+Yc=
+Message-ID: <4A5D148A.5090405@gmail.com>
+Date: Tue, 14 Jul 2009 20:28:10 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090626)
 MIME-Version: 1.0
-To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: possible regression with pty.c commit
-References: <20090711191556.GA3845@localdomain.by> <20090711232452.4dc7c1ba@lxorguk.ukuu.org.uk> <20090711235530.GA3231@localdomain.by> <20090713124834.5c3ecc5d@lxorguk.ukuu.org.uk> <20090714162837.GC3145@localdomain.by>
-In-Reply-To: <20090714162837.GC3145@localdomain.by>
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: kmemleak reports
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergey Senozhatsky schrieb:
-> Hello Alan,
-> I'm having another problem which I guess may be caused by pty/tty changes.
-> The problem is that ppp connection constantly hangups under load (downloading) 
-> (it works perfectly with 30 kernel).
-> 
-> syslog:
-> pptp[1942]: anon log[logecho:pptp_ctrl.c:677]: Echo Reply received.
-> pptp[1942]: anon log[logecho:pptp_ctrl.c:677]: Echo Reply received.
-> pptp[1942]: anon log[logecho:pptp_ctrl.c:677]: Echo Reply received.
-> pptp[1942]: anon log[logecho:pptp_ctrl.c:677]: Echo Reply received.
-> pptp[1942]: anon log[logecho:pptp_ctrl.c:677]: Echo Reply received.
-> pptp[1942]: anon log[logecho:pptp_ctrl.c:677]: Echo Reply received.
-> pptp[1942]: anon log[logecho:pptp_ctrl.c:677]: Echo Reply received.
-> pptp[1942]: anon log[logecho:pptp_ctrl.c:677]: Echo Request received.
-> pptp[1942]: anon log[ctrlp_rep:pptp_ctrl.c:251]: Sent control packet type is 6 'Echo-Reply' 
-> pppd[1929]: No response to 4 echo-requests
-> pppd[1929]: Serial link appears to be disconnected.
-> pppd[1929]: Connect time 8.5 minutes.
-> 
-> In average it works ~10 minutes. 
-> I did "strace -ff -F -tt -s 200 -o ... pon ..." which produced 11MiB and 46 files (it'll take some time to dig).
-> Do you have any ability to test ppp under load?
-> 
-> 	Sergey
 
-Hello everyone,
+Hi Catalin,
 
-I can reproduce this in mere seconds, using an otherwise idle ppp link
-and ping -f -s256 -l256.
-Usually, the first batch of packets hangs the pty, but if the link is
-not entirely idle, the ping may work for a few more seconds. In fact,
-bisect points to commit d945cb9cce20ac7143c2de8d88b187f62db99bdc ("pty:
-Rework the pty layer to use the normal buffering logic").
+I have noticed a few kmemleak reports being sent to LKML in the last few days, and I could chime in with mine, if you wish:
 
-Regards,
-  Pierre
+    kmemleak: 97 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+
+The entries are for X, ntpdate, scsi_scan_2, softirq, swapper, in case there's anything surprising in there.
+
+However, I was thinking that you might soon start getting too many reports to process.  I wonder if there might be some way that you could have a similar facility to kerneloops that would automatically register leak reports to a website where they could be organized and ranked by number of occurrences.  Are the individual leaks reported in such at way that would allow them to be grouped like that?
+
+If a kerneloops-style setup is not desirable/feasible, would you be able to send me a walkthrough for how you go about tracking down one of these leaks?  Then I might be able to help out by investigating a few of my own.
+
+Thanks,
+
+-- 
+Kevin Winchester
+
+
+
