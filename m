@@ -1,66 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbZGNA4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZGNA6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752217AbZGNA4i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 20:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZGNA4i
+	id S1752347AbZGNA6N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 20:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZGNA6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 20:56:38 -0400
-Received: from pop-tawny.atl.sa.earthlink.net ([207.69.195.67]:33166 "EHLO
-	pop-tawny.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752025AbZGNA4h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 20:56:37 -0400
-Message-ID: <4A5BD7B5.1010904@earthlink.net>
-Date: Mon, 13 Jul 2009 20:56:21 -0400
-From: Robert Reif <reif@earthlink.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15 (Ubuntu-1.1.15+nobinonly-0ubuntu2)
-MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: davem@davemloft.net, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, x86@kernel.org, tony.luck@intel.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH v2 0/8] sparc: use asm-generic/dma-mapping-common.h and
- pci-dma-compat.h
-References: <1247466360-13330-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1247466360-13330-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 13 Jul 2009 20:58:12 -0400
+Received: from mga01.intel.com ([192.55.52.88]:7379 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752037AbZGNA6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 20:58:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,393,1243839600"; 
+   d="scan'208";a="707507613"
+Subject: Re: [PATCH 1/3] backlight: Allow drivers to update the core, and
+	generate events on changes
+From: ykzhao <yakui.zhao@intel.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "rpurdie@rpsys.net" <rpurdie@rpsys.net>,
+       "lenb@kernel.org" <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>,
+       "corentincj@iksaif.net" <corentincj@iksaif.net>
+In-Reply-To: <1247517685-7719-1-git-send-email-mjg@redhat.com>
+References: <1247517685-7719-1-git-send-email-mjg@redhat.com>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Tue, 14 Jul 2009 08:58:48 +0800
+Message-Id: <1247533128.3704.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> This is the second version of the patchset to convert SPARC to
-> asm-generic/dma-mapping-common.h and pci-dma-compat.h:
->
->   
-I still get the same runtime warning with this patch set at boot time.
-
-The bad address is within the kernel so it looks like
-it's catching a real bug.
-
-cat kallsyms | grep f0007000
-f0007000 T trapbase_cpu3
-
-WARNING: at lib/dma-debug.c:873 check_for_illegal_area+0xc8/0x100()
-esp ffd7ba30: DMA-API: device driver maps memory from kernel text or 
-rodata [addr=f0007000] [len=4096]
-Modules linked in: ext3 jbd sd_mod sun_esp esp_scsi scsi_transport_spi 
-scsi_mod
-[f011ffa0 : check_for_illegal_area+0xc8/0x100 ]
-[f0120b1c : debug_dma_map_sg+0x158/0x1c4 ]
-[fe6946d0 : sbus_esp_map_sg+0xec/0xfc [sun_esp] ]
-[fe684454 : esp_maybe_execute_command+0x1f0/0x6f8 [esp_scsi] ]
-[fe6849e4 : esp_queuecommand+0x88/0x98 [esp_scsi] ]
-[fe638c00 : scsi_dispatch_cmd+0x200/0x2a8 [scsi_mod] ]
-[fe63f038 : scsi_request_fn+0x3f4/0x52c [scsi_mod] ]
-[f00f6d64 : __generic_unplug_device+0x40/0x50 ]
-[f00f6d90 : generic_unplug_device+0x1c/0x38 ]
-[f00f4be4 : blk_unplug+0x14/0x24 ]
-[f00ade1c : sync_buffer+0x48/0x60 ]
-[f01f6d58 : __wait_on_bit+0x4c/0xa4 ]
-[f01f6e60 : out_of_line_wait_on_bit+0xb0/0xc0 ]
-[fe709320 : __ext3_get_inode_loc+0x3bc/0x418 [ext3] ]
-[fe7093b4 : ext3_iget+0x38/0x65c [ext3] ]
-[fe712c70 : ext3_get_journal+0xc/0xd4 [ext3] ]
+On Tue, 2009-07-14 at 04:41 +0800, Matthew Garrett wrote:
+> Certain hardware will send us events when the backlight brightness
+> changes. Add a function to update the value in the core, and
+> additionally send a uevent so that userspace can pop up appropriate
+> UI. The uevents are flagged depending on whether the update originated
+> in the kernel or from userspace, making it easier to only display UI
+> at the appropriate time.
+> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> ---
+>  drivers/video/backlight/backlight.c |   23 +++++++++++++++++++++++
+>  include/linux/backlight.h           |    1 +
+>  2 files changed, 24 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+> index 157057c..98ab76c 100644
+> --- a/drivers/video/backlight/backlight.c
+> +++ b/drivers/video/backlight/backlight.c
+> @@ -120,6 +120,7 @@ static ssize_t backlight_store_brightness(struct device *dev,
+>  {
+>  	int rc;
+>  	struct backlight_device *bd = to_backlight_device(dev);
+> +	char *envp[] = { "SOURCE=userspace", NULL };
+>  	unsigned long brightness;
+>  
+>  	rc = strict_strtoul(buf, 0, &brightness);
+> @@ -142,6 +143,8 @@ static ssize_t backlight_store_brightness(struct device *dev,
+>  	}
+>  	mutex_unlock(&bd->ops_lock);
+>  
+> +	kobject_uevent_env(&bd->dev.kobj, KOBJ_CHANGE, envp);
+> +
+It will be better to send the event to user space only when the
+brightness is updated successfully.
+>  	return rc;
+>  }
+>  
+> @@ -214,6 +217,26 @@ static struct device_attribute bl_device_attributes[] = {
+>  };
+>  
+>  /**
+> + * backlight_force_update - tell the backlight subsystem that hardware state
+> + *   has changed
+> + * @bd: the backlight device to update
+> + *
+> + * Updates the internal state of the backlight in response to a hardware event,
+> + * and generate a uevent to notify userspace
+> + */
+> +void backlight_force_update(struct backlight_device *bd)
+> +{
+> +	char *envp[] = { "SOURCE=kernel", NULL };
+> +
+> +	mutex_lock(&bd->ops_lock);
+> +	if (bd->ops && bd->ops->get_brightness)
+> +		bd->props.brightness = bd->ops->get_brightness(bd);
+> +	mutex_unlock(&bd->ops_lock);
+> +	kobject_uevent_env(&bd->dev.kobj, KOBJ_CHANGE, envp);
+> +}
+> +EXPORT_SYMBOL(backlight_force_update);
+It seems that the acpi video driver will send the ACPI event to user
+space when updating the brightness. 
+Is it necessary to send the udev-event again?
+Thanks.
+> +
+> +/**
+>   * backlight_device_register - create and register a new object of
+>   *   backlight_device class.
+>   * @name: the name of the new object(must be the same as the name of the
+> diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+> index 79ca2da..8298c43 100644
+> --- a/include/linux/backlight.h
+> +++ b/include/linux/backlight.h
+> @@ -100,6 +100,7 @@ static inline void backlight_update_status(struct backlight_device *bd)
+>  extern struct backlight_device *backlight_device_register(const char *name,
+>  	struct device *dev, void *devdata, struct backlight_ops *ops);
+>  extern void backlight_device_unregister(struct backlight_device *bd);
+> +extern void backlight_force_update(struct backlight_device *bd);
+>  
+>  #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
+>  
 
