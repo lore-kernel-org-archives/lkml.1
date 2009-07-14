@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbZGNR2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751666AbZGNRbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902AbZGNR2s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 13:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbZGNR2r
+	id S1751666AbZGNRbe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 13:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750790AbZGNRbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 13:28:47 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:7678 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753839AbZGNR2q convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 13:28:46 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=sEFn+mhKb51aokPPFx1jJfShG6EC4HE5Iu/2PoyycQdiBTeJl3z/s+JOsrR4SBN/a
-	kyCsjvUOo07Hz5QGQcX8w==
-MIME-Version: 1.0
-In-Reply-To: <20090714132538.ac0bc44a.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090710230043.16778.29656.stgit@hastromil.mtv.corp.google.com>
-	 <20090710230205.16778.11707.stgit@hastromil.mtv.corp.google.com>
-	 <4A5AA3E7.9070800@cn.fujitsu.com>
-	 <20090713150303.70ab5176.kamezawa.hiroyu@jp.fujitsu.com>
-	 <2f86c2480907130827u7d2b062bw26bbb80a8e3de657@mail.gmail.com>
-	 <20090714084950.2401d9a6.kamezawa.hiroyu@jp.fujitsu.com>
-	 <6599ad830907132050n226aecb3ucab6746a4d0e81fa@mail.gmail.com>
-	 <20090714125334.b476aa78.kamezawa.hiroyu@jp.fujitsu.com>
-	 <6599ad830907132104o55d31ccexb15e5aa35c31416e@mail.gmail.com>
-	 <20090714132538.ac0bc44a.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 14 Jul 2009 10:28:43 -0700
-Message-ID: <6599ad830907141028y50f36d63h8ea06f73ff369591@mail.gmail.com>
-Subject: Re: [PATCH 3/3] Quick vmalloc vs kmalloc fix to the case where array 
-	size is too large
-From: Paul Menage <menage@google.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Benjamin Blum <bblum@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, serue@us.ibm.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Tue, 14 Jul 2009 13:31:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51036 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbZGNRbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 13:31:33 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1247591665-12000-1-git-send-email-vapier@gentoo.org>
+References: <1247591665-12000-1-git-send-email-vapier@gentoo.org> <20090714161416.GA19147@cmpxchg.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Bernd Schmidt <bernds_cb1@t-online.de>, Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH v2] NOMMU: add support for Memory Protection Units (MPU)
+Date: Tue, 14 Jul 2009 18:22:06 +0100
+Message-ID: <6206.1247592126@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 13, 2009 at 9:25 PM, KAMEZAWA
-Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> My point is
->  - More PIDs, More time necessary to read procs file.
+Mike Frysinger <vapier@gentoo.org> wrote:
 
-Right now, many pids => impossible to read procs file due to kmalloc
-failure. (This was always the case with cpusets too). So using kmalloc
-in those cases is a strict improvement.
+> Some architectures (like the Blackfin arch) implement some of the
+> "simpler" features that one would expect out of a MMU such as memory
+> protection.  In our case, we actually get read/write/exec protection
+> down to the page boundary so processes can't stomp on each other let
+> alone the kernel.  There is a performance decrease (which depends greatly
+> on the workload) however as the hardware/software interaction was not
+> optimized at design time.
 
-> This patch boost it ;) Seems like "visit this later again" ,or FIXME patch.
+It occurs to me that I could probably test this on FRV by using the MMU in a
+limited way.  How do you actually keep track of the protections applied?  Do
+you have a single global page table that is managed by the mmap code on a
+per-VMA basis?
 
-Agreed.
-
-Paul
+David
