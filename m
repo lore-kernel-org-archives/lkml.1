@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZGNO21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbZGNO22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbZGNO21 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 10:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbZGNO20
+	id S1754870AbZGNO22 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 10:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbZGNO21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 10:28:26 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:44072 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754792AbZGNO2Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 10:28:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45852 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754800AbZGNO2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 14 Jul 2009 10:28:25 -0400
-Subject: Re: possible memory leak on i915_gem_create_ioctl
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Alexey Fisher <bug-track@fisher-privat.net>
-Cc: "kernel-testers-owner@vger.kernel.org" 
-	<kernel-testers-owner@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>
-In-Reply-To: <4A5C93AD.5050403@fisher-privat.net>
-References: <4A5C93AD.5050403@fisher-privat.net>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 14 Jul 2009 15:28:20 +0100
-Message-Id: <1247581700.28240.106.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jul 2009 14:28:21.0759 (UTC) FILETIME=[56DC40F0:01CA048F]
+Date: Tue, 14 Jul 2009 14:28:01 GMT
+From: tip-bot for Dave Jones <davej@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       davej@redhat.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, davej@redhat.com
+In-Reply-To: <20090713201437.GA12165@redhat.com>
+References: <20090713201437.GA12165@redhat.com>
+Subject: [tip:x86/urgent] x86: Fix warning in pvclock.c
+Message-ID: <tip-2ad76643ff58bb8841f391ea8327c14abe273ea3@git.kernel.org>
+Git-Commit-ID: 2ad76643ff58bb8841f391ea8327c14abe273ea3
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 14 Jul 2009 14:28:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-14 at 16:18 +0200, Alexey Fisher wrote:
-> kmemleak report a lot of possible memory leaks if using any glxrelated 
-> applications like glxgears, glxinfo, compiz, cairo-dock with g45 graphic.
-> 
-> Here is a trace from /sys/kernel/debug/kmemleak:
-> 
-> unreferenced object 0xffff8800b298e000 (size 544):
->    comm "openarena", pid 5002, jiffies 4296480664
->    backtrace:
->      [<ffffffff814ac755>] kmemleak_alloc+0x25/0x60
->      [<ffffffff810f4b8b>] kmem_cache_alloc+0xfb/0x180
->      [<ffffffff8122404f>] idr_pre_get+0x5f/0x90
->      [<ffffffff812c6fed>] drm_gem_handle_create+0x2d/0xa0
->      [<ffffffff812e0d60>] i915_gem_create_ioctl+0x60/0xc0
->      [<ffffffff812c5c74>] drm_ioctl+0x184/0x3b0
->      [<ffffffff8110c6dc>] vfs_ioctl+0x7c/0xa0
->      [<ffffffff8110cbaa>] do_vfs_ioctl+0x8a/0x5a0
->      [<ffffffff8110d141>] sys_ioctl+0x81/0xa0
->      [<ffffffff8100b66b>] system_call_fastpath+0x16/0x1b
->      [<ffffffffffffffff>] 0xffffffffffffffff
+Commit-ID:  2ad76643ff58bb8841f391ea8327c14abe273ea3
+Gitweb:     http://git.kernel.org/tip/2ad76643ff58bb8841f391ea8327c14abe273ea3
+Author:     Dave Jones <davej@redhat.com>
+AuthorDate: Mon, 13 Jul 2009 16:14:37 -0400
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Tue, 14 Jul 2009 16:25:05 +0200
 
-I already reported these - http://lkml.org/lkml/2009/7/9/110.
+x86: Fix warning in pvclock.c
 
-They look like real leaks but someone who understands the code better
-would need to look at them.
+when building 32-bit, I see this ..
+arch/x86/kernel/pvclock.c:63:7: warning: "__x86_64__" is not defined
 
--- 
-Catalin
+Signed-off-by: Dave Jones <davej@redhat.com>
+LKML-Reference: <20090713201437.GA12165@redhat.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
+
+
+---
+ arch/x86/kernel/pvclock.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/pvclock.c b/arch/x86/kernel/pvclock.c
+index 4f9c55f..03801f2 100644
+--- a/arch/x86/kernel/pvclock.c
++++ b/arch/x86/kernel/pvclock.c
+@@ -60,7 +60,7 @@ static inline u64 scale_delta(u64 delta, u32 mul_frac, int shift)
+ 		"adc  %5,%%edx ; "
+ 		: "=A" (product), "=r" (tmp1), "=r" (tmp2)
+ 		: "a" ((u32)delta), "1" ((u32)(delta >> 32)), "2" (mul_frac) );
+-#elif __x86_64__
++#elif defined(__x86_64__)
+ 	__asm__ (
+ 		"mul %%rdx ; shrd $32,%%rdx,%%rax"
+ 		: "=a" (product) : "0" (delta), "d" ((u64)mul_frac) );
