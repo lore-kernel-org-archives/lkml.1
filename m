@@ -1,36 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbZGNNMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753269AbZGNNMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033AbZGNNMA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 09:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZGNNL7
+	id S1753269AbZGNNMr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 09:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbZGNNMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 09:11:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40770 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752499AbZGNNL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 09:11:59 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1247561931.2473.2.camel@ht.satnam>
-References: <1247561931.2473.2.camel@ht.satnam> <20090709094430.23882.46013.stgit@warthog.procyon.org.uk> <1247561220.2473.0.camel@ht.satnam>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, torvalds@osdl.org,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       akpm@linux-foundation.org, linux-afs@lists.infradead.org
-Subject: Re: [PATCH] AFS: Fix compilation warning
-Date: Tue, 14 Jul 2009 14:10:44 +0100
-Message-ID: <4131.1247577044@redhat.com>
+	Tue, 14 Jul 2009 09:12:47 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:28827 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752541AbZGNNMq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 09:12:46 -0400
+Date: Tue, 14 Jul 2009 09:12:15 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       rjw@sisk.pl
+Subject: Re: [PATCH] Fix congestion_wait() sync/async vs read/write
+	confusion
+Message-ID: <20090714131215.GF3783@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Jan Kara <jack@suse.cz>, Jens Axboe <jens.axboe@oracle.com>,
+	linux-kernel@vger.kernel.org, rjw@sisk.pl
+References: <20090708184703.GW23611@kernel.dk> <20090708191238.GE18008@think> <20090714114419.GA17633@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090714114419.GA17633@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: abhmt008.oracle.com [141.146.116.17]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4A5C8431.01D7:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+On Tue, Jul 14, 2009 at 01:44:19PM +0200, Jan Kara wrote:
+> On Wed 08-07-09 15:12:38, Chris Mason wrote:
+> > On Wed, Jul 08, 2009 at 08:47:03PM +0200, Jens Axboe wrote:
+> > > Hi,
+> > > 
+> > > This one isn't great, we currently have broken congestion wait logic in
+> > > the kernel. 2.6.30 is impacted as well, so this patch should go to
+> > > stable too once it's in -git. I'll let this one simmer until tomorrow,
+> > > then ask Linus to pull it. The offending commit breaking this is
+> > > 1faa16d22877f4839bd433547d770c676d1d964c.
+> > > 
+> > > Meanwhile, it could potentially cause buffered writeout slowdowns in the
+> > > kernel. Perhaps the 2.6.30 regression in that area is caused by this?
+> > > Would be interesting if the submitter could test. I can't find the list,
+> > > CC'ing Rafael.
+> > 
+> > Even if this does slow down some workloads, the bug is not in using the
+> > correct flag ;) So, I'd ack this one.
+> > 
+> > Jan Kara was able to reproduce the tiobench 2.6.30 regression, so I've
+> > cc'd him and kept the patch below.
+>   Thanks for the patch Chris. I've remeasured tiobench with the 2.6.30 +
+> the fix but it didn't help (which is not too surprising as what I observe
+> is most likely CFQ related as there's no regression with NOOP scheduler).
+>   Just to recall:
+>     2.6.29 (CFQ)           Avg    StdDev
+> 8   38.01 40.26 39.69 ->  39.32  0.955092
+> 16  40.09 38.18 40.05 ->  39.44  0.891104
+> 
+>     2.6.30-rc8 (CFQ)
+> 8   36.67 36.81 38.20 ->  37.23  0.69062
+> 16  37.45 36.47 37.46 ->  37.13  0.464351
+> 
+>     2.6.30-rc8+fix (CFQ)
+> 8   37.56 37.38 37.98 ->  37.64  0.251396
+> 16  38.11 36.71 37.18 ->  37.33  0.581741
+> 
+>   So with the fix there's no statistically significant difference and we
+> are still below 2.6.29 results. I'm now going to retest with the WRITE_SYNC
+> changes reverted.
 
-> 2. fix 80 column wrap problem
+Well, its good the patch didn't make things worse ;)  I didn't have the
+highest hopes that it would resolve the regression, but thanks for
+testing!
 
-I don't see an 80-column wrap problem that you've removed.
+-chris
 
-David
