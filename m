@@ -1,90 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbZGNOPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZGNOPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754718AbZGNOPK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 10:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbZGNOPJ
+	id S1754766AbZGNOPy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 10:15:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbZGNOPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 10:15:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47600 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754154AbZGNOPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 10:15:09 -0400
-From: Xiaotian Feng <dfeng@redhat.com>
-To: axboe@kernel.dk
-Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>
-Subject: [PATCH V2] block: sysfs fix mismatched queue_var_{store,show} in 64bit kernel
-Date: Tue, 14 Jul 2009 22:15:06 +0800
-Message-Id: <1247580906-24762-1-git-send-email-dfeng@redhat.com>
-In-Reply-To: <1247572618-24073-1-git-send-email-dfeng@redhat.com>
-References: <1247572618-24073-1-git-send-email-dfeng@redhat.com>
+	Tue, 14 Jul 2009 10:15:54 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:55484 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754631AbZGNOPx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 10:15:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=f2ocY2kI69VEcsK46WLw78mC2SzQQqbXmDL6RSrf14FbHSXk4miJs42dUHjn9PbNc0
+         i0Jlj0zXO/HPaPWU1jK65SGwL1krlG58OTTx6iXV7qWqHjbbyTAQ9tvIF4TObPyE5dQ9
+         zyr2b0yc7IrvEbaQSZ6CVmhjHIQe7MuQIB09Y=
+Date: Tue, 14 Jul 2009 16:15:47 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] ring_buffer: fix warning
+Message-ID: <20090714141544.GA5728@nowhere>
+References: <4A5C3549.7000905@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A5C3549.7000905@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In blk-sysfs.c, queue_var_store uses unsigned long to store data,
-but queue_var_show uses unsigned int to show data. This causes,
+On Tue, Jul 14, 2009 at 03:35:37PM +0800, Lai Jiangshan wrote:
+> 
+> kernel/trace/ring_buffer.c: In function 'rb_tail_page_update':
+> kernel/trace/ring_buffer.c:849: warning: value computed is not used
+> kernel/trace/ring_buffer.c:850: warning: value computed is not used
+> 
+> Add a "(void)" to fix this warning.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index e648ba4..d371279 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -846,8 +846,8 @@ static int rb_tail_page_update(struct ring_buffer_per_cpu *cpu_buffer,
+>  		 * not come in and change it. In which case, we
+>  		 * do not want to modify it.
+>  		 */
+> -		local_cmpxchg(&next_page->write, old_write, val);
+> -		local_cmpxchg(&next_page->entries, old_entries, eval);
+> +		(void)local_cmpxchg(&next_page->write, old_write, val);
+> +		(void)local_cmpxchg(&next_page->entries, old_entries, eval);
+>  
+>  		/*
+>  		 * No need to worry about races with clearing out the commit.
 
-	# echo 70000000000 > /sys/block/<dev>/queue/read_ahead_kb
-	# cat /sys/block/<dev>/queue/read_ahead_kb => get wrong value
 
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
----
- block/blk-sysfs.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+Looks good. Indeed the rest of the path remains the same, whether the
+interrupts have already won the race or not.
 
-diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-index b1cd040..e177eb3 100644
---- a/block/blk-sysfs.c
-+++ b/block/blk-sysfs.c
-@@ -16,9 +16,9 @@ struct queue_sysfs_entry {
- };
- 
- static ssize_t
--queue_var_show(unsigned int var, char *page)
-+queue_var_show(unsigned long var, char *page)
- {
--	return sprintf(page, "%d\n", var);
-+	return sprintf(page, "%lu\n", var);
- }
- 
- static ssize_t
-@@ -77,7 +77,8 @@ queue_requests_store(struct request_queue *q, const char *page, size_t count)
- 
- static ssize_t queue_ra_show(struct request_queue *q, char *page)
- {
--	int ra_kb = q->backing_dev_info.ra_pages << (PAGE_CACHE_SHIFT - 10);
-+	unsigned long ra_kb = q->backing_dev_info.ra_pages <<
-+					(PAGE_CACHE_SHIFT - 10);
- 
- 	return queue_var_show(ra_kb, (page));
- }
-@@ -95,7 +96,7 @@ queue_ra_store(struct request_queue *q, const char *page, size_t count)
- 
- static ssize_t queue_max_sectors_show(struct request_queue *q, char *page)
- {
--	int max_sectors_kb = queue_max_sectors(q) >> 1;
-+	unsigned long max_sectors_kb = queue_max_sectors(q) >> 1;
- 
- 	return queue_var_show(max_sectors_kb, (page));
- }
-@@ -140,7 +141,7 @@ queue_max_sectors_store(struct request_queue *q, const char *page, size_t count)
- 
- static ssize_t queue_max_hw_sectors_show(struct request_queue *q, char *page)
- {
--	int max_hw_sectors_kb = queue_max_hw_sectors(q) >> 1;
-+	unsigned long max_hw_sectors_kb = queue_max_hw_sectors(q) >> 1;
- 
- 	return queue_var_show(max_hw_sectors_kb, (page));
- }
-@@ -189,7 +190,7 @@ static ssize_t queue_nomerges_store(struct request_queue *q, const char *page,
- 
- static ssize_t queue_rq_affinity_show(struct request_queue *q, char *page)
- {
--	unsigned int set = test_bit(QUEUE_FLAG_SAME_COMP, &q->queue_flags);
-+	unsigned long set = test_bit(QUEUE_FLAG_SAME_COMP, &q->queue_flags);
- 
- 	return queue_var_show(set != 0, page);
- }
--- 
-1.6.2.5
+Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
 
