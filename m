@@ -1,120 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZGNQyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZGNQzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbZGNQyf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 12:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbZGNQye
+	id S1755716AbZGNQzN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 12:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbZGNQzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 12:54:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38002 "EHLO mx2.suse.de"
+	Tue, 14 Jul 2009 12:55:12 -0400
+Received: from fafnir.cs.unc.edu ([152.2.129.90]:38494 "EHLO fafnir.cs.unc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755163AbZGNQye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 12:54:34 -0400
-Date: Tue, 14 Jul 2009 18:55:08 +0200
-From: Kurt Garloff <garloff@suse.de>
-To: Erik Jacobson <erikj@sgi.com>,
-       Linux kernel list <linux-kernel@vger.kernel.org>
-Cc: Norbert Eicker <N.Eicker@fz-juelich.de>,
-       Greg Kroah-Hartman <GregKH@suse.de>,
-       Alexey Starikovskiy <AStarikovskiy@suse.cz>,
-       Len Brown <LenB@kernel.org>
-Subject: [PATCH 0/3] Resend: Discard reserved PXM bits for SRAT v1
-Message-ID: <20090714165508.GD31657@tpkurt2.suse.de>
-Mail-Followup-To: Kurt Garloff <garloff@suse.de>,
-	Erik Jacobson <erikj@sgi.com>,
-	Linux kernel list <linux-kernel@vger.kernel.org>,
-	Norbert Eicker <N.Eicker@fz-juelich.de>,
-	Greg Kroah-Hartman <GregKH@suse.de>,
-	Alexey Starikovskiy <AStarikovskiy@suse.cz>,
-	Len Brown <LenB@kernel.org>
-References: <20090518093352.GC15531@tpkurt2.garloff.de> <20090622140522.GA5378@sgi.com>
+	id S1755163AbZGNQzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 12:55:11 -0400
+Date: Tue, 14 Jul 2009 12:54:13 -0400 (EDT)
+From: "James H. Anderson" <anderson@cs.unc.edu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Chris Friesen <cfriesen@nortel.com>, Raistlin <raistlin@linux.it>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Noah Watkins <jayhawk@soe.ucsc.edu>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>,
+       "James H. Anderson" <anderson@cs.unc.edu>
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+In-Reply-To: <1247589099.7500.191.camel@twins>
+Message-ID: <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu>
+References: <200907102350.47124.henrik@austad.us>  <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>  <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>  <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir>
+  <4A5C9ABA.9070909@nortel.com>  <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu> <1247589099.7500.191.camel@twins>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0IvGJv3f9h+YhkrH"
-Content-Disposition: inline
-In-Reply-To: <20090622140522.GA5378@sgi.com>
-X-Operating-System: Linux 2.6.27.23-0.1-default x86_64
-X-PGP-Info: on http://www.garloff.de/kurt/mykeys.pgp
-X-PGP-Key: 1024D/1C98774E
-Organization: SUSE Linux Products GmbH (a Novell company), Nuernberg, GF:
-	Markus Rex, HRB 16746 (AG Nuernberg)
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---0IvGJv3f9h+YhkrH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Erik,
+On Tue, 14 Jul 2009, Peter Zijlstra wrote:
 
-On Mon, Jun 22, 2009 at 09:05:22AM -0500, Erik Jacobson wrote:
-> I just wanted to post in to the thread that this patch set solved both
-> the node numbering (where there was a node0 and a node2) and the issue
-> where all CPUs were showing up one the first node.
->=20
-> I applied the three patches against 2.6.30-git14.
->=20
-> We look forward to seeing the changes integrated.
+>
+> Hi Jim,
+>
+> On Tue, 2009-07-14 at 11:19 -0400, James H. Anderson wrote:
+>> The first email in this thread that I was cc'ed on talked about
+>> implementing global EDF,
+>
+> Hendrik says that its a modified Modified-Least-Laxity-First, so
+> something like M^2-LLF, and I cc'ed you (and I meant to add Bjorn too,
+> but now see I failed to actually do so) in the hope that you would have
+> some thoughts on his scheduling algorithm, since that is what you do a
+> lot of ;-)
+>
+> It could well be he modified M-LLF into G-EDF, but I'm behind in my
+> reading here, so I'll have to leave that up to others.
 
-So do I.
-The patches are obviously already in SUSE kernels, I'd like to see them
-in mainline too.
+I meant to say something about this algorithm earlier that may be
+worthwhile.  If I understand Hendrik's algorithm correctly, it falls
+within a class of global schedulers for which bounded deadline
+tardiness is guaranteed (as long as total utilization doesn't exceed
+the system's capacity).  This follows from results in:
 
-> On this 2-socket Intel 5500 based system (Nehalem), the /sys stuff looks
-> good:
->=20
-> $ ls /sys/devices/system/node/node?
-> /sys/devices/system/node/node0:
-> cpu0  cpu2  cpulist  distance  numastat
-> cpu1  cpu3  cpumap   meminfo   scan_unevictable_pages
->=20
-> /sys/devices/system/node/node1:
-> cpu4  cpu6  cpulist  distance  numastat
-> cpu5  cpu7  cpumap   meminfo   scan_unevictable_pages
->=20
->=20
-> Where as, before, it looked like this (non-ordered, all CPUs showing up
-> in node 0).
->=20
-> # ls -ld /sys/devices/system/node/node*
-> drwxr-xr-x 2 root root 0 2009-06-18 09:30 /sys/devices/system/node/node0
-> drwxr-xr-x 2 root root 0 2009-06-18 09:30 /sys/devices/system/node/node2
->=20
-> [root@cct201 ~]# ls /sys/devices/system/node/node0
-> cpu0  cpu2  cpu4  cpu6  cpulist  distance  numastat
-> cpu1  cpu3  cpu5  cpu7  cpumap   meminfo   scan_unevictable_pages
->=20
->=20
-> System details:
-> - SGI Altix XE 270
-> - Supermicro X8DTN v 1.1 mainboard
-> - 2 sockets of Xeon X5570
-=20
-OK, you really observe the same here as did FZJ.
-Thanks for reporting!
+H. Leontyev and J. Anderson, "Generalized Tardiness Bounds for Global
+Multiprocessor Scheduling",  Proceedings of the 28th IEEE Real-Time
+Systems Symposium, pp. 413-422, December 2007.
 
-So let me resend the patches, rediffed against current 2.6.31rc git
-in followup mails.
+This is a positive thing w.r.t. wanting to support soft real-time
+workloads.  However, global EDF also has this property and (I would
+think) is easier to implement (I'm just guessing here -- we haven't
+actually implemented any algorithm that involves laxities in
+LITMUS^RT).  Ted Baker did some work on an algorithm called EDZL
+(EDF until zero laxity) that is essentially a hybrid of these two
+algorithms.  In simulations we've done (not based on real implementations),
+EDZL exhibits really low tardiness (almost non-existent).  EDZL may
+give you the benefits of using laxities where useful and be easier
+to implement (but that's just my guess)
 
-Len, Linus, please adopt.
+Regarding all these "legacy" issues, I think it would be helpful to
+write them all down carefully and formally, and then think about
+what are the *simplest* mechanisms that will do the job in the common
+case.  It is not worthwhile (in my opinion) to introduce tons of
+complexity to nip at corner cases that aren't that common.  Of course,
+this begs the question of what is "common" and what is not: something
+that may also be worth trying to find evidence for and writing down.
 
-Best,
---=20
-Kurt Garloff, VP OPS Partner Engineering -- Novell Inc.
+Or better yet, someone needs to define a new standard for multicore...
+but I'm not sure how that gets done.
 
---0IvGJv3f9h+YhkrH
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Gotta go....
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iD8DBQFKXLhsxmLh6hyYd04RAnZrAKDSz89T9ZtzcP0JiAoWZxpTkMaoGgCfRBri
-Pyy+VVok1ud4S3Uh5a7ulCI=
-=C1d/
------END PGP SIGNATURE-----
-
---0IvGJv3f9h+YhkrH--
+-Jim
