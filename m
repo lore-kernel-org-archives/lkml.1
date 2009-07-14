@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbZGNWDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbZGNWCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbZGNWDA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 18:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbZGNWC5
+	id S1756581AbZGNWCv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 18:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756191AbZGNWCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 18:02:57 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:3604 "EHLO
+	Tue, 14 Jul 2009 18:02:49 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:3553 "EHLO
 	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756619AbZGNWCz (ORCPT
+	with ESMTP id S1756179AbZGNWCp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 18:02:55 -0400
-Subject: [PATCH 3/3] cciss: kick off logical drive topology rescan through
-	sysfs
+	Tue, 14 Jul 2009 18:02:45 -0400
+Subject: [PATCH 1/3] cciss: remove logical drive sysfs entries during driver
+	cleanup.
 To: linux-kernel@vger.kernel.org
 From: Andrew Patterson <andrew.patterson@hp.com>
 Cc: akpm@linux-foundation.org, linux-scsi@vger.kernel.org, mike.miller@hp.com,
        jens.axboe@oracle.com
-Date: Tue, 14 Jul 2009 16:02:55 -0600
-Message-ID: <20090714220255.22282.96793.stgit@bob.kio>
+Date: Tue, 14 Jul 2009 16:02:45 -0600
+Message-ID: <20090714220245.22282.40514.stgit@bob.kio>
 In-Reply-To: <20090714220239.22282.44414.stgit@bob.kio>
 References: <20090714220239.22282.44414.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
@@ -28,81 +28,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cciss: kick off logical drive topology rescan through sysfs
+cciss: remove logical drive sysfs entries during driver cleanup.
 
-Added /sys/bus/pci/devices/<dev>/ccissX/rescan sysfs entry used
-to kick off a rescan that discovers logical drive topology changes.
+Sysfs entries for logical drives need to be removed when a drive is
+deleted during driver cleanup.
 
 Acked-by: Mike Miller <mike.miller@hp.com>
 Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 ---
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-index 0a92a7c..4050606 100644
---- a/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-+++ b/Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
-@@ -31,3 +31,10 @@ Date:		March 2009
- Kernel Version: 2.6.30
- Contact:	iss_storagedev@hp.com
- Description:	A symbolic link to /sys/block/cciss!cXdY
-+
-+Where:		/sys/bus/pci/devices/<dev>/ccissX/rescan
-+Date:		July 2009
-+Kernel Version:	2.6.31
-+Contact:	iss_storagedev@hp.com
-+Description:	Kicks of a rescan of the controller to discovery logical
-+		drive topology changes.
 diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index c6bba77..a409e26 100644
+index a52cc7f..970c896 100644
 --- a/drivers/block/cciss.c
 +++ b/drivers/block/cciss.c
-@@ -461,9 +461,19 @@ static void __devinit cciss_procinit(int i)
- #define to_hba(n) container_of(n, struct ctlr_info, dev)
- #define to_drv(n) container_of(n, drive_info_struct, dev)
+@@ -1977,7 +1977,6 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
+ 			h->drv[i].busy_configuring = 1;
+ 			spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
+ 			return_code = deregister_disk(h, i, 1);
+-			cciss_destroy_ld_sysfs_entry(&h->drv[i]);
+ 			h->drv[i].busy_configuring = 0;
+ 		}
+ 	}
+@@ -2118,6 +2117,7 @@ static int deregister_disk(ctlr_info_t *h, int drv_index,
+ 				 * indicate that this element of the drive
+ 				 * array is free.
+ 				 */
++	cciss_destroy_ld_sysfs_entry(drv);
  
--static struct device_type cciss_host_type = {
--	.name		= "cciss_host",
--};
-+static ssize_t host_store_rescan(struct device *dev,
-+				 struct device_attribute *attr,
-+				 const char *buf, size_t count)
-+{
-+	struct ctlr_info *h = to_hba(dev);
+ 	if (clear_all) {
+ 		/* check to see if it was the last disk */
+@@ -4141,6 +4141,9 @@ static void __devexit cciss_remove_one(struct pci_dev *pdev)
+ 			if (q)
+ 				blk_cleanup_queue(q);
+ 		}
++		if (hba[i]->drv[j].raid_level != -1)
++			cciss_destroy_ld_sysfs_entry(&hba[i]->drv[j]);
 +
-+	add_to_scan_list(h);
-+	wake_up_process(cciss_scan_thread);
-+	wait_for_completion_interruptible(&h->scan_wait);
-+
-+	return count;
-+}
-+DEVICE_ATTR(rescan, S_IWUSR, NULL, host_store_rescan);
+ 	}
  
- static ssize_t dev_show_unique_id(struct device *dev,
- 				 struct device_attribute *attr,
-@@ -567,6 +577,25 @@ static ssize_t dev_show_rev(struct device *dev,
- }
- DEVICE_ATTR(rev, S_IRUGO, dev_show_rev, NULL);
- 
-+static struct attribute *cciss_host_attrs[] = {
-+	&dev_attr_rescan.attr,
-+	NULL
-+};
-+
-+static struct attribute_group cciss_host_attr_group = {
-+	.attrs = cciss_host_attrs,
-+};
-+
-+static struct attribute_group *cciss_host_attr_groups[] = {
-+	&cciss_host_attr_group,
-+	NULL
-+};
-+
-+static struct device_type cciss_host_type = {
-+	.name		= "cciss_host",
-+	.groups		= cciss_host_attr_groups,
-+};
-+
- static struct attribute *cciss_dev_attrs[] = {
- 	&dev_attr_unique_id.attr,
- 	&dev_attr_model.attr,
+ #ifdef CONFIG_CISS_SCSI_TAPE
 
