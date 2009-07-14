@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZGNORZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZGNOR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbZGNORZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 10:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZGNORZ
+	id S1754786AbZGNOR6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 10:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbZGNOR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 10:17:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50336 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751398AbZGNORY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 10:17:24 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1247579382.11921.7.camel@ht.satnam>
-References: <1247579382.11921.7.camel@ht.satnam> <1247561931.2473.2.camel@ht.satnam> <20090709094430.23882.46013.stgit@warthog.procyon.org.uk> <1247561220.2473.0.camel@ht.satnam> <4131.1247577044@redhat.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: dhowells@redhat.com, Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-afs@lists.infradead.org
-Subject: Re: [PATCH] AFS: Fix compilation warning
-Date: Tue, 14 Jul 2009 15:16:07 +0100
-Message-ID: <4563.1247580967@redhat.com>
+	Tue, 14 Jul 2009 10:17:58 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:43474 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753491AbZGNOR5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 10:17:57 -0400
+Subject: Re: kmemleak hexdump proposal
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20090714140349.GA3145@localdomain.by>
+References: <20090629201014.GA5414@localdomain.by>
+	 <1247566033.28240.46.camel@pc1117.cambridge.arm.com>
+	 <20090714103356.GA2929@localdomain.by>
+	 <1247567641.28240.51.camel@pc1117.cambridge.arm.com>
+	 <20090714105709.GB2929@localdomain.by>
+	 <1247578781.28240.92.camel@pc1117.cambridge.arm.com>
+	 <20090714140349.GA3145@localdomain.by>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 14 Jul 2009 15:17:42 +0100
+Message-Id: <1247581062.28240.97.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Jul 2009 14:17:43.0767 (UTC) FILETIME=[DA966670:01CA048D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-
-> > I don't see an 80-column wrap problem that you've removed.
+On Tue, 2009-07-14 at 17:03 +0300, Sergey Senozhatsky wrote:
+> On (07/14/09 14:39), Catalin Marinas wrote:
+> > On Tue, 2009-07-14 at 13:57 +0300, Sergey Senozhatsky wrote:
+> > [...]
+> > > +/*
+> > > + * Printing of the objects hex dump to the seq file. The number on lines
+> > > + * to be printed is limited to HEX_MAX_LINES to prevent seq file spamming.
+> > > + * The actual number of printed bytes depends on HEX_ROW_SIZE.
+> > > + * It must be called with the object->lock held.
+> > > + */
+> > [...]
+> > 
+> > The patch looks fine. Could you please add a description and
+> > Signed-off-by line?
 > > 
 > 
-> ok here it is :
-> 
-> -               if (fid.vnode != vnode->fid.vnode) {
-> -                       _debug("%s: dirent changed [%u != %u]",
-> -                              dentry->d_name.name, fid.vnode,
-> -                              vnode->fid.vnode);
+> Sure. During 30-40 minutes (sorry, I'm a bit busy now). OK?
 
-Ah, I see.  I thought you meant there was a line of >80 chars that got fixed.
+There is no hurry, sometime in the next few weeks :-)
 
-David
+> Should I update Documentation/kmemeleak.txt either?
+
+I don't think this is needed as it doesn't say much about the format of
+the debug/kmemleak file (and that's pretty clear, no need to explain
+what a hex dump means).
+
+-- 
+Catalin
+
