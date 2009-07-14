@@ -1,119 +1,462 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbZGNHo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZGNHpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbZGNHo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 03:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZGNHoz
+	id S1754084AbZGNHpr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 03:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZGNHpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 03:44:55 -0400
-Received: from stephens.ittc.ku.edu ([129.237.125.220]:49407 "EHLO
-	stephens.ittc.ku.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbZGNHoy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 03:44:54 -0400
-Message-ID: <4A5C3774.6090901@ittc.ku.edu>
-Date: Tue, 14 Jul 2009 02:44:52 -0500
-From: Douglas Niehaus <niehaus@ittc.ku.edu>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Tue, 14 Jul 2009 03:45:46 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51196 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754030AbZGNHpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 03:45:45 -0400
+Message-ID: <4A5C377F.4040105@cn.fujitsu.com>
+Date: Tue, 14 Jul 2009 15:45:03 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Ted & Syauchen Baker <baker.tlh@comcast.net>,
-       "'Peter Zijlstra'" <a.p.zijlstra@chello.nl>,
-       "'Henrik Austad'" <henrik@austad.us>,
-       "'LKML'" <linux-kernel@vger.kernel.org>,
-       "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Bill Huey'" <billh@gnuppy.monkey.org>,
-       "'Linux RT'" <linux-rt-users@vger.kernel.org>,
-       "'Fabio Checconi'" <fabio@gandalf.sssup.it>,
-       "'James H. Anderson'" <anderson@cs.unc.edu>,
-       "'Thomas Gleixner'" <tglx@linutronix.de>,
-       "'Ted Baker'" <baker@cs.fsu.edu>,
-       "'Dhaval Giani'" <dhaval.giani@gmail.com>,
-       "'Noah Watkins'" <jayhawk@soe.ucsc.edu>,
-       "'KUSP Google Group'" <kusp@googlegroups.com>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-References: <200907102350.47124.henrik@austad.us> <1247336891.9978.32.camel@laptop> <4A594D2D.3080101@ittc.ku.edu> <002301ca0403$47f9d9d0$d7ed8d70$@tlh@comcast.net> <4A5BC7AB.4020703@ittc.ku.edu> <4A5C3361.70007@nortel.com>
-In-Reply-To: <4A5C3361.70007@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>
+CC: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, jbaron@redhat.com, agk@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH] io-controller: implement per group request allocation
+ limitation
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <4A569FC5.7090801@cn.fujitsu.com> <20090713160352.GA3714@redhat.com> <4A5BA238.3030902@ds.jp.nec.com>
+In-Reply-To: <4A5BA238.3030902@ds.jp.nec.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0.1 (stephens.ittc.ku.edu); Tue, 14 Jul 2009 02:44:53 -0500 (CDT)
-X-ITTC-MailScanner-Information: Please contact the ISP for more information
-X-ITTC-MailScanner-ID: 26A2828F5E.A5FFF
-X-ITTC-MailScanner: Found to be clean
-X-ITTC-MailScanner-From: niehaus@ittc.ku.edu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Chris Friesen wrote:
-> Douglas Niehaus wrote:
->
->   
->>      (1.1) Will the use of system services (system calls) by RT threads 
->> need to be explicitly supported by, perhaps, explicitly making the 
->> schedulers of *other* threads also using those system calls aware of 
->> that and take it into account to make those other tasks non-preemptible 
->> while holding system call related locks.
+Munehiro Ikeda wrote:
+> Vivek Goyal wrote, on 07/13/2009 12:03 PM:
+>> On Fri, Jul 10, 2009 at 09:56:21AM +0800, Gui Jianfeng wrote:
+>>> Hi Vivek,
+>>>
+>>> This patch exports a cgroup based per group request limits interface.
+>>> and removes the global one. Now we can use this interface to perform
+>>> different request allocation limitation for different groups.
+>>>
 >>
->>      (1.2) Can Linux SMP ever support this in an acceptable manner since 
->> locks associated with systems services are shared across CPU boundaries. 
->> THus, I can isolate a set of RT tasks on a CPU easily, and they are well 
->> isolated and can run under strict predictability, *until they use a 
->> system call that uses a lock*. Then, the system call is an interaction 
->> channel with every other thread on the system using the same system call.
->>     
->
->
-> This may be a terminology issue, but I think it would be more correct to
-> say that the lock is the interaction channel, not the system call, and
-> it is an interaction channel with every other entity on the system using
-> the same lock.  Depending on the specific lock, this could be other
-> userspace tasks, kernel threads, or even hardware interrupt handlers.
->
->   
-Sorry, sloppiness on my part while typing quickly, resulting in the 
-terminolgy problem of --- my using the wrong terminology.
+>> Thanks Gui. Few points come to mind.
+>>
+>> - You seem to be making this as per cgroup limit on all devices. I guess
+>>    that different devices in the system can have different settings of
+>>    q->nr_requests and hence will probably want different per group limit.
+>>    So we might have to make it per cgroup per device limit.
+> 
+> From the viewpoint of implementation, there is a difficulty in my mind to
+> implement per cgroup per device limit arising from that io_group is
+> allocated
+> when associated device is firstly used.  I guess Gui chose per cgroup limit
+> on all devices approach because of this, right?
 
-Yes, the lock, is the interaction channel.
+  Yes, I choose this solution from the simplicity point of view, the code will
+  get complicated if choosing per cgroup per device limit. But it seems per 
+  cgroup per device limits is more reasonable.
 
-Admittedly, which locks are the interaction channels is correlated with 
-which system services are used by threads, but sometimes more and 
-sometimes less strongly correlated.
+> 
+> 
+>> - There does not seem to be any checks for making sure that children
+>>    cgroups don't have more request descriptors allocated than parent
+>> group.
+>>
+>> - I am re-thinking that what's the advantage of configuring request
+>>    descriptors also through cgroups. It does bring in additional
+>> complexity
+>>    with it and it should justfiy the advantages. Can you think of some?
+>>
+>>    Until and unless we can come up with some significant advantages, I
+>> will
+>>    prefer to continue to use per group limit through q->nr_group_requests
+>>    interface instead of cgroup. Once things stablize, we can revisit
+>> it and
+>>    see how this interface can be improved.
+> 
+> I agree.  I will try to clarify if per group per device limitation is
+> needed
+> or not (or, if it has the advantage beyond the complexity) through some
+> tests.
 
-When I explain it to less expert audiences than this, I tend to talk in 
-terms of the system services because they at least know what some of 
-them are, while many have no idea what the concurrency control in the 
-kernel is. They can fairly easily see that if RT tasks use a range of 
-services used by generic Linux tasks, then some interaction between RT 
-and non-RT tasks is a result.
+  Great, hope to hear you soon.
 
-Still, no excuses, only explanation. Sorry to have over-simplified to 
-this audience.
+-- 
+Regards
+Gui Jianfeng
 
-Thanks for clarifying.
-> This goes back to your first question of which system services an RT
-> task can use while maintaining schedulability analysis.  Unfortunately
-> this may be a moving target, since the exact answer depends on what
-> locks are taken in the underlying kernel implementation.
->
-> Chris
->   
-Yes. This is true and is also the point I was trying to make. When 
-talking to people about RT over the years I have observed that it is 
-often hard to communicate the full cost of the predictability required 
-for RT tasks
+> 
+> 
+> 
+> Tnaks a lot,
+> Muuhh
+> 
+> 
+>> Thanks
+>> Vivek
+>>
+>>> Signed-off-by: Gui Jianfeng<guijianfeng@cn.fujitsu.com>
+>>> ---
+>>>   block/blk-core.c     |   23 ++++++++++--
+>>>   block/blk-settings.c |    1 -
+>>>   block/blk-sysfs.c    |   43 -----------------------
+>>>   block/elevator-fq.c  |   94
+>>> ++++++++++++++++++++++++++++++++++++++++++++++---
+>>>   block/elevator-fq.h  |    4 ++
+>>>   5 files changed, 111 insertions(+), 54 deletions(-)
+>>>
+>>> diff --git a/block/blk-core.c b/block/blk-core.c
+>>> index 79fe6a9..7010b76 100644
+>>> --- a/block/blk-core.c
+>>> +++ b/block/blk-core.c
+>>> @@ -722,13 +722,20 @@ static void ioc_set_batching(struct
+>>> request_queue *q, struct io_context *ioc)
+>>>   static void __freed_request(struct request_queue *q, int sync,
+>>>                       struct request_list *rl)
+>>>   {
+>>> +    struct io_group *iog;
+>>> +    unsigned long nr_group_requests;
+>>> +
+>>>       if (q->rq_data.count[sync]<  queue_congestion_off_threshold(q))
+>>>           blk_clear_queue_congested(q, sync);
+>>>
+>>>       if (q->rq_data.count[sync] + 1<= q->nr_requests)
+>>>           blk_clear_queue_full(q, sync);
+>>>
+>>> -    if (rl->count[sync] + 1<= q->nr_group_requests) {
+>>> +    iog = rl_iog(rl);
+>>> +
+>>> +    nr_group_requests = get_group_requests(q, iog);
+>>> +
+>>> +    if (nr_group_requests&&  rl->count[sync] + 1<= nr_group_requests) {
+>>>           if (waitqueue_active(&rl->wait[sync]))
+>>>               wake_up(&rl->wait[sync]);
+>>>       }
+>>> @@ -828,6 +835,8 @@ static struct request *get_request(struct
+>>> request_queue *q, int rw_flags,
+>>>       const bool is_sync = rw_is_sync(rw_flags) != 0;
+>>>       int may_queue, priv;
+>>>       int sleep_on_global = 0;
+>>> +    struct io_group *iog;
+>>> +    unsigned long nr_group_requests;
+>>>
+>>>       may_queue = elv_may_queue(q, rw_flags);
+>>>       if (may_queue == ELV_MQUEUE_NO)
+>>> @@ -843,7 +852,12 @@ static struct request *get_request(struct
+>>> request_queue *q, int rw_flags,
+>>>       if (q->rq_data.count[is_sync]+1>= q->nr_requests)
+>>>           blk_set_queue_full(q, is_sync);
+>>>
+>>> -    if (rl->count[is_sync]+1>= q->nr_group_requests) {
+>>> +    iog = rl_iog(rl);
+>>> +
+>>> +    nr_group_requests = get_group_requests(q, iog);
+>>> +
+>>> +    if (nr_group_requests&&
+>>> +        rl->count[is_sync]+1>= nr_group_requests) {
+>>>           ioc = current_io_context(GFP_ATOMIC, q->node);
+>>>           /*
+>>>            * The queue request descriptor group will fill after this
+>>> @@ -852,7 +866,7 @@ static struct request *get_request(struct
+>>> request_queue *q, int rw_flags,
+>>>            * This process will be allowed to complete a batch of
+>>>            * requests, others will be blocked.
+>>>            */
+>>> -        if (rl->count[is_sync]<= q->nr_group_requests)
+>>> +        if (rl->count[is_sync]<= nr_group_requests)
+>>>               ioc_set_batching(q, ioc);
+>>>           else {
+>>>               if (may_queue != ELV_MQUEUE_MUST
+>>> @@ -898,7 +912,8 @@ static struct request *get_request(struct
+>>> request_queue *q, int rw_flags,
+>>>        * from per group request list
+>>>        */
+>>>
+>>> -    if (rl->count[is_sync]>= (3 * q->nr_group_requests / 2))
+>>> +    if (nr_group_requests&&
+>>> +        rl->count[is_sync]>= (3 * nr_group_requests / 2))
+>>>           goto out;
+>>>
+>>>       rl->starved[is_sync] = 0;
+>>> diff --git a/block/blk-settings.c b/block/blk-settings.c
+>>> index 78b8aec..bd582a7 100644
+>>> --- a/block/blk-settings.c
+>>> +++ b/block/blk-settings.c
+>>> @@ -148,7 +148,6 @@ void blk_queue_make_request(struct request_queue
+>>> *q, make_request_fn *mfn)
+>>>        * set defaults
+>>>        */
+>>>       q->nr_requests = BLKDEV_MAX_RQ;
+>>> -    q->nr_group_requests = BLKDEV_MAX_GROUP_RQ;
+>>>
+>>>       q->make_request_fn = mfn;
+>>>       blk_queue_dma_alignment(q, 511);
+>>> diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+>>> index 92b9f25..706d852 100644
+>>> --- a/block/blk-sysfs.c
+>>> +++ b/block/blk-sysfs.c
+>>> @@ -78,40 +78,8 @@ queue_requests_store(struct request_queue *q,
+>>> const char *page, size_t count)
+>>>       return ret;
+>>>   }
+>>>   #ifdef CONFIG_GROUP_IOSCHED
+>>> -static ssize_t queue_group_requests_show(struct request_queue *q,
+>>> char *page)
+>>> -{
+>>> -    return queue_var_show(q->nr_group_requests, (page));
+>>> -}
+>>> -
+>>>   extern void elv_io_group_congestion_threshold(struct request_queue *q,
+>>>                             struct io_group *iog);
+>>> -
+>>> -static ssize_t
+>>> -queue_group_requests_store(struct request_queue *q, const char *page,
+>>> -                    size_t count)
+>>> -{
+>>> -    struct hlist_node *n;
+>>> -    struct io_group *iog;
+>>> -    struct elv_fq_data *efqd;
+>>> -    unsigned long nr;
+>>> -    int ret = queue_var_store(&nr, page, count);
+>>> -
+>>> -    if (nr<  BLKDEV_MIN_RQ)
+>>> -        nr = BLKDEV_MIN_RQ;
+>>> -
+>>> -    spin_lock_irq(q->queue_lock);
+>>> -
+>>> -    q->nr_group_requests = nr;
+>>> -
+>>> -    efqd =&q->elevator->efqd;
+>>> -
+>>> -    hlist_for_each_entry(iog, n,&efqd->group_list, elv_data_node) {
+>>> -        elv_io_group_congestion_threshold(q, iog);
+>>> -    }
+>>> -
+>>> -    spin_unlock_irq(q->queue_lock);
+>>> -    return ret;
+>>> -}
+>>>   #endif
+>>>
+>>>   static ssize_t queue_ra_show(struct request_queue *q, char *page)
+>>> @@ -278,14 +246,6 @@ static struct queue_sysfs_entry
+>>> queue_requests_entry = {
+>>>       .store = queue_requests_store,
+>>>   };
+>>>
+>>> -#ifdef CONFIG_GROUP_IOSCHED
+>>> -static struct queue_sysfs_entry queue_group_requests_entry = {
+>>> -    .attr = {.name = "nr_group_requests", .mode = S_IRUGO | S_IWUSR },
+>>> -    .show = queue_group_requests_show,
+>>> -    .store = queue_group_requests_store,
+>>> -};
+>>> -#endif
+>>> -
+>>>   static struct queue_sysfs_entry queue_ra_entry = {
+>>>       .attr = {.name = "read_ahead_kb", .mode = S_IRUGO | S_IWUSR },
+>>>       .show = queue_ra_show,
+>>> @@ -360,9 +320,6 @@ static struct queue_sysfs_entry
+>>> queue_iostats_entry = {
+>>>
+>>>   static struct attribute *default_attrs[] = {
+>>>       &queue_requests_entry.attr,
+>>> -#ifdef CONFIG_GROUP_IOSCHED
+>>> -    &queue_group_requests_entry.attr,
+>>> -#endif
+>>>       &queue_ra_entry.attr,
+>>>       &queue_max_hw_sectors_entry.attr,
+>>>       &queue_max_sectors_entry.attr,
+>>> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+>>> index 29392e7..bfb0210 100644
+>>> --- a/block/elevator-fq.c
+>>> +++ b/block/elevator-fq.c
+>>> @@ -59,6 +59,35 @@ elv_release_ioq(struct elevator_queue *eq, struct
+>>> io_queue **ioq_ptr);
+>>>   #define for_each_entity_safe(entity, parent) \
+>>>       for (; entity&&  ({ parent = entity->parent; 1; }); entity =
+>>> parent)
+>>>
+>>> +unsigned short get_group_requests(struct request_queue *q,
+>>> +                  struct io_group *iog)
+>>> +{
+>>> +    struct cgroup_subsys_state *css;
+>>> +    struct io_cgroup *iocg;
+>>> +    unsigned long nr_group_requests;
+>>> +
+>>> +    if (!iog)
+>>> +        return q->nr_requests;
+>>> +
+>>> +    rcu_read_lock();
+>>> +
+>>> +    if (!iog->iocg_id) {
+>>> +        nr_group_requests = 0;
+>>> +        goto out;
+>>> +    }
+>>> +
+>>> +    css = css_lookup(&io_subsys, iog->iocg_id);
+>>> +    if (!css) {
+>>> +        nr_group_requests = 0;
+>>> +        goto out;
+>>> +    }
+>>> +
+>>> +    iocg = container_of(css, struct io_cgroup, css);
+>>> +    nr_group_requests = iocg->nr_group_requests;
+>>> +out:
+>>> +    rcu_read_unlock();
+>>> +    return nr_group_requests;
+>>> +}
+>>>
+>>>   static struct io_entity *bfq_lookup_next_entity(struct
+>>> io_sched_data *sd,
+>>>                            int extract);
+>>> @@ -1257,14 +1286,17 @@ void elv_io_group_congestion_threshold(struct
+>>> request_queue *q,
+>>>                           struct io_group *iog)
+>>>   {
+>>>       int nr;
+>>> +    unsigned long nr_group_requests;
+>>>
+>>> -    nr = q->nr_group_requests - (q->nr_group_requests / 8) + 1;
+>>> -    if (nr>  q->nr_group_requests)
+>>> -        nr = q->nr_group_requests;
+>>> +    nr_group_requests = get_group_requests(q, iog);
+>>> +
+>>> +    nr = nr_group_requests - (nr_group_requests / 8) + 1;
+>>> +    if (nr>  nr_group_requests)
+>>> +        nr = nr_group_requests;
+>>>       iog->nr_congestion_on = nr;
+>>>
+>>> -    nr = q->nr_group_requests - (q->nr_group_requests / 8)
+>>> -            - (q->nr_group_requests / 16) - 1;
+>>> +    nr = nr_group_requests - (nr_group_requests / 8)
+>>> +            - (nr_group_requests / 16) - 1;
+>>>       if (nr<  1)
+>>>           nr = 1;
+>>>       iog->nr_congestion_off = nr;
+>>> @@ -1283,6 +1315,7 @@ int elv_io_group_congested(struct request_queue
+>>> *q, struct page *page, int sync)
+>>>   {
+>>>       struct io_group *iog;
+>>>       int ret = 0;
+>>> +    unsigned long nr_group_requests;
+>>>
+>>>       rcu_read_lock();
+>>>
+>>> @@ -1300,10 +1333,11 @@ int elv_io_group_congested(struct
+>>> request_queue *q, struct page *page, int sync)
+>>>       }
+>>>
+>>>       ret = elv_is_iog_congested(q, iog, sync);
+>>> +    nr_group_requests = get_group_requests(q, iog);
+>>>       if (ret)
+>>>           elv_log_iog(&q->elevator->efqd, iog, "iog congested=%d
+>>> sync=%d"
+>>>               " rl.count[sync]=%d nr_group_requests=%d",
+>>> -            ret, sync, iog->rl.count[sync], q->nr_group_requests);
+>>> +            ret, sync, iog->rl.count[sync], nr_group_requests);
+>>>       rcu_read_unlock();
+>>>       return ret;
+>>>   }
+>>> @@ -1549,6 +1583,48 @@ free_buf:
+>>>       return ret;
+>>>   }
+>>>
+>>> +static u64 io_cgroup_nr_requests_read(struct cgroup *cgroup,
+>>> +                       struct cftype *cftype)
+>>> +{
+>>> +    struct io_cgroup *iocg;
+>>> +    u64 ret;
+>>> +
+>>> +    if (!cgroup_lock_live_group(cgroup))
+>>> +        return -ENODEV;
+>>> +
+>>> +    iocg = cgroup_to_io_cgroup(cgroup);
+>>> +    spin_lock_irq(&iocg->lock);
+>>> +    ret = iocg->nr_group_requests;
+>>> +    spin_unlock_irq(&iocg->lock);
+>>> +
+>>> +    cgroup_unlock();
+>>> +
+>>> +    return ret;
+>>> +}
+>>> +
+>>> +static int io_cgroup_nr_requests_write(struct cgroup *cgroup,
+>>> +                    struct cftype *cftype,
+>>> +                    u64 val)
+>>> +{
+>>> +    struct io_cgroup *iocg;
+>>> +
+>>> +    if (val<  BLKDEV_MIN_RQ)
+>>> +        val = BLKDEV_MIN_RQ;
+>>> +
+>>> +    if (!cgroup_lock_live_group(cgroup))
+>>> +        return -ENODEV;
+>>> +
+>>> +    iocg = cgroup_to_io_cgroup(cgroup);
+>>> +
+>>> +    spin_lock_irq(&iocg->lock);
+>>> +    iocg->nr_group_requests = (unsigned long)val;
+>>> +    spin_unlock_irq(&iocg->lock);
+>>> +
+>>> +    cgroup_unlock();
+>>> +
+>>> +    return 0;
+>>> +}
+>>> +
+>>>   #define SHOW_FUNCTION(__VAR)                        \
+>>>   static u64 io_cgroup_##__VAR##_read(struct cgroup *cgroup,        \
+>>>                          struct cftype *cftype)        \
+>>> @@ -1735,6 +1811,11 @@ static int io_cgroup_disk_dequeue_read(struct
+>>> cgroup *cgroup,
+>>>
+>>>   struct cftype bfqio_files[] = {
+>>>       {
+>>> +        .name = "nr_group_requests",
+>>> +        .read_u64 = io_cgroup_nr_requests_read,
+>>> +        .write_u64 = io_cgroup_nr_requests_write,
+>>> +    },
+>>> +    {
+>>>           .name = "policy",
+>>>           .read_seq_string = io_cgroup_policy_read,
+>>>           .write_string = io_cgroup_policy_write,
+>>> @@ -1790,6 +1871,7 @@ static struct cgroup_subsys_state
+>>> *iocg_create(struct cgroup_subsys *subsys,
+>>>
+>>>       spin_lock_init(&iocg->lock);
+>>>       INIT_HLIST_HEAD(&iocg->group_data);
+>>> +    iocg->nr_group_requests = BLKDEV_MAX_GROUP_RQ;
+>>>       iocg->weight = IO_DEFAULT_GRP_WEIGHT;
+>>>       iocg->ioprio_class = IO_DEFAULT_GRP_CLASS;
+>>>       INIT_LIST_HEAD(&iocg->policy_list);
+>>> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+>>> index f089a55..df077d0 100644
+>>> --- a/block/elevator-fq.h
+>>> +++ b/block/elevator-fq.h
+>>> @@ -308,6 +308,7 @@ struct io_cgroup {
+>>>       unsigned int weight;
+>>>       unsigned short ioprio_class;
+>>>
+>>> +    unsigned long nr_group_requests;
+>>>       /* list of io_policy_node */
+>>>       struct list_head policy_list;
+>>>
+>>> @@ -386,6 +387,9 @@ struct elv_fq_data {
+>>>       unsigned int fairness;
+>>>   };
+>>>
+>>> +extern unsigned short get_group_requests(struct request_queue *q,
+>>> +                     struct io_group *iog);
+>>> +
+>>>   /* Logging facilities. */
+>>>   #ifdef CONFIG_DEBUG_GROUP_IOSCHED
+>>>   #define elv_log_ioq(efqd, ioq, fmt, args...) \
+>>> -- 
+>>> 1.5.4.rc3
+>>
+> 
 
-Extremely detailed information is required, and getting it can be 
-expensive. This is one reason why supporting RT in Linux proper is even 
-harder than it first appears.
-
-However, I think that while completely arbitrary use of Linux system 
-services by RT tasks is extremely complicated, many RT applications can 
-be happy using only a small subset of services, and so various classes 
-of applications can be supported successfully with merely extreme 
-effort, as opposed to completely insane effort.
-
-It is a really hard problem, no doubt, though.
-
-Doug
 
