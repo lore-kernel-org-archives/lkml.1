@@ -1,57 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbZGNWxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZGNWyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756737AbZGNWxl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 18:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756629AbZGNWxk
+	id S1756731AbZGNWyn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 18:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756013AbZGNWym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 18:53:40 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:49524 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756179AbZGNWxj (ORCPT
+	Tue, 14 Jul 2009 18:54:42 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2137 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755452AbZGNWym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 18:53:39 -0400
-Date: Tue, 14 Jul 2009 23:53:20 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-i2c@vger.kernel.org, linus.walleij@stericsson.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 5/5] drivers/i2c: Use resource_size
-Message-ID: <20090714225320.GA10277@fluff.org.uk>
-References: <Pine.LNX.4.64.0907050837160.27464@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907050837160.27464@ask.diku.dk>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 14 Jul 2009 18:54:42 -0400
+Subject: Re: [PATCH] MAINTAINERS: Coalesce name and email address lines
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       sam@ravnborg.org, pavel@ucw.cz, randy.dunlap@oracle.com
+In-Reply-To: <20090714154021.a8b0dfb7.akpm@linux-foundation.org>
+References: <cover.1247517373.git.joe@perches.com>
+	 <1247522300.4008.37.camel@Joe-Laptop.home>
+	 <20090714154021.a8b0dfb7.akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary="=-uhZgQI1RIN04AuTa62Nv"
+Date: Tue, 14 Jul 2009 15:54:03 -0700
+Message-Id: <1247612043.18411.56.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 05, 2009 at 08:37:50AM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Use the function resource_size, which reduces the chance of introducing
-> off-by-one errors in calculating the resource size.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> struct resource *res;
-> @@
-> 
-> - (res->end - res->start) + 1
-> + resource_size(res)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-I'll class these as fixes and have applied them to my
-tree for linus.
+--=-uhZgQI1RIN04AuTa62Nv
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+On Tue, 2009-07-14 at 15:40 -0700, Andrew Morton wrote:
+> On Mon, 13 Jul 2009 14:58:19 -0700
+> Joe Perches <joe@perches.com> wrote:
+> 
+> > On Mon, 2009-07-13 at 14:14 -0700, Joe Perches wrote:
+> > > A collection of cleanup patches to MAINTAINERS
+> > 
+> > I ran the script I submitted awhile back on MAINTAINERS
+> > after these [0/16] patches are applied.
+> > 
+> > http://lkml.org/lkml/2009/6/1/275
+> > 
+> > I think the result is useful for people that rely
+> > on copy and paste of email addresses.
+> > 
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > 
+> >  MAINTAINERS | 2722 ++++++++++++++++++++---------------------------------------
+> >  1 files changed, 908 insertions(+), 1814 deletions(-)
+> 
+> I don't think I want to have to maintain this patch for more than eight
+> minutes.
 
-  'a smiley only costs 4 bytes'
+Neither would I...
+
+> Please send me a copy of that script so I can regenerate the patch when
+> it breaks.  I'll include it in the changelog of the patch, because
+> there's a decent chance that the patch will get broken during just the
+> several-hour lag between me pulling Linus's tree and sending patches at
+> him.
+
+Thanks.  I wanted to get feedback though, so I sent the result.
+
+Here's the script inline and as an attachment.
+
+I've removed handling for the removed Cirrus Logic section
+and fixed a complaint about recent fuzz with stgit.
+
+diff --git a/integrate_maintainers.sh b/integrate_maintainers.sh
+new file mode 100755
+index 0000000..b8ac2fa
+--- /dev/null
++++ b/integrate_maintainers.sh
+@@ -0,0 +1,34 @@
++#! /bin/sh
++#
++# Change MAINTAINERS from
++#	P: name
++#	M: address
++# to:
++#	M: name <address>
++#
++# Integrate P: and M: lines
++#
++perl -i -e 'local $/; while(<>) { s@P:	([^\n]+)\nM:	([^\n]+)\n@M:	\1 <\2>\n@g; print; }' MAINTAINERS
++#
++# Quote names with periods, commas and parentheses
++#
++sed -r -i -e "s/^M:	(.+)([\.,'\(])(.*) </M:	\"\1\2\3\" </g" MAINTAINERS
++#
++# Add a description of email name style
++#
++patch -p1 <<EOF
++diff --git a/MAINTAINERS b/MAINTAINERS
++--- a/MAINTAINERS
+++++ b/MAINTAINERS
++@@ -73,8 +73,8 @@ Note: For the hard of thinking, this list is meant to remain in alphabetical
++ order. If you could add yourselves to it in alphabetical order that would be
++ so much easier [Ed]
++ 
++-P: Person
++-M: Mail patches to
+++P: Person (obsolete)
+++M: Mail patches to: FullName <address@domain>
++ L: Mailing list that is relevant to this area
++ W: Web-page with status/info
++ T: SCM tree type and location.  Type is one of: git, hg, quilt, stgit.
++EOF
+
+
+
+--=-uhZgQI1RIN04AuTa62Nv
+Content-Disposition: attachment; filename="integrate_maintainers.sh"
+Content-Type: application/x-shellscript; name="integrate_maintainers.sh"
+Content-Transfer-Encoding: 7bit
+
+#! /bin/sh
+#
+# Change MAINTAINERS from
+#	P: name
+#	M: address
+# to:
+#	M: name <address>
+#
+# Integrate P: and M: lines
+#
+perl -i -e 'local $/; while(<>) { s@P:	([^\n]+)\nM:	([^\n]+)\n@M:	\1 <\2>\n@g; print; }' MAINTAINERS
+#
+# Quote names with periods, commas and parentheses
+#
+sed -r -i -e "s/^M:	(.+)([\.,'\(])(.*) </M:	\"\1\2\3\" </g" MAINTAINERS
+#
+# Add a description of email name style
+#
+patch -p1 <<EOF
+diff --git a/MAINTAINERS b/MAINTAINERS
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -73,8 +73,8 @@ Note: For the hard of thinking, this list is meant to remain in alphabetical
+ order. If you could add yourselves to it in alphabetical order that would be
+ so much easier [Ed]
+ 
+-P: Person
+-M: Mail patches to
++P: Person (obsolete)
++M: Mail patches to: FullName <address@domain>
+ L: Mailing list that is relevant to this area
+ W: Web-page with status/info
+ T: SCM tree type and location.  Type is one of: git, hg, quilt, stgit.
+EOF
+
+--=-uhZgQI1RIN04AuTa62Nv--
+
