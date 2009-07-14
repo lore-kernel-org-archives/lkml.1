@@ -1,62 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752066AbZGNLo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbZGNLoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752066AbZGNLo1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 07:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZGNLo0
+	id S1751366AbZGNLoE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 07:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbZGNLoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 07:44:26 -0400
-Received: from rtitmf2.realtek.com ([60.250.210.236]:3992 "EHLO
-	mf2.realtek.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751932AbZGNLoY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 07:44:24 -0400
-X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Jul 2009 07:44:23 EDT
-Message-ID: <48F90369174947C98F6AE82888FA60C5@realtek.com.tw>
-From: =?big5?B?qkyr2KZ3?= <colin@realtek.com.tw>
-To: <linux-kernel@vger.kernel.org>
-Subject: jiffies got lost because of printk
-Date: Tue, 14 Jul 2009 19:39:03 +0800
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="big5"; reply-type=original
+	Tue, 14 Jul 2009 07:44:04 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:14833 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750934AbZGNLoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 07:44:02 -0400
+X-IronPort-AV: E=Sophos;i="4.42,397,1243839600"; 
+   d="scan'208";a="205393752"
+Subject: Re: 2.6.31-rc3 nfsv4 client regression (oops)
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linux NFS ML <linux-nfs@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <4A5C3858.6070303@garzik.org>
+References: <4A5C3858.6070303@garzik.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Organization: NetApp
+Date: Tue, 14 Jul 2009 07:43:08 -0400
+Message-Id: <1247571788.19099.32.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 14 Jul 2009 11:43:58.0748 (UTC) FILETIME=[600C35C0:01CA0478]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-07-14 at 03:48 -0400, Jeff Garzik wrote:
+> The NFSv4 client just oops'd on me...
+> 
+> NFSv4 client: 2.6.31-rc3, Fedora 10, x86-64
+> 		    2.6.30 works, I think 2.6.31-rc1 worked too
+> 
+> NFSv4 server: 2.6.29.4-167.fc11.x86_64 (Fedora 11 kernel), F11, x86-64
+> 
+> Oops output captured at kerneloops.org: 
+> http://www.kerneloops.org/raw.php?rawid=537858&msgid=
+> 
+> Kernel config for 2.6.31-rc3, the problematic kernel, attached.
+> 
+> 
+> > RIP: 0010:[<ffffffffa02db5b0>]  [<ffffffffa02db5b0>] nfs4_free_lock_state+0x20/0x80 [nfs]
+> > [...]
+> > Call Trace:
+> >  [<ffffffffa02db7dd>] nfs4_set_lock_state+0x1cd/0x220 [nfs]
+> >  [<ffffffffa02cc9db>] nfs4_proc_lock+0x2cb/0x4e0 [nfs]
+> >  [<ffffffff810b40dc>] ? __alloc_pages_nodemask+0x10c/0x600
+> >  [<ffffffffa02b6079>] do_setlk+0xb9/0xd0 [nfs]
+> >  [<ffffffffa02b6220>] nfs_lock+0xd0/0x1d0 [nfs]
+> >  [<ffffffff8111e883>] vfs_lock_file+0x23/0x50
+> >  [<ffffffff8111eaa3>] fcntl_setlk+0x133/0x2f0
+> >  [<ffffffff81192571>] ? __up_read+0x91/0xb0
+> >  [<ffffffff810f0fea>] sys_fcntl+0xca/0x420
+> >  [<ffffffff8100b4fb>] system_call_fastpath+0x16/0x1b
 
-Hi there,
-We found that system time is not synced with RTC time on our embedded 
-system.
-This is because sometimes we print too many chars to console.
-For these lines in the function, release_console_sem, of printk.c,
-        for ( ; ; ) {
-                spin_lock_irqsave(&logbuf_lock, flags);
-                wake_klogd |= log_start - log_end;
-                if (con_start == log_end)
-                        break;                  /* Nothing to print */
-                _con_start = con_start;
-                _log_end = log_end;
-                con_start = log_end;            /* Flush */
-                spin_unlock(&logbuf_lock);
-                call_console_drivers(_con_start, _log_end);
-                local_irq_restore(flags);
-        }
+Wow... That bug appears to have been there for years. I'm surprised it
+hasn't been reported before.
 
-Interrupt will be disabled before calling call_console_drivers and enabled 
-after call_console_drivers finishes.
-For the setting of com port baud rate 115200 and HZ 100, if there are more 
-than 115200/8/100 bytes waiting for output,
-interrupt will be disabled for more than 1 HZ and timer interrupt will be 
-lost.
-I know that printing too much in kernel level is not proper. But for 1000HZ, 
-interrupt may be lost even just output 15 chars.
-Any idea?
+Anyhow, it looks to me as if you are hitting the case in
+nfs4_get_lock_state() where the first call to __nfs4_find_lock_state()
+fails, (and so 'new' gets allocated) then the second call succeeds. When
+the routine attempts to free the now redundant 'new', the call to
+nfs4_free_lock_state() oopses because new->ls_state hasn't been set.
 
-Regards,
-Colin
+The following patch ought to fix it...
+
+---------------------
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+NFSv4: Fix an Oops in nfs4_free_lock_state
+
+The oops http://www.kerneloops.org/raw.php?rawid=537858&msgid= appears to
+be due to the nfs4_lock_state->ls_state field being uninitialised. This
+happens if the call to nfs4_free_lock_state() is triggered at the end of
+nfs4_get_lock_state().
+
+The fixe is to move the initialisation of ls_state into the allocator.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/nfs4state.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 
+diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
+index b73c5a7..65ca8c1 100644
+--- a/fs/nfs/nfs4state.c
++++ b/fs/nfs/nfs4state.c
+@@ -553,6 +553,7 @@ static struct nfs4_lock_state *nfs4_alloc_lock_state(struct nfs4_state *state, f
+ 	INIT_LIST_HEAD(&lsp->ls_sequence.list);
+ 	lsp->ls_seqid.sequence = &lsp->ls_sequence;
+ 	atomic_set(&lsp->ls_count, 1);
++	lsp->ls_state = state;
+ 	lsp->ls_owner = fl_owner;
+ 	spin_lock(&clp->cl_lock);
+ 	nfs_alloc_unique_id(&clp->cl_lockowner_id, &lsp->ls_id, 1, 64);
+@@ -587,7 +588,6 @@ static struct nfs4_lock_state *nfs4_get_lock_state(struct nfs4_state *state, fl_
+ 		if (lsp != NULL)
+ 			break;
+ 		if (new != NULL) {
+-			new->ls_state = state;
+ 			list_add(&new->ls_locks, &state->lock_states);
+ 			set_bit(LK_STATE_IN_USE, &state->flags);
+ 			lsp = new;
+
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
