@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZGNRrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbZGNRro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbZGNRrk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 13:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbZGNRrk
+	id S1754276AbZGNRro (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 13:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZGNRrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 13:47:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37077 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751522AbZGNRrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 13:47:39 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1247161851.5766.44.camel@heimdal.trondhjem.org>
-References: <1247161851.5766.44.camel@heimdal.trondhjem.org> <1552.1247160463@redhat.com>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: dhowells@redhat.com, steved@redhat.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] NFS: Propagate 'fsc' mount option through automounts
-Date: Tue, 14 Jul 2009 18:47:34 +0100
-Message-ID: <6404.1247593654@redhat.com>
+	Tue, 14 Jul 2009 13:47:43 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:42856 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbZGNRrl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 13:47:41 -0400
+Subject: Re: [PATCH 3/3] Quick vmalloc vs kmalloc fix to the case where
+ array  size is too large
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Benjamin Blum <bblum@google.com>
+In-Reply-To: <6599ad830907141028y50f36d63h8ea06f73ff369591@mail.gmail.com>
+References: <20090710230043.16778.29656.stgit@hastromil.mtv.corp.google.com>
+	 <20090710230205.16778.11707.stgit@hastromil.mtv.corp.google.com>
+	 <4A5AA3E7.9070800@cn.fujitsu.com>
+	 <20090713150303.70ab5176.kamezawa.hiroyu@jp.fujitsu.com>
+	 <2f86c2480907130827u7d2b062bw26bbb80a8e3de657@mail.gmail.com>
+	 <20090714084950.2401d9a6.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830907132050n226aecb3ucab6746a4d0e81fa@mail.gmail.com>
+	 <20090714125334.b476aa78.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830907132104o55d31ccexb15e5aa35c31416e@mail.gmail.com>
+	 <20090714132538.ac0bc44a.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830907141028y50f36d63h8ea06f73ff369591@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 14 Jul 2009 10:47:32 -0700
+Message-Id: <1247593652.13426.15938.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <Trond.Myklebust@netapp.com> wrote:
-
-> Why not just use the mount path as the default uniquifier?
-
-Because:
-
- (1) Which mount path?  You're now constructing the mount tree in its own
-     private namespace.
-
- (2) Due to the new VFS-pathwalk-based mount, the uniquifier is applied to the
-     root mount only, and if modified to inherit, would be applied to every
-     automount subordinate to that, rather than just the actual subject of the
-     mount.
-
- (3) Due to the new VFS-pathwalk-based mount and the private namespace, the
-     default uniquifier for all instances of any particular mount is always
-     the same.
-
- (4) If we work around some how the mounts now getting their mount path from
-     the private namespace, there are still real namespaces, chroots and
-     root-pivots to contend with.
-
-> > +	target->options = source->options;
+On Tue, 2009-07-14 at 10:28 -0700, Paul Menage wrote:
+> On Mon, Jul 13, 2009 at 9:25 PM, KAMEZAWA
+> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > My point is
+> >  - More PIDs, More time necessary to read procs file.
 > 
-> BTW: Why does fscache require a private flag field?
+> Right now, many pids => impossible to read procs file due to kmalloc
+> failure. (This was always the case with cpusets too). So using kmalloc
+> in those cases is a strict improvement.
 
-I thought it best to avoid touching nfs_server::flags as that is at least
-partially visible to userspace.
+How big were those allocations that were failing?  The code made it
+appear that order-2 (PAGE_SIZE*4) allocations were failing.  That's a
+bit lower than I'd expect the page allocator to start failing.
 
-> > +	struct nfs_parsed_mount_data parsed_data = { .fscache_uniq = NULL, };
-> 
-> Rather than wasting all this space on the stack, how about just changing
-> the second argument of nfs_fscache_get_super_cookie()? You only use the
-> pointer to data->fscache_uniq.
+-- Dave
 
-Yeah, that's probably wise.
-
-Actually, I don't really want to get this data via mount at all (as there are
-automounts to locally configure for caching).
-
-David
