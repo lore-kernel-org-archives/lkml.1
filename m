@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754331AbZGNRuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbZGNRvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754331AbZGNRuP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 13:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbZGNRuO
+	id S1754403AbZGNRvj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 13:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZGNRvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 13:50:14 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:21414 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753987AbZGNRuN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 13:50:13 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=C1QPSkLZT8Cpbu8yhDlO1EETvqyo+n4N2xlS9pqR7JeydRYE5F5fAYvdQyZdygXvU
-	8LYnSBec876ZXTCp5cTIQ==
+	Tue, 14 Jul 2009 13:51:38 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39527 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752361AbZGNRvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 13:51:37 -0400
+Date: Tue, 14 Jul 2009 10:50:07 -0700
+From: Greg KH <gregkh@suse.de>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Cc: jmorris@namei.org, sds@tycho.nsa.gov, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on
+ sysfs files, directories, and symlinks.
+Message-ID: <20090714175007.GA9428@suse.de>
+References: <1247074106-23405-1-git-send-email-dpquigl@tycho.nsa.gov>
+ <20090709151803.GB24302@suse.de>
+ <1247159613.4398.215.camel@localhost>
+ <20090709175250.GB26378@suse.de>
+ <1247167738.4398.229.camel@localhost>
+ <20090709201257.GB27124@suse.de>
+ <1247170786.4398.242.camel@localhost>
+ <20090709204128.GA27638@suse.de>
+ <1247589459.4398.372.camel@localhost>
 MIME-Version: 1.0
-In-Reply-To: <1247593652.13426.15938.camel@nimitz>
-References: <20090710230043.16778.29656.stgit@hastromil.mtv.corp.google.com>
-	 <20090713150303.70ab5176.kamezawa.hiroyu@jp.fujitsu.com>
-	 <2f86c2480907130827u7d2b062bw26bbb80a8e3de657@mail.gmail.com>
-	 <20090714084950.2401d9a6.kamezawa.hiroyu@jp.fujitsu.com>
-	 <6599ad830907132050n226aecb3ucab6746a4d0e81fa@mail.gmail.com>
-	 <20090714125334.b476aa78.kamezawa.hiroyu@jp.fujitsu.com>
-	 <6599ad830907132104o55d31ccexb15e5aa35c31416e@mail.gmail.com>
-	 <20090714132538.ac0bc44a.kamezawa.hiroyu@jp.fujitsu.com>
-	 <6599ad830907141028y50f36d63h8ea06f73ff369591@mail.gmail.com>
-	 <1247593652.13426.15938.camel@nimitz>
-Date: Tue, 14 Jul 2009 10:50:02 -0700
-Message-ID: <6599ad830907141050r1e9dde98l56afd37629f749e8@mail.gmail.com>
-Subject: Re: [PATCH 3/3] Quick vmalloc vs kmalloc fix to the case where array 
-	size is too large
-From: Paul Menage <menage@google.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Benjamin Blum <bblum@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247589459.4398.372.camel@localhost>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 10:47 AM, Dave Hansen<dave@linux.vnet.ibm.com> wrote:
->
-> How big were those allocations that were failing?  The code made it
-> appear that order-2 (PAGE_SIZE*4) allocations were failing.  That's a
-> bit lower than I'd expect the page allocator to start failing.
+On Tue, Jul 14, 2009 at 12:37:39PM -0400, David P. Quigley wrote:
+> So, I've been looking through the sysfs code and I can't find a
+> reference to netlink in there. I am assuming that it is other parts of
+> the kernel which make use of netlink which are calling the sysfs_*
+> functions. Any suggestions for where to look on how this is being used
+> and what the important users are?
 
-I think it depends on how much fragmentation you've got.
+The netlink messages are coming from the kobject uevent code, look in
+lib/kobject_uevent.c for the code that creates and sends them out.  This
+happens for every sysfs directory that is created that corresponds with
+a kobject.
 
-We've seen it fail for cpusets with (I guess) hundreds or thousands of threads.
+thanks,
 
-Paul
+greg k-h
