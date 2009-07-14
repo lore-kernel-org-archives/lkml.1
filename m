@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbZGNWHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbZGNWJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756569AbZGNWHP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 18:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbZGNWHO
+	id S1756544AbZGNWJd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 18:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbZGNWJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 18:07:14 -0400
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:64483 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752537AbZGNWHN convert rfc822-to-8bit (ORCPT
+	Tue, 14 Jul 2009 18:09:33 -0400
+Received: from ru.mvista.com ([213.79.90.228]:3768 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755981AbZGNWJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 18:07:13 -0400
+	Tue, 14 Jul 2009 18:09:32 -0400
+Date: Wed, 15 Jul 2009 02:09:31 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: Ang: Re: [PATCH 0/2] Setting GPIOs simultaneously
+Message-ID: <20090714220931.GA11378@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090713222005.GA19859@oksana.dev.rtsoft.ru>
+ <20090713151911.GA28114@oksana.dev.rtsoft.ru>
+ <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
+ <20090713173455.GA9866@oksana.dev.rtsoft.ru>
+ <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
+ <OF613F53BF.1FD77EDB-ONC12575F3.00753535-C12575F3.00753537@transmode.se>
 MIME-Version: 1.0
-In-Reply-To: <20090714094629.GB2076@elf.ucw.cz>
-References: <20090710084323.GA6522@elf.ucw.cz>
-	 <a55d774e0907100155m25366994pe9ec5d0f5f868818@mail.gmail.com>
-	 <20090710103243.GB7789@elf.ucw.cz>
-	 <a55d774e0907100431j3fdc4671i6b185019594367fa@mail.gmail.com>
-	 <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz>
-	 <20090713220726.GA28375@elf.ucw.cz>
-	 <d6200be20907131829o77bce3d8w8f238bc079478368@mail.gmail.com>
-	 <20090714094629.GB2076@elf.ucw.cz>
-Date: Tue, 14 Jul 2009 15:07:12 -0700
-Message-ID: <d6200be20907141507s39b54cccq9f0cedc325d3a203@mail.gmail.com>
-Subject: Re: HTC: touchscreen driver
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <OF613F53BF.1FD77EDB-ONC12575F3.00753535-C12575F3.00753537@transmode.se>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 2:46 AM, Pavel Machek<pavel@ucw.cz> wrote:
->
->> >        if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
->> >                printk(KERN_ERR "synaptics_ts_probe: need I2C_FUNC_I2C\n");
->> > @@ -269,6 +354,9 @@ static int synaptics_ts_probe(
->> >        pdata = client->dev.platform_data;
->> >        if (pdata)
->> >                ts->power = pdata->power;
->> > +       else
->> > +               pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
->> > +
->>
->> Where do you free this?
->
-> Well, nowhere; but it should not actually matter. ... btw can this
-> path (!pdata) actually trigger? The driver will not be working,
-> anyway, in that case..
+On Tue, Jul 14, 2009 at 11:20:13PM +0200, Joakim Tjernlund wrote:
+[...]
+> >But any users of the legacy bindings should be in-tree.
+> 
+> ehh, it was working until you made it OF only. Why do call the native
+> way legacy?  It is the method all non OF arch uses.
 
-The driver should work fine without the pdata. The pdata is used to
-align the touchscreen data with the screen behind it.
+It's legacy because there are no in-tree users anymore. Nowadays
+we're trying to pass all needed information via OF, and we're
+trying to avoid ugly platform-dependant hacks. Your SPI scheme
+can be easily described via OF, but sure, it's hard to implement
+it with the current SPI/OF subsystem.
 
->> > +       u32 flags;
->> > +       u32 inactive_left; /* 0x10000 = screen width */
->> > +       u32 inactive_right; /* 0x10000 = screen width */
->> > +       u32 inactive_top; /* 0x10000 = screen height */
->> > +       u32 inactive_bottom; /* 0x10000 = screen height */
->> > +       u32 snap_left_on; /* 0x10000 = screen width */
->> > +       u32 snap_left_off; /* 0x10000 = screen width */
->> > +       u32 snap_right_on; /* 0x10000 = screen width */
->> > +       u32 snap_right_off; /* 0x10000 = screen width */
->> > +       u32 snap_top_on; /* 0x10000 = screen height */
->> > +       u32 snap_top_off; /* 0x10000 = screen height */
->> > +       u32 snap_bottom_on; /* 0x10000 = screen height */
->> > +       u32 snap_bottom_off; /* 0x10000 = screen height */
->> > +       u32 fuzz_x; /* 0x10000 = screen width */
->> > +       u32 fuzz_y; /* 0x10000 = screen height */
->>
->> I prefer the existing C99 types.
->
-> Yes, well, the rest of kernel disagrees with you.
+[...]
+> >http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg34738.html
+> >^^^ I'm dreaming about this framework. I.e. true addressing
+> >    for chip-selects. :-)
+> 
+> This is probably needed to support most SPI users out there, but until
+> such framework is in place I think the native methods need to stay, right?
 
-The coding style document claims C99 types are allowed. If that is no
-longer the case it should be updated.
+I'm not the right person to ask. I can only express my opinions.
+The maintainer make final decision.
 
->
->> This driver only supports a subset of Synaptics' devices so a more
->> generic driver will eventually be needed. The patch below adds support
->> for a more recent but similar panel.
->
-> Ok, that should be simple enough to apply, but lets do improvements
-> when we cleaned the code enough for the mainline...?
+But if you ask for my opinion, I don't think that they should stay
+unless we'll see a user in the mainline.
 
-We need this change now. Your cleanup will cause conflicts for anyone
-using our driver, so it would be better if it includes all our fixes.
+> As is now, SPI has regressed w.r.t earlier releases.
+
+Yes and no. Yes, it has "regressed" for out-of-tree code, and no,
+I don't feel sorry about that. :-)
 
 -- 
-Arve Hjønnevåg
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
