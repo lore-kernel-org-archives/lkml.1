@@ -1,88 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbZGNTKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbZGNTOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755694AbZGNTKM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 15:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZGNTKL
+	id S1756050AbZGNTOl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 15:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbZGNTOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 15:10:11 -0400
-Received: from easi.embeddedalley.com ([71.6.201.124]:47788 "HELO
-	easi.embeddedalley.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753665AbZGNTKK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 15:10:10 -0400
-In-Reply-To: <20090714100440.6283.A69D9226@jp.fujitsu.com>
-References: <20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com> <6599ad830907131515h3c9622b5v309cf8f13d272bab@mail.gmail.com> <20090714100440.6283.A69D9226@jp.fujitsu.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9B7C6FE2-D946-4286-9537-C4A715997B89@embeddedalley.com>
-Cc: Paul Menage <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers Mailing List 
-	<containers@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Content-Transfer-Encoding: 7bit
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 1/1] Memory usage limit notification addition to memcg
-Date: Tue, 14 Jul 2009 12:13:32 -0700
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-X-Mailer: Apple Mail (2.753.1)
+	Tue, 14 Jul 2009 15:14:40 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:56112 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755452AbZGNTOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 15:14:39 -0400
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+From: Raistlin <raistlin@linux.it>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       "James H. Anderson" <anderson@cs.unc.edu>,
+       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Noah Watkins <jayhawk@soe.ucsc.edu>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>
+In-Reply-To: <4A5CCD5A.80108@nortel.com>
+References: <200907102350.47124.henrik@austad.us>
+	 <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>
+	 <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>
+	 <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir>
+	 <4A5C9ABA.9070909@nortel.com> <1247590112.9086.936.camel@Palantir>
+	 <4A5CCD5A.80108@nortel.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MRo2C8k7mHoqG/cwkZ/l"
+Date: Tue, 14 Jul 2009 21:14:12 +0200
+Message-Id: <1247598852.4839.99.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jul 13, 2009, at 6:43 PM, KOSAKI Motohiro wrote:
+--=-MRo2C8k7mHoqG/cwkZ/l
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> I like multiple threshold and per-thresold file-descriptor.
-> it solve multiple waiters issue.
+On Tue, 2009-07-14 at 12:24 -0600, Chris Friesen wrote:
+> > - that A is actually blocked, as said before;
+>=20
+> Why does it make any difference that A is blocked rather than busy
+> waiting?  In either case A cannot make forward progress.
+>=20
+I think it's not a problem of A, but of the overall schedule, from a
+system predictability perspective.
+
+Anyway, we are still evaluating what, if any could the issues be.
+
+> > - that A's budget is not diminished.
+>=20
+> If we're running B with A's priority, presumably it will get some amount
+> of cpu time above and beyond what it would normally have gotten during a
+> particular scheduling interval. =20
 >
-> but How about this?
->
->   /cgroup
->     /group1
->       /notifications
->          /threashold-A
->          /threashold-B
+Right...
 
-Why are you making this so complicated?
-As a group, there is a limit and a notification
-threshold.  Use the power of the cgroup hierarchy
-if you want something with related limits and
-different thresholds.  I don't understand the system
-design  that would desire group cooperation
-but yet different threshold notifications, except in
-the case of upper/lower limits.  I'm not arguing
-you can't do it, but the value in doing so.
+> Perhaps it would make sense to charge B
+> what it would normally have gotten, and charge the excess amount to A?
+>=20
+Mmm.. That's right, but I'm not sure I get what happen while executing
+C... Anyway, it seems to me that we are getting closer to each other
+point of view... let's keep staying in touch! :-D
 
-The complexity of the event delivery will cause
-extensive discussion as well.  You have great
-ideas but scratch just a little below the surface
-and there are complex problems to solve.  For
-example, if you have a "below limit" notification
-I can think of many challenges to solve.  Do you
-constantly deliver the event?  Only once on crossing?
-At some time interval?  How often? On a new attach
-to the event?  Hysteresis? How do you control these?
+Regards,
+Dario
 
-The purpose of this memory notification was to improve
-upon a previous attempt at such a feature.  It's a useful
-feature that is today being used in some applications
-to successfully manage the constrained resource.
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
 
-If you look at my presentation from the last ELC, you
-will see this patch is one small step of many to improve
-resource management.  This event notification discussion
-is important, but still just a tiny implementation detail in
-a bigger resource management scheme.  We need to
-make the small steps to make people aware of new features,
-write applications that utilize these features, and to
-perhaps discover something even better we aren't
-even considering.
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
 
-Thanks.
+--=-MRo2C8k7mHoqG/cwkZ/l
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-	-- Dan
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpc2QQACgkQk4XaBE3IOsQuAgCeIb3kMjLV+nBcJuOGBXramc6y
+ISoAni/i533oEpgsZvJF/JYgNkBsgNHG
+=D2j6
+-----END PGP SIGNATURE-----
+
+--=-MRo2C8k7mHoqG/cwkZ/l--
 
