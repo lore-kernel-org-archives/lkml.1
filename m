@@ -1,152 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbZGNKQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZGNKRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932077AbZGNKQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 06:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbZGNKQX
+	id S1754544AbZGNKRQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 06:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbZGNKRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 06:16:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34818 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754247AbZGNKQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 06:16:23 -0400
-Subject: Re: [PATCH] dma-debug: Fix the overlap() function to be correct
- and readable
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Joerg Roedel <joerg.roedel@amd.com>
-In-Reply-To: <20090710195157.GA31361@elte.hu>
-References: <20090710162848.GA26862@elte.hu>
-	 <alpine.LFD.2.01.0907101206120.3352@localhost.localdomain>
-	 <20090710193110.GA28281@elte.hu>  <20090710195157.GA31361@elte.hu>
-Content-Type: text/plain
-Date: Tue, 14 Jul 2009 15:45:42 +0530
-Message-Id: <1247566542.2473.18.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	Tue, 14 Jul 2009 06:17:15 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:51457 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754432AbZGNKRP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 06:17:15 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=NgnNa4BYe58A:10 a=w4iE+TBsmj5y1WloLYF40w==:17
+ a=mNOX19dFcVHLgXfqMbcA:9 a=cKy0DWkD-H2CPApk5gEA:7
+ a=xyi4UKUvTanFX2mArvRP5ROYGcIA:4
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: linux-kernel@vger.kernel.org
+Subject: Re: Possible Suspend to Ram bug?
+Date: Tue, 14 Jul 2009 04:17:12 -0600
+User-Agent: KMail/1.12.90 (Linux/2.6.29-2-amd64; KDE/4.3.60; x86_64; svn-990302; 2009-06-30)
+References: <200907100458.27410.tfjellstrom@shaw.ca>
+In-Reply-To: <200907100458.27410.tfjellstrom@shaw.ca>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907140417.12847.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-10 at 21:51 +0200, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > > IOW, I think this whole function is just total crap, apparently 
-> > > put together by randomly assembling characters until it 
-> > > compiles. Somebody should put more effort into looking at it, 
-> > > but I think it should be something like
-> > > 
-> > > 	static inline int overlap(void *addr, unsigned long len, void *start, void *end)
-> > > 	{
-> > > 		unsigned long a1 = (unsigned long) addr;
-> > > 		unsigned long b1 = a1 + len;
-> > > 		unsigned long a2 = (unsigned long) start;
-> > > 		unsigned long b2 = (unsigned long) end;
-> > 
-> > At least some arguments have unsigned long natural types (they come 
-> > out of page_address() for example) so the function parameters could 
-> > perhaps be changed to unsigned long too as well.
-> > 
-> > > 	#ifdef WE_CARE_DEEPLY
-> > > 		/* Overflow? */
-> > > 		if (b1 < a1)
-> > > 			return 1;
-> > > 	#ifdef AND_ARE_ANAL
-> > > 		if (b2 < a2)
-> > > 			return 1;
-> > > 	#endif
-> > > 	#endif
-> > > 		return !(b1 <= a2 || a1 >= b2);
-> > > 	}
-> > > 
-> > > but I really migth have done soemthing wrong there. It's a 
-> > > simple function, but somebody needs to double-check that I 
-> > > haven't made it worse.
-> > 
-> > Looks correct to me.
-> 
-> How about the patch below? Lightly tested.
-> 
-> 	Ingo
-> 
-> ------------>
-> >From 35c89da82e969a2fd157478940e7ecde1e19ccc4 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri, 10 Jul 2009 21:38:02 +0200
-> Subject: [PATCH] dma-debug: Fix the overlap() function to be correct and readable
-> 
-> Linus noticed how unclean and buggy the overlap() function is:
-> 
->  - It uses convoluted (and bug-causing) positive checks for
->    range overlap - instead of using a more natural negative
->    check.
-> 
->  - Even the positive checks are buggy: a positive intersection
->    check has four natural cases while we checked only for three,
->    missing the (addr < start && addr2 == end) case for example.
-> 
->  - The variables are mis-named, making it non-obvious how the
->    check was done.
-> 
->  - It needlessly uses u64 instead of unsigned long. Since these
->    are kernel memory pointers and we explicitly exclude highmem
->    ranges anyway we cannot ever overflow 32 bits, even if we
->    could. (and on 64-bit it doesnt matter anyway)
-> 
-> All in one, this function needs a total revamp. I used Linus's
-> suggestions minus the paranoid checks (we cannot overflow really
-> because if we get totally bad DMA ranges passed far more things
-> break in the systems than just DMA debugging). I also fixed a
-> few other small details i noticed.
-> 
-> Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: Joerg Roedel <joerg.roedel@amd.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  lib/dma-debug.c |   24 ++++++++++++------------
->  1 files changed, 12 insertions(+), 12 deletions(-)
-> 
-> diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-> index c9187fe..02fed52 100644
-> --- a/lib/dma-debug.c
-> +++ b/lib/dma-debug.c
-> @@ -856,22 +856,21 @@ static void check_for_stack(struct device *dev, void *addr)
->  				"stack [addr=%p]\n", addr);
->  }
->  
-> -static inline bool overlap(void *addr, u64 size, void *start, void *end)
-> +static inline bool overlap(void *addr, unsigned long len, void *start, void *end)
->  {
-> -	void *addr2 = (char *)addr + size;
-> +	unsigned long a1 = (unsigned long)addr;
-> +	unsigned long b1 = a1 + len;
-> +	unsigned long a2 = (unsigned long)start;
-> +	unsigned long b2 = (unsigned long)end;
->  
-> -	return ((addr >= start && addr < end) ||
-> -		(addr2 >= start && addr2 < end) ||
-> -		((addr < start) && (addr2 > end)));
-> +	return !(b1 <= a2 || a1 >= b2);
->  }
->  
+On Fri July 10 2009, Thomas Fjellstrom wrote:
+> I've recently gotten a new OCZ Vertex 30G SSD and have noticed that it will
+> flip out the second time linux wakes up from "suspend to ram".
+>
+> The system will run fine for days or weeks, so long as it isn't waking up a
+> second StR.
+>
+> Here is an example error that I get from the device (my root / device):
+>
+> [42018.455204] sd 0:0:0:0: [sda] Unhandled error code
+> [42018.455208] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET
+> driverbyte=DRIVER_OK,SUGGEST_OK
+> [42018.455215] end_request: I/O error, dev sda, sector 12583031
+> [42018.455221] EXT3-fs error (device sda2): ext3_get_inode_loc: unable to
+> read inode block - inode=391005, block=1572871
+>
+> At that point using my / fs is pretty much impossible. Every single app
+> fails to launch with an I/O Error, about the only command I can run in that
+> state is "dmesg" in an existing konsole.
+>
+> I'm currently using 2.6.29-2-amd64 from debian, and am running on a
+> Gigabyte MA790FXT-UD5P, with a AMD Phenom II X4 810 cpu, and 4G ram.
+>
+> One interesting thing to note, the file system on the Vertex SSD reports as
+> clean to fsck on the next boot, while my /home which is on a Seagate
+> 7200.12 drive reports with several orphaned inodes (every single time). And
+> that's regardless if I use ALT+SYSRQ+S/U to try and sync everything. Also,
+> ALT+SYSRQ+B doesn't work at that point, only ALT+SYSRQ+O or using the
+> system power/reset buttons will work.
+>
+> I'm attaching the full log I was able to save from dmesg (over nfs, luckily
+> that worked).
 
-If b1 = a2 (overlap) then this function will say 0
-If a1 = b2 (overlap) then this function will say 0
+Anyone have a clue what might be wrong?
 
-if b1 > (a2 + infinite) which is not overlap this function will say 1
-
-I think we need to test both edges.
-
-So it should be :
-
-	return ((a2 <= b1 && b2 >= a1) || (a1 <= b2 && a2 <= b1));
-
-Thanks,
---
-JSR
-
-
+-- 
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
