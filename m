@@ -1,133 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZGNJOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbZGNJOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbZGNJOO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 05:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbZGNJON
+	id S1754064AbZGNJOl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 05:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZGNJOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 05:14:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33535 "EHLO hera.kernel.org"
+	Tue, 14 Jul 2009 05:14:40 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43520 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753386AbZGNJOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 05:14:12 -0400
-Subject: Re: [ANNOUNCE] 2.6.29.6-rt23
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0907102023500.2768@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
-	 <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
-	 <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain>
-	 <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
-	 <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain>
-	 <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
-	 <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain>
-	 <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
-	 <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
-	 <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
-	 <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
-	 <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
-	 <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
-	 <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
-	 <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
-	 <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
-	 <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
-	 <1247249002.18898.11.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0907102023500.2768@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 14 Jul 2009 14:42:33 +0530
-Message-Id: <1247562753.2473.4.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753462AbZGNJOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 05:14:39 -0400
+Date: Tue, 14 Jul 2009 10:14:38 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 5/13] Choose pages from the per cpu list-based on
+	migration type
+Message-ID: <20090714091438.GA28569@csn.ul.ie>
+References: <20070910112011.3097.8438.sendpatchset@skynet.skynet.ie> <20070910112151.3097.54726.sendpatchset@skynet.skynet.ie> <20090713121628.bde62c65.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090713121628.bde62c65.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-10 at 20:29 +0200, Thomas Gleixner wrote:
-> On Fri, 10 Jul 2009, Fernando Lopez-Lezcano wrote:
-> > On Thu, 2009-07-09 at 20:25 +0200, Thomas Gleixner wrote:
-> > > We are pleased to announce the next update to our new preempt-rt
-> > > series.
-> > >  
-> > >      - update to 2.6.29.6
-> > >  
-> > >      - compile fixes (Wu Zhangjin)
-> > > 
-> > >      - powerpc highmem fix
-> > > 
-> > >      - hwlat smp_processor_id() fix (Carsten)
-> > > 
-> > >      - ktime_get* speedups (Martin)
+On Mon, Jul 13, 2009 at 12:16:28PM -0700, Andrew Morton wrote:
+> On Mon, 10 Sep 2007 12:21:51 +0100 (IST)
+> Mel Gorman <mel@csn.ul.ie> wrote:
+> >
+> 
+> A somewhat belated review comment.
+> 
+> > The freelists for each migrate type can slowly become polluted due to the
+> > per-cpu list.  Consider what happens when the following happens
 > > 
-> > I'm getting slightly weird behavior from rt23 in an intel quad core
-> > machine (my T61 laptop is fine), rt22 was fine. It is some timer issue,
-> > if I type continuously I get (every few seconds) repeated keys. Nothing
-> > in the logs, nothing in dmesg that is (significantly) different from an
-> > rt22 boot. 
+> > 1. A 2^pageblock_order list is reserved for __GFP_MOVABLE pages
+> > 2. An order-0 page is allocated from the newly reserved block
+> > 3. The page is freed and placed on the per-cpu list
+> > 4. alloc_page() is called with GFP_KERNEL as the gfp_mask
+> > 5. The per-cpu list is used to satisfy the allocation
+> > 
+> > This results in a kernel page is in the middle of a migratable region. This
+> > patch prevents this leak occuring by storing the MIGRATE_ type of the page in
+> > page->private. On allocate, a page will only be returned of the desired type,
+> > else more pages will be allocated. This may temporarily allow a per-cpu list
+> > to go over the pcp->high limit but it'll be corrected on the next free. Care
+> > is taken to preserve the hotness of pages recently freed.
+> >
+> > The additional code is not measurably slower for the workloads we've tested.
 > 
-> Hmm. The only change which touches timer related stuff is the ktime*
-> speedups. Can you please apply the revert patch below and check
-> whether that changes anything? If not, then we need to look at the
-> 2.6.29.5 -> .6 delta.
+> It sure looks slower.
 > 
-> Thanks,
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > ---
+> > 
+> >  mm/page_alloc.c |   18 ++++++++++++++++--
+> >  1 file changed, 16 insertions(+), 2 deletions(-)
+> > 
+> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc5-004-split-the-free-lists-for-movable-and-unmovable-allocations/mm/page_alloc.c linux-2.6.23-rc5-005-choose-pages-from-the-per-cpu-list-based-on-migration-type/mm/page_alloc.c
+> > --- linux-2.6.23-rc5-004-split-the-free-lists-for-movable-and-unmovable-allocations/mm/page_alloc.c	2007-09-02 16:19:34.000000000 +0100
+> > +++ linux-2.6.23-rc5-005-choose-pages-from-the-per-cpu-list-based-on-migration-type/mm/page_alloc.c	2007-09-02 16:20:09.000000000 +0100
+> > @@ -757,7 +757,8 @@ static int rmqueue_bulk(struct zone *zon
+> >  		struct page *page = __rmqueue(zone, order, migratetype);
+> >  		if (unlikely(page == NULL))
+> >  			break;
+> > -		list_add_tail(&page->lru, list);
+> > +		list_add(&page->lru, list);
+> > +		set_page_private(page, migratetype);
+> >  	}
+> >  	spin_unlock(&zone->lock);
+> >  	return i;
+> > @@ -884,6 +885,7 @@ static void fastcall free_hot_cold_page(
+> >  	local_irq_save(flags);
+> >  	__count_vm_event(PGFREE);
+> >  	list_add(&page->lru, &pcp->list);
+> > +	set_page_private(page, get_pageblock_migratetype(page));
+> >  	pcp->count++;
+> >  	if (pcp->count >= pcp->high) {
+> >  		free_pages_bulk(zone, pcp->batch, &pcp->list, 0);
+> > @@ -948,7 +950,19 @@ again:
+> >  			if (unlikely(!pcp->count))
+> >  				goto failed;
+> >  		}
+> > -		page = list_entry(pcp->list.next, struct page, lru);
+> > +
+> > +		/* Find a page of the appropriate migrate type */
+> > +		list_for_each_entry(page, &pcp->list, lru)
+> > +			if (page_private(page) == migratetype)
+> > +				break;
 > 
-> 	tglx
-> -----
-> diff --git b/kernel/hrtimer.c a/kernel/hrtimer.c
-> index 93affb0..cb8a15c 100644
-> --- b/kernel/hrtimer.c
-> +++ a/kernel/hrtimer.c
-> @@ -46,6 +46,37 @@
->  
->  #include <asm/uaccess.h>
->  
-> +/**
-> + * ktime_get - get the monotonic time in ktime_t format
-> + *
-> + * returns the time in ktime_t format
-> + */
-> +ktime_t ktime_get(void)
-> +{
-> +	struct timespec now;
-> +
-> +	ktime_get_ts(&now);
-> +
-> +	return timespec_to_ktime(now);
-> +}
-> +EXPORT_SYMBOL_GPL(ktime_get);
-> +
-> +/**
-> + * ktime_get_real - get the real (wall-) time in ktime_t format
-> + *
-> + * returns the time in ktime_t format
-> + */
-> +ktime_t ktime_get_real(void)
-> +{
-> +	struct timespec now;
-> +
-> +	getnstimeofday(&now);
-> +
-> +	return timespec_to_ktime(now);
-> +}
-> +
-> +EXPORT_SYMBOL_GPL(ktime_get_real);
-> +
+> We're doing a linear search through the per-cpu magaznines right there
+> in the page allocator hot path.  Even if the search matches the first
+> element, the setup costs will matter.
+> 
+> Surely we can make this search go away with a better choice of data
+> structures?
+> 
 
-Remove extra line before EXPORT_SYMBOL_GPL(ktime_get_real);
+I have a patch that expands the per-cpu structure and eliminates the search
+and I made various attempts at reducing the setup cost (e.g.  checking if
+the first element suited before starting the search). However, I wasn't been
+able to show for definite it made anything faster but it did increase
+the size of a per-cpu structure.
 
---
-JSR
+> 
+> > +		/* Allocate more to the pcp list if necessary */
+> > +		if (unlikely(&page->lru == &pcp->list)) {
+> > +			pcp->count += rmqueue_bulk(zone, 0,
+> > +					pcp->batch, &pcp->list, migratetype);
+> > +			page = list_entry(pcp->list.next, struct page, lru);
+> > +		}
+> > +
+> >  		list_del(&page->lru);
+> >  		pcp->count--;
+> >  	} else {
+> 
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
