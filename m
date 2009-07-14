@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbZGNDqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbZGNDum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbZGNDqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 23:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZGNDqs
+	id S1753404AbZGNDum (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 23:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZGNDum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 23:46:48 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53884 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752936AbZGNDqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 23:46:47 -0400
-Date: Tue, 14 Jul 2009 13:46:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: linux-next: manual merge of the ttydev tree with Linus' tree
-Message-Id: <20090714134644.644cb3fc.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 13 Jul 2009 23:50:42 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:47185 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753176AbZGNDul (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 13 Jul 2009 23:50:41 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=HT+6hKSyXLoT/sMR3QrZ95jm9CQvQkRa74J4L8bU2YrgSctdAwQShtP/gmsPrh/7t
+	k9tYJcrVOt9+ASfCTMALw==
+MIME-Version: 1.0
+In-Reply-To: <20090714084950.2401d9a6.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090710230043.16778.29656.stgit@hastromil.mtv.corp.google.com>
+	 <20090710230205.16778.11707.stgit@hastromil.mtv.corp.google.com>
+	 <4A5AA3E7.9070800@cn.fujitsu.com>
+	 <20090713150303.70ab5176.kamezawa.hiroyu@jp.fujitsu.com>
+	 <2f86c2480907130827u7d2b062bw26bbb80a8e3de657@mail.gmail.com>
+	 <20090714084950.2401d9a6.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 13 Jul 2009 20:50:33 -0700
+Message-ID: <6599ad830907132050n226aecb3ucab6746a4d0e81fa@mail.gmail.com>
+Subject: Re: [PATCH 3/3] Quick vmalloc vs kmalloc fix to the case where array 
+	size is too large
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Benjamin Blum <bblum@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, serue@us.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+On Mon, Jul 13, 2009 at 4:49 PM, KAMEZAWA
+Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> IIUC, this place, .../procs interface is not so important for performance
+> as to being allowed this ugly conding.
+>
 
-Today's linux-next merge of the ttydev tree got a conflict in
-drivers/usb/serial/sierra.c between commit
-7bae0a070db4bc2761dd9515f450cdfa3f3f248c ("USB: Sierra: fix oops upon
-device close") from Linus' tree and commit
-2db76e5f8b74d5eb0d26a55d4b4e0b2b1c76ff4d ("tty-usb-sierra-updates-pm")
-from the ttydev tree.
+It's not just the calling thread that suffers from the overhead -
+we've seen performance hits on other processes on a machine due to the
+TLB-shootdown overhead associated with vmalloc()/vfree().
 
-Just context changes.  I fixed ti up (see below) and can carry the fix
-for a while.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc drivers/usb/serial/sierra.c
-index f48d05e,9b22dff..0000000
---- a/drivers/usb/serial/sierra.c
-+++ b/drivers/usb/serial/sierra.c
-@@@ -841,7 -884,11 +884,10 @@@ static void sierra_release(struct usb_s
-  		portdata = usb_get_serial_port_data(port);
-  		if (!portdata)
-  			continue;
-+ 		portdata->suspend_status = 0;
-+ 		device_remove_file(&port->dev, &dev_attr_suspend_status);
-+ 
-  		kfree(portdata);
- -		usb_set_serial_port_data(port, NULL);
-  	}
-  }
-  
-@@@ -864,8 -979,11 +978,11 @@@ static struct usb_serial_driver sierra_
-  	.tiocmget          = sierra_tiocmget,
-  	.tiocmset          = sierra_tiocmset,
-  	.attach            = sierra_startup,
- -	.disconnect        = sierra_disconnect,
- +	.release           = sierra_release,
-+ 	.port_probe	   = sierra_create_sysfs_attrs,
-  	.read_int_callback = sierra_instat_callback,
-+ 	.suspend           = sierra_suspend,
-+ 	.resume            = sierra_resume,
-  };
-  
-  /* Functions used by new usb-serial code. */
+Paul
