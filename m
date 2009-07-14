@@ -1,91 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbZGNNgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbZGNNhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753662AbZGNNgQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 09:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbZGNNgP
+	id S1753733AbZGNNhT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 09:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbZGNNhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 09:36:15 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:49435 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753415AbZGNNgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 09:36:15 -0400
-Date: Tue, 14 Jul 2009 15:36:01 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org,
-       Nicolas Pitre <nico@cam.org>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Tony Lindgren <tony@atomide.com>, David Brownell <david-b@pacbell.net>,
-       manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
-       Pavel Pisa <ppisa@pikron.com>,
-       Jarkko Lavinen <jarkko.lavinen@nokia.com>, Ben Dooks <ben@fluff.org>,
-       saschasommer@freenet.de, avorontsov@ru.mvista.com,
-       Alex Dubov <oakad@yahoo.com>, ian@mnementh.co.uk,
-       HaraldWelte@viatech.com, JosephChan@via.com.tw,
-       Adrian Hunter <adrian.hunter@nokia.com>
-Subject: New MMC maintainer needed
-Message-ID: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-6573-1247578570-0001-2"
+	Tue, 14 Jul 2009 09:37:19 -0400
+Received: from ru.mvista.com ([213.79.90.228]:2312 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753601AbZGNNhS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 09:37:18 -0400
+Date: Tue, 14 Jul 2009 17:37:16 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Steven Rostedt <srostedt@redhat.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH RFC 1/2] Makefile: Never use -fno-omit-frame-pointer
+Message-ID: <20090714133716.GC28970@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090616201630.GA4971@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090616201630.GA4971@oksana.dev.rtsoft.ru>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Wed, Jun 17, 2009 at 12:16:30AM +0400, Anton Vorontsov wrote:
+> According to Segher Boessenkool and GCC manual, -fomit-frame-pointer
+> is only the default when optimising on archs/ABIs where it doesn't
+> hinder debugging and -pg. So, we do not get it by default on x86,
+> not at any optimisation level.
+> 
+> On the other hand, *using* -fno-omit-frame-pointer causes gcc to
+> produce buggy code on PowerPC targets.
+> 
+> If Segher and GCC manual are right, this patch should be a no-op
+> for all arches except PowerPC, where the patch fixes gcc issues.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+> 
+> See this thread for more discussion:
+> http://osdir.com/ml/linux-kernel/2009-05/msg01754.html
+> 
+> p.s.
+> Obviously, I didn't test this patch on anything else but PPC32. ;-)
+> 
+> Segher, do you know if all GCC versions that we support for
+> building Linux are behaving the way that GCC manual describe?
 
---=_freyr.ossman.eu-6573-1247578570-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+No news is good news... Ingo, can we merge this into -tip for testing?
 
-I'm afraid the time has come for me to step down as maintainer for the
-MMC/SD/SDIO subsystem and for someone else to take over the rudder. It
-is no secret that I haven't been able to give the maintainer role the
-resources it required, and as a result it has gone from being a fun
-hobby to a burdensome chore. I was hoping it was a temporary slump, but
-this has been the norm for over a year now, so it's time for me to
-throw in the towel.
+Thanks,
 
-I don't have any clear nominees for a replacement, but if you feel that
-you are in a position to take over the maintainer role then please
-raise your hand.
+>  Makefile |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Makefile b/Makefile
+> index ea63667..70ad1ff 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -535,7 +535,7 @@ KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+>  endif
+>  
+>  ifdef CONFIG_FRAME_POINTER
+> -KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+> +KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
+>  else
+>  KBUILD_CFLAGS	+= -fomit-frame-pointer
+>  endif
+> -- 
+> 1.6.3.1
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-I only have a few patches in my queue right now and I can push those
-off to Linus before I quit. There are however a lot of unhandled
-messages that need attention. I can provide a list once a successor has
-been named.
-
-I realise that you have put a lot of time and effort into the patches
-you send me and I am truly sorry that I haven't been able to handle
-them better. Hopefully me stepping down means that we get someone who
-can actually take care of everything in a timely manner.
-
-I haven't decided what to do with the sdhci maintainership yet. Right
-now I only know I need a break and freeing myself from the MMC
-maintainer role is the first step. Hopefully I can return as a
-developer in the future.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-6573-1247578570-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkpcicoACgkQ7b8eESbyJLij2QCfQKe9XJvFsd/oUoF5/qIVFAoS
-hugAoJOIL4kmFHavWxEKpnt8C5gAuHFv
-=yhTF
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-6573-1247578570-0001-2--
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
