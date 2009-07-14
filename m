@@ -1,57 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZGNRoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbZGNRpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbZGNRoD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 13:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbZGNRoC
+	id S1754068AbZGNRpi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 13:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbZGNRpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 13:44:02 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:10195 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbZGNRoB (ORCPT
+	Tue, 14 Jul 2009 13:45:38 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:43159 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbZGNRph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 13:44:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=XOlOGgDJcoBwUkDCwM3+g3BU/eQZQz7l29+5BhGLU4C3Yy9Vcsw6P3D1BOza5xgs7
-	+UM2ahszosb9a+oo5Bssw==
+	Tue, 14 Jul 2009 13:45:37 -0400
+Message-ID: <4A5CC43B.1020402@monstr.eu>
+Date: Tue, 14 Jul 2009 19:45:31 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-In-Reply-To: <2f86c2480907141034r5a985cfue9e8fdf64ad28465@mail.gmail.com>
-References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
-	 <20090705063850.GX11273@balbir.in.ibm.com>
-	 <6599ad830907101658i13e4046br70377a487dd6b49b@mail.gmail.com>
-	 <20090713121138.GC5051@balbir.in.ibm.com>
-	 <6599ad830907130926v7788af12hdcd76e4ccb3ab6de@mail.gmail.com>
-	 <20090714055638.GI5051@balbir.in.ibm.com>
-	 <6599ad830907132349u6cf52060t4fafb6637cbe4ed1@mail.gmail.com>
-	 <20090714071617.GK5051@balbir.in.ibm.com>
-	 <2f86c2480907141034r5a985cfue9e8fdf64ad28465@mail.gmail.com>
-Date: Tue, 14 Jul 2009 10:43:56 -0700
-Message-ID: <6599ad830907141043s1c16d5c9saad9118c210ecef4@mail.gmail.com>
-Subject: Re: [PATCH 0/2] CGroups: cgroup member list enhancement/fix
-From: Paul Menage <menage@google.com>
-To: Benjamin Blum <bblum@google.com>
-Cc: balbir@linux.vnet.ibm.com, lizf@cn.fujitzu.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       libcg-devel <libcg-devel@lists.sourceforge.net>,
-       akpm@linux-foundation.org
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       LTP <ltp-list@lists.sourceforge.net>
+Subject: Re: access_ok macor
+References: <4A5C8068.6020203@monstr.eu> <200907141843.05629.arnd@arndb.de> <4A5CB8B4.7050108@monstr.eu> <200907141913.21240.arnd@arndb.de>
+In-Reply-To: <200907141913.21240.arnd@arndb.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 10:34 AM, Benjamin Blum<bblum@google.com> wrote:
-> procs file). While that's preferable to a global lock, if we can add a
-> field to task_struct, a (lockless) flag-based approach might be
-> possible.
->
+Arnd Bergmann wrote:
+> On Tuesday 14 July 2009, Michal Simek wrote:
+>> when the code tried to read/write from unaligned address (and in cpu is turn on unaligned exception)
+>> then is caused unaligned exception and asm code assemble/return value which is on that unaligned
+>> address. (Assemble it that read/write every byte separately). That will be harder to prevent all
+>> this cases because unaligned exception is in generic code.
+>> What do you mean add __range_ok? Range checking is ok. The problem is when in case get_user kernel
+>> try to load unaligned addr - unaligned exception is perform and try to load that value separately.
+>> If that page is not there, page fault handler is called and not find it, it is performed search
+>> from exception table and that address is not there of course - because address in pc is generic
+>> unaligned code. I think that handling this needs more code.
+>> Maybe if the address with from unaligned exception handler (there are some address which can caused
+>> it) and find out which aligned address is there and find out proper fixup for it.
+>> I think that this could work.
+>>
+>> What do you think?
+> 
+> I think the key point is that the kernel should never try an unaligned
+> access. Other architectures already rely on this, so you can too.
 
-I've been trying to think of a way to do that. AFAICS the only way to
-do that reliably would be to move the call to cgroup_fork() that hooks
-into the parent's cgroup inside the lock on the group leader's thread
-list, and move the fork callbacks into cgroup_fork(). (Which would
-mean that they'd not be able to sleep/fail, etc).
+I think that especially for this case get/put_user (+ user_copy macros)
+kernel can do it because just copy/paste data from user space and data
+can be unaligned.
 
-Paul
+
+> Instead of doing an aligned access from the unaligned exception handler,
+> you should not access the data at all when you come from kernel mode
+> but only search the fixup table to see if you should continue anyway.
+
+> 
+> Sorry for adding confusion by mentioning the __range_ok, which is addressing
+> a separate problem. I should have made that clearer.
+
+it is ok.
+
+> 
+> In pseudo-code, I think you should do:
+> 
+> void unaligned_exception(struct pt_regs *regs, unsigned long address)
+> {
+> 	if (kernel_mode(regs)) {
+> 		/*
+> 		 * unaligned access not allowed in kernel,
+> 		 * but search exception table.
+> 		 */
+> 		bad_page_fault(regs, address, 0);
+> 	} else {
+> 		if (!access_ok(address, 4))
+> 			force_sig(SIGBUS, current);
+> 		else
+> 			fixup_unaligned_access(regs);
+> 	}
+> }
+
+Not sure about this idea because I think we have to use unaligned access for kernel too.
+Your idea to skip unaligned access for kernel code should work but I think we have to find out
+a solution for case when we need to use it in kernel code.
+
+My idea was
+
+
+void bad_page_fault()
+{
+	fixup = search_exception_tables(regs->pc);
+	if (fixup) {
+		regs->pc = fixup->fixup;
+		return;
+	}
+
+	fixup = search_exception_tables(unaligned exception addr & 0xffff fffc) //mask last 2bits to get
+aligned address
+	if (fixup) {
+		regs->pc = fixup->fixup;
+		return;
+	}
+
+	die();
+
+}
+
+
+but not sure if will work because this setup bad fixup. In case that tlb load correct data
+and kernel is able to access that place then unaligned exception needn't caused next page fault
+and exception handler can load that value.
+
+Maybe this could be work.
+
+Michal
+
+
+
+
+
+> 
+> 	Arnd <><
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
