@@ -1,107 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbZGNUco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbZGNUdF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbZGNUco (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 16:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756354AbZGNUcn
+	id S1756482AbZGNUdF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 16:33:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756466AbZGNUdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 16:32:43 -0400
-Received: from outbound-mail-116.bluehost.com ([69.89.22.16]:41128 "HELO
-	outbound-mail-116.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756349AbZGNUcm (ORCPT
+	Tue, 14 Jul 2009 16:33:04 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:55001 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756458AbZGNUdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 16:32:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=U2QCYLjBOzfbvwq9zorW3gT+jZOgLgWMRrULnQvRXX2P9yX1Nk60pqwO4BuCwn2FKFj/WW5NRTjIa7diWIHSLf+spBW0BoP9pDnUYiIJXRR627GA+Z8VaHobvSdYiiFs;
-Date: Tue, 14 Jul 2009 13:32:39 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alex Chiang <achiang@hp.com>
-Cc: lenb@kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 0/3] ACPI/PCI Hotplug: acpiphp cleanup
-Message-ID: <20090714133239.070e976c@jbarnes-g45>
-In-Reply-To: <20090714200431.GC15021@ldl.fc.hp.com>
-References: <20090710193601.30165.62311.stgit@bob.kio>
-	<20090714122731.1ebea158@jbarnes-g45>
-	<20090714200431.GC15021@ldl.fc.hp.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Tue, 14 Jul 2009 16:33:03 -0400
+X-Greylist: delayed 436 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Jul 2009 16:33:03 EDT
+Date: Tue, 14 Jul 2009 22:33:01 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@osdl.org>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, dmitry.torokhov@gmail.com,
+       dtor@mail.ru, linux-input@vger.kernel.org
+Subject: Re: Support for synaptic touchscreen in HTC dream
+Message-ID: <20090714203301.GA11390@rhlx01.hs-esslingen.de>
+References: <20090714100634.GA4054@elf.ucw.cz> <20090714202545.GA7707@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090714202545.GA7707@rhlx01.hs-esslingen.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Jul 2009 14:04:31 -0600
-Alex Chiang <achiang@hp.com> wrote:
+Hi,
 
-> * Jesse Barnes <jbarnes@virtuousgeek.org>:
-> > Haven't heard from Len yet, but I'm a bit nervous about adding this
-> > to for-linus.  We already have a fix upstream for the
-> > acpi_get_pci_dev issue right?  So there's no hurry on this set of
-> > (nice) cleanups is there?
+On Tue, Jul 14, 2009 at 10:25:45PM +0200, Andreas Mohr wrote:
+> Hi,
 > 
-> The problem is that I introduced an assumption in
-> acpiphp_configure_bridge, which calls acpi_get_pci_dev. That call may
-> fail on systems with non-materialized PCI root bridges.
+> > +       ts->snap_down[swapped] = -inactive_area_left;
+> > +       ts->snap_up[swapped] = max_x + inactive_area_right;
+> > +       ts->snap_down[!swapped] = -inactive_area_top;
+> > +       ts->snap_up[!swapped] = max_y + inactive_area_bottom;
+> > +       ts->snap_down_on[swapped] = snap_left_on;
+> > +       ts->snap_down_off[swapped] = snap_left_off;
+> > +       ts->snap_up_on[swapped] = max_x - snap_right_on;
+> > +       ts->snap_up_off[swapped] = max_x - snap_right_off;
+> > +       ts->snap_down_on[!swapped] = snap_top_on;
+> > +       ts->snap_down_off[!swapped] = snap_top_off;
+> > +       ts->snap_up_on[!swapped] = max_y - snap_bottom_on;
+> > +       ts->snap_up_off[!swapped] = max_y - snap_bottom_off;
 > 
-> Fixing that assumption was addressed by this hunk in patch 2/3:
-> 
-> @@ -1387,16 +1363,7 @@ static void acpiphp_sanitize_bus(struct
-> pci_bus *bus) /* Program resources in newly inserted bridge */
->  static int acpiphp_configure_bridge (acpi_handle handle)
->  {
-> -       struct pci_dev *dev;
-> -       struct pci_bus *bus;
-> -
-> -       dev = acpi_get_pci_dev(handle);
-> -       if (!dev) {
-> -               err("cannot get PCI domain and bus number for
-> bridge\n");
-> -               return -EINVAL;
-> -       }
-> -
-> -       bus = dev->bus;
-> +       struct pci_bus *bus = pci_bus_from_handle(handle);
-> 
->         pci_bus_size_bridges(bus);
->         pci_bus_assign_resources(bus);
-> 
-> Now, my systems cannot do PCI root bridge hotplug, so that line
-> where we call acpi_get_pci_dev() won't cause us to fail, but I'm
-> concerned about machines in the wild that:
-> 
-> 	a) can do PCI root bridge hotplug
-> 	b) have non-materialized PCI root bridges
-> 
-> Maybe that is a small set of machines...
-> 
-> I agree that this series is on the large side for -rc4 and
-> beyond, but I'd prefer to fix it now.
-> 
-> The thing is, a "minimal" fix wouldn't save us that much, since
-> we'd still have to export acpi_pci_root stuff. We could maybe
-> drop patch 3/3 which makes the final diffstat look like this:
-> 
->  drivers/acpi/pci_root.c            |   17 +-----
->  include/acpi/acpi_bus.h            |   14 +++++
->  drivers/pci/hotplug/acpiphp_glue.c |  108
-> ++++++++++++------------------------ 3 files changed, 53
-> insertions(+), 86 deletions(-)
-> 
-> Hm, actually, I can actually make that even smaller by separating
-> out the interface change.
-> 
-> Would you like me to do that and resubmit? I'd still need an ACK
-> from Len re: acpi_pci_root...
-> 
-> Thanks.
-> 
-> /ac
-> 
-> 
+> Could this perhaps be represented by _one_ struct definition
+> and two representations of it, one for swapped and one for non-swapped case or so?
+> (although sometimes it´s reverted logic, might need more thought)
+> Sounds like an awful lot of repeated array calculations for no overly good reason
+> (unless gcc happens to fully optimize it into oblivion automatically).
 
+-ETOOMUCHBEER
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Of course we need to swap orthogonal members individually,
+thus this kind of code.
+However maybe there´s still a more elegant way of doing this.
+
+Andreas Mohr
