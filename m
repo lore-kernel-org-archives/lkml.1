@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbZGNRjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZGNRoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbZGNRjv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 13:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZGNRju
+	id S1754048AbZGNRoD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 13:44:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbZGNRoC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 13:39:50 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:42717 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752080AbZGNRju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 13:39:50 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] libata: pata_bf54x: handle portmuxing of pins through GPIO PORTs
-Date: Tue, 14 Jul 2009 13:39:47 -0400
-Message-Id: <1247593187-26570-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.3
+	Tue, 14 Jul 2009 13:44:02 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:10195 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750820AbZGNRoB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 13:44:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=XOlOGgDJcoBwUkDCwM3+g3BU/eQZQz7l29+5BhGLU4C3Yy9Vcsw6P3D1BOza5xgs7
+	+UM2ahszosb9a+oo5Bssw==
+MIME-Version: 1.0
+In-Reply-To: <2f86c2480907141034r5a985cfue9e8fdf64ad28465@mail.gmail.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	 <20090705063850.GX11273@balbir.in.ibm.com>
+	 <6599ad830907101658i13e4046br70377a487dd6b49b@mail.gmail.com>
+	 <20090713121138.GC5051@balbir.in.ibm.com>
+	 <6599ad830907130926v7788af12hdcd76e4ccb3ab6de@mail.gmail.com>
+	 <20090714055638.GI5051@balbir.in.ibm.com>
+	 <6599ad830907132349u6cf52060t4fafb6637cbe4ed1@mail.gmail.com>
+	 <20090714071617.GK5051@balbir.in.ibm.com>
+	 <2f86c2480907141034r5a985cfue9e8fdf64ad28465@mail.gmail.com>
+Date: Tue, 14 Jul 2009 10:43:56 -0700
+Message-ID: <6599ad830907141043s1c16d5c9saad9118c210ecef4@mail.gmail.com>
+Subject: Re: [PATCH 0/2] CGroups: cgroup member list enhancement/fix
+From: Paul Menage <menage@google.com>
+To: Benjamin Blum <bblum@google.com>
+Cc: balbir@linux.vnet.ibm.com, lizf@cn.fujitzu.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       libcg-devel <libcg-devel@lists.sourceforge.net>,
+       akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+On Tue, Jul 14, 2009 at 10:34 AM, Benjamin Blum<bblum@google.com> wrote:
+> procs file). While that's preferable to a global lock, if we can add a
+> field to task_struct, a (lockless) flag-based approach might be
+> possible.
+>
 
-By default, the PATA pins are routed to the async address lines in which
-case, no peripheral muxing needs to be done.  However, if the pins get
-routed through the GPIO PORTs pins, we need to make sure to request them
-so that the muxing is properly set up.
+I've been trying to think of a way to do that. AFAICS the only way to
+do that reliably would be to move the call to cgroup_fork() that hooks
+into the parent's cgroup inside the lock on the group leader's thread
+list, and move the fork callbacks into cgroup_fork(). (Which would
+mean that they'd not be able to sleep/fail, etc).
 
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-Andrew: could you pick this up ?  it was posted over a month ago to the
-Linux/IDE list w/no feedback.
-
- drivers/ata/pata_bf54x.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/ata/pata_bf54x.c b/drivers/ata/pata_bf54x.c
-index c4b47a3..02c81f1 100644
---- a/drivers/ata/pata_bf54x.c
-+++ b/drivers/ata/pata_bf54x.c
-@@ -1557,6 +1557,25 @@ static unsigned short atapi_io_port[] = {
- 	P_ATAPI_DMARQ,
- 	P_ATAPI_INTRQ,
- 	P_ATAPI_IORDY,
-+	P_ATAPI_D0A,
-+	P_ATAPI_D1A,
-+	P_ATAPI_D2A,
-+	P_ATAPI_D3A,
-+	P_ATAPI_D4A,
-+	P_ATAPI_D5A,
-+	P_ATAPI_D6A,
-+	P_ATAPI_D7A,
-+	P_ATAPI_D8A,
-+	P_ATAPI_D9A,
-+	P_ATAPI_D10A,
-+	P_ATAPI_D11A,
-+	P_ATAPI_D12A,
-+	P_ATAPI_D13A,
-+	P_ATAPI_D14A,
-+	P_ATAPI_D15A,
-+	P_ATAPI_A0A,
-+	P_ATAPI_A1A,
-+	P_ATAPI_A2A,
- 	0
- };
- 
--- 
-1.6.3.3
-
+Paul
