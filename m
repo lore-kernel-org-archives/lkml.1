@@ -1,131 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbZGNTzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbZGNUEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756234AbZGNTzV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 15:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbZGNTzU
+	id S1756202AbZGNUEe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 16:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbZGNUEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 15:55:20 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:43027 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755469AbZGNTzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 15:55:18 -0400
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-From: Raistlin <raistlin@linux.it>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: "James H. Anderson" <anderson@cs.unc.edu>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>
-In-Reply-To: <1247589099.7500.191.camel@twins>
-References: <200907102350.47124.henrik@austad.us>
-	 <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>
-	 <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>
-	 <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir>
-	 <4A5C9ABA.9070909@nortel.com>
-	 <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu>
-	 <1247589099.7500.191.camel@twins>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Gr5SOStY/8HMQWAPltg5"
-Date: Tue, 14 Jul 2009 21:54:54 +0200
-Message-Id: <1247601294.4839.137.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 14 Jul 2009 16:04:33 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:18040 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751663AbZGNUEc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 16:04:32 -0400
+Date: Tue, 14 Jul 2009 14:04:31 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: lenb@kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 0/3] ACPI/PCI Hotplug: acpiphp cleanup
+Message-ID: <20090714200431.GC15021@ldl.fc.hp.com>
+References: <20090710193601.30165.62311.stgit@bob.kio> <20090714122731.1ebea158@jbarnes-g45>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090714122731.1ebea158@jbarnes-g45>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Jesse Barnes <jbarnes@virtuousgeek.org>:
+> Haven't heard from Len yet, but I'm a bit nervous about adding this to
+> for-linus.  We already have a fix upstream for the acpi_get_pci_dev
+> issue right?  So there's no hurry on this set of (nice) cleanups is
+> there?
 
---=-Gr5SOStY/8HMQWAPltg5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The problem is that I introduced an assumption in acpiphp_configure_bridge,
+which calls acpi_get_pci_dev. That call may fail on systems
+with non-materialized PCI root bridges.
 
-On Tue, 2009-07-14 at 18:31 +0200, Peter Zijlstra wrote:
-> > but the discussion since has been entirely about synchronization issues=
-.
->=20
-> Right, this seems to be a very hot topic.
->=20
-Indeed! :-D
+Fixing that assumption was addressed by this hunk in patch 2/3:
 
-> Right, Ted holds similar opinions.
->=20
-> Practically though, active Priority Inheritance has enormous benefits
-> for us simple people that need to get things done :-)
->=20
-> It has allowed us to convert this huge mass of code into something that
-> is real-time enough for a lot of practical uses, including industrial
-> robots and the like without the need to analyze each and every lock out
-> there.
->=20
-As said to you personally, I put quite a lot of efforts trying to find
-some code using PI-futexes directly or PTHREAD_PRIO_INHERIT POSIX
-mutexes, for personal curiosity and research interest... But I did not
-manage for now. :-(
+@@ -1387,16 +1363,7 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus)
+ /* Program resources in newly inserted bridge */
+ static int acpiphp_configure_bridge (acpi_handle handle)
+ {
+-       struct pci_dev *dev;
+-       struct pci_bus *bus;
+-
+-       dev = acpi_get_pci_dev(handle);
+-       if (!dev) {
+-               err("cannot get PCI domain and bus number for bridge\n");
+-               return -EINVAL;
+-       }
+-
+-       bus = dev->bus;
++       struct pci_bus *bus = pci_bus_from_handle(handle);
 
-Do you think it would be possible to have some pointers?
+        pci_bus_size_bridges(bus);
+        pci_bus_assign_resources(bus);
 
-> > In this approach, critical-section lengths must be known, and any
-> > lock request that occurs when a task doesn't have sufficient
-> > budget is simply denied -- the request is done later when that task
-> > receives additional budget.  This avoids a task in one group from
-> > holding a lock while it is preempted (which could severely hurt
-> > lock-requesting tasks in other groups).  This scheme is really easy
-> > to implement in conjunction with the FMLP and it doesn't require
-> > complicated budget tracking.  Its effects on blocking terms are
-> > also easy to analyze.  Thomas Nolte and colleagues (in Sweden) have
-> > written some papers where they've used skip-based locks in
-> > hierarchically-scheduled systems.
->=20
-> Not granting locks when the contender doesn't have enough budget to
-> finish them seems like a very attractive solution, however the cost of
-> having to analyze the critical section seems prohibitive.
->=20
-I've always thought so... We have some work related to this as well (can
-give pointers if interested), but I personally like PI/BWI-PEP etc.
-because such a knowledge is not required at all... Anyway...
+Now, my systems cannot do PCI root bridge hotplug, so that line
+where we call acpi_get_pci_dev() won't cause us to fail, but I'm
+concerned about machines in the wild that:
 
-> That said, we could maybe experiment with this for a few key lock sites.
->=20
-... This would be nice!
+	a) can do PCI root bridge hotplug
+	b) have non-materialized PCI root bridges
 
-> Furthermore we're limited by the existing legacy (both spec and code
-> wise), but I think we have been able to make good progress through tools
-> that help us, such as lockdep and the latency tracer (now ftrace), which
-> help us find trouble in an active manner.
->=20
-Well, in my very humble opinion you're definitely doing great job! :-D
+Maybe that is a small set of machines...
 
-Regards,
-Dario
+I agree that this series is on the large side for -rc4 and
+beyond, but I'd prefer to fix it now.
 
---=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+The thing is, a "minimal" fix wouldn't save us that much, since
+we'd still have to export acpi_pci_root stuff. We could maybe
+drop patch 3/3 which makes the final diffstat look like this:
 
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
+ drivers/acpi/pci_root.c            |   17 +-----
+ include/acpi/acpi_bus.h            |   14 +++++
+ drivers/pci/hotplug/acpiphp_glue.c |  108 ++++++++++++------------------------
+ 3 files changed, 53 insertions(+), 86 deletions(-)
 
---=-Gr5SOStY/8HMQWAPltg5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Hm, actually, I can actually make that even smaller by separating
+out the interface change.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Would you like me to do that and resubmit? I'd still need an ACK
+from Len re: acpi_pci_root...
 
-iEYEABECAAYFAkpc4o4ACgkQk4XaBE3IOsT7WQCaA43n07lRdElL3mJUuN1fO4D0
-f0AAn12dihlRyUy3x/TtCI/SXkTcCz30
-=UiOy
------END PGP SIGNATURE-----
+Thanks.
 
---=-Gr5SOStY/8HMQWAPltg5--
+/ac
 
