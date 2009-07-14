@@ -1,95 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZGNQzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZGNQ42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755716AbZGNQzN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 12:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbZGNQzM
+	id S1755729AbZGNQ42 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 12:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbZGNQ42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 12:55:12 -0400
-Received: from fafnir.cs.unc.edu ([152.2.129.90]:38494 "EHLO fafnir.cs.unc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755163AbZGNQzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 12:55:11 -0400
-Date: Tue, 14 Jul 2009 12:54:13 -0400 (EDT)
-From: "James H. Anderson" <anderson@cs.unc.edu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Chris Friesen <cfriesen@nortel.com>, Raistlin <raistlin@linux.it>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>,
-       "James H. Anderson" <anderson@cs.unc.edu>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-In-Reply-To: <1247589099.7500.191.camel@twins>
-Message-ID: <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu>
-References: <200907102350.47124.henrik@austad.us>  <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>  <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>  <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir>
-  <4A5C9ABA.9070909@nortel.com>  <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu> <1247589099.7500.191.camel@twins>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Tue, 14 Jul 2009 12:56:28 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:65090 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755163AbZGNQ41 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 12:56:27 -0400
+Message-ID: <4A5CB8B4.7050108@monstr.eu>
+Date: Tue, 14 Jul 2009 18:56:20 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       LTP <ltp-list@lists.sourceforge.net>
+Subject: Re: access_ok macor
+References: <4A5C8068.6020203@monstr.eu> <200907141652.59049.arnd@arndb.de> <4A5CAEFF.9080206@monstr.eu> <200907141843.05629.arnd@arndb.de>
+In-Reply-To: <200907141843.05629.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arnd Bergmann wrote:
+> On Tuesday 14 July 2009, Michal Simek wrote:
+>> Arnd Bergmann wrote:
+> 
+>>>>  r29=00000000, r30=00000000, r31=CE9759A4, rPC=C000123C
+>>>>  msr=800045AE, ear=00000001, esr=000000B2, fsr=000080D0
+>>>> Segmentation fault
+>>>>
+>>> I guess then you should check if 0xc000123c is in your
+>>> exception table, or why it is not.
+>> on that address is load instruction for unaligned exception because addr is odd number
+>> that's why is called unaligned exception handler and from this function
+>> is called load instruction which failed. :-(
+>>
+>> Currently this make more sense why that tests failed. If that pointers are
+>> even number exception is not taken and exception sure don't have fixup for it because
+>> this is generic code. :-(
+>>
+>> That's the problem because we are looking for regs->pc but this point to unaligned exception
+>> handler.
+> 
+> Ok, that makes a lot of sense.
+> 
+> The solution then is to handle fixups from the unaligned exception handler
+> if you come from the kernel. That should fix the three text cases.
+> 
+> I don't fully understand your exception handling there, but I think you
+> also need to add code checking for __range_ok() to your unaligned handler,
+> to prevent malicious user space code from accessing the kernel through
+> unaligned pointers.
+
+when the code tried to read/write from unaligned address (and in cpu is turn on unaligned exception)
+then is caused unaligned exception and asm code assemble/return value which is on that unaligned
+address. (Assemble it that read/write every byte separately). That will be harder to prevent all
+this cases because unaligned exception is in generic code.
+What do you mean add __range_ok? Range checking is ok. The problem is when in case get_user kernel
+try to load unaligned addr - unaligned exception is perform and try to load that value separately.
+If that page is not there, page fault handler is called and not find it, it is performed search
+from exception table and that address is not there of course - because address in pc is generic
+unaligned code. I think that handling this needs more code.
+Maybe if the address with from unaligned exception handler (there are some address which can caused
+it) and find out which aligned address is there and find out proper fixup for it.
+I think that this could work.
+
+What do you think?
+
+Michal
 
 
-On Tue, 14 Jul 2009, Peter Zijlstra wrote:
 
->
-> Hi Jim,
->
-> On Tue, 2009-07-14 at 11:19 -0400, James H. Anderson wrote:
->> The first email in this thread that I was cc'ed on talked about
->> implementing global EDF,
->
-> Hendrik says that its a modified Modified-Least-Laxity-First, so
-> something like M^2-LLF, and I cc'ed you (and I meant to add Bjorn too,
-> but now see I failed to actually do so) in the hope that you would have
-> some thoughts on his scheduling algorithm, since that is what you do a
-> lot of ;-)
->
-> It could well be he modified M-LLF into G-EDF, but I'm behind in my
-> reading here, so I'll have to leave that up to others.
+> 
+> 	Arnd <><
 
-I meant to say something about this algorithm earlier that may be
-worthwhile.  If I understand Hendrik's algorithm correctly, it falls
-within a class of global schedulers for which bounded deadline
-tardiness is guaranteed (as long as total utilization doesn't exceed
-the system's capacity).  This follows from results in:
 
-H. Leontyev and J. Anderson, "Generalized Tardiness Bounds for Global
-Multiprocessor Scheduling",  Proceedings of the 28th IEEE Real-Time
-Systems Symposium, pp. 413-422, December 2007.
-
-This is a positive thing w.r.t. wanting to support soft real-time
-workloads.  However, global EDF also has this property and (I would
-think) is easier to implement (I'm just guessing here -- we haven't
-actually implemented any algorithm that involves laxities in
-LITMUS^RT).  Ted Baker did some work on an algorithm called EDZL
-(EDF until zero laxity) that is essentially a hybrid of these two
-algorithms.  In simulations we've done (not based on real implementations),
-EDZL exhibits really low tardiness (almost non-existent).  EDZL may
-give you the benefits of using laxities where useful and be easier
-to implement (but that's just my guess)
-
-Regarding all these "legacy" issues, I think it would be helpful to
-write them all down carefully and formally, and then think about
-what are the *simplest* mechanisms that will do the job in the common
-case.  It is not worthwhile (in my opinion) to introduce tons of
-complexity to nip at corner cases that aren't that common.  Of course,
-this begs the question of what is "common" and what is not: something
-that may also be worth trying to find evidence for and writing down.
-
-Or better yet, someone needs to define a new standard for multicore...
-but I'm not sure how that gets done.
-
-Gotta go....
-
--Jim
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
