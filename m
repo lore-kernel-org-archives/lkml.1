@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbZGNPyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZGNPyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbZGNPyR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 11:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZGNPyR
+	id S1755186AbZGNPyo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 11:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZGNPyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 11:54:17 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:46363 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754800AbZGNPyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 11:54:15 -0400
-X-Sasl-enc: 1xf7aOUu4p8GQLUkMSl0FyfCVStJE5gjasZ4qGTIIxjF 1247586854
-Date: Tue, 14 Jul 2009 12:54:09 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       rpurdie@rpsys.net, lenb@kernel.org, rui.zhang@intel.com,
-       corentincj@iksaif.net
-Subject: Re: [PATCH 1/3] backlight: Allow drivers to update the core, and
- generate events on changes
-Message-ID: <20090714155409.GA31991@khazad-dum.debian.net>
-References: <1247517685-7719-1-git-send-email-mjg@redhat.com>
- <20090714103006.GA19866@khazad-dum.debian.net>
- <20090714132152.GA22521@srcf.ucam.org>
+	Tue, 14 Jul 2009 11:54:43 -0400
+Received: from www.tglx.de ([62.245.132.106]:60263 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755023AbZGNPyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 11:54:43 -0400
+Date: Tue, 14 Jul 2009 17:54:04 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT pull] core fixes for 2.6.31
+Message-ID: <alpine.LFD.2.00.0907141749380.2777@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090714132152.GA22521@srcf.ucam.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Jul 2009, Matthew Garrett wrote:
-> On Tue, Jul 14, 2009 at 07:30:07AM -0300, Henrique de Moraes Holschuh wrote:
-> > On Mon, 13 Jul 2009, Matthew Garrett wrote:
-> > > Certain hardware will send us events when the backlight brightness
-> > > changes. Add a function to update the value in the core, and
-> > > additionally send a uevent so that userspace can pop up appropriate
-> > > UI. The uevents are flagged depending on whether the update originated
-> > > in the kernel or from userspace, making it easier to only display UI
-> > > at the appropriate time.
-> > 
-> > Any reasons to not do it using poll() support (since sysfs has it)?  Or at
-> > least, do both poll and uevents?
-> 
-> More code? It doesn't really seem necessary.
+Linus,
 
-Well, we all know just how marvelously engineered and high-bandwidth the
-uevent+udev+everything else channel is, don't we?
+Please pull the latest core-fixes-for-linus-2 git tree from:
 
-Adding the poll() notification is not expensive, one line to do it, plus a
-few more to find out the exact sysfs node that needs to receive the
-notification (hideous API, that).
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus-2
 
-> > Other than that, I like the idea a lot.  thinkpad-acpi will use this event
-> > support.
-> 
-> Good, that's one of the use-cases I wanted to deal with - but the hotkey 
-> mask stuff is complicated enough that I hadn't got round to touching 
-> that yet. The combination of this and the ALSA mixer code should get us 
-> full notification.
+Thanks,
 
-Leave it to me.  Even if it arrives a bit later than the main patch, it
-won't cause problems for the merging of the main work anyway, and as you
-said, it *IS* hairy code to do it right and it plugs right in the middle of
-the more confusing parts of thinkpad-acpi.  I will do it in a way that makes
-the whole thing also usable for the mixer notifications.
+	tglx
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+------------------>
+Sonny Rao (1):
+      futexes: Fix infinite loop in get_futex_key() on huge page
+
+
+ kernel/futex.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 794c862..0672ff8 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -247,6 +247,7 @@ again:
+ 	if (err < 0)
+ 		return err;
+ 
++	page = compound_head(page);
+ 	lock_page(page);
+ 	if (!page->mapping) {
+ 		unlock_page(page);
