@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbZGNRRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbZGNRSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755882AbZGNRRk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 13:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbZGNRRi
+	id S1755855AbZGNRSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 13:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZGNRSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 13:17:38 -0400
-Received: from fafnir.cs.unc.edu ([152.2.129.90]:36411 "EHLO fafnir.cs.unc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755858AbZGNRRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 13:17:37 -0400
-Date: Tue, 14 Jul 2009 13:16:52 -0400 (EDT)
-From: "James H. Anderson" <anderson@cs.unc.edu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Chris Friesen <cfriesen@nortel.com>, Raistlin <raistlin@linux.it>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Thomas Gleixner <tglx@linutronix.de>, Ted Baker <baker@cs.fsu.edu>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>,
-       "James H. Anderson" <anderson@cs.unc.edu>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-In-Reply-To: <1247589099.7500.191.camel@twins>
-Message-ID: <alpine.LRH.2.00.0907141259100.16818@anderson.cs.unc.edu>
-References: <200907102350.47124.henrik@austad.us>  <1247336891.9978.32.camel@laptop>  <4A594D2D.3080101@ittc.ku.edu>  <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>  <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir>
-  <4A5C9ABA.9070909@nortel.com>  <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu> <1247589099.7500.191.camel@twins>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Tue, 14 Jul 2009 13:18:45 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:53051 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755393AbZGNRSo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 13:18:44 -0400
+Subject: event tracing, ringbuffer and RB_MAX_SMALL_DATA
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-BAVhum20oFEw9e1G+qMl"
+Date: Tue, 14 Jul 2009 19:18:11 +0200
+Message-Id: <1247591891.7178.20.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-BAVhum20oFEw9e1G+qMl
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 14 Jul 2009, Peter Zijlstra wrote:
+Hi,
 
-> On that, how does the priority ceiling/protection protocol extend to
-> deadline schedulers?
+By code inspection, I think there's a bug if your event contains only
 
-Sorry -- I should have responded to this.
+	__dynamic_array(u8, buf, buflen)
 
-These things are pretty easy to extend to deadline scheduling if
-partitioning is assumed, and this has been done.  However, it is not
-easy to do under global scheduling.  Having tasks pinned to processors
-(partitioning) makes it much easier to compute blocking terms (it's much
-easier to predict what is happening on each processor at any time).
-Without this, it is *really* hard to compute reasonable blocking
-terms.  Even doing something as mundane as avoiding deadlocks without a lot
-of overhead may not be trivial.  At the time we developed the FMLP
-(a couple of years ago), there was *no* published locking protocol (to my
-knowledge) that worked under GEDF.  To my knowledge, the FMLP is still the
-only one that works under GEDF.  (BTW, I should say that I am not
-familiar with the PEP protocol that has been discussed in this thread.
-I assume it doesn't work under GEDF, or you wouldn't have asked the
-question.)
+and your buflen is only, say, 3. Then the event size will be the common
+event size (12 bytes) plus this, so 15, which is well below
+RB_MAX_SMALL_DATA (4*28 =3D 112), so it'll be divided by four to be stored
+into type_len. At this point, however, you've lost the information that
+your dynamic array was only three bytes, and it'll be considered _four_
+bytes long by parsers as far as I can tell?
 
-BTW, FIFO waiting makes blocking terms in the global case much easier
-to compute: once a lock request is initiated, the set of blocking lock
-requests (onces initiated earlier) is fixed.  (This is actually a bit
-of an over-simplification if waiting is by suspending.)  With priority-based
-waiting, higher-priority requests can come later.  Determining a
-reasonable bound on the number of such requests is hard.
+johannes
 
-You can find references to papers by others in our FMLP papers.
+--=-BAVhum20oFEw9e1G+qMl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
--Jim
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKXL3PAAoJEODzc/N7+QmaHFMP/RL6Xb4+aVAMoIR2jw0REU5w
+mo+lfvKhPJP9Hk7IaMnHiK4KVdhpiJc19zEvx9i5RpaV2+INZ+PwEGsNOo2SyUg8
+Lw8MMleZEkt0ddSFcrs9Te6ewfvXVRUKzXd4ycfV+eVyWimT9ixXQ1gKFhWtkJxQ
+H93X9iksogRsRP+zZuyqhNv2q81oUvIdutvE2TtLGuK6rmJDh+5F8MHAz4FxV8r0
+3Ix2/b24giz2tJtWrts2QJDqqj/0LGZh9DjWgzWNlg6OSkA1kB4W8+A+Mk4VXFei
+LiAnaxRNR67h3mOiE/vLwz8sajoXoamcsWKbY7fWYGmQ0uHrWNjLFQi3/9DMDJG3
+YhIXdIMcxlbXEKwU/vhgs+URKyddEFRF6uUt/+v19++O2AWKA7VTdC+e9kmvHvJQ
+jUdvb5AiWAL24N61cuVMyIbjZRPMr+s0MdZxT0fB5jQlo8jknFdm1GeG/5E900lT
+m2SWj1BkhGAx8cSQMLAt8wED8B2xFkTqSz7FxppeUo2SrnaY2PBt0tTMsnXGu2Ph
+mNlY11sMiib77O+50nYlzsl+MAEt9LeIN5pTlBaFEe0466++2T0zV2kB4f66HRxr
+ikrBowKbNsM+68wSdqCsH5lRqMW2HBDRKVKedcs1O5Alzx5Kq8X8dFE+HS2FHcGT
+AY4t5NP1aDtiOUM5lSRm
+=CuBi
+-----END PGP SIGNATURE-----
+
+--=-BAVhum20oFEw9e1G+qMl--
+
