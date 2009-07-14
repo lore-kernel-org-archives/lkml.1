@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZGNG3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZGNGdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbZGNG3G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 02:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbZGNG3F
+	id S1753765AbZGNGdN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 02:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZGNGdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 02:29:05 -0400
-Received: from mailout5.samsung.com ([203.254.224.35]:44995 "EHLO
-	mailout5.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753580AbZGNG3E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 02:29:04 -0400
-Date: Tue, 14 Jul 2009 08:28:05 +0200
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: RE: [PATCH] Input: add MAX7359 key switch controller driver, v2
-In-reply-to: <4A5BF6F0.6020403@samsung.com>
-To: "'Kim Kyuwon'" <q1.kim@samsung.com>,
-       "'Dmitry Torokhov'" <dmitry.torokhov@gmail.com>
-Cc: "'Trilok Soni'" <soni.trilok@gmail.com>,
-       "'Kim Kyuwon'" <chammoru@gmail.com>,
-       "'LKML'" <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       "'Kyungmin Park'" <kyungmin.park@samsung.com>,
-       Marek Szyprowski <m.szyprowski@samsung.com>
-Message-id: <001801ca044c$428839d0$c798ad70$%szyprowski@samsung.com>
-MIME-version: 1.0
-X-Mailer: Microsoft Office Outlook 12.0
-Content-type: text/plain; charset=us-ascii
-Content-language: pl
-Content-transfer-encoding: 7BIT
-Thread-index: AcoEMIUDdOgsTxw6RMyhEWwp4aE+sgAGwtiA
-References: <4A04E5EA.7000103@samsung.com>
- <5d5443650905091027w2b60f2ael520373790e6414c7@mail.gmail.com>
- <4d34a0a70905101934j320c03abl7e39af4fbfdf1f62@mail.gmail.com>
- <20090511031208.GA15208@dtor-d630.eng.vmware.com>
- <5d5443650906191038o797e0c3eu8234a56ee247ea68@mail.gmail.com>
- <5d5443650907130152t420e9426q762c24bdb1b29aae@mail.gmail.com>
- <20090713093147.GJ10819@dtor-d630.eng.vmware.com>
- <4A5BF6F0.6020403@samsung.com>
+	Tue, 14 Jul 2009 02:33:12 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:33422 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753686AbZGNGdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 02:33:11 -0400
+Date: Tue, 14 Jul 2009 16:33:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: linux-next: driver-core tree build failure
+Message-Id: <20090714163309.f2ee320d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Greg,
 
-On Tuesday, July 14, 2009 5:10 AM, Kim Kyuwon wrote:
-> Dmitry Torokhov wrote:
-> > On Mon, Jul 13, 2009 at 02:22:10PM +0530, Trilok Soni wrote:
-> >> I don't see this driver picked up yet in your -next branch. We should
-> >> target this driver to be mainlined in next merge window. This is very
-> >> important driver for some of the embedded systems, including palm pre
-> >> :)
-> > I was wondering if somebody could test the patch below and if it still
-> > works then I will apply to the next branch. Thanks!
-> >
-> 
-> Dear Marek,
-> 
-> Because I don't have the NCP board(which includes the max7359 keypad)
-> now, I can't test this patch. Marek, could you please test this patch?
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-I would like to, but I could not find the base version to which I can apply
-that patch. I've tried v2 version posted in '[PATCH] Input: add MAX7359 key
-switch controller driver, v2' mail from Sat 2009-05-09 04:10 with 2 patches
-posted in replies to that main, but the latest patch still fails to apply.
+drivers/mtd/mtdcore.c:220: error: expected '{' before 'const'
+drivers/mtd/mtdcore.c:227: error: 'mtd_groups' undeclared here (not in a function)
 
-Could someone send me a complete patch, so I can do a test?
+Caused by the update to commit ba87b739a1f5dd545679d886b8d193cdede991cf
+("driver model: constify attribute groups").
 
-Best regards
---
-Marek Szyprowski
-Samsung Poland R&D Center
+I have applied the patch below for today.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 14 Jul 2009 16:29:39 +1000
+Subject: [PATCH] driver-core: fix for mtd typo
 
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/mtd/mtdcore.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index 93e6731..05a16be 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -217,7 +217,7 @@ struct attribute_group mtd_group = {
+ 	.attrs		= mtd_attrs,
+ };
+ 
+-struct const attribute_group *mtd_groups[] = {
++const struct attribute_group *mtd_groups[] = {
+ 	&mtd_group,
+ 	NULL,
+ };
+-- 
+1.6.3.3
 
