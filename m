@@ -1,112 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752046AbZGNAsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbZGNAt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752046AbZGNAsR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 13 Jul 2009 20:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZGNAsQ
+	id S1752126AbZGNAt1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 13 Jul 2009 20:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZGNAt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 13 Jul 2009 20:48:16 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:56457 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751793AbZGNAsQ (ORCPT
+	Mon, 13 Jul 2009 20:49:26 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40971 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbZGNAtZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 13 Jul 2009 20:48:16 -0400
-Date: Tue, 14 Jul 2009 09:48:04 +0900 (JST)
-Message-Id: <20090714.094804.869026176829743314.mitake@dcl.info.waseda.ac.jp>
-To: mingo@elte.hu
-Cc: a.p.zijlstra@chello.nl, andi@firstfloor.org, fweisbec@gmail.com,
-       acme@redhat.com, linux-kernel@vger.kernel.org, jbaron@redhat.com
-Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
- how many spinlocks to schedstat
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <20090713085119.GA6757@elte.hu>
-References: <1247405045.6733.2.camel@laptop>
-	<20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp>
-	<20090713085119.GA6757@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+	Mon, 13 Jul 2009 20:49:25 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 14 Jul 2009 09:47:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Cc: Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers Mailing List 
+	<containers@lists.linux-foundation.org>,
+       Linux memory management list <linux-mm@kvack.org>,
+       Dan Malek <dan@embeddedalley.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] Resource usage threshold notification addition to 
+ res_counter (v3)
+Message-Id: <20090714094729.45d4dff4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad830907131736w4397d336xad733f274c812690@mail.gmail.com>
+References: <1246998310-16764-1-git-send-email-vbuzov@embeddedalley.com>
+	<1247530581-31416-1-git-send-email-vbuzov@embeddedalley.com>
+	<1247530581-31416-2-git-send-email-vbuzov@embeddedalley.com>
+	<6599ad830907131736w4397d336xad733f274c812690@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
-Date: Mon, 13 Jul 2009 10:51:19 +0200
+On Mon, 13 Jul 2009 17:36:40 -0700
+Paul Menage <menage@google.com> wrote:
 
-> X-Mew-Uidl: 4144 3205
-> Return-Path: <mingo@elte.hu>
-> Received: from murder ([unix socket])
-> 	 by ns.dcl.info.waseda.ac.jp (Cyrus v2.3.8-OS X Server 10.5:	9F33) with LMTPA;
-> 	 Mon, 13 Jul 2009 17:51:35 +0900
-> X-Sieve: CMU Sieve 2.3
-> Received: from localhost (localhost [127.0.0.1])
-> 	by ns.dcl.info.waseda.ac.jp (Postfix) with ESMTP id 418376729D2
-> 	for <mitake@dcl.info.waseda.ac.jp>; Mon, 13 Jul 2009 17:51:35 +0900 (JST)
-> X-Virus-Scanned: amavisd-new at dcl.info.waseda.ac.jp
-> Received: from ns.dcl.info.waseda.ac.jp ([127.0.0.1])
-> 	by localhost (ns.dcl.info.waseda.ac.jp [127.0.0.1]) (amavisd-new, port 10024)
-> 	with ESMTP id 4VNvZ6jG1jE9 for <mitake@dcl.info.waseda.ac.jp>;
-> 	Mon, 13 Jul 2009 17:51:34 +0900 (JST)
-> Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
-> 	by ns.dcl.info.waseda.ac.jp (Postfix) with ESMTP id C08246729C2
-> 	for <mitake@dcl.info.waseda.ac.jp>; Mon, 13 Jul 2009 17:51:33 +0900 (JST)
-> Received: from elvis.elte.hu ([157.181.1.14])
-> 	by mx3.mail.elte.hu with esmtp (Exim)
-> 	id 1MQHFr-0003wM-HT
-> 	from <mingo@elte.hu>; Mon, 13 Jul 2009 10:51:28 +0200
-> Received: by elvis.elte.hu (Postfix, from userid 1004)
-> 	id 115B83E22CE; Mon, 13 Jul 2009 10:51:21 +0200 (CEST)
-> Message-ID: <20090713085119.GA6757@elte.hu>
-> References: <1247230336.7529.34.camel@twins> <20090712.162337.287595819039280884.mitake@dcl.info.waseda.ac.jp> <1247405045.6733.2.camel@laptop> <20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp>
-> MIME-Version: 1.0
-> In-Reply-To: <20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp>
-> X-ELTE-SpamScore: -1.5
-> X-ELTE-SpamLevel: 
-> X-ELTE-SpamCheck: no
-> X-ELTE-SpamVersion: ELTE 2.0 
-> X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%	[score: 0.0000]
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
-> From: Ingo Molnar <mingo@elte.hu>
-> To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> Cc: a.p.zijlstra@chello.nl, andi@firstfloor.org, fweisbec@gmail.com,
-> 	acme@redhat.com, linux-kernel@vger.kernel.org,
-> 	Jason Baron <jbaron@redhat.com>
-> Date: Mon, 13 Jul 2009 10:51:19 +0200
-> User-Agent: Mutt/1.5.18 (2008-05-17)
-> Received-SPF: neutral (mx3: 157.181.1.14 is neither permitted nor denied by domain of elte.hu) client-ip=157.181.1.14; envelope-from=mingo@elte.hu; helo=elvis.elte.hu;
-> X-Mew: tab/spc characters on Subject: are simplified.
+> As I mentioned in another thread, I think that associating the
+> threshold with the res_counter rather than with each individual waiter
+> is a mistake, since it creates global state and makes it hard to have
+> multiple waiters on the same cgroup.
 > 
-> 
-> * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-> 
-> > > Yeah, steve broke it, but then Jason fixed it again, but his 
-> > > patches might not have made it in yet.
-> > > 
-> > >   http://lkml.org/lkml/2009/7/6/313
-> > 
-> > Wow! I can obtain lock_acquire with Jason's patch,
-> > 
-> > % perf stat -e lockdep:lock_acquire sleep 1
-> > 
-> >  Performance counter stats for 'sleep 1':
-> > 
-> >            1420  lockdep:lock_acquire
-> > 
-> >     1.004953591  seconds time elapsed
-> > 
-> > I wanted this.
-> > So I don't have nothing to do.., but thanks Jason!
-> 
-> I gave some review feedback about those patches, see:
-> 
->    http://lkml.org/lkml/2009/7/13/360
-> 
-> Once they are addressed we can try them in -tip.
+Ah, Hmm...maybe yes. 
 
-Thanks! I'll try new features of perfcounters. It's interesting.
-But I told "not found" by lkml.org.
-Is the post you attempted to point http://lkml.org/lkml/2009/7/13/36 ?
+But the problem is "hierarchy". (even if this usage notifier don't handle it.)
+
+While we charge as following res_coutner+hierarchy
+
+	res_counter_A			+ PAGE_SIZE
+		res_counter_B			+ PAGE_SIZE
+			res_counter_C			+ PAGE_SIZE
+
+Checking "where we exceeds" in smart way is not very easy. Balbir's soft limit does
+similar check but it's not very smart, either I think.
+
+If there are prural thesholds (notifer, softlimit, etc...), this is worth to be
+tried. Hmm...if not, size of res_coutner excees 128bytes and we'll see terrible counter.
+Any idea ?
+
+Thanks,
+-Kame
+
+
+> Paul
+> 
+> On Mon, Jul 13, 2009 at 5:16 PM, Vladislav
+> Buzov<vbuzov@embeddedalley.com> wrote:
+> > This patch updates the Resource Counter to add a configurable resource usage
+> > threshold notification mechanism.
+> >
+> > Signed-off-by: Vladislav Buzov <vbuzov@embeddedalley.com>
+> > Signed-off-by: Dan Malek <dan@embeddedalley.com>
+> > ---
+> >  Documentation/cgroups/resource_counter.txt |   21 ++++++++-
+> >  include/linux/res_counter.h                |   69 ++++++++++++++++++++++++++++
+> >  kernel/res_counter.c                       |    7 +++
+> >  3 files changed, 95 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/Documentation/cgroups/resource_counter.txt b/Documentation/cgroups/resource_counter.txt
+> > index 95b24d7..1369dff 100644
+> > --- a/Documentation/cgroups/resource_counter.txt
+> > +++ b/Documentation/cgroups/resource_counter.txt
+> > @@ -39,7 +39,20 @@ to work with it.
+> >        The failcnt stands for "failures counter". This is the number of
+> >        resource allocation attempts that failed.
+> >
+> > - c. spinlock_t lock
+> > + e. unsigned long long threshold
+> > +
+> > +       The resource usage threshold to notify the resouce controller. This is
+> > +       the minimal difference between the resource limit and current usage
+> > +       to fire a notification.
+> > +
+> > + f. void (*threshold_notifier)(struct res_counter *counter)
+> > +
+> > +       The threshold notification callback installed by the resource
+> > +       controller. Called when the usage reaches or exceeds the threshold.
+> > +       Should be fast and not sleep because called when interrupts are
+> > +       disabled.
+> > +
+> > + g. spinlock_t lock
+> >
+> >        Protects changes of the above values.
+> >
+> > @@ -140,6 +153,7 @@ counter fields. They are recommended to adhere to the following rules:
+> >        usage           usage_in_<unit_of_measurement>
+> >        max_usage       max_usage_in_<unit_of_measurement>
+> >        limit           limit_in_<unit_of_measurement>
+> > +       threshold       notify_threshold_in_<unit_of_measurement>
+> >        failcnt         failcnt
+> >        lock            no file :)
+> >
+> > @@ -153,9 +167,12 @@ counter fields. They are recommended to adhere to the following rules:
+> >        usage           prohibited
+> >        max_usage       reset to usage
+> >        limit           set the limit
+> > +       threshold       set the threshold
+> >        failcnt         reset to zero
+> >
+> > -
+> > + d. Notification is enabled by installing the threshold notifier callback. It
+> > +    is up to the resouce controller to communicate the notification to user
+> > +    space tasks.
+> >
+> >  5. Usage example
+> >
+> > diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+> > index 511f42f..5ec98d7 100644
+> > --- a/include/linux/res_counter.h
+> > +++ b/include/linux/res_counter.h
+> > @@ -9,6 +9,11 @@
+> >  *
+> >  * Author: Pavel Emelianov <xemul@openvz.org>
+> >  *
+> > + * Resouce usage threshold notification update
+> > + * Copyright 2009 CE Linux Forum and Embedded Alley Solutions, Inc.
+> > + * Author: Dan Malek <dan@embeddedalley.com>
+> > + * Author: Vladislav Buzov <vbuzov@embeddedalley.com>
+> > + *
+> >  * See Documentation/cgroups/resource_counter.txt for more
+> >  * info about what this counter is.
+> >  */
+> > @@ -35,6 +40,19 @@ struct res_counter {
+> >         */
+> >        unsigned long long limit;
+> >        /*
+> > +        * the resource usage threshold to notify the resouce controller. This
+> > +        * is the minimal difference between the resource limit and current
+> > +        * usage to fire a notification.
+> > +        */
+> > +       unsigned long long threshold;
+> > +       /*
+> > +        * the threshold notification callback installed by the resource
+> > +        * controller. Called when the usage reaches or exceeds the threshold.
+> > +        * Should be fast and not sleep because called when interrupts are
+> > +        * disabled.
+> > +        */
+> > +       void (*threshold_notifier)(struct res_counter *counter);
+> > +       /*
+> >         * the number of unsuccessful attempts to consume the resource
+> >         */
+> >        unsigned long long failcnt;
+> > @@ -87,6 +105,7 @@ enum {
+> >        RES_MAX_USAGE,
+> >        RES_LIMIT,
+> >        RES_FAILCNT,
+> > +       RES_THRESHOLD,
+> >  };
+> >
+> >  /*
+> > @@ -132,6 +151,21 @@ static inline bool res_counter_limit_check_locked(struct res_counter *cnt)
+> >        return false;
+> >  }
+> >
+> > +static inline bool res_counter_threshold_check_locked(struct res_counter *cnt)
+> > +{
+> > +       if (cnt->usage + cnt->threshold < cnt->limit)
+> > +               return true;
+> > +
+> > +       return false;
+> > +}
+> > +
+> > +static inline void res_counter_threshold_notify_locked(struct res_counter *cnt)
+> > +{
+> > +       if (!res_counter_threshold_check_locked(cnt) &&
+> > +           cnt->threshold_notifier)
+> > +               cnt->threshold_notifier(cnt);
+> > +}
+> > +
+> >  /*
+> >  * Helper function to detect if the cgroup is within it's limit or
+> >  * not. It's currently called from cgroup_rss_prepare()
+> > @@ -147,6 +181,21 @@ static inline bool res_counter_check_under_limit(struct res_counter *cnt)
+> >        return ret;
+> >  }
+> >
+> > +/*
+> > + * Helper function to detect if the cgroup usage is under it's threshold or
+> > + * not.
+> > + */
+> > +static inline bool res_counter_check_under_threshold(struct res_counter *cnt)
+> > +{
+> > +       bool ret;
+> > +       unsigned long flags;
+> > +
+> > +       spin_lock_irqsave(&cnt->lock, flags);
+> > +       ret = res_counter_threshold_check_locked(cnt);
+> > +       spin_unlock_irqrestore(&cnt->lock, flags);
+> > +       return ret;
+> > +}
+> > +
+> >  static inline void res_counter_reset_max(struct res_counter *cnt)
+> >  {
+> >        unsigned long flags;
+> > @@ -174,6 +223,26 @@ static inline int res_counter_set_limit(struct res_counter *cnt,
+> >        spin_lock_irqsave(&cnt->lock, flags);
+> >        if (cnt->usage <= limit) {
+> >                cnt->limit = limit;
+> > +               if (limit <= cnt->threshold)
+> > +                       cnt->threshold = 0;
+> > +               else
+> > +                       res_counter_threshold_notify_locked(cnt);
+> > +               ret = 0;
+> > +       }
+> > +       spin_unlock_irqrestore(&cnt->lock, flags);
+> > +       return ret;
+> > +}
+> > +
+> > +static inline int res_counter_set_threshold(struct res_counter *cnt,
+> > +               unsigned long long threshold)
+> > +{
+> > +       unsigned long flags;
+> > +       int ret = -EINVAL;
+> > +
+> > +       spin_lock_irqsave(&cnt->lock, flags);
+> > +       if (cnt->limit > threshold) {
+> > +               cnt->threshold = threshold;
+> > +               res_counter_threshold_notify_locked(cnt);
+> >                ret = 0;
+> >        }
+> >        spin_unlock_irqrestore(&cnt->lock, flags);
+> > diff --git a/kernel/res_counter.c b/kernel/res_counter.c
+> > index e1338f0..9b36748 100644
+> > --- a/kernel/res_counter.c
+> > +++ b/kernel/res_counter.c
+> > @@ -5,6 +5,10 @@
+> >  *
+> >  * Author: Pavel Emelianov <xemul@openvz.org>
+> >  *
+> > + * Resouce usage threshold notification update
+> > + * Copyright 2009 CE Linux Forum and Embedded Alley Solutions, Inc.
+> > + * Author: Dan Malek <dan@embeddedalley.com>
+> > + * Author: Vladislav Buzov <vbuzov@embeddedalley.com>
+> >  */
+> >
+> >  #include <linux/types.h>
+> > @@ -32,6 +36,7 @@ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+> >        counter->usage += val;
+> >        if (counter->usage > counter->max_usage)
+> >                counter->max_usage = counter->usage;
+> > +       res_counter_threshold_notify_locked(counter);
+> >        return 0;
+> >  }
+> >
+> > @@ -101,6 +106,8 @@ res_counter_member(struct res_counter *counter, int member)
+> >                return &counter->limit;
+> >        case RES_FAILCNT:
+> >                return &counter->failcnt;
+> > +       case RES_THRESHOLD:
+> > +               return &counter->threshold;
+> >        };
+> >
+> >        BUG();
+> > --
+> > 1.5.6.3
+> >
+> >
+> 
 
