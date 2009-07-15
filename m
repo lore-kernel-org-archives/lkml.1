@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbZGOPDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbZGOPE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755268AbZGOPDa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 11:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755234AbZGOPD3
+	id S1755288AbZGOPE6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 11:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbZGOPE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 11:03:29 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:46606 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755214AbZGOPD2 convert rfc822-to-8bit (ORCPT
+	Wed, 15 Jul 2009 11:04:58 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51218 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753100AbZGOPE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 11:03:28 -0400
-X-Greylist: delayed 37577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Jul 2009 11:03:28 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LnH76wApbQLJZtqTeAHaq49wZH+uOUmdmNYpsW3sOqYtKD3gn1ReNPzoAI3OGv4wIv
-         bNvVW73opTv+QmspryD39zJoxMxnQ2jyVAxCIZK+vOCP2kXKaiK2KnAAtAZRw9qetptY
-         vTzVhjUSxpYqZ2Q35IufkYzU/4SoRu8UtqURo=
-MIME-Version: 1.0
-In-Reply-To: <7a7c22420907142326t3b8d4f5fqaf3813cb456186ec@mail.gmail.com>
-References: <7a7c22420907142137o4253dfb5gcd72176cd6a38beb@mail.gmail.com>
-	 <7a7c22420907142326t3b8d4f5fqaf3813cb456186ec@mail.gmail.com>
-Date: Wed, 15 Jul 2009 20:33:27 +0530
-Message-ID: <7a7c22420907150803v4f4ae9dn9eff41b5d5a7edf6@mail.gmail.com>
-Subject: Re: SCSI command (SP-OUT) failing on SLES 9 32-bit
-From: rohan a <info1686@gmail.com>
-To: linux-scsi@vger.kernel.org
+	Wed, 15 Jul 2009 11:04:57 -0400
+Date: Wed, 15 Jul 2009 02:04:17 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Thomas Fjellstrom <tfjellstrom@shaw.ca>
 Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Subject: Re: Possible Suspend to Ram bug?
+Message-ID: <20090715000417.GB1552@ucw.cz>
+References: <200907100458.27410.tfjellstrom@shaw.ca> <200907150359.12187.tfjellstrom@shaw.ca> <alpine.LNX.2.00.0907151330180.813@wotan.suse.de> <200907150545.14867.tfjellstrom@shaw.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907150545.14867.tfjellstrom@shaw.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
+On Wed 2009-07-15 05:45:14, Thomas Fjellstrom wrote:
+> On Wed July 15 2009, Jiri Kosina wrote:
+> > On Wed, 15 Jul 2009, Thomas Fjellstrom wrote:
+> > > I'll try with debian's 2.6.30 first. But there's a small issue with
+> > > that, .30 and .31 seem to have some performance regressions according to
+> > > sites like phoronix.
+> >
+> > You know, there are lies, then horrible lies, then benchmarks, and
+> > benchmarks done wrong.
+> >
+> > Just do your own measurements under your particular workload, and if you
+> > see any performance regression, just report it.
+> 
+> The benchmarks they run are pretty much what I'd do to test, so I'd more than 
+> likely get the same results, and waste a bunch of time.
 
-Any suggestions...please help
+So rather you expect us to waste a bunch of time?
+
+> 2.6.30 did seem to fix the ssd error. but the first time I suspended, my r8169 
+> decided to flip out. I had to rmmod and modprobe it to get the network back 
+> up.
+> 
+> [  867.780034] ------------[ cut here ]------------
+> [  867.780165] WARNING: at 
+> /home/blank/debian/kernel/tmp/linux-2.6-2.6.30/debian/build/source_amd64_none/net/sched/sch_generic.c:226 
+> dev_watchdog+0xc7/0x164()
+> [  867.780373] Hardware name: GA-MA790FXT-UD5P
+> [  867.780488] NETDEV WATCHDOG: eth1 (r8169): transmit timed out
+> [  867.780610] Modules linked in: nvidia(P) powernow_k8 cpufreq_conservative 
+> cpufreq_stats cpufreq_userspace cpufreq_powersave nfsd exportfs nfs lockd 
+> fscache nfs_acl auth_rpcgss sunrpc it87 hwmon_vid adt7473 firewire_sbp2 loop 
+> snd_hda$
+> [  867.785472] Pid: 0, comm: swapper Tainted: P
+
+....and some more.
 
 
-On Wed, Jul 15, 2009 at 11:56 AM, rohan a<info1686@gmail.com> wrote:
-> I do not want to move to the SG3 driver as of now since all devices
-> are working on all Linux platforms using the deprectaed SG driver.
->
->
->
-> On 7/15/09, rohan a <info1686@gmail.com> wrote:
->> Hello,
->>        The SCSI command for LTO-4 drive based encryption (SPOUT
->> opcode = 0xB5) is failing on SLES 9 32-bit only and not on SLES 9 (64-
->> bit), SLES 10,11 or RHEL 4/5
->>
->> Any idea why this is happening?
->>
->> Error returned is : Invalid field in CDB
->>
->> I am using ioctl() with the deprecated request SCSI_IOCTL_SEND_COMMAND
->> and not the SG3 driver.
->> However, only the SPOUT command is failing and none of the other SCSI
->> commands.
->> For ex: even the SPIN command (to obtain encryption status and
->> capabilities) works.
->>
->> I even updated to SP4.
->>
->> Any suggestions here?
->>
->> Thanks
->>
->
+> At this point I was getting repeated "link up" messages and even though 
+> ifconfig said the network was up, there was no actual connectivity. as 
+> mentioned only rmmod+modprobe of r8169 fixed the problem. It doesn't seem to 
+> happen often though.
+
+Reproduce it without taints, then youu can report a regression in network...
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
