@@ -1,270 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbZGOP1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbZGOP2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755446AbZGOP1U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 11:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbZGOP1U
+	id S1755429AbZGOP2z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 11:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZGOP2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 11:27:20 -0400
-Received: from compulab.site5.com ([67.18.134.219]:49500 "EHLO compulab.co.il"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755350AbZGOP1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 11:27:09 -0400
-Message-ID: <4A5DF54A.7000403@compulab.co.il>
-Date: Wed, 15 Jul 2009 18:27:06 +0300
-From: Denis Turischev <denis@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090114)
-MIME-Version: 1.0
-To: Wim Van Sebroeck <wim@iguana.be>
-CC: linux-kernel@vger.kernel.org, Mike Rapoport <mike@compulab.co.il>
-Subject: SBC-FITPC2 watchdog support
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 15 Jul 2009 11:28:54 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:52470 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754937AbZGOP2y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 11:28:54 -0400
+Date: Wed, 15 Jul 2009 17:28:51 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>
+Subject: [RFC][PATCH] reuse ktime in sub-functions of tick_check_idle.
+Message-ID: <20090715172851.21d618f3@skybase>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds support to watchdog timer on SBC-FITPC2 board by Compulab
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Signed-off by Denis Turischev <denis@compulab.co.il>
+On a system with NOHZ=y tick_check_idle calls tick_nohz_stop_idle and
+tick_nohz_update_jiffies. Given the right conditions (ts->idle_active
+and/or ts->tick_stopped) both function get a time stamp with ktime_get.
+The same time stamp can be reused if both function require one.
 
+On s390 this change has the additional benefit that gcc inlines the
+tick_nohz_stop_idle function into tick_check_idle. The number of
+instructions to execute tick_check_idle drops from 225 to 144
+(without the ktime_get optimization it is 367 vs 215 instructions).
 
-diff -Nru linux-2.6.30.orig/MAINTAINERS linux-2.6.30/MAINTAINERS
---- linux-2.6.30.orig/MAINTAINERS       2009-06-15 15:34:46.000000000 +0300
-+++ linux-2.6.30/MAINTAINERS    2009-07-15 18:03:35.000000000 +0300
-@@ -4888,6 +4888,12 @@
- S:     Maintained
- F:     drivers/watchdog/sc1200wdt.c
+before:
 
-+SBC-FITPC2 WDT DRIVER
-+P:     Denis Turischev
-+M:     denis@compulab.co.il
-+S:     Maintained
-+F:     drivers/watchdog/sbc_fitpc2_wdt.c
-+
- SCHEDULER
- P:     Ingo Molnar
- M:     mingo@elte.hu
-diff -Nru linux-2.6.30.orig/drivers/watchdog/Kconfig
-linux-2.6.30/drivers/watchdog/Kconfig
---- linux-2.6.30.orig/drivers/watchdog/Kconfig  2009-06-15
-15:35:04.000000000 +0300
-+++ linux-2.6.30/drivers/watchdog/Kconfig       2009-07-15
-18:00:56.000000000 +0300
-@@ -695,6 +695,26 @@
-          To compile this driver as a module, choose M here: the
-          module will be called sbc_epx_c3.
+ 0)               |  tick_check_idle() {
+ 0)               |    tick_nohz_stop_idle() {
+ 0)               |      ktime_get() {
+ 0)               |        read_tod_clock() {
+ 0)   0.601 us    |        }
+ 0)   1.765 us    |      }
+ 0)   3.047 us    |    }
+ 0)               |    ktime_get() {
+ 0)               |      read_tod_clock() {
+ 0)   0.570 us    |      }
+ 0)   1.727 us    |    }
+ 0)               |    tick_do_update_jiffies64() {
+ 0)   0.609 us    |    }
+ 0)   8.055 us    |  }
 
-+config SBC_FITPC2_WATCHDOG
-+       tristate "Compulab SBC-FITPC2 watchdog"
-+       depends on X86
-+       ---help---
-+         This is the driver for the built-in watchdog timer on the fit-PC2
-+         Single-board computer made by Compulab.
-+
-+         To enable or disable the watchdog one should enter BIOS (F2)
-and go
-+         to "Advanced" menu , changing  "Watchdog Timer" option to
-On/Off accordingly.
-+         While this option is disabled user can't change "Watchdog
-Timer Value",
-+         when enabled one can set 31-255 s operational range. Entering
-setup
-+         temporary disables watchdog operation regardless to current state.
-+
-+         Once watchdog was enabled the system will be restarted every
-+         "Watchdog Timer Value" period, so to prevent it user can
-restart or
-+         disable the watchdog
-+
-+         To compile this driver as a module, choose M here: the
-+         module will be called sbc_fitpc2_wdt.
-+
- # M32R Architecture
+after:
 
- # M68K Architecture
-diff -Nru linux-2.6.30.orig/drivers/watchdog/Makefile
-linux-2.6.30/drivers/watchdog/Makefile
---- linux-2.6.30.orig/drivers/watchdog/Makefile 2009-06-15
-15:35:04.000000000 +0300
-+++ linux-2.6.30/drivers/watchdog/Makefile      2009-07-15
-17:59:38.000000000 +0300
-@@ -90,6 +90,7 @@
- obj-$(CONFIG_W83977F_WDT) += w83977f_wdt.o
- obj-$(CONFIG_MACHZ_WDT) += machzwd.o
- obj-$(CONFIG_SBC_EPX_C3_WATCHDOG) += sbc_epx_c3.o
-+obj-$(CONFIG_SBC_FITPC2_WATCHDOG) += sbc_fitpc2_wdt.o
+ 0)               |  tick_check_idle() {
+ 0)               |    ktime_get() {
+ 0)               |      read_tod_clock() {
+ 0)   0.617 us    |      }
+ 0)   1.773 us    |    }
+ 0)               |    tick_do_update_jiffies64() {
+ 0)   0.593 us    |    }
+ 0)   4.477 us    |  }
 
- # M32R Architecture
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: john stultz <johnstul@us.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-diff -Nru linux-2.6.30.orig/drivers/watchdog/sbc_fitpc2_wdt.c
-linux-2.6.30/drivers/watchdog/sbc_fitpc2_wdt.c
---- linux-2.6.30.orig/drivers/watchdog/sbc_fitpc2_wdt.c 1970-01-01
-02:00:00.000000000 +0200
-+++ linux-2.6.30/drivers/watchdog/sbc_fitpc2_wdt.c      2009-07-15
-17:45:34.000000000 +0300
-@@ -0,0 +1,153 @@
-+/*
-+ * Watchdog driver for SBC-FITPC2 board
-+ *
-+ * Author: Denis Turischev <denis@compulab.co.il>
-+ *
-+ * Adapted from the IXP2000 watchdog driver by Deepak Saxena.
-+ *
-+ * This file is licensed under  the terms of the GNU General Public
-+ * License version 2. This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ */
+ kernel/time/tick-sched.c |   56 ++++++++++++++++++++++++-----------------------
+ 1 file changed, 29 insertions(+), 27 deletions(-)
+
+Index: git-linux-2.6/kernel/time/tick-sched.c
+===================================================================
+--- git-linux-2.6.orig/kernel/time/tick-sched.c
++++ git-linux-2.6/kernel/time/tick-sched.c
+@@ -134,18 +134,13 @@ __setup("nohz=", setup_tick_nohz);
+  * value. We do this unconditionally on any cpu, as we don't know whether the
+  * cpu, which has the update task assigned is in a long sleep.
+  */
+-static void tick_nohz_update_jiffies(void)
++static void tick_nohz_update_jiffies(ktime_t now)
+ {
+ 	int cpu = smp_processor_id();
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+ 	unsigned long flags;
+-	ktime_t now;
+-
+-	if (!ts->tick_stopped)
+-		return;
+ 
+ 	cpumask_clear_cpu(cpu, nohz_cpu_mask);
+-	now = ktime_get();
+ 	ts->idle_waketime = now;
+ 
+ 	local_irq_save(flags);
+@@ -155,20 +150,17 @@ static void tick_nohz_update_jiffies(voi
+ 	touch_softlockup_watchdog();
+ }
+ 
+-static void tick_nohz_stop_idle(int cpu)
++static void tick_nohz_stop_idle(int cpu, ktime_t now)
+ {
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
++	ktime_t delta;
+ 
+-	if (ts->idle_active) {
+-		ktime_t now, delta;
+-		now = ktime_get();
+-		delta = ktime_sub(now, ts->idle_entrytime);
+-		ts->idle_lastupdate = now;
+-		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
+-		ts->idle_active = 0;
++	delta = ktime_sub(now, ts->idle_entrytime);
++	ts->idle_lastupdate = now;
++	ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
++	ts->idle_active = 0;
+ 
+-		sched_clock_idle_wakeup_event(0);
+-	}
++	sched_clock_idle_wakeup_event(0);
+ }
+ 
+ static ktime_t tick_nohz_start_idle(struct tick_sched *ts)
+@@ -431,7 +423,11 @@ void tick_nohz_restart_sched_tick(void)
+ 	ktime_t now;
+ 
+ 	local_irq_disable();
+-	tick_nohz_stop_idle(cpu);
++	if (ts->idle_active || (ts->inidle && ts->tick_stopped))
++		now = ktime_get();
 +
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/miscdevice.h>
-+#include <linux/watchdog.h>
-+#include <linux/ioport.h>
-+#include <linux/delay.h>
-+#include <linux/notifier.h>
-+#include <linux/fs.h>
-+#include <linux/reboot.h>
-+#include <linux/init.h>
-+#include <linux/moduleparam.h>
++	if (ts->idle_active)
++		tick_nohz_stop_idle(cpu, now);
+ 
+ 	if (!ts->inidle || !ts->tick_stopped) {
+ 		ts->inidle = 0;
+@@ -445,7 +441,6 @@ void tick_nohz_restart_sched_tick(void)
+ 
+ 	/* Update jiffies first */
+ 	select_nohz_load_balancer(0);
+-	now = ktime_get();
+ 	tick_do_update_jiffies64(now);
+ 	cpumask_clear_cpu(cpu, nohz_cpu_mask);
+ 
+@@ -579,22 +574,18 @@ static void tick_nohz_switch_to_nohz(voi
+  * timer and do not touch the other magic bits which need to be done
+  * when idle is left.
+  */
+-static void tick_nohz_kick_tick(int cpu)
++static void tick_nohz_kick_tick(int cpu, ktime_t now)
+ {
+ #if 0
+ 	/* Switch back to 2.6.27 behaviour */
+ 
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+-	ktime_t delta, now;
+-
+-	if (!ts->tick_stopped)
+-		return;
++	ktime_t delta;
+ 
+ 	/*
+ 	 * Do not touch the tick device, when the next expiry is either
+ 	 * already reached or less/equal than the tick period.
+ 	 */
+-	now = ktime_get();
+ 	delta =	ktime_sub(hrtimer_get_expires(&ts->sched_timer), now);
+ 	if (delta.tv64 <= tick_period.tv64)
+ 		return;
+@@ -614,11 +605,22 @@ static inline void tick_nohz_switch_to_n
+  */
+ void tick_check_idle(int cpu)
+ {
++#ifdef CONFIG_NO_HZ
++	struct tick_sched *ts;
++#endif
 +
-+#include <asm/io.h>
-+#include <asm/uaccess.h>
-+#include <asm/system.h>
-+
-+
-+static int nowayout = WATCHDOG_NOWAYOUT;
-+static unsigned int margin = 60;       /* (secs) Default is 1 minute */
-+static unsigned long wdt_status;
-+
-+#define        WDT_IN_USE              0
-+#define        WDT_OK_TO_CLOSE         1
-+
-+static void wdt_send_data( unsigned char command ,unsigned char data )
-+{
-+       outb(command, 0x4c);
-+        mdelay(100);
-+       outb(data, 0x48);
-+       mdelay(200);
-+}
-+
-+static void wdt_enable(void)
-+{
-+        wdt_send_data(1,1);
-+        wdt_send_data(2,margin);
-+}
-+
-+static void wdt_disable(void)
-+{
-+        wdt_send_data(1,0);
-+        wdt_send_data(2,0);
-+}
-+
-+static int fitpc2_wdt_open(struct inode *inode, struct file *file)
-+{
-+       if (test_and_set_bit(WDT_IN_USE, &wdt_status))
-+               return -EBUSY;
-+
-+       clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
-+
-+       wdt_enable();
-+
-+       return nonseekable_open(inode, file);
-+}
-+
-+static ssize_t fitpc2_wdt_write(struct file *file, const char *data,
-size_t len, loff_t *ppos)
-+{
-+       if (len) {
-+               if (!nowayout) {
-+                       size_t i;
-+
-+                       clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
-+
-+                       for (i = 0; i != len; i++) {
-+                               char c;
-+
-+                               if (get_user(c, data + i))
-+                                       return -EFAULT;
-+
-+                               if (c == 'V')
-+                                       set_bit(WDT_OK_TO_CLOSE,
-&wdt_status);
-+                       }
-+               }
-+               wdt_enable();
-+       }
-+
-+       return len;
-+}
-+
-+static int fitpc2_wdt_release(struct inode *inode, struct file *file)
-+{
-+       if (test_bit(WDT_OK_TO_CLOSE, &wdt_status)) {
-+               wdt_disable();
-+       } else {
-+               printk(KERN_CRIT "WATCHDOG: Device closed unexpectedly - "
-+                                       "timer will not stop\n");
-+       }
-+
-+       clear_bit(WDT_IN_USE, &wdt_status);
-+       clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
-+
-+       return 0;
-+}
-+
-+
-+static const struct file_operations fitpc2_wdt_fops =
-+{
-+       .owner          = THIS_MODULE,
-+       .llseek         = no_llseek,
-+       .write          = fitpc2_wdt_write,
-+       .open           = fitpc2_wdt_open,
-+       .release        = fitpc2_wdt_release,
-+};
-+
-+static struct miscdevice fitpc2_wdt_miscdev =
-+{
-+       .minor          = WATCHDOG_MINOR,
-+       .name           = "watchdog",
-+       .fops           = &fitpc2_wdt_fops,
-+};
-+
-+static int __init fitpc2_wdt_init(void)
-+{
-+       if (margin < 31 || margin > 255) {
-+               printk(KERN_CRIT "WATCHDOG: margin must be in range 31 -
-255 seconds, you tried to set %d\n", margin);
-+               return -EINVAL;
-+       }
-+       return misc_register(&fitpc2_wdt_miscdev);
-+}
-+
-+static void __exit fitpc2_wdt_exit(void)
-+{
-+       misc_deregister(&fitpc2_wdt_miscdev);
-+}
-+
-+module_init(fitpc2_wdt_init);
-+module_exit(fitpc2_wdt_exit);
-+
-+MODULE_AUTHOR("Denis Turischev <denis@compulab.co.il>");
-+MODULE_DESCRIPTION("SBC-FITPC2 Watchdog");
-+
-+module_param(margin, int, 0);
-+MODULE_PARM_DESC(margin, "Watchdog margin in seconds (default 60s)");
-+
-+module_param(nowayout, int, 0);
-+MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started");
-+
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
-+
+ 	tick_check_oneshot_broadcast(cpu);
+ #ifdef CONFIG_NO_HZ
+-	tick_nohz_stop_idle(cpu);
+-	tick_nohz_update_jiffies();
+-	tick_nohz_kick_tick(cpu);
++	ts = &per_cpu(tick_cpu_sched, cpu);
++	if (ts->idle_active || ts->tick_stopped) {
++		ktime_t now = ktime_get();
++		if (ts->idle_active)
++			tick_nohz_stop_idle(cpu, now);
++		if (ts->tick_stopped) {
++			tick_nohz_update_jiffies(now);
++			tick_nohz_kick_tick(cpu, now);
++		}
++	}
+ #endif
+ }
+ 
