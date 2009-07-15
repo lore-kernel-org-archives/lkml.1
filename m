@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751847AbZGOEoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751902AbZGOFFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751847AbZGOEoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 00:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZGOEob
+	id S1751902AbZGOFFr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 01:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZGOFFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 00:44:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42258 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751646AbZGOEoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 00:44:30 -0400
-Subject: Re: [PATCH 01/06] Fix compilation warning for
- sound/soc/codecs/wm8400.c
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Subrata Modak <subrata@linux.vnet.ibm.com>
-Cc: Jaroslav Kysela <erex@perex.cz>, alsa-devel@alsa-project.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Takashi Iwai <iwai@suse.de>, Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       David Howells <dhowells@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090715021826.4032.63752.sendpatchset@subratamodak.linux.ibm.com>
-References: <20090715021826.4032.63752.sendpatchset@subratamodak.linux.ibm.com>
-Content-Type: text/plain
-Date: Wed, 15 Jul 2009 10:13:38 +0530
-Message-Id: <1247633018.2437.5.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Jul 2009 01:05:46 -0400
+Received: from web37604.mail.mud.yahoo.com ([209.191.87.87]:46037 "HELO
+	web37604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751706AbZGOFFp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 01:05:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=bvV5Q3nTEz8ypwEMJuBNh7ENOBSDqDgbBONuTImGBUZMsPK1Gw1vK1W90jPSr5f8XBHum4pFJk2nh+BkrYONMpoIVFNGEVKgp6LSG9XTlvQdHurHTMti8B8M5TW7q6vTFQRSkxKB5cp5WFypQ5W/LweUuVD8fKqbO/25H1DGxI4=;
+Message-ID: <812689.20578.qm@web37604.mail.mud.yahoo.com>
+X-YMail-OSG: yGMN4J4VM1l2Pyg0vb16z05LvYIH6p8jH0iC1OJ2V5UJ3xFeaVXEEeeAt3g4fKi5MI3hDL1LzuSRfhwSWg2Ro3Geijj9GfTHdbQKcU36zwpywCHehprGPimWAK.4AoW.NlCOtr2BR7J6nlREnJ.QtoZV00q0Im7MJJI1LXLYCSHAyyQ40FBA0O2ztOHp_9XXYZWAznUqx9P1pyJZjbxFdS58KtZWw7ze3pszFI9EPQ3r_xoP8JU6kn6YHk4hPy8nS8NfMcxCLX6VNjpdnW0XYrucPXDEnGpUkmdws3t69CCc5Nd3afJsae7Z_JmTmt0nJxjF
+X-Mailer: YahooMailClassic/5.4.17 YahooMailWebService/0.7.289.15
+Date: Tue, 14 Jul 2009 21:59:04 -0700 (PDT)
+From: Alex Dubov <oakad@yahoo.com>
+Subject: Re: New MMC maintainer needed
+To: LKML <linux-kernel@vger.kernel.org>, linux-embedded@vger.kernel.org,
+       Nicolas Pitre <nico@cam.org>,
+       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Tony Lindgren <tony@atomide.com>, David Brownell <david-b@pacbell.net>,
+       manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
+       Pavel Pisa <ppisa@pikron.com>,
+       Jarkko Lavinen <jarkko.lavinen@nokia.com>, Ben Dooks <ben@fluff.org>,
+       saschasommer@freenet.de, avorontsov@ru.mvista.com, ian@mnementh.co.uk,
+       HaraldWelte@viatech.com, JosephChan@via.com.tw,
+       Adrian Hunter <adrian.hunter@nokia.com>,
+       Pierre Ossman <pierre@ossman.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Subrata,
 
-On Wed, 2009-07-15 at 07:48 +0530, Subrata Modak wrote:
-> Following fix is inspired by David Howells fix few days back:
-> http://lkml.org/lkml/2009/7/9/109,
-> 
+> I'm afraid the time has come for me
+> to step down as maintainer for the
+> MMC/SD/SDIO subsystem and for someone else to take over the
+> rudder. It
+> is no secret that I haven't been able to give the
+> maintainer role the
+> resources it required, and as a result it has gone from
+> being a fun
+> hobby to a burdensome chore. I was hoping it was a
+> temporary slump, but
+> this has been the norm for over a year now, so it's time
+> for me to
+> throw in the towel.
 
-Please check further of this thread :
+What an unfortunate thing.
 
-http://marc.info/?l=linux-kernel&m=124756210124518&w=2
+Franky speaking, I couldn't manage any time to work on Linux
+in the last year myself. I had such a great plans for Memstick
+and such, yet none advanced.
+
+At this rate, the future of the flash cards on Linux will
+become highly uncertain.
+:-(
 
 
-> Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>,
-> ---
-> 
-> --- a/sound/soc/codecs/wm8400.c	2009-06-15 07:52:31.000000000 +0530
-> +++ b/sound/soc/codecs/wm8400.c	2009-07-15 05:35:00.000000000 +0530
-> @@ -1015,7 +1015,7 @@ static int wm8400_set_dai_pll(struct snd
->  {
->  	struct snd_soc_codec *codec = codec_dai->codec;
->  	struct wm8400_priv *wm8400 = codec->private_data;
-> -	struct fll_factors factors;
-> +	struct fll_factors uninitialized_var(factors);
->  	int ret;
->  	u16 reg;
->  
-> 
 
-This kind of warnings born due to not handling the variables properly.
-Please try to understand the root cause of this warning, just shutting
-this warning is of no use.
-
-Please revise your patches, If you face any problems let me know.
-
-Thanks,
---
-JSR
-
+      
