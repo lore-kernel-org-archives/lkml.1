@@ -1,142 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754298AbZGOLjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342AbZGOLpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754298AbZGOLjQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 07:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZGOLjQ
+	id S1754342AbZGOLpT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 07:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbZGOLpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 07:39:16 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:65493 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753702AbZGOLjP (ORCPT
+	Wed, 15 Jul 2009 07:45:18 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:49189 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754259AbZGOLpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 07:39:15 -0400
-Message-ID: <4A5DBFD9.7070707@monstr.eu>
-Date: Wed, 15 Jul 2009 13:39:05 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Wed, 15 Jul 2009 07:45:16 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=NgnNa4BYe58A:10 a=w4iE+TBsmj5y1WloLYF40w==:17
+ a=LmnUMDoxnP6Y21a0UqEA:9 a=1ThRXIKabyUAheEiGFIA:7
+ a=AFF2GWIj9vqy8akH8VFAlZ9Y8LMA:4
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: linux-kernel@vger.kernel.org
+Subject: Re: Possible Suspend to Ram bug?
+Date: Wed, 15 Jul 2009 05:45:14 -0600
+User-Agent: KMail/1.12.90 (Linux/2.6.30-1-amd64; KDE/4.3.60; x86_64; svn-990302; 2009-06-30)
+References: <200907100458.27410.tfjellstrom@shaw.ca> <200907150359.12187.tfjellstrom@shaw.ca> <alpine.LNX.2.00.0907151330180.813@wotan.suse.de>
+In-Reply-To: <alpine.LNX.2.00.0907151330180.813@wotan.suse.de>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: John Williams <jwilliams@itee.uq.edu.au>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       "subrata@linux.vnet.ibm.com" <subrata@linux.vnet.ibm.com>
-Subject: Re: access_ok macor
-References: <4A5C8068.6020203@monstr.eu> <200907141843.05629.arnd@arndb.de> <9e6f3dfd0907141811p512b4edp3f9dd0fdeae1123e@mail.gmail.com> <200907151214.52369.arnd@arndb.de>
-In-Reply-To: <200907151214.52369.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907150545.14867.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Wednesday 15 July 2009, John Williams wrote:
->> On Wed, Jul 15, 2009 at 2:43 AM, Arnd Bergmann <arnd@arndb.de> wrote:
->>> The solution then is to handle fixups from the unaligned exception handler
->>> if you come from the kernel. That should fix the three text cases.
->>>
->>> I don't fully understand your exception handling there, but I think you
->>> also need to add code checking for __range_ok() to your unaligned handler,
->>> to prevent malicious user space code from accessing the kernel through
->>> unaligned pointers.
->>
->> Just to try to clarify - are there any alignment rules in the ABI on
->> user-space pointers (which end up going to get/put_user)?
-> 
-> The kernel normally expects aligned input from user space, but I guess
-> it can't hurt to handle it anyway. arch/mips/kernel/alignment.c seems
-> to handle that case. Maybe Ralf can give some more insight.
+On Wed July 15 2009, Jiri Kosina wrote:
+> On Wed, 15 Jul 2009, Thomas Fjellstrom wrote:
+> > I'll try with debian's 2.6.30 first. But there's a small issue with
+> > that, .30 and .31 seem to have some performance regressions according to
+> > sites like phoronix.
+>
+> You know, there are lies, then horrible lies, then benchmarks, and
+> benchmarks done wrong.
+>
+> Just do your own measurements under your particular workload, and if you
+> see any performance regression, just report it.
 
-you meant unaligned.c.
+The benchmarks they run are pretty much what I'd do to test, so I'd more than 
+likely get the same results, and waste a bunch of time.
 
-> 
->> It seems the failure path is like this:
->>
->> 1. userspace passes unaligned pointer
->> 2. get_user attempts to access
->> 3. CPU raises unaligned exception (if only it would raise the segfault as
->> higher priority, before the unaligned!)
->> 4. unaligned exception handler attempts to simulate the unaligned access
->> with multiple partial read/write ops
->> 5. CPU raises MMU exception on the read/write by the unaligned handler
->> 6. kernel segfault handler looks up faulting address, it is in the unaligned
->> exception handler, which has no fixup.
->> 7. no fixup -> failure
-> 
-> Right.
-> 
->> So, I suppose the question is - where in the sequence is the true failure?
-> 
-> I think in step 4. AFIACT, the kernel must do a number of checks on accesses
-> to random pointers.
-> 
->> Clearly LTP thinks it's ok to pass unaligned pointers to the kernel,
->> suggesting (1) is fine - thus my question about alignment rules in the ABI.
-> 
-> No, LTP thinks it should get a -EFAULT error code for that access. It does
-> specify whether it expects this because of an unaligned address or because
-> of an invalid page.
+2.6.30 did seem to fix the ssd error. but the first time I suspended, my r8169 
+decided to flip out. I had to rmmod and modprobe it to get the network back 
+up.
 
-IMHO author of this test not expect that caused too much troubles. From that tests
-EFAULT should be return from copy_to_user macro not caused kernel fault. LTP should contain
-special testcases for testing unaligned address.
-I think we should add one more test with invalid aligned argument for that 3 tests + some doc.
-I'll send it.
+[  867.780034] ------------[ cut here ]------------
+[  867.780165] WARNING: at 
+/home/blank/debian/kernel/tmp/linux-2.6-2.6.30/debian/build/source_amd64_none/net/sched/sch_generic.c:226 
+dev_watchdog+0xc7/0x164()
+[  867.780373] Hardware name: GA-MA790FXT-UD5P
+[  867.780488] NETDEV WATCHDOG: eth1 (r8169): transmit timed out
+[  867.780610] Modules linked in: nvidia(P) powernow_k8 cpufreq_conservative 
+cpufreq_stats cpufreq_userspace cpufreq_powersave nfsd exportfs nfs lockd 
+fscache nfs_acl auth_rpcgss sunrpc it87 hwmon_vid adt7473 firewire_sbp2 loop 
+snd_hda$
+[  867.785472] Pid: 0, comm: swapper Tainted: P           2.6.30-1-amd64 #1
+[  867.785598] Call Trace:
+[  867.785699]  <IRQ>  [<ffffffff804229aa>] ? dev_watchdog+0xc7/0x164
+[  867.785877]  [<ffffffff804229aa>] ? dev_watchdog+0xc7/0x164
+[  867.786005]  [<ffffffff8024236b>] ? warn_slowpath_common+0x77/0xa3
+[  867.786130]  [<ffffffff804228e3>] ? dev_watchdog+0x0/0x164
+[  867.786252]  [<ffffffff802423f3>] ? warn_slowpath_fmt+0x51/0x59
+[  867.786377]  [<ffffffff802342fe>] ? enqueue_task+0x5c/0x65
+[  867.786499]  [<ffffffff802546f7>] ? autoremove_wake_function+0x9/0x2e
+[  867.786626]  [<ffffffff804228b7>] ? netif_tx_lock+0x3d/0x69
+[  867.786749]  [<ffffffff8040f3fc>] ? netdev_drivername+0x3b/0x40
+[  867.786873]  [<ffffffff804229aa>] ? dev_watchdog+0xc7/0x164
+[  867.786993]  [<ffffffff80235601>] ? __wake_up+0x30/0x44
+[  867.787116]  [<ffffffff804228e3>] ? dev_watchdog+0x0/0x164
+[  867.787239]  [<ffffffff8024aa2b>] ? run_timer_softirq+0x193/0x210
+[  867.787364]  [<ffffffff8025b465>] ? getnstimeofday+0x55/0xaf
+[  867.787487]  [<ffffffff80246f55>] ? __do_softirq+0xac/0x173
+[  867.787609]  [<ffffffff80210bcc>] ? call_softirq+0x1c/0x30
+[  867.787730]  [<ffffffff802125fa>] ? do_softirq+0x3a/0x7e
+[  867.787849]  [<ffffffff80246cd2>] ? irq_exit+0x3f/0x80
+[  867.787968]  [<ffffffff80220e63>] ? smp_apic_timer_interrupt+0x87/0x94
+[  867.788105]  [<ffffffff802105d3>] ? apic_timer_interrupt+0x13/0x20
+[  867.788231]  <EOI>  [<ffffffff80227518>] ? native_safe_halt+0x2/0x3
+[  867.788410]  [<ffffffff80216995>] ? default_idle+0x40/0x68
+[  867.788531]  [<ffffffff8025d714>] ? clockevents_notify+0x2b/0x75
+[  867.788656]  [<ffffffff80216d48>] ? c1e_idle+0xe5/0x10d
+[  867.788776]  [<ffffffff8020edda>] ? cpu_idle+0x50/0x91
+[  867.788894] ---[ end trace 521854739609a619 ]---
+[  867.804550] r8169: eth1: link up
+[  915.796566] r8169: eth1: link up
+[  963.796491] r8169: eth1: link up
+[  989.420829] r8169: eth1: link up
 
-M
+At this point I was getting repeated "link up" messages and even though 
+ifconfig said the network was up, there was no actual connectivity. as 
+mentioned only rmmod+modprobe of r8169 fixed the problem. It doesn't seem to 
+happen often though.
 
-> 
->> Do we need fixups on the unaligned handler itself? This will be ugly ugly
->> ugly. 
-> 
-> That's what ARM does. You don't have to do it from assembly though,
-> implementing it in C is probably easier.
-> 
->> Or, some way of tracing the segfault back through the unaligned
->> exception and to the root cause (the get/put-user), and call that fixup as
->> required?
-> 
-> Yes, I guess that would have to look roughly like this:
-
-
-> 
-> int emulate_insn(struct pt_regs *regs, unsigned long addr, unsigned long len)
-> {
-> 	/* use inline assembly with fixups here, return -EFAULT on bad addr */		
-> }
-> 
-> void alignment_exception(struct pt_regs *regs, unsigned long addr, unsigned long len)
-> {
-> 	const struct exception_table_entry *fixup;
-> 	int err;
-> 
-> 	if (user_mode(regs)) {
-> 		if (!access_ok(addr, len))
-> 			goto segv;
-> 		if (emulate_insn(regs) == -EFAULT))
-> 			goto segv;
-> 	} else {
-> 		if (!access_ok(addr, len))
-> 			goto fixup;
-> 		if (emulate_insn(regs, addr, len) == -EFAULT))
-> 			goto fixup;
-> 	return;
-> 
-> fixup:
-> 	fixup = search_exception_tables(regs->ip);
-> 	if (!fixup)
-> 		goto segv;
-> 
-> 	regs->ip = fixup->fixup;
-> 	return;
-> 
-> segv:
-> 	force_sig(SIGSEGV, current));
-> }
-
+I'll update if i see anymore issues.
 
 -- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
