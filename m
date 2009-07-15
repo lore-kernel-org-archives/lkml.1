@@ -1,103 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZGORRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZGOR0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667AbZGORRt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 13:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZGORRs
+	id S1755729AbZGOR0p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 13:26:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbZGOR0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 13:17:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59335 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755516AbZGORRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 13:17:47 -0400
-Subject: kmemleak: Early log buffer exceeded
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Catalin Marinas <catalin.marinas@arm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 15 Jul 2009 22:47:12 +0530
-Message-Id: <1247678232.2429.11.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Jul 2009 13:26:44 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:38129 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755199AbZGOR0n convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 13:26:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=R2SgOpHFSRA24SRmTBppUKVRWuiTX/L4xOfJ+Ukig7J9GyASptmqyl4VslUE+KCWZJ
+         ZhtqWtxsHWNqAYAGYDIJVkxZYLztTJcTqHt4PUA/YUjMhAolZY3S138qnqRBE+h73EUU
+         m7i0r3YNccg9eXZKyOkmBWPgxp7/nbKmM3IF0=
+MIME-Version: 1.0
+In-Reply-To: <a55d774e0907150833g494dc91dxe7695543b61b2e50@mail.gmail.com>
+References: <20090714100634.GA4054@elf.ucw.cz>
+	 <20090714175201.GB14661@dtor-d630.eng.vmware.com>
+	 <20090715134855.GB2538@elf.ucw.cz>
+	 <20090715152702.GB21611@dtor-d630.eng.vmware.com>
+	 <a55d774e0907150833g494dc91dxe7695543b61b2e50@mail.gmail.com>
+Date: Wed, 15 Jul 2009 22:56:42 +0530
+Message-ID: <5d5443650907151026y670087fesa3022e37f68e2d8@mail.gmail.com>
+Subject: Re: Support for synaptic touchscreen in HTC dream
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Brian Swetland <swetland@google.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       "Arve Hj?nnev?g" <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently this reporting seems not very impressive and not giving much
-useful information :
+Hi Brian,
 
-kmemleak: Early log buffer exceeded
-kmemleak: Kernel memory leak detector disabled
+On Wed, Jul 15, 2009 at 9:03 PM, Brian Swetland<swetland@google.com> wrote:
+> On Wed, Jul 15, 2009 at 8:27 AM, Dmitry
+> Torokhov<dmitry.torokhov@gmail.com> wrote:
+>> On Wed, Jul 15, 2009 at 03:48:55PM +0200, Pavel Machek wrote:
+>>> On Tue 2009-07-14 10:52:12, Dmitry Torokhov wrote:
+>>> >
+>>> > ABS_HAT is pretty unusual for a touchscreen...
+>>>
+>>> It is trying to do something useful for multitouch. People actually
+>>> use multitouch on HTC dream. I guess I can strip it from version being
+>>> merged...
+>>
+>> What about converting it to emit ABS_MT_* events added specifically
+>> for the multitouch protocol?
+>
+> I believe at the time the driver was written, those events did not
+> exist.  If the input framework has more appropriate events for the
+> "2nd finger" (which is how synaptics represents MT on this panel), we
+> should definitely switch to them.
+>
 
-It should be something like this because it is an error and this will
-disable Kernel memory leak detector :
+Yes, MT events were added recently and they are working. Please check
+this demo based on MT events.
 
-[    0.000173] ------------[ cut here ]------------
-[    0.000186] WARNING: at mm/kmemleak.c:726 log_early+0x39/0xa9()
-[    0.000189] Hardware name:         
-[    0.000192] Early log buffer exceeded, please increase DEBUG_KMEMLEAK_EARLY_LOG_SIZE
-[    0.000195] Modules linked in:
-[    0.000202] Pid: 0, comm: swapper Not tainted 2.6.31-rc3 #51
-[    0.000206] Call Trace:
-[    0.000216]  [<c102cf74>] warn_slowpath_common+0x60/0x90
-[    0.000222]  [<c102cfd8>] warn_slowpath_fmt+0x24/0x27
-[    0.000227]  [<c109614b>] log_early+0x39/0xa9
-[    0.000232]  [<c109682d>] kmemleak_alloc+0x41/0x4c
-[    0.000241]  [<c1093b63>] __kmalloc+0xcb/0x153
-[    0.000247]  [<c1093c04>] alloc_arraycache+0x19/0x50
-[    0.000253]  [<c1093e44>] do_tune_cpucache+0x209/0x35d
-[    0.000259]  [<c10940ee>] enable_cpucache+0x58/0x9a
-[    0.000267]  [<c14bc6e5>] kmem_cache_init_late+0x21/0xc2
-[    0.000274]  [<c14a8a20>] start_kernel+0x1e5/0x2ba
-[    0.000280]  [<c14a8340>] i386_start_kernel+0x6a/0x6f
-[    0.000380] ---[ end trace 4eaa2a86a8e2da22 ]---
-[    0.000384] kmemleak: Kernel memory leak detector disabled
+http://www.linuxfordevices.com/c/a/News/Linux-multitouch-technology-demod/
 
-Currently default value of DEBUG_KMEMLEAK_EARLY_LOG_SIZE is 400 which
-can be easily exceed-able if debugging is on.
+Also, please confirm if polling mode is really used in some h/w
+configuration, if not as said by Dmitry, we can remove it and do clean
+integration with threaded irq.
 
-These issues can be fixed like this :
-
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 12327b2..2eaf8bc 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -362,14 +362,15 @@ config DEBUG_KMEMLEAK
- config DEBUG_KMEMLEAK_EARLY_LOG_SIZE
- 	int "Maximum kmemleak early log entries"
- 	depends on DEBUG_KMEMLEAK
--	range 200 2000
--	default 400
-+	range 256 2048
-+	default 512
- 	help
- 	  Kmemleak must track all the memory allocations to avoid
- 	  reporting false positives. Since memory may be allocated or
- 	  freed before kmemleak is initialised, an early log buffer is
--	  used to store these actions. If kmemleak reports "early log
--	  buffer exceeded", please increase this value.
-+	  used to store these actions. You need to increase this value,
-+	  if kmemleak reports "Early log buffer exceeded, please increase
-+	  DEBUG_KMEMLEAK_EARLY_LOG_SIZE".
- 
- config DEBUG_KMEMLEAK_TEST
- 	tristate "Simple test for the kernel memory leak detector"
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 5aabd41..084e927 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -722,7 +722,8 @@ static void log_early(int op_type, const void *ptr, size_t size,
- 	struct early_log *log;
- 
- 	if (crt_early_log >= ARRAY_SIZE(early_log)) {
--		pr_warning("Early log buffer exceeded\n");
-+		WARN_ONCE(1, KERN_ERR "Early log buffer exceeded, "
-+			  "please increase DEBUG_KMEMLEAK_EARLY_LOG_SIZE\n");
- 		kmemleak_disable();
- 		return;
- 	}
-
---
-JSR
-
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
