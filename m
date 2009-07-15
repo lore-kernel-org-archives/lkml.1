@@ -1,146 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbZGOVW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbZGOVX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbZGOVW6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 17:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbZGOVVw
+	id S1753046AbZGOVX4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 17:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZGOVVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 17:21:52 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:42912 "EHLO
+	Wed, 15 Jul 2009 17:21:10 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:42877 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbZGOVVM (ORCPT
+	with ESMTP id S1751402AbZGOVVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 17:21:12 -0400
+	Wed, 15 Jul 2009 17:21:06 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 18/20] ceph: debugging
-Date: Wed, 15 Jul 2009 14:24:48 -0700
-Message-Id: <1247693090-27796-19-git-send-email-sage@newdream.net>
+Subject: [PATCH 00/20] ceph: Ceph distributed file system client v0.10
+Date: Wed, 15 Jul 2009 14:24:30 -0700
+Message-Id: <1247693090-27796-1-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1247693090-27796-18-git-send-email-sage@newdream.net>
-References: <1247693090-27796-1-git-send-email-sage@newdream.net>
- <1247693090-27796-2-git-send-email-sage@newdream.net>
- <1247693090-27796-3-git-send-email-sage@newdream.net>
- <1247693090-27796-4-git-send-email-sage@newdream.net>
- <1247693090-27796-5-git-send-email-sage@newdream.net>
- <1247693090-27796-6-git-send-email-sage@newdream.net>
- <1247693090-27796-7-git-send-email-sage@newdream.net>
- <1247693090-27796-8-git-send-email-sage@newdream.net>
- <1247693090-27796-9-git-send-email-sage@newdream.net>
- <1247693090-27796-10-git-send-email-sage@newdream.net>
- <1247693090-27796-11-git-send-email-sage@newdream.net>
- <1247693090-27796-12-git-send-email-sage@newdream.net>
- <1247693090-27796-13-git-send-email-sage@newdream.net>
- <1247693090-27796-14-git-send-email-sage@newdream.net>
- <1247693090-27796-15-git-send-email-sage@newdream.net>
- <1247693090-27796-16-git-send-email-sage@newdream.net>
- <1247693090-27796-17-git-send-email-sage@newdream.net>
- <1247693090-27796-18-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some debugging infrastructure, including the ability to adjust the
-level of debug output on a per-file basis.
+This is v0.10 of the Ceph distributed file system client.
 
-Signed-off-by: Sage Weil <sage@newdream.net>
+Changes since v0.9:
+ - fixed unaligned memory access (thanks for heads up to Stefan Richter)
+ - a few code cleanups
+ - MDS reconnect and op replay bugfixes.  (The main milestone here is
+   stable handling of MDS server failures and restarts, tested by
+   running various workloads with the servers in restart loops.)
+
+What would people like to see for this to be merged into fs/?
+
+Thanks-
+sage
+
+
+
+
 ---
- fs/ceph/ceph_debug.h |   86 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 86 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/ceph_debug.h
 
-diff --git a/fs/ceph/ceph_debug.h b/fs/ceph/ceph_debug.h
-new file mode 100644
-index 0000000..70a2521
---- /dev/null
-+++ b/fs/ceph/ceph_debug.h
-@@ -0,0 +1,86 @@
-+#ifndef _FS_CEPH_DEBUG_H
-+#define _FS_CEPH_DEBUG_H
-+
-+#include <linux/string.h>
-+
-+extern int ceph_debug __read_mostly;         /* debug level. */
-+extern int ceph_debug_console __read_mostly; /* send debug output to console? */
-+extern int ceph_debug_mask __read_mostly;
-+
-+/*
-+ * different debug levels for different modules.  These default to -1.
-+ * If they are >= 0, then they override the global ceph_debug value.
-+ */
-+extern int ceph_debug_addr __read_mostly;
-+extern int ceph_debug_caps __read_mostly;
-+extern int ceph_debug_dir __read_mostly;
-+extern int ceph_debug_export __read_mostly;
-+extern int ceph_debug_file __read_mostly;
-+extern int ceph_debug_inode __read_mostly;
-+extern int ceph_debug_ioctl __read_mostly;
-+extern int ceph_debug_mdsc __read_mostly;
-+extern int ceph_debug_mdsmap __read_mostly;
-+extern int ceph_debug_msgr __read_mostly;
-+extern int ceph_debug_mon __read_mostly;
-+extern int ceph_debug_osdc __read_mostly;
-+extern int ceph_debug_osdmap __read_mostly;
-+extern int ceph_debug_snap __read_mostly;
-+extern int ceph_debug_super __read_mostly;
-+extern int ceph_debug_protocol __read_mostly;
-+extern int ceph_debug_proc __read_mostly;
-+extern int ceph_debug_tools __read_mostly;
-+
-+#define DOUT_MASK_ADDR		0x00000001
-+#define DOUT_MASK_CAPS		0x00000002
-+#define DOUT_MASK_DIR		0x00000004
-+#define DOUT_MASK_EXPORT	0x00000008
-+#define DOUT_MASK_FILE		0x00000010
-+#define DOUT_MASK_INODE		0x00000020
-+#define DOUT_MASK_IOCTL		0x00000040
-+#define DOUT_MASK_MDSC		0x00000080
-+#define DOUT_MASK_MDSMAP	0x00000100
-+#define DOUT_MASK_MSGR		0x00000200
-+#define DOUT_MASK_MON		0x00000400
-+#define DOUT_MASK_OSDC		0x00000800
-+#define DOUT_MASK_OSDMAP	0x00001000
-+#define DOUT_MASK_SNAP		0x00002000
-+#define DOUT_MASK_SUPER		0x00004000
-+#define DOUT_MASK_PROTOCOL	0x00008000
-+#define DOUT_MASK_PROC		0x00010000
-+#define DOUT_MASK_TOOLS		0x00020000
-+
-+#define DOUT_UNMASKABLE	0x80000000
-+
-+#define _STRINGIFY(x) #x
-+#define STRINGIFY(x) _STRINGIFY(x)
-+
-+#define FMT_PREFIX "%-30.30s: "
-+#define FMT_SUFFIX "%s"
-+#define LOG_ARGS __FILE__ ":" STRINGIFY(__LINE__)
-+#define TRAIL_PARAM ""
-+
-+#define LOG_LINE FMT_PREFIX fmt, LOG_ARGS, args
-+
-+#define dout_flag(x, mask, fmt, args...) do {				\
-+		if (((ceph_debug_mask | DOUT_UNMASKABLE) & mask) &&	\
-+		    ((DOUT_VAR >= 0 && (x) <= DOUT_VAR) ||		\
-+		     (DOUT_VAR < 0 && (x) <= ceph_debug))) {		\
-+			if (ceph_debug_console)				\
-+				printk(KERN_ERR FMT_PREFIX fmt, LOG_ARGS, \
-+				       args);				\
-+			else						\
-+				printk(KERN_DEBUG FMT_PREFIX fmt, LOG_ARGS, \
-+				       args);				\
-+		}							\
-+	} while (0)
-+
-+#define _dout(x, fmt, args...) dout_flag((x), DOUT_MASK, fmt FMT_SUFFIX, args)
-+
-+#define _derr(x, fmt, args...) do {					\
-+		printk(KERN_ERR FMT_PREFIX fmt FMT_SUFFIX, LOG_ARGS, args); \
-+	} while (0)
-+
-+#define dout(x, args...) _dout((x), args, TRAIL_PARAM)
-+#define derr(x, args...) _derr((x), args, TRAIL_PARAM)
-+
-+#endif
--- 
-1.5.6.5
+Ceph is a distributed file system designed for reliability, scalability, 
+and performance.  The storage system consists of some (potentially 
+large) number of storage servers (bricks), a smaller set of metadata 
+server daemons, and a few monitor daemons for managing cluster 
+membership and state.  The storage daemons rely on btrfs for storing 
+data (and take advantage of btrfs' internal transactions to keep the 
+local data set in a consistent state).  This makes the storage cluster 
+simple to deploy, while providing scalability not currently available 
+from block-based Linux cluster file systems.
 
+Additionaly, Ceph brings a few new things to Linux.  Directory 
+granularity snapshots allow users to create a read-only snapshot of any 
+directory (and its nested contents) with 'mkdir .snap/my_snapshot' [1]. 
+Deletion is similarly trivial ('rmdir .snap/old_snapshot').  Ceph also 
+maintains recursive accounting statistics on the number of nested files, 
+directories, and file sizes for each directory, making it much easier 
+for an administrator to manage usage [2].
+
+Basic features include:
+
+ * Strong data and metadata consistency between clients
+ * High availability and reliability.  No single points of failure.
+ * N-way replication of all data across storage nodes
+ * Scalability from 1 to potentially many thousands of nodes
+ * Fast recovery from node failures
+ * Automatic rebalancing of data on node addition/removal
+ * Easy deployment: most FS components are userspace daemons
+
+In contrast to cluster filesystems like GFS2 and OCFS2 that rely on 
+symmetric access by all clients to shared block devices, Ceph separates 
+data and metadata management into independent server clusters, similar 
+to Lustre.  Unlike Lustre, however, metadata and storage nodes run 
+entirely as user space daemons.  The storage daemon utilizes btrfs to 
+store data objects, leveraging its advanced features (transactions, 
+checksumming, metadata replication, etc.).  File data is striped across 
+storage nodes in large chunks to distribute workload and facilitate high 
+throughputs. When storage nodes fail, data is re-replicated in a 
+distributed fashion by the storage nodes themselves (with some minimal 
+coordination from the cluster monitor), making the system extremely 
+efficient and scalable.
+
+Metadata servers effectively form a large, consistent, distributed
+in-memory cache above the storage cluster that is scalable,
+dynamically redistributes metadata in response to workload changes,
+and can tolerate arbitrary (well, non-Byzantine) node failures.  The
+metadata server embeds inodes with only a single link inside the
+directories that contain them, allowing entire directories of dentries
+and inodes to be loaded into its cache with a single I/O operation.
+Hard links are supported via an auxiliary table facilitating inode
+lookup by number.  The contents of large directories can be fragmented
+and managed by independent metadata servers, allowing scalable
+concurrent access.
+
+The system offers automatic data rebalancing/migration when scaling from 
+a small cluster of just a few nodes to many hundreds, without requiring 
+an administrator to carve the data set into static volumes or go through 
+the tedious process of migrating data between servers.  When the file 
+system approaches full, new storage nodes can be easily added and things 
+will "just work."
+
+A git tree containing just the client (and this patch series) is at
+	git://ceph.newdream.net/linux-ceph-client.git
+
+The corresponding user space daemons need to be built in order to test
+it.  Instructions for getting a test setup running are at
+        http://ceph.newdream.net/wiki/
+
+The source for the full system is at
+	git://ceph.newdream.net/ceph.git
+
+Debian packages are available from
+	http://ceph.newdream.net/debian
+
+The Ceph home page is at
+	http://ceph.newdream.net
+
+[1] Snapshots
+        http://marc.info/?l=linux-fsdevel&m=122341525709480&w=2
+[2] Recursive accounting
+        http://marc.info/?l=linux-fsdevel&m=121614651204667&w=2
+
+---
+ Documentation/filesystems/ceph.txt |  181 +++
+ fs/Kconfig                         |    1 +
+ fs/Makefile                        |    1 +
+ fs/ceph/Kconfig                    |   14 +
+ fs/ceph/Makefile                   |   35 +
+ fs/ceph/addr.c                     | 1099 ++++++++++++++
+ fs/ceph/caps.c                     | 2570 +++++++++++++++++++++++++++++++++
+ fs/ceph/ceph_debug.h               |   86 ++
+ fs/ceph/ceph_fs.h                  |  924 ++++++++++++
+ fs/ceph/ceph_ver.h                 |    6 +
+ fs/ceph/crush/crush.c              |  140 ++
+ fs/ceph/crush/crush.h              |  188 +++
+ fs/ceph/crush/hash.h               |   90 ++
+ fs/ceph/crush/mapper.c             |  597 ++++++++
+ fs/ceph/crush/mapper.h             |   19 +
+ fs/ceph/debugfs.c                  |  604 ++++++++
+ fs/ceph/decode.h                   |  136 ++
+ fs/ceph/dir.c                      | 1129 +++++++++++++++
+ fs/ceph/export.c                   |  155 ++
+ fs/ceph/file.c                     |  794 +++++++++++
+ fs/ceph/inode.c                    | 2357 ++++++++++++++++++++++++++++++
+ fs/ceph/ioctl.c                    |   65 +
+ fs/ceph/ioctl.h                    |   12 +
+ fs/ceph/mds_client.c               | 2775 ++++++++++++++++++++++++++++++++++++
+ fs/ceph/mds_client.h               |  353 +++++
+ fs/ceph/mdsmap.c                   |  132 ++
+ fs/ceph/mdsmap.h                   |   45 +
+ fs/ceph/messenger.c                | 2392 +++++++++++++++++++++++++++++++
+ fs/ceph/messenger.h                |  273 ++++
+ fs/ceph/mon_client.c               |  454 ++++++
+ fs/ceph/mon_client.h               |  135 ++
+ fs/ceph/msgr.h                     |  156 ++
+ fs/ceph/osd_client.c               |  983 +++++++++++++
+ fs/ceph/osd_client.h               |  151 ++
+ fs/ceph/osdmap.c                   |  692 +++++++++
+ fs/ceph/osdmap.h                   |   83 ++
+ fs/ceph/rados.h                    |  419 ++++++
+ fs/ceph/snap.c                     |  890 ++++++++++++
+ fs/ceph/super.c                    | 1204 ++++++++++++++++
+ fs/ceph/super.h                    |  952 ++++++++++++
+ fs/ceph/types.h                    |   27 +
+ 41 files changed, 23319 insertions(+), 0 deletions(-)
