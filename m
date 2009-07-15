@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZGOVxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755262AbZGOVxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbZGOVxI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 17:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbZGOVxI
+	id S1755262AbZGOVxr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 17:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZGOVxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 17:53:08 -0400
-Received: from smtpout.cs.fsu.edu ([128.186.122.75]:5664 "EHLO mail.cs.fsu.edu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754997AbZGOVxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 17:53:07 -0400
-Date: Wed, 15 Jul 2009 17:53:05 -0400
-From: Ted Baker <baker@cs.fsu.edu>
-To: Henrik Austad <henrik@austad.us>
-Cc: "James H. Anderson" <anderson@cs.unc.edu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Chris Friesen <cfriesen@nortel.com>, Raistlin <raistlin@linux.it>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>,
+	Wed, 15 Jul 2009 17:53:47 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:51598 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755037AbZGOVxq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 17:53:46 -0400
+Message-ID: <4A5E4FDD.7090307@nortel.com>
+Date: Wed, 15 Jul 2009 15:53:33 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Ted Baker <baker@cs.fsu.edu>
+CC: "James H. Anderson" <anderson@cs.unc.edu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Raistlin <raistlin@linux.it>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
        LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Bill Huey <billh@gnuppy.monkey.org>,
        Linux RT <linux-rt-users@vger.kernel.org>,
@@ -28,41 +31,44 @@ Cc: "James H. Anderson" <anderson@cs.unc.edu>,
        Giuseppe Lipari <lipari@retis.sssup.it>,
        Bjoern Brandenburg <bbb@cs.unc.edu>
 Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-Message-ID: <20090715215305.GD14993@cs.fsu.edu>
-References: <200907102350.47124.henrik@austad.us> <1247589099.7500.191.camel@twins> <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu> <200907142128.48558.henrik@austad.us>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907142128.48558.henrik@austad.us>
-User-Agent: Mutt/1.4.2.1i
+References: <1247336891.9978.32.camel@laptop> <4A594D2D.3080101@ittc.ku.edu> <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir> <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir> <4A5C9ABA.9070909@nortel.com> <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu> <1247589099.7500.191.camel@twins> <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu> <20090715205503.GA14993@cs.fsu.edu>
+In-Reply-To: <20090715205503.GA14993@cs.fsu.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jul 2009 21:53:35.0706 (UTC) FILETIME=[B406D3A0:01CA0596]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 09:28:47PM +0200, Henrik Austad wrote:
+Ted Baker wrote:
 
-> ... In MC you need to do this the hard way, namely compute the
-> point in time not when the task misses the deadline, but when it
-> will *eventually* fail a deadline. By doing that, you combine
-> deadline, wcet and granted time in one variable, and you have a
-> *single* variable to compare.
+> The present Linux "RT throttling" mechanism seems to be an attempt
+> to achieve something similar (preventing RT tasks from shutting
+> out other work, by reserving some bandwidth for non-RT tasks).
+> However, it is done so grossly as to be unsatisfactory for
+> real-time applications.  The better way to do this would be to
+> enforce a bandwidth limit on each task with real-time priority --
+> using the budget amount and replenishment interval required by
+> that task -- and enforce by admission control that the real-time
+> tasks do not exceed some configurable percent of the total system
+> utilization.
 
-This is true in a theoretical sense, and is the basis of some
-"optimal" scheduling algorithms, including the "throwforward
-scheduling" algorithm.  It makes sense in some environments, where
-you actually know the WCET of the task in advance.  However, I
-don't believe a Linux system can expect all applications to
-provide this kind of information.
+>From an API standpoint, the "group scheduling" functionality in linux
+allows for the creation of an arbitrary hierarchy of groups, each of
+which may contain zero or more tasks.  (Each task is associated with
+exactly one group.)
 
-In a system programmed using process and threads, the decision to
-sleep or wake is embedded in the internal logic of the thread, and
-implemented by system calls.  The existing system calls do not
-convey how long the thread needs to execute before it reaches its
-next suspension point.  Therefore, without a new API you cannot
-use WCET. If you create a new API for this, you are limiting this
-form of scheduling to threads that choose to use that API, and are
-able to provide the needed WCET information.  This seems like a
-small number of cases among the full range of real-time Linux
-applications.
+There is a distinction between groups containing realtime tasks, and
+groups containing non-realtime tasks.  For realtime groups, each group
+is allocated a specific amount of cpu time.  For non-realtime groups,
+each group is allocated a specific weight.
 
-Ted
+A realtime group may use up to its specified amount of cpu time.  Any
+cpu time not used by a realtime group is distributed to the non-realtime
+groups according to their relative weights.
+
+This does add a whole different API to the mix, but allows for controls
+to be set by the administrator on existing POSIX apps without needing to
+recompile them.
+
+Chris
