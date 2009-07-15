@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZGOKIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZGOKK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbZGOKIz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 06:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZGOKIz
+	id S1753878AbZGOKK1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 06:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZGOKK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 06:08:55 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:30807 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753426AbZGOKIy (ORCPT
+	Wed, 15 Jul 2009 06:10:26 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:50458 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbZGOKK0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 06:08:54 -0400
-X-Greylist: delayed 580 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Jul 2009 06:08:53 EDT
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=NgnNa4BYe58A:10 a=w4iE+TBsmj5y1WloLYF40w==:17
- a=r6rVttBYdIM1qgCwhnkA:9 a=9vL-GUva0kOrnu-Y5AcA:7
- a=pV5SmESTpSbM3mq3ec6756A75DIA:4
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: linux-kernel@vger.kernel.org
-Subject: Re: Possible Suspend to Ram bug?
-Date: Wed, 15 Jul 2009 03:59:12 -0600
-User-Agent: KMail/1.12.90 (Linux/2.6.29-2-amd64; KDE/4.3.60; x86_64; svn-990302; 2009-06-30)
-Cc: Jiri Kosina <jkosina@suse.cz>
-References: <200907100458.27410.tfjellstrom@shaw.ca> <200907140417.12847.tfjellstrom@shaw.ca> <alpine.LRH.2.00.0907141752580.27150@twin.jikos.cz>
-In-Reply-To: <alpine.LRH.2.00.0907141752580.27150@twin.jikos.cz>
+	Wed, 15 Jul 2009 06:10:26 -0400
+Message-ID: <4A5DA96F.8000900@monstr.eu>
+Date: Wed, 15 Jul 2009 12:03:27 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Paul Mundt <lethal@linux-sh.org>, Arnd Bergmann <arnd@arndb.de>,
+       monstr@monstr.eu, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       LTP <ltp-list@lists.sourceforge.net>
+Subject: Re: access_ok macor
+References: <4A5C8068.6020203@monstr.eu> <200907141843.05629.arnd@arndb.de> <4A5CB8B4.7050108@monstr.eu> <200907141913.21240.arnd@arndb.de> <20090715092113.GA1863@linux-sh.org>
+In-Reply-To: <20090715092113.GA1863@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907150359.12187.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue July 14 2009, Jiri Kosina wrote:
-> On Tue, 14 Jul 2009, Thomas Fjellstrom wrote:
-> > On Fri July 10 2009, Thomas Fjellstrom wrote:
-> > > I've recently gotten a new OCZ Vertex 30G SSD and have noticed that it
-> > > will flip out the second time linux wakes up from "suspend to ram".
-> > >
-> > > The system will run fine for days or weeks, so long as it isn't waking
-> > > up a second StR.
-> > >
-> > > Here is an example error that I get from the device (my root / device):
-> > >
-> > > [42018.455204] sd 0:0:0:0: [sda] Unhandled error code
-> > > [42018.455208] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET
-> > > driverbyte=DRIVER_OK,SUGGEST_OK
-> > > [42018.455215] end_request: I/O error, dev sda, sector 12583031
-> > > [42018.455221] EXT3-fs error (device sda2): ext3_get_inode_loc: unable
-> > > to read inode block - inode=391005, block=1572871
-> > >
-> > > At that point using my / fs is pretty much impossible. Every single app
-> > > fails to launch with an I/O Error, about the only command I can run in
-> > > that state is "dmesg" in an existing konsole.
-> > >
-> > > I'm currently using 2.6.29-2-amd64 from debian, and am running on a
-> > > Gigabyte MA790FXT-UD5P, with a AMD Phenom II X4 810 cpu, and 4G ram.
-> > >
-> > > One interesting thing to note, the file system on the Vertex SSD
-> > > reports as clean to fsck on the next boot, while my /home which is on a
-> > > Seagate 7200.12 drive reports with several orphaned inodes (every
-> > > single time). And that's regardless if I use ALT+SYSRQ+S/U to try and
-> > > sync everything. Also, ALT+SYSRQ+B doesn't work at that point, only
-> > > ALT+SYSRQ+O or using the system power/reset buttons will work.
-> > >
-> > > I'm attaching the full log I was able to save from dmesg (over nfs,
-> > > luckily that worked).
-> >
-> > Anyone have a clue what might be wrong?
->
-> First please try to reproduce with recent kernel (2.6.30 at least,
-> 2.6.31-rc3 preferrably).
+Paul Mundt wrote:
+> On Tue, Jul 14, 2009 at 07:13:20PM +0200, Arnd Bergmann wrote:
+>> On Tuesday 14 July 2009, Michal Simek wrote:
+>>> when the code tried to read/write from unaligned address (and in cpu
+>>> is turn on unaligned exception) then is caused unaligned exception
+>>> and asm code assemble/return value which is on that unaligned
+>>> address. (Assemble it that read/write every byte separately). That
+>>> will be harder to prevent all this cases because unaligned exception
+>>> is in generic code.  What do you mean add __range_ok? Range checking
+>>> is ok. The problem is when in case get_user kernel try to load
+>>> unaligned addr - unaligned exception is perform and try to load that
+>>> value separately.  If that page is not there, page fault handler is
+>>> called and not find it, it is performed search from exception table
+>>> and that address is not there of course - because address in pc is
+>>> generic unaligned code. I think that handling this needs more code.
+>>> Maybe if the address with from unaligned exception handler (there are
+>>> some address which can caused it) and find out which aligned address
+>>> is there and find out proper fixup for it.  I think that this could
+>>> work.
+>>>
+>>> What do you think?
+>> I think the key point is that the kernel should never try an unaligned
+>> access. Other architectures already rely on this, so you can too.
+> 
+> No, other architectures used to rely on this, until it was no longer
+> possible to do so. See for example, nfs. Unaligned accesses by the kernel
+> must be handled by the architecture, unaligned accesses by userspace can
+> be optionally fixed up.
 
-I'll try with debian's 2.6.30 first. But there's a small issue with that, .30 
-and .31 seem to have some performance regressions according to sites like 
-phoronix.
+Can you please look at John's email in this thread. How does SH handle this case?
+I mean when for get/put user address is added unaligned address. How does your kernel handle it?
+
+Michal
+
 
 -- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
