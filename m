@@ -1,99 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZGOPcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZGOPdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZGOPcl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 11:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbZGOPck
+	id S1755507AbZGOPdo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 11:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbZGOPdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 11:32:40 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60681 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755420AbZGOPcj (ORCPT
+	Wed, 15 Jul 2009 11:33:43 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:41893 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755423AbZGOPdm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 11:32:39 -0400
-Date: Wed, 15 Jul 2009 02:31:44 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
-Subject: Re: [linux-pm] [PATCH 2/8] introduce the device async action
-	mechanism
-Message-ID: <20090715003144.GD2360@ucw.cz>
-References: <1247643516.26272.77.camel@rzhang-dt>
+	Wed, 15 Jul 2009 11:33:42 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=TGm2EZukrc91mOiqXxKR1jeDH3+h4Vb4R+hdz0BqNoWkTwyZOo2B0lFdq85E0C5Hn
+	ULmBLVyMyXtwd7e19JPcg==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247643516.26272.77.camel@rzhang-dt>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090715152702.GB21611@dtor-d630.eng.vmware.com>
+References: <20090714100634.GA4054@elf.ucw.cz>
+	 <20090714175201.GB14661@dtor-d630.eng.vmware.com>
+	 <20090715134855.GB2538@elf.ucw.cz>
+	 <20090715152702.GB21611@dtor-d630.eng.vmware.com>
+Date: Wed, 15 Jul 2009 08:33:38 -0700
+Message-ID: <a55d774e0907150833g494dc91dxe7695543b61b2e50@mail.gmail.com>
+Subject: Re: Support for synaptic touchscreen in HTC dream
+From: Brian Swetland <swetland@google.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Arve Hj?nnev?g" <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-07-15 15:38:36, Zhang Rui wrote:
-> Introduce the device async action mechanism.
-> 
-> In order to speed up Linux suspend/resume/shutdown process,
-> we introduce the device async action mechanism that allow devices
-> to suspend/resume/shutdown asynchronously.
-> 
-> The basic idea is that,
-> if the suspend/resume/shutdown process of a device set,
-> including a root device and its child devices, are independent of
-> other devices, we create an async domain for this device set,
-> and make them suspend/resume/shutdown asynchronously.
-> 
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/base/Makefile     |    3 
->  drivers/base/async_dev.c  |  180 ++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/async_dev.h |   40 ++++++++++
->  include/linux/device.h    |    2 
->  4 files changed, 224 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/async_dev.h
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/include/linux/async_dev.h
-> @@ -0,0 +1,40 @@
-> +/*
-> + * async_dev.h: function calls for device async actions
-> + *
-> + * (C) Copyright 2009 Intel Corporation
-> + * Author: Zhang Rui <rui.zhang@intel.com>
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; version 2
-> + * of the License.
-> + */
-> +
-> +#ifndef _ASYNC_DEV_H_
-> +#define _ASYNC_DEV_H_
-> +
-> +#include <linux/types.h>
-> +#include <linux/list.h>
-> +#include <linux/async.h>
-> +#include <linux/device.h>
-> +#include <linux/pm.h>
-> +
-> +struct dev_async_struct {
-> +	struct device *dev;
-> +	int type;
-> +	/* Synchronization Domain for device async actions */
-> +	struct list_head domain;
-> +	struct list_head node;
-> +	async_cookie_t cookie;
-> +};
-> +
-> +#define DEV_ASYNC_ACTIONS_ALL	0
-> +
-> +extern int dev_async_schedule(struct device *, void *,
-> +			void *, int);
-> +extern void dev_async_synchronization(void);
+On Wed, Jul 15, 2009 at 8:27 AM, Dmitry
+Torokhov<dmitry.torokhov@gmail.com> wrote:
+> On Wed, Jul 15, 2009 at 03:48:55PM +0200, Pavel Machek wrote:
+>> On Tue 2009-07-14 10:52:12, Dmitry Torokhov wrote:
+>> >
+>> > ABS_HAT is pretty unusual for a touchscreen...
+>>
+>> It is trying to do something useful for multitouch. People actually
+>> use multitouch on HTC dream. I guess I can strip it from version being
+>> merged...
+>
+> What about converting it to emit ABS_MT_* events added specifically
+> for the multitouch protocol?
 
-'_synchronize' to be consistent with schedule?
+I believe at the time the driver was written, those events did not
+exist.  If the input framework has more appropriate events for the
+"2nd finger" (which is how synaptics represents MT on this panel), we
+should definitely switch to them.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Brian
