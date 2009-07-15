@@ -1,476 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752132AbZGOGR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbZGOGSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752132AbZGOGR6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 02:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZGOGR5
+	id S1752161AbZGOGSu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 02:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZGOGSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 02:17:57 -0400
-Received: from sg2ehsobe004.messaging.microsoft.com ([207.46.51.78]:31774 "EHLO
-	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751670AbZGOGR4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 02:17:56 -0400
-X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Jul 2009 02:17:55 EDT
-X-SpamScore: 0
-X-BigFish: VPS0(zz655Nc8kzz1202hzzz32i6bh43j)
-X-WSS-ID: 0KMT7FL-04-JXD-01
-Date: Wed, 15 Jul 2009 14:02:19 +0800
-From: Crane Cai <crane.cai@amd.com>
-To: lenb@kernel.org
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ACPI: add driver for SMBus Control Method Interface
-Message-ID: <20090715060219.GA30514@crane-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 15 Jul 2009 06:02:18.0319 (UTC) FILETIME=[CF40BDF0:01CA0511]
+	Wed, 15 Jul 2009 02:18:49 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35698 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750890AbZGOGSs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 02:18:48 -0400
+Date: Wed, 15 Jul 2009 16:18:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for July 15
+Message-Id: <20090715161841.9be17451.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__15_Jul_2009_16_18_41_+1000_wlKve1QP_sjy=LCY"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver supports the SMBus Control Method Interface. It needs BIOS declare
-ACPI control methods via SMBus Control Method Interface Spec.
+--Signature=_Wed__15_Jul_2009_16_18_41_+1000_wlKve1QP_sjy=LCY
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Please apply
+Hi all,
 
-Signed-off-by: Crane Cai <crane.cai@amd.com>
----
- drivers/acpi/Kconfig   |   11 ++
- drivers/acpi/Makefile  |    1 +
- drivers/acpi/cmi_i2c.c |  391 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 403 insertions(+), 0 deletions(-)
- create mode 100644 drivers/acpi/cmi_i2c.c
+Changes since 20090714:
 
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index 7ec7d88..ce7cf38 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -333,4 +333,15 @@ config ACPI_SBS
- 	  To compile this driver as a module, choose M here:
- 	  the modules will be called sbs and sbshc.
- 
-+config ACPI_I2C
-+	tristate "SMBus Control Method Interface"
-+	depends on X86
-+	help
-+	  This driver supports the SMBus Control Method Interface. It needs
-+	  BIOS declare ACPI control methods via SMBus Control Method Interface
-+	  Spec.
-+
-+	  To compile this driver as a module, choose M here:
-+	  the modules will be called sbs and sbshc.
-+
- endif	# ACPI
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-index 03a985b..a76c351 100644
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -56,6 +56,7 @@ obj-$(CONFIG_ACPI_HOTPLUG_MEMORY) += acpi_memhotplug.o
- obj-$(CONFIG_ACPI_BATTERY)	+= battery.o
- obj-$(CONFIG_ACPI_SBS)		+= sbshc.o
- obj-$(CONFIG_ACPI_SBS)		+= sbs.o
-+obj-$(CONFIG_ACPI_I2C)		+= cmi_i2c.o
- 
- # processor has its own "processor." module_param namespace
- processor-y			:= processor_core.o processor_throttling.o
-diff --git a/drivers/acpi/cmi_i2c.c b/drivers/acpi/cmi_i2c.c
-new file mode 100644
-index 0000000..69f3202
---- /dev/null
-+++ b/drivers/acpi/cmi_i2c.c
-@@ -0,0 +1,391 @@
-+/*
-+ * SMBus driver for ACPI SMBus CMI
-+ *
-+ * Copyright (C) 2009 Crane Cai <crane.cai@amd.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation version 2.
-+ */
-+
-+#include <linux/version.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/kernel.h>
-+#include <linux/stddef.h>
-+#include <linux/init.h>
-+#include <linux/i2c.h>
-+#include <linux/acpi.h>
-+#include <linux/delay.h>
-+
-+#define ACPI_SMB_HC_COMPONENT	0x00080000
-+#define ACPI_SMB_HC_CLASS	"smbus"
-+#define ACPI_SMB_HC_DEVICE_NAME	"smbus cmi"
-+#define SMB_HC_DEVICE_NAME	"SMBus CMI adapter"
-+
-+#define _COMPONENT		ACPI_SMB_HC_COMPONENT
-+
-+ACPI_MODULE_NAME("smbus_cmi");
-+
-+struct smbus_methods {
-+	char *mt_info;
-+	char *mt_sbr;
-+	char *mt_sbw;
-+};
-+
-+struct acpi_smbus_cmi {
-+	acpi_handle handle;
-+	struct i2c_adapter adapter;
-+	struct smbus_methods *methods;
-+};
-+
-+static const struct smbus_methods smb_mtds = {
-+	.mt_info = "_SBI",
-+	.mt_sbr = "_SBR",
-+	.mt_sbw = "_SBW",
-+};
-+
-+static const struct acpi_device_id i2c_device_ids[] = {
-+	{"SMBUS01", 0},
-+	{"", 0},
-+};
-+
-+static int acpi_smb_cmi_add(struct acpi_device *device);
-+static int acpi_smb_cmi_remove(struct acpi_device *device, int type);
-+
-+static struct acpi_driver acpi_smb_cmi_driver = {
-+	.name = ACPI_SMB_HC_DEVICE_NAME,
-+	.class = ACPI_SMB_HC_CLASS,
-+	.ids = i2c_device_ids,
-+	.ops = {
-+		.add = acpi_smb_cmi_add,
-+		.remove = acpi_smb_cmi_remove,
-+		},
-+};
-+
-+#define ACPI_SMB_STATUS_OK		0x00
-+#define ACPI_SMB_STATUS_FAIL		0x07
-+#define ACPI_SMB_STATUS_DNAK		0x10
-+#define ACPI_SMB_STATUS_DERR		0x11
-+#define ACPI_SMB_STATUS_CMD_DENY	0x12
-+#define ACPI_SMB_STATUS_UNKNOWN		0x13
-+#define ACPI_SMB_STATUS_ACC_DENY	0x17
-+#define ACPI_SMB_STATUS_TIMEOUT		0x18
-+#define ACPI_SMB_STATUS_NOTSUP		0x19
-+#define ACPI_SMB_STATUS_BUSY		0x1A
-+#define ACPI_SMB_STATUS_PEC		0x1F
-+
-+#define ACPI_SMB_PRTCL_WRITE			0x0
-+#define ACPI_SMB_PRTCL_READ			0x01
-+#define ACPI_SMB_PRTCL_QUICK			0x02
-+#define ACPI_SMB_PRTCL_BYTE			0x04
-+#define ACPI_SMB_PRTCL_BYTE_DATA		0x06
-+#define ACPI_SMB_PRTCL_WORD_DATA		0x08
-+#define ACPI_SMB_PRTCL_BLOCK_DATA		0x0a
-+#define ACPI_SMB_PRTCL_PROC_CALL		0x0c
-+#define ACPI_SMB_PRTCL_BLOCK_PROC_CALL		0x0d
-+#define ACPI_SMB_PRTCL_PEC			0x80
-+
-+
-+static int
-+acpi_smb_cmi_access(struct i2c_adapter *adap, u16 addr, unsigned short flags,
-+		   char read_write, u8 command, int size,
-+		   union i2c_smbus_data *data)
-+{
-+	int result = 0;
-+	struct acpi_smbus_cmi *smbus_cmi = adap->algo_data;
-+	unsigned char protocol, len = 0;
-+	acpi_status status = 0;
-+	struct acpi_object_list input;
-+	union acpi_object mt_params[5];
-+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+	union acpi_object *obj;
-+	union acpi_object *pkg;
-+	char *mthd;
-+
-+	switch (size) {
-+	case I2C_SMBUS_QUICK:
-+		protocol = ACPI_SMB_PRTCL_QUICK;
-+		command = 0;
-+		if (read_write == I2C_SMBUS_WRITE) {
-+			mt_params[3].type = ACPI_TYPE_INTEGER;
-+			mt_params[3].integer.value = 0;
-+			mt_params[4].type = ACPI_TYPE_INTEGER;
-+			mt_params[4].integer.value = 0;
-+		}
-+		break;
-+
-+	case I2C_SMBUS_BYTE:
-+		protocol = ACPI_SMB_PRTCL_BYTE;
-+		if (read_write == I2C_SMBUS_WRITE) {
-+			mt_params[3].type = ACPI_TYPE_INTEGER;
-+			mt_params[3].integer.value = 0;
-+			mt_params[4].type = ACPI_TYPE_INTEGER;
-+			mt_params[4].integer.value = 0;
-+		} else {
-+			command = 0;
-+		}
-+		break;
-+
-+	case I2C_SMBUS_BYTE_DATA:
-+		protocol = ACPI_SMB_PRTCL_BYTE_DATA;
-+		if (read_write == I2C_SMBUS_WRITE) {
-+			mt_params[3].type = ACPI_TYPE_INTEGER;
-+			mt_params[3].integer.value = 1;
-+			mt_params[4].type = ACPI_TYPE_INTEGER;
-+			mt_params[4].integer.value = data->byte;
-+		}
-+		break;
-+
-+	case I2C_SMBUS_WORD_DATA:
-+		protocol = ACPI_SMB_PRTCL_WORD_DATA;
-+		if (read_write == I2C_SMBUS_WRITE) {
-+			mt_params[3].type = ACPI_TYPE_INTEGER;
-+			mt_params[3].integer.value = 2;
-+			mt_params[4].type = ACPI_TYPE_INTEGER;
-+			mt_params[4].integer.value = data->word;
-+		}
-+		break;
-+
-+	case I2C_SMBUS_BLOCK_DATA:
-+		protocol = ACPI_SMB_PRTCL_BLOCK_DATA;
-+		if (read_write == I2C_SMBUS_WRITE) {
-+			len = data->block[0];
-+			if (len == 0 || len > I2C_SMBUS_BLOCK_MAX)
-+				return -EINVAL;
-+			mt_params[3].type = ACPI_TYPE_INTEGER;
-+			mt_params[3].integer.value = len;
-+			mt_params[4].type = ACPI_TYPE_BUFFER;
-+			mt_params[4].buffer.pointer = data->block + 1;
-+		}
-+		break;
-+
-+	default:
-+		ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus CMI adapter: "
-+				  "Unsupported transaction %d\n", size));
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (read_write == I2C_SMBUS_READ) {
-+		protocol |= ACPI_SMB_PRTCL_READ;
-+		mthd = smbus_cmi->methods->mt_sbr;
-+		input.count = 3;
-+	} else {
-+		protocol |= ACPI_SMB_PRTCL_WRITE;
-+		mthd = smbus_cmi->methods->mt_sbw;
-+		input.count = 5;
-+	}
-+
-+	input.pointer = mt_params;
-+	mt_params[0].type = ACPI_TYPE_INTEGER;
-+	mt_params[0].integer.value = protocol;
-+	mt_params[1].type = ACPI_TYPE_INTEGER;
-+	mt_params[1].integer.value = addr;
-+	mt_params[2].type = ACPI_TYPE_INTEGER;
-+	mt_params[2].integer.value = command;
-+
-+	status = acpi_evaluate_object(smbus_cmi->handle, mthd, &input, &buffer);
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_WARN, "Error evaluate %s\n", mthd));
-+		return -EIO;
-+	}
-+
-+	pkg = buffer.pointer;
-+	if (pkg && pkg->type == ACPI_TYPE_PACKAGE)
-+		obj = pkg->package.elements;
-+	else {
-+		result = -EIO;
-+		goto out;
-+	}
-+	if (obj == NULL || obj->type != ACPI_TYPE_INTEGER) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus status object type \
-+						error\n"));
-+		result = -EIO;
-+		goto out;
-+	}
-+
-+	result = obj->integer.value;
-+	switch (result) {
-+	case ACPI_SMB_STATUS_OK:
-+		break;
-+	case ACPI_SMB_STATUS_BUSY:
-+		result = -EBUSY;
-+		goto out;
-+	case ACPI_SMB_STATUS_TIMEOUT:
-+		result = -ETIMEDOUT;
-+		goto out;
-+	case ACPI_SMB_STATUS_DNAK:
-+		result = -ENXIO;
-+		goto out;
-+	default:
-+		result = -EIO;
-+		goto out;
-+	}
-+
-+	if (read_write == I2C_SMBUS_WRITE)
-+		goto out;
-+
-+	obj = pkg->package.elements + 1;
-+	if (obj == NULL || obj->type != ACPI_TYPE_INTEGER) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus return package object \
-+						type error\n"));
-+		result = -EIO;
-+		goto out;
-+	}
-+
-+	len = obj->integer.value;
-+	obj = pkg->package.elements + 2;
-+	switch (size) {
-+	case I2C_SMBUS_BYTE:
-+	case I2C_SMBUS_BYTE_DATA:
-+	case I2C_SMBUS_WORD_DATA:
-+		if (obj == NULL || obj->type != ACPI_TYPE_INTEGER) {
-+			ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus return package \
-+						object type error\n"));
-+			result = -EIO;
-+			goto out;
-+		}
-+		if (len == 2)
-+			data->word = obj->integer.value & 0xffff;
-+		else
-+			data->byte = obj->integer.value & 0xff;
-+		break;
-+	case I2C_SMBUS_BLOCK_DATA:
-+		if (obj == NULL || obj->type != ACPI_TYPE_BUFFER) {
-+			ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus return package \
-+						object type error\n"));
-+			result = -EIO;
-+			goto out;
-+		}
-+		data->block[0] = len;
-+		if (data->block[0] == 0 || data->block[0] > I2C_SMBUS_BLOCK_MAX)
-+			return -EPROTO;
-+		memcpy(data->block + 1, obj->buffer.pointer, len);
-+		break;
-+	}
-+
-+out:
-+	kfree(buffer.pointer);
-+	return result;
-+}
-+
-+static u32 acpi_smb_cmi_func(struct i2c_adapter *adapter)
-+{
-+
-+	return I2C_FUNC_SMBUS_QUICK | I2C_FUNC_SMBUS_BYTE |
-+		I2C_FUNC_SMBUS_BYTE_DATA | I2C_FUNC_SMBUS_WORD_DATA |
-+		I2C_FUNC_SMBUS_BLOCK_DATA;
-+}
-+
-+static const struct i2c_algorithm acpi_smbus_cmi_algorithm = {
-+	.smbus_xfer = acpi_smb_cmi_access,
-+	.functionality = acpi_smb_cmi_func,
-+};
-+
-+static int acpi_smb_cmi_add(struct acpi_device *device)
-+{
-+	int status;
-+	struct acpi_smbus_cmi *smb_cmi;
-+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+	union acpi_object *obj;
-+
-+	if (!device)
-+		return -EINVAL;
-+
-+	smb_cmi = kzalloc(sizeof(struct acpi_smbus_cmi), GFP_KERNEL);
-+	if (!smb_cmi)
-+		return -ENOMEM;
-+
-+	smb_cmi->handle = device->handle;
-+	strcpy(acpi_device_name(device), ACPI_SMB_HC_DEVICE_NAME);
-+	strcpy(acpi_device_class(device), ACPI_SMB_HC_CLASS);
-+	device->driver_data = smb_cmi;
-+	smb_cmi->methods = (struct smbus_methods *)(&smb_mtds);
-+
-+	status = acpi_evaluate_object(smb_cmi->handle,
-+					smb_cmi->methods->mt_info,
-+					NULL, &buffer);
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_WARN, "Error obtaining _SBI\n"));
-+		goto err;
-+	}
-+
-+	obj = buffer.pointer;
-+	if (obj && obj->type == ACPI_TYPE_PACKAGE)
-+		obj = obj->package.elements;
-+	else {
-+		kfree(buffer.pointer);
-+		goto err;
-+	}
-+
-+	if (obj->type != ACPI_TYPE_INTEGER) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus CMI Version object type \
-+								error\n"));
-+	} else
-+		ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus CMI Version %0x\n",
-+					(int)obj->integer.value));
-+	kfree(buffer.pointer);
-+
-+	snprintf(smb_cmi->adapter.name, sizeof(smb_cmi->adapter.name),
-+		"SMBus CMI adapter");
-+	smb_cmi->adapter.owner = THIS_MODULE;
-+	smb_cmi->adapter.algo = &acpi_smbus_cmi_algorithm;
-+	smb_cmi->adapter.algo_data = smb_cmi;
-+	smb_cmi->adapter.class	= I2C_CLASS_HWMON | I2C_CLASS_SPD;
-+	smb_cmi->adapter.dev.parent = &device->dev;
-+
-+	if (i2c_add_adapter(&smb_cmi->adapter)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_WARN,
-+			  "SMBus CMI adapter: Failed to register adapter\n"));
-+		kfree(smb_cmi);
-+		return -EIO;
-+	}
-+
-+	printk(KERN_INFO PREFIX "%s [%s]\n",
-+	       acpi_device_name(device), acpi_device_bid(device));
-+
-+	return AE_OK;
-+
-+err:
-+	kfree(smb_cmi);
-+	device->driver_data = NULL;
-+	return -EIO;
-+}
-+
-+static int acpi_smb_cmi_remove(struct acpi_device *device, int type)
-+{
-+	struct acpi_smbus_cmi *smbus_cmi;
-+
-+	if (!device)
-+		return -EINVAL;
-+
-+	smbus_cmi = acpi_driver_data(device);
-+
-+	i2c_del_adapter(&smbus_cmi->adapter);
-+	kfree(smbus_cmi);
-+
-+	return AE_OK;
-+}
-+
-+static int __init acpi_smb_cmi_init(void)
-+{
-+	int result;
-+
-+	result = acpi_bus_register_driver(&acpi_smb_cmi_driver);
-+	if (result < 0)
-+		return -ENODEV;
-+
-+	return 0;
-+}
-+
-+static void __exit acpi_smb_cmi_exit(void)
-+{
-+	acpi_bus_unregister_driver(&acpi_smb_cmi_driver);
-+}
-+
-+module_init(acpi_smb_cmi_init);
-+module_exit(acpi_smb_cmi_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Crane Cai");
-+MODULE_DESCRIPTION("ACPI SMBus CMI driver");
--- 
-1.6.0.4
+Undropped trees: usb, staging
 
+This tree fails to build for powerpc allyesconfig (final link problem).
+
+The pci tree gained a build failure so I used the version from
+next-20090714.
+
+The dwmw2-iommu tree gained a build failure so I used the version from
+next-20090714.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 132 trees (counting Linus' and 19 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+CONFLICT (content): Merge conflict in fs/configfs/dir.c
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
+CONFLICT (content): Merge conflict in fs/reiserfs/journal.c
+CONFLICT (content): Merge conflict in fs/reiserfs/super.c
+Merging vfs/for-next
+Merging pci/linux-next
+$ git reset --hard HEAD^
+Merging refs/next/20090714/pci
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/orinoco/main.c
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/usb/serial/generic.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/pl2303.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
+$ git reset --hard HEAD^
+Merging refs/next/20090713/ttydev
+CONFLICT (content): Merge conflict in drivers/usb/serial/generic.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/pl2303.c
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+$ git reset --hard HEAD^
+Merging refs/next/20090714/dwmw2-iommu
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging edac-amd/for-next
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in drivers/oprofile/oprofile_stats.c
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/perf_counter.c
+CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq_ondemand.c
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in init/main.c
+Applying: driver-core: fix for mtd typo
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Wed__15_Jul_2009_16_18_41_+1000_wlKve1QP_sjy=LCY
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEUEARECAAYFAkpddMEACgkQjjKRsyhoI8x3fwCgvdofaAzccmrnb0+05oyM1qE8
+2kYAlizSad7BIUW54VZ8g4UgqqK3UlY=
+=vSnD
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__15_Jul_2009_16_18_41_+1000_wlKve1QP_sjy=LCY--
