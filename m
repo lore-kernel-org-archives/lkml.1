@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbZGOKtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbZGOKvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047AbZGOKtr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 06:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZGOKtq
+	id S1754064AbZGOKvA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 06:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZGOKu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 06:49:46 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43665 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753922AbZGOKtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 06:49:46 -0400
-Date: Wed, 15 Jul 2009 11:49:45 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Rientjes <rientjes@google.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] page-allocator: Ensure that processes that have been OOM
-	killed exit the page allocator (resend)
-Message-ID: <20090715104944.GC9267@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 15 Jul 2009 06:50:59 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:54593 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753981AbZGOKu7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 06:50:59 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org, Haojian Zhuang <haojian.zhuang@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] regulator: Fix support for deviceless supply mappings
+Date: Wed, 15 Jul 2009 11:50:57 +0100
+Message-Id: <1247655057-14436-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Processes that have been OOM killed set the thread flag TIF_MEMDIE. A process
-such as this is expected to exit the page allocator but potentially, it
-loops forever. This patch checks TIF_MEMDIE when deciding whether to loop
-again in the page allocator. If set, and __GFP_NOFAIL is not specified
-then the loop will exit on the assumption it's no longer important for the
-process to make forward progress. Note that a process that has just been
-OOM-killed will still loop at least one more time retrying the allocation
-before the thread flag is checked.
+The patch to add support for looking up consumers by device name
+had the side effect of causing us to require a device which is
+at best premature since at least cpufreq still operates outside
+the device model. Remove that requirement.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- mm/page_alloc.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+Reported-by: Haojian Zhuang <haojian.zhuang@gmail.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/core.c |   18 +++++++++++++-----
+ 1 files changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index f8902e7..5c98d02 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1547,6 +1547,14 @@ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
- 	if (gfp_mask & __GFP_NORETRY)
- 		return 0;
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index eed62ad..04b1a7c 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -872,6 +872,7 @@ static int set_consumer_device_supply(struct regulator_dev *rdev,
+ 	const char *supply)
+ {
+ 	struct regulator_map *node;
++	int has_dev;
  
-+	/* Do not loop if OOM-killed unless __GFP_NOFAIL is specified */
-+	if (test_thread_flag(TIF_MEMDIE)) {
-+		if (gfp_mask & __GFP_NOFAIL)
-+			WARN(1, "Potential infinite loop with __GFP_NOFAIL");
-+		else
-+			return 0;
-+	}
+ 	if (consumer_dev && consumer_dev_name)
+ 		return -EINVAL;
+@@ -882,6 +883,11 @@ static int set_consumer_device_supply(struct regulator_dev *rdev,
+ 	if (supply == NULL)
+ 		return -EINVAL;
+ 
++	if (consumer_dev_name != NULL)
++		has_dev = 1;
++	else
++		has_dev = 0;
 +
- 	/*
- 	 * In this implementation, order <= PAGE_ALLOC_COSTLY_ORDER
- 	 * means __GFP_NOFAIL, but that may not be true in other
+ 	list_for_each_entry(node, &regulator_map_list, list) {
+ 		if (consumer_dev_name != node->dev_name)
+ 			continue;
+@@ -896,17 +902,19 @@ static int set_consumer_device_supply(struct regulator_dev *rdev,
+ 		return -EBUSY;
+ 	}
+ 
+-	node = kmalloc(sizeof(struct regulator_map), GFP_KERNEL);
++	node = kzalloc(sizeof(struct regulator_map), GFP_KERNEL);
+ 	if (node == NULL)
+ 		return -ENOMEM;
+ 
+ 	node->regulator = rdev;
+-	node->dev_name = kstrdup(consumer_dev_name, GFP_KERNEL);
+ 	node->supply = supply;
+ 
+-	if (node->dev_name == NULL) {
+-		kfree(node);
+-		return -ENOMEM;
++	if (has_dev) {
++		node->dev_name = kstrdup(consumer_dev_name, GFP_KERNEL);
++		if (node->dev_name == NULL) {
++			kfree(node);
++			return -ENOMEM;
++		}
+ 	}
+ 
+ 	list_add(&node->list, &regulator_map_list);
+-- 
+1.6.3.3
+
