@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbZGORxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbZGORzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755921AbZGORxR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 13:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbZGORxR
+	id S1755950AbZGORzV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 13:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbZGORzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 13:53:17 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:62574 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755229AbZGORxQ convert rfc822-to-8bit (ORCPT
+	Wed, 15 Jul 2009 13:55:20 -0400
+Received: from smtp105.sbc.mail.gq1.yahoo.com ([67.195.14.108]:32376 "HELO
+	smtp105.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755843AbZGORzU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 13:53:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Af5Kp1x/NWpeEHJM7/j2qnGK0P4YyeMftvTnWnyiMwrfWNdLzOYdQXpkeYiQseV+Ct
-         H0ERGB6tHOsSFwo3PT0BZkHYzWVmP1UE8FK+gQgzrB/yaZjuWTnwAttYFN1DYG6TuDCK
-         CCN3z2MOt66Bnlpoc1ylEu8rfWi0FXEt75zMI=
+	Wed, 15 Jul 2009 13:55:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=gBTgd14InGr/k59eEkJhxkEPNHbZ5nBVoEkPV920cgRInpKQR4boJc04BQnM+/+Y7oBchjxOJBNYLA4wQRmkTC1snIInVzitKA8RgKOwvPnYxyV7AwwhE3798/qc26H7aaD77mL4Q2ss/rTdpIXizo6U4z9EEESAFS6UM5DKzWY=  ;
+X-YMail-OSG: yvGlVgYVM1kfkLnFvEx0IjP2mk_6fYWtoEPY8oJDWiC7dZ0YIjDwCJSQkO0NbsSRqpDwY35vcvVXYAL79cdUCVBJ1Nj957yGyHLKo4qSJLrv8btOxeUn7r91vymLuNW0Ts10tsCIDbhOz1Anyieq82uRC9l8Tw96NVUEBkwUCvSNFQm75GbvKB9UC3BC3XoyxFgtAFxscF0afLntMFCSSLFBSVHG6DJuyYPD97x8QLn6AhAkQI79pXTG6pIEDouR_ht9F6OyFW1X4j0-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Subject: Re: Kernel Oops when trying to suspend with ubifs mounted on block2mtd mtd device on 2.3.31-rc2
+Date: Wed, 15 Jul 2009 10:55:17 -0700
+User-Agent: KMail/1.9.10
+Cc: Tobias Diedrich <ranma@tdiedrich.de>, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, David.Woodhouse@intel.com
+References: <20090715122051.GA1439@yamamaya.is-a-geek.org> <4A5DD233.7090702@nokia.com>
+In-Reply-To: <4A5DD233.7090702@nokia.com>
 MIME-Version: 1.0
-In-Reply-To: <4A5D82EA.1070002@turknet.net.tr>
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
-	 <dWkuWjWDsSB.A.8EE.Q0oUKB@chimera> <4A5D82EA.1070002@turknet.net.tr>
-Date: Wed, 15 Jul 2009 19:53:14 +0200
-Message-ID: <8db1092f0907151053v5731f409ydd81465d20c929f8@mail.gmail.com>
-Subject: Re: [Bug #13727] Cannot Recognize Empty DVD Media
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907151055.17959.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/15 Tarkan Erimer <tarkan.erimer@turknet.net.tr>:
-> On 07/07/2009 03:01 AM, Rafael J. Wysocki wrote:
->>
->> This message has been generated automatically as a part of a report
->> of recent regressions.
->>
->> The following bug entry is on the current list of known regressions
->> from 2.6.30.  Please verify if it still should be listed and let me know
->> (either way).
->>
->>
->> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13727
->> Subject         : Cannot Recognize Empty DVD Media
->> Submitter       : Tarkan Erimer<tarkan.erimer@turknet.net.tr>
->> Date            : 2009-07-02 16:23 (5 days old)
->> References      : http://lkml.org/lkml/2009/7/2/178
->>
->>
->>
->
-> I confirm that, as of Linux-2.6.31-rc3, it's fixed.
+On Wednesday 15 July 2009, Adrian Hunter wrote:
+> Looks like it might be related to MTD driver model updates.
 
-I also confirm, that -rc3 works OK.
+Not the sysfs support ... more likely the patch adding cls_suspend()
+support, 15bce40cb3133bcc07d548013df97e4653d363c1, is goofed.  Maybe
+it's invoking suspend on the wrong device node...
 
-Thanks
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+
+
