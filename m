@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbZGOJkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZGOJmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753716AbZGOJkO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 05:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbZGOJkO
+	id S1753730AbZGOJmP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 05:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZGOJmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 05:40:14 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:45511 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753219AbZGOJkM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 05:40:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SXbAPC5bnLB4Tf2fSFY5nhQ+M9oc1lRVbRZP/Ywo+P/ODXQp59QfplBPF8yuRsazuZ
-         xSEjlyjtgBEUTYQQyaQfk0GqlMNlQoQ6lN5ATIJzIC0zehRvSKG1hH3WfLkTllK2wZ5p
-         fr5ybz6WmKhqFkFmghzjOWR1zJljPBa9nNkUA=
+	Wed, 15 Jul 2009 05:42:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33586 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753219AbZGOJmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 05:42:13 -0400
+Message-ID: <4A5DA461.5010401@kernel.org>
+Date: Wed, 15 Jul 2009 18:41:53 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <1247587564-27737-3-git-send-email-mjg@redhat.com>
-References: <1247587564-27737-1-git-send-email-mjg@redhat.com>
-	 <1247587564-27737-2-git-send-email-mjg@redhat.com>
-	 <1247587564-27737-3-git-send-email-mjg@redhat.com>
-Date: Wed, 15 Jul 2009 11:40:08 +0200
-Message-ID: <71cd59b00907150240q22e8694el281cf862e71e1b66@mail.gmail.com>
-Subject: Re: [PATCH 3/3] eeepc-laptop: Update the backlight state when we 
-	change brightness
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       rpurdie@rpsys.net, lenb@kernel.org, rui.zhang@intel.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Niel Lambrechts <niel.lambrechts@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH 3/4] block: implement mixed merge of different failfast
+ requests
+References: <1246610898-22350-1-git-send-email-tj@kernel.org> <1246610898-22350-4-git-send-email-tj@kernel.org> <4A507203.8020001@panasas.com> <4A553E36.8060006@kernel.org> <4A55B5A9.2060705@panasas.com>
+In-Reply-To: <4A55B5A9.2060705@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 15 Jul 2009 09:42:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 6:06 PM, Matthew Garrett<mjg@redhat.com> wrote:
-> Trigger a status update when the user hits a brightness key, allowing
-> userspace to present appropriate UI.
->
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> ---
->  drivers/platform/x86/eeepc-laptop.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
-> index ec560f1..fde86b3 100644
-> --- a/drivers/platform/x86/eeepc-laptop.c
-> +++ b/drivers/platform/x86/eeepc-laptop.c
-> @@ -641,7 +641,7 @@ static int notify_brn(void)
->        struct backlight_device *bd = eeepc_backlight_device;
->        if (bd) {
->                int old = bd->props.brightness;
-> -               bd->props.brightness = read_brightness(bd);
-> +               backlight_force_update(bd, BACKLIGHT_UPDATE_HOTKEY);
->                return old;
->        }
->        return -1;
-> --
-> 1.6.2.5
->
->
+Boaz Harrosh wrote:
+> On 07/09/2009 03:47 AM, Tejun Heo wrote:
+>> Hello,
+>>
+>> Boaz Harrosh wrote:
+>>>> @@ -1165,6 +1165,7 @@ static int __make_request(struct request_queue *q, struct bio *bio)
+>>>>  	const unsigned short prio = bio_prio(bio);
+>>>>  	const int sync = bio_sync(bio);
+>>>>  	const int unplug = bio_unplug(bio);
+>>>> +	const unsigned int ff = bio->bi_rw & REQ_FAILFAST_MASK;
+>>> Perhaps a bio_fail_fast(bio)
+>>> and also an blk_failfast(rq).
+>> Me not being a big fan of those simple accessors, I want to avoid
+>> adding those especially the use of bio ones are mostly confined to
+>> block layer proper.
+>>
+> 
+> OK but at least take care of blk_noretry_request(), at the minimum
+> kill it, and use req->cmd_flags & REQ_FAILFAST_MASK everywhere.
 
-This could be added to asus-laptop too. It doesn't handle brightness
-changes right now (only backlight on/off) but it works the same way,
-so it won't be hard to add. I'll do that as soon as your main patch is
-merged.
-Thanks,
+Hmmm... looking at it now, looks like we can kill them all actually.
+There are a lot of inconsistencies in this space.
 
+* BIO_RW_* are bit positions and accessed with liberal combination of
+  bio_rw_flagged() and manual bitops.
+
+* QUEUE_FLAG_* are bit positions and has rather large collection of
+  accessors.  The accessors have locking asserts.
+
+* __REQ_* are bit positions but have counter part REQ_* bit masks
+  defined and there are whole bunch of simple specific accessors.
+
+I think all these can just be converted to bit masks (and I'll be
+happy with that) but whether that would be desirable is a different
+matter.  I think it would be best to hear what Jens' plan about flag
+cleanup is (who BTW is away till the end of the next week) before
+proceeding.
+
+Jens, can you please let us know what your plan is?
+
+Thanks.
 
 -- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+tejun
