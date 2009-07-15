@@ -1,149 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZGOWFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbZGOWGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614AbZGOWFu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 18:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZGOWFu
+	id S1755235AbZGOWGr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 18:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbZGOWGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 18:05:50 -0400
-Received: from cmpxchg.org ([85.214.51.133]:60352 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752952AbZGOWFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 18:05:49 -0400
-Date: Thu, 16 Jul 2009 00:04:45 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       kosaki.motohiro@jp.fujitsu.com,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] mm: Warn once when a page is freed with PG_mlocked set V2
-Message-ID: <20090715220445.GA1823@cmpxchg.org>
-References: <20090715125822.GB29749@csn.ul.ie> <alpine.DEB.1.10.0907151027410.23643@gentwo.org>
+	Wed, 15 Jul 2009 18:06:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50405 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754265AbZGOWGp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 18:06:45 -0400
+Date: Wed, 15 Jul 2009 15:06:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       mike.miller@hp.com, jens.axboe@oracle.com
+Subject: Re: [PATCH 2/3] cciss: use only one scan thread
+Message-Id: <20090715150637.6f171759.akpm@linux-foundation.org>
+In-Reply-To: <20090714220250.22282.69385.stgit@bob.kio>
+References: <20090714220239.22282.44414.stgit@bob.kio>
+	<20090714220250.22282.69385.stgit@bob.kio>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0907151027410.23643@gentwo.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Christoph,
+On Tue, 14 Jul 2009 16:02:50 -0600
+Andrew Patterson <andrew.patterson@hp.com> wrote:
 
-On Wed, Jul 15, 2009 at 10:31:54AM -0400, Christoph Lameter wrote:
-> On Wed, 15 Jul 2009, Mel Gorman wrote:
+> cciss: use only one scan thread
 > 
-> > -static inline int free_pages_check(struct page *page)
-> > +static inline int free_pages_check(struct page *page, int wasMlocked)
-> >  {
-> > +	WARN_ONCE(wasMlocked, KERN_WARNING
-> > +		"Page flag mlocked set for process %s at pfn:%05lx\n"
-> > +		"page:%p flags:0x%lX\n",
-> > +		current->comm, page_to_pfn(page),
-> > +		page, page->flags|__PG_MLOCKED);
-> > +
-> >  	if (unlikely(page_mapcount(page) |
+> Replace the use of one scan kthread per controller with one per driver.
+> Use a queue to hold a list of controllers that need to be rescanned with
+> routines to add and remove controllers from the queue.
+> Fix locking and completion handling to prevent a hang during rmmod.
 > 
-> There is already a free_page_mlocked() that is only called if the mlock
-> bit is set. Move it into there to avoid having to run two checks in the
-> hot codee path?
-> 
-> Also __free_pages_ok() now has a TestClearMlocked in the hot code path.
-> Would it be possible to get rid of the unconditional use of an atomic
-> operation? Just check the bit and clear it later in free_page_mlocked()?
+>
+> ...
+>
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -39,6 +39,7 @@
+>  #include <linux/hdreg.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/compat.h>
+> +#include <linux/mutex.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/io.h>
+>  
+> @@ -155,6 +156,10 @@ static struct board_type products[] = {
+>  
+>  static ctlr_info_t *hba[MAX_CTLR];
+>  
+> +static struct task_struct *cciss_scan_thread;
+> +static struct mutex scan_mutex;
+> +static struct list_head scan_q;
 
-That was initially done, but free_pages_check() checks for that flag
-and did bad_page() on those mlocked ones.  Now, one idea was to not
-check the mlocked flag at all in free_pages_check() as we handle it
-differently anyway.  But I think we might still want to check for it
-in tail-pages of higher order blocks.
+Both of the above can be initialised at compile-time.  This is a bit
+neater and prevents reviewers from having to run around checking that
+they got initialised early enough.
 
-And if you move that warning after free_pages_check(), the interesting
-bits for the warning have been wiped already.
+>  static void do_cciss_request(struct request_queue *q);
+>  static irqreturn_t do_cciss_intr(int irq, void *dev_id);
+>  static int cciss_open(struct block_device *bdev, fmode_t mode);
+> @@ -189,6 +194,8 @@ static int sendcmd_withirq_core(ctlr_info_t *h, CommandList_struct *c,
+>  static int process_sendcmd_error(ctlr_info_t *h, CommandList_struct *c);
+>  
+>  static void fail_all_cmds(unsigned long ctlr);
+> +static int add_to_scan_list(struct ctlr_info *h);
+> +static void remove_from_scan_list(struct ctlr_info *h);
 
-But we can get rid of the locked test-and-clear despite all the other
-issues, patch below.
+These forward declarations are unneeded.
 
-	Hannes
+>  static int scan_thread(void *data);
+>  static int check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c);
+>  
+> @@ -3232,20 +3239,121 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
+>  	return IRQ_HANDLED;
+>  }
+>  
+> -static int scan_thread(void *data)
+> +/**
+> + * add_to_scan_list() - add controller to rescan queue
+> + * @h:		      Pointer to the controller.
+> + *
+> + * Adds the controller to the rescan queue if not already on the queue.
+> + *
+> + * returns 1 if added to the queue, 0 if skipped (could be on the
+> + * queue already, or the controller could be initializing or shutting
+> + * down).
+> + **/
+> +static int add_to_scan_list(struct ctlr_info *h)
+>  {
+> -	ctlr_info_t *h = data;
+> -	int rc;
+> -	DECLARE_COMPLETION_ONSTACK(wait);
+> -	h->rescan_wait = &wait;
+> +	struct ctlr_info *test_h;
+> +	int found = 0;
+> +	int ret = 0;
+> +
+> +	if (h->busy_initializing)
+> +		return 0;
 
->From eee677ddea61b1331a3bd8e402a0d02437fe872a Mon Sep 17 00:00:00 2001
-From: Johannes Weiner <hannes@cmpxchg.org>
-Date: Wed, 15 Jul 2009 23:40:28 +0200
-Subject: [patch] mm: non-atomic test-clear of PG_mlocked on free
+This looks pretty random and racy.
 
-By the time PG_mlocked is cleared in the page freeing path, nobody
-else is looking at our page->flags anymore.
+For example, what stops busy_initializing from becoming true one
+picosecond after the test?
 
-It is thus safe to make the test-and-clear non-atomic and thereby
-removing an unnecessary and expensive operation from a hotpath.
+> +	if (!mutex_trylock(&h->busy_shutting_down))
+> +		return 0;
+>  
+> -	for (;;) {
+> -		rc = wait_for_completion_interruptible(&wait);
+> -		if (kthread_should_stop())
+> +	mutex_lock(&scan_mutex);
+> +	list_for_each_entry(test_h, &scan_q, scan_list) {
+> +		if (test_h == h) {
+> +			found = 1;
+>  			break;
+> -		if (!rc)
+> +		}
+> +	}
+> +	if (!found && !h->busy_scanning) {
+> +		INIT_COMPLETION(h->scan_wait);
+> +		list_add_tail(&h->scan_list, &scan_q);
+> +		ret = 1;
+> +	}
+> +	mutex_unlock(&scan_mutex);
+> +	mutex_unlock(&h->busy_shutting_down);
+> +
+> +	return ret;
+> +}
 
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
----
- include/linux/page-flags.h |   12 +++++++++---
- mm/page_alloc.c            |    4 ++--
- 2 files changed, 11 insertions(+), 5 deletions(-)
+We already did init_completion(h->scan_wait) at startup time?  Doing
+the INIT_COMPLETION() here looks unusual and is hopefully unnecessary.
 
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index e2e5ce5..10e6011 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -158,6 +158,9 @@ static inline int TestSetPage##uname(struct page *page)			\
- static inline int TestClearPage##uname(struct page *page)		\
- 		{ return test_and_clear_bit(PG_##lname, &page->flags); }
- 
-+#define __TESTCLEARFLAG(uname, lname)					\
-+static inline int __TestClearPage##uname(struct page *page)		\
-+		{ return __test_and_clear_bit(PG_##lname, &page->flags); }
- 
- #define PAGEFLAG(uname, lname) TESTPAGEFLAG(uname, lname)		\
- 	SETPAGEFLAG(uname, lname) CLEARPAGEFLAG(uname, lname)
-@@ -184,6 +187,9 @@ static inline void __ClearPage##uname(struct page *page) {  }
- #define TESTCLEARFLAG_FALSE(uname)					\
- static inline int TestClearPage##uname(struct page *page) { return 0; }
- 
-+#define __TESTCLEARFLAG_FALSE(uname)					\
-+static inline int __TestClearPage##uname(struct page *page) { return 0; }
-+
- struct page;	/* forward declaration */
- 
- TESTPAGEFLAG(Locked, locked) TESTSETFLAG(Locked, locked)
-@@ -250,11 +256,11 @@ PAGEFLAG(Unevictable, unevictable) __CLEARPAGEFLAG(Unevictable, unevictable)
- #ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
- #define MLOCK_PAGES 1
- PAGEFLAG(Mlocked, mlocked) __CLEARPAGEFLAG(Mlocked, mlocked)
--	TESTSCFLAG(Mlocked, mlocked)
-+	TESTSCFLAG(Mlocked, mlocked) __TESTCLEARFLAG(Mlocked, mlocked)
- #else
- #define MLOCK_PAGES 0
--PAGEFLAG_FALSE(Mlocked)
--	SETPAGEFLAG_NOOP(Mlocked) TESTCLEARFLAG_FALSE(Mlocked)
-+PAGEFLAG_FALSE(Mlocked) SETPAGEFLAG_NOOP(Mlocked)
-+	TESTCLEARFLAG_FALSE(Mlocked) __TESTCLEARFLAG_FALSE(Mlocked)
- #endif
- 
- #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index caa9268..b0c8758 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -557,7 +557,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
- 	unsigned long flags;
- 	int i;
- 	int bad = 0;
--	int wasMlocked = TestClearPageMlocked(page);
-+	int wasMlocked = __TestClearPageMlocked(page);
- 
- 	kmemcheck_free_shadow(page, order);
- 
-@@ -1021,7 +1021,7 @@ static void free_hot_cold_page(struct page *page, int cold)
- 	struct zone *zone = page_zone(page);
- 	struct per_cpu_pages *pcp;
- 	unsigned long flags;
--	int wasMlocked = TestClearPageMlocked(page);
-+	int wasMlocked = __TestClearPageMlocked(page);
- 
- 	kmemcheck_free_shadow(page, 0);
- 
--- 
-1.6.3
+> +/**
+> + * scan_thread() - kernel thread used to rescan controllers
+> + * @data:	 Ignored.
+> + *
+> + * A kernel thread used scan for drive topology changes on
+> + * controllers. The thread processes only one controller at a time
+> + * using a queue.  Controllers are added to the queue using
+> + * add_to_scan_list() and removed from the queue either after done
+> + * processing or using remove_from_scan_list().
+> + *
+> + * returns 0.
+> + **/
+> +static int scan_thread(void *data)
+> +{
+> +	struct ctlr_info *h;
+> +
+> +	set_current_state(TASK_INTERRUPTIBLE);
+> +	while (!kthread_should_stop()) {
+> +		mutex_lock(&scan_mutex);
+> +		if (list_empty(&scan_q)) {
+> +			h = NULL;
+> +		} else {
+> +			h = list_entry(scan_q.next,
+> +				       struct ctlr_info,
+> +				       scan_list);
+> +			list_del(&h->scan_list);
+> +			h->busy_scanning = 1;
+> +		}
+> +		mutex_unlock(&scan_mutex);
+> +
+> +		if (h) {
+> +			__set_current_state(TASK_RUNNING);
+>  			rebuild_lun_table(h, 0);
+> +			complete_all(&h->scan_wait);
+> +			mutex_lock(&scan_mutex);
+> +			h->busy_scanning = 0;
+> +			mutex_unlock(&scan_mutex);
+> +			set_current_state(TASK_INTERRUPTIBLE);
+> +		} else {
+> +			schedule();
+> +			set_current_state(TASK_INTERRUPTIBLE);
+> +			continue;
+> +		}
+>  	}
+> +
+> +	__set_current_state(TASK_RUNNING);
+>  	return 0;
+>  }
+
+This code is somewhat wrong.  Look:
+
+	set_current_state(TASK_INTERRUPTIBLE);
+	...
+		mutex_lock(&scan_mutex);
+
+now, we don't know what state the task is in.  If the mutex_lock()
+slept the we're in state TASK_RUNNING.  If the mutex_lock() didn't
+sleep then we're in state <mumble>.  Where
+<mumble>==TASK_INTERRUPTIBLE, but that's an implementation fluke.
+
+So I'd say that some rethinking/restructuring is needed here.
+
 
