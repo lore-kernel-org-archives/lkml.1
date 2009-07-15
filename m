@@ -1,223 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751947AbZGOVVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbZGOVVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751947AbZGOVVL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 17:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZGOVVI
+	id S1752801AbZGOVVZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 17:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZGOVVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 17:21:08 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:42879 "EHLO
+	Wed, 15 Jul 2009 17:21:21 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:42911 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751537AbZGOVVG (ORCPT
+	with ESMTP id S1752046AbZGOVVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 17:21:06 -0400
+	Wed, 15 Jul 2009 17:21:11 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 01/20] ceph: documentation
-Date: Wed, 15 Jul 2009 14:24:31 -0700
-Message-Id: <1247693090-27796-2-git-send-email-sage@newdream.net>
+Subject: [PATCH 16/20] ceph: nfs re-export support
+Date: Wed, 15 Jul 2009 14:24:46 -0700
+Message-Id: <1247693090-27796-17-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1247693090-27796-1-git-send-email-sage@newdream.net>
+In-Reply-To: <1247693090-27796-16-git-send-email-sage@newdream.net>
 References: <1247693090-27796-1-git-send-email-sage@newdream.net>
+ <1247693090-27796-2-git-send-email-sage@newdream.net>
+ <1247693090-27796-3-git-send-email-sage@newdream.net>
+ <1247693090-27796-4-git-send-email-sage@newdream.net>
+ <1247693090-27796-5-git-send-email-sage@newdream.net>
+ <1247693090-27796-6-git-send-email-sage@newdream.net>
+ <1247693090-27796-7-git-send-email-sage@newdream.net>
+ <1247693090-27796-8-git-send-email-sage@newdream.net>
+ <1247693090-27796-9-git-send-email-sage@newdream.net>
+ <1247693090-27796-10-git-send-email-sage@newdream.net>
+ <1247693090-27796-11-git-send-email-sage@newdream.net>
+ <1247693090-27796-12-git-send-email-sage@newdream.net>
+ <1247693090-27796-13-git-send-email-sage@newdream.net>
+ <1247693090-27796-14-git-send-email-sage@newdream.net>
+ <1247693090-27796-15-git-send-email-sage@newdream.net>
+ <1247693090-27796-16-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mount options, syntax.
+Basic NFS re-export support is included.  This mostly works.  However,
+Ceph's MDS design precludes the ability to generate a (small)
+filehandle that will be valid forever, so this is of limited utility.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- Documentation/filesystems/ceph.txt |  181 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 181 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/filesystems/ceph.txt
+ fs/ceph/export.c |  155 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 155 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/export.c
 
-diff --git a/Documentation/filesystems/ceph.txt b/Documentation/filesystems/ceph.txt
+diff --git a/fs/ceph/export.c b/fs/ceph/export.c
 new file mode 100644
-index 0000000..26b014e
+index 0000000..6ec1629
 --- /dev/null
-+++ b/Documentation/filesystems/ceph.txt
-@@ -0,0 +1,181 @@
-+Ceph Distributed File System
-+============================
++++ b/fs/ceph/export.c
+@@ -0,0 +1,155 @@
++#include <linux/exportfs.h>
++#include <asm/unaligned.h>
 +
-+Ceph is a distributed network file system designed to provide good
-+performance, reliability, and scalability.
++#include "super.h"
++#include "ceph_debug.h"
 +
-+Basic features include:
++int ceph_debug_export __read_mostly = -1;
++#define DOUT_MASK DOUT_MASK_EXPORT
++#define DOUT_VAR ceph_debug_export
 +
-+ * POSIX semantics
-+ * Seamless scaling from 1 to many thousands of nodes
-+ * High availability and reliability.  No single points of failure.
-+ * N-way replication of data across storage nodes
-+ * Fast recovery from node failures
-+ * Automatic rebalancing of data on node addition/removal
-+ * Easy deployment: most FS components are userspace daemons
-+
-+Also,
-+ * Flexible snapshots (on any directory)
-+ * Recursive accounting (nested files, directories, bytes)
-+
-+In contrast to cluster filesystems like GFS, OCFS2, and GPFS that rely
-+on symmetric access by all clients to shared block devices, Ceph
-+separates data and metadata management into independent server
-+clusters, similar to Lustre.  Unlike Lustre, however, metadata and
-+storage nodes run entirely as user space daemons.  Storage nodes
-+utilize btrfs to store data objects, leveraging its advanced features
-+(checksumming, metadata replication, etc.).  File data is striped
-+across storage nodes in large chunks to distribute workload and
-+facilitate high throughputs.  When storage nodes fail, data is
-+re-replicated in a distributed fashion by the storage nodes themselves
-+(with some minimal coordination from a cluster monitor), making the
-+system extremely efficient and scalable.
-+
-+Metadata servers effectively form a large, consistent, distributed
-+in-memory cache above the file namespace that is extremely scalable,
-+dynamically redistributes metadata in response to workload changes,
-+and can tolerate arbitrary (well, non-Byzantine) node failures.  The
-+metadata server takes a somewhat unconventional approach to metadata
-+storage to significantly improve performance for common workloads.  In
-+particular, inodes with only a single link are embedded in
-+directories, allowing entire directories of dentries and inodes to be
-+loaded into its cache with a single I/O operation.  The contents of
-+extremely large directories can be fragmented and managed by
-+independent metadata servers, allowing scalable concurrent access.
-+
-+The system offers automatic data rebalancing/migration when scaling
-+from a small cluster of just a few nodes to many hundreds, without
-+requiring an administrator carve the data set into static volumes or
-+go through the tedious process of migrating data between servers.
-+When the file system approaches full, new nodes can be easily added
-+and things will "just work."
-+
-+Ceph includes flexible snapshot mechanism that allows a user to create
-+a snapshot on any subdirectory (and its nested contents) in the
-+system.  Snapshot creation and deletion are as simple as 'mkdir
-+.snap/foo' and 'rmdir .snap/foo'.
-+
-+Ceph also provides some recursive accounting on directories for nested
-+files and bytes.  That is, a 'getfattr -d foo' on any directory in the
-+system will reveal the total number of nested regular files and
-+subdirectories, and a summation of all nested file sizes.  This makes
-+the identification of large disk space consumers relatively quick, as
-+no 'du' or similar recursive scan of the file system is required.
++/*
++ * fh is N tuples of
++ *  <ino, parent's d_name.hash>
++ *
++ * This is only a semi-reliable strategy.  The fundamental issue is
++ * that ceph doesn't not have a way to locate an arbitrary inode by
++ * ino.  Keeping a few parents in the handle increases the probability
++ * that we'll find it in one of the MDS caches, but it is by no means
++ * a guarantee.
++ *
++ * Also, the FINDINODE request is currently directed at a single MDS.
++ * It should probably try all MDS's before giving up.  For a single MDS
++ * system that isn't a problem.
++ *
++ * In the meantime, this works reasonably well for basic usage.
++ */
 +
 +
-+Mount Syntax
-+============
++struct ceph_export_item {
++	struct ceph_vino ino;
++	struct ceph_vino parent_ino;
++	u32 parent_name_hash;
++} __attribute__ ((packed));
 +
-+The basic mount syntax is:
++#define IPSZ ((sizeof(struct ceph_export_item) + sizeof(u32) + 1) / sizeof(u32))
 +
-+ # mount -t ceph monip[:port][,monip2[:port]...]:/[subdir] mnt
++static int ceph_encode_fh(struct dentry *dentry, u32 *rawfh, int *max_len,
++		   int connectable)
++{
++	int type = 1;
++	struct ceph_export_item *fh =
++		(struct ceph_export_item *)rawfh;
++	int max = *max_len / IPSZ;
++	int len;
++	struct dentry *d_parent;
 +
-+You only need to specify a single monitor, as the client will get the
-+full list when it connects.  (However, if the monitor you specify
-+happens to be down, the mount won't succeed.)  The port can be left
-+off if the monitor is using the default.  So if the monitor is at
-+1.2.3.4,
++	dout(10, "encode_fh %p max_len %d u32s (%d export items)%s\n", dentry,
++	     *max_len, max, connectable ? " connectable" : "");
 +
-+ # mount -t ceph 1.2.3.4:/ /mnt/ceph
++	if (max < 1 || (connectable && max < 2))
++		return -ENOSPC;
 +
-+is sufficient.  If /sbin/mount.ceph is installed, a hostname can be
-+used instead of an IP address.
++	for (len = 0; len < max; len++) {
++		d_parent = dentry->d_parent;
++		fh[len].ino = ceph_vino(dentry->d_inode);
++		fh[len].parent_ino = ceph_vino(d_parent->d_inode);
++		fh[len].parent_name_hash = dentry->d_parent->d_name.hash;
 +
++		if (IS_ROOT(dentry))
++			break;
 +
++		dentry = dentry->d_parent;
 +
-+Mount Options
-+=============
++		if (!dentry)
++			break;
++	}
 +
-+  ip=A.B.C.D[:N]
-+  port=N
-+	Specify the IP and/or port the client should bind to locally.
-+	There is normally not much reason to do this.  If the IP is not
-+	specified, the client's IP address is determined by looking at the
-+	address it's connection to the monitor originates from.
++	if (len > 1)
++		type = 2;
 +
-+  wsize=X
-+	Specify the maximum write size in bytes.  By default there is no
-+	maximu.  Ceph will normally size writes based on the file stripe
-+	size.
++	*max_len = len * IPSZ;
++	return type;
++}
 +
-+  rsize=X
-+	Specify the maximum readahead.
++static struct dentry *__fh_to_dentry(struct super_block *sb,
++			      struct ceph_export_item *fh, int len)
++{
++	struct ceph_mds_client *mdsc = &ceph_client(sb)->mdsc;
++	struct inode *inode;
++	struct dentry *dentry;
++	int err;
++#define BUF_SIZE 16
++	char path2[BUF_SIZE];
++	u32 hash = fh->parent_name_hash;
 +
-+  mount_timeout=X
-+	Specify the timeout value for mount (in seconds), in the case
-+	of a non-responsive Ceph file system.  The default is 30
-+	seconds.
++	inode = ceph_find_inode(sb, fh->ino);
++	if (!inode) {
++		struct ceph_mds_request *req;
++		derr(10, "fh_to_dentry %llx.%x -- no inode\n", fh->ino.ino,
++		     hash);
++		req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LOOKUPHASH,
++					       USE_ANY_MDS);
++		if (IS_ERR(req))
++			return ERR_PTR(PTR_ERR(req));
 +
-+  rbytes
-+	When stat() is called on a directory, set st_size to 'rbytes',
-+	the summation of file sizes over all files nested beneath that
-+	directory.  This is the default.
++		req->r_ino1 = fh->ino;
++		snprintf(path2, BUF_SIZE, "%d", hash);
++		req->r_ino2 = fh->parent_ino;
++		req->r_num_caps = 1;
++		err = ceph_mdsc_do_request(mdsc, NULL, req);
++		ceph_mdsc_put_request(req);
++		inode = ceph_find_inode(sb, fh->ino);
++		if (!inode)
++			return ERR_PTR(err ? err : -ESTALE);
++	}
 +
-+  norbytes
-+	When stat() is called on a directory, set st_size to the
-+	number of entries in that directory.
++	dentry = d_obtain_alias(inode);
 +
-+  nocrc
-+	Disable CRC32C calculation for data writes.  If set, the OSD
-+	must rely on TCP's error correction to detect data corruption
-+	in the data payload.
++	if (!dentry) {
++		derr(10, "fh_to_dentry %llx.%x -- inode %p but ENOMEM\n",
++		     fh->ino.ino,
++		     hash, inode);
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
++	}
++	err = ceph_init_dentry(dentry);
 +
-+  noasyncreaddir
-+	Disable client's use its local cache to satisfy	readdir
-+	requests.  (This does not change correctness; the client uses
-+	cached metadata only when a lease or capability ensures it is
-+	valid.)
++	if (err < 0) {
++		iput(inode);
++		return ERR_PTR(err);
++	}
++	dout(10, "fh_to_dentry %llx.%x -- inode %p dentry %p\n", fh->ino.ino,
++	     hash, inode, dentry);
++	return dentry;
 +
++}
 +
-+Debugging options (these are also changeable via debugfs):
++static struct dentry *ceph_fh_to_dentry(struct super_block *sb, struct fid *fid,
++				 int fh_len, int fh_type)
++{
++	u32 *fh = fid->raw;
++	return __fh_to_dentry(sb, (struct ceph_export_item *)fh, fh_len/IPSZ);
++}
 +
-+  debug=N
-+	Specify the level of debug output for the Ceph client.  Larger
-+	values mean more output, and range from 0 to 50.  The default
-+	is 1 (high-level informational messages only).
++static struct dentry *ceph_fh_to_parent(struct super_block *sb, struct fid *fid,
++				 int fh_len, int fh_type)
++{
++	u32 *fh = fid->raw;
++	u64 ino = get_unaligned((u64 *)fh);
++	u32 hash = fh[2];
 +
-+  debug_console=N
-+	If non-zero, debug messages will be printk'ed with KERN_ERR,
-+	causing them to appear on the system console.  Otherwise,
-+	messages will be printed with KERN_DEBUG and will appear in
-+	the system log.
++	derr(10, "fh_to_parent %llx.%x\n", (unsigned long long)ino, hash);
 +
-+  debug_msgr=N
-+	Debug level for the messaging/communications layer, if >= 0.
-+	Default is -1.
++	if (fh_len < 6)
++		return ERR_PTR(-ESTALE);
 +
-+  debug_mdsc=N
-+	Debug level for the MDS client, if >= 0.
++	return __fh_to_dentry(sb, (struct ceph_export_item *)fh + 1,
++			      fh_len/IPSZ - 1);
++}
 +
-+  debug_osdc=N
-+	Debug level for the OSD client, if >= 0.
-+
-+  debug_addr=N
-+	Debug level for address space operations, if >= 0.
-+
-+  debug_file=N
-+	Debug level for file operations, if >= 0.
-+
-+  debug_inode=N
-+	Debug level for inode operations, if >= 0.
-+
-+  debug_caps=N
-+	Debug level for file capability operations, if >= 0.
-+
-+  debug_snap=N
-+	Debug level for snapshot operations, if >= 0.
-+
-+
-+
-+
-+More Information
-+================
-+
-+For more information on Ceph, see the home page at
-+	http://ceph.newdream.net/
-+
-+The Linux kernel client source tree is available at
-+	git://ceph.newdream.net/linux-ceph-client.git
-+
-+and the source for the full system is at
-+	git://ceph.newdream.net/ceph.git
++const struct export_operations ceph_export_ops = {
++	.encode_fh = ceph_encode_fh,
++	.fh_to_dentry = ceph_fh_to_dentry,
++	.fh_to_parent = ceph_fh_to_parent,
++};
 -- 
 1.5.6.5
 
