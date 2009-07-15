@@ -1,77 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbZGOWXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbZGOWeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbZGOWXf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 18:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZGOWXe
+	id S1756095AbZGOWeG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 18:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbZGOWeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 18:23:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:63571 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753055AbZGOWXd (ORCPT
+	Wed, 15 Jul 2009 18:34:06 -0400
+Received: from smtpout.cs.fsu.edu ([128.186.122.75]:5737 "EHLO mail.cs.fsu.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755945AbZGOWeE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 18:23:33 -0400
-Date: Thu, 16 Jul 2009 00:23:29 +0200
-From: Karsten Keil <keil@b1-systems.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Matthias Urlichs <matthias@urlichs.de>, isdn@linux-pingi.de,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: drivers/isdn/hardware/mISDN/hfcpci.c compiler warning seems
-	like a BUG
-Message-ID: <20090715222329.GA5292@nb-hp>
-References: <1247639997.2437.21.camel@ht.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 15 Jul 2009 18:34:04 -0400
+Date: Wed, 15 Jul 2009 18:34:00 -0400
+From: Ted Baker <baker@cs.fsu.edu>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: "James H. Anderson" <anderson@cs.unc.edu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Raistlin <raistlin@linux.it>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Noah Watkins <jayhawk@soe.ucsc.edu>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+Message-ID: <20090715223400.GF14993@cs.fsu.edu>
+References: <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir> <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir> <4A5C9ABA.9070909@nortel.com> <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu> <1247589099.7500.191.camel@twins> <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu> <20090715205503.GA14993@cs.fsu.edu> <4A5E4FDD.7090307@nortel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1247639997.2437.21.camel@ht.satnam>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-Provags-ID: V01U2FsdGVkX18fusPva0R3H+gwhjp76jfHZrITRrXkjEiwTZ5
- oxt12QNUbHFms0kyacyoccO6fxZyG4v7fEL3MB+q51QuRs6UfX
- 93MWxMeFfI0Fn/TW701y+lEZZi3IV03
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4A5E4FDD.7090307@nortel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 12:09:57PM +0530, Jaswinder Singh Rajput wrote:
-> I am getting this compiler warning in linus tree :
-> 
->   CC [M]  drivers/isdn/hardware/mISDN/hfcpci.o
-> drivers/isdn/hardware/mISDN/hfcpci.c: In function ‘hfcpci_softirq’:
-> drivers/isdn/hardware/mISDN/hfcpci.c:2333: warning: ignoring return value of ‘driver_for_each_device’, declared with attribute warn_unused_result
-> 
-> static void
-> hfcpci_softirq(void *arg)
-> {
->         (void) driver_for_each_device(&hfc_driver.driver, NULL, arg,
->                                         _hfcpci_softirq);
-> 
->         /* if next event would be in the past ... */
->         if ((s32)(hfc_jiffies + tics - jiffies) <= 0)
->                 hfc_jiffies = jiffies + 1;
->         else
->                 hfc_jiffies += tics;
->         hfc_tl.expires = hfc_jiffies;
->         add_timer(&hfc_tl);
-> }
-> 
-> It seems to me it should return is driver_for_each_device fails :
->         if (driver_for_each_device(&hfc_driver.driver, NULL, arg,
->                                    _hfcpci_softirq))
-> 		return;
+On Wed, Jul 15, 2009 at 03:53:33PM -0600, Chris Friesen wrote:
 
-Without looking deeper into it (I'm on a trip with limited net access), this sounds 
-resonable for me, I will have a closer look next week.
+> >From an API standpoint, the "group scheduling" functionality in linux
+> allows for the creation of an arbitrary hierarchy of groups, each of
+> which may contain zero or more tasks.  (Each task is associated with
+> exactly one group.)
+> 
+> There is a distinction between groups containing realtime tasks, and
+> groups containing non-realtime tasks.  For realtime groups, each group
+> is allocated a specific amount of cpu time.  For non-realtime groups,
+> each group is allocated a specific weight.
+> 
+> A realtime group may use up to its specified amount of cpu time.  Any
+> cpu time not used by a realtime group is distributed to the non-realtime
+> groups according to their relative weights.
+> 
+> This does add a whole different API to the mix, but allows for controls
+> to be set by the administrator on existing POSIX apps without needing to
+> recompile them.
 
-> 
-> or if possible can we return this error code for hfcpci_softirq()
-> 
-> Thanks,
-> --
-> JSR
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+This is in the right direction, but there is a lot about Linux groups
+that I either do not understand or which falls short of what is needed.
+Perhaps you can point me to an up to date detailed explanation of
+how they work?
+
+>From what I've been able to infer from my brief foray into that
+part of the kernel code (a year ago), there seemed to be several
+aspects of the group scheduling that did not seem to admit
+schedulability analysis.  (I admit that I may have read it wrong,
+and these statements are false.)
+
+1) The priority of a group seemed to be defined by the priority of
+the highest-priority thread in the group's run-queue, which means
+it varies dynamically according to which threads in the group are
+contending.
+
+2) Budget enforcement seemed to only occur at system tick
+boundaries, which means precision can only be achieved at the cost
+of frequent clock interrupts.
+
+3) It seemed that a thread could belong to more than one group, 
+and so distributed charges arbitrarily between groups.
+If so, budget allocation would seem very difficult.
+
+4) On an SMP, more than one thread could be running against
+the same budget at the same time, resulting in budget over-charges.
+
+I am particularly concerned about the latter.  The published
+analyses of hierarchical generalizations of bandwidth
+limiting/guaranteeing aperiodic server scheduling algorithms I
+have seen so far all seem to require allocating bandwidth/budget
+to groups on a per-processor basis, so as to void concurrent
+charges to the same budget.
+
+Ted
+
