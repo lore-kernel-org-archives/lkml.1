@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbZGOXNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbZGOXQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756451AbZGOXNZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 19:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZGOXNY
+	id S1756476AbZGOXQu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 19:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756439AbZGOXQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 19:13:24 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:25283 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756366AbZGOXNY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 19:13:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fdiC+WyhRawljj6frSOP5itHwI33nCKOEincciXC89Nb3dA/HfW9eI/xotj7DmhQwP
-         26QB6CFT1P5pJNpv59SHWoKHB1TmUlErQDi7wyX/8MoP3RK92DIQ12O13dQPDT41tEaz
-         Pna1M0Ho5dXcra1l1b8eG5k2Ue2YDmBwIh7FM=
-MIME-Version: 1.0
-In-Reply-To: <20090716001016.489fa970@lxorguk.ukuu.org.uk>
-References: <1247698965.3989.1.camel@dwillia2-linux.ch.intel.com>
-	 <20090716001016.489fa970@lxorguk.ukuu.org.uk>
-Date: Wed, 15 Jul 2009 19:13:23 -0400
-Message-ID: <9e4733910907151613n777261e5k3e3c1cd646c7922a@mail.gmail.com>
-Subject: Re: Why do we probe option roms at 2K boundaries?
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Dan Williams <dan.j.williams@intel.com>, Alan Cox <alan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Hans de Goede <hdegoede@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 15 Jul 2009 19:16:49 -0400
+Received: from smtpout.cs.fsu.edu ([128.186.122.75]:5829 "EHLO mail.cs.fsu.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756381AbZGOXQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 19:16:48 -0400
+Date: Wed, 15 Jul 2009 19:16:46 -0400
+From: Ted Baker <baker@cs.fsu.edu>
+To: Dhaval Giani <dhaval.giani@gmail.com>
+Cc: Chris Friesen <cfriesen@nortel.com>,
+       "James H. Anderson" <anderson@cs.unc.edu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Raistlin <raistlin@linux.it>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Noah Watkins <jayhawk@soe.ucsc.edu>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+Message-ID: <20090715231646.GI14993@cs.fsu.edu>
+References: <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir> <4A5C9ABA.9070909@nortel.com> <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu> <1247589099.7500.191.camel@twins> <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu> <20090715205503.GA14993@cs.fsu.edu> <4A5E4FDD.7090307@nortel.com> <20090715223400.GF14993@cs.fsu.edu> <8aa016e10907151539t16fb1d7fk3122d77e69ac7de5@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8aa016e10907151539t16fb1d7fk3122d77e69ac7de5@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 7:10 PM, Alan Cox<alan@lxorguk.ukuu.org.uk> wrote:
->> interrogating a data structure stored in option-rom memory.  My initial
->> implementation involved blindly scanning from c0000 to f0000 in 512 byte
->> increments.  Neil and others pointed out that this may not be a safe
->
-> It isn't safe. If you hit certain ISA devices your system will drop dead.
-> OTOH I doubt anyone has an intel matrix raid controller and a WD80x3 on
-> the same box ;)
+> > 1) The priority of a group seemed to be defined by the priority of
+> > the highest-priority thread in the group's run-queue, which means
+> > it varies dynamically according to which threads in the group are
+> > contending.
+> >
+> 
+> This is true, but it also ensures that the time allocated to the group
+> is also consumed by group if it wants to.
 
-Random link from google, slide 21
-http://download.microsoft.com/download/9/8/f/98f3fe47-dfc3-4e74-92a3-088782200fe7/TWAR05005_WinHEC05.ppt
+I don't see how schedulability analysis can be done with this model,
+since a single budget is being expended at varying priorities/deadlines.
 
-PCI 3.0+ allows 512b alignment, but you must first make sure you are
-on a PCI 3.0+ system.
+> > 4) On an SMP, more than one thread could be running against
+> > the same budget at the same time, resulting in budget over-charges.
+> >
+> 
+> The rt group scheduler does split the budget per cpu. On expiring the
+> budget, it tries to borrow from other CPUs if possible.
 
->
->> Recently Hans has been working to get Fedora up and running on a recent
->> Intel software RAID platform and noticed that the option-rom is no
->> longer visible with the 2K aligned scan.  I.e. he needed to make the
->> following changes to the mdadm probe_roms() routine:
->
-> Option ROMs should be 2K aligned. Is your data structure part of a ROM or
-> an actual ROM header ?
->
->> Is this safe?  Should the kernel be updated as well?  I am assuming that
->> you were the one that originally introduced the 2K aligned scan with
->> this commit from the historical git:
->
-> Actually I don't think that was me, don't remember it anyway.
->
-> The man to bug at the moment on ROM magic is probably H Peter Anvin
-> however.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+First, how is the splitting of the budget between CPU's controlled
+by the application?
 
+Second, I don't see how schedulabiliyt analysis could be done if
+CPU's can "borrow" budget from other CPUs, unless there is some
+mechanism in place to "pay it back".  How do you do the analysis?
 
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Ted
