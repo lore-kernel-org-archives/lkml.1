@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751733AbZGODOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856AbZGODSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751733AbZGODOD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 23:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZGODOC
+	id S1751856AbZGODSf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 23:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbZGODSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 23:14:02 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58873 "EHLO smtps.tip.net.au"
+	Tue, 14 Jul 2009 23:18:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54716 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbZGODOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 23:14:01 -0400
-Date: Wed, 15 Jul 2009 13:13:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: linux-next: sound tree build warning
-Message-Id: <20090715131354.da512c72.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__15_Jul_2009_13_13_54_+1000_qkKNd_KA=040OxRv"
+	id S1751108AbZGODSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 23:18:34 -0400
+Message-ID: <4A5D4A39.9020000@kernel.org>
+Date: Wed, 15 Jul 2009 12:17:13 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
+       mingo@elte.hu, andi@firstfloor.org, hpa@zytor.com, tglx@linutronix.de,
+       cl@linux-foundation.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 04/10] percpu: make 4k first chunk allocator map memory
+References: <1245850216-31653-5-git-send-email-tj@kernel.org> <1245850216-31653-1-git-send-email-tj@kernel.org> <24253.1247479973@redhat.com>
+In-Reply-To: <24253.1247479973@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 15 Jul 2009 03:17:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__15_Jul_2009_13_13_54_+1000_qkKNd_KA=040OxRv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello,
 
-Hi Takashi,
+David Howells wrote:
+> Tejun Heo <tj@kernel.org> wrote:
+> 
+>> +	pr_info("PERCPU: %d 4k pages per cpu, static data %zu bytes\n",
+>> +		pcpu4k_unit_pages, static_size);
+> 
+> It occurs to me that this is may include a bad assumption.  Page size need not
+> be 4K.  I don't know that it matters, but looking at this:
+> 
+>> +	vm.size = num_possible_cpus() * pcpu4k_unit_pages << PAGE_SHIFT;
+>> +	vm_area_register_early(&vm, PAGE_SIZE);
+> 
+> It might.
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+Yeah, I realized that after trying to convert powerpc64 and ia64 and
+renamed it to page.  I'll soon post the patches.
 
-sound/soc/codecs/wm8993.c: In function 'wm8993_hw_params':
-sound/soc/codecs/wm8993.c:1799: warning: array subscript is above array bou=
-nds
+Thanks.
 
-Introduced by commit 942c435ba79fd263a922bb114d56eccab6250662 ("ASoC: Add
-WM8993 CODEC driver").
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__15_Jul_2009_13_13_54_+1000_qkKNd_KA=040OxRv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpdSXMACgkQjjKRsyhoI8wkXwCfSBK3xP0o75j45HDFvoF8t8jL
-3bkAnjT9uuc1+ovPElQzonAWd8xPjKEb
-=+/hx
------END PGP SIGNATURE-----
-
---Signature=_Wed__15_Jul_2009_13_13_54_+1000_qkKNd_KA=040OxRv--
+-- 
+tejun
