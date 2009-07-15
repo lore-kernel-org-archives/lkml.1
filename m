@@ -1,141 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751380AbZGOEcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbZGOEfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751380AbZGOEcR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 00:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbZGOEcQ
+	id S1751546AbZGOEfd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 00:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZGOEfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 00:32:16 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64423 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750996AbZGOEcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 00:32:16 -0400
-Message-ID: <4A5D5BCF.4070707@cn.fujitsu.com>
-Date: Wed, 15 Jul 2009 12:32:15 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] tracing/function: simplify for __ftrace_replace_code()
-References: <4A5D5B12.2050802@cn.fujitsu.com>
-In-Reply-To: <4A5D5B12.2050802@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 15 Jul 2009 00:35:32 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35453 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbZGOEfb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 00:35:31 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 15 Jul 2009 13:33:24 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 0/5] Memory controller soft limit patches (v9)
+Message-Id: <20090715133324.e4683ef2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090715040811.GF24034@balbir.in.ibm.com>
+References: <20090710125950.5610.99139.sendpatchset@balbir-laptop>
+	<20090715040811.GF24034@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rewrite the __ftrace_replace_code() function, let it's simple, but
-not change the code's logic.
+On Wed, 15 Jul 2009 09:38:11 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-First, we get the state we want to set, if the record has the same
-state, then do nothing, if not, enable/disable it.
+> * Balbir Singh <balbir@linux.vnet.ibm.com> [2009-07-10 18:29:50]:
+> 
+> > 
+> > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > 
+> > New Feature: Soft limits for memory resource controller.
+> > 
+> > Here is v9 of the new soft limit implementation. Soft limits is a new feature
+> > for the memory resource controller, something similar has existed in the
+> > group scheduler in the form of shares. The CPU controllers interpretation
+> > of shares is very different though. 
+> >
+> 
+> If there are no objections to these patches, could we pick them up for
+> testing in mmotm. 
+> 
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- kernel/trace/ftrace.c |   75 +++++++++++++-----------------------------------
- 1 files changed, 21 insertions(+), 54 deletions(-)
+If any, will be fixed up in mmotm. About behavior, I don't have more things
+than I've said. (dealying kswapd is not very good.)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 4521c77..18aeb8d 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -1016,71 +1016,38 @@ static int
- __ftrace_replace_code(struct dyn_ftrace *rec, int enable)
- {
- 	unsigned long ftrace_addr;
--	unsigned long ip, fl;
-+	unsigned long flag = 0UL;
- 
- 	ftrace_addr = (unsigned long)FTRACE_ADDR;
- 
--	ip = rec->ip;
--
- 	/*
--	 * If this record is not to be traced and
--	 * it is not enabled then do nothing.
-+	 * If this record is not to be traced or we want to disable it,
-+	 * then disable it.
- 	 *
--	 * If this record is not to be traced and
--	 * it is enabled then disable it.
-+	 * If we want to enable it and filtering is off, then enable it.
- 	 *
-+	 * If we want to enable it and filtering is on, enable it only if
-+	 * it's filtered
- 	 */
--	if (rec->flags & FTRACE_FL_NOTRACE) {
--		if (rec->flags & FTRACE_FL_ENABLED)
--			rec->flags &= ~FTRACE_FL_ENABLED;
--		else
--			return 0;
--
--	} else if (ftrace_filtered && enable) {
--		/*
--		 * Filtering is on:
--		 */
--
--		fl = rec->flags & (FTRACE_FL_FILTER | FTRACE_FL_ENABLED);
--
--		/* Record is filtered and enabled, do nothing */
--		if (fl == (FTRACE_FL_FILTER | FTRACE_FL_ENABLED))
--			return 0;
--
--		/* Record is not filtered or enabled, do nothing */
--		if (!fl)
--			return 0;
--
--		/* Record is not filtered but enabled, disable it */
--		if (fl == FTRACE_FL_ENABLED)
--			rec->flags &= ~FTRACE_FL_ENABLED;
--		else
--		/* Otherwise record is filtered but not enabled, enable it */
--			rec->flags |= FTRACE_FL_ENABLED;
--	} else {
--		/* Disable or not filtered */
--
--		if (enable) {
--			/* if record is enabled, do nothing */
--			if (rec->flags & FTRACE_FL_ENABLED)
--				return 0;
--
--			rec->flags |= FTRACE_FL_ENABLED;
--
--		} else {
-+	if (enable && !(rec->flags & FTRACE_FL_NOTRACE)) {
-+		if (ftrace_filtered) {
-+			if (rec->flags & FTRACE_FL_FILTER)
-+				flag = FTRACE_FL_ENABLED;
-+		} else
-+			flag = FTRACE_FL_ENABLED;
-+	}
- 
--			/* if record is not enabled, do nothing */
--			if (!(rec->flags & FTRACE_FL_ENABLED))
--				return 0;
-+	/* If not change this record's state, then do nothing */
-+	if ((rec->flags & FTRACE_FL_ENABLED) == flag)
-+		return 0;
- 
--			rec->flags &= ~FTRACE_FL_ENABLED;
--		}
-+	if (flag) {
-+		rec->flags |= FTRACE_FL_ENABLED;
-+		return ftrace_make_call(rec, ftrace_addr);
- 	}
- 
--	if (rec->flags & FTRACE_FL_ENABLED)
--		return ftrace_make_call(rec, ftrace_addr);
--	else
--		return ftrace_make_nop(NULL, rec, ftrace_addr);
-+	rec->flags &= ~FTRACE_FL_ENABLED;
-+	return ftrace_make_nop(NULL, rec, ftrace_addr);
- }
- 
- static void ftrace_replace_code(int enable)
--- 
-1.6.1.2
+But plz discuss with Vladislav Buzov about implementation details of [2..3/5].
+==
+[PATCH 1/2] Resource usage threshold notification addition to res_counter (v3)
 
+It seems there are multiple functionalities you can shere with them.
+
+ - hierarchical threshold check
+ - callback or notify agaisnt threshold.
+ etc..
+
+I'm very happy if all messy things around res_counter+hierarchy are sorted out
+before diving into melting pot. I hope both of you have nice interfaces and
+keep res_counter neat.
+
+Thanks,
+-Kame
 
