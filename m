@@ -1,147 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZGONgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZGONlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbZGONgh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 09:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbZGONgh
+	id S1754749AbZGONlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 09:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbZGONlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 09:36:37 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57844 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754710AbZGONgf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 09:36:35 -0400
-Date: Wed, 15 Jul 2009 15:36:27 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Trilok Soni <soni.trilok@gmail.com>
-Cc: Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, dmitry.torokhov@gmail.com,
-       dtor@mail.ru, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org
-Subject: Re: Support for synaptic touchscreen in HTC dream
-Message-ID: <20090715133627.GA2538@elf.ucw.cz>
-References: <20090714100634.GA4054@elf.ucw.cz> <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com>
+	Wed, 15 Jul 2009 09:41:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36841 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754482AbZGONlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 09:41:16 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Chris Mason <chris.mason@oracle.com>, Mike Galbraith <efault@gmx.de>,
+       Diego Calleja <diegocg@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com,
+       linux-ext4@vger.kernel.org
+Subject: Re: Performance regressions in 2.6.30-rc7?
+References: <20090529210718.bef7a9c1.akpm@linux-foundation.org>
+	<200905301851.47708.diegocg@gmail.com>
+	<20090603195806.GA9571@atrey.karlin.mff.cuni.cz>
+	<1244100382.7131.12.camel@marge.simson.net>
+	<20090604112109.GC2859@duck.suse.cz>
+	<1244142795.5731.31.camel@marge.simson.net>
+	<20090609103208.GB9235@duck.suse.cz> <20090609184818.GD9556@think>
+	<20090610091211.GA13692@duck.suse.cz>
+	<x4963f3rb4t.fsf@segfault.boston.devel.redhat.com>
+	<20090715104319.GC25458@duck.suse.cz>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 15 Jul 2009 09:41:02 -0400
+In-Reply-To: <20090715104319.GC25458@duck.suse.cz> (Jan Kara's message of
+	"Wed, 15 Jul 2009 12:43:19 +0200")
+Message-ID: <x4963du3vyp.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Jan Kara <jack@suse.cz> writes:
 
-> > +static void decode_report(struct synaptics_ts_data *ts, u8 *buf)
-> > +{
-> 
-> some documentation about this logic would be great.
+> On Wed 10-06-09 18:12:50, Jeff Moyer wrote:
+>> Jan Kara <jack@suse.cz> writes:
+>> 
+>> > On Tue 09-06-09 14:48:18, Chris Mason wrote:
+>> >> On Tue, Jun 09, 2009 at 12:32:08PM +0200, Jan Kara wrote:
+>> >> > On Thu 04-06-09 21:13:15, Mike Galbraith wrote:
+>> >> > > On Thu, 2009-06-04 at 13:21 +0200, Jan Kara wrote:
+>> >> > > 
+>> >> > > > > Sequential Writes
+>> >> > > > > 2.6.30-smp-ordered            6000  65536  32   50.16 508.9%    31.996    45595.78   0.64965  0.02402    10
+>> >> > > > > 2.6.29.4-smp-ordered          6000  65536  32   52.70 543.2%    33.658    23794.92   0.71754  0.00836    10
+>> >> > > > > 
+>> >> > > > > 2.6.30-smp-writeback          6000  65536  32   47.82 525.4%    35.003    32588.84   0.56192  0.02298     9
+>> >> > > > > 2.6.29.4-smp-writeback        6000  65536  32   52.52 467.6%    32.397    12972.78   0.53580  0.00522    11
+>> >> > > > > 
+>> >> > > > > 2.6.30-smp-ordered            6000  65536  16   56.08 254.9%    15.463    33000.68   0.39687  0.00521    22
+>> >> > > > > 2.6.29.4-smp-ordered          6000  65536  16   62.40 308.4%    14.701    13455.02   0.13125  0.00208    20
+>> >> > > > > 
+>> >> > > > > 2.6.30-smp-writeback          6000  65536  16   51.90 281.4%    17.098    12869.85   0.36771  0.00104    18
+>> >> > > > > 2.6.29.4-smp-writeback        6000  65536  16   60.53 272.6%    14.977     8637.08   0.21146  0.00000    22
+>> >> > > > > 
+>> >> > > > > 2.6.30-smp-ordered            6000  65536   8   51.09 113.4%     8.700    14856.55   0.06771  0.00417    45
+>> >> > > > > 2.6.29.4-smp-ordered          6000  65536   8   56.13 130.6%     8.098     8400.45   0.03958  0.00000    43
+>> >> > > > > 
+>> >> > > > > 2.6.30-smp-writeback          6000  65536   8   50.19 131.7%     8.680    16821.04   0.11979  0.00208    38
+>> >> > > > > 2.6.29.4-smp-writeback        6000  65536   8   54.90 130.7%     8.244     4925.48   0.10000  0.00000    42
+>> >> > > >   It really seems write has some problems... There's consistently lower
+>> >> > > > throughput and it also seems some writes take really long. I'll try to
+>> >> > > > reproduce it here.
+>> >> > > 
+>> >> > > Looked "pretty solid" to me.  I haven't observed enough to ~trust.
+>> >> >   OK, I did a few runs of tiobench here and I can confirm that I see about
+>> >> > 6% performance regression in Sequential Write throughput between 2.6.29
+>> >> > and 2.6.30-rc8. I'll try to find what's causing it.
+>> >> 
+>> >> My first guess would be the WRITE_SYNC style changes.  Is the regression
+>> >> still there with noop?
+>> >   Thanks for the hint. I was guessing that as well. And experiments show
+>> > it's definitely connected. To be more precise with the data:
+>> > The test machine is 2 CPU, 2 GB ram, simple lowend SATA disk. Tiobench run
+>> > with:
+>> > tiobench/tiobench.pl -b 65536 -t 16 -t 8 -d /local/scratch -s 4096
+>> >   which means 4GB testfile, writes happen in 64k chunks, test done with 16
+>> > and 8 threads. /local/scratch is a separate partition always cleaned and
+>> > umounted + mounted before each test. The results are (always 3 runs):
+>> >     2.6.29+CFQ:           Avg    StdDev
+>> > 8   38.01 40.26 39.69 ->  39.32  0.955092
+>> > 16  40.09 38.18 40.05 ->  39.44  0.891104
+>> >
+>> >     2.6.30-rc8+CFQ:
+>> > 8   36.67 36.81 38.20 ->  37.23  0.69062
+>> > 16  37.45 36.47 37.46 ->  37.13  0.464351
+>> >
+>> >     2.6.29+NOOP:
+>> > 8   38.67 38.66 37.55 ->  38.29  0.525632
+>> > 16  39.59 39.15 39.19 ->  39.31  0.198662
+>> >
+>> >     2.6.30-rc8+NOOP:
+>> > 8   38.31 38.47 38.16 ->  38.31  0.126579
+>> > 16  39.08 39.25 39.13 ->  39.15  0.0713364
+>> 
+>> I ran the same test on a bigger system: 8GB ram (so I used a 16GB size
+>> for the test) and a 4 disk stripe hanging off of a CCISS controller.
+>> All the runs used ext3 in data=ordered mode and CFQ as the I/O scheduler.
+>> 
+>>      2.6.29.3-140.fc11       Avg       StdDev
+>>  8   158.72 152.72 148.24    153.227   5.25834
+>> 16   176.06 174.91 176.27    175.747   0.73214
+>> 
+>>      2.6.30-rc7
+>>  8   147.89 144.57 144.99    145.817   1.8078
+>> 16   121.37 119.56 111.85    117.593   5.05553
+>> 
+>> Jan, let me know if you want any help tracking this down.
+>   OK, so I've found time to follow-up on this. I've checked that
+> congestion_wait fixes Jens sent recently didn't change anything. Also I've
+> verified that backing out WRITE_SYNC related changes didn't help. Finally,
+> I've verified that when I back out all the changes that went to CFQ between
+> 2.6.29 and 2.6.30 and the WRITE_SYNC changes, then the performance is back
+> to original values.
+>   Jens / Jeff, what to do next? I can try to bisect through CFQ changes but
+> that's going to be rather tedious and the result is uncertain since I
+> expect performance to jump up and down as various changes took place. So
+> I'd rather spend my time with something that has a higher chance to
+> succeed...
+>
 
-Arve, can you help here?
+Looking through the changelogs, I most suspect this:
 
+commit 2f5cb7381b737e24c8046fd4aeab571fb71315f5
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Tue Apr 7 08:51:19 2009 +0200
 
-> > +       int pos[2][2];
-> > +       int f, a;
-> > +       int base = 2;
-> > +       int z = buf[1];
-> > +       int w = buf[0] >> 4;
-> > +       int finger = buf[0] & 7;
-> > +       int finger2_pressed;
-> > +
-> > +       for (f = 0; f < 2; f++) {
-> > +               u32 flip_flag = SYNAPTICS_FLIP_X;
-> > +               for (a = 0; a < 2; a++) {
-> > +                       int p = buf[base + 1];
-> > +                       p |= (u16)(buf[base] & 0x1f) << 8;
-> > +                       if (ts->flags & flip_flag)
-> > +                               p = ts->max[a] - p;
-> > +                       if (ts->flags & SYNAPTICS_SNAP_TO_INACTIVE_EDGE) {
+    cfq-iosched: change dispatch logic to deal with single requests at
+    the time
+    
+We had one other regression that bisected to this change, though I don't
+claim to fully understand why just yet.  Take a look at this bug:
+  http://bugzilla.kernel.org/show_bug.cgi?id=13401
 
+Try Jens' test patch posted there:
+  http://bugzilla.kernel.org/attachment.cgi?id=21650
 
-> > +static irqreturn_t synaptics_ts_irq_handler(int irq, void *dev_id)
-> > +{
-> > +       struct synaptics_ts_data *ts = dev_id;
-> > +
-> > +       disable_irq(ts->client->irq);
-> 
-> disable_irq_nosync or convert this to request_threaded_irq(...).
-> Please see recent discussion on linux-input for MAX key switch
-> controller.
+and let us know how that fares.
 
-Do you have a link? (I replaced it with disable_irq_nosync, if that is
-enough...)
+Thanks for looking into this!
 
-> > +static int synaptics_ts_probe(
-> > +       struct i2c_client *client, const struct i2c_device_id *id)
-> > +{
-> 
-> __devinit ?
-
-Ok.
-
-> > +       if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
-> 
-> check for SMBUS? I have added linux-i2c as this driver has i2c bits,
-> so not removing any code.
-
-I guess this driver is only probed on mach-pxa... on machines that
-have the neccessary hardware.
-
-> > +               printk(KERN_ERR "synaptics_ts_probe: need I2C_FUNC_I2C\n");
-> 
-> dev_xxx/pr_xxx friends?
-
-Fixed all occurences.
-
-
-> > +       ts->input_dev = input_allocate_device();
-> > +       if (ts->input_dev == NULL) {
-> > +               ret = -ENOMEM;
-> > +               pr_err("synaptics: Failed to allocate input device\n");
-> > +               goto err_input_dev_alloc_failed;
-> > +       }
-> > +       ts->input_dev->name = "synaptics-rmi-touchscreen";
-> 
-> other parameters of input_dev, like vendor, bus etc.,
-
-Ok, what are those for? I can probably invent some dummy values, but...
-
-> > +       set_bit(EV_SYN, ts->input_dev->evbit);
-> > +       set_bit(EV_KEY, ts->input_dev->evbit);
-> > +       set_bit(BTN_TOUCH, ts->input_dev->keybit);
-> > +       set_bit(BTN_2, ts->input_dev->keybit);
-> > +       set_bit(EV_ABS, ts->input_dev->evbit);
-> > +
-> 
-> __set_bit or input_set_capability please.
-
-__set_bit is easier, done.
-
-> > +static int synaptics_ts_remove(struct i2c_client *client)
-> > +{
-> 
-> __devexit
-
-Applied.
-
-
-> > +static int synaptics_ts_suspend(struct i2c_client *client, pm_message_t mesg)
-> > +{
-> 
-> #ifdef CONFIG_PM ?
-
-Yep.
-
-> > +MODULE_DESCRIPTION("Synaptics Touchscreen Driver");
-> > +MODULE_LICENSE("GPL");
-> 
-> MODULE_ALIAS?
-
-Umm, why? This is loaded from board-*.c files, and I don't think i2c
-has enumeration capabilities.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-Jeff
