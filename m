@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZGON6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZGON7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbZGON6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 09:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbZGON6R
+	id S1754835AbZGON7Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 09:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZGON7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 09:58:17 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:52900 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753957AbZGON6O (ORCPT
+	Wed, 15 Jul 2009 09:59:16 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:42578 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754531AbZGON7P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 09:58:14 -0400
-Date: Wed, 15 Jul 2009 14:58:08 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Zhang Rui <rui.zhang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "corentincj@iksaif.net" <corentincj@iksaif.net>
-Subject: Re: [PATCH 1/3] backlight: Allow drivers to update the core, and
-	generate events on changes
-Message-ID: <20090715135808.GA19054@srcf.ucam.org>
-References: <1247517685-7719-1-git-send-email-mjg@redhat.com> <1247574573.23871.8.camel@dax.rpnet.com> <1247644518.26272.88.camel@rzhang-dt> <1247646153.6248.3.camel@dax.rpnet.com> <1247647105.26272.99.camel@rzhang-dt> <1247649089.20241.5.camel@dax.rpnet.com>
+	Wed, 15 Jul 2009 09:59:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=mO0NTY8ORNeV5kRiiDWnNZbrFzrdpC4XmnN/CNKfiEv48ljsig4JqUab9gQjVUOjr+
+         511QtbwyDXbj9B2WUdvL7EOF/Fot6HobvUQ+Mqxthd4mQsdgtoqgJvHC9DSD4Q4qK5KE
+         AD6/uk1t7x3tejd/eEBnFz2NtKZFjdd8tVt/I=
+Message-ID: <4A5DE10E.7010005@gmail.com>
+Date: Wed, 15 Jul 2009 16:00:46 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247649089.20241.5.camel@dax.rpnet.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: jens.axboe@oracle.com
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] bio: sizeof pointer instead of size of the pointed-to type?
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 10:11:29AM +0100, Richard Purdie wrote:
+Do not take the size of a pointer to determine the size of the pointed-to type
 
-> So there are basically two values we're ever interested in at a given
-> point in time. The current ambient light reading and the corresponding
-> display luminance adjustment. Both of those could just be exposed as an
-> input device really?
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+This is not yet tested. Is it correct?
 
-The alternative would be hwmon, I guess.
-
-> Agreed, userspace should be where policy is decided. Having a standalone
-> module which connected the two together with a "default" policy might be
-> acceptable too though? If userspace then wants to handle things it just
-> makes sure the module is not loaded.
-
-You want smoothing even in a default policy, and doing that well might 
-be a bit much for the kernel?
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+diff --git a/fs/bio.c b/fs/bio.c
+index 7673800..e65c35d 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -96,7 +96,7 @@ static struct kmem_cache *bio_find_or_create_slab(unsigned int extra_size)
+ 	if (bio_slab_nr == bio_slab_max && entry == -1) {
+ 		bio_slab_max <<= 1;
+ 		bio_slabs = krealloc(bio_slabs,
+-				     bio_slab_max * sizeof(struct bio_slab),
++				     bio_slab_max * sizeof(struct bio_slab *),
+ 				     GFP_KERNEL);
+ 		if (!bio_slabs)
+ 			goto out_unlock;
