@@ -1,78 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZGOLKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbZGOLMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbZGOLKX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 07:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbZGOLKX
+	id S1754129AbZGOLMm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 07:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZGOLMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 07:10:23 -0400
-Received: from mga14.intel.com ([143.182.124.37]:12643 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753453AbZGOLKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 07:10:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,403,1243839600"; 
-   d="scan'208";a="165217624"
-Date: Wed, 15 Jul 2009 19:10:12 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] shmem: call set_page_dirty() with locked page
-Message-ID: <20090715111012.GA1403@localhost>
-References: <20090714092926.GA23969@localhost> <Pine.LNX.4.64.0907141918380.10805@sister.anvils>
+	Wed, 15 Jul 2009 07:12:41 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:44305 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753579AbZGOLMl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 07:12:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=lGO8sPx5mznG/Buy35w7kONUT7W+1Tg0i0ORhy4lx6n4kiANxxnvthOeAONP2j/ZKU
+         bVunX+3760j9Cl9CA3AAMN7Sc+3zk8JpROMwdC9O8+sJ7HSRLFYcLkjIvu7ifSSlQk6I
+         pQBq4/7C0k7J5hjMYc+wBsq3KL79lcx5lwhNc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907141918380.10805@sister.anvils>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <12377.1247654255@redhat.com>
+References: <1247591665-12000-1-git-send-email-vapier@gentoo.org> 
+	<20090714161416.GA19147@cmpxchg.org> <6206.1247592126@redhat.com> 
+	<4A5CFFD8.7020106@t-online.de> <12377.1247654255@redhat.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 15 Jul 2009 07:12:20 -0400
+Message-ID: <8bd0f97a0907150412h234cf4d6l439d92d832055373@mail.gmail.com>
+Subject: Re: [Uclinux-dist-devel] [PATCH v2] NOMMU: add support for Memory 
+	Protection Units (MPU)
+To: David Howells <dhowells@redhat.com>
+Cc: Bernd Schmidt <bernds_cb1@t-online.de>,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 02:24:54AM +0800, Hugh Dickins wrote:
-> On Tue, 14 Jul 2009, Wu Fengguang wrote:
-> > Here set_page_dirty() can be moved into the page lock.
-> 
-> Indeed it can, but you've forgotten to mention why you think
-> that would be a good thing?  All I can see is that it would
+On Wed, Jul 15, 2009 at 06:37, David Howells wrote:
+> Bernd Schmidt <bernds_cb1@t-online.de> wrote:
+>> No page table, just three bitmaps (r/w/x), with one bit per page, per mm.
+>
+> I presume that all you do is maintain a distinction between
+> userspace-accessible areas and kernel-only areas, and don't prevent userspace
+> processes from destroying each other.
 
-Sorry for missing out the rational.  My problem is: the hwpoison code
-must make sure whether one page can be dropped without losing data.
-
-> very very slightly increase the page's lock hold time, which
-> wouldn't be an improvement: what improvement are you making?
-
-Yes there were nothing wrong. Just to make it align with the general
-practice(not rule): pages are normally dirtied inside the page lock.
-
-The noticeable exceptions are mapped pages and pages with buffer_heads
-- they could go dirty at any time. Fortunately they will have to be
-unmapped/released anyway.
-
-shmem may not be the only remaining exception. But let's fix it first.
-I'd be appreciated if someone could name some more exceptions, or some
-better criterion on "the data in this page can be recovered".
-
-Thanks,
-Fengguang
-
-> > CC: Hugh Dickins <hugh@veritas.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  mm/shmem.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > --- linux.orig/mm/shmem.c
-> > +++ linux/mm/shmem.c
-> > @@ -1630,8 +1630,8 @@ shmem_write_end(struct file *file, struc
-> >  	if (pos + copied > inode->i_size)
-> >  		i_size_write(inode, pos + copied);
-> >  
-> > -	unlock_page(page);
-> >  	set_page_dirty(page);
-> > +	unlock_page(page);
-> >  	page_cache_release(page);
-> >  
-> >  	return copied;
+there is full 4k page protection between processes and between the
+kernel and processes.
+-mike
