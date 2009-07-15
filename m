@@ -1,140 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbZGOUzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932349AbZGOU5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932344AbZGOUzN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 16:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbZGOUzM
+	id S932349AbZGOU5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 16:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932326AbZGOU5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 16:55:12 -0400
-Received: from smtpout.cs.fsu.edu ([128.186.122.75]:5549 "EHLO mail.cs.fsu.edu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932317AbZGOUzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 16:55:11 -0400
-Date: Wed, 15 Jul 2009 16:55:03 -0400
-From: Ted Baker <baker@cs.fsu.edu>
-To: "James H. Anderson" <anderson@cs.unc.edu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Chris Friesen <cfriesen@nortel.com>, Raistlin <raistlin@linux.it>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-Message-ID: <20090715205503.GA14993@cs.fsu.edu>
-References: <1247336891.9978.32.camel@laptop> <4A594D2D.3080101@ittc.ku.edu> <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir> <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir> <4A5C9ABA.9070909@nortel.com> <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu> <1247589099.7500.191.camel@twins> <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu>
-Mime-Version: 1.0
+	Wed, 15 Jul 2009 16:57:22 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:38595 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932325AbZGOU5V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 16:57:21 -0400
+Date: Wed, 15 Jul 2009 22:57:16 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mreimer@vpop.net,
+       linux-kernel@vger.kernel.org, szabolcs.gyurko@tlt.hu, cbou@mail.ru
+Subject: Re: [PATCH 4/4] ds2760: handle full_active_uAh == 0 case correctly
+Message-ID: <20090715205716.GT18340@buzzloop.caiaq.de>
+References: <1247674841-9909-1-git-send-email-daniel@caiaq.de> <1247674841-9909-2-git-send-email-daniel@caiaq.de> <1247674841-9909-3-git-send-email-daniel@caiaq.de> <1247674841-9909-4-git-send-email-daniel@caiaq.de> <147B4C9E-4AE2-4FAD-BC58-7D5D905A1B77@vpop.net> <20090715185159.GI9464@buzzloop.caiaq.de> <20090715120625.cb8937f3.akpm@linux-foundation.org> <20090715192833.GA8938@oksana.dev.rtsoft.ru> <20090715200246.GJ9464@buzzloop.caiaq.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090715200246.GJ9464@buzzloop.caiaq.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 12:54:13PM -0400, James H. Anderson wrote:
+On Wed, Jul 15, 2009 at 10:02:46PM +0200, Daniel Mack wrote:
+> On Wed, Jul 15, 2009 at 11:28:33PM +0400, Anton Vorontsov wrote:
+> > Yep. All patches look good, I'll apply them to battery-2.6.git.
 > 
-> ... Ted Baker did some work on an algorithm called EDZL
-> (EDF until zero laxity) that is essentially a hybrid of these two
-> algorithms.  In simulations we've done (not based on real implementations),
-> EDZL exhibits really low tardiness (almost non-existent).  EDZL may
-> give you the benefits of using laxities where useful and be easier
-> to implement (but that's just my guess)
+> Thanks. Please consider applying the one below as well if you're fine
+> with it. We need that parameter for bootstrapping in the factory when
+> devices are produced.
 
-Yes, EDZL is a simple extension of EDF.  If you have a WCET
-estimate for a task, you just apply EDF until/unless the task
-reaches zero laxity.  If it reaches zero laxity you bump it to a
-fixed priority level that is above all EDF tasks.  It seems very
-good in simulations, in terms of schedulabilty, number of context
-switches, and number of task migration.  It never deviates from
-EDF except in cases where a deadline would otherwise be missed.
-Therefore all EDF schedulability tests are valid for EDZL.  In
-addition, we have some tighter tests.  EDZL never causes more than
-one context switch more than EDF, when a task goes from positive
-laxity to zero laxity.  This does not happen often.  It is much
-lower overhead than least-laxity-first, since there is no
-possibility of getting into a time-slicing situtation among tasks
-with equal laxity.  It is also nice because in many cases the
-scheduler will not know the WCET of a task, and so it is
-impossible to compute laxity.  In those cases, you just use EDF.
-The two policies (EDF and EDZL) are completely compatible and
-interoperable.
+> When connecting a ds2760 to a partly loaded battery the first time,
+> there must be a way to bootstrap the current_accum value. Without that,
+> the current capactity value is bogus until the battery is fully charged
+> for the first time.
 
-I hope that Linux will not pursue EDF or EDZL in only a narrow
-sense, as simple priority scheduling algorithms, without providing
-for bandwidth guaranteees and limits.
+Erm, sorry, here's another version that does the 0.25mAh -> Ah
+calculation in ds2760_battery_set_current_accum().
 
-By bandwith "guarantee" I mean that the task/scheduling entity is
-guaranteed to be able to at least *compete* at a certain level for
-a certain percentage of the CPU, if we cannot (better) provide an
-admission control mechanism that guarantees it will actually get a
-certain percentage of the CPU.
+Daniel
 
-By bandwidth "limit" I mean that there is an enforced bound
-on the percentage of processor time a task/scheduling entity
-may consume.  
+>From e89cd102afe30dcb26fa3c788b439aebc52a93c3 Mon Sep 17 00:00:00 2001
+From: Daniel Mack <daniel@caiaq.de>
+Date: Wed, 15 Jul 2009 21:57:29 +0200
+Subject: [PATCH] ds2760: add current_accum module parameter
 
-For example, in the fixed-priority domain, we have Sporadic
-Server.  This guarantees the server a chance to compete at its top
-priority for at least sched_ss_init_budget time in every
-sched_ss_repl_period time, at sched_priority, within some
-tolerance.  It also should not be permitted to use more than
-sched_ss_init_budget time in every sched_ss_repl_period time, at
-sched_priority, within some tolerance.
+When connecting a ds2760 to a partly loaded battery the first time,
+there must be a way to bootstrap the current_accum value. Without that,
+the current capactity value is bogus until the battery is fully charged
+for the first time.
 
-In the deadline scheduling domain, we have algorithms like
-Constant Bandwidth Server (and some improved variants) that
-provide similar gurantees and limites, in terms of deadlines.  (I
-recall seeing one very good version in a paper I recently saw,
-which I could seek out and provide to the list if there is
-interest.)
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
+Cc: Matt Reimer <mreimer@vpop.net>
+Cc: Anton Vorontsov <cbou@mail.ru>
+---
+ drivers/power/ds2760_battery.c |   41 ++++++++++++++++++++++++++-------------
+ 1 files changed, 27 insertions(+), 14 deletions(-)
 
-These so-called "aperiodic server scheduling" algorithms are
-critically needed in a system like Linux that is open (in the
-sense of being able to host a dynamic mix of uncoordinated
-applications), and based on a thread programming model (as copared
-to the job/task models used in scheduling theory).  With the
-thread abstraction one generally cannot give the scheduler WCET
-bounds, and sometimes cannot give deadlines, since the threads
-will wake up and go to sleep according to their own internal logic
-(all the OS sees is the system calls).  However, if the
-application is guaranteed a chance to at least compete at a high
-enough priority for a certain bandwidth (and, preferably, actually
-be guaranteed that bandwidth, by admission control), it is
-possible to write real-time applications. In order to be able to
-make such a guarantee, one must be able to limit the CPU usage of
-all other threads.  This means, in effect, that *all*
-tasks/scheduling entities above a certain priority level must be
-scheduled according to a bandwidth-limiting algorithm.
+diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
+index 2d0e5ed..f4a9258 100644
+--- a/drivers/power/ds2760_battery.c
++++ b/drivers/power/ds2760_battery.c
+@@ -70,6 +70,10 @@ static unsigned int rated_capacity;
+ module_param(rated_capacity, uint, 0644);
+ MODULE_PARM_DESC(rated_capacity, "rated battery capacity, 10*mAh or index");
+ 
++static unsigned int current_accum;
++module_param(current_accum, uint, 0644);
++MODULE_PARM_DESC(current_accum, "current accumulator value");
++
+ /* Some batteries have their rated capacity stored a N * 10 mAh, while
+  * others use an index into this table. */
+ static int rated_capacities[] = {
+@@ -215,6 +219,22 @@ static int ds2760_battery_read_status(struct ds2760_device_info *di)
+ 	return 0;
+ }
+ 
++static void ds2760_battery_set_current_accum(struct ds2760_device_info *di,
++					     unsigned int acr_val)
++{
++	unsigned char acr[2];
++
++	/* acr is in units of 0.25 mAh */
++	acr_val *= 4L;
++	acr_val /= 1000;
++
++	acr[0] = acr_val >> 8;
++	acr[1] = acr_val & 0xff;
++
++	if (w1_ds2760_write(di->w1_dev, acr, DS2760_CURRENT_ACCUM_MSB, 2) < 2)
++		dev_warn(di->dev, "ACR write failed\n");
++}
++
+ static void ds2760_battery_update_status(struct ds2760_device_info *di)
+ {
+ 	int old_charge_status = di->charge_status;
+@@ -246,21 +266,9 @@ static void ds2760_battery_update_status(struct ds2760_device_info *di)
+ 			if (di->full_counter < 2) {
+ 				di->charge_status = POWER_SUPPLY_STATUS_CHARGING;
+ 			} else {
+-				unsigned char acr[2];
+-				int acr_val;
+-
+-				/* acr is in units of 0.25 mAh */
+-				acr_val = di->full_active_uAh * 4L / 1000;
+-
+-				acr[0] = acr_val >> 8;
+-				acr[1] = acr_val & 0xff;
+-
+-				if (w1_ds2760_write(di->w1_dev, acr,
+-				    DS2760_CURRENT_ACCUM_MSB, 2) < 2)
+-					dev_warn(di->dev,
+-						 "ACR reset failed\n");
+-
+ 				di->charge_status = POWER_SUPPLY_STATUS_FULL;
++				ds2760_battery_set_current_accum(di,
++						di->full_active_uAh);
+ 			}
+ 		}
+ 	} else {
+@@ -423,6 +431,11 @@ static int ds2760_battery_probe(struct platform_device *pdev)
+ 	if (rated_capacity)
+ 		ds2760_battery_write_rated_capacity(di, rated_capacity);
+ 
++	/* set current accumulator if given as parameter.
++	 * this should only be done for bootstrapping the value */
++	if (current_accum)
++		ds2760_battery_set_current_accum(di, current_accum);
++
+ 	retval = power_supply_register(&pdev->dev, &di->bat);
+ 	if (retval) {
+ 		dev_err(di->dev, "failed to register battery\n");
+-- 
+1.6.3.1
 
-The present Linux "RT throttling" mechanism seems to be an attempt
-to achieve something similar (preventing RT tasks from shutting
-out other work, by reserving some bandwidth for non-RT tasks).
-However, it is done so grossly as to be unsatisfactory for
-real-time applications.  The better way to do this would be to
-enforce a bandwidth limit on each task with real-time priority --
-using the budget amount and replenishment interval required by
-that task -- and enforce by admission control that the real-time
-tasks do not exceed some configurable percent of the total system
-utilization.
-
-Of course, the POSIX standard does not recognize any budget and
-replenishment interval for policies other than SCHED_SPORADIC, but
-the same problem exists with respect to the present "RT
-throttling" mechanism.  It would be possible to provide legal
-implementation-defined extensions for the operations that take a
-struct sched_param to look at these additional sched_param fields
-for other policies such as SCHED_FIFO and SCHED_OTHER, and to
-provide default values when they are not specified.  The amount of
-capacity to be reserved for system internal use could be
-configured, using some combination of kernel compile-time macros,
-boot parameters, and the /proc interface.  User defaults could be
-configured using extensions to the setrlimit() interface.
-
-Ted
