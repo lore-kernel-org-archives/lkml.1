@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755784AbZGOSQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932158AbZGOSSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755784AbZGOSQF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 14:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbZGOSQE
+	id S932158AbZGOSSo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 14:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbZGOSSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 14:16:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39546
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755784AbZGOSQD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 14:16:03 -0400
-Date: Wed, 15 Jul 2009 11:16:06 -0700 (PDT)
-Message-Id: <20090715.111606.193724419.davem@davemloft.net>
-To: petkovbb@googlemail.com
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] ide-tape: misc stuff
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1247671100-8173-1-git-send-email-petkovbb@gmail.com>
-References: <1247671100-8173-1-git-send-email-petkovbb@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 15 Jul 2009 14:18:43 -0400
+Received: from gandalf.vpop.net ([216.193.240.4]:52164 "EHLO gandalf.vpop.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755980AbZGOSSm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 14:18:42 -0400
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
+       Anton Vorontsov <cbou@mail.ru>
+Message-Id: <EE599D8C-0A32-46DC-9C34-34BAE1C2BEE1@vpop.net>
+From: Matt Reimer <mreimer@vpop.net>
+To: Daniel Mack <daniel@caiaq.de>
+In-Reply-To: <1247674841-9909-3-git-send-email-daniel@caiaq.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [PATCH 3/4] ds2760: add rated_capacity module parameter
+Date: Wed, 15 Jul 2009 11:06:07 -0700
+References: <1247674841-9909-1-git-send-email-daniel@caiaq.de> <1247674841-9909-2-git-send-email-daniel@caiaq.de> <1247674841-9909-3-git-send-email-daniel@caiaq.de>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Borislav Petkov <petkovbb@googlemail.com>
-Date: Wed, 15 Jul 2009 17:18:16 +0200
+On Jul 15, 2009, at 9:20 AM, Daniel Mack wrote:
 
-> here is some ide-tape stuff.
-> 
-> * 0001: somehow fell through the cracks, DEBUG build fix
+> For systems where the ds2760 is soldered directly on the PCB, the  
+> 'rated
+> capacity' register is not set to anything useful.
+>
+> In order to allow users to bootstrap this value, introduce a new  
+> module
+> parameter 'rated_capacity' and use it to write the internal EEPROM in
+> case the value differes from what's been given.
+>
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
+> Cc: Matt Reimer <mreimer@vpop.net>
+> Cc: Anton Vorontsov <cbou@mail.ru>
 
-This is OK.
+Acked-by: Matt Reimer <mreimer@vpop.net>
 
-> * 0002: mostly code unification
-
-I'm not applying this.  IDE is in deep maintainence mode and
-we really need to avoid changes that don't fix real bugs and
-have only marginal benefit, like this change.
-
-> * 0003: this one converts ide-tape to the debugging scheme we use with ide-cd
->   and ide-floppy. It adds some debug calls at important places and has proven
->   very helpful when working on bug reports with users. No functional change.
-
-I'm not applying this for the same reason as patch #2.
-
-> * 0004: real bugfix
-
-Ok, did you test this?
-
-Please respin patch #1 and #4 as a two patch set and resubmit.
-
-Thank you.
+Matt
