@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZGOKq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZGOKsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbZGOKq7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 06:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbZGOKq6
+	id S1754017AbZGOKsg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 06:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZGOKsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 06:46:58 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:42583 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754007AbZGOKq5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 06:46:57 -0400
-Subject: Re: kmemleak reports
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A5D148A.5090405@gmail.com>
-References: <4A5D148A.5090405@gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 15 Jul 2009 11:46:27 +0100
-Message-Id: <1247654787.10407.39.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Jul 2009 10:46:27.0856 (UTC) FILETIME=[8191A100:01CA0539]
+	Wed, 15 Jul 2009 06:48:36 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43497 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753702AbZGOKsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 06:48:35 -0400
+Date: Wed, 15 Jul 2009 11:48:34 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: kosaki.motohiro@jp.fujitsu.com, Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH] mm: Warn once when a page is freed with PG_mlocked set
+	(resend)
+Message-ID: <20090715104833.GB9267@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-14 at 20:28 -0300, Kevin Winchester wrote:
-> I have noticed a few kmemleak reports being sent to LKML in the last
-> few days, and I could chime in with mine, if you wish:
-> 
->     kmemleak: 97 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+When a page is freed with the PG_mlocked set, it is considered an unexpected
+but recoverable situation. A counter records how often this event happens
+but it is easy to miss that this event has occured at all. This patch warns
+once when PG_mlocked is set to prompt debuggers to check the counter to
+see how often it is happening.
 
-That's not unlikely, though several of reports may come from a single
-place (a user-space script could be used to group them together).
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ mm/page_alloc.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
-> The entries are for X, ntpdate, scsi_scan_2, softirq, swapper, in case
-> there's anything surprising in there.
-
-As I mentioned in the past, you can run a few "echo scan
-> /sys/kernel/debug/kmemleak" to see if any of them disappear.
-
-> However, I was thinking that you might soon start getting too many
-> reports to process.  I wonder if there might be some way that you
-> could have a similar facility to kerneloops that would automatically
-> register leak reports to a website where they could be organized and
-> ranked by number of occurrences.  Are the individual leaks reported in
-> such at way that would allow them to be grouped like that?
-
-The leaks are reported in the order they were allocated and this makes
-it easier to debug (since an early leak may trigger subsequent reports
-on pointers it contains since it isn't scanned).
-
-My hope is that once the initial leaks are fixed, there will be less in
-the future and could be easily linked to recent commits (which is not
-always the case now).
-
-I don't have the time to set up something like kerneloops but I'm happy
-to manually log them somewhere (like bugzilla.kernel.org).
-Alternatively, kerneloops.org could detect kmemleak reports on the list
-and log them.
-
-> If a kerneloops-style setup is not desirable/feasible, would you be
-> able to send me a walkthrough for how you go about tracking down one
-> of these leaks?  Then I might be able to help out by investigating a
-> few of my own.
-
-First, make sure you use -rc3 as it has several kmemleak fixes. On
-x86_64, there is another patch I posted for moving the _edata in
-vmlinux.lds.S to be able to scan the whole .data section.
-
-I gave some hints in this message - http://lkml.org/lkml/2009/7/14/72.
-I'll also update the Documentation/kmemleak.txt file with such
-information in the next few days.
-
--- 
-Catalin
-
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index caa9268..f8902e7 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -495,8 +495,16 @@ static inline void free_page_mlock(struct page *page)
+ static void free_page_mlock(struct page *page) { }
+ #endif
+ 
+-static inline int free_pages_check(struct page *page)
+-{
++static inline int free_pages_check(struct page *page, int wasMlocked)
++{
++	if (unlikely(wasMlocked)) {
++		WARN_ONCE(1, KERN_WARNING
++			"Page flag mlocked set for process %s at pfn:%05lx\n"
++			"page:%p flags:0x%lX\n",
++			current->comm, page_to_pfn(page),
++			page, page->flags|__PG_MLOCKED);
++	}
++
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+ 		(atomic_read(&page->_count) != 0) |
+@@ -562,7 +570,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+ 	kmemcheck_free_shadow(page, order);
+ 
+ 	for (i = 0 ; i < (1 << order) ; ++i)
+-		bad += free_pages_check(page + i);
++		bad += free_pages_check(page + i, wasMlocked);
+ 	if (bad)
+ 		return;
+ 
+@@ -1027,7 +1035,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+ 
+ 	if (PageAnon(page))
+ 		page->mapping = NULL;
+-	if (free_pages_check(page))
++	if (free_pages_check(page, wasMlocked))
+ 		return;
+ 
+ 	if (!PageHighMem(page)) {
