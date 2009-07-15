@@ -1,76 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755288AbZGOPE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZGOPJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755288AbZGOPE6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 11:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbZGOPE6
+	id S1755214AbZGOPJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 11:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbZGOPJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 11:04:58 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51218 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753100AbZGOPE5 (ORCPT
+	Wed, 15 Jul 2009 11:09:27 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:48959 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752525AbZGOPJ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 11:04:57 -0400
-Date: Wed, 15 Jul 2009 02:04:17 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Possible Suspend to Ram bug?
-Message-ID: <20090715000417.GB1552@ucw.cz>
-References: <200907100458.27410.tfjellstrom@shaw.ca> <200907150359.12187.tfjellstrom@shaw.ca> <alpine.LNX.2.00.0907151330180.813@wotan.suse.de> <200907150545.14867.tfjellstrom@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907150545.14867.tfjellstrom@shaw.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 15 Jul 2009 11:09:26 -0400
+Subject: Re: SCSI command (SP-OUT) failing on SLES 9 32-bit
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: rohan a <info1686@gmail.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <7a7c22420907150803v4f4ae9dn9eff41b5d5a7edf6@mail.gmail.com>
+References: <7a7c22420907142137o4253dfb5gcd72176cd6a38beb@mail.gmail.com>
+	 <7a7c22420907142326t3b8d4f5fqaf3813cb456186ec@mail.gmail.com>
+	 <7a7c22420907150803v4f4ae9dn9eff41b5d5a7edf6@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 15 Jul 2009 15:09:23 +0000
+Message-Id: <1247670563.4236.16.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-07-15 05:45:14, Thomas Fjellstrom wrote:
-> On Wed July 15 2009, Jiri Kosina wrote:
-> > On Wed, 15 Jul 2009, Thomas Fjellstrom wrote:
-> > > I'll try with debian's 2.6.30 first. But there's a small issue with
-> > > that, .30 and .31 seem to have some performance regressions according to
-> > > sites like phoronix.
-> >
-> > You know, there are lies, then horrible lies, then benchmarks, and
-> > benchmarks done wrong.
-> >
-> > Just do your own measurements under your particular workload, and if you
-> > see any performance regression, just report it.
+On Wed, 2009-07-15 at 20:33 +0530, rohan a wrote:
+> Hi guys,
 > 
-> The benchmarks they run are pretty much what I'd do to test, so I'd more than 
-> likely get the same results, and waste a bunch of time.
+> Any suggestions...please help
 
-So rather you expect us to waste a bunch of time?
+I know of no kernel bug that could be causing this.  The SLES9 kernel is
+just too old though for me to remember clearly.  I'd suggest you file a
+support incident with SUSE ... they'll debug and fix this on the older
+kernels; we really only deal with the new kernel and one or two back
+revisions here on linux-scsi.
 
-> 2.6.30 did seem to fix the ssd error. but the first time I suspended, my r8169 
-> decided to flip out. I had to rmmod and modprobe it to get the network back 
-> up.
-> 
-> [  867.780034] ------------[ cut here ]------------
-> [  867.780165] WARNING: at 
-> /home/blank/debian/kernel/tmp/linux-2.6-2.6.30/debian/build/source_amd64_none/net/sched/sch_generic.c:226 
-> dev_watchdog+0xc7/0x164()
-> [  867.780373] Hardware name: GA-MA790FXT-UD5P
-> [  867.780488] NETDEV WATCHDOG: eth1 (r8169): transmit timed out
-> [  867.780610] Modules linked in: nvidia(P) powernow_k8 cpufreq_conservative 
-> cpufreq_stats cpufreq_userspace cpufreq_powersave nfsd exportfs nfs lockd 
-> fscache nfs_acl auth_rpcgss sunrpc it87 hwmon_vid adt7473 firewire_sbp2 loop 
-> snd_hda$
-> [  867.785472] Pid: 0, comm: swapper Tainted: P
-
-....and some more.
+James
 
 
-> At this point I was getting repeated "link up" messages and even though 
-> ifconfig said the network was up, there was no actual connectivity. as 
-> mentioned only rmmod+modprobe of r8169 fixed the problem. It doesn't seem to 
-> happen often though.
-
-Reproduce it without taints, then youu can report a regression in network...
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
