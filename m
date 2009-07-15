@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZGOE3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751380AbZGOEcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751287AbZGOE3R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 00:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbZGOE3Q
+	id S1751380AbZGOEcR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 00:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbZGOEcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 00:29:16 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49211 "EHLO song.cn.fujitsu.com"
+	Wed, 15 Jul 2009 00:32:16 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64423 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751034AbZGOE3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 00:29:15 -0400
-Message-ID: <4A5D5B12.2050802@cn.fujitsu.com>
-Date: Wed, 15 Jul 2009 12:29:06 +0800
+	id S1750996AbZGOEcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 00:32:16 -0400
+Message-ID: <4A5D5BCF.4070707@cn.fujitsu.com>
+Date: Wed, 15 Jul 2009 12:32:15 +0800
 From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
@@ -18,53 +18,124 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] tracing/function: fix the return value of ftrace_trace_onoff_callback()
+Subject: [PATCH 2/2] tracing/function: simplify for __ftrace_replace_code()
+References: <4A5D5B12.2050802@cn.fujitsu.com>
+In-Reply-To: <4A5D5B12.2050802@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ftrace_trace_onoff_callback() will return error even if we do the
-right operation, for example:
+Rewrite the __ftrace_replace_code() function, let it's simple, but
+not change the code's logic.
 
-# echo _spin_*:traceon:10 > set_ftrace_filter
--bash: echo: write error: Invalid argument
-# cat set_ftrace_filter
-#### all functions enabled ####
-_spin_trylock_bh:traceon:count=10
-_spin_unlock_irq:traceon:count=10
-_spin_unlock_bh:traceon:count=10
-_spin_lock_irq:traceon:count=10
-_spin_unlock:traceon:count=10
-_spin_trylock:traceon:count=10
-_spin_unlock_irqrestore:traceon:count=10
-_spin_lock_irqsave:traceon:count=10
-_spin_lock_bh:traceon:count=10
-_spin_lock:traceon:count=10
-
-We want to set _spin_*:traceon:10 to set_ftrace_filter, it complain
-with "Invalid argument", but the operation is successful.
-So, this patch fix it.
+First, we get the state we want to set, if the record has the same
+state, then do nothing, if not, enable/disable it.
 
 Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 ---
- kernel/trace/trace_functions.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/trace/ftrace.c |   75 +++++++++++++-----------------------------------
+ 1 files changed, 21 insertions(+), 54 deletions(-)
 
-diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-index 7402144..75ef000 100644
---- a/kernel/trace/trace_functions.c
-+++ b/kernel/trace/trace_functions.c
-@@ -363,7 +363,7 @@ ftrace_trace_onoff_callback(char *glob, char *cmd, char *param, int enable)
-  out_reg:
- 	ret = register_ftrace_function_probe(glob, ops, count);
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 4521c77..18aeb8d 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1016,71 +1016,38 @@ static int
+ __ftrace_replace_code(struct dyn_ftrace *rec, int enable)
+ {
+ 	unsigned long ftrace_addr;
+-	unsigned long ip, fl;
++	unsigned long flag = 0UL;
  
--	return ret;
-+	return ret < 0 ? ret : 0;
+ 	ftrace_addr = (unsigned long)FTRACE_ADDR;
+ 
+-	ip = rec->ip;
+-
+ 	/*
+-	 * If this record is not to be traced and
+-	 * it is not enabled then do nothing.
++	 * If this record is not to be traced or we want to disable it,
++	 * then disable it.
+ 	 *
+-	 * If this record is not to be traced and
+-	 * it is enabled then disable it.
++	 * If we want to enable it and filtering is off, then enable it.
+ 	 *
++	 * If we want to enable it and filtering is on, enable it only if
++	 * it's filtered
+ 	 */
+-	if (rec->flags & FTRACE_FL_NOTRACE) {
+-		if (rec->flags & FTRACE_FL_ENABLED)
+-			rec->flags &= ~FTRACE_FL_ENABLED;
+-		else
+-			return 0;
+-
+-	} else if (ftrace_filtered && enable) {
+-		/*
+-		 * Filtering is on:
+-		 */
+-
+-		fl = rec->flags & (FTRACE_FL_FILTER | FTRACE_FL_ENABLED);
+-
+-		/* Record is filtered and enabled, do nothing */
+-		if (fl == (FTRACE_FL_FILTER | FTRACE_FL_ENABLED))
+-			return 0;
+-
+-		/* Record is not filtered or enabled, do nothing */
+-		if (!fl)
+-			return 0;
+-
+-		/* Record is not filtered but enabled, disable it */
+-		if (fl == FTRACE_FL_ENABLED)
+-			rec->flags &= ~FTRACE_FL_ENABLED;
+-		else
+-		/* Otherwise record is filtered but not enabled, enable it */
+-			rec->flags |= FTRACE_FL_ENABLED;
+-	} else {
+-		/* Disable or not filtered */
+-
+-		if (enable) {
+-			/* if record is enabled, do nothing */
+-			if (rec->flags & FTRACE_FL_ENABLED)
+-				return 0;
+-
+-			rec->flags |= FTRACE_FL_ENABLED;
+-
+-		} else {
++	if (enable && !(rec->flags & FTRACE_FL_NOTRACE)) {
++		if (ftrace_filtered) {
++			if (rec->flags & FTRACE_FL_FILTER)
++				flag = FTRACE_FL_ENABLED;
++		} else
++			flag = FTRACE_FL_ENABLED;
++	}
+ 
+-			/* if record is not enabled, do nothing */
+-			if (!(rec->flags & FTRACE_FL_ENABLED))
+-				return 0;
++	/* If not change this record's state, then do nothing */
++	if ((rec->flags & FTRACE_FL_ENABLED) == flag)
++		return 0;
+ 
+-			rec->flags &= ~FTRACE_FL_ENABLED;
+-		}
++	if (flag) {
++		rec->flags |= FTRACE_FL_ENABLED;
++		return ftrace_make_call(rec, ftrace_addr);
+ 	}
+ 
+-	if (rec->flags & FTRACE_FL_ENABLED)
+-		return ftrace_make_call(rec, ftrace_addr);
+-	else
+-		return ftrace_make_nop(NULL, rec, ftrace_addr);
++	rec->flags &= ~FTRACE_FL_ENABLED;
++	return ftrace_make_nop(NULL, rec, ftrace_addr);
  }
  
- static struct ftrace_func_command ftrace_traceon_cmd = {
+ static void ftrace_replace_code(int enable)
 -- 
 1.6.1.2
+
 
