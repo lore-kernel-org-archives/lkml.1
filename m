@@ -1,187 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbZGOIyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZGOJAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbZGOIyX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 04:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZGOIyX
+	id S1753363AbZGOJAO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 05:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbZGOJAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 04:54:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41467 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753322AbZGOIyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 04:54:21 -0400
-X-Authenticated: #23875046
-X-Provags-ID: V01U2FsdGVkX1+HDc9SltKHSWz4KOeSM1IuNQsqgS9qSHka3NDxzs
-	n4kavX6D5puAgB
-Message-ID: <4A5D9939.3000500@fisher-privat.net>
-Date: Wed, 15 Jul 2009 10:54:17 +0200
-From: Alexey Fisher <bug-track@fisher-privat.net>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090710)
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-CC: Catalin Marinas <catalin.marinas@arm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-ext4@vger.kernel.org
-Subject: Re: ext4 memory leak (was Re: [PATCH] x86: _edata should include
- all .data.* sections on X86_64)
-References: <4A5C20E5.6010203@fisher-privat.net> <84144f020907140019g511723dctb541f6333d1a082b@mail.gmail.com> <4A5C41C8.7040904@fisher-privat.net> <1247564356.28240.30.camel@pc1117.cambridge.arm.com> <1247565175.28240.37.camel@pc1117.cambridge.arm.com> <4A5C5A59.5080304@fisher-privat.net> <1247567499.28240.48.camel@pc1117.cambridge.arm.com> <4A5C5FD0.3020204@fisher-privat.net> <1247574390.28240.67.camel@pc1117.cambridge.arm.com> <20090715080336.GA4823@skywalker>
-In-Reply-To: <20090715080336.GA4823@skywalker>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 15 Jul 2009 05:00:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39707 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752366AbZGOJAM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 05:00:12 -0400
+Date: Wed, 15 Jul 2009 10:01:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pete Clements <clem@clem.clem-digital.net>
+Cc: linux-kernel@vger.kernel.org (linux-kernel)
+Subject: Re: Oops tty layer -- 31-rc3 and 31-rc2-git10
+Message-ID: <20090715100113.44bbe88c@lxorguk.ukuu.org.uk>
+In-Reply-To: <200907142347.n6ENl23S001626@clem.clem-digital.net>
+References: <200907142347.n6ENl23S001626@clem.clem-digital.net>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.45
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch work for me.
+On Tue, 14 Jul 2009 19:47:02 -0400 (EDT)
+Pete Clements <clem@clem.clem-digital.net> wrote:
 
-Aneesh Kumar K.V schrieb:
-> On Tue, Jul 14, 2009 at 01:26:30PM +0100, Catalin Marinas wrote:
->> (I cc'ed linux-ext4@vger.kernel.org as well)
->>
->> On Tue, 2009-07-14 at 12:37 +0200, Alexey Fisher wrote:
->>> this is complete trace from debug/kmemleak .
->> [...]
->>> i will compile now latest linux-arm.org/linux-2.6.git
->>> unreferenced object 0xffff880132c48890 (size 1024):
->>>    comm "exe", pid 1612, jiffies 4294894130
->>>    backtrace:
->>>      [<ffffffff810fbaca>] create_object+0x13a/0x2c0
->>>      [<ffffffff810fbd75>] kmemleak_alloc+0x25/0x60
->>>      [<ffffffff810f596b>] __kmalloc+0x11b/0x210
->>>      [<ffffffff811ae061>] ext4_mb_init+0x1b1/0x5c0
->>>      [<ffffffff8119f1e9>] ext4_fill_super+0x1e29/0x2720
->>>      [<ffffffff8110111f>] get_sb_bdev+0x16f/0x1b0
->>>      [<ffffffff81195413>] ext4_get_sb+0x13/0x20
->>>      [<ffffffff81100bf6>] vfs_kern_mount+0x76/0x180
->>>      [<ffffffff81100d6d>] do_kern_mount+0x4d/0x120
->>>      [<ffffffff81118ee7>] do_mount+0x307/0x8b0
->>>      [<ffffffff8111951f>] sys_mount+0x8f/0xe0
->>>      [<ffffffff8100b66b>] system_call_fastpath+0x16/0x1b
->>>      [<ffffffffffffffff>] 0xffffffffffffffff
->> After some investigation, this looks to me like a real leak.
->>
->> I managed to reproduce something similar (though the size may differ, I
->> think depending on filesystem size - only tried with a 64MB loop
->> device):
->>
->> unreferenced object 0xde468300 (size 32):
->>   comm "mount", pid 1445, jiffies 4294950074
->>   backtrace:
->>     [<c006d473>] __save_stack_trace+0x17/0x1c
->>     [<c006d545>] create_object+0xcd/0x188
->>     [<c01efe43>] kmemleak_alloc+0x1b/0x3c
->>     [<c006c013>] __kmalloc+0xd7/0xe4
->>     [<c00c1029>] ext4_mb_init+0x14d/0x374
->>     [<c00b7d7d>] ext4_fill_super+0x1385/0x16b4
->>     [<c0070891>] get_sb_bdev+0xa9/0xe4
->>     [<c00b574b>] ext4_get_sb+0xf/0x14
->>     [<c006fd3f>] vfs_kern_mount+0x33/0x64
->>     [<c006fda5>] do_kern_mount+0x25/0x8c
->>     [<c007e11f>] do_mount+0x47f/0x4c4
->>     [<c007e1b5>] sys_mount+0x51/0x80
->>     [<c0027c01>] ret_fast_syscall+0x1/0x40
->>     [<ffffffff>] 0xffffffff
->>
->> The above block is the meta_group_info allocated in
->> ext4_mb_init_backend() and stored in sbi->s_group_info[i] (i = 0 in my
->> case). Adding printk's and and inspecting the memory at
->> sbi->s_group_info[] shows different value stored, not the pointer
->> reported as leak.
->>
->> About the new pointer at sbi->s_group_info[0], kmemleak has this
->> information (via the dump= option in my branch; it isn't a leak report):
->>
->> kmemleak: Object 0xdfebfa80 (size 128):
->> kmemleak:   comm "mount", pid 1445, jiffies 4294950075
->> kmemleak:   min_count = 1
->> kmemleak:   count = 1
->> kmemleak:   flags = 0x1
->> kmemleak:   backtrace:
->>      [<c006d473>] __save_stack_trace+0x17/0x1c
->>      [<c006d545>] create_object+0xcd/0x188
->>      [<c01efe43>] kmemleak_alloc+0x1b/0x3c
->>      [<c006c013>] __kmalloc+0xd7/0xe4
->>      [<c00c0df1>] ext4_mb_add_groupinfo+0x29/0x114
->>      [<c00c107f>] ext4_mb_init+0x1a3/0x374
->>      [<c00b7d7d>] ext4_fill_super+0x1385/0x16b4
->>      [<c0070891>] get_sb_bdev+0xa9/0xe4
->>      [<c00b574b>] ext4_get_sb+0xf/0x14
->>      [<c006fd3f>] vfs_kern_mount+0x33/0x64
->>      [<c006fda5>] do_kern_mount+0x25/0x8c
->>      [<c007e11f>] do_mount+0x47f/0x4c4
->>      [<c007e1b5>] sys_mount+0x51/0x80
->>      [<c0027c01>] ret_fast_syscall+0x1/0x40
->>      [<ffffffff>] 0xffffffff
->>
->> So, ext4_mb_add_groupinfo() is overriding the pointers stored in
->> sbi->s_group_info[] by the ext4_mb_init_backend() function without
->> freeing them first.
->>
->> Maybe the ext4 people could clarify what is happening here as I'm not
->> familiar with the code.
->>
-> 
-> Can you try this patch ?
-> 
-> commit 4cc505d4c16c86f8f590ce4b288c920572bf2be9
-> Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Date:   Wed Jul 15 13:20:37 2009 +0530
-> 
->     ext4: Memory leak fix ext4_group_info allocation.
->     
->     commit 5f21b0e642d7bf6fe4434c9ba12bc9cb96b17cf7  was done to
->     reallocate groupinfo struct during resize properly. That goal
->     was to allocate new groupinfo struct when we are adding new block
->     groups during resize. Calling ext4_mb_add_group_info in the
->     mballoc initialization code path resulted in we reallocating
->     the group info struct . Fix this by not separately allocating
->     group info in the mballoc init path and always depend on
->     ext4_mb_add_group_info to allocate group info struct.
->     
->     The earlier code also had a bug that we allocated less number of
->     group info struct for the last meta group. But on resize we
->     expected that we had EXT4_DESC_PER_BLOCK group info struct for
->     each meta group.
->     
->     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-> index 519a0a6..96ed1d8 100644
-> --- a/fs/ext4/mballoc.c
-> +++ b/fs/ext4/mballoc.c
-> @@ -2615,22 +2615,6 @@ static int ext4_mb_init_backend(struct super_block *sb)
->  		goto err_freesgi;
->  	}
->  	EXT4_I(sbi->s_buddy_cache)->i_disksize = 0;
-> -
-> -	metalen = sizeof(*meta_group_info) << EXT4_DESC_PER_BLOCK_BITS(sb);
-> -	for (i = 0; i < num_meta_group_infos; i++) {
-> -		if ((i + 1) == num_meta_group_infos)
-> -			metalen = sizeof(*meta_group_info) *
-> -				(ngroups -
-> -					(i << EXT4_DESC_PER_BLOCK_BITS(sb)));
-> -		meta_group_info = kmalloc(metalen, GFP_KERNEL);
-> -		if (meta_group_info == NULL) {
-> -			printk(KERN_ERR "EXT4-fs: can't allocate mem for a "
-> -			       "buddy group\n");
-> -			goto err_freemeta;
-> -		}
-> -		sbi->s_group_info[i] = meta_group_info;
-> -	}
-> -
->  	for (i = 0; i < ngroups; i++) {
->  		desc = ext4_get_group_desc(sb, i, NULL);
->  		if (desc == NULL) {
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-testers" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Fyi:
+> Getting the following oops on shutdown with 31-rc2-git10 and 31-rc3.
+> (x86 UP)
 
+Yep - testing a fix in -next at the moment.
+
+--
+
+
+tty: fix close/hangup race
+
+From: Alan Cox <alan@linux.intel.com>
+
+We can get a situation where a hangup occurs during or after a close. In
+that case the ldisc gets disposed of by the close and the hangup then
+explodes.
+
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
+
+ drivers/char/tty_ldisc.c |   25 +++++++++++++++----------
+ 1 files changed, 15 insertions(+), 10 deletions(-)
+
+
+diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
+index 913aa8d..5018e08 100644
+--- a/drivers/char/tty_ldisc.c
++++ b/drivers/char/tty_ldisc.c
+@@ -791,17 +791,20 @@ void tty_ldisc_hangup(struct tty_struct *tty)
+ 	 * N_TTY.
+ 	 */
+ 	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
+-		/* Avoid racing set_ldisc */
++		/* Avoid racing set_ldisc or tty_ldisc_release */
+ 		mutex_lock(&tty->ldisc_mutex);
+-		/* Switch back to N_TTY */
+-		tty_ldisc_halt(tty);
+-		tty_ldisc_wait_idle(tty);
+-		tty_ldisc_reinit(tty);
+-		/* At this point we have a closed ldisc and we want to
+-		   reopen it. We could defer this to the next open but
+-		   it means auditing a lot of other paths so this is a FIXME */
+-		WARN_ON(tty_ldisc_open(tty, tty->ldisc));
+-		tty_ldisc_enable(tty);
++		if (tty->ldisc) {	/* Not yet closed */
++			/* Switch back to N_TTY */
++			tty_ldisc_halt(tty);
++			tty_ldisc_wait_idle(tty);
++			tty_ldisc_reinit(tty);
++			/* At this point we have a closed ldisc and we want to
++			   reopen it. We could defer this to the next open but
++			   it means auditing a lot of other paths so this is
++			   a FIXME */
++			WARN_ON(tty_ldisc_open(tty, tty->ldisc));
++			tty_ldisc_enable(tty);
++		}
+ 		mutex_unlock(&tty->ldisc_mutex);
+ 		tty_reset_termios(tty);
+ 	}
+@@ -866,6 +869,7 @@ void tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty)
+ 
+ 	tty_ldisc_wait_idle(tty);
+ 
++	mutex_lock(&tty->ldisc_mutex);
+ 	/*
+ 	 * Now kill off the ldisc
+ 	 */
+@@ -876,6 +880,7 @@ void tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty)
+ 
+ 	/* Ensure the next open requests the N_TTY ldisc */
+ 	tty_set_termios_ldisc(tty, N_TTY);
++	mutex_unlock(&tty->ldisc_mutex);
+ 
+ 	/* This will need doing differently if we need to lock */
+ 	if (o_tty)
