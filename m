@@ -1,72 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZGONRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZGONT3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbZGONRP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 09:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZGONRP
+	id S1754672AbZGONT3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 09:19:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZGONT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 09:17:15 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:46585 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752089AbZGONRO (ORCPT
+	Wed, 15 Jul 2009 09:19:28 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:56898 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752645AbZGONT1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 09:17:14 -0400
-From: Siarhei Siamashka <siarhei.siamashka@nokia.com>
-Organization: Nokia-D/Helsinki
-To: ext Jamie Lokier <jamie@shareable.org>
-Subject: Re: [PATCH] ARM: copy_page.S: take into account the size of the cache line
-Date: Wed, 15 Jul 2009 16:12:19 +0300
-User-Agent: KMail/1.9.9
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1247156605-16245-1-git-send-email-kirill@shutemov.name> <20090710235123.GE30322@shareable.org>
-In-Reply-To: <20090710235123.GE30322@shareable.org>
+	Wed, 15 Jul 2009 09:19:27 -0400
+X-Trace: 226530479/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.119.106/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.119.106
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvYEAOdzXUpPRXdq/2dsb2JhbACBUc59gjaBUwU
+X-IronPort-AV: E=Sophos;i="4.42,404,1243810800"; 
+   d="scan'208";a="226530479"
+Date: Wed, 15 Jul 2009 14:18:44 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Wu Fengguang <fengguang.wu@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] shmem: call set_page_dirty() with locked page
+In-Reply-To: <20090715111012.GA1403@localhost>
+Message-ID: <Pine.LNX.4.64.0907151405020.23573@sister.anvils>
+References: <20090714092926.GA23969@localhost> <Pine.LNX.4.64.0907141918380.10805@sister.anvils>
+ <20090715111012.GA1403@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907151612.20240.siarhei.siamashka@nokia.com>
-X-OriginalArrivalTime: 15 Jul 2009 13:16:51.0016 (UTC) FILETIME=[83CA9480:01CA054E]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 11 July 2009 02:51:23 ext Jamie Lokier wrote:
-> Kirill A. Shutemov wrote:
-> > From: Kirill A. Shutemov <kirill@shutemov.name>
-> >
-> > Optimized version of copy_page() was written with assumption that cache
-> > line size is 32 bytes. On Cortex-A8 cache line size is 64 bytes.
-> >
-> > This patch tries to generalize copy_page() to work with any cache line
-> > size if cache line size is multiple of 16 and page size is multiple of
-> > two cache line size.
-> >
-> > Unfortunately, kernel doesn't provide a macros with correct cache size.
-> > L1_CACHE_SHIFT is 5 on any ARM. So we have to define macros for this
-> > propose by ourself.
->
-> Why don't you fix L1_CACHE_SHIFT for Cortex-A8?
+On Wed, 15 Jul 2009, Wu Fengguang wrote:
+> On Wed, Jul 15, 2009 at 02:24:54AM +0800, Hugh Dickins wrote:
+> > On Tue, 14 Jul 2009, Wu Fengguang wrote:
+> > > Here set_page_dirty() can be moved into the page lock.
+> > 
+> > Indeed it can, but you've forgotten to mention why you think
+> > that would be a good thing?  All I can see is that it would
+> 
+> Sorry for missing out the rational.  My problem is: the hwpoison code
+> must make sure whether one page can be dropped without losing data.
 
-That's the plan.
+Ah, thanks: your comments here will need to go into the patch
+description.  But shouldn't this patch be part of the hwpoison set?
 
-Right now Kirill is on a vacation, but I think he can continue investigating
-this stuff when he is back and will come up with a clean solution.
+> 
+> > very very slightly increase the page's lock hold time, which
+> > wouldn't be an improvement: what improvement are you making?
+> 
+> Yes there were nothing wrong. Just to make it align with the general
+> practice(not rule): pages are normally dirtied inside the page lock.
 
-Fixing L1_CACHE_SHIFT may open a whole can of worms (fixing some old
-bugs, or breaking some things that might work only when incorrectly
-assuming that cache line is always 32 bytes). For example, looks like this
-thing in 'arch/arm/include/asm/dma-mapping.h' may be dangerous for
-ARM cores, which have cache line size different from 32:
+I don't mind making shmem follow more common practice here if it makes
+life easier for you; but until now there's been no reason to do so -
+as you say, there's no rule to call set_page_dirty with page locked.
 
-static inline int dma_get_cache_alignment(void)
-{
-     return 32;
-}
+I wish you would distinguish between dirtying a page and marking a
+page dirty: if it matters to you whether it's done inside the page
+lock or not, then it matter which one you are talking about.  This
+page was dirtied while the page lock was held, but it's being marked
+dirty just after dropping the page lock.
 
--- 
-Best regards,
-Siarhei Siamashka
+What about shmem_symlink: shouldn't this patch be moving the
+unlock_page down there too?
+
+Hugh
+
+> 
+> The noticeable exceptions are mapped pages and pages with buffer_heads
+> - they could go dirty at any time. Fortunately they will have to be
+> unmapped/released anyway.
+> 
+> shmem may not be the only remaining exception. But let's fix it first.
+> I'd be appreciated if someone could name some more exceptions, or some
+> better criterion on "the data in this page can be recovered".
+> 
+> Thanks,
+> Fengguang
+> 
+> > > CC: Hugh Dickins <hugh@veritas.com>
+> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > ---
+> > >  mm/shmem.c |    2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > --- linux.orig/mm/shmem.c
+> > > +++ linux/mm/shmem.c
+> > > @@ -1630,8 +1630,8 @@ shmem_write_end(struct file *file, struc
+> > >  	if (pos + copied > inode->i_size)
+> > >  		i_size_write(inode, pos + copied);
+> > >  
+> > > -	unlock_page(page);
+> > >  	set_page_dirty(page);
+> > > +	unlock_page(page);
+> > >  	page_cache_release(page);
+> > >  
+> > >  	return copied;
