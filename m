@@ -1,86 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbZGOWw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756313AbZGOWzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbZGOWw1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 18:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbZGOWw0
+	id S1756313AbZGOWzV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 18:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbZGOWzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 18:52:26 -0400
-Received: from smtpout.cs.fsu.edu ([128.186.122.75]:5763 "EHLO mail.cs.fsu.edu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753998AbZGOWwZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 18:52:25 -0400
-Date: Wed, 15 Jul 2009 18:52:23 -0400
-From: Ted Baker <baker@cs.fsu.edu>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Raistlin <raistlin@linux.it>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       "James H. Anderson" <anderson@cs.unc.edu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-Message-ID: <20090715225223.GG14993@cs.fsu.edu>
-References: <200907102350.47124.henrik@austad.us> <1247336891.9978.32.camel@laptop> <4A594D2D.3080101@ittc.ku.edu> <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir> <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir> <4A5C9ABA.9070909@nortel.com> <20090715214558.GC14993@cs.fsu.edu> <4A5E5430.8000102@nortel.com>
+	Wed, 15 Jul 2009 18:55:20 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:54357 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755769AbZGOWzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 18:55:20 -0400
+Subject: Re: Carefully chosen CYC2NS_SCALE_FACTOR ??
+From: john stultz <johnstul@us.ibm.com>
+To: Petr Tesarik <ptesarik@suse.cz>
+Cc: Andi Kleen <andi@firstfloor.org>, george@mvista.com,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1247666603.11358.62.camel@nathan.suse.cz>
+References: <1247666603.11358.62.camel@nathan.suse.cz>
+Content-Type: text/plain
+Date: Wed, 15 Jul 2009 15:54:36 -0700
+Message-Id: <1247698476.7511.179.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5E5430.8000102@nortel.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 04:12:00PM -0600, Chris Friesen wrote:
+On Wed, 2009-07-15 at 16:03 +0200, Petr Tesarik wrote:
+> Hi,
+> 
+> I'm having trouble understanding the rationale behind the choice for
+> CYC2NS_SCALE_FACTOR in arch/x86/include/asm/timer.h:
+> 
+> #define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+> 
+> Why on Earth is this 10?
 
-> As Peter mentioned, it's not so much a matter of whether it's desired or
-> not.  It's required, at least in terms of supporting priority
-> inheritance for pthread mutexes.  I haven't been involved with the
-> linux-rt side of things, but I believe Peter implied that they used PI
-> fairly heavily there to try to minimize priority inversion issues
-> because it was infeasible to analyze all the various locks.  The kernel
-> is over 10 million lines of code, so any locking changes pretty much
-> have to fit into the existing framework with minimal changes.
-...
-> Any additional penalty due to PI should be limited to
-> the mutexes which actually have PI enabled.  If an application can limit
-> itself to "safe" syscalls and has enough knowledge of its own locking,
-> then it could presumably use regular mutexes and avoid the overhead of PI.
+Oh yikes. Its been awhile since I wrote that. 
+
+Had to dig through my mail archive to find it, but that was written up
+in 2003 for 2.5.66 and the cycles_2_ns/set_cyc2ns_scale functions
+weren't even used for sched clock back then. I introduced it for the
+monotonic_clock() functionality. Here's the original patch:
+	http://marc.info/?l=linux-kernel&m=104915471311051&w=2
+
+
+But point taken: its a terribly unhelpful comment!
+
+> AFAICS this constant is the position of the decimal point in the
+> fixed-point cycle-to-nanoseconds computations. It is computed as
+> follows:
+> 
+>                 *scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
+
+So one minor tweak, I don't think we really *mean* NSEC_PER_MSEC there,
+but just 10^6, as its NSEC_PER_SEC/1000 (since the freq is stored in
+khz). Don't know when that changed, but it doesn't really make it any
+more clear whats going on. The comment above this code is more correct
+in explaining how we calculate the scale value (but not so much the
+scale_factor :)
+
+
+> Now, NSEC_PER_MSEC is 10^6, the size of cyc2ns is 32 bits and cpu_khz,
+> being an integer, cannot be less than 1. So, if I want maximum accuracy,
+> I should choose the maximium CYC2NS_SCALE_FACTOR such that:
+> 
+> 10^6 * 2^CYC2NS_SCALE_FACTOR < 2^32
 >
-> I'm not sure the same could apply to the kernel in general...Peter would
-> have to address that as I'm not familiar with the linux-rt changes.
+> Which transforms to:
+> 
+> CYC2NS_SCALE_FACTOR = floor(log2(2^32/NSEC_PER_MSEC)) = 12
+> 
+> Did I miss an obvious reason for not using the scale factor of 12?
 
-I understand the need to support the (largely broken for SMP)
-POSIX real-time API, but from what I read of the scheduler it
-seems that support for priority inheritance on mutexes has greatly
-complicated the kernel, and that the cost extends to applications
-that do not use priority inheritance mutexes.  I especially don't
-see why why priority inheritance mutexes should ever be used by
-the kernel itself.  Is there a way to provide in the kernel
-whatever minimal hooks are needed to support the API for users who
-want it, with less impact?
+No. At this point you're probably right.
 
-My experience on IEEE PASC and the Austin Group, including work
-with POSIX validation test suites, has shown that many of the
-POSIX specifications leave a huge amount of room for
-implementation freedom -- much larger than I thought when I
-balloted them.  I found this out when I wrote test programs that
-implementors argued went beyond the specs, when I complained as
-user about POSIX implementations that I thought did not meet the
-specs, and when I read interpretation requests from other users
-and implementors.
+The hangcheck timer had a very large interval, 180 seconds, so we
+probably expected to have to deal with 2x that number in cycles. So
+something on the order of 1 trillion cycles @4ghz. The concern was that
+(cyc * cyc2ns_scale) had to not overflow 64bits, so cyc2ns_scale had to
+be less then about 24 bits. But even with that consideration, 2^12 works
+fine, as we divide out the cpu_khz value.
 
-So, I think it would be worth the effort to read the POSIX
-specification for PTHREAD_PRIO_INHERIT carefully, with a lawyerly
-attitude, to see if it really requires going to the lengths the
-Linux kernel currently goes.  That is, look for loopholes that
-permit Linux to do the right thing. I can't do this today, but
-maybe I will another day.
+So yea, your analysis looks fine. 
 
-Ted
+I suspect you could change the code to use 12, but probably reworking
+sched_clock to use the TSC clocksource and its orig_mult/shift values
+would be a better cleanup. The cyc_2_ns is pretty redundant to the
+cyc2ns code used by the timekeeping core.
+
+thanks
+-john
+
+
