@@ -1,58 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZGOP35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZGOPcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbZGOP35 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 11:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbZGOP34
+	id S1755494AbZGOPcl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 11:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbZGOPck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 11:29:56 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59302 "EHLO
+	Wed, 15 Jul 2009 11:32:40 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60681 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755202AbZGOP3z (ORCPT
+	with ESMTP id S1755420AbZGOPcj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 11:29:55 -0400
-Date: Wed, 15 Jul 2009 02:29:16 +0200
+	Wed, 15 Jul 2009 11:32:39 -0400
+Date: Wed, 15 Jul 2009 02:31:44 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: Zhang Rui <rui.zhang@intel.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
        "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
-Subject: Re: [PATCH 0/8] device async action mechanism
-Message-ID: <20090715002916.GC2360@ucw.cz>
-References: <1247643512.26272.74.camel@rzhang-dt>
+Subject: Re: [linux-pm] [PATCH 2/8] introduce the device async action
+	mechanism
+Message-ID: <20090715003144.GD2360@ucw.cz>
+References: <1247643516.26272.77.camel@rzhang-dt>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1247643512.26272.74.camel@rzhang-dt>
+In-Reply-To: <1247643516.26272.77.camel@rzhang-dt>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-I notice you are still ccing my @suse.cz address. That one no longer
-works :-(. 
-
-> this is the patch set I made to speed up the device
-> suspend/resume/shutdown process.
+On Wed 2009-07-15 15:38:36, Zhang Rui wrote:
+> Introduce the device async action mechanism.
 > 
-> A new mechanism called Device Async Actions is introduced in this patch set.
+> In order to speed up Linux suspend/resume/shutdown process,
+> we introduce the device async action mechanism that allow devices
+> to suspend/resume/shutdown asynchronously.
+> 
 > The basic idea is that,
-> 1. device declares to support certain kinds of device async action,
->    like suspend, resume, shutdown, etc.
-> 2. a async domain is create for this device
-> 3. the child device inherits the async domain
-> 4. devices in the same domain suspend/resume/shutdown asynchronously with
->    the other devices.
+> if the suspend/resume/shutdown process of a device set,
+> including a root device and its child devices, are independent of
+> other devices, we create an async domain for this device set,
+> and make them suspend/resume/shutdown asynchronously.
 > 
-> Currently, in order to make sure that it won't bring any side effects,
-> I only convert the ACPI battery and i8042 to use this framework, which reduces
-> 0.5s+ S3 time(suspend time plus resume time)???, from 7.0s to less than 6.5s.
-> and about 0.5s shutdown time in my test.
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/base/Makefile     |    3 
+>  drivers/base/async_dev.c  |  180 ++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/async_dev.h |   40 ++++++++++
+>  include/linux/device.h    |    2 
+>  4 files changed, 224 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/include/linux/async_dev.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/include/linux/async_dev.h
+> @@ -0,0 +1,40 @@
+> +/*
+> + * async_dev.h: function calls for device async actions
+> + *
+> + * (C) Copyright 2009 Intel Corporation
+> + * Author: Zhang Rui <rui.zhang@intel.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; version 2
+> + * of the License.
+> + */
+> +
+> +#ifndef _ASYNC_DEV_H_
+> +#define _ASYNC_DEV_H_
+> +
+> +#include <linux/types.h>
+> +#include <linux/list.h>
+> +#include <linux/async.h>
+> +#include <linux/device.h>
+> +#include <linux/pm.h>
+> +
+> +struct dev_async_struct {
+> +	struct device *dev;
+> +	int type;
+> +	/* Synchronization Domain for device async actions */
+> +	struct list_head domain;
+> +	struct list_head node;
+> +	async_cookie_t cookie;
+> +};
+> +
+> +#define DEV_ASYNC_ACTIONS_ALL	0
+> +
+> +extern int dev_async_schedule(struct device *, void *,
+> +			void *, int);
+> +extern void dev_async_synchronization(void);
 
-Hmm, 7seconds is still quite long. What hw is that?
+'_synchronize' to be consistent with schedule?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
