@@ -1,91 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbZGOBUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbZGOBWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756896AbZGOBUy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 21:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756860AbZGOBUx
+	id S1756902AbZGOBWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 21:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756859AbZGOBWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 21:20:53 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45651 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756855AbZGOBUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 21:20:53 -0400
-Message-ID: <4A5D2E8D.1080701@garzik.org>
-Date: Tue, 14 Jul 2009 21:19:09 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 14 Jul 2009 21:22:21 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:50858 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756855AbZGOBWU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 21:22:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=HTVB6FeY7JrAVb2ZOfjdWbWEN9od5vHb6KmKdSLrHTCPMuezZMCNxgUkJ6P36RHkvP
+         DqK5FNxwqa/QJc2v84+D35cJvE0gzStcENN1nmdoU604g7XWCRms3VfqpTOlTSNNVaGb
+         DyH1XFG+dkP6bklg3mZ0hGhbfSSA5CMzNLcRw=
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] add "VmUsers: N" to /proc/$PID/status
+Date: Wed, 15 Jul 2009 03:22:18 +0200
+User-Agent: KMail/1.8.2
 MIME-Version: 1.0
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Linux NFS ML <linux-nfs@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.31-rc3 nfsv4 client regression (oops)
-References: <4A5C3858.6070303@garzik.org> <1247571788.19099.32.camel@heimdal.trondhjem.org>
-In-Reply-To: <1247571788.19099.32.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200907150322.18123.vda.linux@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Tue, 2009-07-14 at 03:48 -0400, Jeff Garzik wrote:
->> The NFSv4 client just oops'd on me...
->>
->> NFSv4 client: 2.6.31-rc3, Fedora 10, x86-64
->> 		    2.6.30 works, I think 2.6.31-rc1 worked too
->>
->> NFSv4 server: 2.6.29.4-167.fc11.x86_64 (Fedora 11 kernel), F11, x86-64
->>
->> Oops output captured at kerneloops.org: 
->> http://www.kerneloops.org/raw.php?rawid=537858&msgid=
->>
->> Kernel config for 2.6.31-rc3, the problematic kernel, attached.
->>
->>
->>> RIP: 0010:[<ffffffffa02db5b0>]  [<ffffffffa02db5b0>] nfs4_free_lock_state+0x20/0x80 [nfs]
->>> [...]
->>> Call Trace:
->>>  [<ffffffffa02db7dd>] nfs4_set_lock_state+0x1cd/0x220 [nfs]
->>>  [<ffffffffa02cc9db>] nfs4_proc_lock+0x2cb/0x4e0 [nfs]
->>>  [<ffffffff810b40dc>] ? __alloc_pages_nodemask+0x10c/0x600
->>>  [<ffffffffa02b6079>] do_setlk+0xb9/0xd0 [nfs]
->>>  [<ffffffffa02b6220>] nfs_lock+0xd0/0x1d0 [nfs]
->>>  [<ffffffff8111e883>] vfs_lock_file+0x23/0x50
->>>  [<ffffffff8111eaa3>] fcntl_setlk+0x133/0x2f0
->>>  [<ffffffff81192571>] ? __up_read+0x91/0xb0
->>>  [<ffffffff810f0fea>] sys_fcntl+0xca/0x420
->>>  [<ffffffff8100b4fb>] system_call_fastpath+0x16/0x1b
-> 
-> Wow... That bug appears to have been there for years. I'm surprised it
-> hasn't been reported before.
-> 
-> Anyhow, it looks to me as if you are hitting the case in
-> nfs4_get_lock_state() where the first call to __nfs4_find_lock_state()
-> fails, (and so 'new' gets allocated) then the second call succeeds. When
-> the routine attempts to free the now redundant 'new', the call to
-> nfs4_free_lock_state() oopses because new->ls_state hasn't been set.
-> 
-> The following patch ought to fix it...
-> 
-> ---------------------
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> NFSv4: Fix an Oops in nfs4_free_lock_state
-> 
-> The oops http://www.kerneloops.org/raw.php?rawid=537858&msgid= appears to
-> be due to the nfs4_lock_state->ls_state field being uninitialised. This
-> happens if the call to nfs4_free_lock_state() is triggered at the end of
-> nfs4_get_lock_state().
-> 
-> The fixe is to move the initialisation of ls_state into the allocator.
-> 
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Was disscussed sometime ago: http://lkml.org/lkml/2007/8/27/53
 
-Thanks, I'll give it a try!
+This patch aims to improve memory usage info collection
+from userspace. It addresses the problem when userspace
+monitoring cannot determine when two (or more) processes
+share the VM, but they are not threads.
 
-	Jeff
+In Linux, you can clone a process with CLONE_VM, but without
+CLONE_THREAD, and as a result it will get new PID, and its own,
+visible /proc/PID entry.
+
+It creates a problem: userspace tools will think that this is
+just another, separate process. There is no way it can
+figure out that /proc/PID1 and /proc/PID2
+correspond to two processes which share VM,
+and if ir will sum memory usage over the whole of /proc/*,
+it will count their memory usage twice.
+
+It can be nice to know how many such CLONE_VM'ed processes
+share VM with given /proc/PID. Then it would be possible to do
+more accurate accounting of memory usage. Say, by dividing
+all memory usage numbers of this process by this number.
+
+After this patch, CLONE_VM'ed processes have a new line,
+"VmUsers:", in /proc/$PID/status:
+...
+VmUsers:        2
+Threads:        1
+...
+
+The value is obtained simply by atomic_read(&mm->mm_users).
+
+One concern is that the counter may be larger
+than real value, if other CPU did get_task_mm() on the VM
+while we were generating /proc/$PID/status. Better ideas?
 
 
+Test program is below:
 
+#include <sched.h>
+#include <sys/types.h>
+#include <linux/unistd.h>
+#include <errno.h>
+#include <syscall.h>
+/* Defeat glibc "pid caching" */
+#define GETPID() ((int)syscall(SYS_getpid))
+#define GETTID() ((int)syscall(SYS_gettid))
+char stack[8*1024];
+int f(void *arg) {
+        printf("child %d (%d)\n", GETPID(),  GETTID());
+        sleep(1000);
+        _exit(0);
+}
+int main() {
+        int n;
+        memset(malloc(1234*1024), 1, 1234*1024);
+        printf("parent %d (%d)\n", GETPID(), GETTID());
+        // Create a process with shared VM, but not a thread
+        n = clone(f, stack + sizeof(stack)/2, CLONE_VM, 0);
+        printf("clone returned %d\n", n);
+        sleep(1000);
+        _exit(0);
+}
+
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+-- 
+vda
+
+
+--- linux-2.6.31-rc2/fs/proc/task_mmu.c	Wed Jun 10 05:05:27 2009
++++ linux-2.6.31-rc2.VmUsers/fs/proc/task_mmu.c	Wed Jul 15 02:54:45 2009
+@@ -18,6 +18,7 @@
+ {
+ 	unsigned long data, text, lib;
+ 	unsigned long hiwater_vm, total_vm, hiwater_rss, total_rss;
++	unsigned num_vmusers;
+ 
+ 	/*
+ 	 * Note: to minimize their overhead, mm maintains hiwater_vm and
+@@ -36,6 +37,7 @@
+ 	data = mm->total_vm - mm->shared_vm - mm->stack_vm;
+ 	text = (PAGE_ALIGN(mm->end_code) - (mm->start_code & PAGE_MASK)) >> 10;
+ 	lib = (mm->exec_vm << (PAGE_SHIFT-10)) - text;
++	num_vmusers = atomic_read(&mm->mm_users) - 1;
+ 	seq_printf(m,
+ 		"VmPeak:\t%8lu kB\n"
+ 		"VmSize:\t%8lu kB\n"
+@@ -46,7 +48,8 @@
+ 		"VmStk:\t%8lu kB\n"
+ 		"VmExe:\t%8lu kB\n"
+ 		"VmLib:\t%8lu kB\n"
+-		"VmPTE:\t%8lu kB\n",
++		"VmPTE:\t%8lu kB\n"
++		"VmUsers:\t%u\n",
+ 		hiwater_vm << (PAGE_SHIFT-10),
+ 		(total_vm - mm->reserved_vm) << (PAGE_SHIFT-10),
+ 		mm->locked_vm << (PAGE_SHIFT-10),
+@@ -54,7 +57,8 @@
+ 		total_rss << (PAGE_SHIFT-10),
+ 		data << (PAGE_SHIFT-10),
+ 		mm->stack_vm << (PAGE_SHIFT-10), text, lib,
+-		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10);
++		(PTRS_PER_PTE*sizeof(pte_t)*mm->nr_ptes) >> 10,
++		num_vmusers);
+ }
+ 
+ unsigned long task_vsize(struct mm_struct *mm)
+--- linux-2.6.31-rc2/fs/proc/task_nommu.c	Wed Jun 10 05:05:27 2009
++++ linux-2.6.31-rc2.VmUsers/fs/proc/task_nommu.c	Wed Jul 15 02:54:39 2009
+@@ -20,7 +20,8 @@
+ 	struct vm_region *region;
+ 	struct rb_node *p;
+ 	unsigned long bytes = 0, sbytes = 0, slack = 0, size;
+-        
++	unsigned num_vmusers;
++
+ 	down_read(&mm->mmap_sem);
+ 	for (p = rb_first(&mm->mm_rb); p; p = rb_next(p)) {
+ 		vma = rb_entry(p, struct vm_area_struct, vm_rb);
+@@ -67,11 +68,14 @@
+ 
+ 	bytes += kobjsize(current); /* includes kernel stack */
+ 
++	num_vmusers = atomic_read(&mm->mm_users) - 1;
++
+ 	seq_printf(m,
+ 		"Mem:\t%8lu bytes\n"
+ 		"Slack:\t%8lu bytes\n"
+-		"Shared:\t%8lu bytes\n",
+-		bytes, slack, sbytes);
++		"Shared:\t%8lu bytes\n"
++		"VmUsers:\t%u\n",
++		bytes, slack, sbytes, num_vmusers);
+ 
+ 	up_read(&mm->mmap_sem);
+ }
