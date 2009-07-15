@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932320AbZGOUb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932332AbZGOUdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932320AbZGOUb3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 16:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbZGOUb3
+	id S932332AbZGOUdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 16:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932324AbZGOUdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 16:31:29 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:33654 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932284AbZGOUb2 (ORCPT
+	Wed, 15 Jul 2009 16:33:18 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24747 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932304AbZGOUdR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 16:31:28 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] regulator: Improve virtual consumer probe error handling
-Date: Wed, 15 Jul 2009 21:31:25 +0100
-Message-Id: <1247689885-29359-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.3
+	Wed, 15 Jul 2009 16:33:17 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:x-system-of-record;
+	b=krBxMP2kz9gxdIMrWcjp1ycKi81xKspPpYB+/kQ7n4z2WSI2W7iMRZ1Flp8wrY7/+
+	IYrevGjZgL4ZWtZnc9DpA==
+Date: Wed, 15 Jul 2009 13:33:08 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+Subject: [patch] mm: update alloc_flags after oom killer has been called
+Message-ID: <alpine.DEB.2.00.0907151332320.24006@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Report errors to the user and try harder to clean up if we're not
-able to probe.
+It is possible for the oom killer to select current as the task to kill.  
+When this happens, alloc_flags needs to be updated accordingly to set 
+ALLOC_NO_WATERMARKS so the subsequent allocation attempt may use memory 
+reserves as the result of its thread having TIF_MEMDIE set if the 
+allocation is not __GFP_NOMEMALLOC.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- drivers/regulator/virtual.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/regulator/virtual.c b/drivers/regulator/virtual.c
-index acbe18f..036d790 100644
---- a/drivers/regulator/virtual.c
-+++ b/drivers/regulator/virtual.c
-@@ -286,8 +286,7 @@ static int regulator_virtual_consumer_probe(struct platform_device *pdev)
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1756,6 +1756,7 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
  
- 	drvdata = kzalloc(sizeof(struct virtual_consumer_data), GFP_KERNEL);
- 	if (drvdata == NULL) {
--		ret = -ENOMEM;
--		goto err;
-+		return -ENOMEM;
- 	}
+ 	wake_all_kswapd(order, zonelist, high_zoneidx);
  
- 	mutex_init(&drvdata->lock);
-@@ -295,13 +294,17 @@ static int regulator_virtual_consumer_probe(struct platform_device *pdev)
- 	drvdata->regulator = regulator_get(&pdev->dev, reg_id);
- 	if (IS_ERR(drvdata->regulator)) {
- 		ret = PTR_ERR(drvdata->regulator);
-+		dev_err(&pdev->dev, "Failed to get %s: %d\n", reg_id, ret);
- 		goto err;
- 	}
++restart:
+ 	/*
+ 	 * OK, we're below the kswapd watermark and have kicked background
+ 	 * reclaim. Now things get more complex, so set up alloc_flags according
+@@ -1763,7 +1764,6 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+ 	 */
+ 	alloc_flags = gfp_to_alloc_flags(gfp_mask);
  
- 	for (i = 0; i < ARRAY_SIZE(attributes); i++) {
- 		ret = device_create_file(&pdev->dev, attributes[i]);
--		if (ret != 0)
--			goto err;
-+		if (ret != 0) {
-+			dev_err(&pdev->dev, "Failed to create attr %d: %d\n",
-+				i, ret);
-+			goto err_regulator;
-+		}
- 	}
- 
- 	drvdata->mode = regulator_get_mode(drvdata->regulator);
-@@ -310,6 +313,8 @@ static int regulator_virtual_consumer_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
-+err_regulator:
-+	regulator_put(drvdata->regulator);
- err:
- 	for (i = 0; i < ARRAY_SIZE(attributes); i++)
- 		device_remove_file(&pdev->dev, attributes[i]);
--- 
-1.6.3.3
-
+-restart:
+ 	/* This is the last chance, in general, before the goto nopage. */
+ 	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
+ 			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
