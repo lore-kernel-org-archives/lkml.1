@@ -1,49 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbZGONaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZGONgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbZGONaJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 09:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZGONaJ
+	id S1754738AbZGONgh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 09:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbZGONgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 09:30:09 -0400
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:60873 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbZGONaI (ORCPT
+	Wed, 15 Jul 2009 09:36:37 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57844 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754710AbZGONgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 09:30:08 -0400
-Date: Wed, 15 Jul 2009 18:59:56 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: tty related hangs with 2.6.31-rc3 
-Message-ID: <20090715132956.GA10004@skywalker>
+	Wed, 15 Jul 2009 09:36:35 -0400
+Date: Wed, 15 Jul 2009 15:36:27 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Trilok Soni <soni.trilok@gmail.com>
+Cc: Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, dmitry.torokhov@gmail.com,
+       dtor@mail.ru, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org
+Subject: Re: Support for synaptic touchscreen in HTC dream
+Message-ID: <20090715133627.GA2538@elf.ucw.cz>
+References: <20090714100634.GA4054@elf.ucw.cz> <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi!
 
-I am finding tty related hangs with 2.6.31-rc3. This didn't happen 
-before. This happen when i close the emacs session. The /proc/<pid>/stack
-content is below      
+> > +static void decode_report(struct synaptics_ts_data *ts, u8 *buf)
+> > +{
+> 
+> some documentation about this logic would be great.
 
-[<c0362c5b>] process_echoes+0x2b/0x2e0
-[<c03638cb>] n_tty_write_wakeup+0xb/0x40
-[<c0360a88>] tty_wakeup+0x58/0x70
-[<c0368347>] pty_write+0x67/0x70
-[<c035f1cb>] tty_put_char+0x2b/0x40
-[<c036291f>] do_output_char+0xef/0x200
-[<c0362d4e>] process_echoes+0x11e/0x2e0
-[<c0364292>] n_tty_receive_char+0x102/0x710
-[<c0364ac0>] n_tty_receive_buf+0x220/0x410
-[<c036059c>] tiocsti+0x8c/0xa0
-[<c0361aca>] tty_ioctl+0x25a/0x310
-[<c01e52c8>] vfs_ioctl+0x28/0x80
-[<c01e54f4>] do_vfs_ioctl+0x64/0x1c0
-[<c01e56a3>] sys_ioctl+0x53/0x70
-[<c0102e3c>] sysenter_do_call+0x12/0x28
-[<ffffffff>] 0xffffffff
+Arve, can you help here?
 
--aneesh
+
+> > +       int pos[2][2];
+> > +       int f, a;
+> > +       int base = 2;
+> > +       int z = buf[1];
+> > +       int w = buf[0] >> 4;
+> > +       int finger = buf[0] & 7;
+> > +       int finger2_pressed;
+> > +
+> > +       for (f = 0; f < 2; f++) {
+> > +               u32 flip_flag = SYNAPTICS_FLIP_X;
+> > +               for (a = 0; a < 2; a++) {
+> > +                       int p = buf[base + 1];
+> > +                       p |= (u16)(buf[base] & 0x1f) << 8;
+> > +                       if (ts->flags & flip_flag)
+> > +                               p = ts->max[a] - p;
+> > +                       if (ts->flags & SYNAPTICS_SNAP_TO_INACTIVE_EDGE) {
+
+
+> > +static irqreturn_t synaptics_ts_irq_handler(int irq, void *dev_id)
+> > +{
+> > +       struct synaptics_ts_data *ts = dev_id;
+> > +
+> > +       disable_irq(ts->client->irq);
+> 
+> disable_irq_nosync or convert this to request_threaded_irq(...).
+> Please see recent discussion on linux-input for MAX key switch
+> controller.
+
+Do you have a link? (I replaced it with disable_irq_nosync, if that is
+enough...)
+
+> > +static int synaptics_ts_probe(
+> > +       struct i2c_client *client, const struct i2c_device_id *id)
+> > +{
+> 
+> __devinit ?
+
+Ok.
+
+> > +       if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
+> 
+> check for SMBUS? I have added linux-i2c as this driver has i2c bits,
+> so not removing any code.
+
+I guess this driver is only probed on mach-pxa... on machines that
+have the neccessary hardware.
+
+> > +               printk(KERN_ERR "synaptics_ts_probe: need I2C_FUNC_I2C\n");
+> 
+> dev_xxx/pr_xxx friends?
+
+Fixed all occurences.
+
+
+> > +       ts->input_dev = input_allocate_device();
+> > +       if (ts->input_dev == NULL) {
+> > +               ret = -ENOMEM;
+> > +               pr_err("synaptics: Failed to allocate input device\n");
+> > +               goto err_input_dev_alloc_failed;
+> > +       }
+> > +       ts->input_dev->name = "synaptics-rmi-touchscreen";
+> 
+> other parameters of input_dev, like vendor, bus etc.,
+
+Ok, what are those for? I can probably invent some dummy values, but...
+
+> > +       set_bit(EV_SYN, ts->input_dev->evbit);
+> > +       set_bit(EV_KEY, ts->input_dev->evbit);
+> > +       set_bit(BTN_TOUCH, ts->input_dev->keybit);
+> > +       set_bit(BTN_2, ts->input_dev->keybit);
+> > +       set_bit(EV_ABS, ts->input_dev->evbit);
+> > +
+> 
+> __set_bit or input_set_capability please.
+
+__set_bit is easier, done.
+
+> > +static int synaptics_ts_remove(struct i2c_client *client)
+> > +{
+> 
+> __devexit
+
+Applied.
+
+
+> > +static int synaptics_ts_suspend(struct i2c_client *client, pm_message_t mesg)
+> > +{
+> 
+> #ifdef CONFIG_PM ?
+
+Yep.
+
+> > +MODULE_DESCRIPTION("Synaptics Touchscreen Driver");
+> > +MODULE_LICENSE("GPL");
+> 
+> MODULE_ALIAS?
+
+Umm, why? This is loaded from board-*.c files, and I don't think i2c
+has enumeration capabilities.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
