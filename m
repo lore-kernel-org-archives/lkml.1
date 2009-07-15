@@ -1,159 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752977AbZGOHhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbZGOHhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752977AbZGOHhG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 03:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZGOHhG
+	id S1753027AbZGOHhp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 03:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZGOHho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 03:37:06 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:58886 "EHLO gir.skynet.ie"
+	Wed, 15 Jul 2009 03:37:44 -0400
+Received: from mga11.intel.com ([192.55.52.93]:39573 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752956AbZGOHhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 03:37:05 -0400
-Date: Wed, 15 Jul 2009 08:37:03 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org
-cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: [git] drm-fixes
-Message-ID: <alpine.DEB.2.00.0907150834110.16612@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752958AbZGOHho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 03:37:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,403,1243839600"; 
+   d="scan'208";a="707936150"
+Subject: [PATCH 0/8] device async action mechanism
+From: Zhang Rui <rui.zhang@intel.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+Cc: Len Brown <lenb@kernel.org>, Pavel Machek <pavel@suse.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Zhang, Rui" <rui.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 15 Jul 2009 15:38:32 +0800
+Message-Id: <1247643512.26272.74.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Hi Linus,
+this is the patch set I made to speed up the device
+suspend/resume/shutdown process.
 
-Please pull the 'drm-fixes' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
+A new mechanism called Device Async Actions is introduced in this patch set.
+The basic idea is that,
+1. device declares to support certain kinds of device async action,
+   like suspend, resume, shutdown, etc.
+2. a async domain is create for this device
+3. the child device inherits the async domain
+4. devices in the same domain suspend/resume/shutdown asynchronously with
+   the other devices.
 
-This is just the simplest bug fixes that have showed up since rc1. It has 
-one non-drm change to hide the old intelfb driver under CONFIG_EMBEDDED
-and have it conflict with i915 kms code.
+Currently, in order to make sure that it won't bring any side effects,
+I only convert the ACPI battery and i8042 to use this framework, which reduces
+0.5s+ S3 time(suspend time plus resume time)﻿, from 7.0s to less than 6.5s.
+and about 0.5s shutdown time in my test.
 
-I've got an update for the radeon kms+ttm staging driver, that I'll
-send a pull request for separately. I'm just confirming it doesn't touch 
-anything outside the staging code.
+Any comments are welcome. :)
 
-Dave.
+thanks,
+rui
 
- drivers/gpu/drm/drm_debugfs.c   |    4 ++++
- drivers/gpu/drm/drm_gem.c       |   17 ++++++++++-------
- drivers/gpu/drm/drm_stub.c      |    3 ++-
- drivers/gpu/drm/ttm/ttm_bo_vm.c |    4 ++--
- drivers/gpu/drm/via/via_irq.c   |    6 +++++-
- drivers/video/Kconfig           |    3 ++-
- include/drm/drm_pciids.h        |    6 ++++--
- 7 files changed, 29 insertions(+), 14 deletions(-)
 
-commit ecca0683230b83e8f830ff157911fad20bc43015
-Author: Julia Lawall <julia@diku.dk>
-Date:   Sat Jul 11 09:50:09 2009 +0200
+ drivers/acpi/battery.c      |   13 +++
+ drivers/base/Makefile       |    3 +-
+ drivers/base/async_dev.c    |  210 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/base/core.c         |   16 +++-
+ drivers/base/power/main.c   |   10 ++-
+ drivers/input/serio/i8042.c |   10 ++-
+ include/linux/async.h       |    3 +
+ include/linux/async_dev.h   |   45 +++++++++
+ include/linux/device.h      |    2 +
+ 9 files changed, 306 insertions(+), 6 deletions(-)
 
-    drm: Move a dereference below a NULL test
-    
-    If the NULL test is necessary, then the dereference should be moved below
-    the NULL test.
-    
-    The semantic patch that makes this change is as follows:
-    (http://www.emn.fr/x-info/coccinelle/)
-    
-    // <smpl>
-    @@
-    type T;
-    expression E;
-    identifier i,fld;
-    statement S;
-    @@
-    
-    - T i = E->fld;
-    + T i;
-      ... when != E
-          when != i
-      if (E == NULL) S
-    + i = E->fld;
-    // </smpl>
-    
-    Signed-off-by: Julia Lawall <julia@diku.dk>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
 
-commit ba0ab82358a12e7a7f2872d6b65c437157c6888f
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Fri Jul 3 11:24:46 2009 -0700
 
-    fb/intelfb: conflict with DRM_I915 and hide by default
-    
-    Users get confused by this driver.  It's really a special purpose
-    embedded driver, and causes a lot of problems if enabled.  So hide it
-    under EMBEDDED by default, and make sure it doesn't get enabled with
-    the i915 DRM driver.
-    
-    Dave, I'm hoping you can feed this to Linus through your tree.  It's
-    appropriate for 2.6.31 I think.
-    
-    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 916635bfcae5fec170ccd36f4b451cf7c5d23b9d
-Author: Roel Kluin <roel.kluin@gmail.com>
-Date:   Wed Jul 15 16:00:37 2009 +1000
-
-    drm/ttm: fix misplaced parentheses
-    
-    Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 42dd8619940a153e950c4d2301cd5e49f7342f99
-Author: Simon Farnsworth <simon.farnsworth@onelan.com>
-Date:   Fri Jul 10 11:25:16 2009 +0100
-
-    drm/via: Fix vblank IRQ on VIA hardware.
-    
-    via_enable_vblank wasn't setting the VBlank enable bit - instead, it
-    was masking out the rest of the register.
-    
-    At the same time, fix via_disable_vblank to clear the VBlank enable
-    bit.
-    
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 845792d940f5755b7a7837c450a71d9e831a13e2
-Author: Jiri Slaby <jirislaby@gmail.com>
-Date:   Mon Jul 13 23:20:21 2009 +0200
-
-    drm: drm_gem, check kzalloc retval
-    
-    Check kzalloc retval against NULL in drm_gem_object_alloc and bail out
-    appropriately.
-    
-    While at it merge the fail paths and jump to them by gotos at the end
-    of the function.
-    
-    Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit d25e3a6faa82eeaa6e5487c2d2e27cfd938ed108
-Author: Jiri Slaby <jirislaby@gmail.com>
-Date:   Mon Jul 13 23:20:20 2009 +0200
-
-    drm: drm_debugfs, check kmalloc retval
-    
-    Check kmalloc return value in drm_debugfs_create_files and bail out
-    appropriately if the pointer is NULL.
-    
-    Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 069a9dce384e211784ce6fdfaf1f13921327480d
-Author: Alex Deucher <alexdeucher@gmail.com>
-Date:   Wed Jul 1 13:03:52 2009 -0400
-
-    drm/radeon: add some missing pci ids
-    
-    Also, fix ordering for a couple others
-    
-    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
