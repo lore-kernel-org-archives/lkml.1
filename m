@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750844AbZGOEBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751050AbZGOEQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750844AbZGOEBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 00:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbZGOEBW
+	id S1751050AbZGOEQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 00:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZGOEQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 00:01:22 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39001 "EHLO smtps.tip.net.au"
+	Wed, 15 Jul 2009 00:16:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57898 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667AbZGOEBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 00:01:21 -0400
-Date: Wed, 15 Jul 2009 14:01:16 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: dwmw2-iommu tree build failure
-Message-Id: <20090715140116.c2ce8fde.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__15_Jul_2009_14_01_16_+1000_1dByRbfzTkmPxLIZ"
+	id S1750781AbZGOEQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 00:16:57 -0400
+Message-ID: <4A5D5830.6000206@kernel.org>
+Date: Wed, 15 Jul 2009 13:16:48 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/9] devres: WARN() and return, don't crash on device_del()
+ of uninitialized device
+References: <20090712223717.GB16600@kroah.com> <1247438766-17266-1-git-send-email-gregkh@suse.de>
+In-Reply-To: <1247438766-17266-1-git-send-email-gregkh@suse.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 15 Jul 2009 04:16:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__15_Jul_2009_14_01_16_+1000_1dByRbfzTkmPxLIZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Greg Kroah-Hartman wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> I just debugged an obscure crash caused by a device_del() of a all NULL'd
+> out struct device (in usb-serial) and found that a patch like this one would
+> have saved me time (in addition to improved chances of a bug report from
+> users hitting similar driver bugs).
+> 
+> [akpm@linux-foundation.org: cleanup]
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Kay Sievers <kay.sievers@vrfy.org>
+> Cc: Tejun Heo <tj@kernel.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Hi David,
+Acked-by: Tejun Heo <tj@kernel.org>
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
-
-drivers/pci/intel-iommu.c: In function 'dmar_init_reserved_ranges':
-drivers/pci/intel-iommu.c:1323: error: 'struct iova_domain' has no member n=
-amed 'iova_alloc_lock'
-
-Caused by commit b25c32b0af7045d3837c44d9685358aeeb9b7ac8 ("intel-iommu:
-Remove superfluous iova_alloc_lock from IOVA code").
-
-I have used the verion of the dwmw2-iommu tree from next-20090714 for
-today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__15_Jul_2009_14_01_16_+1000_1dByRbfzTkmPxLIZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpdVIwACgkQjjKRsyhoI8ztPgCfRaIU/3SgPQoofma33vNtcMeC
-6VoAoLVkYndUmYES6Uydfw0QbKUBcpKG
-=3a5e
------END PGP SIGNATURE-----
-
---Signature=_Wed__15_Jul_2009_14_01_16_+1000_1dByRbfzTkmPxLIZ--
+-- 
+tejun
