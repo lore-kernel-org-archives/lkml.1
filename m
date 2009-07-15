@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZGOLvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZGOLw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbZGOLvc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 07:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbZGOLvb
+	id S1754434AbZGOLw3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 07:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbZGOLw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 07:51:31 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:56454 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754388AbZGOLva (ORCPT
+	Wed, 15 Jul 2009 07:52:28 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:22311 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754354AbZGOLw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 07:51:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type;
-        b=L6MvbWUKUu1dxDfexAgYJ6sfhL4plCA9vLOKK8RztjNdz9ycuqMvFEmgO/GBNsTLtV
-         6Lnrm5S+HFb86V5xUsZcIQhdFPZkoeZCq4wAoUBmLJjffZxX91QsaAD6IKCiLWklyRj8
-         5jwZ3X6yDiLapfSOg1FRnOTvOm+jOmRI5izDk=
-Date: Wed, 15 Jul 2009 13:52:50 +0200
-From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: PATCH - Fix backlight compilation error on jornada700
-Message-Id: <20090715135250.5f1de20a.kristoffer.ericson@gmail.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i686-pc-linux-gnu)
+	Wed, 15 Jul 2009 07:52:27 -0400
+Subject: Re: Mounting more than one ubifs fails on 2.6.31-rc2
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+In-Reply-To: <20090715113210.GB16289@yamamaya.is-a-geek.org>
+References: <20090715113210.GB16289@yamamaya.is-a-geek.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 15 Jul 2009 14:52:11 +0300
+Message-Id: <1247658731.11353.16.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Wed__15_Jul_2009_13_52_50_+0200_YvNjTo/Bj7+_0T58"
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 15 Jul 2009 11:52:13.0594 (UTC) FILETIME=[B16977A0:01CA0542]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Wed, 2009-07-15 at 13:32 +0200, Tobias Diedrich wrote:
+> I get the following error when trying to mount a second ubifs:
+> "mount: File exists"
+> Apparently the problem is that ubifs is registered in /sys/class/bdi
+> with it's name 'ubifs' instead of the ubi device major/minor and
+> so can only be registered once.
+> 
+> navi:/home/ranma# mount -t ubifs ubi1:rootfs /mnt/ubi1
+> navi:/home/ranma# mount -t ubifs ubi0:rootfs /mnt/ubi0
+> mount: File exists
+> navi:/home/ranma# umount /mnt/ubi1
+> navi:/home/ranma# mount -t ubifs ubi0:rootfs /mnt/ubi0
+> navi:/home/ranma# mount -t ubifs ubi1:rootfs /mnt/ubi1
+> mount: File exists
+> 
+> The corresponding kernel error messages is:
+> sysfs: cannot create duplicate filename '/class/bdi/ubifs'
+> 
 
---Multipart=_Wed__15_Jul_2009_13_52_50_+0200_YvNjTo/Bj7+_0T58
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Was fixed recently:
 
-This fixes compilation error on jornada700_bl.c. 
-
-Signed-off-by: Kristoffer Ericson <kristoffer.ericson@gmail.com>
-
-diff --git a/drivers/video/backlight/jornada720_bl.c b/drivers/video/backlight/jornada720_bl.c
-index c3ebb6b..7aed256 100644
---- a/drivers/video/backlight/jornada720_bl.c
-+++ b/drivers/video/backlight/jornada720_bl.c
-@@ -72,7 +72,7 @@ static int jornada_bl_update_status(struct backlight_device *bd)
- 		if (jornada_ssp_byte(SETBRIGHTNESS) != TXDUMMY) {
- 			printk(KERN_INFO "bl : failed to set brightness\n");
- 			ret = -ETIMEDOUT;
--			goto out
-+			goto out;
- 		}
- 
- 		/* at this point we expect that the mcu has accepted
-
+http://git.infradead.org/ubifs-2.6.git?a=commit;h=7fcd9c3ecbf09c0a77db7ba01aac75b32fb79a93
 
 -- 
-Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
---Multipart=_Wed__15_Jul_2009_13_52_50_+0200_YvNjTo/Bj7+_0T58
-Content-Type: application/octet-stream;
- name="jornada_backlight.patch"
-Content-Disposition: attachment;
- filename="jornada_backlight.patch"
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L2pvcm5hZGE3MjBfYmwuYyBiL2Ry
-aXZlcnMvdmlkZW8vYmFja2xpZ2h0L2pvcm5hZGE3MjBfYmwuYwppbmRleCBjM2ViYjZiLi43YWVk
-MjU2IDEwMDY0NAotLS0gYS9kcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9qb3JuYWRhNzIwX2JsLmMK
-KysrIGIvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvam9ybmFkYTcyMF9ibC5jCkBAIC03Miw3ICs3
-Miw3IEBAIHN0YXRpYyBpbnQgam9ybmFkYV9ibF91cGRhdGVfc3RhdHVzKHN0cnVjdCBiYWNrbGln
-aHRfZGV2aWNlICpiZCkKIAkJaWYgKGpvcm5hZGFfc3NwX2J5dGUoU0VUQlJJR0hUTkVTUykgIT0g
-VFhEVU1NWSkgewogCQkJcHJpbnRrKEtFUk5fSU5GTyAiYmwgOiBmYWlsZWQgdG8gc2V0IGJyaWdo
-dG5lc3NcbiIpOwogCQkJcmV0ID0gLUVUSU1FRE9VVDsKLQkJCWdvdG8gb3V0CisJCQlnb3RvIG91
-dDsKIAkJfQogCiAJCS8qIGF0IHRoaXMgcG9pbnQgd2UgZXhwZWN0IHRoYXQgdGhlIG1jdSBoYXMg
-YWNjZXB0ZWQK
-
---Multipart=_Wed__15_Jul_2009_13_52_50_+0200_YvNjTo/Bj7+_0T58--
