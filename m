@@ -1,341 +1,348 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbZGOAwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZGOA7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756832AbZGOAwg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 20:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbZGOAwg
+	id S1756829AbZGOA7l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 20:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbZGOA7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 20:52:36 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:10703 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756330AbZGOAwf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 20:52:35 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=VY5aAVBCvB6riIxr0jB5OkaM2hxYq1e2sLJ3mCU4VT+ES/dpVIW5jZS+jdB9xU9Ld
-	zrlfjr80l4k/HA2p8stjA==
+	Tue, 14 Jul 2009 20:59:40 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58389 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756378AbZGOA7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 20:59:40 -0400
+Message-ID: <4A5D2A09.7010504@cn.fujitsu.com>
+Date: Wed, 15 Jul 2009 08:59:53 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-In-Reply-To: <200906020557.n525v6KO004302@imap1.linux-foundation.org>
-References: <200906020557.n525v6KO004302@imap1.linux-foundation.org>
-Date: Tue, 14 Jul 2009 17:52:28 -0700
-Message-ID: <6599ad830907141752n5c701f9ap2a87df0a7f4f6ff3@mail.gmail.com>
-Subject: Re: + oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch 
-	added to -mm tree
-From: Paul Menage <menage@google.com>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org, rientjes@google.com, mel@csn.ul.ie,
-       npiggin@suse.de, riel@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: mingo@elte.hu, tglx@linutronix.de, hirofumi@mail.parknet.co.jp,
+       linux-kernel@vger.kernel.org
+Subject: Re: Re: [PATCH 1/2] Add function to convert between calendar time
+ and broken-down time for universal use
+References: <4A5C3BC0.6020701@cn.fujitsu.com> <20090714151040.b7b3b26d.akpm@linux-foundation.org>
+In-Reply-To: <20090714151040.b7b3b26d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 1, 2009 at 10:57 PM, <akpm@linux-foundation.org> wrote:
+Andrew Morton wrote:
+> On Tue, 14 Jul 2009 16:03:12 +0800
+> Zhaolei <zhaolei@cn.fujitsu.com> wrote:
 >
-> The patch titled
->     oom: move oom_adj value from task_struct to mm_struct
-> has been added to the -mm tree.  Its filename is
->     oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch
+>   
+>> There are many similar code in kernel for one object:
+>> convert time between calendar time and broken-down time.
+>>
+>> Here is some source I found:
+>> fs/ncpfs/dir.c
+>> fs/smbfs/proc.c
+>> fs/fat/misc.c
+>> fs/udf/udftime.c
+>> fs/cifs/netmisc.c
+>> net/netfilter/xt_time.c
+>> drivers/scsi/ips.c
+>> drivers/input/misc/hp_sdc_rtc.c
+>> drivers/rtc/rtc-lib.c
+>> arch/ia64/hp/sim/boot/fw-emu.c
+>> arch/m68k/mac/misc.c
+>> arch/powerpc/kernel/time.c
+>> arch/parisc/include/asm/rtc.h
+>> ...
+>>
+>> We can make a common function for this type of conversion,
+>> At least we can get following benefit:
+>> 1: Make kernel simple and unify
+>> 2: Easy to fix bug in converting code
+>> 3: Reduce clone of code in future
+>>    For example, I'm trying to make ftrace display walltime,
+>>    this patch will make me easy.
+>>
+>>     
+>
+> The objective is a good one.  Have you verified that these new library
+> functions can be used by most/all of the above callers?
+>   
 
-This patch represents an API/semantics change that's invisible from
-userspace, unless userspace specifically checks for the old and new
-behaviours to see which applies.
+Hello, Andrew
 
-Is it intentional that it's now impossible to create a tree of
-processes that will inherit a non-zero oom_adj? It appears to get
-reset whenever you exec a child process.
+Thanks for your review.
 
-Old behaviour:
+I checked some of them, and I think this new library can make them simple.
+A example is my patch for fs/fat/misc.c.
 
-[root@localhost ~]# echo -1 > /proc/$$/oom_adj
-[root@localhost ~]# cat /proc/$$/oom_adj
--1
-[root@localhost ~]# bash
-[root@localhost ~]# cat /proc/$$/oom_adj
--1
+>   
+>> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+>> ---
+>>  include/linux/time.h   |    9 +++
+>>  kernel/time/Makefile   |    2 +-
+>>  kernel/time/timeconv.c |  180 
+>> ++++++++++++++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 190 insertions(+), 1 deletions(-)
+>>  create mode 100644 kernel/time/timeconv.c
+>>
+>> diff --git a/include/linux/time.h b/include/linux/time.h
+>> index ea16c1a..0ae0e6e 100644
+>> --- a/include/linux/time.h
+>> +++ b/include/linux/time.h
+>> @@ -151,6 +151,15 @@ extern void update_xtime_cache(u64 nsec);
+>>  struct tms;
+>>  extern void do_sys_times(struct tms *);
+>>  
+>> +extern void gmtime(__kernel_time_t totalsecs,
+>> +        unsigned int *year, unsigned int *mon, unsigned int *mday,
+>> +        unsigned int *hour, unsigned int *min, unsigned int *sec,
+>> +        unsigned int *wday, unsigned int *yday);
+>> +extern void localtime(__kernel_time_t totalsecs,
+>> +        unsigned int *year, unsigned int *mon, unsigned int *mday,
+>> +        unsigned int *hour, unsigned int *min, unsigned int *sec,
+>> +        unsigned int *wday, unsigned int *yday);
+>>     
+>
+> I'd imagine that many callers would at least need some types changed -
+> replace `int' with `unsigned int', etc.  Not a big problem.
+>   
 
-New behaviour:
+Actually, I considered to use int instead, but at last I use unsigned int to
+make it same with mktime() which is already in kernel.
 
-[root@localhost ~]# echo -1 > /proc/$$/oom_adj
-[root@localhost ~]# cat /proc/$$/oom_adj
--1
-[root@localhost ~]# bash
-[root@localhost ~]# cat /proc/$$/oom_adj
-0
+>   
+>>  /**
+>>   * timespec_to_ns - Convert timespec to nanoseconds
+>>   * @ts:        pointer to the timespec variable to be converted
+>> diff --git a/kernel/time/Makefile b/kernel/time/Makefile
+>> index 0b0a636..ee26662 100644
+>> --- a/kernel/time/Makefile
+>> +++ b/kernel/time/Makefile
+>> @@ -1,4 +1,4 @@
+>> -obj-y += timekeeping.o ntp.o clocksource.o jiffies.o timer_list.o 
+>> timecompare.o
+>> +obj-y += timekeeping.o ntp.o clocksource.o jiffies.o timer_list.o 
+>> timecompare.o timeconv.o
+>>  
+>>  obj-$(CONFIG_GENERIC_CLOCKEVENTS_BUILD)        += clockevents.o
+>>  obj-$(CONFIG_GENERIC_CLOCKEVENTS)        += tick-common.o
+>> diff --git a/kernel/time/timeconv.c b/kernel/time/timeconv.c
+>> new file mode 100644
+>> index 0000000..c710605
+>> --- /dev/null
+>> +++ b/kernel/time/timeconv.c
+>> @@ -0,0 +1,180 @@
+>> +/*
+>> + * Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, 
+>> Inc.
+>>     
+>
+> The patch is significantly wordwrapped by your email client.
+>
+> The patch has no tabs in it at all - either some serious cleanup is
+> needed of your email client is performing tab-to-space conversion.
+>   
 
+Sorry...I reinstalled a email client......
+I'll fix it and resend this patch.
+
+
+>> + * This file is part of the GNU C Library.
+>> + * Contributed by Paul Eggert (eggert@twinsun.com).
+>> + *
+>> + * The GNU C Library is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU Library General Public License as
+>> + * published by the Free Software Foundation; either version 2 of the
+>> + * License, or (at your option) any later version.
+>> + *
+>> + * The GNU C Library is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+>> + * Library General Public License for more details.
+>> + *
+>> + * You should have received a copy of the GNU Library General Public
+>> + * License along with the GNU C Library; see the file COPYING.LIB.  If not,
+>> + * write to the Free Software Foundation, Inc., 59 Temple Place - Suite 
+>> 330,
+>> + * Boston, MA 02111-1307, USA.
+>> + */
+>> +
+>> +/*
+>> + * Converts the calendar time to broken-down time representation
+>> + * Based on code from glibc-2.6
+>> + *
+>> + * 2009-7-14:
+>> + *   Moved from glibc-2.6 to kernel by Zhaolei<zhaolei@cn.fujitsu.com>
+>> + */
+>> +
+>> +#include <linux/time.h>
+>> +#include <linux/module.h>
+>> +
+>> +/*
+>> + * Nonzero if YEAR is a leap year (every 4 years,
+>> + * except every 100th isn't, and every 400th is).
+>> + */
+>> +static inline int __isleap(unsigned int year)
+>> +{
+>> +    return (year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0);
+>> +}
+>>     
 >
-> Before you just go and hit "reply", please:
->   a) Consider who else should be cc'ed
->   b) Prefer to cc a suitable mailing list as well
->   c) Ideally: find the original patch on the mailing list and do a
->      reply-to-all to that, adding suitable additional cc's
+> The explicit `inline' probably isn't beneficial here.
+>   
+
+OK, I'll remove it.
+
+>   
+>> +/* How many days come before each month (0-12). */
+>> +static const unsigned short __mon_yday[2][13] =
+>> +  {
+>> +    /* Normal years. */
+>> +    {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365},
+>> +    /* Leap years. */
+>> +    {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366}
+>> +  };
+>> +
+>> +#define SECS_PER_HOUR    (60 * 60)
+>> +#define SECS_PER_DAY    (SECS_PER_HOUR * 24)
+>>     
 >
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> I wonder if these whould be in a header.  I guess not, if there aren't
+> any sites which can use this.
+>   
+
+Agree, IMHO, it is not necessary to move it into header.
+
+>   
+>> +static void __offtime(__kernel_time_t totalsecs, int offset,
+>> +         unsigned int *year, unsigned int *mon, unsigned int *mday,
+>> +         unsigned int *hour, unsigned int *min, unsigned int *sec,
+>> +         unsigned int *wday, unsigned int *yday)
+>> +{
+>> +    long days, rem, y;
+>> +    const unsigned short *ip;
+>> +
+>> +    days = totalsecs / SECS_PER_DAY;
+>> +    rem = totalsecs % SECS_PER_DAY;
+>> +    rem += offset;
+>> +    while (rem < 0) {
+>> +        rem += SECS_PER_DAY;
+>> +        --days;
+>> +    }
+>> +    while (rem >= SECS_PER_DAY) {
+>> +        rem -= SECS_PER_DAY;
+>> +        ++days;
+>> +    }
+>> +
+>> +    if (hour)
+>> +        *hour = rem / SECS_PER_HOUR;
+>> +    rem %= SECS_PER_HOUR;
+>> +    if (min)
+>> +        *min = rem / 60;
+>> +    if (sec)
+>> +        *sec = rem % 60;
+>> +
+>> +    if (wday) {
+>> +        /* January 1, 1970 was a Thursday. */
+>> +        *wday = (4 + days) % 7;
+>> +        if (*wday < 0)
+>> +            *wday += 7;
+>> +    }
+>>     
 >
-> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> out what to do about this
+> The code should all be converted to standard kernel style, please. 
+> Mainly the use of hard tabs.
+>   
+
+Sorry, I'll resend this patch.
+
+>> +    y = 1970;
+>> +
+>> +#define DIV(a, b) ((a) / (b) - ((a) % (b) < 0))
+>>     
 >
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> hm, I wonder what that does.
 >
-> ------------------------------------------------------
-> Subject: oom: move oom_adj value from task_struct to mm_struct
-> From: David Rientjes <rientjes@google.com>
+> It would be clearer to convert this into a regular C function, along
+> with a comment whcih explains what it does.
 >
-> The per-task oom_adj value is a characteristic of its mm more than the
-> task itself since it's not possible to oom kill any thread that shares the
-> mm.  If a task were to be killed while attached to an mm that could not be
-> freed because another thread were set to OOM_DISABLE, it would have
-> needlessly been terminated since there is no potential for future memory
-> freeing.
+>   
+>> +#define LEAPS_THRU_END_OF(y) (DIV(y, 4) - DIV(y, 100) + DIV(y, 400))
+>>     
 >
-> This patch moves oomkilladj (now more appropriately named oom_adj) from
-> struct task_struct to struct mm_struct.  This requires task_lock() on a
-> task to check its oom_adj value to protect against exec, but it's already
-> necessary to take the lock when dereferencing the mm to find the total VM
-> size for the badness heuristic.
+> Ditto.
+>   
+
+It is because I try to keep similar style with code in glibc so that updates
+in glibc can easy to applied here.
+But actually it looks ugly, I'll fix it.
+
+
+>   
+>> +    while (days < 0 || days >= (__isleap(y) ? 366 : 365)) {
+>> +        /* Guess a corrected year, assuming 365 days per year. */
+>> +        long yg = y + days / 365 - (days % 365 < 0);
+>> +
+>> +        /* Adjust DAYS and Y to match the guessed year. */
+>> +        days -= ((yg - y) * 365
+>> +             + LEAPS_THRU_END_OF(yg - 1)
+>> +             - LEAPS_THRU_END_OF(y - 1));
+>> +        y = yg;
+>> +    }
+>> +    if (year) {
+>> +        *year = y - 1900;
+>> +        if (*year != y - 1900) {
+>> +            /* The year cannot be represented due to overflow. */
+>> +            *year = -1;
+>> +        }
+>> +    }
+>> +
+>> +    if (yday)
+>> +        *yday = days;
+>> +
+>> +    ip = __mon_yday[__isleap(y)];
+>> +    for (y = 11; days < ip[y]; y--)
+>> +        continue;
+>> +    days -= ip[y];
+>> +    if (mon)
+>> +        *mon = y;
+>> +    if (mday)
+>> +        *mday = days + 1;
+>> +}
+>>     
 >
-> This fixes a livelock if the oom killer chooses a task and another thread
-> sharing the same memory has an oom_adj value of OOM_DISABLE.  This occurs
-> because oom_kill_task() repeatedly returns 1 and refuses to kill the
-> chosen task while select_bad_process() will repeatedly choose the same
-> task during the next retry.
+>   
+>> ...
+>>
+>> +void gmtime(__kernel_time_t totalsecs,
+>> +         unsigned int *year, unsigned int *mon, unsigned int *mday,
+>> +         unsigned int *hour, unsigned int *min, unsigned int *sec,
+>> +         unsigned int *wday, unsigned int *yday)
+>> +{
+>> +    __offtime(totalsecs, 0, year, mon, mday, hour, min, sec, wday, yday);
+>> +}
+>> +EXPORT_SYMBOL(gmtime);
+>>
+>> ...
+>>
+>> +void localtime(__kernel_time_t totalsecs,
+>> +         unsigned int *year, unsigned int *mon, unsigned int *mday,
+>> +         unsigned int *hour, unsigned int *min, unsigned int *sec,
+>> +         unsigned int *wday, unsigned int *yday)
+>> +{
+>> +    __offtime(totalsecs, -sys_tz.tz_minuteswest * 60, year, mon, mday, 
+>> hour,
+>> +        min, sec, wday, yday);
+>> +}
+>> +EXPORT_SYMBOL(localtime);
+>>     
 >
-> Taking task_lock() in select_bad_process() to check for OOM_DISABLE and in
-> oom_kill_task() to check for threads sharing the same memory will be
-> removed in the next patch in this series where it will no longer be
-> necessary.
->
-> Writing to /proc/pid/oom_adj for a kthread will now return -EINVAL since
-> these threads are immune from oom killing already.  They simply report an
-> oom_adj value of OOM_DISABLE.
->
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Rik van Riel <riel@redhat.com>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
->
->  Documentation/filesystems/proc.txt |   15 +++++++----
->  fs/proc/base.c                     |   19 ++++++++++++---
->  include/linux/mm_types.h           |    2 +
->  include/linux/sched.h              |    1
->  mm/oom_kill.c                      |   34 +++++++++++++++++----------
->  5 files changed, 50 insertions(+), 21 deletions(-)
->
-> diff -puN Documentation/filesystems/proc.txt~oom-move-oom_adj-value-from-task_struct-to-mm_struct Documentation/filesystems/proc.txt
-> --- a/Documentation/filesystems/proc.txt~oom-move-oom_adj-value-from-task_struct-to-mm_struct
-> +++ a/Documentation/filesystems/proc.txt
-> @@ -1003,11 +1003,13 @@ CHAPTER 3: PER-PROCESS PARAMETERS
->  3.1 /proc/<pid>/oom_adj - Adjust the oom-killer score
->  ------------------------------------------------------
->
-> -This file can be used to adjust the score used to select which processes
-> -should be killed in an  out-of-memory  situation.  Giving it a high score will
-> -increase the likelihood of this process being killed by the oom-killer.  Valid
-> -values are in the range -16 to +15, plus the special value -17, which disables
-> -oom-killing altogether for this process.
-> +This file can be used to adjust the score used to select which processes should
-> +be killed in an out-of-memory situation.  The oom_adj value is a characteristic
-> +of the task's mm, so all threads that share an mm with pid will have the same
-> +oom_adj value.  A high value will increase the likelihood of this process being
-> +killed by the oom-killer.  Valid values are in the range -16 to +15 as
-> +explained below and a special value of -17, which disables oom-killing
-> +altogether for threads sharing pid's mm.
->
->  The process to be killed in an out-of-memory situation is selected among all others
->  based on its badness score. This value equals the original memory size of the process
-> @@ -1021,6 +1023,9 @@ the parent's score if they do not share
->  are the prime candidates to be killed. Having only one 'hungry' child will make
->  parent less preferable than the child.
->
-> +/proc/<pid>/oom_adj cannot be changed for kthreads since they are immune from
-> +oom-killing already.
-> +
->  /proc/<pid>/oom_score shows process' current badness score.
->
->  The following heuristics are then applied:
-> diff -puN fs/proc/base.c~oom-move-oom_adj-value-from-task_struct-to-mm_struct fs/proc/base.c
-> --- a/fs/proc/base.c~oom-move-oom_adj-value-from-task_struct-to-mm_struct
-> +++ a/fs/proc/base.c
-> @@ -1006,7 +1006,12 @@ static ssize_t oom_adjust_read(struct fi
->
->        if (!task)
->                return -ESRCH;
-> -       oom_adjust = task->oomkilladj;
-> +       task_lock(task);
-> +       if (task->mm)
-> +               oom_adjust = task->mm->oom_adj;
-> +       else
-> +               oom_adjust = OOM_DISABLE;
-> +       task_unlock(task);
->        put_task_struct(task);
->
->        len = snprintf(buffer, sizeof(buffer), "%i\n", oom_adjust);
-> @@ -1035,11 +1040,19 @@ static ssize_t oom_adjust_write(struct f
->        task = get_proc_task(file->f_path.dentry->d_inode);
->        if (!task)
->                return -ESRCH;
-> -       if (oom_adjust < task->oomkilladj && !capable(CAP_SYS_RESOURCE)) {
-> +       task_lock(task);
-> +       if (!task->mm) {
-> +               task_unlock(task);
-> +               put_task_struct(task);
-> +               return -EINVAL;
-> +       }
-> +       if (oom_adjust < task->mm->oom_adj && !capable(CAP_SYS_RESOURCE)) {
-> +               task_unlock(task);
->                put_task_struct(task);
->                return -EACCES;
->        }
-> -       task->oomkilladj = oom_adjust;
-> +       task->mm->oom_adj = oom_adjust;
-> +       task_unlock(task);
->        put_task_struct(task);
->        if (end - buffer == 0)
->                return -EIO;
-> diff -puN include/linux/mm_types.h~oom-move-oom_adj-value-from-task_struct-to-mm_struct include/linux/mm_types.h
-> --- a/include/linux/mm_types.h~oom-move-oom_adj-value-from-task_struct-to-mm_struct
-> +++ a/include/linux/mm_types.h
-> @@ -240,6 +240,8 @@ struct mm_struct {
->
->        unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
->
-> +       s8 oom_adj;     /* OOM kill score adjustment (bit shift) */
-> +
->        cpumask_t cpu_vm_mask;
->
->        /* Architecture-specific MM context */
-> diff -puN include/linux/sched.h~oom-move-oom_adj-value-from-task_struct-to-mm_struct include/linux/sched.h
-> --- a/include/linux/sched.h~oom-move-oom_adj-value-from-task_struct-to-mm_struct
-> +++ a/include/linux/sched.h
-> @@ -1151,7 +1151,6 @@ struct task_struct {
->         * a short time
->         */
->        unsigned char fpu_counter;
-> -       s8 oomkilladj; /* OOM kill score adjustment (bit shift). */
->  #ifdef CONFIG_BLK_DEV_IO_TRACE
->        unsigned int btrace_seq;
->  #endif
-> diff -puN mm/oom_kill.c~oom-move-oom_adj-value-from-task_struct-to-mm_struct mm/oom_kill.c
-> --- a/mm/oom_kill.c~oom-move-oom_adj-value-from-task_struct-to-mm_struct
-> +++ a/mm/oom_kill.c
-> @@ -58,6 +58,7 @@ unsigned long badness(struct task_struct
->        unsigned long points, cpu_time, run_time;
->        struct mm_struct *mm;
->        struct task_struct *child;
-> +       int oom_adj;
->
->        task_lock(p);
->        mm = p->mm;
-> @@ -65,6 +66,7 @@ unsigned long badness(struct task_struct
->                task_unlock(p);
->                return 0;
->        }
-> +       oom_adj = mm->oom_adj;
->
->        /*
->         * The memory size of the process is the basis for the badness.
-> @@ -148,15 +150,15 @@ unsigned long badness(struct task_struct
->                points /= 8;
->
->        /*
-> -        * Adjust the score by oomkilladj.
-> +        * Adjust the score by oom_adj.
->         */
-> -       if (p->oomkilladj) {
-> -               if (p->oomkilladj > 0) {
-> +       if (oom_adj) {
-> +               if (oom_adj > 0) {
->                        if (!points)
->                                points = 1;
-> -                       points <<= p->oomkilladj;
-> +                       points <<= oom_adj;
->                } else
-> -                       points >>= -(p->oomkilladj);
-> +                       points >>= -(oom_adj);
->        }
->
->  #ifdef DEBUG
-> @@ -251,8 +253,12 @@ static struct task_struct *select_bad_pr
->                        *ppoints = ULONG_MAX;
->                }
->
-> -               if (p->oomkilladj == OOM_DISABLE)
-> +               task_lock(p);
-> +               if (p->mm && p->mm->oom_adj == OOM_DISABLE) {
-> +                       task_unlock(p);
->                        continue;
-> +               }
-> +               task_unlock(p);
->
->                points = badness(p, uptime.tv_sec);
->                if (points > *ppoints || !chosen) {
-> @@ -304,8 +310,7 @@ static void dump_tasks(const struct mem_
->                }
->                printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %3d     %3d %s\n",
->                       p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
-> -                      get_mm_rss(mm), (int)task_cpu(p), p->oomkilladj,
-> -                      p->comm);
-> +                      get_mm_rss(mm), (int)task_cpu(p), mm->oom_adj, p->comm);
->                task_unlock(p);
->        } while_each_thread(g, p);
->  }
-> @@ -367,8 +372,12 @@ static int oom_kill_task(struct task_str
->         * Don't kill the process if any threads are set to OOM_DISABLE
->         */
->        do_each_thread(g, q) {
-> -               if (q->mm == mm && q->oomkilladj == OOM_DISABLE)
-> +               task_lock(q);
-> +               if (q->mm == mm && q->mm && q->mm->oom_adj == OOM_DISABLE) {
-> +                       task_unlock(q);
->                        return 1;
-> +               }
-> +               task_unlock(q);
->        } while_each_thread(g, q);
->
->        __oom_kill_task(p, 1);
-> @@ -393,10 +402,11 @@ static int oom_kill_process(struct task_
->        struct task_struct *c;
->
->        if (printk_ratelimit()) {
-> -               printk(KERN_WARNING "%s invoked oom-killer: "
-> -                       "gfp_mask=0x%x, order=%d, oomkilladj=%d\n",
-> -                       current->comm, gfp_mask, order, current->oomkilladj);
->                task_lock(current);
-> +               printk(KERN_WARNING "%s invoked oom-killer: "
-> +                       "gfp_mask=0x%x, order=%d, oom_adj=%d\n",
-> +                       current->comm, gfp_mask, order,
-> +                       current->mm ? current->mm->oom_adj : OOM_DISABLE);
->                cpuset_print_task_mems_allowed(current);
->                task_unlock(current);
->                dump_stack();
-> _
->
-> Patches currently in -mm which might be from rientjes@google.com are
->
-> origin.patch
-> linux-next.patch
-> cpusets-restructure-the-function-cpuset_update_task_memory_state.patch
-> cpusets-update-tasks-page-slab-spread-flags-in-time.patch
-> cpusetmm-update-tasks-mems_allowed-in-time.patch
-> cpusetmm-update-tasks-mems_allowed-in-time-fix.patch
-> cpusetmm-update-tasks-mems_allowed-in-time-cleanup.patch
-> page-allocator-use-a-pre-calculated-value-instead-of-num_online_nodes-in-fast-paths-do-not-override-definition-of-node_set_online-with-macro.patch
-> mm-setup_per_zone_inactive_ratio-do-not-call-for-int_sqrt-if-not-needed.patch
-> mm-setup_per_zone_inactive_ratio-fix-comment-and-make-it-__init.patch
-> page-allocator-warn-if-__gfp_nofail-is-used-for-a-large-allocation.patch
-> mm-pm-freezer-disable-oom-killer-when-tasks-are-frozen.patch
-> oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch
-> oom-avoid-unnecessary-mm-locking-and-scanning-for-oom_disable.patch
-> memcg-add-file-based-rss-accounting.patch
-> memcg-add-file-based-rss-accounting-fix-mem_cgroup_update_mapped_file_stat-oops.patch
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+> These are such simple wrappers around __offtime() that it might be
+> better to make them static inlines in time.h, so callers will end up
+> directly calling __offtime() rather than having to remarshal ten
+> function arguments.
+>   
+
+Good idea, will fix.
+
+Thanks
+Zhaolei
+
+
