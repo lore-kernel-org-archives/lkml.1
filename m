@@ -1,79 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZGOO7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbZGOO6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274AbZGOO7L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 10:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755253AbZGOO7K
+	id S1755245AbZGOO6w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 10:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbZGOO6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 10:59:10 -0400
-Received: from cantor.suse.de ([195.135.220.2]:59570 "EHLO mx1.suse.de"
+	Wed, 15 Jul 2009 10:58:52 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39509 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755248AbZGOO7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 10:59:09 -0400
-Date: Wed, 15 Jul 2009 16:59:07 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Janboe Ye <yuan-bo.ye@motorola.com>, linux-kernel@vger.kernel.org,
-       vegard.nossum@gmail.com, fche@redhat.com, cl@linux-foundation.org
-Subject: Re: [RFC][PATCH] Check write to slab memory which freed already using mudflap
-Message-ID: <20090715145907.GE7298@wotan.suse.de>
-References: <84144f020907090944u51f60cbsc0a4ec2c2cbdcc8c@mail.gmail.com> <20090710084745.GA26752@elte.hu> <1247215920.32044.3.camel@penberg-laptop> <20090710090351.GD14666@wotan.suse.de> <1247217263.771.8.camel@penberg-laptop> <20090710092921.GF14666@wotan.suse.de> <1247218826.771.15.camel@penberg-laptop> <alpine.DEB.2.00.0907100243010.14601@chino.kir.corp.google.com> <1247219506.771.22.camel@penberg-laptop> <alpine.DEB.2.00.0907100253560.14601@chino.kir.corp.google.com>
-Mime-Version: 1.0
+	id S1753443AbZGOO6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 10:58:51 -0400
+Date: Wed, 15 Jul 2009 16:58:49 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+       Mike Galbraith <efault@gmx.de>, Diego Calleja <diegocg@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com,
+       linux-ext4@vger.kernel.org
+Subject: Re: Performance regressions in 2.6.30-rc7?
+Message-ID: <20090715145849.GE25458@duck.suse.cz>
+References: <20090603195806.GA9571@atrey.karlin.mff.cuni.cz> <1244100382.7131.12.camel@marge.simson.net> <20090604112109.GC2859@duck.suse.cz> <1244142795.5731.31.camel@marge.simson.net> <20090609103208.GB9235@duck.suse.cz> <20090609184818.GD9556@think> <20090610091211.GA13692@duck.suse.cz> <x4963f3rb4t.fsf@segfault.boston.devel.redhat.com> <20090715104319.GC25458@duck.suse.cz> <x4963du3vyp.fsf@segfault.boston.devel.redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0907100253560.14601@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <x4963du3vyp.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 03:03:19AM -0700, David Rientjes wrote:
-> On Fri, 10 Jul 2009, Pekka Enberg wrote:
+On Wed 15-07-09 09:41:02, Jeff Moyer wrote:
+> Jan Kara <jack@suse.cz> writes:
 > 
-> > Hey, I said SLAB is on its way out (yes, it really is). But I didn't say
-> > we're going to blindly remove it if performs better than the
-> > alternatives. I don't see any reason why SQLB can't reach the same
-> > performance as SLAB after on fundamental level, though. Can you?
-> > 
+> > On Wed 10-06-09 18:12:50, Jeff Moyer wrote:
+> >> Jan Kara <jack@suse.cz> writes:
+> >> 
+> >> > On Tue 09-06-09 14:48:18, Chris Mason wrote:
+> >> >> On Tue, Jun 09, 2009 at 12:32:08PM +0200, Jan Kara wrote:
+> >> >> > On Thu 04-06-09 21:13:15, Mike Galbraith wrote:
+> >> >> > > On Thu, 2009-06-04 at 13:21 +0200, Jan Kara wrote:
+> >> >> > > 
+> >> >> > > > > Sequential Writes
+> >> >> > > > > 2.6.30-smp-ordered            6000  65536  32   50.16 508.9%    31.996    45595.78   0.64965  0.02402    10
+> >> >> > > > > 2.6.29.4-smp-ordered          6000  65536  32   52.70 543.2%    33.658    23794.92   0.71754  0.00836    10
+> >> >> > > > > 
+> >> >> > > > > 2.6.30-smp-writeback          6000  65536  32   47.82 525.4%    35.003    32588.84   0.56192  0.02298     9
+> >> >> > > > > 2.6.29.4-smp-writeback        6000  65536  32   52.52 467.6%    32.397    12972.78   0.53580  0.00522    11
+> >> >> > > > > 
+> >> >> > > > > 2.6.30-smp-ordered            6000  65536  16   56.08 254.9%    15.463    33000.68   0.39687  0.00521    22
+> >> >> > > > > 2.6.29.4-smp-ordered          6000  65536  16   62.40 308.4%    14.701    13455.02   0.13125  0.00208    20
+> >> >> > > > > 
+> >> >> > > > > 2.6.30-smp-writeback          6000  65536  16   51.90 281.4%    17.098    12869.85   0.36771  0.00104    18
+> >> >> > > > > 2.6.29.4-smp-writeback        6000  65536  16   60.53 272.6%    14.977     8637.08   0.21146  0.00000    22
+> >> >> > > > > 
+> >> >> > > > > 2.6.30-smp-ordered            6000  65536   8   51.09 113.4%     8.700    14856.55   0.06771  0.00417    45
+> >> >> > > > > 2.6.29.4-smp-ordered          6000  65536   8   56.13 130.6%     8.098     8400.45   0.03958  0.00000    43
+> >> >> > > > > 
+> >> >> > > > > 2.6.30-smp-writeback          6000  65536   8   50.19 131.7%     8.680    16821.04   0.11979  0.00208    38
+> >> >> > > > > 2.6.29.4-smp-writeback        6000  65536   8   54.90 130.7%     8.244     4925.48   0.10000  0.00000    42
+> >> >> > > >   It really seems write has some problems... There's consistently lower
+> >> >> > > > throughput and it also seems some writes take really long. I'll try to
+> >> >> > > > reproduce it here.
+> >> >> > > 
+> >> >> > > Looked "pretty solid" to me.  I haven't observed enough to ~trust.
+> >> >> >   OK, I did a few runs of tiobench here and I can confirm that I see about
+> >> >> > 6% performance regression in Sequential Write throughput between 2.6.29
+> >> >> > and 2.6.30-rc8. I'll try to find what's causing it.
+> >> >> 
+> >> >> My first guess would be the WRITE_SYNC style changes.  Is the regression
+> >> >> still there with noop?
+> >> >   Thanks for the hint. I was guessing that as well. And experiments show
+> >> > it's definitely connected. To be more precise with the data:
+> >> > The test machine is 2 CPU, 2 GB ram, simple lowend SATA disk. Tiobench run
+> >> > with:
+> >> > tiobench/tiobench.pl -b 65536 -t 16 -t 8 -d /local/scratch -s 4096
+> >> >   which means 4GB testfile, writes happen in 64k chunks, test done with 16
+> >> > and 8 threads. /local/scratch is a separate partition always cleaned and
+> >> > umounted + mounted before each test. The results are (always 3 runs):
+> >> >     2.6.29+CFQ:           Avg    StdDev
+> >> > 8   38.01 40.26 39.69 ->  39.32  0.955092
+> >> > 16  40.09 38.18 40.05 ->  39.44  0.891104
+> >> >
+> >> >     2.6.30-rc8+CFQ:
+> >> > 8   36.67 36.81 38.20 ->  37.23  0.69062
+> >> > 16  37.45 36.47 37.46 ->  37.13  0.464351
+> >> >
+> >> >     2.6.29+NOOP:
+> >> > 8   38.67 38.66 37.55 ->  38.29  0.525632
+> >> > 16  39.59 39.15 39.19 ->  39.31  0.198662
+> >> >
+> >> >     2.6.30-rc8+NOOP:
+> >> > 8   38.31 38.47 38.16 ->  38.31  0.126579
+> >> > 16  39.08 39.25 39.13 ->  39.15  0.0713364
+> >> 
+> >> I ran the same test on a bigger system: 8GB ram (so I used a 16GB size
+> >> for the test) and a 4 disk stripe hanging off of a CCISS controller.
+> >> All the runs used ext3 in data=ordered mode and CFQ as the I/O scheduler.
+> >> 
+> >>      2.6.29.3-140.fc11       Avg       StdDev
+> >>  8   158.72 152.72 148.24    153.227   5.25834
+> >> 16   176.06 174.91 176.27    175.747   0.73214
+> >> 
+> >>      2.6.30-rc7
+> >>  8   147.89 144.57 144.99    145.817   1.8078
+> >> 16   121.37 119.56 111.85    117.593   5.05553
+> >> 
+> >> Jan, let me know if you want any help tracking this down.
+> >   OK, so I've found time to follow-up on this. I've checked that
+> > congestion_wait fixes Jens sent recently didn't change anything. Also I've
+> > verified that backing out WRITE_SYNC related changes didn't help. Finally,
+> > I've verified that when I back out all the changes that went to CFQ between
+> > 2.6.29 and 2.6.30 and the WRITE_SYNC changes, then the performance is back
+> > to original values.
+> >   Jens / Jeff, what to do next? I can try to bisect through CFQ changes but
+> > that's going to be rather tedious and the result is uncertain since I
+> > expect performance to jump up and down as various changes took place. So
+> > I'd rather spend my time with something that has a higher chance to
+> > succeed...
+> >
 > 
-> I'm not really interested in making predictions on which design has the 
-> greatest potential for pure performance, I'm interested in what is proven 
-> to work and does the job better than any alternative.  Right now, for 
-> certain workloads, that's undeniably slab.  So I'd disagree that slab is 
-> on its way out until another allocator is shown to at least have parity 
-> with it (at which time I'd become more interested in the cleanliness of 
-> the code, the debugging support, etc.).
+> Looking through the changelogs, I most suspect this:
 > 
-> It's my opinion that slab is on its way out when there's no benchmark that 
-> shows it is superior by any significant amount.  If that happens (and if 
-> its successor is slub, slqb, or a yet to be implemented allocator), we can 
-> probably start a discussion on what's in and what's out at that time.
+> commit 2f5cb7381b737e24c8046fd4aeab571fb71315f5
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Tue Apr 7 08:51:19 2009 +0200
+> 
+>     cfq-iosched: change dispatch logic to deal with single requests at
+>     the time
+>     
+> We had one other regression that bisected to this change, though I don't
+> claim to fully understand why just yet.  Take a look at this bug:
+>   http://bugzilla.kernel.org/show_bug.cgi?id=13401
+> 
+> Try Jens' test patch posted there:
+>   http://bugzilla.kernel.org/attachment.cgi?id=21650
+> 
+> and let us know how that fares.
+  It seems that with this test patch, the throughput is somewhere between
+2.6.29 and 2.6.30.  I'm now repeating runs more times to get more
+statistical reliability because with 3 runs I did so far it's somewhere on
+the boundary of statistical meaningfulness...
 
-How are you running your netperf test? Over localhost or remotely?
-It is a 16 core system? NUMA?
-
-It seems pretty variable when I run it here, although there seems
-to be a pretty clear upper bound on performance, where a lot of the
-results land around (then others go anywhere down to less than half
-that performance).
-
-Anyway, tried to get an idea of performance on my 8 core NUMA system,
-over localhost, and just at 64 threads. Ran the test 60 times for
-each allocator.
-
-Rates for 2.6.31-rc2 (+slqb from Pekka's tree)
-SLAB: 1869710
-SLQB: 1859710
-SLUB: 1769400
-
-Slab did have slightly higher maximal numbers too, although slqb
-SLQB had the highest minimum. But both were fairly similar there.
-SLUB's minimum went down to around 13% lower than the others.
-
-Now I didn't reboot or restart netperf server during runs, so there
-is possibility of results drifting for some reason (eg. due to
-cache/node placment).
-
-I can't say SLQB beats SLAB here, but it's fairly good. I'll see
-if any tweaks can improve it further...
-
+									Honza 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
