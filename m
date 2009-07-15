@@ -1,54 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbZGOOc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZGOOfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754905AbZGOOc1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 10:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZGOOc0
+	id S1755059AbZGOOfN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 10:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZGOOfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 10:32:26 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:53491 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753307AbZGOOc0 (ORCPT
+	Wed, 15 Jul 2009 10:35:13 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35584 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752485AbZGOOfM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 10:32:26 -0400
-Date: Wed, 15 Jul 2009 10:31:54 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>, kosaki.motohiro@jp.fujitsu.com,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Johannes Weiner <hannes@cmpxchg.org>, Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [PATCH] mm: Warn once when a page is freed with PG_mlocked set
- V2
-In-Reply-To: <20090715125822.GB29749@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0907151027410.23643@gentwo.org>
-References: <20090715125822.GB29749@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 15 Jul 2009 10:35:12 -0400
+X-Sasl-enc: KtWw8q43M2bkZtXNwgfVUg6B8xPt4NgubLhMUaNbZBUd 1247668511
+Date: Wed, 15 Jul 2009 11:35:09 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31-rc2: thinkpad boots with backlight low
+Message-ID: <20090715143509.GC22098@khazad-dum.debian.net>
+References: <20090714092513.GB2010@elf.ucw.cz>
+ <20090715112204.GA16289@yamamaya.is-a-geek.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090715112204.GA16289@yamamaya.is-a-geek.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Jul 2009, Mel Gorman wrote:
+There is one thing that comes to mind: display power management.
 
-> -static inline int free_pages_check(struct page *page)
-> +static inline int free_pages_check(struct page *page, int wasMlocked)
->  {
-> +	WARN_ONCE(wasMlocked, KERN_WARNING
-> +		"Page flag mlocked set for process %s at pfn:%05lx\n"
-> +		"page:%p flags:0x%lX\n",
-> +		current->comm, page_to_pfn(page),
-> +		page, page->flags|__PG_MLOCKED);
-> +
->  	if (unlikely(page_mapcount(page) |
+Is anything, by chance, setting the backlight devices to low power mode
+on machine restart?  The backlight drivers would try to set brightness
+to 0 when it cannot turn the display off for real...
 
-There is already a free_page_mlocked() that is only called if the mlock
-bit is set. Move it into there to avoid having to run two checks in the
-hot codee path?
-
-Also __free_pages_ok() now has a TestClearMlocked in the hot code path.
-Would it be possible to get rid of the unconditional use of an atomic
-operation? Just check the bit and clear it later in free_page_mlocked()?
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
