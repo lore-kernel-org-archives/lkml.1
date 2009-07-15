@@ -1,123 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932300AbZGOU0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbZGOU3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932300AbZGOU0I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 16:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbZGOU0I
+	id S932308AbZGOU3m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 16:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932283AbZGOU3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 16:26:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44167 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932117AbZGOU0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 16:26:07 -0400
-Cc: beckyb@kernel.crashing.org, Jeremy Fitzhardinge <jeremy@goop.org>,
-       tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Ian Campbell <Ian.Campbell@citrix.com>, x86@kernel.org,
-       "linux-kernel@vger.kernel.org Mailing List" 
-	<linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-       Joerg Roedel <joerg.roedel@amd.com>
-Message-Id: <FF72C10D-2755-4B85-8714-8C35F34FED69@kernel.crashing.org>
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <68EFFAF6-EF5B-4148-BC54-70BF2AF2456E@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [00/15] swiotlb cleanup
-Date: Wed, 15 Jul 2009 15:24:33 -0500
-References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20090710051236.GA22218@elte.hu> <68EFFAF6-EF5B-4148-BC54-70BF2AF2456E@kernel.crashing.org>
-X-Mailer: Apple Mail (2.935.3)
+	Wed, 15 Jul 2009 16:29:42 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:25308 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932259AbZGOU3l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 16:29:41 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=iWiX0IZiVxMfPxO36xZ+FfHXCgkY7dibM6Ni7GaSRsVVbAfTpW87E2Cjuq9tG80Wd
+	cNOyCZWZIRXkutGYWoPLQ==
+Date: Wed, 15 Jul 2009 13:29:33 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] page-allocator: Ensure that processes that have been
+ OOM killed exit the page allocator (resend)
+In-Reply-To: <20090715104944.GC9267@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0907151326350.22582@chino.kir.corp.google.com>
+References: <20090715104944.GC9267@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 15 Jul 2009, Mel Gorman wrote:
 
-On Jul 13, 2009, at 10:13 PM, Becky Bruce wrote:
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index f8902e7..5c98d02 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1547,6 +1547,14 @@ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
+>  	if (gfp_mask & __GFP_NORETRY)
+>  		return 0;
+>  
+> +	/* Do not loop if OOM-killed unless __GFP_NOFAIL is specified */
+> +	if (test_thread_flag(TIF_MEMDIE)) {
+> +		if (gfp_mask & __GFP_NOFAIL)
+> +			WARN(1, "Potential infinite loop with __GFP_NOFAIL");
+> +		else
+> +			return 0;
+> +	}
+> +
+>  	/*
+>  	 * In this implementation, order <= PAGE_ALLOC_COSTLY_ORDER
+>  	 * means __GFP_NOFAIL, but that may not be true in other
+> 
 
->
-> On Jul 10, 2009, at 12:12 AM, Ingo Molnar wrote:
->
->>
->> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
->>
->>> - removes unused (and unnecessary) hooks in swiotlb.
->>>
->>> - adds dma_capable() and converts swiotlb to use it. It can be  
->>> used to
->>> know if a memory area is dma capable or not. I added
->>> is_buffer_dma_capable() for the same purpose long ago but it turned
->>> out that the function doesn't work on POWERPC.
->>>
->>> This can be applied cleanly to linux-next, -mm, and mainline. This
->>> patchset touches multiple architectures (ia64, powerpc, x86) so I
->>> guess that -mm is appropriate for this patchset (I don't care much
->>> what tree would merge this though).
->>>
->>> This is tested on x86 but only compile tested on POWERPC and IA64.
->>>
->>> Thanks,
->>>
->>> =
->>> arch/ia64/include/asm/dma-mapping.h    |   18 ++++++
->>> arch/powerpc/include/asm/dma-mapping.h |   23 +++++++
->>> arch/powerpc/kernel/dma-swiotlb.c      |   48 +---------------
->>> arch/x86/include/asm/dma-mapping.h     |   18 ++++++
->>> arch/x86/kernel/pci-dma.c              |    2 +-
->>> arch/x86/kernel/pci-gart_64.c          |    5 +-
->>> arch/x86/kernel/pci-nommu.c            |    2 +-
->>> arch/x86/kernel/pci-swiotlb.c          |   25 --------
->>> include/linux/dma-mapping.h            |    5 --
->>> include/linux/swiotlb.h                |   11 ----
->>> lib/swiotlb.c                          |  102 ++++++++ 
->>> +-----------------------
->>> 11 files changed, 92 insertions(+), 167 deletions(-)
->>
->> Hm, the functions and facilities you remove here were added as part
->> of preparatory patches for Xen guest support. You were aware of
->> them, you were involved in discussions about those aspects with Ian
->> and Jeremy but still you chose not to Cc: either of them and you
->> failed to address that aspect in the changelogs.
->>
->> I'd like the Xen code to become cleaner more than anyone else here i
->> guess, but patch submission methods like this are not really
->> helpful. A far better method is to be open about such disagreements,
->> to declare them, to Cc: everyone who disagrees, and to line out the
->> arguments in the changelogs as well - instead of just curtly
->> declaring those APIs 'unused' and failing to Cc: involved parties.
->>
->> Alas, on the technical level the cleanups themselves look mostly
->> fine to me. Ian, Jeremy, the changes will alter Xen's use of
->> swiotlb, but can the Xen side still live with these new methods - in
->> particular is dma_capable() sufficient as a mechanism and can the
->> Xen side filter out DMA allocations to make them physically
->> continuous?
->>
->> Ben, Tony, Becky, any objections wrt. the PowerPC / IA64 impact? If
->> everyone agrees i can apply them to the IOMMU tree, test it and push
->> it out to -next, etc.
->>
->
-> Ingo,
->
-> With the exception of the patch I commented on, I think these look  
-> OK from the powerpc point of view.  I've successfully booted one of  
-> my test platforms with the entire series applied and will run some  
-> more extensive (i.e. not "Whee!  A prompt!") tests tomorrow.
-
-Well, I am still testing.  I've observed one unexpected LTP testcase  
-failure with these patches applied, but so far have been unable to  
-reproduce it.  So these patches are probably OK, but I will look into  
-this some more next week.
-
--Becky
-
->
->
-> -Becky
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
+This only works for GFP_ATOMIC since the next iteration of the page 
+allocator will (probably) fail reclaim and simply invoke the oom killer 
+again, which will notice current has TIF_MEMDIE set and choose to do 
+nothing, at which time the allocator simply loops again.
