@@ -1,79 +1,496 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZGOJmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZGOJmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753730AbZGOJmP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 05:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZGOJmO
+	id S1753759AbZGOJmq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 05:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZGOJmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 05:42:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33586 "EHLO hera.kernel.org"
+	Wed, 15 Jul 2009 05:42:44 -0400
+Received: from mga11.intel.com ([192.55.52.93]:40790 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753219AbZGOJmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 05:42:13 -0400
-Message-ID: <4A5DA461.5010401@kernel.org>
-Date: Wed, 15 Jul 2009 18:41:53 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Niel Lambrechts <niel.lambrechts@gmail.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <axboe@kernel.dk>
-Subject: Re: [PATCH 3/4] block: implement mixed merge of different failfast
- requests
-References: <1246610898-22350-1-git-send-email-tj@kernel.org> <1246610898-22350-4-git-send-email-tj@kernel.org> <4A507203.8020001@panasas.com> <4A553E36.8060006@kernel.org> <4A55B5A9.2060705@panasas.com>
-In-Reply-To: <4A55B5A9.2060705@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+	id S1753219AbZGOJmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 05:42:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,403,1243839600"; 
+   d="scan'208";a="707963055"
+Subject: Re: [PATCH] ACPI: add driver for SMBus Control Method Interface
+From: ykzhao <yakui.zhao@intel.com>
+To: Crane Cai <crane.cai@amd.com>
+Cc: "lenb@kernel.org" <lenb@kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090715060219.GA30514@crane-desktop>
+References: <20090715060219.GA30514@crane-desktop>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Wed, 15 Jul 2009 17:43:22 +0800
+Message-Id: <1247651002.4113.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 15 Jul 2009 09:42:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> On 07/09/2009 03:47 AM, Tejun Heo wrote:
->> Hello,
->>
->> Boaz Harrosh wrote:
->>>> @@ -1165,6 +1165,7 @@ static int __make_request(struct request_queue *q, struct bio *bio)
->>>>  	const unsigned short prio = bio_prio(bio);
->>>>  	const int sync = bio_sync(bio);
->>>>  	const int unplug = bio_unplug(bio);
->>>> +	const unsigned int ff = bio->bi_rw & REQ_FAILFAST_MASK;
->>> Perhaps a bio_fail_fast(bio)
->>> and also an blk_failfast(rq).
->> Me not being a big fan of those simple accessors, I want to avoid
->> adding those especially the use of bio ones are mostly confined to
->> block layer proper.
->>
-> 
-> OK but at least take care of blk_noretry_request(), at the minimum
-> kill it, and use req->cmd_flags & REQ_FAILFAST_MASK everywhere.
+On Wed, 2009-07-15 at 14:02 +0800, Crane Cai wrote:
+> This driver supports the SMBus Control Method Interface. It needs BIOS declare
+> ACPI control methods via SMBus Control Method Interface Spec.
+It seems that SM bus control is realized in BIOS. And OS can use the
+given control method interface to access it. 
+Will this controller be accessed directly directly BIOS?
+If it can be accessed by BIOS, how to resolve the conflict between BIOS
+and OS?
 
-Hmmm... looking at it now, looks like we can kill them all actually.
-There are a lot of inconsistencies in this space.
-
-* BIO_RW_* are bit positions and accessed with liberal combination of
-  bio_rw_flagged() and manual bitops.
-
-* QUEUE_FLAG_* are bit positions and has rather large collection of
-  accessors.  The accessors have locking asserts.
-
-* __REQ_* are bit positions but have counter part REQ_* bit masks
-  defined and there are whole bunch of simple specific accessors.
-
-I think all these can just be converted to bit masks (and I'll be
-happy with that) but whether that would be desirable is a different
-matter.  I think it would be best to hear what Jens' plan about flag
-cleanup is (who BTW is away till the end of the next week) before
-proceeding.
-
-Jens, can you please let us know what your plan is?
+In fact we see the conflict on some boxes. The SMbus controller will be
+accessed by BIOS. If the corresponding driver is loaded for the SMBUS
+controller, there exists the potential risk. In such case we will hide
+the SMbus controller or not load the device driver for it.
 
 Thanks.
+> 
+> Please apply
+> 
+> Signed-off-by: Crane Cai <crane.cai@amd.com>
+> ---
+>  drivers/acpi/Kconfig   |   11 ++
+>  drivers/acpi/Makefile  |    1 +
+>  drivers/acpi/cmi_i2c.c |  391 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 403 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/acpi/cmi_i2c.c
+> 
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 7ec7d88..ce7cf38 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -333,4 +333,15 @@ config ACPI_SBS
+>           To compile this driver as a module, choose M here:
+>           the modules will be called sbs and sbshc.
+> 
+> +config ACPI_I2C
+> +       tristate "SMBus Control Method Interface"
+> +       depends on X86
+> +       help
+> +         This driver supports the SMBus Control Method Interface. It needs
+> +         BIOS declare ACPI control methods via SMBus Control Method Interface
+> +         Spec.
+> +
+> +         To compile this driver as a module, choose M here:
+> +         the modules will be called sbs and sbshc.
+> +
+>  endif  # ACPI
+> diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+> index 03a985b..a76c351 100644
+> --- a/drivers/acpi/Makefile
+> +++ b/drivers/acpi/Makefile
+> @@ -56,6 +56,7 @@ obj-$(CONFIG_ACPI_HOTPLUG_MEMORY) += acpi_memhotplug.o
+>  obj-$(CONFIG_ACPI_BATTERY)     += battery.o
+>  obj-$(CONFIG_ACPI_SBS)         += sbshc.o
+>  obj-$(CONFIG_ACPI_SBS)         += sbs.o
+> +obj-$(CONFIG_ACPI_I2C)         += cmi_i2c.o
+> 
+>  # processor has its own "processor." module_param namespace
+>  processor-y                    := processor_core.o processor_throttling.o
+> diff --git a/drivers/acpi/cmi_i2c.c b/drivers/acpi/cmi_i2c.c
+> new file mode 100644
+> index 0000000..69f3202
+> --- /dev/null
+> +++ b/drivers/acpi/cmi_i2c.c
+> @@ -0,0 +1,391 @@
+> +/*
+> + * SMBus driver for ACPI SMBus CMI
+> + *
+> + * Copyright (C) 2009 Crane Cai <crane.cai@amd.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation version 2.
+> + */
+> +
+> +#include <linux/version.h>
+> +#include <linux/module.h>
+> +#include <linux/slab.h>
+> +#include <linux/kernel.h>
+> +#include <linux/stddef.h>
+> +#include <linux/init.h>
+> +#include <linux/i2c.h>
+> +#include <linux/acpi.h>
+> +#include <linux/delay.h>
+> +
+> +#define ACPI_SMB_HC_COMPONENT  0x00080000
+> +#define ACPI_SMB_HC_CLASS      "smbus"
+> +#define ACPI_SMB_HC_DEVICE_NAME        "smbus cmi"
+> +#define SMB_HC_DEVICE_NAME     "SMBus CMI adapter"
+> +
+> +#define _COMPONENT             ACPI_SMB_HC_COMPONENT
+> +
+> +ACPI_MODULE_NAME("smbus_cmi");
+> +
+> +struct smbus_methods {
+> +       char *mt_info;
+> +       char *mt_sbr;
+> +       char *mt_sbw;
+> +};
+> +
+> +struct acpi_smbus_cmi {
+> +       acpi_handle handle;
+> +       struct i2c_adapter adapter;
+> +       struct smbus_methods *methods;
+> +};
+> +
+> +static const struct smbus_methods smb_mtds = {
+> +       .mt_info = "_SBI",
+> +       .mt_sbr = "_SBR",
+> +       .mt_sbw = "_SBW",
+> +};
+> +
+> +static const struct acpi_device_id i2c_device_ids[] = {
+> +       {"SMBUS01", 0},
+> +       {"", 0},
+> +};
+> +
+> +static int acpi_smb_cmi_add(struct acpi_device *device);
+> +static int acpi_smb_cmi_remove(struct acpi_device *device, int type);
+> +
+> +static struct acpi_driver acpi_smb_cmi_driver = {
+> +       .name = ACPI_SMB_HC_DEVICE_NAME,
+> +       .class = ACPI_SMB_HC_CLASS,
+> +       .ids = i2c_device_ids,
+> +       .ops = {
+> +               .add = acpi_smb_cmi_add,
+> +               .remove = acpi_smb_cmi_remove,
+> +               },
+> +};
+> +
+> +#define ACPI_SMB_STATUS_OK             0x00
+> +#define ACPI_SMB_STATUS_FAIL           0x07
+> +#define ACPI_SMB_STATUS_DNAK           0x10
+> +#define ACPI_SMB_STATUS_DERR           0x11
+> +#define ACPI_SMB_STATUS_CMD_DENY       0x12
+> +#define ACPI_SMB_STATUS_UNKNOWN                0x13
+> +#define ACPI_SMB_STATUS_ACC_DENY       0x17
+> +#define ACPI_SMB_STATUS_TIMEOUT                0x18
+> +#define ACPI_SMB_STATUS_NOTSUP         0x19
+> +#define ACPI_SMB_STATUS_BUSY           0x1A
+> +#define ACPI_SMB_STATUS_PEC            0x1F
+> +
+> +#define ACPI_SMB_PRTCL_WRITE                   0x0
+> +#define ACPI_SMB_PRTCL_READ                    0x01
+> +#define ACPI_SMB_PRTCL_QUICK                   0x02
+> +#define ACPI_SMB_PRTCL_BYTE                    0x04
+> +#define ACPI_SMB_PRTCL_BYTE_DATA               0x06
+> +#define ACPI_SMB_PRTCL_WORD_DATA               0x08
+> +#define ACPI_SMB_PRTCL_BLOCK_DATA              0x0a
+> +#define ACPI_SMB_PRTCL_PROC_CALL               0x0c
+> +#define ACPI_SMB_PRTCL_BLOCK_PROC_CALL         0x0d
+> +#define ACPI_SMB_PRTCL_PEC                     0x80
+> +
+> +
+> +static int
+> +acpi_smb_cmi_access(struct i2c_adapter *adap, u16 addr, unsigned short flags,
+> +                  char read_write, u8 command, int size,
+> +                  union i2c_smbus_data *data)
+> +{
+> +       int result = 0;
+> +       struct acpi_smbus_cmi *smbus_cmi = adap->algo_data;
+> +       unsigned char protocol, len = 0;
+> +       acpi_status status = 0;
+> +       struct acpi_object_list input;
+> +       union acpi_object mt_params[5];
+> +       struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+> +       union acpi_object *obj;
+> +       union acpi_object *pkg;
+> +       char *mthd;
+> +
+> +       switch (size) {
+> +       case I2C_SMBUS_QUICK:
+> +               protocol = ACPI_SMB_PRTCL_QUICK;
+> +               command = 0;
+> +               if (read_write == I2C_SMBUS_WRITE) {
+> +                       mt_params[3].type = ACPI_TYPE_INTEGER;
+> +                       mt_params[3].integer.value = 0;
+> +                       mt_params[4].type = ACPI_TYPE_INTEGER;
+> +                       mt_params[4].integer.value = 0;
+> +               }
+> +               break;
+> +
+> +       case I2C_SMBUS_BYTE:
+> +               protocol = ACPI_SMB_PRTCL_BYTE;
+> +               if (read_write == I2C_SMBUS_WRITE) {
+> +                       mt_params[3].type = ACPI_TYPE_INTEGER;
+> +                       mt_params[3].integer.value = 0;
+> +                       mt_params[4].type = ACPI_TYPE_INTEGER;
+> +                       mt_params[4].integer.value = 0;
+> +               } else {
+> +                       command = 0;
+> +               }
+> +               break;
+> +
+> +       case I2C_SMBUS_BYTE_DATA:
+> +               protocol = ACPI_SMB_PRTCL_BYTE_DATA;
+> +               if (read_write == I2C_SMBUS_WRITE) {
+> +                       mt_params[3].type = ACPI_TYPE_INTEGER;
+> +                       mt_params[3].integer.value = 1;
+> +                       mt_params[4].type = ACPI_TYPE_INTEGER;
+> +                       mt_params[4].integer.value = data->byte;
+> +               }
+> +               break;
+> +
+> +       case I2C_SMBUS_WORD_DATA:
+> +               protocol = ACPI_SMB_PRTCL_WORD_DATA;
+> +               if (read_write == I2C_SMBUS_WRITE) {
+> +                       mt_params[3].type = ACPI_TYPE_INTEGER;
+> +                       mt_params[3].integer.value = 2;
+> +                       mt_params[4].type = ACPI_TYPE_INTEGER;
+> +                       mt_params[4].integer.value = data->word;
+> +               }
+> +               break;
+> +
+> +       case I2C_SMBUS_BLOCK_DATA:
+> +               protocol = ACPI_SMB_PRTCL_BLOCK_DATA;
+> +               if (read_write == I2C_SMBUS_WRITE) {
+> +                       len = data->block[0];
+> +                       if (len == 0 || len > I2C_SMBUS_BLOCK_MAX)
+> +                               return -EINVAL;
+> +                       mt_params[3].type = ACPI_TYPE_INTEGER;
+> +                       mt_params[3].integer.value = len;
+> +                       mt_params[4].type = ACPI_TYPE_BUFFER;
+> +                       mt_params[4].buffer.pointer = data->block + 1;
+> +               }
+> +               break;
+> +
+> +       default:
+> +               ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus CMI adapter: "
+> +                                 "Unsupported transaction %d\n", size));
+> +               return -EOPNOTSUPP;
+> +       }
+> +
+> +       if (read_write == I2C_SMBUS_READ) {
+> +               protocol |= ACPI_SMB_PRTCL_READ;
+> +               mthd = smbus_cmi->methods->mt_sbr;
+> +               input.count = 3;
+> +       } else {
+> +               protocol |= ACPI_SMB_PRTCL_WRITE;
+> +               mthd = smbus_cmi->methods->mt_sbw;
+> +               input.count = 5;
+> +       }
+> +
+> +       input.pointer = mt_params;
+> +       mt_params[0].type = ACPI_TYPE_INTEGER;
+> +       mt_params[0].integer.value = protocol;
+> +       mt_params[1].type = ACPI_TYPE_INTEGER;
+> +       mt_params[1].integer.value = addr;
+> +       mt_params[2].type = ACPI_TYPE_INTEGER;
+> +       mt_params[2].integer.value = command;
+> +
+> +       status = acpi_evaluate_object(smbus_cmi->handle, mthd, &input, &buffer);
+> +       if (ACPI_FAILURE(status)) {
+> +               ACPI_DEBUG_PRINT((ACPI_DB_WARN, "Error evaluate %s\n", mthd));
+> +               return -EIO;
+> +       }
+> +
+> +       pkg = buffer.pointer;
+> +       if (pkg && pkg->type == ACPI_TYPE_PACKAGE)
+> +               obj = pkg->package.elements;
+> +       else {
+> +               result = -EIO;
+> +               goto out;
+> +       }
+> +       if (obj == NULL || obj->type != ACPI_TYPE_INTEGER) {
+> +               ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus status object type \
+> +                                               error\n"));
+> +               result = -EIO;
+> +               goto out;
+> +       }
+> +
+> +       result = obj->integer.value;
+> +       switch (result) {
+> +       case ACPI_SMB_STATUS_OK:
+> +               break;
+> +       case ACPI_SMB_STATUS_BUSY:
+> +               result = -EBUSY;
+> +               goto out;
+> +       case ACPI_SMB_STATUS_TIMEOUT:
+> +               result = -ETIMEDOUT;
+> +               goto out;
+> +       case ACPI_SMB_STATUS_DNAK:
+> +               result = -ENXIO;
+> +               goto out;
+> +       default:
+> +               result = -EIO;
+> +               goto out;
+> +       }
+> +
+> +       if (read_write == I2C_SMBUS_WRITE)
+> +               goto out;
+> +
+> +       obj = pkg->package.elements + 1;
+> +       if (obj == NULL || obj->type != ACPI_TYPE_INTEGER) {
+> +               ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus return package object \
+> +                                               type error\n"));
+> +               result = -EIO;
+> +               goto out;
+> +       }
+> +
+> +       len = obj->integer.value;
+> +       obj = pkg->package.elements + 2;
+> +       switch (size) {
+> +       case I2C_SMBUS_BYTE:
+> +       case I2C_SMBUS_BYTE_DATA:
+> +       case I2C_SMBUS_WORD_DATA:
+> +               if (obj == NULL || obj->type != ACPI_TYPE_INTEGER) {
+> +                       ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus return package \
+> +                                               object type error\n"));
+> +                       result = -EIO;
+> +                       goto out;
+> +               }
+> +               if (len == 2)
+> +                       data->word = obj->integer.value & 0xffff;
+> +               else
+> +                       data->byte = obj->integer.value & 0xff;
+> +               break;
+> +       case I2C_SMBUS_BLOCK_DATA:
+> +               if (obj == NULL || obj->type != ACPI_TYPE_BUFFER) {
+> +                       ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus return package \
+> +                                               object type error\n"));
+> +                       result = -EIO;
+> +                       goto out;
+> +               }
+> +               data->block[0] = len;
+> +               if (data->block[0] == 0 || data->block[0] > I2C_SMBUS_BLOCK_MAX)
+> +                       return -EPROTO;
+> +               memcpy(data->block + 1, obj->buffer.pointer, len);
+> +               break;
+> +       }
+> +
+> +out:
+> +       kfree(buffer.pointer);
+> +       return result;
+> +}
+> +
+> +static u32 acpi_smb_cmi_func(struct i2c_adapter *adapter)
+> +{
+> +
+> +       return I2C_FUNC_SMBUS_QUICK | I2C_FUNC_SMBUS_BYTE |
+> +               I2C_FUNC_SMBUS_BYTE_DATA | I2C_FUNC_SMBUS_WORD_DATA |
+> +               I2C_FUNC_SMBUS_BLOCK_DATA;
+> +}
+> +
+> +static const struct i2c_algorithm acpi_smbus_cmi_algorithm = {
+> +       .smbus_xfer = acpi_smb_cmi_access,
+> +       .functionality = acpi_smb_cmi_func,
+> +};
+> +
+> +static int acpi_smb_cmi_add(struct acpi_device *device)
+> +{
+> +       int status;
+> +       struct acpi_smbus_cmi *smb_cmi;
+> +       struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+> +       union acpi_object *obj;
+> +
+> +       if (!device)
+> +               return -EINVAL;
+> +
+> +       smb_cmi = kzalloc(sizeof(struct acpi_smbus_cmi), GFP_KERNEL);
+> +       if (!smb_cmi)
+> +               return -ENOMEM;
+> +
+> +       smb_cmi->handle = device->handle;
+> +       strcpy(acpi_device_name(device), ACPI_SMB_HC_DEVICE_NAME);
+> +       strcpy(acpi_device_class(device), ACPI_SMB_HC_CLASS);
+> +       device->driver_data = smb_cmi;
+> +       smb_cmi->methods = (struct smbus_methods *)(&smb_mtds);
+> +
+> +       status = acpi_evaluate_object(smb_cmi->handle,
+> +                                       smb_cmi->methods->mt_info,
+> +                                       NULL, &buffer);
+> +       if (ACPI_FAILURE(status)) {
+> +               ACPI_DEBUG_PRINT((ACPI_DB_WARN, "Error obtaining _SBI\n"));
+> +               goto err;
+> +       }
+> +
+> +       obj = buffer.pointer;
+> +       if (obj && obj->type == ACPI_TYPE_PACKAGE)
+> +               obj = obj->package.elements;
+> +       else {
+> +               kfree(buffer.pointer);
+> +               goto err;
+> +       }
+> +
+> +       if (obj->type != ACPI_TYPE_INTEGER) {
+> +               ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus CMI Version object type \
+> +                                                               error\n"));
+> +       } else
+> +               ACPI_DEBUG_PRINT((ACPI_DB_WARN, "SMBus CMI Version %0x\n",
+> +                                       (int)obj->integer.value));
+> +       kfree(buffer.pointer);
+> +
+> +       snprintf(smb_cmi->adapter.name, sizeof(smb_cmi->adapter.name),
+> +               "SMBus CMI adapter");
+> +       smb_cmi->adapter.owner = THIS_MODULE;
+> +       smb_cmi->adapter.algo = &acpi_smbus_cmi_algorithm;
+> +       smb_cmi->adapter.algo_data = smb_cmi;
+> +       smb_cmi->adapter.class  = I2C_CLASS_HWMON | I2C_CLASS_SPD;
+> +       smb_cmi->adapter.dev.parent = &device->dev;
+> +
+> +       if (i2c_add_adapter(&smb_cmi->adapter)) {
+> +               ACPI_DEBUG_PRINT((ACPI_DB_WARN,
+> +                         "SMBus CMI adapter: Failed to register adapter\n"));
+> +               kfree(smb_cmi);
+> +               return -EIO;
+> +       }
+> +
+> +       printk(KERN_INFO PREFIX "%s [%s]\n",
+> +              acpi_device_name(device), acpi_device_bid(device));
+> +
+> +       return AE_OK;
+> +
+> +err:
+> +       kfree(smb_cmi);
+> +       device->driver_data = NULL;
+> +       return -EIO;
+> +}
+> +
+> +static int acpi_smb_cmi_remove(struct acpi_device *device, int type)
+> +{
+> +       struct acpi_smbus_cmi *smbus_cmi;
+> +
+> +       if (!device)
+> +               return -EINVAL;
+> +
+> +       smbus_cmi = acpi_driver_data(device);
+> +
+> +       i2c_del_adapter(&smbus_cmi->adapter);
+> +       kfree(smbus_cmi);
+> +
+> +       return AE_OK;
+> +}
+> +
+> +static int __init acpi_smb_cmi_init(void)
+> +{
+> +       int result;
+> +
+> +       result = acpi_bus_register_driver(&acpi_smb_cmi_driver);
+> +       if (result < 0)
+> +               return -ENODEV;
+> +
+> +       return 0;
+> +}
+> +
+> +static void __exit acpi_smb_cmi_exit(void)
+> +{
+> +       acpi_bus_unregister_driver(&acpi_smb_cmi_driver);
+> +}
+> +
+> +module_init(acpi_smb_cmi_init);
+> +module_exit(acpi_smb_cmi_exit);
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Crane Cai");
+> +MODULE_DESCRIPTION("ACPI SMBus CMI driver");
+> --
+> 1.6.0.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
--- 
-tejun
