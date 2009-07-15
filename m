@@ -1,49 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbZGOLMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbZGOLQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbZGOLMm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 07:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZGOLMl
+	id S1754051AbZGOLQM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 07:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZGOLQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 07:12:41 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:44305 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbZGOLMl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 07:12:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=lGO8sPx5mznG/Buy35w7kONUT7W+1Tg0i0ORhy4lx6n4kiANxxnvthOeAONP2j/ZKU
-         bVunX+3760j9Cl9CA3AAMN7Sc+3zk8JpROMwdC9O8+sJ7HSRLFYcLkjIvu7ifSSlQk6I
-         pQBq4/7C0k7J5hjMYc+wBsq3KL79lcx5lwhNc=
-MIME-Version: 1.0
-In-Reply-To: <12377.1247654255@redhat.com>
-References: <1247591665-12000-1-git-send-email-vapier@gentoo.org> 
-	<20090714161416.GA19147@cmpxchg.org> <6206.1247592126@redhat.com> 
-	<4A5CFFD8.7020106@t-online.de> <12377.1247654255@redhat.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 15 Jul 2009 07:12:20 -0400
-Message-ID: <8bd0f97a0907150412h234cf4d6l439d92d832055373@mail.gmail.com>
-Subject: Re: [Uclinux-dist-devel] [PATCH v2] NOMMU: add support for Memory 
-	Protection Units (MPU)
-To: David Howells <dhowells@redhat.com>
-Cc: Bernd Schmidt <bernds_cb1@t-online.de>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Jul 2009 07:16:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35848 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752089AbZGOLQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 07:16:11 -0400
+Subject: [PATCH] SOUND: riptide.c proper handling of pci_register_driver
+ for joystick
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <s5hfxcyxqew.wl%tiwai@suse.de>
+References: <1247639250.2437.11.camel@ht.satnam>
+	 <s5hfxcyxqew.wl%tiwai@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 15 Jul 2009 16:45:40 +0530
+Message-Id: <1247656540.2432.3.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 06:37, David Howells wrote:
-> Bernd Schmidt <bernds_cb1@t-online.de> wrote:
->> No page table, just three bitmaps (r/w/x), with one bit per page, per mm.
->
-> I presume that all you do is maintain a distinction between
-> userspace-accessible areas and kernel-only areas, and don't prevent userspace
-> processes from destroying each other.
+On Wed, 2009-07-15 at 11:10 +0200, Takashi Iwai wrote:
+> At Wed, 15 Jul 2009 11:57:30 +0530,
+> Jaswinder Singh Rajput wrote:
+> > 
+> > I am getting this compiler warning in linus tree :
+> > 
+> >   CC [M]  sound/pci/riptide/riptide.o
+> > sound/pci/riptide/riptide.c: In function ‘alsa_card_riptide_init’:
+> > sound/pci/riptide/riptide.c:2200: warning: ignoring return value of ‘__pci_register_driver’, declared with attribute warn_unused_result
+> > 
+> > This fixes the warning in my case, hope this will be helpful :
+> > 
+> > diff --git a/sound/pci/riptide/riptide.c b/sound/pci/riptide/riptide.c
+> > index 235a71e..fd8a552 100644
+> > --- a/sound/pci/riptide/riptide.c
+> > +++ b/sound/pci/riptide/riptide.c
+> > @@ -2197,9 +2197,9 @@ static int __init alsa_card_riptide_init(void)
+> >  	if (err < 0)
+> >  		return err;
+> >  #if defined(SUPPORT_JOYSTICK)
+> > -	pci_register_driver(&joystick_driver);
+> > +	err = pci_register_driver(&joystick_driver);
+> >  #endif
+> > -	return 0;
+> > +	return err;
+> 
+> In that case, the formerly registered audio driver should be
+> unregistered before returning the error from the probe callback.
+> Could you fix that?
+> 
 
-there is full 4k page protection between processes and between the
-kernel and processes.
--mike
+[PATCH] SOUND: riptide.c proper handling of pci_register_driver for joystick
+
+We need to check returning error for pci_register_driver(&joystick_driver)
+
+On failure, we should unregister formerly registered audio drivers
+
+This also fixed the compiler warning :
+
+  CC [M]  sound/pci/riptide/riptide.o
+ sound/pci/riptide/riptide.c: In function ‘alsa_card_riptide_init’:
+ sound/pci/riptide/riptide.c:2200: warning: ignoring return value of ‘__pci_register_driver’, declared with attribute warn_unused_result
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ sound/pci/riptide/riptide.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/sound/pci/riptide/riptide.c b/sound/pci/riptide/riptide.c
+index 235a71e..b5ca02e 100644
+--- a/sound/pci/riptide/riptide.c
++++ b/sound/pci/riptide/riptide.c
+@@ -2197,9 +2197,12 @@ static int __init alsa_card_riptide_init(void)
+ 	if (err < 0)
+ 		return err;
+ #if defined(SUPPORT_JOYSTICK)
+-	pci_register_driver(&joystick_driver);
++	err = pci_register_driver(&joystick_driver);
++	/* On failure unregister formerly registered audio driver */
++	if (err < 0)
++		pci_unregister_driver(&driver);
+ #endif
+-	return 0;
++	return err;
+ }
+ 
+ static void __exit alsa_card_riptide_exit(void)
+-- 
+1.6.0.6
+
+
+
