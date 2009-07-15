@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbZGOJMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbZGOJOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbZGOJMu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 05:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZGOJMt
+	id S1753527AbZGOJOM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 05:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZGOJOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 05:12:49 -0400
-Received: from www.tglx.de ([62.245.132.106]:54304 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753426AbZGOJMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 05:12:49 -0400
-Date: Wed, 15 Jul 2009 11:12:08 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 15 Jul 2009 05:14:11 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41590 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753395AbZGOJOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 05:14:10 -0400
+Date: Wed, 15 Jul 2009 10:14:09 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT pull] timer fixes for 2.6.31
-In-Reply-To: <20090715082040.GA5038@osiris.boeblingen.de.ibm.com>
-Message-ID: <alpine.LFD.2.00.0907151111130.2777@localhost.localdomain>
-References: <alpine.LFD.2.00.0907141755210.2777@localhost.localdomain> <20090715082040.GA5038@osiris.boeblingen.de.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Subject: Re: sound/soc/codecs/wm9081.c compiler warning
+Message-ID: <20090715091409.GD8689@rakim.wolfsonmicro.main>
+References: <1247639434.2437.14.camel@ht.satnam>
+ <s5heisixqdk.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <s5heisixqdk.wl%tiwai@suse.de>
+X-Cookie: Use other side for additional listings.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Jul 2009, Heiko Carstens wrote:
+On Wed, Jul 15, 2009 at 11:11:19AM +0200, Takashi Iwai wrote:
+> At Wed, 15 Jul 2009 12:00:34 +0530,
+> Jaswinder Singh Rajput wrote:
 
-> On Tue, Jul 14, 2009 at 05:56:02PM +0200, Thomas Gleixner wrote:
-> > Linus,
-> > 
-> > Please pull the latest timers-fixes-for-linus git tree from:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
-> > 
-> > Thanks,
-> > 
-> > 	tglx
-> > 
-> > ------------------>
-> > Heiko Carstens (1):
-> >       timer stats: fix quick check optimization
-> 
-> hmm... this patch was not pulled.
+> > I am getting this compiler warning in linus tree:
 
-Because a certain moron did not push it out. :(
+> >   CC [M]  sound/soc/codecs/wm9081.o
+> > sound/soc/codecs/wm9081.c: In function ‘configure_clock’:
+> > sound/soc/codecs/wm9081.c:674: warning: ‘new_sysclk’ may be used uninitialized in this function
+
+> > This fixes the warning in my case, hope this will be helpful :
+
+> I think your fix is OK, but I let it to Mark :)
+
+I'm just looking at this at the minute.  I'm trying to decide if it
+should take that approach or error out if it can't find a configuration.
+
+Again, I'm not seeing the warning itself - compiler versions would be
+useful in warning reports (particularly for control flow analysis stuff
+like this).
