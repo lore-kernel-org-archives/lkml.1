@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZGOKCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbZGOKEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbZGOKCv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 06:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZGOKCu
+	id S1753802AbZGOKEy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 06:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbZGOKEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 06:02:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36506 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753395AbZGOKCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 06:02:49 -0400
-Message-ID: <4A5DA937.6040605@kernel.org>
-Date: Wed, 15 Jul 2009 19:02:31 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Tejun Heo <htejun@gmail.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-next@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: linux-next: Tree for July 6-July 9-July 15 (percpu/x86)
-References: <20090706162632.fdde002e.sfr@canb.auug.org.au>	<20090706095343.df21d4c9.rdunlap@xenotime.net>	<20090709102248.01e2312c.randy.dunlap@oracle.com>	<20090715094720.GA6674@linux.vnet.ibm.com> <20090715195807.f0d1a7ea.sfr@canb.auug.org.au>
-In-Reply-To: <20090715195807.f0d1a7ea.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 15 Jul 2009 06:04:53 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55920 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752181AbZGOKEx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 06:04:53 -0400
+Date: Wed, 15 Jul 2009 11:05:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: possible regression with pty.c commit
+Message-ID: <20090715110533.62daf05e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090714162837.GC3145@localdomain.by>
+References: <20090711191556.GA3845@localdomain.by>
+	<20090711232452.4dc7c1ba@lxorguk.ukuu.org.uk>
+	<20090711235530.GA3231@localdomain.by>
+	<20090713124834.5c3ecc5d@lxorguk.ukuu.org.uk>
+	<20090714162837.GC3145@localdomain.by>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 15 Jul 2009 10:02:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
->>> Still present in 20090709...
->>>
->> still seen in 20090715 with allnoconfig.
-> 
-> Any ideas?
+On Tue, 14 Jul 2009 19:28:37 +0300
+Sergey Senozhatsky <sergey.senozhatsky@mail.by> wrote:
 
-Getting the tree now.  Probably broken build with !SMP.  Will report
-back as soon as I know more.
+> Hello Alan,
+> I'm having another problem which I guess may be caused by pty/tty changes.
+> The problem is that ppp connection constantly hangups under load (downloading) 
+> (it works perfectly with 30 kernel).
 
-Thanks.
-
--- 
-tejun
+Have you also got the unthrottle change reverted - without that revert it
+certainly will hang as you describe.
