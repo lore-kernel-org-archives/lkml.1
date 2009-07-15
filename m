@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbZGOJMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbZGOJMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753479AbZGOJMI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 05:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbZGOJMH
+	id S1753515AbZGOJMu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 05:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZGOJMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 05:12:07 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41576 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752426AbZGOJMF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 05:12:05 -0400
-Date: Wed, 15 Jul 2009 10:12:03 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: sound tree build warning
-Message-ID: <20090715091203.GC8689@rakim.wolfsonmicro.main>
-References: <20090715131354.da512c72.sfr@canb.auug.org.au>
- <20090715083521.GB8689@rakim.wolfsonmicro.main>
- <s5hhbxexqgx.wl%tiwai@suse.de>
+	Wed, 15 Jul 2009 05:12:49 -0400
+Received: from www.tglx.de ([62.245.132.106]:54304 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753426AbZGOJMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 05:12:49 -0400
+Date: Wed, 15 Jul 2009 11:12:08 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT pull] timer fixes for 2.6.31
+In-Reply-To: <20090715082040.GA5038@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.LFD.2.00.0907151111130.2777@localhost.localdomain>
+References: <alpine.LFD.2.00.0907141755210.2777@localhost.localdomain> <20090715082040.GA5038@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hhbxexqgx.wl%tiwai@suse.de>
-X-Cookie: Use other side for additional listings.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 11:09:18AM +0200, Takashi Iwai wrote:
-> At Wed, 15 Jul 2009 09:35:21 +0100,
-> Mark Brown wrote:
+On Wed, 15 Jul 2009, Heiko Carstens wrote:
 
-> > Fixed, though Takashi seems to be away at the minute so it'll not appear
-> > in -next until he reappears.
+> On Tue, Jul 14, 2009 at 05:56:02PM +0200, Thomas Gleixner wrote:
+> > Linus,
+> > 
+> > Please pull the latest timers-fixes-for-linus git tree from:
+> > 
+> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
+> > 
+> > Thanks,
+> > 
+> > 	tglx
+> > 
+> > ------------------>
+> > Heiko Carstens (1):
+> >       timer stats: fix quick check optimization
+> 
+> hmm... this patch was not pulled.
 
-> I'm back now and pulled your trees.  The tomorrow's next tree should
-> be fine.
-
-Ah, excellent - I'll send a pull request for the fix later this morning.
+Because a certain moron did not push it out. :(
