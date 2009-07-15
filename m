@@ -1,85 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751664AbZGOVT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751947AbZGOVVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751664AbZGOVT5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 17:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZGOVT4
+	id S1751947AbZGOVVL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 17:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZGOVVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 17:19:56 -0400
-Received: from smtpout.cs.fsu.edu ([128.186.122.75]:5602 "EHLO mail.cs.fsu.edu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751319AbZGOVTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 17:19:55 -0400
-Date: Wed, 15 Jul 2009 17:19:52 -0400
-From: Ted Baker <baker@cs.fsu.edu>
-To: "James H. Anderson" <anderson@cs.unc.edu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Chris Friesen <cfriesen@nortel.com>, Raistlin <raistlin@linux.it>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-Message-ID: <20090715211952.GB14993@cs.fsu.edu>
-References: <1247336891.9978.32.camel@laptop> <4A594D2D.3080101@ittc.ku.edu> <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir> <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir> <4A5C9ABA.9070909@nortel.com> <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu> <1247589099.7500.191.camel@twins> <alpine.LRH.2.00.0907141259100.16818@anderson.cs.unc.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0907141259100.16818@anderson.cs.unc.edu>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 15 Jul 2009 17:21:08 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:42879 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751537AbZGOVVG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 17:21:06 -0400
+From: Sage Weil <sage@newdream.net>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sage Weil <sage@newdream.net>
+Subject: [PATCH 01/20] ceph: documentation
+Date: Wed, 15 Jul 2009 14:24:31 -0700
+Message-Id: <1247693090-27796-2-git-send-email-sage@newdream.net>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1247693090-27796-1-git-send-email-sage@newdream.net>
+References: <1247693090-27796-1-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 01:16:52PM -0400, James H. Anderson wrote:
-> ... BTW, I should say that I am not
-> familiar with the PEP protocol that has been discussed in this thread.
-> I assume it doesn't work under GEDF, or you wouldn't have asked the
-> question...
+Mount options, syntax.
 
-I have not seen the definition of PEP, but from the context of
-this discussion I infer that it refers to an implementation of
-priority inheritance.  As such, with pretty much any global
-scheduling policy, the set of other tasks whose critical sections
-could stack up is bounded only by the number of tasks in the
-system.
+Signed-off-by: Sage Weil <sage@newdream.net>
+---
+ Documentation/filesystems/ceph.txt |  181 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 181 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/filesystems/ceph.txt
 
-In any case, I have misunderstood what PEP is, let me attempt
-to summarize what I have inferred:
+diff --git a/Documentation/filesystems/ceph.txt b/Documentation/filesystems/ceph.txt
+new file mode 100644
+index 0000000..26b014e
+--- /dev/null
++++ b/Documentation/filesystems/ceph.txt
+@@ -0,0 +1,181 @@
++Ceph Distributed File System
++============================
++
++Ceph is a distributed network file system designed to provide good
++performance, reliability, and scalability.
++
++Basic features include:
++
++ * POSIX semantics
++ * Seamless scaling from 1 to many thousands of nodes
++ * High availability and reliability.  No single points of failure.
++ * N-way replication of data across storage nodes
++ * Fast recovery from node failures
++ * Automatic rebalancing of data on node addition/removal
++ * Easy deployment: most FS components are userspace daemons
++
++Also,
++ * Flexible snapshots (on any directory)
++ * Recursive accounting (nested files, directories, bytes)
++
++In contrast to cluster filesystems like GFS, OCFS2, and GPFS that rely
++on symmetric access by all clients to shared block devices, Ceph
++separates data and metadata management into independent server
++clusters, similar to Lustre.  Unlike Lustre, however, metadata and
++storage nodes run entirely as user space daemons.  Storage nodes
++utilize btrfs to store data objects, leveraging its advanced features
++(checksumming, metadata replication, etc.).  File data is striped
++across storage nodes in large chunks to distribute workload and
++facilitate high throughputs.  When storage nodes fail, data is
++re-replicated in a distributed fashion by the storage nodes themselves
++(with some minimal coordination from a cluster monitor), making the
++system extremely efficient and scalable.
++
++Metadata servers effectively form a large, consistent, distributed
++in-memory cache above the file namespace that is extremely scalable,
++dynamically redistributes metadata in response to workload changes,
++and can tolerate arbitrary (well, non-Byzantine) node failures.  The
++metadata server takes a somewhat unconventional approach to metadata
++storage to significantly improve performance for common workloads.  In
++particular, inodes with only a single link are embedded in
++directories, allowing entire directories of dentries and inodes to be
++loaded into its cache with a single I/O operation.  The contents of
++extremely large directories can be fragmented and managed by
++independent metadata servers, allowing scalable concurrent access.
++
++The system offers automatic data rebalancing/migration when scaling
++from a small cluster of just a few nodes to many hundreds, without
++requiring an administrator carve the data set into static volumes or
++go through the tedious process of migrating data between servers.
++When the file system approaches full, new nodes can be easily added
++and things will "just work."
++
++Ceph includes flexible snapshot mechanism that allows a user to create
++a snapshot on any subdirectory (and its nested contents) in the
++system.  Snapshot creation and deletion are as simple as 'mkdir
++.snap/foo' and 'rmdir .snap/foo'.
++
++Ceph also provides some recursive accounting on directories for nested
++files and bytes.  That is, a 'getfattr -d foo' on any directory in the
++system will reveal the total number of nested regular files and
++subdirectories, and a summation of all nested file sizes.  This makes
++the identification of large disk space consumers relatively quick, as
++no 'du' or similar recursive scan of the file system is required.
++
++
++Mount Syntax
++============
++
++The basic mount syntax is:
++
++ # mount -t ceph monip[:port][,monip2[:port]...]:/[subdir] mnt
++
++You only need to specify a single monitor, as the client will get the
++full list when it connects.  (However, if the monitor you specify
++happens to be down, the mount won't succeed.)  The port can be left
++off if the monitor is using the default.  So if the monitor is at
++1.2.3.4,
++
++ # mount -t ceph 1.2.3.4:/ /mnt/ceph
++
++is sufficient.  If /sbin/mount.ceph is installed, a hostname can be
++used instead of an IP address.
++
++
++
++Mount Options
++=============
++
++  ip=A.B.C.D[:N]
++  port=N
++	Specify the IP and/or port the client should bind to locally.
++	There is normally not much reason to do this.  If the IP is not
++	specified, the client's IP address is determined by looking at the
++	address it's connection to the monitor originates from.
++
++  wsize=X
++	Specify the maximum write size in bytes.  By default there is no
++	maximu.  Ceph will normally size writes based on the file stripe
++	size.
++
++  rsize=X
++	Specify the maximum readahead.
++
++  mount_timeout=X
++	Specify the timeout value for mount (in seconds), in the case
++	of a non-responsive Ceph file system.  The default is 30
++	seconds.
++
++  rbytes
++	When stat() is called on a directory, set st_size to 'rbytes',
++	the summation of file sizes over all files nested beneath that
++	directory.  This is the default.
++
++  norbytes
++	When stat() is called on a directory, set st_size to the
++	number of entries in that directory.
++
++  nocrc
++	Disable CRC32C calculation for data writes.  If set, the OSD
++	must rely on TCP's error correction to detect data corruption
++	in the data payload.
++
++  noasyncreaddir
++	Disable client's use its local cache to satisfy	readdir
++	requests.  (This does not change correctness; the client uses
++	cached metadata only when a lease or capability ensures it is
++	valid.)
++
++
++Debugging options (these are also changeable via debugfs):
++
++  debug=N
++	Specify the level of debug output for the Ceph client.  Larger
++	values mean more output, and range from 0 to 50.  The default
++	is 1 (high-level informational messages only).
++
++  debug_console=N
++	If non-zero, debug messages will be printk'ed with KERN_ERR,
++	causing them to appear on the system console.  Otherwise,
++	messages will be printed with KERN_DEBUG and will appear in
++	the system log.
++
++  debug_msgr=N
++	Debug level for the messaging/communications layer, if >= 0.
++	Default is -1.
++
++  debug_mdsc=N
++	Debug level for the MDS client, if >= 0.
++
++  debug_osdc=N
++	Debug level for the OSD client, if >= 0.
++
++  debug_addr=N
++	Debug level for address space operations, if >= 0.
++
++  debug_file=N
++	Debug level for file operations, if >= 0.
++
++  debug_inode=N
++	Debug level for inode operations, if >= 0.
++
++  debug_caps=N
++	Debug level for file capability operations, if >= 0.
++
++  debug_snap=N
++	Debug level for snapshot operations, if >= 0.
++
++
++
++
++More Information
++================
++
++For more information on Ceph, see the home page at
++	http://ceph.newdream.net/
++
++The Linux kernel client source tree is available at
++	git://ceph.newdream.net/linux-ceph-client.git
++
++and the source for the full system is at
++	git://ceph.newdream.net/ceph.git
+-- 
+1.5.6.5
 
-A high priority running task that would otherwise become blocked
-waiting for a lower-priority lock-holding task to release the lock
-can give up its prority/shot at execution to the lower-priority
-task that is blocking it.  That is, when a task A is "blocked" for
-a lock it can stay in the run-queue so long as the task B that is
-(ultimately, transitively) blocking it is in (the same?)
-run-queue.  At any point where the scheduler would choose to
-execute A it instead finds B, by traversing wait-for links between
-tasks, and executes B.  The priority order of the run-queue can be
-based on any (partial) ordering relation, including deadlines.
-
-A slight complexity is that if B is allowed to suspend itself
-while holding a lock, and does so, one must run back and also
-remove the tasks like A from the run-queue, and when B wakes up,
-one must do the revers.  However, the frequency of deep nesting
-of wait-for relationships seems small.
-
-For GEDF on SMP, a question is how to handle the case where A is
-blocked on one processor and B may be running on a different one.
-This seems to require removing A from the run-queue when it is
-detected.
-
-Of course, the current Linux model appears not to fully support
-GEDF, since run-queues are per-processor, subject to explicit
-migration.  So, as infer from the preceding messages, the question
-above transforms into whether to migrate A to B's processor
-run-queue or to migrate B to A's processor run-queue?
-
-Ted
