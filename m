@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932292AbZGOUYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932296AbZGOUYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932292AbZGOUYQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 16:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932280AbZGOUYP
+	id S932296AbZGOUYv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 16:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932280AbZGOUYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 16:24:15 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:23518 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932171AbZGOUYO (ORCPT
+	Wed, 15 Jul 2009 16:24:51 -0400
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:46485 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932266AbZGOUYu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 16:24:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=kabHBFOWhes3PiykS7Wy+4eKNmEU+SrF95jRdK86lngawb2WKHA7DAY3YEDgFUAMF
-	A/FBIXyl7ED1P0P6uDTkQ==
-Date: Wed, 15 Jul 2009 13:24:08 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Stephan von Krawczynski <skraw@ithnet.com>
-cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: What to do with this message (2.6.30.1) ?
-In-Reply-To: <20090715113740.334309dd.skraw@ithnet.com>
-Message-ID: <alpine.DEB.2.00.0907151323170.22582@chino.kir.corp.google.com>
-References: <20090713134621.124aa18e.skraw@ithnet.com> <4807377b0907132240g6f74c9cbnf1302d354a0e0a72@mail.gmail.com> <alpine.DEB.2.00.0907132247001.8784@chino.kir.corp.google.com> <20090715084754.36ff73bf.skraw@ithnet.com> <alpine.DEB.2.00.0907150115190.14393@chino.kir.corp.google.com>
- <20090715113740.334309dd.skraw@ithnet.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 15 Jul 2009 16:24:50 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <20090715134855.GB2538@elf.ucw.cz>
+References: <20090714100634.GA4054@elf.ucw.cz>
+	 <20090714175201.GB14661@dtor-d630.eng.vmware.com>
+	 <20090715134855.GB2538@elf.ucw.cz>
+Date: Wed, 15 Jul 2009 13:24:49 -0700
+Message-ID: <d6200be20907151324t7c133d49ofedf02efda4054cd@mail.gmail.com>
+Subject: Re: Support for synaptic touchscreen in HTC dream
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Jul 2009, Stephan von Krawczynski wrote:
+On Wed, Jul 15, 2009 at 6:48 AM, Pavel Machek<pavel@ucw.cz> wrote:
+> On Tue 2009-07-14 10:52:12, Dmitry Torokhov wrote:
+>> On Tue, Jul 14, 2009 at 12:06:34PM +0200, Pavel Machek wrote:
+>> > From: Arve Hj?nnev?g <arve@android.com>
+>> >
+>> > This adds support for synaptic touchscreen, used in HTC dream
+>> > cellphone.
+>> >
+>> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+>>
+>> This is pretty large body of code, could we get a sign-off from Arve as
+>> well since he seems to be the author?
+>
+> Arve?
+>
 
-> > If you have some additional time, it would also be helpful to get a 
-> > bisection of when the problem started occurring (it appears to be sometime 
-> > between 2.6.29 and 2.6.30).
-> 
-> Do you know what version should definitely be not affected? I can check one
-> kernel version per day, can you name a list which versions to check out? 
-> 
+The original patches has my sign-offs. Can you just keep that and add
+a line describing your changes before your sign-off?
 
-To my knowledge, this issue was never reported on 2.6.29, so that should 
-be a sane starting point.
+...
+>> > +static struct workqueue_struct *synaptics_wq;
+>>
+>> Do we need a separate workqueue? Is reading the device that slow that we
+>> can use keventd?
+>
+
+keventd has two problems. First, other work runs on it that can take
+more than 12.5ms. This will case dropped events. Second, the i2c bus
+sometimes locks up, which in turns would cause this driver to block
+keventd for seconds.
+
+...
+>> > +   if (client->irq) {
+>> > +           ret = request_irq(client->irq, synaptics_ts_irq_handler,
+>> > +                             0, client->name, ts);
+>>
+>> I think threaded IRQ will fit the bill and will take care of
+>> IRQ/workqueue shutdown races. Of course you still need to use workqueue
+>> if polling.
+>
+> I guess we'll just strip polling version for now?
+
+Sounds good to me.
+
+-- 
+Arve Hjønnevåg
