@@ -1,82 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbZGOBPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbZGOBUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756879AbZGOBPq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 21:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbZGOBPq
+	id S1756896AbZGOBUy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 21:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756860AbZGOBUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 21:15:46 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:5512 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756801AbZGOBPp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 21:15:45 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=uyF/xYuYUSmzp06uk7pX5xuzyF184pJHYM+u6EgIdERvYnjQO24h/3I0Wlhqsi6/8
-	/IF3zm16hgbEmHAVJxIlg==
+	Tue, 14 Jul 2009 21:20:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45651 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756855AbZGOBUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 14 Jul 2009 21:20:53 -0400
+Message-ID: <4A5D2E8D.1080701@garzik.org>
+Date: Tue, 14 Jul 2009 21:19:09 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <20090714210557.0f983c37@bree.surriel.com>
-References: <200906020557.n525v6KO004302@imap1.linux-foundation.org>
-	 <6599ad830907141752n5c701f9ap2a87df0a7f4f6ff3@mail.gmail.com>
-	 <20090714210557.0f983c37@bree.surriel.com>
-Date: Tue, 14 Jul 2009 18:15:39 -0700
-Message-ID: <6599ad830907141815x64e74a6ek1499f6032cea6f5@mail.gmail.com>
-Subject: Re: [PATCH] copy over oom_adj value at fork time
-From: Paul Menage <menage@google.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rientjes@google.com, mel@csn.ul.ie, npiggin@suse.de
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Linux NFS ML <linux-nfs@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.31-rc3 nfsv4 client regression (oops)
+References: <4A5C3858.6070303@garzik.org> <1247571788.19099.32.camel@heimdal.trondhjem.org>
+In-Reply-To: <1247571788.19099.32.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 6:05 PM, Rik van Riel<riel@redhat.com> wrote:
-> After moving the oom_adj value from the task struct to the
-> mm_struct, the oom_adj value was no longer properly inherited
-> by child processes.
->
-> Copying over the oom_adj value at fork time fixes that bug.
->
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> Reported-by: Paul Menage <manage@google.com>
-> ---
-> Paul, does this fix your bug?
+Trond Myklebust wrote:
+> On Tue, 2009-07-14 at 03:48 -0400, Jeff Garzik wrote:
+>> The NFSv4 client just oops'd on me...
+>>
+>> NFSv4 client: 2.6.31-rc3, Fedora 10, x86-64
+>> 		    2.6.30 works, I think 2.6.31-rc1 worked too
+>>
+>> NFSv4 server: 2.6.29.4-167.fc11.x86_64 (Fedora 11 kernel), F11, x86-64
+>>
+>> Oops output captured at kerneloops.org: 
+>> http://www.kerneloops.org/raw.php?rawid=537858&msgid=
+>>
+>> Kernel config for 2.6.31-rc3, the problematic kernel, attached.
+>>
+>>
+>>> RIP: 0010:[<ffffffffa02db5b0>]  [<ffffffffa02db5b0>] nfs4_free_lock_state+0x20/0x80 [nfs]
+>>> [...]
+>>> Call Trace:
+>>>  [<ffffffffa02db7dd>] nfs4_set_lock_state+0x1cd/0x220 [nfs]
+>>>  [<ffffffffa02cc9db>] nfs4_proc_lock+0x2cb/0x4e0 [nfs]
+>>>  [<ffffffff810b40dc>] ? __alloc_pages_nodemask+0x10c/0x600
+>>>  [<ffffffffa02b6079>] do_setlk+0xb9/0xd0 [nfs]
+>>>  [<ffffffffa02b6220>] nfs_lock+0xd0/0x1d0 [nfs]
+>>>  [<ffffffff8111e883>] vfs_lock_file+0x23/0x50
+>>>  [<ffffffff8111eaa3>] fcntl_setlk+0x133/0x2f0
+>>>  [<ffffffff81192571>] ? __up_read+0x91/0xb0
+>>>  [<ffffffff810f0fea>] sys_fcntl+0xca/0x420
+>>>  [<ffffffff8100b4fb>] system_call_fastpath+0x16/0x1b
+> 
+> Wow... That bug appears to have been there for years. I'm surprised it
+> hasn't been reported before.
+> 
+> Anyhow, it looks to me as if you are hitting the case in
+> nfs4_get_lock_state() where the first call to __nfs4_find_lock_state()
+> fails, (and so 'new' gets allocated) then the second call succeeds. When
+> the routine attempts to free the now redundant 'new', the call to
+> nfs4_free_lock_state() oopses because new->ls_state hasn't been set.
+> 
+> The following patch ought to fix it...
+> 
+> ---------------------
+> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> NFSv4: Fix an Oops in nfs4_free_lock_state
+> 
+> The oops http://www.kerneloops.org/raw.php?rawid=537858&msgid= appears to
+> be due to the nfs4_lock_state->ls_state field being uninitialised. This
+> happens if the call to nfs4_free_lock_state() is triggered at the end of
+> nfs4_get_lock_state().
+> 
+> The fixe is to move the initialisation of ls_state into the allocator.
+> 
+> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-It fixes that specific problem. (Although the patch title should
-probably be "copy over oom_adj value at execve time")
+Thanks, I'll give it a try!
 
-But ironically, with this fix applied the main part of the original
-change (force all threads in a process to share a single oom_adj
-value) will start to break my code - it's no longer possible to have
-the regular threads in a process be oom-immune, then vfork() and set a
-non-disabled oom_adj in the child, since this will set it for the
-entire process. (Our job scheduler does something like this, in order
-to have the launcher be OOM immune and the running jobs be at various
-oom_adj levels depending on their priority).
+	Jeff
 
-It's probably something that I can work around, but it seems like the
-kind of API change that could break unsuspecting users.
 
-Paul
 
->
->  kernel/fork.c |    1 +
->  1 file changed, 1 insertion(+)
->
-> Index: mmotm/kernel/fork.c
-> ===================================================================
-> --- mmotm.orig/kernel/fork.c    2009-07-14 20:58:01.000000000 -0400
-> +++ mmotm/kernel/fork.c 2009-07-14 21:00:40.000000000 -0400
-> @@ -435,6 +435,7 @@ static struct mm_struct * mm_init(struct
->        init_rwsem(&mm->mmap_sem);
->        INIT_LIST_HEAD(&mm->mmlist);
->        mm->flags = (current->mm) ? current->mm->flags : default_dump_filter;
-> +       mm->oom_adj = current->mm->oom_adj;
->        mm->core_state = NULL;
->        mm->nr_ptes = 0;
->        set_mm_counter(mm, file_rss, 0);
->
