@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZGOR0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbZGORbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbZGOR0p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 13:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755680AbZGOR0o
+	id S1755719AbZGORbM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 13:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbZGORbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 13:26:44 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:38129 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755199AbZGOR0n convert rfc822-to-8bit (ORCPT
+	Wed, 15 Jul 2009 13:31:11 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:30979 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755248AbZGORbK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 13:26:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=R2SgOpHFSRA24SRmTBppUKVRWuiTX/L4xOfJ+Ukig7J9GyASptmqyl4VslUE+KCWZJ
-         ZhtqWtxsHWNqAYAGYDIJVkxZYLztTJcTqHt4PUA/YUjMhAolZY3S138qnqRBE+h73EUU
-         m7i0r3YNccg9eXZKyOkmBWPgxp7/nbKmM3IF0=
-MIME-Version: 1.0
-In-Reply-To: <a55d774e0907150833g494dc91dxe7695543b61b2e50@mail.gmail.com>
-References: <20090714100634.GA4054@elf.ucw.cz>
-	 <20090714175201.GB14661@dtor-d630.eng.vmware.com>
-	 <20090715134855.GB2538@elf.ucw.cz>
-	 <20090715152702.GB21611@dtor-d630.eng.vmware.com>
-	 <a55d774e0907150833g494dc91dxe7695543b61b2e50@mail.gmail.com>
-Date: Wed, 15 Jul 2009 22:56:42 +0530
-Message-ID: <5d5443650907151026y670087fesa3022e37f68e2d8@mail.gmail.com>
-Subject: Re: Support for synaptic touchscreen in HTC dream
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Brian Swetland <swetland@google.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       "Arve Hj?nnev?g" <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 15 Jul 2009 13:31:10 -0400
+Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Miao Xie <miaox@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       David Rientjes <rientjes@google.com>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
+References: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Wed, 15 Jul 2009 13:31:04 -0400
+Message-Id: <1247679064.4089.26.camel@useless.americas.hpqcorp.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Brian,
+On Wed, 2009-07-15 at 18:48 +0900, KOSAKI Motohiro wrote:
+> Hi
+> 
+> On 2.6.31-rc3, following test makes kernel panic immediately.
+> 
+>   numactl --interleave=all echo
+> 
+> Panic message is below. I don't think commit 58568d2a8 is correct patch.
+> 
+> old behavior:
+>   do_set_mempolicy
+>     mpol_new
+>       cpuset_update_task_memory_state
+>         guarantee_online_mems
+>           nodes_and(cs->mems_allowed, node_states[N_HIGH_MEMORY]);
+> 
+> but new code doesn't consider N_HIGH_MEMORY. Then, the userland program
+> passing non-online node bit makes crash, I guess.
+> 
+> Miao, What do you think?
 
-On Wed, Jul 15, 2009 at 9:03 PM, Brian Swetland<swetland@google.com> wrote:
-> On Wed, Jul 15, 2009 at 8:27 AM, Dmitry
-> Torokhov<dmitry.torokhov@gmail.com> wrote:
->> On Wed, Jul 15, 2009 at 03:48:55PM +0200, Pavel Machek wrote:
->>> On Tue 2009-07-14 10:52:12, Dmitry Torokhov wrote:
->>> >
->>> > ABS_HAT is pretty unusual for a touchscreen...
->>>
->>> It is trying to do something useful for multitouch. People actually
->>> use multitouch on HTC dream. I guess I can strip it from version being
->>> merged...
->>
->> What about converting it to emit ABS_MT_* events added specifically
->> for the multitouch protocol?
->
-> I believe at the time the driver was written, those events did not
-> exist.  If the input framework has more appropriate events for the
-> "2nd finger" (which is how synaptics represents MT on this panel), we
-> should definitely switch to them.
->
+This looks similar to the problem I tried to fix in:
 
-Yes, MT events were added recently and they are working. Please check
-this demo based on MT events.
+	http://marc.info/?l=linux-mm&m=124140637722309&w=4
 
-http://www.linuxfordevices.com/c/a/News/Linux-multitouch-technology-demod/
+Miao pointed out that the patch needs more work to track hot plug of
+nodes.  I've not had time to get back to this.
 
-Also, please confirm if polling mode is really used in some h/w
-configuration, if not as said by Dmitry, we can remove it and do clean
-integration with threaded irq.
+Interestingly, on ia64, the top cpuset mems_allowed gets set to all
+possible nodes, while on x86_64, it gets set to on-line nodes [or nodes
+with memory].  Maybe this is a to support hot-plug?
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+Lee
+
+<snip>
+
