@@ -1,110 +1,420 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbZGOISO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbZGOITp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752624AbZGOISO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 04:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZGOISN
+	id S1752653AbZGOITp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 04:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZGOITo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 04:18:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:50134 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbZGOISL (ORCPT
+	Wed, 15 Jul 2009 04:19:44 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:29832
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752023AbZGOITk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 04:18:11 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=p/Ank1qE2gVFVLfGC6Fw/VnV3Z4xavjR5oEPB/ld/LVqrgbN6v1qD30oWEWYWICIg
-	kFw5XahDEf/lhrWLT2wAA==
-Date: Wed, 15 Jul 2009 01:18:02 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Stephan von Krawczynski <skraw@ithnet.com>
-cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: What to do with this message (2.6.30.1) ?
-In-Reply-To: <20090715084754.36ff73bf.skraw@ithnet.com>
-Message-ID: <alpine.DEB.2.00.0907150115190.14393@chino.kir.corp.google.com>
-References: <20090713134621.124aa18e.skraw@ithnet.com> <4807377b0907132240g6f74c9cbnf1302d354a0e0a72@mail.gmail.com> <alpine.DEB.2.00.0907132247001.8784@chino.kir.corp.google.com> <20090715084754.36ff73bf.skraw@ithnet.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 15 Jul 2009 04:19:40 -0400
+Message-ID: <4A5D9117.2060205@panasas.com>
+Date: Wed, 15 Jul 2009 11:19:35 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH]: New implementation of scsi_execute_async()
+References: <4A563368.5040407@vlnb.net> <4A59DF14.7060807@panasas.com> <4A5CAF66.3090909@vlnb.net>
+In-Reply-To: <4A5CAF66.3090909@vlnb.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jul 2009 08:19:39.0147 (UTC) FILETIME=[FF2B4DB0:01CA0524]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Jul 2009, Stephan von Krawczynski wrote:
-
-> Jul 15 03:01:26 backup kernel: swapper: page allocation failure. order:1, mode:0x4020
-> Jul 15 03:01:26 backup kernel: Pid: 0, comm: swapper Not tainted 2.6.30.1 #4
-> Jul 15 03:01:26 backup kernel: Call Trace:
-> Jul 15 03:01:26 backup kernel:  <IRQ>  [<ffffffff8026919e>] ? __alloc_pages_internal+0x3df/0x3ff
-> Jul 15 03:01:26 backup kernel:  [<ffffffff802892f3>] ? __slab_alloc+0x175/0x4ba
-> Jul 15 03:01:26 backup kernel:  [<ffffffff803f2a90>] ? __netdev_alloc_skb+0x15/0x2f
-> Jul 15 03:01:26 backup kernel:  [<ffffffff803f2a90>] ? __netdev_alloc_skb+0x15/0x2f
-> Jul 15 03:01:26 backup kernel:  [<ffffffff80289c7d>] ? __kmalloc_track_caller+0x8f/0xb6
-> Jul 15 03:01:26 backup kernel:  [<ffffffff803f1ec2>] ? __alloc_skb+0x61/0x12f
-> Jul 15 03:01:26 backup kernel:  [<ffffffff803f2a90>] ? __netdev_alloc_skb+0x15/0x2f
-> Jul 15 03:01:26 backup kernel:  [<ffffffffa0049da0>] ? e1000_alloc_rx_buffers+0x8c/0x248 [e1000e]
-> Jul 15 03:01:26 backup kernel:  [<ffffffffa004a262>] ? e1000_clean_rx_irq+0x2a2/0x2db [e1000e]
-> Jul 15 03:01:26 backup kernel:  [<ffffffffa004b8dc>] ? e1000_clean+0x70/0x219 [e1000e]
-> Jul 15 03:01:27 backup kernel:  [<ffffffff803f6017>] ? net_rx_action+0x69/0x11f
-> Jul 15 03:01:27 backup kernel:  [<ffffffff802373eb>] ? __do_softirq+0x66/0xf7
-> Jul 15 03:01:27 backup kernel:  [<ffffffff8020bebc>] ? call_softirq+0x1c/0x28
-> Jul 15 03:01:27 backup kernel:  [<ffffffff8020d680>] ? do_softirq+0x2c/0x68
-> Jul 15 03:01:27 backup kernel:  [<ffffffff8020cf62>] ? do_IRQ+0xa9/0xbf
-> Jul 15 03:01:27 backup kernel:  [<ffffffff8020b793>] ? ret_from_intr+0x0/0xa
-> Jul 15 03:01:27 backup kernel:  <EOI>  [<ffffffff802116d8>] ? mwait_idle+0x6e/0x73
-> Jul 15 03:01:27 backup kernel:  [<ffffffff802116d8>] ? mwait_idle+0x6e/0x73
-> Jul 15 03:01:27 backup kernel:  [<ffffffff8020a1cb>] ? cpu_idle+0x40/0x7c
-> Jul 15 03:01:28 backup kernel:  [<ffffffff805a9bb0>] ? start_kernel+0x31e/0x32a
-> Jul 15 03:01:28 backup kernel:  [<ffffffff805a937e>] ? x86_64_start_kernel+0xe5/0xeb
-> Jul 15 03:01:28 backup kernel: DMA per-cpu:
-> Jul 15 03:01:28 backup kernel: CPU    0: hi:    0, btch:   1 usd:   0
-> Jul 15 03:01:28 backup kernel: CPU    1: hi:    0, btch:   1 usd:   0
-> Jul 15 03:01:28 backup kernel: CPU    2: hi:    0, btch:   1 usd:   0
-> Jul 15 03:01:28 backup kernel: CPU    3: hi:    0, btch:   1 usd:   0
-> Jul 15 03:01:28 backup kernel: DMA32 per-cpu:
-> Jul 15 03:01:28 backup kernel: CPU    0: hi:  186, btch:  31 usd: 157
-> Jul 15 03:01:28 backup kernel: CPU    1: hi:  186, btch:  31 usd:  62
-> Jul 15 03:01:28 backup kernel: CPU    2: hi:  186, btch:  31 usd:  84
-> Jul 15 03:01:28 backup kernel: CPU    3: hi:  186, btch:  31 usd:  41
-> Jul 15 03:01:28 backup kernel: Normal per-cpu:
-> Jul 15 03:01:28 backup kernel: CPU    0: hi:  186, btch:  31 usd: 175
-> Jul 15 03:01:28 backup kernel: CPU    1: hi:  186, btch:  31 usd:  73
-> Jul 15 03:01:28 backup kernel: CPU    2: hi:  186, btch:  31 usd:  33
-> Jul 15 03:01:28 backup kernel: CPU    3: hi:  186, btch:  31 usd:  56
-> Jul 15 03:01:28 backup kernel: Active_anon:32502 active_file:111663 inactive_anon:8167
-> Jul 15 03:01:28 backup kernel:  inactive_file:1332510 unevictable:0 dirty:39449 writeback:1586 unstable:0
-> Jul 15 03:01:28 backup kernel:  free:10034 slab:546449 mapped:1841 pagetables:1189 bounce:0
-> Jul 15 03:01:28 backup kernel: DMA free:11704kB min:12kB low:12kB high:16kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB present:10752kB pages_scanned:0 all_unreclaimable? yes
-> Jul 15 03:01:28 backup kernel: lowmem_reserve[]: 0 3767 8059 8059
-> Jul 15 03:01:28 backup kernel: DMA32 free:22052kB min:5364kB low:6704kB high:8044kB active_anon:19216kB inactive_anon:4032kB active_file:113380kB inactive_file:2196508kB unevictable:0kB present:3857440kB pages_scanned:0 all_unreclaimable? no
-> Jul 15 03:01:28 backup kernel: lowmem_reserve[]: 0 0 4292 4292
-> Jul 15 03:01:28 backup kernel: Normal free:6380kB min:6112kB low:7640kB high:9168kB active_anon:110792kB inactive_anon:28636kB active_file:333272kB inactive_file:3133532kB unevictable:0kB present:4395520kB pages_scanned:0 all_unreclaimable? no
-> Jul 15 03:01:28 backup kernel: lowmem_reserve[]: 0 0 0 0
-> Jul 15 03:01:28 backup kernel: DMA: 6*4kB 6*8kB 3*16kB 2*32kB 4*64kB 2*128kB 1*256kB 1*512kB 2*1024kB 0*2048kB 2*4096kB = 11704kB
-> Jul 15 03:01:28 backup kernel: DMA32: 5283*4kB 93*8kB 2*16kB 0*32kB 0*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 22036kB
-> Jul 15 03:01:28 backup kernel: Normal: 1310*4kB 99*8kB 6*16kB 0*32kB 0*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 6256kB
-> Jul 15 03:01:29 backup kernel: 1444268 total pagecache pages
-> Jul 15 03:01:29 backup kernel: 34 pages in swap cache
-> Jul 15 03:01:29 backup kernel: Swap cache stats: add 118, delete 84, find 0/2
-> Jul 15 03:01:29 backup kernel: Free swap  = 2104080kB
-> Jul 15 03:01:29 backup kernel: Total swap = 2104488kB
+On 07/14/2009 07:16 PM, Vladislav Bolkhovitin wrote:
+> Boaz Harrosh wrote:
+>> On 07/09/2009 09:14 PM, Vladislav Bolkhovitin wrote:
+>>> This patch reimplements scsi_execute_async(). In the new version it's a lot less
+>>> hackish and also has additional features. Namely:
+>>>
+>>> 1. Possibility to insert commands both in tail and in head of the queue.
+>>>
+>>> 2. Possibility to explicitly specify if the last SG element has space for padding.
+>>>
+>>> This patch based on the previous patches posted by Tejun Heo. Comparing to them
+>>> it has the following improvements:
+>>>
+>>> 1. It uses BIOs chaining instead of kmalloc()ing the whole bio.
+>>>
+>>> 2. It uses SGs chaining instead of kmalloc()ing one big SG in case if direct
+>>> mapping failed (e.g. because of DMA alignment or padding).
+>>>
+>>> 3. If direct mapping failed, if possible, it copies only the last SG element,
+>>> not the whole SG.
+>>>
+>>> Also this patch adds and exports function blk_copy_sg(), which copies one SG to
+>>> another.
+>>>
+>>> At the moment SCST is the only user of this functionality. It needs it, because
+>>> its target drivers, which are, basically, SCSI drivers, can deal only with SGs,
+>>> not with BIOs. But, according the latest discussions, there are other potential
+>>> users for of this functionality, so I'm sending this patch in a hope that it will be
+>>> also useful for them and eventually will be merged in the mainline kernel.
+>>>
+>>> This patch requires previously sent patch with subject "[PATCH]: Rename REQ_COPY_USER
+>>> to more descriptive REQ_HAS_TAIL_SPACE_FOR_PADDING".
+>>>
+>>> It's against 2.6.30.1, but if necessary, I can update it to any necessary
+>>> kernel version.
+>>>
+>>> Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+>>>
+>>>  block/blk-map.c            |  536 +++++++++++++++++++++++++++++++++++++++++++++
+>>>  drivers/scsi/scsi_lib.c    |  108 ++++++++-
+>>>  include/linux/blkdev.h     |    6 
+>>>  include/scsi/scsi_device.h |   11 
+>>>  4 files changed, 660 insertions(+), 1 deletion(-)
+>>>
+>> The scsi bits are not needed and just add complexity. 
+>> allocate the request, call blk_rq_map_kern_sg() and
+>> blk_execute_xxx directly from your driver. Since you exacly
+>> know your code path lots of if(s) and flags are saved and that ugly
+>> scsi_io_context allocation.
+> 
+> Are you against any helper functions? scsi_lib.c has only scsi_execute_async(),
+> which is a small helper function, which only hides internal machinery details.
+> All the flags it has are needed and can't be avoided, especially
+> SCSI_ASYNC_EXEC_FLAG_HAS_TAIL_SPACE_FOR_PADDING
 > 
 
-I added Justin Piszcz to the cc since he was having the same problem as 
-described in http://bugzilla.kernel.org/show_bug.cgi?id=13648.
+Yes I'm sure. This will not be accepted. Just do it directly in the driver
+like all other ULD's and block layer users. Use direct blk API. All these little
+things and flags you are talking about are block specific, there is no single thing
+SCSI about them.
 
-He was unable to get slabtop -o output when this was happening, though, so 
-maybe you could grab a snapshot of that when you get these failures?  It 
-will help us figure out what cache the slab leak is in (assuming there is 
-one, >1G of slab on this machine is egregious).
+> The allocation of scsi_io_context is unavoidable, because sense buffer should
+> be allocated anyway.
+>  
 
-Justin, were you using e1000e in your bug report?
+NO!, driver needs to do it's job and provide a sense buffer and call blk API
+just like all the other drivers. this has nothing to do with SCSI.
 
-If you have some additional time, it would also be helpful to get a 
-bisection of when the problem started occurring (it appears to be sometime 
-between 2.6.29 and 2.6.30).
+>> If you absolutely need that scsi_normalize_sense() of scsi_execute_req
+>> call it from driver, its already exported.
+> 
+> No, I don't need scsi_normalize_sense() and not use it anywhere.
+>  
+
+Sorry yes I was spaced out for a sec.
+
+>>> diff -upkr linux-2.6.30.1/block/blk-map.c linux-2.6.30.1/block/blk-map.c
+>>> --- linux-2.6.30.1/block/blk-map.c	2009-06-10 07:05:27.000000000 +0400
+>>> +++ linux-2.6.30.1/block/blk-map.c	2009-07-09 21:33:07.000000000 +0400
+>>> @@ -5,6 +5,7 @@
+>>>  #include <linux/module.h>
+>>>  #include <linux/bio.h>
+>>>  #include <linux/blkdev.h>
+>>> +#include <linux/scatterlist.h>
+>>>  #include <scsi/sg.h>		/* for struct sg_iovec */
+>>>  
+>>>  #include "blk.h"
+>>> @@ -273,6 +274,541 @@ int blk_rq_unmap_user(struct bio *bio)
+>>>  EXPORT_SYMBOL(blk_rq_unmap_user);
+>>>  
+>>>  /**
+>>> + * blk_copy_sg - copy one SG vector to another
+>>> + * @dst_sg:	destination SG
+>>> + * @src_sg:	source SG
+>>> + * @copy_len:	maximum amount of data to copy. If 0, then copy all.
+>>> + * @d_km_type:	kmap_atomic type for the destination SG
+>>> + * @s_km_type:	kmap_atomic type for the source SG
+>>> + *
+>>> + * Description:
+>>> + *    Data from the destination SG vector will be copied to the source SG
+>>> + *    vector. End of the vectors will be determined by sg_next() returning
+>>> + *    NULL. Returns number of bytes copied.
+>>> + */
+>>> +int blk_copy_sg(struct scatterlist *dst_sg,
+>>> +		struct scatterlist *src_sg, size_t copy_len,
+>>> +		enum km_type d_km_type, enum km_type s_km_type)
+>>> +{
+>>> +	int res = 0;
+>>> +	size_t src_len, dst_len, src_offs, dst_offs;
+>>> +	struct page *src_page, *dst_page;
+>>> +
+>>> +	if (copy_len == 0)
+>>> +		copy_len = 0x7FFFFFFF; /* copy all */
+>>> +
+>>> +	dst_page = sg_page(dst_sg);
+>>> +	dst_len = dst_sg->length;
+>>> +	dst_offs = dst_sg->offset;
+>>> +
+>>> +	src_offs = 0;
+>>> +	do {
+>>> +		src_page = sg_page(src_sg);
+>>> +		src_len = src_sg->length;
+>>> +		src_offs = src_sg->offset;
+>>> +
+>>> +		do {
+>>> +			void *saddr, *daddr;
+>>> +			size_t n;
+>>> +
+>>> +			saddr = kmap_atomic(src_page, s_km_type) + src_offs;
+>>> +			daddr = kmap_atomic(dst_page, d_km_type) + dst_offs;
+>>> +
+>>> +			if ((src_offs == 0) && (dst_offs == 0) &&
+>>> +			    (src_len >= PAGE_SIZE) && (dst_len >= PAGE_SIZE) &&
+>>> +			    (copy_len >= PAGE_SIZE)) {
+>>> +				copy_page(daddr, saddr);
+>>> +				n = PAGE_SIZE;
+>>> +			} else {
+>>> +				n = min_t(size_t, PAGE_SIZE - dst_offs,
+>>> +						  PAGE_SIZE - src_offs);
+>>> +				n = min(n, src_len);
+>>> +				n = min(n, dst_len);
+>>> +				n = min_t(size_t, n, copy_len);
+>>> +				memcpy(daddr, saddr, n);
+>>> +				dst_offs += n;
+>>> +				src_offs += n;
+>>> +			}
+>>> +
+>>> +			kunmap_atomic(saddr, s_km_type);
+>>> +			kunmap_atomic(daddr, d_km_type);
+>>> +
+>>> +			res += n;
+>>> +			copy_len -= n;
+>>> +			if (copy_len == 0)
+>>> +				goto out;
+>>> +
+>>> +			if ((src_offs & ~PAGE_MASK) == 0) {
+>>> +				src_page = nth_page(src_page, 1);
+>>> +				src_offs = 0;
+>>> +			}
+>>> +			if ((dst_offs & ~PAGE_MASK) == 0) {
+>>> +				dst_page = nth_page(dst_page, 1);
+>>> +				dst_offs = 0;
+>>> +			}
+>>> +
+>>> +			src_len -= n;
+>>> +			dst_len -= n;
+>>> +			if (dst_len == 0) {
+>>> +				dst_sg = sg_next(dst_sg);
+>>> +				if (dst_sg == NULL)
+>>> +					goto out;
+>>> +				dst_page = sg_page(dst_sg);
+>>> +				dst_len = dst_sg->length;
+>>> +				dst_offs = dst_sg->offset;
+>>> +			}
+>>> +		} while (src_len > 0);
+>>> +
+>>> +		src_sg = sg_next(src_sg);
+>>> +	} while (src_sg != NULL);
+>>> +
+>>> +out:
+>>> +	return res;
+>>> +}
+>>> +EXPORT_SYMBOL(blk_copy_sg);
+>>> +
+>> This has nothing to do with block layer lib/scatterlist.c is a better
+>> candidate.
+> 
+> Done. V2 of the patch is coming.
+>  
+>> see if you can refactor it better together with sg_copy_to/from_buffer
+> 
+> Unfortunately, they can't be used, because in there is a need to copy one SG
+> entry to another (sg_copy_elem() in the V2). Using sg_copy_elem() sg_copy()
+> implemented in just a few tens LOC.
+>  
+>>> +/**
+>>> + * blk_rq_unmap_kern_sg - "unmaps" data buffers in the request
+>>> + * @req:	request to unmap
+>>> + * @do_copy:	sets copy data between buffers, if needed, or not
+>>> + *
+>>> + * Description:
+>>> + *    It frees all additional buffers allocated for SG->BIO mapping.
+>>> + */
+>>> +void blk_rq_unmap_kern_sg(struct request *req, int do_copy)
+>>> +{
+>>> +	struct scatterlist *hdr = (struct scatterlist *)req->end_io_data;
+>>> +
+>> You can't use req->end_io_data  here! req->end_io_data is reserved for
+>> blk_execute_async callers. It can not be used for private block use.
+> 
+> Why? I see blk_execute_rq() happily uses it. Plus, I implemented stacking of
+> it in scsi_execute_async().
+> 
+
+As I said users of blk_execute_rq_nowait() blk_execute_rq is a user of
+blk_execute_rq_nowait just as the other guy.
+
+"implemented stacking" is exactly the disaster I'm talking about.
+Also it totaly breaks the blk API. Now I need to to specific code
+when mapping with this API as opposed to other mappings when I execute
+
+> Do you have better suggestion?
+>  
+
+I have not look at it deeply but you'll need another system. Perhaps
+like map_user/unmap_user where you give unmap_user the original bio.
+Each user of map_user needs to keep a pointer to the original bio
+on mapping. Maybe some other options as well. You can use the bio's
+private data pointer, when building the first bio from scatter-list.
+
+>> (Don't you use it in this patchset from scsi_execute_async ?)
+> 
+> As I wrote, I used patches posted by Tejun Heo.
+>  
+>>> +	if (hdr == NULL)
+>>> +		goto out;
+>>> +
+>>> +	if (hdr->length == 0) {
+>>> +		/* Tail element only was copied */
+>>> +		struct scatterlist *new_sg = &hdr[1];
+>>> +		struct scatterlist *orig_sg = (struct scatterlist *)hdr->page_link;
+>>> +
+>> I don't like that overloading of (scatterlist *) like that. Put a well defined struct
+>> or union with proper flags and types, so all possibilities are clear at both sides of
+>> the code. Document that structure for the different options.
+> 
+> Done.
+>  
+>>> +		if ((rq_data_dir(req) == READ) && do_copy) {
+>>> +			void *saddr, *daddr;
+>>> +
+>>> +			saddr = kmap_atomic(sg_page(orig_sg), KM_BIO_SRC_IRQ);
+>>> +			daddr = kmap_atomic(sg_page(new_sg), KM_BIO_DST_IRQ) +
+>>> +					new_sg->offset;
+>>> +			memcpy(daddr, saddr, orig_sg->length);
+>>> +			kunmap_atomic(saddr, KM_BIO_SRC_IRQ);
+>>> +			kunmap_atomic(daddr, KM_BIO_DST_IRQ);
+>>> +		}
+>>> +
+>>> +		__free_pages(sg_page(orig_sg), get_order(orig_sg->length));
+>>> +		*orig_sg = *new_sg;
+>>> +		kfree(hdr);
+>>> +	} else {
+>>> +		/* The whole SG was copied */
+>>> +		struct scatterlist *new_sgl = &hdr[1];
+>>> +		struct scatterlist *orig_sgl = (struct scatterlist *)hdr->page_link;
+>>> +		struct scatterlist *sg, *start_sg;
+>> Here too ugly as hell, use a proper structure with the needed types.
+> 
+> The same.
+>  
+>>> +		int n;
+>>> +
+>>> +		if ((rq_data_dir(req) == READ) && do_copy) {
+>>> +			blk_copy_sg(orig_sgl, new_sgl, 0, KM_BIO_DST_IRQ,
+>>> +				KM_BIO_SRC_IRQ);
+>>> +		}
+>>> +
+>>> +		start_sg = hdr;
+>>> +		sg = new_sgl;
+>>> +		n = 1;
+>>> +		while (sg != NULL) {
+>>> +			__free_page(sg_page(sg));
+>>> +			sg = sg_next(sg);
+>>> +			n++;
+>>> +			/* One entry for chaining */
+>>> +			if ((sg == NULL) || (n == (SG_MAX_SINGLE_ALLOC - 1))) {
+>>> +				kfree(start_sg);
+>>> +				start_sg = sg;
+>>> +				n = 0;
+>>> +			}
+>>> +		}
+>>> +	}
+>>> +
+>>> +out:
+>>> +	return;
+>>> +}
+>>> +EXPORT_SYMBOL(blk_rq_unmap_kern_sg);
+>>> +
+>>> +static int blk_rq_handle_align_tail_only(struct request *rq,
+>>> +					 struct scatterlist *sg_to_copy,
+>>> +					 gfp_t gfp, gfp_t page_gfp)
+>>> +{
+>>> +	int res = 0;
+>>> +	struct scatterlist *tail_sg = sg_to_copy;
+>>> +	struct scatterlist *new_sg;
+>>> +	struct scatterlist *hdr;
+>>> +	int new_sg_nents;
+>>> +	struct page *pg;
+>>> +
+>>> +	new_sg_nents = 2;
+>>> +
+>>> +	new_sg = kmalloc(sizeof(*new_sg) * new_sg_nents, gfp);
+>>> +	if (new_sg == NULL)
+>>> +		goto out_nomem;
+>>> +
+>>> +	sg_init_table(new_sg, new_sg_nents);
+>>> +
+>>> +	hdr = new_sg;
+>>> +	new_sg++;
+>>> +	new_sg_nents--;
+>>> +
+>>> +	hdr->page_link = (unsigned long)tail_sg;
+>>> +	*new_sg = *tail_sg;
+>>> +
+>>> +	pg = alloc_pages(page_gfp, get_order(tail_sg->length));
+>>> +	if (pg == NULL)
+>>> +		goto err_free_new_sg;
+>>> +
+>>> +	if (rq_data_dir(rq) == WRITE) {
+>>> +		void *saddr, *daddr;
+>>> +		saddr = kmap_atomic(sg_page(tail_sg), KM_USER0) +
+>>> +				tail_sg->offset;
+>>> +		daddr = kmap_atomic(pg, KM_USER1);
+>>> +		memcpy(daddr, saddr, tail_sg->length);
+>>> +		kunmap_atomic(saddr, KM_USER0);
+>>> +		kunmap_atomic(daddr, KM_USER1);
+>>> +	}
+>>> +
+>>> +	sg_assign_page(tail_sg, pg);
+>>> +	tail_sg->offset = 0;
+>>> +
+>>> +	rq->end_io_data = hdr;
+>>> +	rq->cmd_flags |= REQ_HAS_TAIL_SPACE_FOR_PADDING;
+>>> +
+>>> +out:
+>>> +	return res;
+>>> +
+>>> +err_free_new_sg:
+>>> +	kfree(new_sg);
+>>> +
+>>> +out_nomem:
+>>> +	res = -ENOMEM;
+>>> +	goto out;
+>>> +}
+>>> +
+>>> +static int blk_rq_handle_align(struct request *rq, struct scatterlist **psgl,
+>>> +			       int *pnents, struct scatterlist *sgl_to_copy,
+>>> +			       int nents_to_copy, gfp_t gfp, gfp_t page_gfp)
+>>> +{
+>>> +	int res = 0, i;
+>>> +	struct scatterlist *sgl = *psgl;
+>>> +	int nents = *pnents;
+>>> +	struct scatterlist *sg, *prev_sg;
+>>> +	struct scatterlist *new_sgl;
+>>> +	struct scatterlist *hdr;
+>>> +	size_t len = 0, to_copy;
+>>> +	int new_sgl_nents, new_sgl_nents_to_alloc, n;
+>>> +
+>> below should use the sg_alloc_table / sg_free_table constructs for
+>> the proper chaining/setting of scatterlist chains. Failing to do so
+>> is both a code duplication and hinder of future changes to these constructs.
+>> see all places that use sg_alloc_table/sg_free_table in source like scsi_lib.c.
+> 
+> Done. I didn't know about sg_alloc_table()/sg_free_table().
+> 
+>> I'll stop the review here. You need to solve the req->end_io_data use and change
+>> this to sg_alloc_table/sg_free_table (perhaps the one with the callback i'm not sure)
+>>
+>> I'll continue review on the next patchset.
+> 
+> Thanks!
+> Vlad
+> 
+
+I will go head and review your new patch
+Boaz
