@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbZGOWIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbZGOWJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbZGOWIU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 18:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZGOWIT
+	id S1755564AbZGOWJN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 18:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZGOWJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 18:08:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49123 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754007AbZGOWIS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 18:08:18 -0400
-Date: Wed, 15 Jul 2009 15:08:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       mike.miller@hp.com, jens.axboe@oracle.com
-Subject: Re: [PATCH 0/3] cciss rmmod/scan-thread fixes
-Message-Id: <20090715150809.8fd350b9.akpm@linux-foundation.org>
-In-Reply-To: <20090714220239.22282.44414.stgit@bob.kio>
-References: <20090714220239.22282.44414.stgit@bob.kio>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Jul 2009 18:09:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44121 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754793AbZGOWJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 18:09:12 -0400
+Date: Wed, 15 Jul 2009 15:08:29 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: anthony@codemonkey.ws, avi@redhat.com, kvm@vger.kernel.org,
+       chrisw@redhat.com, hjk@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv4] uio: add generic driver for PCI 2.3 devices
+Message-ID: <20090715220829.GB31962@suse.de>
+References: <20090715201340.GA12279@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090715201340.GA12279@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Jul 2009 16:02:40 -0600
-Andrew Patterson <andrew.patterson@hp.com> wrote:
-
-> The following series fixes several problems causing hangs while
-> rmmoding the cciss driver. In the process of fixing these hangs, I
-> also reworked the the logical drive scanning kernel thread to use one
-> thread per driver rather than one thread per controller. I also added
-> a sysfs attribute to kick off a controller scan.
+On Wed, Jul 15, 2009 at 11:13:40PM +0300, Michael S. Tsirkin wrote:
+> This adds a generic uio driver that can bind to any PCI device.  First
+> user will be virtualization where a qemu userspace process needs to give
+> guest OS access to the device.
 > 
->  .../ABI/testing/sysfs-bus-pci-devices-cciss        |    7 +
->  drivers/block/cciss.c                              |  198 ++++++++++++++++++--
->  drivers/block/cciss.h                              |    7 +
->  3 files changed, 188 insertions(+), 24 deletions(-)
+> Interrupts are handled using the Interrupt Disable bit in the PCI command
+> register and Interrupt Status bit in the PCI status register.  All devices
+> compliant to PCI 2.3 (circa 2002) and all compliant PCI Express devices should
+> support these bits.  Driver detects this support, and won't bind to devices
+> which do not support the Interrupt Disable Bit in the command register.
 > 
-> Andrew Patterson (3):
->       cciss: remove logical drive sysfs entries during driver cleanup.
->       cciss: use only one scan thread
->       cciss: kick off logical drive topology rescan through sysfs
+> It's expected that more features of interest to virtualization will be
+> added to this driver in the future. Possibilities are: mmap for device
+> resources, MSI/MSI-X, eventfd (to interface with kvm), iommu.
 > 
+> Acked-by: Chris Wright <chrisw@redhat.com>
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> ---
+> 
+> Hans, Greg, please review and consider for upstream.
+> 
+> This is intended to solve the problem in virtualization that shared
+> interrupts do not work with assigned devices. Earlier versions of this
+> patch have circulated on kvm@vger.
 
-So I assume that these are intended to fix the problem which
-cciss-fix-the-termination-of-the-scanning-thread.patch didn't fix?
+How does this play with the pci-stub driver that I thought was written
+to solve this very problem?  Will it conflict?
 
-Once we get this all sorted out, which kernel version(s) are we
-targetting and why?
+In fact, it looks like you copied the comments for this driver directly
+from the pci-stub driver :)
 
-Thanks.
+How about moving that documentation into a place that people will notice
+it, like the rest of the UIO documentation?
 
+And right now you are just sending the irq to userspace, what is
+userspace supposed to do with it?  Do you have a userspace program that
+uses this interface today to verify that everything works?  If so, care
+to provide a pointer to it?
+
+thanks,
+
+greg k-h
