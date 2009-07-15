@@ -1,108 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZGONT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZGONWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbZGONT3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 09:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZGONT2
+	id S1754686AbZGONWa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 09:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZGONW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 09:19:28 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:56898 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752645AbZGONT1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 09:19:27 -0400
-X-Trace: 226530479/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.119.106/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.119.106
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvYEAOdzXUpPRXdq/2dsb2JhbACBUc59gjaBUwU
-X-IronPort-AV: E=Sophos;i="4.42,404,1243810800"; 
-   d="scan'208";a="226530479"
-Date: Wed, 15 Jul 2009 14:18:44 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Wu Fengguang <fengguang.wu@intel.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] shmem: call set_page_dirty() with locked page
-In-Reply-To: <20090715111012.GA1403@localhost>
-Message-ID: <Pine.LNX.4.64.0907151405020.23573@sister.anvils>
-References: <20090714092926.GA23969@localhost> <Pine.LNX.4.64.0907141918380.10805@sister.anvils>
- <20090715111012.GA1403@localhost>
+	Wed, 15 Jul 2009 09:22:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35753 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753875AbZGONW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 09:22:29 -0400
+Date: Wed, 15 Jul 2009 06:20:36 -0700
+From: Greg KH <gregkh@suse.de>
+To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysfs: fix hardlink count on device_move
+Message-ID: <20090715132036.GC9688@suse.de>
+References: <4A5CAA9F.1050302@linux.vnet.ibm.com>
+ <20090714160447.GA1933@suse.de>
+ <4A5D9EB7.30603@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A5D9EB7.30603@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Jul 2009, Wu Fengguang wrote:
-> On Wed, Jul 15, 2009 at 02:24:54AM +0800, Hugh Dickins wrote:
-> > On Tue, 14 Jul 2009, Wu Fengguang wrote:
-> > > Here set_page_dirty() can be moved into the page lock.
+On Wed, Jul 15, 2009 at 11:17:43AM +0200, Peter Oberparleiter wrote:
+> Greg KH wrote:
+> > On Tue, Jul 14, 2009 at 05:56:15PM +0200, Peter Oberparleiter wrote:
+> >> From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+> >>
+> >> Update directory hardlink count when moving kobjects to a new parent.
+> >> Fixes the following problem which occurs when several devices are
+> >> moved to the same parent and then unregistered:
+> >>
+> >>> ls -laF /sys/devices/css0/defunct/
+> >>> total 0
+> >>> drwxr-xr-x 4294967295 root root    0 2009-07-14 17:02 ./
+> >>> drwxr-xr-x        114 root root    0 2009-07-14 17:02 ../
+> >>> drwxr-xr-x          2 root root    0 2009-07-14 17:01 power/
+> >>> -rw-r--r--          1 root root 4096 2009-07-14 17:01 uevent
+> >> Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
 > > 
-> > Indeed it can, but you've forgotten to mention why you think
-> > that would be a good thing?  All I can see is that it would
+> > Thanks for the patch.
+> > 
+> > Is this something new in 2.6.31-rc, or does it also show up in .30
+> > and/or .27?
 > 
-> Sorry for missing out the rational.  My problem is: the hwpoison code
-> must make sure whether one page can be dropped without losing data.
+> This is an old problem that existed since the introduction of 
+> sysfs_move_dir() in 2.6.20.
 
-Ah, thanks: your comments here will need to go into the patch
-description.  But shouldn't this patch be part of the hwpoison set?
+Thanks for the info, I'll mark it as such.
 
-> 
-> > very very slightly increase the page's lock hold time, which
-> > wouldn't be an improvement: what improvement are you making?
-> 
-> Yes there were nothing wrong. Just to make it align with the general
-> practice(not rule): pages are normally dirtied inside the page lock.
-
-I don't mind making shmem follow more common practice here if it makes
-life easier for you; but until now there's been no reason to do so -
-as you say, there's no rule to call set_page_dirty with page locked.
-
-I wish you would distinguish between dirtying a page and marking a
-page dirty: if it matters to you whether it's done inside the page
-lock or not, then it matter which one you are talking about.  This
-page was dirtied while the page lock was held, but it's being marked
-dirty just after dropping the page lock.
-
-What about shmem_symlink: shouldn't this patch be moving the
-unlock_page down there too?
-
-Hugh
-
-> 
-> The noticeable exceptions are mapped pages and pages with buffer_heads
-> - they could go dirty at any time. Fortunately they will have to be
-> unmapped/released anyway.
-> 
-> shmem may not be the only remaining exception. But let's fix it first.
-> I'd be appreciated if someone could name some more exceptions, or some
-> better criterion on "the data in this page can be recovered".
-> 
-> Thanks,
-> Fengguang
-> 
-> > > CC: Hugh Dickins <hugh@veritas.com>
-> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > ---
-> > >  mm/shmem.c |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > --- linux.orig/mm/shmem.c
-> > > +++ linux/mm/shmem.c
-> > > @@ -1630,8 +1630,8 @@ shmem_write_end(struct file *file, struc
-> > >  	if (pos + copied > inode->i_size)
-> > >  		i_size_write(inode, pos + copied);
-> > >  
-> > > -	unlock_page(page);
-> > >  	set_page_dirty(page);
-> > > +	unlock_page(page);
-> > >  	page_cache_release(page);
-> > >  
-> > >  	return copied;
+greg k-h
