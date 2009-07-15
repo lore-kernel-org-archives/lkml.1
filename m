@@ -1,120 +1,341 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbZGOAuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbZGOAwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756835AbZGOAuE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 14 Jul 2009 20:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756813AbZGOAuD
+	id S1756832AbZGOAwg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 14 Jul 2009 20:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbZGOAwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 14 Jul 2009 20:50:03 -0400
-Received: from mail-out2.netspace.net.au ([203.10.110.72]:58923 "EHLO
-	mail.netspace.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756814AbZGOAuC (ORCPT
+	Tue, 14 Jul 2009 20:52:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:10703 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756330AbZGOAwf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 14 Jul 2009 20:50:02 -0400
-X-Greylist: delayed 359 seconds by postgrey-1.27 at vger.kernel.org; Tue, 14 Jul 2009 20:50:01 EDT
-Message-ID: <1247618643.4a5d265392efc@webmail.netspace.net.au>
-Date: Wed, 15 Jul 2009 10:44:03 +1000
-From: renevant@netspace.net.au
-To: linux-kernel@vger.kernel.org
-Subject: possible problem with 2.6.31-rc3
+	Tue, 14 Jul 2009 20:52:35 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=VY5aAVBCvB6riIxr0jB5OkaM2hxYq1e2sLJ3mCU4VT+ES/dpVIW5jZS+jdB9xU9Ld
+	zrlfjr80l4k/HA2p8stjA==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.1
+In-Reply-To: <200906020557.n525v6KO004302@imap1.linux-foundation.org>
+References: <200906020557.n525v6KO004302@imap1.linux-foundation.org>
+Date: Tue, 14 Jul 2009 17:52:28 -0700
+Message-ID: <6599ad830907141752n5c701f9ap2a87df0a7f4f6ff3@mail.gmail.com>
+Subject: Re: + oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch 
+	added to -mm tree
+From: Paul Menage <menage@google.com>
+To: linux-kernel@vger.kernel.org
+Cc: mm-commits@vger.kernel.org, rientjes@google.com, mel@csn.ul.ie,
+       npiggin@suse.de, riel@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, Jun 1, 2009 at 10:57 PM, <akpm@linux-foundation.org> wrote:
+>
+> The patch titled
+>     oom: move oom_adj value from task_struct to mm_struct
+> has been added to the -mm tree.  Its filename is
+>     oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch
 
-Got this last night, possible problem when using pppoe-relay ?
+This patch represents an API/semantics change that's invisible from
+userspace, unless userspace specifically checks for the old and new
+behaviours to see which applies.
 
-Jul 15 05:01:47 Athas kernel: BUG: unable to handle kernel NULL pointer
-dereference at 0000000000000030
-Jul 15 05:01:47 Athas kernel: IP: [<ffffffff810a62e9>] fput+0x14/0x53
-Jul 15 05:01:47 Athas kernel: PGD 21410c067 PUD 21f508067 PMD 0 
-Jul 15 05:01:47 Athas kernel: Oops: 0002 [#1] SMP 
-Jul 15 05:01:47 Athas kernel: last sysfs file:
-/sys/devices/platform/it87.552/cpu0_vid
-Jul 15 05:01:47 Athas kernel: CPU 3 
-Jul 15 05:01:47 Athas kernel: Modules linked in: tun kvm_amd kvm bridge stp llc
-raid456 raid6_pq async_xor async_memcpy async_tx xor md_mod usbhid snd_seq_oss
-snd_seq_midi_event snd_hda_codec_atihdmi snd_seq snd_seq_device
-snd_hda_codec_realtek i2c_piix4 snd_pcm_oss snd_mixer_oss sr_mod cdrom ohci1394
-snd_hda_intel snd_hda_codec snd_pcm snd_timer snd r8169 8250_pnp ohci_hcd
-ehci_hcd 8250 ieee1394 usbcore sg nls_base pcspkr i2c_core serio_raw e1000e
-soundcore snd_page_alloc mii pata_atiixp serial_core thermal evdev processor fan
-button battery ac it87_wdt it87 hwmon_vid rtc_cmos rtc_core rtc_lib
-Jul 15 05:01:47 Athas kernel: Pid: 569, comm: pppoe-relay Not tainted 2.6.31-rc3
-#16 GA-MA790GP-UD4H
-Jul 15 05:01:47 Athas kernel: RIP: 0010:[<ffffffff810a62e9>] 
-[<ffffffff810a62e9>] fput+0x14/0x53
-Jul 15 05:01:47 Athas kernel: RSP: 0018:ffff8802141899b8  EFLAGS: 00010246
-Jul 15 05:01:47 Athas kernel: RAX: 0000000000000000 RBX: 0000000000000000 RCX:
-ffff88022359a808
-Jul 15 05:01:47 Athas kernel: RDX: 0000000000000000 RSI: 0000000000000246 RDI:
-0000000000000000
-Jul 15 05:01:47 Athas kernel: RBP: 0000000000000005 R08: ffff8802231adb40 R09:
-00000000bdd9e2e4
-Jul 15 05:01:47 Athas kernel: R10: 0000000000000246 R11: ffffffff8127aab3 R12:
-ffff880214189ab8
-Jul 15 05:01:47 Athas kernel: R13: 0000000000000000 R14: 0000000000000000 R15:
-0000000000000001
-Jul 15 05:01:47 Athas kernel: FS:  00007f066c7fa6f0(0000)
-GS:ffff88002807f000(0000) knlGS:000000000098fb70
-Jul 15 05:01:47 Athas kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-Jul 15 05:01:47 Athas kernel: CR2: 0000000000000030 CR3: 0000000214142000 CR4:
-00000000000006e0
-Jul 15 05:01:47 Athas kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-0000000000000000
-Jul 15 05:01:47 Athas kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
-0000000000000400
-Jul 15 05:01:47 Athas kernel: Process pppoe-relay (pid: 569, threadinfo
-ffff880214188000, task ffff88021f46f080)
-Jul 15 05:01:47 Athas kernel: Stack:
-Jul 15 05:01:47 Athas kernel: ffff8802231adb40 00000000bdd9e2e4 0000000000000000
-ffffffff810b3bde
-Jul 15 05:01:47 Athas kernel: <0> 0000000000000000 00000000bdd9e2e4
-ffff880214189d98 0000000000000001
-Jul 15 05:01:47 Athas kernel: <0> 0000000000000000 ffffffff810b4702
-ffff8802238b1e28 ffff8802231adb40
-Jul 15 05:01:47 Athas kernel: Call Trace:
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b3bde>] ? poll_freewait+0x36/0x8b
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b4702>] ? do_select+0x499/0x4cc
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b4bfd>] ? __pollwait+0x0/0x10b
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b4d08>] ? pollwake+0x0/0x74
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b4d08>] ? pollwake+0x0/0x74
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b4d08>] ? pollwake+0x0/0x74
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b4d08>] ? pollwake+0x0/0x74
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b4d08>] ? pollwake+0x0/0x74
-Jul 15 05:01:47 Athas kernel: [<ffffffff8121e117>] ? skb_free_datagram+0x20/0x72
-Jul 15 05:01:47 Athas kernel: [<ffffffff8127a113>] ? packet_recvmsg+0x223/0x24b
-Jul 15 05:01:47 Athas kernel: [<ffffffff81213673>] ? sock_sendmsg+0xde/0x10e
-Jul 15 05:01:47 Athas kernel: [<ffffffff8100bcee>] ? apic_timer_interrupt+0xe/0x20
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b48aa>] ? core_sys_select+0x175/0x220
-Jul 15 05:01:47 Athas kernel: [<ffffffff8100bcee>] ? apic_timer_interrupt+0xe/0x20
-Jul 15 05:01:47 Athas kernel: [<ffffffff810537b3>] ? enqueue_hrtimer+0x71/0x94
-Jul 15 05:01:47 Athas kernel: [<ffffffff81212c9a>] ? sockfd_lookup_light+0x2a/0x78
-Jul 15 05:01:47 Athas kernel: [<ffffffff812139f8>] ? sys_sendto+0xf5/0x122
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b24f0>] ? sys_dup3+0x2e/0x15e
-Jul 15 05:01:47 Athas kernel: [<ffffffff810b4bbf>] ? sys_select+0x9d/0xdb
-Jul 15 05:01:47 Athas kernel: [<ffffffff8100b26b>] ? system_call_fastpath+0x16/0x1b
-Jul 15 05:01:47 Athas kernel: Code: 00 74 05 e8 dc 42 f9 ff 48 83 c4 28 5b 5d 41
-5c 41 5d 41 5e 41 5f c3 48 83 ec 18 65 48 8b 04 25 28 00 00 00 48 89 44 24 08 31
-c0 <f0> 48 ff 4f 30 0f 94 c0 84 c0 74 19 48 8b 44 24 08 65 48 33 04 
-Jul 15 05:01:47 Athas kernel: RIP  [<ffffffff810a62e9>] fput+0x14/0x53
-Jul 15 05:01:47 Athas kernel: RSP <ffff8802141899b8>
-Jul 15 05:01:47 Athas kernel: CR2: 0000000000000030
-Jul 15 05:01:47 Athas kernel: ---[ end trace 95d5eea73b626779 ]---
+Is it intentional that it's now impossible to create a tree of
+processes that will inherit a non-zero oom_adj? It appears to get
+reset whenever you exec a child process.
 
-I've merged my kernel with the latest kernel virtual machine branch as well. I'm
-not a programmer so i'm not sure what i'm looking at, it could be a problem with
-my system but incase it's not I thought i'd post here.
+Old behaviour:
 
+[root@localhost ~]# echo -1 > /proc/$$/oom_adj
+[root@localhost ~]# cat /proc/$$/oom_adj
+-1
+[root@localhost ~]# bash
+[root@localhost ~]# cat /proc/$$/oom_adj
+-1
 
-Can provide lspci and dmesg and .config output if necessary.
+New behaviour:
 
+[root@localhost ~]# echo -1 > /proc/$$/oom_adj
+[root@localhost ~]# cat /proc/$$/oom_adj
+-1
+[root@localhost ~]# bash
+[root@localhost ~]# cat /proc/$$/oom_adj
+0
 
-
-------------------------------------------------------------
-This email was sent from Netspace Webmail: http://www.netspace.net.au
-
+>
+> Before you just go and hit "reply", please:
+>   a) Consider who else should be cc'ed
+>   b) Prefer to cc a suitable mailing list as well
+>   c) Ideally: find the original patch on the mailing list and do a
+>      reply-to-all to that, adding suitable additional cc's
+>
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>
+> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
+> out what to do about this
+>
+> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+>
+> ------------------------------------------------------
+> Subject: oom: move oom_adj value from task_struct to mm_struct
+> From: David Rientjes <rientjes@google.com>
+>
+> The per-task oom_adj value is a characteristic of its mm more than the
+> task itself since it's not possible to oom kill any thread that shares the
+> mm.  If a task were to be killed while attached to an mm that could not be
+> freed because another thread were set to OOM_DISABLE, it would have
+> needlessly been terminated since there is no potential for future memory
+> freeing.
+>
+> This patch moves oomkilladj (now more appropriately named oom_adj) from
+> struct task_struct to struct mm_struct.  This requires task_lock() on a
+> task to check its oom_adj value to protect against exec, but it's already
+> necessary to take the lock when dereferencing the mm to find the total VM
+> size for the badness heuristic.
+>
+> This fixes a livelock if the oom killer chooses a task and another thread
+> sharing the same memory has an oom_adj value of OOM_DISABLE.  This occurs
+> because oom_kill_task() repeatedly returns 1 and refuses to kill the
+> chosen task while select_bad_process() will repeatedly choose the same
+> task during the next retry.
+>
+> Taking task_lock() in select_bad_process() to check for OOM_DISABLE and in
+> oom_kill_task() to check for threads sharing the same memory will be
+> removed in the next patch in this series where it will no longer be
+> necessary.
+>
+> Writing to /proc/pid/oom_adj for a kthread will now return -EINVAL since
+> these threads are immune from oom killing already.  They simply report an
+> oom_adj value of OOM_DISABLE.
+>
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: Rik van Riel <riel@redhat.com>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>
+>  Documentation/filesystems/proc.txt |   15 +++++++----
+>  fs/proc/base.c                     |   19 ++++++++++++---
+>  include/linux/mm_types.h           |    2 +
+>  include/linux/sched.h              |    1
+>  mm/oom_kill.c                      |   34 +++++++++++++++++----------
+>  5 files changed, 50 insertions(+), 21 deletions(-)
+>
+> diff -puN Documentation/filesystems/proc.txt~oom-move-oom_adj-value-from-task_struct-to-mm_struct Documentation/filesystems/proc.txt
+> --- a/Documentation/filesystems/proc.txt~oom-move-oom_adj-value-from-task_struct-to-mm_struct
+> +++ a/Documentation/filesystems/proc.txt
+> @@ -1003,11 +1003,13 @@ CHAPTER 3: PER-PROCESS PARAMETERS
+>  3.1 /proc/<pid>/oom_adj - Adjust the oom-killer score
+>  ------------------------------------------------------
+>
+> -This file can be used to adjust the score used to select which processes
+> -should be killed in an  out-of-memory  situation.  Giving it a high score will
+> -increase the likelihood of this process being killed by the oom-killer.  Valid
+> -values are in the range -16 to +15, plus the special value -17, which disables
+> -oom-killing altogether for this process.
+> +This file can be used to adjust the score used to select which processes should
+> +be killed in an out-of-memory situation.  The oom_adj value is a characteristic
+> +of the task's mm, so all threads that share an mm with pid will have the same
+> +oom_adj value.  A high value will increase the likelihood of this process being
+> +killed by the oom-killer.  Valid values are in the range -16 to +15 as
+> +explained below and a special value of -17, which disables oom-killing
+> +altogether for threads sharing pid's mm.
+>
+>  The process to be killed in an out-of-memory situation is selected among all others
+>  based on its badness score. This value equals the original memory size of the process
+> @@ -1021,6 +1023,9 @@ the parent's score if they do not share
+>  are the prime candidates to be killed. Having only one 'hungry' child will make
+>  parent less preferable than the child.
+>
+> +/proc/<pid>/oom_adj cannot be changed for kthreads since they are immune from
+> +oom-killing already.
+> +
+>  /proc/<pid>/oom_score shows process' current badness score.
+>
+>  The following heuristics are then applied:
+> diff -puN fs/proc/base.c~oom-move-oom_adj-value-from-task_struct-to-mm_struct fs/proc/base.c
+> --- a/fs/proc/base.c~oom-move-oom_adj-value-from-task_struct-to-mm_struct
+> +++ a/fs/proc/base.c
+> @@ -1006,7 +1006,12 @@ static ssize_t oom_adjust_read(struct fi
+>
+>        if (!task)
+>                return -ESRCH;
+> -       oom_adjust = task->oomkilladj;
+> +       task_lock(task);
+> +       if (task->mm)
+> +               oom_adjust = task->mm->oom_adj;
+> +       else
+> +               oom_adjust = OOM_DISABLE;
+> +       task_unlock(task);
+>        put_task_struct(task);
+>
+>        len = snprintf(buffer, sizeof(buffer), "%i\n", oom_adjust);
+> @@ -1035,11 +1040,19 @@ static ssize_t oom_adjust_write(struct f
+>        task = get_proc_task(file->f_path.dentry->d_inode);
+>        if (!task)
+>                return -ESRCH;
+> -       if (oom_adjust < task->oomkilladj && !capable(CAP_SYS_RESOURCE)) {
+> +       task_lock(task);
+> +       if (!task->mm) {
+> +               task_unlock(task);
+> +               put_task_struct(task);
+> +               return -EINVAL;
+> +       }
+> +       if (oom_adjust < task->mm->oom_adj && !capable(CAP_SYS_RESOURCE)) {
+> +               task_unlock(task);
+>                put_task_struct(task);
+>                return -EACCES;
+>        }
+> -       task->oomkilladj = oom_adjust;
+> +       task->mm->oom_adj = oom_adjust;
+> +       task_unlock(task);
+>        put_task_struct(task);
+>        if (end - buffer == 0)
+>                return -EIO;
+> diff -puN include/linux/mm_types.h~oom-move-oom_adj-value-from-task_struct-to-mm_struct include/linux/mm_types.h
+> --- a/include/linux/mm_types.h~oom-move-oom_adj-value-from-task_struct-to-mm_struct
+> +++ a/include/linux/mm_types.h
+> @@ -240,6 +240,8 @@ struct mm_struct {
+>
+>        unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
+>
+> +       s8 oom_adj;     /* OOM kill score adjustment (bit shift) */
+> +
+>        cpumask_t cpu_vm_mask;
+>
+>        /* Architecture-specific MM context */
+> diff -puN include/linux/sched.h~oom-move-oom_adj-value-from-task_struct-to-mm_struct include/linux/sched.h
+> --- a/include/linux/sched.h~oom-move-oom_adj-value-from-task_struct-to-mm_struct
+> +++ a/include/linux/sched.h
+> @@ -1151,7 +1151,6 @@ struct task_struct {
+>         * a short time
+>         */
+>        unsigned char fpu_counter;
+> -       s8 oomkilladj; /* OOM kill score adjustment (bit shift). */
+>  #ifdef CONFIG_BLK_DEV_IO_TRACE
+>        unsigned int btrace_seq;
+>  #endif
+> diff -puN mm/oom_kill.c~oom-move-oom_adj-value-from-task_struct-to-mm_struct mm/oom_kill.c
+> --- a/mm/oom_kill.c~oom-move-oom_adj-value-from-task_struct-to-mm_struct
+> +++ a/mm/oom_kill.c
+> @@ -58,6 +58,7 @@ unsigned long badness(struct task_struct
+>        unsigned long points, cpu_time, run_time;
+>        struct mm_struct *mm;
+>        struct task_struct *child;
+> +       int oom_adj;
+>
+>        task_lock(p);
+>        mm = p->mm;
+> @@ -65,6 +66,7 @@ unsigned long badness(struct task_struct
+>                task_unlock(p);
+>                return 0;
+>        }
+> +       oom_adj = mm->oom_adj;
+>
+>        /*
+>         * The memory size of the process is the basis for the badness.
+> @@ -148,15 +150,15 @@ unsigned long badness(struct task_struct
+>                points /= 8;
+>
+>        /*
+> -        * Adjust the score by oomkilladj.
+> +        * Adjust the score by oom_adj.
+>         */
+> -       if (p->oomkilladj) {
+> -               if (p->oomkilladj > 0) {
+> +       if (oom_adj) {
+> +               if (oom_adj > 0) {
+>                        if (!points)
+>                                points = 1;
+> -                       points <<= p->oomkilladj;
+> +                       points <<= oom_adj;
+>                } else
+> -                       points >>= -(p->oomkilladj);
+> +                       points >>= -(oom_adj);
+>        }
+>
+>  #ifdef DEBUG
+> @@ -251,8 +253,12 @@ static struct task_struct *select_bad_pr
+>                        *ppoints = ULONG_MAX;
+>                }
+>
+> -               if (p->oomkilladj == OOM_DISABLE)
+> +               task_lock(p);
+> +               if (p->mm && p->mm->oom_adj == OOM_DISABLE) {
+> +                       task_unlock(p);
+>                        continue;
+> +               }
+> +               task_unlock(p);
+>
+>                points = badness(p, uptime.tv_sec);
+>                if (points > *ppoints || !chosen) {
+> @@ -304,8 +310,7 @@ static void dump_tasks(const struct mem_
+>                }
+>                printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %3d     %3d %s\n",
+>                       p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
+> -                      get_mm_rss(mm), (int)task_cpu(p), p->oomkilladj,
+> -                      p->comm);
+> +                      get_mm_rss(mm), (int)task_cpu(p), mm->oom_adj, p->comm);
+>                task_unlock(p);
+>        } while_each_thread(g, p);
+>  }
+> @@ -367,8 +372,12 @@ static int oom_kill_task(struct task_str
+>         * Don't kill the process if any threads are set to OOM_DISABLE
+>         */
+>        do_each_thread(g, q) {
+> -               if (q->mm == mm && q->oomkilladj == OOM_DISABLE)
+> +               task_lock(q);
+> +               if (q->mm == mm && q->mm && q->mm->oom_adj == OOM_DISABLE) {
+> +                       task_unlock(q);
+>                        return 1;
+> +               }
+> +               task_unlock(q);
+>        } while_each_thread(g, q);
+>
+>        __oom_kill_task(p, 1);
+> @@ -393,10 +402,11 @@ static int oom_kill_process(struct task_
+>        struct task_struct *c;
+>
+>        if (printk_ratelimit()) {
+> -               printk(KERN_WARNING "%s invoked oom-killer: "
+> -                       "gfp_mask=0x%x, order=%d, oomkilladj=%d\n",
+> -                       current->comm, gfp_mask, order, current->oomkilladj);
+>                task_lock(current);
+> +               printk(KERN_WARNING "%s invoked oom-killer: "
+> +                       "gfp_mask=0x%x, order=%d, oom_adj=%d\n",
+> +                       current->comm, gfp_mask, order,
+> +                       current->mm ? current->mm->oom_adj : OOM_DISABLE);
+>                cpuset_print_task_mems_allowed(current);
+>                task_unlock(current);
+>                dump_stack();
+> _
+>
+> Patches currently in -mm which might be from rientjes@google.com are
+>
+> origin.patch
+> linux-next.patch
+> cpusets-restructure-the-function-cpuset_update_task_memory_state.patch
+> cpusets-update-tasks-page-slab-spread-flags-in-time.patch
+> cpusetmm-update-tasks-mems_allowed-in-time.patch
+> cpusetmm-update-tasks-mems_allowed-in-time-fix.patch
+> cpusetmm-update-tasks-mems_allowed-in-time-cleanup.patch
+> page-allocator-use-a-pre-calculated-value-instead-of-num_online_nodes-in-fast-paths-do-not-override-definition-of-node_set_online-with-macro.patch
+> mm-setup_per_zone_inactive_ratio-do-not-call-for-int_sqrt-if-not-needed.patch
+> mm-setup_per_zone_inactive_ratio-fix-comment-and-make-it-__init.patch
+> page-allocator-warn-if-__gfp_nofail-is-used-for-a-large-allocation.patch
+> mm-pm-freezer-disable-oom-killer-when-tasks-are-frozen.patch
+> oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch
+> oom-avoid-unnecessary-mm-locking-and-scanning-for-oom_disable.patch
+> memcg-add-file-based-rss-accounting.patch
+> memcg-add-file-based-rss-accounting-fix-mem_cgroup_update_mapped_file_stat-oops.patch
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
