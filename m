@@ -1,25 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZGOKsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbZGOKtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZGOKsg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 06:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZGOKsg
+	id S1754047AbZGOKtr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 06:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZGOKtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 06:48:36 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43497 "EHLO gir.skynet.ie"
+	Wed, 15 Jul 2009 06:49:46 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43665 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753702AbZGOKsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 06:48:35 -0400
-Date: Wed, 15 Jul 2009 11:48:34 +0100
+	id S1753922AbZGOKtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 06:49:46 -0400
+Date: Wed, 15 Jul 2009 11:49:45 +0100
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kosaki.motohiro@jp.fujitsu.com, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] mm: Warn once when a page is freed with PG_mlocked set
-	(resend)
-Message-ID: <20090715104833.GB9267@csn.ul.ie>
+Cc: David Rientjes <rientjes@google.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] page-allocator: Ensure that processes that have been OOM
+	killed exit the page allocator (resend)
+Message-ID: <20090715104944.GC9267@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
@@ -28,55 +25,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a page is freed with the PG_mlocked set, it is considered an unexpected
-but recoverable situation. A counter records how often this event happens
-but it is easy to miss that this event has occured at all. This patch warns
-once when PG_mlocked is set to prompt debuggers to check the counter to
-see how often it is happening.
+Processes that have been OOM killed set the thread flag TIF_MEMDIE. A process
+such as this is expected to exit the page allocator but potentially, it
+loops forever. This patch checks TIF_MEMDIE when deciding whether to loop
+again in the page allocator. If set, and __GFP_NOFAIL is not specified
+then the loop will exit on the assumption it's no longer important for the
+process to make forward progress. Note that a process that has just been
+OOM-killed will still loop at least one more time retrying the allocation
+before the thread flag is checked.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 --- 
- mm/page_alloc.c |   16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+ mm/page_alloc.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index caa9268..f8902e7 100644
+index f8902e7..5c98d02 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -495,8 +495,16 @@ static inline void free_page_mlock(struct page *page)
- static void free_page_mlock(struct page *page) { }
- #endif
+@@ -1547,6 +1547,14 @@ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
+ 	if (gfp_mask & __GFP_NORETRY)
+ 		return 0;
  
--static inline int free_pages_check(struct page *page)
--{
-+static inline int free_pages_check(struct page *page, int wasMlocked)
-+{
-+	if (unlikely(wasMlocked)) {
-+		WARN_ONCE(1, KERN_WARNING
-+			"Page flag mlocked set for process %s at pfn:%05lx\n"
-+			"page:%p flags:0x%lX\n",
-+			current->comm, page_to_pfn(page),
-+			page, page->flags|__PG_MLOCKED);
++	/* Do not loop if OOM-killed unless __GFP_NOFAIL is specified */
++	if (test_thread_flag(TIF_MEMDIE)) {
++		if (gfp_mask & __GFP_NOFAIL)
++			WARN(1, "Potential infinite loop with __GFP_NOFAIL");
++		else
++			return 0;
 +	}
 +
- 	if (unlikely(page_mapcount(page) |
- 		(page->mapping != NULL)  |
- 		(atomic_read(&page->_count) != 0) |
-@@ -562,7 +570,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
- 	kmemcheck_free_shadow(page, order);
- 
- 	for (i = 0 ; i < (1 << order) ; ++i)
--		bad += free_pages_check(page + i);
-+		bad += free_pages_check(page + i, wasMlocked);
- 	if (bad)
- 		return;
- 
-@@ -1027,7 +1035,7 @@ static void free_hot_cold_page(struct page *page, int cold)
- 
- 	if (PageAnon(page))
- 		page->mapping = NULL;
--	if (free_pages_check(page))
-+	if (free_pages_check(page, wasMlocked))
- 		return;
- 
- 	if (!PageHighMem(page)) {
+ 	/*
+ 	 * In this implementation, order <= PAGE_ALLOC_COSTLY_ORDER
+ 	 * means __GFP_NOFAIL, but that may not be true in other
