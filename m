@@ -1,113 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZGOVwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZGOVxI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbZGOVwf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 17:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbZGOVwf
+	id S1755351AbZGOVxI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 17:53:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbZGOVxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 17:52:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39801 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754958AbZGOVwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 17:52:34 -0400
-Date: Wed, 15 Jul 2009 17:52:14 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Divyesh Shah <dpshah@google.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
-       mrubin@google.com
-Subject: Re: [PATCH] block: Improve think time sampling for CFQ
-Message-ID: <20090715215214.GA3994@redhat.com>
-References: <20090715212553.8349.51342.stgit@hyd-omgvisitor1.hyd.corp.google.com>
-MIME-Version: 1.0
+	Wed, 15 Jul 2009 17:53:08 -0400
+Received: from smtpout.cs.fsu.edu ([128.186.122.75]:5664 "EHLO mail.cs.fsu.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754997AbZGOVxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 17:53:07 -0400
+Date: Wed, 15 Jul 2009 17:53:05 -0400
+From: Ted Baker <baker@cs.fsu.edu>
+To: Henrik Austad <henrik@austad.us>
+Cc: "James H. Anderson" <anderson@cs.unc.edu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Chris Friesen <cfriesen@nortel.com>, Raistlin <raistlin@linux.it>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Noah Watkins <jayhawk@soe.ucsc.edu>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+Message-ID: <20090715215305.GD14993@cs.fsu.edu>
+References: <200907102350.47124.henrik@austad.us> <1247589099.7500.191.camel@twins> <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu> <200907142128.48558.henrik@austad.us>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090715212553.8349.51342.stgit@hyd-omgvisitor1.hyd.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200907142128.48558.henrik@austad.us>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 02:56:54AM +0530, Divyesh Shah wrote:
-> Avoid taking a think time sample when the cfqq is not a sync queue or not
-> currently active or till its first request in the ongoing timeslice
-> completes.
-> 
+On Tue, Jul 14, 2009 at 09:28:47PM +0200, Henrik Austad wrote:
 
-Hi Divyesh,
+> ... In MC you need to do this the hard way, namely compute the
+> point in time not when the task misses the deadline, but when it
+> will *eventually* fail a deadline. By doing that, you combine
+> deadline, wcet and granted time in one variable, and you have a
+> *single* variable to compare.
 
-It would be nice to give some more details in changelog regarding why are
-you donig this change.
+This is true in a theoretical sense, and is the basis of some
+"optimal" scheduling algorithms, including the "throwforward
+scheduling" algorithm.  It makes sense in some environments, where
+you actually know the WCET of the task in advance.  However, I
+don't believe a Linux system can expect all applications to
+provide this kind of information.
 
+In a system programmed using process and threads, the decision to
+sleep or wake is embedded in the internal logic of the thread, and
+implemented by system calls.  The existing system calls do not
+convey how long the thread needs to execute before it reaches its
+next suspension point.  Therefore, without a new API you cannot
+use WCET. If you create a new API for this, you are limiting this
+form of scheduling to threads that choose to use that API, and are
+able to provide the needed WCET information.  This seems like a
+small number of cases among the full range of real-time Linux
+applications.
 
-> Signed-off by: Divyesh Shah <dpshah@google.com>
-> ---
-> This applies to Linus's kernel tree.
-> 
->  block/cfq-iosched.c |   15 +++++++++++----
->  1 files changed, 11 insertions(+), 4 deletions(-)
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index fd7080e..1657d4f 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -1904,10 +1904,17 @@ err:
->  }
->  
->  static void
-> -cfq_update_io_thinktime(struct cfq_data *cfqd, struct cfq_io_context *cic)
-> +cfq_update_io_thinktime(struct cfq_data *cfqd, struct cfq_queue *cfqq,
-> +			struct cfq_io_context *cic)
->  {
-> -	unsigned long elapsed = jiffies - cic->last_end_request;
-> -	unsigned long ttime = min(elapsed, 2UL * cfqd->cfq_slice_idle);
-> +	unsigned long elapsed, ttime;
-> +
-> +	if (!cfq_cfqq_sync(cfqq) || cfqq != cfqd->active_queue || 
-> +	    cfq_cfqq_slice_new(cfqq))
-> +		return;
-
-If we take a valid sample only when cfqq is the active queue, I think it
-will take a long time before idling is enabled back?
-
-For example consider a queue for which idling got disabled for some
-reason. Now that queue will be scheduled in and after completion of
-request, we will not idle and immediately expire the queue. For sequential
-readers, next request most likely will come after the expiry of the queue.
-Now this queue is not active, so when next request comes in, that sample
-will not be valid and we will never enable the idling on this queue?
-
-I am not sure what are you trying to solve here. I guess that you are
-concerned about the case where a reader can drive queue depth more than 1.
-So after first request when next request comes in, it is probably not very
-fair to compare it with cic->last_end_request. Instead it should be
-compared with arrival time of previous request?
-
-If yes, then we can probably maintain another variable, cic->last_req_arrival
-and calculate elapsed time based on last_req_arrival only if it is after
-the last_end_request. May be something like as follows.
-
-	if (time_after(cic->last_req_arrival, cic->last_end_request))
-		elapsed = jiffies - cic->last_req_arrival;
-	else
-		elapsed = jiffies - cic->last_end_request;
-		
-One more question, why are you not considering a sample valid if slice_new
-is set for the active queue? I think with introduction of
-last_req_arrival, we probably would not need it.
-
-Thanks
-Vivek
-
-> +
-> +	elapsed = jiffies - cic->last_end_request;
-> +	ttime = min(elapsed, 2UL * cfqd->cfq_slice_idle);
->  
->  	cic->ttime_samples = (7*cic->ttime_samples + 256) / 8;
->  	cic->ttime_total = (7*cic->ttime_total + 256*ttime) / 8;
-> @@ -2072,7 +2079,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->  	if (rq_is_meta(rq))
->  		cfqq->meta_pending++;
->  
-> -	cfq_update_io_thinktime(cfqd, cic);
-> +	cfq_update_io_thinktime(cfqd, cfqq, cic);
->  	cfq_update_io_seektime(cfqd, cic, rq);
->  	cfq_update_idle_window(cfqd, cfqq, cic);
->  
+Ted
