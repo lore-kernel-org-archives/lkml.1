@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752061AbZGOFcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752066AbZGOFlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752061AbZGOFcc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 01:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZGOFcb
+	id S1752066AbZGOFlu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 01:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZGOFlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 01:32:31 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:54276 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbZGOFca (ORCPT
+	Wed, 15 Jul 2009 01:41:49 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:63314 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751829AbZGOFlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 01:32:30 -0400
-Date: Wed, 15 Jul 2009 11:02:22 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 0/5] Memory controller soft limit patches (v9)
-Message-ID: <20090715053222.GH24034@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090710125950.5610.99139.sendpatchset@balbir-laptop> <20090715040811.GF24034@balbir.in.ibm.com> <20090715142736.39AA.A69D9226@jp.fujitsu.com>
+	Wed, 15 Jul 2009 01:41:49 -0400
+Message-ID: <4A5D6BF9.8030701@nokia.com>
+Date: Wed, 15 Jul 2009 08:41:13 +0300
+From: Luciano Coelho <luciano.coelho@nokia.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090715142736.39AA.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: ext Jiri Slaby <jirislaby@gmail.com>
+CC: "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] wireless: wl12xx, fix lock imbalance
+References: <1247603833-10862-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1247603833-10862-1-git-send-email-jirislaby@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Jul 2009 05:41:17.0010 (UTC) FILETIME=[DF744320:01CA050E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-07-15 14:28:19]:
-
-> > * Balbir Singh <balbir@linux.vnet.ibm.com> [2009-07-10 18:29:50]:
-> > 
-> > > 
-> > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > > 
-> > > New Feature: Soft limits for memory resource controller.
-> > > 
-> > > Here is v9 of the new soft limit implementation. Soft limits is a new feature
-> > > for the memory resource controller, something similar has existed in the
-> > > group scheduler in the form of shares. The CPU controllers interpretation
-> > > of shares is very different though. 
-> > >
-> > 
-> > If there are no objections to these patches, could we pick them up for
-> > testing in mmotm. 
-> 
-> Sorry, I haven't review this patch series. please give me few days.
+ext Jiri Slaby wrote:
+> Add omitted mutex_unlock to one of wl12xx_op_start fail paths (when
+> wl12xx_chip_wakeup fails).
 >
+> [v2]
+> Power off the device, because:
+> \= cite from http://marc.info/?l=linux-kernel&m=124755028209880&w=2
+> If the chip cannot be booted, why should it remain powered on?
+> In some rare cases, the chip might fail to initialize, but can
+> recover if powered off and on again, so turning it off at this
+> point is the right thing to do. =/
+>
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> ---
+>   
 
-Sure, could you see if the reclaim bits are better now. 
+Looks good now.  Thanks!
+
+Reviewed-by: Luciano Coelho <luciano.coelho@nokia.com>
+
+>  drivers/net/wireless/wl12xx/main.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/wireless/wl12xx/main.c b/drivers/net/wireless/wl12xx/main.c
+> index 603d611..d30683c 100644
+> --- a/drivers/net/wireless/wl12xx/main.c
+> +++ b/drivers/net/wireless/wl12xx/main.c
+> @@ -336,7 +336,7 @@ static int wl12xx_op_start(struct ieee80211_hw *hw)
+>  
+>  	ret = wl12xx_chip_wakeup(wl);
+>  	if (ret < 0)
+> -		return ret;
+> +		goto out;
+>  
+>  	ret = wl->chip.op_boot(wl);
+>  	if (ret < 0)
+>   
+
 
 -- 
-        Thanks,
-	Balbir
+Cheers,
+Luca.
+
