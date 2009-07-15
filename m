@@ -1,241 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbZGOWON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZGOWOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755123AbZGOWON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 18:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbZGOWON
+	id S1754095AbZGOWOM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 18:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbZGOWOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 18:14:13 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:52562 "EHLO smtp.gentoo.org"
+	Wed, 15 Jul 2009 18:14:11 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:52560 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753260AbZGOWOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753214AbZGOWOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 15 Jul 2009 18:14:11 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: Evgeniy Polyakov <zbr@ioremap.net>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/3] connector: clean up grammar/style in documentation
-Date: Wed, 15 Jul 2009 18:14:08 -0400
-Message-Id: <1247696049-15699-2-git-send-email-vapier@gentoo.org>
+Subject: [PATCH 1/3] connector: make callback argument type explicit
+Date: Wed, 15 Jul 2009 18:14:07 -0400
+Message-Id: <1247696049-15699-1-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1247696049-15699-1-git-send-email-vapier@gentoo.org>
-References: <1247696049-15699-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The grammar in most of this file is slightly off, and some sections are
-hard to read due to lack of visual clues breaking up related material.
+The connector documentation states that the argument to the callback
+function is always a pointer to a struct cn_msg, but rather than encode it
+in the API itself, it uses a void pointer everywhere.  This doesn't make
+much sense to encode the pointer in documentation as it prevents proper C
+type checking from occurring and can easily allow people to use the wrong
+pointer type.  So convert the argument type to an explicit struct cn_msg
+pointer.
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- Documentation/connector/connector.txt |  119 +++++++++++++++++----------------
- 1 files changed, 61 insertions(+), 58 deletions(-)
+ Documentation/connector/cn_test.c |    4 +---
+ drivers/connector/cn_proc.c       |    3 +--
+ drivers/connector/cn_queue.c      |    7 +++++--
+ drivers/connector/connector.c     |    6 +++---
+ drivers/staging/dst/dcore.c       |    3 +--
+ drivers/video/uvesafb.c           |    3 +--
+ drivers/w1/w1_netlink.c           |    3 +--
+ include/linux/connector.h         |    6 +++---
+ 8 files changed, 16 insertions(+), 19 deletions(-)
 
-diff --git a/Documentation/connector/connector.txt b/Documentation/connector/connector.txt
-index ad6e0ba..847f0d8 100644
---- a/Documentation/connector/connector.txt
-+++ b/Documentation/connector/connector.txt
-@@ -5,10 +5,10 @@ Kernel Connector.
- Kernel connector - new netlink based userspace <-> kernel space easy
- to use communication module.
+diff --git a/Documentation/connector/cn_test.c b/Documentation/connector/cn_test.c
+index f688eba..50d5ce4 100644
+--- a/Documentation/connector/cn_test.c
++++ b/Documentation/connector/cn_test.c
+@@ -32,10 +32,8 @@ static char cn_test_name[] = "cn_test";
+ static struct sock *nls;
+ static struct timer_list cn_test_timer;
  
--Connector driver adds possibility to connect various agents using
--netlink based network.  One must register callback and
--identifier. When driver receives special netlink message with
--appropriate identifier, appropriate callback will be called.
-+The Connector driver adds makes it easy to connect various agents using a
-+netlink based network.  One must register a callback and an identifier.
-+When the driver receives a special netlink message with the appropriate
-+identifier, the appropriate callback will be called.
- 
- From the userspace point of view it's quite straightforward:
- 
-@@ -17,10 +17,10 @@ From the userspace point of view it's quite straightforward:
- 	send();
- 	recv();
- 
--But if kernelspace want to use full power of such connections, driver
--writer must create special sockets, must know about struct sk_buff
--handling...  Connector allows any kernelspace agents to use netlink
--based networking for inter-process communication in a significantly
-+But if kernelspace wants to use the full power of such connections, the
-+driver writer must create special sockets, must know about struct sk_buff
-+handling, etc...  The Connector driver allows any kernelspace agents to use
-+netlink based networking for inter-process communication in a significantly
- easier way:
- 
- int cn_add_callback(struct cb_id *id, char *name, void (*callback) (void *));
-@@ -32,15 +32,15 @@ struct cb_id
- 	__u32			val;
- };
- 
--idx and val are unique identifiers which must be registered in
--connector.h for in-kernel usage.  void (*callback) (void *) - is a
--callback function which will be called when message with above idx.val
--will be received by connector core.  Argument for that function must
-+idx and val are unique identifiers which must be registered in the
-+connector.h header for in-kernel usage.  void (*callback) (void *) is a
-+callback function which will be called when a message with above idx.val
-+is received by the connector core.  The argument for that function must
- be dereferenced to struct cn_msg *.
- 
- struct cn_msg
+-void cn_test_callback(void *data)
++void cn_test_callback(struct cn_msg *msg)
  {
--	struct cb_id 		id;
-+	struct cb_id		id;
+-	struct cn_msg *msg = (struct cn_msg *)data;
+-
+ 	printk("%s: %lu: idx=%x, val=%x, seq=%u, ack=%u, len=%d: %s.\n",
+ 	       __func__, jiffies, msg->id.idx, msg->id.val,
+ 	       msg->seq, msg->ack, msg->len, (char *)msg->data);
+diff --git a/drivers/connector/cn_proc.c b/drivers/connector/cn_proc.c
+index c5afc98..85e5dc0 100644
+--- a/drivers/connector/cn_proc.c
++++ b/drivers/connector/cn_proc.c
+@@ -202,9 +202,8 @@ static void cn_proc_ack(int err, int rcvd_seq, int rcvd_ack)
+  * cn_proc_mcast_ctl
+  * @data: message sent from userspace via the connector
+  */
+-static void cn_proc_mcast_ctl(void *data)
++static void cn_proc_mcast_ctl(struct cn_msg *msg)
+ {
+-	struct cn_msg *msg = data;
+ 	enum proc_cn_mcast_op *mc_op = NULL;
+ 	int err = 0;
  
- 	__u32			seq;
- 	__u32			ack;
-@@ -55,92 +55,95 @@ Connector interfaces.
- 
- int cn_add_callback(struct cb_id *id, char *name, void (*callback) (void *));
- 
--Registers new callback with connector core.
-+ Registers new callback with connector core.
- 
--struct cb_id *id 		- unique connector's user identifier.
--			  	  It must be registered in connector.h for legal in-kernel users.
--char *name 			- connector's callback symbolic name.
--void (*callback) (void *)	- connector's callback.
-+ struct cb_id *id		- unique connector's user identifier.
-+				  It must be registered in connector.h for legal in-kernel users.
-+ char *name			- connector's callback symbolic name.
-+ void (*callback) (void *)	- connector's callback.
- 				  Argument must be dereferenced to struct cn_msg *.
- 
-+
- void cn_del_callback(struct cb_id *id);
- 
--Unregisters new callback with connector core.
-+ Unregisters new callback with connector core.
-+
-+ struct cb_id *id		- unique connector's user identifier.
- 
--struct cb_id *id 		- unique connector's user identifier.
- 
- int cn_netlink_send(struct cn_msg *msg, u32 __groups, int gfp_mask);
- 
--Sends message to the specified groups.  It can be safely called from
--softirq context, but may silently fail under strong memory pressure.
--If there are no listeners for given group -ESRCH can be returned.
-+ Sends message to the specified groups.  It can be safely called from
-+ softirq context, but may silently fail under strong memory pressure.
-+ If there are no listeners for given group -ESRCH can be returned.
- 
--struct cn_msg *			- message header(with attached data).
--u32 __group			- destination group.
-+ struct cn_msg *		- message header(with attached data).
-+ u32 __group			- destination group.
- 				  If __group is zero, then appropriate group will
- 				  be searched through all registered connector users,
- 				  and message will be delivered to the group which was
- 				  created for user with the same ID as in msg.
- 				  If __group is not zero, then message will be delivered
- 				  to the specified group.
--int gfp_mask			- GFP mask.
-+ int gfp_mask			- GFP mask.
- 
--Note: When registering new callback user, connector core assigns
--netlink group to the user which is equal to it's id.idx.
-+ Note: When registering new callback user, connector core assigns
-+ netlink group to the user which is equal to it's id.idx.
- 
- /*****************************************/
- Protocol description.
- /*****************************************/
- 
--Current offers transport layer with fixed header.  Recommended
--protocol which uses such header is following:
-+The current framework offers a transport layer with fixed headers.  The
-+recommended protocol which uses such a header is as following:
- 
- msg->seq and msg->ack are used to determine message genealogy.  When
--someone sends message it puts there locally unique sequence and random
--acknowledge numbers.  Sequence number may be copied into
-+someone sends a message, they use a locally unique sequence and random
-+acknowledge number.  The sequence number may be copied into
- nlmsghdr->nlmsg_seq too.
- 
--Sequence number is incremented with each message to be sent.
-+The sequence number is incremented with each message sent.
- 
--If we expect reply to our message, then sequence number in received
--message MUST be the same as in original message, and acknowledge
--number MUST be the same + 1.
-+If you expect a reply to the message, then the sequence number in the
-+received message MUST be the same as in the original message, and the
-+acknowledge number MUST be the same + 1.
- 
--If we receive message and it's sequence number is not equal to one we
--are expecting, then it is new message.  If we receive message and it's
--sequence number is the same as one we are expecting, but it's
--acknowledge is not equal acknowledge number in original message + 1,
--then it is new message.
-+If we receive a message and its sequence number is not equal to one we
-+are expecting, then it is a new message.  If we receive a message and
-+its sequence number is the same as one we are expecting, but its
-+acknowledge is not equal to the acknowledge number in the original
-+message + 1, then it is a new message.
- 
--Obviously, protocol header contains above id.
-+Obviously, the protocol header contains the above id.
- 
--connector allows event notification in the following form: kernel
-+The connector allows event notification in the following form: kernel
- driver or userspace process can ask connector to notify it when
--selected id's will be turned on or off(registered or unregistered it's
--callback). It is done by sending special command to connector
--driver(it also registers itself with id={-1, -1}).
-+selected ids will be turned on or off (registered or unregistered its
-+callback).  It is done by sending a special command to the connector
-+driver (it also registers itself with id={-1, -1}).
- 
--As example of usage Documentation/connector now contains cn_test.c -
--testing module which uses connector to request notification and to
--send messages.
-+As example of this usage can be found in the cn_test.c module which
-+uses the connector to request notification and to send messages.
- 
- /*****************************************/
- Reliability.
- /*****************************************/
- 
--Netlink itself is not reliable protocol, that means that messages can
-+Netlink itself is not a reliable protocol.  That means that messages can
- be lost due to memory pressure or process' receiving queue overflowed,
--so caller is warned must be prepared. That is why struct cn_msg [main
--connector's message header] contains u32 seq and u32 ack fields.
-+so caller is warned that it must be prepared.  That is why the struct
-+cn_msg [main connector's message header] contains u32 seq and u32 ack
-+fields.
- 
- /*****************************************/
- Userspace usage.
- /*****************************************/
-+
- 2.6.14 has a new netlink socket implementation, which by default does not
--allow to send data to netlink groups other than 1.
--So, if to use netlink socket (for example using connector) 
--with different group number userspace application must subscribe to 
--that group. It can be achieved by following pseudocode:
-+allow people to send data to netlink groups other than 1.
-+So, if you wish to use a netlink socket (for example using connector)
-+with a different group number, the userspace application must subscribe to
-+that group first.  It can be achieved by the following pseudocode:
- 
- s = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
- 
-@@ -160,8 +163,8 @@ if (bind(s, (struct sockaddr *)&l_local, sizeof(struct sockaddr_nl)) == -1) {
+diff --git a/drivers/connector/cn_queue.c b/drivers/connector/cn_queue.c
+index c769ef2..d478aef 100644
+--- a/drivers/connector/cn_queue.c
++++ b/drivers/connector/cn_queue.c
+@@ -87,7 +87,9 @@ void cn_queue_wrapper(struct work_struct *work)
+ 	kfree(d->free);
  }
  
- Where 270 above is SOL_NETLINK, and 1 is a NETLINK_ADD_MEMBERSHIP socket
--option. To drop multicast subscription one should call above socket option
--with NETLINK_DROP_MEMBERSHIP parameter which is defined as 0.
-+option.  To drop a multicast subscription, one should call the above socket
-+option with the NETLINK_DROP_MEMBERSHIP parameter which is defined as 0.
+-static struct cn_callback_entry *cn_queue_alloc_callback_entry(char *name, struct cb_id *id, void (*callback)(void *))
++static struct cn_callback_entry *
++cn_queue_alloc_callback_entry(char *name, struct cb_id *id,
++			      void (*callback)(struct cn_msg *))
+ {
+ 	struct cn_callback_entry *cbq;
  
- 2.6.14 netlink code only allows to select a group which is less or equal to
- the maximum group number, which is used at netlink_kernel_create() time.
+@@ -120,7 +122,8 @@ int cn_cb_equal(struct cb_id *i1, struct cb_id *i2)
+ 	return ((i1->idx == i2->idx) && (i1->val == i2->val));
+ }
+ 
+-int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id, void (*callback)(void *))
++int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id,
++			  void (*callback)(struct cn_msg *))
+ {
+ 	struct cn_callback_entry *cbq, *__cbq;
+ 	int found = 0;
+diff --git a/drivers/connector/connector.c b/drivers/connector/connector.c
+index fd336c5..3f45669 100644
+--- a/drivers/connector/connector.c
++++ b/drivers/connector/connector.c
+@@ -269,7 +269,8 @@ static void cn_notify(struct cb_id *id, u32 notify_event)
+  *
+  * May sleep.
+  */
+-int cn_add_callback(struct cb_id *id, char *name, void (*callback)(void *))
++int cn_add_callback(struct cb_id *id, char *name,
++		    void (*callback)(struct cn_msg *))
+ {
+ 	int err;
+ 	struct cn_dev *dev = &cdev;
+@@ -351,9 +352,8 @@ static int cn_ctl_msg_equals(struct cn_ctl_msg *m1, struct cn_ctl_msg *m2)
+  *
+  * Used for notification of a request's processing.
+  */
+-static void cn_callback(void *data)
++static void cn_callback(struct cn_msg *msg)
+ {
+-	struct cn_msg *msg = data;
+ 	struct cn_ctl_msg *ctl;
+ 	struct cn_ctl_entry *ent;
+ 	u32 size;
+diff --git a/drivers/staging/dst/dcore.c b/drivers/staging/dst/dcore.c
+index fad25b7..8472418 100644
+--- a/drivers/staging/dst/dcore.c
++++ b/drivers/staging/dst/dcore.c
+@@ -846,10 +846,9 @@ static dst_command_func dst_commands[] = {
+ /*
+  * Configuration parser.
+  */
+-static void cn_dst_callback(void *data)
++static void cn_dst_callback(struct cn_msg *msg)
+ {
+ 	struct dst_ctl *ctl;
+-	struct cn_msg *msg = data;
+ 	int err;
+ 	struct dst_ctl_ack ack;
+ 	struct dst_node *n = NULL, *tmp;
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index ca5b464..e98baf6 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -67,9 +67,8 @@ static DEFINE_MUTEX(uvfb_lock);
+  * find the kernel part of the task struct, copy the registers and
+  * the buffer contents and then complete the task.
+  */
+-static void uvesafb_cn_callback(void *data)
++static void uvesafb_cn_callback(struct cn_msg *msg)
+ {
+-	struct cn_msg *msg = data;
+ 	struct uvesafb_task *utask;
+ 	struct uvesafb_ktask *task;
+ 
+diff --git a/drivers/w1/w1_netlink.c b/drivers/w1/w1_netlink.c
+index fdf7285..52ccb3d 100644
+--- a/drivers/w1/w1_netlink.c
++++ b/drivers/w1/w1_netlink.c
+@@ -306,9 +306,8 @@ static int w1_netlink_send_error(struct cn_msg *rcmsg, struct w1_netlink_msg *rm
+ 	return error;
+ }
+ 
+-static void w1_cn_callback(void *data)
++static void w1_cn_callback(struct cn_msg *msg)
+ {
+-	struct cn_msg *msg = data;
+ 	struct w1_netlink_msg *m = (struct w1_netlink_msg *)(msg + 1);
+ 	struct w1_netlink_cmd *cmd;
+ 	struct w1_slave *sl;
+diff --git a/include/linux/connector.h b/include/linux/connector.h
+index b68d278..47ebf41 100644
+--- a/include/linux/connector.h
++++ b/include/linux/connector.h
+@@ -136,7 +136,7 @@ struct cn_callback_data {
+ 	void *ddata;
+ 	
+ 	void *callback_priv;
+-	void (*callback) (void *);
++	void (*callback) (struct cn_msg *);
+ 
+ 	void *free;
+ };
+@@ -167,11 +167,11 @@ struct cn_dev {
+ 	struct cn_queue_dev *cbdev;
+ };
+ 
+-int cn_add_callback(struct cb_id *, char *, void (*callback) (void *));
++int cn_add_callback(struct cb_id *, char *, void (*callback) (struct cn_msg *));
+ void cn_del_callback(struct cb_id *);
+ int cn_netlink_send(struct cn_msg *, u32, gfp_t);
+ 
+-int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id, void (*callback)(void *));
++int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id, void (*callback)(struct cn_msg *));
+ void cn_queue_del_callback(struct cn_queue_dev *dev, struct cb_id *id);
+ 
+ int queue_cn_work(struct cn_callback_entry *cbq, struct work_struct *work);
 -- 
 1.6.3.3
 
