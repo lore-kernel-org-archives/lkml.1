@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbZGORsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932150AbZGORtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875AbZGORsq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 13:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbZGORsp
+	id S932150AbZGORtW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 13:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbZGORtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 13:48:45 -0400
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:53746 "EHLO
-	master.douglaskthompson" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755825AbZGORsn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 13:48:43 -0400
-Date: Wed, 15 Jul 2009 11:38:49 -0600
-From: dougthompson@xmission.com
-To: bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH 1/4] edac: mpc85xx add P2020DS support
-Message-ID: <4a5e1429.HffMs6pyjuaYD//x%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Wed, 15 Jul 2009 13:49:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55793 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755882AbZGORtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 13:49:14 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: jens.axboe@oracle.com, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] bio: sizeof pointer instead of size of the pointed-to type?
+References: <4A5DE10E.7010005@gmail.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 15 Jul 2009 13:49:05 -0400
+In-Reply-To: <4A5DE10E.7010005@gmail.com> (Roel Kluin's message of "Wed, 15
+	Jul 2009 16:00:46 +0200")
+Message-ID: <x49r5whu99q.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Based on Kumar's new compatible types patch, add P2020 into
-MPC85xx EDAC compatible lists so that EDAC can recognize
-P2020 meomry controller and L2 cache controller and export
-the relevant fields to sysfs.
+Roel Kluin <roel.kluin@gmail.com> writes:
 
-EDAC MPC85xx DDR3 support is needed if DDR3 memory stick is
-installed on a P2020DS board so that EDAC core can recognize
-DDR3 memory type.
+> Do not take the size of a pointer to determine the size of the pointed-to type
+>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> This is not yet tested. Is it correct?
+>
+> diff --git a/fs/bio.c b/fs/bio.c
+> index 7673800..e65c35d 100644
+> --- a/fs/bio.c
+> +++ b/fs/bio.c
+> @@ -96,7 +96,7 @@ static struct kmem_cache *bio_find_or_create_slab(unsigned int extra_size)
+>  	if (bio_slab_nr == bio_slab_max && entry == -1) {
+>  		bio_slab_max <<= 1;
+>  		bio_slabs = krealloc(bio_slabs,
+> -				     bio_slab_max * sizeof(struct bio_slab),
+> +				     bio_slab_max * sizeof(struct bio_slab *),
+>  				     GFP_KERNEL);
+>  		if (!bio_slabs)
+>  			goto out_unlock;
 
-Signed-off-by: Yang Shi <yang.shi@windriver.com>
-Acked-by: Dave Jiang <djiang@mvista.com>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
----
+NAK.  The code is correct as-is.
 
- drivers/edac/mpc85xx_edac.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-Index: linux-2.6.31-rc3/drivers/edac/mpc85xx_edac.c
-===================================================================
---- linux-2.6.31-rc3.orig/drivers/edac/mpc85xx_edac.c
-+++ linux-2.6.31-rc3/drivers/edac/mpc85xx_edac.c
-@@ -646,6 +646,7 @@ static struct of_device_id mpc85xx_l2_er
- 	{ .compatible = "fsl,mpc8560-l2-cache-controller", },
- 	{ .compatible = "fsl,mpc8568-l2-cache-controller", },
- 	{ .compatible = "fsl,mpc8572-l2-cache-controller", },
-+	{ .compatible = "fsl,p2020-l2-cache-controller", },
- 	{},
- };
- 
-@@ -984,6 +985,7 @@ static struct of_device_id mpc85xx_mc_er
- 	{ .compatible = "fsl,mpc8560-memory-controller", },
- 	{ .compatible = "fsl,mpc8568-memory-controller", },
- 	{ .compatible = "fsl,mpc8572-memory-controller", },
-+	{ .compatible = "fsl,p2020-memory-controller", },
- 	{},
- };
- 
+Cheers,
+Jeff
