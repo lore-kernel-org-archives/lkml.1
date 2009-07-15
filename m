@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZGON1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbZGONaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690AbZGON1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 09:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbZGON1c
+	id S1754703AbZGONaJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 09:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZGONaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 09:27:32 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:64422 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753318AbZGON1b (ORCPT
+	Wed, 15 Jul 2009 09:30:09 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:60873 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbZGONaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 09:27:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: access_ok macor
-Date: Wed, 15 Jul 2009 15:27:07 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-2-generic; KDE/4.2.96; x86_64; ; )
-Cc: John Williams <jwilliams@itee.uq.edu.au>, monstr@monstr.eu,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       LTP <ltp-list@lists.sourceforge.net>
-References: <4A5C8068.6020203@monstr.eu> <200907151214.52369.arnd@arndb.de> <20090715120512.GA2752@linux-mips.org>
-In-Reply-To: <20090715120512.GA2752@linux-mips.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 15 Jul 2009 09:30:08 -0400
+Date: Wed, 15 Jul 2009 18:59:56 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: tty related hangs with 2.6.31-rc3 
+Message-ID: <20090715132956.GA10004@skywalker>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907151527.08341.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18E4/8vYTU4YS0VfOuZSlHBsrK7tj+N7OJ2LlY
- ucfw+BLZhL6CYT38L6VCXMpL5p238UTcJWOSc2ws69QXrqRftR
- MqdW99ExUGHwJpNQ5OgDw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 15 July 2009, Ralf Baechle wrote:
- 
-> > I think in step 4. AFIACT, the kernel must do a number of checks on accesses
-> > to random pointers.
->
-> Yes; but the checks that unaligned.c does on MIPS are no different from
-> any other get_user(), that is it ensures that the entire 8/16/32/64-bit
-> access is in userspace.  That's done using access_ok().
+Hi,
 
-Well, access_ok() plus the fixup code for unmapped or write-protected user
-pages, I guess. But I agree, there are no checks beyond what get/put_user
-does. In particular, the access_ok() check should only be needed for
-faults from user space, while any fault coming from kernel space is
-either some kernel code accessing its own data (as you mention below) or
-a __get_user/__put_user that has already checked access permissions.
+I am finding tty related hangs with 2.6.31-rc3. This didn't happen 
+before. This happen when i close the emacs session. The /proc/<pid>/stack
+content is below      
 
-In my example, I got the case from kernel space wrong, it should not
-check access_ok() if !user_space(regs), or it needs to do set_fs(KERNEL_DS)
-first, like the mips code does.
+[<c0362c5b>] process_echoes+0x2b/0x2e0
+[<c03638cb>] n_tty_write_wakeup+0xb/0x40
+[<c0360a88>] tty_wakeup+0x58/0x70
+[<c0368347>] pty_write+0x67/0x70
+[<c035f1cb>] tty_put_char+0x2b/0x40
+[<c036291f>] do_output_char+0xef/0x200
+[<c0362d4e>] process_echoes+0x11e/0x2e0
+[<c0364292>] n_tty_receive_char+0x102/0x710
+[<c0364ac0>] n_tty_receive_buf+0x220/0x410
+[<c036059c>] tiocsti+0x8c/0xa0
+[<c0361aca>] tty_ioctl+0x25a/0x310
+[<c01e52c8>] vfs_ioctl+0x28/0x80
+[<c01e54f4>] do_vfs_ioctl+0x64/0x1c0
+[<c01e56a3>] sys_ioctl+0x53/0x70
+[<c0102e3c>] sysenter_do_call+0x12/0x28
+[<ffffffff>] 0xffffffff
 
-> We've moved on.  Handling miss-alignment is no longer a very relavent part
-> of the syscall interface.  So I think for the definition of the Linux
-> ABI this should just be left as implementation defined behaviour but
-> whatever an architecture does, it should be done consistently for all
-> system interfaces.
-
-Ok, thanks, for explanation.
-
-I guess for the microblaze unaligned handler, both cases mean that
-it needs to do a fixup table lookup for the original fault and
-it needs to handle fixups on its own emulation code. The only difference
-between disallowing unaligned accesses in the ABI and allowing them
-is which of the two ways (check fixup table, emulate instruction) it
-tries first.
-
-	Arnd <><
+-aneesh
