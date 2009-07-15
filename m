@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbZGOJTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbZGOJVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753095AbZGOJTY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 05:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZGOJTY
+	id S1753546AbZGOJVo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 05:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZGOJVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 05:19:24 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:49429 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752089AbZGOJTX (ORCPT
+	Wed, 15 Jul 2009 05:21:44 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:57472 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753052AbZGOJVn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 05:19:23 -0400
-Message-ID: <4A5D9EB7.30603@linux.vnet.ibm.com>
-Date: Wed, 15 Jul 2009 11:17:43 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Wed, 15 Jul 2009 05:21:43 -0400
+Date: Wed, 15 Jul 2009 18:21:13 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: monstr@monstr.eu, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       LTP <ltp-list@lists.sourceforge.net>
+Subject: Re: access_ok macor
+Message-ID: <20090715092113.GA1863@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Arnd Bergmann <arnd@arndb.de>, monstr@monstr.eu,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	LTP <ltp-list@lists.sourceforge.net>
+References: <4A5C8068.6020203@monstr.eu> <200907141843.05629.arnd@arndb.de> <4A5CB8B4.7050108@monstr.eu> <200907141913.21240.arnd@arndb.de>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysfs: fix hardlink count on device_move
-References: <4A5CAA9F.1050302@linux.vnet.ibm.com> <20090714160447.GA1933@suse.de>
-In-Reply-To: <20090714160447.GA1933@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907141913.21240.arnd@arndb.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Tue, Jul 14, 2009 at 05:56:15PM +0200, Peter Oberparleiter wrote:
->> From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
->>
->> Update directory hardlink count when moving kobjects to a new parent.
->> Fixes the following problem which occurs when several devices are
->> moved to the same parent and then unregistered:
->>
->>> ls -laF /sys/devices/css0/defunct/
->>> total 0
->>> drwxr-xr-x 4294967295 root root    0 2009-07-14 17:02 ./
->>> drwxr-xr-x        114 root root    0 2009-07-14 17:02 ../
->>> drwxr-xr-x          2 root root    0 2009-07-14 17:01 power/
->>> -rw-r--r--          1 root root 4096 2009-07-14 17:01 uevent
->> Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+On Tue, Jul 14, 2009 at 07:13:20PM +0200, Arnd Bergmann wrote:
+> On Tuesday 14 July 2009, Michal Simek wrote:
+> > when the code tried to read/write from unaligned address (and in cpu
+> > is turn on unaligned exception) then is caused unaligned exception
+> > and asm code assemble/return value which is on that unaligned
+> > address. (Assemble it that read/write every byte separately). That
+> > will be harder to prevent all this cases because unaligned exception
+> > is in generic code.  What do you mean add __range_ok? Range checking
+> > is ok. The problem is when in case get_user kernel try to load
+> > unaligned addr - unaligned exception is perform and try to load that
+> > value separately.  If that page is not there, page fault handler is
+> > called and not find it, it is performed search from exception table
+> > and that address is not there of course - because address in pc is
+> > generic unaligned code. I think that handling this needs more code.
+> > Maybe if the address with from unaligned exception handler (there are
+> > some address which can caused it) and find out which aligned address
+> > is there and find out proper fixup for it.  I think that this could
+> > work.
+> > 
+> > What do you think?
 > 
-> Thanks for the patch.
-> 
-> Is this something new in 2.6.31-rc, or does it also show up in .30
-> and/or .27?
+> I think the key point is that the kernel should never try an unaligned
+> access. Other architectures already rely on this, so you can too.
 
-This is an old problem that existed since the introduction of 
-sysfs_move_dir() in 2.6.20.
-
+No, other architectures used to rely on this, until it was no longer
+possible to do so. See for example, nfs. Unaligned accesses by the kernel
+must be handled by the architecture, unaligned accesses by userspace can
+be optionally fixed up.
