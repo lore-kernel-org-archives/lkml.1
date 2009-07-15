@@ -1,78 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932296AbZGOUYv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932300AbZGOU0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932296AbZGOUYv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 16:24:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932280AbZGOUYv
+	id S932300AbZGOU0I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 16:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbZGOU0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 16:24:51 -0400
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:46485 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932266AbZGOUYu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 16:24:50 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090715134855.GB2538@elf.ucw.cz>
-References: <20090714100634.GA4054@elf.ucw.cz>
-	 <20090714175201.GB14661@dtor-d630.eng.vmware.com>
-	 <20090715134855.GB2538@elf.ucw.cz>
-Date: Wed, 15 Jul 2009 13:24:49 -0700
-Message-ID: <d6200be20907151324t7c133d49ofedf02efda4054cd@mail.gmail.com>
-Subject: Re: Support for synaptic touchscreen in HTC dream
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 15 Jul 2009 16:26:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44167 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932117AbZGOU0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 16:26:07 -0400
+Cc: beckyb@kernel.crashing.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       Ian Campbell <Ian.Campbell@citrix.com>, x86@kernel.org,
+       "linux-kernel@vger.kernel.org Mailing List" 
+	<linux-kernel@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Message-Id: <FF72C10D-2755-4B85-8714-8C35F34FED69@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
+To: Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <68EFFAF6-EF5B-4148-BC54-70BF2AF2456E@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: [00/15] swiotlb cleanup
+Date: Wed, 15 Jul 2009 15:24:33 -0500
+References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20090710051236.GA22218@elte.hu> <68EFFAF6-EF5B-4148-BC54-70BF2AF2456E@kernel.crashing.org>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 6:48 AM, Pavel Machek<pavel@ucw.cz> wrote:
-> On Tue 2009-07-14 10:52:12, Dmitry Torokhov wrote:
->> On Tue, Jul 14, 2009 at 12:06:34PM +0200, Pavel Machek wrote:
->> > From: Arve Hj?nnev?g <arve@android.com>
->> >
->> > This adds support for synaptic touchscreen, used in HTC dream
->> > cellphone.
->> >
->> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+On Jul 13, 2009, at 10:13 PM, Becky Bruce wrote:
+
+>
+> On Jul 10, 2009, at 12:12 AM, Ingo Molnar wrote:
+>
 >>
->> This is pretty large body of code, could we get a sign-off from Arve as
->> well since he seems to be the author?
->
-> Arve?
->
-
-The original patches has my sign-offs. Can you just keep that and add
-a line describing your changes before your sign-off?
-
-...
->> > +static struct workqueue_struct *synaptics_wq;
+>> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 >>
->> Do we need a separate workqueue? Is reading the device that slow that we
->> can use keventd?
->
-
-keventd has two problems. First, other work runs on it that can take
-more than 12.5ms. This will case dropped events. Second, the i2c bus
-sometimes locks up, which in turns would cause this driver to block
-keventd for seconds.
-
-...
->> > +   if (client->irq) {
->> > +           ret = request_irq(client->irq, synaptics_ts_irq_handler,
->> > +                             0, client->name, ts);
+>>> - removes unused (and unnecessary) hooks in swiotlb.
+>>>
+>>> - adds dma_capable() and converts swiotlb to use it. It can be  
+>>> used to
+>>> know if a memory area is dma capable or not. I added
+>>> is_buffer_dma_capable() for the same purpose long ago but it turned
+>>> out that the function doesn't work on POWERPC.
+>>>
+>>> This can be applied cleanly to linux-next, -mm, and mainline. This
+>>> patchset touches multiple architectures (ia64, powerpc, x86) so I
+>>> guess that -mm is appropriate for this patchset (I don't care much
+>>> what tree would merge this though).
+>>>
+>>> This is tested on x86 but only compile tested on POWERPC and IA64.
+>>>
+>>> Thanks,
+>>>
+>>> =
+>>> arch/ia64/include/asm/dma-mapping.h    |   18 ++++++
+>>> arch/powerpc/include/asm/dma-mapping.h |   23 +++++++
+>>> arch/powerpc/kernel/dma-swiotlb.c      |   48 +---------------
+>>> arch/x86/include/asm/dma-mapping.h     |   18 ++++++
+>>> arch/x86/kernel/pci-dma.c              |    2 +-
+>>> arch/x86/kernel/pci-gart_64.c          |    5 +-
+>>> arch/x86/kernel/pci-nommu.c            |    2 +-
+>>> arch/x86/kernel/pci-swiotlb.c          |   25 --------
+>>> include/linux/dma-mapping.h            |    5 --
+>>> include/linux/swiotlb.h                |   11 ----
+>>> lib/swiotlb.c                          |  102 ++++++++ 
+>>> +-----------------------
+>>> 11 files changed, 92 insertions(+), 167 deletions(-)
 >>
->> I think threaded IRQ will fit the bill and will take care of
->> IRQ/workqueue shutdown races. Of course you still need to use workqueue
->> if polling.
+>> Hm, the functions and facilities you remove here were added as part
+>> of preparatory patches for Xen guest support. You were aware of
+>> them, you were involved in discussions about those aspects with Ian
+>> and Jeremy but still you chose not to Cc: either of them and you
+>> failed to address that aspect in the changelogs.
+>>
+>> I'd like the Xen code to become cleaner more than anyone else here i
+>> guess, but patch submission methods like this are not really
+>> helpful. A far better method is to be open about such disagreements,
+>> to declare them, to Cc: everyone who disagrees, and to line out the
+>> arguments in the changelogs as well - instead of just curtly
+>> declaring those APIs 'unused' and failing to Cc: involved parties.
+>>
+>> Alas, on the technical level the cleanups themselves look mostly
+>> fine to me. Ian, Jeremy, the changes will alter Xen's use of
+>> swiotlb, but can the Xen side still live with these new methods - in
+>> particular is dma_capable() sufficient as a mechanism and can the
+>> Xen side filter out DMA allocations to make them physically
+>> continuous?
+>>
+>> Ben, Tony, Becky, any objections wrt. the PowerPC / IA64 impact? If
+>> everyone agrees i can apply them to the IOMMU tree, test it and push
+>> it out to -next, etc.
+>>
 >
-> I guess we'll just strip polling version for now?
+> Ingo,
+>
+> With the exception of the patch I commented on, I think these look  
+> OK from the powerpc point of view.  I've successfully booted one of  
+> my test platforms with the entire series applied and will run some  
+> more extensive (i.e. not "Whee!  A prompt!") tests tomorrow.
 
-Sounds good to me.
+Well, I am still testing.  I've observed one unexpected LTP testcase  
+failure with these patches applied, but so far have been unable to  
+reproduce it.  So these patches are probably OK, but I will look into  
+this some more next week.
 
--- 
-Arve Hjønnevåg
+-Becky
+
+>
+>
+> -Becky
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
