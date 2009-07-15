@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZGOSwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbZGOSwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbZGOSwH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 14:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbZGOSwG
+	id S1756111AbZGOSwm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 14:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755896AbZGOSwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 14:52:06 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:34896 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755350AbZGOSwF (ORCPT
+	Wed, 15 Jul 2009 14:52:41 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:26026 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755747AbZGOSwl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 14:52:05 -0400
-Date: Wed, 15 Jul 2009 20:51:59 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: Matt Reimer <mreimer@vpop.net>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
-       Anton Vorontsov <cbou@mail.ru>
-Subject: Re: [PATCH 4/4] ds2760: handle full_active_uAh == 0 case correctly
-Message-ID: <20090715185159.GI9464@buzzloop.caiaq.de>
-References: <1247674841-9909-1-git-send-email-daniel@caiaq.de> <1247674841-9909-2-git-send-email-daniel@caiaq.de> <1247674841-9909-3-git-send-email-daniel@caiaq.de> <1247674841-9909-4-git-send-email-daniel@caiaq.de> <147B4C9E-4AE2-4FAD-BC58-7D5D905A1B77@vpop.net>
+	Wed, 15 Jul 2009 14:52:41 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <147B4C9E-4AE2-4FAD-BC58-7D5D905A1B77@vpop.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: FW: avoiding run_workqueue() recursion
+Date: Wed, 15 Jul 2009 11:52:39 -0700
+Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501CFAFCD@exchange.ZeugmaSystems.local>
+In-Reply-To: <20090715183941.GA13341@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: FW: avoiding run_workqueue() recursion
+Thread-Index: AcoFfDHpyBtWsCzcSpe+ovCIzLEmVAAAI2sg
+References: <DDFD17CC94A9BD49A82147DDF7D545C501CFAE3D@exchange.ZeugmaSystems.local> <20090715183941.GA13341@redhat.com>
+From: "Anirban Sinha" <ASinha@zeugmasystems.com>
+To: "Oleg Nesterov" <oleg@redhat.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 11:06:29AM -0700, Matt Reimer wrote:
-> On Jul 15, 2009, at 9:20 AM, Daniel Mack wrote:
->
->> In systems where the battery monitor is not part of the battery pack  
->> and
->> is hence not bootstrapped with sane values, the full_active_uAh is
->> likely to be zero.
->>
->> Handle that case by defaulting to the rated_capacity information which
->> can be passed to the driver using the new module parameter.
->>
->> Signed-off-by: Daniel Mack <daniel@caiaq.de>
->> Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
->> Cc: Matt Reimer <mreimer@vpop.net>
->> Cc: Anton Vorontsov <cbou@mail.ru>
->
-> Acked-by: Matt Reimer <mreimer@vpop.net>
+Hi Oleg:
 
-Thanks Matt :) Andrew, will they go thru your channel?
+>If we just return silently, we do not flush but hide the problem ?
+>And in this can lead to other problems which are very hard to
+>trigger/debug.
 
-Daniel
+True. I think flushing is an invalid operation for a thread that is
+already walking the work-queue, like keventd. It is inherently bug in
+the code somewhere else (may be in a work function?). I liked your idea
+of replacing WARN_ON() with BUG_ON() but I do understand that a panic
+could be a bigger hammer here. May be we can have some sort of
+restrictions or conventions for writing work functions?  I don't know. 
+
+Ani
+
