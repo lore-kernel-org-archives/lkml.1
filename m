@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZGOR4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZGOSA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbZGOR4n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 13:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbZGOR4m
+	id S1755955AbZGOSA3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 14:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbZGOSA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 13:56:42 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:51417 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755896AbZGOR4l convert rfc822-to-8bit (ORCPT
+	Wed, 15 Jul 2009 14:00:29 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:61463 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755350AbZGOSA2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 13:56:41 -0400
+	Wed, 15 Jul 2009 14:00:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
          :cc:content-type:content-transfer-encoding;
-        b=Xv8YmYkETAdTDc+kkDSseUIOW9s3dZ47YdTOmwD//FAZz2viSOKIUuW0SyjW5G9isz
-         Q9QVU1CmpgN5slYl2GSNREIpdA4mAZEMgwjjRFqQUpBQBjQdsxzwceqJpl3GXjDTh/GD
-         oZD82fi0FPgCZvKMWSIRDlyEIhc4iF3viRBtM=
+        b=VIEgvucWe2tnH0XdDHTqURMISyMErd/QTIt29dFJ5hUdtOjDOFOIRUeULvR8pwxkUU
+         fBPTgsf/XQt1jxp4HeiGlf5Zd44jtwfvzjc8xRCLreAI7D7h/8nGWBhZPvKBgO6xRSwd
+         fcuVLI5ZgsJTF5b3NgBoYhj6GbwM62fgpQaH4=
 MIME-Version: 1.0
-In-Reply-To: <4A5D82EA.1070002@turknet.net.tr>
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera>
-	 <dWkuWjWDsSB.A.8EE.Q0oUKB@chimera> <4A5D82EA.1070002@turknet.net.tr>
-Date: Wed, 15 Jul 2009 19:56:37 +0200
-Message-ID: <8db1092f0907151056u6654cf4bp2fe36d3fa4081a07@mail.gmail.com>
-Subject: Re: [Bug #13727] Cannot Recognize Empty DVD Media
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com>
+References: <43e72e890907141511h70a0a987g57cb26e23e5824a9@mail.gmail.com> 
+	<20090714235332.GA1552@ucw.cz> <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Wed, 15 Jul 2009 11:00:07 -0700
+Message-ID: <43e72e890907151100j37feb30av7281d09960ca5db2@mail.gmail.com>
+Subject: Re: Generic events for wake up from S1-S4
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>, Jouni Malinen <j@w1.fi>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Stephen Chen <Stephen.Chen@atheros.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/15 Tarkan Erimer <tarkan.erimer@turknet.net.tr>:
-> On 07/07/2009 03:01 AM, Rafael J. Wysocki wrote:
+On Wed, Jul 15, 2009 at 8:51 AM, Luis R. Rodriguez<mcgrof@gmail.com> wrote:
+> On Tue, Jul 14, 2009 at 4:53 PM, Pavel Machek<pavel@ucw.cz> wrote:
+>> On Tue 2009-07-14 15:11:45, Luis R. Rodriguez wrote:
+>>> I'm working on Wake-on-Wireless support for wireless right now [1].
+>>> Upon wake up I wanted to inform the kernel of the event which caused
+>>> the wake up but am not clear if there is a generic API for this. Mind
+>>> you, for WoW we'll need at least some AC power to the card so we'll
+>>> need to at least be in S3-Hot so we'll only need events for that for
+>>> now.
+>>>
+>>> Do we have some generic infrastructure to gather reasons for wake up
+>>> from S1-S4 and pass this to userspace yet?
 >>
->> This message has been generated automatically as a part of a report
->> of recent regressions.
->>
->> The following bug entry is on the current list of known regressions
->> from 2.6.30.  Please verify if it still should be listed and let me know
->> (either way).
->>
->>
->> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13727
->> Subject         : Cannot Recognize Empty DVD Media
->> Submitter       : Tarkan Erimer<tarkan.erimer@turknet.net.tr>
->> Date            : 2009-07-02 16:23 (5 days old)
->> References      : http://lkml.org/lkml/2009/7/2/178
->>
->>
->>
->
-> I confirm that, as of Linux-2.6.31-rc3, it's fixed.
+>> I do not think generic api exists...
 
-I also confirm, that -rc3 works OK.
+Going back to this topic -- any suggestions? Will a generic netlink
+family be OK? Or perhaps easier a udev event for some suitable
+existing parent ?
 
-Thanks
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+  Luis
