@@ -1,69 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755643AbZGORON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZGORRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755643AbZGORON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 13:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408AbZGORON
+	id S1755667AbZGORRt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 13:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZGORRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 13:14:13 -0400
-Received: from claw.goop.org ([74.207.240.146]:60310 "EHLO claw.goop.org"
+	Wed, 15 Jul 2009 13:17:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59335 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755348AbZGOROM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 13:14:12 -0400
-Message-ID: <4A5E0E61.6020704@goop.org>
-Date: Wed, 15 Jul 2009 10:14:09 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Chris Mason <chris.mason@oracle.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andrew Warfield <andy@cs.ubc.ca>,
-       Jake Wires <Jake.Wires@citrix.com>,
-       Daniel Stodden <Daniel.Stodden@citrix.com>
-Subject: Using splice to carry Xen granted pages through the network stack?
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=UTF-8
+	id S1755516AbZGORRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 13:17:47 -0400
+Subject: kmemleak: Early log buffer exceeded
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Catalin Marinas <catalin.marinas@arm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 15 Jul 2009 22:47:12 +0530
+Message-Id: <1247678232.2429.11.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ I originally sent this in March or so, but I don't think you
-responded, and this still seems like an interesting idea. ]
+Currently this reporting seems not very impressive and not giving much
+useful information :
 
-Hi Jens,
+kmemleak: Early log buffer exceeded
+kmemleak: Kernel memory leak detector disabled
 
-In a thread from December last year ("Support for zero-copy TCP transmit
-of user space data") you suggested using the splice machinery as a way
-to implement zero-copy transmit for iscsi data.
+It should be something like this because it is an error and this will
+disable Kernel memory leak detector :
 
-I have a similar problem relating to doing zero-copy transmit of pages
-granted from another Xen domain.  These are pages which are in some ways
-similar to device mappings (they have no struct page unless we jump
-through some hoops to give them one, for example) which are given to us
-by another domain (virtual machine)'s network stack since they contain
-data they want to transmit through our stack.  Once the stack has
-finished with the pages we need to get them back to return to the
-original domain (and definitely not let them get freed into the normal
-kernel pool).
+[    0.000173] ------------[ cut here ]------------
+[    0.000186] WARNING: at mm/kmemleak.c:726 log_early+0x39/0xa9()
+[    0.000189] Hardware name:         
+[    0.000192] Early log buffer exceeded, please increase DEBUG_KMEMLEAK_EARLY_LOG_SIZE
+[    0.000195] Modules linked in:
+[    0.000202] Pid: 0, comm: swapper Not tainted 2.6.31-rc3 #51
+[    0.000206] Call Trace:
+[    0.000216]  [<c102cf74>] warn_slowpath_common+0x60/0x90
+[    0.000222]  [<c102cfd8>] warn_slowpath_fmt+0x24/0x27
+[    0.000227]  [<c109614b>] log_early+0x39/0xa9
+[    0.000232]  [<c109682d>] kmemleak_alloc+0x41/0x4c
+[    0.000241]  [<c1093b63>] __kmalloc+0xcb/0x153
+[    0.000247]  [<c1093c04>] alloc_arraycache+0x19/0x50
+[    0.000253]  [<c1093e44>] do_tune_cpucache+0x209/0x35d
+[    0.000259]  [<c10940ee>] enable_cpucache+0x58/0x9a
+[    0.000267]  [<c14bc6e5>] kmem_cache_init_late+0x21/0xc2
+[    0.000274]  [<c14a8a20>] start_kernel+0x1e5/0x2ba
+[    0.000280]  [<c14a8340>] i386_start_kernel+0x6a/0x6f
+[    0.000380] ---[ end trace 4eaa2a86a8e2da22 ]---
+[    0.000384] kmemleak: Kernel memory leak detector disabled
 
-I've been looking a little bit at the splice stuff to work out how it
-might be useful in this case.  One issue struct page; I guess we really
-can't get away from having one for granted pages and still get the full
-value of using splice (especially I can see also see it being useful on
-the block side of the world as well).  So, we can jump through hoops for
-that.
+Currently default value of DEBUG_KMEMLEAK_EARLY_LOG_SIZE is 400 which
+can be easily exceed-able if debugging is on.
 
-But the general plumbing of splice into the network stack seems to have
-been an open issue since you introduced it 3 years ago (using as a
-reference http://lwn.net/Articles/181169/).  Has any work been done on
-this aspect since?  What would need to be done to do it?  Would it mean
-wiring up a pipe_buffer_operations to operate with something like
-Rusty's skb_shared_info destructor?
+These issues can be fixed like this :
 
-Thanks,
-   J
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 12327b2..2eaf8bc 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -362,14 +362,15 @@ config DEBUG_KMEMLEAK
+ config DEBUG_KMEMLEAK_EARLY_LOG_SIZE
+ 	int "Maximum kmemleak early log entries"
+ 	depends on DEBUG_KMEMLEAK
+-	range 200 2000
+-	default 400
++	range 256 2048
++	default 512
+ 	help
+ 	  Kmemleak must track all the memory allocations to avoid
+ 	  reporting false positives. Since memory may be allocated or
+ 	  freed before kmemleak is initialised, an early log buffer is
+-	  used to store these actions. If kmemleak reports "early log
+-	  buffer exceeded", please increase this value.
++	  used to store these actions. You need to increase this value,
++	  if kmemleak reports "Early log buffer exceeded, please increase
++	  DEBUG_KMEMLEAK_EARLY_LOG_SIZE".
+ 
+ config DEBUG_KMEMLEAK_TEST
+ 	tristate "Simple test for the kernel memory leak detector"
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 5aabd41..084e927 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -722,7 +722,8 @@ static void log_early(int op_type, const void *ptr, size_t size,
+ 	struct early_log *log;
+ 
+ 	if (crt_early_log >= ARRAY_SIZE(early_log)) {
+-		pr_warning("Early log buffer exceeded\n");
++		WARN_ONCE(1, KERN_ERR "Early log buffer exceeded, "
++			  "please increase DEBUG_KMEMLEAK_EARLY_LOG_SIZE\n");
+ 		kmemleak_disable();
+ 		return;
+ 	}
+
+--
+JSR
 
