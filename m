@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbZGOI23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbZGOIbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752943AbZGOI23 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 04:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZGOI23
+	id S1752956AbZGOIbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 04:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbZGOIbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 04:28:29 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41426 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752645AbZGOI22 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 04:28:28 -0400
-Date: Wed, 15 Jul 2009 09:28:26 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Subrata Modak <subrata@linux.vnet.ibm.com>,
-       Jaroslav Kysela <erex@perex.cz>, alsa-devel@alsa-project.org,
-       Takashi Iwai <iwai@suse.de>, Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       David Howells <dhowells@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/06] Fix compilation warning for
- sound/soc/codecs/wm8400.c
-Message-ID: <20090715082826.GA8689@rakim.wolfsonmicro.main>
-References: <20090715021826.4032.63752.sendpatchset@subratamodak.linux.ibm.com>
- <1247633018.2437.5.camel@ht.satnam>
+	Wed, 15 Jul 2009 04:31:37 -0400
+Received: from lucidpixels.com ([75.144.35.66]:33603 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752325AbZGOIbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 04:31:37 -0400
+Date: Wed, 15 Jul 2009 04:31:36 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: David Rientjes <rientjes@google.com>
+cc: Stephan von Krawczynski <skraw@ithnet.com>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: What to do with this message (2.6.30.1) ?
+In-Reply-To: <alpine.DEB.2.00.0907150115190.14393@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.0907150430080.4475@p34.internal.lan>
+References: <20090713134621.124aa18e.skraw@ithnet.com> <4807377b0907132240g6f74c9cbnf1302d354a0e0a72@mail.gmail.com> <alpine.DEB.2.00.0907132247001.8784@chino.kir.corp.google.com> <20090715084754.36ff73bf.skraw@ithnet.com>
+ <alpine.DEB.2.00.0907150115190.14393@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247633018.2437.5.camel@ht.satnam>
-X-Cookie: Use other side for additional listings.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 10:13:38AM +0530, Jaswinder Singh Rajput wrote:
-> Hello Subrata,
 
-> This kind of warnings born due to not handling the variables properly.
-> Please try to understand the root cause of this warning, just shutting
-> this warning is of no use.
 
-...as I said last time you submitted rougly the same patch.  Please also
-remember that sometimes these problems are false positives caused by
-issues with the compiler flow analysis (as appears to be the case here).
+On Wed, 15 Jul 2009, David Rientjes wrote:
+
+> On Wed, 15 Jul 2009, Stephan von Krawczynski wrote:
+>
+>> Jul 15 03:01:29 backup kernel: 1444268 total pagecache pages
+>> Jul 15 03:01:29 backup kernel: 34 pages in swap cache
+>> Jul 15 03:01:29 backup kernel: Swap cache stats: add 118, delete 84, find 0/2
+>> Jul 15 03:01:29 backup kernel: Free swap  = 2104080kB
+>> Jul 15 03:01:29 backup kernel: Total swap = 2104488kB
+>>
+>
+> I added Justin Piszcz to the cc since he was having the same problem as
+> described in http://bugzilla.kernel.org/show_bug.cgi?id=13648.
+>
+> He was unable to get slabtop -o output when this was happening, though, so
+> maybe you could grab a snapshot of that when you get these failures?  It
+> will help us figure out what cache the slab leak is in (assuming there is
+> one, >1G of slab on this machine is egregious).
+>
+> Justin, were you using e1000e in your bug report?
+Yes:
+
+[    9.302541] e1000e 0000:00:19.0: irq 32 for MSI/MSI-X
+
+I will note with 2.6.30.1 (thus far) it has not re-appeared (yet).
+
+>
+> If you have some additional time, it would also be helpful to get a
+> bisection of when the problem started occurring (it appears to be sometime
+> between 2.6.29 and 2.6.30).
+>
+
