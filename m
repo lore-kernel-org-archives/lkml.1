@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZGOXoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbZGOXoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbZGOXoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 19:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756575AbZGOXoR
+	id S1756531AbZGOXoP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 19:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756511AbZGOXoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 19:44:17 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:46553 "EHLO
+	Wed, 15 Jul 2009 19:44:14 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:46551 "EHLO
 	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756433AbZGOXoN (ORCPT
+	with ESMTP id S1756381AbZGOXoN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 15 Jul 2009 19:44:13 -0400
 From: Matthew Garrett <mjg@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
        Matthew Garrett <mjg@redhat.com>
-Subject: [PATCH 2/4] libata: Flag most SATA ports as hotpluggable
-Date: Thu, 16 Jul 2009 00:43:56 +0100
-Message-Id: <1247701438-18266-2-git-send-email-mjg@redhat.com>
+Subject: [PATCH 1/4] scsi: Allow hosts to be flagged as hotpluggable
+Date: Thu, 16 Jul 2009 00:43:55 +0100
+Message-Id: <1247701438-18266-1-git-send-email-mjg@redhat.com>
 X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <1247701438-18266-1-git-send-email-mjg@redhat.com>
-References: <1247701438-18266-1-git-send-email-mjg@redhat.com>
 X-SA-Do-Not-Run: Yes
 X-SA-Exim-Connect-IP: 78.86.230.144
 X-SA-Exim-Mail-From: mjg@redhat.com
@@ -28,223 +26,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SATA is generally hotpluggable, though some controllers don't expose
-enough information to make it possible. Flag most SATA controllers as
-supporting hotplug, leaving the remaining ones (ich in PIIX mode, Promise
-SX4, Pacific Digital Talon) marked as not supporting it.
+Userspace may wish to make policy decisions based on whether a host
+supports device hotplug or not - for example, AHCI link power management
+disables hotplug, so may only be desirable on hotplug ports. Add
+support for marking hosts as hotpluggable in order to allow userspace to
+treat them appropriately.
 
 Signed-off-by: Matthew Garrett <mjg@redhat.com>
 ---
- drivers/ata/ahci.c          |    1 +
- drivers/ata/sata_fsl.c      |    1 +
- drivers/ata/sata_inic162x.c |    1 +
- drivers/ata/sata_mv.c       |    2 ++
- drivers/ata/sata_nv.c       |    3 +++
- drivers/ata/sata_promise.c  |    1 +
- drivers/ata/sata_qstor.c    |    1 +
- drivers/ata/sata_sil.c      |    3 ++-
- drivers/ata/sata_sil24.c    |    1 +
- drivers/ata/sata_sis.c      |    1 +
- drivers/ata/sata_svw.c      |    1 +
- drivers/ata/sata_uli.c      |    1 +
- drivers/ata/sata_via.c      |    1 +
- drivers/ata/sata_vsc.c      |    1 +
- 14 files changed, 18 insertions(+), 1 deletions(-)
+ drivers/scsi/hosts.c      |    1 +
+ drivers/scsi/scsi_sysfs.c |    2 ++
+ include/scsi/scsi_host.h  |    9 +++++++++
+ 3 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 15a2303..de84054 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -347,6 +347,7 @@ static struct scsi_host_template ahci_sht = {
- 	.dma_boundary		= AHCI_DMA_BOUNDARY,
- 	.shost_attrs		= ahci_shost_attrs,
- 	.sdev_attrs		= ahci_sdev_attrs,
-+	.hotpluggable		= 1,
- };
+diff --git a/drivers/scsi/hosts.c b/drivers/scsi/hosts.c
+index 5fd2da4..5a48bac 100644
+--- a/drivers/scsi/hosts.c
++++ b/drivers/scsi/hosts.c
+@@ -363,6 +363,7 @@ struct Scsi_Host *scsi_host_alloc(struct scsi_host_template *sht, int privsize)
+ 	shost->unchecked_isa_dma = sht->unchecked_isa_dma;
+ 	shost->use_clustering = sht->use_clustering;
+ 	shost->ordered_tag = sht->ordered_tag;
++	shost->hotpluggable = sht->hotpluggable;
  
- static struct ata_port_operations ahci_ops = {
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index 94eaa43..e7738c7 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -1252,6 +1252,7 @@ static struct scsi_host_template sata_fsl_sht = {
- 	.can_queue = SATA_FSL_QUEUE_DEPTH,
- 	.sg_tablesize = SATA_FSL_MAX_PRD_USABLE,
- 	.dma_boundary = ATA_DMA_BOUNDARY,
-+	.hotpluggable = 1,
- };
+ 	if (sht->supported_mode == MODE_UNKNOWN)
+ 		/* means we didn't set it ... default to INITIATOR */
+diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+index 91482f2..7669cbf 100644
+--- a/drivers/scsi/scsi_sysfs.c
++++ b/drivers/scsi/scsi_sysfs.c
+@@ -246,6 +246,7 @@ static DEVICE_ATTR(active_mode, S_IRUGO | S_IWUSR, show_shost_active_mode, NULL)
  
- static struct ata_port_operations sata_fsl_ops = {
-diff --git a/drivers/ata/sata_inic162x.c b/drivers/ata/sata_inic162x.c
-index 8d890cc..f51e71d 100644
---- a/drivers/ata/sata_inic162x.c
-+++ b/drivers/ata/sata_inic162x.c
-@@ -234,6 +234,7 @@ static struct scsi_host_template inic_sht = {
- 	ATA_BASE_SHT(DRV_NAME),
- 	.sg_tablesize	= LIBATA_MAX_PRD,	/* maybe it can be larger? */
- 	.dma_boundary	= INIC_DMA_BOUNDARY,
-+	.hotpluggable	= 1,
- };
+ shost_rd_attr(unique_id, "%u\n");
+ shost_rd_attr(host_busy, "%hu\n");
++shost_rd_attr(hotpluggable, "%d\n");
+ shost_rd_attr(cmd_per_lun, "%hd\n");
+ shost_rd_attr(can_queue, "%hd\n");
+ shost_rd_attr(sg_tablesize, "%hu\n");
+@@ -257,6 +258,7 @@ shost_rd_attr2(proc_name, hostt->proc_name, "%s\n");
+ static struct attribute *scsi_sysfs_shost_attrs[] = {
+ 	&dev_attr_unique_id.attr,
+ 	&dev_attr_host_busy.attr,
++	&dev_attr_hotpluggable.attr,
+ 	&dev_attr_cmd_per_lun.attr,
+ 	&dev_attr_can_queue.attr,
+ 	&dev_attr_sg_tablesize.attr,
+diff --git a/include/scsi/scsi_host.h b/include/scsi/scsi_host.h
+index b62a097..b099493 100644
+--- a/include/scsi/scsi_host.h
++++ b/include/scsi/scsi_host.h
+@@ -421,6 +421,7 @@ struct scsi_host_template {
+ 	 */
+ 	unsigned unchecked_isa_dma:1;
  
- static const int scr_map[] = {
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index 23714ae..8d61998 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -647,6 +647,7 @@ static struct scsi_host_template mv5_sht = {
- 	ATA_BASE_SHT(DRV_NAME),
- 	.sg_tablesize		= MV_MAX_SG_CT / 2,
- 	.dma_boundary		= MV_DMA_BOUNDARY,
-+	.hotpluggable		= 1,
- };
++
+ 	/*
+ 	 * True if this host adapter can make good use of clustering.
+ 	 * I originally thought that if the tablesize was large that it
+@@ -447,6 +448,11 @@ struct scsi_host_template {
+ 	unsigned ordered_tag:1;
  
- static struct scsi_host_template mv6_sht = {
-@@ -654,6 +655,7 @@ static struct scsi_host_template mv6_sht = {
- 	.can_queue		= MV_MAX_Q_DEPTH - 1,
- 	.sg_tablesize		= MV_MAX_SG_CT / 2,
- 	.dma_boundary		= MV_DMA_BOUNDARY,
-+	.hotpluggable		= 1,
- };
+ 	/*
++	 * True if host supports hotplugging
++	 */
++	unsigned hotpluggable:1;
++
++	/*
+ 	 * Countdown for host blocking with no commands outstanding.
+ 	 */
+ 	unsigned int max_host_blocked;
+@@ -622,6 +628,9 @@ struct Scsi_Host {
+ 	/* Asynchronous scan in progress */
+ 	unsigned async_scan:1;
  
- static struct ata_port_operations mv5_ops = {
-diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index b2d11f3..9e93c56 100644
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -388,6 +388,7 @@ static struct pci_driver nv_pci_driver = {
- 
- static struct scsi_host_template nv_sht = {
- 	ATA_BMDMA_SHT(DRV_NAME),
-+	.hotpluggable		= 1,
- };
- 
- static struct scsi_host_template nv_adma_sht = {
-@@ -396,6 +397,7 @@ static struct scsi_host_template nv_adma_sht = {
- 	.sg_tablesize		= NV_ADMA_SGTBL_TOTAL_LEN,
- 	.dma_boundary		= NV_ADMA_DMA_BOUNDARY,
- 	.slave_configure	= nv_adma_slave_config,
-+	.hotpluggable		= 1,
- };
- 
- static struct scsi_host_template nv_swncq_sht = {
-@@ -404,6 +406,7 @@ static struct scsi_host_template nv_swncq_sht = {
- 	.sg_tablesize		= LIBATA_MAX_PRD,
- 	.dma_boundary		= ATA_DMA_BOUNDARY,
- 	.slave_configure	= nv_swncq_slave_config,
-+	.hotpluggable		= 1,
- };
- 
- /*
-diff --git a/drivers/ata/sata_promise.c b/drivers/ata/sata_promise.c
-index b1fd7d6..abddf93 100644
---- a/drivers/ata/sata_promise.c
-+++ b/drivers/ata/sata_promise.c
-@@ -166,6 +166,7 @@ static struct scsi_host_template pdc_ata_sht = {
- 	ATA_BASE_SHT(DRV_NAME),
- 	.sg_tablesize		= PDC_MAX_PRD,
- 	.dma_boundary		= ATA_DMA_BOUNDARY,
-+	.hotpluggable		= 1,
- };
- 
- static const struct ata_port_operations pdc_common_ops = {
-diff --git a/drivers/ata/sata_qstor.c b/drivers/ata/sata_qstor.c
-index 326c0cf..f9db8fe 100644
---- a/drivers/ata/sata_qstor.c
-+++ b/drivers/ata/sata_qstor.c
-@@ -130,6 +130,7 @@ static struct scsi_host_template qs_ata_sht = {
- 	ATA_BASE_SHT(DRV_NAME),
- 	.sg_tablesize		= QS_MAX_PRD,
- 	.dma_boundary		= QS_DMA_BOUNDARY,
-+	.hotpluggable		= 1,
- };
- 
- static struct ata_port_operations qs_ata_ops = {
-diff --git a/drivers/ata/sata_sil.c b/drivers/ata/sata_sil.c
-index 030ec07..7237abb 100644
---- a/drivers/ata/sata_sil.c
-+++ b/drivers/ata/sata_sil.c
-@@ -179,7 +179,8 @@ static struct scsi_host_template sil_sht = {
- 	    transfer chunks up to 2GB and which cross 64KB boundaries,
- 	    therefore the DMA limits are more relaxed than standard ATA SFF. */
- 	.dma_boundary		= SIL_DMA_BOUNDARY,
--	.sg_tablesize		= ATA_MAX_PRD
-+	.sg_tablesize		= ATA_MAX_PRD,
-+	.hotpluggable		= 1,
- };
- 
- static struct ata_port_operations sil_ops = {
-diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
-index 77aa8d7..166be9e 100644
---- a/drivers/ata/sata_sil24.c
-+++ b/drivers/ata/sata_sil24.c
-@@ -386,6 +386,7 @@ static struct scsi_host_template sil24_sht = {
- 	.can_queue		= SIL24_MAX_CMDS,
- 	.sg_tablesize		= SIL24_MAX_SGE,
- 	.dma_boundary		= ATA_DMA_BOUNDARY,
-+	.hotpluggable		= 1,
- };
- 
- static struct ata_port_operations sil24_ops = {
-diff --git a/drivers/ata/sata_sis.c b/drivers/ata/sata_sis.c
-index 8f98332..4cc5469 100644
---- a/drivers/ata/sata_sis.c
-+++ b/drivers/ata/sata_sis.c
-@@ -87,6 +87,7 @@ static struct pci_driver sis_pci_driver = {
- 
- static struct scsi_host_template sis_sht = {
- 	ATA_BMDMA_SHT(DRV_NAME),
-+	.hotpluggable		= 1,
- };
- 
- static struct ata_port_operations sis_ops = {
-diff --git a/drivers/ata/sata_svw.c b/drivers/ata/sata_svw.c
-index 7257f2d..2f90770 100644
---- a/drivers/ata/sata_svw.c
-+++ b/drivers/ata/sata_svw.c
-@@ -341,6 +341,7 @@ static struct scsi_host_template k2_sata_sht = {
- #ifdef CONFIG_PPC_OF
- 	.proc_info		= k2_sata_proc_info,
- #endif
-+	.hotpluggable		= 1,
- };
- 
- 
-diff --git a/drivers/ata/sata_uli.c b/drivers/ata/sata_uli.c
-index e5bff47..9f2ae95 100644
---- a/drivers/ata/sata_uli.c
-+++ b/drivers/ata/sata_uli.c
-@@ -77,6 +77,7 @@ static struct pci_driver uli_pci_driver = {
- 
- static struct scsi_host_template uli_sht = {
- 	ATA_BMDMA_SHT(DRV_NAME),
-+	.hotpluggable		= 1,
- };
- 
- static struct ata_port_operations uli_ops = {
-diff --git a/drivers/ata/sata_via.c b/drivers/ata/sata_via.c
-index bdd43c7..c554b2e 100644
---- a/drivers/ata/sata_via.c
-+++ b/drivers/ata/sata_via.c
-@@ -111,6 +111,7 @@ static struct pci_driver svia_pci_driver = {
- 
- static struct scsi_host_template svia_sht = {
- 	ATA_BMDMA_SHT(DRV_NAME),
-+	.hotpluggable		= 1,
- };
- 
- static struct ata_port_operations svia_base_ops = {
-diff --git a/drivers/ata/sata_vsc.c b/drivers/ata/sata_vsc.c
-index 8b2a278..dc58b2b 100644
---- a/drivers/ata/sata_vsc.c
-+++ b/drivers/ata/sata_vsc.c
-@@ -303,6 +303,7 @@ out:
- 
- static struct scsi_host_template vsc_sata_sht = {
- 	ATA_BMDMA_SHT(DRV_NAME),
-+	.hotpluggable		= 1,
- };
- 
- 
++	/* 1 if hotpluggable, 0 if not */
++	unsigned hotpluggable:1;
++
+ 	/*
+ 	 * Optional work queue to be utilized by the transport
+ 	 */
 -- 
 1.6.2.5
 
