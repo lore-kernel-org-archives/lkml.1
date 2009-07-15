@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbZGOJtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbZGOJ5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753820AbZGOJtP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 05:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZGOJtO
+	id S1753741AbZGOJ5L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 05:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZGOJ5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 05:49:14 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:40388 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753708AbZGOJtO (ORCPT
+	Wed, 15 Jul 2009 05:57:11 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.161]:13746 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752089AbZGOJ5J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 05:49:14 -0400
-Subject: Re: event tracing, ringbuffer and RB_MAX_SMALL_DATA
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <4A5D2BF6.6010802@cn.fujitsu.com>
-References: <1247591891.7178.20.camel@johannes.local>
-	 <4A5D2BF6.6010802@cn.fujitsu.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Mp7M2S11r7HSMM9Tx7oQ"
-Date: Wed, 15 Jul 2009 11:48:25 +0200
-Message-Id: <1247651305.14973.3.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Wed, 15 Jul 2009 05:57:09 -0400
+X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuUNIDI7OdQ=
+X-RZG-CLASS-ID: mo00
+Message-ID: <4A5DA7E7.8020303@hartkopp.net>
+Date: Wed, 15 Jul 2009 11:56:55 +0200
+From: Oliver Hartkopp <oliver@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>, tglx@linutronix.de
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, kaber@trash.net,
+       peterz@infradead.org
+Subject: Re: [patch 1/3] net: serialize hrtimer callback in sched_cbq
+References: <20090709215606.526259917@linutronix.de>	<20090712.135555.207096388.davem@davemloft.net>	<alpine.LFD.2.00.0907141040350.2777@localhost.localdomain> <20090714.090055.56906831.davem@davemloft.net>
+In-Reply-To: <20090714.090055.56906831.davem@davemloft.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller wrote:
+> From: Thomas Gleixner <tglx@linutronix.de>
+> Date: Tue, 14 Jul 2009 10:55:14 +0200 (CEST)
+> 
+>> David,
+>>
+>> On Sun, 12 Jul 2009, David Miller wrote:
+>>
+>>> What should probably happen is that the hrtimer merely fires off work
+>>> at software interrupt context (perhaps a tasklet or similar), and that
+>>> software interrupt code take the qdisc's root lock throughout it's
+>>> execution.
+>> Sigh, I almost expected that the removal of the callback modes will
+>> fire back some day.
+> 
+> Well this makes hrtimers decidedly less useful for networking and we
+> have a ton of bugs right now, basically in every hrtimer used by the
+> networking currently.
 
---=-Mp7M2S11r7HSMM9Tx7oQ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The CAN stuff is clean in this topic. See below.
 
-On Wed, 2009-07-15 at 09:08 +0800, Li Zefan wrote:
+> 
+> The only way we can use them, as things currently stand, is as
+> triggers for softirq work.
+> 
+> Is it really that troublesome to provide this kind of facility
+> generically, rather than having various subsystems replicate such code
+> where they want to use hrtimers and are restricted to softirqs?
 
-> Right, the length of a dynamic array is not recorded, and this
-> causes 2 problems:
->=20
-> - the event filter is not working properly for dynamic strings
-> - userspace parsers can't figure out the length of those arrays
->=20
-> I had an idea some time ago, and hopefully will send out a
-> patch today or tomorrow.=20
+Indeed this had been my concerns also, when i moved the hrtimer usage in a CAN
+protocol to use tasklets.
 
-Well except for the corner case I pointed out, you can determine the
-length of dynamic arrays by either
- - the next dynamic array's offset or
- - the length of the item.
+("can: update can-bcm for hrtimer hardirq callbacks")
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=6e5c172cf7ca1ab878cc6a6a4c1d52fef60f3ee0
 
-So, afaict, the simplest solution would be to not embed the length of
-the item in type_len if it's not divisible by four and contains dynamic
-members, though the latter condition might be hard to check.
+due to
 
-johannes
+("hrtimer: removing all ur callback modes")
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ca109491f612aab5c8152207631c0444f63da97f
 
---=-Mp7M2S11r7HSMM9Tx7oQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+I was not very amused that time and wanted to NACK that change, but Linus said:
 
------BEGIN PGP SIGNATURE-----
+"Quite frankly, your NAK doesn't matter.
+We've had too many bugs in hrtimers. They _will_ get simplified."
+(http://lkml.indiana.edu/hypermail/linux/kernel/0812.1/00218.html)
 
-iQIcBAABAgAGBQJKXaXlAAoJEODzc/N7+QmaZIgP/3vKMBalUH0Z+KtBfMmcA2aB
-vpX0TnUtP5Y/dHMUMJbTmU+qlhF56WJ1noSJR6yfy7gUa7VXHiLTekGfviLDcLd2
-1d1cSpBuayDTthqyw/79VIcfGqZvi/U7SsiPf/ffFQnnsA3W7XJmrEMstYGOtegt
-T/1KFvyt6OXwpTMd2M6duulAY8wDmE//KpP6/XatiLl4jQbb5L3H45MNC1bU9rUd
-qMkYmQPbCx/DYSplybIlyaRZ0nnqxWPS0YZXL7DAmPGSy3yY0Ah61QgcaOeP5L9K
-9j+VN7q2CCDHemmyfBtlFlG8ANddlwtsHugwrygAgsxcg3iap6FjAkomNCwDES2q
-FbQMuT3jo/7hYg+vhitTVll0WePPkMprhcJqOD4gZxi7oGNTITMqFdv8dc8rut91
-PR+7RxsSk077+V9gHNMWwdZNnGExsiFs7gLS4V4ntrT5hq/e74NQMx5ThpKlZYmu
-TVoPukPz/LDG5WNEdAoP6EYnGYvJEfJK1wTe0QZgSuZmza/Hjj92b4zbYzwYz0vA
-7jIBQtomdQGihwkRqJVNqk+rIhLVfE/LDBLUQUKSkd7GMoxJMXdrIi1ZYY+lG0Es
-5u+wMu2P9v/bEh0orCqv2cJuZ+BvUL3IG0SFPoCCkrOQXkuS2yRp1RqdAH5uap0K
-LN+9AYWRpEN/9kklBZxb
-=WY3m
------END PGP SIGNATURE-----
+Thomas, is there chance to get this nice simple possibility back to invoke at
+least a hrtimer for SOFT_IRQ context additional to the current functionality??
 
---=-Mp7M2S11r7HSMM9Tx7oQ--
+I would expect this to save lot's of tasklet code that is - and will be -
+created due to the lack of the hrtimers softirq capability ...
+
+FWIK there were really many callback modes before (per-cpu stuff and so), that
+were probably too much. But having a SOFT_IRQ callback mode again would really
+help.
+
+Regards,
+Oliver
 
