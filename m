@@ -1,320 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbZGOX7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbZGOX7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755588AbZGOX7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 19:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZGOX7S
+	id S1756142AbZGOX7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 19:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbZGOX7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 19:59:18 -0400
-Received: from gate.crashing.org ([63.228.1.57]:57400 "EHLO gate.crashing.org"
+	Wed, 15 Jul 2009 19:59:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56113 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751883AbZGOX7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 19:59:17 -0400
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
-       galak@kernel.crashing.org, linux-kernel@vger.kernel.org
-Message-Id: <79B7CF70-0A66-43DA-91ED-3C8638FED141@kernel.crashing.org>
-From: Becky Bruce <beckyb@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090714094919V.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: removing addr_needs_map in struct dma_mapping_ops
-Date: Wed, 15 Jul 2009 18:59:03 -0500
-References: <20090710104706I.fujita.tomonori@lab.ntt.co.jp> <B6C36B32-6861-4FD9-B8A3-E8C328687E0F@kernel.crashing.org> <20090714094919V.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Apple Mail (2.935.3)
+	id S1752859AbZGOX7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 19:59:43 -0400
+Date: Thu, 16 Jul 2009 01:59:38 +0200
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng v2.16
+Message-ID: <20090715235938.GB18427@nb.net.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jul 13, 2009, at 7:49 PM, FUJITA Tomonori wrote:
+The stable util-linux-ng 2.16 release is available at
 
-> On Mon, 13 Jul 2009 16:50:43 -0500
-> Becky Bruce <beckyb@kernel.crashing.org> wrote:
->
->>> talked about defining something like struct dma_data. Then we could
->>>
->>> struct dev_archdata {
->>>     ...
->>>
->>>     struct dma_data *ddata;
->>> };
->>>
->>> or
->>>
->>> struct dev_archdata {
->>>     ...
->>>
->>>     struct dma_data ddata;
->>> };
->>>
->>>
->>> struct dma_data needs dma_direct_offset, iommu_table, dma_base, and
->>> dma_window_size, anything else?
->>
->> IIRC, what we had talked about was simpler - we talked about changing
->> the current dev_archdata from this:
->>
->> struct dev_archdata {
->>        struct device_node      *of_node;
->>        struct dma_mapping_ops  *dma_ops;
->>        void                    *dma_data;
->> };
->>
->> to this:
->>
->> struct dev_archdata {
->> 	struct device_node *of_node;
->> 	struct dma_mapping_ops *dma_ops;
->> 	unsigned long long dma_data;
->> #ifdef CONFIG_SWIOTLB
->> 	dma_addr_t max_direct_dma_addr;
->> #endif
->> };
->>
->> Where max_direct_dma_addr is the address beyond which a specific
->> device must use swiotlb, and dma_data is the offset like it is now
->> (but wider on 32-bit systems than void *). I believe Ben had  
->> mentioned
->> wanting to make the max_direct_dma_addr part conditional so we don't
->> bloat archdata on platforms that don't ever bounce.
->
-> Only maximum address is enough? The minimum (dma_window_base_cur in
-> swiotlb_pci_addr_needs_map) is not necessary?
->
->
->> The change to the type of dma_data is actually in preparation for an
->> optimization I have planned for 64-bit PCI devices (and which  
->> probably
->> requires more discussion), so that doesn't need to happen now -  just
->> leave it as a void *, and I can post a followup patch.
->>
->> Let me know if I can help or do any testing - I've been meaning to
->> look into switching to dma_map_ops for a while now but it hasn't
->> managed to pop off my todo stack.
->
-> Ok, how about this? I'm not familiar with POWERPC so I might
-> misunderstand something.
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
 
-This is close, but it misses the setup for non-pci devices. We have a  
-bus notifier that we use to set up archdata for those devices -   
-ppc_swiotlb_bus_notify() in arch/powerpc/kernel/dma-swiotlb.c.  It  
-won't cause breakage to not have this set up, because those will fall  
-through to the dma_capable(), but I think we should initialize it  
-anyway (who knows what it will end up used for later....).
+Feedback and bug reports, as always, are welcomed.
 
->
->
->
-> diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/ 
-> include/asm/device.h
-> index 7d2277c..0086f8d 100644
-> --- a/arch/powerpc/include/asm/device.h
-> +++ b/arch/powerpc/include/asm/device.h
-> @@ -16,6 +16,9 @@ struct dev_archdata {
-> 	/* DMA operations on that device */
-> 	struct dma_mapping_ops	*dma_ops;
-> 	void			*dma_data;
-> +#ifdef CONFIG_SWIOTLB
-> +	dma_addr_t		max_direct_dma_addr;
-> +#endif
-> };
->
-> static inline void dev_archdata_set_node(struct dev_archdata *ad,
-> diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/ 
-> include/asm/swiotlb.h
-> index 30891d6..b23a4f1 100644
-> --- a/arch/powerpc/include/asm/swiotlb.h
-> +++ b/arch/powerpc/include/asm/swiotlb.h
-> @@ -24,4 +24,6 @@ static inline void dma_mark_clean(void *addr,  
-> size_t size) {}
-> extern unsigned int ppc_swiotlb_enable;
-> int __init swiotlb_setup_bus_notifier(void);
->
-> +extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
-> +
-> #endif /* __ASM_SWIOTLB_H */
-> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/ 
-> dma-swiotlb.c
-> index 68ccf11..e21359e 100644
-> --- a/arch/powerpc/kernel/dma-swiotlb.c
-> +++ b/arch/powerpc/kernel/dma-swiotlb.c
-> @@ -56,39 +56,16 @@ swiotlb_arch_address_needs_mapping(struct device  
-> *hwdev, dma_addr_t addr,
-> 				   size_t size)
-> {
-> 	struct dma_mapping_ops *dma_ops = get_dma_ops(hwdev);
-> +	struct dev_archdata *sd = &hwdev->archdata;
->
-> 	BUG_ON(!dma_ops);
-> -	return dma_ops->addr_needs_map(hwdev, addr, size);
-> -}
-
-You can get rid of the dma_ops stuff here.... it's no longer needed.
-
->
->
-> -/*
-> - * Determine if an address is reachable by a pci device, or if we  
-> must bounce.
-> - */
-> -static int
-> -swiotlb_pci_addr_needs_map(struct device *hwdev, dma_addr_t addr,  
-> size_t size)
-> -{
-> -	u64 mask = dma_get_mask(hwdev);
-> -	dma_addr_t max;
-> -	struct pci_controller *hose;
-> -	struct pci_dev *pdev = to_pci_dev(hwdev);
-> -
-> -	hose = pci_bus_to_host(pdev->bus);
-> -	max = hose->dma_window_base_cur + hose->dma_window_size;
-> -
-> -	/* check that we're within mapped pci window space */
-> -	if ((addr + size > max) | (addr < hose->dma_window_base_cur))
-> +	if (sd->max_direct_dma_addr && addr + size > sd- 
-> >max_direct_dma_addr)
-> 		return 1;
->
-> -	return !is_buffer_dma_capable(mask, addr, size);
-> -}
-> -
-> -static int
-> -swiotlb_addr_needs_map(struct device *hwdev, dma_addr_t addr,  
-> size_t size)
-> -{
-> 	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
-> }
->
-> -
-> /*
->  * At the moment, all platforms that use this code only require
->  * swiotlb to be used if we're operating on HIGHMEM.  Since
-> @@ -104,7 +81,6 @@ struct dma_mapping_ops swiotlb_dma_ops = {
-> 	.dma_supported = swiotlb_dma_supported,
-> 	.map_page = swiotlb_map_page,
-> 	.unmap_page = swiotlb_unmap_page,
-> -	.addr_needs_map = swiotlb_addr_needs_map,
-> 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
-> 	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
-> 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
-> @@ -119,13 +95,23 @@ struct dma_mapping_ops swiotlb_pci_dma_ops = {
-> 	.dma_supported = swiotlb_dma_supported,
-> 	.map_page = swiotlb_map_page,
-> 	.unmap_page = swiotlb_unmap_page,
-> -	.addr_needs_map = swiotlb_pci_addr_needs_map,
-> 	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
-> 	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
-> 	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
-> 	.sync_sg_for_device = swiotlb_sync_sg_for_device
-> };
->
-> +void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
-> +{
-> +	struct pci_controller *hose;
-> +	struct dev_archdata *sd;
-> +
-> +	hose = pci_bus_to_host(pdev->bus);
-> +	sd = &pdev->dev.archdata;
-> +	sd->max_direct_dma_addr =
-> +		hose->dma_window_base_cur + hose->dma_window_size;
-> +}
-> +
-> static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
-> 				  unsigned long action, void *data)
-> {
-> diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/ 
-> platforms/85xx/mpc8536_ds.c
-> index 055ff41..401751b 100644
-> --- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-> @@ -136,6 +136,7 @@ define_machine(mpc8536_ds) {
-> 	.init_IRQ		= mpc8536_ds_pic_init,
-> #ifdef CONFIG_PCI
-> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
-> #endif
-> 	.get_irq		= mpic_get_irq,
-> 	.restart		= fsl_rstcr_restart,
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/ 
-> platforms/85xx/mpc85xx_ds.c
-> index 849c0ac..1ba8e38 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> @@ -277,6 +277,7 @@ define_machine(mpc8544_ds) {
-> 	.init_IRQ		= mpc85xx_ds_pic_init,
-> #ifdef CONFIG_PCI
-> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
-> #endif
-> 	.get_irq		= mpic_get_irq,
-> 	.restart		= fsl_rstcr_restart,
-> @@ -291,6 +292,7 @@ define_machine(mpc8572_ds) {
-> 	.init_IRQ		= mpc85xx_ds_pic_init,
-> #ifdef CONFIG_PCI
-> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
-> #endif
-> 	.get_irq		= mpic_get_irq,
-> 	.restart		= fsl_rstcr_restart,
-> @@ -305,6 +307,7 @@ define_machine(p2020_ds) {
-> 	.init_IRQ		= mpc85xx_ds_pic_init,
-> #ifdef CONFIG_PCI
-> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
-> #endif
-> 	.get_irq		= mpic_get_irq,
-> 	.restart		= fsl_rstcr_restart,
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/ 
-> powerpc/platforms/85xx/mpc85xx_mds.c
-> index 60ed9c0..165a2de 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> @@ -356,6 +356,7 @@ define_machine(mpc8568_mds) {
-> 	.progress	= udbg_progress,
-> #ifdef CONFIG_PCI
-> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
-> #endif
-> };
->
-> @@ -377,5 +378,6 @@ define_machine(mpc8569_mds) {
-> 	.progress	= udbg_progress,
-> #ifdef CONFIG_PCI
-> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
-> #endif
-> };
-> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/ 
-> powerpc/platforms/86xx/mpc86xx_hpcn.c
-> index 6632702..d1878f3 100644
-> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> @@ -187,5 +187,6 @@ define_machine(mpc86xx_hpcn) {
-> 	.progress		= udbg_progress,
-> #ifdef CONFIG_PCI
-> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
-> #endif
-> };
-
-Instead of initializing this here (which has problems if ! 
-CONFIG_SWIOTLB), place this in the xxxxx_xxxx_setup_arch function in  
-the same files, which already have an #ifdef CONFIG_SWIOTLB in which  
-this can be embedded.
-
-I'm about to be off-list for a few days but will be happy to help when  
-I'm back next week.
-
-Thanks!
-Becky
+	Karel
 
 
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Util-linux-ng 2.16 Release Notes (15-Jul-2009)
+==============================================
 
+Release highlights
+------------------
+
+libuuid, uuidgen(1) and uuidd(8):
+  - the libuuid library has been moved from e2fsprogs to util-linux-ng
+
+switch_root:
+  - this NEW COMMAND allows to switch to another filesystem as the root
+    of the mount tree.
+
+mount, umount, fsck:
+  - DOES NOT SUPPORT linking against obsolete libvolume_id (from udev)
+
+libblkid:
+  - development files (.so, .a, ...) have been moved from /lib to /usr/lib.
+
+
+Stable maintenance releases between v2.15 and v2.16
+---------------------------------------------------
+
+util-linux-ng 2.15.1 [10-Jun-2009]
+
+ * ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/v2.15.1-ReleaseNotes
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/v2.15.1-ChangeLog
+
+
+ChangeLog between v2.15 and v2.16
+---------------------------------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
+
+
+build-sys:
+   - add --disable-libblkid, remove volume_id support  [Karel Zak]
+   - add --disable-switch_root  [Karel Zak]
+   - add --disable-tls  [Karel Zak]
+   - add --disable-uuidd  [Karel Zak]
+   - add UTIL_{SET,RESTORE}_FLAGS  [Karel Zak]
+   - check for openat() and linux for switch_root  [Karel Zak]
+   - cleanup libuuid stuff  [Karel Zak]
+   - complete /libs to /shlibs rename  [Karel Zak]
+   - enable fsck by default  [Karel Zak]
+   - fix "make -C" bug  [Karel Zak]
+   - fix --disable-uuidd  [Karel Zak]
+   - fix blkid.h include for old e2fsprogs  [Karel Zak]
+   - fix exec/data install hooks  [Karel Zak]
+   - fix headers in mkswap and libblkid  [Karel Zak]
+   - fix libuuid Makefile.am  [Karel Zak]
+   - fix libuuid and libblkid version-info  [Karel Zak]
+   - fix typo from 30688dde55f637c9b984809c685b61378b82805f  [Robert Förster]
+   - improve $libdirname definition  [Karel Zak]
+   - improve symlinks creation in shlibs/  [Karel Zak]
+   - release++ (v2.16-rc1)  [Karel Zak]
+   - release++ (v2.16-rc2)  [Karel Zak]
+   - rename /libs to /shlibs  [Karel Zak]
+   - rename to _execdir  [Karel Zak]
+   - reverse shlibs installation  [Kay Sievers]
+buildsys:
+   - move $usr{bin,sbin,lib}execdir definition to ./configure  [Karel Zak]
+cal:
+   - Highlight today even when month or year specified  [Rajeev V. Pillai]
+   - uClibc has langinfo.h but not _NL_TIME_WEEK_1STDAY.  [Tom Prince]
+chrt:
+   - don't assume SCHED_BATCH and SCHED_IDLE exist  [Aurelien Jarno]
+docs:
+   - add missing commands/projects to AUTHORS file  [Karel Zak]
+   - add v2.16 ReleaseNotes  [Karel Zak]
+   - refresh TODO list  [Karel Zak]
+   - remove example.files/rc[.local]  [Karel Zak]
+   - remove obsolete information from fstab example  [Karel Zak]
+   - update AUTHORS file  [Karel Zak]
+   - update v2.16 ReleaseNotes  [Karel Zak]
+   - update v2.16-ReleaseNotes  [Karel Zak]
+fdisk:
+   - (and cfdisk) fix to be consistent about maximum heads  [Chris Webb]
+   - add simple test for doslabel stuff  [Zdenek Behan]
+hwclock:
+   - fix mismatched popen/fclose.  [John Keeping]
+include:
+   - clean up _PATH_DEV_* macros  [Karel Zak]
+   - fix _PATH_DEV  [Karel Zak]
+ionice:
+   - Allow setting the none class  [Jakob Unterwurzacher]
+ldattach:
+   - add N_PPS support  [Tilman Schmidt]
+libblkid:
+   - add device-mapper snapshot cow device probe  [Milan Broz]
+   - add install-hook for libuuid.[a,so] devel files  [Karel Zak]
+   - add stdarg.h to blkidP.h  [Karel Zak]
+   - blkid_do_safeprobe() has to be tolerant to RAIDs  [Karel Zak]
+   - cleanup debug messages and return codes in blkid_do_probe()  [Karel Zak]
+   - don't require udev symlinks verification for non-root users  [Karel Zak]
+   - fix "hangs forever with partition type mdraid"  [Karel Zak]
+   - fix #ifdefs readability  [Karel Zak]
+   - fix $libdir in blkid.pc  [Karel Zak]
+   - fix LVM1 probe  [Milan Broz]
+   - fix reiserfs name  [Karel Zak]
+   - make libuuid optional  [Karel Zak]
+   - move to misc-utils/ directory  [Karel Zak]
+   - update man page  [Karel Zak]
+libuuid:
+   - add --disable-libuuid and LIBUUID_VERSION  [Karel Zak]
+   - add .gitignore  [Karel Zak]
+   - add info about u-l-ng to man pages  [Karel Zak]
+   - add install-hook for libuuid.[a,so] devel files  [Karel Zak]
+   - Don't run uuidd if it would fail due to permission problems  [Theodore Ts'o]
+   - fix $libdir in uuid.pc  [Karel Zak]
+   - fix parallel building  [Karel Zak]
+   - generate uuid_generate_{random,time}.3 man page links [Karel Zak]
+   - import UUID library from e2fsprogs  [Karel Zak]
+   - Make sure fd's 0, 1, and 2 are valid before exec'ing uuidd  [Theodore Ts'o]
+   - move clock state file from /var/lib to /var/run  [Karel Zak]
+libuuid, uuidd:
+   - Avoid infinite loop while reading from the socket fd  [Theodore Ts'o]
+losetup:
+   - add --set-capacity  [Karel Zak]
+   - fix return codes of functions arounf is_associated()  [Karel Zak]
+   - handle symlinks in /dev/loop/  [Mike Frysinger]
+   - suggest to use modprobe rather than insmod in losetup.8  [Karel Zak]
+lscpu:
+   - fix cpuid code on x86/PIC  [Mike Frysinger]
+mount:
+   - (and fsck) remove libvolume_id support  [Karel Zak]
+   - a little clean up info about loopdevs in man page  [Karel Zak]
+   - add ext4 to mount.8  [Karel Zak]
+   - add ext4 to the list of filesystems in mount.8  [Karel Zak]
+   - add info about obsolete vfat options to mount.8  [Karel Zak]
+   - allow loop suid umount  [Kay Sievers]
+   - cleanup notes about -l option in mount.8  [Karel Zak]
+   - fix undefined reference to `security_get_initial_context'  [Karel Zak]
+   - move MS_{PROPAGATION,BIND,MOVE} detection  [Karel Zak]
+   - use "none" fstype for MS_PROPAGATION mounts  [Karel Zak]
+   - use TAG parsing function from libblkid  [Karel Zak]
+   - when a remount to rw fails, quit and return an error  [Valerie Aurora]
+po:
+   - fix typo in French translation  [Olivier Blin]
+   - merge changes  [Karel Zak]
+   - refresh POTFILES.in  [Karel Zak]
+   - update cs.po (from translationproject.org)  [Petr Pisar]
+   - update fi.po (from translationproject.org)  [Lauri Nurmi]
+   - update fr.po (from translationproject.org)  [Nicolas Provost]
+   - update vi.po (from translationproject.org)  [Clytie Siddall]
+raw:
+   - Use the RAW_SETBIND ioctl without stat'ing the raw# file  [Jeff Mahoney]
+   - undeprecate raw  [Karel Zak]
+switch_root:
+   - add man page  [Karel Zak]
+   - add subroot support  [Daniel Drake]
+   - clean up argv[] usage, add -h and -V  [Karel Zak]
+   - do recursiveRemove after our root is moved to avoid races.  [Peter Jones]
+   - fix coding style  [Karel Zak]
+   - fork before cleaning up the filesystem.  [Peter Jones]
+   - new command  [Karel Zak]
+   - rewrite to use fstatat() and unlinkat()  [Karel Zak]
+   - use err.h, clean up return codes  [Karel Zak]
+   - use file descriptor instead of path for recursiveRemove()  [Peter Jones]
+   - use snprintf() rather tan str{cpy,cat}()  [Karel Zak]
+tests:
+   - add functions for work withdisk images  [Karel Zak]
+   - add mdraid libblkid test  [Karel Zak]
+   - don't run some mount tests for non-root users  [Karel Zak]
+   - fix 'delete extended partition' checksum  [Karel Zak]
+   - fix reiserfs test  [Karel Zak]
+   - fix script that creates lscpu dumps  [Karel Zak]
+   - move lscpu /proc and /sys dumps to tarballs  [Karel Zak]
+   - remove broken Xen dumps for lscpu  [Karel Zak]
+umount:
+   - clean up help output  [Karel Zak]
+uuidd:
+   - Avoid closing the server socket when calling create_daemon()  [Theodore Ts'o]
+   - fix $PIDFILE in uuidd.rc  [Karel Zak]
+   - init /var/run/uuidd, add option for on-demand mode to .rc file  [Karel Zak]
+   - move uuidd files from /var/lib/libuuid to /var/run/uuidd  [Karel Zak]
+   - move uuidd.rc to misc-utils directory  [Karel Zak]
+   - new command (UUID daemon from e2fsprogs)  [Karel Zak]
+uuidgen:
+   - new command (from e2fsprogs)  [Karel Zak]
+-- 
+ Karel Zak  <kzak@redhat.com>
