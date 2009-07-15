@@ -1,62 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZGOIR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbZGOISO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752610AbZGOIR1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 04:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZGOIR0
+	id S1752624AbZGOISO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 04:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZGOISN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 04:17:26 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49374 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752181AbZGOIRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 04:17:25 -0400
-Message-ID: <4A5D90B1.3020304@cn.fujitsu.com>
-Date: Wed, 15 Jul 2009 16:17:53 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 15 Jul 2009 04:18:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:50134 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbZGOISL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 04:18:11 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=p/Ank1qE2gVFVLfGC6Fw/VnV3Z4xavjR5oEPB/ld/LVqrgbN6v1qD30oWEWYWICIg
+	kFw5XahDEf/lhrWLT2wAA==
+Date: Wed, 15 Jul 2009 01:18:02 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Stephan von Krawczynski <skraw@ithnet.com>
+cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: What to do with this message (2.6.30.1) ?
+In-Reply-To: <20090715084754.36ff73bf.skraw@ithnet.com>
+Message-ID: <alpine.DEB.2.00.0907150115190.14393@chino.kir.corp.google.com>
+References: <20090713134621.124aa18e.skraw@ithnet.com> <4807377b0907132240g6f74c9cbnf1302d354a0e0a72@mail.gmail.com> <alpine.DEB.2.00.0907132247001.8784@chino.kir.corp.google.com> <20090715084754.36ff73bf.skraw@ithnet.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] ring_buffer: fix warning (V2)
-References: <4A5C3549.7000905@cn.fujitsu.com>
-In-Reply-To: <4A5C3549.7000905@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 15 Jul 2009, Stephan von Krawczynski wrote:
 
-kernel/trace/ring_buffer.c: In function 'rb_tail_page_update':
-kernel/trace/ring_buffer.c:849: warning: value computed is not used
-kernel/trace/ring_buffer.c:850: warning: value computed is not used
+> Jul 15 03:01:26 backup kernel: swapper: page allocation failure. order:1, mode:0x4020
+> Jul 15 03:01:26 backup kernel: Pid: 0, comm: swapper Not tainted 2.6.30.1 #4
+> Jul 15 03:01:26 backup kernel: Call Trace:
+> Jul 15 03:01:26 backup kernel:  <IRQ>  [<ffffffff8026919e>] ? __alloc_pages_internal+0x3df/0x3ff
+> Jul 15 03:01:26 backup kernel:  [<ffffffff802892f3>] ? __slab_alloc+0x175/0x4ba
+> Jul 15 03:01:26 backup kernel:  [<ffffffff803f2a90>] ? __netdev_alloc_skb+0x15/0x2f
+> Jul 15 03:01:26 backup kernel:  [<ffffffff803f2a90>] ? __netdev_alloc_skb+0x15/0x2f
+> Jul 15 03:01:26 backup kernel:  [<ffffffff80289c7d>] ? __kmalloc_track_caller+0x8f/0xb6
+> Jul 15 03:01:26 backup kernel:  [<ffffffff803f1ec2>] ? __alloc_skb+0x61/0x12f
+> Jul 15 03:01:26 backup kernel:  [<ffffffff803f2a90>] ? __netdev_alloc_skb+0x15/0x2f
+> Jul 15 03:01:26 backup kernel:  [<ffffffffa0049da0>] ? e1000_alloc_rx_buffers+0x8c/0x248 [e1000e]
+> Jul 15 03:01:26 backup kernel:  [<ffffffffa004a262>] ? e1000_clean_rx_irq+0x2a2/0x2db [e1000e]
+> Jul 15 03:01:26 backup kernel:  [<ffffffffa004b8dc>] ? e1000_clean+0x70/0x219 [e1000e]
+> Jul 15 03:01:27 backup kernel:  [<ffffffff803f6017>] ? net_rx_action+0x69/0x11f
+> Jul 15 03:01:27 backup kernel:  [<ffffffff802373eb>] ? __do_softirq+0x66/0xf7
+> Jul 15 03:01:27 backup kernel:  [<ffffffff8020bebc>] ? call_softirq+0x1c/0x28
+> Jul 15 03:01:27 backup kernel:  [<ffffffff8020d680>] ? do_softirq+0x2c/0x68
+> Jul 15 03:01:27 backup kernel:  [<ffffffff8020cf62>] ? do_IRQ+0xa9/0xbf
+> Jul 15 03:01:27 backup kernel:  [<ffffffff8020b793>] ? ret_from_intr+0x0/0xa
+> Jul 15 03:01:27 backup kernel:  <EOI>  [<ffffffff802116d8>] ? mwait_idle+0x6e/0x73
+> Jul 15 03:01:27 backup kernel:  [<ffffffff802116d8>] ? mwait_idle+0x6e/0x73
+> Jul 15 03:01:27 backup kernel:  [<ffffffff8020a1cb>] ? cpu_idle+0x40/0x7c
+> Jul 15 03:01:28 backup kernel:  [<ffffffff805a9bb0>] ? start_kernel+0x31e/0x32a
+> Jul 15 03:01:28 backup kernel:  [<ffffffff805a937e>] ? x86_64_start_kernel+0xe5/0xeb
+> Jul 15 03:01:28 backup kernel: DMA per-cpu:
+> Jul 15 03:01:28 backup kernel: CPU    0: hi:    0, btch:   1 usd:   0
+> Jul 15 03:01:28 backup kernel: CPU    1: hi:    0, btch:   1 usd:   0
+> Jul 15 03:01:28 backup kernel: CPU    2: hi:    0, btch:   1 usd:   0
+> Jul 15 03:01:28 backup kernel: CPU    3: hi:    0, btch:   1 usd:   0
+> Jul 15 03:01:28 backup kernel: DMA32 per-cpu:
+> Jul 15 03:01:28 backup kernel: CPU    0: hi:  186, btch:  31 usd: 157
+> Jul 15 03:01:28 backup kernel: CPU    1: hi:  186, btch:  31 usd:  62
+> Jul 15 03:01:28 backup kernel: CPU    2: hi:  186, btch:  31 usd:  84
+> Jul 15 03:01:28 backup kernel: CPU    3: hi:  186, btch:  31 usd:  41
+> Jul 15 03:01:28 backup kernel: Normal per-cpu:
+> Jul 15 03:01:28 backup kernel: CPU    0: hi:  186, btch:  31 usd: 175
+> Jul 15 03:01:28 backup kernel: CPU    1: hi:  186, btch:  31 usd:  73
+> Jul 15 03:01:28 backup kernel: CPU    2: hi:  186, btch:  31 usd:  33
+> Jul 15 03:01:28 backup kernel: CPU    3: hi:  186, btch:  31 usd:  56
+> Jul 15 03:01:28 backup kernel: Active_anon:32502 active_file:111663 inactive_anon:8167
+> Jul 15 03:01:28 backup kernel:  inactive_file:1332510 unevictable:0 dirty:39449 writeback:1586 unstable:0
+> Jul 15 03:01:28 backup kernel:  free:10034 slab:546449 mapped:1841 pagetables:1189 bounce:0
+> Jul 15 03:01:28 backup kernel: DMA free:11704kB min:12kB low:12kB high:16kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB present:10752kB pages_scanned:0 all_unreclaimable? yes
+> Jul 15 03:01:28 backup kernel: lowmem_reserve[]: 0 3767 8059 8059
+> Jul 15 03:01:28 backup kernel: DMA32 free:22052kB min:5364kB low:6704kB high:8044kB active_anon:19216kB inactive_anon:4032kB active_file:113380kB inactive_file:2196508kB unevictable:0kB present:3857440kB pages_scanned:0 all_unreclaimable? no
+> Jul 15 03:01:28 backup kernel: lowmem_reserve[]: 0 0 4292 4292
+> Jul 15 03:01:28 backup kernel: Normal free:6380kB min:6112kB low:7640kB high:9168kB active_anon:110792kB inactive_anon:28636kB active_file:333272kB inactive_file:3133532kB unevictable:0kB present:4395520kB pages_scanned:0 all_unreclaimable? no
+> Jul 15 03:01:28 backup kernel: lowmem_reserve[]: 0 0 0 0
+> Jul 15 03:01:28 backup kernel: DMA: 6*4kB 6*8kB 3*16kB 2*32kB 4*64kB 2*128kB 1*256kB 1*512kB 2*1024kB 0*2048kB 2*4096kB = 11704kB
+> Jul 15 03:01:28 backup kernel: DMA32: 5283*4kB 93*8kB 2*16kB 0*32kB 0*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 22036kB
+> Jul 15 03:01:28 backup kernel: Normal: 1310*4kB 99*8kB 6*16kB 0*32kB 0*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 6256kB
+> Jul 15 03:01:29 backup kernel: 1444268 total pagecache pages
+> Jul 15 03:01:29 backup kernel: 34 pages in swap cache
+> Jul 15 03:01:29 backup kernel: Swap cache stats: add 118, delete 84, find 0/2
+> Jul 15 03:01:29 backup kernel: Free swap  = 2104080kB
+> Jul 15 03:01:29 backup kernel: Total swap = 2104488kB
+> 
 
-Add "(void)"s to fix this warning.
+I added Justin Piszcz to the cc since he was having the same problem as 
+described in http://bugzilla.kernel.org/show_bug.cgi?id=13648.
 
-Changed from V1:
-  Add a comment(which is written by Steven) for it.
+He was unable to get slabtop -o output when this was happening, though, so 
+maybe you could grab a snapshot of that when you get these failures?  It 
+will help us figure out what cache the slab leak is in (assuming there is 
+one, >1G of slab on this machine is egregious).
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index e648ba4..51633d7 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -845,9 +845,14 @@ static int rb_tail_page_update(struct ring_buffer_per_cpu *cpu_buffer,
- 		 * This will only succeed if an interrupt did
- 		 * not come in and change it. In which case, we
- 		 * do not want to modify it.
-+		 *
-+		 * We add (void) to let the compiler know that we do not care
-+		 * about the return value of these functions. We use the
-+		 * cmpxchg to only update if an interrupt did not already
-+		 * do it for us. If the cmpxchg fails, we don't care.
- 		 */
--		local_cmpxchg(&next_page->write, old_write, val);
--		local_cmpxchg(&next_page->entries, old_entries, eval);
-+		(void)local_cmpxchg(&next_page->write, old_write, val);
-+		(void)local_cmpxchg(&next_page->entries, old_entries, eval);
- 
- 		/*
- 		 * No need to worry about races with clearing out the commit.
+Justin, were you using e1000e in your bug report?
 
+If you have some additional time, it would also be helpful to get a 
+bisection of when the problem started occurring (it appears to be sometime 
+between 2.6.29 and 2.6.30).
