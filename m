@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZGOI06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbZGOI23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbZGOI06 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 04:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZGOI05
+	id S1752943AbZGOI23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 04:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZGOI23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 04:26:57 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56369 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546AbZGOI05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 04:26:57 -0400
-Message-ID: <4A5D92F2.1010007@cn.fujitsu.com>
-Date: Wed, 15 Jul 2009 16:27:30 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+	Wed, 15 Jul 2009 04:28:29 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41426 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752645AbZGOI22 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 04:28:28 -0400
+Date: Wed, 15 Jul 2009 09:28:26 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Jaroslav Kysela <erex@perex.cz>, alsa-devel@alsa-project.org,
+       Takashi Iwai <iwai@suse.de>, Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       David Howells <dhowells@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip V2] ring_buffer: fix warning
-References: <4A5C3549.7000905@cn.fujitsu.com> <4A5D90B1.3020304@cn.fujitsu.com>
-In-Reply-To: <4A5D90B1.3020304@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 01/06] Fix compilation warning for
+ sound/soc/codecs/wm8400.c
+Message-ID: <20090715082826.GA8689@rakim.wolfsonmicro.main>
+References: <20090715021826.4032.63752.sendpatchset@subratamodak.linux.ibm.com>
+ <1247633018.2437.5.camel@ht.satnam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247633018.2437.5.camel@ht.satnam>
+X-Cookie: Use other side for additional listings.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for missing Reviewed-by and Acked-by, so I resend it.
+On Wed, Jul 15, 2009 at 10:13:38AM +0530, Jaswinder Singh Rajput wrote:
+> Hello Subrata,
 
-Subject: [PATCH -tip V2] ring_buffer: fix warning
+> This kind of warnings born due to not handling the variables properly.
+> Please try to understand the root cause of this warning, just shutting
+> this warning is of no use.
 
-kernel/trace/ring_buffer.c: In function 'rb_tail_page_update':
-kernel/trace/ring_buffer.c:849: warning: value computed is not used
-kernel/trace/ring_buffer.c:850: warning: value computed is not used
-
-Add "(void)"s to fix this warning.
-
-Changed from V1:
-  Add a comment(which is written by Steven) for it.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
----
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index e648ba4..51633d7 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -845,9 +845,14 @@ static int rb_tail_page_update(struct ring_buffer_per_cpu *cpu_buffer,
- 		 * This will only succeed if an interrupt did
- 		 * not come in and change it. In which case, we
- 		 * do not want to modify it.
-+		 *
-+		 * We add (void) to let the compiler know that we do not care
-+		 * about the return value of these functions. We use the
-+		 * cmpxchg to only update if an interrupt did not already
-+		 * do it for us. If the cmpxchg fails, we don't care.
- 		 */
--		local_cmpxchg(&next_page->write, old_write, val);
--		local_cmpxchg(&next_page->entries, old_entries, eval);
-+		(void)local_cmpxchg(&next_page->write, old_write, val);
-+		(void)local_cmpxchg(&next_page->entries, old_entries, eval);
- 
- 		/*
- 		 * No need to worry about races with clearing out the commit.
-
+...as I said last time you submitted rougly the same patch.  Please also
+remember that sometimes these problems are false positives caused by
+issues with the compiler flow analysis (as appears to be the case here).
