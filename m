@@ -1,76 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbZGOHGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbZGOHQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752563AbZGOHGg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 03:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZGOHGf
+	id S1752678AbZGOHQZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 03:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZGOHQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 03:06:35 -0400
-Received: from mga03.intel.com ([143.182.124.21]:39444 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752023AbZGOHGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 03:06:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,403,1243839600"; 
-   d="scan'208";a="165141342"
-Date: Wed, 15 Jul 2009 15:06:17 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Ronald Moesbergen <intercommit@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
-       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-Message-ID: <20090715070617.GB6145@localhost>
-References: <a0272b440907062349k24041e74sbb1776ab3e172c58@mail.gmail.com> <4A5395FD.2040507@vlnb.net> <a0272b440907080149j3eeeb9bat13f942520db059a8@mail.gmail.com> <4A5493A8.2000806@vlnb.net> <a0272b440907092332o7c5bf1d0oa51d1cfc9b9e98f5@mail.gmail.com> <4A56FF32.2060303@vlnb.net> <4A570981.5080803@vlnb.net> <a0272b440907130512y60a757afqd5629f4ca3ac8e1b@mail.gmail.com> <20090713123621.GA31051@localhost> <4A5CD3EB.50402@vlnb.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5CD3EB.50402@vlnb.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 15 Jul 2009 03:16:24 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:51564 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752649AbZGOHQX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 03:16:23 -0400
+Date: Wed, 15 Jul 2009 09:15:34 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [PATCH] Input: add MAX7359 key switch controller driver, v2
+In-reply-to: <5d5443650907140323l6cc06151nbec94d5d8646c60a@mail.gmail.com>
+To: "'Trilok Soni'" <soni.trilok@gmail.com>
+Cc: "'Dmitry Torokhov'" <dmitry.torokhov@gmail.com>,
+       "'Kim Kyuwon'" <q1.kim@samsung.com>,
+       "'Kim Kyuwon'" <chammoru@gmail.com>,
+       "'LKML'" <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org,
+       "'Kyungmin Park'" <kyungmin.park@samsung.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Message-id: <003f01ca051c$0e8d12b0$2ba73810$%szyprowski@samsung.com>
+MIME-version: 1.0
+X-Mailer: Microsoft Office Outlook 12.0
+Content-type: text/plain; charset=iso-8859-2
+Content-language: pl
+Content-transfer-encoding: 8BIT
+Thread-index: AcoEbR0ffNGqlkMJRESvSKfpKJYm0wArZwUQ
+References: <4A04E5EA.7000103@samsung.com>
+ <5d5443650906191038o797e0c3eu8234a56ee247ea68@mail.gmail.com>
+ <5d5443650907130152t420e9426q762c24bdb1b29aae@mail.gmail.com>
+ <20090713093147.GJ10819@dtor-d630.eng.vmware.com>
+ <4A5BF6F0.6020403@samsung.com>
+ <001801ca044c$428839d0$c798ad70$%szyprowski@samsung.com>
+ <20090714082452.GH2822@dtor-d630.eng.vmware.com>
+ <002a01ca0462$8b750a90$a25f1fb0$%szyprowski@samsung.com>
+ <5d5443650907140211i4c6e4a49q9c055dc1e91071da@mail.gmail.com>
+ <002b01ca046c$7f9fd240$7edf76c0$%szyprowski@samsung.com>
+ <5d5443650907140323l6cc06151nbec94d5d8646c60a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 02:52:27AM +0800, Vladislav Bolkhovitin wrote:
-> 
-> Wu Fengguang, on 07/13/2009 04:36 PM wrote:
-> >> Test done with XFS on both the target and the initiator. This confirms
-> >> your findings, using files instead of block devices is faster, but
-> >> only when using the io_context patch.
-> > 
-> > It shows that the one really matters is the io_context patch,
-> > even when context readahead is running. I guess what happened
-> > in the tests are:
-> > - without readahead (or readahead algorithm failed to do proper
-> >   sequential readaheads), the SCST processes will be submitting
-> >   small but close to each other IOs.  CFQ relies on the io_context
-> >   patch to prevent unnecessary idling.
-> > - with proper readahead, the SCST processes will also be submitting
-> >   close readahead IOs. For example, one file's 100-102MB pages is
-> >   readahead by process A, while its 102-104MB pages may be
-> >   readahead by process B. In this case CFQ will also idle waiting
-> >   for process A to submit the next IO, but in fact that IO is being
-> >   submitted by process B. So the io_context patch is still necessary
-> >   even when context readahead is working fine. I guess context
-> >   readahead do have the added value of possibly enlarging the IO size
-> >   (however this benchmark seems to not very sensitive to IO size).
-> 
-> Looks like the truth. Although with 2MB RA I expect CFQ to do idling >10 
-> times less, which should bring bigger improvement than few %%.
-> 
-> For how long CFQ idles? For HZ/125, i.e. 8 ms with HZ 250?
+Hello,
 
-Yes, 8ms by default. Note that the 8ms idle time is armed when the
-last IO from current process completes. So it would be definitely a
-waste if the cooperative process submitted the next read/readahead
-IO within this 8ms idle window (without cfq_coop.patch).
+On Tuesday, July 14, 2009 12:23 PM Trilok Soni wrote:
 
-Thanks,
-Fengguang
+> On Tue, Jul 14, 2009 at 3:48 PM, Marek
+> Szyprowski<m.szyprowski@samsung.com> wrote:
+> > Hello,
+> >
+> > On Tuesday, July 14, 2009 11:12 AM, Trilok Soni wrote:
+> >
+> >> On Tue, Jul 14, 2009 at 2:37 PM, Marek
+> >> Szyprowski<m.szyprowski@samsung.com> wrote:
+> >> > Hello,
+> >> >
+> >> > On Tuesday, July 14, 2009 10:25 AM, Dmitry Torokhov wrote:
+> >> >
+> >> >> On Tue, Jul 14, 2009 at 08:28:05AM +0200, Marek Szyprowski wrote:
+> >> >> > Hello,
+> >> >> > On Tuesday, July 14, 2009 5:10 AM, Kim Kyuwon wrote:
+> >> >> > > Dmitry Torokhov wrote:
+> >> >> > > > On Mon, Jul 13, 2009 at 02:22:10PM +0530, Trilok Soni wrote:
+> >> >> > > >> I don't see this driver picked up yet in your -next branch. We should
+> >> >> > > >> target this driver to be mainlined in next merge window. This is very
+> >> >> > > >> important driver for some of the embedded systems, including palm pre
+> >> >> > > >> :)
+> >> >> > > > I was wondering if somebody could test the patch below and if it still
+> >> >> > > > works then I will apply to the next branch. Thanks!
+> >> >> > > >
+> >> >> > >
+> >> >> > > Dear Marek,
+> >> >> > >
+> >> >> > > Because I don't have the NCP board(which includes the max7359 keypad)
+> >> >> > > now, I can't test this patch. Marek, could you please test this patch?
+> >> >> >
+> >> >> > I would like to, but I could not find the base version to which I can apply
+> >> >> > that patch. I've tried v2 version posted in '[PATCH] Input: add MAX7359 key
+> >> >> > switch controller driver, v2' mail from Sat 2009-05-09 04:10 with 2 patches
+> >> >> > posted in replies to that main, but the latest patch still fails to apply.
+> >> >> >
+> >> >> > Could someone send me a complete patch, so I can do a test?
+> >> >> >
+> >> >>
+> >> >> Sending everything as attachments, maybe that will help...
+> >> >
+> >> > Ok. I've did the tests.
+> >> >
+> >> > MAX7359 keypad driver works after your patch, but reports much more events than
+> >> > the previous version. In this test I pressed quickly the first button on the
+> >> > keypad.
+> >> >
+> >> > Old version:
+> >> > NCP:~# hexdump /dev/input/event0
+> >> > 0000000 0037 0000 e733 000b 0001 00e7 0001 0000
+> >> > 0000010 0037 0000 e748 000b 0000 0000 0000 0000
+> >> > 0000020 0037 0000 94e2 000d 0001 00e7 0000 0000
+> >> > 0000030 0037 0000 94f3 000d 0000 0000 0000 0000
+> >> >
+> >>
+> >> Please use evtest instead. It will give better output atleast.
+> >
+> > Ok.
+> >
+> > Old version (clean v2 patch):
+> >
+> > NCP:~# evtest /dev/input/event0
+> > Input driver version is 1.0.0
+> > Input device ID: bus 0x18 vendor 0x0 product 0x0 version 0x0
+> > Input device name: "max7359"
+> > Supported events:
+> >  Event type 0 (Sync)
+> >  Event type 1 (Key)
+> >    Event code 107 (End)
+> >    Event code 139 (Menu)
+> >    Event code 148 (Prog1)
+> >    Event code 149 (Prog2)
+> >    Event code 177 (ScrollUp)
+> >    Event code 178 (ScrollDown)
+> >    Event code 212 (Camera)
+> >    Event code 231 (?)
+> >    Event code 474 (?)
+> >  Event type 20 (Repeat)
+> > Testing ... (interrupt to exit)
+> > Event: time 38.740081, type 1 (Key), code 139 (Menu), value 1
+> > Event: time 38.740101, -------------- Report Sync ------------
+> > Event: time 38.850061, type 1 (Key), code 139 (Menu), value 0
+> > Event: time 38.850077, -------------- Report Sync ------------
+> >
+> > New version (updated platform definition to use struct matrix_keymap_data instead of
+> max7359_keypad_platform_data):
+> >
+> > NCP:~# evtest /dev/input/event0
+> > Input driver version is 1.0.0
+> > Input device ID: bus 0x18 vendor 0x0 product 0x0 version 0x0
+> > Input device name: "max7359"
+> > Supported events:
+> >  Event type 0 (Sync)
+> >  Event type 1 (Key)
+> >    Event code 107 (End)
+> >    Event code 139 (Menu)
+> >    Event code 148 (Prog1)
+> >    Event code 149 (Prog2)
+> >    Event code 177 (ScrollUp)
+> >    Event code 178 (ScrollDown)
+> >    Event code 212 (Camera)
+> >    Event code 231 (?)
+> >    Event code 474 (?)
+> >  Event type 4 (Misc)
+> >    Event code 4 (ScanCode)
+> >  Event type 20 (Repeat)
+> > Testing ... (interrupt to exit)
+> > Event: time 75.680066, type 4 (Misc), code 4 (ScanCode), value 01
+> > Event: time 75.680095, type 1 (Key), code 139 (Menu), value 1
+> > Event: time 75.680107, -------------- Report Sync ------------
+> > Event: time 75.700072, type 4 (Misc), code 4 (ScanCode), value 3f
+> > Event: time 75.700095, -------------- Report Sync ------------
+> > Event: time 75.830064, type 4 (Misc), code 4 (ScanCode), value 01
+> > Event: time 75.830093, type 1 (Key), code 139 (Menu), value 0
+> > Event: time 75.830100, -------------- Report Sync ------------
+> > Event: time 75.850073, type 4 (Misc), code 4 (ScanCode), value 3f
+> > Event: time 75.850097, -------------- Report Sync ------------
+> >
+> > Something is definitely different. It looks that I missed a patch that added some additional events,
+> because I don't think that the
+> > threaded irq patch would cause this.
+> >
+> 
+> Nope, it is not because of threaded irq patch but MSC_SCAN event
+> generation. Not to worry.
+
+I'm sorry for the commotion, but I did the test in a wrong way. I thought Dmitry has sent me a patch with the threaded irq already
+integrated. Joonyoung Shim has pointed me that I was wrong. I had to apply the threaded irq patch on top of the patch Dmitry has
+sent me.
+
+To sum up - the threaded irq version does not work here on ARM S3C6410 NCP board. In /proc/interrupts I only noticed that only 1
+interrupt has been triggered. No events are reported. Same was with Melfas Touchscreen driver (also only 1 interrupt triggered).
+
+Best regards
+--
+Marek Szyprowski
+Samsung Poland R&D Center
+
 
