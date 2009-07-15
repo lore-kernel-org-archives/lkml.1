@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932204AbZGOSY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756004AbZGOS1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932204AbZGOSY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 14:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZGOSY6
+	id S1756004AbZGOS1a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 14:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755654AbZGOS13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 14:24:58 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:35152 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755229AbZGOSY6 (ORCPT
+	Wed, 15 Jul 2009 14:27:29 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:46390 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755348AbZGOS12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 14:24:58 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A5E1D1A.3090705@s5r6.in-berlin.de>
-Date: Wed, 15 Jul 2009 20:16:58 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090630 SeaMonkey/1.1.17
+	Wed, 15 Jul 2009 14:27:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=JA3EZgMAqWlYsvbDAwTW9WyZx8AcaRv2nnUTbRMtH4C8B0g8csYVYqhHOTGHIUH2MV
+         c16pZdGFWuOUGF2lzuoYyfjkMT/p4XKI/YLmsT//Qqqi4abeCDOebZ4SFkG4z31twB49
+         Zi6xn6m+pzzU+onDbgD/63Ofkf6R2X7CRCd80=
+Message-ID: <4A5E1FF3.6010108@gmail.com>
+Date: Wed, 15 Jul 2009 20:29:07 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: dedekind@infradead.org
-CC: Subrata Modak <subrata@linux.vnet.ibm.com>, linux-mtd@lists.infradead.org,
-       Adrian Hunter <adrian.hunter@nokia.com>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       David Howells <dhowells@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 02/06] Fix compilation warning for fs/ubifs/commit.c
-References: <20090715021901.4112.45973.sendpatchset@subratamodak.linux.ibm.com> <1247640750.11353.6.camel@localhost.localdomain>
-In-Reply-To: <1247640750.11353.6.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: gnb@melbourne.sgi.com, jbaron@redhat.com, gregkh@suse.de,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Dynamic debug: fix typo: -/->
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
-> On Wed, 2009-07-15 at 07:49 +0530, Subrata Modak wrote:
->> Following fix is inspired by David Howells fix few days back:
->> http://lkml.org/lkml/2009/7/9/109,
->>
->> Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>,
->> ---
-> 
-> Removed junk comma at the end of "signed-off-by" and pushed to
-> the ubifs-2.6.git tree:
-> 
-> http://git.infradead.org/ubifs-2.6.git?a=commit;h=5c1507e6097c4abc13bbad69de137366c9043f22
-> 
-> Thanks.
-> 
+The member was intended, not the local variable.
 
-The changelog of the patch is bad.  "Fix compilation warning" is not 
-correct.  It should be "suppress compilation warning" or "annotate 
-unitialized variable" or whatever --- i.e. it should say what it does. 
-Furthermore, since the 3 lines context around the change in the diff do 
-not reveal why the chosen "fix" is correct and desirable, the changelog 
-should also leave a note why it's done this way.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Right?
 
-The patch form David Howells which is quoted here has an equally bad 
-subject, but at least its changelog goes on to explain what the patch 
-really does and why it does it in the proposed way.
--- 
-Stefan Richter
--=====-==--= -=== -====
-http://arcgraph.de/sr/
+diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
+index 833139c..e22c148 100644
+--- a/lib/dynamic_debug.c
++++ b/lib/dynamic_debug.c
+@@ -164,7 +164,7 @@ static void ddebug_change(const struct ddebug_query *query,
+ 
+ 			if (!newflags)
+ 				dt->num_enabled--;
+-			else if (!dp-flags)
++			else if (!dp->flags)
+ 				dt->num_enabled++;
+ 			dp->flags = newflags;
+ 			if (newflags) {
