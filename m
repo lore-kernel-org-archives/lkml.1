@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbZGOQVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932166AbZGOQ0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932179AbZGOQVW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 12:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932165AbZGOQVR
+	id S932166AbZGOQ0G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 12:26:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932151AbZGOQ0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 12:21:17 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:43774 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932125AbZGOQVA (ORCPT
+	Wed, 15 Jul 2009 12:26:05 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:48867 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932143AbZGOQ0D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 12:21:00 -0400
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Daniel Mack <daniel@caiaq.de>,
-       Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
-       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>
-Subject: [PATCH 3/4] ds2760: add rated_capacity module parameter
-Date: Wed, 15 Jul 2009 18:20:40 +0200
-Message-Id: <1247674841-9909-3-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1247674841-9909-2-git-send-email-daniel@caiaq.de>
-References: <1247674841-9909-1-git-send-email-daniel@caiaq.de>
- <1247674841-9909-2-git-send-email-daniel@caiaq.de>
+	Wed, 15 Jul 2009 12:26:03 -0400
+Date: Wed, 15 Jul 2009 21:55:56 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] percpu: add dummy pcpu_lpage_remapped() for !CONFIG_SMP
+Message-ID: <20090715162556.GA4767@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20090706162632.fdde002e.sfr@canb.auug.org.au> <20090706095343.df21d4c9.rdunlap@xenotime.net> <20090709102248.01e2312c.randy.dunlap@oracle.com> <20090715094720.GA6674@linux.vnet.ibm.com> <20090715195807.f0d1a7ea.sfr@canb.auug.org.au> <4A5DA937.6040605@kernel.org> <4A5DEA0D.8050706@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4A5DEA0D.8050706@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For systems where the ds2760 is soldered directly on the PCB, the 'rated
-capacity' register is not set to anything useful.
+* Tejun Heo <htejun@gmail.com> [2009-07-15 23:39:09]:
 
-In order to allow users to bootstrap this value, introduce a new module
-parameter 'rated_capacity' and use it to write the internal EEPROM in
-case the value differes from what's been given.
+> !CONFIG_SMP was missing pcpu_lpage_remapped() definition causing build
+> failure.  Add dummy implementation.  This was discovered by linux-next
+> testing.
+>
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
-Cc: Matt Reimer <mreimer@vpop.net>
-Cc: Anton Vorontsov <cbou@mail.ru>
----
- drivers/power/ds2760_battery.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+Thanks, the patch fixes the build failure.
 
-diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
-index f439071..ed0ea5e 100644
---- a/drivers/power/ds2760_battery.c
-+++ b/drivers/power/ds2760_battery.c
-@@ -66,6 +66,10 @@ static unsigned int pmod_enabled;
- module_param(pmod_enabled, bool, 0644);
- MODULE_PARM_DESC(pmod_enabled, "PMOD enable bit");
- 
-+static unsigned int rated_capacity;
-+module_param(rated_capacity, uint, 0644);
-+MODULE_PARM_DESC(rated_capacity, "rated battery capacity, 10*mAh or index");
-+
- /* Some batteries have their rated capacity stored a N * 10 mAh, while
-  * others use an index into this table. */
- static int rated_capacities[] = {
-@@ -274,6 +278,17 @@ static void ds2760_battery_write_status(struct ds2760_device_info *di,
- 	w1_ds2760_recall_eeprom(di->w1_dev, DS2760_EEPROM_BLOCK1);
- }
- 
-+static void ds2760_battery_write_rated_capacity(struct ds2760_device_info *di,
-+						unsigned char rated_capacity)
-+{
-+	if (rated_capacity == di->raw[DS2760_RATED_CAPACITY])
-+		return;
-+
-+	w1_ds2760_write(di->w1_dev, &rated_capacity, DS2760_RATED_CAPACITY, 1);
-+	w1_ds2760_store_eeprom(di->w1_dev, DS2760_EEPROM_BLOCK1);
-+	w1_ds2760_recall_eeprom(di->w1_dev, DS2760_EEPROM_BLOCK1);
-+}
-+
- static void ds2760_battery_work(struct work_struct *work)
- {
- 	struct ds2760_device_info *di = container_of(work,
-@@ -399,6 +414,10 @@ static int ds2760_battery_probe(struct platform_device *pdev)
- 
- 	ds2760_battery_write_status(di, status);
- 
-+	/* set rated capacity from module param */
-+	if (rated_capacity)
-+		ds2760_battery_write_rated_capacity(di, rated_capacity);
-+
- 	retval = power_supply_register(&pdev->dev, &di->bat);
- 	if (retval) {
- 		dev_err(di->dev, "failed to register battery\n");
--- 
-1.6.3.1
-
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+> Yeap, it was missing dummy definition on !CONFIG_SMP.  This patch
+> fixes it.  Committed to percpu#for-next.  Thanks.
+> 
+>  include/linux/percpu.h |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+> index 8ce91af..e134c82 100644
+> --- a/include/linux/percpu.h
+> +++ b/include/linux/percpu.h
+> @@ -184,6 +184,11 @@ static inline void free_percpu(void *p)
+> 
+>  static inline void __init setup_per_cpu_areas(void) { }
+> 
+> +static inline void *pcpu_lpage_remapped(void *kaddr)
+> +{
+> +	return NULL;
+> +}
+> +
+>  #endif /* CONFIG_SMP */
+> 
+>  #define alloc_percpu(type)	(type *)__alloc_percpu(sizeof(type), \
+> -- 
+> 1.6.0.2
+			
+					Kamalesh
