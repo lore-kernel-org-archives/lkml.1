@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932238AbZGOTGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932243AbZGOTHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932238AbZGOTGR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 15:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932224AbZGOTGQ
+	id S932243AbZGOTHM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 15:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932227AbZGOTHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 15:06:16 -0400
-Received: from sg2ehsobe003.messaging.microsoft.com ([207.46.51.77]:39478 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932226AbZGOTGQ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 15:06:16 -0400
-X-SpamScore: -23
-X-BigFish: VS-23(zba6lz1432R98dN936eM9371Pzz1202h10c0jzzz2dh87h6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-Message-ID: <4A5E2895.3040907@am.sony.com>
-Date: Wed, 15 Jul 2009 12:05:57 -0700
-From: Frank Rowand <frank.rowand@am.sony.com>
-Reply-To: frank.rowand@am.sony.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Joe Perches <joe@perches.com>,
-       =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
-       Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: HTC: touchscreen driver
-References: <20090710084323.GA6522@elf.ucw.cz>	 <a55d774e0907100155m25366994pe9ec5d0f5f868818@mail.gmail.com>	 <20090710103243.GB7789@elf.ucw.cz>	 <a55d774e0907100431j3fdc4671i6b185019594367fa@mail.gmail.com>	 <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz>	 <20090713220726.GA28375@elf.ucw.cz>	 <d6200be20907131829o77bce3d8w8f238bc079478368@mail.gmail.com> <1247535863.16528.6.camel@Joe-Laptop.home>
-In-Reply-To: <1247535863.16528.6.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset="UTF-8"
-X-OriginalArrivalTime: 15 Jul 2009 19:06:02.0062 (UTC) FILETIME=[4B967EE0:01CA057F]
-X-SEL-encryption-scan: scanned
-Content-Transfer-Encoding: 8BIT
+	Wed, 15 Jul 2009 15:07:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43804 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932224AbZGOTHL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 15:07:11 -0400
+Date: Wed, 15 Jul 2009 12:06:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: mreimer@vpop.net, linux-kernel@vger.kernel.org, szabolcs.gyurko@tlt.hu,
+       cbou@mail.ru
+Subject: Re: [PATCH 4/4] ds2760: handle full_active_uAh == 0 case correctly
+Message-Id: <20090715120625.cb8937f3.akpm@linux-foundation.org>
+In-Reply-To: <20090715185159.GI9464@buzzloop.caiaq.de>
+References: <1247674841-9909-1-git-send-email-daniel@caiaq.de>
+	<1247674841-9909-2-git-send-email-daniel@caiaq.de>
+	<1247674841-9909-3-git-send-email-daniel@caiaq.de>
+	<1247674841-9909-4-git-send-email-daniel@caiaq.de>
+	<147B4C9E-4AE2-4FAD-BC58-7D5D905A1B77@vpop.net>
+	<20090715185159.GI9464@buzzloop.caiaq.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Mon, 2009-07-13 at 18:29 -0700, Arve Hjønnevåg wrote:
->> On Mon, Jul 13, 2009 at 3:07 PM, Pavel Machek<pavel@ucw.cz> wrote:
->>> -                       printk(KERN_ERR "synaptics_ts_work_func: i2c_transfer failed\n");
->>> +                       printk(KERN_ERR "ts_work: i2c_transfer failed\n");
->> This will make it harder to read the kernel logs since the driver is 
->> no longer specified.
-> 
-> How about converting to:
-> 
-> #define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
-> or
-> #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> 
-> and pr_<level>()
+On Wed, 15 Jul 2009 20:51:59 +0200
+Daniel Mack <daniel@caiaq.de> wrote:
 
-dev_printk() and the related helpers in include/linux/device.h
-might also be useful.
+> On Wed, Jul 15, 2009 at 11:06:29AM -0700, Matt Reimer wrote:
+> > On Jul 15, 2009, at 9:20 AM, Daniel Mack wrote:
+> >
+> >> In systems where the battery monitor is not part of the battery pack  
+> >> and
+> >> is hence not bootstrapped with sane values, the full_active_uAh is
+> >> likely to be zero.
+> >>
+> >> Handle that case by defaulting to the rated_capacity information which
+> >> can be passed to the driver using the new module parameter.
+> >>
+> >> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> >> Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
+> >> Cc: Matt Reimer <mreimer@vpop.net>
+> >> Cc: Anton Vorontsov <cbou@mail.ru>
+> >
+> > Acked-by: Matt Reimer <mreimer@vpop.net>
+> 
+> Thanks Matt :) Andrew, will they go thru your channel?
+> 
 
--Frank Rowand
----
-Sony Corporation of America
+Well.  I'll look at them, as I try to do when someone cc'ed me.  But
+drivers/power is usually handled by Anton?
 
