@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbZGOIUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZGOI0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752694AbZGOIUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 04:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZGOIUo
+	id S1752779AbZGOI0P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 04:26:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZGOI0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 04:20:44 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:47128 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbZGOIUo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 04:20:44 -0400
-Date: Wed, 15 Jul 2009 10:20:40 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT pull] timer fixes for 2.6.31
-Message-ID: <20090715082040.GA5038@osiris.boeblingen.de.ibm.com>
-References: <alpine.LFD.2.00.0907141755210.2777@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0907141755210.2777@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 15 Jul 2009 04:26:14 -0400
+Received: from dan.rpsys.net ([93.97.175.187]:64332 "EHLO dan.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752196AbZGOI0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 04:26:13 -0400
+Subject: Re: [PATCH 1/3] backlight: Allow drivers to update the core, and
+	generate events on changes
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Matthew Garrett <mjg@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>,
+       "corentincj@iksaif.net" <corentincj@iksaif.net>
+In-Reply-To: <1247644518.26272.88.camel@rzhang-dt>
+References: <1247517685-7719-1-git-send-email-mjg@redhat.com>
+	 <1247574573.23871.8.camel@dax.rpnet.com>
+	 <1247644518.26272.88.camel@rzhang-dt>
+Content-Type: text/plain
+Date: Wed, 15 Jul 2009 09:22:33 +0100
+Message-Id: <1247646153.6248.3.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 05:56:02PM +0200, Thomas Gleixner wrote:
-> Linus,
+On Wed, 2009-07-15 at 15:55 +0800, Zhang Rui wrote:
+> > Also, are "userspace" and "kernel" as meaningful as they could be?
+> Would
+> > "sysfs" and "hwkeys" make more sense and allow for other future hardware
+> > differences? Perhaps someone will tie the backlight to an ambient light
+> > sensor for example...
+> > 
 > 
-> Please pull the latest timers-fixes-for-linus git tree from:
+> Hah, I just finished a patch to introduce the ACPI als driver.
 > 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
-> 
-> Thanks,
-> 
-> 	tglx
-> 
-> ------------------>
-> Heiko Carstens (1):
->       timer stats: fix quick check optimization
+> I'm not quite familiar with the status of ALS support in Linux kernel.
+> and here is my questions,
+> I don't think we have a generic sysfs driver for ALS, i.e. ALS class
+> device, right?
+> do you guys think it's reasonable to have one?
 
-hmm... this patch was not pulled.
+We don't have one that I'm aware of.
 
-> diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-> index 54648e6..4759917 100644
-> --- a/include/linux/hrtimer.h
-> +++ b/include/linux/hrtimer.h
-> @@ -448,7 +448,7 @@ extern void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
-> 
->  static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
->  {
-> -	if (likely(!timer->start_pid))
-> +	if (likely(!timer->start_site))
->  		return;
->  	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
->  				 timer->function, timer->start_comm, 0);
+The first question is what information and configuration options are we
+likely to have with ALS sensors? If its just a light level reading, the
+input subsystem is ideally suited for sharing that. Is there
+configuration we need to expose?
+
+Cheers,
+
+Richard
+
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
+
