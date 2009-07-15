@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZGOP5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932119AbZGOQIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755614AbZGOP5t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 11:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbZGOP5s
+	id S932119AbZGOQIx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 12:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755631AbZGOQIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 11:57:48 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39554 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755548AbZGOP5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 11:57:48 -0400
-X-Authenticated: #23875046
-X-Provags-ID: V01U2FsdGVkX19z+N1UIUJziMwJ6TbBFX0zSRjodjq7iG/OfkF84P
-	iPtsUSk6U3vS48
-Message-ID: <4A5DFC79.6050804@fisher-privat.net>
-Date: Wed, 15 Jul 2009 17:57:45 +0200
-From: Alexey Fisher <bug-track@fisher-privat.net>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090710)
+	Wed, 15 Jul 2009 12:08:53 -0400
+Received: from mail-vw0-f200.google.com ([209.85.212.200]:36933 "EHLO
+	mail-vw0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755592AbZGOQIw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 12:08:52 -0400
+X-Greylist: delayed 85767 seconds by postgrey-1.27 at vger.kernel.org; Wed, 15 Jul 2009 12:08:51 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=JdLCsusC8dsVV+7ssFBVhl0Ie6DSoaUiF/6o1TntgeCh9smY83nXVcFr+0EpRCuSCz
+         4pTIkNVBAjXDQ2EoIrDdzqLZ0OFwpFGfWXEcrsYx2nsphlyd3avBVfvO6db5+vrNSBkU
+         yBQ7YNICJfSmEevcwIaYC/4T/7hxT9PXDaHwc=
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: ykzhao <yakui.zhao@intel.com>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-Subject: Re: [PATCH] Solve the issue with memory corruption on Intel BIOS.
-References: <1247637314-5609-1-git-send-email-bug-track@fisher-privat.net> <20090715103431.4381b423@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090715103431.4381b423@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+In-Reply-To: <1245763114-7753-1-git-send-email-vapier@gentoo.org>
+References: <1245763114-7753-1-git-send-email-vapier@gentoo.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 15 Jul 2009 12:08:31 -0400
+Message-ID: <8bd0f97a0907150908y333f89eav1d0edbb6a5951c05@mail.gmail.com>
+Subject: Re: [PATCH] USB: isp1760: allow platform devices to customize 
+	devflags
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: gregkh@suse.de, bigeasy@linuxtronix.de, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox schrieb:
-> On Wed, 15 Jul 2009 07:55:14 +0200
-> Alexey Fisher <bug-track@fisher-privat.net> wrote:
-> 
->> In Bug 13710 was reported "corrupted low memory after resume on Intel
->> DG45ID board". It use AMI BIOS with Intel vendor string. We need to add this
->> vendor to CONFIG_X86_RESERVE_LOW_64K workaround.
-> 
-> Given that this is the first report of a problem with an Intel BIOS, and
-> there are millions of systems not affected your match is far too wide I
-> think. Match the board identifier as well at least rather than randomly
-> making everyone suffer.
+On Tue, Jun 23, 2009 at 09:18, Mike Frysinger wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
+>
+> Platform device support was merged earlier, but support for boards to
+> customize the devflags aspect of the controller was not.  We want this on
+> Blackfin systems to control the bus width, but might as well expose all of
+> the fields while we're at it.
 
-It did a memory dump on "windows vista sp2" before and after suspend.. 
-there is the same corruption on same place. But it looks like windows do 
-not use this part so intensive like linux do.
-
-i send new patch to mailing list:
-[PATCH] Lowmemory corruption. Quirk for Intel DG45ID board.
+ping ...
+-mike
