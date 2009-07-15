@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbZGOVVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbZGOVXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753236AbZGOVVx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 17:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZGOVVu
+	id S1753805AbZGOVXe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 17:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbZGOVXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 17:21:50 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:42903 "EHLO
+	Wed, 15 Jul 2009 17:23:30 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:42908 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752115AbZGOVVM (ORCPT
+	with ESMTP id S1751895AbZGOVVK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 17:21:12 -0400
+	Wed, 15 Jul 2009 17:21:10 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 19/20] ceph: debugfs
-Date: Wed, 15 Jul 2009 14:24:49 -0700
-Message-Id: <1247693090-27796-20-git-send-email-sage@newdream.net>
+Subject: [PATCH 11/20] ceph: CRUSH mapping algorithm
+Date: Wed, 15 Jul 2009 14:24:41 -0700
+Message-Id: <1247693090-27796-12-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1247693090-27796-19-git-send-email-sage@newdream.net>
+In-Reply-To: <1247693090-27796-11-git-send-email-sage@newdream.net>
 References: <1247693090-27796-1-git-send-email-sage@newdream.net>
  <1247693090-27796-2-git-send-email-sage@newdream.net>
  <1247693090-27796-3-git-send-email-sage@newdream.net>
@@ -29,638 +29,1100 @@ References: <1247693090-27796-1-git-send-email-sage@newdream.net>
  <1247693090-27796-9-git-send-email-sage@newdream.net>
  <1247693090-27796-10-git-send-email-sage@newdream.net>
  <1247693090-27796-11-git-send-email-sage@newdream.net>
- <1247693090-27796-12-git-send-email-sage@newdream.net>
- <1247693090-27796-13-git-send-email-sage@newdream.net>
- <1247693090-27796-14-git-send-email-sage@newdream.net>
- <1247693090-27796-15-git-send-email-sage@newdream.net>
- <1247693090-27796-16-git-send-email-sage@newdream.net>
- <1247693090-27796-17-git-send-email-sage@newdream.net>
- <1247693090-27796-18-git-send-email-sage@newdream.net>
- <1247693090-27796-19-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Basic state information is available via /debug/ceph, including
-instances of the client, fsids, current monitor, mds and osd maps,
-outstanding server requests, and hooks to adjust debug levels.
+CRUSH is a fancy hash function designed to map inputs onto a dynamic
+hierarchy of devices while minimizing the extent to which inputs are
+remapped when the devices are added or removed.  It includes some
+features that are specifically useful for storage, most notably the
+ability to map each input onto a set of N devices that are separated
+across administrator-defined failure domains.  CRUSH is used to
+distribute data across the cluster of Ceph storage nodes.
+
+More information about CRUSH can be found in this paper:
+
+    http://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/debugfs.c |  604 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 604 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/debugfs.c
+ fs/ceph/crush/crush.c  |  140 +++++++++++
+ fs/ceph/crush/crush.h  |  188 +++++++++++++++
+ fs/ceph/crush/hash.h   |   90 ++++++++
+ fs/ceph/crush/mapper.c |  597 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ceph/crush/mapper.h |   19 ++
+ 5 files changed, 1034 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/crush/crush.c
+ create mode 100644 fs/ceph/crush/crush.h
+ create mode 100644 fs/ceph/crush/hash.h
+ create mode 100644 fs/ceph/crush/mapper.c
+ create mode 100644 fs/ceph/crush/mapper.h
 
-diff --git a/fs/ceph/debugfs.c b/fs/ceph/debugfs.c
+diff --git a/fs/ceph/crush/crush.c b/fs/ceph/crush/crush.c
 new file mode 100644
-index 0000000..bf399e7
+index 0000000..13755cd
 --- /dev/null
-+++ b/fs/ceph/debugfs.c
-@@ -0,0 +1,604 @@
-+#include <linux/module.h>
-+#include <linux/ctype.h>
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
++++ b/fs/ceph/crush/crush.c
+@@ -0,0 +1,140 @@
 +
-+#include "super.h"
-+#include "mds_client.h"
++#ifdef __KERNEL__
++# include <linux/slab.h>
++#else
++# include <stdlib.h>
++# include <assert.h>
++# define kfree(x) do { if (x) free(x); } while (0)
++# define BUG_ON(x) assert(!(x))
++#endif
 +
-+static struct dentry *ceph_debugfs_dir;
-+static struct dentry *ceph_debugfs_debug;
-+static struct dentry *ceph_debugfs_debug_msgr;
-+static struct dentry *ceph_debugfs_debug_console;
-+static struct dentry *ceph_debugfs_debug_mask;
-+static struct dentry *ceph_debugfs_caps_reservation;
++#include "crush.h"
++
++/**
++ * crush_get_bucket_item_weight - Get weight of an item in given bucket
++ * @b: bucket pointer
++ * @p: item index in bucket
++ */
++int crush_get_bucket_item_weight(struct crush_bucket *b, int p)
++{
++	if (p >= b->size)
++		return 0;
++
++	switch (b->alg) {
++	case CRUSH_BUCKET_UNIFORM:
++		return ((struct crush_bucket_uniform *)b)->item_weight;
++	case CRUSH_BUCKET_LIST:
++		return ((struct crush_bucket_list *)b)->item_weights[p];
++	case CRUSH_BUCKET_TREE:
++		if (p & 1)
++			return ((struct crush_bucket_tree *)b)->node_weights[p];
++		return 0;
++	case CRUSH_BUCKET_STRAW:
++		return ((struct crush_bucket_straw *)b)->item_weights[p];
++	}
++	return 0;
++}
++
++/**
++ * crush_calc_parents - Calculate parent vectors for the given crush map.
++ * @map: crush_map pointer
++ */
++void crush_calc_parents(struct crush_map *map)
++{
++	int i, b, c;
++
++	for (b = 0; b < map->max_buckets; b++) {
++		if (map->buckets[b] == NULL)
++			continue;
++		for (i = 0; i < map->buckets[b]->size; i++) {
++			c = map->buckets[b]->items[i];
++			BUG_ON(c >= map->max_devices ||
++			       c < -map->max_buckets);
++			if (c >= 0)
++				map->device_parents[c] = map->buckets[b]->id;
++			else
++				map->bucket_parents[-1-c] = map->buckets[b]->id;
++		}
++	}
++}
++
++void crush_destroy_bucket_uniform(struct crush_bucket_uniform *b)
++{
++	kfree(b->h.perm);
++	kfree(b->h.items);
++	kfree(b);
++}
++
++void crush_destroy_bucket_list(struct crush_bucket_list *b)
++{
++	kfree(b->item_weights);
++	kfree(b->sum_weights);
++	kfree(b->h.perm);
++	kfree(b->h.items);
++	kfree(b);
++}
++
++void crush_destroy_bucket_tree(struct crush_bucket_tree *b)
++{
++	kfree(b->node_weights);
++	kfree(b);
++}
++
++void crush_destroy_bucket_straw(struct crush_bucket_straw *b)
++{
++	kfree(b->straws);
++	kfree(b->item_weights);
++	kfree(b->h.perm);
++	kfree(b->h.items);
++	kfree(b);
++}
++
++void crush_destroy_bucket(struct crush_bucket *b)
++{
++	switch (b->alg) {
++	case CRUSH_BUCKET_UNIFORM:
++		crush_destroy_bucket_uniform((struct crush_bucket_uniform *)b);
++		break;
++	case CRUSH_BUCKET_LIST:
++		crush_destroy_bucket_list((struct crush_bucket_list *)b);
++		break;
++	case CRUSH_BUCKET_TREE:
++		crush_destroy_bucket_tree((struct crush_bucket_tree *)b);
++		break;
++	case CRUSH_BUCKET_STRAW:
++		crush_destroy_bucket_straw((struct crush_bucket_straw *)b);
++		break;
++	}
++}
++
++/**
++ * crush_destroy - Destroy a crush_map
++ * @map: crush_map pointer
++ */
++void crush_destroy(struct crush_map *map)
++{
++	int b;
++
++	/* buckets */
++	if (map->buckets) {
++		for (b = 0; b < map->max_buckets; b++) {
++			if (map->buckets[b] == NULL)
++				continue;
++			crush_destroy_bucket(map->buckets[b]);
++		}
++		kfree(map->buckets);
++	}
++
++	/* rules */
++	if (map->rules) {
++		for (b = 0; b < map->max_rules; b++)
++			kfree(map->rules[b]);
++		kfree(map->rules);
++	}
++
++	kfree(map->bucket_parents);
++	kfree(map->device_parents);
++	kfree(map);
++}
++
++
+diff --git a/fs/ceph/crush/crush.h b/fs/ceph/crush/crush.h
+new file mode 100644
+index 0000000..1d89bfd
+--- /dev/null
++++ b/fs/ceph/crush/crush.h
+@@ -0,0 +1,188 @@
++#ifndef _CRUSH_CRUSH_H
++#define _CRUSH_CRUSH_H
++
++#include <linux/types.h>
 +
 +/*
-+ * ceph_debug_mask
++ * CRUSH is a pseudo-random data distribution algorithm that
++ * efficiently distributes input values (typically, data objects)
++ * across a heterogeneous, structured storage cluster.
++ *
++ * The algorithm was originally described in detail in this paper
++ * (although the algorithm has evolved somewhat since then):
++ *
++ *     http://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf
++ *
++ * LGPL2
 + */
-+struct _debug_mask_name {
-+	int mask;
-+	char *name;
++
++
++#define CRUSH_MAGIC 0x00010000ul
++
++
++#define CRUSH_MAX_DEPTH 10
++#define CRUSH_MAX_SET   10
++
++
++/*
++ * CRUSH uses user-defined "rules" to describe how inputs should be
++ * mapped to devices.  A rule consists of sequence of steps to perform
++ * to generate the set of output devices.
++ */
++struct crush_rule_step {
++	__u32 op;
++	__s32 arg1;
++	__s32 arg2;
 +};
 +
-+static struct _debug_mask_name _debug_mask_names[] = {
-+		{DOUT_MASK_ADDR, "addr"},
-+		{DOUT_MASK_CAPS, "caps"},
-+		{DOUT_MASK_DIR, "dir"},
-+		{DOUT_MASK_EXPORT, "export"},
-+		{DOUT_MASK_FILE, "file"},
-+		{DOUT_MASK_INODE, "inode"},
-+		{DOUT_MASK_IOCTL, "ioctl"},
-+		{DOUT_MASK_MDSC, "mdsc"},
-+		{DOUT_MASK_MDSMAP, "mdsmap"},
-+		{DOUT_MASK_MSGR, "msgr"},
-+		{DOUT_MASK_MON, "mon"},
-+		{DOUT_MASK_OSDC, "osdc"},
-+		{DOUT_MASK_OSDMAP, "osdmap"},
-+		{DOUT_MASK_SNAP, "snap"},
-+		{DOUT_MASK_SUPER, "super"},
-+		{DOUT_MASK_PROTOCOL, "protocol"},
-+		{DOUT_MASK_PROC, "proc"},
-+		{DOUT_MASK_TOOLS, "tools"},
-+		{0, NULL}
++/* step op codes */
++enum {
++	CRUSH_RULE_NOOP = 0,
++	CRUSH_RULE_TAKE = 1,          /* arg1 = value to start with */
++	CRUSH_RULE_CHOOSE_FIRSTN = 2, /* arg1 = num items to pick */
++				      /* arg2 = type */
++	CRUSH_RULE_CHOOSE_INDEP = 3,  /* same */
++	CRUSH_RULE_EMIT = 4,          /* no args */
++	CRUSH_RULE_CHOOSE_LEAF_FIRSTN = 6,
++	CRUSH_RULE_CHOOSE_LEAF_INDEP = 7,
 +};
 +
-+static int debug_mask_show(struct seq_file *s, void *p)
++/*
++ * for specifying choose num (arg1) relative to the max parameter
++ * passed to do_rule
++ */
++#define CRUSH_CHOOSE_N            0
++#define CRUSH_CHOOSE_N_MINUS(x)   (-(x))
++
++/*
++ * The rule mask is used to describe what the rule is intended for.
++ * Given a ruleset and size of output set, we search through the
++ * rule list for a matching rule_mask.
++ */
++struct crush_rule_mask {
++	__u8 ruleset;
++	__u8 type;
++	__u8 min_size;
++	__u8 max_size;
++};
++
++struct crush_rule {
++	__u32 len;
++	struct crush_rule_mask mask;
++	struct crush_rule_step steps[0];
++};
++
++#define crush_rule_size(len) (sizeof(struct crush_rule) + \
++			      (len)*sizeof(struct crush_rule_step))
++
++
++
++/*
++ * A bucket is a named container of other items (either devices or
++ * other buckets).  Items within a bucket are chosen using one of a
++ * few different algorithms.  The table summarizes how the speed of
++ * each option measures up against mapping stability when items are
++ * added or removed.
++ *
++ *  Bucket Alg     Speed       Additions    Removals
++ *  ------------------------------------------------
++ *  uniform         O(1)       poor         poor
++ *  list            O(n)       optimal      poor
++ *  tree            O(log n)   good         good
++ *  straw           O(n)       optimal      optimal
++ */
++enum {
++	CRUSH_BUCKET_UNIFORM = 1,
++	CRUSH_BUCKET_LIST = 2,
++	CRUSH_BUCKET_TREE = 3,
++	CRUSH_BUCKET_STRAW = 4
++};
++static inline const char *crush_bucket_alg_name(int alg)
 +{
-+	int i = 0;
-+	seq_printf(s, "0x%x", ceph_debug_mask);
-+
-+	while (_debug_mask_names[i].mask) {
-+		if (ceph_debug_mask & _debug_mask_names[i].mask)
-+			seq_printf(s, " %s",
-+				       _debug_mask_names[i].name);
-+		i++;
++	switch (alg) {
++	case CRUSH_BUCKET_UNIFORM: return "uniform";
++	case CRUSH_BUCKET_LIST: return "list";
++	case CRUSH_BUCKET_TREE: return "tree";
++	case CRUSH_BUCKET_STRAW: return "straw";
++	default: return "unknown";
 +	}
-+	seq_printf(s, "\n");
++}
++
++struct crush_bucket {
++	__s32 id;        /* this'll be negative */
++	__u16 type;      /* non-zero; type=0 is reserved for devices */
++	__u16 alg;       /* one of CRUSH_BUCKET_* */
++	__u32 weight;    /* 16-bit fixed point */
++	__u32 size;      /* num items */
++	__s32 *items;
++
++	/*
++	 * cached random permutation: used for uniform bucket and for
++	 * the linear search fallback for the other bucket types.
++	 */
++	__u32 perm_x;  /* @x for which *perm is defined */
++	__u32 perm_n;  /* num elements of *perm that are permuted/defined */
++	__u32 *perm;
++};
++
++struct crush_bucket_uniform {
++	struct crush_bucket h;
++	__u32 item_weight;  /* 16-bit fixed point; all items equally weighted */
++};
++
++struct crush_bucket_list {
++	struct crush_bucket h;
++	__u32 *item_weights;  /* 16-bit fixed point */
++	__u32 *sum_weights;   /* 16-bit fixed point.  element i is sum
++				 of weights 0..i, inclusive */
++};
++
++struct crush_bucket_tree {
++	struct crush_bucket h;  /* note: h.size is _tree_ size, not number of
++				   actual items */
++	__u8 num_nodes;
++	__u32 *node_weights;
++};
++
++struct crush_bucket_straw {
++	struct crush_bucket h;
++	__u32 *item_weights;   /* 16-bit fixed point */
++	__u32 *straws;         /* 16-bit fixed point */
++};
++
++
++
++/*
++ * CRUSH map includes all buckets, rules, etc.
++ */
++struct crush_map {
++	struct crush_bucket **buckets;
++	struct crush_rule **rules;
++
++	/*
++	 * Parent pointers to identify the parent bucket a device or
++	 * bucket in the hierarchy.  If an item appears more than
++	 * once, this is the _last_ time it appeared (where buckets
++	 * are processed in bucket id order, from -1 on down to
++	 * -max_buckets.
++	 */
++	__u32 *bucket_parents;
++	__u32 *device_parents;
++
++	__s32 max_buckets;
++	__u32 max_rules;
++	__s32 max_devices;
++};
++
++
++/* crush.c */
++extern int crush_get_bucket_item_weight(struct crush_bucket *b, int pos);
++extern void crush_calc_parents(struct crush_map *map);
++extern void crush_destroy_bucket_uniform(struct crush_bucket_uniform *b);
++extern void crush_destroy_bucket_list(struct crush_bucket_list *b);
++extern void crush_destroy_bucket_tree(struct crush_bucket_tree *b);
++extern void crush_destroy_bucket_straw(struct crush_bucket_straw *b);
++extern void crush_destroy_bucket(struct crush_bucket *b);
++extern void crush_destroy(struct crush_map *map);
++
++#endif
+diff --git a/fs/ceph/crush/hash.h b/fs/ceph/crush/hash.h
+new file mode 100644
+index 0000000..42f3312
+--- /dev/null
++++ b/fs/ceph/crush/hash.h
+@@ -0,0 +1,90 @@
++#ifndef _CRUSH_HASH_H
++#define _CRUSH_HASH_H
++
++/*
++ * Robert Jenkins' function for mixing 32-bit values
++ * http://burtleburtle.net/bob/hash/evahash.html
++ * a, b = random bits, c = input and output
++ */
++#define crush_hashmix(a, b, c) do {			\
++		a = a-b;  a = a-c;  a = a^(c>>13);	\
++		b = b-c;  b = b-a;  b = b^(a<<8);	\
++		c = c-a;  c = c-b;  c = c^(b>>13);	\
++		a = a-b;  a = a-c;  a = a^(c>>12);	\
++		b = b-c;  b = b-a;  b = b^(a<<16);	\
++		c = c-a;  c = c-b;  c = c^(b>>5);	\
++		a = a-b;  a = a-c;  a = a^(c>>3);	\
++		b = b-c;  b = b-a;  b = b^(a<<10);	\
++		c = c-a;  c = c-b;  c = c^(b>>15);	\
++	} while (0)
++
++#define crush_hash_seed 1315423911
++
++static inline __u32 crush_hash32(__u32 a)
++{
++	__u32 hash = crush_hash_seed ^ a;
++	__u32 b = a;
++	__u32 x = 231232;
++	__u32 y = 1232;
++	crush_hashmix(b, x, hash);
++	crush_hashmix(y, a, hash);
++	return hash;
++}
++
++static inline __u32 crush_hash32_2(__u32 a, __u32 b)
++{
++	__u32 hash = crush_hash_seed ^ a ^ b;
++	__u32 x = 231232;
++	__u32 y = 1232;
++	crush_hashmix(a, b, hash);
++	crush_hashmix(x, a, hash);
++	crush_hashmix(b, y, hash);
++	return hash;
++}
++
++static inline __u32 crush_hash32_3(__u32 a, __u32 b, __u32 c)
++{
++	__u32 hash = crush_hash_seed ^ a ^ b ^ c;
++	__u32 x = 231232;
++	__u32 y = 1232;
++	crush_hashmix(a, b, hash);
++	crush_hashmix(c, x, hash);
++	crush_hashmix(y, a, hash);
++	crush_hashmix(b, x, hash);
++	crush_hashmix(y, c, hash);
++	return hash;
++}
++
++static inline __u32 crush_hash32_4(__u32 a, __u32 b, __u32 c,
++				   __u32 d)
++{
++	__u32 hash = crush_hash_seed ^ a ^ b ^ c ^ d;
++	__u32 x = 231232;
++	__u32 y = 1232;
++	crush_hashmix(a, b, hash);
++	crush_hashmix(c, d, hash);
++	crush_hashmix(a, x, hash);
++	crush_hashmix(y, b, hash);
++	crush_hashmix(c, x, hash);
++	crush_hashmix(y, d, hash);
++	return hash;
++}
++
++static inline __u32 crush_hash32_5(__u32 a, __u32 b, __u32 c,
++				   __u32 d, __u32 e)
++{
++	__u32 hash = crush_hash_seed ^ a ^ b ^ c ^ d ^ e;
++	__u32 x = 231232;
++	__u32 y = 1232;
++	crush_hashmix(a, b, hash);
++	crush_hashmix(c, d, hash);
++	crush_hashmix(e, x, hash);
++	crush_hashmix(y, a, hash);
++	crush_hashmix(b, x, hash);
++	crush_hashmix(y, c, hash);
++	crush_hashmix(d, x, hash);
++	crush_hashmix(y, e, hash);
++	return hash;
++}
++
++#endif
+diff --git a/fs/ceph/crush/mapper.c b/fs/ceph/crush/mapper.c
+new file mode 100644
+index 0000000..8dfe212
+--- /dev/null
++++ b/fs/ceph/crush/mapper.c
+@@ -0,0 +1,597 @@
++
++#ifdef __KERNEL__
++# include <linux/string.h>
++# include <linux/slab.h>
++# include <linux/bug.h>
++# include <linux/kernel.h>
++# ifndef dprintk
++#  define dprintk(args...)
++# endif
++#else
++# include <string.h>
++# include <stdio.h>
++# include <stdlib.h>
++# include <assert.h>
++# define BUG_ON(x) assert(!(x))
++# define dprintk(args...) /* printf(args) */
++# define kmalloc(x, f) malloc(x)
++# define kfree(x) free(x)
++#endif
++
++#include "crush.h"
++#include "hash.h"
++
++
++/**
++ * crush_find_rule - find a crush_rule id for a given ruleset, type, and size.
++ * @map: the crush_map
++ * @ruleset: the storage ruleset id (user defined)
++ * @type: storage ruleset type (user defined)
++ * @size: output set size
++ */
++int crush_find_rule(struct crush_map *map, int ruleset, int type, int size)
++{
++	int i;
++
++	for (i = 0; i < map->max_rules; i++) {
++		if (map->rules[i] &&
++		    map->rules[i]->mask.ruleset == ruleset &&
++		    map->rules[i]->mask.type == type &&
++		    map->rules[i]->mask.min_size <= size &&
++		    map->rules[i]->mask.max_size >= size)
++			return i;
++	}
++	return -1;
++}
++
++
++/*
++ * bucket choose methods
++ *
++ * For each bucket algorithm, we have a "choose" method that, given a
++ * crush input @x and replica position (usually, position in output set) @r,
++ * will produce an item in the bucket.
++ */
++
++/*
++ * Choose based on a random permutation of the bucket.
++ */
++static int bucket_perm_choose(struct crush_bucket *bucket,
++				int x, int r)
++{
++	unsigned pr = r % bucket->size;
++	unsigned i, s;
++
++	/* start a new permutation if @x has changed */
++	if (bucket->perm_x != x || bucket->perm_n == 0) {
++		dprintk("bucket %d new x=%d\n", bucket->id, x);
++		bucket->perm_x = x;
++
++		/* optimize common r=0 case */
++		if (pr == 0) {
++			s = crush_hash32_3(x, bucket->id, 0) %
++				bucket->size;
++			bucket->perm[0] = s;
++			bucket->perm_n = 0xffff;
++			goto out;
++		}
++
++		for (i = 0; i < bucket->size; i++)
++			bucket->perm[i] = i;
++		bucket->perm_n = 0;
++	} else if (bucket->perm_n == 0xffff) {
++		/* clean up after the r=0 case above */
++		for (i = 1; i < bucket->size; i++)
++			bucket->perm[i] = i;
++		bucket->perm[bucket->perm[0]] = 0;
++		bucket->perm_n = 1;
++	}
++
++	/* calculate permutation up to pr */
++	for (i = 0; i < bucket->perm_n; i++)
++		dprintk(" perm_choose have %d: %d\n", i, bucket->perm[i]);
++	while (bucket->perm_n <= pr) {
++		unsigned p = bucket->perm_n;
++		/* no point in swapping the final entry */
++		if (p < bucket->size - 1) {
++			i = crush_hash32_3(x, bucket->id, p) %
++				(bucket->size - p);
++			if (i) {
++				unsigned t = bucket->perm[p + i];
++				bucket->perm[p + i] = bucket->perm[p];
++				bucket->perm[p] = t;
++			}
++			dprintk(" perm_choose swap %d with %d\n", p, p+i);
++		}
++		bucket->perm_n++;
++	}
++	for (i = 0; i < bucket->size; i++)
++		dprintk(" perm_choose  %d: %d\n", i, bucket->perm[i]);
++
++	s = bucket->perm[pr];
++out:
++	dprintk(" perm_choose %d sz=%d x=%d r=%d (%d) s=%d\n", bucket->id,
++		bucket->size, x, r, pr, s);
++	return bucket->items[s];
++}
++
++/* uniform */
++static int bucket_uniform_choose(struct crush_bucket_uniform *bucket,
++				 int x, int r)
++{
++	return bucket_perm_choose(&bucket->h, x, r);
++}
++
++/* list */
++static int bucket_list_choose(struct crush_bucket_list *bucket,
++			      int x, int r)
++{
++	int i;
++
++	for (i = bucket->h.size-1; i >= 0; i--) {
++		__u64 w = crush_hash32_4(x, bucket->h.items[i], r,
++					 bucket->h.id);
++		w &= 0xffff;
++		dprintk("list_choose i=%d x=%d r=%d item %d weight %x "
++			"sw %x rand %llx",
++			i, x, r, bucket->h.items[i], bucket->item_weights[i],
++			bucket->sum_weights[i], w);
++		w *= bucket->sum_weights[i];
++		w = w >> 16;
++		/*dprintk(" scaled %llx\n", w);*/
++		if (w < bucket->item_weights[i])
++			return bucket->h.items[i];
++	}
++
++	BUG_ON(1);
 +	return 0;
 +}
 +
-+static int get_debug_mask(const char *name, int len)
-+{
-+	int i = 0;
 +
-+	while (_debug_mask_names[i].name) {
-+		if (strncmp(_debug_mask_names[i].name, name, len) == 0)
-+			return _debug_mask_names[i].mask;
-+		i++;
++/* tree */
++static int height(int n)
++{
++	int h = 0;
++	while ((n & 1) == 0) {
++		h++;
++		n = n >> 1;
 +	}
-+	return 0;
++	return h;
 +}
 +
-+static ssize_t debug_mask_store(struct file *file, const char __user *buffer,
-+				size_t count, loff_t *data)
++static int left(int x)
 +{
-+	char *next, *tok;
-+	char *buf;
++	int h = height(x);
++	return x - (1 << (h-1));
++}
 +
-+	if (count > PAGE_SIZE)
-+		return -EINVAL;
++static int right(int x)
++{
++	int h = height(x);
++	return x + (1 << (h-1));
++}
 +
-+	buf = kmalloc(count + 1, GFP_KERNEL);
++static int terminal(int x)
++{
++	return x & 1;
++}
 +
-+	if (copy_from_user(buf, buffer, count))
-+		return -EFAULT;
++static int bucket_tree_choose(struct crush_bucket_tree *bucket,
++			      int x, int r)
++{
++	int n, l;
++	__u32 w;
++	__u64 t;
 +
-+	buf[count] = '\0';
++	/* start at root */
++	n = bucket->num_nodes >> 1;
 +
-+	next = buf;
++	while (!terminal(n)) {
++		/* pick point in [0, w) */
++		w = bucket->node_weights[n];
++		t = (__u64)crush_hash32_4(x, n, r, bucket->h.id) * (__u64)w;
++		t = t >> 32;
 +
-+	while (1) {
-+		tok = next;
-+		next = strpbrk(tok, " \t\r\n");
-+		if (!next)
-+			break;
-+		if (isdigit(*tok)) {
-+			ceph_debug_mask = simple_strtol(tok, NULL, 0);
-+		} else {
-+			int remove = 0;
-+			int mask;
++		/* descend to the left or right? */
++		l = left(n);
++		if (t < bucket->node_weights[l])
++			n = l;
++		else
++			n = right(n);
++	}
 +
-+			if (*tok == '-') {
-+				remove = 1;
-+				tok++;
-+			} else if (*tok == '+')
-+				tok++;
-+			mask = get_debug_mask(tok, next-tok);
-+			if (mask) {
-+				if (remove)
-+					ceph_debug_mask &= ~mask;
++	return bucket->h.items[n >> 1];
++}
++
++
++/* straw */
++
++static int bucket_straw_choose(struct crush_bucket_straw *bucket,
++			       int x, int r)
++{
++	int i;
++	int high = 0;
++	__u64 high_draw = 0;
++	__u64 draw;
++
++	for (i = 0; i < bucket->h.size; i++) {
++		draw = crush_hash32_3(x, bucket->h.items[i], r);
++		draw &= 0xffff;
++		draw *= bucket->straws[i];
++		if (i == 0 || draw > high_draw) {
++			high = i;
++			high_draw = draw;
++		}
++	}
++	return bucket->h.items[high];
++}
++
++static int crush_bucket_choose(struct crush_bucket *in, int x, int r)
++{
++	dprintk("choose %d x=%d r=%d\n", in->id, x, r);
++	switch (in->alg) {
++	case CRUSH_BUCKET_UNIFORM:
++		return bucket_uniform_choose((struct crush_bucket_uniform *)in,
++					  x, r);
++	case CRUSH_BUCKET_LIST:
++		return bucket_list_choose((struct crush_bucket_list *)in,
++					  x, r);
++	case CRUSH_BUCKET_TREE:
++		return bucket_tree_choose((struct crush_bucket_tree *)in,
++					  x, r);
++	case CRUSH_BUCKET_STRAW:
++		return bucket_straw_choose((struct crush_bucket_straw *)in,
++					   x, r);
++	default:
++		BUG_ON(1);
++/* 		return in->items[0] */;
++	}
++}
++
++/*
++ * true if device is marked "out" (failed, fully offloaded)
++ * of the cluster
++ */
++static int is_out(struct crush_map *map, __u32 *weight, int item, int x)
++{
++	if (weight[item] >= 0x1000)
++		return 0;
++	if (weight[item] == 0)
++		return 1;
++	if ((crush_hash32_2(x, item) & 0xffff) < weight[item])
++		return 0;
++	return 1;
++}
++
++/**
++ * crush_choose - choose numrep distinct items of given type
++ * @map: the crush_map
++ * @bucket: the bucket we are choose an item from
++ * @x: crush input value
++ * @numrep: the number of items to choose
++ * @type: the type of item to choose
++ * @out: pointer to output vector
++ * @outpos: our position in that vector
++ * @firstn: true if choosing "first n" items, false if choosing "indep"
++ * @recurse_to_leaf: true if we want one device under each item of given type
++ * @out2: second output vector for leaf items (if @recurse_to_leaf)
++ */
++static int crush_choose(struct crush_map *map,
++			struct crush_bucket *bucket,
++			__u32 *weight,
++			int x, int numrep, int type,
++			int *out, int outpos,
++			int firstn, int recurse_to_leaf,
++			int *out2)
++{
++	int rep;
++	int ftotal, flocal;
++	int retry_descent, retry_bucket, skip_rep;
++	struct crush_bucket *in = bucket;
++	int r;
++	int i;
++	int item;
++	int itemtype;
++	int collide, reject;
++	const int orig_tries = 5; /* attempts before we fall back to search */
++	dprintk("choose bucket %d x %d outpos %d\n", bucket->id, x, outpos);
++
++	for (rep = outpos; rep < numrep; rep++) {
++		/* keep trying until we get a non-out, non-colliding item */
++		ftotal = 0;
++		skip_rep = 0;
++		do {
++			retry_descent = 0;
++			in = bucket;               /* initial bucket */
++
++			/* choose through intervening buckets */
++			flocal = 0;
++			do {
++				retry_bucket = 0;
++				r = rep;
++				if (in->alg == CRUSH_BUCKET_UNIFORM) {
++					/* be careful */
++					if (firstn || numrep >= in->size)
++						/* r' = r + f_total */
++						r += ftotal;
++					else if (in->size % numrep == 0)
++						/* r'=r+(n+1)*f_local */
++						r += (numrep+1) *
++							(flocal+ftotal);
++					else
++						/* r' = r + n*f_local */
++						r += numrep * (flocal+ftotal);
++				} else {
++					if (firstn)
++						/* r' = r + f_total */
++						r += ftotal;
++					else
++						/* r' = r + n*f_local */
++						r += numrep * (flocal+ftotal);
++				}
++
++				/* bucket choose */
++				if (flocal >= (in->size>>1) &&
++				    flocal > orig_tries)
++					item = bucket_perm_choose(in, x, r);
 +				else
-+					ceph_debug_mask |= mask;
++					item = crush_bucket_choose(in, x, r);
++				BUG_ON(item >= map->max_devices);
++
++				/* desired type? */
++				if (item < 0)
++					itemtype = map->buckets[-1-item]->type;
++				else
++					itemtype = 0;
++				dprintk("  item %d type %d\n", item, itemtype);
++
++				/* keep going? */
++				if (itemtype != type) {
++					BUG_ON(item >= 0 ||
++					       (-1-item) >= map->max_buckets);
++					in = map->buckets[-1-item];
++					continue;
++				}
++
++				/* collision? */
++				collide = 0;
++				for (i = 0; i < outpos; i++) {
++					if (out[i] == item) {
++						collide = 1;
++						break;
++					}
++				}
++
++				if (recurse_to_leaf &&
++				    item < 0 &&
++				    crush_choose(map, map->buckets[-1-item],
++						 weight,
++						 x, outpos+1, 0,
++						 out2, outpos,
++						 firstn, 0, NULL) <= outpos) {
++					reject = 1;
++				} else {
++					/* out? */
++					if (itemtype == 0)
++						reject = is_out(map, weight,
++								item, x);
++					else
++						reject = 0;
++				}
++
++				if (reject || collide) {
++					ftotal++;
++					flocal++;
++
++					if (collide && flocal < 3)
++						/* retry locally a few times */
++						retry_bucket = 1;
++					else if (flocal < in->size + orig_tries)
++						/* exhaustive bucket search */
++						retry_bucket = 1;
++					else if (ftotal < 20)
++						/* then retry descent */
++						retry_descent = 1;
++					else
++						/* else give up */
++						skip_rep = 1;
++					dprintk("  reject %d  collide %d  "
++						"ftotal %d  flocal %d\n",
++						reject, collide, ftotal,
++						flocal);
++				}
++			} while (retry_bucket);
++		} while (retry_descent);
++
++		if (skip_rep) {
++			dprintk("skip rep\n");
++			continue;
++		}
++
++		dprintk("choose got %d\n", item);
++		out[outpos] = item;
++		outpos++;
++	}
++
++	dprintk("choose returns %d\n", outpos);
++	return outpos;
++}
++
++
++/**
++ * crush_do_rule - calculate a mapping with the given input and rule
++ * @map: the crush_map
++ * @ruleno: the rule id
++ * @x: hash input
++ * @result: pointer to result vector
++ * @result_max: maximum result size
++ * @force: force initial replica choice; -1 for none
++ */
++int crush_do_rule(struct crush_map *map,
++		  int ruleno, int x, int *result, int result_max,
++		  int force, __u32 *weight)
++{
++	int result_len;
++	int *force_context = NULL;
++	int force_pos = -1;
++	int *a = NULL;
++	int *b = NULL;
++	int *c = NULL;
++	int recurse_to_leaf;
++	int *w;
++	int wsize = 0;
++	int *o;
++	int osize;
++	int *tmp;
++	struct crush_rule *rule;
++	int step;
++	int i, j;
++	int numrep;
++	int firstn;
++	int rc = -1;
++
++	BUG_ON(ruleno >= map->max_rules);
++
++	a = kmalloc(CRUSH_MAX_SET * sizeof(int), GFP_KERNEL);
++	if (!a)
++		goto out;
++	b = kmalloc(CRUSH_MAX_SET * sizeof(int), GFP_KERNEL);
++	if (!b)
++		goto out;
++	c = kmalloc(CRUSH_MAX_SET * sizeof(int), GFP_KERNEL);
++	if (!c)
++		goto out;
++	force_context = kmalloc(CRUSH_MAX_DEPTH * sizeof(int), GFP_KERNEL);
++	if (!force_context)
++		goto out;
++
++	rule = map->rules[ruleno];
++	result_len = 0;
++	w = a;
++	o = b;
++
++	/*
++	 * determine hierarchical context of force, if any.  note
++	 * that this may or may not correspond to the specific types
++	 * referenced by the crush rule.
++	 */
++	if (force >= 0) {
++		if (force >= map->max_devices ||
++		    map->device_parents[force] == 0) {
++			/*dprintk("CRUSH: forcefed device dne\n");*/
++			rc = -1;  /* force fed device dne */
++			goto out;
++		}
++		if (!is_out(map, weight, force, x)) {
++			while (1) {
++				force_context[++force_pos] = force;
++				if (force >= 0)
++					force = map->device_parents[force];
++				else
++					force = map->bucket_parents[-1-force];
++				if (force == 0)
++					break;
 +			}
 +		}
-+		next++;
 +	}
 +
-+	kfree(buf);
-+
-+	return count;
-+}
-+
-+static int debug_mask_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, debug_mask_show, NULL);
-+}
-+
-+static const struct file_operations ceph_debug_mask_fops = {
-+	.open		= debug_mask_open,
-+	.read		= seq_read,
-+	.write		= debug_mask_store,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
-+static int fsid_show(struct seq_file *s, void *p)
-+{
-+	struct ceph_client *client = s->private;
-+
-+	seq_printf(s, "%llx.%llx\n",
-+	       le64_to_cpu(__ceph_fsid_major(&client->monc.monmap->fsid)),
-+	       le64_to_cpu(__ceph_fsid_minor(&client->monc.monmap->fsid)));
-+	return 0;
-+}
-+
-+static int monmap_show(struct seq_file *s, void *p)
-+{
-+	int i;
-+	struct ceph_client *client = s->private;
-+
-+	if (client->monc.monmap == NULL)
-+		return 0;
-+
-+	seq_printf(s, "epoch %d\n", client->monc.monmap->epoch);
-+	for (i = 0; i < client->monc.monmap->num_mon; i++) {
-+		struct ceph_entity_inst *inst =
-+			&client->monc.monmap->mon_inst[i];
-+
-+		seq_printf(s, "\t%s%d\t%u.%u.%u.%u:%u\n",
-+			       ENTITY_NAME(inst->name),
-+			       IPQUADPORT(inst->addr.ipaddr));
-+	}
-+	return 0;
-+}
-+
-+static int mdsmap_show(struct seq_file *s, void *p)
-+{
-+	int i;
-+	struct ceph_client *client = s->private;
-+
-+	if (client->mdsc.mdsmap == NULL)
-+		return 0;
-+	seq_printf(s, "epoch %d\n", client->mdsc.mdsmap->m_epoch);
-+	seq_printf(s, "root %d\n", client->mdsc.mdsmap->m_root);
-+	seq_printf(s, "session_timeout %d\n",
-+		       client->mdsc.mdsmap->m_session_timeout);
-+	seq_printf(s, "session_autoclose %d\n",
-+		       client->mdsc.mdsmap->m_session_autoclose);
-+	for (i = 0; i < client->mdsc.mdsmap->m_max_mds; i++) {
-+		struct ceph_entity_addr *addr = &client->mdsc.mdsmap->m_addr[i];
-+		int state = client->mdsc.mdsmap->m_state[i];
-+
-+		seq_printf(s, "\tmds%d\t%u.%u.%u.%u:%u\t(%s)\n",
-+			       i,
-+			       IPQUADPORT(addr->ipaddr),
-+			       ceph_mds_state_name(state));
-+	}
-+	return 0;
-+}
-+
-+static int osdmap_show(struct seq_file *s, void *p)
-+{
-+	int i;
-+	struct ceph_client *client = s->private;
-+
-+	if (client->osdc.osdmap == NULL)
-+		return 0;
-+	seq_printf(s, "epoch %d\n", client->osdc.osdmap->epoch);
-+	seq_printf(s, "flags%s%s\n",
-+		   (client->osdc.osdmap->flags & CEPH_OSDMAP_NEARFULL) ?
-+		   " NEARFULL" : "",
-+		   (client->osdc.osdmap->flags & CEPH_OSDMAP_FULL) ?
-+		   " FULL" : "");
-+	for (i = 0; i < client->osdc.osdmap->num_pools; i++) {
-+		struct ceph_pg_pool_info *pool =
-+			&client->osdc.osdmap->pg_pool[i];
-+		seq_printf(s, "pg_pool %d pg_num %d / %d, lpg_num %d / %d\n",
-+			   i, pool->v.pg_num, pool->pg_num_mask,
-+			   pool->v.lpg_num, pool->lpg_num_mask);
-+	}
-+	for (i = 0; i < client->osdc.osdmap->max_osd; i++) {
-+		struct ceph_entity_addr *addr =
-+			&client->osdc.osdmap->osd_addr[i];
-+		int state = client->osdc.osdmap->osd_state[i];
-+		char sb[64];
-+
-+		seq_printf(s,
-+		       "\tosd%d\t%u.%u.%u.%u:%u\t%3d%%\t(%s)\n",
-+		       i, IPQUADPORT(addr->ipaddr),
-+		       ((client->osdc.osdmap->osd_weight[i]*100) >> 16),
-+		       ceph_osdmap_state_str(sb, sizeof(sb), state));
-+	}
-+	return 0;
-+}
-+
-+static int monc_show(struct seq_file *s, void *p)
-+{
-+	struct ceph_client *client = s->private;
-+	struct ceph_mon_statfs_request *req;
-+	u64 nexttid = 0;
-+	int got;
-+	struct ceph_mon_client *monc = &client->monc;
-+
-+	mutex_lock(&monc->statfs_mutex);
-+
-+	if (monc->want_osdmap)
-+		seq_printf(s, "want osdmap %u\n", (unsigned)monc->want_osdmap);
-+	if (monc->want_mdsmap)
-+		seq_printf(s, "want mdsmap %u\n", (unsigned)monc->want_mdsmap);
-+
-+	while (nexttid < monc->last_tid) {
-+		got = radix_tree_gang_lookup(&monc->statfs_request_tree,
-+					     (void **)&req, nexttid, 1);
-+		if (got == 0)
-+			break;
-+		nexttid = req->tid + 1;
-+
-+		seq_printf(s, "%u.%u.%u.%u:%u (%s%d)\tstatfs\n",
-+			IPQUADPORT(req->request->hdr.dst.addr.ipaddr),
-+			ENTITY_NAME(req->request->hdr.dst.name));
-+	}
-+	mutex_unlock(&monc->statfs_mutex);
-+
-+	return 0;
-+}
-+
-+static int mdsc_show(struct seq_file *s, void *p)
-+{
-+	struct ceph_client *client = s->private;
-+	struct ceph_mds_request *req;
-+	u64 nexttid = 0;
-+	int got;
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	int pathlen;
-+	u64 pathbase;
-+	char *path;
-+
-+	mutex_lock(&mdsc->mutex);
-+	while (nexttid < mdsc->last_tid) {
-+		got = radix_tree_gang_lookup(&mdsc->request_tree,
-+					     (void **)&req, nexttid, 1);
-+		if (got == 0)
-+			break;
-+		nexttid = req->r_tid + 1;
-+
-+		seq_printf(s, "%lld\t%u.%u.%u.%u:%u (%s%d)\t",
-+			   req->r_tid,
-+			   IPQUADPORT(req->r_request->hdr.dst.addr.ipaddr),
-+			   ENTITY_NAME(req->r_request->hdr.dst.name));
-+
-+		seq_printf(s, "%s", ceph_mds_op_name(req->r_op));
-+
-+		if (req->r_got_unsafe)
-+			seq_printf(s, "\t(unsafe)");
-+		else
-+			seq_printf(s, "\t");
-+
-+		if (req->r_inode) {
-+			seq_printf(s, " #%llx", ceph_ino(req->r_inode));
-+		} else if (req->r_dentry) {
-+			path = ceph_mdsc_build_path(req->r_dentry, &pathlen,
-+						    &pathbase, 0);
-+			spin_lock(&req->r_dentry->d_lock);
-+			seq_printf(s, " #%llx/%.*s (%s)",
-+				   ceph_ino(req->r_dentry->d_parent->d_inode),
-+				   req->r_dentry->d_name.len,
-+				   req->r_dentry->d_name.name,
-+				   path ? path : "");
-+			spin_unlock(&req->r_dentry->d_lock);
-+			kfree(path);
-+		} else if (req->r_path1) {
-+			seq_printf(s, " #%llx/%s", req->r_ino1.ino,
-+				   req->r_path1);
-+		}
-+
-+		if (req->r_old_dentry) {
-+			path = ceph_mdsc_build_path(req->r_old_dentry, &pathlen,
-+						    &pathbase, 0);
-+			spin_lock(&req->r_old_dentry->d_lock);
-+			seq_printf(s, " #%llx/%.*s (%s)",
-+			   ceph_ino(req->r_old_dentry->d_parent->d_inode),
-+				   req->r_old_dentry->d_name.len,
-+				   req->r_old_dentry->d_name.name,
-+				   path ? path : "");
-+			spin_unlock(&req->r_old_dentry->d_lock);
-+			kfree(path);
-+		} else if (req->r_path2) {
-+			if (req->r_ino2.ino)
-+				seq_printf(s, " #%llx/%s", req->r_ino2.ino,
-+					   req->r_path2);
-+			else
-+				seq_printf(s, " %s", req->r_path2);
-+		}
-+
-+		seq_printf(s, "\n");
-+	}
-+	mutex_unlock(&mdsc->mutex);
-+
-+	return 0;
-+}
-+
-+static int osdc_show(struct seq_file *s, void *p)
-+{
-+	struct ceph_client *client = s->private;
-+	struct ceph_osd_client *osdc = &client->osdc;
-+	u64 nexttid = 0;
-+
-+	mutex_lock(&osdc->request_mutex);
-+	while (nexttid < osdc->last_tid) {
-+		struct ceph_osd_request *req;
-+		struct ceph_osd_request_head *head;
-+		struct ceph_osd_op *op;
-+		int num_ops;
-+		int opcode, olen;
-+		int got, i;
-+
-+		got = radix_tree_gang_lookup(&osdc->request_tree,
-+					     (void **)&req, nexttid, 1);
-+		if (got == 0)
++	for (step = 0; step < rule->len; step++) {
++		firstn = 0;
++		switch (rule->steps[step].op) {
++		case CRUSH_RULE_TAKE:
++			w[0] = rule->steps[step].arg1;
++			if (force_pos >= 0) {
++				BUG_ON(force_context[force_pos] != w[0]);
++				force_pos--;
++			}
++			wsize = 1;
 +			break;
 +
-+		nexttid = req->r_tid + 1;
++		case CRUSH_RULE_CHOOSE_LEAF_FIRSTN:
++		case CRUSH_RULE_CHOOSE_FIRSTN:
++			firstn = 1;
++		case CRUSH_RULE_CHOOSE_LEAF_INDEP:
++		case CRUSH_RULE_CHOOSE_INDEP:
++			BUG_ON(wsize == 0);
 +
-+		seq_printf(s, "%lld\t%u.%u.%u.%u:%u (%s%d)\t",
-+			   req->r_tid,
-+			   IPQUADPORT(req->r_request->hdr.dst.addr.ipaddr),
-+			   ENTITY_NAME(req->r_request->hdr.dst.name));
++			recurse_to_leaf =
++				rule->steps[step].op ==
++				 CRUSH_RULE_CHOOSE_LEAF_FIRSTN ||
++				rule->steps[step].op ==
++				CRUSH_RULE_CHOOSE_LEAF_INDEP;
 +
-+		head = req->r_request->front.iov_base;
-+		op = (void *)(head + 1);
++			/* reset output */
++			osize = 0;
 +
-+		num_ops = le16_to_cpu(head->num_ops);
-+		olen = le32_to_cpu(head->object_len);
-+		seq_printf(s, "%.*s", olen,
-+			   (const char *)(head->ops + num_ops));
++			for (i = 0; i < wsize; i++) {
++				/*
++				 * see CRUSH_N, CRUSH_N_MINUS macros.
++				 * basically, numrep <= 0 means relative to
++				 * the provided result_max
++				 */
++				numrep = rule->steps[step].arg1;
++				if (numrep <= 0) {
++					numrep += result_max;
++					if (numrep <= 0)
++						continue;
++				}
++				j = 0;
++				if (osize == 0 && force_pos >= 0) {
++					/* skip any intermediate types */
++					while (force_pos &&
++					       force_context[force_pos] < 0 &&
++					       rule->steps[step].arg2 !=
++					       map->buckets[-1 - force_context[force_pos]]->type)
++						force_pos--;
++					o[osize] = force_context[force_pos];
++					if (recurse_to_leaf)
++						c[osize] = force_context[0];
++					j++;
++					force_pos--;
++				}
++				osize += crush_choose(map,
++						      map->buckets[-1-w[i]],
++						      weight,
++						      x, numrep,
++						      rule->steps[step].arg2,
++						      o+osize, j,
++						      firstn,
++						      recurse_to_leaf, c+osize);
++			}
 +
-+		if (req->r_reassert_version.epoch)
-+			seq_printf(s, "\t%u'%llu",
-+			   (unsigned)le32_to_cpu(req->r_reassert_version.epoch),
-+			   le64_to_cpu(req->r_reassert_version.version));
-+		else
-+			seq_printf(s, "\t");
++			if (recurse_to_leaf)
++				/* copy final _leaf_ values to output set */
++				memcpy(o, c, osize*sizeof(*o));
 +
-+		for (i = 0; i < num_ops; i++) {
-+			opcode = le16_to_cpu(op->op);
-+			seq_printf(s, "\t%s", ceph_osd_op_name(opcode));
-+			op++;
++			/* swap t and w arrays */
++			tmp = o;
++			o = w;
++			w = tmp;
++			wsize = osize;
++			break;
++
++
++		case CRUSH_RULE_EMIT:
++			for (i = 0; i < wsize && result_len < result_max; i++) {
++				result[result_len] = w[i];
++				result_len++;
++			}
++			wsize = 0;
++			break;
++
++		default:
++			BUG_ON(1);
 +		}
-+
-+		seq_printf(s, "\n");
 +	}
-+	mutex_unlock(&osdc->request_mutex);
-+	return 0;
-+}
-+
-+static int caps_reservation_show(struct seq_file *s, void *p)
-+{
-+	int total, avail, used, reserved;
-+
-+	ceph_reservation_status(&total, &avail, &used, &reserved);
-+
-+	seq_printf(s, "total\t\t%d\n"
-+		      "avail\t\t%d\n"
-+		      "used\t\t%d\n"
-+		      "reserved\t%d\n",
-+		   total, avail, used, reserved);
-+	return 0;
-+}
-+
-+static int dentry_lru_show(struct seq_file *s, void *ptr)
-+{
-+	struct ceph_client *client = s->private;
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_dentry_info *di;
-+
-+	spin_lock(&mdsc->dentry_lru_lock);
-+	list_for_each_entry(di, &mdsc->dentry_lru, lru) {
-+		struct dentry *dentry = di->dentry;
-+		seq_printf(s, "%p %p\t%.*s\n",
-+			   di, dentry, dentry->d_name.len, dentry->d_name.name);
-+	}
-+	spin_unlock(&mdsc->dentry_lru_lock);
-+
-+	return 0;
-+}
-+
-+#define DEFINE_SHOW_FUNC(name) 						\
-+static int name##_open(struct inode *inode, struct file *file)		\
-+{									\
-+	struct seq_file *sf;						\
-+	int ret;							\
-+									\
-+	ret = single_open(file, name, NULL);				\
-+	sf = file->private_data;					\
-+	sf->private = inode->i_private;					\
-+	return ret;							\
-+}									\
-+									\
-+static const struct file_operations name##_fops = {			\
-+	.open		= name##_open,					\
-+	.read		= seq_read,					\
-+	.llseek		= seq_lseek,					\
-+	.release	= single_release,				\
-+};
-+
-+DEFINE_SHOW_FUNC(fsid_show)
-+DEFINE_SHOW_FUNC(monmap_show)
-+DEFINE_SHOW_FUNC(mdsmap_show)
-+DEFINE_SHOW_FUNC(osdmap_show)
-+DEFINE_SHOW_FUNC(monc_show)
-+DEFINE_SHOW_FUNC(mdsc_show)
-+DEFINE_SHOW_FUNC(osdc_show)
-+DEFINE_SHOW_FUNC(caps_reservation_show)
-+DEFINE_SHOW_FUNC(dentry_lru_show)
-+
-+int ceph_debugfs_init(void)
-+{
-+	int ret = -ENOMEM;
-+
-+	ceph_debugfs_dir = debugfs_create_dir("ceph", NULL);
-+
-+	if (!ceph_debugfs_dir)
-+		goto out;
-+
-+	ceph_debugfs_debug = debugfs_create_u32("debug",
-+					0600,
-+					ceph_debugfs_dir,
-+					(u32 *)&ceph_debug);
-+	if (!ceph_debugfs_debug)
-+		goto out;
-+
-+	ceph_debugfs_debug_msgr = debugfs_create_u32("msgr",
-+					0600,
-+					ceph_debugfs_dir,
-+					(u32 *)&ceph_debug_msgr);
-+	if (!ceph_debugfs_debug_msgr)
-+		goto out;
-+
-+	ceph_debugfs_debug_console = debugfs_create_u32("console",
-+					0600,
-+					ceph_debugfs_dir,
-+					(u32 *)&ceph_debug_console);
-+	if (!ceph_debugfs_debug_console)
-+		goto out;
-+
-+	ceph_debugfs_debug_mask = debugfs_create_file("mask",
-+					0600,
-+					ceph_debugfs_dir,
-+					NULL,
-+					&ceph_debug_mask_fops);
-+	if (!ceph_debugfs_debug_mask)
-+		goto out;
-+
-+	ceph_debugfs_caps_reservation = debugfs_create_file("caps_reservation",
-+					0400,
-+					ceph_debugfs_dir,
-+					NULL,
-+					&caps_reservation_show_fops);
-+	if (!ceph_debugfs_caps_reservation)
-+		goto out;
-+
-+	return 0;
++	rc = result_len;
 +
 +out:
-+	ceph_debugfs_cleanup();
-+	return ret;
++	kfree(a);
++	kfree(b);
++	kfree(c);
++	kfree(force_context);
++
++	return rc;
 +}
 +
-+void ceph_debugfs_cleanup(void)
-+{
-+	debugfs_remove(ceph_debugfs_caps_reservation);
-+	debugfs_remove(ceph_debugfs_debug_console);
-+	debugfs_remove(ceph_debugfs_debug_mask);
-+	debugfs_remove(ceph_debugfs_debug_msgr);
-+	debugfs_remove(ceph_debugfs_debug);
-+	debugfs_remove(ceph_debugfs_dir);
-+}
 +
-+int ceph_debugfs_client_init(struct ceph_client *client)
-+{
-+	int ret = 0;
-+#define TMP_NAME_SIZE 16
-+	char name[TMP_NAME_SIZE];
+diff --git a/fs/ceph/crush/mapper.h b/fs/ceph/crush/mapper.h
+new file mode 100644
+index 0000000..9ca9cd5
+--- /dev/null
++++ b/fs/ceph/crush/mapper.h
+@@ -0,0 +1,19 @@
++#ifndef _CRUSH_MAPPER_H
++#define _CRUSH_MAPPER_H
 +
-+	snprintf(name, TMP_NAME_SIZE, "client%d", client->whoami);
++#include "crush.h"
 +
-+	client->debugfs_dir = debugfs_create_dir(name, ceph_debugfs_dir);
-+	if (!client->debugfs_dir)
-+		goto out;
++/*
++ * CRUSH functions for find rules and then mapping an input to an
++ * output set.
++ *
++ * LGPL2
++ */
++extern int crush_find_rule(struct crush_map *map, int pool, int type, int size);
++extern int crush_do_rule(struct crush_map *map,
++			 int ruleno,
++			 int x, int *result, int result_max,
++			 int forcefeed,
++			 __u32 *weights); /* -1 for none */
 +
-+	client->monc.debugfs_file = debugfs_create_file("monc",
-+						      0600,
-+						      client->debugfs_dir,
-+						      client,
-+						      &monc_show_fops);
-+	if (ret)
-+		goto out;
-+
-+	client->mdsc.debugfs_file = debugfs_create_file("mdsc",
-+						      0600,
-+						      client->debugfs_dir,
-+						      client,
-+						      &mdsc_show_fops);
-+	if (ret)
-+		goto out;
-+
-+	client->osdc.debugfs_file = debugfs_create_file("osdc",
-+						      0600,
-+						      client->debugfs_dir,
-+						      client,
-+						      &osdc_show_fops);
-+	if (ret)
-+		goto out;
-+
-+	client->debugfs_fsid = debugfs_create_file("fsid",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&fsid_show_fops);
-+	if (!client->debugfs_fsid)
-+		goto out;
-+
-+	client->debugfs_monmap = debugfs_create_file("monmap",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&monmap_show_fops);
-+	if (!client->debugfs_monmap)
-+		goto out;
-+
-+	client->debugfs_mdsmap = debugfs_create_file("mdsmap",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&mdsmap_show_fops);
-+	if (!client->debugfs_mdsmap)
-+		goto out;
-+
-+	client->debugfs_osdmap = debugfs_create_file("osdmap",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&osdmap_show_fops);
-+	if (!client->debugfs_osdmap)
-+		goto out;
-+
-+	client->debugfs_dentry_lru = debugfs_create_file("dentry_lru",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&dentry_lru_show_fops);
-+	if (!client->debugfs_osdmap)
-+		goto out;
-+
-+	return 0;
-+
-+out:
-+	ceph_debugfs_client_cleanup(client);
-+	return ret;
-+}
-+
-+void ceph_debugfs_client_cleanup(struct ceph_client *client)
-+{
-+	debugfs_remove(client->monc.debugfs_file);
-+	debugfs_remove(client->mdsc.debugfs_file);
-+	debugfs_remove(client->osdc.debugfs_file);
-+	debugfs_remove(client->debugfs_dentry_lru);
-+	debugfs_remove(client->debugfs_monmap);
-+	debugfs_remove(client->debugfs_mdsmap);
-+	debugfs_remove(client->debugfs_osdmap);
-+	debugfs_remove(client->debugfs_fsid);
-+	debugfs_remove(client->debugfs_dir);
-+}
-+
++#endif
 -- 
 1.5.6.5
 
