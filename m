@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZGOOCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZGOOD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959AbZGOOCV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 10:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbZGOOCV
+	id S1754930AbZGOOD0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 10:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbZGOODZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 10:02:21 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:37109 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754936AbZGOOCU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 10:02:20 -0400
-Date: Wed, 15 Jul 2009 19:32:12 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: tty related hangs with 2.6.31-rc3
-Message-ID: <20090715140212.GA11734@skywalker>
-References: <20090715132956.GA10004@skywalker>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090715132956.GA10004@skywalker>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 15 Jul 2009 10:03:25 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56792 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754711AbZGOODZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 10:03:25 -0400
+Subject: Carefully chosen CYC2NS_SCALE_FACTOR ??
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Andi Kleen <andi@firstfloor.org>, John Stultz <johnstul@us.ibm.com>,
+       george@mvista.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: SUSE LINUX
+Date: Wed, 15 Jul 2009 16:03:23 +0200
+Message-Id: <1247666603.11358.62.camel@nathan.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 06:59:56PM +0530, Aneesh Kumar K.V wrote:
-> Hi,
-> 
-> I am finding tty related hangs with 2.6.31-rc3. This didn't happen 
-> before. This happen when i close the emacs session. The /proc/<pid>/stack
-> content is below      
-> 
-> [<c0362c5b>] process_echoes+0x2b/0x2e0
-> [<c03638cb>] n_tty_write_wakeup+0xb/0x40
-> [<c0360a88>] tty_wakeup+0x58/0x70
-> [<c0368347>] pty_write+0x67/0x70
-> [<c035f1cb>] tty_put_char+0x2b/0x40
-> [<c036291f>] do_output_char+0xef/0x200
-> [<c0362d4e>] process_echoes+0x11e/0x2e0
-> [<c0364292>] n_tty_receive_char+0x102/0x710
-> [<c0364ac0>] n_tty_receive_buf+0x220/0x410
-> [<c036059c>] tiocsti+0x8c/0xa0
-> [<c0361aca>] tty_ioctl+0x25a/0x310
-> [<c01e52c8>] vfs_ioctl+0x28/0x80
-> [<c01e54f4>] do_vfs_ioctl+0x64/0x1c0
-> [<c01e56a3>] sys_ioctl+0x53/0x70
-> [<c0102e3c>] sysenter_do_call+0x12/0x28
-> [<ffffffff>] 0xffffffff
-> 
+Hi,
 
-Another hang
+I'm having trouble understanding the rationale behind the choice for
+CYC2NS_SCALE_FACTOR in arch/x86/include/asm/timer.h:
 
-[<c0362c5b>] process_echoes+0x2b/0x2e0
-[<c03639ff>] n_tty_write+0x6f/0x2b0
-[<c0361cb2>] tty_write+0x132/0x1e0
-[<c01d8966>] vfs_write+0x96/0x190
-[<c01d8b1d>] sys_write+0x3d/0x70
-[<c0102e3c>] sysenter_do_call+0x12/0x28
-[<ffffffff>] 0xffffffff
+#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
 
--aneesh
+Why on Earth is this 10?
+
+AFAICS this constant is the position of the decimal point in the
+fixed-point cycle-to-nanoseconds computations. It is computed as
+follows:
+
+                *scale = (NSEC_PER_MSEC << CYC2NS_SCALE_FACTOR)/cpu_khz;
+
+Now, NSEC_PER_MSEC is 10^6, the size of cyc2ns is 32 bits and cpu_khz,
+being an integer, cannot be less than 1. So, if I want maximum accuracy,
+I should choose the maximium CYC2NS_SCALE_FACTOR such that:
+
+10^6 * 2^CYC2NS_SCALE_FACTOR < 2^32
+
+Which transforms to:
+
+CYC2NS_SCALE_FACTOR = floor(log2(2^32/NSEC_PER_MSEC)) = 12
+
+Did I miss an obvious reason for not using the scale factor of 12?
+
+TIA,
+Petr Tesarik
+SUSE Linux
+
+
