@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbZGOM6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZGOM6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbZGOM6Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 08:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbZGOM6X
+	id S1754657AbZGOM6j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 08:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754639AbZGOM6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 08:58:23 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38694 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754544AbZGOM6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 08:58:23 -0400
-Date: Wed, 15 Jul 2009 13:58:22 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kosaki.motohiro@jp.fujitsu.com, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Johannes Weiner <hannes@cmpxchg.org>, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH] mm: Warn once when a page is freed with PG_mlocked set V2
-Message-ID: <20090715125822.GB29749@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 15 Jul 2009 08:58:38 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37705 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754482AbZGOM6i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 08:58:38 -0400
+Date: Wed, 15 Jul 2009 06:00:06 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>,
+       "Zhang, Rui" <rui.zhang@intel.com>
+Subject: Re: [PATCH 2/8] introduce the device async action mechanism
+Message-ID: <20090715060006.71c2e2b6@infradead.org>
+In-Reply-To: <1247643516.26272.77.camel@rzhang-dt>
+References: <1247643516.26272.77.camel@rzhang-dt>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changelog since V1
-  o Remove unnecessary branch
+On Wed, 15 Jul 2009 15:38:36 +0800
+Zhang Rui <rui.zhang@intel.com> wrote:
 
-When a page is freed with the PG_mlocked set, it is considered an unexpected
-but recoverable situation. A counter records how often this event happens
-but it is easy to miss that this event has occured at all. This patch warns
-once when PG_mlocked is set to prompt debuggers to check the counter to
-see how often it is happening.
+> Introduce the device async action mechanism.
+> 
+> In order to speed up Linux suspend/resume/shutdown process,
+> we introduce the device async action mechanism that allow devices
+> to suspend/resume/shutdown asynchronously.
+> 
+> The basic idea is that,
+> if the suspend/resume/shutdown process of a device set,
+> including a root device and its child devices, are independent of
+> other devices, we create an async domain for this device set,
+> and make them suspend/resume/shutdown asynchronously.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- mm/page_alloc.c |   12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+Hi,
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index caa9268..97c8ecf 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -495,8 +495,14 @@ static inline void free_page_mlock(struct page *page)
- static void free_page_mlock(struct page *page) { }
- #endif
- 
--static inline int free_pages_check(struct page *page)
-+static inline int free_pages_check(struct page *page, int wasMlocked)
- {
-+	WARN_ONCE(wasMlocked, KERN_WARNING
-+		"Page flag mlocked set for process %s at pfn:%05lx\n"
-+		"page:%p flags:0x%lX\n",
-+		current->comm, page_to_pfn(page),
-+		page, page->flags|__PG_MLOCKED);
-+
- 	if (unlikely(page_mapcount(page) |
- 		(page->mapping != NULL)  |
- 		(atomic_read(&page->_count) != 0) |
-@@ -562,7 +568,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
- 	kmemcheck_free_shadow(page, order);
- 
- 	for (i = 0 ; i < (1 << order) ; ++i)
--		bad += free_pages_check(page + i);
-+		bad += free_pages_check(page + i, wasMlocked);
- 	if (bad)
- 		return;
- 
-@@ -1027,7 +1033,7 @@ static void free_hot_cold_page(struct page *page, int cold)
- 
- 	if (PageAnon(page))
- 		page->mapping = NULL;
--	if (free_pages_check(page))
-+	if (free_pages_check(page, wasMlocked))
- 		return;
- 
- 	if (!PageHighMem(page)) {
+I have some concerns about having an async domain per device(group)
+rather than having one async domain for all of this, I would
+strongly suggest going to one global domain, so that it becomes
+more practical to just wait for all async actions like this...
+which you need to do during suspend for sure.
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
