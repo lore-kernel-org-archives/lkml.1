@@ -1,266 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZGPMAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755539AbZGPMLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbZGPMAm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 08:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbZGPMAm
+	id S1755539AbZGPMLM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 08:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbZGPMLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 08:00:42 -0400
-Received: from mail-px0-f185.google.com ([209.85.216.185]:39610 "EHLO
-	mail-px0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755457AbZGPMAl (ORCPT
+	Thu, 16 Jul 2009 08:11:12 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:49758 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755060AbZGPMLL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 08:00:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=KZ/uu9/K+7PDtE5dfgVBwFGZ6F6gA/vmMANDpzSNP6nKp6mKe+Ez+wJsgFeD6RCXTg
-         lgnaEi8htxm4ruh3AuUfa4N8s6Jj7O+CXTekQ4Q0W2g+4d3XxUXqmTfl7QckIKBQ3hTw
-         dvqbIx0+sDZrEwQ7D3zd15dxLY9oiCwU7/nhw=
-Date: Thu, 16 Jul 2009 21:00:28 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-mm@kvack.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       npiggin@suse.de,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       avi@redhat.com, "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, aarcange@redhat.com
-Subject: Re: [PATCH 2/2] ZERO PAGE based on pte_special
-Message-Id: <20090716210028.07a8e1f7.minchan.kim@barrios-desktop>
-In-Reply-To: <20090716180424.eb4c44ce.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090709122428.8c2d4232.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090716180134.3393acde.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090716180424.eb4c44ce.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Thu, 16 Jul 2009 08:11:11 -0400
+Subject: Re: [PATCH 02/06] Fix compilation warning for fs/ubifs/commit.c
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Subrata Modak <subrata@linux.vnet.ibm.com>, linux-mtd@lists.infradead.org,
+       Adrian Hunter <adrian.hunter@nokia.com>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       David Howells <dhowells@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A5F0F03.5080507@s5r6.in-berlin.de>
+References: <20090715021901.4112.45973.sendpatchset@subratamodak.linux.ibm.com>
+	 <1247640750.11353.6.camel@localhost.localdomain>
+	 <4A5E1D1A.3090705@s5r6.in-berlin.de>
+	 <1247738232.11353.90.camel@localhost.localdomain>
+	 <4A5F0F03.5080507@s5r6.in-berlin.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 16 Jul 2009 15:09:15 +0300
+Message-Id: <1247746155.11353.143.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Jul 2009 12:09:21.0193 (UTC) FILETIME=[40526190:01CA060E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-07-16 at 13:29 +0200, Stefan Richter wrote:
+> my comment was more directed to Subrata rather than you, as a pointer 
+> for future changes of this kind.
+> 
+> By '"Fix compilation warning" is not correct' I mean:
+> 
+> This subject would be strictly correct if there was a warning message 
+> which contained a factual or formal mistake, and the patch would make 
+> the warning show up as a factual and formal correct message.
+> 
+> Yet the patch does nothing else than _suppress a message_.
 
-Hi, Kame. 
+I agree, so I amended the changelog.
 
-On Thu, 16 Jul 2009 18:04:24 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>      3.) Reason:  The compiler wrongly interprets a variable as
+>          occasionally unused, even though this is nicely organized,
+>          obvious code where the assertion of the compiler is not only
+>          wrong, but everybody also can see immediately from the code that
+>          there will never be a.
+> 
+>          Aside from improving the compiler itself to properly handle
+>          this, in this case the appropriate action is to use the
+>          uninitialized_var() macro --- /unless/ there is a non-intrusive
+>          way to refactor the code to be compilable without warning but
+>          keep it still nice to read.
+> 
+>          Why is the latter still better than uninitialized_var()?  Easy:
+>          If anybody later changes the code such that he introduces an
+>          actual use-without-initialization bug, nobody will notice the
+>          bug because it's hidden by the macro.
+> 
+>          And there are more downsides to the macro:  The readability of
+>          code which makes use of it suffers somewhat.  Also, the macro
+>          works with gcc (i.e. shuts gcc up), but apparently not with the
+>          Intel compiler.
+> 
+> So, in the majority of types of cases, uninitialized_var() is the wrong 
+> course of action.  (Though maybe not in the majority of occurrences of 
+> cases.)
 
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> ZERO_PAGE for anonymous private mapping is useful when an application
-> requires large continuous memory but write sparsely or some other usages.
-> It was removed in 2.6.24 but this patch tries to re-add it.
-> (Because there are some use cases..)
-> 
-> In past, ZERO_PAGE was removed because heavy cache line contention in
-> ZERO_PAGE's refcounting, this version of ZERO_PAGE avoid to refcnt it.
-> Then, implementation is changed as following.
-> 
->   - Use of ZERO_PAGE is limited to PRIVATE mapping. Then, VM_MAYSHARE is
->     checked as VM_SHARED.
-> 
->   - pte_special(), _PAGE_SPECIAL bit in pte is used for indicating ZERO_PAGE.
-> 
->   - vm_normal_page() eats FOLL_XXX flag. If FOLL_NOZERO is set,
->     NULL is returned even if ZERO_PAGE is found.
-> 
->   - __get_user_pages() eats one more flag as GUP_FLAGS_IGNORE_ZERO. If set,
->     __get_user_page() returns NULL even if ZERO_PAGE is found.
-> 
-> Note:
->   - no changes to get_user_pages(). ZERO_PAGE can be returned when
->     vma is ANONYMOUS && PRIVATE and the access is READ.
-> 
-> Changelog v3->v4
->  - FOLL_NOZERO is directly passed to vm_normal_page()
-> 
-> Changelog v2->v3
->  - totally renewed.
->  - use pte_special()
->  - added new argument to vm_normal_page().
->  - MAYSHARE is checked.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  fs/proc/task_mmu.c |    8 +--
->  include/linux/mm.h |    3 -
->  mm/fremap.c        |    2 
->  mm/internal.h      |    1 
->  mm/memory.c        |  136 +++++++++++++++++++++++++++++++++++++++++------------
->  mm/mempolicy.c     |    8 +--
->  mm/migrate.c       |    6 +-
->  mm/mlock.c         |    2 
->  mm/rmap.c          |    6 +-
->  9 files changed, 128 insertions(+), 44 deletions(-)
-> 
-> Index: mmotm-2.6.31-Jul15/mm/memory.c
-> ===================================================================
-> --- mmotm-2.6.31-Jul15.orig/mm/memory.c
-> +++ mmotm-2.6.31-Jul15/mm/memory.c
-> @@ -442,6 +442,27 @@ static inline int is_cow_mapping(unsigne
->  }
->  
->  /*
-> + * Can we use ZERO_PAGE at fault ? or Can we do the FOLL_ANON optimization ?
-> + */
-> +static inline int use_zero_page(struct vm_area_struct *vma)
-> +{
-> +	/*
-> +	 * We don't want to optimize FOLL_ANON for make_pages_present()
-> +	 * when it tries to page in a VM_LOCKED region. As to VM_SHARED,
-> +	 * we want to get the page from the page tables to make sure
-> +	 * that we serialize and update with any other user of that
-> +	 * mapping. At doing page fault, VM_MAYSHARE should be also check for
-> +	 * avoiding possible changes to VM_SHARED.
-> +	 */
-> +	if (vma->vm_flags & (VM_LOCKED | VM_SHARED | VM_MAYSHARE))
-> +		return 0;
-> +	/*
-> +	 * And if we have a fault routine, it's not an anonymous region.
-> +	 */
-> +	return !vma->vm_ops || !vma->vm_ops->fault;
-> +}
-> +
-> +/*
->   * vm_normal_page -- This function gets the "struct page" associated with a pte.
->   *
->   * "Special" mappings do not wish to be associated with a "struct page" (either
-> @@ -488,16 +509,33 @@ static inline int is_cow_mapping(unsigne
->  #else
->  # define HAVE_PTE_SPECIAL 0
->  #endif
-> +
-> +#ifdef CONFIG_SUPPORT_ANON_ZERO_PAGE
-> +# define HAVE_ANON_ZERO 1
-> +#else
-> +# define HAVE_ANON_ZERO 0
-> +#endif
->  struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
-> -				pte_t pte)
-> +			    pte_t pte, unsigned int flags)
->  {
->  	unsigned long pfn = pte_pfn(pte);
->  
->  	if (HAVE_PTE_SPECIAL) {
->  		if (likely(!pte_special(pte)))
->  			goto check_pfn;
-> -		if (!(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)))
-> -			print_bad_pte(vma, addr, pte, NULL);
-> +
-> +		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
-> +			return NULL;
-> +		/*
-> +		 * ZERO PAGE ? If vma is shared or has page fault handler,
-> +		 * Using ZERO PAGE is bug.
-> +		 */
-> +		if (HAVE_ANON_ZERO && use_zero_page(vma)) {
-> +			if (flags & FOLL_NOZERO)
-> +				return NULL;
-> +			return ZERO_PAGE(0);
-> +		}
-> +		print_bad_pte(vma, addr, pte, NULL);
->  		return NULL;
->  	}
->  
-> @@ -591,8 +629,7 @@ copy_one_pte(struct mm_struct *dst_mm, s
->  	if (vm_flags & VM_SHARED)
->  		pte = pte_mkclean(pte);
->  	pte = pte_mkold(pte);
-> -
-> -	page = vm_normal_page(vma, addr, pte);
-> +	page = vm_normal_page(vma, addr, pte, FOLL_NOZERO);
->  	if (page) {
->  		get_page(page);
->  		page_dup_rmap(page, vma, addr);
-> @@ -783,7 +820,7 @@ static unsigned long zap_pte_range(struc
->  		if (pte_present(ptent)) {
->  			struct page *page;
->  
-> -			page = vm_normal_page(vma, addr, ptent);
-> +			page = vm_normal_page(vma, addr, ptent, FOLL_NOZERO);
->  			if (unlikely(details) && page) {
->  				/*
->  				 * unmap_shared_mapping_pages() wants to
-> @@ -1141,7 +1178,7 @@ struct page *follow_page(struct vm_area_
->  		goto no_page;
->  	if ((flags & FOLL_WRITE) && !pte_write(pte))
->  		goto unlock;
-> -	page = vm_normal_page(vma, address, pte);
-> +	page = vm_normal_page(vma, address, pte, flags);
->  	if (unlikely(!page))
->  		goto bad_page;
->  
-> @@ -1186,23 +1223,6 @@ no_page_table:
->  	return page;
->  }
->  
-> -/* Can we do the FOLL_ANON optimization? */
-> -static inline int use_zero_page(struct vm_area_struct *vma)
-> -{
-> -	/*
-> -	 * We don't want to optimize FOLL_ANON for make_pages_present()
-> -	 * when it tries to page in a VM_LOCKED region. As to VM_SHARED,
-> -	 * we want to get the page from the page tables to make sure
-> -	 * that we serialize and update with any other user of that
-> -	 * mapping.
-> -	 */
-> -	if (vma->vm_flags & (VM_LOCKED | VM_SHARED))
-> -		return 0;
-> -	/*
-> -	 * And if we have a fault routine, it's not an anonymous region.
-> -	 */
-> -	return !vma->vm_ops || !vma->vm_ops->fault;
-> -}
->  
->  
->  
-> @@ -1216,6 +1236,7 @@ int __get_user_pages(struct task_struct 
->  	int force = !!(flags & GUP_FLAGS_FORCE);
->  	int ignore = !!(flags & GUP_FLAGS_IGNORE_VMA_PERMISSIONS);
->  	int ignore_sigkill = !!(flags & GUP_FLAGS_IGNORE_SIGKILL);
-> +	int ignore_zero = !!(flags & GUP_FLAGS_IGNORE_ZERO);
->  
->  	if (nr_pages <= 0)
->  		return 0;
-> @@ -1259,7 +1280,12 @@ int __get_user_pages(struct task_struct 
->  				return i ? : -EFAULT;
->  			}
->  			if (pages) {
-> -				struct page *page = vm_normal_page(gate_vma, start, *pte);
-> +				struct page *page;
-> +				/*
-> +				 * this is not anon vma...don't haddle zero page
-> +				 * related flags.
-> +				 */
-> +				page = vm_normal_page(gate_vma, start, *pte, 0);
->  				pages[i] = page;
->  				if (page)
->  					get_page(page);
-> @@ -1287,8 +1313,13 @@ int __get_user_pages(struct task_struct 
->  		foll_flags = FOLL_TOUCH;
->  		if (pages)
->  			foll_flags |= FOLL_GET;
-> -		if (!write && use_zero_page(vma))
-> -			foll_flags |= FOLL_ANON;
-> +		if (!write) {
-> +			if (use_zero_page(vma))
-> +				foll_flags |= FOLL_ANON;
-> +			else
-> +				ignore_zero = 0;
-> +		} else
-> +			ignore_zero = 0;
+I see what you mean. May be in this UBIFS case the code could be
+amended indeed. But there is infinite room for nicifications, and I'm
+not sure touching this function is worth it. It works and was tested a
+lot.
 
-Hmm. nested condition is not good for redabililty. 
+> OK.  Rant over.  It's now time for me to actually have look at the code 
+> which is being patched here. :-)  (Sorry, I commented before only on the 
+> basis of Subrata's diff and changelog.)
+> 
+>  From fs/ubifs/commit.c in mainline 2.6.31-rc3:
+> 
+> Before lower_key, there was obviously already an issue with last_sqnum 
+> which received the same treatment as lower_key receives now.  Both of 
+> these are provided with a value in a conditional block:
+> 
+> 	int first = 1;
+> 
+> 	if (first) {
+> 		first = 0;
+> 		...
+> 	}
+> 
+> block and first used after this block.  From the looks of the whole 
+> function, these two variables indeed don't appear in danger to ever be 
+> accessed uninitialized.
 
-How about this ?
-if (!write && use_zero_page(vma))
-	foll_flags |= FOLL_ANON;
-else
-	ignore_zero = 0;
+Right, this is why I thought this is fake alarm and we can just shyt
+gcc up using 'uninitialized_var()'.
 
+> So, is uninitialized_var() a good fix here?  I'd say it's not a 
+> particular good one.  Count the lines of code of dbg_check_old_index() 
+> and the maximum indentation level of it.  Then remember the teachings of 
+> CodingStyle. :-)  See?  dbg_check_old_index() clearly isn't a prime 
+> example of best kernel coding practice.  /Perhaps/ a little bit of 
+> refactoring would make it easier to read, and as a bonus side effect, 
+> make it unnecessary to use the slightly dangerous and 
+> uninitialized_var() macro here.
 
+Yes, the function is large and could be split on smaller ones. But I
+do not think it is too bad, and still feel like just using
+'uninitialized_var()' is just fine. But if someone re-factors the code
+I will not object, of course, especially if he also tests it :-)
 
 -- 
-Kind regards,
-Minchan Kim
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
