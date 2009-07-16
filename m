@@ -1,112 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbZGPNWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932180AbZGPNXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756389AbZGPNWf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 09:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbZGPNWe
+	id S932180AbZGPNXL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 09:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZGPNXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 09:22:34 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:50911 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755828AbZGPNWe convert rfc822-to-8bit (ORCPT
+	Thu, 16 Jul 2009 09:23:11 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:53629 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755877AbZGPNXK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 09:22:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=J16FStnbJ5oP1jV8P2LwdHoRqaxTNFwHk5oZ+lN94tZEPpQXJ/C7vrQjAlXsAIk308
-         7Tbt2yFJoOEG2/Zs9hbOKWguYg7ADvGANfWQSH1e+McGhBccDBuYwDoAvC22xyJpR/yS
-         aIRvv2S2kw0boHkbk98dxWHpLlL0Cc9+rVnR4=
+	Thu, 16 Jul 2009 09:23:10 -0400
+Date: Thu, 16 Jul 2009 14:23:08 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Subrata Modak <subrata@linux.vnet.ibm.com>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Jaroslav Kysela <erex@perex.cz>, alsa-devel@alsa-project.org,
+       Takashi Iwai <tiwai@suse.de>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       David Howells <dhowells@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/06] Fix compilation warning for
+ sound/soc/codecs/wm8400.c
+Message-ID: <20090716132308.GC9656@rakim.wolfsonmicro.main>
+References: <20090716130958.28045.71072.sendpatchset@subratamodak.linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20090711111110.6be67d82@linux-lm>
-References: <1247098591-4887-1-git-send-email-tom.leiming@gmail.com>
-	 <d82e647a0907081720v438344fcj1b37e0e226818632@mail.gmail.com>
-	 <20090710173649.GB3687@kroah.com> <20090711111110.6be67d82@linux-lm>
-Date: Thu, 16 Jul 2009 21:22:33 +0800
-Message-ID: <d82e647a0907160622y2ec1798eue1310b7feaf79114@mail.gmail.com>
-Subject: Re: [PATCH] driver core:firmware_class:fix memory leak of page 
-	pointers array
-From: Ming Lei <tom.leiming@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, catalin.marinas@arm.com, dwmw2@infradead.org,
-       kay.sievers@vrfy.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090716130958.28045.71072.sendpatchset@subratamodak.linux.ibm.com>
+X-Cookie: They just buzzed and buzzed...buzzed.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/11 Ming Lei <tom.leiming@gmail.com>:
-> On Fri, 10 Jul 2009 10:36:49 -0700
-> Greg KH <greg@kroah.com> wrote:
->
->> On Thu, Jul 09, 2009 at 08:20:48AM +0800, Ming Lei wrote:
->> > 2009/7/9  <tom.leiming@gmail.com>:
->> > > From: Ming Lei <tom.leiming@gmail.com>
->> > >
->> > > The page pointers array is allocated in fw_realloc_buffer()
->> > > called by firmware_data_write(), and should be freed in release
->> > > function of firmware device.
->> > >
->> > > Signed-off-by:Ming Lei <tom.leiming@gmail.com>
->> > > Reported-by:Catalin Marinas <catalin.marinas@arm.com>
->> > > Acked-by: David Woodhouse <David.Woodhouse@intel.com>
->> >
->> > ---
->> > This patch is against Catalin Marinas's patch:
->> >     [PATCH] Free struct device in fw_dev_release()
->>
->> Hm, I never got a final version of that patch, care to send it to me?
+On Thu, Jul 16, 2009 at 06:40:01PM +0530, Subrata Modak wrote:
 
-Hi,Greg
+> How about the following brutal shutdown ?
 
-Care to queue the patch into your driver-core tree and send it to -rc4?
-Thanks.
+No, this is the patch you originally submitted.  You are missing the
+point here - your patches are all just papering over the warning and
+won't help at all if there is an actual problem.
 
->
-> It is the latest version and now is against linus mainline.
-> Thanks.
->
-> From 50603673f5c68eb843584e65cc9930919910f98a Mon Sep 17 00:00:00 2001
-> From: Ming Lei <tom.leiming@gmail.com>
-> Date: Thu, 9 Jul 2009 07:56:52 +0800
-> Subject: [PATCH] driver core:firmware_class:fix memory leak of page pointers array
->
-> The page pointers array is allocated in fw_realloc_buffer() called by
-> firmware_data_write(), and should be freed in release function of firmware
-> device.
->
-> Signed-off-by:Ming Lei <tom.leiming@gmail.com>
-> Reported-by:Catalin Marinas <catalin.marinas@arm.com>
-> Acked-by: David Woodhouse <David.Woodhouse@intel.com>
-> ---
->  drivers/base/firmware_class.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-> index fc46653..2643366 100644
-> --- a/drivers/base/firmware_class.c
-> +++ b/drivers/base/firmware_class.c
-> @@ -180,7 +180,6 @@ static ssize_t firmware_loading_store(struct device *dev,
->                                goto err;
->                        }
->                        /* Pages will be freed by vfree() */
-> -                       fw_priv->pages = NULL;
->                        fw_priv->page_array_size = 0;
->                        fw_priv->nr_pages = 0;
->                        complete(&fw_priv->completion);
-> --
-> 1.6.0.GIT
->
->
->
->
->
-> --
-> Lei Ming
->
+> 'factors' will get initialized here, as, 'freq_out' will probably never have
+> a '0' value. So, 'fll_factors()' will actually overwrite values in 'factors'
+> even after the initial brutal assignment:
+> 	"struct fll_factors factors = {}"
 
+This is pretty much the point of the warning when it's valid - it's
+trying to catch situations where there is a code path where the variable
+is used without being initialised.  If you just blindly initialise the
+variable as you are doing then the warning goes away but any problematic
+code remains so the situation is worse.
 
-
--- 
-Lei Ming
+In this case I suspect that whatever compiler you are using (none of
+those I've tried with seem to be doing this) isn't able to figure out
+that if we skip initialising the variable then we use exactly the same
+condition to return from the function before we try to use the variable.
+For something like this the warning can normally be worked around by
+changing the control flow so that the compiler is able to figure out
+that things are safe.
