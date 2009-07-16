@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbZGPJba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbZGPJcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbZGPJba (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 05:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZGPJba
+	id S1754828AbZGPJcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 05:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZGPJcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 05:31:30 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56160 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754248AbZGPJb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 05:31:29 -0400
-Message-ID: <4A5EF315.7080909@cn.fujitsu.com>
-Date: Thu, 16 Jul 2009 17:29:57 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/function: simplify for __ftrace_replace_code()
-References: <4A5D5B12.2050802@cn.fujitsu.com> <4A5D5BCF.4070707@cn.fujitsu.com>
-In-Reply-To: <4A5D5BCF.4070707@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 16 Jul 2009 05:32:18 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:53309 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754578AbZGPJcR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 05:32:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:content-type:content-transfer-encoding:subject
+         :mime-version:date:x-mailer;
+        b=UgfKYR03Bfiw6v3hjv1Zm8def/yEqkO8ZqZ+LKAyiBGXiHdua+vkXkxHQV4zp5mg0C
+         dPFhX2TSuTUv7rqMffcIxyWQ6wqUOZBMlMBz8kCPpKWMaYpDFB5Ax4WnGGdKAS5hV3TZ
+         Ds+Q7/D+lcktfnPeZZBmIXAC9orT5qK3IGoaE=
+Message-Id: <3B5FFAA5-F608-4F43-B510-BF70BC5DC225@gmail.com>
+From: Patrick Rittiner <rittiner@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Subject: interface index
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Date: Thu, 16 Jul 2009 11:32:10 +0200
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xiao Guangrong wrote:
-> Rewrite the __ftrace_replace_code() function, let it's simple, but
-> not change the code's logic.
-> 
-> First, we get the state we want to set, if the record has the same
-> state, then do nothing, if not, enable/disable it.
-> 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+hello,
 
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-
-> ---
->  kernel/trace/ftrace.c |   75 +++++++++++++-----------------------------------
->  1 files changed, 21 insertions(+), 54 deletions(-)
+can someone tell me how I can get the interface index of a socket  
+connection in kernel space? I mean ow can I use this call in kernel  
+space:
+	ioctl(sock, SIOCGIFFLAGS, &ifInfo)
+I need it to bind the socket to a ethernet interface.
+thanks a lot
