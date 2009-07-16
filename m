@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933290AbZGPUUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbZGPUVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933290AbZGPUUp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 16:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933282AbZGPUUo
+	id S933295AbZGPUVY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 16:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933275AbZGPUVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 16:20:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51188 "EHLO mx2.redhat.com"
+	Thu, 16 Jul 2009 16:21:24 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58424 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933222AbZGPUUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 16:20:43 -0400
-Date: Thu, 16 Jul 2009 16:20:29 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: Christian =?iso-8859-1?Q?Borntr=E4ger?= <borntraeger@de.ibm.com>
-Cc: Alasdair G Kergon <agk@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: regression post 2.6.30: device mapper fails on some logical
-	volumes
-Message-ID: <20090716202028.GA9005@redhat.com>
-References: <200907151852.15121.borntraeger@de.ibm.com> <200907160736.09885.borntraeger@de.ibm.com> <20090716144438.GA8257@redhat.com> <200907161746.06935.borntraeger@de.ibm.com>
+	id S933248AbZGPUVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 16:21:23 -0400
+Message-ID: <4A5F8B5C.3020902@garzik.org>
+Date: Thu, 16 Jul 2009 16:19:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200907161746.06935.borntraeger@de.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Junio C Hamano <gitster@pobox.com>
+CC: git@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] GIT 1.6.4.rc1
+References: <7vmy75bg2f.fsf@alter.siamese.dyndns.org> <4A5EA598.5050801@garzik.org> <7v3a8xb0lz.fsf@alter.siamese.dyndns.org> <4A5ECC09.3010405@garzik.org> <7vocrl9kwi.fsf@alter.siamese.dyndns.org> <4A5ED38F.5070708@garzik.org> <7v4otd9jg8.fsf@alter.siamese.dyndns.org>
+In-Reply-To: <7v4otd9jg8.fsf@alter.siamese.dyndns.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16 2009 at 11:46am -0400,
-Christian Bornträger <borntraeger@de.ibm.com> wrote:
-
-> Am Donnerstag 16 Juli 2009 16:44:39 schrieb Mike Snitzer:
+Junio C Hamano wrote:
+> Jeff Garzik <jeff@garzik.org> writes:
 > 
-> I had another reproduce, and with the latest code (2.6.31-rc3) the mislignment  
-> warnings from rc1 are indeed gone:
-
-Ah OK, so you were using < 2.6.31-rc2 when you saw all those warnings.
-
-> I now only have
+>> That direction doesn't work due to firewalls, hence the scp out /to/
+>> remote.example.com.
 > 
-> [    6.283482] device-mapper: table: 253:51: dasdf1 too small for target
-> [    6.283488] device-mapper: table: 253:51: dasde1 too small for target
-> [    6.648895] device-mapper: table: 253:64: dasdc1 too small for target
-> [    6.648900] device-mapper: table: 253:64: dasdd1 too small for target
-> 
-> The logical volumes space-test and space-home still dont appear.
+> Ah, then the "git init --bare" at remote followed by pushing -all into it,
+> suggested in your other subthread, would be an appropriate way.
 
-I'm fairly certain that this pending fix will resolve your issues:
-http://patchwork.kernel.org/patch/33534/
+Thanks!
 
-I'm not sure when Alasdair intends to push it to Linus but it should be
-soon.
+	Jeff
 
-Mike
+
+
