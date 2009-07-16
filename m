@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751887AbZGPEGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbZGPEJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751887AbZGPEGe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 00:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZGPEGd
+	id S1751961AbZGPEJP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 00:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZGPEJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 00:06:33 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:38628 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751415AbZGPEGd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 00:06:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QlzB292NfWDA6li8Kasgk5OL1cIZAxqut3D5tmR/PEbZuhESz0by9loh6v5MnCufUr
-         Km0oDQs9bllq3UnSJzNY4FlFiN3IXFqPpHS3LnuzZsvzduYcdwCSK7nlNma8LaDmW5E/
-         65AzHS7GdKwaWxZKbHlzbFluHdI56/OzoT6+8=
+	Thu, 16 Jul 2009 00:09:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50157 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327AbZGPEJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 00:09:13 -0400
+Message-ID: <4A5EA7E1.7030403@redhat.com>
+Date: Thu, 16 Jul 2009 00:09:05 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-In-Reply-To: <20090716040225.GA31064@kroah.com>
-References: <1247576250-16274-1-git-send-email-tiago.vignatti@nokia.com>
-	 <1247576250-16274-2-git-send-email-tiago.vignatti@nokia.com>
-	 <20090714161514.GA2026@kroah.com>
-	 <21d7e9970907152054q61c9bf75x836b4b644ec22a00@mail.gmail.com>
-	 <20090716040225.GA31064@kroah.com>
-Date: Thu, 16 Jul 2009 14:06:32 +1000
-Message-ID: <21d7e9970907152106t6747c41fi6c999a96a13e4cfd@mail.gmail.com>
-Subject: Re: [PATCH 1/2] vga: implements VGA arbitration on Linux
-From: Dave Airlie <airlied@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Tiago Vignatti <tiago.vignatti@nokia.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Dave Airlie <airlied@redhat.com>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH -mm] throttle direct reclaim when too many pages are isolated
+ already (v3)
+References: <20090715223854.7548740a@bree.surriel.com>	<20090715194820.237a4d77.akpm@linux-foundation.org>	<4A5E9A33.3030704@redhat.com>	<20090715202114.789d36f7.akpm@linux-foundation.org>	<4A5E9E4E.5000308@redhat.com>	<20090715203854.336de2d5.akpm@linux-foundation.org>	<20090715235318.6d2f5247@bree.surriel.com> <20090715210253.bc137b2d.akpm@linux-foundation.org>
+In-Reply-To: <20090715210253.bc137b2d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 2:02 PM, Greg KH<greg@kroah.com> wrote:
-> On Thu, Jul 16, 2009 at 01:54:42PM +1000, Dave Airlie wrote:
->> On Wed, Jul 15, 2009 at 2:15 AM, Greg KH<greg@kroah.com> wrote:
->> > Minor comment:
->> >
->> >> +#ifdef DEBUG
->> >> +     printk(KERN_DEBUG "%s\n", __func__);
->> >> +#endif
->> >
->> > You should just use 'dev_dbg() for any debugging statments like this.
->> > You can turn them on and off dynamically, and you get all of the proper
->> > device information as to what is going on automatically.
->> >
->> > Plus, there's no need for a #ifdef in the code, which is generally
->> > frowned apon in .c files.
->> >
->>
->> We don't have a device in this case, vga arb is more of an abstraction than
->> an actual device.
->>
->> I suppose if we were feeling crazy we could add a platform device for it.
->
-> No, then use the debug_printk() functions, so that you tie into the
-> kernel-wide debug message system.  Please don't roll your own anymore,
-> there is no need to.
+Andrew Morton wrote:
 
-Ah I assume you mean pr_devel and friends.
+> While I agree that handling fatal signals on the direct reclaim path
+> is probably a good thing, this seems like a fairly random place at
+> which to start the enhancement.
 
-Dave.
+You are right, the direct reclaim path has one other
+place where congestion_wait is called in a loop,
+do_try_to_free_pages itself - we'll probably want to
+break out of that loop too, if the task is about to
+die and free all its memory.
 
->
-> thanks,
->
-> greg k-h
->
+> If we were to step back and approach this in a broader fashion, perhaps
+> we would find some commonality with the existing TIF_MEMDIE handling,
+> dunno.
+
+Good point - what is it that makes TIF_MEMDIE special
+wrt. other fatal signals, anyway?
+
+I wonder if we should not simply "help along" any task
+with fatal signals pending, anywhere in the VM (and maybe
+other places in the kernel, too).
+
+The faster we get rid of a killed process, the sooner its
+resources become available to the other processes.
+
+> And I question the testedness of v3 :)
+
+No question about that :)
+
+-- 
+All rights reversed.
