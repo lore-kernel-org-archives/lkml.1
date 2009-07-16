@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbZGPGQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbZGPGRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755647AbZGPGQr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 02:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZGPGQq
+	id S1756442AbZGPGRU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 02:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756280AbZGPGRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 02:16:46 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:38626 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbZGPGQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 02:16:46 -0400
-Date: Thu, 16 Jul 2009 08:16:42 +0200
-From: Tobias Diedrich <ranma@tdiedrich.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: 2.6.31-rc2: thinkpad boots with backlight low
-Message-ID: <20090716061642.GB13056@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma@tdiedrich.de>,
-	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-	Pavel Machek <pavel@ucw.cz>,
-	kernel list <linux-kernel@vger.kernel.org>, ibm-acpi@hmh.eng.br,
-	ibm-acpi-devel@lists.sourceforge.net
-References: <20090714092513.GB2010@elf.ucw.cz> <20090715112204.GA16289@yamamaya.is-a-geek.org> <20090715143509.GC22098@khazad-dum.debian.net> <20090715223931.GA18924@yamamaya.is-a-geek.org> <20090715225936.GA30370@yamamaya.is-a-geek.org> <20090716000621.GA23073@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090716000621.GA23073@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Jul 2009 02:17:19 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:52203 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752418AbZGPGRT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 02:17:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:from:to:content-type:content-transfer-encoding:subject
+         :mime-version:date:x-mailer;
+        b=H6oq7rWh0AdhhF8pODFwWOnCzvO2Si3BlQbgraSJWQL6EpokYcTBaWXHuCSlE+xjT/
+         9byfCoSwO9MDpRcXbI5S6o2OKmXnGjeHsrYweam7DQAsLTgBWSGOGOYREe7v+z8NsNMf
+         IhVbq+pSTR1YTexsEd4/lNh2fKbCCmHyLzndo=
+Message-Id: <88A69E70-10FB-414A-9542-EBC9E0768D23@gmail.com>
+From: Patrick Rittiner <rittiner@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Subject: RAW ethernet in kernel space
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Date: Thu, 16 Jul 2009 08:17:15 +0200
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> And that will, of course, cause the driver to set the brightness in NVRAM to
-> zero (but it *should* do so for shutdown as well, not just machine-restart.
-> You may have uncovered two bugs, not just one), which will be honoured by
-> the BIOS on the next reboot/power up.
+hi everyone,
 
-I does set it to zero (or whatever was last written to the sysfs or
-/proc/acpi/ibm file) on shutdown and reboot, so no bug there.
+I have a problem, I would like to open a ethernet socket and receive  
+all data (RAW ethernet) on the ethernet interface on it. ( interface  
+has to be in promisc mode ) In user space this is not a big problem,  
+but how can I do it in kernel space? I mean, i can not use functions  
+like ioctl() and socket(), right? so I think there is a sock_create().
 
-> > I assume that the autodetection finds the HBRV acpi function and
-> > selects the former, resulting in a not working backlight control.
-> 
-> Yes.
-> 
-> Please send me by private mail the output of acpidump and dmidecode (so that
-> I will have them both in the same place).  I will blacklist your thinkpad to
-> force TPACPI_BRGHT_MODE_UCMS_STEP.
+so how can I write code like this for kernel space:
 
-Done.
+	memset(&ifInfo, 0x00, sizeof(ifInfo));
+	strncpy(ifInfo.ifr_name, iface,  IFNAMSIZ);
+	ioctl(sock, SIOCGIFFLAGS, &ifInfo);
+	ifInfo.ifr_flags |= IFF_PROMISC;
+	ioctl(sock, SIOCSIFFLAGS, &ifInfo);
 
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
+thanks for your help
