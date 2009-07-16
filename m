@@ -1,67 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933596AbZGPX3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933612AbZGPX31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933596AbZGPX3O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 19:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933573AbZGPX3O
+	id S933612AbZGPX31 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 19:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933548AbZGPX3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 19:29:14 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:40627 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933556AbZGPX3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 19:29:13 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=loZ6p+R/AoxeUMktHXEf7zgmMXROE6BvBGkgC16pC2IlZk3iRdDwLTGIBE15P+c4D
-	ldpaIF7ZCwQh6CvSrOGxA==
-MIME-Version: 1.0
-In-Reply-To: <6599ad830907141815x64e74a6ek1499f6032cea6f5@mail.gmail.com>
-References: <200906020557.n525v6KO004302@imap1.linux-foundation.org>
-	 <6599ad830907141752n5c701f9ap2a87df0a7f4f6ff3@mail.gmail.com>
-	 <20090714210557.0f983c37@bree.surriel.com>
-	 <6599ad830907141815x64e74a6ek1499f6032cea6f5@mail.gmail.com>
-Date: Thu, 16 Jul 2009 16:29:06 -0700
-Message-ID: <6599ad830907161629p54783716p7246e030b8da00fe@mail.gmail.com>
-Subject: Re: [PATCH] copy over oom_adj value at fork time
-From: Paul Menage <menage@google.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rientjes@google.com, mel@csn.ul.ie, npiggin@suse.de
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+	Thu, 16 Jul 2009 19:29:19 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:44130 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933582AbZGPX3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 19:29:15 -0400
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+From: Raistlin <raistlin@linux.it>
+To: Ted Baker <baker@cs.fsu.edu>
+Cc: "James H. Anderson" <anderson@cs.unc.edu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Noah Watkins <jayhawk@soe.ucsc.edu>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>
+In-Reply-To: <20090715205503.GA14993@cs.fsu.edu>
+References: <1247336891.9978.32.camel@laptop> <4A594D2D.3080101@ittc.ku.edu>
+	 <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>
+	 <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir>
+	 <4A5C9ABA.9070909@nortel.com>
+	 <alpine.LRH.2.00.0907141109190.16818@anderson.cs.unc.edu>
+	 <1247589099.7500.191.camel@twins>
+	 <alpine.LRH.2.00.0907141234280.16818@anderson.cs.unc.edu>
+	 <20090715205503.GA14993@cs.fsu.edu>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-iixmZwmzoqEb8NdtUbUW"
+Date: Fri, 17 Jul 2009 01:29:11 +0200
+Message-Id: <1247786951.4929.52.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 6:15 PM, Paul Menage<menage@google.com> wrote:
+
+--=-iixmZwmzoqEb8NdtUbUW
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2009-07-15 at 16:55 -0400, Ted Baker wrote:
+> I hope that Linux will not pursue EDF or EDZL in only a narrow
+> sense, as simple priority scheduling algorithms, without providing
+> for bandwidth guaranteees and limits.
+>=20
+Yes, me to...
+
+> By bandwith "guarantee" I mean that the task/scheduling entity is
+> guaranteed to be able to at least *compete* at a certain level for
+> a certain percentage of the CPU, if we cannot (better) provide an
+> admission control mechanism that guarantees it will actually get a
+> certain percentage of the CPU.
 >
-> But ironically, with this fix applied the main part of the original
-> change (force all threads in a process to share a single oom_adj
-> value) will start to break my code - it's no longer possible to have
-> the regular threads in a process be oom-immune, then vfork() and set a
-> non-disabled oom_adj in the child, since this will set it for the
-> entire process. (Our job scheduler does something like this, in order
-> to have the launcher be OOM immune and the running jobs be at various
-> oom_adj levels depending on their priority).
->
+Again, I agree... But giving a group an explicit priority assignment,
+although very simple conceptually, raises a lot of issues when the
+current implementation of global task scheduling in Linux, with
+"distributed" (one per CPU) runqueue, is concerned.
 
-How about if instead of having the oom_adj be per-mm, we kept an array
-of counters in the mm, tracking how many users were at each oom_adj
-level; the OOM killer could then use the level of the mm's highest
-oom_adj user when deciding how to calculate the badness of a thread
-using that mm.
+> For example, in the fixed-priority domain, we have Sporadic
+> Server.  This guarantees the server a chance to compete at its top
+> priority for at least sched_ss_init_budget time in every
+> sched_ss_repl_period time, at sched_priority, within some
+> tolerance.  It also should not be permitted to use more than
+> sched_ss_init_budget time in every sched_ss_repl_period time, at
+> sched_priority, within some tolerance.
+>=20
+And that's why I'm trying what I said before... For, e.g., the sporadic
+server policy to extend and be applied to group scheduling, groups need
+to have priorities for the standard, already existent, analysis to work.
 
-That would preserve the previous semantics of letting a spawned child
-inherit a per-thread oom_adj value, while avoiding the specific
-problem of the OOM killer getting livelocked (that David's patch
-originally addressed) and the more general case of the inconsistency
-in determining the oom_adj level of an mm depending on which thread
-you look at.
+> In the deadline scheduling domain, we have algorithms like
+> Constant Bandwidth Server (and some improved variants) that
+> provide similar gurantees and limites, in terms of deadlines.  (I
+> recall seeing one very good version in a paper I recently saw,
+> which I could seek out and provide to the list if there is
+> interest.)
+>=20
+Well, if it does not bother you too much, I'm curious about that
+solution... When you find some time, even via private mail, if I'm the
+only one, it would be nice if you can point that paper out to me.
 
-For the very common case where all users of the mm are at the same
-oom_adj level, this array could be left unallocated as NULL, and the
-thread's own oom_adj used.
+Thanks in advice.
 
-Paul
+Regards,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-iixmZwmzoqEb8NdtUbUW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpft8AACgkQk4XaBE3IOsRXKgCfWxk+FvELsneO/20uoyxcqGK4
+KrEAoKr5NV5KJNJYRUsgek1kUscg/apE
+=bpkS
+-----END PGP SIGNATURE-----
+
+--=-iixmZwmzoqEb8NdtUbUW--
+
