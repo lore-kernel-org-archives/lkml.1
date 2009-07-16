@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932600AbZGPQvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932629AbZGPQv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932600AbZGPQvH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 12:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932520AbZGPQvH
+	id S932629AbZGPQv7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 12:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932577AbZGPQv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 12:51:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34166 "EHLO mx2.redhat.com"
+	Thu, 16 Jul 2009 12:51:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34205 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932441AbZGPQvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 12:51:05 -0400
-Message-ID: <4A5F5AB2.2020401@redhat.com>
-Date: Thu, 16 Jul 2009 12:52:02 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	id S932567AbZGPQv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 12:51:57 -0400
+Date: Thu, 16 Jul 2009 18:51:35 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing: dont reset set_ftrace_filter/notrace when opened
+	with r/w perm
+Message-ID: <20090716165135.GA4739@jolsa.lab.eng.brq.redhat.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       =?UTF-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>
-Subject: Re: [PATCH -tip -v12 01/11] x86: instruction decoder API
-References: <20090716155652.6266.39970.stgit@localhost.localdomain> <20090716155700.6266.71011.stgit@localhost.localdomain> <4A5F5326.8060307@zytor.com>
-In-Reply-To: <4A5F5326.8060307@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009年07月16日 12:19, H. Peter Anvin wrote:
-> Masami Hiramatsu wrote:
->>
->> These opcode maps do NOT include most of SSE and FP opcodes, because
->> those opcodes are not used in the kernel.
->>
-> 
-> That is not true.
+If user setup set_ftrace_filter/set_ftrace_notrace files and then opens them
+with read&write permissions, the previous setup will be removed.
 
-Ah, these opcode maps include some SSE/FP setup opcdes which
-are used in the kernel.
+Tested with following program:
 
-I've found that opcodes while running selftest of decoder,
-so, I checked asm() code and added those in the maps.
+[snip]
+#include <stdio.h>
+#include <string.h>
 
-Thank you,
+int main(int argc, char **argv)
+{
+	FILE *f;
+	char *mode = "w+";
+	char *file = argv[1];
 
--- 
-Masami Hiramatsu
+	if (argc == 3)
+		mode = argv[2];
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+	if (NULL == (f = fopen(file, mode))) {
+		perror("fopen failed");
+		return -1;
+	}
 
-e-mail: mhiramat@redhat.com
+	while(!feof(f)) {
+#define BUFLEN 100
+		char buf[BUFLEN];
+		memset(buf, 0, BUFLEN);
+		fgets(buf, BUFLEN, f);
+		printf(buf);
+	}
 
+	fclose(f);
+	return 0;
+}
+[snip]
+
+wbr,
+jirka
+
+
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+
+---
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 4521c77..11394bc 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1661,10 +1661,6 @@ ftrace_regex_open(struct inode *inode, struct file *file, int enable)
+ 		return -ENOMEM;
+ 
+ 	mutex_lock(&ftrace_regex_lock);
+-	if ((file->f_mode & FMODE_WRITE) &&
+-	    !(file->f_flags & O_APPEND))
+-		ftrace_filter_reset(enable);
+-
+ 	if (file->f_mode & FMODE_READ) {
+ 		iter->pg = ftrace_pages_start;
+ 		iter->flags = enable ? FTRACE_ITER_FILTER :
+@@ -2260,6 +2256,9 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
+ 		return 0;
+ 
+ 	mutex_lock(&ftrace_regex_lock);
++	if ((file->f_mode & FMODE_WRITE) &&
++	    !(file->f_flags & O_APPEND))
++		ftrace_filter_reset(enable);
+ 
+ 	if (file->f_mode & FMODE_READ) {
+ 		struct seq_file *m = file->private_data;
