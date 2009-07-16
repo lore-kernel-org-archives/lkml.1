@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZGPJJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZGPJL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754590AbZGPJJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 05:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbZGPJJ4
+	id S1754668AbZGPJL5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 05:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbZGPJL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 05:09:56 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:54745 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754292AbZGPJJz (ORCPT
+	Thu, 16 Jul 2009 05:11:56 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:48993 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754275AbZGPJLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 05:09:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=mFGM13GsEg8nExA5c+qjZ879Dd+gs/i8hglwc1yvS8vx/XCpB5xbOcC80TTdjIbMpu
-         GoVn9LnPv+5uh9tegkGXAG6Pi/+ATfvpnjKhuGyz1FfXOhgvQZ2EYUrZED4lCDBVQdap
-         Ex0CGWGZk9szQ0FoTABT9et9Hozhg8XsxlphU=
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linville@tuxdriver.com, luciano.coelho@nokia.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] wireless: wl12xx, fix lock imbalance
-References: <1247603833-10862-1-git-send-email-jirislaby@gmail.com>
-From: Kalle Valo <kalle.valo@iki.fi>
-Date: Thu, 16 Jul 2009 12:09:52 +0300
-In-Reply-To: <1247603833-10862-1-git-send-email-jirislaby@gmail.com> (Jiri Slaby's message of "Tue\, 14 Jul 2009 22\:37\:13 +0200")
-Message-ID: <87eish56zj.fsf@litku.valot.fi>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 16 Jul 2009 05:11:55 -0400
+Subject: Re: kmemleak reports
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Kevin Winchester <kjwinchester@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A5D148A.5090405@gmail.com>
+References: <4A5D148A.5090405@gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 16 Jul 2009 10:11:45 +0100
+Message-Id: <1247735505.24965.15.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Jul 2009 09:11:47.0012 (UTC) FILETIME=[71EF6040:01CA05F5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
+On Tue, 2009-07-14 at 20:28 -0300, Kevin Winchester wrote:
+> However, I was thinking that you might soon start getting too many
+> reports to process.  I wonder if there might be some way that you
+> could have a similar facility to kerneloops that would automatically
+> register leak reports to a website where they could be organized and
+> ranked by number of occurrences.  Are the individual leaks reported in
+> such at way that would allow them to be grouped like that?
 
-> Add omitted mutex_unlock to one of wl12xx_op_start fail paths (when
-> wl12xx_chip_wakeup fails).
+BTW, a step towards reducing the number of reports on the list is to
+maintain a tree based on the mainline which gathers various fixes posted
+by people. It is up to the maintainers to push them upstream but, in the
+meantime, people could try this tree and avoid reporting the same
+issues.
 
-Thanks for fixing this.
-
-> [v2]
-> Power off the device, because:
-> \= cite from http://marc.info/?l=linux-kernel&m=124755028209880&w=2
-> If the chip cannot be booted, why should it remain powered on?
-> In some rare cases, the chip might fail to initialize, but can
-> recover if powered off and on again, so turning it off at this
-> point is the right thing to do. =/
-
-Yes, I agree with this.
-
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> ---
->  drivers/net/wireless/wl12xx/main.c |    2 +-
-
-Unfortunately this won't apply to wireless-testing because main.c is
-renamed to wl1251_main.c. Can you respin the patch or do you want me to
-do it? I'm sending other wl12xx patches anyway and it's easy for me to
-rebase this one at the same time.
+I'll try to set this up, ideally on kernel.org for wider visibility (if
+I manage to get an account, otherwise on linux-arm.org/git where I
+usually keep my trees).
 
 -- 
-Kalle Valo
+Catalin
+
