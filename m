@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbZGPA2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbZGPApf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbZGPA2Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 20:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbZGPA2Y
+	id S1754627AbZGPApf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 20:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZGPApf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 20:28:24 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:19868 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751795AbZGPA2X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 20:28:23 -0400
-Date: Wed, 15 Jul 2009 18:28:22 -0600
-From: dann frazier <dannf@hp.com>
-To: linux-kernel@vger.kernel.org
-Cc: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH] [x86] pci: Get rid of magic number in AMD bus discovery
-Message-ID: <20090716002821.GV11729@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 15 Jul 2009 20:45:35 -0400
+Received: from mga14.intel.com ([143.182.124.37]:51697 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752804AbZGPApe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 20:45:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,407,1243839600"; 
+   d="scan'208";a="165515551"
+Subject: Re: [PATCH] ACPI: add driver for SMBus Control Method Interface
+From: ykzhao <yakui.zhao@intel.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>, Crane Cai <crane.cai@amd.com>
+Cc: Crane Cai <crane.cai@amd.com>, "lenb@kernel.org" <lenb@kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090715140057.GB19054@srcf.ucam.org>
+References: <20090715060219.GA30514@crane-desktop>
+	 <1247651002.4113.9.camel@localhost.localdomain>
+	 <20090715140057.GB19054@srcf.ucam.org>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Thu, 16 Jul 2009 08:46:14 +0800
+Message-Id: <1247705174.4113.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The number 4 is hardcoded in a couple of loops.
-Use the already-defined PCI_ROOT_NR macro instead.
+On Wed, 2009-07-15 at 22:00 +0800, Matthew Garrett wrote:
+> On Wed, Jul 15, 2009 at 05:43:22PM +0800, ykzhao wrote:
+> > On Wed, 2009-07-15 at 14:02 +0800, Crane Cai wrote:
+> > > This driver supports the SMBus Control Method Interface. It needs BIOS declare
+> > > ACPI control methods via SMBus Control Method Interface Spec.
+> > It seems that SM bus control is realized in BIOS. And OS can use the
+> > given control method interface to access it. 
+> > Will this controller be accessed directly directly BIOS?
+> > If it can be accessed by BIOS, how to resolve the conflict between BIOS
+> > and OS?
+> 
+> It's being accessed via ACPI methods, so the vendors have the 
+> opportunity to implement proper locking.
+If the vendors can implement the proper locking, there will be no
+conflict. 
 
-Signed-off-by: dann frazier <dannf@hp.com>
----
- arch/x86/pci/amd_bus.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index 3ffa10d..feb3e09 100644
---- a/arch/x86/pci/amd_bus.c
-+++ b/arch/x86/pci/amd_bus.c
-@@ -332,7 +332,7 @@ static int __init early_fill_mp_bus_info(void)
- 		return 0;
- 
- 	pci_root_num = 0;
--	for (i = 0; i < 4; i++) {
-+	for (i = 0; i < PCI_ROOT_NR; i++) {
- 		int min_bus;
- 		int max_bus;
- 		reg = read_pci_config(bus, slot, 1, 0xe0 + (i << 2));
-@@ -368,7 +368,7 @@ static int __init early_fill_mp_bus_info(void)
- 	memset(range, 0, sizeof(range));
- 	range[0].end = 0xffff;
- 	/* io port resource */
--	for (i = 0; i < 4; i++) {
-+	for (i = 0; i < PCI_ROOT_NR; i++) {
- 		reg = read_pci_config(bus, slot, 1, 0xc0 + (i << 3));
- 		if (!(reg & 3))
- 			continue;
--- 
-1.6.3.3
-
-
+Another issue is that this driver had better be put in the directory of
+driver/platform/x86/.
+Thanks.
+> 
+> > In fact we see the conflict on some boxes. The SMbus controller will be
+> > accessed by BIOS. If the corresponding driver is loaded for the SMBUS
+> > controller, there exists the potential risk. In such case we will hide
+> > the SMbus controller or not load the device driver for it.
+> 
+> I don't think that's a risk in this case.
+> 
 
