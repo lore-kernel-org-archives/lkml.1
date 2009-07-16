@@ -1,285 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZGPAzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZGPA5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZGPAzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 20:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbZGPAzu
+	id S1756809AbZGPA5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 20:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbZGPA5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 20:55:50 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36990 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756115AbZGPAzt (ORCPT
+	Wed, 15 Jul 2009 20:57:21 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:62674 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756646AbZGPA5U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 20:55:49 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] add isolate pages vmstat
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20090716094619.9D07.A69D9226@jp.fujitsu.com>
-References: <20090716094619.9D07.A69D9226@jp.fujitsu.com>
-Message-Id: <20090716095344.9D10.A69D9226@jp.fujitsu.com>
+	Wed, 15 Jul 2009 20:57:20 -0400
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.4.rc1
+From: Junio C Hamano <gitster@pobox.com>
+Date: Wed, 15 Jul 2009 17:57:12 -0700
+Message-ID: <7vmy75bg2f.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 16 Jul 2009 09:55:47 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: 9C93A1A2-71A3-11DE-813F-F699A5B33865-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ChangeLog
-  Since v5
-   - Rewrote the description
-   - Treat page migration
-  Since v4
-   - Changed displaing order in show_free_areas() (as Wu's suggested)
-  Since v3
-   - Fixed misaccount page bug when lumby reclaim occur
-  Since v2
-   - Separated IsolateLRU field to Isolated(anon) and Isolated(file)
-  Since v1
-   - Renamed IsolatePages to IsolatedLRU
+A release candidate GIT 1.6.4.rc1 is available at the usual places
+for testing:
 
-==================================
-Subject: [PATCH] add isolate pages vmstat
+  http://www.kernel.org/pub/software/scm/git/
 
-If the system is running a heavy load of processes then concurrent reclaim
-can isolate a large numbe of pages from the LRU. /proc/meminfo and the
-output generated for an OOM do not show how many pages were isolated.
+  git-1.6.4.rc1.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.4.rc1.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.4.rc1.tar.{gz,bz2}		(preformatted docs)
 
-This patch shows the information about isolated pages.
+The RPM binary packages for a few architectures are found in:
 
+  testing/git-*-1.6.4.rc1-1.fc9.$arch.rpm	(RPM)
 
-reproduce way
------------------------
-% ./hackbench 140 process 1000
-   => OOM occur
+GIT v1.6.4 Release Notes (draft)
+================================
 
-active_anon:146 inactive_anon:0 isolated_anon:49245
- active_file:79 inactive_file:18 isolated_file:113
- unevictable:0 dirty:0 writeback:0 unstable:0 buffer:39
- free:370 slab_reclaimable:309 slab_unreclaimable:5492
- mapped:53 shmem:15 pagetables:28140 bounce:0
+With the next major release, "git push" into a branch that is
+currently checked out will be refused by default.  You can choose
+what should happen upon such a push by setting the configuration
+variable receive.denyCurrentBranch in the receiving repository.
 
+To ease the transition plan, the receiving repository of such a
+push running this release will issue a big warning when the
+configuration variable is missing.  Please refer to:
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Rik van Riel <riel@redhat.com>
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
----
- drivers/base/node.c    |    4 ++++
- fs/proc/meminfo.c      |    4 ++++
- include/linux/mmzone.h |    2 ++
- mm/migrate.c           |   11 +++++++++++
- mm/page_alloc.c        |   12 +++++++++---
- mm/vmscan.c            |   12 +++++++++++-
- mm/vmstat.c            |    2 ++
- 7 files changed, 43 insertions(+), 4 deletions(-)
+  http://git.or.cz/gitwiki/GitFaq#non-bare
+  http://thread.gmane.org/gmane.comp.version-control.git/107758/focus=108007
 
-Index: b/fs/proc/meminfo.c
-===================================================================
---- a/fs/proc/meminfo.c
-+++ b/fs/proc/meminfo.c
-@@ -65,6 +65,8 @@ static int meminfo_proc_show(struct seq_
- 		"Active(file):   %8lu kB\n"
- 		"Inactive(file): %8lu kB\n"
- 		"Unevictable:    %8lu kB\n"
-+		"Isolated(anon): %8lu kB\n"
-+		"Isolated(file): %8lu kB\n"
- 		"Mlocked:        %8lu kB\n"
- #ifdef CONFIG_HIGHMEM
- 		"HighTotal:      %8lu kB\n"
-@@ -110,6 +112,8 @@ static int meminfo_proc_show(struct seq_
- 		K(pages[LRU_ACTIVE_FILE]),
- 		K(pages[LRU_INACTIVE_FILE]),
- 		K(pages[LRU_UNEVICTABLE]),
-+		K(global_page_state(NR_ISOLATED_ANON)),
-+		K(global_page_state(NR_ISOLATED_FILE)),
- 		K(global_page_state(NR_MLOCK)),
- #ifdef CONFIG_HIGHMEM
- 		K(i.totalhigh),
-Index: b/include/linux/mmzone.h
-===================================================================
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -100,6 +100,8 @@ enum zone_stat_item {
- 	NR_BOUNCE,
- 	NR_VMSCAN_WRITE,
- 	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
-+	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
-+	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
- 	NR_SHMEM,		/* shmem pages (included tmpfs/GEM pages) */
- #ifdef CONFIG_NUMA
- 	NUMA_HIT,		/* allocated in intended node */
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2115,16 +2115,18 @@ void show_free_areas(void)
- 		}
- 	}
- 
--	printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
--		" inactive_file:%lu"
-+	printk("active_anon:%lu inactive_anon:%lu isolated_anon:%lu\n"
-+		" active_file:%lu inactive_file:%lu isolated_file:%lu\n"
- 		" unevictable:%lu"
- 		" dirty:%lu writeback:%lu unstable:%lu buffer:%lu\n"
- 		" free:%lu slab_reclaimable:%lu slab_unreclaimable:%lu\n"
- 		" mapped:%lu shmem:%lu pagetables:%lu bounce:%lu\n",
- 		global_page_state(NR_ACTIVE_ANON),
--		global_page_state(NR_ACTIVE_FILE),
- 		global_page_state(NR_INACTIVE_ANON),
-+		global_page_state(NR_ISOLATED_ANON),
-+		global_page_state(NR_ACTIVE_FILE),
- 		global_page_state(NR_INACTIVE_FILE),
-+		global_page_state(NR_ISOLATED_FILE),
- 		global_page_state(NR_UNEVICTABLE),
- 		global_page_state(NR_FILE_DIRTY),
- 		global_page_state(NR_WRITEBACK),
-@@ -2152,6 +2154,8 @@ void show_free_areas(void)
- 			" active_file:%lukB"
- 			" inactive_file:%lukB"
- 			" unevictable:%lukB"
-+			" isolated(anon):%lukB"
-+			" isolated(file):%lukB"
- 			" present:%lukB"
- 			" mlocked:%lukB"
- 			" dirty:%lukB"
-@@ -2178,6 +2182,8 @@ void show_free_areas(void)
- 			K(zone_page_state(zone, NR_ACTIVE_FILE)),
- 			K(zone_page_state(zone, NR_INACTIVE_FILE)),
- 			K(zone_page_state(zone, NR_UNEVICTABLE)),
-+			K(zone_page_state(zone, NR_ISOLATED_ANON)),
-+			K(zone_page_state(zone, NR_ISOLATED_FILE)),
- 			K(zone->present_pages),
- 			K(zone_page_state(zone, NR_MLOCK)),
- 			K(zone_page_state(zone, NR_FILE_DIRTY)),
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1067,6 +1067,8 @@ static unsigned long shrink_inactive_lis
- 		unsigned long nr_active;
- 		unsigned int count[NR_LRU_LISTS] = { 0, };
- 		int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;
-+		unsigned long nr_anon;
-+		unsigned long nr_file;
- 
- 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
- 			     &page_list, &nr_scan, sc->order, mode,
-@@ -1097,6 +1099,10 @@ static unsigned long shrink_inactive_lis
- 		__mod_zone_page_state(zone, NR_INACTIVE_ANON,
- 						-count[LRU_INACTIVE_ANON]);
- 
-+		nr_anon = count[LRU_ACTIVE_ANON] + count[LRU_INACTIVE_ANON];
-+		nr_file = count[LRU_ACTIVE_FILE] + count[LRU_INACTIVE_FILE];
-+		__mod_zone_page_state(zone, NR_ISOLATED_ANON, nr_anon);
-+		__mod_zone_page_state(zone, NR_ISOLATED_FILE, nr_file);
- 
- 		reclaim_stat->recent_scanned[0] += count[LRU_INACTIVE_ANON];
- 		reclaim_stat->recent_scanned[0] += count[LRU_ACTIVE_ANON];
-@@ -1164,6 +1170,9 @@ static unsigned long shrink_inactive_lis
- 				spin_lock_irq(&zone->lru_lock);
- 			}
- 		}
-+		__mod_zone_page_state(zone, NR_ISOLATED_ANON, -nr_anon);
-+		__mod_zone_page_state(zone, NR_ISOLATED_FILE, -nr_file);
-+
-   	} while (nr_scanned < max_scan);
- 
- done:
-@@ -1274,6 +1283,7 @@ static void shrink_active_list(unsigned 
- 		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -nr_taken);
- 	else
- 		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -nr_taken);
-+	__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, nr_taken);
- 	spin_unlock_irq(&zone->lru_lock);
- 
- 	while (!list_empty(&l_hold)) {
-@@ -1324,7 +1334,7 @@ static void shrink_active_list(unsigned 
- 						LRU_ACTIVE + file * LRU_FILE);
- 	move_active_pages_to_lru(zone, &l_inactive,
- 						LRU_BASE   + file * LRU_FILE);
--
-+	__mod_zone_page_state(zone, NR_ISOLATED_ANON + file, -nr_taken);
- 	spin_unlock_irq(&zone->lru_lock);
- }
- 
-Index: b/mm/vmstat.c
-===================================================================
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -644,6 +644,8 @@ static const char * const vmstat_text[] 
- 	"nr_bounce",
- 	"nr_vmscan_write",
- 	"nr_writeback_temp",
-+	"nr_isolated_anon",
-+	"nr_isolated_file",
- 	"nr_shmem",
- #ifdef CONFIG_NUMA
- 	"numa_hit",
-Index: b/drivers/base/node.c
-===================================================================
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -73,6 +73,8 @@ static ssize_t node_read_meminfo(struct 
- 		       "Node %d Active(file):   %8lu kB\n"
- 		       "Node %d Inactive(file): %8lu kB\n"
- 		       "Node %d Unevictable:    %8lu kB\n"
-+		       "Node %d Isolated(anon): %8lu kB\n"
-+		       "Node %d Isolated(file): %8lu kB\n"
- 		       "Node %d Mlocked:        %8lu kB\n"
- #ifdef CONFIG_HIGHMEM
- 		       "Node %d HighTotal:      %8lu kB\n"
-@@ -106,6 +108,8 @@ static ssize_t node_read_meminfo(struct 
- 		       nid, K(node_page_state(nid, NR_ACTIVE_FILE)),
- 		       nid, K(node_page_state(nid, NR_INACTIVE_FILE)),
- 		       nid, K(node_page_state(nid, NR_UNEVICTABLE)),
-+		       nid, K(node_page_state(nid, NR_ISOLATED_ANON)),
-+		       nid, K(node_page_state(nid, NR_ISOLATED_FILE)),
- 		       nid, K(node_page_state(nid, NR_MLOCK)),
- #ifdef CONFIG_HIGHMEM
- 		       nid, K(i.totalhigh),
-Index: b/mm/migrate.c
-===================================================================
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -67,6 +67,8 @@ int putback_lru_pages(struct list_head *
- 
- 	list_for_each_entry_safe(page, page2, l, lru) {
- 		list_del(&page->lru);
-+		dec_zone_page_state(page, NR_ISOLATED_ANON +
-+				    !!page_is_file_cache(page));
- 		putback_lru_page(page);
- 		count++;
- 	}
-@@ -696,6 +698,8 @@ unlock:
-  		 * restored.
-  		 */
-  		list_del(&page->lru);
-+		dec_zone_page_state(page, NR_ISOLATED_ANON +
-+				    !!page_is_file_cache(page));
- 		putback_lru_page(page);
- 	}
- 
-@@ -740,6 +744,13 @@ int migrate_pages(struct list_head *from
- 	struct page *page2;
- 	int swapwrite = current->flags & PF_SWAPWRITE;
- 	int rc;
-+	int flags;
-+
-+	local_irq_save(flags);
-+	list_for_each_entry(page, from, lru)
-+		__inc_zone_page_state(page, NR_ISOLATED_ANON +
-+				      !!page_is_file_cache(page));
-+	local_irq_restore(flags);
- 
- 	if (!swapwrite)
- 		current->flags |= PF_SWAPWRITE;
+for more details on the reason why this change is needed and the
+transition plan.
+
+For a similar reason, "git push $there :$killed" to delete the branch
+$killed in a remote repository $there, if $killed branch is the current
+branch pointed at by its HEAD, gets a large warning.  You can choose what
+should happen upon such a push by setting the configuration variable
+receive.denyDeleteCurrent in the receiving repository.
+
+When the user does not tell "git push" what to push, it has always
+pushed matching refs.  For some people it is unexpected, and a new
+configuration variable push.default has been introduced to allow
+changing a different default behaviour.  To advertise the new feature,
+a big warning is issued if this is not configured and a git push without
+arguments is attempted.
+
+	Side note: we might want to tone this down, as it does not seem
+	likely for us to change the default behaviour when this option is
+	not set.
 
 
+Updates since v1.6.3
+--------------------
+
+(subsystems)
+
+ * gitweb Perl style clean-up.
+
+ * git-svn updates, including a new --authors-prog option to map author
+   names by invoking an external program.
+
+(portability)
+
+ * We feed iconv with "UTF-8" instead of "utf8"; the former is
+   understood more widely.
+
+(performance)
+
+(usability, bells and whistles)
+
+ * "git add --edit" lets users edit the whole patch text to fine-tune what
+   is added to the index.
+
+ * "git log --graph" draws graphs more compactly by using horizonal lines
+   when able.
+
+ * "git log --decorate" shows shorter refnames by stripping well-known
+   refs/* prefix.
+
+ * "git send-email" understands quoted aliases in .mailrc files (might
+   have to be backported to 1.6.3.X).
+
+ * "git send-email" can fetch the sender address from the configuration
+   variable "sendmail.from" (and "sendmail.<identity>.from").
+
+ * "git show-branch" can color its output.
+
+ * "add" and "update" subcommands to "git submodule" learned --reference
+   option to use local clone with references.
+
+(developers)
+
+ * A major part of the "git bisect" wrapper has moved to C.
+
+Fixes since v1.6.3
+------------------
+
+All of the fixes in v1.6.3.X maintenance series are included in this
+release, unless otherwise noted.
+
+Here are fixes that this release has, but have not been backported to
+v1.6.3.X series.
+
+ * The way Git.pm sets up a Repository object was not friendly to callers
+   that chdir around.  It now internally records the repository location
+   as an absolute path when autodetected.
