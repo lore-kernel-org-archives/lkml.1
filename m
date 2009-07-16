@@ -1,360 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZGPJFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbZGPJFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZGPJFF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 05:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbZGPJFD
+	id S1754598AbZGPJFz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 05:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZGPJFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 05:05:03 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51714 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754471AbZGPJE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 05:04:59 -0400
-Message-ID: <4A5EECDC.4080500@cn.fujitsu.com>
-Date: Thu, 16 Jul 2009 17:03:24 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 16 Jul 2009 05:05:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:62870 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754170AbZGPJFx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 05:05:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ig8IgabYodZlaIE4Jnw3wsFqgEbdbQtqyl5N8WIDPBLpbhWmdv05RXuivtzcbEMk7Z
+         LjQH9KwkJO/V2LCUY2rMG25D0K7uLqAqyNrfgRJUJ2+4ON79hkvIdjBdar+Q+z+7ZLHE
+         YfLxidcXcOp5HD5pCMLwdjprprnlUMAS1sLig=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing/filters: Improve subsystem filter
+In-Reply-To: <81bfc67a0907160120i2528d9abq6c1bd6ffbae8a433@mail.gmail.com>
+References: <81bfc67a0907160049q3d43093cy52276f0fe1157d89@mail.gmail.com>
+	 <4A5EDEF7.7090303@cosmosbay.com>
+	 <81bfc67a0907160120i2528d9abq6c1bd6ffbae8a433@mail.gmail.com>
+Date: Thu, 16 Jul 2009 05:05:51 -0400
+Message-ID: <81bfc67a0907160205q7b20354bsf2389e3f7feac004@mail.gmail.com>
+Subject: Re: e1000e 2.6.30.1 massive packet loss
+From: Caleb Cushing <xenoterracide@gmail.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently a subsystem filter should be applicable to all events
-under the subsystem, and if it failed, all the event filters
-will be cleared. Those behaviors make subsys filter much less
-useful:
+2.6.30.1 with the issue.
 
-  # echo 'vec == 1' > irq/softirq_entry/filter
-  # echo 'irq == 5' > irq/filter
-  bash: echo: write error: Invalid argument
-  # cat irq/softirq_entry/filter
-  none
+           CPU0       CPU1       CPU2       CPU3
+  0:         36          0          0          0    XT-PIC-XT        timer
+  1:          2          0          0          0    XT-PIC-XT        i8042
+  2:          0          0          0          0    XT-PIC-XT        cascade
+  4:          3          0          0          0    XT-PIC-XT        ohci1394
+  5:        392          0          0          0    XT-PIC-XT
+uhci_hcd:usb2, EMU10K1
+  6:          2          0          0          0    XT-PIC-XT        floppy
+  8:        163          0          0          0    XT-PIC-XT        rtc0
+  9:          0          0          0          0    XT-PIC-XT
+acpi, ehci_hcd:usb3, uhci_hcd:usb6
+ 10:          0          0          0          0    XT-PIC-XT
+uhci_hcd:usb4
+ 11:       1318          0          0          0    XT-PIC-XT
+ehci_hcd:usb1, uhci_hcd:usb5, uhci_hcd:usb7, uhci_hcd:usb8
+ 12:          4          0          0          0    XT-PIC-XT        i8042
+ 25:        801        812        813        785   PCI-MSI-edge      i915
+ 26:       3233       3217       3261       3263   PCI-MSI-edge      ahci
+ 27:        199        200        184        173   PCI-MSI-edge      eth0
+NMI:          0          0          0          0   Non-maskable interrupts
+LOC:      14886      16536      13854      15765   Local timer interrupts
+SPU:          0          0          0          0   Spurious interrupts
+RES:        504        515        358        397   Rescheduling interrupts
+CAL:         55         79         74         44   Function call interrupts
+TLB:        649       1202        685        902   TLB shootdowns
+TRM:          0          0          0          0   Thermal event interrupts
+THR:          0          0          0          0   Threshold APIC interrupts
+ERR:          0
+MIS:          0
 
-I'd expect it set the filter for irq_handler_entry/exit, and
-not touch softirq_entry/exit.
+qdisc pfifo_fast 0: dev eth0 root bands 3 priomap  1 2 2 2 1 2 0 0 1 1
+1 1 1 1 1 1
+ Sent 82807 bytes 499 pkt (dropped 0, overlimits 0 requeues 0)
+ rate 0bit 0pps backlog 0b 0p requeues 0
 
-The basic idea is, try to see if the filter can be applied
-to which events, and then just apply to the those events:
+eth0      Link encap:Ethernet  HWaddr 00:21:9B:06:4C:C9
+          inet addr:192.168.1.3  Bcast:192.168.1.255  Mask:255.255.255.0
+          inet6 addr: fe80::221:9bff:fe06:4cc9/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:366 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:519 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:100
+          RX bytes:130219 (127.1 Kb)  TX bytes:86900 (84.8 Kb)
+          Memory:fdfc0000-fdfe0000
 
-  # echo 'vec == 1' > softirq_entry/filter
-  # echo 'irq == 5' > filter
-  # cat irq_handler_entry/filter
-  irq == 5
-  # cat softirq_entry/filter
-  vec == 1
-
-Inspied-by: Steven Rostedt <srostedt@redhat.com>
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/ftrace_event.h       |    4 +-
- kernel/trace/trace.h               |    3 +-
- kernel/trace/trace_events_filter.c |  123 +++++++++++++++++++++++------------
- 3 files changed, 86 insertions(+), 44 deletions(-)
-
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 5c093ff..26d3673 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -101,6 +101,8 @@ void trace_current_buffer_discard_commit(struct ring_buffer_event *event);
- 
- void tracing_record_cmdline(struct task_struct *tsk);
- 
-+struct event_filter;
-+
- struct ftrace_event_call {
- 	struct list_head	list;
- 	char			*name;
-@@ -116,7 +118,7 @@ struct ftrace_event_call {
- 	int			(*define_fields)(void);
- 	struct list_head	fields;
- 	int			filter_active;
--	void			*filter;
-+	struct event_filter	*filter;
- 	void			*mod;
- 
- #ifdef CONFIG_EVENT_PROFILE
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 06886a0..3a87d46 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -768,13 +768,14 @@ struct event_filter {
- 	int			n_preds;
- 	struct filter_pred	**preds;
- 	char			*filter_string;
-+	bool			no_reset;
- };
- 
- struct event_subsystem {
- 	struct list_head	list;
- 	const char		*name;
- 	struct dentry		*entry;
--	void			*filter;
-+	struct event_filter	*filter;
- 	int			nr_events;
- };
- 
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 1c80ef7..0f510c2 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -420,7 +420,13 @@ oom:
- }
- EXPORT_SYMBOL_GPL(init_preds);
- 
--static void filter_free_subsystem_preds(struct event_subsystem *system)
-+/*
-+ * flag == 0: remove all events' filter
-+ * flag == 1: clear filter->no_reset
-+ * flag == 2: remove all preds with no_reset == false
-+ */
-+static void filter_free_subsystem_preds(struct event_subsystem *system,
-+					int flag)
- {
- 	struct ftrace_event_call *call;
- 
-@@ -428,6 +434,14 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
- 		if (!call->define_fields)
- 			continue;
- 
-+		if (flag == 1) {
-+			call->filter->no_reset = false;
-+			continue;
-+		}
-+
-+		if (flag == 2 && call->filter->no_reset == true)
-+			continue;
-+
- 		if (!strcmp(call->system, system->name)) {
- 			filter_disable_preds(call);
- 			remove_filter_string(call->filter);
-@@ -529,7 +543,8 @@ static filter_pred_fn_t select_comparison_fn(int op, int field_size,
- 
- static int filter_add_pred(struct filter_parse_state *ps,
- 			   struct ftrace_event_call *call,
--			   struct filter_pred *pred)
-+			   struct filter_pred *pred,
-+			   bool apply)
- {
- 	struct ftrace_event_field *field;
- 	filter_pred_fn_t fn;
-@@ -541,10 +556,12 @@ static int filter_add_pred(struct filter_parse_state *ps,
- 
- 	if (pred->op == OP_AND) {
- 		pred->pop_n = 2;
--		return filter_add_pred_fn(ps, call, pred, filter_pred_and);
-+		fn = filter_pred_and;
-+		goto add_pred_fn;
- 	} else if (pred->op == OP_OR) {
- 		pred->pop_n = 2;
--		return filter_add_pred_fn(ps, call, pred, filter_pred_or);
-+		fn = filter_pred_or;
-+		goto add_pred_fn;
- 	}
- 
- 	field = find_event_field(call, pred->field_name);
-@@ -567,9 +584,6 @@ static int filter_add_pred(struct filter_parse_state *ps,
- 		else
- 			fn = filter_pred_strloc;
- 		pred->str_len = field->size;
--		if (pred->op == OP_NE)
--			pred->not = 1;
--		return filter_add_pred_fn(ps, call, pred, fn);
- 	} else {
- 		if (field->is_signed)
- 			ret = strict_strtoll(pred->str_val, 0, &val);
-@@ -580,27 +594,33 @@ static int filter_add_pred(struct filter_parse_state *ps,
- 			return -EINVAL;
- 		}
- 		pred->val = val;
--	}
- 
--	fn = select_comparison_fn(pred->op, field->size, field->is_signed);
--	if (!fn) {
--		parse_error(ps, FILT_ERR_INVALID_OP, 0);
--		return -EINVAL;
-+		fn = select_comparison_fn(pred->op, field->size,
-+					  field->is_signed);
-+		if (!fn) {
-+			parse_error(ps, FILT_ERR_INVALID_OP, 0);
-+			return -EINVAL;
-+		}
- 	}
- 
- 	if (pred->op == OP_NE)
- 		pred->not = 1;
- 
--	return filter_add_pred_fn(ps, call, pred, fn);
-+add_pred_fn:
-+	if (apply)
-+		return filter_add_pred_fn(ps, call, pred, fn);
-+	return 0;
- }
- 
- static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 				     struct event_subsystem *system,
- 				     struct filter_pred *pred,
--				     char *filter_string)
-+				     char *filter_string,
-+				     bool apply)
- {
- 	struct ftrace_event_call *call;
- 	int err = 0;
-+	bool fail = true;
- 
- 	list_for_each_entry(call, &ftrace_events, list) {
- 
-@@ -610,16 +630,24 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 		if (strcmp(call->system, system->name))
- 			continue;
- 
--		err = filter_add_pred(ps, call, pred);
--		if (err) {
--			filter_free_subsystem_preds(system);
--			parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
--			goto out;
--		}
--		replace_filter_string(call->filter, filter_string);
-+		if (call->filter->no_reset)
-+			continue;
-+
-+		err = filter_add_pred(ps, call, pred, apply);
-+		if (err)
-+			call->filter->no_reset = true;
-+		else
-+			fail = false;
-+
-+		if (apply)
-+			replace_filter_string(call->filter, filter_string);
- 	}
--out:
--	return err;
-+
-+	if (fail) {
-+		parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
-+		return err;
-+	}
-+	return 0;
- }
- 
- static void parse_init(struct filter_parse_state *ps,
-@@ -978,12 +1006,14 @@ static int check_preds(struct filter_parse_state *ps)
- static int replace_preds(struct event_subsystem *system,
- 			 struct ftrace_event_call *call,
- 			 struct filter_parse_state *ps,
--			 char *filter_string)
-+			 char *filter_string,
-+			 bool apply)
- {
- 	char *operand1 = NULL, *operand2 = NULL;
- 	struct filter_pred *pred;
- 	struct postfix_elt *elt;
- 	int err;
-+	int n_preds = 0;
- 
- 	err = check_preds(ps);
- 	if (err)
-@@ -1002,19 +1032,14 @@ static int replace_preds(struct event_subsystem *system,
- 			continue;
- 		}
- 
-+		if (n_preds++ == MAX_FILTER_PRED) {
-+			parse_error(ps, FILT_ERR_TOO_MANY_PREDS, 0);
-+			return -ENOSPC;
-+		}
-+
- 		if (elt->op == OP_AND || elt->op == OP_OR) {
- 			pred = create_logical_pred(elt->op);
--			if (call)
--				err = filter_add_pred(ps, call, pred);
--			else
--				err = filter_add_subsystem_pred(ps, system,
--							pred, filter_string);
--			filter_free_pred(pred);
--			if (err)
--				return err;
--
--			operand1 = operand2 = NULL;
--			continue;
-+			goto add_pred;
- 		}
- 
- 		if (!operand1 || !operand2) {
-@@ -1023,11 +1048,12 @@ static int replace_preds(struct event_subsystem *system,
- 		}
- 
- 		pred = create_pred(elt->op, operand1, operand2);
-+add_pred:
- 		if (call)
--			err = filter_add_pred(ps, call, pred);
-+			err = filter_add_pred(ps, call, pred, true);
- 		else
- 			err = filter_add_subsystem_pred(ps, system, pred,
--							filter_string);
-+						filter_string, apply);
- 		filter_free_pred(pred);
- 		if (err)
- 			return err;
-@@ -1068,7 +1094,7 @@ int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
- 		goto out;
- 	}
- 
--	err = replace_preds(NULL, call, ps, filter_string);
-+	err = replace_preds(NULL, call, ps, filter_string, true);
- 	if (err)
- 		append_filter_err(ps, call->filter);
- 
-@@ -1092,7 +1118,7 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
- 	mutex_lock(&event_mutex);
- 
- 	if (!strcmp(strstrip(filter_string), "0")) {
--		filter_free_subsystem_preds(system);
-+		filter_free_subsystem_preds(system, 0);
- 		remove_filter_string(system->filter);
- 		mutex_unlock(&event_mutex);
- 		return 0;
-@@ -1103,7 +1129,6 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
- 	if (!ps)
- 		goto out_unlock;
- 
--	filter_free_subsystem_preds(system);
- 	replace_filter_string(system->filter, filter_string);
- 
- 	parse_init(ps, filter_ops, filter_string);
-@@ -1113,9 +1138,23 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
- 		goto out;
- 	}
- 
--	err = replace_preds(system, NULL, ps, filter_string);
--	if (err)
-+	filter_free_subsystem_preds(system, 1);
-+
-+	/* try to see the filter can be applied to which events */
-+	err = replace_preds(system, NULL, ps, filter_string, false);
-+	if (err) {
- 		append_filter_err(ps, system->filter);
-+		goto out;
-+	}
-+
-+	filter_free_subsystem_preds(system, 2);
-+
-+	/* really apply the filter to the events */
-+	err = replace_preds(system, NULL, ps, filter_string, true);
-+	if (err) {
-+		append_filter_err(ps, system->filter);
-+		filter_free_subsystem_preds(system, 2);
-+	}
- 
- out:
- 	filter_opstack_clear(ps);
--- 
-1.6.3
-
-
-
-
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:817 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:817 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:55043 (53.7 Kb)  TX bytes:55043 (53.7 Kb)
