@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbZGPCaD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbZGPCd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162AbZGPCaD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 22:30:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757161AbZGPCaC
+	id S1757190AbZGPCd7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 22:33:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbZGPCd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 22:30:02 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:57888 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757157AbZGPCaB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 22:30:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=a5RX6TtyvbbvuGFh02YXbBy+NNKbMQSu5tJpSDBGpz2ohunLbMZIDAu4QUytSc5Y5P
-         Kn4AeUMXoNCuyvHSyGpZ5zIvmaqkCRLYuhC25+5EaUjsxjKyBf3esj99Sio8fhrwKQt5
-         s0+bJQJy4lyqi89rRfR/t7QIZqK8Lut/yOqbU=
-MIME-Version: 1.0
-In-Reply-To: <20090716021737.GA30363@kroah.com>
-References: <1245763114-7753-1-git-send-email-vapier@gentoo.org> 
-	<8bd0f97a0907150908y333f89eav1d0edbb6a5951c05@mail.gmail.com> 
-	<20090716021737.GA30363@kroah.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 15 Jul 2009 22:29:40 -0400
-Message-ID: <8bd0f97a0907151929t3ca67bc9gd4ebeae1e17894b0@mail.gmail.com>
-Subject: Re: [PATCH] USB: isp1760: allow platform devices to customize 
-	devflags
-To: Greg KH <greg@kroah.com>
-Cc: gregkh@suse.de, bigeasy@linuxtronix.de, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 15 Jul 2009 22:33:58 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45410 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757164AbZGPCd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 22:33:58 -0400
+Date: Thu, 16 Jul 2009 12:33:51 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: ttydev series import warning
+Message-Id: <20090716123351.6c2ea7a0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__16_Jul_2009_12_33_51_+1000_X/9_J/R+QRHe4tGF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 22:17, Greg KH wrote:
-> On Wed, Jul 15, 2009 at 12:08:31PM -0400, Mike Frysinger wrote:
->> On Tue, Jun 23, 2009 at 09:18, Mike Frysinger wrote:
->> > From: Michael Hennerich <michael.hennerich@analog.com>
->> >
->> > Platform device support was merged earlier, but support for boards to
->> > customize the devflags aspect of the controller was not.  We want this on
->> > Blackfin systems to control the bus width, but might as well expose all of
->> > the fields while we're at it.
->>
->> ping ...
->
-> Ping who, yourself?
+--Signature=_Thu__16_Jul_2009_12_33_51_+1000_X/9_J/R+QRHe4tGF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-ping the guy who can merge the patch ...
--mike
+Hi Alan,
+
+Today's linux-next import of the ttydev series produced this error:
+
+tty-fix-sti-race
+error: No changes
+
+I just commented out that empty patch.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__16_Jul_2009_12_33_51_+1000_X/9_J/R+QRHe4tGF
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpekY8ACgkQjjKRsyhoI8yQsgCgsy3t8L9TikHQg97WBL4RuTlG
+gPUAoISXGVt0rXGlYaL7Z4XnMn55oW24
+=9EvT
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__16_Jul_2009_12_33_51_+1000_X/9_J/R+QRHe4tGF--
