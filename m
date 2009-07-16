@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933214AbZGPUFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933243AbZGPUFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933214AbZGPUFq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 16:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932901AbZGPUFq
+	id S933243AbZGPUFy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 16:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933224AbZGPUFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 16:05:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:46608 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932765AbZGPUFp (ORCPT
+	Thu, 16 Jul 2009 16:05:53 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:46727 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933226AbZGPUFu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 16:05:45 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=wZvTnaXTP+7VOy/ppSsMsaYI7cNsYKz/b28pmCC++FqhtudkaR9Ry96cQjCsXgJYj
-	0YT58NMALP353A3igOXPw==
-Date: Thu, 16 Jul 2009 13:05:31 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Miao Xie <miaox@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
-In-Reply-To: <1247679064.4089.26.camel@useless.americas.hpqcorp.net>
-Message-ID: <alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
-References: <20090715182320.39B5.A69D9226@jp.fujitsu.com> <1247679064.4089.26.camel@useless.americas.hpqcorp.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 16 Jul 2009 16:05:50 -0400
+Date: Thu, 16 Jul 2009 14:05:49 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: david@lang.hm
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       James Smart <James.Smart@Emulex.Com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Subject: Re: deterministic scsi order with async scan
+Message-ID: <20090716200549.GU24310@parisc-linux.org>
+References: <alpine.DEB.1.10.0907151801040.9159@asgard> <4A5F100E.9000107@panasas.com> <alpine.DEB.1.10.0907161017180.9159@asgard> <4A5F723B.7070408@emulex.com> <alpine.DEB.1.10.0907161143010.9159@asgard> <1247773155.6606.265.camel@mulgrave.site> <alpine.DEB.1.10.0907161245470.9159@asgard>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0907161245470.9159@asgard>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Jul 2009, Lee Schermerhorn wrote:
+On Thu, Jul 16, 2009 at 12:48:06PM -0700, david@lang.hm wrote:
+> so if I don't use udev but do want the async detection my only option to  
+> have it boot from card 1 instead of card 2 is to just keep rebooting the  
+> machine until it guesses right?
 
-> Interestingly, on ia64, the top cpuset mems_allowed gets set to all
-> possible nodes, while on x86_64, it gets set to on-line nodes [or nodes
-> with memory].  Maybe this is a to support hot-plug?
-> 
+you could make the driver for card2 a module ...
 
-numactl --interleave=all simply passes a nodemask with all bits set, so if 
-cpuset_current_mems_allowed includes offline nodes from node_possible_map, 
-then mpol_set_nodemask() doesn't mask them off.
-
-Seems like we could handle this strictly in mempolicies without worrying 
-about top_cpuset like in the following?
----
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -194,6 +194,7 @@ static int mpol_new_bind(struct mempolicy *pol, const nodemask_t *nodes)
- static int mpol_set_nodemask(struct mempolicy *pol, const nodemask_t *nodes)
- {
- 	nodemask_t cpuset_context_nmask;
-+	nodemask_t mems_allowed;
- 	int ret;
- 
- 	/* if mode is MPOL_DEFAULT, pol is NULL. This is right. */
-@@ -201,20 +202,21 @@ static int mpol_set_nodemask(struct mempolicy *pol, const nodemask_t *nodes)
- 		return 0;
- 
- 	VM_BUG_ON(!nodes);
-+	nodes_and(mems_allowed, cpuset_current_mems_allowed,
-+				node_states[N_HIGH_MEMORY]);
- 	if (pol->mode == MPOL_PREFERRED && nodes_empty(*nodes))
- 		nodes = NULL;	/* explicit local allocation */
- 	else {
- 		if (pol->flags & MPOL_F_RELATIVE_NODES)
- 			mpol_relative_nodemask(&cpuset_context_nmask, nodes,
--					       &cpuset_current_mems_allowed);
-+					       &mems_allowed);
- 		else
- 			nodes_and(cpuset_context_nmask, *nodes,
--				  cpuset_current_mems_allowed);
-+				  mems_allowed);
- 		if (mpol_store_user_nodemask(pol))
- 			pol->w.user_nodemask = *nodes;
- 		else
--			pol->w.cpuset_mems_allowed =
--						cpuset_current_mems_allowed;
-+			pol->w.cpuset_mems_allowed = mems_allowed;
- 	}
- 
- 	ret = mpol_ops[pol->mode].create(pol,
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
