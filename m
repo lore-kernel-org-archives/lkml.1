@@ -1,107 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932594AbZGPQE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932612AbZGPQIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932594AbZGPQE0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 12:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932487AbZGPQEZ
+	id S932612AbZGPQIj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 12:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932455AbZGPQIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 12:04:25 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:64779 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932454AbZGPQEY (ORCPT
+	Thu, 16 Jul 2009 12:08:39 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:50042 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932390AbZGPQIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 12:04:24 -0400
-Message-ID: <4A5F4F59.8000303@vlnb.net>
-Date: Thu, 16 Jul 2009 20:03:37 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 16 Jul 2009 12:08:38 -0400
+Date: Thu, 16 Jul 2009 18:08:33 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
+       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>
+Subject: Re: [PATCH 3/3] ds2760: implement set_charged() feature
+Message-ID: <20090716160833.GR19257@buzzloop.caiaq.de>
+References: <1247759044-4747-1-git-send-email-daniel@caiaq.de> <1247759044-4747-2-git-send-email-daniel@caiaq.de> <1247759044-4747-3-git-send-email-daniel@caiaq.de>
 MIME-Version: 1.0
-To: Ronald Moesbergen <intercommit@gmail.com>
-CC: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       Alan.Brunelle@hp.com, linux-fsdevel@vger.kernel.org,
-       jens.axboe@oracle.com, randy.dunlap@oracle.com,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-References: <4A3CD62B.1020407@vlnb.net> <4A5493A8.2000806@vlnb.net>	 <a0272b440907092332o7c5bf1d0oa51d1cfc9b9e98f5@mail.gmail.com>	 <4A56FF32.2060303@vlnb.net> <4A570981.5080803@vlnb.net>	 <a0272b440907130512y60a757afqd5629f4ca3ac8e1b@mail.gmail.com>	 <4A5CD3E2.2060307@vlnb.net> <4A5D7794.2070607@vlnb.net>	 <a0272b440907160032u482bd483s54540001aef7ac73@mail.gmail.com>	 <4A5F0293.3010206@vlnb.net> <a0272b440907160754j3545f4dby13882ea1ab964222@mail.gmail.com>
-In-Reply-To: <a0272b440907160754j3545f4dby13882ea1ab964222@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19zUHdvsIhet0a7f1IGMV8sL77Rld4i+jkkU6Z
- /gtjxtxoQWQ+ALJTuHnmwqrlXxwujIhqgFum2kkiONMHaQC5yV
- qgMbYs40eevPEeBHB2GxA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247759044-4747-3-git-send-email-daniel@caiaq.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Ronald Moesbergen, on 07/16/2009 06:54 PM wrote:
-> 2009/7/16 Vladislav Bolkhovitin <vst@vlnb.net>:
->> Ronald Moesbergen, on 07/16/2009 11:32 AM wrote:
->>> 2009/7/15 Vladislav Bolkhovitin <vst@vlnb.net>:
->>>>> The drop with 64 max_sectors_kb on the client is a consequence of how
->>>>> CFQ
->>>>> is working. I can't find the exact code responsible for this, but from
->>>>> all
->>>>> signs, CFQ stops delaying requests if amount of outstanding requests
->>>>> exceeds
->>>>> some threshold, which is 2 or 3. With 64 max_sectors_kb and 5 SCST I/O
->>>>> threads this threshold is exceeded, so CFQ doesn't recover order of
->>>>> requests, hence the performance drop. With default 512 max_sectors_kb
->>>>> and
->>>>> 128K RA the server sees at max 2 requests at time.
->>>>>
->>>>> Ronald, can you perform the same tests with 1 and 2 SCST I/O threads,
->>>>> please?
->>> Ok. Should I still use the file-on-xfs testcase for this, or should I
->>> go back to using a regular block device?
->> Yes, please
+On Thu, Jul 16, 2009 at 05:44:04PM +0200, Daniel Mack wrote:
+> The ds2760's internal current meter is not reliable enough as it has an
+> inacurracy of around ~15%. Without any correction for that error, the
+> current accumulator is couting up all the time, even though the battery
+> is already fully charged and hence destroys the static information. The
+> longer it is connected, the worse is the aberration.
 > 
-> As in: Yes, go back to block device, or Yes use file-on-xfs?
-
-File-on-xfs :)
-
->>> The file-over-iscsi is quite
->>> uncommon I suppose, most people will export a block device over iscsi,
->>> not a file.
->> No, files are common. The main reason why people use direct block devices is
->> a not supported by anything believe that comparing with files they "have
->> less overhead", so "should be faster". But it isn't true and can be easily
->> checked.
+> Fortunately, this can be corrected by the DS2760_CURRENT_OFFSET_BIAS
+> register. Using the external power_supply_set_battery_charged()
+> function, this register is now gauging the measurement.
 > 
-> Well, there are other advantages of using a block device: they are
-> generally more manageble, for instance you can use LVM for resizing
-> instead of strange dd magic to extend a file. When using a file you
-> have to extend the volume that holds the file first, and then the file
-> itself.
+> A delayed work is used to debounce flaky GPIO signals and to let the
+> current value settle. Also see Maxim's application note AN4188.
 
-Files also have advantages. For instance, it's easier to backup them and 
-move between servers. On modern systems with fallocate() syscall support 
-you don't have to do "strange dd magic" to resize files and can nearly 
-instantaneously make them bigger. Also with pretty simple modifications 
-scst_vdisk can be improved to make a single virtual device from several 
-files.
+One more small correction - we need to manually write back the BIAS
+level to the di->raw buffer as ds2760_battery_read_status() won't do it
+for us after the first time.
 
-> And you don't lose disk space to filesystem metadata twice.
+Daniel
 
-This is negligible (0.05% for XFS)
 
-> Also, I still don't get why reads/writes from a blockdevice are
-> different in speed than reads/writes from a file on a filesystem.
+commit ebb1173a2c6e1334b1afc7cd119b39eca2350351
+Author: Daniel Mack <daniel@caiaq.de>
+Date:   Thu Jul 16 17:28:56 2009 +0200
 
-Me too and I'd appreciate if someone explain it. But I don't want to 
-introduce one more variable in the task we are solving (how to make 
-100+MB/s from iSCSI on your system).
+    ds2760: implement set_charged() feature
+    
+    The ds2760's internal current meter is not reliable enough as it has an
+    inacurracy of around ~15%. Without any correction for that error, the
+    current accumulator is couting up all the time, even though the battery
+    is already fully charged and hence destroys the static information. The
+    longer it is connected, the worse is the aberration.
+    
+    Fortunately, this can be corrected by the DS2760_CURRENT_OFFSET_BIAS
+    register. Using the external power_supply_set_battery_charged()
+    function, this register is now gauging the measurement.
+    
+    A delayed work is used to debounce flaky GPIO signals and to let the
+    current value settle. Also see Maxim's application note AN4188.
+    
+    Signed-off-by: Daniel Mack <daniel@caiaq.de>
+    Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
+    Cc: Matt Reimer <mreimer@vpop.net>
+    Cc: Anton Vorontsov <cbou@mail.ru>
 
-> I
-> for one will not be using files exported over iscsi, but blockdevices
-> (LVM volumes).
-
-Are you sure?
-
-> Ronald.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
+index f4a9258..9a95bc1 100644
+--- a/drivers/power/ds2760_battery.c
++++ b/drivers/power/ds2760_battery.c
+@@ -56,6 +56,7 @@ struct ds2760_device_info {
+ 	struct device *w1_dev;
+ 	struct workqueue_struct *monitor_wqueue;
+ 	struct delayed_work monitor_work;
++	struct delayed_work set_charged_work;
+ };
+ 
+ static unsigned int cache_time = 1000;
+@@ -327,6 +328,52 @@ static void ds2760_battery_external_power_changed(struct power_supply *psy)
+ 	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ/10);
+ }
+ 
++
++static void ds2760_battery_set_charged_work(struct work_struct *work)
++{
++	char bias;
++	struct ds2760_device_info *di = container_of(work,
++		struct ds2760_device_info, set_charged_work.work);
++
++	dev_dbg(di->dev, "%s\n", __func__);
++
++	ds2760_battery_read_status(di);
++
++	/* When we get notified by external circuitry that the battery is
++	 * considered fully charged now, we know that there is no current
++	 * flow any more. However, the ds2760's internal current meter is
++	 * too inaccurate to rely on - spec say something ~15% failure.
++	 * Hence, we use the current offset bias register to compensate
++	 * that error.
++	 */
++
++	if (!power_supply_am_i_supplied(&di->bat))
++		return;
++
++	bias = di->current_raw +
++		(signed char) di->raw[DS2760_CURRENT_OFFSET_BIAS];
++
++	dev_dbg(di->dev, "%s: bias = %d\n", __func__, bias);
++
++	w1_ds2760_write(di->w1_dev, &bias, DS2760_CURRENT_OFFSET_BIAS, 1);
++	w1_ds2760_store_eeprom(di->w1_dev, DS2760_EEPROM_BLOCK1);
++	w1_ds2760_recall_eeprom(di->w1_dev, DS2760_EEPROM_BLOCK1);
++
++	/* Write to the di->raw[] buffer directly - the CURRENT_OFFSET_BIAS
++	 * value won't be read back by ds2760_battery_read_status() */
++	di->raw[DS2760_CURRENT_OFFSET_BIAS] = bias;
++}
++
++static void ds2760_battery_set_charged(struct power_supply *psy)
++{
++	struct ds2760_device_info *di = to_ds2760_device_info(psy);
++
++	/* postpone the actual work by 20 secs. This is for debouncing GPIO
++	 * signals and to let the current value settle. See AN4188. */
++	cancel_delayed_work(&di->set_charged_work);
++	queue_delayed_work(di->monitor_wqueue, &di->set_charged_work, HZ * 20);
++}
++
+ static int ds2760_battery_get_property(struct power_supply *psy,
+ 				       enum power_supply_property psp,
+ 				       union power_supply_propval *val)
+@@ -412,6 +459,7 @@ static int ds2760_battery_probe(struct platform_device *pdev)
+ 	di->bat.properties	= ds2760_battery_props;
+ 	di->bat.num_properties	= ARRAY_SIZE(ds2760_battery_props);
+ 	di->bat.get_property	= ds2760_battery_get_property;
++	di->bat.set_charged	= ds2760_battery_set_charged;
+ 	di->bat.external_power_changed =
+ 				  ds2760_battery_external_power_changed;
+ 
+@@ -443,6 +491,7 @@ static int ds2760_battery_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	INIT_DELAYED_WORK(&di->monitor_work, ds2760_battery_work);
++	INIT_DELAYED_WORK(&di->set_charged_work, ds2760_battery_set_charged_work);
+ 	di->monitor_wqueue = create_singlethread_workqueue(dev_name(&pdev->dev));
+ 	if (!di->monitor_wqueue) {
+ 		retval = -ESRCH;
+@@ -467,6 +516,8 @@ static int ds2760_battery_remove(struct platform_device *pdev)
+ 
+ 	cancel_rearming_delayed_workqueue(di->monitor_wqueue,
+ 					  &di->monitor_work);
++	cancel_rearming_delayed_workqueue(di->monitor_wqueue,
++					  &di->set_charged_work);
+ 	destroy_workqueue(di->monitor_wqueue);
+ 	power_supply_unregister(&di->bat);
+ 
