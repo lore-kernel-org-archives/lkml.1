@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbZGPIpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbZGPIrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953AbZGPIpN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 04:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZGPIpN
+	id S1754038AbZGPIrB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 04:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZGPIrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 04:45:13 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:2480 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753174AbZGPIpM convert rfc822-to-8bit (ORCPT
+	Thu, 16 Jul 2009 04:47:01 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47382 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752590AbZGPIrA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 04:45:12 -0400
-Message-Id: <4A5F04B7020000780000AB59@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Thu, 16 Jul 2009 09:45:11 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fix MCE's set_trigger() accessor
+	Thu, 16 Jul 2009 04:47:00 -0400
+Subject: Re: Memory leak issues in drm
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Dave Airlie <airlied@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, airlied@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, Eric Anholt <eric@anholt.net>
+In-Reply-To: <1247728158.2543.4.camel@ht.satnam>
+References: <1247720877.2532.4.camel@ht.satnam>
+	 <1247728158.2543.4.camel@ht.satnam>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 16 Jul 2009 09:44:48 +0100
+Message-Id: <1247733888.24965.3.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Jul 2009 08:44:48.0986 (UTC) FILETIME=[AD8433A0:01CA05F1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix oops
+On Thu, 2009-07-16 at 12:39 +0530, Jaswinder Singh Rajput wrote:
+> On Thu, 2009-07-16 at 10:37 +0530, Jaswinder Singh Rajput wrote:
+> > On linus tree, while investigating kmemleak issues in drm :
+> > 
+> > unreferenced object 0xf571dea0 (size 32):
+> >   comm "Xorg", pid 1992, jiffies 4294703188
+> >   backtrace:
+> >     [<c1096655>] create_object+0x140/0x210
+> >     [<c10967f2>] kmemleak_alloc+0x25/0x4b
+> >     [<c1093b63>] __kmalloc+0xcb/0x153
+> >     [<c11ae939>] drm_setversion+0x154/0x1f6
+> >     [<c11ad0b1>] drm_ioctl+0x211/0x296
+> >     [<c10a2dc9>] vfs_ioctl+0x50/0x69
+> >     [<c10a3321>] do_vfs_ioctl+0x49b/0x4d5
+> >     [<c10a3387>] sys_ioctl+0x2c/0x45
+> >     [<c1002988>] sysenter_do_call+0x12/0x36
+> >     [<ffffffff>] 0xffffffff
+> > 
+> 
+> This fixes above memory leak in drm because it was allocating again on
+> dev->devname without freeing previous instance and more memory related
+> issues, hope this will be helpful:
 
-Fix the condition checking the result of strchr() (which previously
-could result in an oops), and make the function return the number of
-bytes actively used.
+Thanks for looking into this (I haven't tried the patch yet but it seems
+that you found the cause of the leak).
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+In case you have time, I reported this as well and another in the drm
+code - http://lkml.org/lkml/2009/7/9/110 - which happens when a graphics
+application exits.
 
----
- arch/x86/kernel/cpu/mcheck/mce.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
---- linux-2.6.31-rc3/arch/x86/kernel/cpu/mcheck/mce.c	2009-07-16 10:01:19.000000000 +0200
-+++ 2.6.31-rc3-x86-mce-set-trigger/arch/x86/kernel/cpu/mcheck/mce.c	2009-07-16 00:00:00.000000000 +0200
-@@ -1692,17 +1692,15 @@ static ssize_t set_trigger(struct sys_de
- 				const char *buf, size_t siz)
- {
- 	char *p;
--	int len;
- 
- 	strncpy(mce_helper, buf, sizeof(mce_helper));
- 	mce_helper[sizeof(mce_helper)-1] = 0;
--	len = strlen(mce_helper);
- 	p = strchr(mce_helper, '\n');
- 
--	if (*p)
-+	if (p)
- 		*p = 0;
- 
--	return len;
-+	return strlen(mce_helper) + !!p;
- }
- 
- static ssize_t set_ignore_ce(struct sys_device *s,
-
-
+-- 
+Catalin
 
