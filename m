@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbZGPEJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbZGPEK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751961AbZGPEJP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 00:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZGPEJO
+	id S1752024AbZGPEK0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 00:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZGPEK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 00:09:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50157 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751327AbZGPEJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 00:09:13 -0400
-Message-ID: <4A5EA7E1.7030403@redhat.com>
-Date: Thu, 16 Jul 2009 00:09:05 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Thu, 16 Jul 2009 00:10:26 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:49732 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751415AbZGPEKZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 00:10:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fFIgP273xoSu+0VvppMhNfYX5xAqqh6n9/Lwwo48dgnIGPaBqV4I//67myQq8nkdNL
+         iumEsT8GflMRZNrwg6+sCkGgoIS45quM/Ka8mhfgGkmvS7T4qopYvjjgU1hnc/bCKXQM
+         F6U4YQ17Mxxk1yNn+VG4leabn8a+dlkdb4gjQ=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH -mm] throttle direct reclaim when too many pages are isolated
- already (v3)
-References: <20090715223854.7548740a@bree.surriel.com>	<20090715194820.237a4d77.akpm@linux-foundation.org>	<4A5E9A33.3030704@redhat.com>	<20090715202114.789d36f7.akpm@linux-foundation.org>	<4A5E9E4E.5000308@redhat.com>	<20090715203854.336de2d5.akpm@linux-foundation.org>	<20090715235318.6d2f5247@bree.surriel.com> <20090715210253.bc137b2d.akpm@linux-foundation.org>
-In-Reply-To: <20090715210253.bc137b2d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090716095241.9D0D.A69D9226@jp.fujitsu.com>
+References: <20090716094619.9D07.A69D9226@jp.fujitsu.com>
+	 <20090716095241.9D0D.A69D9226@jp.fujitsu.com>
+Date: Thu, 16 Jul 2009 13:10:23 +0900
+Message-ID: <28c262360907152110k23e1aebk9fbf7853c29991e@mail.gmail.com>
+Subject: Re: [PATCH 2/3] mm: shrink_inactive_lis() nr_scan accounting fix fix
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+Good.
+I decided making patch like this since I knew this problem.
+You are too diligent :)
 
-> While I agree that handling fatal signals on the direct reclaim path
-> is probably a good thing, this seems like a fairly random place at
-> which to start the enhancement.
+Thanks for good attitude.
 
-You are right, the direct reclaim path has one other
-place where congestion_wait is called in a loop,
-do_try_to_free_pages itself - we'll probably want to
-break out of that loop too, if the task is about to
-die and free all its memory.
-
-> If we were to step back and approach this in a broader fashion, perhaps
-> we would find some commonality with the existing TIF_MEMDIE handling,
-> dunno.
-
-Good point - what is it that makes TIF_MEMDIE special
-wrt. other fatal signals, anyway?
-
-I wonder if we should not simply "help along" any task
-with fatal signals pending, anywhere in the VM (and maybe
-other places in the kernel, too).
-
-The faster we get rid of a killed process, the sooner its
-resources become available to the other processes.
-
-> And I question the testedness of v3 :)
-
-No question about that :)
+On Thu, Jul 16, 2009 at 9:53 AM, KOSAKI
+Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+> Subject: [PATCH] mm: shrink_inactive_lis() nr_scan accounting fix fix
+>
+> If sc->isolate_pages() return 0, we don't need to call shrink_page_list().
+> In past days, shrink_inactive_list() handled it properly.
+>
+> But commit fb8d14e1 (three years ago commit!) breaked it. current shrink_inactive_list()
+> always call shrink_page_list() although isolate_pages() return 0.
+>
+> This patch restore proper return value check.
+>
+>
+> Requirements:
+>  o "nr_taken == 0" condition should stay before calling shrink_page_list().
+>  o "nr_taken == 0" condition should stay after nr_scan related statistics
+>     modification.
+>
+>
+> Cc: Wu Fengguang <fengguang.wu@intel.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
 -- 
-All rights reversed.
+Kind regards,
+Minchan Kim
