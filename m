@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbZGPOt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbZGPOxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932409AbZGPOt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 10:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbZGPOt6
+	id S932418AbZGPOxe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 10:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932326AbZGPOxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 10:49:58 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:27102 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932290AbZGPOt5 (ORCPT
+	Thu, 16 Jul 2009 10:53:33 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:55586 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932323AbZGPOxc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 10:49:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=cfQfLXYk0Lc6K2ckyJnUbcCPec9IEAGDLvsD6jBZsWkyU5UeG+/xg9kW0IcA5+xGJ4
-         /kySZ7aHwTjnqnlpFjFg2mboAYjiC2S2XE947Lu14HNDsnZk/ZnQ0ULRFe2sJBGDo/Ni
-         R/fRkSRsDZu/IJeKf48GG2GxoUdEk6ByZCupw=
-Date: Thu, 16 Jul 2009 10:49:39 -0400
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, paulus@samba.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 5/5] perf_counter: Make call graph option consistent
-Message-ID: <20090716144932.GB8043@nowhere>
-References: <20090716104247.536695580@samba.org> <20090716104817.803604373@samba.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090716104817.803604373@samba.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Jul 2009 10:53:32 -0400
+Subject: Re: [PATCH 1/4] scsi: Allow hosts to be flagged as hotpluggable
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <20090716144536.GB14345@srcf.ucam.org>
+References: <1247701438-18266-1-git-send-email-mjg@redhat.com>
+	 <4A5F3975.70503@s5r6.in-berlin.de> <20090716143828.GB13924@srcf.ucam.org>
+	 <1247755399.6606.4.camel@mulgrave.site>
+	 <20090716144536.GB14345@srcf.ucam.org>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 14:53:29 +0000
+Message-Id: <1247756009.6606.9.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 08:42:52PM +1000, Anton Blanchard wrote:
-> perf record uses -g for logging call graph data but perf report uses -c
-> to print call graph data. Be consistent and use -g everywhere for call graph
-> data.
+On Thu, 2009-07-16 at 15:45 +0100, Matthew Garrett wrote:
+> On Thu, Jul 16, 2009 at 02:43:19PM +0000, James Bottomley wrote:
+> > On Thu, 2009-07-16 at 15:38 +0100, Matthew Garrett wrote:
+> > > Exactly.
+> > 
+> > OK, so if this is only in relation to SATA power management, put it in
+> > libata and call it something like pm_capable.  That way we don't have to
+> > work out what to do with it for the rest of SCSI.
 > 
-> Also update the help text to reflect the current default - fractal,0.5
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+> I have vague memories of this coming up before and it being suggested 
+> that it should be done at the SCSI layer instead, but I can't find that 
+> now. Doing it entirely in libata certainly isn't a problem.
 
+Well, a flag that says 'hotplug' and means both the controller and bus
+support hotplugging might be SCSI specific.  However, the fact is that
+most people make such a determination on the bus type, so it's a bit
+redundant (in true SCSI there really is no controller on a hotplug bus
+that doesn't support hotplug because they can't scan the bus without
+it).  If you intend to use it to make link power management decisions,
+that's completely different because SAS PM support still isn't
+standardised and most of the rest of SCSI doesn't have it either.  So it
+sounds to me you're looking for a flag that says "might have a problem
+with SATA link power management" ... in which case this is currently
+libata specific.  We might be able to expand it to libsas if (when) we
+actually get link power management standardised, but a lot of the other
+busses aren't even going to have a concept of link power management.
 
-Thanks!
+James
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-
-> ---
-> 
-> Im not sure if it's too late to make this change, but I've tripped
-> up a number of times when I cycle between perf record and perf report.
-> 
-> Index: linux.trees.git/tools/perf/builtin-report.c
-> ===================================================================
-> --- linux.trees.git.orig/tools/perf/builtin-report.c	2009-07-16 19:41:41.000000000 +1000
-> +++ linux.trees.git/tools/perf/builtin-report.c	2009-07-16 19:41:49.000000000 +1000
-> @@ -2005,9 +2005,9 @@
->  		   "regex filter to identify parent, see: '--sort parent'"),
->  	OPT_BOOLEAN('x', "exclude-other", &exclude_other,
->  		    "Only display entries with parent-match"),
-> -	OPT_CALLBACK_DEFAULT('c', "callchain", NULL, "output_type,min_percent",
-> +	OPT_CALLBACK_DEFAULT('g', "call-graph", NULL, "output_type,min_percent",
->  		     "Display callchains using output_type and min percent threshold. "
-> -		     "Default: flat,0", &parse_callchain_opt, callchain_default_opt),
-> +		     "Default: fractal,0.5", &parse_callchain_opt, callchain_default_opt),
->  	OPT_STRING('d', "dsos", &dso_list_str, "dso[,dso...]",
->  		   "only consider symbols in these dsos"),
->  	OPT_STRING('C', "comms", &comm_list_str, "comm[,comm...]",
-> 
-> -- 
-> 
 
