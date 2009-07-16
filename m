@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbZGPIaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbZGPIgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630AbZGPIaA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 04:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbZGPI37
+	id S1753762AbZGPIgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 04:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZGPIgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 04:29:59 -0400
-Received: from mga02.intel.com ([134.134.136.20]:52102 "EHLO mga02.intel.com"
+	Thu, 16 Jul 2009 04:36:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44672 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752571AbZGPI36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 04:29:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,410,1243839600"; 
-   d="scan'208";a="430699343"
-Subject: Re: [PATCH 0/8] device async action mechanism
-From: Zhang Rui <rui.zhang@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
-In-Reply-To: <20090716080731.GB8046@one.firstfloor.org>
-References: <1247643512.26272.74.camel@rzhang-dt>
-	 <87ocrm6xeq.fsf@basil.nowhere.org> <1247710483.26272.170.camel@rzhang-dt>
-	 <20090716080731.GB8046@one.firstfloor.org>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 16 Jul 2009 16:30:47 +0800
-Message-Id: <1247733047.26272.199.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	id S1753530AbZGPIgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 04:36:22 -0400
+Message-ID: <4A5EE63F.9050205@kernel.org>
+Date: Thu, 16 Jul 2009 17:35:11 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH #tj-block-for-linus] block: fix failfast merge testing
+ in elv_rq_merge_ok()
+References: <4A5ECC62.7050607@kernel.org> <4A5EDD81.6060409@panasas.com> <4A5EDF90.7090900@kernel.org> <4A5EE2BD.8030100@panasas.com>
+In-Reply-To: <4A5EE2BD.8030100@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Jul 2009 08:35:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-16 at 16:07 +0800, Andi Kleen wrote:
-> On Thu, Jul 16, 2009 at 10:14:43AM +0800, Zhang Rui wrote:
-> > On Wed, 2009-07-15 at 18:41 +0800, Andi Kleen wrote:
-> > > Zhang Rui <rui.zhang@intel.com> writes:
-> > > >
-> > > > Currently, in order to make sure that it won't bring any side effects,
-> > > > I only convert the ACPI battery and i8042 to use this framework, which reduces
-> > > > 0.5s+ S3 time(suspend time plus resume time)ï»¿, from 7.0s to less than 6.5s.
+Boaz Harrosh wrote:
+> OK So could you put a FIXME: and fat comment, on that weird "!"(s)
+> everywhere?
 
-> > > 
-> > > 10.5s+ was intended I guess?
-> > > 
-> > what do you mean?
-> 
-> I am confused by you writing
-> 
-> "reduces <small number> from <much larger number> to <still larger number>"
-> 
-> So I assumed you dropped a decimal on <small number>
-> 
-sorry for my poor English.
+Yeap, sure.  How about something like the following?
 
-I mean the total S3 time (including kernel suspend and kernel resume)
-reduces more than 0.5 second.
-it takes 7.0s without this patch set and now it takes only 6.5s.
+	/*
+	 * Don't merge if failfast settings don't match.  The negation
+	 * in front of each condition is necessary because bio and
+	 * request flags use different bit positions and the accessors
+	 * return those bits directly.  This ugliness will soon go
+	 * away.
+	 */
 
-thanks,
-rui
-
+-- 
+tejun
