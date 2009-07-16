@@ -1,70 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbZGPEK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZGPEQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752024AbZGPEK0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 00:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZGPEK0
+	id S1752127AbZGPEQG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 00:16:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZGPEQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 00:10:26 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:49732 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751415AbZGPEKZ convert rfc822-to-8bit (ORCPT
+	Thu, 16 Jul 2009 00:16:05 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:8947 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbZGPEQD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 00:10:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fFIgP273xoSu+0VvppMhNfYX5xAqqh6n9/Lwwo48dgnIGPaBqV4I//67myQq8nkdNL
-         iumEsT8GflMRZNrwg6+sCkGgoIS45quM/Ka8mhfgGkmvS7T4qopYvjjgU1hnc/bCKXQM
-         F6U4YQ17Mxxk1yNn+VG4leabn8a+dlkdb4gjQ=
-MIME-Version: 1.0
-In-Reply-To: <20090716095241.9D0D.A69D9226@jp.fujitsu.com>
-References: <20090716094619.9D07.A69D9226@jp.fujitsu.com>
-	 <20090716095241.9D0D.A69D9226@jp.fujitsu.com>
-Date: Thu, 16 Jul 2009 13:10:23 +0900
-Message-ID: <28c262360907152110k23e1aebk9fbf7853c29991e@mail.gmail.com>
-Subject: Re: [PATCH 2/3] mm: shrink_inactive_lis() nr_scan accounting fix fix
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 16 Jul 2009 00:16:03 -0400
+Subject: Re: [PATCH 2/3] cciss: use only one scan thread
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       mike.miller@hp.com, jens.axboe@oracle.com
+In-Reply-To: <20090715150637.6f171759.akpm@linux-foundation.org>
+References: <20090714220239.22282.44414.stgit@bob.kio>
+	 <20090714220250.22282.69385.stgit@bob.kio>
+	 <20090715150637.6f171759.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 04:15:59 +0000
+Message-Id: <1247717759.25954.75.camel@grinch>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good.
-I decided making patch like this since I knew this problem.
-You are too diligent :)
+On Wed, 2009-07-15 at 15:06 -0700, Andrew Morton wrote:
+> On Tue, 14 Jul 2009 16:02:50 -0600
+> Andrew Patterson <andrew.patterson@hp.com> wrote:
+> 
+> > cciss: use only one scan thread
+> > 
+> > Replace the use of one scan kthread per controller with one per driver.
+> > Use a queue to hold a list of controllers that need to be rescanned with
+> > routines to add and remove controllers from the queue.
+> > Fix locking and completion handling to prevent a hang during rmmod.
+> > 
+> >
+> > ...
+> >
+> > --- a/drivers/block/cciss.c
+> > +++ b/drivers/block/cciss.c
+> > @@ -39,6 +39,7 @@
+> >  #include <linux/hdreg.h>
+> >  #include <linux/spinlock.h>
+> >  #include <linux/compat.h>
+> > +#include <linux/mutex.h>
+> >  #include <asm/uaccess.h>
+> >  #include <asm/io.h>
+> >  
+> > @@ -155,6 +156,10 @@ static struct board_type products[] = {
+> >  
+> >  static ctlr_info_t *hba[MAX_CTLR];
+> >  
+> > +static struct task_struct *cciss_scan_thread;
+> > +static struct mutex scan_mutex;
+> > +static struct list_head scan_q;
+> 
+> Both of the above can be initialised at compile-time.  This is a bit
+> neater and prevents reviewers from having to run around checking that
+> they got initialised early enough.
 
-Thanks for good attitude.
+Fixed.
 
-On Thu, Jul 16, 2009 at 9:53 AM, KOSAKI
-Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
-> Subject: [PATCH] mm: shrink_inactive_lis() nr_scan accounting fix fix
->
-> If sc->isolate_pages() return 0, we don't need to call shrink_page_list().
-> In past days, shrink_inactive_list() handled it properly.
->
-> But commit fb8d14e1 (three years ago commit!) breaked it. current shrink_inactive_list()
-> always call shrink_page_list() although isolate_pages() return 0.
->
-> This patch restore proper return value check.
->
->
-> Requirements:
->  o "nr_taken == 0" condition should stay before calling shrink_page_list().
->  o "nr_taken == 0" condition should stay after nr_scan related statistics
->     modification.
->
->
-> Cc: Wu Fengguang <fengguang.wu@intel.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+> 
+> >  static void do_cciss_request(struct request_queue *q);
+> >  static irqreturn_t do_cciss_intr(int irq, void *dev_id);
+> >  static int cciss_open(struct block_device *bdev, fmode_t mode);
+> > @@ -189,6 +194,8 @@ static int sendcmd_withirq_core(ctlr_info_t *h, CommandList_struct *c,
+> >  static int process_sendcmd_error(ctlr_info_t *h, CommandList_struct *c);
+> >  
+> >  static void fail_all_cmds(unsigned long ctlr);
+> > +static int add_to_scan_list(struct ctlr_info *h);
+> > +static void remove_from_scan_list(struct ctlr_info *h);
+> 
+> These forward declarations are unneeded.
+> 
 
+Fixed.
+
+> >  static int scan_thread(void *data);
+> >  static int check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c);
+> >  
+> > @@ -3232,20 +3239,121 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
+> >  	return IRQ_HANDLED;
+> >  }
+> >  
+> > -static int scan_thread(void *data)
+> > +/**
+> > + * add_to_scan_list() - add controller to rescan queue
+> > + * @h:		      Pointer to the controller.
+> > + *
+> > + * Adds the controller to the rescan queue if not already on the queue.
+> > + *
+> > + * returns 1 if added to the queue, 0 if skipped (could be on the
+> > + * queue already, or the controller could be initializing or shutting
+> > + * down).
+> > + **/
+> > +static int add_to_scan_list(struct ctlr_info *h)
+> >  {
+> > -	ctlr_info_t *h = data;
+> > -	int rc;
+> > -	DECLARE_COMPLETION_ONSTACK(wait);
+> > -	h->rescan_wait = &wait;
+> > +	struct ctlr_info *test_h;
+> > +	int found = 0;
+> > +	int ret = 0;
+> > +
+> > +	if (h->busy_initializing)
+> > +		return 0;
+> 
+> This looks pretty random and racy.
+
+Fixed. Converted busy_initializer to a mutex and will use:
+
+if (mutex_is_locked(&h->busy_initializing))
+		return 0;
+
+> 
+> For example, what stops busy_initializing from becoming true one
+> picosecond after the test?
+> 
+> > +	if (!mutex_trylock(&h->busy_shutting_down))
+> > +		return 0;
+> >  
+> > -	for (;;) {
+> > -		rc = wait_for_completion_interruptible(&wait);
+> > -		if (kthread_should_stop())
+> > +	mutex_lock(&scan_mutex);
+> > +	list_for_each_entry(test_h, &scan_q, scan_list) {
+> > +		if (test_h == h) {
+> > +			found = 1;
+> >  			break;
+> > -		if (!rc)
+> > +		}
+> > +	}
+> > +	if (!found && !h->busy_scanning) {
+> > +		INIT_COMPLETION(h->scan_wait);
+> > +		list_add_tail(&h->scan_list, &scan_q);
+> > +		ret = 1;
+> > +	}
+> > +	mutex_unlock(&scan_mutex);
+> > +	mutex_unlock(&h->busy_shutting_down);
+> > +
+> > +	return ret;
+> > +}
+> 
+> We already did init_completion(h->scan_wait) at startup time?  Doing
+> the INIT_COMPLETION() here looks unusual and is hopefully unnecessary.
+> 
+
+I am following the text in the "Linux Device Drivers 3rd Edition section
+5.4:
+
+"A completion is normally a one-shot device; it is used once then
+discarded. It is possible, however, to reuse completion structures if
+proper care is taken. If complete_all is not used, a completion
+structure can be reused without any problems as long as there is no
+ambiguity about what event is being signalled. If you use complete_all,
+however, you must reinitialize the completion structure before reusing
+it. The macro:
+
+INIT_COMPLETION(struct completion c);
+
+can be used to quickly perform this reinitialization."
+
+It there are better way to do this? INIT_COMPLETION() currently just
+sets done = 0.
+
+> > +/**
+> > + * scan_thread() - kernel thread used to rescan controllers
+> > + * @data:	 Ignored.
+> > + *
+> > + * A kernel thread used scan for drive topology changes on
+> > + * controllers. The thread processes only one controller at a time
+> > + * using a queue.  Controllers are added to the queue using
+> > + * add_to_scan_list() and removed from the queue either after done
+> > + * processing or using remove_from_scan_list().
+> > + *
+> > + * returns 0.
+> > + **/
+> > +static int scan_thread(void *data)
+> > +{
+> > +	struct ctlr_info *h;
+> > +
+> > +	set_current_state(TASK_INTERRUPTIBLE);
+> > +	while (!kthread_should_stop()) {
+> > +		mutex_lock(&scan_mutex);
+> > +		if (list_empty(&scan_q)) {
+> > +			h = NULL;
+> > +		} else {
+> > +			h = list_entry(scan_q.next,
+> > +				       struct ctlr_info,
+> > +				       scan_list);
+> > +			list_del(&h->scan_list);
+> > +			h->busy_scanning = 1;
+> > +		}
+> > +		mutex_unlock(&scan_mutex);
+> > +
+> > +		if (h) {
+> > +			__set_current_state(TASK_RUNNING);
+> >  			rebuild_lun_table(h, 0);
+> > +			complete_all(&h->scan_wait);
+> > +			mutex_lock(&scan_mutex);
+> > +			h->busy_scanning = 0;
+> > +			mutex_unlock(&scan_mutex);
+> > +			set_current_state(TASK_INTERRUPTIBLE);
+> > +		} else {
+> > +			schedule();
+> > +			set_current_state(TASK_INTERRUPTIBLE);
+> > +			continue;
+> > +		}
+> >  	}
+> > +
+> > +	__set_current_state(TASK_RUNNING);
+> >  	return 0;
+> >  }
+> 
+> This code is somewhat wrong.  Look:
+> 
+> 	set_current_state(TASK_INTERRUPTIBLE);
+> 	...
+> 		mutex_lock(&scan_mutex);
+> 
+> now, we don't know what state the task is in.  If the mutex_lock()
+> slept the we're in state TASK_RUNNING.  If the mutex_lock() didn't
+> sleep then we're in state <mumble>.  Where
+> <mumble>==TASK_INTERRUPTIBLE, but that's an implementation fluke.
+> 
+> So I'd say that some rethinking/restructuring is needed here.
+
+Will look into this.  I have had a hard time removing this possible race
+(even the mutex_lock() does not remove it completely, but at most you
+get multiple completions) without using some sort of nested locks.
+
+> 
+> 
 -- 
-Kind regards,
-Minchan Kim
+Andrew Patterson
+Hewlett-Packard
+
