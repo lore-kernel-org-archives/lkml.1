@@ -1,147 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933000AbZGPSUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbZGPSWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933000AbZGPSUn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 14:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbZGPSUn
+	id S933007AbZGPSWk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 14:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932984AbZGPSWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 14:20:43 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:50628 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932614AbZGPSUm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 14:20:42 -0400
-Date: Thu, 16 Jul 2009 14:20:13 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@vinegar-pot.mit.edu
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       David Howells <dhowells@redhat.com>,
-       Anders Kaseorg <andersk@ksplice.com>
-Subject: Re: [PATCH] Restructure BSS linker script macros.
-In-Reply-To: <alpine.DEB.1.10.0907121820360.23364@vinegar-pot.mit.edu>
-Message-ID: <alpine.DEB.1.10.0907151750020.16617@vinegar-pot.mit.edu>
-References: <alpine.DEB.1.10.0907121820360.23364@vinegar-pot.mit.edu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 16 Jul 2009 14:22:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48484 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932978AbZGPSWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 14:22:39 -0400
+Date: Thu, 16 Jul 2009 11:18:02 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, anthony@codemonkey.ws, avi@redhat.com,
+       kvm@vger.kernel.org, chrisw@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv4] uio: add generic driver for PCI 2.3 devices
+Message-ID: <20090716181802.GA27811@suse.de>
+References: <20090715201340.GA12279@redhat.com>
+ <20090715220829.GB31962@suse.de>
+ <20090716140709.GA16321@redhat.com>
+ <20090716151254.GD3642@local>
+ <20090716155208.GA2375@suse.de>
+ <20090716170346.GA22095@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090716170346.GA22095@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam, David,
+On Thu, Jul 16, 2009 at 08:03:46PM +0300, Michael S. Tsirkin wrote:
+> On Thu, Jul 16, 2009 at 08:52:08AM -0700, Greg KH wrote:
+> > On Thu, Jul 16, 2009 at 05:12:55PM +0200, Hans J. Koch wrote:
+> > > On Thu, Jul 16, 2009 at 05:07:10PM +0300, Michael S. Tsirkin wrote:
+> > > > On Wed, Jul 15, 2009 at 03:08:29PM -0700, Greg KH wrote:
+> > > > > How about moving that documentation into a place that people will notice
+> > > > > it, like the rest of the UIO documentation?
+> > > > 
+> > > > Greg,
+> > > > 
+> > > > would it make more sense to add this to
+> > > > Documentation/DocBook/uio-howto.xml, or to create
+> > > > Documentation/uio_pci_generic.txt ?
+> > > 
+> > > Hi Michael,
+> > > I'd prefer to have it in uio-howto.xml so that people only have to look in
+> > > one place. In does not have to be very detailled, just a short explanation
+> > > what this driver is all about and a short example how to use it.
+> > 
+> > I agree, that would be the best place for it.
+> > 
+> > thanks,
+> > 
+> > greg k-h
+> 
+> OK. Could you take a look at the following please?
 
-Have you had a chance to look at this patch yet?  The lost ALIGN(4) in the 
-mn10300 linker script that this fixes is a regression introduced by commit 
-2e8b5a09ebf1f98f02c1988a48415e89d4c25168 (between 2.6.30 and 2.6.31-rc1) 
-that we probably want to fix for 2.6.31.  (That should be the only 
-functional effect of this patch.)
+Looks good to me.
 
-	-Tim Abbott
+Want to resend both of the patches so I can apply them to my tree?
 
-On Sun, 12 Jul 2009, Tim Abbott wrote:
+thanks,
 
-> The BSS section macros in vmlinux.lds.h currently place the .sbss
-> input section outside the bounds of [__bss_start, __bss_end].  On all
-> architectures except for microblaze that handle both .sbss and
-> __bss_start/__bss_end, this is wrong: the .sbss input section is
-> within the range [__bss_start, __bss_end].  Relatedly, the example
-> code at the top of the file actually has __bss_start/__bss_end defined
-> twice; I believe the right fix here is to define them in the
-> BSS_SECTION macro but not in the BSS macro.
-> 
-> Another problem with the current macros is that several
-> architectures have an ALIGN(4) or some other small number just before
-> __bss_stop in their linker scripts.  The BSS_SECTION macro currently
-> hardcodes this to 4; while it should really be an argument.  It also
-> ignores its sbss_align argument; fix that.
-> 
-> mn10300 is the only user at present of any of the macros touched by
-> this patch.  It looks like mn10300 actually was incorrectly converted
-> to use the new BSS() macro (the alignment of 4 prior to conversion was
-> a __bss_stop alignment, but the argument to the BSS macro is a start
-> alignment).  So fix this as well.
-> 
-> I'd like acks from Sam and David on this one.  Also CCing Paul, since
-> he has a patch from me which will need to be updated to use
-> BSS_SECTION(0, PAGE_SIZE, 4) once this gets merged.
-> 
-> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: David Howells <dhowells@redhat.com>
-> ---
->  arch/mn10300/kernel/vmlinux.lds.S |    2 +-
->  include/asm-generic/vmlinux.lds.h |   19 +++++++++----------
->  2 files changed, 10 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
-> index c96ba3d..f4aa079 100644
-> --- a/arch/mn10300/kernel/vmlinux.lds.S
-> +++ b/arch/mn10300/kernel/vmlinux.lds.S
-> @@ -107,7 +107,7 @@ SECTIONS
->    __init_end = .;
->    /* freed after init ends here */
->  
-> -  BSS(4)
-> +  BSS_SECTION(0, PAGE_SIZE, 4)
->  
->    _end = . ;
->  
-> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-> index a553f10..6ad76bf 100644
-> --- a/include/asm-generic/vmlinux.lds.h
-> +++ b/include/asm-generic/vmlinux.lds.h
-> @@ -30,9 +30,7 @@
->   *	EXCEPTION_TABLE(...)
->   *	NOTES
->   *
-> - *	__bss_start = .;
-> - *	BSS_SECTION(0, 0)
-> - *	__bss_stop = .;
-> + *	BSS_SECTION(0, 0, 0)
->   *	_end = .;
->   *
->   *	/DISCARD/ : {
-> @@ -489,7 +487,8 @@
->   * bss (Block Started by Symbol) - uninitialized data
->   * zeroed during startup
->   */
-> -#define SBSS								\
-> +#define SBSS(sbss_align)						\
-> +	. = ALIGN(sbss_align);						\
->  	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
->  		*(.sbss)						\
->  		*(.scommon)						\
-> @@ -498,12 +497,10 @@
->  #define BSS(bss_align)							\
->  	. = ALIGN(bss_align);						\
->  	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {				\
-> -		VMLINUX_SYMBOL(__bss_start) = .;			\
->  		*(.bss.page_aligned)					\
->  		*(.dynbss)						\
->  		*(.bss)							\
->  		*(COMMON)						\
-> -		VMLINUX_SYMBOL(__bss_stop) = .;				\
->  	}
->  
->  /*
-> @@ -735,8 +732,10 @@
->  		INIT_RAM_FS						\
->  	}
->  
-> -#define BSS_SECTION(sbss_align, bss_align)				\
-> -	SBSS								\
-> +#define BSS_SECTION(sbss_align, bss_align, stop_align)			\
-> +	. = ALIGN(sbss_align);						\
-> +	VMLINUX_SYMBOL(__bss_start) = .;				\
-> +	SBSS(sbss_align)						\
->  	BSS(bss_align)							\
-> -	. = ALIGN(4);
-> -
-> +	. = ALIGN(stop_align);						\
-> +	VMLINUX_SYMBOL(__bss_stop) = .;
-> -- 
-> 1.6.3.3
-> 
+greg k-h
