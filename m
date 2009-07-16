@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932786AbZGPQ6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbZGPRC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932786AbZGPQ6e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 12:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932614AbZGPQ6e
+	id S932798AbZGPRC4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 13:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932781AbZGPRCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 12:58:34 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:33804 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932582AbZGPQ6d (ORCPT
+	Thu, 16 Jul 2009 13:02:55 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:49668 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932621AbZGPRCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 12:58:33 -0400
-Date: Thu, 16 Jul 2009 09:58:32 -0700 (PDT)
-From: Sage Weil <sage@newdream.net>
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/20] ceph: on-wire types
-In-Reply-To: <878wiox10x.fsf@basil.nowhere.org>
-Message-ID: <Pine.LNX.4.64.0907160951420.7645@cobra.newdream.net>
-References: <1247693090-27796-1-git-send-email-sage@newdream.net>
- <1247693090-27796-2-git-send-email-sage@newdream.net>
- <1247693090-27796-3-git-send-email-sage@newdream.net> <878wiox10x.fsf@basil.nowhere.org>
+	Thu, 16 Jul 2009 13:02:55 -0400
+Date: Thu, 16 Jul 2009 13:02:53 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+cc: linux-pm@lists.linux-foundation.org, <len.brown@intel.com>,
+       <yanh@lemote.com>, <linux-kernel@vger.kernel.org>, <wuzj@lemote.com>,
+       <zhangfx@lemote.com>
+Subject: Re: [linux-pm] [PATCH] [suspend] pci_raw_set_power_state: replace
+ msleep by udelay in resuming procedure
+In-Reply-To: <1247759007-27411-1-git-send-email-wuzhangjin@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0907161259510.2952-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Jul 2009, Andi Kleen wrote:
-> Sage Weil <sage@newdream.net> writes:
-> > +
-> > +/*
-> > + * Max file size is a policy choice; in reality we are limited
-> > + * by 2^64.
-> > + */
-> > +#define CEPH_FILE_MAX_SIZE (1ULL << 40)   /* 1 TB */
-> 
-> Seems odd to hardcode this here.
+On Thu, 16 Jul 2009, Wu Zhangjin wrote:
 
-It is.  It's just an arbitrary value to bound recovery time... I'll switch 
-it a server-specified value.
+> we can not call msleep() when resuming from STR/Standby: if the
+> current_state of the pci device is PCI_D3hot, means we are in the
+> procedure of resuming, in this procedure, we can not re-schedule,
+> otherwise, there will be a deadlock.
 
-> The way attribute packed is used in these files seems rather
-> random and adhoc, sometimes it is, sometimes it isn't.
+I don't understand.
 
-Not intentionally, it looks like it was missing on some structs 
-that were already naturally aligned.  I'll add it everywhere.
+First of all, why does current_state == PCI_D3hot mean the system is
+resuming from sleep?  Isn't it possible that the PCI device is going
+through a runtime resume?
 
-> I assume you tested that 32bit and 64bit interoperability?
+Secondly, why will scheduling during a resume cause a deadlock?
 
-Yes.
+Alan Stern
 
-> Is the file system supposed to be endian safe on the wire?
-
-Yes, although I don't have access to any big endian machines, so it hasn't 
-been tested.  We've been periodically running the code through sparse, 
-though.
-
-Thanks!
-sage
