@@ -1,108 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932422AbZGPPAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbZGPPEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932422AbZGPPAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 11:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZGPPAb
+	id S1757616AbZGPPEK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 11:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756976AbZGPPEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 11:00:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46877 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751134AbZGPPAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 11:00:30 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Chris Mason <chris.mason@oracle.com>, Mike Galbraith <efault@gmx.de>,
-       Diego Calleja <diegocg@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com,
-       linux-ext4@vger.kernel.org
-Subject: Re: Performance regressions in 2.6.30-rc7?
-References: <20090609103208.GB9235@duck.suse.cz> <20090609184818.GD9556@think>
-	<20090610091211.GA13692@duck.suse.cz>
-	<x4963f3rb4t.fsf@segfault.boston.devel.redhat.com>
-	<20090715104319.GC25458@duck.suse.cz>
-	<x4963du3vyp.fsf@segfault.boston.devel.redhat.com>
-	<20090715145849.GE25458@duck.suse.cz>
-	<20090715175028.GE22826@atrey.karlin.mff.cuni.cz>
-	<20090715185452.GG22826@atrey.karlin.mff.cuni.cz>
-	<x49iqhspue9.fsf@segfault.boston.devel.redhat.com>
-	<20090716144601.GB25725@duck.suse.cz>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 16 Jul 2009 10:59:45 -0400
-In-Reply-To: <20090716144601.GB25725@duck.suse.cz> (Jan Kara's message of
-	"Thu, 16 Jul 2009 16:46:01 +0200")
-Message-ID: <x49ab34ptb2.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 16 Jul 2009 11:04:09 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:54687 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756536AbZGPPEI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 11:04:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qRKr+CtwLNL/F9Wxe9pJs/UEeCGZV1rsM5s8YsQkP557LlgU8ffbXCeqPlbnxPsD0B
+         fP+pwn2+9VLCbihkOSley5SdygVdpSbhE0H3CfsCLA28GP7cyIav/MoWU0u7oLVAe7Ri
+         er7mY5Iq0u+xZ0fy2a4xhQY9n0z5QGJvLTVKw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <AFAB8585072C7E48BC5C6F9C87F9B79703BA839300@pdsmsx502.ccr.corp.intel.com>
+References: <1247522953-12702-1-git-send-email-tomas.winkler@intel.com>
+	 <AFAB8585072C7E48BC5C6F9C87F9B79703BA8388BB@pdsmsx502.ccr.corp.intel.com>
+	 <AFAB8585072C7E48BC5C6F9C87F9B79703BA839300@pdsmsx502.ccr.corp.intel.com>
+Date: Thu, 16 Jul 2009 18:04:04 +0300
+Message-ID: <1ba2fa240907160804g18b1a215w3161c9682db7b35@mail.gmail.com>
+Subject: Re: [PATCH] imwc3200: move iwmc3200 SDIO ids to sdio_ids.h
+From: Tomas Winkler <tomasw@gmail.com>
+To: "Zhu, Yi" <yi.zhu@intel.com>
+Cc: "drzeus-list@drzeus.cx" <drzeus-list@drzeus.cx>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
->> OK, looking back at the blktrace data I collected, we see[1]:
->> 
->> Total (cciss_c0d1):         2.6.29                  2.6.30-rc7
->> -------------------------------------------------------------------
->> Writes Queued:         8,531K,   34,126MiB  |   8,526K,   34,104MiB 
->> Write Dispatches:    556,256,   34,126MiB   | 294,809,   34,105MiB  <===
->> Writes Requeued:           0                |       0               
->> Writes Completed:    556,256,   34,126MiB   | 294,809,   34,105MiB  
->> Write Merges:          7,975K,   31,901MiB  |   8,231K,   32,924MiB 
->> --------------------------------------------------------------------
->> IO unplugs:          1,253,337              | 7,346,184             <===
->> Timer unplugs:         1,462                |       3               
->> 
->> Hmmm...
+On Thu, Jul 16, 2009 at 3:23 PM, Zhu, Yi <yi.zhu@intel.com> wrote:
+>
+> > Subject: RE: [PATCH] imwc3200: move iwmc3200 SDIO ids to sdio_ids.h
+>
+> BTW, subject should be "iwmc3200".
 
->   Yeah, this looks promissing. Although what I don't get is, how come that
-> number of writes dispatched is roughly twice as much for 2.6.29 but the
-> number of unplugs is higher on 2.6.30. My naive assumption would be that
-> higher unplug rate -> less merging -> more requests dispatched.
+Thanks. I'll address all comments although I'm not sure how to split
+the patch since adding SDIO_VENDOR_ID_INTEL to sdio_ids.h it affects
+all the drivers anyhow, so I'm suggesting to route it through netdev.
 
-Yeah, that's confusing!  I don't have an answer for you yet!
-
->> commit b029195dda0129b427c6e579a3bb3ae752da3a93
->> Author: Jens Axboe <jens.axboe@oracle.com>
->> Date:   Tue Apr 7 11:38:31 2009 +0200
->> 
->>     cfq-iosched: don't let idling interfere with plugging
->>     
->>     When CFQ is waiting for a new request from a process, currently it'll
->>     immediately restart queuing when it sees such a request. This doesn't
->>     work very well with streamed IO, since we then end up splitting IO
->>     that would otherwise have been merged nicely. For a simple dd test,
->>     this causes 10x as many requests to be issued as we should have.
->>     Normally this goes unnoticed due to the low overhead of requests
->>     at the device side, but some hardware is very sensitive to request
->>     sizes and there it can cause big slow downs.
->>     
->>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
->> 
->> There were a couple of subsequent fixups to this commit:
->> 
->> commit d6ceb25e8d8bccf826848c2621a50d02c0a7f4ae
->> Author: Jens Axboe <jens.axboe@oracle.com>
->> Date:   Tue Apr 14 14:18:16 2009 +0200
->> 
->>     cfq-iosched: don't delay queue kick for a merged request
->> 
->> commit 2d870722965211de072bb36b446a4df99dae07e1
->> Author: Jens Axboe <jens.axboe@oracle.com>
->> Date:   Wed Apr 15 12:12:46 2009 +0200
->> 
->>     cfq-iosched: tweak kick logic a bit more
->> 
->> 
->> So I guess that's where we need to start looking.
->   OK, I can try to check whether backing out just these changes will help
-> anything.
-
-Well, that will help identify if they are, in fact, the cause.  I hope
-it's not too hard to disentangle them from the current kernel!  Thanks
-for all of your work on this!
-
-Cheers,
-Jeff
+Thanks
+Tomas
