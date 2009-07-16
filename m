@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751430AbZGPEBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751662AbZGPEDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751430AbZGPEBk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 00:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbZGPEBk
+	id S1751662AbZGPEDN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 00:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZGPEDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 00:01:40 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:34867 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbZGPEBj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 00:01:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xrG+haRLbx5FZgkDI05zsw5pUBnCjxdwH9VjeG/9D48fdeGA823a7QHyU4O906YPyA
-         ZV57E4LdXmQEuE0ecrX5bJ7KmSvGOMM+1yhqVjpNFPQ34nwUMsTEIorV8YGbEu6QO0HB
-         jarMxlUkqszajdMUjvb5UYRCbYwFVYaoYtnIo=
+	Thu, 16 Jul 2009 00:03:12 -0400
+Received: from kroah.org ([198.145.64.141]:59061 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750932AbZGPEDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 00:03:12 -0400
+Date: Wed, 15 Jul 2009 21:02:25 -0700
+From: Greg KH <greg@kroah.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Tiago Vignatti <tiago.vignatti@nokia.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Dave Airlie <airlied@redhat.com>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] vga: implements VGA arbitration on Linux
+Message-ID: <20090716040225.GA31064@kroah.com>
+References: <1247576250-16274-1-git-send-email-tiago.vignatti@nokia.com>
+ <1247576250-16274-2-git-send-email-tiago.vignatti@nokia.com>
+ <20090714161514.GA2026@kroah.com>
+ <21d7e9970907152054q61c9bf75x836b4b644ec22a00@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090715201654.550cb640.akpm@linux-foundation.org>
-References: <20090716094619.9D07.A69D9226@jp.fujitsu.com>
-	 <20090716095119.9D0A.A69D9226@jp.fujitsu.com>
-	 <20090715201654.550cb640.akpm@linux-foundation.org>
-Date: Thu, 16 Jul 2009 13:01:37 +0900
-Message-ID: <28c262360907152101y15d7edc6m3e3cf4d3473b0008@mail.gmail.com>
-Subject: Re: [PATCH 1/3] Rename pgmoved variable in shrink_active_list()
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <21d7e9970907152054q61c9bf75x836b4b644ec22a00@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 12:16 PM, Andrew
-Morton<akpm@linux-foundation.org> wrote:
-> On Thu, 16 Jul 2009 09:52:34 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
->
->>       if (file)
->> -             __mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
->> +             __mod_zone_page_state(zone, NR_ACTIVE_FILE, -nr_taken);
->>       else
->> -             __mod_zone_page_state(zone, NR_ACTIVE_ANON, -pgmoved);
->> +             __mod_zone_page_state(zone, NR_ACTIVE_ANON, -nr_taken);
->
-> we could have used __sub_zone_page_state() there.
+On Thu, Jul 16, 2009 at 01:54:42PM +1000, Dave Airlie wrote:
+> On Wed, Jul 15, 2009 at 2:15 AM, Greg KH<greg@kroah.com> wrote:
+> > Minor comment:
+> >
+> >> +#ifdef DEBUG
+> >> + � � printk(KERN_DEBUG "%s\n", __func__);
+> >> +#endif
+> >
+> > You should just use 'dev_dbg() for any debugging statments like this.
+> > You can turn them on and off dynamically, and you get all of the proper
+> > device information as to what is going on automatically.
+> >
+> > Plus, there's no need for a #ifdef in the code, which is generally
+> > frowned apon in .c files.
+> >
+> 
+> We don't have a device in this case, vga arb is more of an abstraction than
+> an actual device.
+> 
+> I suppose if we were feeling crazy we could add a platform device for it.
 
-Yes. It can be changed all at once by separate patches. :)
+No, then use the debug_printk() functions, so that you tie into the
+kernel-wide debug message system.  Please don't roll your own anymore,
+there is no need to.
 
+thanks,
 
-
--- 
-Kind regards,
-Minchan Kim
+greg k-h
