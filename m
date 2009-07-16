@@ -1,91 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933207AbZGPUAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933214AbZGPUFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933207AbZGPUAQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 16:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933148AbZGPUAP
+	id S933214AbZGPUFq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 16:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932901AbZGPUFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 16:00:15 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:55436 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932765AbZGPUAN (ORCPT
+	Thu, 16 Jul 2009 16:05:46 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:46608 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932765AbZGPUFp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 16:00:13 -0400
-Date: Thu, 16 Jul 2009 22:00:12 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Przemys??awPawe??czyk <przemyslaw@pawelczyk.it>
-Subject: Re: [PATCH -tip -v12 01/11] x86: instruction decoder API
-Message-ID: <20090716200012.GB5994@merkur.ravnborg.org>
-Mail-Followup-To: Masami Hiramatsu <mhiramat@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-	lkml <linux-kernel@vger.kernel.org>,
-	systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-	DLE <dle-develop@lists.sourceforge.net>,
-	Jim Keniston <jkenisto@us.ibm.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Andi Kleen <ak@linux.intel.com>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	Avi Kivity <avi@redhat.com>,
-	Przemys??awPawe??czyk <przemyslaw@pawelczyk.it>
-References: <20090716155652.6266.39970.stgit@localhost.localdomain> <20090716155700.6266.71011.stgit@localhost.localdomain> <20090716163708.GB5804@merkur.ravnborg.org> <4A5F6356.9080505@redhat.com>
+	Thu, 16 Jul 2009 16:05:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=wZvTnaXTP+7VOy/ppSsMsaYI7cNsYKz/b28pmCC++FqhtudkaR9Ry96cQjCsXgJYj
+	0YT58NMALP353A3igOXPw==
+Date: Thu, 16 Jul 2009 13:05:31 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Miao Xie <miaox@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
+In-Reply-To: <1247679064.4089.26.camel@useless.americas.hpqcorp.net>
+Message-ID: <alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
+References: <20090715182320.39B5.A69D9226@jp.fujitsu.com> <1247679064.4089.26.camel@useless.americas.hpqcorp.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5F6356.9080505@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 01:28:54PM -0400, Masami Hiramatsu wrote:
-> Sam Ravnborg wrote:
-> >> diff --git a/arch/x86/include/asm/inat.h b/arch/x86/include/asm/inat.h
-> >> new file mode 100644
-> >> index 0000000..01e079a
-> >> --- /dev/null
-> >> +++ b/arch/x86/include/asm/inat.h
-> >> @@ -0,0 +1,125 @@
-> >> +#ifndef _ASM_INAT_INAT_H
-> >> +#define _ASM_INAT_INAT_H
-> > 
-> > [With reference to comment on patch 2/12...]
-> > You create inat.h here.
-> > Could you investigave what is needed to factor out the stuff
-> > needed from userspace so we can avoid the ugly havk where
-> > you redefine types.h?
-> 
-> Sorry, I'm a bit confusing.
-> Would you mean that I should break down user_include.h and
-> add those redefined types in inat.h?
-No - try to factor out what is needed for your program
-so you can avoid user_include.h entirely.
-> 
-> > Maybe create a inat_types.h + inat.h as we do in other cases?
-> 
-> And inat_types.h has two parts, one for kernel, and one for
-> userspace(which is moved from user_include.h), is that right?
-More like inat_types.h include pure definitions and inat.h
-define all the macros (that would be much nicer if expressed
-as static inlines).
+On Wed, 15 Jul 2009, Lee Schermerhorn wrote:
 
-The real thing to consider is what is needed from your userspace
-program and is also required by the kernel.
-I did not event remotely try to find out - as I guess you know it.
-So try to isolate these bits somehow and you have then nicely dropped
-a lot of dependencies on the remainign headers and can thus
-hopefully get rid of the ugly usser_include.h hack.
+> Interestingly, on ia64, the top cpuset mems_allowed gets set to all
+> possible nodes, while on x86_64, it gets set to on-line nodes [or nodes
+> with memory].  Maybe this is a to support hot-plug?
+> 
 
-	Sam
+numactl --interleave=all simply passes a nodemask with all bits set, so if 
+cpuset_current_mems_allowed includes offline nodes from node_possible_map, 
+then mpol_set_nodemask() doesn't mask them off.
+
+Seems like we could handle this strictly in mempolicies without worrying 
+about top_cpuset like in the following?
+---
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -194,6 +194,7 @@ static int mpol_new_bind(struct mempolicy *pol, const nodemask_t *nodes)
+ static int mpol_set_nodemask(struct mempolicy *pol, const nodemask_t *nodes)
+ {
+ 	nodemask_t cpuset_context_nmask;
++	nodemask_t mems_allowed;
+ 	int ret;
+ 
+ 	/* if mode is MPOL_DEFAULT, pol is NULL. This is right. */
+@@ -201,20 +202,21 @@ static int mpol_set_nodemask(struct mempolicy *pol, const nodemask_t *nodes)
+ 		return 0;
+ 
+ 	VM_BUG_ON(!nodes);
++	nodes_and(mems_allowed, cpuset_current_mems_allowed,
++				node_states[N_HIGH_MEMORY]);
+ 	if (pol->mode == MPOL_PREFERRED && nodes_empty(*nodes))
+ 		nodes = NULL;	/* explicit local allocation */
+ 	else {
+ 		if (pol->flags & MPOL_F_RELATIVE_NODES)
+ 			mpol_relative_nodemask(&cpuset_context_nmask, nodes,
+-					       &cpuset_current_mems_allowed);
++					       &mems_allowed);
+ 		else
+ 			nodes_and(cpuset_context_nmask, *nodes,
+-				  cpuset_current_mems_allowed);
++				  mems_allowed);
+ 		if (mpol_store_user_nodemask(pol))
+ 			pol->w.user_nodemask = *nodes;
+ 		else
+-			pol->w.cpuset_mems_allowed =
+-						cpuset_current_mems_allowed;
++			pol->w.cpuset_mems_allowed = mems_allowed;
+ 	}
+ 
+ 	ret = mpol_ops[pol->mode].create(pol,
