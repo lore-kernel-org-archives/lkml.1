@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932644AbZGPPza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932613AbZGPP5D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932644AbZGPPza (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 11:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932633AbZGPPzZ
+	id S932613AbZGPP5D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 11:57:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932455AbZGPPym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 11:55:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58231 "EHLO mx2.redhat.com"
+	Thu, 16 Jul 2009 11:54:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58148 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932624AbZGPPzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 11:55:20 -0400
+	id S932454AbZGPPyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 11:54:39 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip -v12 10/11] tracing: Generate names for each kprobe event
-	automatically
+Subject: [PATCH -tip -v12 04/11] kprobes: cleanup fix_riprel() using insn
+	decoder on x86
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        DLE <dle-develop@lists.sourceforge.net>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Date: Thu, 16 Jul 2009 11:57:53 -0400
-Message-ID: <20090716155753.6266.19656.stgit@localhost.localdomain>
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Date: Thu, 16 Jul 2009 11:57:18 -0400
+Message-ID: <20090716155718.6266.22751.stgit@localhost.localdomain>
 In-Reply-To: <20090716155652.6266.39970.stgit@localhost.localdomain>
 References: <20090716155652.6266.39970.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -34,196 +31,165 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Generate names for each kprobe event based on the probe point,
-and remove generic k*probe event types because there is no user
-of those types.
+Cleanup fix_riprel() in arch/x86/kernel/kprobes.c by using x86 instruction
+decoder.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Tom Zanussi <tzanussi@gmail.com>
 ---
 
- Documentation/trace/kprobetrace.txt |    3 +-
- kernel/trace/trace_event_types.h    |   18 ----------
- kernel/trace/trace_kprobe.c         |   64 ++++++++++++++++++-----------------
- 3 files changed, 35 insertions(+), 50 deletions(-)
+ arch/x86/kernel/kprobes.c |  128 ++++++++-------------------------------------
+ 1 files changed, 23 insertions(+), 105 deletions(-)
 
-diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-index b29a54b..437ad49 100644
---- a/Documentation/trace/kprobetrace.txt
-+++ b/Documentation/trace/kprobetrace.txt
-@@ -28,7 +28,8 @@ Synopsis of kprobe_events
-   p[:EVENT] SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: Set a probe
-   r[:EVENT] SYMBOL[+0] [FETCHARGS]			: Set a return probe
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 5341842..b77e050 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -109,50 +109,6 @@ static const u32 twobyte_is_boostable[256 / 32] = {
+ 	/*      -----------------------------------------------         */
+ 	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+ };
+-static const u32 onebyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 00 */
+-	W(0x10, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 10 */
+-	W(0x20, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 20 */
+-	W(0x30, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 30 */
+-	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 40 */
+-	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 50 */
+-	W(0x60, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0) | /* 60 */
+-	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 70 */
+-	W(0x80, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 80 */
+-	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 90 */
+-	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* a0 */
+-	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* b0 */
+-	W(0xc0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* c0 */
+-	W(0xd0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1) , /* d0 */
+-	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* e0 */
+-	W(0xf0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1)   /* f0 */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+-static const u32 twobyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1) | /* 0f */
+-	W(0x10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0) , /* 1f */
+-	W(0x20, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1) | /* 2f */
+-	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
+-	W(0x40, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 4f */
+-	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
+-	W(0x60, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 6f */
+-	W(0x70, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1) , /* 7f */
+-	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
+-	W(0x90, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 9f */
+-	W(0xa0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1) | /* af */
+-	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1) , /* bf */
+-	W(0xc0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
+-	W(0xd0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
+-	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* ef */
+-	W(0xf0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)   /* ff */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+ #undef W
  
-- EVENT			: Event name.
-+ EVENT			: Event name. If omitted, the event name is generated
-+			  based on SYMBOL+offs or MEMADDR.
-  SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted.
-  MEMADDR		: Address where the probe is inserted.
- 
-diff --git a/kernel/trace/trace_event_types.h b/kernel/trace/trace_event_types.h
-index 186b598..e74f090 100644
---- a/kernel/trace/trace_event_types.h
-+++ b/kernel/trace/trace_event_types.h
-@@ -175,22 +175,4 @@ TRACE_EVENT_FORMAT(kmem_free, TRACE_KMEM_FREE, kmemtrace_free_entry, ignore,
- 	TP_RAW_FMT("type:%u call_site:%lx ptr:%p")
- );
- 
--TRACE_EVENT_FORMAT(kprobe, TRACE_KPROBE, kprobe_trace_entry, ignore,
--	TRACE_STRUCT(
--		TRACE_FIELD(unsigned long, ip, ip)
--		TRACE_FIELD(int, nargs, nargs)
--		TRACE_FIELD_ZERO(unsigned long, args)
--	),
--	TP_RAW_FMT("%08lx: args:0x%lx ...")
--);
--
--TRACE_EVENT_FORMAT(kretprobe, TRACE_KRETPROBE, kretprobe_trace_entry, ignore,
--	TRACE_STRUCT(
--		TRACE_FIELD(unsigned long, func, func)
--		TRACE_FIELD(unsigned long, ret_ip, ret_ip)
--		TRACE_FIELD(int, nargs, nargs)
--		TRACE_FIELD_ZERO(unsigned long, args)
--	),
--	TP_RAW_FMT("%08lx <- %08lx: args:0x%lx ...")
--);
- #undef TRACE_SYSTEM
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 67c33e1..3444d1d 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -34,6 +34,7 @@
- 
- #define MAX_TRACE_ARGS 128
- #define MAX_ARGSTR_LEN 63
-+#define MAX_EVENT_NAME_LEN 64
- 
- /* currently, trace_kprobe only supports X86. */
- 
-@@ -272,11 +273,11 @@ static struct trace_probe *alloc_trace_probe(const char *symbol,
- 		if (!tp->symbol)
- 			goto error;
- 	}
--	if (event) {
--		tp->call.name = kstrdup(event, GFP_KERNEL);
--		if (!tp->call.name)
--			goto error;
--	}
-+	if (!event)
-+		goto error;
-+	tp->call.name = kstrdup(event, GFP_KERNEL);
-+	if (!tp->call.name)
-+		goto error;
- 
- 	INIT_LIST_HEAD(&tp->list);
- 	return tp;
-@@ -306,7 +307,7 @@ static struct trace_probe *find_probe_event(const char *event)
- 	struct trace_probe *tp;
- 
- 	list_for_each_entry(tp, &probe_list, list)
--		if (tp->call.name && !strcmp(tp->call.name, event))
-+		if (!strcmp(tp->call.name, event))
- 			return tp;
- 	return NULL;
- }
-@@ -322,8 +323,7 @@ static void __unregister_trace_probe(struct trace_probe *tp)
- /* Unregister a trace_probe and probe_event: call with locking probe_lock */
- static void unregister_trace_probe(struct trace_probe *tp)
+ struct kretprobe_blackpoint kretprobe_blacklist[] = {
+@@ -345,68 +301,30 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
+ static void __kprobes fix_riprel(struct kprobe *p)
  {
--	if (tp->call.name)
--		unregister_probe_event(tp);
-+	unregister_probe_event(tp);
- 	__unregister_trace_probe(tp);
- 	list_del(&tp->list);
+ #ifdef CONFIG_X86_64
+-	u8 *insn = p->ainsn.insn;
+-	s64 disp;
+-	int need_modrm;
+-
+-	/* Skip legacy instruction prefixes.  */
+-	while (1) {
+-		switch (*insn) {
+-		case 0x66:
+-		case 0x67:
+-		case 0x2e:
+-		case 0x3e:
+-		case 0x26:
+-		case 0x64:
+-		case 0x65:
+-		case 0x36:
+-		case 0xf0:
+-		case 0xf3:
+-		case 0xf2:
+-			++insn;
+-			continue;
+-		}
+-		break;
+-	}
++	struct insn insn;
++	kernel_insn_init(&insn, p->ainsn.insn);
+ 
+-	/* Skip REX instruction prefix.  */
+-	if (is_REX_prefix(insn))
+-		++insn;
+-
+-	if (*insn == 0x0f) {
+-		/* Two-byte opcode.  */
+-		++insn;
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)twobyte_has_modrm);
+-	} else
+-		/* One-byte opcode.  */
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)onebyte_has_modrm);
+-
+-	if (need_modrm) {
+-		u8 modrm = *++insn;
+-		if ((modrm & 0xc7) == 0x05) {
+-			/* %rip+disp32 addressing mode */
+-			/* Displacement follows ModRM byte.  */
+-			++insn;
+-			/*
+-			 * The copied instruction uses the %rip-relative
+-			 * addressing mode.  Adjust the displacement for the
+-			 * difference between the original location of this
+-			 * instruction and the location of the copy that will
+-			 * actually be run.  The tricky bit here is making sure
+-			 * that the sign extension happens correctly in this
+-			 * calculation, since we need a signed 32-bit result to
+-			 * be sign-extended to 64 bits when it's added to the
+-			 * %rip value and yield the same 64-bit result that the
+-			 * sign-extension of the original signed 32-bit
+-			 * displacement would have given.
+-			 */
+-			disp = (u8 *) p->addr + *((s32 *) insn) -
+-			       (u8 *) p->ainsn.insn;
+-			BUG_ON((s64) (s32) disp != disp); /* Sanity check.  */
+-			*(s32 *)insn = (s32) disp;
+-		}
++	if (insn_rip_relative(&insn)) {
++		s64 newdisp;
++		u8 *disp;
++		insn_get_displacement(&insn);
++		/*
++		 * The copied instruction uses the %rip-relative addressing
++		 * mode.  Adjust the displacement for the difference between
++		 * the original location of this instruction and the location
++		 * of the copy that will actually be run.  The tricky bit here
++		 * is making sure that the sign extension happens correctly in
++		 * this calculation, since we need a signed 32-bit result to
++		 * be sign-extended to 64 bits when it's added to the %rip
++		 * value and yield the same 64-bit result that the sign-
++		 * extension of the original signed 32-bit displacement would
++		 * have given.
++		 */
++		newdisp = (u8 *) p->addr + (s64) insn.displacement.value -
++			  (u8 *) p->ainsn.insn;
++		BUG_ON((s64) (s32) newdisp != newdisp); /* Sanity check.  */
++		disp = (u8 *) p->ainsn.insn + INSN_DISPLACEMENT_OFFS(&insn);
++		*(s32 *) disp = (s32) newdisp;
+ 	}
+ #endif
  }
-@@ -352,18 +352,16 @@ static int register_trace_probe(struct trace_probe *tp)
- 		goto end;
- 	}
- 	/* register as an event */
--	if (tp->call.name) {
--		old_tp = find_probe_event(tp->call.name);
--		if (old_tp) {
--			/* delete old event */
--			unregister_trace_probe(old_tp);
--			free_trace_probe(old_tp);
--		}
--		ret = register_probe_event(tp);
--		if (ret) {
--			pr_warning("Faild to register probe event(%d)\n", ret);
--			__unregister_trace_probe(tp);
--		}
-+	old_tp = find_probe_event(tp->call.name);
-+	if (old_tp) {
-+		/* delete old event */
-+		unregister_trace_probe(old_tp);
-+		free_trace_probe(old_tp);
-+	}
-+	ret = register_probe_event(tp);
-+	if (ret) {
-+		pr_warning("Faild to register probe event(%d)\n", ret);
-+		__unregister_trace_probe(tp);
- 	}
- 	list_add_tail(&tp->list, &probe_list);
- end:
-@@ -566,7 +564,18 @@ static int create_trace_probe(int argc, char **argv)
- 	argc -= 2; argv += 2;
- 
- 	/* setup a probe */
--	tp = alloc_trace_probe(symbol, event, argc);
-+	if (!event) {
-+		/* Make a new event name */
-+		char buf[MAX_EVENT_NAME_LEN];
-+		if (symbol)
-+			snprintf(buf, MAX_EVENT_NAME_LEN, "%c@%s%+ld",
-+				 is_return ? 'r' : 'p', symbol, offset);
-+		else
-+			snprintf(buf, MAX_EVENT_NAME_LEN, "%c@0x%p",
-+				 is_return ? 'r' : 'p', addr);
-+		tp = alloc_trace_probe(symbol, buf, argc);
-+	} else
-+		tp = alloc_trace_probe(symbol, event, argc);
- 	if (IS_ERR(tp))
- 		return PTR_ERR(tp);
- 
-@@ -647,8 +656,7 @@ static int probes_seq_show(struct seq_file *m, void *v)
- 	char buf[MAX_ARGSTR_LEN + 1];
- 
- 	seq_printf(m, "%c", probe_is_return(tp) ? 'r' : 'p');
--	if (tp->call.name)
--		seq_printf(m, ":%s", tp->call.name);
-+	seq_printf(m, ":%s", tp->call.name);
- 
- 	if (tp->symbol)
- 		seq_printf(m, " %s%+ld", probe_symbol(tp), probe_offset(tp));
-@@ -766,10 +774,7 @@ static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
- 	struct ring_buffer_event *event;
- 	int size, i, pc;
- 	unsigned long irq_flags;
--	struct ftrace_event_call *call = &event_kprobe;
--
--	if (&tp->call.name)
--		call = &tp->call;
-+	struct ftrace_event_call *call = &tp->call;
- 
- 	local_save_flags(irq_flags);
- 	pc = preempt_count();
-@@ -801,10 +806,7 @@ static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
- 	struct ring_buffer_event *event;
- 	int size, i, pc;
- 	unsigned long irq_flags;
--	struct ftrace_event_call *call = &event_kretprobe;
--
--	if (&tp->call.name)
--		call = &tp->call;
-+	struct ftrace_event_call *call = &tp->call;
- 
- 	local_save_flags(irq_flags);
- 	pc = preempt_count();
 
 
 -- 
