@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752235AbZGPH1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbZGPHad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752235AbZGPH1N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 03:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZGPH1N
+	id S1752222AbZGPHad (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 03:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZGPHac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 03:27:13 -0400
-Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:60631 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbZGPH1M (ORCPT
+	Thu, 16 Jul 2009 03:30:32 -0400
+Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:41684 "EHLO
+	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751002AbZGPHac (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 03:27:12 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Junio C Hamano <gitster@pobox.com>, git@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] GIT 1.6.4.rc1
-References: <7vmy75bg2f.fsf@alter.siamese.dyndns.org>
- <4A5EA598.5050801@garzik.org> <7v3a8xb0lz.fsf@alter.siamese.dyndns.org>
- <4A5ECC09.3010405@garzik.org> <7vocrl9kwi.fsf@alter.siamese.dyndns.org>
- <4A5ED38F.5070708@garzik.org>
-From: Junio C Hamano <gitster@pobox.com>
-Date: Thu, 16 Jul 2009 00:27:03 -0700
-In-Reply-To: <4A5ED38F.5070708@garzik.org> (Jeff Garzik's message of "Thu\,
- 16 Jul 2009 03\:15\:27 -0400")
-Message-ID: <7v4otd9jg8.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 16 Jul 2009 03:30:32 -0400
+Message-ID: <4A5ED714.7010304@blueyonder.co.uk>
+Date: Thu, 16 Jul 2009 08:30:28 +0100
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: 144E07A6-71DA-11DE-B90E-9AE02FB70C38-77302942!a-pb-sasl-sd.pobox.com
+To: linux-kernel@vger.kernel.org
+CC: Sid Boyce <sboyce@blueyonder.co.uk>
+Subject: OpenSolaris boot failure with KVM and VirtualBox
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
+I first tried using kernel 2.6.31-rc1 on openSUSE 11.2 Milestone1 on a
+4P box. All other VM's, Windows and Linux work, currently running
+openSUSE 11.2 Milestone 3 with 2.6.31-rc3. Verified the .iso is good.
+Error message
+=============
+Booting 'OpenSolaris 2009.06'
+kernel$ /platform/i86pc/kernel/$ISADIR/unix
+loading '/platform/i86pc/kernel/$ISADIR/unix' ...
+cpu: 'AuthenticAMD' family 16 model 4 step 2 ...
+[BIOS accepted mixed-mode target setting!]
+  [Multiboot-kernel, loadaddr=0xbffe38, text-and-data=0x1b1ff0, bss=0x0,
+entry=0xc00000]
+'platform/i86pc/kernel/amd64/unix' is loaded
+module$ /boot/$ISADIR/x86.microroot
+loading '/boot/$ISADIR/x86.microroot' ...
+Error 15: File not found
+Press any key to continue ...
+Regards
+Sid.
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
-> That direction doesn't work due to firewalls, hence the scp out /to/
-> remote.example.com.
-
-Ah, then the "git init --bare" at remote followed by pushing -all into it,
-suggested in your other subthread, would be an appropriate way.
