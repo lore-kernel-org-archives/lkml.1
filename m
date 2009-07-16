@@ -1,219 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933657AbZGPXxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933664AbZGPXyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933657AbZGPXxu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 19:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933615AbZGPXxu
+	id S933664AbZGPXyd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 19:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933648AbZGPXyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 19:53:50 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54536 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933585AbZGPXxt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 19:53:49 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH] mm: count only reclaimable lru pages v2
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-In-Reply-To: <20090716150901.GA31204@localhost>
-References: <4A5F3C70.7010001@redhat.com> <20090716150901.GA31204@localhost>
-Message-Id: <20090717085108.A8FD.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 17 Jul 2009 08:53:46 +0900 (JST)
+	Thu, 16 Jul 2009 19:54:32 -0400
+Received: from smtpout.cs.fsu.edu ([128.186.122.75]:2020 "EHLO mail.cs.fsu.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933641AbZGPXyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 19:54:31 -0400
+Date: Thu, 16 Jul 2009 19:54:29 -0400
+From: Ted Baker <baker@cs.fsu.edu>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Noah Watkins <jayhawk@soe.ucsc.edu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Raistlin <raistlin@linux.it>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       "James H. Anderson" <anderson@cs.unc.edu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+Message-ID: <20090716235429.GG27757@cs.fsu.edu>
+References: <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir> <1247505941.7500.39.camel@twins> <5B78D181-E446-4266-B9DD-AC0A2629C638@soe.ucsc.edu> <20090713201305.GA25386@cs.fsu.edu> <4A5BAAE7.5020906@nortel.com> <20090715231109.GH14993@cs.fsu.edu> <4A5F448C.2050909@nortel.com> <20090716212603.GB27757@cs.fsu.edu> <4A5FA4EF.6000506@nortel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A5FA4EF.6000506@nortel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ---
-> mm: count only reclaimable lru pages 
-> 
-> global_lru_pages() / zone_lru_pages() can be used in two ways:
-> - to estimate max reclaimable pages in determine_dirtyable_memory()  
-> - to calculate the slab scan ratio
-> 
-> When swap is full or not present, the anon lru lists are not reclaimable
-> and also won't be scanned. So the anon pages shall not be counted in both
-> usage scenarios. Also rename to _reclaimable_pages: now they are counting
-> the possibly reclaimable lru pages.
-> 
-> It can greatly (and correctly) increase the slab scan rate under high memory
-> pressure (when most file pages have been reclaimed and swap is full/absent),
-> thus reduce false OOM kills.
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  include/linux/vmstat.h |   11 +-------
->  mm/page-writeback.c    |    5 ++-
->  mm/vmscan.c            |   50 ++++++++++++++++++++++++++++++---------
->  3 files changed, 44 insertions(+), 22 deletions(-)
-> 
-> --- linux.orig/include/linux/vmstat.h
-> +++ linux/include/linux/vmstat.h
-> @@ -166,15 +166,8 @@ static inline unsigned long zone_page_st
->  	return x;
->  }
->  
-> -extern unsigned long global_lru_pages(void);
-> -
-> -static inline unsigned long zone_lru_pages(struct zone *zone)
-> -{
-> -	return (zone_page_state(zone, NR_ACTIVE_ANON)
-> -		+ zone_page_state(zone, NR_ACTIVE_FILE)
-> -		+ zone_page_state(zone, NR_INACTIVE_ANON)
-> -		+ zone_page_state(zone, NR_INACTIVE_FILE));
-> -}
-> +extern unsigned long global_reclaimable_pages(void);
-> +extern unsigned long zone_reclaimable_pages(struct zone *zone);
->  
->  #ifdef CONFIG_NUMA
->  /*
-> --- linux.orig/mm/page-writeback.c
-> +++ linux/mm/page-writeback.c
-> @@ -380,7 +380,8 @@ static unsigned long highmem_dirtyable_m
->  		struct zone *z =
->  			&NODE_DATA(node)->node_zones[ZONE_HIGHMEM];
->  
-> -		x += zone_page_state(z, NR_FREE_PAGES) + zone_lru_pages(z);
-> +		x += zone_page_state(z, NR_FREE_PAGES) +
-> +		     zone_reclaimable_pages(z);
->  	}
->  	/*
->  	 * Make sure that the number of highmem pages is never larger
-> @@ -404,7 +405,7 @@ unsigned long determine_dirtyable_memory
->  {
->  	unsigned long x;
->  
-> -	x = global_page_state(NR_FREE_PAGES) + global_lru_pages();
-> +	x = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
->  
->  	if (!vm_highmem_is_dirtyable)
->  		x -= highmem_dirtyable_memory(x);
-> --- linux.orig/mm/vmscan.c
-> +++ linux/mm/vmscan.c
-> @@ -1735,7 +1735,7 @@ static unsigned long do_try_to_free_page
->  			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
->  				continue;
->  
-> -			lru_pages += zone_lru_pages(zone);
-> +			lru_pages += zone_reclaimable_pages(zone);
->  		}
->  	}
->  
-> @@ -1952,7 +1952,7 @@ loop_again:
->  		for (i = 0; i <= end_zone; i++) {
->  			struct zone *zone = pgdat->node_zones + i;
->  
-> -			lru_pages += zone_lru_pages(zone);
-> +			lru_pages += zone_reclaimable_pages(zone);
->  		}
->  
->  		/*
-> @@ -1996,7 +1996,7 @@ loop_again:
->  			if (zone_is_all_unreclaimable(zone))
->  				continue;
->  			if (nr_slab == 0 && zone->pages_scanned >=
-> -						(zone_lru_pages(zone) * 6))
-> +					(zone_reclaimable_pages(zone) * 6))
->  					zone_set_flag(zone,
->  						      ZONE_ALL_UNRECLAIMABLE);
->  			/*
-> @@ -2163,12 +2163,39 @@ void wakeup_kswapd(struct zone *zone, in
->  	wake_up_interruptible(&pgdat->kswapd_wait);
->  }
->  
-> -unsigned long global_lru_pages(void)
-> +/*
-> + * The reclaimable count would be mostly accurate.
-> + * The less reclaimable pages may be
-> + * - mlocked pages, which will be moved to unevictable list when encountered
-> + * - mapped pages, which may require several travels to be reclaimed
-> + * - dirty pages, which is not "instantly" reclaimable
-> + */
-> +unsigned long global_reclaimable_pages(void)
->  {
-> -	return global_page_state(NR_ACTIVE_ANON)
-> -		+ global_page_state(NR_ACTIVE_FILE)
-> -		+ global_page_state(NR_INACTIVE_ANON)
-> -		+ global_page_state(NR_INACTIVE_FILE);
-> +	int nr;
-> +
-> +	nr = global_page_state(NR_ACTIVE_FILE) +
-> +	     global_page_state(NR_INACTIVE_FILE);
-> +
-> +	if (nr_swap_pages > 0)
-> +		nr += global_page_state(NR_ACTIVE_ANON) +
-> +		      global_page_state(NR_INACTIVE_ANON);
-> +
-> +	return nr;
-> +}
-> +
-> +unsigned long zone_reclaimable_pages(struct zone *zone)
-> +{
-> +	int nr;
-> +
-> +	nr = zone_page_state(zone, NR_ACTIVE_FILE) +
-> +	     zone_page_state(zone, NR_INACTIVE_FILE);
-> +
-> +	if (nr_swap_pages > 0)
-> +		nr += zone_page_state(zone, NR_ACTIVE_ANON) +
-> +		      zone_page_state(zone, NR_INACTIVE_ANON);
-> +
-> +	return nr;
->  }
->  
->  #ifdef CONFIG_HIBERNATION
-> @@ -2240,7 +2267,7 @@ unsigned long shrink_all_memory(unsigned
->  
->  	current->reclaim_state = &reclaim_state;
->  
-> -	lru_pages = global_lru_pages();
-> +	lru_pages = global_reclaimable_pages();
->  	nr_slab = global_page_state(NR_SLAB_RECLAIMABLE);
->  	/* If slab caches are huge, it's better to hit them first */
->  	while (nr_slab >= lru_pages) {
-> @@ -2282,7 +2309,7 @@ unsigned long shrink_all_memory(unsigned
->  
->  			reclaim_state.reclaimed_slab = 0;
->  			shrink_slab(sc.nr_scanned, sc.gfp_mask,
-> -					global_lru_pages());
-> +				    global_reclaimable_pages());
->  			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
->  			if (sc.nr_reclaimed >= nr_pages)
->  				goto out;
-> @@ -2299,7 +2326,8 @@ unsigned long shrink_all_memory(unsigned
->  	if (!sc.nr_reclaimed) {
->  		do {
->  			reclaim_state.reclaimed_slab = 0;
-> -			shrink_slab(nr_pages, sc.gfp_mask, global_lru_pages());
-> +			shrink_slab(nr_pages, sc.gfp_mask,
-> +				    global_reclaimable_pages());
->  			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
->  		} while (sc.nr_reclaimed < nr_pages &&
->  				reclaim_state.reclaimed_slab > 0);
-> 
+On Thu, Jul 16, 2009 at 04:08:47PM -0600, Chris Friesen wrote:
 
-I feel like I already reviewed this patch past days..
-Anyway,
+> > However, there is still a difference in context-switching
+> > overhead.  Worst-case, you have twice as many context switches
+> > per critical section with PIP as with PP.
+> 
+> On the other hand, with PI the uncontended case can be implemented as
+> atomic operations in userspace.  With PP we need to issue at least two
+> syscalls per lock/unlock cycle even in the uncontended case (to handle
+> the priority manipulations).
 
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Needing syscalls to change the priority of a thread may be an
+artifact of system design, that might be correctable.
+
+Suppose you put the effective priority of each thread in a
+per-thread page that is mapped into a fixed location in the
+thread's address space (and different locations in the kernel
+memory).  It is nice to have such a page for each thread
+in any case.  I don't recall whether Linux already does this,
+but it is a well proven technique.
+
+Taking a PP lock then involves:
+
+1) push old priority on the thread's stack
+2) overwrite thread's priority with max of the lock priority
+   and the thread priority
+3) try to grab the lock (test-and-set, etc.)
+... conditionally queue, etc.
+
+Releasing the PP lock then involves:
+
+1) conditionally find another thread to grant the lock to,
+   call scheduler, etc., otherwise
+2) give up the actual lock (set bit, etc.)
+3) pop the old priority from the stack, and
+   write it back into the per-thread location
+
+Of course you also have explicit priority changes.  The way we
+handled those was to defer the effect until the lock release
+point.  This means keeping two priority values (the nominal one,
+and the effective one).  Just as you need conditional
+code to do the ugly stuff that requires a kernel trap
+in the case that the lock release requires unblocking
+a task, you need conditional code to copy the copy the
+new nominal priority to the effective priority, if that
+is called for.  We were able to combine these two conditions
+into a single bit test, which then branched out to handle
+each of the cases, if necessary.
+
+I can't swerar there are nocomplexities in Linux that might break
+this scheme, since we were not trying to support all the
+functionality now in Linux.
+
+Ted
 
 
