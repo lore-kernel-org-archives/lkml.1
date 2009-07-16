@@ -1,90 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbZGPBob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbZGPByf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbZGPBob (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 21:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbZGPBoa
+	id S1756990AbZGPByf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 21:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756911AbZGPBye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 21:44:30 -0400
-Received: from mga01.intel.com ([192.55.52.88]:9221 "EHLO mga01.intel.com"
+	Wed, 15 Jul 2009 21:54:34 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52942 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756909AbZGPBo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 21:44:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,408,1243839600"; 
-   d="scan'208";a="708223581"
-Subject: Re: [PATCH 8/8] i8042: support device async suspend & shutdown
-From: Zhang Rui <rui.zhang@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
-In-Reply-To: <87k52a6x62.fsf@basil.nowhere.org>
-References: <1247643522.26272.83.camel@rzhang-dt>
-	 <87k52a6x62.fsf@basil.nowhere.org>
+	id S1756885AbZGPByd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 21:54:33 -0400
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to
+ [__]p{te,ud,md}_free_tlb()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Memory Management <linux-mm@kvack.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>
+In-Reply-To: <20090715135620.GD7298@wotan.suse.de>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>
+	 <20090715135620.GD7298@wotan.suse.de>
 Content-Type: text/plain
-Date: Thu, 16 Jul 2009 09:45:18 +0800
-Message-Id: <1247708718.26272.138.camel@rzhang-dt>
+Date: Thu, 16 Jul 2009 11:54:15 +1000
+Message-Id: <1247709255.27937.5.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-15 at 18:46 +0800, Andi Kleen wrote:
-> Zhang Rui <rui.zhang@intel.com> writes:
+On Wed, 2009-07-15 at 15:56 +0200, Nick Piggin wrote:
+> On Wed, Jul 15, 2009 at 05:49:47PM +1000, Benjamin Herrenschmidt wrote:
+> > Upcoming paches to support the new 64-bit "BookE" powerpc architecture
+> > will need to have the virtual address corresponding to PTE page when
+> > freeing it, due to the way the HW table walker works.
+> > 
+> > Basically, the TLB can be loaded with "large" pages that cover the whole
+> > virtual space (well, sort-of, half of it actually) represented by a PTE
+> > page, and which contain an "indirect" bit indicating that this TLB entry
+> > RPN points to an array of PTEs from which the TLB can then create direct
+> > entries.
 > 
-> > i8042 controller support device async actions.
-> >
-> > If boot option "dev_async_action" is added,
-> > i8042 controller and its child devices can be
-> > suspended/resumed/shutdown asynchronously.
-> >
-> 
-> From a quick look at the i8042 driver it still 
-> seems to do a lot of slow actions without actually sleeping
-> or worse holding locks. e.g. the delay loop in i8042_flush()
-> 
-> Did you measure how long that one takes?
-> 
-> Due to the locks even preempt kernels couldn't do
-> something during that time.
-> 
-> The spinlocks are probably needed when the code is executed
-> during interrupts, but perhaps the suspend variant
-> could use a different code path.
-> 
-> Perhaps it only makes sense to do this when this 
-> code is converted to sleep during delays too?
-> 
-most of the psmouse suspend/shutdown time was cost by a ps2 reset
-command.
-In my test, the serio2 (psmouse) total suspend time is 0.42s, while
-the psmouse_reset takes 0.4s.
+> RPN is PFN in ppc speak, right?
 
-i.e.
-drivers/input/serio/libps2.c
+Ah right, real page number in ppc slang :-)
 
-int ps2_command(struct ps2dev *ps2dev, unsigned char *param, int
-command)
-{
-...
-/*
- * The reset command takes a long time to execute.
- */
-timeout = msecs_to_jiffies(command == PS2_CMD_RESET_BAT ? 4000 : 500);
+> > Thus, in order to invalidate those when PTE pages are deleted,
+> > we need the virtual address to pass to tlbilx or tlbivax instructions.
+> 
+> Interesting arrangement. So are these last level ptes modifieable
+> from userspace or something? If not, I wonder if you could manage
+> them as another level of pointers with the existing pagetable
+> functions?
 
-timeout = wait_event_timeout(ps2dev->wait,
-			!(ps2dev->flags & PS2_FLAG_CMD1), timeout);
-...
-}
+I don't understand what you mean. Basically, the TLB contains PMD's.
+There's nothing to change to the existing page table layout :-) But
+because they appear as large page TLB entries that cover the virtual
+space covered by a PMD, they need to be invalidated using virtual
+addresses when PMDs are removed.
 
-so the patch could save suepend/shutdown time a lot, without any other
-changes in psmouse driver.
+> > The old trick of sticking it somewhere in the PTE page struct page sucks
+> > too much, the address is almost readily available in all call sites and
+> > almost everybody implemets these as macros, so we may as well add the
+> > argument everywhere. I added it to the pmd and pud variants for consistency.
+> > 
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> > 
+> > I would like to merge the new support that depends on this in 2.6.32,
+> > so unless there's major objections, I'd like this to go in early during
+> > the merge window. We can sort out separately how to carry the patch
+> > around in -next until then since the powerpc tree will have a dependency
+> > on it.
+> 
+> Can't see any problem with that.
 
-thanks,
-rui
+Thanks, can I get an Ack then ? :-)
+
+Cheers,
+Ben.
 
 
