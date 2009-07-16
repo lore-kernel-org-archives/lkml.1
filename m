@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932703AbZGPQUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932708AbZGPQVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932703AbZGPQUz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 12:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932684AbZGPQUy
+	id S932708AbZGPQVd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 12:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932686AbZGPQVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 12:20:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42657 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932683AbZGPQUx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 12:20:53 -0400
-Message-ID: <4A5F5326.8060307@zytor.com>
-Date: Thu, 16 Jul 2009 12:19:50 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       =?UTF-8?B?UHJ6ZW15c8WCYXdQYXdlxYJjenlr?= <przemyslaw@pawelczyk.it>
-Subject: Re: [PATCH -tip -v12 01/11] x86: instruction decoder API
-References: <20090716155652.6266.39970.stgit@localhost.localdomain> <20090716155700.6266.71011.stgit@localhost.localdomain>
-In-Reply-To: <20090716155700.6266.71011.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 16 Jul 2009 12:21:32 -0400
+Received: from mga11.intel.com ([192.55.52.93]:5559 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932684AbZGPQVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 12:21:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,412,1243839600"; 
+   d="scan'208";a="708418044"
+Date: Thu, 16 Jul 2009 09:21:29 -0700
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       David Howells <dhowells@redhat.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>
+Subject: Re: [PATCH] mm: count only reclaimable lru pages
+Message-ID: <20090716092129.1dbb0138@jbarnes-g45>
+In-Reply-To: <20090716133454.GA20550@localhost>
+References: <20090716133454.GA20550@localhost>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
+On Thu, 16 Jul 2009 06:34:55 -0700
+"Wu, Fengguang" <fengguang.wu@intel.com> wrote:
+
+> global_lru_pages() / zone_lru_pages() can be used in two ways:
+> - to estimate max reclaimable pages in determine_dirtyable_memory()  
+> - to calculate the slab scan ratio
 > 
-> These opcode maps do NOT include most of SSE and FP opcodes, because
-> those opcodes are not used in the kernel.
+> When swap is full or not present, the anon lru lists are not
+> reclaimable and thus won't be scanned. So the anon pages shall not be
+> counted. Also rename the function names to reflect the new meaning.
+> 
+> It can greatly (and correctly) increase the slab scan rate under high
+> memory pressure (when most file pages have been reclaimed and swap is
+> full/absent), thus avoid possible false OOM kills.
+> 
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  include/linux/vmstat.h |   11 +--------
+>  mm/page-writeback.c    |    5 ++--
+>  mm/vmscan.c            |   44 +++++++++++++++++++++++++++++----------
+>  3 files changed, 38 insertions(+), 22 deletions(-)
 > 
 
-That is not true.
+Looks nice to me, including the naming.  FWIW (given that it's been
+years since I did any serious VM work):
 
-	-hpa
+Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
