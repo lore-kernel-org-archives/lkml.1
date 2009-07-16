@@ -1,94 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbZGPPoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932540AbZGPPof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932528AbZGPPoZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 11:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932470AbZGPPoY
+	id S932540AbZGPPof (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 11:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932489AbZGPPoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 11:44:24 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:46052 "EHLO
+	Thu, 16 Jul 2009 11:44:25 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:46047 "EHLO
 	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932502AbZGPPoX (ORCPT
+	with ESMTP id S932478AbZGPPoW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 11:44:23 -0400
+	Thu, 16 Jul 2009 11:44:22 -0400
 From: Daniel Mack <daniel@caiaq.de>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Daniel Mack <daniel@caiaq.de>,
-       Ian Molton <spyro@f2s.com>, Anton Vorontsov <cbou@mail.ru>,
-       Matt Reimer <mreimer@vpop.net>
-Subject: [PATCH 1/3] pda-power: add set_charged functionaltity
-Date: Thu, 16 Jul 2009 17:44:02 +0200
-Message-Id: <1247759044-4747-1-git-send-email-daniel@caiaq.de>
+       Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
+       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>
+Subject: [PATCH 3/3] ds2760: implement set_charged() feature
+Date: Thu, 16 Jul 2009 17:44:04 +0200
+Message-Id: <1247759044-4747-3-git-send-email-daniel@caiaq.de>
 X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <1247759044-4747-2-git-send-email-daniel@caiaq.de>
+References: <1247759044-4747-1-git-send-email-daniel@caiaq.de>
+ <1247759044-4747-2-git-send-email-daniel@caiaq.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a function to let the power supply core know that the battery
-is fully charged now. This can be done by watching a GPIO line, for
-example.
+The ds2760's internal current meter is not reliable enough as it has an
+inacurracy of around ~15%. Without any correction for that error, the
+current accumulator is couting up all the time, even though the battery
+is already fully charged and hence destroys the static information. The
+longer it is connected, the worse is the aberration.
 
-Some battery drivers might need that information to calibrate
-themselves.
+Fortunately, this can be corrected by the DS2760_CURRENT_OFFSET_BIAS
+register. Using the external power_supply_set_battery_charged()
+function, this register is now gauging the measurement.
+
+A delayed work is used to debounce flaky GPIO signals and to let the
+current value settle. Also see Maxim's application note AN4188.
 
 Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Ian Molton <spyro@f2s.com>
-Cc: Anton Vorontsov <cbou@mail.ru>
+Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
 Cc: Matt Reimer <mreimer@vpop.net>
+Cc: Anton Vorontsov <cbou@mail.ru>
 ---
- drivers/power/power_supply_core.c |   16 ++++++++++++++++
- include/linux/power_supply.h      |    3 +++
- 2 files changed, 19 insertions(+), 0 deletions(-)
+ drivers/power/ds2760_battery.c |   47 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 47 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index 5520040..7303c45 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -111,6 +111,22 @@ int power_supply_is_system_supplied(void)
- 	return error;
+diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
+index f4a9258..30ebd82 100644
+--- a/drivers/power/ds2760_battery.c
++++ b/drivers/power/ds2760_battery.c
+@@ -56,6 +56,7 @@ struct ds2760_device_info {
+ 	struct device *w1_dev;
+ 	struct workqueue_struct *monitor_wqueue;
+ 	struct delayed_work monitor_work;
++	struct delayed_work set_charged_work;
+ };
+ 
+ static unsigned int cache_time = 1000;
+@@ -327,6 +328,48 @@ static void ds2760_battery_external_power_changed(struct power_supply *psy)
+ 	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ/10);
  }
  
-+static int __power_supply_set_battery_charged(struct device *dev, void *data)
++
++static void ds2760_battery_set_charged_work(struct work_struct *work)
 +{
-+	struct power_supply *psy = dev_get_drvdata(dev);
++	char bias;
++	struct ds2760_device_info *di = container_of(work,
++		struct ds2760_device_info, set_charged_work.work);
 +
-+	if (psy->type == POWER_SUPPLY_TYPE_BATTERY && psy->set_charged)
-+		psy->set_charged(psy);
++	dev_dbg(di->dev, "%s\n", __func__);
 +
-+	return 0;
++	ds2760_battery_read_status(di);
++
++	/* When we get notified by external circuitry that the battery is
++	 * considered fully charged now, we know that there is no current
++	 * flow any more. However, the ds2760's internal current meter is
++	 * too inaccurate to rely on - spec say something ~15% failure.
++	 * Hence, we use the current offset bias register to compensate
++	 * that error.
++	 */
++
++	if (!power_supply_am_i_supplied(&di->bat))
++		return;
++
++	bias = di->current_raw +
++		(signed char) di->raw[DS2760_CURRENT_OFFSET_BIAS];
++
++	dev_dbg(di->dev, "%s: bias = %d\n", __func__, bias);
++
++	w1_ds2760_write(di->w1_dev, &bias, DS2760_CURRENT_OFFSET_BIAS, 1);
++	w1_ds2760_store_eeprom(di->w1_dev, DS2760_EEPROM_BLOCK1);
++	w1_ds2760_recall_eeprom(di->w1_dev, DS2760_EEPROM_BLOCK1);
 +}
 +
-+void power_supply_set_battery_charged(void)
++static void ds2760_battery_set_charged(struct power_supply *psy)
 +{
-+	class_for_each_device(power_supply_class, NULL, NULL,
-+				__power_supply_set_battery_charged);
++	struct ds2760_device_info *di = to_ds2760_device_info(psy);
++
++	/* postpone the actual work by 20 secs. This is for debouncing GPIO
++	 * signals and to let the current value settle. See AN4188. */
++	cancel_delayed_work(&di->set_charged_work);
++	queue_delayed_work(di->monitor_wqueue, &di->set_charged_work, HZ * 20);
 +}
 +
- int power_supply_register(struct device *parent, struct power_supply *psy)
- {
- 	int rc = 0;
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 594c494..b2b39e2 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -126,6 +126,7 @@ struct power_supply {
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val);
- 	void (*external_power_changed)(struct power_supply *psy);
-+	void (*set_charged)(struct power_supply *psy);
+ static int ds2760_battery_get_property(struct power_supply *psy,
+ 				       enum power_supply_property psp,
+ 				       union power_supply_propval *val)
+@@ -412,6 +455,7 @@ static int ds2760_battery_probe(struct platform_device *pdev)
+ 	di->bat.properties	= ds2760_battery_props;
+ 	di->bat.num_properties	= ARRAY_SIZE(ds2760_battery_props);
+ 	di->bat.get_property	= ds2760_battery_get_property;
++	di->bat.set_charged	= ds2760_battery_set_charged;
+ 	di->bat.external_power_changed =
+ 				  ds2760_battery_external_power_changed;
  
- 	/* For APM emulation, think legacy userspace. */
- 	int use_for_apm;
-@@ -170,8 +171,10 @@ extern int power_supply_am_i_supplied(struct power_supply *psy);
+@@ -443,6 +487,7 @@ static int ds2760_battery_probe(struct platform_device *pdev)
+ 	}
  
- #if defined(CONFIG_POWER_SUPPLY) || defined(CONFIG_POWER_SUPPLY_MODULE)
- extern int power_supply_is_system_supplied(void);
-+extern void power_supply_set_battery_charged(void);
- #else
- static inline int power_supply_is_system_supplied(void) { return -ENOSYS; }
-+static inline void power_supply_set_battery_charged(void) {}
- #endif
+ 	INIT_DELAYED_WORK(&di->monitor_work, ds2760_battery_work);
++	INIT_DELAYED_WORK(&di->set_charged_work, ds2760_battery_set_charged_work);
+ 	di->monitor_wqueue = create_singlethread_workqueue(dev_name(&pdev->dev));
+ 	if (!di->monitor_wqueue) {
+ 		retval = -ESRCH;
+@@ -467,6 +512,8 @@ static int ds2760_battery_remove(struct platform_device *pdev)
  
- extern int power_supply_register(struct device *parent,
+ 	cancel_rearming_delayed_workqueue(di->monitor_wqueue,
+ 					  &di->monitor_work);
++	cancel_rearming_delayed_workqueue(di->monitor_wqueue,
++					  &di->set_charged_work);
+ 	destroy_workqueue(di->monitor_wqueue);
+ 	power_supply_unregister(&di->bat);
+ 
 -- 
 1.6.3.1
 
