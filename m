@@ -1,86 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932357AbZGPOcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932374AbZGPOfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932357AbZGPOcJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 10:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932106AbZGPOcI
+	id S932374AbZGPOfG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 10:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932257AbZGPOfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 10:32:08 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:52359 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932091AbZGPOcH (ORCPT
+	Thu, 16 Jul 2009 10:35:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58380 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932210AbZGPOfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 10:32:07 -0400
-Message-ID: <4A5F3975.70503@s5r6.in-berlin.de>
-Date: Thu, 16 Jul 2009 16:30:13 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.22) Gecko/20090605 SeaMonkey/1.1.17
-MIME-Version: 1.0
-To: Matthew Garrett <mjg@redhat.com>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/4] scsi: Allow hosts to be flagged as hotpluggable
-References: <1247701438-18266-1-git-send-email-mjg@redhat.com>
-In-Reply-To: <1247701438-18266-1-git-send-email-mjg@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 16 Jul 2009 10:35:03 -0400
+Subject: Re: [PATCH 4/7] sched: Add a preempt count base offset to
+ __might_sleep()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1247753686.6586.20.camel@laptop>
+References: <1247725694-6082-1-git-send-email-fweisbec@gmail.com>
+	 <1247725694-6082-4-git-send-email-fweisbec@gmail.com>
+	 <1247753686.6586.20.camel@laptop>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 16:34:53 +0200
+Message-Id: <1247754893.6586.24.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> Userspace may wish to make policy decisions based on whether a host
-> supports device hotplug or not - for example, AHCI link power management
-> disables hotplug, so may only be desirable on hotplug ports. Add
-> support for marking hosts as hotpluggable in order to allow userspace to
-> treat them appropriately.
-[...]
-> --- a/include/scsi/scsi_host.h
-> +++ b/include/scsi/scsi_host.h
-> @@ -421,6 +421,7 @@ struct scsi_host_template {
->  	 */
->  	unsigned unchecked_isa_dma:1;
->  
-> +
->  	/*
->  	 * True if this host adapter can make good use of clustering.
->  	 * I originally thought that if the tablesize was large that it
-> @@ -447,6 +448,11 @@ struct scsi_host_template {
->  	unsigned ordered_tag:1;
->  
->  	/*
-> +	 * True if host supports hotplugging
-> +	 */
-> +	unsigned hotpluggable:1;
-> +
+On Thu, 2009-07-16 at 16:14 +0200, Peter Zijlstra wrote:
+> On Thu, 2009-07-16 at 02:28 -0400, Frederic Weisbecker wrote:
+> > +++ b/include/linux/hardirq.h
+> > @@ -103,6 +103,13 @@
+> >   */
+> >  #define in_atomic()    ((preempt_count() & ~PREEMPT_ACTIVE) != PREEMPT_INATOMIC_BASE)
+> >  
+> > +static inline int current_preempt_equals(int preempt_offset)
+> > +{
+> > +       int nested = preempt_count() & ~PREEMPT_ACTIVE;
+> > +
+> > +       return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
+> > +}
+> 
+> I'm not sure about it being in hardirq.h, I think we should keep this in
+> sched.c.
+> 
+> Also, I'm not sure about the name, but then I suck at naming too. How
+> about something like: preempt_count_equals() ?
+> 
+> Other than that the series looks nice and I've got it queued.
 
-The comment should specify what the actual effects of the flag are.
+I've added this on top:
 
-(Provides the default for Scsi_Host.hotpluggable?)
+---
+Index: linux-2.6/include/linux/hardirq.h
+===================================================================
+--- linux-2.6.orig/include/linux/hardirq.h
++++ linux-2.6/include/linux/hardirq.h
+@@ -103,13 +103,6 @@
+  */
+ #define in_atomic()	((preempt_count() & ~PREEMPT_ACTIVE) != PREEMPT_INATOMIC_BASE)
+ 
+-static inline int current_preempt_equals(int preempt_offset)
+-{
+-	int nested = preempt_count() & ~PREEMPT_ACTIVE;
+-
+-	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
+-}
+-
+ /*
+  * Check whether we were atomic before we did preempt_disable():
+  * (used by the scheduler, *after* releasing the kernel lock)
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -9444,12 +9444,19 @@ void __init sched_init(void)
+ }
+ 
+ #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
++static inline int preempt_count_equals(int preempt_offset)
++{
++	int nested = preempt_count() & ~PREEMPT_ACTIVE;
++
++	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
++}
++
+ void __might_sleep(char *file, int line, int preempt_offset)
+ {
+ #ifdef in_atomic
+ 	static unsigned long prev_jiffy;	/* ratelimiting */
+ 
+-	if ((current_preempt_equals(preempt_offset) && !irqs_disabled()) ||
++	if ((preempt_count_equals(preempt_offset) && !irqs_disabled()) ||
+ 	    system_state != SYSTEM_RUNNING || oops_in_progress)
+ 		return;
+ 	if (time_before(jiffies, prev_jiffy + HZ) && prev_jiffy)
 
-> +	/*
->  	 * Countdown for host blocking with no commands outstanding.
->  	 */
->  	unsigned int max_host_blocked;
-> @@ -622,6 +628,9 @@ struct Scsi_Host {
->  	/* Asynchronous scan in progress */
->  	unsigned async_scan:1;
->  
-> +	/* 1 if hotpluggable, 0 if not */
-> +	unsigned hotpluggable:1;
-> +
 
-Ditto here.
-
-(Is used by power management infrastructure to decide over runtime PM
-policy?  I.e. don't enter power states which would prevent the port from
-detecting/ reporting hotplug events?)
-
->  	/*
->  	 * Optional work queue to be utilized by the transport
->  	 */
-
-
--- 
-Stefan Richter
--=====-==--= -=== =----
-http://arcgraph.de/sr/
