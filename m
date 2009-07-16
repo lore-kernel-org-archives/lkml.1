@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932335AbZGPK4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZGPK4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932335AbZGPK4V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 06:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932266AbZGPK4S
+	id S1755451AbZGPK4u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 06:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZGPK4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 06:56:18 -0400
-Received: from mga11.intel.com ([192.55.52.93]:58058 "EHLO mga11.intel.com"
+	Thu, 16 Jul 2009 06:56:46 -0400
+Received: from mga01.intel.com ([192.55.52.88]:2706 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755171AbZGPKzb convert rfc822-to-8bit (ORCPT
+	id S1755347AbZGPKyn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 06:55:31 -0400
+	Thu, 16 Jul 2009 06:54:43 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,410,1243839600"; 
-   d="scan'208,223";a="475407408"
+   d="scan'208,223";a="708333218"
 From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
 To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "x86@kernel.org" <x86@kernel.org>
-Date: Thu, 16 Jul 2009 03:55:29 -0700
-Subject: [PATCH v2 8/10] x86/timer: use platform feature to choose timer
- init function
-Thread-Topic: [PATCH v2 8/10] x86/timer: use platform feature to choose
- timer init function
-Thread-Index: AcoGA+6SIKHCRAvCSeafpPamxc6tsQ==
-Message-ID: <43F901BD926A4E43B106BF17856F0755643EBDFA@orsmsx508.amr.corp.intel.com>
+Date: Thu, 16 Jul 2009 03:54:41 -0700
+Subject: [PATCH v2 2/10] x86/boot: add setup_secondary_clock to x86 quirk
+Thread-Topic: [PATCH v2 2/10] x86/boot: add setup_secondary_clock to x86
+ quirk
+Thread-Index: AcoGA9JMNVIIb3doROSsIX3J2X8YqA==
+Message-ID: <43F901BD926A4E43B106BF17856F0755643EBDF4@orsmsx508.amr.corp.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -35,94 +34,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 0b134db20e9ee7d39b14da7a0cdf34459e12a1f8 Mon Sep 17 00:00:00 2001
+>From 8d2ba963b3f352ee478fda838422425aaed0a97a Mon Sep 17 00:00:00 2001
 From: Jacob Pan <jacob.jun.pan@intel.com>
-Date: Wed, 15 Jul 2009 14:25:47 -0700
-Subject: [PATCH] x86/timer: use platform feature to choose timer init function
+Date: Tue, 9 Jun 2009 17:02:48 -0700
+Subject: [PATCH] x86/boot: add setup_secondary_clock to x86 quirk
 
-with the introduction of non-pc x86 platforms, we have more choices in
-selecting system timers. This patch selects timer init function based
-on feature flags set during early boot.
+Some x86 platform such as Intel Moorestown use external timers for per
+cpu clockevent devices. This quirk is added such as we can override the
+default local APIC timers if such platform is detected.
+
+Should not have impact on other platforms that uses default or platform
+specific x86_quirks.
 
 Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
 ---
- arch/x86/include/asm/time.h |    4 ++--
- arch/x86/kernel/time_32.c   |   21 ++++++++++++++++++++-
- 2 files changed, 22 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/setup.h |    1 +
+ arch/x86/kernel/smpboot.c    |   15 ++++++++++++++-
+ 2 files changed, 15 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/time.h b/arch/x86/include/asm/time.h
-index 50c733a..af08d45 100644
---- a/arch/x86/include/asm/time.h
-+++ b/arch/x86/include/asm/time.h
-@@ -2,7 +2,8 @@
- #define _ASM_X86_TIME_H
+diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
+index 4093d1e..7bf325a 100644
+--- a/arch/x86/include/asm/setup.h
++++ b/arch/x86/include/asm/setup.h
+@@ -31,6 +31,7 @@ struct x86_quirks {
+ 	void (*smp_read_mpc_oem)(struct mpc_oemtable *oemtable,
+ 				unsigned short oemsize);
+ 	int (*setup_ioapic_ids)(void);
++	void (*setup_secondary_clock)(void);
+ };
  
- extern void hpet_time_init(void);
--
+ extern void x86_quirk_intr_init(void);
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 2fecda6..3260159 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -66,6 +66,8 @@
+ #include <linux/mc146818rtc.h>
+ 
+ #include <asm/smpboot_hooks.h>
 +#include <asm/platform_feature.h>
 +#include <asm/apb_timer.h>
- #include <asm/mc146818rtc.h>
+ 
  #ifdef CONFIG_X86_32
- #include <linux/efi.h>
-@@ -54,7 +55,6 @@ extern void time_init(void);
- 
- #define get_wallclock() native_get_wallclock()
- #define set_wallclock(x) native_set_wallclock(x)
--#define choose_time_init() hpet_time_init
- 
- #endif /* CONFIG_PARAVIRT */
- 
-diff --git a/arch/x86/kernel/time_32.c b/arch/x86/kernel/time_32.c
-index 5c5d87f..96b1c6f 100644
---- a/arch/x86/kernel/time_32.c
-+++ b/arch/x86/kernel/time_32.c
-@@ -35,8 +35,10 @@
- 
- #include <asm/setup.h>
- #include <asm/hpet.h>
-+#include <asm/apb_timer.h>
- #include <asm/time.h>
- #include <asm/timer.h>
-+#include <asm/platform_feature.h>
- 
- #include <asm/do_timer.h>
- 
-@@ -78,7 +80,7 @@ irqreturn_t timer_interrupt(int irq, void *dev_id)
- 	inc_irq_stat(irq0_irqs);
- 
- #ifdef CONFIG_X86_IO_APIC
--	if (timer_ack) {
-+	if (timer_ack && platform_has(X86_PLATFORM_FEATURE_8259)) {
- 		/*
- 		 * Subtle, when I/O APICs are used we have to ack timer IRQ
- 		 * manually to deassert NMI lines for the watchdog if run
-@@ -118,9 +120,26 @@ void __init hpet_time_init(void)
- {
- 	if (!hpet_enable())
- 		setup_pit_timer();
-+}
-+#ifndef CONFIG_PARAVIRT
-+static inline void __init native_time_init(void)
-+{
-+	if (platform_has(X86_PLATFORM_FEATURE_HPET))
-+		hpet_time_init();
-+	else if (platform_has(X86_PLATFORM_FEATURE_APBT)) {
-+		apbt_enable();
-+	} else {
-+		/* should not get here, at least one timer should be found */
-+		BUG();
-+	}
- 	x86_quirk_time_init();
+ u8 apicid_2_node[MAX_APICID];
+@@ -263,6 +265,17 @@ static void __cpuinit smp_callin(void)
  }
-+static inline void (*choose_time_init(void))(void)
-+{
-+	return native_time_init;
-+}
  
-+#endif
  /*
-  * This is called directly from init code; we must delay timer setup in the
-  * HPET case as we can't make the decision to turn on HPET this early in the
++ * Setup secondary clock
++ */
++notrace static void __cpuinit __setup_secondary_clock(void)
++{
++	if (x86_quirks->setup_secondary_clock)
++		x86_quirks->setup_secondary_clock();
++	else
++		setup_secondary_clock();
++}
++
++/*
+  * Activate a secondary processor.
+  */
+ notrace static void __cpuinit start_secondary(void *unused)
+@@ -323,7 +336,7 @@ notrace static void __cpuinit start_secondary(void *unused)
+ 	/* enable local interrupts */
+ 	local_irq_enable();
+ 
+-	setup_secondary_clock();
++	__setup_secondary_clock();
+ 
+ 	wmb();
+ 	cpu_idle();
 -- 
 1.5.6.5
 
