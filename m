@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933040AbZGPSoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbZGPSto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933040AbZGPSoI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 14:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932941AbZGPSoH
+	id S933044AbZGPSto (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 14:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932941AbZGPSto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 14:44:07 -0400
-Received: from mail.lang.hm ([64.81.33.126]:37131 "EHLO bifrost.lang.hm"
+	Thu, 16 Jul 2009 14:49:44 -0400
+Received: from cmpxchg.org ([85.214.51.133]:55606 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932920AbZGPSoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 14:44:07 -0400
-Date: Thu, 16 Jul 2009 11:43:55 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: James Smart <James.Smart@Emulex.Com>
-cc: Boaz Harrosh <bharrosh@panasas.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Subject: Re: deterministic scsi order with async scan
-In-Reply-To: <4A5F723B.7070408@emulex.com>
-Message-ID: <alpine.DEB.1.10.0907161143010.9159@asgard>
-References: <alpine.DEB.1.10.0907151801040.9159@asgard> <4A5F100E.9000107@panasas.com> <alpine.DEB.1.10.0907161017180.9159@asgard> <4A5F723B.7070408@emulex.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S932920AbZGPStn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 14:49:43 -0400
+Date: Thu, 16 Jul 2009 20:48:46 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Alan Cox <alan@xorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Hangups in n_tty_read()
+Message-ID: <20090716184846.GA1470@cmpxchg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Jul 2009, James Smart wrote:
+Hello Alan,
 
-> david@lang.hm wrote:
->> On Thu, 16 Jul 2009, Boaz Harrosh wrote:
->>
->> 
->>> It is highly discouraged to setup any kind of system that depends
->>> on device-names for block-devices. mounts have the mount by-label
->>> or mount by-uuid. Any other subsystem should go by /dev/disk/by-id/*
->>> slinks to find a persistent raw block-device. the id is generated
->>> from characteristics inside the disk itself so it will be the same
->>> no matter what host connection or bus it is connected too (almost).
->>> 
->>> This is because even if the boot order is consistent, the device-name
->>> is so volatile in the life-span of a system. Did I boot with a removable
->>> USB inserted. that camera or printer was on or off, disk was connected
->>> to the other port. Any such change will break things and give you a very
->>> poor user experience.
->>> 
->> 
->> for a laptop you areprobably correct, but for a server or embedded system 
->> that doesn't have it's hardware changing all the time you are not correct.
->> 
->> especially on a system with lots of drives, why should I have to create an 
->> initrd that goes and searches dozens or hundreds of drives to find out 
->> which one to boot from?
->> 
-> Boaz is correct. Many enterprise SCSI subsystems (FC, SAS) do not have hard 
-> transport addresses for each device like Parallel SCSI used to.  Thus, any 
-> difference in order of appearance of the devices (power-up ordering, FC ALPA 
-> assignment based on who's loop master, order that switch reports them, is an 
-> array in a failover mode with 1 controller non-existent), or if LUN 
-> configuration on an array changes, or as a drive may fail (especially with 
-> hundreds), there's no guarantee you will see the same thing in the same order 
-> w/o name binding. Same thing is true if one of those adapters fails or is 
-> swapped out.
+I regularly get hung terminals when ^Cing a foreground process.  The
+terminal won't show any sign of input or output anymore then.
 
-yes, but does your system change the order of your internal direct 
-attached drives with your FC/SAN drives?
+Here is an excerpt from sysrq+w:
 
-David Lang
+Jul 16 17:33:10 chigurh kernel: [20907.892444] conf          S 0000000000000000     0 10946  10888 0x00000000
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  ffff88000e1efd58 0000000000000082 ffff88000e1efcc8 ffffffff8103423b
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  0000000000004000 0000000000012240 000000000000dc78 ffff880001639240
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  ffff88000e1efce8 ffff880024688000 ffff88002f8651c0 ffff880024688378
+Jul 16 17:33:10 chigurh kernel: [20907.892444] Call Trace:
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  [<ffffffff8103423b>] ? try_to_wake_up+0x29e/0x2b0
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  [<ffffffff8103423b>] ? try_to_wake_up+0x29e/0x2b0
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  [<ffffffff8134f675>] schedule_timeout+0x26/0x190
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  [<ffffffff811ea909>] n_tty_read+0x496/0x74d
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  [<ffffffff8103424d>] ? default_wake_function+0x0/0xf
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  [<ffffffff811e65a5>] tty_read+0x7d/0xba
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  [<ffffffff8109a33b>] vfs_read+0xab/0x122
+Jul 16 17:33:10 chigurh kernel: [20907.892444]  [<ffffffff8109a476>] sys_read+0x47/0x6f
 
->> I am building a system that will have two drives in a hardware mirror on 
->> one SCSI card, and 160 drives on a FC (SCSI) card. why should my boot have 
->> to go and examine all 162 drives to look for an ID on every partition just 
-> Because its the only safe way to ensure proper device identification.
->
-> -- james s
->
+Killing the hung foreground process from another terminal works.  But
+it won't recover the screwed terminal and the terminal does not show
+any reaction to it (like a prompt) even when the process is gone.
+
+I remember one hang without X where the cursor-blinking was still
+affected by keyboard input.
+
+Unfortunately, I hadn't had the chance to test if input comes through
+by blindly executing something disk heavy and watch the LEDs or
+similar, so I can't say for sure if it's just output or if input is
+affected as well.
+
+First kernel I noticed this with was something past .30.  And it
+certainly happens with Linus' latest.
+
+Any idea?
+
+	Hannes
