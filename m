@@ -1,102 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932374AbZGPOfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932386AbZGPOgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932374AbZGPOfG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 10:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932257AbZGPOfF
+	id S932386AbZGPOgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 10:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932307AbZGPOgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 10:35:05 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58380 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932210AbZGPOfD (ORCPT
+	Thu, 16 Jul 2009 10:36:19 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:37110 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932257AbZGPOgS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 10:35:03 -0400
-Subject: Re: [PATCH 4/7] sched: Add a preempt count base offset to
- __might_sleep()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1247753686.6586.20.camel@laptop>
-References: <1247725694-6082-1-git-send-email-fweisbec@gmail.com>
-	 <1247725694-6082-4-git-send-email-fweisbec@gmail.com>
-	 <1247753686.6586.20.camel@laptop>
-Content-Type: text/plain
-Date: Thu, 16 Jul 2009 16:34:53 +0200
-Message-Id: <1247754893.6586.24.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 16 Jul 2009 10:36:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=N3YUTz3p/KVRBG0Mwk5UmZn+1rl7EghRSnLgWogObfBSM65E8hkNy3VpwIpSWAB0UZ
+         kQimQglRvJcQpznJTYC6OgeYM8k0ttv/rcZErKFdsf/VeYGgY4jnEfq6gB6HKlhqG2Do
+         0WuborETvbTDmmxanU6t+ZaO1PO/DjjYR7V2Q=
+MIME-Version: 1.0
+In-Reply-To: <4A5F2EEC.8010508@linux.intel.com>
+References: <1247643512.26272.74.camel@rzhang-dt>
+	 <87ocrm6xeq.fsf@basil.nowhere.org>
+	 <1247710483.26272.170.camel@rzhang-dt>
+	 <20090716114020.GA11928@khazad-dum.debian.net>
+	 <4A5F2EEC.8010508@linux.intel.com>
+Date: Thu, 16 Jul 2009 16:36:17 +0200
+Message-ID: <b637ec0b0907160736r3477301fn25c495b03a18dc4a@mail.gmail.com>
+Subject: Re: [PATCH 0/8] device async action mechanism
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Zhang Rui <rui.zhang@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-16 at 16:14 +0200, Peter Zijlstra wrote:
-> On Thu, 2009-07-16 at 02:28 -0400, Frederic Weisbecker wrote:
-> > +++ b/include/linux/hardirq.h
-> > @@ -103,6 +103,13 @@
-> >   */
-> >  #define in_atomic()    ((preempt_count() & ~PREEMPT_ACTIVE) != PREEMPT_INATOMIC_BASE)
-> >  
-> > +static inline int current_preempt_equals(int preempt_offset)
-> > +{
-> > +       int nested = preempt_count() & ~PREEMPT_ACTIVE;
-> > +
-> > +       return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
-> > +}
-> 
-> I'm not sure about it being in hardirq.h, I think we should keep this in
-> sched.c.
-> 
-> Also, I'm not sure about the name, but then I suck at naming too. How
-> about something like: preempt_count_equals() ?
-> 
-> Other than that the series looks nice and I've got it queued.
+On Thu, Jul 16, 2009 at 3:45 PM, Arjan van de Ven<arjan@linux.intel.com> wrote:
+> Henrique de Moraes Holschuh wrote:
+>>
+>> On Thu, 16 Jul 2009, Zhang Rui wrote:
+>>>
+>>> the kernel device suspend time is reduced from 3.2s to 2.8s after
+>>> applying this patch set in my test box.
+>>
+>> It will give even a bigger boot time saving on ThinkPads, where there is a
+>> Synaptics (or ALPS if you are unlucky) touchpad with the trackpoint behind
+>> it... it takes about 2s to init both devices here.  That's two seconds of
+>> boot time you can shove off if it is being initialized assyncronously :-)
+>>
+>
+> that's a different problem that I don't think this will solve; as long
+> as you keep the boot of the kernel wait for all async actions, you're going
+> to hit that wait. In Moblin we have a (bad) patch to not do the wait,
+> at some point we need to figure how to get a mainline-able patch....
+> --
 
-I've added this on top:
-
----
-Index: linux-2.6/include/linux/hardirq.h
-===================================================================
---- linux-2.6.orig/include/linux/hardirq.h
-+++ linux-2.6/include/linux/hardirq.h
-@@ -103,13 +103,6 @@
-  */
- #define in_atomic()	((preempt_count() & ~PREEMPT_ACTIVE) != PREEMPT_INATOMIC_BASE)
- 
--static inline int current_preempt_equals(int preempt_offset)
--{
--	int nested = preempt_count() & ~PREEMPT_ACTIVE;
--
--	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
--}
--
- /*
-  * Check whether we were atomic before we did preempt_disable():
-  * (used by the scheduler, *after* releasing the kernel lock)
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -9444,12 +9444,19 @@ void __init sched_init(void)
- }
- 
- #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
-+static inline int preempt_count_equals(int preempt_offset)
-+{
-+	int nested = preempt_count() & ~PREEMPT_ACTIVE;
-+
-+	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
-+}
-+
- void __might_sleep(char *file, int line, int preempt_offset)
- {
- #ifdef in_atomic
- 	static unsigned long prev_jiffy;	/* ratelimiting */
- 
--	if ((current_preempt_equals(preempt_offset) && !irqs_disabled()) ||
-+	if ((preempt_count_equals(preempt_offset) && !irqs_disabled()) ||
- 	    system_state != SYSTEM_RUNNING || oops_in_progress)
- 		return;
- 	if (time_before(jiffies, prev_jiffy + HZ) && prev_jiffy)
+Is it possible for you to post that patch (or point to a website hosting it)?
 
 
+
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
