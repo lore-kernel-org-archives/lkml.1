@@ -1,246 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZGPEQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbZGPEWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbZGPEQG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 00:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZGPEQF
+	id S1752145AbZGPEWf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 00:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZGPEWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 00:16:05 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:8947 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbZGPEQD (ORCPT
+	Thu, 16 Jul 2009 00:22:34 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:54400 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbZGPEWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 00:16:03 -0400
-Subject: Re: [PATCH 2/3] cciss: use only one scan thread
-From: Andrew Patterson <andrew.patterson@hp.com>
+	Thu, 16 Jul 2009 00:22:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MRs+HBKeKcrWMeCfJOySOvlQpmU5PRVayesQjCdMJpbUjs8UpW4vKFVrWMNRLE1Jq+
+         /C7m6Ee+AQ67T7SDfv1QFec8mL55LTfZaYH9tV6VPV+DxsAMsX2MELWuapTgDt8EvUMj
+         lutOX0J79Mx+0hKZ3QA2zL5Z/lFMcLIxJG8es=
+MIME-Version: 1.0
+In-Reply-To: <20090715201657.b01edccd.akpm@linux-foundation.org>
+References: <20090716094619.9D07.A69D9226@jp.fujitsu.com>
+	 <20090716095344.9D10.A69D9226@jp.fujitsu.com>
+	 <20090715201657.b01edccd.akpm@linux-foundation.org>
+Date: Thu, 16 Jul 2009 13:22:32 +0900
+Message-ID: <28c262360907152122v4f30594cr677b744df3aaefcc@mail.gmail.com>
+Subject: Re: [PATCH 3/3] add isolate pages vmstat
+From: Minchan Kim <minchan.kim@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       mike.miller@hp.com, jens.axboe@oracle.com
-In-Reply-To: <20090715150637.6f171759.akpm@linux-foundation.org>
-References: <20090714220239.22282.44414.stgit@bob.kio>
-	 <20090714220250.22282.69385.stgit@bob.kio>
-	 <20090715150637.6f171759.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 16 Jul 2009 04:15:59 +0000
-Message-Id: <1247717759.25954.75.camel@grinch>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6G4NHJ7030532
 
-On Wed, 2009-07-15 at 15:06 -0700, Andrew Morton wrote:
-> On Tue, 14 Jul 2009 16:02:50 -0600
-> Andrew Patterson <andrew.patterson@hp.com> wrote:
-> 
-> > cciss: use only one scan thread
-> > 
-> > Replace the use of one scan kthread per controller with one per driver.
-> > Use a queue to hold a list of controllers that need to be rescanned with
-> > routines to add and remove controllers from the queue.
-> > Fix locking and completion handling to prevent a hang during rmmod.
-> > 
-> >
-> > ...
-> >
-> > --- a/drivers/block/cciss.c
-> > +++ b/drivers/block/cciss.c
-> > @@ -39,6 +39,7 @@
-> >  #include <linux/hdreg.h>
-> >  #include <linux/spinlock.h>
-> >  #include <linux/compat.h>
-> > +#include <linux/mutex.h>
-> >  #include <asm/uaccess.h>
-> >  #include <asm/io.h>
-> >  
-> > @@ -155,6 +156,10 @@ static struct board_type products[] = {
-> >  
-> >  static ctlr_info_t *hba[MAX_CTLR];
-> >  
-> > +static struct task_struct *cciss_scan_thread;
-> > +static struct mutex scan_mutex;
-> > +static struct list_head scan_q;
-> 
-> Both of the above can be initialised at compile-time.  This is a bit
-> neater and prevents reviewers from having to run around checking that
-> they got initialised early enough.
-
-Fixed.
-
-> 
-> >  static void do_cciss_request(struct request_queue *q);
-> >  static irqreturn_t do_cciss_intr(int irq, void *dev_id);
-> >  static int cciss_open(struct block_device *bdev, fmode_t mode);
-> > @@ -189,6 +194,8 @@ static int sendcmd_withirq_core(ctlr_info_t *h, CommandList_struct *c,
-> >  static int process_sendcmd_error(ctlr_info_t *h, CommandList_struct *c);
-> >  
-> >  static void fail_all_cmds(unsigned long ctlr);
-> > +static int add_to_scan_list(struct ctlr_info *h);
-> > +static void remove_from_scan_list(struct ctlr_info *h);
-> 
-> These forward declarations are unneeded.
-> 
-
-Fixed.
-
-> >  static int scan_thread(void *data);
-> >  static int check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c);
-> >  
-> > @@ -3232,20 +3239,121 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
-> >  	return IRQ_HANDLED;
-> >  }
-> >  
-> > -static int scan_thread(void *data)
-> > +/**
-> > + * add_to_scan_list() - add controller to rescan queue
-> > + * @h:		      Pointer to the controller.
-> > + *
-> > + * Adds the controller to the rescan queue if not already on the queue.
-> > + *
-> > + * returns 1 if added to the queue, 0 if skipped (could be on the
-> > + * queue already, or the controller could be initializing or shutting
-> > + * down).
-> > + **/
-> > +static int add_to_scan_list(struct ctlr_info *h)
-> >  {
-> > -	ctlr_info_t *h = data;
-> > -	int rc;
-> > -	DECLARE_COMPLETION_ONSTACK(wait);
-> > -	h->rescan_wait = &wait;
-> > +	struct ctlr_info *test_h;
-> > +	int found = 0;
-> > +	int ret = 0;
-> > +
-> > +	if (h->busy_initializing)
-> > +		return 0;
-> 
-> This looks pretty random and racy.
-
-Fixed. Converted busy_initializer to a mutex and will use:
-
-if (mutex_is_locked(&h->busy_initializing))
-		return 0;
-
-> 
-> For example, what stops busy_initializing from becoming true one
-> picosecond after the test?
-> 
-> > +	if (!mutex_trylock(&h->busy_shutting_down))
-> > +		return 0;
-> >  
-> > -	for (;;) {
-> > -		rc = wait_for_completion_interruptible(&wait);
-> > -		if (kthread_should_stop())
-> > +	mutex_lock(&scan_mutex);
-> > +	list_for_each_entry(test_h, &scan_q, scan_list) {
-> > +		if (test_h == h) {
-> > +			found = 1;
-> >  			break;
-> > -		if (!rc)
-> > +		}
-> > +	}
-> > +	if (!found && !h->busy_scanning) {
-> > +		INIT_COMPLETION(h->scan_wait);
-> > +		list_add_tail(&h->scan_list, &scan_q);
-> > +		ret = 1;
-> > +	}
-> > +	mutex_unlock(&scan_mutex);
-> > +	mutex_unlock(&h->busy_shutting_down);
-> > +
-> > +	return ret;
-> > +}
-> 
-> We already did init_completion(h->scan_wait) at startup time?  Doing
-> the INIT_COMPLETION() here looks unusual and is hopefully unnecessary.
-> 
-
-I am following the text in the "Linux Device Drivers 3rd Edition section
-5.4:
-
-"A completion is normally a one-shot device; it is used once then
-discarded. It is possible, however, to reuse completion structures if
-proper care is taken. If complete_all is not used, a completion
-structure can be reused without any problems as long as there is no
-ambiguity about what event is being signalled. If you use complete_all,
-however, you must reinitialize the completion structure before reusing
-it. The macro:
-
-INIT_COMPLETION(struct completion c);
-
-can be used to quickly perform this reinitialization."
-
-It there are better way to do this? INIT_COMPLETION() currently just
-sets done = 0.
-
-> > +/**
-> > + * scan_thread() - kernel thread used to rescan controllers
-> > + * @data:	 Ignored.
-> > + *
-> > + * A kernel thread used scan for drive topology changes on
-> > + * controllers. The thread processes only one controller at a time
-> > + * using a queue.  Controllers are added to the queue using
-> > + * add_to_scan_list() and removed from the queue either after done
-> > + * processing or using remove_from_scan_list().
-> > + *
-> > + * returns 0.
-> > + **/
-> > +static int scan_thread(void *data)
-> > +{
-> > +	struct ctlr_info *h;
-> > +
-> > +	set_current_state(TASK_INTERRUPTIBLE);
-> > +	while (!kthread_should_stop()) {
-> > +		mutex_lock(&scan_mutex);
-> > +		if (list_empty(&scan_q)) {
-> > +			h = NULL;
-> > +		} else {
-> > +			h = list_entry(scan_q.next,
-> > +				       struct ctlr_info,
-> > +				       scan_list);
-> > +			list_del(&h->scan_list);
-> > +			h->busy_scanning = 1;
-> > +		}
-> > +		mutex_unlock(&scan_mutex);
-> > +
-> > +		if (h) {
-> > +			__set_current_state(TASK_RUNNING);
-> >  			rebuild_lun_table(h, 0);
-> > +			complete_all(&h->scan_wait);
-> > +			mutex_lock(&scan_mutex);
-> > +			h->busy_scanning = 0;
-> > +			mutex_unlock(&scan_mutex);
-> > +			set_current_state(TASK_INTERRUPTIBLE);
-> > +		} else {
-> > +			schedule();
-> > +			set_current_state(TASK_INTERRUPTIBLE);
-> > +			continue;
-> > +		}
-> >  	}
-> > +
-> > +	__set_current_state(TASK_RUNNING);
-> >  	return 0;
-> >  }
-> 
-> This code is somewhat wrong.  Look:
-> 
-> 	set_current_state(TASK_INTERRUPTIBLE);
-> 	...
-> 		mutex_lock(&scan_mutex);
-> 
-> now, we don't know what state the task is in.  If the mutex_lock()
-> slept the we're in state TASK_RUNNING.  If the mutex_lock() didn't
-> sleep then we're in state <mumble>.  Where
-> <mumble>==TASK_INTERRUPTIBLE, but that's an implementation fluke.
-> 
-> So I'd say that some rethinking/restructuring is needed here.
-
-Will look into this.  I have had a hard time removing this possible race
-(even the mutex_lock() does not remove it completely, but at most you
-get multiple completions) without using some sort of nested locks.
-
-> 
-> 
--- 
-Andrew Patterson
-Hewlett-Packard
-
+On Thu, Jul 16, 2009 at 12:16 PM, AndrewMorton<akpm@linux-foundation.org> wrote:> On Thu, 16 Jul 2009 09:55:47 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:>>> ChangeLog>>   Since v5>>    - Rewrote the description>>    - Treat page migration>>   Since v4>>    - Changed displaing order in show_free_areas() (as Wu's suggested)>>   Since v3>>    - Fixed misaccount page bug when lumby reclaim occur>>   Since v2>>    - Separated IsolateLRU field to Isolated(anon) and Isolated(file)>>   Since v1>>    - Renamed IsolatePages to IsolatedLRU>>>> ==================================>> Subject: [PATCH] add isolate pages vmstat>>>> If the system is running a heavy load of processes then concurrent reclaim>> can isolate a large numbe of pages from the LRU. /proc/meminfo and the>> output generated for an OOM do not show how many pages were isolated.>>>> This patch shows the information about isolated pages.>>>>>> reproduce way>> ----------------------->> % ./hackbench 140 process 1000>>    => OOM occur>>>> active_anon:146 inactive_anon:0 isolated_anon:49245>>  active_file:79 inactive_file:18 isolated_file:113>>  unevictable:0 dirty:0 writeback:0 unstable:0 buffer:39>>  free:370 slab_reclaimable:309 slab_unreclaimable:5492>>  mapped:53 shmem:15 pagetables:28140 bounce:0>>>>>> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>>> Acked-by: Rik van Riel <riel@redhat.com>>> Acked-by: Wu Fengguang <fengguang.wu@intel.com>>> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>>> --->>  drivers/base/node.c    |    4 ++++>>  fs/proc/meminfo.c      |    4 ++++>>  include/linux/mmzone.h |    2 ++>>  mm/migrate.c           |   11 +++++++++++>>  mm/page_alloc.c        |   12 +++++++++--->>  mm/vmscan.c            |   12 +++++++++++->>  mm/vmstat.c            |    2 ++>>  7 files changed, 43 insertions(+), 4 deletions(-)>>>> Index: b/fs/proc/meminfo.c>> ===================================================================>> --- a/fs/proc/meminfo.c>> +++ b/fs/proc/meminfo.c>> @@ -65,6 +65,8 @@ static int meminfo_proc_show(struct seq_>>               "Active(file):   %8lu kB\n">>               "Inactive(file): %8lu kB\n">>               "Unevictable:    %8lu kB\n">> +             "Isolated(anon): %8lu kB\n">> +             "Isolated(file): %8lu kB\n">>               "Mlocked:        %8lu kB\n">> Are these counters really important enough to justify being present in> /proc/meminfo?  They seem fairly low-level developer-only details.> Perhaps relegate them to /proc/vmstat?>>>  #ifdef CONFIG_HIGHMEM>>               "HighTotal:      %8lu kB\n">> @@ -110,6 +112,8 @@ static int meminfo_proc_show(struct seq_>>               K(pages[LRU_ACTIVE_FILE]),>>               K(pages[LRU_INACTIVE_FILE]),>>               K(pages[LRU_UNEVICTABLE]),>> +             K(global_page_state(NR_ISOLATED_ANON)),>> +             K(global_page_state(NR_ISOLATED_FILE)),>>               K(global_page_state(NR_MLOCK)),>>  #ifdef CONFIG_HIGHMEM>>               K(i.totalhigh),>> Index: b/include/linux/mmzone.h>> ===================================================================>> --- a/include/linux/mmzone.h>> +++ b/include/linux/mmzone.h>> @@ -100,6 +100,8 @@ enum zone_stat_item {>>       NR_BOUNCE,>>       NR_VMSCAN_WRITE,>>       NR_WRITEBACK_TEMP,      /* Writeback using temporary buffers */>> +     NR_ISOLATED_ANON,       /* Temporary isolated pages from anon lru */>> +     NR_ISOLATED_FILE,       /* Temporary isolated pages from file lru */>>       NR_SHMEM,               /* shmem pages (included tmpfs/GEM pages) */>>  #ifdef CONFIG_NUMA>>       NUMA_HIT,               /* allocated in intended node */>> Index: b/mm/page_alloc.c>> ===================================================================>> --- a/mm/page_alloc.c>> +++ b/mm/page_alloc.c>> @@ -2115,16 +2115,18 @@ void show_free_areas(void)>>               }>>       }>>>> -     printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n">> -             " inactive_file:%lu">> +     printk("active_anon:%lu inactive_anon:%lu isolated_anon:%lu\n">> +             " active_file:%lu inactive_file:%lu isolated_file:%lu\n">>               " unevictable:%lu">>               " dirty:%lu writeback:%lu unstable:%lu buffer:%lu\n">>               " free:%lu slab_reclaimable:%lu slab_unreclaimable:%lu\n">>               " mapped:%lu shmem:%lu pagetables:%lu bounce:%lu\n",>>               global_page_state(NR_ACTIVE_ANON),>> -             global_page_state(NR_ACTIVE_FILE),>>               global_page_state(NR_INACTIVE_ANON),>> +             global_page_state(NR_ISOLATED_ANON),>> +             global_page_state(NR_ACTIVE_FILE),>>               global_page_state(NR_INACTIVE_FILE),>> +             global_page_state(NR_ISOLATED_FILE),>>               global_page_state(NR_UNEVICTABLE),>>               global_page_state(NR_FILE_DIRTY),>>               global_page_state(NR_WRITEBACK),>> @@ -2152,6 +2154,8 @@ void show_free_areas(void)>>                       " active_file:%lukB">>                       " inactive_file:%lukB">>                       " unevictable:%lukB">> +                     " isolated(anon):%lukB">> +                     " isolated(file):%lukB">>                       " present:%lukB">>                       " mlocked:%lukB">>                       " dirty:%lukB">> @@ -2178,6 +2182,8 @@ void show_free_areas(void)>>                       K(zone_page_state(zone, NR_ACTIVE_FILE)),>>                       K(zone_page_state(zone, NR_INACTIVE_FILE)),>>                       K(zone_page_state(zone, NR_UNEVICTABLE)),>> +                     K(zone_page_state(zone, NR_ISOLATED_ANON)),>> +                     K(zone_page_state(zone, NR_ISOLATED_FILE)),>>                       K(zone->present_pages),>>                       K(zone_page_state(zone, NR_MLOCK)),>>                       K(zone_page_state(zone, NR_FILE_DIRTY)),>> Index: b/mm/vmscan.c>> ===================================================================>> --- a/mm/vmscan.c>> +++ b/mm/vmscan.c>> @@ -1067,6 +1067,8 @@ static unsigned long shrink_inactive_lis>>               unsigned long nr_active;>>               unsigned int count[NR_LRU_LISTS] = { 0, };>>               int mode = lumpy_reclaim ? ISOLATE_BOTH : ISOLATE_INACTIVE;>> +             unsigned long nr_anon;>> +             unsigned long nr_file;>>>>               nr_taken = sc->isolate_pages(sc->swap_cluster_max,>>                            &page_list, &nr_scan, sc->order, mode,>> @@ -1097,6 +1099,10 @@ static unsigned long shrink_inactive_lis>>               __mod_zone_page_state(zone, NR_INACTIVE_ANON,>>                                               -count[LRU_INACTIVE_ANON]);>>>> +             nr_anon = count[LRU_ACTIVE_ANON] + count[LRU_INACTIVE_ANON];>> +             nr_file = count[LRU_ACTIVE_FILE] + count[LRU_INACTIVE_FILE];>> +             __mod_zone_page_state(zone, NR_ISOLATED_ANON, nr_anon);>> +             __mod_zone_page_state(zone, NR_ISOLATED_FILE, nr_file);>>>>               reclaim_stat->recent_scanned[0] += count[LRU_INACTIVE_ANON];>>               reclaim_stat->recent_scanned[0] += count[LRU_ACTIVE_ANON];>> @@ -1164,6 +1170,9 @@ static unsigned long shrink_inactive_lis>>                               spin_lock_irq(&zone->lru_lock);>>                       }>>               }>> +             __mod_zone_page_state(zone, NR_ISOLATED_ANON, -nr_anon);>> +             __mod_zone_page_state(zone, NR_ISOLATED_FILE, -nr_file);>> +>>       } while (nr_scanned < max_scan);>> This is a non-trivial amount of extra stuff.  Do we really need it?>
+I thought so.This patch results form process fork bomb(ex, mstctl11 in LTP).Too many isolated patches are based on isolation counter.
+So, I think we need this until now.If we can solve the problem with different method, then we can drop this.
+-- Kind regards,Minchan Kim���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
