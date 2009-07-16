@@ -1,67 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933168AbZGPTsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933181AbZGPTsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933168AbZGPTsQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 15:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZGPTsP
+	id S933181AbZGPTsg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 15:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933164AbZGPTse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 15:48:15 -0400
-Received: from fafnir.cs.unc.edu ([152.2.129.90]:38297 "EHLO fafnir.cs.unc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933103AbZGPTsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 15:48:14 -0400
-Date: Thu, 16 Jul 2009 15:46:39 -0400 (EDT)
-From: "James H. Anderson" <anderson@cs.unc.edu>
-To: Raj Rajkumar <raj@ece.cmu.edu>
-cc: Ted Baker <baker@cs.fsu.edu>, Noah Watkins <jayhawk@soe.ucsc.edu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Raistlin <raistlin@linux.it>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       "Linux RT <linux-rt-users@vger.kernel.org> Fabio Checconi" 
-	<fabio@gandalf.sssup.it>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>,
-       Karthik Singaram Lakshmanan <lakshmanan@cmu.edu>,
-       Dionisio de Niz <dionisio@sei.cmu.edu>
-Subject: Re: [Fwd: Re: RFC for a new Scheduling policy/class in the
- Linux-kernel]
-In-Reply-To: <4A5F806D.6040701@ece.cmu.edu>
-Message-ID: <alpine.LRH.2.00.0907161538340.3814@anderson.cs.unc.edu>
-References: <4A5F7254.3020809@ece.cmu.edu> <alpine.LRH.2.00.0907161513050.3814@anderson.cs.unc.edu> <4A5F806D.6040701@ece.cmu.edu>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Thu, 16 Jul 2009 15:48:34 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:12467 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933132AbZGPTsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 15:48:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=NRxxdBB8gKlsUrC30Is3gO4dZKvT4JAqgtXR3Zb5TS2iObdSuX8WYNxYlbiigC8iog
+         Lid0+oo9KUXdaNNLCw1+0zPnpUGFDNgcZjlxWUSrW7dazk/W/nBxfkRtQMcL2Ut8cHRD
+         9ccYoLVWBdF0endkqC2y88KEAB3LYRxjJhUUk=
+Message-ID: <4A5F8404.1040408@gmail.com>
+Date: Thu, 16 Jul 2009 15:48:20 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Zan Lynx <zlynx@acm.org>
+CC: Gregory Haskins <ghaskins@novell.com>, Arnd Bergmann <arnd@arndb.de>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       glommer@redhat.com, aliguori@us.ibm.com
+Subject: Re: [KVM PATCH] KVM: introduce "xinterface" API for external interaction
+ with guests
+References: <20090716150323.29318.17714.stgit@dev.haskins.net> <20090716151945.29318.10882.stgit@dev.haskins.net> <200907161852.42071.arnd@arndb.de> <4A5F6FF4.2090706@novell.com> <4A5F773C.2020303@novell.com> <4A5F81BF.5000301@acm.org>
+In-Reply-To: <4A5F81BF.5000301@acm.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig014880A7936364E9D5EE3287"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig014880A7936364E9D5EE3287
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> It looks to me like Jim and Bjoern name the kernel-mutex locking scheme 
-> (of non-preemption and FIFO queueing) as FMLP and advocate it for 
-> user-level mutexes.  Jim: Please correct me if my interpretation is 
-> incorrect.
+Zan Lynx wrote:
+> Gregory Haskins wrote:
+>> Gregory Haskins wrote:
+>>> Note that if we are going to generalize the interface to support othe=
+r
+>>> guests as you may have been suggesting above, it should probably stay=
 
-I should have addressed this, sorry.
+>>> statically linked (and perhaps live in ./lib or something)
+>>>  =20
+>>
+>> More specifically, it can no longer live in kvm.ko.  I guess it
+>> technically doesn't have to be statically linked, though (e.g.
+>> xinterface.ko is fine, too).
+>
+> Speaking as someone who knows nothing about this, if this is going to
+> be a module and visible in places like lsmod, could you name it
+> something else?
+>
+> I see "xinterface.ko" and the first thing in my head is "something to
+> do with the X Window System."
+>
+> How about kvm_xinterface or vguest_xinterface?
+>
 
-Actually, I don't advocate for anything.  :-)  As I said in my very
-first email in this thread, in the LTIMUS^RT project, changing Linux
-is not one of our goals.  I leave that to other people who are way
-smarter than me.
+Heh, I totally agree.  That was just pseudo-naming, anyway. ;)
 
-But to the point you raise, please note that the long version of the
-FMLP is a little more than combining non-preemption with FIFO waiting
-since waiting is via suspension.  And as I said in an earlier email,
-we designed it for a real-time (only) environment.  However, I think
-a user-level variant that could be used in a more general environment
-would certainly be possible.
+If it was going to be generic, I would do something like
+"virt-xinterface.ko".
 
--Jim
+Kind Regards,
+-Greg
 
-P.S. We didn't talk about the low processor utlization (Dhall effect)
-mentioned in your last email.  However, that applies to hard real-time
-workloads, not soft real-time workloads.  This discussion has been
-touching on both.
 
+--------------enig014880A7936364E9D5EE3287
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpfhAgACgkQP5K2CMvXmqH3AwCeNydw8IcEBskULI0oI1tCpP6d
+uYoAnR+sqTmBvx0GfrjIuL513Q5M7UZd
+=Lf6I
+-----END PGP SIGNATURE-----
+
+--------------enig014880A7936364E9D5EE3287--
