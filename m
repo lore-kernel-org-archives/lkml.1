@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751662AbZGPEDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751836AbZGPEDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751662AbZGPEDN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 00:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZGPEDM
+	id S1751836AbZGPEDR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 00:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbZGPEDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 00:03:12 -0400
-Received: from kroah.org ([198.145.64.141]:59061 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750932AbZGPEDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 00:03:12 -0400
-Date: Wed, 15 Jul 2009 21:02:25 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Tiago Vignatti <tiago.vignatti@nokia.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Dave Airlie <airlied@redhat.com>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] vga: implements VGA arbitration on Linux
-Message-ID: <20090716040225.GA31064@kroah.com>
-References: <1247576250-16274-1-git-send-email-tiago.vignatti@nokia.com>
- <1247576250-16274-2-git-send-email-tiago.vignatti@nokia.com>
- <20090714161514.GA2026@kroah.com>
- <21d7e9970907152054q61c9bf75x836b4b644ec22a00@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <21d7e9970907152054q61c9bf75x836b4b644ec22a00@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Thu, 16 Jul 2009 00:03:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38195 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751675AbZGPEDO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 00:03:14 -0400
+Date: Wed, 15 Jul 2009 21:02:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH -mm] throttle direct reclaim when too many pages are
+ isolated already (v3)
+Message-Id: <20090715210253.bc137b2d.akpm@linux-foundation.org>
+In-Reply-To: <20090715235318.6d2f5247@bree.surriel.com>
+References: <20090715223854.7548740a@bree.surriel.com>
+	<20090715194820.237a4d77.akpm@linux-foundation.org>
+	<4A5E9A33.3030704@redhat.com>
+	<20090715202114.789d36f7.akpm@linux-foundation.org>
+	<4A5E9E4E.5000308@redhat.com>
+	<20090715203854.336de2d5.akpm@linux-foundation.org>
+	<20090715235318.6d2f5247@bree.surriel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 01:54:42PM +1000, Dave Airlie wrote:
-> On Wed, Jul 15, 2009 at 2:15 AM, Greg KH<greg@kroah.com> wrote:
-> > Minor comment:
-> >
-> >> +#ifdef DEBUG
-> >> +     printk(KERN_DEBUG "%s\n", __func__);
-> >> +#endif
-> >
-> > You should just use 'dev_dbg() for any debugging statments like this.
-> > You can turn them on and off dynamically, and you get all of the proper
-> > device information as to what is going on automatically.
-> >
-> > Plus, there's no need for a #ifdef in the code, which is generally
-> > frowned apon in .c files.
-> >
-> 
-> We don't have a device in this case, vga arb is more of an abstraction than
-> an actual device.
-> 
-> I suppose if we were feeling crazy we could add a platform device for it.
+On Wed, 15 Jul 2009 23:53:18 -0400 Rik van Riel <riel@redhat.com> wrote:
 
-No, then use the debug_printk() functions, so that you tie into the
-kernel-wide debug message system.  Please don't roll your own anymore,
-there is no need to.
+> @@ -1049,6 +1074,14 @@ static unsigned long shrink_inactive_lis
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>  	int lumpy_reclaim = 0;
+>  
+> +	while (unlikely(too_many_isolated(zone, file, sc))) {
+> +		congestion_wait(WRITE, HZ/10);
+> +
+> +		/* We are about to die and free our memory. Return now. */
+> +		if (fatal_signal_pending(current))
+> +			return SWAP_CLUSTER_MAX;
+> +	}
 
-thanks,
+mutter.
 
-greg k-h
+While I agree that handling fatal signals on the direct reclaim path
+is probably a good thing, this seems like a fairly random place at
+which to start the enhancement.
+
+If we were to step back and approach this in a broader fashion, perhaps
+we would find some commonality with the existing TIF_MEMDIE handling,
+dunno.
+
+
+And I question the testedness of v3 :)
