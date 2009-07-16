@@ -1,60 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933651AbZGPXo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933657AbZGPXxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933651AbZGPXo2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 19:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933628AbZGPXo1
+	id S933657AbZGPXxu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 19:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933615AbZGPXxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 19:44:27 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:41775 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933629AbZGPXo0 (ORCPT
+	Thu, 16 Jul 2009 19:53:50 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54536 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933585AbZGPXxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 19:44:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=IllWnhdTUO5DyaraxFyExUWM3OtPuQ8aMwNg0LYLXK7sbRZ2op5uBb6QssKnEPVQ3C
-         /KJxi0UDtO31jbj9z/n800ANoDm8wb0XswdPKQ7VCRT72WdLCPwxI+N1yf5TA2MGbpxz
-         dQKU/RRRV9PK2ZmZ6HWOULcWbwBp4RGODrzo8=
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH] add "VmUsers: N" to /proc/$PID/status
-Date: Fri, 17 Jul 2009 01:44:27 +0200
-User-Agent: KMail/1.8.2
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200907150322.18123.vda.linux@googlemail.com> <200907162327.25700.vda.linux@googlemail.com> <63188.1247786645@turing-police.cc.vt.edu>
-In-Reply-To: <63188.1247786645@turing-police.cc.vt.edu>
+	Thu, 16 Jul 2009 19:53:49 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH] mm: count only reclaimable lru pages v2
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+In-Reply-To: <20090716150901.GA31204@localhost>
+References: <4A5F3C70.7010001@redhat.com> <20090716150901.GA31204@localhost>
+Message-Id: <20090717085108.A8FD.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907170144.27775.vda.linux@googlemail.com>
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 17 Jul 2009 08:53:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 July 2009 01:24, Valdis.Kletnieks@vt.edu wrote:
-> > I, indeed, want to have just an N I can divide RSS/VSZ/etc by,
-> > to get, say, top display which do not mislead user
-> > into thinking that he has 3 processes with 100 megabyte RSS
-> > when in reality he has 3 processes sharing a single VM
-> > with 100 meg RSS.
+> ---
+> mm: count only reclaimable lru pages 
 > 
-> Thinking about it a bit more - it's probably *usually* possible to sort out
-> which processes are sharing because if you have 2 sets of shared memory,
-> they'll *usually* have different RSS values - so the 2 processes with a
-> count of 2 and an RSS of 179M are one set, and the 2 processes with a count
-> of 2 and an RSS of 198M are probably another.
+> global_lru_pages() / zone_lru_pages() can be used in two ways:
+> - to estimate max reclaimable pages in determine_dirtyable_memory()  
+> - to calculate the slab scan ratio
+> 
+> When swap is full or not present, the anon lru lists are not reclaimable
+> and also won't be scanned. So the anon pages shall not be counted in both
+> usage scenarios. Also rename to _reclaimable_pages: now they are counting
+> the possibly reclaimable lru pages.
+> 
+> It can greatly (and correctly) increase the slab scan rate under high memory
+> pressure (when most file pages have been reclaimed and swap is full/absent),
+> thus reduce false OOM kills.
+> 
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  include/linux/vmstat.h |   11 +-------
+>  mm/page-writeback.c    |    5 ++-
+>  mm/vmscan.c            |   50 ++++++++++++++++++++++++++++++---------
+>  3 files changed, 44 insertions(+), 22 deletions(-)
+> 
+> --- linux.orig/include/linux/vmstat.h
+> +++ linux/include/linux/vmstat.h
+> @@ -166,15 +166,8 @@ static inline unsigned long zone_page_st
+>  	return x;
+>  }
+>  
+> -extern unsigned long global_lru_pages(void);
+> -
+> -static inline unsigned long zone_lru_pages(struct zone *zone)
+> -{
+> -	return (zone_page_state(zone, NR_ACTIVE_ANON)
+> -		+ zone_page_state(zone, NR_ACTIVE_FILE)
+> -		+ zone_page_state(zone, NR_INACTIVE_ANON)
+> -		+ zone_page_state(zone, NR_INACTIVE_FILE));
+> -}
+> +extern unsigned long global_reclaimable_pages(void);
+> +extern unsigned long zone_reclaimable_pages(struct zone *zone);
+>  
+>  #ifdef CONFIG_NUMA
+>  /*
+> --- linux.orig/mm/page-writeback.c
+> +++ linux/mm/page-writeback.c
+> @@ -380,7 +380,8 @@ static unsigned long highmem_dirtyable_m
+>  		struct zone *z =
+>  			&NODE_DATA(node)->node_zones[ZONE_HIGHMEM];
+>  
+> -		x += zone_page_state(z, NR_FREE_PAGES) + zone_lru_pages(z);
+> +		x += zone_page_state(z, NR_FREE_PAGES) +
+> +		     zone_reclaimable_pages(z);
+>  	}
+>  	/*
+>  	 * Make sure that the number of highmem pages is never larger
+> @@ -404,7 +405,7 @@ unsigned long determine_dirtyable_memory
+>  {
+>  	unsigned long x;
+>  
+> -	x = global_page_state(NR_FREE_PAGES) + global_lru_pages();
+> +	x = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
+>  
+>  	if (!vm_highmem_is_dirtyable)
+>  		x -= highmem_dirtyable_memory(x);
+> --- linux.orig/mm/vmscan.c
+> +++ linux/mm/vmscan.c
+> @@ -1735,7 +1735,7 @@ static unsigned long do_try_to_free_page
+>  			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+>  				continue;
+>  
+> -			lru_pages += zone_lru_pages(zone);
+> +			lru_pages += zone_reclaimable_pages(zone);
+>  		}
+>  	}
+>  
+> @@ -1952,7 +1952,7 @@ loop_again:
+>  		for (i = 0; i <= end_zone; i++) {
+>  			struct zone *zone = pgdat->node_zones + i;
+>  
+> -			lru_pages += zone_lru_pages(zone);
+> +			lru_pages += zone_reclaimable_pages(zone);
+>  		}
+>  
+>  		/*
+> @@ -1996,7 +1996,7 @@ loop_again:
+>  			if (zone_is_all_unreclaimable(zone))
+>  				continue;
+>  			if (nr_slab == 0 && zone->pages_scanned >=
+> -						(zone_lru_pages(zone) * 6))
+> +					(zone_reclaimable_pages(zone) * 6))
+>  					zone_set_flag(zone,
+>  						      ZONE_ALL_UNRECLAIMABLE);
+>  			/*
+> @@ -2163,12 +2163,39 @@ void wakeup_kswapd(struct zone *zone, in
+>  	wake_up_interruptible(&pgdat->kswapd_wait);
+>  }
+>  
+> -unsigned long global_lru_pages(void)
+> +/*
+> + * The reclaimable count would be mostly accurate.
+> + * The less reclaimable pages may be
+> + * - mlocked pages, which will be moved to unevictable list when encountered
+> + * - mapped pages, which may require several travels to be reclaimed
+> + * - dirty pages, which is not "instantly" reclaimable
+> + */
+> +unsigned long global_reclaimable_pages(void)
+>  {
+> -	return global_page_state(NR_ACTIVE_ANON)
+> -		+ global_page_state(NR_ACTIVE_FILE)
+> -		+ global_page_state(NR_INACTIVE_ANON)
+> -		+ global_page_state(NR_INACTIVE_FILE);
+> +	int nr;
+> +
+> +	nr = global_page_state(NR_ACTIVE_FILE) +
+> +	     global_page_state(NR_INACTIVE_FILE);
+> +
+> +	if (nr_swap_pages > 0)
+> +		nr += global_page_state(NR_ACTIVE_ANON) +
+> +		      global_page_state(NR_INACTIVE_ANON);
+> +
+> +	return nr;
+> +}
+> +
+> +unsigned long zone_reclaimable_pages(struct zone *zone)
+> +{
+> +	int nr;
+> +
+> +	nr = zone_page_state(zone, NR_ACTIVE_FILE) +
+> +	     zone_page_state(zone, NR_INACTIVE_FILE);
+> +
+> +	if (nr_swap_pages > 0)
+> +		nr += zone_page_state(zone, NR_ACTIVE_ANON) +
+> +		      zone_page_state(zone, NR_INACTIVE_ANON);
+> +
+> +	return nr;
+>  }
+>  
+>  #ifdef CONFIG_HIBERNATION
+> @@ -2240,7 +2267,7 @@ unsigned long shrink_all_memory(unsigned
+>  
+>  	current->reclaim_state = &reclaim_state;
+>  
+> -	lru_pages = global_lru_pages();
+> +	lru_pages = global_reclaimable_pages();
+>  	nr_slab = global_page_state(NR_SLAB_RECLAIMABLE);
+>  	/* If slab caches are huge, it's better to hit them first */
+>  	while (nr_slab >= lru_pages) {
+> @@ -2282,7 +2309,7 @@ unsigned long shrink_all_memory(unsigned
+>  
+>  			reclaim_state.reclaimed_slab = 0;
+>  			shrink_slab(sc.nr_scanned, sc.gfp_mask,
+> -					global_lru_pages());
+> +				    global_reclaimable_pages());
+>  			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
+>  			if (sc.nr_reclaimed >= nr_pages)
+>  				goto out;
+> @@ -2299,7 +2326,8 @@ unsigned long shrink_all_memory(unsigned
+>  	if (!sc.nr_reclaimed) {
+>  		do {
+>  			reclaim_state.reclaimed_slab = 0;
+> -			shrink_slab(nr_pages, sc.gfp_mask, global_lru_pages());
+> +			shrink_slab(nr_pages, sc.gfp_mask,
+> +				    global_reclaimable_pages());
+>  			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
+>  		} while (sc.nr_reclaimed < nr_pages &&
+>  				reclaim_state.reclaimed_slab > 0);
+> 
 
-Hmm. We can just expose the raw value of task->mm pointer.
-For all tasks which share a VM, it will have the same value.
+I feel like I already reviewed this patch past days..
+Anyway,
 
-It would be an "information leak", yes, but it isn't obvious
-whether it can be exploited at all. We can also obscure it
-a bit by XORing or summing it with randomly selected constant
-or some such.
---
-vda
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+
+
