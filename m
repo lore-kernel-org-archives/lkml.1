@@ -1,75 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757529AbZGPFps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752008AbZGPF53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757529AbZGPFps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 01:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbZGPFps
+	id S1752008AbZGPF53 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 01:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZGPF52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 01:45:48 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:12016 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757464AbZGPFpr (ORCPT
+	Thu, 16 Jul 2009 01:57:28 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49603 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751015AbZGPF51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 01:45:47 -0400
-Subject: Re: [PATCH 0/3] cciss rmmod/scan-thread fixes
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       mike.miller@hp.com, jens.axboe@oracle.com
-In-Reply-To: <20090715150809.8fd350b9.akpm@linux-foundation.org>
-References: <20090714220239.22282.44414.stgit@bob.kio>
-	 <20090715150809.8fd350b9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 16 Jul 2009 05:45:42 +0000
-Message-Id: <1247723142.25954.86.camel@grinch>
+	Thu, 16 Jul 2009 01:57:27 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 16 Jul 2009 14:55:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [BUGFIX][PATCH] cgroup avoid permanent sleep at rmdir v7
+Message-Id: <20090716145534.07511d67.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090703093154.5f6e910a.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090703093154.5f6e910a.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-15 at 15:08 -0700, Andrew Morton wrote:
-> On Tue, 14 Jul 2009 16:02:40 -0600
-> Andrew Patterson <andrew.patterson@hp.com> wrote:
-> 
-> > The following series fixes several problems causing hangs while
-> > rmmoding the cciss driver. In the process of fixing these hangs, I
-> > also reworked the the logical drive scanning kernel thread to use one
-> > thread per driver rather than one thread per controller. I also added
-> > a sysfs attribute to kick off a controller scan.
-> > 
-> >  .../ABI/testing/sysfs-bus-pci-devices-cciss        |    7 +
-> >  drivers/block/cciss.c                              |  198 ++++++++++++++++++--
-> >  drivers/block/cciss.h                              |    7 +
-> >  3 files changed, 188 insertions(+), 24 deletions(-)
-> > 
-> > Andrew Patterson (3):
-> >       cciss: remove logical drive sysfs entries during driver cleanup.
-> >       cciss: use only one scan thread
-> >       cciss: kick off logical drive topology rescan through sysfs
-> > 
-> 
-> So I assume that these are intended to fix the problem which
-> cciss-fix-the-termination-of-the-scanning-thread.patch didn't fix?
+Rebased onto mm-of-the-moment snapshot 2009-07-15-20-57.
+passed fundamental tests.
+Thanks,
+-Kame
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Correct. As well as a lot of the race conditions during cleanup.
+After commit: cgroup: fix frequent -EBUSY at rmdir
+	      ec64f51545fffbc4cb968f0cea56341a4b07e85a
+cgroup's rmdir (especially against memcg) doesn't return -EBUSY
+by temporal ref counts. That commit expects all refs after pre_destroy()
+is temporary but...it wasn't. Then, rmdir can wait permanently.
+This patch tries to fix that and change followings.
 
-> 
-> Once we get this all sorted out, which kernel version(s) are we
-> targetting and why?
+ - set CGRP_WAIT_ON_RMDIR flag before pre_destroy().
+ - clear CGRP_WAIT_ON_RMDIR flag when the subsys finds racy case.
+   if there are sleeping ones, wakes them up.
+ - rmdir() sleeps only when CGRP_WAIT_ON_RMDIR flag is set.
 
-The current problems this patchset tries to solve is that rmmod of the
-module hangs along with logical hot remove.
+Changelog v7
+  - rebased to mmotm.
 
-I was hoping to get these in as soon as possible. It looks like the
-sysfs additions and the scan_thread patches initially went into 2.6.30
-(if my limited git-fu is telling me correctly), so I can't call this a
-regression.  I guess 2.6.32 then.
+Changelog v5->v6
+  - renamed cgroup_release_rmdir() as cgroup_release_and_wakeup_rmdir()
 
-> 
-> Thanks.
-> 
--- 
-Andrew Patterson
-Hewlett-Packard
+Changelog v4->v5:
+  - added cgroup_exclude_rmdir(), cgroup_release_rmdir().
+
+Changelog v3->v4:
+  - rewrite/add comments.
+  - remane cgroup_wakeup_rmdir_waiters() to cgroup_wakeup_rmdir_waiter().
+Changelog v2->v3:
+  - removed retry_rmdir() callback.
+  - make use of CGRP_WAIT_ON_RMDIR flag more.
+
+Tested-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Reviewed-by: Paul Menage <menage@google.com>
+Acked-by: Balbir Sigh <balbir@linux.vnet.ibm.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/cgroup.h |   17 +++++++++++++++
+ kernel/cgroup.c        |   55 +++++++++++++++++++++++++++++++++----------------
+ mm/memcontrol.c        |   23 +++++++++++++++++---
+ 3 files changed, 75 insertions(+), 20 deletions(-)
+
+Index: mmotm-2.6.31-Jul15/include/linux/cgroup.h
+===================================================================
+--- mmotm-2.6.31-Jul15.orig/include/linux/cgroup.h
++++ mmotm-2.6.31-Jul15/include/linux/cgroup.h
+@@ -363,6 +363,23 @@ int cgroup_task_count(const struct cgrou
+ int cgroup_is_descendant(const struct cgroup *cgrp, struct task_struct *task);
+ 
+ /*
++ * When the subsys has to access css and may add permanent refcnt to css,
++ * it should take care of racy conditions with rmdir(). Following set of
++ * functions, is for stop/restart rmdir if necessary.
++ * Because these will call css_get/put, "css" should be alive css.
++ *
++ *  cgroup_exclude_rmdir();
++ *  ...do some jobs which may access arbitrary empty cgroup
++ *  cgroup_release_and_wakeup_rmdir();
++ *
++ *  When someone removes a cgroup while cgroup_exclude_rmdir() holds it,
++ *  it sleeps and cgroup_release_and_wakeup_rmdir() will wake him up.
++ */
++
++void cgroup_exclude_rmdir(struct cgroup_subsys_state *css);
++void cgroup_release_and_wakeup_rmdir(struct cgroup_subsys_state *css);
++
++/*
+  * Control Group subsystem type.
+  * See Documentation/cgroups/cgroups.txt for details
+  */
+Index: mmotm-2.6.31-Jul15/kernel/cgroup.c
+===================================================================
+--- mmotm-2.6.31-Jul15.orig/kernel/cgroup.c
++++ mmotm-2.6.31-Jul15/kernel/cgroup.c
+@@ -736,16 +736,28 @@ static void cgroup_d_remove_dir(struct d
+  * reference to css->refcnt. In general, this refcnt is expected to goes down
+  * to zero, soon.
+  *
+- * CGRP_WAIT_ON_RMDIR flag is modified under cgroup's inode->i_mutex;
++ * CGRP_WAIT_ON_RMDIR flag is set under cgroup's inode->i_mutex;
+  */
+ DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
+ 
+-static void cgroup_wakeup_rmdir_waiters(const struct cgroup *cgrp)
++static void cgroup_wakeup_rmdir_waiter(struct cgroup *cgrp)
+ {
+-	if (unlikely(test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
++	if (unlikely(test_and_clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
+ 		wake_up_all(&cgroup_rmdir_waitq);
+ }
+ 
++void cgroup_exclude_rmdir(struct cgroup_subsys_state *css)
++{
++	css_get(css);
++}
++
++void cgroup_release_and_wakeup_rmdir(struct cgroup_subsys_state *css)
++{
++	cgroup_wakeup_rmdir_waiter(css->cgroup);
++	css_put(css);
++}
++
++
+ static int rebind_subsystems(struct cgroupfs_root *root,
+ 			      unsigned long final_bits)
+ {
+@@ -1360,7 +1372,7 @@ int cgroup_attach_task(struct cgroup *cg
+ 	 * wake up rmdir() waiter. the rmdir should fail since the cgroup
+ 	 * is no longer empty.
+ 	 */
+-	cgroup_wakeup_rmdir_waiters(cgrp);
++	cgroup_wakeup_rmdir_waiter(cgrp);
+ 	return 0;
+ }
+ 
+@@ -2745,33 +2757,42 @@ again:
+ 	mutex_unlock(&cgroup_mutex);
+ 
+ 	/*
++	 * In general, subsystem has no css->refcnt after pre_destroy(). But
++	 * in racy cases, subsystem may have to get css->refcnt after
++	 * pre_destroy() and it makes rmdir return with -EBUSY. This sometimes
++	 * make rmdir return -EBUSY too often. To avoid that, we use waitqueue
++	 * for cgroup's rmdir. CGRP_WAIT_ON_RMDIR is for synchronizing rmdir
++	 * and subsystem's reference count handling. Please see css_get/put
++	 * and css_tryget() and cgroup_wakeup_rmdir_waiter() implementation.
++	 */
++	set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
++
++	/*
+ 	 * Call pre_destroy handlers of subsys. Notify subsystems
+ 	 * that rmdir() request comes.
+ 	 */
+ 	ret = cgroup_call_pre_destroy(cgrp);
+-	if (ret)
++	if (ret) {
++		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+ 		return ret;
++	}
+ 
+ 	mutex_lock(&cgroup_mutex);
+ 	parent = cgrp->parent;
+ 	if (atomic_read(&cgrp->count) || !list_empty(&cgrp->children)) {
++		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+ 		mutex_unlock(&cgroup_mutex);
+ 		return -EBUSY;
+ 	}
+-	/*
+-	 * css_put/get is provided for subsys to grab refcnt to css. In typical
+-	 * case, subsystem has no reference after pre_destroy(). But, under
+-	 * hierarchy management, some *temporal* refcnt can be hold.
+-	 * To avoid returning -EBUSY to a user, waitqueue is used. If subsys
+-	 * is really busy, it should return -EBUSY at pre_destroy(). wake_up
+-	 * is called when css_put() is called and refcnt goes down to 0.
+-	 */
+-	set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+ 	prepare_to_wait(&cgroup_rmdir_waitq, &wait, TASK_INTERRUPTIBLE);
+-
+ 	if (!cgroup_clear_css_refs(cgrp)) {
+ 		mutex_unlock(&cgroup_mutex);
+-		schedule();
++		/*
++		 * Because someone may call cgroup_wakeup_rmdir_waiter() before
++		 * prepare_to_wait(), we need to check this flag.
++		 */
++		if (test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags))
++			schedule();
+ 		finish_wait(&cgroup_rmdir_waitq, &wait);
+ 		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+ 		if (signal_pending(current))
+@@ -3343,7 +3364,7 @@ void __css_put(struct cgroup_subsys_stat
+ 			set_bit(CGRP_RELEASABLE, &cgrp->flags);
+ 			check_for_release(cgrp);
+ 		}
+-		cgroup_wakeup_rmdir_waiters(cgrp);
++		cgroup_wakeup_rmdir_waiter(cgrp);
+ 	}
+ 	rcu_read_unlock();
+ }
+Index: mmotm-2.6.31-Jul15/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.31-Jul15.orig/mm/memcontrol.c
++++ mmotm-2.6.31-Jul15/mm/memcontrol.c
+@@ -1234,6 +1234,12 @@ static int mem_cgroup_move_account(struc
+ 	ret = 0;
+ out:
+ 	unlock_page_cgroup(pc);
++	/*
++	 * We charges against "to" which may not have any tasks. Then, "to"
++	 * can be under rmdir(). But in current implementation, caller of
++	 * this function is just force_empty() and it's garanteed that
++	 * "to" is never removed. So, we don't check rmdir status here.
++	 */
+ 	return ret;
+ }
+ 
+@@ -1455,6 +1461,7 @@ __mem_cgroup_commit_charge_swapin(struct
+ 		return;
+ 	if (!ptr)
+ 		return;
++	cgroup_exclude_rmdir(&ptr->css);
+ 	pc = lookup_page_cgroup(page);
+ 	mem_cgroup_lru_del_before_commit_swapcache(page);
+ 	__mem_cgroup_commit_charge(ptr, pc, ctype);
+@@ -1484,8 +1491,12 @@ __mem_cgroup_commit_charge_swapin(struct
+ 		}
+ 		rcu_read_unlock();
+ 	}
+-	/* add this page(page_cgroup) to the LRU we want. */
+-
++	/*
++	 * At swapin, we may charge account against cgroup which has no tasks.
++	 * So, rmdir()->pre_destroy() can be called while we do this charge.
++	 * In that case, we need to call pre_destroy() again. check it here.
++	 */
++	cgroup_release_and_wakeup_rmdir(&ptr->css);
+ }
+ 
+ void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
+@@ -1691,7 +1702,7 @@ void mem_cgroup_end_migration(struct mem
+ 
+ 	if (!mem)
+ 		return;
+-
++	cgroup_exclude_rmdir(&mem->css);
+ 	/* at migration success, oldpage->mapping is NULL. */
+ 	if (oldpage->mapping) {
+ 		target = oldpage;
+@@ -1731,6 +1742,12 @@ void mem_cgroup_end_migration(struct mem
+ 	 */
+ 	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+ 		mem_cgroup_uncharge_page(target);
++	/*
++	 * At migration, we may charge account against cgroup which has no tasks
++	 * So, rmdir()->pre_destroy() can be called while we do this charge.
++	 * In that case, we need to call pre_destroy() again. check it here.
++	 */
++	cgroup_release_and_wakeup_rmdir(&mem->css);
+ }
+ 
+ /*
 
