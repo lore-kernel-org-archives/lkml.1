@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933349AbZGPUrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933354AbZGPUsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933349AbZGPUrg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 16:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933336AbZGPUrg
+	id S933354AbZGPUsx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 16:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933336AbZGPUsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 16:47:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42749 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933326AbZGPUre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 16:47:34 -0400
-Message-ID: <4A5F9228.7060904@redhat.com>
-Date: Thu, 16 Jul 2009 16:48:40 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 16 Jul 2009 16:48:52 -0400
+Received: from SMTP.ANDREW.CMU.EDU ([128.2.11.61]:59614 "EHLO
+	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933328AbZGPUsv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 16:48:51 -0400
+Message-ID: <4A5F91F4.5070505@ece.cmu.edu>
+Date: Thu, 16 Jul 2009 16:47:48 -0400
+From: Raj Rajkumar <raj@ece.cmu.edu>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Przemys??awPawe??czyk <przemyslaw@pawelczyk.it>
-Subject: Re: [PATCH -tip -v12 01/11] x86: instruction decoder API
-References: <20090716155652.6266.39970.stgit@localhost.localdomain> <20090716155700.6266.71011.stgit@localhost.localdomain> <20090716163708.GB5804@merkur.ravnborg.org> <4A5F6356.9080505@redhat.com> <20090716200012.GB5994@merkur.ravnborg.org>
-In-Reply-To: <20090716200012.GB5994@merkur.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "James H. Anderson" <anderson@cs.unc.edu>
+CC: Ted Baker <baker@cs.fsu.edu>, Noah Watkins <jayhawk@soe.ucsc.edu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Raistlin <raistlin@linux.it>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       "Linux RT <linux-rt-users@vger.kernel.org> Fabio Checconi" 
+	<fabio@gandalf.sssup.it>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>,
+       Karthik Singaram Lakshmanan <lakshmanan@cmu.edu>,
+       Dionisio de Niz <dionisio@sei.cmu.edu>
+Subject: Re: [Fwd: Re: RFC for a new Scheduling policy/class in the Linux-kernel]
+References: <4A5F7254.3020809@ece.cmu.edu> <alpine.LRH.2.00.0907161513050.3814@anderson.cs.unc.edu> <4A5F806D.6040701@ece.cmu.edu> <alpine.LRH.2.00.0907161538340.3814@anderson.cs.unc.edu>
+In-Reply-To: <alpine.LRH.2.00.0907161538340.3814@anderson.cs.unc.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.5.5.374460, Antispam-Engine: 2.7.1.369594, Antispam-Data: 2009.7.16.203316
+X-SMTP-Spam-Clean: 8% (
+ BODY_SIZE_1900_1999 0, BODY_SIZE_2000_LESS 0, BODY_SIZE_5000_LESS 0, BODY_SIZE_7000_LESS 0, __BOUNCE_CHALLENGE_SUBJ 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __MOZILLA_MSGID 0, __SANE_MSGID 0, __TO_MALFORMED_2 0, __USER_AGENT 0)
+X-SMTP-Spam-Score: 8%
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Thu, Jul 16, 2009 at 01:28:54PM -0400, Masami Hiramatsu wrote:
->> Sam Ravnborg wrote:
->>>> diff --git a/arch/x86/include/asm/inat.h b/arch/x86/include/asm/inat.h
->>>> new file mode 100644
->>>> index 0000000..01e079a
->>>> --- /dev/null
->>>> +++ b/arch/x86/include/asm/inat.h
->>>> @@ -0,0 +1,125 @@
->>>> +#ifndef _ASM_INAT_INAT_H
->>>> +#define _ASM_INAT_INAT_H
->>> [With reference to comment on patch 2/12...]
->>> You create inat.h here.
->>> Could you investigave what is needed to factor out the stuff
->>> needed from userspace so we can avoid the ugly havk where
->>> you redefine types.h?
->> Sorry, I'm a bit confusing.
->> Would you mean that I should break down user_include.h and
->> add those redefined types in inat.h?
-> No - try to factor out what is needed for your program
-> so you can avoid user_include.h entirely.
->>> Maybe create a inat_types.h + inat.h as we do in other cases?
->> And inat_types.h has two parts, one for kernel, and one for
->> userspace(which is moved from user_include.h), is that right?
-> More like inat_types.h include pure definitions and inat.h
-> define all the macros (that would be much nicer if expressed
-> as static inlines).
+Jim:
 
-OK, some macros still need to be macros, because it will be used
-for defining static tables.
+Good discussion.   THanks for taking the time to educate me on past 
+exchanges.
 
-> The real thing to consider is what is needed from your userspace
-> program and is also required by the kernel.
-> I did not event remotely try to find out - as I guess you know it.
-> So try to isolate these bits somehow and you have then nicely dropped
-> a lot of dependencies on the remainign headers and can thus
-> hopefully get rid of the ugly usser_include.h hack.
+ > We didn't talk about the low processor utlization (Dhall effect)
+ > mentioned in your last email.  However, that applies to hard real-time
+ > workloads, not soft real-time workloads.  This discussion has been
+ > touching on both.
 
-OK, I'll try to remove user_include.h hack.
+For hard real-time workloads, partitioning (static binding to specific 
+processors) works well, with developer control over where tasks run and 
+their contenders.  For soft real-time workloads, global scheduling 
+(dynamic binding to available processors) should do well.   The 
+situation is analogous to what we see in banks and airports.  There is a 
+common global queue serviced by multiple counters for "soft" real-time 
+customers, and for those (business or first-class/special) customers 
+needing higher QoS,  separate queues are provided.  In the OS context, 
+we need to ensure that the two queues/servers do not interfere.  
+Ceilings would help even when the hard and soft real-time tasks use the 
+same processors.
 
-Thank you so much!
+However, the question of dealing with mutexes shared by processes 
+allocated to different processors remains.  As Ted has pointed out, 
+avoiding them would be best!  In practice, moving them to a 
+synchronization processor (as was pointed out by Peter? and also 
+discussed in one of my earlier papers on synchronization on 
+multi-processors) ought to be considered.  I think the first-order 
+improvements are
+from
+
+(1) ensuring that task waiting times are bounded as a function of 
+critical sections only (i.e. avoiding the "unbounded" priority inversion 
+problem) - this is accomplished by having critical sections execute at 
+ceiling priorities (or higher) in the multiprocessor case,
+(2) avoiding the wait from very long critical sections used only by 
+lower-priority tasks - using priority ceilings instead of higher 
+priority values for long critical sections mitigates this problem.
+ 
+---
+Raj
 
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
 
