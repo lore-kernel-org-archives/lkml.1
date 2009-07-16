@@ -1,104 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbZGPNKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbZGPNLC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283AbZGPNKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 09:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZGPNKb
+	id S1756234AbZGPNLC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 09:11:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756224AbZGPNLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 09:10:31 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:52562 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756161AbZGPNKa (ORCPT
+	Thu, 16 Jul 2009 09:11:00 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51894 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756204AbZGPNLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 09:10:30 -0400
+	Thu, 16 Jul 2009 09:11:00 -0400
+Subject: Re: [PATCH 02/06] Fix compilation warning for fs/ubifs/commit.c
 From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Jaroslav Kysela <erex@perex.cz>, alsa-devel@alsa-project.org,
-       Takashi Iwai <tiwai@suse.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       David Howells <dhowells@redhat.com>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>,
+Reply-To: subrata@linux.vnet.ibm.com
+To: dedekind@infradead.org
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Adrian Hunter <adrian.hunter@nokia.com>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       David Howells <dhowells@redhat.com>, linux-mtd@lists.infradead.org,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        LKML <linux-kernel@vger.kernel.org>
-Date: Thu, 16 Jul 2009 18:40:01 +0530
-Message-Id: <20090716130958.28045.71072.sendpatchset@subratamodak.linux.ibm.com>
-Subject: Re:[PATCH 01/06] Fix compilation warning for sound/soc/codecs/wm8400.c
+In-Reply-To: <1247748885.11353.156.camel@localhost.localdomain>
+References: <20090716124133.25463.33849.sendpatchset@subratamodak.linux.ibm.com>
+	 <1247748885.11353.156.camel@localhost.localdomain>
+Content-Type: text/plain
+Organization: IBM
+Date: Thu, 16 Jul 2009 18:40:18 +0530
+Message-Id: <1247749820.5572.14.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
-
->On Wed, 2009-07-15 at 10:13 +0530, Jaswinder Singh Rajput wrote:
->Hello Subrata,
-> 
-> On Wed, 2009-07-15 at 07:48 +0530, Subrata Modak wrote:
-> > Following fix is inspired by David Howells fix few days back:
-> > http://lkml.org/lkml/2009/7/9/109,
+On Thu, 2009-07-16 at 15:54 +0300, Artem Bityutskiy wrote:
+> On Thu, 2009-07-16 at 18:11 +0530, Subrata Modak wrote:
+> > does not use:
+> > 	"const struct ubifs_info *c"
+> > inside the inline function. I do not see any practical usage of
+> > "const struct ubifs_info *c" in the functions key_read() and key_write().
+> > Is there something which i am missing to understand ?
 > > 
+> > When i applied the following patch, still the "fs/ubifs/" code compiled fine.
+> > If the below fix is correct, i can try fixing some other functions i saw
+> > having similar defects.
 > 
-> Please check further of this thread :
+> Yeah, I think the reason why we have this extra argument there is that
+> we assumed there will be several key schemes. It is possible to add more
+> than one, but we use only one.
 > 
-> http://marc.info/?l=linux-kernel&m=124756210124518&w=2
+> Since you have already spent your time for this, could you please check
+> if removing this 'c' makes the code smaller? If not, I'd prefer not to
 
-Does the above really apply here ?
-
-> 
-> 
-> > Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>,
-> > ---
-> > 
-> > --- a/sound/soc/codecs/wm8400.c	2009-06-15 07:52:31.000000000 +0530
-> > +++ b/sound/soc/codecs/wm8400.c	2009-07-15 05:35:00.000000000 +0530
-> > @@ -1015,7 +1015,7 @@ static int wm8400_set_dai_pll(struct snd
-> >  {
-> >  	struct snd_soc_codec *codec = codec_dai->codec;
-> >  	struct wm8400_priv *wm8400 = codec->private_data;
-> > -	struct fll_factors factors;
-> > +	struct fll_factors uninitialized_var(factors);
-> >  	int ret;
-> >  	u16 reg;
-> >  
-> > 
-> 
-> This kind of warnings born due to not handling the variables properly.
-> Please try to understand the root cause of this warning, just shutting
-> this warning is of no use.
-> 
-> Please revise your patches, If you face any problems let me know.
-> 
-
-How about the following brutal shutdown ?
----
-
---- a/sound/soc/codecs/wm8400.c	2009-07-16 16:21:37.000000000 +0530
-+++ b/sound/soc/codecs/wm8400.c	2009-07-16 18:28:48.000000000 +0530
-@@ -1015,7 +1015,7 @@ static int wm8400_set_dai_pll(struct snd
- {
- 	struct snd_soc_codec *codec = codec_dai->codec;
- 	struct wm8400_priv *wm8400 = codec->private_data;
--	struct fll_factors factors;
-+	struct fll_factors factors = {};
- 	int ret;
- 	u16 reg;
- 
----
-
-As i found that:
-
-1024 
-1025         if (freq_out != 0) {
-1026                 ret = fll_factors(wm8400, &factors, freq_in, freq_out);
-1027                 if (ret != 0)
-1028                         return ret;
-1029         }
-1030 
-
-'factors' will get initialized here, as, 'freq_out' will probably never have
-a '0' value. So, 'fll_factors()' will actually overwrite values in 'factors'
-even after the initial brutal assignment:
-	"struct fll_factors factors = {}"
+Ok. I would let you know soon.
 
 Regards--
 Subrata
+
+> remove it.
+> 
 
