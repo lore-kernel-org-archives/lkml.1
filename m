@@ -1,89 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZGPH6C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZGPH6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbZGPH6C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 03:58:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZGPH6B
+	id S1752932AbZGPH6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 03:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZGPH6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 03:58:01 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:32851
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751306AbZGPH6A (ORCPT
+	Thu, 16 Jul 2009 03:58:48 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40578 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867AbZGPH6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 03:58:00 -0400
-Message-ID: <4A5EDD81.6060409@panasas.com>
-Date: Thu, 16 Jul 2009 10:57:53 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH #tj-block-for-linus] block: fix failfast merge testing
- in elv_rq_merge_ok()
-References: <4A5ECC62.7050607@kernel.org>
-In-Reply-To: <4A5ECC62.7050607@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 16 Jul 2009 03:58:47 -0400
+Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ted Baker <baker@cs.fsu.edu>
+Cc: Chris Friesen <cfriesen@nortel.com>, Noah Watkins <jayhawk@soe.ucsc.edu>,
+       Raistlin <raistlin@linux.it>, Douglas Niehaus <niehaus@ittc.ku.edu>,
+       Henrik Austad <henrik@austad.us>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Bill Huey <billh@gnuppy.monkey.org>,
+       Linux RT <linux-rt-users@vger.kernel.org>,
+       Fabio Checconi <fabio@gandalf.sssup.it>,
+       "James H. Anderson" <anderson@cs.unc.edu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       KUSP Google Group <kusp@googlegroups.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>
+In-Reply-To: <20090715231109.GH14993@cs.fsu.edu>
+References: <200907102350.47124.henrik@austad.us>
+	 <1247336891.9978.32.camel@laptop> <4A594D2D.3080101@ittc.ku.edu>
+	 <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir>
+	 <1247505941.7500.39.camel@twins>
+	 <5B78D181-E446-4266-B9DD-AC0A2629C638@soe.ucsc.edu>
+	 <20090713201305.GA25386@cs.fsu.edu> <4A5BAAE7.5020906@nortel.com>
+	 <20090715231109.GH14993@cs.fsu.edu>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Jul 2009 07:57:56.0457 (UTC) FILETIME=[211E5590:01CA05EB]
+Date: Thu, 16 Jul 2009 09:58:32 +0200
+Message-Id: <1247731113.15471.24.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/16/2009 09:44 AM, Tejun Heo wrote:
-> Commit ab0fd1debe730ec9998678a0c53caefbd121ed10 tries to prevent merge
-> of requests with different failfast settings.  In elv_rq_merge_ok(),
-> it compares new bio's failfast flags against the merge target
-> request's.  However, the flag testing accessors for bio and blk don't
-> return boolean but the tested bit value directly and FAILFAST on bio
-> and blk don't match, so directly comparing them with == results in
-> false negative unnecessary preventing merge of readahead requests.
+On Wed, 2009-07-15 at 19:11 -0400, Ted Baker wrote:
+> On Mon, Jul 13, 2009 at 03:45:11PM -0600, Chris Friesen wrote:
 > 
-> This patch convert the results to boolean by negating them before
-> comparison.
+> > Given that the semantics of POSIX PI locking assumes certain scheduler
+> > behaviours, is it actually abstraction inversion to have that same
+> > dependency expressed in the kernel code that implements it?
+> ....> 
+> > The whole point of mutexes (and semaphores) within the linux kernel is
+> > that it is possible to block while holding them.  I suspect you're going
+> > to find it fairly difficult to convince people to spinlocks just to make
+> > it possible to provide latency guarantees.
+> 
+> The abstraction inversion is when the kernel uses (internally)
+> something as complex as a POSIX PI mutex.  So, I'm not arguing
+> that the kernel does not need internal mutexes/semaphores that
+> can be held while a task is suspended/blocked.  I'm just arguing
+> that those internal mutexes/semaphores should not be PI ones.
+>
+> > ...  the selling point for PI vs PP is that under PIP the
+> > priority of the lock holder is automatically boosted only if
+> > necessary, and only as high as necessary.
+> 
+> The putative benefit of this is disputed, as shown by Jim and
+> Bjorn's work with LITMUS-RT and others.  For difference to be
+> noted, there must be a lot of contention, and long critical
+> sections.  The benefit of less frequent priority boosting and
+> lower priorities can be balanced by more increased worst-case
+> number of context switches.
+> 
+> > On the other hand, PP requires code analysis to properly set the
+> > ceilings for each individual mutex.
+> 
+> Indeed, this is difficult, but no more difficult than estimating
+> worst-case blocking times, which requires more extensive code
+> analysis and requires consideration of more cases with PI than PP.
+> 
+> If determining the exact ceiling is too difficult.  one can simply
+> set the ceiling to the maximum priority used by the application.
+> 
+> Again, I don't think that either PP or PI is appropriate for use
+> in a (SMP) kernel. For non-blocking locks, the current
+> no-preeemption spinlock mechanism works.  For higher-level
+> (blocking) locks, I'm attracted to Jim Anderson's model of
+> non-preemptable critical sections, combined with FIFO queue
+> service.
 
-I don't like that at all. Please fix the accessors to return
-boolean. They look and regarded as boolean. I've never seen
-them used as their bit value.
+Right, so there's two points here I think:
 
-if you are concerned with performance don't
-an if(flag & bit) is even slightly slower then
-   if(0 != (flag & bit)) on some processors
+ A) making most locks preemptible
+ B) adding PI to all preemptible locks
 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Cc: Boaz Harrosh <bharrosh@panasas.com>
-> Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Cc: Jeff Garzik <jeff@garzik.org>
-> ---
-> Eh... talk about being obscure. :-( I've put this onto the following
-> temp block tree I'm running and will push toward Linus in a few days.
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-block-for-linus
-> 
-> Thanks.
-> 
->  block/elevator.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/block/elevator.c b/block/elevator.c
-> index 6f23753..977aa7c 100644
-> --- a/block/elevator.c
-> +++ b/block/elevator.c
-> @@ -103,9 +103,9 @@ int elv_rq_merge_ok(struct request *rq, struct bio *bio)
->  	/*
->  	 * Don't merge if failfast settings don't match
->  	 */
-> -	if (bio_failfast_dev(bio)	!= blk_failfast_dev(rq)		||
-> -	    bio_failfast_transport(bio)	!= blk_failfast_transport(rq)	||
-> -	    bio_failfast_driver(bio)	!= blk_failfast_driver(rq))
-> +	if (!bio_failfast_dev(bio)	 != !blk_failfast_dev(rq)	||
-> +	    !bio_failfast_transport(bio) != !blk_failfast_transport(rq)	||
-> +	    !bio_failfast_driver(bio)	 != !blk_failfast_driver(rq))
->  		return 0;
-> 
->  	if (!elv_iosched_allow_merge(rq, bio))
+I think that we can all agree that if you do A, B makes heaps of sense,
+right?
 
-Boaz
+I just asked Thomas if he could remember any numbers on this, and he
+said that keeping all the locks non-preemptible had at least an order
+difference in max latencies [ so a 60us (A+B) would turn into 600us (!
+A) ], this means a proportional decrease for the max freq of periodic
+tasks.
+
+This led to the conviction that the PI overheads are worth it, since
+people actually want high freq tasks.
+
+Of course, when the decreased period is still sufficient for the
+application at hand, the non-preemptible case allows for better
+analysis.
+
+
