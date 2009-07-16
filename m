@@ -1,272 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbZGPNCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbZGPNKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756090AbZGPNCd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 09:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbZGPNCc
+	id S1756283AbZGPNKc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 09:10:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZGPNKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 09:02:32 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38218 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755543AbZGPNCb (ORCPT
+	Thu, 16 Jul 2009 09:10:31 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:52562 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756161AbZGPNKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 09:02:31 -0400
-Message-ID: <eb603fae09005e4a23c9e84da316ff68.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20090716210028.07a8e1f7.minchan.kim@barrios-desktop>
-References: <20090709122428.8c2d4232.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090716180134.3393acde.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090716180424.eb4c44ce.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090716210028.07a8e1f7.minchan.kim@barrios-desktop>
-Date: Thu, 16 Jul 2009 22:02:28 +0900 (JST)
-Subject: Re: [PATCH 2/2] ZERO PAGE based on pte_special
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Minchan Kim" <minchan.kim@gmail.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       npiggin@suse.de,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       avi@redhat.com, "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, aarcange@redhat.com
-User-Agent: SquirrelMail/1.4.16
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Thu, 16 Jul 2009 09:10:30 -0400
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Jaroslav Kysela <erex@perex.cz>, alsa-devel@alsa-project.org,
+       Takashi Iwai <tiwai@suse.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       David Howells <dhowells@redhat.com>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Thu, 16 Jul 2009 18:40:01 +0530
+Message-Id: <20090716130958.28045.71072.sendpatchset@subratamodak.linux.ibm.com>
+Subject: Re:[PATCH 01/06] Fix compilation warning for sound/soc/codecs/wm8400.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minchan Kim wrote:
->
-> Hi, Kame.
->
-> On Thu, 16 Jul 2009 18:04:24 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->
->> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>
->> ZERO_PAGE for anonymous private mapping is useful when an application
->> requires large continuous memory but write sparsely or some other
->> usages.
->> It was removed in 2.6.24 but this patch tries to re-add it.
->> (Because there are some use cases..)
->>
->> In past, ZERO_PAGE was removed because heavy cache line contention in
->> ZERO_PAGE's refcounting, this version of ZERO_PAGE avoid to refcnt it.
->> Then, implementation is changed as following.
->>
->>   - Use of ZERO_PAGE is limited to PRIVATE mapping. Then, VM_MAYSHARE is
->>     checked as VM_SHARED.
->>
->>   - pte_special(), _PAGE_SPECIAL bit in pte is used for indicating
->> ZERO_PAGE.
->>
->>   - vm_normal_page() eats FOLL_XXX flag. If FOLL_NOZERO is set,
->>     NULL is returned even if ZERO_PAGE is found.
->>
->>   - __get_user_pages() eats one more flag as GUP_FLAGS_IGNORE_ZERO. If
->> set,
->>     __get_user_page() returns NULL even if ZERO_PAGE is found.
->>
->> Note:
->>   - no changes to get_user_pages(). ZERO_PAGE can be returned when
->>     vma is ANONYMOUS && PRIVATE and the access is READ.
->>
->> Changelog v3->v4
->>  - FOLL_NOZERO is directly passed to vm_normal_page()
->>
->> Changelog v2->v3
->>  - totally renewed.
->>  - use pte_special()
->>  - added new argument to vm_normal_page().
->>  - MAYSHARE is checked.
->>
->> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> ---
->>  fs/proc/task_mmu.c |    8 +--
->>  include/linux/mm.h |    3 -
->>  mm/fremap.c        |    2
->>  mm/internal.h      |    1
->>  mm/memory.c        |  136
->> +++++++++++++++++++++++++++++++++++++++++------------
->>  mm/mempolicy.c     |    8 +--
->>  mm/migrate.c       |    6 +-
->>  mm/mlock.c         |    2
->>  mm/rmap.c          |    6 +-
->>  9 files changed, 128 insertions(+), 44 deletions(-)
->>
->> Index: mmotm-2.6.31-Jul15/mm/memory.c
->> ===================================================================
->> --- mmotm-2.6.31-Jul15.orig/mm/memory.c
->> +++ mmotm-2.6.31-Jul15/mm/memory.c
->> @@ -442,6 +442,27 @@ static inline int is_cow_mapping(unsigne
->>  }
->>
->>  /*
->> + * Can we use ZERO_PAGE at fault ? or Can we do the FOLL_ANON
->> optimization ?
->> + */
->> +static inline int use_zero_page(struct vm_area_struct *vma)
->> +{
->> +	/*
->> +	 * We don't want to optimize FOLL_ANON for make_pages_present()
->> +	 * when it tries to page in a VM_LOCKED region. As to VM_SHARED,
->> +	 * we want to get the page from the page tables to make sure
->> +	 * that we serialize and update with any other user of that
->> +	 * mapping. At doing page fault, VM_MAYSHARE should be also check for
->> +	 * avoiding possible changes to VM_SHARED.
->> +	 */
->> +	if (vma->vm_flags & (VM_LOCKED | VM_SHARED | VM_MAYSHARE))
->> +		return 0;
->> +	/*
->> +	 * And if we have a fault routine, it's not an anonymous region.
->> +	 */
->> +	return !vma->vm_ops || !vma->vm_ops->fault;
->> +}
->> +
->> +/*
->>   * vm_normal_page -- This function gets the "struct page" associated
->> with a pte.
->>   *
->>   * "Special" mappings do not wish to be associated with a "struct page"
->> (either
->> @@ -488,16 +509,33 @@ static inline int is_cow_mapping(unsigne
->>  #else
->>  # define HAVE_PTE_SPECIAL 0
->>  #endif
->> +
->> +#ifdef CONFIG_SUPPORT_ANON_ZERO_PAGE
->> +# define HAVE_ANON_ZERO 1
->> +#else
->> +# define HAVE_ANON_ZERO 0
->> +#endif
->>  struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long
->> addr,
->> -				pte_t pte)
->> +			    pte_t pte, unsigned int flags)
->>  {
->>  	unsigned long pfn = pte_pfn(pte);
->>
->>  	if (HAVE_PTE_SPECIAL) {
->>  		if (likely(!pte_special(pte)))
->>  			goto check_pfn;
->> -		if (!(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)))
->> -			print_bad_pte(vma, addr, pte, NULL);
->> +
->> +		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
->> +			return NULL;
->> +		/*
->> +		 * ZERO PAGE ? If vma is shared or has page fault handler,
->> +		 * Using ZERO PAGE is bug.
->> +		 */
->> +		if (HAVE_ANON_ZERO && use_zero_page(vma)) {
->> +			if (flags & FOLL_NOZERO)
->> +				return NULL;
->> +			return ZERO_PAGE(0);
->> +		}
->> +		print_bad_pte(vma, addr, pte, NULL);
->>  		return NULL;
->>  	}
->>
->> @@ -591,8 +629,7 @@ copy_one_pte(struct mm_struct *dst_mm, s
->>  	if (vm_flags & VM_SHARED)
->>  		pte = pte_mkclean(pte);
->>  	pte = pte_mkold(pte);
->> -
->> -	page = vm_normal_page(vma, addr, pte);
->> +	page = vm_normal_page(vma, addr, pte, FOLL_NOZERO);
->>  	if (page) {
->>  		get_page(page);
->>  		page_dup_rmap(page, vma, addr);
->> @@ -783,7 +820,7 @@ static unsigned long zap_pte_range(struc
->>  		if (pte_present(ptent)) {
->>  			struct page *page;
->>
->> -			page = vm_normal_page(vma, addr, ptent);
->> +			page = vm_normal_page(vma, addr, ptent, FOLL_NOZERO);
->>  			if (unlikely(details) && page) {
->>  				/*
->>  				 * unmap_shared_mapping_pages() wants to
->> @@ -1141,7 +1178,7 @@ struct page *follow_page(struct vm_area_
->>  		goto no_page;
->>  	if ((flags & FOLL_WRITE) && !pte_write(pte))
->>  		goto unlock;
->> -	page = vm_normal_page(vma, address, pte);
->> +	page = vm_normal_page(vma, address, pte, flags);
->>  	if (unlikely(!page))
->>  		goto bad_page;
->>
->> @@ -1186,23 +1223,6 @@ no_page_table:
->>  	return page;
->>  }
->>
->> -/* Can we do the FOLL_ANON optimization? */
->> -static inline int use_zero_page(struct vm_area_struct *vma)
->> -{
->> -	/*
->> -	 * We don't want to optimize FOLL_ANON for make_pages_present()
->> -	 * when it tries to page in a VM_LOCKED region. As to VM_SHARED,
->> -	 * we want to get the page from the page tables to make sure
->> -	 * that we serialize and update with any other user of that
->> -	 * mapping.
->> -	 */
->> -	if (vma->vm_flags & (VM_LOCKED | VM_SHARED))
->> -		return 0;
->> -	/*
->> -	 * And if we have a fault routine, it's not an anonymous region.
->> -	 */
->> -	return !vma->vm_ops || !vma->vm_ops->fault;
->> -}
->>
->>
->>
->> @@ -1216,6 +1236,7 @@ int __get_user_pages(struct task_struct
->>  	int force = !!(flags & GUP_FLAGS_FORCE);
->>  	int ignore = !!(flags & GUP_FLAGS_IGNORE_VMA_PERMISSIONS);
->>  	int ignore_sigkill = !!(flags & GUP_FLAGS_IGNORE_SIGKILL);
->> +	int ignore_zero = !!(flags & GUP_FLAGS_IGNORE_ZERO);
->>
->>  	if (nr_pages <= 0)
->>  		return 0;
->> @@ -1259,7 +1280,12 @@ int __get_user_pages(struct task_struct
->>  				return i ? : -EFAULT;
->>  			}
->>  			if (pages) {
->> -				struct page *page = vm_normal_page(gate_vma, start, *pte);
->> +				struct page *page;
->> +				/*
->> +				 * this is not anon vma...don't haddle zero page
->> +				 * related flags.
->> +				 */
->> +				page = vm_normal_page(gate_vma, start, *pte, 0);
->>  				pages[i] = page;
->>  				if (page)
->>  					get_page(page);
->> @@ -1287,8 +1313,13 @@ int __get_user_pages(struct task_struct
->>  		foll_flags = FOLL_TOUCH;
->>  		if (pages)
->>  			foll_flags |= FOLL_GET;
->> -		if (!write && use_zero_page(vma))
->> -			foll_flags |= FOLL_ANON;
->> +		if (!write) {
->> +			if (use_zero_page(vma))
->> +				foll_flags |= FOLL_ANON;
->> +			else
->> +				ignore_zero = 0;
->> +		} else
->> +			ignore_zero = 0;
->
-> Hmm. nested condition is not good for redabililty.
->
-> How about this ?
-> if (!write && use_zero_page(vma))
-> 	foll_flags |= FOLL_ANON;
-> else
-> 	ignore_zero = 0;
->
-Ah, yes. yours seems better.
-I'll post updated one, later.
+Hey,
 
-Thank you
--Kame
+>On Wed, 2009-07-15 at 10:13 +0530, Jaswinder Singh Rajput wrote:
+>Hello Subrata,
+> 
+> On Wed, 2009-07-15 at 07:48 +0530, Subrata Modak wrote:
+> > Following fix is inspired by David Howells fix few days back:
+> > http://lkml.org/lkml/2009/7/9/109,
+> > 
+> 
+> Please check further of this thread :
+> 
+> http://marc.info/?l=linux-kernel&m=124756210124518&w=2
+
+Does the above really apply here ?
+
+> 
+> 
+> > Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>,
+> > ---
+> > 
+> > --- a/sound/soc/codecs/wm8400.c	2009-06-15 07:52:31.000000000 +0530
+> > +++ b/sound/soc/codecs/wm8400.c	2009-07-15 05:35:00.000000000 +0530
+> > @@ -1015,7 +1015,7 @@ static int wm8400_set_dai_pll(struct snd
+> >  {
+> >  	struct snd_soc_codec *codec = codec_dai->codec;
+> >  	struct wm8400_priv *wm8400 = codec->private_data;
+> > -	struct fll_factors factors;
+> > +	struct fll_factors uninitialized_var(factors);
+> >  	int ret;
+> >  	u16 reg;
+> >  
+> > 
+> 
+> This kind of warnings born due to not handling the variables properly.
+> Please try to understand the root cause of this warning, just shutting
+> this warning is of no use.
+> 
+> Please revise your patches, If you face any problems let me know.
+> 
+
+How about the following brutal shutdown ?
+---
+
+--- a/sound/soc/codecs/wm8400.c	2009-07-16 16:21:37.000000000 +0530
++++ b/sound/soc/codecs/wm8400.c	2009-07-16 18:28:48.000000000 +0530
+@@ -1015,7 +1015,7 @@ static int wm8400_set_dai_pll(struct snd
+ {
+ 	struct snd_soc_codec *codec = codec_dai->codec;
+ 	struct wm8400_priv *wm8400 = codec->private_data;
+-	struct fll_factors factors;
++	struct fll_factors factors = {};
+ 	int ret;
+ 	u16 reg;
+ 
+---
+
+As i found that:
+
+1024 
+1025         if (freq_out != 0) {
+1026                 ret = fll_factors(wm8400, &factors, freq_in, freq_out);
+1027                 if (ret != 0)
+1028                         return ret;
+1029         }
+1030 
+
+'factors' will get initialized here, as, 'freq_out' will probably never have
+a '0' value. So, 'fll_factors()' will actually overwrite values in 'factors'
+even after the initial brutal assignment:
+	"struct fll_factors factors = {}"
+
+Regards--
+Subrata
 
