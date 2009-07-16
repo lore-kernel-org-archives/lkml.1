@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbZGPQ5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932784AbZGPQ5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932696AbZGPQ5c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 12:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932582AbZGPQ5b
+	id S932784AbZGPQ5v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 12:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbZGPQ5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 12:57:31 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46508 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932577AbZGPQ5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 12:57:31 -0400
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>
-Subject: [PATCH] vm: Document that setting vfs_cache_pressure to 0 isn't a good idea
-Date: Thu, 16 Jul 2009 18:57:29 +0200
-Message-Id: <1247763449-22360-1-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
+	Thu, 16 Jul 2009 12:57:50 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:55258 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932584AbZGPQ5t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 12:57:49 -0400
+Subject: Re: [PATCH] imwc3200: move iwmc3200 SDIO ids to sdio_ids.h
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Tomas Winkler <tomasw@gmail.com>
+Cc: "Zhu, Yi" <yi.zhu@intel.com>,
+       "drzeus-list@drzeus.cx" <drzeus-list@drzeus.cx>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1ba2fa240907160804g18b1a215w3161c9682db7b35@mail.gmail.com>
+References: <1247522953-12702-1-git-send-email-tomas.winkler@intel.com>
+	 <AFAB8585072C7E48BC5C6F9C87F9B79703BA8388BB@pdsmsx502.ccr.corp.intel.com>
+	 <AFAB8585072C7E48BC5C6F9C87F9B79703BA839300@pdsmsx502.ccr.corp.intel.com>
+	 <1ba2fa240907160804g18b1a215w3161c9682db7b35@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 18:57:34 +0200
+Message-Id: <1247763454.4549.56.camel@violet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reported-by: Christian Thaeter <ct@pipapo.org>
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- Documentation/sysctl/vm.txt |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Hi Dave,
 
- Andrew, would you merge this please? Thanks.
+> > > Subject: RE: [PATCH] imwc3200: move iwmc3200 SDIO ids to sdio_ids.h
+> >
+> > BTW, subject should be "iwmc3200".
+> 
+> Thanks. I'll address all comments although I'm not sure how to split
+> the patch since adding SDIO_VENDOR_ID_INTEL to sdio_ids.h it affects
+> all the drivers anyhow, so I'm suggesting to route it through netdev.
 
-diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
-index c4de635..76e8671 100644
---- a/Documentation/sysctl/vm.txt
-+++ b/Documentation/sysctl/vm.txt
-@@ -585,7 +585,9 @@ caching of directory and inode objects.
- At the default value of vfs_cache_pressure=100 the kernel will attempt to
- reclaim dentries and inodes at a "fair" rate with respect to pagecache and
- swapcache reclaim.  Decreasing vfs_cache_pressure causes the kernel to prefer
--to retain dentry and inode caches.  Increasing vfs_cache_pressure beyond 100
-+to retain dentry and inode caches. When vfs_cache_pressure=0, the kernel will
-+never reclaim dentries and inodes due to memory pressure and this can easily
-+lead to out-of-memory conditions. Increasing vfs_cache_pressure beyond 100
- causes the kernel to prefer to reclaim dentries and inodes.
- 
- ==============================================================
--- 
-1.6.0.2
+I think it is best that you take the whole patch via net-next-2.6 to
+avoid breakage during the next merge window.
+
+Regards
+
+Marcel
+
 
