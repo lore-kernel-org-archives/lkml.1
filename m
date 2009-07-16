@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbZGPRC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932812AbZGPRDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932798AbZGPRC4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 13:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932781AbZGPRCz
+	id S932812AbZGPRDL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 13:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932801AbZGPRDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 13:02:55 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:49668 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932621AbZGPRCz (ORCPT
+	Thu, 16 Jul 2009 13:03:10 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:46094 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932781AbZGPRDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 13:02:55 -0400
-Date: Thu, 16 Jul 2009 13:02:53 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-cc: linux-pm@lists.linux-foundation.org, <len.brown@intel.com>,
-       <yanh@lemote.com>, <linux-kernel@vger.kernel.org>, <wuzj@lemote.com>,
-       <zhangfx@lemote.com>
-Subject: Re: [linux-pm] [PATCH] [suspend] pci_raw_set_power_state: replace
- msleep by udelay in resuming procedure
-In-Reply-To: <1247759007-27411-1-git-send-email-wuzhangjin@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0907161259510.2952-100000@iolanthe.rowland.org>
+	Thu, 16 Jul 2009 13:03:09 -0400
+Date: Thu, 16 Jul 2009 10:03:10 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Noah Watkins <jayhawk@soe.ucsc.edu>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/20] ceph: Ceph distributed file system client v0.10
+In-Reply-To: <20090716035929.GA23145@martini>
+Message-ID: <Pine.LNX.4.64.0907160958520.8026@cobra.newdream.net>
+References: <1247693090-27796-1-git-send-email-sage@newdream.net>
+ <20090716035929.GA23145@martini>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Jul 2009, Wu Zhangjin wrote:
+On Wed, 15 Jul 2009, Noah Watkins wrote:
+> On Wed, Jul 15, 2009 at 02:24:30PM -0700, Sage Weil wrote:
+> > 
+> > A git tree containing just the client (and this patch series) is at
+> > 	git://ceph.newdream.net/linux-ceph-client.git
+> 
+> Sage,
+> 
+> Do you maintain a Git kernel tree with the Ceph kernel client that 
+> tracks mainline?
 
-> we can not call msleep() when resuming from STR/Standby: if the
-> current_state of the pci device is PCI_D3hot, means we are in the
-> procedure of resuming, in this procedure, we can not re-schedule,
-> otherwise, there will be a deadlock.
+Up until now the tree has been rebuilt from the main git repo each time I 
+generate and send out the patchset.  The plan is to move the client code 
+development into that kernel tree once it's ready to merge, and mirror 
+just fs/ceph/* changes in a 'standalone' tree (ceph-client.git).
 
-I don't understand.
+In the meantime, I can put something together to mirror the client code 
+changes in the linux-ceph-client.git tree, if there's any demand for it...
 
-First of all, why does current_state == PCI_D3hot mean the system is
-resuming from sleep?  Isn't it possible that the PCI device is going
-through a runtime resume?
-
-Secondly, why will scheduling during a resume cause a deadlock?
-
-Alan Stern
-
+sage
