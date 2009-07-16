@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932634AbZGPPzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbZGPPyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932634AbZGPPzZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 11:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932621AbZGPPzU
+	id S932591AbZGPPyx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 11:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbZGPPyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 11:55:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58223 "EHLO mx2.redhat.com"
+	Thu, 16 Jul 2009 11:54:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58156 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932584AbZGPPzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 11:55:17 -0400
+	id S932578AbZGPPyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 11:54:44 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip -v12 09/11] tracing: Kprobe-tracer supports more than 6
-	arguments
+Subject: [PATCH -tip -v12 06/11] tracing: ftrace dynamic ftrace_event_call
+	support
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        DLE <dle-develop@lists.sourceforge.net>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        Tom Zanussi <tzanussi@gmail.com>
-Date: Thu, 16 Jul 2009 11:57:48 -0400
-Message-ID: <20090716155748.6266.60501.stgit@localhost.localdomain>
+Date: Thu, 16 Jul 2009 11:57:30 -0400
+Message-ID: <20090716155730.6266.81433.stgit@localhost.localdomain>
 In-Reply-To: <20090716155652.6266.39970.stgit@localhost.localdomain>
 References: <20090716155652.6266.39970.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -34,102 +32,366 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support up to 128 arguments for each kprobes event.
+Add dynamic ftrace_event_call support to ftrace. Trace engines can adds new
+ftrace_event_call to ftrace on the fly. Each operator functions of the call
+takes a ftrace_event_call data structure as an argument, because these
+functions may be shared among several ftrace_event_calls.
+
+Changes from v11:
+ - Call remove_subsystem_dir() when unregistering an event call.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Tom Zanussi <tzanussi@gmail.com>
 ---
 
- Documentation/trace/kprobetrace.txt |    2 +-
- kernel/trace/trace_kprobe.c         |   21 +++++++++++++--------
- 2 files changed, 14 insertions(+), 9 deletions(-)
+ include/linux/ftrace_event.h |   13 +++++---
+ include/trace/ftrace.h       |   22 ++++++-------
+ kernel/trace/trace_events.c  |   72 ++++++++++++++++++++++++++++++++----------
+ kernel/trace/trace_export.c  |   27 ++++++++--------
+ 4 files changed, 86 insertions(+), 48 deletions(-)
 
-diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-index 9ad907c..b29a54b 100644
---- a/Documentation/trace/kprobetrace.txt
-+++ b/Documentation/trace/kprobetrace.txt
-@@ -32,7 +32,7 @@ Synopsis of kprobe_events
-  SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted.
-  MEMADDR		: Address where the probe is inserted.
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index 5c093ff..f7733b6 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -108,12 +108,13 @@ struct ftrace_event_call {
+ 	struct dentry		*dir;
+ 	struct trace_event	*event;
+ 	int			enabled;
+-	int			(*regfunc)(void);
+-	void			(*unregfunc)(void);
++	int			(*regfunc)(struct ftrace_event_call *);
++	void			(*unregfunc)(struct ftrace_event_call *);
+ 	int			id;
+-	int			(*raw_init)(void);
+-	int			(*show_format)(struct trace_seq *s);
+-	int			(*define_fields)(void);
++	int			(*raw_init)(struct ftrace_event_call *);
++	int			(*show_format)(struct ftrace_event_call *,
++					       struct trace_seq *);
++	int			(*define_fields)(struct ftrace_event_call *);
+ 	struct list_head	fields;
+ 	int			filter_active;
+ 	void			*filter;
+@@ -138,6 +139,8 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
  
-- FETCHARGS		: Arguments.
-+ FETCHARGS		: Arguments. Each probe can have up to 128 args.
-   %REG	: Fetch register REG
-   sN	: Fetch Nth entry of stack (N >= 0)
-   @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index ad33073..67c33e1 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -32,7 +32,7 @@
- #include "trace.h"
- #include "trace_output.h"
+ extern int trace_define_field(struct ftrace_event_call *call, char *type,
+ 			      char *name, int offset, int size, int is_signed);
++extern int trace_add_event_call(struct ftrace_event_call *call);
++extern void trace_remove_event_call(struct ftrace_event_call *call);
  
--#define TRACE_KPROBE_ARGS 6
-+#define MAX_TRACE_ARGS 128
- #define MAX_ARGSTR_LEN 63
+ #define is_signed_type(type)	(((type)(-1)) < 0)
  
- /* currently, trace_kprobe only supports X86. */
-@@ -178,11 +178,15 @@ struct trace_probe {
- 		struct kretprobe	rp;
- 	};
- 	const char		*symbol;	/* symbol name */
--	unsigned int		nr_args;
--	struct fetch_func	args[TRACE_KPROBE_ARGS];
- 	struct ftrace_event_call	call;
-+	unsigned int		nr_args;
-+	struct fetch_func	args[];
- };
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 1867553..d696580 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -147,7 +147,8 @@
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *event_call,		\
++		     struct trace_seq *s)				\
+ {									\
+ 	struct ftrace_raw_##call field __attribute__((unused));		\
+ 	int ret = 0;							\
+@@ -289,10 +290,9 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+ int									\
+-ftrace_define_fields_##call(void)					\
++ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+ {									\
+ 	struct ftrace_raw_##call field;					\
+-	struct ftrace_event_call *event_call = &event_##call;		\
+ 	int ret;							\
+ 									\
+ 	__common_field(int, type, 1);					\
+@@ -355,7 +355,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	event_trace_printk(_RET_IP_, "<call>: " <fmt>);
+  * }
+  *
+- * static int ftrace_reg_event_<call>(void)
++ * static int ftrace_reg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	int ret;
+  *
+@@ -366,7 +366,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	return ret;
+  * }
+  *
+- * static void ftrace_unreg_event_<call>(void)
++ * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	unregister_trace_<call>(ftrace_event_<call>);
+  * }
+@@ -399,7 +399,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	trace_current_buffer_unlock_commit(event, irq_flags, pc);
+  * }
+  *
+- * static int ftrace_raw_reg_event_<call>(void)
++ * static int ftrace_raw_reg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	int ret;
+  *
+@@ -410,7 +410,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	return ret;
+  * }
+  *
+- * static void ftrace_unreg_event_<call>(void)
++ * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	unregister_trace_<call>(ftrace_raw_event_<call>);
+  * }
+@@ -419,7 +419,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	.trace			= ftrace_raw_output_<call>, <-- stage 2
+  * };
+  *
+- * static int ftrace_raw_init_event_<call>(void)
++ * static int ftrace_raw_init_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	int id;
+  *
+@@ -537,7 +537,7 @@ static void ftrace_raw_event_##call(proto)				\
+ 		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+ }									\
+ 									\
+-static int ftrace_raw_reg_event_##call(void)				\
++static int ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)\
+ {									\
+ 	int ret;							\
+ 									\
+@@ -548,7 +548,7 @@ static int ftrace_raw_reg_event_##call(void)				\
+ 	return ret;							\
+ }									\
+ 									\
+-static void ftrace_raw_unreg_event_##call(void)				\
++static void ftrace_raw_unreg_event_##call(struct ftrace_event_call *unused)\
+ {									\
+ 	unregister_trace_##call(ftrace_raw_event_##call);		\
+ }									\
+@@ -557,7 +557,7 @@ static struct trace_event ftrace_event_type_##call = {			\
+ 	.trace			= ftrace_raw_output_##call,		\
+ };									\
+ 									\
+-static int ftrace_raw_init_event_##call(void)				\
++static int ftrace_raw_init_event_##call(struct ftrace_event_call *unused)\
+ {									\
+ 	int id;								\
+ 									\
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 90cf936..174840b 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -62,9 +62,7 @@ err:
+ }
+ EXPORT_SYMBOL_GPL(trace_define_field);
  
-+#define SIZEOF_TRACE_PROBE(n)			\
-+	(offsetof(struct trace_probe, args) +	\
-+	(sizeof(struct fetch_func) * (n)))
-+
- static int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs);
- static int kretprobe_trace_func(struct kretprobe_instance *ri,
- 				struct pt_regs *regs);
-@@ -255,11 +259,11 @@ static DEFINE_MUTEX(probe_lock);
- static LIST_HEAD(probe_list);
- 
- static struct trace_probe *alloc_trace_probe(const char *symbol,
--					     const char *event)
-+					     const char *event, int nargs)
+-#ifdef CONFIG_MODULES
+-
+-static void trace_destroy_fields(struct ftrace_event_call *call)
++void trace_destroy_fields(struct ftrace_event_call *call)
  {
- 	struct trace_probe *tp;
+ 	struct ftrace_event_field *field, *next;
  
--	tp = kzalloc(sizeof(struct trace_probe), GFP_KERNEL);
-+	tp = kzalloc(SIZEOF_TRACE_PROBE(nargs), GFP_KERNEL);
- 	if (!tp)
- 		return ERR_PTR(-ENOMEM);
- 
-@@ -559,9 +563,10 @@ static int create_trace_probe(int argc, char **argv)
- 		if (offset && is_return)
- 			return -EINVAL;
+@@ -76,8 +74,6 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
  	}
-+	argc -= 2; argv += 2;
+ }
  
- 	/* setup a probe */
--	tp = alloc_trace_probe(symbol, event);
-+	tp = alloc_trace_probe(symbol, event, argc);
- 	if (IS_ERR(tp))
- 		return PTR_ERR(tp);
+-#endif /* CONFIG_MODULES */
+-
+ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 					int enable)
+ {
+@@ -86,14 +82,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 		if (call->enabled) {
+ 			call->enabled = 0;
+ 			tracing_stop_cmdline_record();
+-			call->unregfunc();
++			call->unregfunc(call);
+ 		}
+ 		break;
+ 	case 1:
+ 		if (!call->enabled) {
+ 			call->enabled = 1;
+ 			tracing_start_cmdline_record();
+-			call->regfunc();
++			call->regfunc(call);
+ 		}
+ 		break;
+ 	}
+@@ -576,7 +572,7 @@ event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 	trace_seq_printf(s, "format:\n");
+ 	trace_write_header(s);
  
-@@ -580,8 +585,8 @@ static int create_trace_probe(int argc, char **argv)
- 		kp->addr = addr;
+-	r = call->show_format(s);
++	r = call->show_format(call, s);
+ 	if (!r) {
+ 		/*
+ 		 * ug!  The format output is bigger than a PAGE!!
+@@ -952,7 +948,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 		d_events = event_subsystem_dir(call->system, d_events);
  
- 	/* parse arguments */
--	argc -= 2; argv += 2; ret = 0;
--	for (i = 0; i < argc && i < TRACE_KPROBE_ARGS; i++) {
-+	ret = 0;
-+	for (i = 0; i < argc && i < MAX_TRACE_ARGS; i++) {
- 		if (strlen(argv[i]) > MAX_ARGSTR_LEN) {
- 			pr_info("Argument%d(%s) is too long.\n", i, argv[i]);
- 			ret = -ENOSPC;
+ 	if (call->raw_init) {
+-		ret = call->raw_init();
++		ret = call->raw_init(call);
+ 		if (ret < 0) {
+ 			pr_warning("Could not initialize trace point"
+ 				   " events/%s\n", call->name);
+@@ -976,7 +972,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 					  id);
+ 
+ 	if (call->define_fields) {
+-		ret = call->define_fields();
++		ret = call->define_fields(call);
+ 		if (ret < 0) {
+ 			pr_warning("Could not initialize trace point"
+ 				   " events/%s\n", call->name);
+@@ -996,6 +992,53 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 	return 0;
+ }
+ 
++static int __trace_add_event_call(struct ftrace_event_call *call)
++{
++	struct dentry *d_events;
++
++	if (!call->name)
++		return -EINVAL;
++
++	d_events = event_trace_events_dir();
++	if (!d_events)
++		return -ENOENT;
++
++	list_add(&call->list, &ftrace_events);
++	return event_create_dir(call, d_events, &ftrace_event_id_fops,
++				&ftrace_enable_fops, &ftrace_event_filter_fops,
++				&ftrace_event_format_fops);
++}
++
++/* Add an additional event_call dynamically */
++int trace_add_event_call(struct ftrace_event_call *call)
++{
++	int ret;
++	mutex_lock(&event_mutex);
++	ret = __trace_add_event_call(call);
++	mutex_unlock(&event_mutex);
++	return ret;
++}
++
++static void __trace_remove_event_call(struct ftrace_event_call *call)
++{
++	ftrace_event_enable_disable(call, 0);
++	if (call->event)
++		__unregister_ftrace_event(call->event);
++	debugfs_remove_recursive(call->dir);
++	list_del(&call->list);
++	trace_destroy_fields(call);
++	destroy_preds(call);
++	remove_subsystem_dir(call->system);
++}
++
++/* Remove an event_call */
++void trace_remove_event_call(struct ftrace_event_call *call)
++{
++	mutex_lock(&event_mutex);
++	__trace_remove_event_call(call);
++	mutex_unlock(&event_mutex);
++}
++
+ #define for_each_event(event, start, end)			\
+ 	for (event = start;					\
+ 	     (unsigned long)event < (unsigned long)end;		\
+@@ -1101,14 +1144,7 @@ static void trace_module_remove_events(struct module *mod)
+ 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
+ 		if (call->mod == mod) {
+ 			found = true;
+-			ftrace_event_enable_disable(call, 0);
+-			if (call->event)
+-				__unregister_ftrace_event(call->event);
+-			debugfs_remove_recursive(call->dir);
+-			list_del(&call->list);
+-			trace_destroy_fields(call);
+-			destroy_preds(call);
+-			remove_subsystem_dir(call->system);
++			__trace_remove_event_call(call);
+ 		}
+ 	}
+ 
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index d06cf89..7cee79d 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -60,7 +60,7 @@ extern void __bad_type_size(void);
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+ {									\
+ 	struct args field;						\
+ 	int ret;							\
+@@ -76,7 +76,7 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+ 				    tpfmt)				\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+ {									\
+ 	struct args field;						\
+ 	int ret;							\
+@@ -115,10 +115,16 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define TRACE_FIELD_SPECIAL(type_item, item, len, cmd)	\
+ 	cmd;
+ 
++static int ftrace_raw_init_event(struct ftrace_event_call *event_call)
++{
++	INIT_LIST_HEAD(&event_call->fields);
++	init_preds(event_call);
++	return 0;
++}
++
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+-int ftrace_define_fields_##call(void);					\
+-static int ftrace_raw_init_event_##call(void);				\
++int ftrace_define_fields_##call(struct ftrace_event_call *c);		\
+ 									\
+ struct ftrace_event_call __used						\
+ __attribute__((__aligned__(4)))						\
+@@ -126,16 +132,10 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.name			= #call,				\
+ 	.id			= proto,				\
+ 	.system			= __stringify(TRACE_SYSTEM),		\
+-	.raw_init		= ftrace_raw_init_event_##call,		\
++	.raw_init		= ftrace_raw_init_event,		\
+ 	.show_format		= ftrace_format_##call,			\
+ 	.define_fields		= ftrace_define_fields_##call,		\
+-};									\
+-static int ftrace_raw_init_event_##call(void)				\
+-{									\
+-	INIT_LIST_HEAD(&event_##call.fields);				\
+-	init_preds(&event_##call);					\
+-	return 0;							\
+-}									\
++};
+ 
+ #undef TRACE_EVENT_FORMAT_NOFILTER
+ #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+@@ -182,9 +182,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+ int									\
+-ftrace_define_fields_##call(void)					\
++ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+ {									\
+-	struct ftrace_event_call *event_call = &event_##call;		\
+ 	struct args field;						\
+ 	int ret;							\
+ 									\
 
 
 -- 
