@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbZGPClB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbZGPCsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757201AbZGPClB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 22:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbZGPClB
+	id S1757214AbZGPCsr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 22:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbZGPCsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 22:41:01 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:52693 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757154AbZGPClA (ORCPT
+	Wed, 15 Jul 2009 22:48:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33479 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757057AbZGPCsp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 22:41:00 -0400
-Date: Thu, 16 Jul 2009 03:40:57 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "corentincj@iksaif.net" <corentincj@iksaif.net>
-Subject: Re: [PATCH 1/3] backlight: Allow drivers to update the core, and
-	generate events on changes
-Message-ID: <20090716024057.GA2461@srcf.ucam.org>
-References: <1247517685-7719-1-git-send-email-mjg@redhat.com> <1247574573.23871.8.camel@dax.rpnet.com> <1247644518.26272.88.camel@rzhang-dt> <1247646153.6248.3.camel@dax.rpnet.com> <1247647105.26272.99.camel@rzhang-dt> <1247649089.20241.5.camel@dax.rpnet.com> <20090715135808.GA19054@srcf.ucam.org> <1247711974.26272.190.camel@rzhang-dt>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247711974.26272.190.camel@rzhang-dt>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Wed, 15 Jul 2009 22:48:45 -0400
+Date: Wed, 15 Jul 2009 19:48:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH -mm] throttle direct reclaim when too many pages are
+ isolated already
+Message-Id: <20090715194820.237a4d77.akpm@linux-foundation.org>
+In-Reply-To: <20090715223854.7548740a@bree.surriel.com>
+References: <20090715223854.7548740a@bree.surriel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 10:39:34AM +0800, Zhang Rui wrote:
-> On Wed, 2009-07-15 at 21:58 +0800, Matthew Garrett wrote:
-> > On Wed, Jul 15, 2009 at 10:11:29AM +0100, Richard Purdie wrote:
-> > 
-> > > So there are basically two values we're ever interested in at a given
-> > > point in time. The current ambient light reading and the corresponding
-> > > display luminance adjustment. Both of those could just be exposed as an
-> > > input device really?
-> > 
-> > The alternative would be hwmon, I guess.
+On Wed, 15 Jul 2009 22:38:53 -0400 Rik van Riel <riel@redhat.com> wrote:
+
+> When way too many processes go into direct reclaim, it is possible
+> for all of the pages to be taken off the LRU.  One result of this
+> is that the next process in the page reclaim code thinks there are
+> no reclaimable pages left and triggers an out of memory kill.
 > 
-> you mean convert an ACPI ALS device to a hwmon device?
+> One solution to this problem is to never let so many processes into
+> the page reclaim path that the entire LRU is emptied.  Limiting the
+> system to only having half of each inactive list isolated for
+> reclaim should be safe.
+> 
 
-Yes.
+Since when?  Linux page reclaim has a bilion machine years testing and
+now stuff like this turns up.  Did we break it or is this a
+never-before-discovered workload?
 
-> > You want smoothing even in a default policy, and doing that well might 
-> > be a bit much for the kernel?
-> > 
-> sorry, I don't understand.
-> do you mean that there should be a default policy in the kernel?
+> ---
+> This patch goes on top of Kosaki's "Account the number of isolated pages"
+> patch series.
+> 
+>  mm/vmscan.c |   25 +++++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+> 
+> Index: mmotm/mm/vmscan.c
+> ===================================================================
+> --- mmotm.orig/mm/vmscan.c	2009-07-08 21:37:01.000000000 -0400
+> +++ mmotm/mm/vmscan.c	2009-07-08 21:39:02.000000000 -0400
+> @@ -1035,6 +1035,27 @@ int isolate_lru_page(struct page *page)
+>  }
+>  
+>  /*
+> + * Are there way too many processes in the direct reclaim path already?
+> + */
+> +static int too_many_isolated(struct zone *zone, int file)
+> +{
+> +	unsigned long inactive, isolated;
+> +
+> +	if (current_is_kswapd())
+> +		return 0;
+> +
+> +	if (file) {
+> +		inactive = zone_page_state(zone, NR_INACTIVE_FILE);
+> +		isolated = zone_page_state(zone, NR_ISOLATED_FILE);
+> +	} else {
+> +		inactive = zone_page_state(zone, NR_INACTIVE_ANON);
+> +		isolated = zone_page_state(zone, NR_ISOLATED_ANON);
+> +	}
+> +
+> +	return isolated > inactive;
+> +}
+> +
+> +/*
+>   * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+>   * of reclaimed pages
+>   */
+> @@ -1049,6 +1070,10 @@ static unsigned long shrink_inactive_lis
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>  	int lumpy_reclaim = 0;
+>  
+> +	while (unlikely(too_many_isolated(zone, file))) {
+> +		schedule_timeout_interruptible(HZ/10);
+> +	}
 
-No, I mean that the only default policy you could reasonably have in the 
-kernel would be tying the backlight directly to the ALS. And that sucks. 
-You need some degree of smoothing, and that's a job better left to 
-userspace.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+This (incorrectly-laid-out) code is a no-op if signal_pending().
