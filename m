@@ -1,74 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933179AbZGPTzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933198AbZGPT4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933179AbZGPTzs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 15:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933116AbZGPTzr
+	id S933198AbZGPT4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 15:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933161AbZGPT4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 15:55:47 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:54689 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932805AbZGPTzq (ORCPT
+	Thu, 16 Jul 2009 15:56:15 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46987 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933116AbZGPT4O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 15:55:46 -0400
-Date: Thu, 16 Jul 2009 21:55:42 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Przemys??awPawe??czyk <przemyslaw@pawelczyk.it>
-Subject: Re: [PATCH -tip -v12 02/11] x86: x86 instruction decoder build-time
-	selftest
-Message-ID: <20090716195542.GA5994@merkur.ravnborg.org>
-Mail-Followup-To: Masami Hiramatsu <mhiramat@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-	lkml <linux-kernel@vger.kernel.org>,
-	systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-	DLE <dle-develop@lists.sourceforge.net>,
-	Jim Keniston <jkenisto@us.ibm.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Andi Kleen <ak@linux.intel.com>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	Avi Kivity <avi@redhat.com>,
-	Przemys??awPawe??czyk <przemyslaw@pawelczyk.it>
-References: <20090716155652.6266.39970.stgit@localhost.localdomain> <20090716155706.6266.79022.stgit@localhost.localdomain> <20090716162947.GA5804@merkur.ravnborg.org> <4A5F6571.3020002@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5F6571.3020002@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Jul 2009 15:56:14 -0400
+Subject: Re: deterministic scsi order with async scan
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: david@lang.hm
+Cc: James Smart <James.Smart@Emulex.Com>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.10.0907161245470.9159@asgard>
+References: <alpine.DEB.1.10.0907151801040.9159@asgard>
+	 <4A5F100E.9000107@panasas.com> <alpine.DEB.1.10.0907161017180.9159@asgard>
+	 <4A5F723B.7070408@emulex.com>  <alpine.DEB.1.10.0907161143010.9159@asgard>
+	 <1247773155.6606.265.camel@mulgrave.site>
+	 <alpine.DEB.1.10.0907161245470.9159@asgard>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 14:56:10 -0500
+Message-Id: <1247774170.6606.305.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> +      cmd_posttest = objdump -d $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/scripts/distill.awk | $(obj)/test_get_len
-> >> +
-> > 
-> > You are using the native objdump here.
-> > But I assume this fails miserably when you build x86 on a powerpc host.
-> > In other words - you broke an allyesconfig build for -next...
-> > We have $(OBJDUMP) for this.
+On Thu, 2009-07-16 at 12:48 -0700, david@lang.hm wrote:
+> On Thu, 16 Jul 2009, James Bottomley wrote:
 > 
-> Ah, I see... Would you know actual name of x86-objdump on the powerpc
-> (or any other crosscompiling host)? I just set "OBJDUMP=objdump" is OK?
-> I'm not so sure about cross-compiling kernel...
+> > On Thu, 2009-07-16 at 11:43 -0700, david@lang.hm wrote:
+> >> On Thu, 16 Jul 2009, James Smart wrote:
+> >>
+> >>> david@lang.hm wrote:
+> >>>> On Thu, 16 Jul 2009, Boaz Harrosh wrote:
+> >>>>
+> >>>>
+> >>>>> It is highly discouraged to setup any kind of system that depends
+> >>>>> on device-names for block-devices. mounts have the mount by-label
+> >>>>> or mount by-uuid. Any other subsystem should go by /dev/disk/by-id/*
+> >>>>> slinks to find a persistent raw block-device. the id is generated
+> >>>>> from characteristics inside the disk itself so it will be the same
+> >>>>> no matter what host connection or bus it is connected too (almost).
+> >>>>>
+> >>>>> This is because even if the boot order is consistent, the device-name
+> >>>>> is so volatile in the life-span of a system. Did I boot with a removable
+> >>>>> USB inserted. that camera or printer was on or off, disk was connected
+> >>>>> to the other port. Any such change will break things and give you a very
+> >>>>> poor user experience.
+> >>>>>
+> >>>>
+> >>>> for a laptop you areprobably correct, but for a server or embedded system
+> >>>> that doesn't have it's hardware changing all the time you are not correct.
+> >>>>
+> >>>> especially on a system with lots of drives, why should I have to create an
+> >>>> initrd that goes and searches dozens or hundreds of drives to find out
+> >>>> which one to boot from?
+> >>>>
+> >>> Boaz is correct. Many enterprise SCSI subsystems (FC, SAS) do not have hard
+> >>> transport addresses for each device like Parallel SCSI used to.  Thus, any
+> >>> difference in order of appearance of the devices (power-up ordering, FC ALPA
+> >>> assignment based on who's loop master, order that switch reports them, is an
+> >>> array in a failover mode with 1 controller non-existent), or if LUN
+> >>> configuration on an array changes, or as a drive may fail (especially with
+> >>> hundreds), there's no guarantee you will see the same thing in the same order
+> >>> w/o name binding. Same thing is true if one of those adapters fails or is
+> >>> swapped out.
+> >>
+> >> yes, but does your system change the order of your internal direct
+> >> attached drives with your FC/SAN drives?
+> >
+> > Certainly, it can.  The way BIOS booting gets around this is either to
+> > use some type of physical indicator (like phy number for SAS) to find C:
+> > or to use a persistent ID mapping scheme (which is pretty much
+> > equivalent to our /dev/disk/by-id/ udev one).
+> 
+> so if I don't use udev but do want the async detection my only option to 
+> have it boot from card 1 instead of card 2 is to just keep rebooting the 
+> machine until it guesses right?
 
-Replacing objdump with $(OBJDUMP) will do the trick.
-We set OBJDUMP to the correct value in the top-level makefile.
+Well, for multiple cards that's effectively true with or without async
+scanning ... the kernel doesn't know how you've enabled the bios scans
+on the cards, so it takes first bus discovery order, so your boot drive
+can always end up as /dev/sdb etc.
 
-Are there any parts of your user-space program that rely
-on the host is little-endian?
-If it does then it would fail on a power-pc target despite using the
-correct objdump.
+In theory, async probing shouldn't be racy, but we've likely got a
+problem between async SCSI scanning and async sd driver attachment, so
+when those are sorted out it should be no worse with than without.
 
-	Sam
+James
+
+
