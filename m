@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZGPHUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbZGPHX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752163AbZGPHUm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 03:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZGPHUm
+	id S1751769AbZGPHX3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 03:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZGPHX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 03:20:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:32842 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752082AbZGPHUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 03:20:41 -0400
-Message-ID: <4A5ED59C.3010805@redhat.com>
-Date: Thu, 16 Jul 2009 09:24:12 +0200
-From: Hans de Goede <hdegoede@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 16 Jul 2009 03:23:29 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:25841 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbZGPHX2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 03:23:28 -0400
+Date: Thu, 16 Jul 2009 10:21:30 +0300
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Jeff Garzik <jeff@garzik.org>
+Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       Junio C Hamano <gitster@pobox.com>,
+       "git@vger.kernel.org" <git@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] GIT 1.6.4.rc1
+Message-ID: <20090716072130.GH5256@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <7vmy75bg2f.fsf@alter.siamese.dyndns.org>
+ <4A5EA598.5050801@garzik.org>
+ <7v3a8xb0lz.fsf@alter.siamese.dyndns.org>
+ <4A5ECC09.3010405@garzik.org>
+ <20090716064802.GG5256@nokia.com>
+ <4A5ED41F.5010502@garzik.org>
 MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>
-CC: Jon Smirl <jonsmirl@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alan Cox <alan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Why do we probe option roms at 2K boundaries?
-References: <1247698965.3989.1.camel@dwillia2-linux.ch.intel.com>	 <20090716001016.489fa970@lxorguk.ukuu.org.uk>	 <9e4733910907151613n777261e5k3e3c1cd646c7922a@mail.gmail.com> <1247702933.4215.4.camel@dwillia2-linux.ch.intel.com>
-In-Reply-To: <1247702933.4215.4.camel@dwillia2-linux.ch.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A5ED41F.5010502@garzik.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 16 Jul 2009 07:21:34.0563 (UTC) FILETIME=[0C9BBB30:01CA05E6]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Thu, Jul 16, 2009 at 09:17:51AM +0200, ext Jeff Garzik wrote:
+> Felipe Balbi wrote:
+> > On Thu, Jul 16, 2009 at 08:43:21AM +0200, ext Jeff Garzik wrote:
+> >> Junio C Hamano wrote:
+> >>> Jeff Garzik <jeff@garzik.org> writes:
+> >>>
+> >>>> Is there some sort of guide to the new best practices for handling
+> >>>> trees such as git.kernel.org, where one pushes into "foo.git"
+> >>>> directly, and there is no checked-out source code at all?
+> >>> I think old repositories will be helped if you add
+> >>>
+> >>> 	[core]
+> >>>         	bare
+> >>>
+> >>> to their foo.git/config files.
+> >> Thanks.  What about cloning new repositories?  Real world example:
+> >>
+> >> Local workstation has /spare/repo/cld/.git repository, with checked-out 
+> >> working tree.
+> >>
+> >> I want to publish this tree to the world via a *.kernel.org-like system, 
+> >> so my task is to
+> >>
+> >> 	scp -r /spare/repo/cld/.git remote.example.com:/pub/scm/cld.git
+> >>
+> >> but if I do this with scp, then future pushes to 
+> >> remote.example.com:/pub/scm/cld.git emit the warning about updating the 
+> >> currently checked-out branch -- even though there are no checked-out 
+> >> files.  The checked-out files were not copied in the scp.
+> > 
+> > how about you create the bare repository on the kernel.org-like server
+> > and then push cld to it ?
+> 
+> You mean use 'git init-db', like this?
+> 
+> 1) remote: cd /pub/scm ; mkdir cld.git ; GIT_DIR=cld.git git init-db
+> 
+> 2) local: cd /spare/repo/cld ; git push --force --all \
+> 	remote.ex.com/pub/scm/cld.git
+> 
+> I suppose that would work...
 
-On 07/16/2009 02:08 AM, Dan Williams wrote:
-> On Wed, 2009-07-15 at 16:13 -0700, Jon Smirl wrote:
->> On Wed, Jul 15, 2009 at 7:10 PM, Alan Cox<alan@lxorguk.ukuu.org.uk>  wrote:
->>>> interrogating a data structure stored in option-rom memory.  My initial
->>>> implementation involved blindly scanning from c0000 to f0000 in 512 byte
->>>> increments.  Neil and others pointed out that this may not be a safe
->>> It isn't safe. If you hit certain ISA devices your system will drop dead.
->>> OTOH I doubt anyone has an intel matrix raid controller and a WD80x3 on
->>> the same box ;)
->> Random link from google, slide 21
->> http://download.microsoft.com/download/9/8/f/98f3fe47-dfc3-4e74-92a3-088782200fe7/TWAR05005_WinHEC05.ppt
->>
->> PCI 3.0+ allows 512b alignment, but you must first make sure you are
->> on a PCI 3.0+ system.
->
-> Thanks, I believe this may be the missing difference between my test
-> system and Hans'.
->
+yes, exactly :-)
 
-Probably, I'll happily test any patches for this you come up with, note that I'm
-leaving for a week of vacation tomorrow, so it might take some time for me to
-get back to you.
-
-Regards,
-
-Hans
+-- 
+balbi
