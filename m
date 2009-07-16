@@ -1,64 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbZGPG3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbZGPGho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbZGPG3T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 02:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZGPG3S
+	id S1756624AbZGPGho (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 02:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbZGPGhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 02:29:18 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:59564 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbZGPG2U (ORCPT
+	Thu, 16 Jul 2009 02:37:43 -0400
+Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:47612 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbZGPGhm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 02:28:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=HRGM319uX2L+zIcc7Z3I3IiK58cP47LbJ505uwC8oAWi+KEA5qlzalv+DhyafGc43E
-         2Ztz30bYH3JeQX/KucD0WjcheWHgV6LpXcbp9+tnjXh+qCvXE5KPEOlUDUyiGvjtvGjt
-         BoMaJVp6TxwJtBOJfn862ASRc6sA56NnOLYLA=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 2/7] sched: Remove obsolete comment in __cond_resched()
-Date: Thu, 16 Jul 2009 02:28:09 -0400
-Message-Id: <1247725694-6082-2-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1247725694-6082-1-git-send-email-fweisbec@gmail.com>
-References: <1247725694-6082-1-git-send-email-fweisbec@gmail.com>
+	Thu, 16 Jul 2009 02:37:42 -0400
+X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Thu, 16 Jul 2009 02:37:42 EDT
+To: Jeff Garzik <jeff@garzik.org>
+Cc: git@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] GIT 1.6.4.rc1
+References: <7vmy75bg2f.fsf@alter.siamese.dyndns.org>
+ <4A5EA598.5050801@garzik.org>
+From: Junio C Hamano <gitster@pobox.com>
+Date: Wed, 15 Jul 2009 23:31:04 -0700
+In-Reply-To: <4A5EA598.5050801@garzik.org> (Jeff Garzik's message of "Wed\,
+ 15 Jul 2009 23\:59\:20 -0400")
+Message-ID: <7v3a8xb0lz.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: 4042DA2E-71D2-11DE-9740-9AE02FB70C38-77302942!a-pb-sasl-sd.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the outdated comment from __cond_resched() related
-to the now removed Big Kernel Semaphore.
+Jeff Garzik <jeff@garzik.org> writes:
 
-Reported-by: Arnd Bergmann <arnd@arndb.de>
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched.c |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+> Is there some sort of guide to the new best practices for handling
+> trees such as git.kernel.org, where one pushes into "foo.git"
+> directly, and there is no checked-out source code at all?
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 264b163..bb11547 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6613,11 +6613,6 @@ static void __cond_resched(void)
- #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
- 	__might_sleep(__FILE__, __LINE__);
- #endif
--	/*
--	 * The BKS might be reacquired before we have dropped
--	 * PREEMPT_ACTIVE, which could trigger a second
--	 * cond_resched() call.
--	 */
- 	add_preempt_count(PREEMPT_ACTIVE);
- 	schedule();
- 	sub_preempt_count(PREEMPT_ACTIVE);
--- 
-1.6.2.3
+I think old repositories will be helped if you add
 
+	[core]
+        	bare
+
+to their foo.git/config files.
