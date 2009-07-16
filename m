@@ -1,128 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932991AbZGPSRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933000AbZGPSUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932991AbZGPSRN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 14:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932952AbZGPSRM
+	id S933000AbZGPSUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 14:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbZGPSUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 14:17:12 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:60163 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932416AbZGPSRL (ORCPT
+	Thu, 16 Jul 2009 14:20:43 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:50628 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932614AbZGPSUm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 14:17:11 -0400
-Message-ID: <4A5F6EAE.8020106@vlnb.net>
-Date: Thu, 16 Jul 2009 22:17:18 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 16 Jul 2009 14:20:42 -0400
+Date: Thu, 16 Jul 2009 14:20:13 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@vinegar-pot.mit.edu
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       David Howells <dhowells@redhat.com>,
+       Anders Kaseorg <andersk@ksplice.com>
+Subject: Re: [PATCH] Restructure BSS linker script macros.
+In-Reply-To: <alpine.DEB.1.10.0907121820360.23364@vinegar-pot.mit.edu>
+Message-ID: <alpine.DEB.1.10.0907151750020.16617@vinegar-pot.mit.edu>
+References: <alpine.DEB.1.10.0907121820360.23364@vinegar-pot.mit.edu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net, Boaz Harrosh <bharrosh@panasas.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>, Joe Eykholt <jeykholt@cisco.com>
-Subject: Re: [PATCH v2]: New implementation of scsi_execute_async()
-References: <4A563368.5040407@vlnb.net> <4A5CAFB5.1000901@vlnb.net> <4A5EDC53.5050902@kernel.org>
-In-Reply-To: <4A5EDC53.5050902@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+bvKn4vXCtxYqCzx0POODErLxXv/W6j2nAwLI
- xewMuvbC5SDviVyDTNGJpF27ICBptil4WfDyW0ueyg1lVVIYT+
- L67R19TbKECG2GEpLa4jQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Tejun
+Sam, David,
 
-Tejun Heo, on 07/16/2009 11:52 AM wrote:
-> Hello, Vladislav.
+Have you had a chance to look at this patch yet?  The lost ALIGN(4) in the 
+mn10300 linker script that this fixes is a regression introduced by commit 
+2e8b5a09ebf1f98f02c1988a48415e89d4c25168 (between 2.6.30 and 2.6.31-rc1) 
+that we probably want to fix for 2.6.31.  (That should be the only 
+functional effect of this patch.)
+
+	-Tim Abbott
+
+On Sun, 12 Jul 2009, Tim Abbott wrote:
+
+> The BSS section macros in vmlinux.lds.h currently place the .sbss
+> input section outside the bounds of [__bss_start, __bss_end].  On all
+> architectures except for microblaze that handle both .sbss and
+> __bss_start/__bss_end, this is wrong: the .sbss input section is
+> within the range [__bss_start, __bss_end].  Relatedly, the example
+> code at the top of the file actually has __bss_start/__bss_end defined
+> twice; I believe the right fix here is to define them in the
+> BSS_SECTION macro but not in the BSS macro.
 > 
-> Sorry about the delay.
+> Another problem with the current macros is that several
+> architectures have an ALIGN(4) or some other small number just before
+> __bss_stop in their linker scripts.  The BSS_SECTION macro currently
+> hardcodes this to 4; while it should really be an argument.  It also
+> ignores its sbss_align argument; fix that.
 > 
-> Vladislav Bolkhovitin wrote:
->> This patch reimplements scsi_execute_async(). In the new version
->> it's a lot less hackish and also has additional features. Namely:
+> mn10300 is the only user at present of any of the macros touched by
+> this patch.  It looks like mn10300 actually was incorrectly converted
+> to use the new BSS() macro (the alignment of 4 prior to conversion was
+> a __bss_stop alignment, but the argument to the BSS macro is a start
+> alignment).  So fix this as well.
 > 
-> :-)
-
-The "hackish" was not about your work, it was about the original 
-implementation, which was too often blamed as "hackish" ;-)
-
->> 1. Possibility to insert commands both in tail and in head of the queue.
->>
->> 2. Possibility to explicitly specify if the last SG element has
->> space for padding.
->>
->> This patch based on the previous patches posted by Tejun
->> Heo. Comparing to them it has the following improvements:
->>
->> 1. It uses BIOs chaining instead of kmalloc()ing the whole bio.
->>
->> 2. It uses SGs chaining instead of kmalloc()ing one big SG in case
->> if direct mapping failed (e.g. because of DMA alignment or padding).
->>
->> 3. If direct mapping failed, if possible, it copies only the last SG
->> element, not the whole SG.
->>
->> 4. When needed, copy_page() is used instead of memcpy() to copy the
->> whole pages.
->>
->> Also this patch adds and exports functions sg_copy() and
->> sg_copy_elem(), which cop one SG to another and one SG element to
->> another respectively.
->>
->> At the moment SCST is the only user of this functionality. It needs
->> it, because its target drivers, which are, basically, SCSI drivers,
->> can deal only with SGs, not with BIOs. But, according the latest
->> discussions, there are other potential users for of this
->> functionality, so I'm sending this patch in a hope that it will be
->> also useful for them and eventually will be merged in the mainline
->> kernel.
->>
->> This patch requires previously sent patch with subject "[PATCH]:
->> Rename REQ_COPY_USER to more descriptive
->> REQ_HAS_TAIL_SPACE_FOR_PADDING".
+> I'd like acks from Sam and David on this one.  Also CCing Paul, since
+> he has a patch from me which will need to be updated to use
+> BSS_SECTION(0, PAGE_SIZE, 4) once this gets merged.
 > 
-> The original patchset was focused more on unifying user and kernel and
-> user sg mapping handling.  It seems you implemented the kernel part
-> completely separately.  Wouldn't it be better to unify where possible?
-
-I don't see a place where they can be unified from using the existing 
-user mapping functionality POV. And in your patchset it was the same. 
-Unifying in the opposite direction is possible, i.e. implementing 
-blk_rq_map_kern() via blk_rq_map_kern_sg(). But this will save a very 
-minor code piece (few tens LOCs). Would you like me to do it?
-
-> Or is there some fundamental reason that can't be done that I missed?
-
-See above.
-
-> Also, code organization-wise, I think good part of the posted code
-> belongs to bio.c.
-
-Could you be more specific, please?
-
-> The tail-only copying is nice but I'm not entirely sure whether such
-> full-blown approach is necessary.  The tail padding was added
-> primarily for dumb ATAPI devices which want to transfer more bytes
-> than requested.  Having extra space at the end makes the driver's job
-> much easier as it can just overflow into the area.  Some controller do
-> have "drain after this" flag in the dma table but some simply can't
-> handle such situations properly without explicit overflow area.
+> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: David Howells <dhowells@redhat.com>
+> ---
+>  arch/mn10300/kernel/vmlinux.lds.S |    2 +-
+>  include/asm-generic/vmlinux.lds.h |   19 +++++++++----------
+>  2 files changed, 10 insertions(+), 11 deletions(-)
 > 
-> So, being the horrid hack it is and highly unlikely to be used in
-> performance sensitive path, I think it would be better to keep the
-> implementation simple and dull.  It just isn't something worth
-> investing complexity over.  Of course, if you have a use case which
-> requires high performance tail padding, it's a different story.
-
-SCST allocates buffers in pages, so there is always a tail space, except 
-one relatively rare case of scst_local target driver, which allows usage 
-of the SCST-exported devices locally on the same host. For it the tail 
-spacing information is lost in the entrails of the block/SCSI 
-subsystems. So, why not to have the tail-only copying? Code-wise it's 
-quite simple, just few tens lines of code.
-
-Thanks,
-Vlad
+> diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
+> index c96ba3d..f4aa079 100644
+> --- a/arch/mn10300/kernel/vmlinux.lds.S
+> +++ b/arch/mn10300/kernel/vmlinux.lds.S
+> @@ -107,7 +107,7 @@ SECTIONS
+>    __init_end = .;
+>    /* freed after init ends here */
+>  
+> -  BSS(4)
+> +  BSS_SECTION(0, PAGE_SIZE, 4)
+>  
+>    _end = . ;
+>  
+> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> index a553f10..6ad76bf 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -30,9 +30,7 @@
+>   *	EXCEPTION_TABLE(...)
+>   *	NOTES
+>   *
+> - *	__bss_start = .;
+> - *	BSS_SECTION(0, 0)
+> - *	__bss_stop = .;
+> + *	BSS_SECTION(0, 0, 0)
+>   *	_end = .;
+>   *
+>   *	/DISCARD/ : {
+> @@ -489,7 +487,8 @@
+>   * bss (Block Started by Symbol) - uninitialized data
+>   * zeroed during startup
+>   */
+> -#define SBSS								\
+> +#define SBSS(sbss_align)						\
+> +	. = ALIGN(sbss_align);						\
+>  	.sbss : AT(ADDR(.sbss) - LOAD_OFFSET) {				\
+>  		*(.sbss)						\
+>  		*(.scommon)						\
+> @@ -498,12 +497,10 @@
+>  #define BSS(bss_align)							\
+>  	. = ALIGN(bss_align);						\
+>  	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {				\
+> -		VMLINUX_SYMBOL(__bss_start) = .;			\
+>  		*(.bss.page_aligned)					\
+>  		*(.dynbss)						\
+>  		*(.bss)							\
+>  		*(COMMON)						\
+> -		VMLINUX_SYMBOL(__bss_stop) = .;				\
+>  	}
+>  
+>  /*
+> @@ -735,8 +732,10 @@
+>  		INIT_RAM_FS						\
+>  	}
+>  
+> -#define BSS_SECTION(sbss_align, bss_align)				\
+> -	SBSS								\
+> +#define BSS_SECTION(sbss_align, bss_align, stop_align)			\
+> +	. = ALIGN(sbss_align);						\
+> +	VMLINUX_SYMBOL(__bss_start) = .;				\
+> +	SBSS(sbss_align)						\
+>  	BSS(bss_align)							\
+> -	. = ALIGN(4);
+> -
+> +	. = ALIGN(stop_align);						\
+> +	VMLINUX_SYMBOL(__bss_stop) = .;
+> -- 
+> 1.6.3.3
+> 
