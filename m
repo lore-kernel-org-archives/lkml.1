@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933154AbZGPTqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbZGPTsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933154AbZGPTqm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 15:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933103AbZGPTqm
+	id S933158AbZGPTsP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 15:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZGPTsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 15:46:42 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:41707 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933130AbZGPTql (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 15:46:41 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] add "VmUsers: N" to /proc/$PID/status
-In-Reply-To: Your message of "Wed, 15 Jul 2009 03:22:18 +0200."
-             <200907150322.18123.vda.linux@googlemail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <200907150322.18123.vda.linux@googlemail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1247773600_4382P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 16 Jul 2009 15:46:40 -0400
-Message-ID: <48286.1247773600@turing-police.cc.vt.edu>
+	Thu, 16 Jul 2009 15:48:14 -0400
+Received: from mail.lang.hm ([64.81.33.126]:40672 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932952AbZGPTsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 15:48:13 -0400
+Date: Thu, 16 Jul 2009 12:48:06 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: James Smart <James.Smart@Emulex.Com>, Boaz Harrosh <bharrosh@panasas.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Subject: Re: deterministic scsi order with async scan
+In-Reply-To: <1247773155.6606.265.camel@mulgrave.site>
+Message-ID: <alpine.DEB.1.10.0907161245470.9159@asgard>
+References: <alpine.DEB.1.10.0907151801040.9159@asgard>  <4A5F100E.9000107@panasas.com> <alpine.DEB.1.10.0907161017180.9159@asgard>  <4A5F723B.7070408@emulex.com>  <alpine.DEB.1.10.0907161143010.9159@asgard> <1247773155.6606.265.camel@mulgrave.site>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1247773600_4382P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 16 Jul 2009, James Bottomley wrote:
 
-On Wed, 15 Jul 2009 03:22:18 +0200, Denys Vlasenko said:
+> On Thu, 2009-07-16 at 11:43 -0700, david@lang.hm wrote:
+>> On Thu, 16 Jul 2009, James Smart wrote:
+>>
+>>> david@lang.hm wrote:
+>>>> On Thu, 16 Jul 2009, Boaz Harrosh wrote:
+>>>>
+>>>>
+>>>>> It is highly discouraged to setup any kind of system that depends
+>>>>> on device-names for block-devices. mounts have the mount by-label
+>>>>> or mount by-uuid. Any other subsystem should go by /dev/disk/by-id/*
+>>>>> slinks to find a persistent raw block-device. the id is generated
+>>>>> from characteristics inside the disk itself so it will be the same
+>>>>> no matter what host connection or bus it is connected too (almost).
+>>>>>
+>>>>> This is because even if the boot order is consistent, the device-name
+>>>>> is so volatile in the life-span of a system. Did I boot with a removable
+>>>>> USB inserted. that camera or printer was on or off, disk was connected
+>>>>> to the other port. Any such change will break things and give you a very
+>>>>> poor user experience.
+>>>>>
+>>>>
+>>>> for a laptop you areprobably correct, but for a server or embedded system
+>>>> that doesn't have it's hardware changing all the time you are not correct.
+>>>>
+>>>> especially on a system with lots of drives, why should I have to create an
+>>>> initrd that goes and searches dozens or hundreds of drives to find out
+>>>> which one to boot from?
+>>>>
+>>> Boaz is correct. Many enterprise SCSI subsystems (FC, SAS) do not have hard
+>>> transport addresses for each device like Parallel SCSI used to.  Thus, any
+>>> difference in order of appearance of the devices (power-up ordering, FC ALPA
+>>> assignment based on who's loop master, order that switch reports them, is an
+>>> array in a failover mode with 1 controller non-existent), or if LUN
+>>> configuration on an array changes, or as a drive may fail (especially with
+>>> hundreds), there's no guarantee you will see the same thing in the same order
+>>> w/o name binding. Same thing is true if one of those adapters fails or is
+>>> swapped out.
+>>
+>> yes, but does your system change the order of your internal direct
+>> attached drives with your FC/SAN drives?
+>
+> Certainly, it can.  The way BIOS booting gets around this is either to
+> use some type of physical indicator (like phy number for SAS) to find C:
+> or to use a persistent ID mapping scheme (which is pretty much
+> equivalent to our /dev/disk/by-id/ udev one).
 
-> It can be nice to know how many such CLONE_VM'ed processes
-> share VM with given /proc/PID. Then it would be possible to do
-> more accurate accounting of memory usage. Say, by dividing
-> all memory usage numbers of this process by this number.
+so if I don't use udev but do want the async detection my only option to 
+have it boot from card 1 instead of card 2 is to just keep rebooting the 
+machine until it guesses right?
 
-Process A clones a process A1.  Process B clones a process B1. Now
-all 4 of them have 'VmUsers: 2' on them, but there's no clean way to tell
-whether A1 or B1 is the one sharing with A, or with B.
-
-The patch is probably sufficient if all you want is some N to divide by, but
-not if you care *which* processes are sharing how much.
-
---==_Exmh_1247773600_4382P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKX4OgcC3lWbTT17ARArsTAJ9RWH4ihOKtaOKR/GZzjNT07vXh7gCfRNb3
-vLI567qRnSeZ01HNvka5oWY=
-=Sbe3
------END PGP SIGNATURE-----
-
---==_Exmh_1247773600_4382P--
+David Lang
