@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbZGPEd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbZGPEfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752798AbZGPEd7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 00:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZGPEd6
+	id S1754572AbZGPEfN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 00:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZGPEfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 00:33:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58475 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752081AbZGPEd5 (ORCPT
+	Thu, 16 Jul 2009 00:35:12 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46212 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbZGPEfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 00:33:57 -0400
-Date: Wed, 15 Jul 2009 21:33:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       mike.miller@hp.com, jens.axboe@oracle.com
-Subject: Re: [PATCH 2/3] cciss: use only one scan thread
-Message-Id: <20090715213348.0805073f.akpm@linux-foundation.org>
-In-Reply-To: <1247717759.25954.75.camel@grinch>
-References: <20090714220239.22282.44414.stgit@bob.kio>
-	<20090714220250.22282.69385.stgit@bob.kio>
-	<20090715150637.6f171759.akpm@linux-foundation.org>
-	<1247717759.25954.75.camel@grinch>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 16 Jul 2009 00:35:11 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/3] add isolate pages vmstat
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Wu Fengguang <fengguang.wu@intel.com>,
+       Rik van Riel <riel@redhat.com>, Minchan Kim <minchan.kim@gmail.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20090715201657.b01edccd.akpm@linux-foundation.org>
+References: <20090716095344.9D10.A69D9226@jp.fujitsu.com> <20090715201657.b01edccd.akpm@linux-foundation.org>
+Message-Id: <20090716132639.9D31.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 16 Jul 2009 13:35:07 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Jul 2009 04:15:59 +0000 Andrew Patterson <andrew.patterson@hp.com> wrote:
-
-> > > +}
+> > reproduce way
+> > -----------------------
+> > % ./hackbench 140 process 1000
+> >    => OOM occur
 > > 
-> > We already did init_completion(h->scan_wait) at startup time?  Doing
-> > the INIT_COMPLETION() here looks unusual and is hopefully unnecessary.
+> > active_anon:146 inactive_anon:0 isolated_anon:49245
+> >  active_file:79 inactive_file:18 isolated_file:113
+> >  unevictable:0 dirty:0 writeback:0 unstable:0 buffer:39
+> >  free:370 slab_reclaimable:309 slab_unreclaimable:5492
+> >  mapped:53 shmem:15 pagetables:28140 bounce:0
 > > 
+> > @@ -1164,6 +1170,9 @@ static unsigned long shrink_inactive_lis
+> >  				spin_lock_irq(&zone->lru_lock);
+> >  			}
+> >  		}
+> > +		__mod_zone_page_state(zone, NR_ISOLATED_ANON, -nr_anon);
+> > +		__mod_zone_page_state(zone, NR_ISOLATED_FILE, -nr_file);
+> > +
+> >    	} while (nr_scanned < max_scan);
 > 
-> I am following the text in the "Linux Device Drivers 3rd Edition section
-> 5.4:
-> 
-> "A completion is normally a one-shot device; it is used once then
-> discarded. It is possible, however, to reuse completion structures if
-> proper care is taken. If complete_all is not used, a completion
-> structure can be reused without any problems as long as there is no
-> ambiguity about what event is being signalled. If you use complete_all,
-> however, you must reinitialize the completion structure before reusing
-> it. The macro:
-> 
-> INIT_COMPLETION(struct completion c);
-> 
-> can be used to quickly perform this reinitialization."
-> 
-> It there are better way to do this? INIT_COMPLETION() currently just
-> sets done = 0.
+> This is a non-trivial amount of extra stuff.  Do we really need it?
 
-OK, I'd assumed that a full wait_for_completion()/complete() operation
-would leave the completion in ready-to-use-again state.
+In general, Administrator really hate large amount unaccounted memory.
+Recent msgctl11 discussion, We faced it isolate pages about 1/3 system 
+memory.
+Ahtough Rik's patch is applied, vmscan can isolate >1GB memory.
 
-But wait_for_completion_interruptible() can indeed leave
-completion.done in a non-zero state if it was interrupted by a signal.
-hm.  Perhaps so the caller can run wait_for_completion*() again.
+That's my point.
+
+
+
+
+
