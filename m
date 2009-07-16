@@ -1,214 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbZGPKUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755107AbZGPKgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbZGPKUJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 06:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZGPKUI
+	id S1755107AbZGPKgJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 06:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbZGPKgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 06:20:08 -0400
-Received: from tservice.net.ru ([195.178.208.66]:55370 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754873AbZGPKUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 06:20:07 -0400
-Date: Thu, 16 Jul 2009 14:19:57 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       davem@davemloft.net
-Subject: Re: [PATCH 1/3] connector: make callback argument type explicit
-Message-ID: <20090716101957.GA9586@ioremap.net>
-References: <1247696049-15699-1-git-send-email-vapier@gentoo.org>
+	Thu, 16 Jul 2009 06:36:08 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:64931 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755028AbZGPKgH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 06:36:07 -0400
+Message-ID: <4A5F0293.3010206@vlnb.net>
+Date: Thu, 16 Jul 2009 14:36:03 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247696049-15699-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ronald Moesbergen <intercommit@gmail.com>
+CC: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       Alan.Brunelle@hp.com, linux-fsdevel@vger.kernel.org,
+       jens.axboe@oracle.com, randy.dunlap@oracle.com,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+References: <4A3CD62B.1020407@vlnb.net> <4A5395FD.2040507@vlnb.net>	 <a0272b440907080149j3eeeb9bat13f942520db059a8@mail.gmail.com>	 <4A5493A8.2000806@vlnb.net>	 <a0272b440907092332o7c5bf1d0oa51d1cfc9b9e98f5@mail.gmail.com>	 <4A56FF32.2060303@vlnb.net> <4A570981.5080803@vlnb.net>	 <a0272b440907130512y60a757afqd5629f4ca3ac8e1b@mail.gmail.com>	 <4A5CD3E2.2060307@vlnb.net> <4A5D7794.2070607@vlnb.net> <a0272b440907160032u482bd483s54540001aef7ac73@mail.gmail.com>
+In-Reply-To: <a0272b440907160032u482bd483s54540001aef7ac73@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18V0Wey3P0jJ3RQ1slF6alSocV0HW0wL2csbQ9
+ QNPcrehIzf8ZCCo9Grw3aeS000rsOANxh7GAhAnH+vQ3VX/ueR
+ bqeZytctteHkEKUCWGh0g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike.
 
-Your patches look good, thanks a lot.
-David, please apply to the appropriate tree.
-Thank you.
-
-On Wed, Jul 15, 2009 at 06:14:07PM -0400, Mike Frysinger (vapier@gentoo.org) wrote:
-> The connector documentation states that the argument to the callback
-> function is always a pointer to a struct cn_msg, but rather than encode it
-> in the API itself, it uses a void pointer everywhere.  This doesn't make
-> much sense to encode the pointer in documentation as it prevents proper C
-> type checking from occurring and can easily allow people to use the wrong
-> pointer type.  So convert the argument type to an explicit struct cn_msg
-> pointer.
+Ronald Moesbergen, on 07/16/2009 11:32 AM wrote:
+> 2009/7/15 Vladislav Bolkhovitin <vst@vlnb.net>:
+>>> The drop with 64 max_sectors_kb on the client is a consequence of how CFQ
+>>> is working. I can't find the exact code responsible for this, but from all
+>>> signs, CFQ stops delaying requests if amount of outstanding requests exceeds
+>>> some threshold, which is 2 or 3. With 64 max_sectors_kb and 5 SCST I/O
+>>> threads this threshold is exceeded, so CFQ doesn't recover order of
+>>> requests, hence the performance drop. With default 512 max_sectors_kb and
+>>> 128K RA the server sees at max 2 requests at time.
+>>>
+>>> Ronald, can you perform the same tests with 1 and 2 SCST I/O threads,
+>>> please?
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> ---
->  Documentation/connector/cn_test.c |    4 +---
->  drivers/connector/cn_proc.c       |    3 +--
->  drivers/connector/cn_queue.c      |    7 +++++--
->  drivers/connector/connector.c     |    6 +++---
->  drivers/staging/dst/dcore.c       |    3 +--
->  drivers/video/uvesafb.c           |    3 +--
->  drivers/w1/w1_netlink.c           |    3 +--
->  include/linux/connector.h         |    6 +++---
->  8 files changed, 16 insertions(+), 19 deletions(-)
-> 
-> diff --git a/Documentation/connector/cn_test.c b/Documentation/connector/cn_test.c
-> index f688eba..50d5ce4 100644
-> --- a/Documentation/connector/cn_test.c
-> +++ b/Documentation/connector/cn_test.c
-> @@ -32,10 +32,8 @@ static char cn_test_name[] = "cn_test";
->  static struct sock *nls;
->  static struct timer_list cn_test_timer;
->  
-> -void cn_test_callback(void *data)
-> +void cn_test_callback(struct cn_msg *msg)
->  {
-> -	struct cn_msg *msg = (struct cn_msg *)data;
-> -
->  	printk("%s: %lu: idx=%x, val=%x, seq=%u, ack=%u, len=%d: %s.\n",
->  	       __func__, jiffies, msg->id.idx, msg->id.val,
->  	       msg->seq, msg->ack, msg->len, (char *)msg->data);
-> diff --git a/drivers/connector/cn_proc.c b/drivers/connector/cn_proc.c
-> index c5afc98..85e5dc0 100644
-> --- a/drivers/connector/cn_proc.c
-> +++ b/drivers/connector/cn_proc.c
-> @@ -202,9 +202,8 @@ static void cn_proc_ack(int err, int rcvd_seq, int rcvd_ack)
->   * cn_proc_mcast_ctl
->   * @data: message sent from userspace via the connector
->   */
-> -static void cn_proc_mcast_ctl(void *data)
-> +static void cn_proc_mcast_ctl(struct cn_msg *msg)
->  {
-> -	struct cn_msg *msg = data;
->  	enum proc_cn_mcast_op *mc_op = NULL;
->  	int err = 0;
->  
-> diff --git a/drivers/connector/cn_queue.c b/drivers/connector/cn_queue.c
-> index c769ef2..d478aef 100644
-> --- a/drivers/connector/cn_queue.c
-> +++ b/drivers/connector/cn_queue.c
-> @@ -87,7 +87,9 @@ void cn_queue_wrapper(struct work_struct *work)
->  	kfree(d->free);
->  }
->  
-> -static struct cn_callback_entry *cn_queue_alloc_callback_entry(char *name, struct cb_id *id, void (*callback)(void *))
-> +static struct cn_callback_entry *
-> +cn_queue_alloc_callback_entry(char *name, struct cb_id *id,
-> +			      void (*callback)(struct cn_msg *))
->  {
->  	struct cn_callback_entry *cbq;
->  
-> @@ -120,7 +122,8 @@ int cn_cb_equal(struct cb_id *i1, struct cb_id *i2)
->  	return ((i1->idx == i2->idx) && (i1->val == i2->val));
->  }
->  
-> -int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id, void (*callback)(void *))
-> +int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id,
-> +			  void (*callback)(struct cn_msg *))
->  {
->  	struct cn_callback_entry *cbq, *__cbq;
->  	int found = 0;
-> diff --git a/drivers/connector/connector.c b/drivers/connector/connector.c
-> index fd336c5..3f45669 100644
-> --- a/drivers/connector/connector.c
-> +++ b/drivers/connector/connector.c
-> @@ -269,7 +269,8 @@ static void cn_notify(struct cb_id *id, u32 notify_event)
->   *
->   * May sleep.
->   */
-> -int cn_add_callback(struct cb_id *id, char *name, void (*callback)(void *))
-> +int cn_add_callback(struct cb_id *id, char *name,
-> +		    void (*callback)(struct cn_msg *))
->  {
->  	int err;
->  	struct cn_dev *dev = &cdev;
-> @@ -351,9 +352,8 @@ static int cn_ctl_msg_equals(struct cn_ctl_msg *m1, struct cn_ctl_msg *m2)
->   *
->   * Used for notification of a request's processing.
->   */
-> -static void cn_callback(void *data)
-> +static void cn_callback(struct cn_msg *msg)
->  {
-> -	struct cn_msg *msg = data;
->  	struct cn_ctl_msg *ctl;
->  	struct cn_ctl_entry *ent;
->  	u32 size;
-> diff --git a/drivers/staging/dst/dcore.c b/drivers/staging/dst/dcore.c
-> index fad25b7..8472418 100644
-> --- a/drivers/staging/dst/dcore.c
-> +++ b/drivers/staging/dst/dcore.c
-> @@ -846,10 +846,9 @@ static dst_command_func dst_commands[] = {
->  /*
->   * Configuration parser.
->   */
-> -static void cn_dst_callback(void *data)
-> +static void cn_dst_callback(struct cn_msg *msg)
->  {
->  	struct dst_ctl *ctl;
-> -	struct cn_msg *msg = data;
->  	int err;
->  	struct dst_ctl_ack ack;
->  	struct dst_node *n = NULL, *tmp;
-> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
-> index ca5b464..e98baf6 100644
-> --- a/drivers/video/uvesafb.c
-> +++ b/drivers/video/uvesafb.c
-> @@ -67,9 +67,8 @@ static DEFINE_MUTEX(uvfb_lock);
->   * find the kernel part of the task struct, copy the registers and
->   * the buffer contents and then complete the task.
->   */
-> -static void uvesafb_cn_callback(void *data)
-> +static void uvesafb_cn_callback(struct cn_msg *msg)
->  {
-> -	struct cn_msg *msg = data;
->  	struct uvesafb_task *utask;
->  	struct uvesafb_ktask *task;
->  
-> diff --git a/drivers/w1/w1_netlink.c b/drivers/w1/w1_netlink.c
-> index fdf7285..52ccb3d 100644
-> --- a/drivers/w1/w1_netlink.c
-> +++ b/drivers/w1/w1_netlink.c
-> @@ -306,9 +306,8 @@ static int w1_netlink_send_error(struct cn_msg *rcmsg, struct w1_netlink_msg *rm
->  	return error;
->  }
->  
-> -static void w1_cn_callback(void *data)
-> +static void w1_cn_callback(struct cn_msg *msg)
->  {
-> -	struct cn_msg *msg = data;
->  	struct w1_netlink_msg *m = (struct w1_netlink_msg *)(msg + 1);
->  	struct w1_netlink_cmd *cmd;
->  	struct w1_slave *sl;
-> diff --git a/include/linux/connector.h b/include/linux/connector.h
-> index b68d278..47ebf41 100644
-> --- a/include/linux/connector.h
-> +++ b/include/linux/connector.h
-> @@ -136,7 +136,7 @@ struct cn_callback_data {
->  	void *ddata;
->  	
->  	void *callback_priv;
-> -	void (*callback) (void *);
-> +	void (*callback) (struct cn_msg *);
->  
->  	void *free;
->  };
-> @@ -167,11 +167,11 @@ struct cn_dev {
->  	struct cn_queue_dev *cbdev;
->  };
->  
-> -int cn_add_callback(struct cb_id *, char *, void (*callback) (void *));
-> +int cn_add_callback(struct cb_id *, char *, void (*callback) (struct cn_msg *));
->  void cn_del_callback(struct cb_id *);
->  int cn_netlink_send(struct cn_msg *, u32, gfp_t);
->  
-> -int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id, void (*callback)(void *));
-> +int cn_queue_add_callback(struct cn_queue_dev *dev, char *name, struct cb_id *id, void (*callback)(struct cn_msg *));
->  void cn_queue_del_callback(struct cn_queue_dev *dev, struct cb_id *id);
->  
->  int queue_cn_work(struct cn_callback_entry *cbq, struct work_struct *work);
-> -- 
-> 1.6.3.3
+> Ok. Should I still use the file-on-xfs testcase for this, or should I
+> go back to using a regular block device?
 
--- 
-	Evgeniy Polyakov
+Yes, please
+
+> The file-over-iscsi is quite
+> uncommon I suppose, most people will export a block device over iscsi,
+> not a file.
+
+No, files are common. The main reason why people use direct block 
+devices is a not supported by anything believe that comparing with files 
+they "have less overhead", so "should be faster". But it isn't true and 
+can be easily checked.
+
+>> With context-RA patch, please, in those and future tests, since it should
+>> make RA for cooperative threads much better.
+>>
+>>> You can limit amount of SCST I/O threads by num_threads parameter of
+>>> scst_vdisk module.
+> 
+> Ok, I'll try that and include the blk_run_backing_dev,
+> readahead-context and io_context patches.
+> 
+> Ronald.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
