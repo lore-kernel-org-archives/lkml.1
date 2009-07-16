@@ -1,56 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZGPLWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZGPLZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbZGPLWL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 07:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbZGPLWK
+	id S1754737AbZGPLZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 07:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbZGPLZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 07:22:10 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:38151 "EHLO e4.ny.us.ibm.com"
+	Thu, 16 Jul 2009 07:25:30 -0400
+Received: from mga09.intel.com ([134.134.136.24]:28743 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754294AbZGPLWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 07:22:09 -0400
-Subject: Re: [PATCH 02/06] Fix compilation warning for fs/ubifs/commit.c
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: dedekind@infradead.org
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-mtd@lists.infradead.org,
-       Adrian Hunter <adrian.hunter@nokia.com>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       David Howells <dhowells@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1247742765.11353.114.camel@localhost.localdomain>
-References: <20090715021901.4112.45973.sendpatchset@subratamodak.linux.ibm.com>
-	 <1247640750.11353.6.camel@localhost.localdomain>
-	 <4A5E1D1A.3090705@s5r6.in-berlin.de>
-	 <1247738232.11353.90.camel@localhost.localdomain>
-	 <1247742274.5572.8.camel@subratamodak.linux.ibm.com>
-	 <1247742765.11353.114.camel@localhost.localdomain>
-Content-Type: text/plain
-Organization: IBM
-Date: Thu, 16 Jul 2009 16:51:49 +0530
-Message-Id: <1247743313.5572.10.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 7bit
+	id S1752187AbZGPLZ3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 07:25:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,410,1243839600"; 
+   d="scan'208";a="430735315"
+From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "x86@kernel.org" <x86@kernel.org>
+Date: Thu, 16 Jul 2009 04:25:27 -0700
+Subject: [PATCH v2 0/10] Moorestown enabling x86 patches (resend w/ correct
+ format)
+Thread-Topic: [PATCH v2 0/10] Moorestown enabling x86 patches (resend w/
+ correct format)
+Thread-Index: AcoGA8lg9ZmxiVdbSue/pkSK8a00mAAA4L9Q
+Message-ID: <43F901BD926A4E43B106BF17856F0755643EBDFD@orsmsx508.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-16 at 14:12 +0300, Artem Bityutskiy wrote:
-> On Thu, 2009-07-16 at 16:34 +0530, Subrata Modak wrote:
-> > Correct. There has been other warning fixes i have sent to LKML, where i
-> > have tweaked the code to fix the compilation, but, code tweaking may not
-> > be possible in this case. However , i would  still investigate.
-> 
-> I do not think that in _general_ it is a good idea to tweak code just
-> to have gcc pleased, granted the code is correct. In this case it is
-> more preferable to shut it up, e.g., using 'unitialized_var()'.
+This patchset enables Moorestown platform in booting, system timers, and
+interrupt controller support.
 
-Great. I would write more description in the patch then. Thanks.
+Moorestown is Intel's Mobile Internet Device (MID) platform for 2009. It
+features Lincroft (north complex with CPU, memory controller, graphics unit)
+and Langwell (IO hub, system controller unit, etc.). While maintaining
+compatibility in the x86 core, it does not have many standard x86 PC features.
 
-Regards--
-Subrata
+Features related to this patchset are:
+Features			x86pc			moorestown
+---------------------------------------------------------------------------
+Interrupt controller	i8259/PIC		IOAPIC only w/o legacy route
+System timers		i8254 HPET		APB timers, up to 8
+FW				BIOS			simple boot FW, no runtime
+I/O ports			yes			Lincroft only
+---------------------------------------------------------------------------
 
-> 
+Highlights of what I have changed since the previous submission:
+
+[PATCH 1/9] x86/boot: add setup_secondary_clock to x86 quirk
+	none
+
+[PATCH 2/9] x86: introduce a set of platform feature flags
+	Use __set_bit, 
+	Use void for platform_feature_init_default(void)
+	Assign default platform flags and x86 quirk based on sub arch ids
+
+[PATCH 3/9] x86/moorestown: add moorestown platform flags
+	Combined in previous patch
+
+[PATCH 4/9] x86/boot: adding hw subarch ID for Moorestown
+	Use enum
+
+[PATCH 5/9] x86: make use of platform flags in setup code
+	Added quirk for reserve_ebda_region()
+	Moved down platform feature check to probe_rom
+	Added x86 PCI irq change, was in Jesse's MRST PCI patch
+
+[PATCH 6/9] x86: add moorestown specific setup code
+	Removed mrst_early_detect()
+	Add PCI SHIM feature to default MRST flags
+
+[PATCH 7/9] x86/apbt: Moorestown APB system timer driver
+	Split into three patches, timer driver, tsc, choose timer
+	Misc clean up
+
+[PATCH 8/9] x86/apic: match destination id with destination mode
+	Dropped
+
+[PATCH 9/9] x86/apic: support moorestown interrupt subsystem
+	Split into two patches, decouple i8259 and ioapic, 
+
+
+Jacob Pan
+Linux Software Engineer
+Intel Open Source Technology Center
 
