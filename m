@@ -1,79 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932969AbZGPSNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932986AbZGPSPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932969AbZGPSNJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 14:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932947AbZGPSNH
+	id S932986AbZGPSPD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 14:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932977AbZGPSPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 14:13:07 -0400
-Received: from easi.embeddedalley.com ([71.6.201.124]:44881 "HELO
-	easi.embeddedalley.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932916AbZGPSNC (ORCPT
+	Thu, 16 Jul 2009 14:15:03 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:54434 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932953AbZGPSO7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 14:13:02 -0400
-In-Reply-To: <20090716171530.GC3576@balbir.in.ibm.com>
-References: <20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com> <6599ad830907131515h3c9622b5v309cf8f13d272bab@mail.gmail.com> <20090714100440.6283.A69D9226@jp.fujitsu.com> <9B7C6FE2-D946-4286-9537-C4A715997B89@embeddedalley.com> <20090716171530.GC3576@balbir.in.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <FE89F36E-EB7E-4F11-887C-5371887C7D68@embeddedalley.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Paul Menage <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers Mailing List 
-	<containers@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+	Thu, 16 Jul 2009 14:14:59 -0400
+Message-ID: <4A5F6DC2.5040008@vlnb.net>
+Date: Thu, 16 Jul 2009 22:13:22 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH]: New implementation of scsi_execute_async()
+References: <4A563368.5040407@vlnb.net> <4A59DF14.7060807@panasas.com> <4A5CAF66.3090909@vlnb.net> <4A5D9117.2060205@panasas.com>
+In-Reply-To: <4A5D9117.2060205@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 1/1] Memory usage limit notification addition to memcg
-Date: Thu, 16 Jul 2009 11:16:29 -0700
-To: balbir@linux.vnet.ibm.com
-X-Mailer: Apple Mail (2.753.1)
+X-Provags-ID: V01U2FsdGVkX1+kXJEmwZItpw6lunXywj+j71g/coJtxOKvf0X
+ NwOhUUKVHcK8upUOO5m0XfRlE+Dwxu3M4lfjmyEhGz91CAgs+2
+ 0X1HoKjmF8o3kIfjjK/MA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Boaz Harrosh, on 07/15/2009 12:19 PM wrote:
+>>>>  block/blk-map.c            |  536 +++++++++++++++++++++++++++++++++++++++++++++
+>>>>  drivers/scsi/scsi_lib.c    |  108 ++++++++-
+>>>>  include/linux/blkdev.h     |    6 
+>>>>  include/scsi/scsi_device.h |   11 
+>>>>  4 files changed, 660 insertions(+), 1 deletion(-)
+>>>>
+>>> The scsi bits are not needed and just add complexity. 
+>>> allocate the request, call blk_rq_map_kern_sg() and
+>>> blk_execute_xxx directly from your driver. Since you exacly
+>>> know your code path lots of if(s) and flags are saved and that ugly
+>>> scsi_io_context allocation.
+>> Are you against any helper functions? scsi_lib.c has only scsi_execute_async(),
+>> which is a small helper function, which only hides internal machinery details.
+>> All the flags it has are needed and can't be avoided, especially
+>> SCSI_ASYNC_EXEC_FLAG_HAS_TAIL_SPACE_FOR_PADDING
+> 
+> Yes I'm sure. This will not be accepted. Just do it directly in the driver
+> like all other ULD's and block layer users. Use direct blk API. All these little
+> things and flags you are talking about are block specific, there is no single thing
+> SCSI about them.
 
-On Jul 16, 2009, at 10:15 AM, Balbir Singh wrote:
+Hmm, I don't understand. What's wrong in this small helper function? Are 
+you against any helper functions, so, all users of, e.g., for_each_sg() 
+must instead open code the corresponding functionality?
 
-> Dan, if you are suggesting that we incrementally add features, I
-> completely agree with you, that way the code is reviewable and
-> maintainable. As we add features we need to
+Do you want me to move scsi_execute_async() from scsi_lib.c to 
+scst_lib.c and rename it to scst_execute_async()? This is the maximum I 
+can do, because I need this functionality. But it will make all other 
+possible users to duplicate it.
 
-Right, this is all goodness.  My specific comments are this patch
-adds a new useful feature and it's been through a couple of iterations
-to make it more acceptable.  Let's post it, as it makes people aware
-of such a feature since it's currently in use and useful, and then
-continue the discussion about how to make it (and all of the cgroup
-features) better.  Otherwise, this is going to degenerate into a "do
-everything but nothing gets done" ongoing discussion and I'll
-quickly lose interest and move on the something else :-)
+Does flag SCSI_ASYNC_EXEC_FLAG_AT_HEAD have nothing to do to SCSI, really?
 
-There are currently two discussions in progress.  One is about
-notification limits, which this feature patch adds.  We need to
-close this discussion with a more feature rich implementation
-that addresses both upper and lower notification, the semantics
-of this feature in a cgroup hierarchy, and in particular the
-behavior outside of the memory controller group.
+>> The allocation of scsi_io_context is unavoidable, because sense buffer should
+>> be allocated anyway.
+>>  
+> 
+> NO!, driver needs to do it's job and provide a sense buffer and call blk API
+> just like all the other drivers. this has nothing to do with SCSI.
 
-The second discussion is about event delivery in cgroups.
-Linux already has many mechanisms, and some product
-implementations patch even more of their own into the kernel.
-Outside of these implementation details, we have to determine
-what is useful for a cgroup.  Are events just arbitrary (anything
-can send any kind of event)?  How do we pass  information?
-Is there some standard header?  How do we control this so
-the event target is identified and we prevent event floods?
-And many more.....
+What job should a driver do? As I wrote, for SCST allocation of the 
+sense buffer is necessary in any case (in SCST sense is allocated on 
+demand only), so it doesn't matter to allocate few bytes more, if it 
+allows to hide unneeded low level details. The same, I guess, should be 
+true for all other possible users of this functionality.
 
-> 1. Look at reuse
-> 2. Make sure the design is sane and will not prohibit further
-> development.
+>>>> +/**
+>>>> + * blk_rq_unmap_kern_sg - "unmaps" data buffers in the request
+>>>> + * @req:	request to unmap
+>>>> + * @do_copy:	sets copy data between buffers, if needed, or not
+>>>> + *
+>>>> + * Description:
+>>>> + *    It frees all additional buffers allocated for SG->BIO mapping.
+>>>> + */
+>>>> +void blk_rq_unmap_kern_sg(struct request *req, int do_copy)
+>>>> +{
+>>>> +	struct scatterlist *hdr = (struct scatterlist *)req->end_io_data;
+>>>> +
+>>> You can't use req->end_io_data  here! req->end_io_data is reserved for
+>>> blk_execute_async callers. It can not be used for private block use.
+>> Why? I see blk_execute_rq() happily uses it. Plus, I implemented stacking of
+>> it in scsi_execute_async().
+>>
+> 
+> As I said users of blk_execute_rq_nowait() blk_execute_rq is a user of
+> blk_execute_rq_nowait just as the other guy.
+> 
+> "implemented stacking" is exactly the disaster I'm talking about.
+> Also it totaly breaks the blk API. Now I need to to specific code
+> when mapping with this API as opposed to other mappings when I execute
+> 
+>> Do you have better suggestion?
+> 
+> I have not look at it deeply but you'll need another system. Perhaps
+> like map_user/unmap_user where you give unmap_user the original bio.
+> Each user of map_user needs to keep a pointer to the original bio
+> on mapping. Maybe some other options as well. You can use the bio's
+> private data pointer, when building the first bio from scatter-list.
 
-3. Contain the scope of work so I can do it without affecting
-     the work that pays my salary :-)
+I can't see how *well documented* stacking of end_io_data can be/lead to 
+any problem. All the possible alternatives I can see are worse:
+
+1. Add in struct request one more field, like "void *blk_end_io_data" 
+and use it.
+
+2. Duplicate code of bio's allocation and chaining 
+(__blk_rq_map_kern_sg()) for the copy case with additional code for 
+allocation and copying of the copy buffers on per-bio basis and use 
+bio->bi_private to track the copy info. Tejun Heo used this approach, 
+but he had only one bio without any chaining. With the chaining this 
+approach becomes terribly overcomplicated and ugly with *NO* real gain.
+
+Do you like any of them? If not, I'd like to see _practical_ suggestions.
 
 Thanks.
-
-	-- Dan
-
+Vlad
