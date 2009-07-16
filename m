@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZGPLdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZGPLkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbZGPLdi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 07:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZGPLdi
+	id S1755419AbZGPLkZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 07:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZGPLkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 07:33:38 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:6216
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752644AbZGPLdh (ORCPT
+	Thu, 16 Jul 2009 07:40:24 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:38593 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755286AbZGPLkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 07:33:37 -0400
-Message-ID: <4A5F100E.9000107@panasas.com>
-Date: Thu, 16 Jul 2009 14:33:34 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Thu, 16 Jul 2009 07:40:23 -0400
+X-Sasl-enc: f+gVRMgF+PjFI64WvdPTGpbN7yStnz2Pyy6YBuvYMW6u 1247744423
+Date: Thu, 16 Jul 2009 08:40:20 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       arjan@linux.intel.com, "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
+Subject: Re: [PATCH 0/8] device async action mechanism
+Message-ID: <20090716114020.GA11928@khazad-dum.debian.net>
+References: <1247643512.26272.74.camel@rzhang-dt>
+ <87ocrm6xeq.fsf@basil.nowhere.org>
+ <1247710483.26272.170.camel@rzhang-dt>
 MIME-Version: 1.0
-To: david@lang.hm
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Subject: Re: deterministic scsi order with async scan
-References: <alpine.DEB.1.10.0907151801040.9159@asgard>
-In-Reply-To: <alpine.DEB.1.10.0907151801040.9159@asgard>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Jul 2009 11:33:37.0226 (UTC) FILETIME=[426AFAA0:01CA0609]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247710483.26272.170.camel@rzhang-dt>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/16/2009 04:09 AM, david@lang.hm wrote:
-> is there any way to get deterministic device ordering with scsi async 
-> scanning?
-> 
-> currently (2.6.30) it seems that the various scsi busses are loaded in the 
-> order that they are detected, which can vary from boot to boot depending 
-> on how long it takes for the card to initialize.
-> 
-> would it be possible to detect the cards/drives, but not register them 
-> until all the detection is complete so that they can be registered in a 
-> deterministic order?
-> 
-> having two drives on two different controllers swap positions from boot to 
-> boot makes it very painful. yes I can make an initrd that fixes this up in 
-> user space by examining each drive and creating links to re-order them, 
-> but this is a lot of work to fix randomization that can be prevented in 
-> the first place.
-> 
-> David Lang
+On Thu, 16 Jul 2009, Zhang Rui wrote:
+> the kernel device suspend time is reduced from 3.2s to 2.8s after
+> applying this patch set in my test box.
 
-It is highly discouraged to setup any kind of system that depends
-on device-names for block-devices. mounts have the mount by-label
-or mount by-uuid. Any other subsystem should go by /dev/disk/by-id/*
-slinks to find a persistent raw block-device. the id is generated
-from characteristics inside the disk itself so it will be the same
-no matter what host connection or bus it is connected too (almost).
+It will give even a bigger boot time saving on ThinkPads, where there is a
+Synaptics (or ALPS if you are unlucky) touchpad with the trackpoint behind
+it... it takes about 2s to init both devices here.  That's two seconds of
+boot time you can shove off if it is being initialized assyncronously :-)
 
-This is because even if the boot order is consistent, the device-name
-is so volatile in the life-span of a system. Did I boot with a removable
-USB inserted. that camera or printer was on or off, disk was connected
-to the other port. Any such change will break things and give you a very
-poor user experience.
-
-I would say that "scsi async" is a grate blessing
-
-Boaz
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
