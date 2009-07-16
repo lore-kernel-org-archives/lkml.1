@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZGPKyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbZGPKyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334AbZGPKyk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 06:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZGPKyh
+	id S932118AbZGPKyo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 06:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZGPKym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 06:54:37 -0400
-Received: from mga09.intel.com ([134.134.136.24]:56134 "EHLO mga09.intel.com"
+	Thu, 16 Jul 2009 06:54:42 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:58130 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755255AbZGPKyf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 06:54:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,410,1243839600"; 
-   d="scan'208,223";a="533343887"
-From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "x86@kernel.org" <x86@kernel.org>
-Date: Thu, 16 Jul 2009 03:54:33 -0700
-Subject: [PATCH v2 1/10] x86/boot: adding hw subarch ID for Moorestown
-Thread-Topic: [PATCH v2 1/10] x86/boot: adding hw subarch ID for Moorestown
-Thread-Index: AcoGA81QhqG4OKM/To22OqmAMIacaQ==
-Message-ID: <43F901BD926A4E43B106BF17856F0755643EBDF3@orsmsx508.amr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1755312AbZGPKyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 06:54:39 -0400
+Message-Id: <20090716104817.803604373@samba.org>
+References: <20090716104247.536695580@samba.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 16 Jul 2009 20:42:52 +1000
+From: Anton Blanchard <anton@samba.org>
+To: a.p.zijlstra@chello.nl, mingo@elte.hu, paulus@samba.org,
+       fweisbec@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 5/5] perf_counter: Make call graph option consistent
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b328ba482b8683d6438f3290f46c4e46fb7492a2 Mon Sep 17 00:00:00 2001
-From: Jacob Pan <jacob.jun.pan@intel.com>
-Date: Thu, 11 Jun 2009 20:34:47 -0700
-Subject: [PATCH] x86/boot: adding hw subarch ID for Moorestown
+perf record uses -g for logging call graph data but perf report uses -c
+to print call graph data. Be consistent and use -g everywhere for call graph
+data.
 
-x86 bootprotocol 2.07 has introduced hardware_subarch ID in the boot
-parameters provided by FW. We use it to identify Moorestown platforms.
+Also update the help text to reflect the current default - fractal,0.5
 
-The subarchitecture ID will help select a set of platform features and
-x86_quirks.
-
-Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- Documentation/x86/boot.txt       |    1 +
- arch/x86/include/asm/bootparam.h |   11 +++++++++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/x86/boot.txt b/Documentation/x86/boot.txt
-index 8da3a79..30b43e1 100644
---- a/Documentation/x86/boot.txt
-+++ b/Documentation/x86/boot.txt
-@@ -599,6 +599,7 @@ Protocol:	2.07+
-   0x00000000	The default x86/PC environment
-   0x00000001	lguest
-   0x00000002	Xen
-+  0x00000003	Moorestown MID
- 
- Field name:	hardware_subarch_data
- Type:		write (subarch-dependent)
-diff --git a/arch/x86/include/asm/bootparam.h b/arch/x86/include/asm/bootparam.h
-index 1724e8d..631cae9 100644
---- a/arch/x86/include/asm/bootparam.h
-+++ b/arch/x86/include/asm/bootparam.h
-@@ -109,4 +109,15 @@ struct boot_params {
- 	__u8  _pad9[276];				/* 0xeec */
- } __attribute__((packed));
- 
-+#define N_X86_SUBARCHS			4
-+
-+enum {
-+	X86_SUBARCH_PC = 0,
-+	X86_SUBARCH_LGUEST,
-+	X86_SUBARCH_XEN,
-+	X86_SUBARCH_MRST,
-+};
-+
-+
-+
- #endif /* _ASM_X86_BOOTPARAM_H */
+Im not sure if it's too late to make this change, but I've tripped
+up a number of times when I cycle between perf record and perf report.
+
+Index: linux.trees.git/tools/perf/builtin-report.c
+===================================================================
+--- linux.trees.git.orig/tools/perf/builtin-report.c	2009-07-16 19:41:41.000000000 +1000
++++ linux.trees.git/tools/perf/builtin-report.c	2009-07-16 19:41:49.000000000 +1000
+@@ -2005,9 +2005,9 @@
+ 		   "regex filter to identify parent, see: '--sort parent'"),
+ 	OPT_BOOLEAN('x', "exclude-other", &exclude_other,
+ 		    "Only display entries with parent-match"),
+-	OPT_CALLBACK_DEFAULT('c', "callchain", NULL, "output_type,min_percent",
++	OPT_CALLBACK_DEFAULT('g', "call-graph", NULL, "output_type,min_percent",
+ 		     "Display callchains using output_type and min percent threshold. "
+-		     "Default: flat,0", &parse_callchain_opt, callchain_default_opt),
++		     "Default: fractal,0.5", &parse_callchain_opt, callchain_default_opt),
+ 	OPT_STRING('d', "dsos", &dso_list_str, "dso[,dso...]",
+ 		   "only consider symbols in these dsos"),
+ 	OPT_STRING('C', "comms", &comm_list_str, "comm[,comm...]",
+
 -- 
-1.5.6.5
 
