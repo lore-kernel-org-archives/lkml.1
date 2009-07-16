@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbZGPTsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933168AbZGPTsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933158AbZGPTsP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 15:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZGPTsO
+	id S933168AbZGPTsQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 15:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbZGPTsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 15:48:14 -0400
-Received: from mail.lang.hm ([64.81.33.126]:40672 "EHLO bifrost.lang.hm"
+	Thu, 16 Jul 2009 15:48:15 -0400
+Received: from fafnir.cs.unc.edu ([152.2.129.90]:38297 "EHLO fafnir.cs.unc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932952AbZGPTsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 15:48:13 -0400
-Date: Thu, 16 Jul 2009 12:48:06 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: James Smart <James.Smart@Emulex.Com>, Boaz Harrosh <bharrosh@panasas.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Subject: Re: deterministic scsi order with async scan
-In-Reply-To: <1247773155.6606.265.camel@mulgrave.site>
-Message-ID: <alpine.DEB.1.10.0907161245470.9159@asgard>
-References: <alpine.DEB.1.10.0907151801040.9159@asgard>  <4A5F100E.9000107@panasas.com> <alpine.DEB.1.10.0907161017180.9159@asgard>  <4A5F723B.7070408@emulex.com>  <alpine.DEB.1.10.0907161143010.9159@asgard> <1247773155.6606.265.camel@mulgrave.site>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S933103AbZGPTsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 15:48:14 -0400
+Date: Thu, 16 Jul 2009 15:46:39 -0400 (EDT)
+From: "James H. Anderson" <anderson@cs.unc.edu>
+To: Raj Rajkumar <raj@ece.cmu.edu>
+cc: Ted Baker <baker@cs.fsu.edu>, Noah Watkins <jayhawk@soe.ucsc.edu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Raistlin <raistlin@linux.it>,
+       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       "Linux RT <linux-rt-users@vger.kernel.org> Fabio Checconi" 
+	<fabio@gandalf.sssup.it>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Tommaso Cucinotta <cucinotta@sssup.it>,
+       Giuseppe Lipari <lipari@retis.sssup.it>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>,
+       Karthik Singaram Lakshmanan <lakshmanan@cmu.edu>,
+       Dionisio de Niz <dionisio@sei.cmu.edu>
+Subject: Re: [Fwd: Re: RFC for a new Scheduling policy/class in the
+ Linux-kernel]
+In-Reply-To: <4A5F806D.6040701@ece.cmu.edu>
+Message-ID: <alpine.LRH.2.00.0907161538340.3814@anderson.cs.unc.edu>
+References: <4A5F7254.3020809@ece.cmu.edu> <alpine.LRH.2.00.0907161513050.3814@anderson.cs.unc.edu> <4A5F806D.6040701@ece.cmu.edu>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Jul 2009, James Bottomley wrote:
 
-> On Thu, 2009-07-16 at 11:43 -0700, david@lang.hm wrote:
->> On Thu, 16 Jul 2009, James Smart wrote:
->>
->>> david@lang.hm wrote:
->>>> On Thu, 16 Jul 2009, Boaz Harrosh wrote:
->>>>
->>>>
->>>>> It is highly discouraged to setup any kind of system that depends
->>>>> on device-names for block-devices. mounts have the mount by-label
->>>>> or mount by-uuid. Any other subsystem should go by /dev/disk/by-id/*
->>>>> slinks to find a persistent raw block-device. the id is generated
->>>>> from characteristics inside the disk itself so it will be the same
->>>>> no matter what host connection or bus it is connected too (almost).
->>>>>
->>>>> This is because even if the boot order is consistent, the device-name
->>>>> is so volatile in the life-span of a system. Did I boot with a removable
->>>>> USB inserted. that camera or printer was on or off, disk was connected
->>>>> to the other port. Any such change will break things and give you a very
->>>>> poor user experience.
->>>>>
->>>>
->>>> for a laptop you areprobably correct, but for a server or embedded system
->>>> that doesn't have it's hardware changing all the time you are not correct.
->>>>
->>>> especially on a system with lots of drives, why should I have to create an
->>>> initrd that goes and searches dozens or hundreds of drives to find out
->>>> which one to boot from?
->>>>
->>> Boaz is correct. Many enterprise SCSI subsystems (FC, SAS) do not have hard
->>> transport addresses for each device like Parallel SCSI used to.  Thus, any
->>> difference in order of appearance of the devices (power-up ordering, FC ALPA
->>> assignment based on who's loop master, order that switch reports them, is an
->>> array in a failover mode with 1 controller non-existent), or if LUN
->>> configuration on an array changes, or as a drive may fail (especially with
->>> hundreds), there's no guarantee you will see the same thing in the same order
->>> w/o name binding. Same thing is true if one of those adapters fails or is
->>> swapped out.
->>
->> yes, but does your system change the order of your internal direct
->> attached drives with your FC/SAN drives?
->
-> Certainly, it can.  The way BIOS booting gets around this is either to
-> use some type of physical indicator (like phy number for SAS) to find C:
-> or to use a persistent ID mapping scheme (which is pretty much
-> equivalent to our /dev/disk/by-id/ udev one).
+> It looks to me like Jim and Bjoern name the kernel-mutex locking scheme 
+> (of non-preemption and FIFO queueing) as FMLP and advocate it for 
+> user-level mutexes.  Jim: Please correct me if my interpretation is 
+> incorrect.
 
-so if I don't use udev but do want the async detection my only option to 
-have it boot from card 1 instead of card 2 is to just keep rebooting the 
-machine until it guesses right?
+I should have addressed this, sorry.
 
-David Lang
+Actually, I don't advocate for anything.  :-)  As I said in my very
+first email in this thread, in the LTIMUS^RT project, changing Linux
+is not one of our goals.  I leave that to other people who are way
+smarter than me.
+
+But to the point you raise, please note that the long version of the
+FMLP is a little more than combining non-preemption with FIFO waiting
+since waiting is via suspension.  And as I said in an earlier email,
+we designed it for a real-time (only) environment.  However, I think
+a user-level variant that could be used in a more general environment
+would certainly be possible.
+
+-Jim
+
+P.S. We didn't talk about the low processor utlization (Dhall effect)
+mentioned in your last email.  However, that applies to hard real-time
+workloads, not soft real-time workloads.  This discussion has been
+touching on both.
+
