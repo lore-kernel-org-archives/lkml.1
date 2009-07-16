@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933295AbZGPUVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933300AbZGPUXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933295AbZGPUVY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 16:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933275AbZGPUVY
+	id S933300AbZGPUXD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 16:23:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933284AbZGPUXC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 16:21:24 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58424 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933248AbZGPUVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 16:21:23 -0400
-Message-ID: <4A5F8B5C.3020902@garzik.org>
-Date: Thu, 16 Jul 2009 16:19:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 16 Jul 2009 16:23:02 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:59300 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933275AbZGPUXB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 16:23:01 -0400
+Date: Thu, 16 Jul 2009 22:23:00 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Alexey Fisher <bug-track@fisher-privat.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, x86@kernel.org
+Subject: Re: [PATCH] x86: _edata should include all .data.* sections on
+	X86_64
+Message-ID: <20090716202300.GA6096@merkur.ravnborg.org>
+Mail-Followup-To: Catalin Marinas <catalin.marinas@arm.com>,
+	Alexey Fisher <bug-track@fisher-privat.net>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Ingo Molnar <mingo@elte.hu>, x86@kernel.org
+References: <4A5C20E5.6010203@fisher-privat.net> <84144f020907140019g511723dctb541f6333d1a082b@mail.gmail.com> <4A5C41C8.7040904@fisher-privat.net> <1247564356.28240.30.camel@pc1117.cambridge.arm.com> <1247565175.28240.37.camel@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-To: Junio C Hamano <gitster@pobox.com>
-CC: git@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] GIT 1.6.4.rc1
-References: <7vmy75bg2f.fsf@alter.siamese.dyndns.org> <4A5EA598.5050801@garzik.org> <7v3a8xb0lz.fsf@alter.siamese.dyndns.org> <4A5ECC09.3010405@garzik.org> <7vocrl9kwi.fsf@alter.siamese.dyndns.org> <4A5ED38F.5070708@garzik.org> <7v4otd9jg8.fsf@alter.siamese.dyndns.org>
-In-Reply-To: <7v4otd9jg8.fsf@alter.siamese.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247565175.28240.37.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Junio C Hamano wrote:
-> Jeff Garzik <jeff@garzik.org> writes:
+On Tue, Jul 14, 2009 at 10:52:55AM +0100, Catalin Marinas wrote:
+> The .data.read_mostly and .data.cacheline_aligned sections aren't
+> covered by the _sdata .. _edata range on X86_64. This affects the
+> kmemleak reporting leading to possible false positives by not scanning
+> all the whole data section.
 > 
->> That direction doesn't work due to firewalls, hence the scp out /to/
->> remote.example.com.
-> 
-> Ah, then the "git init --bare" at remote followed by pushing -all into it,
-> suggested in your other subthread, would be an appropriate way.
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> ---
 
-Thanks!
+To do so was on my todo list when I looked at vmlinux.lds.S for x86, but
+as I got sidetracked I never got to it. Which I see was bad..
+This patch has my:
 
-	Jeff
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-
-
+	Sam
