@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756906AbZGPBM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbZGPBMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756906AbZGPBM1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 21:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756868AbZGPBM0
+	id S1756930AbZGPBMh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 21:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbZGPBMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 21:12:26 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38083 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756867AbZGPBM0 (ORCPT
+	Wed, 15 Jul 2009 21:12:36 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:58625 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756909AbZGPBMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 21:12:26 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 2/3] profile: Suppress warning about large allocations when profile=1 is specified
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Heinz Diehl <htd@fancy-poultry.org>, David Miller <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-In-Reply-To: <1247656992-19846-3-git-send-email-mel@csn.ul.ie>
-References: <1247656992-19846-1-git-send-email-mel@csn.ul.ie> <1247656992-19846-3-git-send-email-mel@csn.ul.ie>
-Message-Id: <20090716100305.9D16.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 15 Jul 2009 21:12:34 -0400
+Subject: Re: [PATCH 1/4] scsi: Allow hosts to be flagged as hotpluggable
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+In-Reply-To: <1247701438-18266-1-git-send-email-mjg@redhat.com>
+References: <1247701438-18266-1-git-send-email-mjg@redhat.com>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 01:12:28 +0000
+Message-Id: <1247706748.8632.3.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 16 Jul 2009 10:12:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When profile= is used, a large buffer is allocated early at boot. This
-> can be larger than what the page allocator can provide so it prints a
-> warning. However, the caller is able to handle the situation so this patch
-> suppresses the warning.
+On Thu, 2009-07-16 at 00:43 +0100, Matthew Garrett wrote:
+> Userspace may wish to make policy decisions based on whether a host
+> supports device hotplug or not - for example, AHCI link power management
+> disables hotplug, so may only be desirable on hotplug ports. Add
+> support for marking hosts as hotpluggable in order to allow userspace to
+> treat them appropriately.
 
-I'm confused.
+OK, so I don't really understand what the hotplug flag means.
 
-Currently caller doesn't handle error return.
+You seem to be setting it unconditionally on most sata HBAs.  If it just
+means "bus is hotpluggable", it should be set to 1 at initialisation and
+the few non hot plug busses (like SPI) get to reset it.
 
-----------------------------------------------------------
-asmlinkage void __init start_kernel(void)
-{
-(snip)
-        init_timers();
-        hrtimers_init();
-        softirq_init();
-        timekeeping_init();
-        time_init();
-        sched_clock_init();
-        profile_init();           <-- ignore return value
-------------------------------------------------------------
+However, by definition SATA (like SAS) is a hotplug bus ... why isn't it
+set for some SATA controllers ... is it because the HBA itself does
+something wrong when a hotplug event comes in?
 
-and, if user want to use linus profiler, the user should choice select
-proper bucket size by boot parameter.
-Currently, allocation failure message tell user about specified bucket size
-is wrong.
-I think this patch hide it.
-
-
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> ---
->  kernel/profile.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/profile.c b/kernel/profile.c
-> index 69911b5..419250e 100644
-> --- a/kernel/profile.c
-> +++ b/kernel/profile.c
-> @@ -117,11 +117,12 @@ int __ref profile_init(void)
->  
->  	cpumask_copy(prof_cpu_mask, cpu_possible_mask);
->  
-> -	prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
-> +	prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL|__GFP_NOWARN);
->  	if (prof_buffer)
->  		return 0;
->  
-> -	prof_buffer = alloc_pages_exact(buffer_bytes, GFP_KERNEL|__GFP_ZERO);
-> +	prof_buffer = alloc_pages_exact(buffer_bytes,
-> +					GFP_KERNEL|__GFP_ZERO|__GFP_NOWARN);
->  	if (prof_buffer)
->  		return 0;
-
+James
 
 
