@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932399AbZGPOrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbZGPOt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932399AbZGPOrM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 10:47:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932307AbZGPOrL
+	id S932409AbZGPOt6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 10:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932303AbZGPOt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 10:47:11 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:59459 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932247AbZGPOrK (ORCPT
+	Thu, 16 Jul 2009 10:49:58 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:27102 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932290AbZGPOt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 10:47:10 -0400
-Message-ID: <4A5F3D5C.1070704@nortel.com>
-Date: Thu, 16 Jul 2009 08:46:52 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Thu, 16 Jul 2009 10:49:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=cfQfLXYk0Lc6K2ckyJnUbcCPec9IEAGDLvsD6jBZsWkyU5UeG+/xg9kW0IcA5+xGJ4
+         /kySZ7aHwTjnqnlpFjFg2mboAYjiC2S2XE947Lu14HNDsnZk/ZnQ0ULRFe2sJBGDo/Ni
+         R/fRkSRsDZu/IJeKf48GG2GxoUdEk6ByZCupw=
+Date: Thu, 16 Jul 2009 10:49:39 -0400
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, paulus@samba.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 5/5] perf_counter: Make call graph option consistent
+Message-ID: <20090716144932.GB8043@nowhere>
+References: <20090716104247.536695580@samba.org> <20090716104817.803604373@samba.org>
 MIME-Version: 1.0
-To: Ted Baker <baker@cs.fsu.edu>
-CC: Raistlin <raistlin@linux.it>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       "James H. Anderson" <anderson@cs.unc.edu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-References: <200907102350.47124.henrik@austad.us> <1247336891.9978.32.camel@laptop> <4A594D2D.3080101@ittc.ku.edu> <1247412708.6704.105.camel@laptop> <1247499843.8107.548.camel@Palantir> <4A5B61DF.8090101@nortel.com> <1247568455.9086.115.camel@Palantir> <4A5C9ABA.9070909@nortel.com> <1247590112.9086.936.camel@Palantir> <4A5CCD5A.80108@nortel.com> <20090715221410.GE14993@cs.fsu.edu>
-In-Reply-To: <20090715221410.GE14993@cs.fsu.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Jul 2009 14:46:54.0877 (UTC) FILETIME=[432814D0:01CA0624]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090716104817.803604373@samba.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ted Baker wrote:
-> On Tue, Jul 14, 2009 at 12:24:26PM -0600, Chris Friesen wrote:
+On Thu, Jul 16, 2009 at 08:42:52PM +1000, Anton Blanchard wrote:
+> perf record uses -g for logging call graph data but perf report uses -c
+> to print call graph data. Be consistent and use -g everywhere for call graph
+> data.
 > 
->>> - that A's budget is not diminished.
->> If we're running B with A's priority, presumably it will get some amount
->> of cpu time above and beyond what it would normally have gotten during a
->> particular scheduling interval.  Perhaps it would make sense to charge B
->> what it would normally have gotten, and charge the excess amount to A?
+> Also update the help text to reflect the current default - fractal,0.5
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-> So, it seems most logical and simplest to leave the charges where
-> they naturally occur, on B.  That is, if you allow priority
-> inheritance, you allow tasks to sometimes run at higher priority
-> than they originally were allocated, but not to execute more 
-> than originally budgeted.
 
-I had considered this myself, as the simplicity is appealing.
+Thanks!
 
-In this scenario, we're going to disrupt B's scheduling pattern by
-forcing it to borrow from its future cpu allocation in order to free up
-the lock.  It will then be forced to block for a while to make up for
-the over-use of it's cpu budget.
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-I was worried that this "bursty" behaviour could cause problems, but on
-reflection it seems like if the application is well-behaved to start
-with, maybe we can assume that lock-hold times will be small enough that
-this shouldn't cause significant problems.
 
-Chris
+> ---
+> 
+> Im not sure if it's too late to make this change, but I've tripped
+> up a number of times when I cycle between perf record and perf report.
+> 
+> Index: linux.trees.git/tools/perf/builtin-report.c
+> ===================================================================
+> --- linux.trees.git.orig/tools/perf/builtin-report.c	2009-07-16 19:41:41.000000000 +1000
+> +++ linux.trees.git/tools/perf/builtin-report.c	2009-07-16 19:41:49.000000000 +1000
+> @@ -2005,9 +2005,9 @@
+>  		   "regex filter to identify parent, see: '--sort parent'"),
+>  	OPT_BOOLEAN('x', "exclude-other", &exclude_other,
+>  		    "Only display entries with parent-match"),
+> -	OPT_CALLBACK_DEFAULT('c', "callchain", NULL, "output_type,min_percent",
+> +	OPT_CALLBACK_DEFAULT('g', "call-graph", NULL, "output_type,min_percent",
+>  		     "Display callchains using output_type and min percent threshold. "
+> -		     "Default: flat,0", &parse_callchain_opt, callchain_default_opt),
+> +		     "Default: fractal,0.5", &parse_callchain_opt, callchain_default_opt),
+>  	OPT_STRING('d', "dsos", &dso_list_str, "dso[,dso...]",
+>  		   "only consider symbols in these dsos"),
+>  	OPT_STRING('C', "comms", &comm_list_str, "comm[,comm...]",
+> 
+> -- 
+> 
+
