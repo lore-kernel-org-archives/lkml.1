@@ -1,126 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932887AbZGPRdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932894AbZGPRhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932887AbZGPRdq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 13:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932867AbZGPRdq
+	id S932894AbZGPRhH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 13:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932520AbZGPRhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 13:33:46 -0400
-Received: from cmpxchg.org ([85.214.51.133]:33279 "EHLO cmpxchg.org"
+	Thu, 16 Jul 2009 13:37:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40557 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932844AbZGPRdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 13:33:45 -0400
-Date: Thu, 16 Jul 2009 19:32:49 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH 1/3] Rename pgmoved variable in shrink_active_list()
-Message-ID: <20090716173249.GB2267@cmpxchg.org>
-References: <20090716094619.9D07.A69D9226@jp.fujitsu.com> <20090716095119.9D0A.A69D9226@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090716095119.9D0A.A69D9226@jp.fujitsu.com>
+	id S932868AbZGPRhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 13:37:05 -0400
+Message-ID: <4A5F6571.3020002@redhat.com>
+Date: Thu, 16 Jul 2009 13:37:53 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Przemys??awPawe??czyk <przemyslaw@pawelczyk.it>
+Subject: Re: [PATCH -tip -v12 02/11] x86: x86 instruction decoder	build-time
+ selftest
+References: <20090716155652.6266.39970.stgit@localhost.localdomain> <20090716155706.6266.79022.stgit@localhost.localdomain> <20090716162947.GA5804@merkur.ravnborg.org>
+In-Reply-To: <20090716162947.GA5804@merkur.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 09:52:34AM +0900, KOSAKI Motohiro wrote:
-> Subject: [PATCH] Rename pgmoved variable in shrink_active_list()
+Sam Ravnborg wrote:
+> On Thu, Jul 16, 2009 at 11:57:06AM -0400, Masami Hiramatsu wrote:
+>> Add a user-space selftest of x86 instruction decoder at kernel build time.
+>> When CONFIG_X86_DECODER_SELFTEST=y, Kbuild builds a test harness of x86
+>> instruction decoder and performs it after building vmlinux.
+>> The test compares the results of objdump and x86 instruction decoder
+>> code and check there are no differences.
 > 
-> Currently, pgmoved variable have two meanings. it cause harder reviewing a bit.
-> This patch separate it.
+> Long overdue review from my side...
+> 
+>>  arch/x86/scripts/Makefile       |   19 +++++++
+>>  arch/x86/scripts/distill.awk    |   42 +++++++++++++++++
+>>  arch/x86/scripts/test_get_len.c |   99 +++++++++++++++++++++++++++++++++++++++
+>>  arch/x86/scripts/user_include.h |   49 +++++++++++++++++++
+> 
+> Hmmm, we have two architectures that uses scripts/ and three that
+> uses tools/.
+> I prefer the latter name as what we have ere is beyound what
+> I generally recognize as a script.
+> 
+> we have scripts/ in top-level and we do not rename this
+> as we have this hardcoded too many places - but no reason to
+> use the wrong name here.
+> 
+>> diff --git a/arch/x86/include/asm/inat.h b/arch/x86/include/asm/inat.h
+>> index 01e079a..9090665 100644
+>> --- a/arch/x86/include/asm/inat.h
+>> +++ b/arch/x86/include/asm/inat.h
+>> @@ -20,7 +20,9 @@
+>>   * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+>>   *
+>>   */
+>> +#ifdef __KERNEL__
+>>  #include <linux/types.h>
+>> +#endif
+>>  
+>>  /* Instruction attributes */
+>>  typedef u32 insn_attr_t;
+> 
+> Why this?
+> If you need this to use this file from userspace then could we do some
+> other trick to make this OK?
+
+
+
+> 
+> I see it repeated several times below.
+> [If this has already been discussed I have missed it - sorry].
 > 
 > 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
-Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
-
-Below are just minor suggestions regarding the changed code.
-
-> ---
->  mm/vmscan.c |   16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
+>> diff --git a/arch/x86/scripts/Makefile b/arch/x86/scripts/Makefile
+>> new file mode 100644
+>> index 0000000..f08859e
+>> --- /dev/null
+>> +++ b/arch/x86/scripts/Makefile
+>> @@ -0,0 +1,19 @@
+>> +PHONY += posttest
+>> +quiet_cmd_posttest = TEST    $@
+>> +      cmd_posttest = objdump -d $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/scripts/distill.awk | $(obj)/test_get_len
+>> +
 > 
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1239,7 +1239,7 @@ static void move_active_pages_to_lru(str
->  static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
->  			struct scan_control *sc, int priority, int file)
->  {
-> -	unsigned long pgmoved;
-> +	unsigned long nr_taken;
->  	unsigned long pgscanned;
->  	unsigned long vm_flags;
->  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-> @@ -1247,10 +1247,11 @@ static void shrink_active_list(unsigned 
->  	LIST_HEAD(l_inactive);
->  	struct page *page;
->  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-> +	unsigned long nr_rotated = 0;
->  
->  	lru_add_drain();
->  	spin_lock_irq(&zone->lru_lock);
-> -	pgmoved = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
-> +	nr_taken = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
->  					ISOLATE_ACTIVE, zone,
->  					sc->mem_cgroup, 1, file);
->  	/*
-> @@ -1260,16 +1261,15 @@ static void shrink_active_list(unsigned 
->  	if (scanning_global_lru(sc)) {
->  		zone->pages_scanned += pgscanned;
->  	}
-> -	reclaim_stat->recent_scanned[!!file] += pgmoved;
-> +	reclaim_stat->recent_scanned[!!file] += nr_taken;
+> You are using the native objdump here.
+> But I assume this fails miserably when you build x86 on a powerpc host.
+> In other words - you broke an allyesconfig build for -next...
+> We have $(OBJDUMP) for this.
 
-Hm, file is a boolean already, the double negation can probably be
-dropped.
+Ah, I see... Would you know actual name of x86-objdump on the powerpc
+(or any other crosscompiling host)? I just set "OBJDUMP=objdump" is OK?
+I'm not so sure about cross-compiling kernel...
 
->  	__count_zone_vm_events(PGREFILL, zone, pgscanned);
->  	if (file)
-> -		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
-> +		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -nr_taken);
->  	else
-> -		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -pgmoved);
-> +		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -nr_taken);
+>> +posttest: $(obj)/test_get_len vmlinux
+>> +	$(call cmd,posttest)
+>> +
+>> +test_get_len_SRC = $(srctree)/arch/x86/scripts/test_get_len.c $(srctree)/arch/x86/lib/insn.c $(srctree)/arch/x86/lib/inat.c
+>> +test_get_len_INC = $(srctree)/arch/x86/include/asm/inat.h $(srctree)/arch/x86/include/asm/insn.h $(objtree)/arch/x86/lib/inat-tables.c
+>> +
+>> +quiet_cmd_test_get_len = CC      $@
+>> +      cmd_test_get_len = $(CC) -Wall $(test_get_len_SRC) -I$(objtree)/arch/x86/lib/ -I$(srctree)/arch/x86/include -include $(srctree)/arch/x86/scripts/user_include.h -o $@
+> 
+> Is there a specific reason why you cannot use the standard hostprogs-y for this?
+> It will take care of dependency tracking etc.
+> What you have above is a hopeless incomplete list of dependencies.
+> 
+> You need to use HOST_EXTRACFLAGS to set additional -I options and the -include.
 
-Should perhaps be in another patch, but we could use
+Thank you, I'll try to use hostprogs-y.
 
-	__mod_zone_page_state(zone, LRU_ACTIVE + file * LRU_FILE);
+>> +
+>> +static void usage()
+>> +{
+>> +	fprintf(stderr, "usage: %s < distilled_disassembly\n", prog);
+>> +	exit(1);
+>> +}
+> 
+> It would be nice to tell the user what the program is supposed to do.
+> I know this is a bit unusual but no reason to copy bad practice.
+> 
 
-like in the call to move_active_pages_to_lru().
+Sure, maybe copying usage line in distill.awk is more helpful for user...
 
->  	spin_unlock_irq(&zone->lru_lock);
->  
-> -	pgmoved = 0;  /* count referenced (mapping) mapped pages */
->  	while (!list_empty(&l_hold)) {
->  		cond_resched();
->  		page = lru_to_page(&l_hold);
-> @@ -1283,7 +1283,7 @@ static void shrink_active_list(unsigned 
->  		/* page_referenced clears PageReferenced */
->  		if (page_mapping_inuse(page) &&
->  		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
-> -			pgmoved++;
-> +			nr_rotated++;
->  			/*
->  			 * Identify referenced, file-backed active pages and
->  			 * give them one more trip around the active list. So
-> @@ -1312,7 +1312,7 @@ static void shrink_active_list(unsigned 
->  	 * helps balance scan pressure between file and anonymous pages in
->  	 * get_scan_ratio.
->  	 */
-> -	reclaim_stat->recent_rotated[!!file] += pgmoved;
-> +	reclaim_stat->recent_rotated[!!file] += nr_rotated;
+Thank you,
 
-file is boolean.
+-- 
+Masami Hiramatsu
 
-There is one more double negation in isolate_pages_global() that can
-be dropped as well.  If you agree, I can submit all those changes in
-separate patches.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-	Hannes
+e-mail: mhiramat@redhat.com
+
