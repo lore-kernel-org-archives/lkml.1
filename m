@@ -1,153 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932193AbZGPDW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbZGPD2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932193AbZGPDW7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 23:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932146AbZGPDW6
+	id S1757312AbZGPD2Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 23:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283AbZGPD2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 23:22:58 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:46789 "EHLO smtp.gentoo.org"
+	Wed, 15 Jul 2009 23:28:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56405 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757282AbZGPDW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 23:22:56 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] USB: isp1760: allow platform devices to customize devflags
-Date: Wed, 15 Jul 2009 23:22:54 -0400
-Message-Id: <1247714574-7445-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <20090716030304.GA30650@kroah.com>
-References: <20090716030304.GA30650@kroah.com>
+	id S1757281AbZGPD2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 23:28:23 -0400
+Message-ID: <4A5E9E4E.5000308@redhat.com>
+Date: Wed, 15 Jul 2009 23:28:14 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH -mm] throttle direct reclaim when too many pages are isolated
+ already
+References: <20090715223854.7548740a@bree.surriel.com>	<20090715194820.237a4d77.akpm@linux-foundation.org>	<4A5E9A33.3030704@redhat.com> <20090715202114.789d36f7.akpm@linux-foundation.org>
+In-Reply-To: <20090715202114.789d36f7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+Andrew Morton wrote:
+> On Wed, 15 Jul 2009 23:10:43 -0400 Rik van Riel <riel@redhat.com> wrote:
+> 
+>> Andrew Morton wrote:
+>>> On Wed, 15 Jul 2009 22:38:53 -0400 Rik van Riel <riel@redhat.com> wrote:
+>>>
+>>>> When way too many processes go into direct reclaim, it is possible
+>>>> for all of the pages to be taken off the LRU.  One result of this
+>>>> is that the next process in the page reclaim code thinks there are
+>>>> no reclaimable pages left and triggers an out of memory kill.
+>>>>
+>>>> One solution to this problem is to never let so many processes into
+>>>> the page reclaim path that the entire LRU is emptied.  Limiting the
+>>>> system to only having half of each inactive list isolated for
+>>>> reclaim should be safe.
+>>>>
+>>> Since when?  Linux page reclaim has a bilion machine years testing and
+>>> now stuff like this turns up.  Did we break it or is this a
+>>> never-before-discovered workload?
+>> It's been there for years, in various forms.  It hardly ever
+>> shows up, but Kosaki's patch series give us a nice chance to
+>> fix it for good.
+> 
+> OK.
+> 
+>>>> @@ -1049,6 +1070,10 @@ static unsigned long shrink_inactive_lis
+>>>>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+>>>>  	int lumpy_reclaim = 0;
+>>>>  
+>>>> +	while (unlikely(too_many_isolated(zone, file))) {
+>>>> +		schedule_timeout_interruptible(HZ/10);
+>>>> +	}
+>>> This (incorrectly-laid-out) code is a no-op if signal_pending().
+>> Good point, I should add some code to break out of page reclaim
+>> if a fatal signal is pending,
+> 
+> We can't just return NULL from __alloc_pages(), and if we can't
+> get a page from the freelists then we're just going to have to keep
+> reclaiming.  So I'm not sure how we can do this.
 
-Platform device support was merged earlier, but support for boards to
-customize the devflags aspect of the controller was not.  We want this on
-Blackfin systems to control the bus width, but might as well expose all of
-the fields while we're at it.
+If we are stuck at this point in the page reclaim code,
+it is because too many other tasks are reclaiming pages.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/usb/host/isp1760-hcd.c |    4 ++++
- drivers/usb/host/isp1760-hcd.h |    2 ++
- drivers/usb/host/isp1760-if.c  |   21 ++++++++++++++++++++-
- include/linux/usb/isp1760.h    |   18 ++++++++++++++++++
- 4 files changed, 44 insertions(+), 1 deletions(-)
- create mode 100644 include/linux/usb/isp1760.h
+That makes it fairly safe to just return SWAP_CLUSTER_MAX
+here and hope that __alloc_pages() can get a page.
 
-diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
-index 1543846..9600a58 100644
---- a/drivers/usb/host/isp1760-hcd.c
-+++ b/drivers/usb/host/isp1760-hcd.c
-@@ -386,6 +386,10 @@ static int isp1760_hc_setup(struct usb_hcd *hcd)
- 		hwmode |= HW_DACK_POL_HIGH;
- 	if (priv->devflags & ISP1760_FLAG_DREQ_POL_HIGH)
- 		hwmode |= HW_DREQ_POL_HIGH;
-+	if (priv->devflags & ISP1760_FLAG_INTR_POL_HIGH)
-+		hwmode |= HW_INTR_HIGH_ACT;
-+	if (priv->devflags & ISP1760_FLAG_INTR_EDGE_TRIG)
-+		hwmode |= HW_INTR_EDGE_TRIG;
- 
- 	/*
- 	 * We have to set this first in case we're in 16-bit mode.
-diff --git a/drivers/usb/host/isp1760-hcd.h b/drivers/usb/host/isp1760-hcd.h
-index 462f494..6931ef5 100644
---- a/drivers/usb/host/isp1760-hcd.h
-+++ b/drivers/usb/host/isp1760-hcd.h
-@@ -142,6 +142,8 @@ typedef void (packet_enqueue)(struct usb_hcd *hcd, struct isp1760_qh *qh,
- #define ISP1760_FLAG_DACK_POL_HIGH	0x00000010 /* DACK active high */
- #define ISP1760_FLAG_DREQ_POL_HIGH	0x00000020 /* DREQ active high */
- #define ISP1760_FLAG_ISP1761		0x00000040 /* Chip is ISP1761 */
-+#define ISP1760_FLAG_INTR_POL_HIGH	0x00000080 /* Interrupt polarity active high */
-+#define ISP1760_FLAG_INTR_EDGE_TRIG	0x00000100 /* Interrupt edge triggered */
- 
- /* chip memory management */
- struct memory_chunk {
-diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
-index d4feebf..1c9f977 100644
---- a/drivers/usb/host/isp1760-if.c
-+++ b/drivers/usb/host/isp1760-if.c
-@@ -3,6 +3,7 @@
-  * Currently there is support for
-  * - OpenFirmware
-  * - PCI
-+ * - PDEV (generic platform device centralized driver model)
-  *
-  * (c) 2007 Sebastian Siewior <bigeasy@linutronix.de>
-  *
-@@ -11,6 +12,7 @@
- #include <linux/usb.h>
- #include <linux/io.h>
- #include <linux/platform_device.h>
-+#include <linux/usb/isp1760.h>
- 
- #include "../core/hcd.h"
- #include "isp1760-hcd.h"
-@@ -308,6 +310,8 @@ static int __devinit isp1760_plat_probe(struct platform_device *pdev)
- 	struct resource *mem_res;
- 	struct resource *irq_res;
- 	resource_size_t mem_size;
-+	struct isp1760_platform_data *priv = pdev->dev.platform_data;
-+	unsigned int devflags = 0;
- 	unsigned long irqflags = IRQF_SHARED | IRQF_DISABLED;
- 
- 	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-@@ -330,8 +334,23 @@ static int __devinit isp1760_plat_probe(struct platform_device *pdev)
- 	}
- 	irqflags |= irq_res->flags & IRQF_TRIGGER_MASK;
- 
-+	if (priv) {
-+		if (priv->is_isp1761)
-+			devflags |= ISP1760_FLAG_ISP1761;
-+		if (priv->bus_width_16)
-+			devflags |= ISP1760_FLAG_BUS_WIDTH_16;
-+		if (priv->port1_otg)
-+			devflags |= ISP1760_FLAG_OTG_EN;
-+		if (priv->analog_oc)
-+			devflags |= ISP1760_FLAG_ANALOG_OC;
-+		if (priv->dack_polarity_high)
-+			devflags |= ISP1760_FLAG_DACK_POL_HIGH;
-+		if (priv->dreq_polarity_high)
-+			devflags |= ISP1760_FLAG_DREQ_POL_HIGH;
-+	}
-+
- 	hcd = isp1760_register(mem_res->start, mem_size, irq_res->start,
--			       irqflags, &pdev->dev, dev_name(&pdev->dev), 0);
-+			       irqflags, &pdev->dev, dev_name(&pdev->dev), devflags);
- 	if (IS_ERR(hcd)) {
- 		pr_warning("isp1760: Failed to register the HCD device\n");
- 		ret = -ENODEV;
-diff --git a/include/linux/usb/isp1760.h b/include/linux/usb/isp1760.h
-new file mode 100644
-index 0000000..de7de53
---- /dev/null
-+++ b/include/linux/usb/isp1760.h
-@@ -0,0 +1,18 @@
-+/*
-+ * board initialization should put one of these into dev->platform_data
-+ * and place the isp1760 onto platform_bus named "isp1760-hcd".
-+ */
-+
-+#ifndef __LINUX_USB_ISP1760_H
-+#define __LINUX_USB_ISP1760_H
-+
-+struct isp1760_platform_data {
-+	unsigned is_isp1761:1;			/* Chip is ISP1761 */
-+	unsigned bus_width_16:1;		/* 16/32-bit data bus width */
-+	unsigned port1_otg:1;			/* Port 1 supports OTG */
-+	unsigned analog_oc:1;			/* Analog overcurrent */
-+	unsigned dack_polarity_high:1;		/* DACK active high */
-+	unsigned dreq_polarity_high:1;		/* DREQ active high */
-+};
-+
-+#endif /* __LINUX_USB_ISP1760_H */
+After all, if __alloc_pages() thinks it made progress,
+but still cannot make the allocation, it will call the
+pageout code again.
+
 -- 
-1.6.3.3
-
+All rights reversed.
