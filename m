@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932473AbZGPPaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932483AbZGPPbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932473AbZGPPaW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 11:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932448AbZGPPaW
+	id S932483AbZGPPbi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 11:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459AbZGPPbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 11:30:22 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:52711 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932414AbZGPPaV (ORCPT
+	Thu, 16 Jul 2009 11:31:37 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:36613 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932458AbZGPPbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 11:30:21 -0400
-Date: Thu, 16 Jul 2009 17:30:19 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       glommer@redhat.com, aliguori@us.ibm.com
-Subject: Re: [KVM PATCH] KVM: introduce "xinterface" API for external
-	interaction with guests
-Message-ID: <20090716153019.GA5727@merkur.ravnborg.org>
-Mail-Followup-To: Gregory Haskins <ghaskins@novell.com>,
-	kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-	glommer@redhat.com, aliguori@us.ibm.com
-References: <20090716150323.29318.17714.stgit@dev.haskins.net> <20090716151945.29318.10882.stgit@dev.haskins.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090716151945.29318.10882.stgit@dev.haskins.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 16 Jul 2009 11:31:36 -0400
+From: Andy Whitcroft <apw@canonical.com>
+To: Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Cc: Andy Whitcroft <apw@canonical.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] rt2x00: Fix chipset detection for rt2500usb
+Date: Thu, 16 Jul 2009 16:28:11 +0100
+Message-Id: <1247758091-14373-1-git-send-email-apw@canonical.com>
+X-Mailer: git-send-email 1.6.3.rc3.199.g24398
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> diff --git a/arch/x86/Kbuild b/arch/x86/Kbuild
-> index ad8ec35..9f50cc3 100644
-> --- a/arch/x86/Kbuild
-> +++ b/arch/x86/Kbuild
-> @@ -1,5 +1,7 @@
->  
-> -obj-$(CONFIG_KVM) += kvm/
-> +ifdef CONFIG_KVM
-> +obj-y += kvm/
-> +endif
+The commit below changed the semantics of rt2x00_check_rev so that it no
+longer checked the bottom 4 bits of the rev were non-zero.  During that
+conversion this part of the check was not propogated to the rt2500usb
+initialisation.
 
-What was wrong with the old version?
-If this is because xinterface.o is builtin to the kernel then we should
-always visit kvm/ and use:
+    commit 358623c22c9fd837b3b1b444377037f72553dc9f
+    Author: Ivo van Doorn <ivdoorn@gmail.com>
+    Date:   Tue May 5 19:46:08 2009 +0200
 
-   obj-y += kvm/
+        rt2x00: Simplify rt2x00_check_rev
 
-unconditionally.
+Without this check rt73 devices are miss recognised as rt2500 devices and
+two drivers are loaded.  Preventing the device being used.  Reinstate this
+check.
 
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ drivers/net/wireless/rt2x00/rt2500usb.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/net/wireless/rt2x00/rt2500usb.c b/drivers/net/wireless/rt2x00/rt2500usb.c
+index 66daf68..ce75426 100644
+--- a/drivers/net/wireless/rt2x00/rt2500usb.c
++++ b/drivers/net/wireless/rt2x00/rt2500usb.c
+@@ -1550,7 +1550,9 @@ static int rt2500usb_init_eeprom(struct rt2x00_dev *rt2x00dev)
+ 	rt2500usb_register_read(rt2x00dev, MAC_CSR0, &reg);
+ 	rt2x00_set_chip(rt2x00dev, RT2570, value, reg);
+ 
+-	if (!rt2x00_check_rev(&rt2x00dev->chip, 0x000ffff0, 0)) {
++	if (!rt2x00_check_rev(&rt2x00dev->chip, 0x000ffff0, 0) ||
++	    rt2x00_check_rev(&rt2x00dev->chip, 0x0000000f, 0)) {
++
+ 		ERROR(rt2x00dev, "Invalid RT chipset detected.\n");
+ 		return -ENODEV;
+ 	}
+-- 
+1.6.3.rc3.199.g24398
 
->  
->  # Xen paravirtualization support
->  obj-$(CONFIG_XEN) += xen/
-> diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
-> index afaaa76..80d951d 100644
-> --- a/arch/x86/kvm/Makefile
-> +++ b/arch/x86/kvm/Makefile
-> @@ -17,3 +17,7 @@ kvm-amd-y		+= svm.o
->  obj-$(CONFIG_KVM)	+= kvm.o
->  obj-$(CONFIG_KVM_INTEL)	+= kvm-intel.o
->  obj-$(CONFIG_KVM_AMD)	+= kvm-amd.o
-> +
-> +ifdef CONFIG_KVM
-> +obj-y += $(addprefix ../../../virt/kvm/, xinterface.o)
-> +endif
-And when we always visit kvm/ the above code snippet makes sense.
-Before we never visited kvm/ unless CONFIG_KVM was defined.
-
-	Sam
