@@ -1,109 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZGPK4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbZGPK5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZGPK4u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 06:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZGPK4q
+	id S1755447AbZGPK5L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 06:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZGPK5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 06:56:46 -0400
-Received: from mga01.intel.com ([192.55.52.88]:2706 "EHLO mga01.intel.com"
+	Thu, 16 Jul 2009 06:57:08 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:58112 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755347AbZGPKyn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 06:54:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,410,1243839600"; 
-   d="scan'208,223";a="708333218"
-From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "x86@kernel.org" <x86@kernel.org>
-Date: Thu, 16 Jul 2009 03:54:41 -0700
-Subject: [PATCH v2 2/10] x86/boot: add setup_secondary_clock to x86 quirk
-Thread-Topic: [PATCH v2 2/10] x86/boot: add setup_secondary_clock to x86
- quirk
-Thread-Index: AcoGA9JMNVIIb3doROSsIX3J2X8YqA==
-Message-ID: <43F901BD926A4E43B106BF17856F0755643EBDF4@orsmsx508.amr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1755286AbZGPKyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 06:54:39 -0400
+Message-Id: <20090716104817.697698033@samba.org>
+References: <20090716104247.536695580@samba.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 16 Jul 2009 20:42:51 +1000
+From: Anton Blanchard <anton@samba.org>
+To: a.p.zijlstra@chello.nl, mingo@elte.hu, paulus@samba.org,
+       fweisbec@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 4/5] perf_counter: Add perf record option to log addresses.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 8d2ba963b3f352ee478fda838422425aaed0a97a Mon Sep 17 00:00:00 2001
-From: Jacob Pan <jacob.jun.pan@intel.com>
-Date: Tue, 9 Jun 2009 17:02:48 -0700
-Subject: [PATCH] x86/boot: add setup_secondary_clock to x86 quirk
+Add the -d or --data option to log event addresses (eg page faults).
 
-Some x86 platform such as Intel Moorestown use external timers for per
-cpu clockevent devices. This quirk is added such as we can override the
-default local APIC timers if such platform is detected.
-
-Should not have impact on other platforms that uses default or platform
-specific x86_quirks.
-
-Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/x86/include/asm/setup.h |    1 +
- arch/x86/kernel/smpboot.c    |   15 ++++++++++++++-
- 2 files changed, 15 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
-index 4093d1e..7bf325a 100644
---- a/arch/x86/include/asm/setup.h
-+++ b/arch/x86/include/asm/setup.h
-@@ -31,6 +31,7 @@ struct x86_quirks {
- 	void (*smp_read_mpc_oem)(struct mpc_oemtable *oemtable,
- 				unsigned short oemsize);
- 	int (*setup_ioapic_ids)(void);
-+	void (*setup_secondary_clock)(void);
- };
+Index: linux.trees.git/tools/perf/builtin-record.c
+===================================================================
+--- linux.trees.git.orig/tools/perf/builtin-record.c	2009-07-15 11:31:53.000000000 +1000
++++ linux.trees.git/tools/perf/builtin-record.c	2009-07-15 11:34:26.000000000 +1000
+@@ -43,6 +43,7 @@
+ static int			verbose				= 0;
+ static int			inherit_stat			= 0;
+ static int			no_samples			= 0;
++static int			sample_address			= 0;
  
- extern void x86_quirk_intr_init(void);
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 2fecda6..3260159 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -66,6 +66,8 @@
- #include <linux/mc146818rtc.h>
+ static long			samples;
+ static struct timeval		last_read;
+@@ -405,6 +406,9 @@
+ 	if (inherit_stat)
+ 		attr->inherit_stat = 1;
  
- #include <asm/smpboot_hooks.h>
-+#include <asm/platform_feature.h>
-+#include <asm/apb_timer.h>
- 
- #ifdef CONFIG_X86_32
- u8 apicid_2_node[MAX_APICID];
-@@ -263,6 +265,17 @@ static void __cpuinit smp_callin(void)
- }
- 
- /*
-+ * Setup secondary clock
-+ */
-+notrace static void __cpuinit __setup_secondary_clock(void)
-+{
-+	if (x86_quirks->setup_secondary_clock)
-+		x86_quirks->setup_secondary_clock();
-+	else
-+		setup_secondary_clock();
-+}
++	if (sample_address)
++		attr->sample_type	|= PERF_SAMPLE_ADDR;
 +
-+/*
-  * Activate a secondary processor.
-  */
- notrace static void __cpuinit start_secondary(void *unused)
-@@ -323,7 +336,7 @@ notrace static void __cpuinit start_secondary(void *unused)
- 	/* enable local interrupts */
- 	local_irq_enable();
+ 	if (call_graph)
+ 		attr->sample_type	|= PERF_SAMPLE_CALLCHAIN;
  
--	setup_secondary_clock();
-+	__setup_secondary_clock();
- 
- 	wmb();
- 	cpu_idle();
+@@ -649,6 +653,8 @@
+ 		    "be more verbose (show counter open errors, etc)"),
+ 	OPT_BOOLEAN('s', "stat", &inherit_stat,
+ 		    "per thread counts"),
++	OPT_BOOLEAN('d', "data", &sample_address,
++		    "Sample addresses"),
+ 	OPT_BOOLEAN('n', "no-samples", &no_samples,
+ 		    "don't sample"),
+ 	OPT_END()
+
 -- 
-1.5.6.5
 
