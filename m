@@ -1,28 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932574AbZGPPyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932658AbZGPPze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932574AbZGPPyn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 11:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932438AbZGPPyl
+	id S932658AbZGPPze (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 11:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932633AbZGPPzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 11:54:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58144 "EHLO mx2.redhat.com"
+	Thu, 16 Jul 2009 11:55:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58239 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932441AbZGPPyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 11:54:37 -0400
+	id S932624AbZGPPz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 11:55:26 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip -v12 03/11] kprobes: checks probe address is instruction
-	boudary on x86
+Subject: [PATCH -tip -v12 00/11] tracing: kprobe-based event tracer and x86
+	instruction decoder
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
+Cc: Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Date: Thu, 16 Jul 2009 11:57:12 -0400
-Message-ID: <20090716155712.6266.68626.stgit@localhost.localdomain>
-In-Reply-To: <20090716155652.6266.39970.stgit@localhost.localdomain>
-References: <20090716155652.6266.39970.stgit@localhost.localdomain>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       =?utf-8?q?Przemys=C5=82aw?= =?utf-8?q?Pawe=C5=82czyk?= 
+	<przemyslaw@pawelczyk.it>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Thu, 16 Jul 2009 11:56:52 -0400
+Message-ID: <20090716155652.6266.39970.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -31,121 +37,247 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure safeness of inserting kprobes by checking whether the specified
-address is at the first byte of a instruction on x86.
-This is done by decoding probed function from its head to the probe point.
+Hi,
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+Here are the v12 patches. I updated it for the latest -tip and
+add fix some bugs.
+
+Here are the patches of kprobe-based event tracer for x86, version 12,
+which allows you to probe various kernel events through ftrace interface.
+The tracer supports per-probe filtering which allows you to set filters
+on each probe and shows formats of each probe. I think this is more
+generic integration with ftrace, especially event-tracer.
+
+This version includes below small fixes.
+ - Fix a buffer overflow bug. (PATCH 8/11)
+ - Fix indirect memory access string bug. (PATCH 8/11)
+ - Remove subsystem event directory if it is empty. (PATCH 6/11)
+ - Cleanup code an remove redundant checks. (PATCH 8/11, 11/11)
+
+This patchset also includes x86(-64) instruction decoder which
+supports non-SSE/FP opcodes and includes x86 opcode map. The decoder
+is used for finding the instruction boundaries when inserting new
+kprobes. I think it will be possible to share this opcode map
+with KVM's decoder.
+The decoder is tested when building kernel, the test compares the 
+results of objdump and the decoder right after building vmlinux.
+You can enable that test by CONFIG_X86_DECODER_SELFTEST=y.
+
+This series can be applied on the latest linux-2.6.31-rc3-tip.
+
+This supports only x86(-32/-64) (but porting it on other arch
+just needs kprobes/kretprobes and register and stack access APIs).
+
+
+Enhancement ideas will be added after merging:
+- Make a stress test of kprobes on this tracer.
+  (see http://sources.redhat.com/ml/systemtap/2009-q2/msg01055.html)
+- Easy probe setting wrapper which analyzes dwarf..
+- .init function tracing support.
+- Support primitive types(long, ulong, int, uint, etc) for args.
+
+
+Kprobe-based Event Tracer
+=========================
+
+Overview
+--------
+This tracer is similar to the events tracer which is based on Tracepoint
+infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
+and kretprobe). It probes anywhere where kprobes can probe(this means, all
+functions body except for __kprobes functions).
+
+Unlike the function tracer, this tracer can probe instructions inside of
+kernel functions. It allows you to check which instruction has been executed.
+
+Unlike the Tracepoint based events tracer, this tracer can add new probe points
+on the fly.
+
+Similar to the events tracer, this tracer doesn't need to be activated via
+current_tracer, instead of that, just set probe points via
+/sys/kernel/debug/tracing/kprobe_events. And you can set filters on each
+probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
+
+
+Synopsis of kprobe_events
+-------------------------
+  p[:EVENT] SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: Set a probe
+  r[:EVENT] SYMBOL[+0] [FETCHARGS]			: Set a return probe
+
+ EVENT			: Event name. If omitted, the event name is generated
+			  based on SYMBOL+offs or MEMADDR.
+ SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted.
+ MEMADDR		: Address where the probe is inserted.
+
+ FETCHARGS		: Arguments. Each probe can have up to 128 args.
+  %REG	: Fetch register REG
+  sN	: Fetch Nth entry of stack (N >= 0)
+  @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
+  @SYM[+|-offs]	: Fetch memory at SYM +|- offs (SYM should be a data symbol)
+  aN	: Fetch function argument. (N >= 0)(*)
+  rv	: Fetch return value.(**)
+  ra	: Fetch return address.(**)
+  +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.(***)
+
+  (*) aN may not correct on asmlinkaged functions and at the middle of
+      function body.
+  (**) only for return probe.
+  (***) this is useful for fetching a field of data structures.
+
+
+Per-Probe Event Filtering
+-------------------------
+ Per-probe event filtering feature allows you to set different filter on each
+probe and gives you what arguments will be shown in trace buffer. If an event
+name is specified right after 'p:' or 'r:' in kprobe_events, the tracer adds
+an event under tracing/events/kprobes/<EVENT>, at the directory you can see
+'id', 'enabled', 'format' and 'filter'.
+
+enabled:
+  You can enable/disable the probe by writing 1 or 0 on it.
+
+format:
+  It shows the format of this probe event. It also shows aliases of arguments
+ which you specified to kprobe_events.
+
+filter:
+  You can write filtering rules of this event. And you can use both of aliase
+ names and field names for describing filters.
+
+
+Event Profiling
+---------------
+ You can check the total number of probe hits and probe miss-hits via
+/sys/kernel/debug/tracing/kprobe_profile.
+ The first column is event name, the second is the number of probe hits,
+the third is the number of probe miss-hits.
+
+
+Usage examples
+--------------
+To add a probe as a new event, write a new definition to kprobe_events
+as below.
+
+  echo p:myprobe do_sys_open a0 a1 a2 a3 > /sys/kernel/debug/tracing/kprobe_events
+
+ This sets a kprobe on the top of do_sys_open() function with recording
+1st to 4th arguments as "myprobe" event.
+
+  echo r:myretprobe do_sys_open rv ra >> /sys/kernel/debug/tracing/kprobe_events
+
+ This sets a kretprobe on the return point of do_sys_open() function with
+recording return value and return address as "myretprobe" event.
+ You can see the format of these events via
+/sys/kernel/debug/tracing/events/kprobes/<EVENT>/format.
+
+  cat /sys/kernel/debug/tracing/events/kprobes/myprobe/format
+name: myprobe
+ID: 23
+format:
+	field:unsigned short common_type;	offset:0;	size:2;
+	field:unsigned char common_flags;	offset:2;	size:1;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;
+	field:int common_pid;	offset:4;	size:4;
+	field:int common_tgid;	offset:8;	size:4;
+
+	field: unsigned long ip;	offset:16;tsize:8;
+	field: int nargs;	offset:24;tsize:4;
+	field: unsigned long arg0;	offset:32;tsize:8;
+	field: unsigned long arg1;	offset:40;tsize:8;
+	field: unsigned long arg2;	offset:48;tsize:8;
+	field: unsigned long arg3;	offset:56;tsize:8;
+
+	alias: a0;	original: arg0;
+	alias: a1;	original: arg1;
+	alias: a2;	original: arg2;
+	alias: a3;	original: arg3;
+
+print fmt: "%lx: 0x%lx 0x%lx 0x%lx 0x%lx", ip, arg0, arg1, arg2, arg3
+
+
+ You can see that the event has 4 arguments and alias expressions
+corresponding to it.
+
+  echo > /sys/kernel/debug/tracing/kprobe_events
+
+ This clears all probe points. and you can see the traced information via
+/sys/kernel/debug/tracing/trace.
+
+  cat /sys/kernel/debug/tracing/trace
+# tracer: nop
+#
+#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+#              | |       |          |         |
+           <...>-1447  [001] 1038282.286875: do_sys_open+0x0/0xd6: 0x3 0x7fffd1ec4440 0x8000 0x0
+           <...>-1447  [001] 1038282.286878: sys_openat+0xc/0xe <- do_sys_open: 0xfffffffffffffffe 0xffffffff81367a3a
+           <...>-1447  [001] 1038282.286885: do_sys_open+0x0/0xd6: 0xffffff9c 0x40413c 0x8000 0x1b6
+           <...>-1447  [001] 1038282.286915: sys_open+0x1b/0x1d <- do_sys_open: 0x3 0xffffffff81367a3a
+           <...>-1447  [001] 1038282.286969: do_sys_open+0x0/0xd6: 0xffffff9c 0x4041c6 0x98800 0x10
+           <...>-1447  [001] 1038282.286976: sys_open+0x1b/0x1d <- do_sys_open: 0x3 0xffffffff81367a3a
+
+
+ Each line shows when the kernel hits a probe, and <- SYMBOL means kernel
+returns from SYMBOL(e.g. "sys_open+0x1b/0x1d <- do_sys_open" means kernel
+returns from do_sys_open to sys_open+0x1b).
+
+
+Thank you,
+
 ---
 
- arch/x86/kernel/kprobes.c |   69 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 69 insertions(+), 0 deletions(-)
+Masami Hiramatsu (11):
+      tracing: Add kprobes event profiling interface
+      tracing: Generate names for each kprobe event automatically
+      tracing: Kprobe-tracer supports more than 6 arguments
+      tracing: add kprobe-based event tracer
+      tracing: Introduce TRACE_FIELD_ZERO() macro
+      tracing: ftrace dynamic ftrace_event_call support
+      x86: add pt_regs register and stack access APIs
+      kprobes: cleanup fix_riprel() using insn decoder on x86
+      kprobes: checks probe address is instruction boudary on x86
+      x86: x86 instruction decoder build-time selftest
+      x86: instruction decoder API
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index b5b1848..5341842 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -48,6 +48,7 @@
- #include <linux/preempt.h>
- #include <linux/module.h>
- #include <linux/kdebug.h>
-+#include <linux/kallsyms.h>
- 
- #include <asm/cacheflush.h>
- #include <asm/desc.h>
-@@ -55,6 +56,7 @@
- #include <asm/uaccess.h>
- #include <asm/alternative.h>
- #include <asm/debugreg.h>
-+#include <asm/insn.h>
- 
- void jprobe_return_end(void);
- 
-@@ -245,6 +247,71 @@ retry:
- 	}
- }
- 
-+/* Recover the probed instruction at addr for further analysis. */
-+static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
-+{
-+	struct kprobe *kp;
-+	kp = get_kprobe((void *)addr);
-+	if (!kp)
-+		return -EINVAL;
-+
-+	/*
-+	 *  Basically, kp->ainsn.insn has an original instruction.
-+	 *  However, RIP-relative instruction can not do single-stepping
-+	 *  at different place, fix_riprel() tweaks the displacement of
-+	 *  that instruction. In that case, we can't recover the instruction
-+	 *  from the kp->ainsn.insn.
-+	 *
-+	 *  On the other hand, kp->opcode has a copy of the first byte of
-+	 *  the probed instruction, which is overwritten by int3. And
-+	 *  the instruction at kp->addr is not modified by kprobes except
-+	 *  for the first byte, we can recover the original instruction
-+	 *  from it and kp->opcode.
-+	 */
-+	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
-+	buf[0] = kp->opcode;
-+	return 0;
-+}
-+
-+/* Dummy buffers for kallsyms_lookup */
-+static char __dummy_buf[KSYM_NAME_LEN];
-+
-+/* Check if paddr is at an instruction boundary */
-+static int __kprobes can_probe(unsigned long paddr)
-+{
-+	int ret;
-+	unsigned long addr, offset = 0;
-+	struct insn insn;
-+	kprobe_opcode_t buf[MAX_INSN_SIZE];
-+
-+	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
-+		return 0;
-+
-+	/* Decode instructions */
-+	addr = paddr - offset;
-+	while (addr < paddr) {
-+		kernel_insn_init(&insn, (void *)addr);
-+		insn_get_opcode(&insn);
-+
-+		/* Check if the instruction has been modified. */
-+		if (OPCODE1(&insn) == BREAKPOINT_INSTRUCTION) {
-+			ret = recover_probed_instruction(buf, addr);
-+			if (ret)
-+				/*
-+				 * Another debugging subsystem might insert
-+				 * this breakpoint. In that case, we can't
-+				 * recover it.
-+				 */
-+				return 0;
-+			kernel_insn_init(&insn, buf);
-+		}
-+		insn_get_length(&insn);
-+		addr += insn.length;
-+	}
-+
-+	return (addr == paddr);
-+}
-+
- /*
-  * Returns non-zero if opcode modifies the interrupt flag.
-  */
-@@ -360,6 +427,8 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
- 
- int __kprobes arch_prepare_kprobe(struct kprobe *p)
- {
-+	if (!can_probe((unsigned long)p->addr))
-+		return -EILSEQ;
- 	/* insn: must be on special executable page on x86. */
- 	p->ainsn.insn = get_insn_slot();
- 	if (!p->ainsn.insn)
 
+ Documentation/trace/kprobetrace.txt    |  147 ++++
+ arch/x86/Kconfig.debug                 |    9 
+ arch/x86/Makefile                      |    3 
+ arch/x86/include/asm/inat.h            |  127 +++
+ arch/x86/include/asm/insn.h            |  136 +++
+ arch/x86/include/asm/ptrace.h          |   62 ++
+ arch/x86/kernel/kprobes.c              |  197 ++---
+ arch/x86/kernel/ptrace.c               |  112 +++
+ arch/x86/lib/Makefile                  |   13 
+ arch/x86/lib/inat.c                    |   82 ++
+ arch/x86/lib/insn.c                    |  473 ++++++++++++
+ arch/x86/lib/x86-opcode-map.txt        |  711 ++++++++++++++++++
+ arch/x86/scripts/Makefile              |   19 
+ arch/x86/scripts/distill.awk           |   42 +
+ arch/x86/scripts/gen-insn-attr-x86.awk |  314 ++++++++
+ arch/x86/scripts/test_get_len.c        |   99 +++
+ arch/x86/scripts/user_include.h        |   49 +
+ include/linux/ftrace_event.h           |   13 
+ include/trace/ftrace.h                 |   22 -
+ kernel/trace/Kconfig                   |   12 
+ kernel/trace/Makefile                  |    1 
+ kernel/trace/trace.h                   |   29 +
+ kernel/trace/trace_event_types.h       |    4 
+ kernel/trace/trace_events.c            |   72 +-
+ kernel/trace/trace_export.c            |   43 +
+ kernel/trace/trace_kprobe.c            | 1245 ++++++++++++++++++++++++++++++++
+ 26 files changed, 3873 insertions(+), 163 deletions(-)
+ create mode 100644 Documentation/trace/kprobetrace.txt
+ create mode 100644 arch/x86/include/asm/inat.h
+ create mode 100644 arch/x86/include/asm/insn.h
+ create mode 100644 arch/x86/lib/inat.c
+ create mode 100644 arch/x86/lib/insn.c
+ create mode 100644 arch/x86/lib/x86-opcode-map.txt
+ create mode 100644 arch/x86/scripts/Makefile
+ create mode 100644 arch/x86/scripts/distill.awk
+ create mode 100644 arch/x86/scripts/gen-insn-attr-x86.awk
+ create mode 100644 arch/x86/scripts/test_get_len.c
+ create mode 100644 arch/x86/scripts/user_include.h
+ create mode 100644 kernel/trace/trace_kprobe.c
 
 -- 
 Masami Hiramatsu
