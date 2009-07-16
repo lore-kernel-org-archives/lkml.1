@@ -1,408 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932647AbZGPP4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932644AbZGPPza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932647AbZGPP4Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 11:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932454AbZGPP4X
+	id S932644AbZGPPza (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 11:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932633AbZGPPzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 11:56:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58229 "EHLO mx2.redhat.com"
+	Thu, 16 Jul 2009 11:55:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58231 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932615AbZGPPzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 11:55:19 -0400
+	id S932624AbZGPPzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 11:55:20 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip -v12 02/11] x86: x86 instruction decoder build-time
-	selftest
+Subject: [PATCH -tip -v12 10/11] tracing: Generate names for each kprobe event
+	automatically
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        DLE <dle-develop@lists.sourceforge.net>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       =?utf-8?q?Przemys=C5=82aw?= =?utf-8?q?Pawe=C5=82czyk?= 
-	<przemyslaw@pawelczyk.it>,
-       Sam Ravnborg <sam@ravnborg.org>
-Date: Thu, 16 Jul 2009 11:57:06 -0400
-Message-ID: <20090716155706.6266.79022.stgit@localhost.localdomain>
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Date: Thu, 16 Jul 2009 11:57:53 -0400
+Message-ID: <20090716155753.6266.19656.stgit@localhost.localdomain>
 In-Reply-To: <20090716155652.6266.39970.stgit@localhost.localdomain>
 References: <20090716155652.6266.39970.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a user-space selftest of x86 instruction decoder at kernel build time.
-When CONFIG_X86_DECODER_SELFTEST=y, Kbuild builds a test harness of x86
-instruction decoder and performs it after building vmlinux.
-The test compares the results of objdump and x86 instruction decoder
-code and check there are no differences.
-
-Changes from v10:
- - Use "unsigned int" instead of "unsigned".
+Generate names for each kprobe event based on the probe point,
+and remove generic k*probe event types because there is no user
+of those types.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Przemysław Pawełczyk <przemyslaw@pawelczyk.it>
-Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Tom Zanussi <tzanussi@gmail.com>
 ---
 
- arch/x86/Kconfig.debug          |    9 ++++
- arch/x86/Makefile               |    3 +
- arch/x86/include/asm/inat.h     |    2 +
- arch/x86/include/asm/insn.h     |    2 +
- arch/x86/lib/inat.c             |    2 +
- arch/x86/lib/insn.c             |    2 +
- arch/x86/scripts/Makefile       |   19 +++++++
- arch/x86/scripts/distill.awk    |   42 +++++++++++++++++
- arch/x86/scripts/test_get_len.c |   99 +++++++++++++++++++++++++++++++++++++++
- arch/x86/scripts/user_include.h |   49 +++++++++++++++++++
- 10 files changed, 229 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/scripts/Makefile
- create mode 100644 arch/x86/scripts/distill.awk
- create mode 100644 arch/x86/scripts/test_get_len.c
- create mode 100644 arch/x86/scripts/user_include.h
+ Documentation/trace/kprobetrace.txt |    3 +-
+ kernel/trace/trace_event_types.h    |   18 ----------
+ kernel/trace/trace_kprobe.c         |   64 ++++++++++++++++++-----------------
+ 3 files changed, 35 insertions(+), 50 deletions(-)
 
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index d105f29..7d0b681 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -186,6 +186,15 @@ config X86_DS_SELFTEST
- config HAVE_MMIOTRACE_SUPPORT
- 	def_bool y
+diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
+index b29a54b..437ad49 100644
+--- a/Documentation/trace/kprobetrace.txt
++++ b/Documentation/trace/kprobetrace.txt
+@@ -28,7 +28,8 @@ Synopsis of kprobe_events
+   p[:EVENT] SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: Set a probe
+   r[:EVENT] SYMBOL[+0] [FETCHARGS]			: Set a return probe
  
-+config X86_DECODER_SELFTEST
-+     bool "x86 instruction decoder selftest"
-+     depends on DEBUG_KERNEL
-+	---help---
-+	 Perform x86 instruction decoder selftests at build time.
-+	 This option is useful for checking the sanity of x86 instruction
-+	 decoder code.
-+	 If unsure, say "N".
-+
- #
- # IO delay types:
- #
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 1b68659..7046556 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -154,6 +154,9 @@ all: bzImage
- KBUILD_IMAGE := $(boot)/bzImage
+- EVENT			: Event name.
++ EVENT			: Event name. If omitted, the event name is generated
++			  based on SYMBOL+offs or MEMADDR.
+  SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted.
+  MEMADDR		: Address where the probe is inserted.
  
- bzImage: vmlinux
-+ifeq ($(CONFIG_X86_DECODER_SELFTEST),y)
-+	$(Q)$(MAKE) $(build)=arch/x86/scripts posttest
-+endif
- 	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
- 	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
- 	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/$@
-diff --git a/arch/x86/include/asm/inat.h b/arch/x86/include/asm/inat.h
-index 01e079a..9090665 100644
---- a/arch/x86/include/asm/inat.h
-+++ b/arch/x86/include/asm/inat.h
-@@ -20,7 +20,9 @@
-  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  *
-  */
-+#ifdef __KERNEL__
- #include <linux/types.h>
-+#endif
+diff --git a/kernel/trace/trace_event_types.h b/kernel/trace/trace_event_types.h
+index 186b598..e74f090 100644
+--- a/kernel/trace/trace_event_types.h
++++ b/kernel/trace/trace_event_types.h
+@@ -175,22 +175,4 @@ TRACE_EVENT_FORMAT(kmem_free, TRACE_KMEM_FREE, kmemtrace_free_entry, ignore,
+ 	TP_RAW_FMT("type:%u call_site:%lx ptr:%p")
+ );
  
- /* Instruction attributes */
- typedef u32 insn_attr_t;
-diff --git a/arch/x86/include/asm/insn.h b/arch/x86/include/asm/insn.h
-index 5b50fa3..5736404 100644
---- a/arch/x86/include/asm/insn.h
-+++ b/arch/x86/include/asm/insn.h
-@@ -20,7 +20,9 @@
-  * Copyright (C) IBM Corporation, 2009
-  */
+-TRACE_EVENT_FORMAT(kprobe, TRACE_KPROBE, kprobe_trace_entry, ignore,
+-	TRACE_STRUCT(
+-		TRACE_FIELD(unsigned long, ip, ip)
+-		TRACE_FIELD(int, nargs, nargs)
+-		TRACE_FIELD_ZERO(unsigned long, args)
+-	),
+-	TP_RAW_FMT("%08lx: args:0x%lx ...")
+-);
+-
+-TRACE_EVENT_FORMAT(kretprobe, TRACE_KRETPROBE, kretprobe_trace_entry, ignore,
+-	TRACE_STRUCT(
+-		TRACE_FIELD(unsigned long, func, func)
+-		TRACE_FIELD(unsigned long, ret_ip, ret_ip)
+-		TRACE_FIELD(int, nargs, nargs)
+-		TRACE_FIELD_ZERO(unsigned long, args)
+-	),
+-	TP_RAW_FMT("%08lx <- %08lx: args:0x%lx ...")
+-);
+ #undef TRACE_SYSTEM
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index 67c33e1..3444d1d 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -34,6 +34,7 @@
  
-+#ifdef __KERNEL__
- #include <linux/types.h>
-+#endif
- /* insn_attr_t is defined in inat.h */
- #include <asm/inat.h>
+ #define MAX_TRACE_ARGS 128
+ #define MAX_ARGSTR_LEN 63
++#define MAX_EVENT_NAME_LEN 64
  
-diff --git a/arch/x86/lib/inat.c b/arch/x86/lib/inat.c
-index d6a34be..564ecbd 100644
---- a/arch/x86/lib/inat.c
-+++ b/arch/x86/lib/inat.c
-@@ -18,7 +18,9 @@
-  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  *
-  */
-+#ifdef __KERNEL__
- #include <linux/module.h>
-+#endif
- #include <asm/insn.h>
+ /* currently, trace_kprobe only supports X86. */
  
- /* Attribute tables are generated from opcode map */
-diff --git a/arch/x86/lib/insn.c b/arch/x86/lib/insn.c
-index 254c848..3b9451a 100644
---- a/arch/x86/lib/insn.c
-+++ b/arch/x86/lib/insn.c
-@@ -18,8 +18,10 @@
-  * Copyright (C) IBM Corporation, 2002, 2004, 2009
-  */
+@@ -272,11 +273,11 @@ static struct trace_probe *alloc_trace_probe(const char *symbol,
+ 		if (!tp->symbol)
+ 			goto error;
+ 	}
+-	if (event) {
+-		tp->call.name = kstrdup(event, GFP_KERNEL);
+-		if (!tp->call.name)
+-			goto error;
+-	}
++	if (!event)
++		goto error;
++	tp->call.name = kstrdup(event, GFP_KERNEL);
++	if (!tp->call.name)
++		goto error;
  
-+#ifdef __KERNEL__
- #include <linux/string.h>
- #include <linux/module.h>
-+#endif
- #include <asm/inat.h>
- #include <asm/insn.h>
+ 	INIT_LIST_HEAD(&tp->list);
+ 	return tp;
+@@ -306,7 +307,7 @@ static struct trace_probe *find_probe_event(const char *event)
+ 	struct trace_probe *tp;
  
-diff --git a/arch/x86/scripts/Makefile b/arch/x86/scripts/Makefile
-new file mode 100644
-index 0000000..f08859e
---- /dev/null
-+++ b/arch/x86/scripts/Makefile
-@@ -0,0 +1,19 @@
-+PHONY += posttest
-+quiet_cmd_posttest = TEST    $@
-+      cmd_posttest = objdump -d $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/scripts/distill.awk | $(obj)/test_get_len
-+
-+posttest: $(obj)/test_get_len vmlinux
-+	$(call cmd,posttest)
-+
-+test_get_len_SRC = $(srctree)/arch/x86/scripts/test_get_len.c $(srctree)/arch/x86/lib/insn.c $(srctree)/arch/x86/lib/inat.c
-+test_get_len_INC = $(srctree)/arch/x86/include/asm/inat.h $(srctree)/arch/x86/include/asm/insn.h $(objtree)/arch/x86/lib/inat-tables.c
-+
-+quiet_cmd_test_get_len = CC      $@
-+      cmd_test_get_len = $(CC) -Wall $(test_get_len_SRC) -I$(objtree)/arch/x86/lib/ -I$(srctree)/arch/x86/include -include $(srctree)/arch/x86/scripts/user_include.h -o $@
-+
-+
-+$(obj)/test_get_len: $(test_get_len_SRC) $(test_get_len_INC)
-+	$(call cmd,test_get_len)
-+
-+clean-files := test_get_len
-+
-diff --git a/arch/x86/scripts/distill.awk b/arch/x86/scripts/distill.awk
-new file mode 100644
-index 0000000..d433619
---- /dev/null
-+++ b/arch/x86/scripts/distill.awk
-@@ -0,0 +1,42 @@
-+#!/bin/awk -f
-+# Usage: objdump -d a.out | awk -f distill.awk | ./test_get_len
-+# Distills the disassembly as follows:
-+# - Removes all lines except the disassembled instructions.
-+# - For instructions that exceed 1 line (7 bytes), crams all the hex bytes
-+# into a single line.
-+# - Remove bad(or prefix only) instructions
-+
-+BEGIN {
-+	prev_addr = ""
-+	prev_hex = ""
-+	prev_mnemonic = ""
-+	bad_expr = "(\\(bad\\)|^rex|^.byte|^rep(z|nz)$|^lock$|^es$|^cs$|^ss$|^ds$|^fs$|^gs$|^data(16|32)$|^addr(16|32|64))"
-+	fwait_expr = "^9b "
-+	fwait_str="9b\tfwait"
-+}
-+
-+/^ *[0-9a-f]+:/ {
-+	if (split($0, field, "\t") < 3) {
-+		# This is a continuation of the same insn.
-+		prev_hex = prev_hex field[2]
-+	} else {
-+		# Skip bad instructions
-+		if (match(prev_mnemonic, bad_expr))
-+			prev_addr = ""
-+		# Split fwait from other f* instructions
-+		if (match(prev_hex, fwait_expr) && prev_mnemonic != "fwait") {
-+			printf "%s\t%s\n", prev_addr, fwait_str
-+			sub(fwait_expr, "", prev_hex)
-+		}
-+		if (prev_addr != "")
-+			printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
-+		prev_addr = field[1]
-+		prev_hex = field[2]
-+		prev_mnemonic = field[3]
+ 	list_for_each_entry(tp, &probe_list, list)
+-		if (tp->call.name && !strcmp(tp->call.name, event))
++		if (!strcmp(tp->call.name, event))
+ 			return tp;
+ 	return NULL;
+ }
+@@ -322,8 +323,7 @@ static void __unregister_trace_probe(struct trace_probe *tp)
+ /* Unregister a trace_probe and probe_event: call with locking probe_lock */
+ static void unregister_trace_probe(struct trace_probe *tp)
+ {
+-	if (tp->call.name)
+-		unregister_probe_event(tp);
++	unregister_probe_event(tp);
+ 	__unregister_trace_probe(tp);
+ 	list_del(&tp->list);
+ }
+@@ -352,18 +352,16 @@ static int register_trace_probe(struct trace_probe *tp)
+ 		goto end;
+ 	}
+ 	/* register as an event */
+-	if (tp->call.name) {
+-		old_tp = find_probe_event(tp->call.name);
+-		if (old_tp) {
+-			/* delete old event */
+-			unregister_trace_probe(old_tp);
+-			free_trace_probe(old_tp);
+-		}
+-		ret = register_probe_event(tp);
+-		if (ret) {
+-			pr_warning("Faild to register probe event(%d)\n", ret);
+-			__unregister_trace_probe(tp);
+-		}
++	old_tp = find_probe_event(tp->call.name);
++	if (old_tp) {
++		/* delete old event */
++		unregister_trace_probe(old_tp);
++		free_trace_probe(old_tp);
 +	}
-+}
-+
-+END {
-+	if (prev_addr != "")
-+		printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
-+}
-diff --git a/arch/x86/scripts/test_get_len.c b/arch/x86/scripts/test_get_len.c
-new file mode 100644
-index 0000000..ba527ea
---- /dev/null
-+++ b/arch/x86/scripts/test_get_len.c
-@@ -0,0 +1,99 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <assert.h>
-+
-+#include <asm/insn.h>
-+
-+/*
-+ * Test of instruction analysis in general and insn_get_length() in
-+ * particular.  See if insn_get_length() and the disassembler agree
-+ * on the length of each instruction in an elf disassembly.
-+ *
-+ * usage: test_get_len < distilled_disassembly
-+ */
-+
-+const char *prog;
-+
-+static void usage()
-+{
-+	fprintf(stderr, "usage: %s < distilled_disassembly\n", prog);
-+	exit(1);
-+}
-+
-+static void malformed_line(const char *line, int line_nr)
-+{
-+	fprintf(stderr, "%s: malformed line %d:\n%s", prog, line_nr, line);
-+	exit(3);
-+}
-+
-+#define BUFSIZE 256
-+
-+int main(int argc, char **argv)
-+{
-+	char line[BUFSIZE];
-+	unsigned char insn_buf[16];
-+	struct insn insn;
-+	int insns = 0;
-+
-+	prog = argv[0];
-+	if (argc > 1)
-+		usage();
-+
-+	while (fgets(line, BUFSIZE, stdin)) {
-+		char copy[BUFSIZE], *s, *tab1, *tab2;
-+		int nb = 0;
-+		unsigned int b;
-+
-+		insns++;
-+		memset(insn_buf, 0, 16);
-+		strcpy(copy, line);
-+		tab1 = strchr(copy, '\t');
-+		if (!tab1)
-+			malformed_line(line, insns);
-+		s = tab1 + 1;
-+		s += strspn(s, " ");
-+		tab2 = strchr(s, '\t');
-+		if (!tab2)
-+			malformed_line(line, insns);
-+		*tab2 = '\0';	/* Characters beyond tab2 aren't examined */
-+		while (s < tab2) {
-+			if (sscanf(s, "%x", &b) == 1) {
-+				insn_buf[nb++] = (unsigned char) b;
-+				s += 3;
-+			} else
-+				break;
-+		}
-+		/* Decode an instruction */
-+		kernel_insn_init(&insn, insn_buf);
-+		insn_get_length(&insn);
-+		if (insn.length != nb) {
-+			fprintf(stderr, "Error: %s", line);
-+			fprintf(stderr, "Error: objdump says %d bytes, but "
-+				"insn_get_length() says %d (attr:%x)\n", nb,
-+				insn.length, insn.attr);
-+			exit(2);
-+		}
-+	}
-+	fprintf(stderr, "Succeed: decoded and checked %d instructions\n",
-+		insns);
-+	return 0;
-+}
-diff --git a/arch/x86/scripts/user_include.h b/arch/x86/scripts/user_include.h
-new file mode 100644
-index 0000000..3bdcc55
---- /dev/null
-+++ b/arch/x86/scripts/user_include.h
-@@ -0,0 +1,49 @@
-+#ifndef __USER_TYPES_H
-+#define __USER_TYPES_H
-+
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+
-+#include <string.h>
-+
-+#ifdef __x86_64__
-+#define CONFIG_X86_64
-+#else
-+#define CONFIG_X86_32
-+#endif
-+typedef unsigned char u8;
-+typedef unsigned short u16;
-+typedef unsigned int u32;
-+typedef unsigned long long u64;
-+
-+typedef signed char s8;
-+typedef short s16;
-+typedef int s32;
-+typedef long long s64;
-+
-+typedef enum bool { false = 0, true } bool;
-+
-+/* any harmless file-scope decl */
-+#define NOP_DECL struct __nop
-+#define EXPORT_SYMBOL_GPL(symbol) NOP_DECL
-+#define MODULE_LICENSE(gpl) NOP_DECL
-+
-+#define WARN_ON(cond) do { } while (0)
-+#define unlikely(cond) (cond)
-+
-+#endif /* __USER_TYPES_H */
++	ret = register_probe_event(tp);
++	if (ret) {
++		pr_warning("Faild to register probe event(%d)\n", ret);
++		__unregister_trace_probe(tp);
+ 	}
+ 	list_add_tail(&tp->list, &probe_list);
+ end:
+@@ -566,7 +564,18 @@ static int create_trace_probe(int argc, char **argv)
+ 	argc -= 2; argv += 2;
+ 
+ 	/* setup a probe */
+-	tp = alloc_trace_probe(symbol, event, argc);
++	if (!event) {
++		/* Make a new event name */
++		char buf[MAX_EVENT_NAME_LEN];
++		if (symbol)
++			snprintf(buf, MAX_EVENT_NAME_LEN, "%c@%s%+ld",
++				 is_return ? 'r' : 'p', symbol, offset);
++		else
++			snprintf(buf, MAX_EVENT_NAME_LEN, "%c@0x%p",
++				 is_return ? 'r' : 'p', addr);
++		tp = alloc_trace_probe(symbol, buf, argc);
++	} else
++		tp = alloc_trace_probe(symbol, event, argc);
+ 	if (IS_ERR(tp))
+ 		return PTR_ERR(tp);
+ 
+@@ -647,8 +656,7 @@ static int probes_seq_show(struct seq_file *m, void *v)
+ 	char buf[MAX_ARGSTR_LEN + 1];
+ 
+ 	seq_printf(m, "%c", probe_is_return(tp) ? 'r' : 'p');
+-	if (tp->call.name)
+-		seq_printf(m, ":%s", tp->call.name);
++	seq_printf(m, ":%s", tp->call.name);
+ 
+ 	if (tp->symbol)
+ 		seq_printf(m, " %s%+ld", probe_symbol(tp), probe_offset(tp));
+@@ -766,10 +774,7 @@ static __kprobes int kprobe_trace_func(struct kprobe *kp, struct pt_regs *regs)
+ 	struct ring_buffer_event *event;
+ 	int size, i, pc;
+ 	unsigned long irq_flags;
+-	struct ftrace_event_call *call = &event_kprobe;
+-
+-	if (&tp->call.name)
+-		call = &tp->call;
++	struct ftrace_event_call *call = &tp->call;
+ 
+ 	local_save_flags(irq_flags);
+ 	pc = preempt_count();
+@@ -801,10 +806,7 @@ static __kprobes int kretprobe_trace_func(struct kretprobe_instance *ri,
+ 	struct ring_buffer_event *event;
+ 	int size, i, pc;
+ 	unsigned long irq_flags;
+-	struct ftrace_event_call *call = &event_kretprobe;
+-
+-	if (&tp->call.name)
+-		call = &tp->call;
++	struct ftrace_event_call *call = &tp->call;
+ 
+ 	local_save_flags(irq_flags);
+ 	pc = preempt_count();
 
 
 -- 
