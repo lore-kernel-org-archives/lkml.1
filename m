@@ -1,123 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbZGPGVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbZGPG2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332AbZGPGVL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 02:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZGPGVK
+	id S1756558AbZGPG2U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 02:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbZGPG2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 02:21:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52473 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbZGPGVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 02:21:09 -0400
-Message-ID: <4A5EC6D4.5040007@cn.fujitsu.com>
-Date: Thu, 16 Jul 2009 14:21:08 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
+	Thu, 16 Jul 2009 02:28:20 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:59564 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752766AbZGPG2T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 02:28:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=IOGnDOcOAtjDplhVqEp01yOnVfFFB+cxO+NX1wB7jhot3vEhuKdAR90/r+ZdmanL+e
+         vW03LAq6JU8e4jvj6MWz4j8Qn4VUSi+Uzs9Mq+6Npap0JxGMcctwF0RGD99ZS+Bp3GCf
+         m0AnzgMzGDRIworUMv4fPVGQoghupodoDq8XE=
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
+Cc: LKML <linux-kernel@vger.kernel.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] tracing/function: cleanup for function tracer
-References: <4A5EC5E7.6080307@cn.fujitsu.com>
-In-Reply-To: <4A5EC5E7.6080307@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 1/7] sched: Drop the need_resched() loop from cond_resched()
+Date: Thu, 16 Jul 2009 02:28:08 -0400
+Message-Id: <1247725694-6082-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can use %pf input format instead of kallsyms_lookup()
-and %s input format
+The schedule() function is a loop that reschedules the current task
+while the TIF_NEED_RESCHED flag is set:
 
-Thanks for Li Zefan's offline review.
+void schedule(void)
+{
+need_resched:
+	/* schedule code */
+	if (need_resched())
+		goto need_resched;
+}
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+And cond_resched() repeat this loop:
+
+do {
+	add_preempt_count(PREEMPT_ACTIVE);
+	schedule();
+	sub_preempt_count(PREEMPT_ACTIVE);
+} while(need_resched());
+
+This loop is needless because schedule() already did the check and
+nothing can set TIF_NEED_RESCHED between schedule() exit and the loop
+check in need_resched().
+
+Then remove this needless loop.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/trace/ftrace.c          |   17 +++--------------
- kernel/trace/trace_functions.c |    4 +---
- 2 files changed, 4 insertions(+), 17 deletions(-)
+ kernel/sched.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 4521c77..8f7d28e 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -1438,18 +1438,13 @@ static int t_hash_show(struct seq_file *m, void *v)
- {
- 	struct ftrace_func_probe *rec;
- 	struct hlist_node *hnd = v;
--	char str[KSYM_SYMBOL_LEN];
- 
- 	rec = hlist_entry(hnd, struct ftrace_func_probe, node);
- 
- 	if (rec->ops->print)
- 		return rec->ops->print(m, rec->ip, rec->ops, rec->data);
- 
--	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
--	seq_printf(m, "%s:", str);
--
--	kallsyms_lookup((unsigned long)rec->ops->func, NULL, NULL, NULL, str);
--	seq_printf(m, "%s", str);
-+	seq_printf(m, "%pf:%pf", (void *)rec->ip, (void *)rec->ops->func);
- 
- 	if (rec->data)
- 		seq_printf(m, ":%p", rec->data);
-@@ -1547,7 +1542,6 @@ static int t_show(struct seq_file *m, void *v)
- {
- 	struct ftrace_iterator *iter = m->private;
- 	struct dyn_ftrace *rec = v;
--	char str[KSYM_SYMBOL_LEN];
- 
- 	if (iter->flags & FTRACE_ITER_HASH)
- 		return t_hash_show(m, v);
-@@ -1560,9 +1554,7 @@ static int t_show(struct seq_file *m, void *v)
- 	if (!rec)
- 		return 0;
- 
--	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
--
--	seq_printf(m, "%s\n", str);
-+	seq_printf(m, "%pf\n", (void *)rec->ip);
- 
- 	return 0;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 75d2c1d..264b163 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6618,11 +6618,9 @@ static void __cond_resched(void)
+ 	 * PREEMPT_ACTIVE, which could trigger a second
+ 	 * cond_resched() call.
+ 	 */
+-	do {
+-		add_preempt_count(PREEMPT_ACTIVE);
+-		schedule();
+-		sub_preempt_count(PREEMPT_ACTIVE);
+-	} while (need_resched());
++	add_preempt_count(PREEMPT_ACTIVE);
++	schedule();
++	sub_preempt_count(PREEMPT_ACTIVE);
  }
-@@ -2543,7 +2535,6 @@ static void g_stop(struct seq_file *m, void *p)
- static int g_show(struct seq_file *m, void *v)
- {
- 	unsigned long *ptr = v;
--	char str[KSYM_SYMBOL_LEN];
  
- 	if (!ptr)
- 		return 0;
-@@ -2553,9 +2544,7 @@ static int g_show(struct seq_file *m, void *v)
- 		return 0;
- 	}
- 
--	kallsyms_lookup(*ptr, NULL, NULL, NULL, str);
--
--	seq_printf(m, "%s\n", str);
-+	seq_printf(m, "%pf\n", v);
- 
- 	return 0;
- }
-diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-index 7402144..b53dc99 100644
---- a/kernel/trace/trace_functions.c
-+++ b/kernel/trace/trace_functions.c
-@@ -288,11 +288,9 @@ static int
- ftrace_trace_onoff_print(struct seq_file *m, unsigned long ip,
- 			 struct ftrace_probe_ops *ops, void *data)
- {
--	char str[KSYM_SYMBOL_LEN];
- 	long count = (long)data;
- 
--	kallsyms_lookup(ip, NULL, NULL, NULL, str);
--	seq_printf(m, "%s:", str);
-+	seq_printf(m, "%pf:", (void *)ip);
- 
- 	if (ops == &traceon_probe_ops)
- 		seq_printf(m, "traceon");
+ int __sched _cond_resched(void)
 -- 
-1.6.1.2
+1.6.2.3
 
