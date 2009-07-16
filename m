@@ -1,41 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbZGPSPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbZGPSQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932995AbZGPSPY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 14:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932963AbZGPSPX
+	id S932980AbZGPSQc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 14:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932952AbZGPSQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 14:15:23 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:59048 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932870AbZGPSPW (ORCPT
+	Thu, 16 Jul 2009 14:16:31 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:55688 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932870AbZGPSQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 14:15:22 -0400
-Date: Thu, 16 Jul 2009 12:15:21 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: david@lang.hm
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Subject: Re: deterministic scsi order with async scan
-Message-ID: <20090716181521.GT24310@parisc-linux.org>
-References: <alpine.DEB.1.10.0907151801040.9159@asgard> <20090716115703.GQ24310@parisc-linux.org> <alpine.DEB.1.10.0907161022540.9159@asgard>
+	Thu, 16 Jul 2009 14:16:30 -0400
+Message-ID: <4A5F6E2C.8020609@vlnb.net>
+Date: Thu, 16 Jul 2009 22:15:08 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0907161022540.9159@asgard>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Joe Eykholt <jeykholt@cisco.com>
+CC: Boaz Harrosh <bharrosh@panasas.com>, Tejun Heo <tj@kernel.org>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH v2]: New implementation of scsi_execute_async()
+References: <4A563368.5040407@vlnb.net> <4A5CAFB5.1000901@vlnb.net> <4A5D9C46.2000002@panasas.com> <4A5E168B.8010809@cisco.com>
+In-Reply-To: <4A5E168B.8010809@cisco.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19+C9+zfhN3bj6fNgLyVnntXd8UP+tum6YtCn8
+ jRIreTj98V+Ap0Kpe13lBUgUNdu8m9Mw2HTnlnaObasct2RWfv
+ llmF/wH6T92NGXnv8WwfQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 10:23:45AM -0700, david@lang.hm wrote:
-> hmm, in that case how can I troubleshoot why this system is detecting the 
-> two different PCI-E cards in different orders on different boots.
+Joe Eykholt, on 07/15/2009 09:48 PM wrote:
+>>> +int sg_copy(struct scatterlist *dst_sg,
+>>> +	    struct scatterlist *src_sg, size_t copy_len,
+>>> +	    enum km_type d_km_type, enum km_type s_km_type)
+>>> +{
+>>> +	int res = 0;
+>>> +	size_t dst_len, dst_offs;
+>>> +
+>>> +	if (copy_len == 0)
+>>> +		copy_len = 0x7FFFFFFF; /* copy all */
+>>> +
+>>> +	dst_len = dst_sg->length;
+>>> +	dst_offs = dst_sg->offset;
+>>> +
+>>> +	do {
+>>> +		copy_len -= __sg_copy_elem(&dst_sg, &dst_len, &dst_offs,
+>>> +				src_sg, copy_len, d_km_type, s_km_type);
+>>> +		if ((copy_len == 0) || (dst_sg == NULL))
+>>> +			goto out;
+>>> +
+>>> +		src_sg = sg_next(src_sg);
+>>> +	} while (src_sg != NULL);
+>>> +
+>>> +out:
+>>> +	return res;
+>>> +}
+> 
+> The return value res is always 0 here, contrary to the description.
+> Maybe it should be void.
 
-I don't know.  Are the cards actually being detected in a different
-order, or are the Linux drivers being bound to them in a different order?
-Are you using modules or are these drivers built-in?
+Will be fixed, thanks
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+>>> +EXPORT_SYMBOL(sg_copy);
+>>>
+>> Boaz
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
