@@ -1,91 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZGPK52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZGPLDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbZGPK52 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 06:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755428AbZGPK5L
+	id S1753340AbZGPLDb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 07:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZGPLDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 06:57:11 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:58106 "EHLO bilbo.ozlabs.org"
+	Thu, 16 Jul 2009 07:03:31 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:41794 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755279AbZGPKyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 06:54:39 -0400
-Message-Id: <20090716104817.273972048@samba.org>
-References: <20090716104247.536695580@samba.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 16 Jul 2009 20:42:48 +1000
-From: Anton Blanchard <anton@samba.org>
-To: a.p.zijlstra@chello.nl, mingo@elte.hu, paulus@samba.org,
-       fweisbec@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 1/5] perf_counter: Make sure we dont leak kernel memory to userspace
+	id S1752245AbZGPLDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 07:03:30 -0400
+Date: Thu, 16 Jul 2009 12:03:29 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] page-allocator: Ensure that processes that have been
+	OOM killed exit the page allocator (resend)
+Message-ID: <20090716110328.GB22499@csn.ul.ie>
+References: <20090715104944.GC9267@csn.ul.ie> <alpine.DEB.2.00.0907151326350.22582@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0907151326350.22582@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are a few places we are leaking tiny amounts of kernel memory
-to userspace. This happens when writing out strings because we always align
-the end to 64 bits.
+On Wed, Jul 15, 2009 at 01:29:33PM -0700, David Rientjes wrote:
+> On Wed, 15 Jul 2009, Mel Gorman wrote:
+> 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index f8902e7..5c98d02 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1547,6 +1547,14 @@ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
+> >  	if (gfp_mask & __GFP_NORETRY)
+> >  		return 0;
+> >  
+> > +	/* Do not loop if OOM-killed unless __GFP_NOFAIL is specified */
+> > +	if (test_thread_flag(TIF_MEMDIE)) {
+> > +		if (gfp_mask & __GFP_NOFAIL)
+> > +			WARN(1, "Potential infinite loop with __GFP_NOFAIL");
+> > +		else
+> > +			return 0;
+> > +	}
+> > +
+> >  	/*
+> >  	 * In this implementation, order <= PAGE_ALLOC_COSTLY_ORDER
+> >  	 * means __GFP_NOFAIL, but that may not be true in other
+> > 
+> 
+> This only works for GFP_ATOMIC since the next iteration of the page 
+> allocator will (probably) fail reclaim and simply invoke the oom killer 
+> again,
 
-To avoid this we should always use an appropriately sized temporary buffer
-and ensure it is zeroed.
+GFP_ATOMIC should not be calling the OOM killer. It has already
+exited. Immeditely after an OOM kill, I would expect the allocation to
+succeed. However, in the event that the task selected for OOM killing is
+the current one and no other task exits, it could loop.
 
-Since d_path assembles the string from the end of the buffer backwards, we
-need to add 64 bits after the buffer to allow for alignment.
+> which will notice current has TIF_MEMDIE set and choose to do 
+> nothing, at which time the allocator simply loops again.
+> 
 
-We also need to copy arch_vma_name to the temporary buffer, because if we use
-it directly we may end up copying to userspace a number of bytes after the end
-of the string constant.
+So, we should unconditionally check if we should loop again whether we
+have OOM killed or not which the following should do.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+==== CUT HERE ====
+page-allocator: Check after an OOM kill if the allocator should loop
 
-Index: linux.trees.git/kernel/perf_counter.c
-===================================================================
---- linux.trees.git.orig/kernel/perf_counter.c	2009-07-16 19:44:23.000000000 +1000
-+++ linux.trees.git/kernel/perf_counter.c	2009-07-16 20:25:37.000000000 +1000
-@@ -2969,8 +2969,10 @@
- 	struct perf_cpu_context *cpuctx;
- 	struct perf_counter_context *ctx;
- 	unsigned int size;
--	char *comm = comm_event->task->comm;
-+	char comm[TASK_COMM_LEN];
- 
-+	memset(comm, 0, sizeof(comm));
-+	strncpy(comm, comm_event->task->comm, sizeof(comm));
- 	size = ALIGN(strlen(comm)+1, sizeof(u64));
- 
- 	comm_event->comm = comm;
-@@ -3089,8 +3091,15 @@
- 	char *buf = NULL;
- 	const char *name;
- 
-+	memset(tmp, 0, sizeof(tmp));
-+
- 	if (file) {
--		buf = kzalloc(PATH_MAX, GFP_KERNEL);
-+		/*
-+		 * d_path works from the end of the buffer backwards, so we
-+		 * need to add enough zero bytes after the string to handle
-+		 * the 64bit alignment we do later.
-+		 */
-+		buf = kzalloc(PATH_MAX + sizeof(u64), GFP_KERNEL);
- 		if (!buf) {
- 			name = strncpy(tmp, "//enomem", sizeof(tmp));
- 			goto got_name;
-@@ -3101,9 +3110,11 @@
- 			goto got_name;
- 		}
- 	} else {
--		name = arch_vma_name(mmap_event->vma);
--		if (name)
-+		if (arch_vma_name(mmap_event->vma)) {
-+			name = strncpy(tmp, arch_vma_name(mmap_event->vma),
-+				       sizeof(tmp));
- 			goto got_name;
-+		}
- 
- 		if (!vma->vm_mm) {
- 			name = strncpy(tmp, "[vdso]", sizeof(tmp));
+Currently, the allocator loops unconditionally after an OOM kill on the
+assumption that the allocation will succeed. However, if the task
+selected for OOM-kill is the current task, it could in theory loop
+forever and always entering the OOM killer. This patch checks as normal
+after an OOM kill if the allocator should loop again.
 
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 -- 
+ mm/page_alloc.c |    2 --
+ 1 file changed, 2 deletions(-)
 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 4b8552e..b381a6b 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1830,8 +1830,6 @@ rebalance:
+ 			if (order > PAGE_ALLOC_COSTLY_ORDER &&
+ 						!(gfp_mask & __GFP_NOFAIL))
+ 				goto nopage;
+-
+-			goto restart;
+ 		}
+ 	}
+ 
