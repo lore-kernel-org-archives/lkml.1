@@ -1,137 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbZGPMcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932169AbZGPMdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756236AbZGPMcF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 08:32:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756036AbZGPMcE
+	id S932169AbZGPMdd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 08:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZGPMdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 08:32:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40276 "EHLO mx2.redhat.com"
+	Thu, 16 Jul 2009 08:33:32 -0400
+Received: from mga14.intel.com ([143.182.124.37]:19254 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756003AbZGPMcC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 08:32:02 -0400
-Date: Thu, 16 Jul 2009 15:31:01 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Greg KH <gregkh@suse.de>
-Cc: anthony@codemonkey.ws, avi@redhat.com, kvm@vger.kernel.org,
-       chrisw@redhat.com, hjk@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv4] uio: add generic driver for PCI 2.3 devices
-Message-ID: <20090716123101.GA15975@redhat.com>
-References: <20090715201340.GA12279@redhat.com> <20090715220829.GB31962@suse.de>
+	id S1753864AbZGPMdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 08:33:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,411,1243839600"; 
+   d="scan'208";a="165688571"
+Date: Thu, 16 Jul 2009 20:33:21 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Minchan Kim <minchan.kim@gmail.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH 1/3] Rename pgmoved variable in shrink_active_list()
+Message-ID: <20090716123321.GA28895@localhost>
+References: <20090716094619.9D07.A69D9226@jp.fujitsu.com> <20090716095119.9D0A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090715220829.GB31962@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090716095119.9D0A.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 03:08:29PM -0700, Greg KH wrote:
-> On Wed, Jul 15, 2009 at 11:13:40PM +0300, Michael S. Tsirkin wrote:
-> > This adds a generic uio driver that can bind to any PCI device.  First
-> > user will be virtualization where a qemu userspace process needs to give
-> > guest OS access to the device.
-> > 
-> > Interrupts are handled using the Interrupt Disable bit in the PCI command
-> > register and Interrupt Status bit in the PCI status register.  All devices
-> > compliant to PCI 2.3 (circa 2002) and all compliant PCI Express devices should
-> > support these bits.  Driver detects this support, and won't bind to devices
-> > which do not support the Interrupt Disable Bit in the command register.
-> > 
-> > It's expected that more features of interest to virtualization will be
-> > added to this driver in the future. Possibilities are: mmap for device
-> > resources, MSI/MSI-X, eventfd (to interface with kvm), iommu.
-> > 
-> > Acked-by: Chris Wright <chrisw@redhat.com>
-> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> > ---
-> > 
-> > Hans, Greg, please review and consider for upstream.
-> > 
-> > This is intended to solve the problem in virtualization that shared
-> > interrupts do not work with assigned devices. Earlier versions of this
-> > patch have circulated on kvm@vger.
+On Thu, Jul 16, 2009 at 08:52:34AM +0800, KOSAKI Motohiro wrote:
+> Subject: [PATCH] Rename pgmoved variable in shrink_active_list()
 > 
-> How does this play with the pci-stub driver that I thought was written
-> to solve this very problem?
+> Currently, pgmoved variable have two meanings. it cause harder reviewing a bit.
+> This patch separate it.
+>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-
-AFAIK the problem pci stub was written to solve is simply to bind to a
-device. You then have to use another kernel module which looks the
-device up with something like pci_get_bus_and_slot to do anything
-useful. In particular, for non-shared interrupts, we can disable the
-interrupt in the apic. But this does not work well for shared
-interrupts. Thus this work.
-
-The uio driver will be used in virtualization scenarious, a couple
-of possible ones that have been mentioned on the kvm list are:
-- device assignment (guest access to device) for simple devices with
-  shared interrupts: emulating PCI is tricky enough to better be done in
-  userspace. shared interrupt support is important as it happens
-  with real devices
-- simple communication between guest and host:
-  we create a virtual device in host, and userspace
-  driver in guest gets events and passes them on
-  to e.g. dbus. shared interrupt support is important
-  to avoid wasting irqs
-
-
->  Will it conflict?
-
-No in a sense that you can't bind both drivers to the same device.
-
-> In fact, it looks like you copied the comments for this driver directly
-> from the pci-stub driver :)
-
-Right.
-
-> How about moving that documentation into a place that people will notice
-> it, like the rest of the UIO documentation?
-
-OK.
-
-> And right now you are just sending the irq to userspace, what is
-> userspace supposed to do with it?
-
-Userspace uses libpci (i.e. pci sysfs) to talk to the device and to
-re-enable interrupts by writing to the command register.
-
-In the case of device assignment, this will be qemu which
-acts as a proxy for driver running in guest context.
-In case of uio loaded in guest, the driver will be in guest
-userspace, and the device is emulated in qemu.
-
-
-> Do you have a userspace program that
-> uses this interface today to verify that everything works?  If so, care
-> to provide a pointer to it?
-
-Sure. I used an emulated device for this.
-First, you patch qemu to add the device:
-http://www.linux-kvm.org/downloads/mst/test_irq.patch
-
-Now, run with the new kernel (-kernel flag), adding
- -device test-irq
-
-Once in guest, assign the device id
-echo "1af4 2009" > /sys/bus/pci/drivers/uio_pci_generic/new_id
-
-Compile and run this driver:
-http://www.linux-kvm.org/downloads/mst/testuio.c
-(it does not use any libraries besides libc,
- so just gcc testuio.c -o testuio)
-
-And now make the device assert interrupts, like this:
-
-while
-sleep 1
-do
-setpci -s 00:04.0 0x40.B=0x1
-done
-
-You should see messages printed as the driver gets interrupts, but no
-error messages about missed interrupts.
-
-> thanks,
-> 
-> greg k-h
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com> 
