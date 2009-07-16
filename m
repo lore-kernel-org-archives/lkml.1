@@ -1,52 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932754AbZGPQem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932767AbZGPQeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932754AbZGPQem (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 12:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932733AbZGPQel
+	id S932767AbZGPQeu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 12:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932757AbZGPQes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 12:34:41 -0400
-Received: from nox.protox.org ([88.191.38.29]:40710 "EHLO nox.protox.org"
+	Thu, 16 Jul 2009 12:34:48 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52010 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932732AbZGPQel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 12:34:41 -0400
-Subject: Re: [PATCH] ttm: add pool wc/uc page allocator
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Jerome Glisse <jglisse@redhat.com>
-Cc: airlied@gmail.com, dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Dave Airlie <airlied@redhat.com>
-In-Reply-To: <1247760821-12122-1-git-send-email-jglisse@redhat.com>
-References: <1247760821-12122-1-git-send-email-jglisse@redhat.com>
-Content-Type: text/plain
-Date: Thu, 16 Jul 2009 18:34:35 +0200
-Message-Id: <1247762075.12808.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S932758AbZGPQeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 12:34:46 -0400
+Date: Thu, 16 Jul 2009 18:34:44 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Chris Mason <chris.mason@oracle.com>, Mike Galbraith <efault@gmx.de>,
+       Diego Calleja <diegocg@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com,
+       linux-ext4@vger.kernel.org
+Subject: Re: Performance regressions in 2.6.30-rc7?
+Message-ID: <20090716163444.GC25725@duck.suse.cz>
+References: <20090610091211.GA13692@duck.suse.cz> <x4963f3rb4t.fsf@segfault.boston.devel.redhat.com> <20090715104319.GC25458@duck.suse.cz> <x4963du3vyp.fsf@segfault.boston.devel.redhat.com> <20090715145849.GE25458@duck.suse.cz> <20090715175028.GE22826@atrey.karlin.mff.cuni.cz> <20090715185452.GG22826@atrey.karlin.mff.cuni.cz> <x49iqhspue9.fsf@segfault.boston.devel.redhat.com> <20090716144601.GB25725@duck.suse.cz> <x49ab34ptb2.fsf@segfault.boston.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49ab34ptb2.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-16 at 18:13 +0200, Jerome Glisse wrote:
-> On AGP system we might allocate/free routinely uncached or wc memory,
-> changing page from cached (wb) to uc or wc is very expensive and involves
-> a lot of flushing. To improve performance this allocator use a pool
-> of uc,wc pages.
+On Thu 16-07-09 10:59:45, Jeff Moyer wrote:
+> Jan Kara <jack@suse.cz> writes:
+> >> OK, looking back at the blktrace data I collected, we see[1]:
+> >> 
+> >> Total (cciss_c0d1):         2.6.29                  2.6.30-rc7
+> >> -------------------------------------------------------------------
+> >> Writes Queued:         8,531K,   34,126MiB  |   8,526K,   34,104MiB 
+> >> Write Dispatches:    556,256,   34,126MiB   | 294,809,   34,105MiB  <===
+> >> Writes Requeued:           0                |       0               
+> >> Writes Completed:    556,256,   34,126MiB   | 294,809,   34,105MiB  
+> >> Write Merges:          7,975K,   31,901MiB  |   8,231K,   32,924MiB 
+> >> --------------------------------------------------------------------
+> >> IO unplugs:          1,253,337              | 7,346,184             <===
+> >> Timer unplugs:         1,462                |       3               
+> >> 
+> >> Hmmm...
 > 
-> Currently each pool (wc, uc) is 256 pages big, improvement would be
-> to tweak this according to memory pressure so we can give back memory
-> to system.
+> >   Yeah, this looks promissing. Although what I don't get is, how come that
+> > number of writes dispatched is roughly twice as much for 2.6.29 but the
+> > number of unplugs is higher on 2.6.30. My naive assumption would be that
+> > higher unplug rate -> less merging -> more requests dispatched.
 > 
-> Signed-off-by: Dave Airlie <airlied@redhat.com>
-> Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+> Yeah, that's confusing!  I don't have an answer for you yet!
+  Maybe this is connected with the WRITE_SYNC changes?
 
-Just a follow-up on that one, i haven't been able yet to thoroughly
-test this patch on AGP system, so i am mostly sending so other people
-can test. I think i corrected few bugs that were in previous iteration
-of that patch.
+> >> commit b029195dda0129b427c6e579a3bb3ae752da3a93
+> >> Author: Jens Axboe <jens.axboe@oracle.com>
+> >> Date:   Tue Apr 7 11:38:31 2009 +0200
+> >> 
+> >>     cfq-iosched: don't let idling interfere with plugging
+> >>     
+> >>     When CFQ is waiting for a new request from a process, currently it'll
+> >>     immediately restart queuing when it sees such a request. This doesn't
+> >>     work very well with streamed IO, since we then end up splitting IO
+> >>     that would otherwise have been merged nicely. For a simple dd test,
+> >>     this causes 10x as many requests to be issued as we should have.
+> >>     Normally this goes unnoticed due to the low overhead of requests
+> >>     at the device side, but some hardware is very sensitive to request
+> >>     sizes and there it can cause big slow downs.
+> >>     
+> >>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> >> 
+> >> There were a couple of subsequent fixups to this commit:
+> >> 
+> >> commit d6ceb25e8d8bccf826848c2621a50d02c0a7f4ae
+> >> Author: Jens Axboe <jens.axboe@oracle.com>
+> >> Date:   Tue Apr 14 14:18:16 2009 +0200
+> >> 
+> >>     cfq-iosched: don't delay queue kick for a merged request
+> >> 
+> >> commit 2d870722965211de072bb36b446a4df99dae07e1
+> >> Author: Jens Axboe <jens.axboe@oracle.com>
+> >> Date:   Wed Apr 15 12:12:46 2009 +0200
+> >> 
+> >>     cfq-iosched: tweak kick logic a bit more
+> >> 
+> >> 
+> >> So I guess that's where we need to start looking.
+> >   OK, I can try to check whether backing out just these changes will help
+> > anything.
+> 
+> Well, that will help identify if they are, in fact, the cause.  I hope
+> it's not too hard to disentangle them from the current kernel!  Thanks
+> for all of your work on this!
+  It was no problem to revert them. But the throughput didn't increase :(.
 
-Beside that i think i have addressed all comment previously raisen,
-but don't hesitate to pin point any things i have miss.
-
-Cheers,
-Jerome
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
