@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbZGPIgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbZGPIhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753762AbZGPIgY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 04:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZGPIgX
+	id S1753786AbZGPIhj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 04:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZGPIhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 04:36:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44672 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753530AbZGPIgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 04:36:22 -0400
-Message-ID: <4A5EE63F.9050205@kernel.org>
-Date: Thu, 16 Jul 2009 17:35:11 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 16 Jul 2009 04:37:38 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57929 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752657AbZGPIhh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 04:37:37 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/5]  move ClearPageActive from move_active_pages() to shrink_active_list()
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20090716173449.9D4B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH #tj-block-for-linus] block: fix failfast merge testing
- in elv_rq_merge_ok()
-References: <4A5ECC62.7050607@kernel.org> <4A5EDD81.6060409@panasas.com> <4A5EDF90.7090900@kernel.org> <4A5EE2BD.8030100@panasas.com>
-In-Reply-To: <4A5EE2BD.8030100@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Jul 2009 08:35:15 +0000 (UTC)
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 16 Jul 2009 17:37:34 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> OK So could you put a FIXME: and fat comment, on that weird "!"(s)
-> everywhere?
+This patch series are several vmscan cleanups.
 
-Yeap, sure.  How about something like the following?
+===================
+Subject: [PATCH] move ClearPageActive from move_active_pages() to shrink_active_list()
 
-	/*
-	 * Don't merge if failfast settings don't match.  The negation
-	 * in front of each condition is necessary because bio and
-	 * request flags use different bit positions and the accessors
-	 * return those bits directly.  This ugliness will soon go
-	 * away.
-	 */
+The mvoe_active_pages_to_lru() function is called under irq disabled and
+ClearPageActive() doesn't need irq disabling.
 
--- 
-tejun
+Then, this patch move it into shrink_active_list().
+
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ mm/vmscan.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1230,10 +1230,6 @@ static void move_active_pages_to_lru(str
+ 		VM_BUG_ON(PageLRU(page));
+ 		SetPageLRU(page);
+ 
+-		VM_BUG_ON(!PageActive(page));
+-		if (!is_active_lru(lru))
+-			ClearPageActive(page);	/* we are de-activating */
+-
+ 		list_move(&page->lru, &zone->lru[lru].list);
+ 		mem_cgroup_add_lru_list(page, lru);
+ 		pgmoved++;
+@@ -1315,6 +1311,7 @@ static void shrink_active_list(unsigned 
+ 			}
+ 		}
+ 
++		ClearPageActive(page);	/* we are de-activating */
+ 		list_add(&page->lru, &l_inactive);
+ 	}
+ 
+
+
