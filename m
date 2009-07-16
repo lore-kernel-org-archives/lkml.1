@@ -1,157 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZGPJjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932065AbZGPJyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbZGPJjK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 05:39:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZGPJjJ
+	id S932065AbZGPJyN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 05:54:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZGPJyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 05:39:09 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:49114 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754294AbZGPJjH (ORCPT
+	Thu, 16 Jul 2009 05:54:12 -0400
+Received: from viefep17-int.chello.at ([62.179.121.37]:59043 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753442AbZGPJyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 05:39:07 -0400
-Subject: Re: Achieved 10Gbit/s bidirectional routing
-From: Jesper Dangaard Brouer <hawk@comx.dk>
-To: Bill Fink <billfink@mindspring.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	Thu, 16 Jul 2009 05:54:12 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [RESEND PATCH 0/11] kernel:lockdep:replace DFS with BFS
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        "David S. Miller" <davem@davemloft.net>,
-       Robert Olsson <Robert.Olsson@data.slu.se>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>, jesse.brandeburg@intel.com,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090715232253.91d9f264.billfink@mindspring.com>
-References: <1247676631.30876.29.camel@localhost.localdomain>
-	 <20090715232253.91d9f264.billfink@mindspring.com>
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <d82e647a0907160012p4f4ee559q1a04be4cfbc4753c@mail.gmail.com>
+References: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com>
+	 <1247476574.7529.55.camel@twins>
+	 <d82e647a0907152139x12edd66agde44f155fa60506b@mail.gmail.com>
+	 <1247721753.15471.2.camel@twins>
+	 <d82e647a0907160012p4f4ee559q1a04be4cfbc4753c@mail.gmail.com>
 Content-Type: text/plain
-Organization: ComX Networks A/S
-Date: Thu, 16 Jul 2009 11:39:04 +0200
-Message-Id: <1247737144.30876.53.camel@localhost.localdomain>
+Date: Thu, 16 Jul 2009 11:54:22 +0200
+Message-Id: <1247738062.15471.96.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 16 Jul 2009 09:39:04.0477 (UTC) FILETIME=[41F0B4D0:01CA05F9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-15 at 23:22 -0400, Bill Fink wrote:
-> On Wed, 15 Jul 2009, Jesper Dangaard Brouer wrote:
+On Thu, 2009-07-16 at 15:12 +0800, Ming Lei wrote:
+> 2009/7/16 Peter Zijlstra <a.p.zijlstra@chello.nl>:
+> >
+> > I've asked several times to comment on the removal of that generation
+> > count DaveM did. Is that a normal part of DFS, or was that an
+> > optimization on top particular to this problem, can something similar be
+> > done for BFS, etc.
 > 
-> > I'm giving a talk at LinuxCon, about 10Gbit/s routing on standard
-> > hardware running Linux.
-> > 
-> >   http://linuxcon.linuxfoundation.org/meetings/1585
-> >   https://events.linuxfoundation.org/lc09o17
-> > 
-> > I'm getting some really good 10Gbit/s bidirectional routing results
-> > with Intels latest 82599 chip. (I got two pre-release engineering
-> > samples directly from Intel, thanks Peter)
-> > 
-> > Using a Core i7-920, and tuning the memory according to the RAMs
-> > X.M.P. settings DDR3-1600MHz, notice this also increases the QPI to
-> > 6.4GT/s.  (Motherboard P6T6 WS revolution)
-> > 
-> > With big 1514 bytes packets, I can basically do 10Gbit/s wirespeed
-> > bidirectional routing.
-> > 
-> > Notice bidirectional routing means that we actually has to move approx
-> > 40Gbit/s through memory and in-and-out of the interfaces.
-> > 
-> > Formatted quick view using 'ifstat -b'
-> > 
-> >   eth31-in   eth31-out   eth32-in  eth32-out
-> >     9.57  +    9.52  +     9.51 +     9.60  = 38.20 Gbit/s
-> >     9.60  +    9.55  +     9.52 +     9.62  = 38.29 Gbit/s
-> >     9.61  +    9.53  +     9.52 +     9.62  = 38.28 Gbit/s
-> >     9.61  +    9.53  +     9.54 +     9.62  = 38.30 Gbit/s
-> > 
-> > [Adding an extra NIC]
-> > 
-> > Another observation is that I'm hitting some kind of bottleneck on the
-> > PCI-express switch.  Adding an extra NIC in a PCIe slot connected to
-> > the same PCIe switch, does not scale beyond 40Gbit/s collective
-> > throughput.
-
-Correcting my self, according to Bill's info below.
-
-It does not scale when adding an extra NIC to the same NVIDIA NF200 PCIe
-switch chip (reason explained below by Bill)
-
- 
-> > But, I happened to have a special motherboard ASUS P6T6 WS revolution,
-> > which has an additional PCIe switch chip NVIDIA's NF200.
-> > 
-> > Connecting two dual port 10GbE NICs via two different PCI-express
-> > switch chips, makes things scale again!  I have achieved a collective
-> > throughput of 66.25 Gbit/s.  This results is also influenced by my
-> > pktgen machines cannot keep up, and I'm getting closer to the memory
-> > bandwidth limits.
-> > 
-> > FYI: I found a really good reference explaining the PCI-express
-> > architecture, written by Intel:
-> > 
-> >  http://download.intel.com/design/intarch/papers/321071.pdf
-> > 
-> > I'm not sure how to explain the PCI-express chip bottleneck I'm
-> > seeing, but my guess is that I'm limited by the number of outstanding
-> > packets/DMA-transfers and the latency for the DMA operations.
-> > 
-> > Does any one have datasheets on the X58 and NVIDIA's NF200 PCI-express
-> > chips, that can tell me the number of outstanding transfers they
-> > support?
+> DFS uses generation count DaveM did to decide if a class is visted, and BFS
+> uses bitmap to mark a class is visted or not and the extra efficiency loss is
 > 
-> We've achieved 70 Gbps aggregate unidirectional TCP performance from
-> one P6T6 based system to another.  We figured out in our case that
-> we were being limited by the interconnect between the Intel X58 and
-> Nvidia N200 chips.  The first 2 PCIe 2.0 slots are directly off the
-> Intel X58 and get the full 40 Gbps throughput from the dual-port
-> Myricom 10-GigE NICs we have installed in them.  But the other
-> 3 PCIe 2.0 slots are on the Nvidia N200 chip, and I discovered
-> through googling that the link between the X58 and N200 chips
-> only operates at PCIe x16 _1.0_ speed, which limits the possible
-> aggregate throughput of the last 3 PCIe 2.0 slots to only 32 Gbps.
-
-This definitly explains the bottlenecks I have seen! Thanks!
-
-Yes, it seems to scale when installing the two NICs in the first two
-slots, both connected to the X58.  If overclocking the RAM and CPU a
-bit, I can match my pktgen machines speed which gives a collective
-throughput of 67.95 Gbit/s.
-
-   eth33          eth34          eth31         eth32
- in     out     in     out     in    out     in    out 
-7.54 + 9.58  + 9.56 + 7.56  + 7.33 + 9.53 + 9.50 + 7.35  = 67.95 Gbit/s
-
-Now I just need a faster generator machine, to find the next bottleneck ;-)
-
-
-> This was clearly seen in our nuttcp testing:
+>           bitmap_zero(bfs_accessed, MAX_LOCKDEP_ENTRIES);
 > 
-> [root@i7raid-1 ~]# ./nuttcp-6.2.6 -In2 -xc0/0 -p5001 192.168.1.11 & ./nuttcp-6.2.6 -In3 -xc0/0 -p5002 192.168.2.11 & ./nuttcp-6.2.6 -In4 -xc1/1 -p5003 192.168.3.11 & ./nuttcp-6.2.6 -In5 -xc1/1 -p5004 192.168.4.11 & ./nuttcp-6.2.6 -In6 -xc2/2 -p5005 192.168.5.11 & ./nuttcp-6.2.6 -In7 -xc2/2 -p5006 192.168.6.11 & ./nuttcp-6.2.6 -In8 -xc3/3 -p5007 192.168.7.11 & ./nuttcp-6.2.6 -In9 -xc3/3 -p5008 192.168.8.11
-> n2: 11505.2648 MB /  10.09 sec = 9566.2298 Mbps 37 %TX 55 %RX 0 retrans 0.10 msRTT
-> n3: 11727.4489 MB /  10.02 sec = 9815.7570 Mbps 39 %TX 44 %RX 0 retrans 0.10 msRTT
-> n4: 11770.1250 MB /  10.07 sec = 9803.9901 Mbps 39 %TX 51 %RX 0 retrans 0.10 msRTT
-> n5: 11837.9320 MB /  10.05 sec = 9876.5725 Mbps 39 %TX 47 %RX 0 retrans 0.10 msRTT
-> n6:  9096.8125 MB /  10.09 sec = 7559.3310 Mbps 30 %TX 32 %RX 0 retrans 0.10 msRTT
-> n7:  9100.1211 MB /  10.10 sec = 7559.7790 Mbps 30 %TX 44 %RX 0 retrans 0.10 msRTT
-> n8:  9095.6179 MB /  10.10 sec = 7557.9983 Mbps 31 %TX 33 %RX 0 retrans 0.10 msRTT
-> n9:  9075.5472 MB /  10.08 sec = 7551.0234 Mbps 31 %TX 33 %RX 0 retrans 0.11 msRTT
+> before staring each BFS.
 > 
-> This used 4 dual-port Myricom 10-GigE NICs.  We also tested with
-> a fifth dual-port 10-GigE NIC, but the aggregate throughput stayed
-> at about 70 Gbps, due to the performance bottleneck between the
-> X58 and N200 chips.
+> On most of ARCH, bimap_zero can be optimizied to only consume very few
+> instructions,
+> can't it?
+> 
+> It seems bitmap is more easily used in BFS than generation count.
 
-This is also very excellent results!
+Ah, I so missed that, sorry about that.
 
-Thanks a lot Bill !!!
--- 
-Med venlig hilsen / Best regards
-  Jesper Brouer
-  ComX Networks A/S
-  Linux Network developer
-  Cand. Scient Datalog / MSc.
-  Author of http://adsl-optimizer.dk
-  LinkedIn: http://www.linkedin.com/in/brouer
+I'll go over the patches one more time and push them out.
+
+Thanks!
 
