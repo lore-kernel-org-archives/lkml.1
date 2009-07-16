@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbZGPGqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbZGPGrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136AbZGPGqN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 02:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbZGPGqN
+	id S1756886AbZGPGrX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 02:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZGPGrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 02:46:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45991 "EHLO hera.kernel.org"
+	Thu, 16 Jul 2009 02:47:22 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55187 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752418AbZGPGqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 02:46:12 -0400
-Message-ID: <4A5ECC62.7050607@kernel.org>
-Date: Thu, 16 Jul 2009 15:44:50 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751932AbZGPGrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 02:47:22 -0400
+Message-ID: <4A5ECC93.1050602@garzik.org>
+Date: Thu, 16 Jul 2009 02:45:39 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Boaz Harrosh <bharrosh@panasas.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH #tj-block-for-linus] block: fix failfast merge testing in
- elv_rq_merge_ok()
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: Junio C Hamano <gitster@pobox.com>
+CC: git@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] GIT 1.6.4.rc1
+References: <7vmy75bg2f.fsf@alter.siamese.dyndns.org> <4A5EA598.5050801@garzik.org> <7v3a8xb0lz.fsf@alter.siamese.dyndns.org> <4A5ECC09.3010405@garzik.org>
+In-Reply-To: <4A5ECC09.3010405@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 16 Jul 2009 06:45:06 +0000 (UTC)
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit ab0fd1debe730ec9998678a0c53caefbd121ed10 tries to prevent merge
-of requests with different failfast settings.  In elv_rq_merge_ok(),
-it compares new bio's failfast flags against the merge target
-request's.  However, the flag testing accessors for bio and blk don't
-return boolean but the tested bit value directly and FAILFAST on bio
-and blk don't match, so directly comparing them with == results in
-false negative unnecessary preventing merge of readahead requests.
+Jeff Garzik wrote:
+> I want to publish this tree to the world via a *.kernel.org-like system, 
+> so my task is to
+> 
+>     scp -r /spare/repo/cld/.git remote.example.com:/pub/scm/cld.git
+> 
+> but if I do this with scp, then future pushes to 
+> remote.example.com:/pub/scm/cld.git emit the warning about updating the 
+> currently checked-out branch -- even though there are no checked-out 
+> files.  The checked-out files were not copied in the scp.
 
-This patch convert the results to boolean by negating them before
-comparison.
+IOW -- do I just edit the config for this case too, or is there some 
+'git clone --bare' magic that can work across ssh, as shown above?
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jeff Garzik <jeff@garzik.org>
----
-Eh... talk about being obscure. :-( I've put this onto the following
-temp block tree I'm running and will push toward Linus in a few days.
+It is easy to clone -from- a remote, but not so easy to clone -to- a 
+new, bare remote.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-block-for-linus
+	Jeff
 
-Thanks.
 
- block/elevator.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/block/elevator.c b/block/elevator.c
-index 6f23753..977aa7c 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -103,9 +103,9 @@ int elv_rq_merge_ok(struct request *rq, struct bio *bio)
- 	/*
- 	 * Don't merge if failfast settings don't match
- 	 */
--	if (bio_failfast_dev(bio)	!= blk_failfast_dev(rq)		||
--	    bio_failfast_transport(bio)	!= blk_failfast_transport(rq)	||
--	    bio_failfast_driver(bio)	!= blk_failfast_driver(rq))
-+	if (!bio_failfast_dev(bio)	 != !blk_failfast_dev(rq)	||
-+	    !bio_failfast_transport(bio) != !blk_failfast_transport(rq)	||
-+	    !bio_failfast_driver(bio)	 != !blk_failfast_driver(rq))
- 		return 0;
-
- 	if (!elv_iosched_allow_merge(rq, bio))
--- 
-1.6.0.2
 
