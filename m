@@ -1,79 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbZGPO6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932422AbZGPPAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbZGPO6H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 10:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZGPO6G
+	id S932422AbZGPPAb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 11:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZGPPAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 10:58:06 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:32802 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996AbZGPO6G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 10:58:06 -0400
-Date: Thu, 16 Jul 2009 08:58:04 -0600
-From: dann frazier <dannf@dannf.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [x86] pci: Get rid of magic number in AMD bus discovery
-Message-ID: <20090716145803.GC27036@ldl.fc.hp.com>
-References: <20090716002821.GV11729@ldl.fc.hp.com>
- <4A5EFC52.7080201@kernel.org>
+	Thu, 16 Jul 2009 11:00:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46877 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751134AbZGPPAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 11:00:30 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Chris Mason <chris.mason@oracle.com>, Mike Galbraith <efault@gmx.de>,
+       Diego Calleja <diegocg@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com,
+       linux-ext4@vger.kernel.org
+Subject: Re: Performance regressions in 2.6.30-rc7?
+References: <20090609103208.GB9235@duck.suse.cz> <20090609184818.GD9556@think>
+	<20090610091211.GA13692@duck.suse.cz>
+	<x4963f3rb4t.fsf@segfault.boston.devel.redhat.com>
+	<20090715104319.GC25458@duck.suse.cz>
+	<x4963du3vyp.fsf@segfault.boston.devel.redhat.com>
+	<20090715145849.GE25458@duck.suse.cz>
+	<20090715175028.GE22826@atrey.karlin.mff.cuni.cz>
+	<20090715185452.GG22826@atrey.karlin.mff.cuni.cz>
+	<x49iqhspue9.fsf@segfault.boston.devel.redhat.com>
+	<20090716144601.GB25725@duck.suse.cz>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Thu, 16 Jul 2009 10:59:45 -0400
+In-Reply-To: <20090716144601.GB25725@duck.suse.cz> (Jan Kara's message of
+	"Thu, 16 Jul 2009 16:46:01 +0200")
+Message-ID: <x49ab34ptb2.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5EFC52.7080201@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 03:09:22AM -0700, Yinghai Lu wrote:
-> dann frazier wrote:
-> > The number 4 is hardcoded in a couple of loops.
-> > Use the already-defined PCI_ROOT_NR macro instead.
-> > 
-> > Signed-off-by: dann frazier <dannf@hp.com>
-> > ---
-> >  arch/x86/pci/amd_bus.c |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-> > index 3ffa10d..feb3e09 100644
-> > --- a/arch/x86/pci/amd_bus.c
-> > +++ b/arch/x86/pci/amd_bus.c
-> > @@ -332,7 +332,7 @@ static int __init early_fill_mp_bus_info(void)
-> >  		return 0;
-> >  
-> >  	pci_root_num = 0;
-> > -	for (i = 0; i < 4; i++) {
-> > +	for (i = 0; i < PCI_ROOT_NR; i++) {
-> >  		int min_bus;
-> >  		int max_bus;
-> >  		reg = read_pci_config(bus, slot, 1, 0xe0 + (i << 2));
-> > @@ -368,7 +368,7 @@ static int __init early_fill_mp_bus_info(void)
-> >  	memset(range, 0, sizeof(range));
-> >  	range[0].end = 0xffff;
-> >  	/* io port resource */
-> > -	for (i = 0; i < 4; i++) {
-> > +	for (i = 0; i < PCI_ROOT_NR; i++) {
-> >  		reg = read_pci_config(bus, slot, 1, 0xc0 + (i << 3));
-> >  		if (!(reg & 3))
-> >  			continue;
-> 
-> please don't do that.
-> 
-> how about
->         /* mmio resource */
->         for (i = 0; i < 8; i++) {
-> 
-> those value is decided by HW...
+Jan Kara <jack@suse.cz> writes:
+>> OK, looking back at the blktrace data I collected, we see[1]:
+>> 
+>> Total (cciss_c0d1):         2.6.29                  2.6.30-rc7
+>> -------------------------------------------------------------------
+>> Writes Queued:         8,531K,   34,126MiB  |   8,526K,   34,104MiB 
+>> Write Dispatches:    556,256,   34,126MiB   | 294,809,   34,105MiB  <===
+>> Writes Requeued:           0                |       0               
+>> Writes Completed:    556,256,   34,126MiB   | 294,809,   34,105MiB  
+>> Write Merges:          7,975K,   31,901MiB  |   8,231K,   32,924MiB 
+>> --------------------------------------------------------------------
+>> IO unplugs:          1,253,337              | 7,346,184             <===
+>> Timer unplugs:         1,462                |       3               
+>> 
+>> Hmmm...
 
-Sorry, I don't follow.
-My goal was just to remove the magic '4' number and replace it with a
-macro instead - not to bump it up. PCI_ROOT_NR looked like the right
-value (used in declaring the array we are indexing), but if not maybe
-some other macro should be defined?
+>   Yeah, this looks promissing. Although what I don't get is, how come that
+> number of writes dispatched is roughly twice as much for 2.6.29 but the
+> number of unplugs is higher on 2.6.30. My naive assumption would be that
+> higher unplug rate -> less merging -> more requests dispatched.
 
--- 
-dann frazier
+Yeah, that's confusing!  I don't have an answer for you yet!
 
+>> commit b029195dda0129b427c6e579a3bb3ae752da3a93
+>> Author: Jens Axboe <jens.axboe@oracle.com>
+>> Date:   Tue Apr 7 11:38:31 2009 +0200
+>> 
+>>     cfq-iosched: don't let idling interfere with plugging
+>>     
+>>     When CFQ is waiting for a new request from a process, currently it'll
+>>     immediately restart queuing when it sees such a request. This doesn't
+>>     work very well with streamed IO, since we then end up splitting IO
+>>     that would otherwise have been merged nicely. For a simple dd test,
+>>     this causes 10x as many requests to be issued as we should have.
+>>     Normally this goes unnoticed due to the low overhead of requests
+>>     at the device side, but some hardware is very sensitive to request
+>>     sizes and there it can cause big slow downs.
+>>     
+>>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+>> 
+>> There were a couple of subsequent fixups to this commit:
+>> 
+>> commit d6ceb25e8d8bccf826848c2621a50d02c0a7f4ae
+>> Author: Jens Axboe <jens.axboe@oracle.com>
+>> Date:   Tue Apr 14 14:18:16 2009 +0200
+>> 
+>>     cfq-iosched: don't delay queue kick for a merged request
+>> 
+>> commit 2d870722965211de072bb36b446a4df99dae07e1
+>> Author: Jens Axboe <jens.axboe@oracle.com>
+>> Date:   Wed Apr 15 12:12:46 2009 +0200
+>> 
+>>     cfq-iosched: tweak kick logic a bit more
+>> 
+>> 
+>> So I guess that's where we need to start looking.
+>   OK, I can try to check whether backing out just these changes will help
+> anything.
+
+Well, that will help identify if they are, in fact, the cause.  I hope
+it's not too hard to disentangle them from the current kernel!  Thanks
+for all of your work on this!
+
+Cheers,
+Jeff
