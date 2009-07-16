@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbZGPOnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbZGPOon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbZGPOnx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 10:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757548AbZGPOnw
+	id S1757591AbZGPOon (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 10:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbZGPOom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 10:43:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47046 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756878AbZGPOnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 10:43:52 -0400
-Message-ID: <4A5F3C70.7010001@redhat.com>
-Date: Thu, 16 Jul 2009 10:42:56 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Thu, 16 Jul 2009 10:44:42 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:38217 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756422AbZGPOol (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 10:44:41 -0400
+Date: Thu, 16 Jul 2009 15:44:39 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 1/4] scsi: Allow hosts to be flagged as hotpluggable
+Message-ID: <20090716144439.GA14345@srcf.ucam.org>
+References: <1247701438-18266-1-git-send-email-mjg@redhat.com> <4A5F3975.70503@s5r6.in-berlin.de> <4A5F3ADE.2040109@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-Subject: Re: [PATCH] mm: count only reclaimable lru pages
-References: <20090716133454.GA20550@localhost>  <alpine.DEB.1.10.0907160959260.32382@gentwo.org>  <20090716142533.GA27165@localhost> <1247754491.6586.23.camel@laptop> <alpine.DEB.1.10.0907161037590.7930@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0907161037590.7930@gentwo.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A5F3ADE.2040109@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 16 Jul 2009, Peter Zijlstra wrote:
+On Thu, Jul 16, 2009 at 04:36:14PM +0200, Stefan Richter wrote:
+> Stefan Richter wrote:
+> > The comment should specify what the actual effects of the flag are.
+> [...]
+> > (Is used by power management infrastructure to decide over runtime PM
+> > policy?  I.e. don't enter power states which would prevent the port from
+> > detecting/ reporting hotplug events?)
 > 
->>> What would you suggest?  In fact I'm not totally comfortable with it.
->>> Maybe it would be safer to simply stick with the old _lru_pages
->>> naming?
->> Nah, I like the reclaimable name, these pages are at least potentially
->> reclaimable.
->>
->> lru_pages() is definately not correct anymore since you exclude the
->> unevictable and possibly the anon pages.
-> 
-> Well lets at least add a comment at the beginning of the functions
-> explaining that these are potentially reclaimable and list some of the
-> types of pages that may not be reclaimable.
+> Perhaps the flag should be called differently (keep_ports_powered or
+> whatever) --- unless you have additional future uses of the flag in mind
+> which justify the more generic name.
 
-The pages that are not reclaimable will be on the
-unevictable LRU list, not on the lists we count.
-
-The only case of pages not being evictable is the
-anon pages, once swap fills up.
+Mm. I was actually wondering about that. For instance, laptop bays are 
+hotpluggable but provide notification out of band and so can use ALPM 
+without losing functionality. I'm not sure about "keep_ports_powered", 
+but I'll try to think of something better.
 
 -- 
-All rights reversed.
+Matthew Garrett | mjg59@srcf.ucam.org
