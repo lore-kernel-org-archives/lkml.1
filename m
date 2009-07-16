@@ -1,111 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbZGPDx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbZGPDyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407AbZGPDx6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 23:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbZGPDx6
+	id S1757414AbZGPDyr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 23:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbZGPDyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 23:53:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33291 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757390AbZGPDx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 23:53:57 -0400
-Date: Wed, 15 Jul 2009 23:53:18 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: [PATCH -mm] throttle direct reclaim when too many pages are
- isolated already (v3)
-Message-ID: <20090715235318.6d2f5247@bree.surriel.com>
-In-Reply-To: <20090715203854.336de2d5.akpm@linux-foundation.org>
-References: <20090715223854.7548740a@bree.surriel.com>
-	<20090715194820.237a4d77.akpm@linux-foundation.org>
-	<4A5E9A33.3030704@redhat.com>
-	<20090715202114.789d36f7.akpm@linux-foundation.org>
-	<4A5E9E4E.5000308@redhat.com>
-	<20090715203854.336de2d5.akpm@linux-foundation.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 15 Jul 2009 23:54:46 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:55409 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757362AbZGPDyp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 23:54:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tzBUlk+/2Ck7D3WKfSkPQmqxYIV7x5iM28DUEN8UqIIkDVanRN9gULzw31A0oEv+gS
+         SosQKKZKGDm0wRKdOaxAwN1CEKdmwaSlj71lkB5cMYvwWyq5ezB7eazZ3/57i610ukFL
+         52rYatMsXUMFEuAslJZFGmkF/dgutJiCNKi5U=
+MIME-Version: 1.0
+In-Reply-To: <20090714161514.GA2026@kroah.com>
+References: <1247576250-16274-1-git-send-email-tiago.vignatti@nokia.com>
+	 <1247576250-16274-2-git-send-email-tiago.vignatti@nokia.com>
+	 <20090714161514.GA2026@kroah.com>
+Date: Thu, 16 Jul 2009 13:54:42 +1000
+Message-ID: <21d7e9970907152054q61c9bf75x836b4b644ec22a00@mail.gmail.com>
+Subject: Re: [PATCH 1/2] vga: implements VGA arbitration on Linux
+From: Dave Airlie <airlied@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: Tiago Vignatti <tiago.vignatti@nokia.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Dave Airlie <airlied@redhat.com>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When way too many processes go into direct reclaim, it is possible
-for all of the pages to be taken off the LRU.  One result of this
-is that the next process in the page reclaim code thinks there are
-no reclaimable pages left and triggers an out of memory kill.
+On Wed, Jul 15, 2009 at 2:15 AM, Greg KH<greg@kroah.com> wrote:
+> Minor comment:
+>
+>> +#ifdef DEBUG
+>> +     printk(KERN_DEBUG "%s\n", __func__);
+>> +#endif
+>
+> You should just use 'dev_dbg() for any debugging statments like this.
+> You can turn them on and off dynamically, and you get all of the proper
+> device information as to what is going on automatically.
+>
+> Plus, there's no need for a #ifdef in the code, which is generally
+> frowned apon in .c files.
+>
 
-One solution to this problem is to never let so many processes into
-the page reclaim path that the entire LRU is emptied.  Limiting the
-system to only having half of each inactive list isolated for
-reclaim should be safe.
+We don't have a device in this case, vga arb is more of an abstraction than
+an actual device.
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
----
-v3: - only wait if scanning global lru (Kamezawa Hiroyuki)
-    - make sure tasks with a fatal signal pending go through
-      congestion_timeout at least once, to give other tasks a
-      chance to free memory
-v2: - fix the bugs pointed out by Andrew Morton
+I suppose if we were feeling crazy we could add a platform device for it.
 
-This patch goes on top of Kosaki's "Account the number of isolated pages"
-patch series.
-
- mm/vmscan.c |   33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
-
-Index: mmotm/mm/vmscan.c
-===================================================================
---- mmotm.orig/mm/vmscan.c	2009-07-15 22:32:35.000000000 -0400
-+++ mmotm/mm/vmscan.c	2009-07-15 23:50:01.000000000 -0400
-@@ -1035,6 +1035,31 @@ int isolate_lru_page(struct page *page)
- }
- 
- /*
-+ * Are there way too many processes in the direct reclaim path already?
-+ */
-+static int too_many_isolated(struct zone *zone, int file,
-+		struct scan_control *sc)
-+{
-+	unsigned long inactive, isolated;
-+
-+	if (current_is_kswapd())
-+		return 0;
-+
-+	if (!scanning_global_lru(sc))
-+		return 0;
-+
-+	if (file) {
-+		inactive = zone_page_state(zone, NR_INACTIVE_FILE);
-+		isolated = zone_page_state(zone, NR_ISOLATED_FILE);
-+	} else {
-+		inactive = zone_page_state(zone, NR_INACTIVE_ANON);
-+		isolated = zone_page_state(zone, NR_ISOLATED_ANON);
-+	}
-+
-+	return isolated > inactive;
-+}
-+
-+/*
-  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
-  * of reclaimed pages
-  */
-@@ -1049,6 +1074,14 @@ static unsigned long shrink_inactive_lis
- 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
- 	int lumpy_reclaim = 0;
- 
-+	while (unlikely(too_many_isolated(zone, file, sc))) {
-+		congestion_wait(WRITE, HZ/10);
-+
-+		/* We are about to die and free our memory. Return now. */
-+		if (fatal_signal_pending(current))
-+			return SWAP_CLUSTER_MAX;
-+	}
-+
- 	/*
- 	 * If we need a large contiguous chunk of memory, or have
- 	 * trouble getting a small set of contiguous pages, we
-
+Dave.
