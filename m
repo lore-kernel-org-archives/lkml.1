@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbZGPDle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbZGPDnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757365AbZGPDle (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 23:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757334AbZGPDld
+	id S1757371AbZGPDnJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 23:43:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbZGPDnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 23:41:33 -0400
-Received: from gate.crashing.org ([63.228.1.57]:50337 "EHLO gate.crashing.org"
+	Wed, 15 Jul 2009 23:43:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59003 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757331AbZGPDlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 15 Jul 2009 23:41:32 -0400
-Subject: Re: [PATCH 04/15] swiotlb: remove unnecessary swiotlb_bus_to_virt
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Becky Bruce <beckyb@kernel.crashing.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, tony.luck@intel.com, x86@kernel.org
-In-Reply-To: <5E909C02-3FA2-4BEB-8C73-F4E4A5A404BF@kernel.crashing.org>
-References: <1247187904-31999-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	 <1247187904-31999-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	 <5E909C02-3FA2-4BEB-8C73-F4E4A5A404BF@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 16 Jul 2009 13:40:18 +1000
-Message-Id: <1247715618.27937.36.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1757334AbZGPDnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 23:43:08 -0400
+Message-ID: <4A5EA1A4.1080502@redhat.com>
+Date: Wed, 15 Jul 2009 23:42:28 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH -mm] throttle direct reclaim when too many pages are isolated
+ already
+References: <20090715223854.7548740a@bree.surriel.com>	<20090715194820.237a4d77.akpm@linux-foundation.org>	<4A5E9A33.3030704@redhat.com>	<20090715202114.789d36f7.akpm@linux-foundation.org>	<4A5E9E4E.5000308@redhat.com> <20090715203854.336de2d5.akpm@linux-foundation.org>
+In-Reply-To: <20090715203854.336de2d5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-13 at 21:17 -0500, Becky Bruce wrote:
+Andrew Morton wrote:
+> On Wed, 15 Jul 2009 23:28:14 -0400 Rik van Riel <riel@redhat.com> wrote:
+
+>> If we are stuck at this point in the page reclaim code,
+>> it is because too many other tasks are reclaiming pages.
+>>
+>> That makes it fairly safe to just return SWAP_CLUSTER_MAX
+>> here and hope that __alloc_pages() can get a page.
+>>
+>> After all, if __alloc_pages() thinks it made progress,
+>> but still cannot make the allocation, it will call the
+>> pageout code again.
 > 
-> phys_to_virt (also, virt_to_phys) is invalid for highmem addresses on  
-> ppc. 
+> Which will immediately return because the caller still has
+> fatal_signal_pending()?
 
-I would be surprised if x86 was any different here. Most of our highmem
-implementation comes straight from x86 :-)
+Other processes are in the middle of freeing pages at
+this point, so we should succeed in __alloc_pages()
+fairly quickly (and then die and free all our memory).
 
-Cheers,
-Ben.
-
-
+-- 
+All rights reversed.
