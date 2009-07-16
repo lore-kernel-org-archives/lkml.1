@@ -1,110 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932564AbZGPPv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932574AbZGPPyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932564AbZGPPv1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 11:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932455AbZGPPvX
+	id S932574AbZGPPyn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 11:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932438AbZGPPyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 11:51:23 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:17137 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757646AbZGPPvV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 11:51:21 -0400
-From: Tiago Vignatti <tiago.vignatti@nokia.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Dave Airlie <airlied@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tiago Vignatti <tiago.vignatti@nokia.com>
-Subject: [PATCH 0/3] VGA arbiter implementation (v2)
-Date: Thu, 16 Jul 2009 18:48:28 +0300
-Message-Id: <1247759311-6254-1-git-send-email-tiago.vignatti@nokia.com>
-X-Mailer: git-send-email 1.5.6.3
-X-OriginalArrivalTime: 16 Jul 2009 15:49:49.0718 (UTC) FILETIME=[0D231B60:01CA062D]
-X-Nokia-AV: Clean
+	Thu, 16 Jul 2009 11:54:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58144 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932441AbZGPPyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 11:54:37 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip -v12 03/11] kprobes: checks probe address is instruction
+	boudary on x86
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Date: Thu, 16 Jul 2009 11:57:12 -0400
+Message-ID: <20090716155712.6266.68626.stgit@localhost.localdomain>
+In-Reply-To: <20090716155652.6266.39970.stgit@localhost.localdomain>
+References: <20090716155652.6266.39970.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ensure safeness of inserting kprobes by checking whether the specified
+address is at the first byte of a instruction on x86.
+This is done by decoding probed function from its head to the probe point.
 
-Following is v2 of the set. It contains some minor clean ups and the additions
-from Dave, mostly related with DRM.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
 
-I just reorganized a little the ideas which everyone sent and summarized them
-here. The basically TODO is:
+ arch/x86/kernel/kprobes.c |   69 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 69 insertions(+), 0 deletions(-)
 
-- DRM hook to disable IRQ when arbiter is on action is done. What else we need
-  on DRM department (besides the hook usage that Dave is cooking)? That's a
-  preliminary here:
-    http://people.freedesktop.org/~airlied/vgaarb/0002-drm-add-support-to-drm-for-VGA-arbitration.patch
-- make a PCI_COMMAND lock to deal with hotplug cards on drivers/pci. Also is
-  it need some spinlock to deal with bridges? (Waiting Jesse's opinion).
-- know exactly if VGA on/off is enough and remove the just I/O or just memory
-  granularity. Alan states that it would reduce some deadlock.
-- Change this hunk bellow:
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index b5b1848..5341842 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -48,6 +48,7 @@
+ #include <linux/preempt.h>
+ #include <linux/module.h>
+ #include <linux/kdebug.h>
++#include <linux/kallsyms.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/desc.h>
+@@ -55,6 +56,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/alternative.h>
+ #include <asm/debugreg.h>
++#include <asm/insn.h>
+ 
+ void jprobe_return_end(void);
+ 
+@@ -245,6 +247,71 @@ retry:
+ 	}
+ }
+ 
++/* Recover the probed instruction at addr for further analysis. */
++static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
++{
++	struct kprobe *kp;
++	kp = get_kprobe((void *)addr);
++	if (!kp)
++		return -EINVAL;
++
++	/*
++	 *  Basically, kp->ainsn.insn has an original instruction.
++	 *  However, RIP-relative instruction can not do single-stepping
++	 *  at different place, fix_riprel() tweaks the displacement of
++	 *  that instruction. In that case, we can't recover the instruction
++	 *  from the kp->ainsn.insn.
++	 *
++	 *  On the other hand, kp->opcode has a copy of the first byte of
++	 *  the probed instruction, which is overwritten by int3. And
++	 *  the instruction at kp->addr is not modified by kprobes except
++	 *  for the first byte, we can recover the original instruction
++	 *  from it and kp->opcode.
++	 */
++	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
++	buf[0] = kp->opcode;
++	return 0;
++}
++
++/* Dummy buffers for kallsyms_lookup */
++static char __dummy_buf[KSYM_NAME_LEN];
++
++/* Check if paddr is at an instruction boundary */
++static int __kprobes can_probe(unsigned long paddr)
++{
++	int ret;
++	unsigned long addr, offset = 0;
++	struct insn insn;
++	kprobe_opcode_t buf[MAX_INSN_SIZE];
++
++	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
++		return 0;
++
++	/* Decode instructions */
++	addr = paddr - offset;
++	while (addr < paddr) {
++		kernel_insn_init(&insn, (void *)addr);
++		insn_get_opcode(&insn);
++
++		/* Check if the instruction has been modified. */
++		if (OPCODE1(&insn) == BREAKPOINT_INSTRUCTION) {
++			ret = recover_probed_instruction(buf, addr);
++			if (ret)
++				/*
++				 * Another debugging subsystem might insert
++				 * this breakpoint. In that case, we can't
++				 * recover it.
++				 */
++				return 0;
++			kernel_insn_init(&insn, buf);
++		}
++		insn_get_length(&insn);
++		addr += insn.length;
++	}
++
++	return (addr == paddr);
++}
++
+ /*
+  * Returns non-zero if opcode modifies the interrupt flag.
+  */
+@@ -360,6 +427,8 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
+ 
+ int __kprobes arch_prepare_kprobe(struct kprobe *p)
+ {
++	if (!can_probe((unsigned long)p->addr))
++		return -EILSEQ;
+ 	/* insn: must be on special executable page on x86. */
+ 	p->ainsn.insn = get_insn_slot();
+ 	if (!p->ainsn.insn)
 
- +             init_waitqueue_entry(&wait, current);
- +             add_wait_queue(&vga_wait_queue, &wait);
- +             set_current_state(interruptible ?
- +                               TASK_INTERRUPTIBLE :
- +                               TASK_UNINTERRUPTIBLE);
- +             if (signal_pending(current)) {
- +                     rc = -EINTR;
- +                     break;
- +             }
- +             schedule();
- +             remove_wait_queue(&vga_wait_queue, &wait);
- +             set_current_state(TASK_RUNNING);
 
- by something like:
+-- 
+Masami Hiramatsu
 
- +             wait_event_interruptible(...)
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-  it's Alan's comment. Does it seems doable to everyone?
-
-
-For testing purposes, I'm using posttool:
-    http://cgit.freedesktop.org/~airlied/posttool/
-
-which has the following dependencies:
-    http://cgit.freedesktop.org/~vignatti/libx86/
-    http://cgit.freedesktop.org/~vignatti/libpciaccess/ (vgaarb branch)
-
-
-Please, comment on and send the feedbacks. Thanks,
-
-                Tiago
-
-
-Dave Airlie (1):
-  drm: add support to drm for VGA arbitration.
-
-Tiago Vignatti (2):
-  vga: implements VGA arbitration on Linux
-  vga: drops a documentation regarding the VGA arbiter
-
- Documentation/vgaarbiter.txt           |  197 ++++++
- drivers/gpu/Makefile                   |    2 +-
- drivers/gpu/drm/drm_irq.c              |   24 +
- drivers/gpu/drm/i915/i915_dma.c        |    6 +
- drivers/gpu/drm/i915/i915_reg.h        |    1 +
- drivers/gpu/drm/i915/intel_display.c   |   17 +
- drivers/gpu/drm/i915/intel_drv.h       |    1 +
- drivers/gpu/drm/radeon/r100.c          |    9 +
- drivers/gpu/drm/radeon/radeon.h        |    2 +
- drivers/gpu/drm/radeon/radeon_asic.h   |    9 +
- drivers/gpu/drm/radeon/radeon_device.c |    5 +-
- drivers/gpu/vga/Kconfig                |   10 +
- drivers/gpu/vga/Makefile               |    1 +
- drivers/gpu/vga/vgaarb.c               | 1116 ++++++++++++++++++++++++++++++++
- drivers/video/Kconfig                  |    2 +
- include/drm/drmP.h                     |    3 +
- include/linux/vgaarb.h                 |  170 +++++
- 17 files changed, 1573 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/vgaarbiter.txt
- create mode 100644 drivers/gpu/vga/Kconfig
- create mode 100644 drivers/gpu/vga/Makefile
- create mode 100644 drivers/gpu/vga/vgaarb.c
- create mode 100644 include/linux/vgaarb.h
-
+e-mail: mhiramat@redhat.com
