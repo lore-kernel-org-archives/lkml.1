@@ -1,128 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932126AbZGPDW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932193AbZGPDW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932126AbZGPDW6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 15 Jul 2009 23:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbZGPDW5
+	id S932193AbZGPDW7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 15 Jul 2009 23:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932146AbZGPDW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 15 Jul 2009 23:22:57 -0400
-Received: from elasmtp-spurfowl.atl.sa.earthlink.net ([209.86.89.66]:49325
-	"EHLO elasmtp-spurfowl.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757281AbZGPDW4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 15 Jul 2009 23:22:58 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:46789 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757282AbZGPDW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 15 Jul 2009 23:22:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=HnSMip8pxgqtyoGaEeQY6BhD02Er49DZJpSrEsRqBscX3Y1QHOq+Pa7bV1/rScwW;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Wed, 15 Jul 2009 23:22:53 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Jesper Dangaard Brouer <hawk@comx.dk>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Robert Olsson <Robert.Olsson@data.slu.se>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>, jesse.brandeburg@intel.com,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Achieved 10Gbit/s bidirectional routing
-Message-Id: <20090715232253.91d9f264.billfink@mindspring.com>
-In-Reply-To: <1247676631.30876.29.camel@localhost.localdomain>
-References: <1247676631.30876.29.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4d4021f585ceb0ab90aeff7b9e9a62eec2350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 71.127.147.41
+From: Mike Frysinger <vapier@gentoo.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH] USB: isp1760: allow platform devices to customize devflags
+Date: Wed, 15 Jul 2009 23:22:54 -0400
+Message-Id: <1247714574-7445-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <20090716030304.GA30650@kroah.com>
+References: <20090716030304.GA30650@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Jul 2009, Jesper Dangaard Brouer wrote:
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-> I'm giving a talk at LinuxCon, about 10Gbit/s routing on standard
-> hardware running Linux.
-> 
->   http://linuxcon.linuxfoundation.org/meetings/1585
->   https://events.linuxfoundation.org/lc09o17
-> 
-> I'm getting some really good 10Gbit/s bidirectional routing results
-> with Intels latest 82599 chip. (I got two pre-release engineering
-> samples directly from Intel, thanks Peter)
-> 
-> Using a Core i7-920, and tuning the memory according to the RAMs
-> X.M.P. settings DDR3-1600MHz, notice this also increases the QPI to
-> 6.4GT/s.  (Motherboard P6T6 WS revolution)
-> 
-> With big 1514 bytes packets, I can basically do 10Gbit/s wirespeed
-> bidirectional routing.
-> 
-> Notice bidirectional routing means that we actually has to move approx
-> 40Gbit/s through memory and in-and-out of the interfaces.
-> 
-> Formatted quick view using 'ifstat -b'
-> 
->   eth31-in   eth31-out   eth32-in  eth32-out
->     9.57  +    9.52  +     9.51 +     9.60  = 38.20 Gbit/s
->     9.60  +    9.55  +     9.52 +     9.62  = 38.29 Gbit/s
->     9.61  +    9.53  +     9.52 +     9.62  = 38.28 Gbit/s
->     9.61  +    9.53  +     9.54 +     9.62  = 38.30 Gbit/s
-> 
-> [Adding an extra NIC]
-> 
-> Another observation is that I'm hitting some kind of bottleneck on the
-> PCI-express switch.  Adding an extra NIC in a PCIe slot connected to
-> the same PCIe switch, does not scale beyond 40Gbit/s collective
-> throughput.
-> 
-> But, I happened to have a special motherboard ASUS P6T6 WS revolution,
-> which has an additional PCIe switch chip NVIDIA's NF200.
-> 
-> Connecting two dual port 10GbE NICs via two different PCI-express
-> switch chips, makes things scale again!  I have achieved a collective
-> throughput of 66.25 Gbit/s.  This results is also influenced by my
-> pktgen machines cannot keep up, and I'm getting closer to the memory
-> bandwidth limits.
-> 
-> FYI: I found a really good reference explaining the PCI-express
-> architecture, written by Intel:
-> 
->  http://download.intel.com/design/intarch/papers/321071.pdf
-> 
-> I'm not sure how to explain the PCI-express chip bottleneck I'm
-> seeing, but my guess is that I'm limited by the number of outstanding
-> packets/DMA-transfers and the latency for the DMA operations.
-> 
-> Does any one have datasheets on the X58 and NVIDIA's NF200 PCI-express
-> chips, that can tell me the number of outstanding transfers they
-> support?
+Platform device support was merged earlier, but support for boards to
+customize the devflags aspect of the controller was not.  We want this on
+Blackfin systems to control the bus width, but might as well expose all of
+the fields while we're at it.
 
-We've achieved 70 Gbps aggregate unidirectional TCP performance from
-one P6T6 based system to another.  We figured out in our case that
-we were being limited by the interconnect between the Intel X58 and
-Nvidia N200 chips.  The first 2 PCIe 2.0 slots are directly off the
-Intel X58 and get the full 40 Gbps throughput from the dual-port
-Myricom 10-GigE NICs we have installed in them.  But the other
-3 PCIe 2.0 slots are on the Nvidia N200 chip, and I discovered
-through googling that the link between the X58 and N200 chips
-only operates at PCIe x16 _1.0_ speed, which limits the possible
-aggregate throughput of the last 3 PCIe 2.0 slots to only 32 Gbps.
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/usb/host/isp1760-hcd.c |    4 ++++
+ drivers/usb/host/isp1760-hcd.h |    2 ++
+ drivers/usb/host/isp1760-if.c  |   21 ++++++++++++++++++++-
+ include/linux/usb/isp1760.h    |   18 ++++++++++++++++++
+ 4 files changed, 44 insertions(+), 1 deletions(-)
+ create mode 100644 include/linux/usb/isp1760.h
 
-This was clearly seen in our nuttcp testing:
+diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
+index 1543846..9600a58 100644
+--- a/drivers/usb/host/isp1760-hcd.c
++++ b/drivers/usb/host/isp1760-hcd.c
+@@ -386,6 +386,10 @@ static int isp1760_hc_setup(struct usb_hcd *hcd)
+ 		hwmode |= HW_DACK_POL_HIGH;
+ 	if (priv->devflags & ISP1760_FLAG_DREQ_POL_HIGH)
+ 		hwmode |= HW_DREQ_POL_HIGH;
++	if (priv->devflags & ISP1760_FLAG_INTR_POL_HIGH)
++		hwmode |= HW_INTR_HIGH_ACT;
++	if (priv->devflags & ISP1760_FLAG_INTR_EDGE_TRIG)
++		hwmode |= HW_INTR_EDGE_TRIG;
+ 
+ 	/*
+ 	 * We have to set this first in case we're in 16-bit mode.
+diff --git a/drivers/usb/host/isp1760-hcd.h b/drivers/usb/host/isp1760-hcd.h
+index 462f494..6931ef5 100644
+--- a/drivers/usb/host/isp1760-hcd.h
++++ b/drivers/usb/host/isp1760-hcd.h
+@@ -142,6 +142,8 @@ typedef void (packet_enqueue)(struct usb_hcd *hcd, struct isp1760_qh *qh,
+ #define ISP1760_FLAG_DACK_POL_HIGH	0x00000010 /* DACK active high */
+ #define ISP1760_FLAG_DREQ_POL_HIGH	0x00000020 /* DREQ active high */
+ #define ISP1760_FLAG_ISP1761		0x00000040 /* Chip is ISP1761 */
++#define ISP1760_FLAG_INTR_POL_HIGH	0x00000080 /* Interrupt polarity active high */
++#define ISP1760_FLAG_INTR_EDGE_TRIG	0x00000100 /* Interrupt edge triggered */
+ 
+ /* chip memory management */
+ struct memory_chunk {
+diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
+index d4feebf..1c9f977 100644
+--- a/drivers/usb/host/isp1760-if.c
++++ b/drivers/usb/host/isp1760-if.c
+@@ -3,6 +3,7 @@
+  * Currently there is support for
+  * - OpenFirmware
+  * - PCI
++ * - PDEV (generic platform device centralized driver model)
+  *
+  * (c) 2007 Sebastian Siewior <bigeasy@linutronix.de>
+  *
+@@ -11,6 +12,7 @@
+ #include <linux/usb.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
++#include <linux/usb/isp1760.h>
+ 
+ #include "../core/hcd.h"
+ #include "isp1760-hcd.h"
+@@ -308,6 +310,8 @@ static int __devinit isp1760_plat_probe(struct platform_device *pdev)
+ 	struct resource *mem_res;
+ 	struct resource *irq_res;
+ 	resource_size_t mem_size;
++	struct isp1760_platform_data *priv = pdev->dev.platform_data;
++	unsigned int devflags = 0;
+ 	unsigned long irqflags = IRQF_SHARED | IRQF_DISABLED;
+ 
+ 	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+@@ -330,8 +334,23 @@ static int __devinit isp1760_plat_probe(struct platform_device *pdev)
+ 	}
+ 	irqflags |= irq_res->flags & IRQF_TRIGGER_MASK;
+ 
++	if (priv) {
++		if (priv->is_isp1761)
++			devflags |= ISP1760_FLAG_ISP1761;
++		if (priv->bus_width_16)
++			devflags |= ISP1760_FLAG_BUS_WIDTH_16;
++		if (priv->port1_otg)
++			devflags |= ISP1760_FLAG_OTG_EN;
++		if (priv->analog_oc)
++			devflags |= ISP1760_FLAG_ANALOG_OC;
++		if (priv->dack_polarity_high)
++			devflags |= ISP1760_FLAG_DACK_POL_HIGH;
++		if (priv->dreq_polarity_high)
++			devflags |= ISP1760_FLAG_DREQ_POL_HIGH;
++	}
++
+ 	hcd = isp1760_register(mem_res->start, mem_size, irq_res->start,
+-			       irqflags, &pdev->dev, dev_name(&pdev->dev), 0);
++			       irqflags, &pdev->dev, dev_name(&pdev->dev), devflags);
+ 	if (IS_ERR(hcd)) {
+ 		pr_warning("isp1760: Failed to register the HCD device\n");
+ 		ret = -ENODEV;
+diff --git a/include/linux/usb/isp1760.h b/include/linux/usb/isp1760.h
+new file mode 100644
+index 0000000..de7de53
+--- /dev/null
++++ b/include/linux/usb/isp1760.h
+@@ -0,0 +1,18 @@
++/*
++ * board initialization should put one of these into dev->platform_data
++ * and place the isp1760 onto platform_bus named "isp1760-hcd".
++ */
++
++#ifndef __LINUX_USB_ISP1760_H
++#define __LINUX_USB_ISP1760_H
++
++struct isp1760_platform_data {
++	unsigned is_isp1761:1;			/* Chip is ISP1761 */
++	unsigned bus_width_16:1;		/* 16/32-bit data bus width */
++	unsigned port1_otg:1;			/* Port 1 supports OTG */
++	unsigned analog_oc:1;			/* Analog overcurrent */
++	unsigned dack_polarity_high:1;		/* DACK active high */
++	unsigned dreq_polarity_high:1;		/* DREQ active high */
++};
++
++#endif /* __LINUX_USB_ISP1760_H */
+-- 
+1.6.3.3
 
-[root@i7raid-1 ~]# ./nuttcp-6.2.6 -In2 -xc0/0 -p5001 192.168.1.11 & ./nuttcp-6.2.6 -In3 -xc0/0 -p5002 192.168.2.11 & ./nuttcp-6.2.6 -In4 -xc1/1 -p5003 192.168.3.11 & ./nuttcp-6.2.6 -In5 -xc1/1 -p5004 192.168.4.11 & ./nuttcp-6.2.6 -In6 -xc2/2 -p5005 192.168.5.11 & ./nuttcp-6.2.6 -In7 -xc2/2 -p5006 192.168.6.11 & ./nuttcp-6.2.6 -In8 -xc3/3 -p5007 192.168.7.11 & ./nuttcp-6.2.6 -In9 -xc3/3 -p5008 192.168.8.11
-n2: 11505.2648 MB /  10.09 sec = 9566.2298 Mbps 37 %TX 55 %RX 0 retrans 0.10 msRTT
-n3: 11727.4489 MB /  10.02 sec = 9815.7570 Mbps 39 %TX 44 %RX 0 retrans 0.10 msRTT
-n4: 11770.1250 MB /  10.07 sec = 9803.9901 Mbps 39 %TX 51 %RX 0 retrans 0.10 msRTT
-n5: 11837.9320 MB /  10.05 sec = 9876.5725 Mbps 39 %TX 47 %RX 0 retrans 0.10 msRTT
-n6:  9096.8125 MB /  10.09 sec = 7559.3310 Mbps 30 %TX 32 %RX 0 retrans 0.10 msRTT
-n7:  9100.1211 MB /  10.10 sec = 7559.7790 Mbps 30 %TX 44 %RX 0 retrans 0.10 msRTT
-n8:  9095.6179 MB /  10.10 sec = 7557.9983 Mbps 31 %TX 33 %RX 0 retrans 0.10 msRTT
-n9:  9075.5472 MB /  10.08 sec = 7551.0234 Mbps 31 %TX 33 %RX 0 retrans 0.11 msRTT
-
-This used 4 dual-port Myricom 10-GigE NICs.  We also tested with
-a fifth dual-port 10-GigE NIC, but the aggregate throughput stayed
-at about 70 Gbps, due to the performance bottleneck between the
-X58 and N200 chips.
-
-						-Bill
