@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934468AbZGQMHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934474AbZGQMM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934468AbZGQMHF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 08:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934454AbZGQMHF
+	id S934474AbZGQMM2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 08:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934462AbZGQMM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 08:07:05 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51494 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934450AbZGQMHE (ORCPT
+	Fri, 17 Jul 2009 08:12:27 -0400
+Received: from mailfilter13.ihug.co.nz ([203.109.136.13]:8454 "EHLO
+	mailfilter13.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934454AbZGQMM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 08:07:04 -0400
-Date: Fri, 17 Jul 2009 14:06:57 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg KH <greg@kroah.com>
-Cc: swetland@google.com, malchev@google.com,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: HTC Dream for staging
-Message-ID: <20090717120657.GB2192@elf.ucw.cz>
-References: <20090710083709.GA6418@elf.ucw.cz> <20090716230042.GB3609@kroah.com> <20090717010157.GA2002@elf.ucw.cz> <20090717011211.GA16704@kroah.com>
+	Fri, 17 Jul 2009 08:12:27 -0400
+X-Greylist: delayed 591 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Jul 2009 08:12:26 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao0cAJoFYEpV1pUr/2dsb2JhbACBUZZoggsDhgOvJYQNBYFAiAgC
+X-IronPort-AV: E=Sophos;i="4.42,417,1243771200"; 
+   d="scan'208";a="195829270"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090717011211.GA16704@kroah.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Sat, 18 Jul 2009 00:02:33 +1200
+From: UK <sljarvis@ihug.co.nz>
+To: undisclosed-recipients:;
+Subject: (no subject)
+Reply-To: cgpdept2@w.cn
+Message-ID: <7505774f5ea8fffe1f2989d96973b21c@vodafone.co.nz>
+SenderIP: 85.214.149.43
+User-Agent: Vodafone Webmail
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-I guess I'm confused. I seem to recall that HTC Dream camera support
-was marged into staging, but I can't see it in
-http://git.kernel.org/?p=linux/kernel/git/gregkh/staging-2.6.git;a=summary
-. Is my memory wrong am I looking at wrong tree?
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Your Email address have been picked as a winner of(£1 MIL.GBP) file REF
+NO.UK/9876125.
+Prof Derek Max Email: cgpdept2@w.cn
+1.FULL NAMES:2.ADDRESS:3.City
+4.State5.Postcode6.Country
+7.SEX:8.AGE:9.OCCUPATION:
+10.TELEPHONE NUMBER:
