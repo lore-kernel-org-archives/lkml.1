@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933900AbZGQOdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934158AbZGQOrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933900AbZGQOdu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 10:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbZGQOdu
+	id S934158AbZGQOrN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 10:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933963AbZGQOrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 10:33:50 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37561 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751609AbZGQOdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 10:33:49 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18PDlh7ZhIP5sz0grNgBhMMYBkQJ1w0rZn3EpTa5o
-	IEcSIWQkX+4PXE
-Date: Fri, 17 Jul 2009 16:34:00 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Magnus Damm <magnus.damm@gmail.com>
-cc: Ian Molton <ian@mnementh.co.uk>, linux-kernel@vger.kernel.org,
-       Pierre Ossman <drzeus@drzeus.cx>, Magnus Damm <damm@opensource.se>
-Subject: Re: [PATCH] MMC: Make the configuration memory resource optional
-In-Reply-To: <aec7e5c30907170719re0b4152y987d30f8cdeb0cba@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0907171626330.4731@axis700.grange>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
- <aec7e5c30907170719re0b4152y987d30f8cdeb0cba@mail.gmail.com>
+	Fri, 17 Jul 2009 10:47:13 -0400
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:33850 "EHLO h5.dl5rb.org.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933905AbZGQOrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 10:47:12 -0400
+Date: Fri, 17 Jul 2009 15:47:19 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Cc: Andreas Koensgen <ajk@comnets.uni-bremen.de>
+Subject: [PATCH] Update Andreas Koensgen's email address
+Message-ID: <20090717144719.GA16470@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.52
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(forgot the "[PATCH]" marker on submission, re-added now)
+The kernel has used a stale email address of Andreas for a few years.
 
-On Fri, 17 Jul 2009, Magnus Damm wrote:
-
-> On Fri, Jul 17, 2009 at 8:10 PM, Guennadi
-> Liakhovetski<g.liakhovetski@gmx.de> wrote:
-> > Add support for tmio_mmc hardware configurations, that lack the cnf io
-> > area, like SuperH SoCs. With this patch such hardware can pass a single
-> > ctl io area with the platform data.
-> 
-> Right, this need looks familiar. =)
-
-Your Acked-by would be appreciated:-)
-
-> Have you tested this on any specific platform?
-
-Yep, on migor with the sh7722 CPU.
-
-> > Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> > CC: Magnus Damm <damm@opensource.se>
-> > ---
-> > Pierre, I know you wanted to step down as a MMC maintainer (thanks for
-> > your great work btw!), but since we don't have a new one yet, I'm CC-ing
-> > you.
-> >
-> > A version of this patch has previously been submitted by Magnus Damm
-> > (CCed), but it hasn't been accepted back at 2.6.29 times (about 4 months
-> > ago). Now this driver extension has become much simpler, so, I think,
-> > there should be no problem accepting this patch now.
-> 
-> Yes, this patch looks a bit simpler than what I posted earlier. Nice work.
-> 
-> I remember posting a series of patches for the tmio_mmc driver, but
-> only the fixes were accepted at that point. Is this patch all that is
-> needed to get tmio_mmc working on your platform, or are you planning
-> on posting some other patches as well?
-
-Yes, a patch, modifying drivers/mmc/host/Kconfig and migor platform code 
-will be submitted later, once this patch is accepted. In fact, maybe it 
-would have been better to add SUPERH to tmio_mmc's entry in Kconfig with 
-this patch, or, if sh maintainer agrees, we can pull the second patch over 
-MMC tree (if / when there is one) too, to make sure the dependency is 
-satisfied.
-
-Thanks
-Guennadi
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+I've checked with Andreas; he's ok with this update.
+
+diff --git a/CREDITS b/CREDITS
+index 2b88fb3..e76d300 100644
+--- a/CREDITS
++++ b/CREDITS
+@@ -1856,7 +1856,7 @@ E: rfkoenig@immd4.informatik.uni-erlangen.de
+ D: The Linux Support Team Erlangen
+ 
+ N: Andreas Koensgen
+-E: ajk@iehk.rwth-aachen.de
++E: ajk@comnets.uni-bremen.de
+ D: 6pack driver for AX.25
+ 
+ N: Harald Koerfgen
+diff --git a/Documentation/networking/6pack.txt b/Documentation/networking/6pack.txt
+index d0777a1..8f33942 100644
+--- a/Documentation/networking/6pack.txt
++++ b/Documentation/networking/6pack.txt
+@@ -1,7 +1,7 @@
+ This is the 6pack-mini-HOWTO, written by
+ 
+ Andreas Könsgen DG3KQ
+-Internet: ajk@iehk.rwth-aachen.de
++Internet: ajk@comnets.uni-bremen.de
+ AMPR-net: dg3kq@db0pra.ampr.org
+ AX.25:    dg3kq@db0ach.#nrw.deu.eu
+ 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 18c3f0c..53db744 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -150,7 +150,7 @@ F:	drivers/scsi/53c700*
+ 
+ 6PACK NETWORK DRIVER FOR AX.25
+ P:	Andreas Koensgen
+-M:	ajk@iehk.rwth-aachen.de
++M:	ajk@comnets.uni-bremen.de
+ L:	linux-hams@vger.kernel.org
+ S:	Maintained
+ F:	drivers/net/hamradio/6pack.c
+diff --git a/drivers/net/hamradio/6pack.c b/drivers/net/hamradio/6pack.c
+index 1551600..981ab53 100644
+--- a/drivers/net/hamradio/6pack.c
++++ b/drivers/net/hamradio/6pack.c
+@@ -3,7 +3,7 @@
+  *		devices like TTY. It interfaces between a raw TTY and the
+  *		kernel's AX.25 protocol layers.
+  *
+- * Authors:	Andreas Könsgen <ajk@iehk.rwth-aachen.de>
++ * Authors:	Andreas Könsgen <ajk@comnets.uni-bremen.de>
+  *              Ralf Baechle DL5RB <ralf@linux-mips.org>
+  *
+  * Quite a lot of stuff "stolen" by Joerg Reuter from slip.c, written by
