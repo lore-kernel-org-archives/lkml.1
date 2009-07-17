@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933766AbZGQAG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933789AbZGQAG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933766AbZGQAG5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 20:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933706AbZGQAGz
+	id S933789AbZGQAG6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 20:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933740AbZGQAGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 20:06:55 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39146 "EHLO smtp.gentoo.org"
+	Thu, 16 Jul 2009 20:06:04 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39132 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933726AbZGQAGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 20:06:05 -0400
+	id S933726AbZGQAF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 20:05:59 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 21/21] Blackfin: define HARDIRQ_BITS again for now
-Date: Thu, 16 Jul 2009 20:05:46 -0400
-Message-Id: <1247789146-18786-22-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org,
+       Robin Getz <robin.getz@analog.com>
+Subject: [PATCH 14/21] Blackfin: fix handling of IPEND in interrupt context save
+Date: Thu, 16 Jul 2009 20:05:39 -0400
+Message-Id: <1247789146-18786-15-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
 References: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
@@ -22,35 +23,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The default values of HARDIRQ_BITS and PREEMPT_BITS in common code leads to
-build failure:
+From: Robin Getz <robin.getz@analog.com>
 
-In file included from include/linux/interrupt.h:12,
-                from include/linux/kernel_stat.h:8,
-                from arch/blackfin/kernel/asm-offsets.c:32:
-include/linux/hardirq.h:66:2: error: #error PREEMPT_ACTIVE is too low!
+The interrupt context save logic incorrectly stored the address of the
+IPEND register rather than its value due to a missing dereference.  While
+we're here, also enable this code for all kernel debugging scenarios and
+not just when KGDB is enabled.
 
-So until that gets resolved, just declare our own default value again.
-
+Signed-off-by: Robin Getz <robin.getz@analog.com>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/include/asm/hardirq.h |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/blackfin/include/asm/context.S |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/blackfin/include/asm/hardirq.h b/arch/blackfin/include/asm/hardirq.h
-index cbd52f8..0b78b87 100644
---- a/arch/blackfin/include/asm/hardirq.h
-+++ b/arch/blackfin/include/asm/hardirq.h
-@@ -6,6 +6,9 @@
- extern void ack_bad_irq(unsigned int irq);
- #define ack_bad_irq ack_bad_irq
- 
-+/* Define until common code gets sane defaults */
-+#define HARDIRQ_BITS 9
-+
- #include <asm-generic/hardirq.h>
- 
- #endif
+diff --git a/arch/blackfin/include/asm/context.S b/arch/blackfin/include/asm/context.S
+index 16561ab..f8a664f 100644
+--- a/arch/blackfin/include/asm/context.S
++++ b/arch/blackfin/include/asm/context.S
+@@ -223,9 +223,10 @@
+ 	[--sp] = RETN;
+ 	[--sp] = RETE;
+ 	[--sp] = SEQSTAT;
+-#ifdef CONFIG_KGDB
+-	r1.l = lo(IPEND);
+-	r1.h = hi(IPEND);
++#ifdef CONFIG_DEBUG_KERNEL
++	p1.l = lo(IPEND);
++	p1.h = hi(IPEND);
++	r1 = [p1];
+ 	[--sp] = r1;
+ #else
+ 	[--sp] = r0;	/* Skip IPEND as well. */
 -- 
 1.6.3.3
 
