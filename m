@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbZGQTV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbZGQTph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752084AbZGQTV4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 15:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZGQTVz
+	id S1752159AbZGQTph (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 15:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbZGQTpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 15:21:55 -0400
-Received: from mail-px0-f185.google.com ([209.85.216.185]:54410 "EHLO
-	mail-px0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbZGQTVy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 15:21:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=rwmR5SkhIcus6z7PKBAgLQaxXcONbnwaLzmVenGdrxjiexlNSftZEVILgoNG6q6Om0
-         eETl+B3MXfx/elE8PW7d8yu0rff8SpWGxga9lM/pLsN123+u8KfpYtHepgffmN3wpT8I
-         nQkwVQ4ym270CliASF3MPldUgD68/FbTJ0jH8=
-Message-ID: <4A60CFF5.7030600@gmail.com>
-Date: Fri, 17 Jul 2009 16:24:37 -0300
-From: "Tomas M." <tmezzadra@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090628)
+	Fri, 17 Jul 2009 15:45:36 -0400
+Received: from www.tglx.de ([62.245.132.106]:52376 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751913AbZGQTpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 15:45:36 -0400
+Date: Fri, 17 Jul 2009 21:43:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Christoph Hellwig <hch@infradead.org>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com
+Subject: Re: [ANNOUNCE][RFC] trace-cmd - command line reader for ftrace
+In-Reply-To: <alpine.DEB.2.00.0907171009050.9337@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.2.00.0907172140230.11571@localhost.localdomain>
+References: <alpine.DEB.2.00.0907171009050.9337@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: suspend script fails with 2.6.31, related to stdout?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-a pm-suspend hook fails with 2.6.31 (which does not under 2.6.30). the 
-error as follows:
----
+On Fri, 17 Jul 2009, Steven Rostedt wrote:
+> Since using echo and cat can sometimes be annoying to set up the tracer, 
+> I've been asked several times if I could come up with a tool to do it for 
+> you. For the last few weeks I've been working on one. The most difficult 
+> job was to parse out the "print_fmt" of the format files in the event.
+> 
+> This code is somewhat a proof of concept and is in alpha form. Although it 
+> is still very functional and useful. I can imagine that this could also be 
+> sucked into Ingo Molnar's "perf" utility.
 
-/etc/pm/sleep.d/11netcfg resume suspend: /bin/stty: standard input: 
-Inappropriate ioctl for device
-/bin/stty: standard input: Inappropriate ioctl for device
-:: Scanning for networks    [BUSY] wlan0     Interface doesn't support 
-scanning : Network is down
+That would be the first thing to do. Please integrate it with perf so
+we have one "look into the kernel" tool instead of N different ones
+with separate command line syntax and output style.
 
-wlan0     Interface doesn't support scanning : Network is down
+Thanks,
 
-wlan0     Interface doesn't support scanning : Network is down
-
-wlan0     Interface doesn't support scanning : Network is down
-
-wlan0     Interface doesn't support scanning : Network is down
-
-wlan0     Interface doesn't support scanning : Network is down
-
-/etc/rc.d/functions: line 99: printf: - : invalid option
-printf: usage: printf [-v var] format [arguments]
-   [FAIL]
----
-ive been tracking down the script, and it all comes down to iwlist 
-(which is used to scan for networks) which prints outputs to stdout. i 
-dont know how to debug this any further.. does anyone have any idea?
+	tglx
