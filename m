@@ -1,65 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932918AbZGQFcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbZGQFdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932918AbZGQFcw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 01:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757802AbZGQFcv
+	id S932998AbZGQFdt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 01:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932790AbZGQFds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 01:32:51 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50585 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757761AbZGQFcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 01:32:50 -0400
-Date: Fri, 17 Jul 2009 15:32:43 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Barry Song <21cnbao@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: linux-next: sound tree build failure
-Message-Id: <20090717153243.b8392c24.sfr@canb.auug.org.au>
-In-Reply-To: <20090717045620.GC17656@kroah.com>
-References: <20090717112935.2e831eee.sfr@canb.auug.org.au>
-	<20090717045620.GC17656@kroah.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+	Fri, 17 Jul 2009 01:33:48 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:59533 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932520AbZGQFds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 01:33:48 -0400
+Subject: Re: [PATCH] Convert blackfin to use arch_gettimeoffset()
+From: john stultz <johnstul@us.ibm.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       uclinux-dist-devel@blackfin.uclinux.org
+In-Reply-To: <8bd0f97a0907161926j258da72cg9dd1ca76ea8be2fb@mail.gmail.com>
+References: <1244758210.7192.5.camel@localhost.localdomain>
+	 <1247790356.7398.14.camel@localhost.localdomain>
+	 <8bd0f97a0907161926j258da72cg9dd1ca76ea8be2fb@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 22:33:45 -0700
+Message-Id: <1247808825.674.4.camel@work-vm>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__17_Jul_2009_15_32_43_+1000_cGiMHPOhjCGCu3tt"
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__17_Jul_2009_15_32_43_+1000_cGiMHPOhjCGCu3tt
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2009-07-16 at 22:26 -0400, Mike Frysinger wrote:
+> On Thu, Jul 16, 2009 at 20:25, john stultz wrote:
+> > This patch converts blackfin to use GENERIC_TIME via the arch_getoffset()
+> > infrastructure, reducing the amount of arch specific code we need to
+> > maintain.
+> >
+> > This patch applies on top of Linus' current -git tree (2.6.31-rc3).
+> >
+> > I've taken my best swing at converting this, but I'm not 100% confident
+> > I got it right. My cross-compiler is now out of date (gcc4.2) so I
+> > wasn't able to  check if it compiled. Any assistance from arch
+> > maintainers or testers to get this merged would be great.
+> 
+> something seems to be off as the Blackfin defconfig now does:
+>   LD      .tmp_vmlinux1
+> kernel/built-in.o: In function `clocksource_forward_now':
+> kernel/time/timekeeping.c:82: undefined reference to `arch_gettimeoffset'
+> kernel/built-in.o: In function `getnstimeofday':
+> kernel/time/timekeeping.c:119: undefined reference to `arch_gettimeoffset'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> most likely because the Blackfin time.c is the old stuff
+> (non-clocksource) while time-ts.c is the newer stuff (clocksource) and
+> this change only touches time.c
 
-Hi Greg,
+Ok. So I guess I missed that time.c isn't built if GENERIC_CLOCKEVENTS
+isn't enabled, so ARCH_HAS_GETTIMEOFFSET needs to depend on !
+GENERIC_CLOCKEVENTS.
 
-On Thu, 16 Jul 2009 21:56:20 -0700 Greg KH <greg@kroah.com> wrote:
->
-> It turned out to be "too late" to make the change, I missed the -rc2
-> window, so it will be a .32 thing.
->=20
-> I'll move it from my driver-core.current to my driver-core tree to clear
-> up any confusion.
+Hopefully I've got it cleared up now. Let me know if I'm still causing
+trouble.
 
-OK, thanks.
+thanks
+-john
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Fri__17_Jul_2009_15_32_43_+1000_cGiMHPOhjCGCu3tt
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+This patch converts blackfin to use GENERIC_TIME via the
+arch_getoffset() infrastructure, reducing the amount of arch specific
+code we need to maintain.
 
-iEYEARECAAYFAkpgDPsACgkQjjKRsyhoI8yvgwCglJNLCDzNWnFaEygyH+3QXtJo
-J+MAnirdAI625N7qu2NhGsX+d/Ib4vV3
-=+ZaV
------END PGP SIGNATURE-----
+This patch applies on top of Linus' current -git tree (2.6.31-rc3).
 
---Signature=_Fri__17_Jul_2009_15_32_43_+1000_cGiMHPOhjCGCu3tt--
+I've taken my best swing at converting this, but I'm not 100% confident
+I got it right. My cross-compiler is now out of date (gcc4.2) so I
+wasn't able to  check if it compiled. Any assistance from arch
+maintainers or testers to get this merged would be great.
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+---
+
+diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
+index 7faa2f5..c8f5c3d 100644
+--- a/arch/blackfin/Kconfig
++++ b/arch/blackfin/Kconfig
+@@ -229,7 +229,7 @@ endchoice
+ 
+ config SMP
+ 	depends on BF561
+-	select GENERIC_TIME
++	select GENERIC_CLOCKEVENTS
+ 	bool "Symmetric multi-processing support"
+ 	---help---
+ 	  This enables support for systems with more than one CPU,
+@@ -612,12 +612,10 @@ comment "Kernel Timer/Scheduler"
+ source kernel/Kconfig.hz
+ 
+ config GENERIC_TIME
+-	bool "Generic time"
+-	default y
++	def_bool y
+ 
+ config GENERIC_CLOCKEVENTS
+ 	bool "Generic clock events"
+-	depends on GENERIC_TIME
+ 	default y
+ 
+ choice
+@@ -652,6 +650,10 @@ config GPTMR0_CLOCKSOURCE
+ 	depends on GENERIC_CLOCKEVENTS
+ 	depends on !TICKSOURCE_GPTMR0
+ 
++config ARCH_USES_GETTIMEOFFSET
++	depends on !GENERIC_CLOCKEVENTS
++	def_bool y
++
+ source kernel/time/Kconfig
+ 
+ comment "Misc"
+diff --git a/arch/blackfin/kernel/time.c b/arch/blackfin/kernel/time.c
+index adb54aa..e5069fe 100644
+--- a/arch/blackfin/kernel/time.c
++++ b/arch/blackfin/kernel/time.c
+@@ -81,11 +81,11 @@ time_sched_init(irqreturn_t(*timer_routine) (int, void *))
+ #endif
+ }
+ 
++#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
+ /*
+  * Should return useconds since last timer tick
+  */
+-#ifndef CONFIG_GENERIC_TIME
+-static unsigned long gettimeoffset(void)
++u32 arch_gettimeoffset(void)
+ {
+ 	unsigned long offset;
+ 	unsigned long clocks_per_jiffy;
+@@ -184,65 +184,6 @@ void __init time_init(void)
+ 	time_sched_init(timer_interrupt);
+ }
+ 
+-#ifndef CONFIG_GENERIC_TIME
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long flags;
+-	unsigned long seq;
+-	unsigned long usec, sec;
+-
+-	do {
+-		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-		usec = gettimeoffset();
+-		sec = xtime.tv_sec;
+-		usec += (xtime.tv_nsec / NSEC_PER_USEC);
+-	}
+-	while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-
+-	while (usec >= USEC_PER_SEC) {
+-		usec -= USEC_PER_SEC;
+-		sec++;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int do_settimeofday(struct timespec *tv)
+-{
+-	time_t wtm_sec, sec = tv->tv_sec;
+-	long wtm_nsec, nsec = tv->tv_nsec;
+-
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_seqlock_irq(&xtime_lock);
+-	/*
+-	 * This is revolting. We need to set the xtime.tv_usec
+-	 * correctly. However, the value in this location is
+-	 * is value at the last tick.
+-	 * Discover what correction gettimeofday
+-	 * would have done, and then undo it!
+-	 */
+-	nsec -= (gettimeoffset() * NSEC_PER_USEC);
+-
+-	wtm_sec = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+-	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
+-
+-	set_normalized_timespec(&xtime, sec, nsec);
+-	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
+-
+-	ntp_clear();
+-
+-	write_sequnlock_irq(&xtime_lock);
+-	clock_was_set();
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(do_settimeofday);
+-#endif /* !CONFIG_GENERIC_TIME */
+-
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+  */
+
+
