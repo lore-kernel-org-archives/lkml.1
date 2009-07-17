@@ -1,131 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757785AbZGQFRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757809AbZGQFRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757785AbZGQFRJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 01:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZGQFRJ
+	id S1757809AbZGQFRk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 01:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbZGQFRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 01:17:09 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40982 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbZGQFRI (ORCPT
+	Fri, 17 Jul 2009 01:17:39 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51255 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053AbZGQFRj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 01:17:08 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 17 Jul 2009 14:16:52 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Luming Yu <luming.yu@gmail.com>
-Subject: Re: [RFC patch] delete improper hot pluggable code of memory affinity
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <3877989d0907160218l4a28791v90ad22cc048c3440@mail.gmail.com>
-References: <3877989d0907160218l4a28791v90ad22cc048c3440@mail.gmail.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20090717135847.38B3.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 17 Jul 2009 01:17:39 -0400
+Subject: Re: [PATCH] Convert blackfin to use arch_gettimeoffset()
+From: john stultz <johnstul@us.ibm.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       uclinux-dist-devel@blackfin.uclinux.org
+In-Reply-To: <8bd0f97a0907161926j258da72cg9dd1ca76ea8be2fb@mail.gmail.com>
+References: <1244758210.7192.5.camel@localhost.localdomain>
+	 <1247790356.7398.14.camel@localhost.localdomain>
+	 <8bd0f97a0907161926j258da72cg9dd1ca76ea8be2fb@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 22:17:36 -0700
+Message-Id: <1247807856.674.1.camel@work-vm>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi, Luming-san.
-
-> The current kernel code *wrongly* interprets Hot Pluggable bit of
-> Memory Affinity Structure (SRAT table in ACPI spec).
-
-I'm not sure your patch is correct or not yet, but I would like
-to tell you a critical point about the definition of 
-Memory Affinity Structure.
-
-The spec says the Enable bit of Memory Affinity Structure means that
-the contents of its memory affinity structure is only VALID.
-It doesn't mean memory is really connected at the area.
-It means only that OS can read the entry.
-
-When the enabled bit and hot pluggable bit is set on, 
-it may mean that the area may be hot-added after boot up.
-So, kernel must check e820 or efi to confirm that memory is
-really connected.
-
-If you already know it, sorry for noise....
-Just for your information.
-
-Thanks.
-
-
-
-> if Hot Pluggable bit is set and CONFIG_MEMORY_HOTPLUG_SPARSE is NOT
-> set, the memory Affinity will
-> be ignored. And a faked Node will be used...
+On Thu, 2009-07-16 at 22:26 -0400, Mike Frysinger wrote:
+> On Thu, Jul 16, 2009 at 20:25, john stultz wrote:
+> > This patch converts blackfin to use GENERIC_TIME via the arch_getoffset()
+> > infrastructure, reducing the amount of arch specific code we need to
+> > maintain.
+> >
+> > This patch applies on top of Linus' current -git tree (2.6.31-rc3).
+> >
+> > I've taken my best swing at converting this, but I'm not 100% confident
+> > I got it right. My cross-compiler is now out of date (gcc4.2) so I
+> > wasn't able to  check if it compiled. Any assistance from arch
+> > maintainers or testers to get this merged would be great.
 > 
-> An alternative is to enable CONFIG_MEMORY_HOTPLUG_SPARSE *always*
-> along with acpi_numa_memory_affinity_init.
-> Please decide which one is appropriate.
+> something seems to be off as the Blackfin defconfig now does:
+>   LD      .tmp_vmlinux1
+> kernel/built-in.o: In function `clocksource_forward_now':
+> kernel/time/timekeeping.c:82: undefined reference to `arch_gettimeoffset'
+> kernel/built-in.o: In function `getnstimeofday':
+> kernel/time/timekeeping.c:119: undefined reference to `arch_gettimeoffset'
+> make: *** [.tmp_vmlinux1] Error 1
 > 
-> The downside of this patch is *some useful info* is lost and a follow
-> up patch is needed.
-> 
-> **The patch is enclosed in text attachment*
-> **Using web client to send the patch* *
-> **below is for review, please apply attached  patch*/
-> 
-> Thanks,
-> Luming
-> 
-> 
-> Signed-off-by: Yu Luming <luming.yu@intel.com>
-> 
->  srat_64.c |   16 ----------------
->  1 file changed, 16 deletions(-)
-> 
-> 
-> diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-> index 2dfcbf9..82423e5 100644
-> --- a/arch/x86/mm/srat_64.c
-> +++ b/arch/x86/mm/srat_64.c
-> @@ -172,11 +172,6 @@ acpi_numa_processor_affinity_init(struct
-> acpi_srat_cpu_affinity *pa)
->  	       pxm, apic_id, node);
->  }
-> 
-> -#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-> -static inline int save_add_info(void) {return 1;}
-> -#else
-> -static inline int save_add_info(void) {return 0;}
-> -#endif
->  /*
->   * Update nodes_add[]
->   * This code supports one contiguous hot add area per node
-> @@ -249,9 +244,6 @@ acpi_numa_memory_affinity_init(struct
-> acpi_srat_mem_affinity *ma)
->  	}
->  	if ((ma->flags & ACPI_SRAT_MEM_ENABLED) == 0)
->  		return;
-> -
-> -	if ((ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) && !save_add_info())
-> -		return;
->  	start = ma->base_address;
->  	end = start + ma->length;
->  	pxm = ma->proximity_domain;
-> @@ -291,14 +283,6 @@ acpi_numa_memory_affinity_init(struct
-> acpi_srat_mem_affinity *ma)
->  	e820_register_active_regions(node, start >> PAGE_SHIFT,
->  				     end >> PAGE_SHIFT);
-> 
-> -	if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
-> -		update_nodes_add(node, start, end);
-> -		/* restore nodes[node] */
-> -		*nd = oldnode;
-> -		if ((nd->start | nd->end) == 0)
-> -			node_clear(node, nodes_parsed);
-> -	}
-> -
->  	node_memblk_range[num_node_memblks].start = start;
->  	node_memblk_range[num_node_memblks].end = end;
->  	memblk_nodeid[num_node_memblks] = node;
+> most likely because the Blackfin time.c is the old stuff
+> (non-clocksource) while time-ts.c is the newer stuff (clocksource) and
+> this change only touches time.c
 
--- 
-Yasunori Goto 
+Hrm.. Ok. I'll take a look. Thanks for testing and the pointer!
 
+-john
 
