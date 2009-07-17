@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbZGQUlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbZGQUmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbZGQUlA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756913AbZGQUk7
+	id S1757588AbZGQUmN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 16:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbZGQUlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:40:59 -0400
-Received: from kroah.org ([198.145.64.141]:50650 "EHLO coco.kroah.org"
+	Fri, 17 Jul 2009 16:41:51 -0400
+Received: from kroah.org ([198.145.64.141]:50664 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756878AbZGQUk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 16:40:57 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:38:24 2009
-Message-Id: <20090717203824.486304857@mini.kroah.org>
+	id S1756937AbZGQUlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 16:41:00 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:38:25 2009
+Message-Id: <20090717203824.944087345@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 17 Jul 2009 13:37:22 -0700
+Date: Fri, 17 Jul 2009 13:37:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       mark gross <mgross@linux.intel.com>
-Subject: [patch 4/8] Fix iommu address space allocation
+       Tomasz Lemiech <szpajder@staszic.waw.pl>,
+       Ivan Vecera <ivecera@redhat.com>, Ben McKeegan <ben@netservers.co.uk>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Christoph Biedl <linux-kernel.bfrz@manchmal.in-ulm.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 7/8] tulip: Fix for MTU problems with 802.1q tagged frames
 References: <20090717203718.637372453@mini.kroah.org>
-Content-Disposition: inline; filename=fix-iommu-address-space-allocation.patch
+Content-Disposition: inline; filename=tulip-fix-for-mtu-problems-with-802.1q-tagged-frames.patch
 In-Reply-To: <20090717203935.GA5641@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,70 +34,229 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Woodhouse <dwmw2@infradead.org>
+From: Tomasz Lemiech <szpajder@staszic.waw.pl>
 
-commit a15a519ed6e5e644f5a33c213c00b0c1d3cfe683 upstream.
+commit 1f8ae0a21d83f43006d7f6d2862e921dbf2eeddd upstream.
 
-This fixes kernel.org bug #13584. The IOVA code attempted to optimise
-the insertion of new ranges into the rbtree, with the unfortunate result
-that some ranges just didn't get inserted into the tree at all. Then
-those ranges would be handed out more than once, and things kind of go
-downhill from there.
+The original patch was submitted last year but wasn't discussed or applied
+because of missing maintainer's CCs. I only fixed some formatting errors,
+but as I saw tulip is very badly formatted and needs further work.
 
-Introduced after 2.6.25 by ddf02886cbe665d67ca750750196ea5bf524b10b
-("PCI: iova RB tree setup tweak").
+Original description:
+This patch fixes MTU problem, which occurs when using 802.1q VLANs. We
+should allow receiving frames of up to 1518 bytes in length, instead of
+1514.
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-Cc: mark gross <mgross@linux.intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Based on patch written by Ben McKeegan for 2.4.x kernels. It is archived
+at http://www.candelatech.com/~greear/vlan/howto.html#tulip
+I've adjusted a few things to make it apply on 2.6.x kernels.
+
+Tested on D-Link DFE-570TX quad-fastethernet card.
+
+Signed-off-by: Tomasz Lemiech <szpajder@staszic.waw.pl>
+Signed-off-by: Ivan Vecera <ivecera@redhat.com>
+Signed-off-by: Ben McKeegan <ben@netservers.co.uk>
+Acked-by: Grant Grundler <grundler@parisc-linux.org>
+Cc: Christoph Biedl <linux-kernel.bfrz@manchmal.in-ulm.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
 ---
- drivers/pci/iova.c |   26 ++++++++++++++++++++++----
- 1 file changed, 22 insertions(+), 4 deletions(-)
+ drivers/net/tulip/interrupt.c |   84 +++++++++++++++++++++++++++---------------
+ drivers/net/tulip/tulip.h     |   32 +++++++++++++++-
+ 2 files changed, 86 insertions(+), 30 deletions(-)
 
---- a/drivers/pci/iova.c
-+++ b/drivers/pci/iova.c
-@@ -1,9 +1,19 @@
- /*
-- * Copyright (c) 2006, Intel Corporation.
-+ * Copyright © 2006-2009, Intel Corporation.
-  *
-- * This file is released under the GPLv2.
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-+ * Place - Suite 330, Boston, MA 02111-1307 USA.
-  *
-- * Copyright (C) 2006-2008 Intel Corporation
-  * Author: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-  */
+--- a/drivers/net/tulip/interrupt.c
++++ b/drivers/net/tulip/interrupt.c
+@@ -140,6 +140,7 @@ int tulip_poll(struct napi_struct *napi,
+                /* If we own the next entry, it is a new packet. Send it up. */
+                while ( ! (tp->rx_ring[entry].status & cpu_to_le32(DescOwned))) {
+                        s32 status = le32_to_cpu(tp->rx_ring[entry].status);
++		       short pkt_len;
  
-@@ -123,7 +133,15 @@ move_left:
- 	/* Insert the new_iova into domain rbtree by holding writer lock */
- 	/* Add new node and rebalance tree. */
- 	{
--		struct rb_node **entry = &((prev)), *parent = NULL;
-+		struct rb_node **entry, *parent = NULL;
+                        if (tp->dirty_rx + RX_RING_SIZE == tp->cur_rx)
+                                break;
+@@ -151,8 +152,28 @@ int tulip_poll(struct napi_struct *napi,
+ 		       if (++work_done >= budget)
+                                goto not_done;
+ 
+-                       if ((status & 0x38008300) != 0x0300) {
+-                               if ((status & 0x38000300) != 0x0300) {
++		       /*
++			* Omit the four octet CRC from the length.
++			* (May not be considered valid until we have
++			* checked status for RxLengthOver2047 bits)
++			*/
++		       pkt_len = ((status >> 16) & 0x7ff) - 4;
 +
-+		/* If we have 'prev', it's a valid place to start the
-+		   insertion. Otherwise, start from the root. */
-+		if (prev)
-+			entry = &prev;
-+		else
-+			entry = &iovad->rbroot.rb_node;
++		       /*
++			* Maximum pkt_len is 1518 (1514 + vlan header)
++			* Anything higher than this is always invalid
++			* regardless of RxLengthOver2047 bits
++			*/
 +
- 		/* Figure out where to put new node */
- 		while (*entry) {
- 			struct iova *this = container_of(*entry,
++		       if ((status & (RxLengthOver2047 |
++				      RxDescCRCError |
++				      RxDescCollisionSeen |
++				      RxDescRunt |
++				      RxDescDescErr |
++				      RxWholePkt)) != RxWholePkt
++			   || pkt_len > 1518) {
++			       if ((status & (RxLengthOver2047 |
++					      RxWholePkt)) != RxWholePkt) {
+                                 /* Ingore earlier buffers. */
+                                        if ((status & 0xffff) != 0x7fff) {
+                                                if (tulip_debug > 1)
+@@ -161,30 +182,23 @@ int tulip_poll(struct napi_struct *napi,
+                                                               dev->name, status);
+                                                tp->stats.rx_length_errors++;
+                                        }
+-                               } else if (status & RxDescFatalErr) {
++			       } else {
+                                 /* There was a fatal error. */
+                                        if (tulip_debug > 2)
+                                                printk(KERN_DEBUG "%s: Receive error, Rx status %8.8x.\n",
+                                                       dev->name, status);
+                                        tp->stats.rx_errors++; /* end of a packet.*/
+-                                       if (status & 0x0890) tp->stats.rx_length_errors++;
++				       if (pkt_len > 1518 ||
++					   (status & RxDescRunt))
++					       tp->stats.rx_length_errors++;
++
+                                        if (status & 0x0004) tp->stats.rx_frame_errors++;
+                                        if (status & 0x0002) tp->stats.rx_crc_errors++;
+                                        if (status & 0x0001) tp->stats.rx_fifo_errors++;
+                                }
+                        } else {
+-                               /* Omit the four octet CRC from the length. */
+-                               short pkt_len = ((status >> 16) & 0x7ff) - 4;
+                                struct sk_buff *skb;
+ 
+-#ifndef final_version
+-                               if (pkt_len > 1518) {
+-                                       printk(KERN_WARNING "%s: Bogus packet size of %d (%#x).\n",
+-                                              dev->name, pkt_len, pkt_len);
+-                                       pkt_len = 1518;
+-                                       tp->stats.rx_length_errors++;
+-                               }
+-#endif
+                                /* Check if the packet is long enough to accept without copying
+                                   to a minimally-sized skbuff. */
+                                if (pkt_len < tulip_rx_copybreak
+@@ -357,14 +371,35 @@ static int tulip_rx(struct net_device *d
+ 	/* If we own the next entry, it is a new packet. Send it up. */
+ 	while ( ! (tp->rx_ring[entry].status & cpu_to_le32(DescOwned))) {
+ 		s32 status = le32_to_cpu(tp->rx_ring[entry].status);
++		short pkt_len;
+ 
+ 		if (tulip_debug > 5)
+ 			printk(KERN_DEBUG "%s: In tulip_rx(), entry %d %8.8x.\n",
+ 				   dev->name, entry, status);
+ 		if (--rx_work_limit < 0)
+ 			break;
+-		if ((status & 0x38008300) != 0x0300) {
+-			if ((status & 0x38000300) != 0x0300) {
++
++		/*
++		  Omit the four octet CRC from the length.
++		  (May not be considered valid until we have
++		  checked status for RxLengthOver2047 bits)
++		*/
++		pkt_len = ((status >> 16) & 0x7ff) - 4;
++		/*
++		  Maximum pkt_len is 1518 (1514 + vlan header)
++		  Anything higher than this is always invalid
++		  regardless of RxLengthOver2047 bits
++		*/
++
++		if ((status & (RxLengthOver2047 |
++			       RxDescCRCError |
++			       RxDescCollisionSeen |
++			       RxDescRunt |
++			       RxDescDescErr |
++			       RxWholePkt))        != RxWholePkt
++		     || pkt_len > 1518) {
++			if ((status & (RxLengthOver2047 |
++			     RxWholePkt))         != RxWholePkt) {
+ 				/* Ingore earlier buffers. */
+ 				if ((status & 0xffff) != 0x7fff) {
+ 					if (tulip_debug > 1)
+@@ -373,31 +408,22 @@ static int tulip_rx(struct net_device *d
+ 							   dev->name, status);
+ 					tp->stats.rx_length_errors++;
+ 				}
+-			} else if (status & RxDescFatalErr) {
++			} else {
+ 				/* There was a fatal error. */
+ 				if (tulip_debug > 2)
+ 					printk(KERN_DEBUG "%s: Receive error, Rx status %8.8x.\n",
+ 						   dev->name, status);
+ 				tp->stats.rx_errors++; /* end of a packet.*/
+-				if (status & 0x0890) tp->stats.rx_length_errors++;
++				if (pkt_len > 1518 ||
++				    (status & RxDescRunt))
++					tp->stats.rx_length_errors++;
+ 				if (status & 0x0004) tp->stats.rx_frame_errors++;
+ 				if (status & 0x0002) tp->stats.rx_crc_errors++;
+ 				if (status & 0x0001) tp->stats.rx_fifo_errors++;
+ 			}
+ 		} else {
+-			/* Omit the four octet CRC from the length. */
+-			short pkt_len = ((status >> 16) & 0x7ff) - 4;
+ 			struct sk_buff *skb;
+ 
+-#ifndef final_version
+-			if (pkt_len > 1518) {
+-				printk(KERN_WARNING "%s: Bogus packet size of %d (%#x).\n",
+-					   dev->name, pkt_len, pkt_len);
+-				pkt_len = 1518;
+-				tp->stats.rx_length_errors++;
+-			}
+-#endif
+-
+ 			/* Check if the packet is long enough to accept without copying
+ 			   to a minimally-sized skbuff. */
+ 			if (pkt_len < tulip_rx_copybreak
+--- a/drivers/net/tulip/tulip.h
++++ b/drivers/net/tulip/tulip.h
+@@ -201,8 +201,38 @@ enum desc_status_bits {
+ 	DescStartPkt = 0x20000000,
+ 	DescEndRing  = 0x02000000,
+ 	DescUseLink  = 0x01000000,
+-	RxDescFatalErr = 0x008000,
++
++	/*
++	 * Error summary flag is logical or of 'CRC Error', 'Collision Seen',
++	 * 'Frame Too Long', 'Runt' and 'Descriptor Error' flags generated
++	 * within tulip chip.
++	 */
++	RxDescErrorSummary = 0x8000,
++	RxDescCRCError = 0x0002,
++	RxDescCollisionSeen = 0x0040,
++
++	/*
++	 * 'Frame Too Long' flag is set if packet length including CRC exceeds
++	 * 1518.  However, a full sized VLAN tagged frame is 1522 bytes
++	 * including CRC.
++	 *
++	 * The tulip chip does not block oversized frames, and if this flag is
++	 * set on a receive descriptor it does not indicate the frame has been
++	 * truncated.  The receive descriptor also includes the actual length.
++	 * Therefore we can safety ignore this flag and check the length
++	 * ourselves.
++	 */
++	RxDescFrameTooLong = 0x0080,
++	RxDescRunt = 0x0800,
++	RxDescDescErr = 0x4000,
+ 	RxWholePkt   = 0x00000300,
++	/*
++	 * Top three bits of 14 bit frame length (status bits 27-29) should
++	 * never be set as that would make frame over 2047 bytes. The Receive
++	 * Watchdog flag (bit 4) may indicate the length is over 2048 and the
++	 * length field is invalid.
++	 */
++	RxLengthOver2047 = 0x38000010
+ };
+ 
+ 
 
 
