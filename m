@@ -1,278 +1,400 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbZGQUd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbZGQUeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753885AbZGQUd2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZGQUd1
+	id S1754491AbZGQUeb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 16:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZGQUeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:33:27 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:47792 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752752AbZGQUd0 (ORCPT
+	Fri, 17 Jul 2009 16:34:31 -0400
+Received: from mail-px0-f185.google.com ([209.85.216.185]:58965 "EHLO
+	mail-px0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbZGQUe3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 16:33:26 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
-       Jonathan Cameron <jic23@cam.ac.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Fri, 17 Jul 2009 21:33:15 +0100
-Message-Id: <1247862795-22547-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.3
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: [PATCH] hwmon: Add WM835x PMIC hardware monitoring driver
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Fri, 17 Jul 2009 16:34:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SsIL8WgyyWmSIEaHuTmgYuvcEmwhLDqrsVYspTs6iSlrHWE1Wubq3gQVJiUQVmjHLV
+         jpxa+YPtdWRFChvqYA2ik1IHdSbtxurS+a3YqHzfxO1YhQSfckkHKqugo3QX/eu4PqNg
+         L+vs3Ka+0lchMj6Lt7OrP+gq6DnUJSXzcijRo=
+Date: Fri, 17 Jul 2009 16:34:24 -0400
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/filters: Improve subsystem filter
+Message-ID: <20090717203422.GA7136@nowhere>
+References: <4A5EECDC.4080500@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A5EECDC.4080500@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver provides reporting of the status supply voltage rails
-of the WM835x series of PMICs via the hwmon API.
+On Thu, Jul 16, 2009 at 05:03:24PM +0800, Li Zefan wrote:
+> Currently a subsystem filter should be applicable to all events
+> under the subsystem, and if it failed, all the event filters
+> will be cleared. Those behaviors make subsys filter much less
+> useful:
+> 
+>   # echo 'vec == 1' > irq/softirq_entry/filter
+>   # echo 'irq == 5' > irq/filter
+>   bash: echo: write error: Invalid argument
+>   # cat irq/softirq_entry/filter
+>   none
+> 
+> I'd expect it set the filter for irq_handler_entry/exit, and
+> not touch softirq_entry/exit.
+> 
+> The basic idea is, try to see if the filter can be applied
+> to which events, and then just apply to the those events:
+> 
+>   # echo 'vec == 1' > softirq_entry/filter
+>   # echo 'irq == 5' > filter
+>   # cat irq_handler_entry/filter
+>   irq == 5
+>   # cat softirq_entry/filter
+>   vec == 1
+> 
+> Inspied-by: Steven Rostedt <srostedt@redhat.com>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  include/linux/ftrace_event.h       |    4 +-
+>  kernel/trace/trace.h               |    3 +-
+>  kernel/trace/trace_events_filter.c |  123 +++++++++++++++++++++++------------
+>  3 files changed, 86 insertions(+), 44 deletions(-)
+> 
+> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+> index 5c093ff..26d3673 100644
+> --- a/include/linux/ftrace_event.h
+> +++ b/include/linux/ftrace_event.h
+> @@ -101,6 +101,8 @@ void trace_current_buffer_discard_commit(struct ring_buffer_event *event);
+>  
+>  void tracing_record_cmdline(struct task_struct *tsk);
+>  
+> +struct event_filter;
+> +
+>  struct ftrace_event_call {
+>  	struct list_head	list;
+>  	char			*name;
+> @@ -116,7 +118,7 @@ struct ftrace_event_call {
+>  	int			(*define_fields)(void);
+>  	struct list_head	fields;
+>  	int			filter_active;
+> -	void			*filter;
+> +	struct event_filter	*filter;
+>  	void			*mod;
+>  
+>  #ifdef CONFIG_EVENT_PROFILE
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 06886a0..3a87d46 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -768,13 +768,14 @@ struct event_filter {
+>  	int			n_preds;
+>  	struct filter_pred	**preds;
+>  	char			*filter_string;
+> +	bool			no_reset;
+>  };
+>  
+>  struct event_subsystem {
+>  	struct list_head	list;
+>  	const char		*name;
+>  	struct dentry		*entry;
+> -	void			*filter;
+> +	struct event_filter	*filter;
+>  	int			nr_events;
+>  };
+>  
+> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+> index 1c80ef7..0f510c2 100644
+> --- a/kernel/trace/trace_events_filter.c
+> +++ b/kernel/trace/trace_events_filter.c
+> @@ -420,7 +420,13 @@ oom:
+>  }
+>  EXPORT_SYMBOL_GPL(init_preds);
+>  
+> -static void filter_free_subsystem_preds(struct event_subsystem *system)
+> +/*
+> + * flag == 0: remove all events' filter
+> + * flag == 1: clear filter->no_reset
+> + * flag == 2: remove all preds with no_reset == false
+> + */
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/hwmon/Kconfig           |   10 +++
- drivers/hwmon/Makefile          |    1 +
- drivers/hwmon/wm8350-hwmon.c    |  149 +++++++++++++++++++++++++++++++++++++++
- drivers/mfd/wm8350-core.c       |    3 +
- include/linux/mfd/wm8350/core.h |    6 ++
- 5 files changed, 169 insertions(+), 0 deletions(-)
- create mode 100644 drivers/hwmon/wm8350-hwmon.c
 
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 2d50166..c94d708 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -920,6 +920,16 @@ config SENSORS_W83627EHF
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called w83627ehf.
- 
-+config SENSORS_WM8350
-+	tristate "Wolfson Microelectronics WM835x"
-+	depends on MFD_WM8350
-+	help
-+	  If you say yes here you get support for the hardware
-+	  monitoring features of the WM835x series of PMICs.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called wm8350-hwmon.
-+
- config SENSORS_ULTRA45
- 	tristate "Sun Ultra45 PIC16F747"
- 	depends on SPARC64
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index b793dce..c02e90e 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -89,6 +89,7 @@ obj-$(CONFIG_SENSORS_VT8231)	+= vt8231.o
- obj-$(CONFIG_SENSORS_W83627EHF)	+= w83627ehf.o
- obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l785ts.o
- obj-$(CONFIG_SENSORS_W83L786NG)	+= w83l786ng.o
-+obj-$(CONFIG_SENSORS_WM8350)	+= wm8350-hwmon.o
- 
- ifeq ($(CONFIG_HWMON_DEBUG_CHIP),y)
- EXTRA_CFLAGS += -DDEBUG
-diff --git a/drivers/hwmon/wm8350-hwmon.c b/drivers/hwmon/wm8350-hwmon.c
-new file mode 100644
-index 0000000..7387620
---- /dev/null
-+++ b/drivers/hwmon/wm8350-hwmon.c
-@@ -0,0 +1,149 @@
-+/*
-+ * drivers/hwmon/wm8350-hwmon.c - Wolfson Microelectroncis WM8350 PMIC
-+ *                                  hardware monitoring features.
-+ *
-+ * Copyright (C) 2009 Wolfson Microelectronics plc
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License v2 as published by the
-+ * Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/hwmon.h>
-+#include <linux/hwmon-sysfs.h>
-+
-+#include <linux/mfd/wm8350/core.h>
-+#include <linux/mfd/wm8350/comparator.h>
-+
-+static ssize_t show_name(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "wm8350\n");
-+}
-+
-+static const char *input_names[] = {
-+	[WM8350_AUXADC_USB]  = "USB" ,
-+	[WM8350_AUXADC_LINE] = "Line" ,
-+	[WM8350_AUXADC_BATT] = "Battery",
-+};
-+
-+
-+static ssize_t show_voltage(struct device *dev,
-+			    struct device_attribute *attr, char *buf)
-+{
-+	struct wm8350 *wm8350 = dev_get_drvdata(dev);
-+	int channel = to_sensor_dev_attr(attr)->index;
-+	int val;
-+
-+	val = wm8350_read_auxadc(wm8350, channel, 0, 0)
-+		* WM8350_AUX_COEFF / 1000;
-+
-+	return sprintf(buf, "%d\n", val);
-+}
-+
-+static ssize_t show_label(struct device *dev,
-+			  struct device_attribute *attr, char *buf)
-+{
-+	int channel = to_sensor_dev_attr(attr)->index;
-+
-+	return sprintf(buf, "%s\n", input_names[channel]);
-+}
-+
-+#define WM8350_NAMED_VOLTAGE(id, name) \
-+	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage,\
-+				  NULL, WM8350_AUXADC_##name);		\
-+	static SENSOR_DEVICE_ATTR(in##id##_label, S_IRUGO, show_label,	\
-+				  NULL, WM8350_AUXADC_##name)
-+
-+static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
-+
-+WM8350_NAMED_VOLTAGE(0, USB);
-+WM8350_NAMED_VOLTAGE(1, BATT);
-+WM8350_NAMED_VOLTAGE(2, LINE);
-+
-+static struct attribute *wm8350_attributes[] = {
-+	&dev_attr_name.attr,
-+
-+	&sensor_dev_attr_in0_input.dev_attr.attr,
-+	&sensor_dev_attr_in0_label.dev_attr.attr,
-+	&sensor_dev_attr_in1_input.dev_attr.attr,
-+	&sensor_dev_attr_in1_label.dev_attr.attr,
-+	&sensor_dev_attr_in2_input.dev_attr.attr,
-+	&sensor_dev_attr_in2_label.dev_attr.attr,
-+
-+	NULL,
-+};
-+
-+static const struct attribute_group wm8350_attr_group = {
-+	.attrs	= wm8350_attributes,
-+};
-+
-+static int __devinit wm8350_hwmon_probe(struct platform_device *pdev)
-+{
-+	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
-+	int ret;
-+
-+	ret = sysfs_create_group(&pdev->dev.kobj, &wm8350_attr_group);
-+	if (ret)
-+		goto err;
-+
-+	wm8350->hwmon.classdev = hwmon_device_register(&pdev->dev);
-+	if (IS_ERR(wm8350->hwmon.classdev)) {
-+		ret = PTR_ERR(wm8350->hwmon.classdev);
-+		goto err_group;
-+	}
-+
-+	return 0;
-+
-+err_group:
-+	sysfs_remove_group(&pdev->dev.kobj, &wm8350_attr_group);
-+err:
-+	return ret;
-+}
-+
-+static int __devexit wm8350_hwmon_remove(struct platform_device *pdev)
-+{
-+	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
-+
-+	hwmon_device_unregister(wm8350->hwmon.classdev);
-+	sysfs_remove_group(&pdev->dev.kobj, &wm8350_attr_group);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver wm8350_hwmon_driver = {
-+	.probe = wm8350_hwmon_probe,
-+	.remove = __devexit_p(wm8350_hwmon_remove),
-+	.driver = {
-+		.name = "wm8350-hwmon",
-+	},
-+};
-+
-+static int __init wm8350_hwmon_init(void)
-+{
-+	return platform_driver_register(&wm8350_hwmon_driver);
-+}
-+module_init(wm8350_hwmon_init);
-+
-+static void __exit wm8350_hwmon_exit(void)
-+{
-+	platform_driver_unregister(&wm8350_hwmon_driver);
-+}
-+module_exit(wm8350_hwmon_exit);
-+
-+MODULE_AUTHOR("Mark Brown");
-+MODULE_DESCRIPTION("WM8350 Hardware Monitoring");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:wm8350-hwmon");
-diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
-index fe24079..9d662a5 100644
---- a/drivers/mfd/wm8350-core.c
-+++ b/drivers/mfd/wm8350-core.c
-@@ -1472,6 +1472,8 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
- 				   &(wm8350->codec.pdev));
- 	wm8350_client_dev_register(wm8350, "wm8350-gpio",
- 				   &(wm8350->gpio.pdev));
-+	wm8350_client_dev_register(wm8350, "wm8350-hwmon",
-+				   &(wm8350->hwmon.pdev));
- 	wm8350_client_dev_register(wm8350, "wm8350-power",
- 				   &(wm8350->power.pdev));
- 	wm8350_client_dev_register(wm8350, "wm8350-rtc", &(wm8350->rtc.pdev));
-@@ -1498,6 +1500,7 @@ void wm8350_device_exit(struct wm8350 *wm8350)
- 	platform_device_unregister(wm8350->wdt.pdev);
- 	platform_device_unregister(wm8350->rtc.pdev);
- 	platform_device_unregister(wm8350->power.pdev);
-+	platform_device_unregister(wm8350->hwmon.pdev);
- 	platform_device_unregister(wm8350->gpio.pdev);
- 	platform_device_unregister(wm8350->codec.pdev);
- 
-diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
-index 42cca67..969b0b5 100644
---- a/include/linux/mfd/wm8350/core.h
-+++ b/include/linux/mfd/wm8350/core.h
-@@ -605,6 +605,11 @@ struct wm8350_irq {
- 	void *data;
- };
- 
-+struct wm8350_hwmon {
-+	struct platform_device *pdev;
-+	struct device *classdev;
-+};
-+
- struct wm8350 {
- 	struct device *dev;
- 
-@@ -629,6 +634,7 @@ struct wm8350 {
- 	/* Client devices */
- 	struct wm8350_codec codec;
- 	struct wm8350_gpio gpio;
-+	struct wm8350_hwmon hwmon;
- 	struct wm8350_pmic pmic;
- 	struct wm8350_power power;
- 	struct wm8350_rtc rtc;
--- 
-1.6.3.3
+
+Once an option overlap the boolean binary range, it's better
+to start thinking about an enum type, for better self-explaining code.
+
+
+> +static void filter_free_subsystem_preds(struct event_subsystem *system,
+> +					int flag)
+>  {
+>  	struct ftrace_event_call *call;
+>  
+> @@ -428,6 +434,14 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
+>  		if (!call->define_fields)
+>  			continue;
+>  
+> +		if (flag == 1) {
+> +			call->filter->no_reset = false;
+> +			continue;
+> +		}
+> +
+> +		if (flag == 2 && call->filter->no_reset == true)
+
+
+
+Or simply if (flag == 2 && call->filter->no_reset)
+
+
+
+> +			continue;
+> +
+>  		if (!strcmp(call->system, system->name)) {
+>  			filter_disable_preds(call);
+>  			remove_filter_string(call->filter);
+> @@ -529,7 +543,8 @@ static filter_pred_fn_t select_comparison_fn(int op, int field_size,
+>  
+>  static int filter_add_pred(struct filter_parse_state *ps,
+>  			   struct ftrace_event_call *call,
+> -			   struct filter_pred *pred)
+> +			   struct filter_pred *pred,
+> +			   bool apply)
+
+
+bool dry_run sounds perhaps more intuitive for what is happening there.
+Because "apply" is surprising in a "add_thing" function, it's like
+a field to confirm that we know what what we are doing :)
+
+(May be I start to become a PITA with my naming worries, especially
+since I'm usually not good at it in my patches :)
+
+Otherwise, the rest looks good.
+
+Tom, any comment?
+
+
+
+>  {
+>  	struct ftrace_event_field *field;
+>  	filter_pred_fn_t fn;
+> @@ -541,10 +556,12 @@ static int filter_add_pred(struct filter_parse_state *ps,
+>  
+>  	if (pred->op == OP_AND) {
+>  		pred->pop_n = 2;
+> -		return filter_add_pred_fn(ps, call, pred, filter_pred_and);
+> +		fn = filter_pred_and;
+> +		goto add_pred_fn;
+>  	} else if (pred->op == OP_OR) {
+>  		pred->pop_n = 2;
+> -		return filter_add_pred_fn(ps, call, pred, filter_pred_or);
+> +		fn = filter_pred_or;
+> +		goto add_pred_fn;
+>  	}
+>  
+>  	field = find_event_field(call, pred->field_name);
+> @@ -567,9 +584,6 @@ static int filter_add_pred(struct filter_parse_state *ps,
+>  		else
+>  			fn = filter_pred_strloc;
+>  		pred->str_len = field->size;
+> -		if (pred->op == OP_NE)
+> -			pred->not = 1;
+> -		return filter_add_pred_fn(ps, call, pred, fn);
+>  	} else {
+>  		if (field->is_signed)
+>  			ret = strict_strtoll(pred->str_val, 0, &val);
+> @@ -580,27 +594,33 @@ static int filter_add_pred(struct filter_parse_state *ps,
+>  			return -EINVAL;
+>  		}
+>  		pred->val = val;
+> -	}
+>  
+> -	fn = select_comparison_fn(pred->op, field->size, field->is_signed);
+> -	if (!fn) {
+> -		parse_error(ps, FILT_ERR_INVALID_OP, 0);
+> -		return -EINVAL;
+> +		fn = select_comparison_fn(pred->op, field->size,
+> +					  field->is_signed);
+> +		if (!fn) {
+> +			parse_error(ps, FILT_ERR_INVALID_OP, 0);
+> +			return -EINVAL;
+> +		}
+>  	}
+>  
+>  	if (pred->op == OP_NE)
+>  		pred->not = 1;
+>  
+> -	return filter_add_pred_fn(ps, call, pred, fn);
+> +add_pred_fn:
+> +	if (apply)
+> +		return filter_add_pred_fn(ps, call, pred, fn);
+> +	return 0;
+>  }
+>  
+>  static int filter_add_subsystem_pred(struct filter_parse_state *ps,
+>  				     struct event_subsystem *system,
+>  				     struct filter_pred *pred,
+> -				     char *filter_string)
+> +				     char *filter_string,
+> +				     bool apply)
+>  {
+>  	struct ftrace_event_call *call;
+>  	int err = 0;
+> +	bool fail = true;
+>  
+>  	list_for_each_entry(call, &ftrace_events, list) {
+>  
+> @@ -610,16 +630,24 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
+>  		if (strcmp(call->system, system->name))
+>  			continue;
+>  
+> -		err = filter_add_pred(ps, call, pred);
+> -		if (err) {
+> -			filter_free_subsystem_preds(system);
+> -			parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
+> -			goto out;
+> -		}
+> -		replace_filter_string(call->filter, filter_string);
+> +		if (call->filter->no_reset)
+> +			continue;
+> +
+> +		err = filter_add_pred(ps, call, pred, apply);
+> +		if (err)
+> +			call->filter->no_reset = true;
+> +		else
+> +			fail = false;
+> +
+> +		if (apply)
+> +			replace_filter_string(call->filter, filter_string);
+>  	}
+> -out:
+> -	return err;
+> +
+> +	if (fail) {
+> +		parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
+> +		return err;
+> +	}
+> +	return 0;
+>  }
+>  
+>  static void parse_init(struct filter_parse_state *ps,
+> @@ -978,12 +1006,14 @@ static int check_preds(struct filter_parse_state *ps)
+>  static int replace_preds(struct event_subsystem *system,
+>  			 struct ftrace_event_call *call,
+>  			 struct filter_parse_state *ps,
+> -			 char *filter_string)
+> +			 char *filter_string,
+> +			 bool apply)
+>  {
+>  	char *operand1 = NULL, *operand2 = NULL;
+>  	struct filter_pred *pred;
+>  	struct postfix_elt *elt;
+>  	int err;
+> +	int n_preds = 0;
+>  
+>  	err = check_preds(ps);
+>  	if (err)
+> @@ -1002,19 +1032,14 @@ static int replace_preds(struct event_subsystem *system,
+>  			continue;
+>  		}
+>  
+> +		if (n_preds++ == MAX_FILTER_PRED) {
+> +			parse_error(ps, FILT_ERR_TOO_MANY_PREDS, 0);
+> +			return -ENOSPC;
+> +		}
+> +
+>  		if (elt->op == OP_AND || elt->op == OP_OR) {
+>  			pred = create_logical_pred(elt->op);
+> -			if (call)
+> -				err = filter_add_pred(ps, call, pred);
+> -			else
+> -				err = filter_add_subsystem_pred(ps, system,
+> -							pred, filter_string);
+> -			filter_free_pred(pred);
+> -			if (err)
+> -				return err;
+> -
+> -			operand1 = operand2 = NULL;
+> -			continue;
+> +			goto add_pred;
+>  		}
+>  
+>  		if (!operand1 || !operand2) {
+> @@ -1023,11 +1048,12 @@ static int replace_preds(struct event_subsystem *system,
+>  		}
+>  
+>  		pred = create_pred(elt->op, operand1, operand2);
+> +add_pred:
+>  		if (call)
+> -			err = filter_add_pred(ps, call, pred);
+> +			err = filter_add_pred(ps, call, pred, true);
+>  		else
+>  			err = filter_add_subsystem_pred(ps, system, pred,
+> -							filter_string);
+> +						filter_string, apply);
+>  		filter_free_pred(pred);
+>  		if (err)
+>  			return err;
+> @@ -1068,7 +1094,7 @@ int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
+>  		goto out;
+>  	}
+>  
+> -	err = replace_preds(NULL, call, ps, filter_string);
+> +	err = replace_preds(NULL, call, ps, filter_string, true);
+>  	if (err)
+>  		append_filter_err(ps, call->filter);
+>  
+> @@ -1092,7 +1118,7 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
+>  	mutex_lock(&event_mutex);
+>  
+>  	if (!strcmp(strstrip(filter_string), "0")) {
+> -		filter_free_subsystem_preds(system);
+> +		filter_free_subsystem_preds(system, 0);
+>  		remove_filter_string(system->filter);
+>  		mutex_unlock(&event_mutex);
+>  		return 0;
+> @@ -1103,7 +1129,6 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
+>  	if (!ps)
+>  		goto out_unlock;
+>  
+> -	filter_free_subsystem_preds(system);
+>  	replace_filter_string(system->filter, filter_string);
+>  
+>  	parse_init(ps, filter_ops, filter_string);
+> @@ -1113,9 +1138,23 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
+>  		goto out;
+>  	}
+>  
+> -	err = replace_preds(system, NULL, ps, filter_string);
+> -	if (err)
+> +	filter_free_subsystem_preds(system, 1);
+> +
+> +	/* try to see the filter can be applied to which events */
+> +	err = replace_preds(system, NULL, ps, filter_string, false);
+> +	if (err) {
+>  		append_filter_err(ps, system->filter);
+> +		goto out;
+> +	}
+> +
+> +	filter_free_subsystem_preds(system, 2);
+> +
+> +	/* really apply the filter to the events */
+> +	err = replace_preds(system, NULL, ps, filter_string, true);
+> +	if (err) {
+> +		append_filter_err(ps, system->filter);
+> +		filter_free_subsystem_preds(system, 2);
+> +	}
+>  
+>  out:
+>  	filter_opstack_clear(ps);
+> -- 
+> 1.6.3
+> 
+> 
+> 
+> 
 
