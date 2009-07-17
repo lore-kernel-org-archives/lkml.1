@@ -1,184 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964982AbZGQR2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934789AbZGQR2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964982AbZGQR2A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 13:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964973AbZGQR15
+	id S934789AbZGQR2a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 13:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964978AbZGQR23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 13:27:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49192 "EHLO mx2.redhat.com"
+	Fri, 17 Jul 2009 13:28:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49238 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964966AbZGQR1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 13:27:55 -0400
+	id S964881AbZGQR2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 13:28:25 -0400
 From: Izik Eidus <ieidus@redhat.com>
 To: akpm@linux-foundation.org
 Cc: hugh.dickins@tiscali.co.uk, aarcange@redhat.com, chrisw@redhat.com,
        avi@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au, ieidus@redhat.com
-Subject: [PATCH 01/10] ksm: add mmu_notifier set_pte_at_notify()
-Date: Fri, 17 Jul 2009 20:30:41 +0300
-Message-Id: <1247851850-4298-2-git-send-email-ieidus@redhat.com>
-In-Reply-To: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au, ieidus@redhat.com,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Ralf Baechle <ralf@linux-mips.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Helge Deller <deller@gmx.de>, Chris Zankel <chris@zankel.net>
+Subject: [PATCH 03/10] ksm: define MADV_MERGEABLE and MADV_UNMERGEABLE
+Date: Fri, 17 Jul 2009 20:30:43 +0300
+Message-Id: <1247851850-4298-4-git-send-email-ieidus@redhat.com>
+In-Reply-To: <1247851850-4298-3-git-send-email-ieidus@redhat.com>
 References: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-2-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-3-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Izik Eidus <ieidus@redhat.com>
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-The set_pte_at_notify() macro allows setting a pte in the shadow page
-table directly, instead of flushing the shadow page table entry and then
-getting vmexit to set it.  It uses a new change_pte() callback to do so.
+The out-of-tree KSM used ioctls on fds cloned from /dev/ksm to register
+a memory area for merging: we prefer now to use an madvise(2) interface.
 
-set_pte_at_notify() is an optimization for kvm, and other users of
-mmu_notifiers, for COW pages.  It is useful for kvm when ksm is used,
-because it allows kvm not to have to receive vmexit and only then map
-the ksm page into the shadow page table, but instead map it directly
-at the same time as Linux maps the page into the host page table.
+This patch just defines MADV_MERGEABLE (to tell KSM it may merge pages
+in this area found identical to pages in other mergeable areas) and
+MADV_UNMERGEABLE (to undo that).
 
-Users of mmu_notifiers who don't implement new mmu_notifier_change_pte()
-callback will just receive the mmu_notifier_invalidate_page() callback.
+Most architectures use asm-generic, but alpha, mips, parisc, xtensa
+need their own definitions: included here for mmotm convenience, but
+we'll probably want to split this and feed pieces to arch maintainers.
 
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
-Signed-off-by: Chris Wright <chrisw@redhat.com>
+Based upon earlier patches by Chris Wright and Izik Eidus.
+
 Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Signed-off-by: Chris Wright <chrisw@redhat.com>
+Signed-off-by: Izik Eidus <ieidus@redhat.com>
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Chris Zankel <chris@zankel.net>
 ---
- include/linux/mmu_notifier.h |   34 ++++++++++++++++++++++++++++++++++
- mm/memory.c                  |    9 +++++++--
- mm/mmu_notifier.c            |   20 ++++++++++++++++++++
- 3 files changed, 61 insertions(+), 2 deletions(-)
+ arch/alpha/include/asm/mman.h     |    3 +++
+ arch/mips/include/asm/mman.h      |    3 +++
+ arch/parisc/include/asm/mman.h    |    3 +++
+ arch/xtensa/include/asm/mman.h    |    3 +++
+ include/asm-generic/mman-common.h |    3 +++
+ 5 files changed, 15 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/mmu_notifier.h b/include/linux/mmu_notifier.h
-index b77486d..4e02ee2 100644
---- a/include/linux/mmu_notifier.h
-+++ b/include/linux/mmu_notifier.h
-@@ -62,6 +62,15 @@ struct mmu_notifier_ops {
- 				 unsigned long address);
+diff --git a/arch/alpha/include/asm/mman.h b/arch/alpha/include/asm/mman.h
+index 90d7c35..c77c557 100644
+--- a/arch/alpha/include/asm/mman.h
++++ b/arch/alpha/include/asm/mman.h
+@@ -48,6 +48,9 @@
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
  
- 	/*
-+	 * change_pte is called in cases that pte mapping to page is changed:
-+	 * for example, when ksm remaps pte to point to a new shared page.
-+	 */
-+	void (*change_pte)(struct mmu_notifier *mn,
-+			   struct mm_struct *mm,
-+			   unsigned long address,
-+			   pte_t pte);
++#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
++#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
 +
-+	/*
- 	 * Before this is invoked any secondary MMU is still ok to
- 	 * read/write to the page previously pointed to by the Linux
- 	 * pte because the page hasn't been freed yet and it won't be
-@@ -154,6 +163,8 @@ extern void __mmu_notifier_mm_destroy(struct mm_struct *mm);
- extern void __mmu_notifier_release(struct mm_struct *mm);
- extern int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
- 					  unsigned long address);
-+extern void __mmu_notifier_change_pte(struct mm_struct *mm,
-+				      unsigned long address, pte_t pte);
- extern void __mmu_notifier_invalidate_page(struct mm_struct *mm,
- 					  unsigned long address);
- extern void __mmu_notifier_invalidate_range_start(struct mm_struct *mm,
-@@ -175,6 +186,13 @@ static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
- 	return 0;
- }
+ /* compatibility flags */
+ #define MAP_FILE	0
  
-+static inline void mmu_notifier_change_pte(struct mm_struct *mm,
-+					   unsigned long address, pte_t pte)
-+{
-+	if (mm_has_notifiers(mm))
-+		__mmu_notifier_change_pte(mm, address, pte);
-+}
+diff --git a/arch/mips/include/asm/mman.h b/arch/mips/include/asm/mman.h
+index e4d6f1f..f15554d 100644
+--- a/arch/mips/include/asm/mman.h
++++ b/arch/mips/include/asm/mman.h
+@@ -71,6 +71,9 @@
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
+ 
++#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
++#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
 +
- static inline void mmu_notifier_invalidate_page(struct mm_struct *mm,
- 					  unsigned long address)
- {
-@@ -236,6 +254,16 @@ static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
- 	__young;							\
- })
+ /* compatibility flags */
+ #define MAP_FILE	0
  
-+#define set_pte_at_notify(__mm, __address, __ptep, __pte)		\
-+({									\
-+	struct mm_struct *___mm = __mm;					\
-+	unsigned long ___address = __address;				\
-+	pte_t ___pte = __pte;						\
-+									\
-+	set_pte_at(___mm, ___address, __ptep, ___pte);			\
-+	mmu_notifier_change_pte(___mm, ___address, ___pte);		\
-+})
+diff --git a/arch/parisc/include/asm/mman.h b/arch/parisc/include/asm/mman.h
+index defe752..a12d9d4 100644
+--- a/arch/parisc/include/asm/mman.h
++++ b/arch/parisc/include/asm/mman.h
+@@ -54,6 +54,9 @@
+ #define MADV_16M_PAGES  24              /* Use 16 Megabyte pages */
+ #define MADV_64M_PAGES  26              /* Use 64 Megabyte pages */
+ 
++#define MADV_MERGEABLE   65		/* KSM may merge identical pages */
++#define MADV_UNMERGEABLE 66		/* KSM may not merge identical pages */
 +
- #else /* CONFIG_MMU_NOTIFIER */
+ /* compatibility flags */
+ #define MAP_FILE	0
+ #define MAP_VARIABLE	0
+diff --git a/arch/xtensa/include/asm/mman.h b/arch/xtensa/include/asm/mman.h
+index 9b92620..6e55b4d 100644
+--- a/arch/xtensa/include/asm/mman.h
++++ b/arch/xtensa/include/asm/mman.h
+@@ -78,6 +78,9 @@
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
  
- static inline void mmu_notifier_release(struct mm_struct *mm)
-@@ -248,6 +276,11 @@ static inline int mmu_notifier_clear_flush_young(struct mm_struct *mm,
- 	return 0;
- }
- 
-+static inline void mmu_notifier_change_pte(struct mm_struct *mm,
-+					   unsigned long address, pte_t pte)
-+{
-+}
++#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
++#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
 +
- static inline void mmu_notifier_invalidate_page(struct mm_struct *mm,
- 					  unsigned long address)
- {
-@@ -273,6 +306,7 @@ static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
+ /* compatibility flags */
+ #define MAP_FILE	0
  
- #define ptep_clear_flush_young_notify ptep_clear_flush_young
- #define ptep_clear_flush_notify ptep_clear_flush
-+#define set_pte_at_notify set_pte_at
+diff --git a/include/asm-generic/mman-common.h b/include/asm-generic/mman-common.h
+index 3b69ad3..dd63bd3 100644
+--- a/include/asm-generic/mman-common.h
++++ b/include/asm-generic/mman-common.h
+@@ -35,6 +35,9 @@
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
  
- #endif /* CONFIG_MMU_NOTIFIER */
- 
-diff --git a/mm/memory.c b/mm/memory.c
-index 6521619..8159a62 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2113,9 +2113,14 @@ gotten:
- 		 * seen in the presence of one thread doing SMC and another
- 		 * thread doing COW.
- 		 */
--		ptep_clear_flush_notify(vma, address, page_table);
-+		ptep_clear_flush(vma, address, page_table);
- 		page_add_new_anon_rmap(new_page, vma, address);
--		set_pte_at(mm, address, page_table, entry);
-+		/*
-+		 * We call the notify macro here because, when using secondary
-+		 * mmu page tables (such as kvm shadow page tables), we want the
-+		 * new page to be mapped directly into the secondary page table.
-+		 */
-+		set_pte_at_notify(mm, address, page_table, entry);
- 		update_mmu_cache(vma, address, entry);
- 		if (old_page) {
- 			/*
-diff --git a/mm/mmu_notifier.c b/mm/mmu_notifier.c
-index 5f4ef02..7e33f2c 100644
---- a/mm/mmu_notifier.c
-+++ b/mm/mmu_notifier.c
-@@ -99,6 +99,26 @@ int __mmu_notifier_clear_flush_young(struct mm_struct *mm,
- 	return young;
- }
- 
-+void __mmu_notifier_change_pte(struct mm_struct *mm, unsigned long address,
-+			       pte_t pte)
-+{
-+	struct mmu_notifier *mn;
-+	struct hlist_node *n;
++#define MADV_MERGEABLE   12		/* KSM may merge identical pages */
++#define MADV_UNMERGEABLE 13		/* KSM may not merge identical pages */
 +
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(mn, n, &mm->mmu_notifier_mm->list, hlist) {
-+		if (mn->ops->change_pte)
-+			mn->ops->change_pte(mn, mm, address, pte);
-+		/*
-+		 * Some drivers don't have change_pte,
-+		 * so we must call invalidate_page in that case.
-+		 */
-+		else if (mn->ops->invalidate_page)
-+			mn->ops->invalidate_page(mn, mm, address);
-+	}
-+	rcu_read_unlock();
-+}
-+
- void __mmu_notifier_invalidate_page(struct mm_struct *mm,
- 					  unsigned long address)
- {
+ /* compatibility flags */
+ #define MAP_FILE	0
+ 
 -- 
 1.5.6.5
 
