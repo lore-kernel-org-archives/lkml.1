@@ -1,129 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934794AbZGQR2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964985AbZGQR3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934794AbZGQR2x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 13:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964966AbZGQR16
+	id S964985AbZGQR3L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 13:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934798AbZGQR3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 13:27:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49193 "EHLO mx2.redhat.com"
+	Fri, 17 Jul 2009 13:29:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49261 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964959AbZGQR1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 13:27:55 -0400
+	id S934796AbZGQR3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 13:29:05 -0400
 From: Izik Eidus <ieidus@redhat.com>
 To: akpm@linux-foundation.org
 Cc: hugh.dickins@tiscali.co.uk, aarcange@redhat.com, chrisw@redhat.com,
        avi@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au, ieidus@redhat.com
-Subject: [PATCH 02/10] ksm: first tidy up madvise_vma()
-Date: Fri, 17 Jul 2009 20:30:42 +0300
-Message-Id: <1247851850-4298-3-git-send-email-ieidus@redhat.com>
-In-Reply-To: <1247851850-4298-2-git-send-email-ieidus@redhat.com>
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au, ieidus@redhat.com,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: [PATCH 06/10] ksm: identify PageKsm pages
+Date: Fri, 17 Jul 2009 20:30:46 +0300
+Message-Id: <1247851850-4298-7-git-send-email-ieidus@redhat.com>
+In-Reply-To: <1247851850-4298-6-git-send-email-ieidus@redhat.com>
 References: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
  <1247851850-4298-2-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-3-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-4-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-5-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-6-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-madvise.c has several levels of switch statements, what to do in which?
-Move MADV_DOFORK code down from madvise_vma() to madvise_behavior(), so
-madvise_vma() can be a simple router, to madvise_behavior() by default.
+KSM will need to identify its kernel merged pages unambiguously,
+and /proc/kpageflags will probably like to do so too.
 
-vma->vm_flags is an unsigned long so use the same type for new_flags.
-Add missing comment lines to describe MADV_DONTFORK and MADV_DOFORK.
+Since KSM will only be substituting anonymous pages, statistics are
+best preserved by making a PageKsm page a special PageAnon page:
+one with no anon_vma.
+
+But KSM then needs its own page_add_ksm_rmap() - keep it in ksm.h near
+PageKsm; and do_wp_page() must COW them, unlike singly mapped PageAnons.
 
 Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 Signed-off-by: Chris Wright <chrisw@redhat.com>
 Signed-off-by: Izik Eidus <ieidus@redhat.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/madvise.c |   39 +++++++++++++--------------------------
- 1 files changed, 13 insertions(+), 26 deletions(-)
+ fs/proc/page.c      |    5 +++++
+ include/linux/ksm.h |   29 +++++++++++++++++++++++++++++
+ mm/memory.c         |    3 ++-
+ 3 files changed, 36 insertions(+), 1 deletions(-)
 
-diff --git a/mm/madvise.c b/mm/madvise.c
-index 76eb419..66c3126 100644
---- a/mm/madvise.c
-+++ b/mm/madvise.c
-@@ -41,7 +41,7 @@ static long madvise_behavior(struct vm_area_struct * vma,
- 	struct mm_struct * mm = vma->vm_mm;
- 	int error = 0;
- 	pgoff_t pgoff;
--	int new_flags = vma->vm_flags;
-+	unsigned long new_flags = vma->vm_flags;
+diff --git a/fs/proc/page.c b/fs/proc/page.c
+index 2707c6c..2281c2c 100644
+--- a/fs/proc/page.c
++++ b/fs/proc/page.c
+@@ -2,6 +2,7 @@
+ #include <linux/compiler.h>
+ #include <linux/fs.h>
+ #include <linux/init.h>
++#include <linux/ksm.h>
+ #include <linux/mm.h>
+ #include <linux/mmzone.h>
+ #include <linux/proc_fs.h>
+@@ -95,6 +96,8 @@ static const struct file_operations proc_kpagecount_operations = {
+ #define KPF_UNEVICTABLE		18
+ #define KPF_NOPAGE		20
  
- 	switch (behavior) {
- 	case MADV_NORMAL:
-@@ -57,6 +57,10 @@ static long madvise_behavior(struct vm_area_struct * vma,
- 		new_flags |= VM_DONTCOPY;
- 		break;
- 	case MADV_DOFORK:
-+		if (vma->vm_flags & VM_IO) {
-+			error = -EINVAL;
-+			goto out;
-+		}
- 		new_flags &= ~VM_DONTCOPY;
- 		break;
- 	}
-@@ -211,37 +215,16 @@ static long
- madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
- 		unsigned long start, unsigned long end, int behavior)
- {
--	long error;
--
- 	switch (behavior) {
--	case MADV_DOFORK:
--		if (vma->vm_flags & VM_IO) {
--			error = -EINVAL;
--			break;
--		}
--	case MADV_DONTFORK:
--	case MADV_NORMAL:
--	case MADV_SEQUENTIAL:
--	case MADV_RANDOM:
--		error = madvise_behavior(vma, prev, start, end, behavior);
--		break;
- 	case MADV_REMOVE:
--		error = madvise_remove(vma, prev, start, end);
--		break;
--
-+		return madvise_remove(vma, prev, start, end);
- 	case MADV_WILLNEED:
--		error = madvise_willneed(vma, prev, start, end);
--		break;
--
-+		return madvise_willneed(vma, prev, start, end);
- 	case MADV_DONTNEED:
--		error = madvise_dontneed(vma, prev, start, end);
--		break;
--
-+		return madvise_dontneed(vma, prev, start, end);
- 	default:
--		BUG();
--		break;
-+		return madvise_behavior(vma, prev, start, end, behavior);
- 	}
--	return error;
- }
++#define KPF_KSM			21
++
+ /* kernel hacking assistances
+  * WARNING: subject to change, never rely on them!
+  */
+@@ -137,6 +140,8 @@ static u64 get_uflags(struct page *page)
+ 		u |= 1 << KPF_MMAP;
+ 	if (PageAnon(page))
+ 		u |= 1 << KPF_ANON;
++	if (PageKsm(page))
++		u |= 1 << KPF_KSM;
  
- static int
-@@ -262,6 +245,7 @@ madvise_behavior_valid(int behavior)
- 		return 0;
- 	}
+ 	/*
+ 	 * compound pages: export both head/tail info
+diff --git a/include/linux/ksm.h b/include/linux/ksm.h
+index eb2a448..a485c14 100644
+--- a/include/linux/ksm.h
++++ b/include/linux/ksm.h
+@@ -10,6 +10,7 @@
+ #include <linux/bitops.h>
+ #include <linux/mm.h>
+ #include <linux/sched.h>
++#include <linux/vmstat.h>
+ 
+ #ifdef CONFIG_KSM
+ int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
+@@ -29,6 +30,27 @@ static inline void ksm_exit(struct mm_struct *mm)
+ 	if (test_bit(MMF_VM_MERGEABLE, &mm->flags))
+ 		__ksm_exit(mm);
  }
 +
- /*
-  * The madvise(2) system call.
-  *
-@@ -286,6 +270,9 @@ madvise_behavior_valid(int behavior)
-  *		so the kernel can free resources associated with it.
-  *  MADV_REMOVE - the application wants to free up the given range of
-  *		pages and associated backing store.
-+ *  MADV_DONTFORK - omit this area from child's address space when forking:
-+ *		typically, to avoid COWing pages pinned by get_user_pages().
-+ *  MADV_DOFORK - cancel MADV_DONTFORK: no longer omit this area when forking.
-  *
-  * return values:
-  *  zero    - success
++/*
++ * A KSM page is one of those write-protected "shared pages" or "merged pages"
++ * which KSM maps into multiple mms, wherever identical anonymous page content
++ * is found in VM_MERGEABLE vmas.  It's a PageAnon page, with NULL anon_vma.
++ */
++static inline int PageKsm(struct page *page)
++{
++	return ((unsigned long)page->mapping == PAGE_MAPPING_ANON);
++}
++
++/*
++ * But we have to avoid the checking which page_add_anon_rmap() performs.
++ */
++static inline void page_add_ksm_rmap(struct page *page)
++{
++	if (atomic_inc_and_test(&page->_mapcount)) {
++		page->mapping = (void *) PAGE_MAPPING_ANON;
++		__inc_zone_page_state(page, NR_ANON_PAGES);
++	}
++}
+ #else  /* !CONFIG_KSM */
+ 
+ static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
+@@ -45,6 +67,13 @@ static inline int ksm_fork(struct mm_struct *mm, struct mm_struct *oldmm)
+ static inline void ksm_exit(struct mm_struct *mm)
+ {
+ }
++
++static inline int PageKsm(struct page *page)
++{
++	return 0;
++}
++
++/* No stub required for page_add_ksm_rmap(page) */
+ #endif /* !CONFIG_KSM */
+ 
+ #endif
+diff --git a/mm/memory.c b/mm/memory.c
+index 8b1922c..6707072 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -45,6 +45,7 @@
+ #include <linux/swap.h>
+ #include <linux/highmem.h>
+ #include <linux/pagemap.h>
++#include <linux/ksm.h>
+ #include <linux/rmap.h>
+ #include <linux/module.h>
+ #include <linux/delayacct.h>
+@@ -1972,7 +1973,7 @@ static int do_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	 * Take out anonymous pages first, anonymous shared vmas are
+ 	 * not dirty accountable.
+ 	 */
+-	if (PageAnon(old_page)) {
++	if (PageAnon(old_page) && !PageKsm(old_page)) {
+ 		if (!trylock_page(old_page)) {
+ 			page_cache_get(old_page);
+ 			pte_unmap_unlock(page_table, ptl);
 -- 
 1.5.6.5
 
