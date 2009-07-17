@@ -1,120 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934064AbZGQClE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934076AbZGQClT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934064AbZGQClE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 22:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934016AbZGQClE
+	id S934076AbZGQClT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 22:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934068AbZGQClS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 22:41:04 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55248 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934015AbZGQClC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 22:41:02 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 17 Jul 2009 11:39:11 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: David Rientjes <rientjes@google.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Miao Xie <miaox@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
-Message-Id: <20090717113911.c49395ae.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090717104512.A914.A69D9226@jp.fujitsu.com>
-References: <20090717090003.A903.A69D9226@jp.fujitsu.com>
-	<20090717095745.1d3039b1.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090717104512.A914.A69D9226@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 16 Jul 2009 22:41:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37036 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934067AbZGQClR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 22:41:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Lu, Guanqun" <guanqun.lu@intel.com>
+Subject: Re: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
+Date: Fri, 17 Jul 2009 04:41:46 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, "jeremy@goop.org" <jeremy@goop.org>
+References: <1247834204-3084-1-git-send-email-guanqun.lu@intel.com> <200907170352.11749.rjw@sisk.pl> <8FED46E8A9CA574792FC7AACAC38FE7701E6EA157E@PDSMSX501.ccr.corp.intel.com>
+In-Reply-To: <8FED46E8A9CA574792FC7AACAC38FE7701E6EA157E@PDSMSX501.ccr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907170441.47373.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Jul 2009 11:07:09 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> > On Fri, 17 Jul 2009 09:04:46 +0900 (JST)
-> > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > 
-> > > > On Wed, 15 Jul 2009, Lee Schermerhorn wrote:
-> > > > 
-> > > > > Interestingly, on ia64, the top cpuset mems_allowed gets set to all
-> > > > > possible nodes, while on x86_64, it gets set to on-line nodes [or nodes
-> > > > > with memory].  Maybe this is a to support hot-plug?
-> > > > > 
-> > > > 
-> > > > numactl --interleave=all simply passes a nodemask with all bits set, so if 
-> > > > cpuset_current_mems_allowed includes offline nodes from node_possible_map, 
-> > > > then mpol_set_nodemask() doesn't mask them off.
-> > > > 
-> > > > Seems like we could handle this strictly in mempolicies without worrying 
-> > > > about top_cpuset like in the following?
-> > > 
-> > > This patch seems band-aid patch. it will change memory-hotplug behavior.
-> > > Please imazine following scenario:
-> > > 
-> > > 1. numactl interleave=all process-A
-> > > 2. memory hot-add
-> > > 
-> > > before 2.6.30:
-> > > 		-> process-A can use hot-added memory
-> > > 
-> > > your proposal patch:
-> > > 		-> process-A can't use hot-added memory
-> > > 
-> > 
-> > IMHO, the application itseld should be notifed to change its mempolicy by
-> > hot-plug script on the host. While an application uses interleave, a new node
-> > hot-added is just a noise. I think "How pages are interleaved" should not be
-> > changed implicitly. Then, checking at set_mempolicy() seems sane. If notified,
-> > application can do page migration and rebuild his mapping in ideal way.
+On Friday 17 July 2009, Lu, Guanqun wrote:
+> >-----Original Message-----
+> >From: Rafael J. Wysocki [mailto:rjw@sisk.pl]
+> >Sent: Friday, July 17, 2009 9:52 AM
+> >To: Lu, Guanqun
+> >Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; jeremy@goop.org
+> >Subject: Re: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
+> >
+> >On Friday 17 July 2009, Guanqun Lu wrote:
+> >> We currently only bypass IRQF_TIMER in '__disable_irq',
+> >> but Xen specific IRQs should not be disabled either.
+> >> This commit adds a new flag to accompolish this goal
+> >> without being mixed up with IRQF_TIMER flag.
+> >
+> >For some obscure reasons [2/3] didn't reach my inbox.  The other 2 patches
+> >look fine to me.
 > 
-> Do you really want ABI change?
-> 
-No ;_
+> I'm sending patch [2/3] via attachment in case it's lost accidentally by git-send-email again.
+> Sorry for the inconvenience it may cause.
 
-Hmm, IIUC, current handling of nodemask of mempolicy is below.
-There should be 3 masks.
-  - systems's N_HIGH_MEMORY
-  - the mask user specified via mempolicy() (remembered only when MPOL_F_RELATIVE
-  - cpusets's one
+Thanks, patch looks OK to me.
 
-And pol->v.nodes is just a _cache_ of logical-and of aboves.
-Synchronization with cpusets is guaranteed by cpuset's generation.
-Synchronization with N_HIGH_MEMORY should be guaranteed by memory hotplug
-notifier, but this is not implemented yet.
-
-Then, what I can tell here is...
- - remember what's user requested. (only when MPOL_F_RELATIVE_NODES ?)
- - add notifiers for memory hot-add. (only when MPOL_F_RELATIVE_NODES ?)
- - add notifiers for memory hot-remove (both MPOL_F_STATIC/RELATIVE_NODES ?)
-
-IMHO, for cpusets, don't calculate v.nodes again if MPOL_F_STATIC is good.
-But for N_HIGH_MEMORY, v.nodes should be caluculated even if MPOL_F_STATIC is set.
-
-Then, I think the mask user passed should be remembered even if MPOL_F_STATIC is
-set and v.nodes should work as cache and should be updated in appropriate way.
-
-Thanks,
--Kame
+Best,
+Rafael
 
 
-
-
-
-
-
-
-
-
-
-
+> >> Signed-off-by: Guanqun Lu <guanqun.lu@intel.com>
+> >> ---
+> >>  include/linux/interrupt.h |    1 +
+> >>  kernel/irq/manage.c       |    3 ++-
+> >>  2 files changed, 3 insertions(+), 1 deletions(-)
+> >>
+> >> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+> >> index 2721f07..99264c3 100644
+> >> --- a/include/linux/interrupt.h
+> >> +++ b/include/linux/interrupt.h
+> >> @@ -58,6 +58,7 @@
+> >>  #define IRQF_PERCPU		0x00000400
+> >>  #define IRQF_NOBALANCING	0x00000800
+> >>  #define IRQF_IRQPOLL		0x00001000
+> >> +#define IRQF_NO_SUSPEND		0x00002000
+> >>
+> >>  /*
+> >>   * Bits used by threaded handlers:
+> >> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> >> index 50da676..3dc4e74 100644
+> >> --- a/kernel/irq/manage.c
+> >> +++ b/kernel/irq/manage.c
+> >> @@ -192,7 +192,8 @@ static inline int setup_affinity(unsigned int irq, struct irq_desc
+> >*desc)
+> >>  void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+> >>  {
+> >>  	if (suspend) {
+> >> -		if (!desc->action || (desc->action->flags & IRQF_TIMER))
+> >> +		if (!desc->action ||
+> >> +		    (desc->action->flags & (IRQF_TIMER | IRQF_NO_SUSPEND)))
+> >>  			return;
+> >>  		desc->status |= IRQ_SUSPENDED;
+> >>  	}
