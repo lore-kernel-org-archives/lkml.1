@@ -1,133 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933403AbZGQFnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933628AbZGQFwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933403AbZGQFnq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 01:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932899AbZGQFnp
+	id S933628AbZGQFwM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 01:52:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933476AbZGQFwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 01:43:45 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42160 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932850AbZGQFno (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 01:43:44 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH 1/3] Rename pgmoved variable in shrink_active_list()
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <20090716173249.GB2267@cmpxchg.org>
-References: <20090716095119.9D0A.A69D9226@jp.fujitsu.com> <20090716173249.GB2267@cmpxchg.org>
-Message-Id: <20090717091920.A90C.A69D9226@jp.fujitsu.com>
+	Fri, 17 Jul 2009 01:52:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45367 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933463AbZGQFwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 01:52:11 -0400
+Message-ID: <4A601145.8090605@kernel.org>
+Date: Fri, 17 Jul 2009 14:51:01 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH #tj-block-for-linus] block: fix failfast merge testing
+ in elv_rq_merge_ok()
+References: <4A5ECC62.7050607@kernel.org> <4A5EDD81.6060409@panasas.com> <4A5EDF90.7090900@kernel.org> <4A5EE2BD.8030100@panasas.com> <4A5EE63F.9050205@kernel.org> <4A5EE977.5070400@panasas.com>
+In-Reply-To: <4A5EE977.5070400@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 17 Jul 2009 14:43:37 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 17 Jul 2009 05:51:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, Jul 16, 2009 at 09:52:34AM +0900, KOSAKI Motohiro wrote:
-> > Subject: [PATCH] Rename pgmoved variable in shrink_active_list()
-> > 
-> > Currently, pgmoved variable have two meanings. it cause harder reviewing a bit.
-> > This patch separate it.
-> > 
-> > 
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Boaz Harrosh wrote:
+> On 07/16/2009 11:35 AM, Tejun Heo wrote:
+>> Boaz Harrosh wrote:
+>>> OK So could you put a FIXME: and fat comment, on that weird "!"(s)
+>>> everywhere?
+>> Yeap, sure.  How about something like the following?
+>>
+>> 	/*
+>> 	 * Don't merge if failfast settings don't match.  The negation
 > 
-> Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
-> 
-> Below are just minor suggestions regarding the changed code.
-> 
-> > ---
-> >  mm/vmscan.c |   16 ++++++++--------
-> >  1 file changed, 8 insertions(+), 8 deletions(-)
-> > 
-> > Index: b/mm/vmscan.c
-> > ===================================================================
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -1239,7 +1239,7 @@ static void move_active_pages_to_lru(str
-> >  static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
-> >  			struct scan_control *sc, int priority, int file)
-> >  {
-> > -	unsigned long pgmoved;
-> > +	unsigned long nr_taken;
-> >  	unsigned long pgscanned;
-> >  	unsigned long vm_flags;
-> >  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-> > @@ -1247,10 +1247,11 @@ static void shrink_active_list(unsigned 
-> >  	LIST_HEAD(l_inactive);
-> >  	struct page *page;
-> >  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-> > +	unsigned long nr_rotated = 0;
-> >  
-> >  	lru_add_drain();
-> >  	spin_lock_irq(&zone->lru_lock);
-> > -	pgmoved = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
-> > +	nr_taken = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
-> >  					ISOLATE_ACTIVE, zone,
-> >  					sc->mem_cgroup, 1, file);
-> >  	/*
-> > @@ -1260,16 +1261,15 @@ static void shrink_active_list(unsigned 
-> >  	if (scanning_global_lru(sc)) {
-> >  		zone->pages_scanned += pgscanned;
-> >  	}
-> > -	reclaim_stat->recent_scanned[!!file] += pgmoved;
-> > +	reclaim_stat->recent_scanned[!!file] += nr_taken;
-> 
-> Hm, file is a boolean already, the double negation can probably be
-> dropped.
-> 
-> >  	__count_zone_vm_events(PGREFILL, zone, pgscanned);
-> >  	if (file)
-> > -		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
-> > +		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -nr_taken);
-> >  	else
-> > -		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -pgmoved);
-> > +		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -nr_taken);
-> 
-> Should perhaps be in another patch, but we could use
-> 
-> 	__mod_zone_page_state(zone, LRU_ACTIVE + file * LRU_FILE);
-> 
-> like in the call to move_active_pages_to_lru().
->
-> >  	spin_unlock_irq(&zone->lru_lock);
-> >  
-> > -	pgmoved = 0;  /* count referenced (mapping) mapped pages */
-> >  	while (!list_empty(&l_hold)) {
-> >  		cond_resched();
-> >  		page = lru_to_page(&l_hold);
-> > @@ -1283,7 +1283,7 @@ static void shrink_active_list(unsigned 
-> >  		/* page_referenced clears PageReferenced */
-> >  		if (page_mapping_inuse(page) &&
-> >  		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
-> > -			pgmoved++;
-> > +			nr_rotated++;
-> >  			/*
-> >  			 * Identify referenced, file-backed active pages and
-> >  			 * give them one more trip around the active list. So
-> > @@ -1312,7 +1312,7 @@ static void shrink_active_list(unsigned 
-> >  	 * helps balance scan pressure between file and anonymous pages in
-> >  	 * get_scan_ratio.
-> >  	 */
-> > -	reclaim_stat->recent_rotated[!!file] += pgmoved;
-> > +	reclaim_stat->recent_rotated[!!file] += nr_rotated;
-> 
-> file is boolean.
-> 
-> There is one more double negation in isolate_pages_global() that can
-> be dropped as well.  If you agree, I can submit all those changes in
-> separate patches.
+> - 	 * Don't merge if failfast settings don't match.  The negation
+> + 	 * Don't merge if failfast settings don't match.
+> +	 * FIXME:   The negation ...
 
-Yeah, thanks please. 
+So updated.  Thanks.
 
-
-
+-- 
+tejun
