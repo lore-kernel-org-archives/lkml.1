@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964941AbZGQQon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964954AbZGQQsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964941AbZGQQon (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 12:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964917AbZGQQon
+	id S964954AbZGQQsQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 12:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964939AbZGQQsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 12:44:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58673 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964884AbZGQQom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 12:44:42 -0400
-Date: Fri, 17 Jul 2009 18:43:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Catalin Marinas <catalin.marinas@arm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] kmemleak: Scan all thread stacks
-Message-ID: <20090717164346.GC5131@elte.hu>
-References: <20090717093359.8288.45464.stgit@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090717093359.8288.45464.stgit@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 17 Jul 2009 12:48:15 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45773 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934732AbZGQQsO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 12:48:14 -0400
+Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting of frozen
+ tasks really
+From: Peter Zijlstra <peterz@infradead.org>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, Nathan Lynch <ntl@pobox.com>,
+       Nigel Cunningham <nigel@tuxonice.net>, stable@kernel.org,
+       containers@lists.linux-foundation.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <20090717152235.GA5878@count0.beaverton.ibm.com>
+References: <20090717121545.489258927@linutronix.de>
+	 <20090717122103.225652146@linutronix.de> <1247833910.15751.61.camel@twins>
+	 <20090717152235.GA5878@count0.beaverton.ibm.com>
+Content-Type: text/plain
+Date: Fri, 17 Jul 2009 18:47:34 +0200
+Message-Id: <1247849254.6522.75.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-07-17 at 08:22 -0700, Matt Helsley wrote:
 
-* Catalin Marinas <catalin.marinas@arm.com> wrote:
+> The job scheduler in question does not use FROZEN as a transient state and
+> does not use checkpoint/restart at all since c/r is still a work in progress.
+> Even when used for power management it seems wrong to count frozen tasks
+> towards the loadavg since they aren't using CPU time or waiting for IO.
 
-> This patch changes the for_each_process() loop with the
-> do_each_thread()/while_each_thread() pair. It also replaces the
-> read_lock(&tasklist_lock) with rcu_read_lock() and task_lock(p).
-> 
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> ---
-> 
-> My questions:
-> 
-> 1. Is it correct that for_each_process() used currently by kmemleak may
->    not loop through all the possible kernel thread stacks?
-
-yes. You need the full, all tasks variant:
-
-        do_each_thread(g, p) {
-        ...
-        } while_each_thread(g, p);
+You're abusing it for _WHAT_?
 
 
-> 2. Is it safe to use rcu_read_lock() and task_lock() when scanning the
->    corresponding kernel stack (thread_info structure)? The loop doesn't
->    do any modification to the task list. The reason for this is to
->    allow kernel preemption when scanning the stacks.
 
-you cannot generally preempt while holding the RCU read-lock.
-
-	Ingo
