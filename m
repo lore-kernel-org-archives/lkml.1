@@ -1,91 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbZGQXd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbZGQXiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758004AbZGQXd7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 19:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755128AbZGQXd6
+	id S1758049AbZGQXiK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 19:38:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758002AbZGQXiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 19:33:58 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46706 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754836AbZGQXd6 (ORCPT
+	Fri, 17 Jul 2009 19:38:08 -0400
+Received: from elasmtp-masked.atl.sa.earthlink.net ([209.86.89.68]:52487 "EHLO
+	elasmtp-masked.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751809AbZGQXiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 19:33:58 -0400
-Date: Fri, 17 Jul 2009 19:33:55 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Noah Watkins <jayhawk@soe.ucsc.edu>
-cc: LKML <linux-kernel@vger.kernel.org>, srostedt@redhat.com
-Subject: Re: [ANNOUNCE][RFC] trace-cmd - command line reader for ftrace
-In-Reply-To: <20090717174523.GA14502@martini>
-Message-ID: <alpine.DEB.2.00.0907171932170.9337@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0907171009050.9337@gandalf.stny.rr.com> <20090717174523.GA14502@martini>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 17 Jul 2009 19:38:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=OGT/hzRDdlqDcCMiJldFAwweSZfjKHFdGYtBqgIh77qkNHcghlFqndH4rddiqpbv;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Fri, 17 Jul 2009 19:38:02 -0400
+From: Bill Fink <billfink@mindspring.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Jesper Dangaard Brouer <hawk@comx.dk>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Robert Olsson <Robert.Olsson@data.slu.se>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>, jesse.brandeburg@intel.com,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Achieved 10Gbit/s bidirectional routing
+Message-Id: <20090717193802.3cb36d9d.billfink@mindspring.com>
+In-Reply-To: <20090717203546.GA31259@1wt.eu>
+References: <1247676631.30876.29.camel@localhost.localdomain>
+	<20090715232253.91d9f264.billfink@mindspring.com>
+	<1247737144.30876.53.camel@localhost.localdomain>
+	<20090716113827.19fbb379.billfink@mindspring.com>
+	<20090717203546.GA31259@1wt.eu>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4df2f2f4e2d15c532d1064e3720a1f24bc350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 71.127.147.41
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 17 Jul 2009, Willy Tarreau wrote:
 
-
-On Fri, 17 Jul 2009, Noah Watkins wrote:
-
-> root@martini:~/Projects/trace-cmd# ./trace-cmd record -p function_graph ls /bin
->   plugin function_graph
-> bash	 bzip2recover  dash		     dumpkeys	 gunzip     login
-> <... directory listing pruned ...>
-> ntfs-3g.probe	rm	  stty	      uname	       zforce
-> *** glibc detected *** ./trace-cmd: malloc(): memory corruption (fast):
-
-Was this on the trace-cmd record or report? If it was the record, do not 
-use function_graph with "optimize_for_size", there's a known issue on
-x86_32 with that option that gcc breaks the function graph tracer.
-
-Try one of the other trace plugins, and if you still have issues, let
-me know. Also, I just updated the code, because I found a bug in the 
-reporting on 32bit archs.
-
--- Steve
-
-
-
-> 0x09c70038 ***
-> ======= Backtrace: =========
-> /lib/tls/i686/cmov/libc.so.6[0xb7efa604]
-> /lib/tls/i686/cmov/libc.so.6[0xb7efd5b6]
-> /lib/tls/i686/cmov/libc.so.6(__libc_malloc+0x95)[0xb7efe9c5]
-> ./trace-cmd[0x804948a]
-> ./trace-cmd[0x804963f]
-> ./trace-cmd[0x804b06e]
-> ./trace-cmd[0x804b84f]
-> /lib/tls/i686/cmov/libc.so.6(__libc_start_main+0xe5)[0xb7ea1775]
-> ./trace-cmd[0x8049191]
-> ======= Memory map: ========
-> 08048000-08054000 r-xp 00000000 08:08 62598
-> /home/nwatkins/Projects/trace-cmd/trace-cmd
-> 08054000-08055000 r--p 0000b000 08:08 62598
-> /home/nwatkins/Projects/trace-cmd/trace-cmd
-> 08055000-08056000 rw-p 0000c000 08:08 62598
-> /home/nwatkins/Projects/trace-cmd/trace-cmd
-> 09c70000-09c91000 rw-p 00000000 00:00 0          [heap]
-> b7d00000-b7d21000 rw-p 00000000 00:00 0 
-> b7d21000-b7e00000 ---p 00000000 00:00 0 
-> b7e8a000-b7e8b000 rw-p 00000000 00:00 0 
-> b7e8b000-b7fe7000 r-xp 00000000 08:07 6174       /lib/tls/i686/cmov/libc-2.9.so
-> b7fe7000-b7fe8000 ---p 0015c000 08:07 6174       /lib/tls/i686/cmov/libc-2.9.so
-> b7fe8000-b7fea000 r--p 0015c000 08:07 6174       /lib/tls/i686/cmov/libc-2.9.so
-> b7fea000-b7feb000 rw-p 0015e000 08:07 6174       /lib/tls/i686/cmov/libc-2.9.so
-> b7feb000-b7fee000 rw-p 00000000 00:00 0 
-> b7ff2000-b7fff000 r-xp 00000000 08:07 2596       /lib/libgcc_s.so.1
-> b7fff000-b8000000 r--p 0000c000 08:07 2596       /lib/libgcc_s.so.1
-> b8000000-b8001000 rw-p 0000d000 08:07 2596       /lib/libgcc_s.so.1
-> b8001000-b8004000 rw-p 00000000 00:00 0 
-> b8004000-b8005000 r-xp 00000000 00:00 0          [vdso]
-> b8005000-b8021000 r-xp 00000000 08:07 2554       /lib/ld-2.9.so
-> b8021000-b8022000 r--p 0001b000 08:07 2554       /lib/ld-2.9.so
-> b8022000-b8023000 rw-p 0001c000 08:07 2554       /lib/ld-2.9.so
-> bfb81000-bfb96000 rw-p 00000000 00:00 0          [stack]
-> Aborted
-> root@martini:~/Projects/trace-cmd# 
+> On Thu, Jul 16, 2009 at 11:38:27AM -0400, Bill Fink wrote:
 > 
+> > We also achieved nearly 80 Gbps in bidirectional TCP tests (40 Gbps
+> > simultaneously in each direction):
+> > 
+> > [root@i7raid-1 ~]# ./nuttcp-6.2.6 -In2 -xc0/0 -p5001 192.168.1.11 & ./nuttcp-6.2.6 -In3 -r -xc0/0 -p5002 192.168.2.11 & ./nuttcp-6.2.6 -In4 -xc1/1 -p5003 192.168.3.11 & ./nuttcp-6.2.6 -In5 -r -xc1/1 -p5004 192.168.4.11 & ./nuttcp-6.2.6 -In6 -xc2/2 -p5005 192.168.5.11 & ./nuttcp-6.2.6 -In7 -r -xc2/2 -p5006 192.168.6.11 & ./nuttcp-6.2.6 -In8 -xc3/3 -p5007 192.168.7.11 & ./nuttcp-6.2.6 -In9 -r -xc3/3 -p5008 192.168.8.11                                    
+> > n2: 11542.6250 MB /  10.07 sec = 9619.9920 Mbps 44 %TX 51 %RX 0 retrans 0.12 msRTT                                                                      
+> > n3: 11543.7143 MB /  10.06 sec = 9622.2153 Mbps 41 %TX 49 %RX 0 retrans 0.15 msRTT                                                   
+> > n4: 11622.8125 MB /  10.05 sec = 9701.0296 Mbps 43 %TX 51 %RX 0 retrans 0.10 msRTT                                                                      
+> > n5: 11523.6875 MB /  10.03 sec = 9638.8883 Mbps 43 %TX 50 %RX 0 retrans 0.15 msRTT                                                                      
+> > n6: 11608.0141 MB /  10.04 sec = 9695.7388 Mbps 43 %TX 50 %RX 0 retrans 0.10 msRTT                                                                      
+> > n7: 11580.1250 MB /  10.04 sec = 9679.3910 Mbps 43 %TX 50 %RX 0 retrans 0.13 msRTT                                                                      
+> > n8: 11608.0000 MB /  10.06 sec = 9678.7596 Mbps 42 %TX 50 %RX 0 retrans 0.10 msRTT                                                                      
+> > n9: 11553.3750 MB /  10.05 sec = 9643.7296 Mbps 45 %TX 50 %RX 0 retrans 0.11 msRTT                                                                      
+> > 
+> > This was using 2 dual-port 10-GigE NICs in the first two PCIe 2.0 slots.
+> > We are using an Intel i7 965 quad-core 3.2 GHz Nehalem processor
+> > (overclocked to 3.4 GHz) and 2000 MHz DDR3 memory.  Adding an additional
+> > dual-port 10-GigE NIC on the Nvidia N200 chip does only marginally
+> > better, as it appears we are basically CPU limited at this point for
+> > this test (the sum of the TX and RX CPU utilization for each pair of
+> > 10-GigE interfaces is about 93%).
 > 
+> Hey guys, those are really nice numbers. Since TCP splicing appeared in the
+> kernel (once we got it fixed), I achieved 10 Gbps of HTTP proxying using
+> haproxy with very low CPU usage (about 20% of a Core2Duo 2.66 GHz).
+> 
+> Before buying the machines, I had been wandering around with the NICs
+> donated by Myricom in order to try to find a machine capable of supporting
+> this. My conclusion was that a lot of machines had difficulties getting
+> above 3.5, 4.7 and 6.5 Gbps of output traffic (those 3 numbers were always
+> the same, depending on the chipsets). There clearly was a bandwidth
+> limitation imposed by the chipset.
+> 
+> So I waited for the X38 and AM780FX chipsets to become available and
+> bought 3 machines (1 C2D, 1 AMD X2, 1 AMD X4). Those ones have no problem
+> with 10 Gbps of forwarded traffic (20 Gbps of total bus bandwidth), even
+> with 1500 bytes frames, but I don't know how high they can go, maybe
+> they will saturate slightly above.
+> 
+> Unfortunately, I only have 5 NICs in 3 machines and no switch (and CX4
+> is hard to find these days), so I'm probably stuck at 10 Gbps max.
+> 
+> Interestingly, I had the impression that forwarding data with TCP
+> splicing costs less CPU than IP forwarding, because the NICs can do
+> LRO.
+> 
+> Also, I know a french service provider who uses haproxy on Core i7
+> machines and who has already reached 5 Gbps of sustained traffic
+> with recent intel dual-port NICs (though I'm not sure exactly which
+> ones). This is with very little CPU usage too, less than 2-3% user
+> and 15% system+softirq. On previous machines (quad core xeons), it
+> was impossible to go beyond 3 Gbps, it looked like the chipset was
+> the limitating factor too (though I don't precisely remember which
+> one it was).
+> 
+> I really blamed the NICs because this guys machine was about 4 times
+> more powerful than mine, but apparently it was just a chipset issue.
+> 
+> I also happen to have a customer who recently received a few Sun NXGE,
+> mounted in Sun x2100-m2 using an nvidia chipset which I tested OK at
+> 10 Gbps with my myri10GE NICs. I'll try to see if I can run some tests
+> there, as Davem once said those NICs are really good too.
+> 
+> All in all, I find it really cool that our beloved OS scales that
+> well with the hardware :-)
+
+Yes, I am quite impressed that the Linux kernel and TCP/IP network
+stack performs amazingly well at these multi-10-GigE speeds.  I was
+especially interested in Jesper's IP forwarding results, as we haven't
+tested that yet ourselves, and one of the intended applications of
+these systems is as a multi-10-GigE firewall, so that's looking very
+encouraging at this point.
+
+						-Bill
