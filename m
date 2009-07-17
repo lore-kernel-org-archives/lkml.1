@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbZGQUTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZGQUX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754399AbZGQUTp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZGQUTo
+	id S1754297AbZGQUX5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 16:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbZGQUXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:19:44 -0400
-Received: from kroah.org ([198.145.64.141]:43093 "EHLO coco.kroah.org"
+	Fri, 17 Jul 2009 16:23:48 -0400
+Received: from kroah.org ([198.145.64.141]:43071 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753877AbZGQUTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 16:19:43 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:30 2009
-Message-Id: <20090717201230.590698517@mini.kroah.org>
+	id S1753470AbZGQUTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 16:19:39 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:29 2009
+Message-Id: <20090717201229.027381107@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 17 Jul 2009 13:08:59 -0700
+Date: Fri, 17 Jul 2009 13:08:55 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mike Frysinger <vapier@gentoo.org>
-Subject: [patch 08/24] Blackfin: fix command line corruption with DEBUG_DOUBLEFAULT
+       Julien Tinnes <jt@cr0.org>, Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
+       Eugene Teo <eugene@redhat.com>
+Subject: [patch 04/24] personality: fix PER_CLEAR_ON_SETID (CVE-2009-1895)
 References: <20090717200851.907421303@mini.kroah.org>
-Content-Disposition: inline; filename=blackfin-fix-command-line-corruption-with-debug_doublefault.patch
+Content-Disposition: inline; filename=personality-fix-per_clear_on_setid.patch
 In-Reply-To: <20090717201639.GA14209@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,56 +32,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mike Frysinger <vapier@gentoo.org>
+From: Julien Tinnes <jt@cr0.org>
 
-commit 37082511f06108129bd5f96d625a6fae2d5a4ab4 upstream.
+commit f9fabcb58a6d26d6efde842d1703ac7cfa9427b6 upstream.
 
-Commit 6b3087c6 (which introduced Blackfin SMP) broke command line passing
-when the DEBUG_DOUBLEFAULT config option was enabled.  Switch the code to
-using a scratch register and not R7 which holds the command line.
+We have found that the current PER_CLEAR_ON_SETID mask on Linux doesn't
+include neither ADDR_COMPAT_LAYOUT, nor MMAP_PAGE_ZERO.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+The current mask is READ_IMPLIES_EXEC|ADDR_NO_RANDOMIZE.
+
+We believe it is important to add MMAP_PAGE_ZERO, because by using this
+personality it is possible to have the first page mapped inside a
+process running as setuid root.  This could be used in those scenarios:
+
+ - Exploiting a NULL pointer dereference issue in a setuid root binary
+ - Bypassing the mmap_min_addr restrictions of the Linux kernel: by
+   running a setuid binary that would drop privileges before giving us
+   control back (for instance by loading a user-supplied library), we
+   could get the first page mapped in a process we control.  By further
+   using mremap and mprotect on this mapping, we can then completely
+   bypass the mmap_min_addr restrictions.
+
+Less importantly, we believe ADDR_COMPAT_LAYOUT should also be added
+since on x86 32bits it will in practice disable most of the address
+space layout randomization (only the stack will remain randomized).
+
+Signed-off-by: Julien Tinnes <jt@cr0.org>
+Signed-off-by: Tavis Ormandy <taviso@sdf.lonestar.org>
+Acked-by: Christoph Hellwig <hch@infradead.org>
+Acked-by: Kees Cook <kees@ubuntu.com>
+Acked-by: Eugene Teo <eugene@redhat.com>
+[ Shortened lines and fixed whitespace as per Christophs' suggestion ]
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/blackfin/mach-common/head.S |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ include/linux/personality.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/arch/blackfin/mach-common/head.S
-+++ b/arch/blackfin/mach-common/head.S
-@@ -126,25 +126,25 @@ ENTRY(__start)
- 	 * below
- 	 */
- 	GET_PDA(p0, r0);
--	r7 = [p0 + PDA_RETX];
-+	r6 = [p0 + PDA_RETX];
- 	p1.l = _init_saved_retx;
- 	p1.h = _init_saved_retx;
--	[p1] = r7;
-+	[p1] = r6;
+--- a/include/linux/personality.h
++++ b/include/linux/personality.h
+@@ -40,7 +40,10 @@ enum {
+  * Security-relevant compatibility flags that must be
+  * cleared upon setuid or setgid exec:
+  */
+-#define PER_CLEAR_ON_SETID (READ_IMPLIES_EXEC|ADDR_NO_RANDOMIZE)
++#define PER_CLEAR_ON_SETID (READ_IMPLIES_EXEC  | \
++			    ADDR_NO_RANDOMIZE  | \
++			    ADDR_COMPAT_LAYOUT | \
++			    MMAP_PAGE_ZERO)
  
--	r7 = [p0 + PDA_DCPLB];
-+	r6 = [p0 + PDA_DCPLB];
- 	p1.l = _init_saved_dcplb_fault_addr;
- 	p1.h = _init_saved_dcplb_fault_addr;
--	[p1] = r7;
-+	[p1] = r6;
- 
--	r7 = [p0 + PDA_ICPLB];
-+	r6 = [p0 + PDA_ICPLB];
- 	p1.l = _init_saved_icplb_fault_addr;
- 	p1.h = _init_saved_icplb_fault_addr;
--	[p1] = r7;
-+	[p1] = r6;
- 
--	r7 = [p0 + PDA_SEQSTAT];
-+	r6 = [p0 + PDA_SEQSTAT];
- 	p1.l = _init_saved_seqstat;
- 	p1.h = _init_saved_seqstat;
--	[p1] = r7;
-+	[p1] = r6;
- #endif
- 
- 	/* Initialize stack pointer */
+ /*
+  * Personality types.
 
 
