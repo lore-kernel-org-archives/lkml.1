@@ -1,122 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbZGQXiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbZGQXjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758049AbZGQXiK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 19:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758002AbZGQXiI
+	id S1758058AbZGQXjx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 19:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbZGQXju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 19:38:08 -0400
-Received: from elasmtp-masked.atl.sa.earthlink.net ([209.86.89.68]:52487 "EHLO
-	elasmtp-masked.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751809AbZGQXiG (ORCPT
+	Fri, 17 Jul 2009 19:39:50 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:60551 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758002AbZGQXjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 19:38:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=OGT/hzRDdlqDcCMiJldFAwweSZfjKHFdGYtBqgIh77qkNHcghlFqndH4rddiqpbv;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Fri, 17 Jul 2009 19:38:02 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Jesper Dangaard Brouer <hawk@comx.dk>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Robert Olsson <Robert.Olsson@data.slu.se>,
-       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>, jesse.brandeburg@intel.com,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Achieved 10Gbit/s bidirectional routing
-Message-Id: <20090717193802.3cb36d9d.billfink@mindspring.com>
-In-Reply-To: <20090717203546.GA31259@1wt.eu>
-References: <1247676631.30876.29.camel@localhost.localdomain>
-	<20090715232253.91d9f264.billfink@mindspring.com>
-	<1247737144.30876.53.camel@localhost.localdomain>
-	<20090716113827.19fbb379.billfink@mindspring.com>
-	<20090717203546.GA31259@1wt.eu>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Fri, 17 Jul 2009 19:39:49 -0400
+Subject: [RFC][PATCH] Introduce CLOCK_REALTIME_COARSE
+From: john stultz <johnstul@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@tglx.de>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, nikolag@ca.ibm.com,
+       Darren Hart <dvhltc@us.ibm.com>
+Content-Type: text/plain
+Date: Fri, 17 Jul 2009 16:39:05 -0700
+Message-Id: <1247873945.8334.67.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4df2f2f4e2d15c532d1064e3720a1f24bc350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 71.127.147.41
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Jul 2009, Willy Tarreau wrote:
+Hey all,
 
-> On Thu, Jul 16, 2009 at 11:38:27AM -0400, Bill Fink wrote:
-> 
-> > We also achieved nearly 80 Gbps in bidirectional TCP tests (40 Gbps
-> > simultaneously in each direction):
-> > 
-> > [root@i7raid-1 ~]# ./nuttcp-6.2.6 -In2 -xc0/0 -p5001 192.168.1.11 & ./nuttcp-6.2.6 -In3 -r -xc0/0 -p5002 192.168.2.11 & ./nuttcp-6.2.6 -In4 -xc1/1 -p5003 192.168.3.11 & ./nuttcp-6.2.6 -In5 -r -xc1/1 -p5004 192.168.4.11 & ./nuttcp-6.2.6 -In6 -xc2/2 -p5005 192.168.5.11 & ./nuttcp-6.2.6 -In7 -r -xc2/2 -p5006 192.168.6.11 & ./nuttcp-6.2.6 -In8 -xc3/3 -p5007 192.168.7.11 & ./nuttcp-6.2.6 -In9 -r -xc3/3 -p5008 192.168.8.11                                    
-> > n2: 11542.6250 MB /  10.07 sec = 9619.9920 Mbps 44 %TX 51 %RX 0 retrans 0.12 msRTT                                                                      
-> > n3: 11543.7143 MB /  10.06 sec = 9622.2153 Mbps 41 %TX 49 %RX 0 retrans 0.15 msRTT                                                   
-> > n4: 11622.8125 MB /  10.05 sec = 9701.0296 Mbps 43 %TX 51 %RX 0 retrans 0.10 msRTT                                                                      
-> > n5: 11523.6875 MB /  10.03 sec = 9638.8883 Mbps 43 %TX 50 %RX 0 retrans 0.15 msRTT                                                                      
-> > n6: 11608.0141 MB /  10.04 sec = 9695.7388 Mbps 43 %TX 50 %RX 0 retrans 0.10 msRTT                                                                      
-> > n7: 11580.1250 MB /  10.04 sec = 9679.3910 Mbps 43 %TX 50 %RX 0 retrans 0.13 msRTT                                                                      
-> > n8: 11608.0000 MB /  10.06 sec = 9678.7596 Mbps 42 %TX 50 %RX 0 retrans 0.10 msRTT                                                                      
-> > n9: 11553.3750 MB /  10.05 sec = 9643.7296 Mbps 45 %TX 50 %RX 0 retrans 0.11 msRTT                                                                      
-> > 
-> > This was using 2 dual-port 10-GigE NICs in the first two PCIe 2.0 slots.
-> > We are using an Intel i7 965 quad-core 3.2 GHz Nehalem processor
-> > (overclocked to 3.4 GHz) and 2000 MHz DDR3 memory.  Adding an additional
-> > dual-port 10-GigE NIC on the Nvidia N200 chip does only marginally
-> > better, as it appears we are basically CPU limited at this point for
-> > this test (the sum of the TX and RX CPU utilization for each pair of
-> > 10-GigE interfaces is about 93%).
-> 
-> Hey guys, those are really nice numbers. Since TCP splicing appeared in the
-> kernel (once we got it fixed), I achieved 10 Gbps of HTTP proxying using
-> haproxy with very low CPU usage (about 20% of a Core2Duo 2.66 GHz).
-> 
-> Before buying the machines, I had been wandering around with the NICs
-> donated by Myricom in order to try to find a machine capable of supporting
-> this. My conclusion was that a lot of machines had difficulties getting
-> above 3.5, 4.7 and 6.5 Gbps of output traffic (those 3 numbers were always
-> the same, depending on the chipsets). There clearly was a bandwidth
-> limitation imposed by the chipset.
-> 
-> So I waited for the X38 and AM780FX chipsets to become available and
-> bought 3 machines (1 C2D, 1 AMD X2, 1 AMD X4). Those ones have no problem
-> with 10 Gbps of forwarded traffic (20 Gbps of total bus bandwidth), even
-> with 1500 bytes frames, but I don't know how high they can go, maybe
-> they will saturate slightly above.
-> 
-> Unfortunately, I only have 5 NICs in 3 machines and no switch (and CX4
-> is hard to find these days), so I'm probably stuck at 10 Gbps max.
-> 
-> Interestingly, I had the impression that forwarding data with TCP
-> splicing costs less CPU than IP forwarding, because the NICs can do
-> LRO.
-> 
-> Also, I know a french service provider who uses haproxy on Core i7
-> machines and who has already reached 5 Gbps of sustained traffic
-> with recent intel dual-port NICs (though I'm not sure exactly which
-> ones). This is with very little CPU usage too, less than 2-3% user
-> and 15% system+softirq. On previous machines (quad core xeons), it
-> was impossible to go beyond 3 Gbps, it looked like the chipset was
-> the limitating factor too (though I don't precisely remember which
-> one it was).
-> 
-> I really blamed the NICs because this guys machine was about 4 times
-> more powerful than mine, but apparently it was just a chipset issue.
-> 
-> I also happen to have a customer who recently received a few Sun NXGE,
-> mounted in Sun x2100-m2 using an nvidia chipset which I tested OK at
-> 10 Gbps with my myri10GE NICs. I'll try to see if I can run some tests
-> there, as Davem once said those NICs are really good too.
-> 
-> All in all, I find it really cool that our beloved OS scales that
-> well with the hardware :-)
+	After talking with some application writers who want very fast, but not
+fine-grained timestamps, I decided to try to implement a new clock_ids
+to clock_gettime(): CLOCK_REALTIME_COARSE and CLOCK_MONOTONIC_COARSE
+which returns the time at the last tick. This is very fast as we don't
+have to access any hardware (which can be very painful if you're using
+something like the acpi_pm clocksource), and we can even use the vdso
+clock_gettime() method to avoid the syscall. The only trade off is you
+only get low-res tick grained time resolution.
 
-Yes, I am quite impressed that the Linux kernel and TCP/IP network
-stack performs amazingly well at these multi-10-GigE speeds.  I was
-especially interested in Jesper's IP forwarding results, as we haven't
-tested that yet ourselves, and one of the intended applications of
-these systems is as a multi-10-GigE firewall, so that's looking very
-encouraging at this point.
+This isn't a new idea, I know Ingo pushed a patch (see commit
+5899a0f044f3c80e9f7262ec5bc7164773a4c28e) a little while ago that made
+the vsyscall gettimeofday() return coarse grained time when the
+vsyscall64 sysctrl was set to 2. However this affects all applications
+on a system.
 
-						-Bill
+With this method, applications can choose the proper speed/granularity
+trade-off for themselves.
+
+This is a first pass on this implementation, and while I did test it,
+the box I tested it with did not have a glibc new enough to utilize the
+vdso clock_gettime(), so there may still be issues there. I'll find a
+newer box for testing shortly.
+
+Any thoughts or feedback will be appreciated!
+
+thanks
+-john
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+---
+ arch/x86/vdso/vclock_gettime.c |   39 ++++++++++++++++++++++++++++++++++++---
+ include/linux/time.h           |    3 +++
+ kernel/posix-timers.c          |   33 +++++++++++++++++++++++++++++++++
+ kernel/time/timekeeping.c      |   19 +++++++++++++++++++
+ 4 files changed, 91 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/vdso/vclock_gettime.c b/arch/x86/vdso/vclock_gettime.c
+index 1ef0f90..e949cc7 100644
+--- a/arch/x86/vdso/vclock_gettime.c
++++ b/arch/x86/vdso/vclock_gettime.c
+@@ -83,14 +83,47 @@ notrace static noinline int do_monotonic(struct timespec *ts)
+ 	return 0;
+ }
+ 
++notrace static noinline int do_realtime_coarse(struct timespec *ts)
++{
++	unsigned long seq;
++	do {
++		seq = read_seqbegin(&gtod->lock);
++		ts->tv_sec = gtod->wall_time_sec;
++		ts->tv_nsec = gtod->wall_time_nsec;
++	} while (unlikely(read_seqretry(&gtod->lock, seq)));
++	return 0;
++}
++
++notrace static noinline int do_monotonic_coarse(struct timespec *ts)
++{
++	unsigned long seq, ns, secs;
++	do {
++		seq = read_seqbegin(&gtod->lock);
++		secs = gtod->wall_time_sec;
++		ns = gtod->wall_time_nsec;
++		secs += gtod->wall_to_monotonic.tv_sec;
++		ns += gtod->wall_to_monotonic.tv_nsec;
++	} while (unlikely(read_seqretry(&gtod->lock, seq)));
++	vset_normalized_timespec(ts, secs, ns);
++	return 0;
++}
++
+ notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
+ {
+-	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
++	if (likely(gtod->sysctl_enabled))
+ 		switch (clock) {
+ 		case CLOCK_REALTIME:
+-			return do_realtime(ts);
++			if (likely(gtod->clock.vread))
++				return do_realtime(ts);
++			break;
+ 		case CLOCK_MONOTONIC:
+-			return do_monotonic(ts);
++			if (likely(gtod->clock.vread))
++				return do_monotonic(ts);
++			break;
++		case CLOCK_REALTIME_COARSE:
++			return do_realtime_coarse(ts);
++		case CLOCK_MONOTONIC_COARSE:
++			return do_monotonic_coarse(ts);
+ 		}
+ 	return vdso_fallback_gettime(clock, ts);
+ }
+diff --git a/include/linux/time.h b/include/linux/time.h
+index ce321ac..9db8421 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -108,6 +108,7 @@ void timekeeping_init(void);
+ 
+ unsigned long get_seconds(void);
+ struct timespec current_kernel_time(void);
++struct timespec get_monotonic_coarse(void);
+ 
+ #define CURRENT_TIME		(current_kernel_time())
+ #define CURRENT_TIME_SEC	((struct timespec) { get_seconds(), 0 })
+@@ -225,6 +226,8 @@ struct itimerval {
+ #define CLOCK_PROCESS_CPUTIME_ID	2
+ #define CLOCK_THREAD_CPUTIME_ID		3
+ #define CLOCK_MONOTONIC_RAW		4
++#define CLOCK_REALTIME_COARSE		5
++#define CLOCK_MONOTONIC_COARSE		6
+ 
+ /*
+  * The IDs of various hardware clocks:
+diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+index 752b036..6821ea1 100644
+--- a/kernel/posix-timers.c
++++ b/kernel/posix-timers.c
+@@ -236,6 +236,25 @@ static int posix_get_monotonic_raw(clockid_t which_clock, struct timespec *tp)
+ 	return 0;
+ }
+ 
++
++static int posix_get_realtime_coarse(clockid_t which_clock, struct timespec *tp)
++{
++	*tp = current_kernel_time();
++	return 0;
++}
++
++static int posix_get_monotonic_coarse(clockid_t which_clock,
++						struct timespec *tp)
++{
++	*tp = get_monotonic_coarse();
++	return 0;
++}
++
++int posix_get_coarse_res(const clockid_t which_clock, struct timespec *tp)
++{
++	*tp = ktime_to_timespec(KTIME_LOW_RES);
++	return 0;
++}
+ /*
+  * Initialize everything, well, just everything in Posix clocks/timers ;)
+  */
+@@ -255,10 +274,24 @@ static __init int init_posix_timers(void)
+ 		.clock_set = do_posix_clock_nosettime,
+ 		.timer_create = no_timer_create,
+ 	};
++	struct k_clock clock_realtime_coarse = {
++		.clock_getres = hrtimer_get_res,
++		.clock_get = posix_get_realtime_coarse,
++		.clock_set = do_posix_clock_nosettime,
++		.timer_create = no_timer_create,
++	};
++	struct k_clock clock_monotonic_coarse = {
++		.clock_getres = hrtimer_get_res,
++		.clock_get = posix_get_monotonic_coarse,
++		.clock_set = do_posix_clock_nosettime,
++		.timer_create = no_timer_create,
++	};
+ 
+ 	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
+ 	register_posix_clock(CLOCK_MONOTONIC, &clock_monotonic);
+ 	register_posix_clock(CLOCK_MONOTONIC_RAW, &clock_monotonic_raw);
++	register_posix_clock(CLOCK_REALTIME_COARSE, &clock_realtime_coarse);
++	register_posix_clock(CLOCK_MONOTONIC_COARSE, &clock_monotonic_coarse);
+ 
+ 	posix_timers_cache = kmem_cache_create("posix_timers_cache",
+ 					sizeof (struct k_itimer), 0, SLAB_PANIC,
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index fa05e88..cfe1f32 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -602,3 +602,22 @@ struct timespec current_kernel_time(void)
+ 	return now;
+ }
+ EXPORT_SYMBOL(current_kernel_time);
++
++struct timespec get_monotonic_coarse(void)
++{
++	struct timespec now, mono;
++	unsigned long seq;
++
++	do {
++		seq = read_seqbegin(&xtime_lock);
++
++		now = xtime_cache;
++		mono = wall_to_monotonic;
++	} while (read_seqretry(&xtime_lock, seq));
++
++	set_normalized_timespec(&now, now.tv_sec + mono.tv_sec,
++				now.tv_nsec + mono.tv_nsec);
++	return now;
++}
++EXPORT_SYMBOL(get_monotonic_coarse);
++
+
+
