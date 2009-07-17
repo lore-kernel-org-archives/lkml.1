@@ -1,56 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964841AbZGQPo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964852AbZGQPvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964841AbZGQPo7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 11:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964831AbZGQPo6
+	id S964852AbZGQPvj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 11:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964835AbZGQPvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 11:44:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35015 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S964823AbZGQPo5 (ORCPT
+	Fri, 17 Jul 2009 11:51:39 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:60273 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964830AbZGQPvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 11:44:57 -0400
-Date: Fri, 17 Jul 2009 08:44:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: David Miller <davem@davemloft.net>, tglx@linutronix.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, kaber@trash.net
-Subject: Re: [patch 1/3] net: serialize hrtimer callback in sched_cbq
-In-Reply-To: <1247832892.15751.35.camel@twins>
-Message-ID: <alpine.LFD.2.01.0907170838091.13838@localhost.localdomain>
-References: <20090709215606.526259917@linutronix.de>  <20090712.135555.207096388.davem@davemloft.net>  <alpine.LFD.2.00.0907141040350.2777@localhost.localdomain>  <20090714.090055.56906831.davem@davemloft.net>  <1247588890.7500.186.camel@twins> 
- <alpine.LFD.2.01.0907140940440.13838@localhost.localdomain> <1247832892.15751.35.camel@twins>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 17 Jul 2009 11:51:38 -0400
+Date: Fri, 17 Jul 2009 08:51:17 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Nathan Lynch <ntl@pobox.com>, Nigel Cunningham <nigel@tuxonice.net>,
+       stable@kernel.org, containers@lists.linux-foundation.org,
+       linux-pm@lists.linux-foundation.org, Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting of frozen
+	tasks really
+Message-ID: <20090717155116.GB5878@count0.beaverton.ibm.com>
+References: <20090717121545.489258927@linutronix.de> <20090717122103.225652146@linutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090717122103.225652146@linutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 17 Jul 2009, Peter Zijlstra wrote:
+On Fri, Jul 17, 2009 at 12:25:01PM -0000, Thomas Gleixner wrote:
+> commit e3c8ca8336 (sched: do not count frozen tasks toward load) broke
+> the nr_uninterruptible accounting on freeze/thaw. On freeze the task
+> is excluded from accounting with a check for (task->flags &
+> PF_FROZEN), but that flag is cleared before the task is thawed. So
+> while we prevent that the freezing task with state
+> TASK_UNINTERRUPTIBLE is accounted to nr_uninterruptible we decrement
+> nr_uninterruptible on thaw.
 > 
-> How would something like the below work for people?
+> Use a separate flag which is handled by the freezing task itself. Set
+> it before calling the scheduler with TASK_UNINTERRUPTIBLE state and
+> clear it after we return from frozen state.
 
-This looks saner.
+I'm sorry, it's not clear to me based on the description what problem is
+being fixed. As far as I can see PF_FROZEN is almost exactly the same as
+PF_FREEZING. When a task is being frozen TIF_FREEZE is set. Then the task
+enters the refrigerator, sets PF_FROZEN, and schedule()s until PF_FROZEN
+is no longer set. The original code with extra comments:
 
-It was the insanity of having the core timer code know about different 
-modes that caused all the sily problems.
+static inline void frozen_process(void)
+{
+        if (!unlikely(current->flags & PF_NOFREEZE)) {
+                current->flags |= PF_FROZEN;
+                wmb();
+        }
+        clear_freeze_flag(current);
+}
 
-Having a separate abstraction layer for "I want to get a softirq timeout" 
-sounds fine, as long as the timer code itself never cares.
+/* Refrigerator is place where frozen processes are stored :-). */
+void refrigerator(void)
+{
+        /* Hmm, should we be allowed to suspend when there are realtime
+           processes around? */
+        long save;
 
-That said, I don't think this shoud be a "hrtimer" issue (reflected in 
-your naming and include file choice). I think this is a softirq or tasklet 
-(or whatever) issue, and should be named that way.
+        task_lock(current);
+        if (freezing(current)) {
+		/* prevent accounting of that task to load */
+                frozen_process();  /* <-- sets PF_FROZEN */
+                task_unlock(current);
+        } else {
+                task_unlock(current);
+                return;
+        }
+        save = current->state;
+        pr_debug("%s entered refrigerator\n", current->comm);
 
-Why should the timer code (and header files) care about how you can use 
-tasklets with them? It shouldn't. The timers should be seen as the really 
-low-level critical code, and the timer code should never need to know 
-about softirq's or tasklets or whatever.
+        spin_lock_irq(&current->sighand->siglock);
+        recalc_sigpending(); /* We sent fake signal, clean it up */
+        spin_unlock_irq(&current->sighand->siglock);
 
-So I think you shouldmove it to kernel/softirq.c.
+	/* you set PF_FREEZING here */
+        for (;;) {
+                set_current_state(TASK_UNINTERRUPTIBLE);
+                if (!frozen(current))  /* <-- checks PF_FROZEN */
+                        break;
+                schedule();
+        }
+	/* you clear PF_FREEZING here */
+        pr_debug("%s left refrigerator\n", current->comm);
+        __set_current_state(save);
+}
 
-			Linus
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Nathan Lynch <ntl@pobox.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Nigel Cunningham <nigel@tuxonice.net>
+> Cc: <stable@kernel.org>
+> Cc: containers@lists.linux-foundation.org
+> Cc: linux-pm@lists.linux-foundation.org
+> Cc: Matt Helsley <matthltc@us.ibm.com>
+> 
+> ---
+>  include/linux/sched.h |    3 ++-
+>  kernel/freezer.c      |    7 +++++++
+>  2 files changed, 9 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/include/linux/sched.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/sched.h
+> +++ linux-2.6/include/linux/sched.h
+> @@ -209,7 +209,7 @@ extern unsigned long long time_sync_thre
+>  			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
+>  #define task_contributes_to_load(task)	\
+>  				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
+> -				 (task->flags & PF_FROZEN) == 0)
+> +				 (task->flags & PF_FREEZING) == 0)
+> 
+>  #define __set_task_state(tsk, state_value)		\
+>  	do { (tsk)->state = (state_value); } while (0)
+> @@ -1680,6 +1680,7 @@ extern cputime_t task_gtime(struct task_
+>  #define PF_MEMALLOC	0x00000800	/* Allocating memory */
+>  #define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
+>  #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
+> +#define PF_FREEZING	0x00004000	/* freeze in progress. do not account to load */
+>  #define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
+>  #define PF_FROZEN	0x00010000	/* frozen for system suspend */
+>  #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+> Index: linux-2.6/kernel/freezer.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/freezer.c
+> +++ linux-2.6/kernel/freezer.c
+> @@ -44,12 +44,19 @@ void refrigerator(void)
+>  	recalc_sigpending(); /* We sent fake signal, clean it up */
+>  	spin_unlock_irq(&current->sighand->siglock);
+> 
+> +	/* prevent accounting of that task to load */
+> +	current->flags |= PF_FREEZING;
+> +
+>  	for (;;) {
+>  		set_current_state(TASK_UNINTERRUPTIBLE);
+>  		if (!frozen(current))
+>  			break;
+>  		schedule();
+>  	}
+> +
+> +	/* Remove the accounting blocker */
+> +	current->flags &= ~PF_FREEZING;
+> +
+
+Hence PF_FREEZING covers slightly less time than PF_FROZEN but
+otherwise does not change the way nr_uninterruptible is incremented or
+decremented (in (de)activate_task()).
+
+So it's not clear to me how adding PF_FREEZING fixes anything. Am I
+missing something?
+
+Cheers,
+	-Matt Helsley
