@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934719AbZGQPiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964841AbZGQPo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934719AbZGQPiX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 11:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934703AbZGQPiX
+	id S964841AbZGQPo7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 11:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964831AbZGQPo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 11:38:23 -0400
-Received: from mx10.kentrox.com ([192.228.33.31]:41217 "EHLO smtp.kentrox.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934687AbZGQPiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 11:38:22 -0400
-X-Greylist: delayed 1826 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Jul 2009 11:38:22 EDT
-From: Jeff Harris <jeff_harris@kentrox.com>
-To: alan@linux.intel.com, vapier@gentoo.org, adobriyan@gmail.com
-Cc: linux-kernel@vger.kernel.org, Jeff Harris <jeff_harris@kentrox.com>
-Subject: [PATCH] tty: Fix tcdrain hang due to tty chars_in_buffer errors
-Date: Fri, 17 Jul 2009 11:07:54 -0400
-Message-Id: <1247843274-7462-1-git-send-email-jeff_harris@kentrox.com>
-X-Mailer: git-send-email 1.5.5.1
-X-OriginalArrivalTime: 17 Jul 2009 15:07:54.0178 (UTC) FILETIME=[5C2BEA20:01CA06F0]
+	Fri, 17 Jul 2009 11:44:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35015 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S964823AbZGQPo5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 11:44:57 -0400
+Date: Fri, 17 Jul 2009 08:44:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: David Miller <davem@davemloft.net>, tglx@linutronix.de,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, kaber@trash.net
+Subject: Re: [patch 1/3] net: serialize hrtimer callback in sched_cbq
+In-Reply-To: <1247832892.15751.35.camel@twins>
+Message-ID: <alpine.LFD.2.01.0907170838091.13838@localhost.localdomain>
+References: <20090709215606.526259917@linutronix.de>  <20090712.135555.207096388.davem@davemloft.net>  <alpine.LFD.2.00.0907141040350.2777@localhost.localdomain>  <20090714.090055.56906831.davem@davemloft.net>  <1247588890.7500.186.camel@twins> 
+ <alpine.LFD.2.01.0907140940440.13838@localhost.localdomain> <1247832892.15751.35.camel@twins>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If a tty driver's chars_in_buffer callback reports an error, the wait loop in
-tty_wait_until_sent may never exit until its timeout.  A tty device
-disconnection will hangup the tty causing the tty_wait_until_sent loop to
-wake-up, but if the subsequent call to chars_in_buffer reports an error
-instead of zero, the loop will go back to sleep instead of exiting.
 
-A process calling tcdrain will block indefinitely if it calls tcdrain when the
-device is disconnected.
 
-Signed-off-by: Jeff Harris <jeff_harris@kentrox.com>
----
- drivers/char/tty_ioctl.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On Fri, 17 Jul 2009, Peter Zijlstra wrote:
+> 
+> How would something like the below work for people?
 
-diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
-index ad6ba4e..306d52e 100644
---- a/drivers/char/tty_ioctl.c
-+++ b/drivers/char/tty_ioctl.c
-@@ -156,7 +156,7 @@ void tty_wait_until_sent(struct tty_struct *tty, long timeout)
- 	if (!timeout)
- 		timeout = MAX_SCHEDULE_TIMEOUT;
- 	if (wait_event_interruptible_timeout(tty->write_wait,
--			!tty_chars_in_buffer(tty), timeout) >= 0) {
-+			tty_chars_in_buffer(tty) <= 0, timeout) >= 0) {
- 		if (tty->ops->wait_until_sent)
- 			tty->ops->wait_until_sent(tty, timeout);
- 	}
-@@ -332,7 +332,7 @@ void tty_termios_encode_baud_rate(struct ktermios *termios,
- 	int iclose = ibaud/50, oclose = obaud/50;
- 	int ibinput = 0;
- 
--	if (obaud == 0)			/* CD dropped 		  */
-+	if (obaud == 0)			/* CD dropped		  */
- 		ibaud = 0;		/* Clear ibaud to be sure */
- 
- 	termios->c_ispeed = ibaud;
--- 
-1.5.5.1
+This looks saner.
 
+It was the insanity of having the core timer code know about different 
+modes that caused all the sily problems.
+
+Having a separate abstraction layer for "I want to get a softirq timeout" 
+sounds fine, as long as the timer code itself never cares.
+
+That said, I don't think this shoud be a "hrtimer" issue (reflected in 
+your naming and include file choice). I think this is a softirq or tasklet 
+(or whatever) issue, and should be named that way.
+
+Why should the timer code (and header files) care about how you can use 
+tasklets with them? It shouldn't. The timers should be seen as the really 
+low-level critical code, and the timer code should never need to know 
+about softirq's or tasklets or whatever.
+
+So I think you shouldmove it to kernel/softirq.c.
+
+			Linus
