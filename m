@@ -1,105 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933948AbZGQBul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbZGQBvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933948AbZGQBul (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 21:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757603AbZGQBuk
+	id S933965AbZGQBvw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 21:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933605AbZGQBvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 21:50:40 -0400
-Received: from mga01.intel.com ([192.55.52.88]:37068 "EHLO mga01.intel.com"
+	Thu, 16 Jul 2009 21:51:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36906 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757613AbZGQBuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 21:50:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,414,1243839600"; 
-   d="scan'208";a="708568971"
-Subject: Re: [PATCH 8/8] i8042: support device async suspend & shutdown
-From: Zhang Rui <rui.zhang@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <20090715003716.GE2360@ucw.cz>
-References: <1247643522.26272.83.camel@rzhang-dt>
-	 <20090715003716.GE2360@ucw.cz>
-Content-Type: text/plain
-Date: Fri, 17 Jul 2009 09:51:28 +0800
-Message-Id: <1247795488.26272.227.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	id S933572AbZGQBvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 21:51:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Guanqun Lu <guanqun.lu@intel.com>
+Subject: Re: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
+Date: Fri, 17 Jul 2009 03:52:11 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, jeremy@goop.org
+References: <1247834204-3084-1-git-send-email-guanqun.lu@intel.com>
+In-Reply-To: <1247834204-3084-1-git-send-email-guanqun.lu@intel.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907170352.11749.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-15 at 08:37 +0800, Pavel Machek wrote:
-> On Wed 2009-07-15 15:38:42, Zhang Rui wrote:
-> > 
-> > i8042 controller support device async actions.
-> > 
-> > If boot option "dev_async_action" is added,
-> > i8042 controller and its child devices can be
-> > suspended/resumed/shutdown asynchronously.
-> > 
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > ---
-> >  drivers/input/serio/i8042.c |   10 +++++++++-
-> >  1 file changed, 9 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/drivers/input/serio/i8042.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/input/serio/i8042.c
-> > +++ linux-2.6/drivers/input/serio/i8042.c
-> > @@ -1284,14 +1284,21 @@ static int __init i8042_init(void)
-> >  		goto err_unregister_driver;
-> >  	}
-> >  
-> > -	err = platform_device_add(i8042_platform_device);
-> > +	err = dev_async_register(&i8042_platform_device->dev,
-> > +			DEV_ASYNC_SUSPEND | DEV_ASYNC_SHUTDOWN);
-> >  	if (err)
-> >  		goto err_free_device;
-> >  
-> > +	err = platform_device_add(i8042_platform_device);
-> > +	if (err)
-> > +		goto err_dev_async_unregister;
-> > +
-> >  	panic_blink = i8042_panic_blink;
-> >  
-> >  	return 0;
-> >  
-> > + err_dev_async_unregister:
-> > +	dev_async_unregister(&i8042_platform_device->dev);
-> 
-> 
-> >   err_free_device:
-> >  	platform_device_put(i8042_platform_device);
-> >   err_unregister_driver:
-> > @@ -1304,6 +1311,7 @@ static int __init i8042_init(void)
-> >  
-> >  static void __exit i8042_exit(void)
-> >  {
-> > +	dev_async_unregister(&i8042_platform_device->dev);
-> >  	platform_device_unregister(i8042_platform_device);
-> >  	platform_driver_unregister(&i8042_driver);
-> >  	i8042_platform_exit();
-> 
-> Could we get the core to do async_unregister during device_unregister?
-> 
-yes, we can.
-I think it's a little strange that drivers need to invoke
-dev_async_register to register an async device group, but don't need to
-call dev_async_unregister to unregister it.
+On Friday 17 July 2009, Guanqun Lu wrote:
+> We currently only bypass IRQF_TIMER in '__disable_irq',
+> but Xen specific IRQs should not be disabled either.
+> This commit adds a new flag to accompolish this goal
+> without being mixed up with IRQF_TIMER flag.
 
-> Or maybe better, just add flags during device_add?
+For some obscure reasons [2/3] didn't reach my inbox.  The other 2 patches
+look fine to me.
+
+Best,
+Rafael
+
+
+> Signed-off-by: Guanqun Lu <guanqun.lu@intel.com>
+> ---
+>  include/linux/interrupt.h |    1 +
+>  kernel/irq/manage.c       |    3 ++-
+>  2 files changed, 3 insertions(+), 1 deletions(-)
 > 
-Many devices don't know if they support async actions or not during
-device initialization time, like PCI and ACPI devices.
-If we want to create an async group for a PCI device, we have to call
-dev_async_register in the specified PCI device driver, rather than in
-the PCI bus scan stage.
-
-thanks,
-rui
-
+> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+> index 2721f07..99264c3 100644
+> --- a/include/linux/interrupt.h
+> +++ b/include/linux/interrupt.h
+> @@ -58,6 +58,7 @@
+>  #define IRQF_PERCPU		0x00000400
+>  #define IRQF_NOBALANCING	0x00000800
+>  #define IRQF_IRQPOLL		0x00001000
+> +#define IRQF_NO_SUSPEND		0x00002000
+>  
+>  /*
+>   * Bits used by threaded handlers:
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 50da676..3dc4e74 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -192,7 +192,8 @@ static inline int setup_affinity(unsigned int irq, struct irq_desc *desc)
+>  void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+>  {
+>  	if (suspend) {
+> -		if (!desc->action || (desc->action->flags & IRQF_TIMER))
+> +		if (!desc->action ||
+> +		    (desc->action->flags & (IRQF_TIMER | IRQF_NO_SUSPEND)))
+>  			return;
+>  		desc->status |= IRQ_SUSPENDED;
+>  	}
