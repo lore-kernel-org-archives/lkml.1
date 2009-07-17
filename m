@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964885AbZGQQ2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964926AbZGQQfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964885AbZGQQ2e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 12:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934732AbZGQQ2d
+	id S964926AbZGQQfJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 12:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964917AbZGQQfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 12:28:33 -0400
-Received: from kroah.org ([198.145.64.141]:60093 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934725AbZGQQ2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 12:28:32 -0400
-Date: Fri, 17 Jul 2009 09:27:52 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Barry Song <21cnbao@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: linux-next: sound tree build failure
-Message-ID: <20090717162752.GA7949@kroah.com>
-References: <20090717112935.2e831eee.sfr@canb.auug.org.au>
- <20090717045620.GC17656@kroah.com>
- <20090717153243.b8392c24.sfr@canb.auug.org.au>
+	Fri, 17 Jul 2009 12:35:08 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:48299 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964908AbZGQQfH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 12:35:07 -0400
+Date: Fri, 17 Jul 2009 12:34:49 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
+       Minchan Kim <minchan.kim@gmail.com>
+Subject: Re: [PATCH 3/3] add isolate pages vmstat
+In-Reply-To: <20090717085821.A900.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0907171234130.11303@gentwo.org>
+References: <20090716095344.9D10.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0907161024120.32382@gentwo.org> <20090717085821.A900.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090717153243.b8392c24.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 17, 2009 at 03:32:43PM +1000, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> On Thu, 16 Jul 2009 21:56:20 -0700 Greg KH <greg@kroah.com> wrote:
-> >
-> > It turned out to be "too late" to make the change, I missed the -rc2
-> > window, so it will be a .32 thing.
-> > 
-> > I'll move it from my driver-core.current to my driver-core tree to clear
-> > up any confusion.
-> 
-> OK, thanks.
+On Fri, 17 Jul 2009, KOSAKI Motohiro wrote:
 
-Now done.
+> > Why do a separate pass over all the migrates pages? Can you add the
+> > _inc_xx  somewhere after the page was isolated from the lru by calling
+> > try_to_unmap()?
+>
+> calling try_to_unmap()? the pages are isolated before calling migrate_pages().
+> migrate_pages() have multiple caller. then I put this __inc_xx into top of
+> migrate_pages().
 
-thanks,
-
-greg k-h
+Then put the inc_xxx's where the pages are isolated.
