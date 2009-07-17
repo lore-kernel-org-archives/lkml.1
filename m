@@ -1,96 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964809AbZGQOP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964807AbZGQORh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964809AbZGQOP6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 10:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934698AbZGQOPy
+	id S964807AbZGQORh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 10:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934674AbZGQORg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 10:15:54 -0400
-Received: from www.tglx.de ([62.245.132.106]:48867 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934684AbZGQOPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 10:15:52 -0400
-Date: Fri, 17 Jul 2009 16:13:58 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Barry Song <21cnbao@gmail.com>
-cc: mingo@redhat.com, dahlmann.thomas@arcor.de,
-       LKML <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] Delete redundant IRQ_DISABLED check in irq_thread
-In-Reply-To: <1247820229-4983-1-git-send-email-21cnbao@gmail.com>
-Message-ID: <alpine.LFD.2.00.0907171523100.11571@localhost.localdomain>
-References: <1247820229-4983-1-git-send-email-21cnbao@gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 17 Jul 2009 10:17:36 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:64378 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934662AbZGQORg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 10:17:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=fyY0EdGTLzlEzBtZuSMGs4ZqKCaL6vqO2YbohZVGOANuRgdcQY6CaD9aBVljRLRphk
+         U6Y1+41U6Frrn68fE8cn/W/M+8tqJafe9872ONekTP2A2tbfJrJwaJ7TuPsp9ny/v1cT
+         4vynWCIa5CBRoxUrlHGS2GlYL6mf+tAtiCGEA=
+Message-ID: <4A60886E.5070106@gmail.com>
+Date: Fri, 17 Jul 2009 16:19:26 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bernd Petrovitsch <bernd@firmix.at>
+CC: mingo@redhat.com, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] ia32: strncpy does not null terminate string
+References: <4A60755F.4030604@gmail.com>
+In-Reply-To: <4A60755F.4030604@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Jul 2009, Barry Song wrote:
-> Signed-off-by: Barry Song <21cnbao@gmail.com>
+strlcpy() will always null terminate the string.
 
-> I think it is completely redundant to check IRQ_DISABLED to decide
-> whether thread_fn will be called.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+> The proof is flawed: Global variables are automatically '\0'
+> initialized.
 
-I do not :)
+Hmm, I see, how about using strlcpy instead?
 
-> At first, the irq_thread is waken up by HARDIRQ handler, if
-> IRQ_DISABLED is true, HARDIRQ will have no chance to run, then
-> irq_thread will not run. So there is only a situation that both
-> HARDIRQ can run and IRQ_DISABLED is set.
->
-> The case is that the flag is set in the interval of HARDIRQ enter
-> and irq_thread is scheduled to run. I think there is nobody which is
-> interested to disable irq in the interval except HARDIRQ handler
-> itself. Then that causes the second problem I will explain.
-
-Err. It's not a question whether somebody is interested or not. 
-
-Fact is that the interrupt can be disabled between the thread wake up
-and the handler thread calling the handler function. So it's a
-question of correctness not to call the handler when the irq is
-disabled for the following reason:
-
-CPU 0	     	      	CPU 1
-hard irq
-     -> thread is woken
-                        disable_irq()
-			synchronize_irq() returns because
-			there is no thread running the handler
-
-thread runs		code which assumes that no irq handler
-     -> calls handler   can run continues.
-
-That would happen with your patch applied.
-
-We would need more complex accounting when we want to cover the full
-chain from hardirq->wakeup->thread to avoid the above scenario, but
-that'd be a nightmare as we would have to deal with accounting wakeups
-of an already running irq thread as well.
-
-We optimize for the normal and fast case so the current logic is
-correct and stays that way.
-
-> Secondly, checking the flag causes some problems in fact. We often
-> call disable_irq_nosync to diable irq in HARDIRQ to avoid flooding
-> irq to follow. But the disable_irq_nosync will set IRQ_DISABLED
-> flag, then that will prevent the execution of thread_fn. That's not
-> the original idea to call disable_irq_nosync in HARDIRQ.
-
-Calling disable_irq_nosync in the hard irq handler is wrong with
-threaded interrupts and I even consider it wrong with non threaded irq
-handlers. 
-
-The hard interrupt handler of a threaded irq needs to check whether
-the interrupt originated from the device and if that's the case it
-needs to disable the irq in the device rather than disabling the
-interrupt line completely. Simply because it would disable shared
-interrupts on the same irq line until the thread reenables them.
-
-The correct thing to do is disabling it at the device level if you
-need to prevent interrupt storms.
-
-Thanks,
-
-	tglx
+diff --git a/arch/x86/ia32/sys_ia32.c b/arch/x86/ia32/sys_ia32.c
+index 085a8c3..528972f 100644
+--- a/arch/x86/ia32/sys_ia32.c
++++ b/arch/x86/ia32/sys_ia32.c
+@@ -687,7 +687,7 @@ long sys32_vm86_warning(void)
+ 		compat_printk(KERN_INFO
+ 			      "%s: vm86 mode not supported on 64 bit kernel\n",
+ 			      me->comm);
+-		strncpy(lastcomm, me->comm, sizeof(lastcomm));
++		strlcpy(lastcomm, me->comm, sizeof(lastcomm));
+ 	}
+ 	return -ENOSYS;
+ }
