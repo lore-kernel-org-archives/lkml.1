@@ -1,59 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757652AbZGQUzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbZGQVM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757652AbZGQUzt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756911AbZGQUzs
+	id S1757510AbZGQVM3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 17:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757025AbZGQVM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:55:48 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:40841 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756962AbZGQUzs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 16:55:48 -0400
-Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting of frozen
- tasks really
-From: Nathan Lynch <ntl@pobox.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Matt Helsley <matthltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
-       Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@tuxonice.net>,
-       stable@kernel.org, containers@lists.linux-foundation.org,
-       linux-pm@lists.linux-foundation.org
-In-Reply-To: <1247849254.6522.75.camel@laptop>
-References: <20090717121545.489258927@linutronix.de>
- <20090717122103.225652146@linutronix.de> <1247833910.15751.61.camel@twins>
- <20090717152235.GA5878@count0.beaverton.ibm.com>
- <1247849254.6522.75.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 17 Jul 2009 15:55:34 -0500
-Message-Id: <1247864134.17553.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+	Fri, 17 Jul 2009 17:12:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51780 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755090AbZGQVM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 17:12:28 -0400
+Message-ID: <4A60E972.1060301@redhat.com>
+Date: Fri, 17 Jul 2009 17:13:22 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
+       Tim Abbott <tabbott@ksplice.com>
+Subject: Re: [RFC][ PATCH -tip v2 3/7] Kbuild: disable gcc crossjumping
+References: <20090622212255.5384.53732.stgit@localhost.localdomain> <20090622212313.5384.84166.stgit@localhost.localdomain> <alpine.DEB.2.00.0906271611280.12592@gandalf.stny.rr.com> <20090717202825.GA6872@merkur.ravnborg.org>
+In-Reply-To: <20090717202825.GA6872@merkur.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Pobox-Relay-ID: 3448107A-7314-11DE-A738-F699A5B33865-04752483!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-17 at 18:47 +0200, Peter Zijlstra wrote:
-> On Fri, 2009-07-17 at 08:22 -0700, Matt Helsley wrote:
+Sam Ravnborg wrote:
+> On Sat, Jun 27, 2009 at 04:13:04PM -0400, Steven Rostedt wrote:
+>> A change like this requires an ACK from Sam Ravnborg.
+>>
+>> -- Steve
 > 
-> > The job scheduler in question does not use FROZEN as a transient state and
-> > does not use checkpoint/restart at all since c/r is still a work in progress.
-
-Right, the job scheduler uses the cgroup freezer as a mechanism to
-preempt a low priority job for a higher priority job.  (It had used
-SIGSTOP in the past.)  So in this scenario a frozen cgroup may remain in
-that state for a while.  Load average is consulted as a measure of
-system utilization.
-
-> > Even when used for power management it seems wrong to count frozen tasks
-> > towards the loadavg since they aren't using CPU time or waiting for IO.
+> Overdue review...
 > 
-> You're abusing it for _WHAT_?
+> I do not know the gcc option so I cannot comment on theeffect of it.
 
-I think Matt was referring to system-wide suspend/resume/hibernate, not
-a behavior of the job scheduler, if that's your concern.
+Thanks for comment. however, as far as I can see, I couldn't find
+in the difference between binary with -fno-crossjump and without it.
+So I decided to drop this patch...
 
+> 
+>>> diff --git a/Makefile b/Makefile
+>>> index 2903e13..f73b139 100644
+>>> --- a/Makefile
+>>> +++ b/Makefile
+>>> @@ -524,6 +524,10 @@ else
+>>>  KBUILD_CFLAGS	+= -O2
+>>>  endif
+>>>  
+>>> +ifdef CONFIG_DISABLE_CROSSJUMP
+>>> +KBUILD_CFLAGS	+= -fno-crossjumping
+>>> +endif
+>>> +
+>>>  include $(srctree)/arch/$(SRCARCH)/Makefile
+> 
+> Why do we add this option _before_ we include the arch specific Makefile?
+> If we do not want the arch specific Makefile to undo this then move it lower.
+> 
+> Also please add a comment what the effect of the disabling is.
+> There is no reason I should fire up info gcc to find out
+> what -fno-crossjumping is about.
+
+Sure, I'll write a comment on, next time.
+
+> 
+> 
+>>>  
+>>>  ifneq ($(CONFIG_FRAME_WARN),0)
+>>> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+>>> index 8da7467..f88e6b8 100644
+>>> --- a/lib/Kconfig.debug
+>>> +++ b/lib/Kconfig.debug
+>>> @@ -673,6 +673,13 @@ config FRAME_POINTER
+>>>  	  larger and slower, but it gives very useful debugging information
+>>>  	  in case of kernel bugs. (precise oopses/stacktraces/warnings)
+>>>  
+>>> +config DISABLE_CROSSJUMP
+>>> +	bool "Disable cross-function jump optimization"
+>>> +	help
+>>> +	  This build option disables cross-function jump optimization
+>>> +	  (crossjumping) of gcc. Disabling crossjumping might increase
+>>> +	  kernel binary size a little.
+> 
+> So the above comment tells me that is I disable crossjumping I will
+> increase the kernel image a little.
+> That is by no means a good explanation.
+> 
+> Please explain the potential advantage of disabling crossjumping.
+
+Agreed.
+
+Thank you,
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
