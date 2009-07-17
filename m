@@ -1,95 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbZGQTtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZGQTwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752346AbZGQTtU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 15:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZGQTtU
+	id S1752590AbZGQTwe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 15:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZGQTwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 15:49:20 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:2042 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbZGQTtT (ORCPT
+	Fri, 17 Jul 2009 15:52:34 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:33647 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751397AbZGQTwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 15:49:19 -0400
-Subject: [PATCH] hugetlb:  restore interleaving of bootmem huge pages
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, stable <stable@kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Mel Gorman <mel@csn.ul.ie>,
-       David Rientjes <rientjes@google.com>, Adam Litke <agl@us.ibm.com>,
-       Andy Whitcroft <apw@canonical.com>, Eric Whitney <eric.whitney@hp.com>
-Content-Type: text/plain
-Organization: HP/LKTT
-Date: Fri, 17 Jul 2009 15:49:14 -0400
-Message-Id: <1247860154.11565.45.camel@useless.americas.hpqcorp.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 17 Jul 2009 15:52:33 -0400
+Date: Fri, 17 Jul 2009 12:52:33 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 18/20] ceph: debugging
+In-Reply-To: <20090717185641.GH8046@one.firstfloor.org>
+Message-ID: <Pine.LNX.4.64.0907171247570.23194@cobra.newdream.net>
+References: <1247693090-27796-13-git-send-email-sage@newdream.net>
+ <1247693090-27796-14-git-send-email-sage@newdream.net>
+ <1247693090-27796-15-git-send-email-sage@newdream.net>
+ <1247693090-27796-16-git-send-email-sage@newdream.net>
+ <1247693090-27796-17-git-send-email-sage@newdream.net>
+ <1247693090-27796-18-git-send-email-sage@newdream.net>
+ <1247693090-27796-19-git-send-email-sage@newdream.net> <87d480x16p.fsf@basil.nowhere.org>
+ <Pine.LNX.4.64.0907161014330.8026@cobra.newdream.net>
+ <Pine.LNX.4.64.0907171010470.23194@cobra.newdream.net>
+ <20090717185641.GH8046@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PATCH fix distribution of bootmem huge pages
+On Fri, 17 Jul 2009, Andi Kleen wrote:
+> Good.
+> 
+> Sorry for not doing more (and more serious) reviews, not enough
+> time right now.
 
-Against: 2.6.31-rc3
+You've been helpful nonetheless, thanks! :)
 
-For stable, applicable back through 2.6.27
+> > #define _dout(fmt, args...)						\
+> > 	pr_debug(" %12.12s:%-4d : " fmt "%s",				\
+> > 		 ceph_file_part(__FILE__, sizeof(__FILE__)),		\
+> > 		 __LINE__, args);
+> 
+> That seems like a wasteful way to do this -- i bet you could
+> shrink binary size with debugging on considerably if you move
+> the file_part into a function.
 
-[A version of this patch has been added to the -mm tree.  That patch
-won't apply cleanly to mainline nor stable trees because of function
-renaming.  This one should.]
+If you mean ceph_file_part shouldn't be inline, definitely.  Beyond that 
+I'm not sure what more to change... it's just a few extra chars on the 
+format string and 2 calls instead of 1?
 
-I noticed that alloc_bootmem_huge_page() will only advance to the
-next node on failure to allocate a huge page.  I asked about this
-on linux-mm and linux-numa, cc'ing the usual huge page suspects.
-Mel Gorman responded:
-
-	I strongly suspect that the same node being used until allocation
-	failure instead of round-robin is an oversight and not deliberate
-	at all. It appears to be a side-effect of a fix made way back in
-	commit 63b4613c3f0d4b724ba259dc6c201bb68b884e1a ["hugetlb: fix
-	hugepage allocation with memoryless nodes"]. Prior to that patch
-	it looked like allocations would always round-robin even when
-	allocation was successful.
-
-Andy Whitcroft countered that the existing behavior looked like Andi
-Kleen's original implementation and suggested that we ask him.  We
-did and Andy replied that his intention was to interleave the
-allocations.  So, ...
-
-This patch moves the advance of the hstate next node from which to
-allocate up before the test for success of the attempted allocation.
-This will unconditionally advance the next node from which to alloc,
-interleaving successful allocations over the nodes with sufficient
-contiguous memory, and skipping over nodes that fail the huge page
-allocation attempt.
-
-Note that alloc_bootmem_huge_page() will only be called for huge pages
-of order > MAX_ORDER.
-
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-
- mm/hugetlb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.31-rc3-mmotm-090715-2057/mm/hugetlb.c
-===================================================================
---- linux-2.6.31-rc3-mmotm-090715-2057.orig/mm/hugetlb.c	2009-07-17 11:30:20.000000000 -0400
-+++ linux-2.6.31-rc3-mmotm-090715-2057/mm/hugetlb.c	2009-07-17 11:37:30.000000000 -0400
-@@ -1010,6 +1010,7 @@ int __weak alloc_bootmem_huge_page(struc
- 				NODE_DATA(h->hugetlb_next_nid),
- 				huge_page_size(h), huge_page_size(h), 0);
- 
-+		hstate_next_node(h);
- 		if (addr) {
- 			/*
- 			 * Use the beginning of the huge page to store the
-@@ -1019,7 +1020,6 @@ int __weak alloc_bootmem_huge_page(struc
- 			m = addr;
- 			goto found;
- 		}
--		hstate_next_node(h);
- 		nr_nodes--;
- 	}
- 	return 0;
-
-
+sage
