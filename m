@@ -1,325 +1,384 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbZGQX0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZGQXaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754948AbZGQX0N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 19:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZGQX0I
+	id S1755319AbZGQXaV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 19:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbZGQXaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 19:26:08 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:3599 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753219AbZGQX0G (ORCPT
+	Fri, 17 Jul 2009 19:30:19 -0400
+Received: from webmail10.mail.sp.isp-net.nl ([217.149.192.62]:34061 "EHLO
+	webmail10.mail.sp.isp-net.nl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751801AbZGQXaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 19:26:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=HtvRzUfsTcHA1+2Pl+ce9Y8WZjvnxsNLE+dtNDt2MohQYY3udInDTPWkQdVRLzHVdg
-         ZMJU0jzGdjxLvLT19SD4claS/J+N1OwuSTHGGb1L2GuuNyW47i8rNB2tIz1oXDK1FdOC
-         8sxusSQKRIF65//yNeEaG/rckAygQlw3qZEH8=
+	Fri, 17 Jul 2009 19:30:17 -0400
+X-Greylist: delayed 1274 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Jul 2009 19:30:17 EDT
+Date: Sat, 18 Jul 2009 01:08:59 +0200
+From: Dick Streefland <dick@streefland.net>
+To: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
+Message-ID: <20090717230859.GB10171@streefland.net>
+References: <20090624021506.GA5871@cr0.nay.redhat.com> <20090624114607.GA10817@streefland.net> <20090624133148.GA12878@streefland.net> <20090629025146.GA5998@cr0.nay.redhat.com> <20090629113613.GA6853@streefland.net> <20090709023855.GA5648@cr0.nay.redhat.com> <20090709082651.GA6165@streefland.net> <20090710075530.GB6263@cr0.nay.redhat.com> <20090710095432.GA9721@streefland.net> <20090717211703.GF7080@merkur.ravnborg.org>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0907171730070.11571@localhost.localdomain>
-References: <1247820229-4983-1-git-send-email-21cnbao@gmail.com>
-	 <alpine.LFD.2.00.0907171523100.11571@localhost.localdomain>
-	 <3c17e3570907170758g337703b7l12e1c262d6f385bf@mail.gmail.com>
-	 <alpine.LFD.2.00.0907171730070.11571@localhost.localdomain>
-Date: Sat, 18 Jul 2009 07:26:05 +0800
-Message-ID: <3c17e3570907171626x3a319425wf0a813c079595f09@mail.gmail.com>
-Subject: Re: [PATCH] Delete redundant IRQ_DISABLED check in irq_thread
-From: Barry Song <21cnbao@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: mingo@redhat.com, dahlmann.thomas@arcor.de,
-       LKML <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090717211703.GF7080@merkur.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Language-Detected: ro
+X-Language-Detected: en
+X-Spam-Scanned: InterNLnet Mail Scan System V2.03
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes. The patch looks great and very intelligible. I think it is
-acceptable and valid. But why not the case you said:
+On Friday 2009-07-17 23:17, Sam Ravnborg wrote:
+| Dick - I lost the original patch.
+| Can you please resend.
+| 
+| In the changelog please include the information that
+| you tested this with relevant grep versions.
 
-> Fact is that the interrupt can be disabled between the thread wake up
-> and the handler thread calling the handler function. So it's a
-> question of correctness not to call the handler when the irq is
-> disabled for the following reason:
+Sure, here it is:
 
-CPU 0                   CPU 1
-hard irq
-    -> thread is woken
-                       disable_irq()
-                       synchronize_irq() returns because
-                       there is no thread running the handler
+======================================================================
 
-thread runs             code which assumes that no irq handler
-    -> calls handler   can run continues.
+I've rewritten the extract-ikconfig script to extract the kernel
+configuration from a kernel compiled with CONFIG_IKCONFIG. The main
+motivation for the rewrite was to remove the dependency on the
+external C program binoffset.c, which is compiled on the initial run.
 
-> That would happen with your patch applied.
+The binoffset executable is invoked with a relative path, which means
+that the old script can only be run from the top of the kernel tree,
+and only when you have write permission in the scripts directory.
+The new script uses tr/grep/tail/zcat only, and can be invoked from
+anywhere. The binoffset.c program has been removed. This script
+requires GNU grep 2.5 (released 2002-03-13) or higher, because the -o
+option was introduced in that version.
 
-be changed to:
-CPU 0                   CPU 1
-hard irq
-    -> thread is woken
-                       disable_irq()
+Signed-off-by: Dick Streefland <dick@streefland.net>
+---
 
-thread runs
-    -> calls handler
+ Documentation/dontdiff   |    1 -
+ scripts/.gitignore       |    1 -
+ scripts/binoffset.c      |  163 ----------------------------------------------
+ scripts/extract-ikconfig |  113 ++++++++++++-------------------
+ 4 files changed, 44 insertions(+), 234 deletions(-)
 
-                       synchronize_irq() returns because both hardirq
-and thread is finished
-                       run continues.
-
-and
-
-CPU 0                   CPU 1
-hard irq
-    -> thread is woken
-
-thread runs
-    -> calls handler
-                        |
-                        | disable_irq()
-                        |
-    thread fn return
-                       synchronize_irq() returns because both hardirq
-and thread is finished.
-                       run continues.
-
-Or synchronize_irq() still returns even thread is not executed or
-running, but add an interface like flush_scheduled_work() for
-work-queue to wait for the return of thread_fn like:
-CPU 0                   CPU 1
-hard irq
-    -> thread is woken
-                       disable_irq()
-                       synchronize_irq() returns because
-                       there is no thread running the handler
-
-thread runs
-    -> calls handler
-                       synchronize_threaded_irq()
-                       run continues.
-
-I guess people call disable_irq to disable the whole execution,
-specially to disable the hardirq(then both top and bottom are
-blocked). It's really strange the disable operation only blocks the
-bottom-half.
-
-And an interrupt is generally a trigger source to trigger other
-executions. And other executions often sync according to the
-interrupt, and seldom control the interrupt enable/disable
-asynchronously. So an asynchronous and unexpected disable_irq() is
-generically called by close/remove/release and so on. Why not let it
-wait for the finish of top and bottom?
-
-
-2009/7/18, Thomas Gleixner <tglx@linutronix.de>:
-> On Fri, 17 Jul 2009, Barry Song wrote:
->> 2009/7/17 Thomas Gleixner <tglx@linutronix.de>:
->> > The correct thing to do is disabling it at the device level if you
->> > need to prevent interrupt storms.
->>
->> For some devices which use level trigger and  buses like spi, i2c.
->> Checking the interrupt source and clear IRQ probably need to
->> read/write the registers of devices by i2c,spi. But i2c, spi access
->> maybe causes schedule based on their driver framework. So the checking
->> operation and clear operation can only be done in process switch. So
->> the only way to avoid interrupt storms is disabling the irq line at
->> hardirq, after clearing irq in the bottom-half by work-queue or
->> thread, then enable it again.
->> For example, a spi touchscreen is touched, then it gives a high level
->> in a GPIO irq line to CPU. CPU enter hardirq, but to clear the high
->> level, it must write the touchscreen by spi, how could it avoid the
->> interrupt storms betweem hardirq and bottom-half if it doesn't disable
->> the irq line since it can't write the spi in hardirq?
->
-> Sigh, I probably don't need to understand why hardware designers come
-> up with such crap. Using a level triggered interrupt for a device
-> which cannot be shut up in the hard interrupt routine is simply
-> moronic. But yeah, we have to live with that. :(
->
-> Removing the disabled check to fix that stupidity and replacing it by
-> a complex accounting mechanism is not an option.
->
-> The patently untested patch below should solve your problem without
-> adding horrible complexity.
->
-> I think that's a straight forward solution to the problem and reflects
-> the semantics of your use case very clearly while it does not touch
-> the disabled logic. You really do not want to disable the interrupt,
-> you want to keep it masked until you can unmask it again. That makes a
-> huge difference.
->
-> All you need to do is to set the irq flow handler of your GPIO pin to
-> handle_level_oneshot_irq and the generic code will take care of it.
->
-> Thanks,
->
-> 	tglx
-> ------
-> diff --git a/include/linux/irq.h b/include/linux/irq.h
-> index cb2e77a..5f22436 100644
-> --- a/include/linux/irq.h
-> +++ b/include/linux/irq.h
-> @@ -194,6 +194,8 @@ struct irq_desc {
->  #endif
->  	atomic_t		threads_active;
->  	wait_queue_head_t       wait_for_threads;
-> +	void			(*thread_eoi)(unsigned int irq,
-> +					      struct irq_desc *desc);
->  #ifdef CONFIG_PROC_FS
->  	struct proc_dir_entry	*dir;
->  #endif
-> @@ -284,6 +286,7 @@ extern irqreturn_t handle_IRQ_event(unsigned int irq,
-> struct irqaction *action);
->   * callable via desc->chip->handle_irq()
->   */
->  extern void handle_level_irq(unsigned int irq, struct irq_desc *desc);
-> +extern void handle_level_oneshot_irq(unsigned int irq, struct irq_desc
-> *desc);
->  extern void handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc);
->  extern void handle_edge_irq(unsigned int irq, struct irq_desc *desc);
->  extern void handle_simple_irq(unsigned int irq, struct irq_desc *desc);
-> diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-> index 13c68e7..2aa072c 100644
-> --- a/kernel/irq/chip.c
-> +++ b/kernel/irq/chip.c
-> @@ -341,27 +341,15 @@ out_unlock:
->  	spin_unlock(&desc->lock);
->  }
->
-> -/**
-> - *	handle_level_irq - Level type irq handler
-> - *	@irq:	the interrupt number
-> - *	@desc:	the interrupt description structure for this irq
-> - *
-> - *	Level type interrupts are active as long as the hardware line has
-> - *	the active level. This may require to mask the interrupt and unmask
-> - *	it after the associated handler has acknowledged the device, so the
-> - *	interrupt line is back to inactive.
-> - */
-> -void
-> -handle_level_irq(unsigned int irq, struct irq_desc *desc)
-> +static void __handle_level_irq(unsigned int irq, struct irq_desc *desc)
->  {
->  	struct irqaction *action;
->  	irqreturn_t action_ret;
->
-> -	spin_lock(&desc->lock);
->  	mask_ack_irq(desc, irq);
->
->  	if (unlikely(desc->status & IRQ_INPROGRESS))
-> -		goto out_unlock;
-> +		return;
->  	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
->  	kstat_incr_irqs_this_cpu(irq, desc);
->
-> @@ -371,7 +359,7 @@ handle_level_irq(unsigned int irq, struct irq_desc
-> *desc)
->  	 */
->  	action = desc->action;
->  	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
-> -		goto out_unlock;
-> +		return;
->
->  	desc->status |= IRQ_INPROGRESS;
->  	spin_unlock(&desc->lock);
-> @@ -382,14 +370,69 @@ handle_level_irq(unsigned int irq, struct irq_desc
-> *desc)
->
->  	spin_lock(&desc->lock);
->  	desc->status &= ~IRQ_INPROGRESS;
-> +}
-> +
-> +/**
-> + *	handle_level_irq - Level type irq handler
-> + *	@irq:	the interrupt number
-> + *	@desc:	the interrupt description structure for this irq
-> + *
-> + *	Level type interrupts are active as long as the hardware line has
-> + *	the active level. This may require to mask the interrupt and unmask
-> + *	it after the associated handler has acknowledged the device, so the
-> + *	interrupt line is back to inactive.
-> + */
-> +void
-> +handle_level_irq(unsigned int irq, struct irq_desc *desc)
-> +{
-> +	spin_lock(&desc->lock);
-> +	__handle_level_irq(irq, desc);
->  	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
->  		desc->chip->unmask(irq);
-> -out_unlock:
->  	spin_unlock(&desc->lock);
->  }
->  EXPORT_SYMBOL_GPL(handle_level_irq);
->
->  /**
-> + *	handle_level_oneshot_irq - Level type oneshot irq handler
-> + *	@irq:	the interrupt number
-> + *	@desc:	the interrupt description structure for this irq
-> + *
-> + *	Level type interrupts are active as long as the hardware line has
-> + *	the active level. This may require to mask the interrupt and unmask
-> + *	it after the associated handler has acknowledged the device, so the
-> + *	interrupt line is back to inactive. The oneshot variant keeps the
-> + *	interrupt masked on return. This allows to use it with devices
-> + *	where the interrupt can not be disabled or acknowledged on the
-> + *	device level in the hard interrupt context (device is on i2c, spi..)
-> + *	The unmask is done when the threaded interrupt has processed the
-> + *	interrupt.
-> + */
-> +void
-> +handle_level_oneshot_irq(unsigned int irq, struct irq_desc *desc)
-> +{
-> +	spin_lock(&desc->lock);
-> +	__handle_level_irq(irq, desc);
-> +	desc->status |= IRQ_MASKED;
-> +	spin_unlock(&desc->lock);
-> +}
-> +EXPORT_SYMBOL_GPL(handle_level_oneshot_irq);
-> +
-> +/*
-> + * One shot mode handlers do not unmask the irq line in the hard
-> + * interrupt context. Unmask when the handler has finished.
-> + */
-> +static void unmask_oneshot_irq(unsigned int irq, struct irq_desc *desc)
-> +{
-> +	spin_lock_irq(&desc->lock);
-> +	if (!(desc->status & IRQ_DISABLED) && (desc->status & IRQ_MASKED)) {
-> +		desc->status &= ~IRQ_MASKED;
-> +		desc->chip->unmask(irq);
-> +	}
-> +	spin_unlock_irq(&desc->lock);
-> +}
-> +
-> +/**
->   *	handle_fasteoi_irq - irq handler for transparent controllers
->   *	@irq:	the interrupt number
->   *	@desc:	the interrupt description structure for this irq
-> @@ -584,6 +627,9 @@ __set_irq_handler(unsigned int irq, irq_flow_handler_t
-> handle, int is_chained,
->  	desc->handle_irq = handle;
->  	desc->name = name;
->
-> +	if (handle == handle_level_oneshot_irq)
-> +		desc->thread_eoi = unmask_oneshot_irq;
-> +
->  	if (handle != handle_bad_irq && is_chained) {
->  		desc->status &= ~IRQ_DISABLED;
->  		desc->status |= IRQ_NOREQUEST | IRQ_NOPROBE;
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index 50da676..d0115d4 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -475,6 +475,8 @@ static int irq_thread(void *data)
->  			spin_unlock_irq(&desc->lock);
->
->  			action->thread_fn(action->irq, action->dev_id);
-> +			if (desc->thread_eoi)
-> +				desc->thread_eoi(action->irq, desc);
->  		}
->
->  		wake = atomic_dec_and_test(&desc->threads_active);
->
+diff --git a/Documentation/dontdiff b/Documentation/dontdiff
+index 88519da..6fef118 100644
+--- a/Documentation/dontdiff
++++ b/Documentation/dontdiff
+@@ -68,7 +68,6 @@ autoconf.h*
+ bbootsect
+ bin2c
+ binkernel.spec
+-binoffset
+ bootsect
+ bounds.h
+ bsetup
+diff --git a/scripts/.gitignore b/scripts/.gitignore
+index 52cab46..c5d5db5 100644
+--- a/scripts/.gitignore
++++ b/scripts/.gitignore
+@@ -6,5 +6,4 @@ kallsyms
+ pnmtologo
+ bin2c
+ unifdef
+-binoffset
+ ihex2fw
+diff --git a/scripts/binoffset.c b/scripts/binoffset.c
+deleted file mode 100644
+index 1a2e39b..0000000
+--- a/scripts/binoffset.c
++++ /dev/null
+@@ -1,163 +0,0 @@
+-/***************************************************************************
+- * binoffset.c
+- * (C) 2002 Randy Dunlap <rdunlap@xenotime.net>
+-
+-#   This program is free software; you can redistribute it and/or modify
+-#   it under the terms of the GNU General Public License as published by
+-#   the Free Software Foundation; either version 2 of the License, or
+-#   (at your option) any later version.
+-#
+-#   This program is distributed in the hope that it will be useful,
+-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-#   GNU General Public License for more details.
+-#
+-#   You should have received a copy of the GNU General Public License
+-#   along with this program; if not, write to the Free Software
+-#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+-
+-# binoffset.c:
+-# - searches a (binary) file for a specified (binary) pattern
+-# - returns the offset of the located pattern or ~0 if not found
+-# - exits with exit status 0 normally or non-0 if pattern is not found
+-#   or any other error occurs.
+-
+-****************************************************************/
+-
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <errno.h>
+-#include <unistd.h>
+-#include <fcntl.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <sys/mman.h>
+-
+-#define VERSION		"0.1"
+-#define BUF_SIZE	(16 * 1024)
+-#define PAT_SIZE	100
+-
+-char		*progname;
+-char		*inputname;
+-int		inputfd;
+-unsigned int	bix;			/* buf index */
+-unsigned char	patterns [PAT_SIZE] = {0}; /* byte-sized pattern array */
+-int		pat_len;		/* actual number of pattern bytes */
+-unsigned char	*madr;			/* mmap address */
+-size_t		filesize;
+-int		num_matches = 0;
+-off_t		firstloc = 0;
+-
+-void usage (void)
+-{
+-	fprintf (stderr, "%s ver. %s\n", progname, VERSION);
+-	fprintf (stderr, "usage:  %s filename pattern_bytes\n",
+-			progname);
+-	fprintf (stderr, "        [prints location of pattern_bytes in file]\n");
+-	exit (1);
+-}
+-
+-void get_pattern (int pat_count, char *pats [])
+-{
+-	int ix, err, tmp;
+-
+-#ifdef DEBUG
+-	fprintf (stderr,"get_pattern: count = %d\n", pat_count);
+-	for (ix = 0; ix < pat_count; ix++)
+-		fprintf (stderr, "  pat # %d:  [%s]\n", ix, pats[ix]);
+-#endif
+-
+-	for (ix = 0; ix < pat_count; ix++) {
+-		tmp = 0;
+-		err = sscanf (pats[ix], "%5i", &tmp);
+-		if (err != 1 || tmp > 0xff) {
+-			fprintf (stderr, "pattern or value error in pattern # %d [%s]\n",
+-					ix, pats[ix]);
+-			usage ();
+-		}
+-		patterns [ix] = tmp;
+-	}
+-	pat_len = pat_count;
+-}
+-
+-void search_pattern (void)
+-{
+-	for (bix = 0; bix < filesize; bix++) {
+-		if (madr[bix] == patterns[0]) {
+-			if (memcmp (&madr[bix], patterns, pat_len) == 0) {
+-				if (num_matches == 0)
+-					firstloc = bix;
+-				num_matches++;
+-			}
+-		}
+-	}
+-}
+-
+-#ifdef NOTDEF
+-size_t get_filesize (int fd)
+-{
+-	off_t end_off = lseek (fd, 0, SEEK_END);
+-	lseek (fd, 0, SEEK_SET);
+-	return (size_t) end_off;
+-}
+-#endif
+-
+-size_t get_filesize (int fd)
+-{
+-	int err;
+-	struct stat stat;
+-
+-	err = fstat (fd, &stat);
+-	fprintf (stderr, "filesize: %ld\n", err < 0 ? (long)err : stat.st_size);
+-	if (err < 0)
+-		return err;
+-	return (size_t) stat.st_size;
+-}
+-
+-int main (int argc, char *argv [])
+-{
+-	progname = argv[0];
+-
+-	if (argc < 3)
+-		usage ();
+-
+-	get_pattern (argc - 2, argv + 2);
+-
+-	inputname = argv[1];
+-
+-	inputfd = open (inputname, O_RDONLY);
+-	if (inputfd == -1) {
+-		fprintf (stderr, "%s: cannot open '%s'\n",
+-				progname, inputname);
+-		exit (3);
+-	}
+-
+-	filesize = get_filesize (inputfd);
+-
+-	madr = mmap (0, filesize, PROT_READ, MAP_PRIVATE, inputfd, 0);
+-	if (madr == MAP_FAILED) {
+-		fprintf (stderr, "mmap error = %d\n", errno);
+-		close (inputfd);
+-		exit (4);
+-	}
+-
+-	search_pattern ();
+-
+-	if (munmap (madr, filesize))
+-		fprintf (stderr, "munmap error = %d\n", errno);
+-
+-	if (close (inputfd))
+-		fprintf (stderr, "%s: error %d closing '%s'\n",
+-				progname, errno, inputname);
+-
+-	fprintf (stderr, "number of pattern matches = %d\n", num_matches);
+-	if (num_matches == 0)
+-		firstloc = ~0;
+-	printf ("%ld\n", firstloc);
+-	fprintf (stderr, "%ld\n", firstloc);
+-
+-	exit (num_matches ? 0 : 2);
+-}
+-
+-/* end binoffset.c */
+diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
+index 72997c3..37f30d3 100755
+--- a/scripts/extract-ikconfig
++++ b/scripts/extract-ikconfig
+@@ -1,78 +1,53 @@
+ #!/bin/sh
+-# extracts .config info from a [b]zImage file
+-# uses: binoffset (new), dd, zcat, strings, grep
+-# $arg1 is [b]zImage filename
+-
+-binoffset="./scripts/binoffset"
+-test -e $binoffset || cc -o $binoffset ./scripts/binoffset.c || exit 1
+-
+-IKCFG_ST="0x49 0x4b 0x43 0x46 0x47 0x5f 0x53 0x54"
+-IKCFG_ED="0x49 0x4b 0x43 0x46 0x47 0x5f 0x45 0x44"
+-dump_config() {
+-    file="$1"
+-
+-    start=`$binoffset $file $IKCFG_ST 2>/dev/null`
+-    [ "$?" != "0" ] && start="-1"
+-    if [ "$start" -eq "-1" ]; then
+-	return
+-    fi
+-    end=`$binoffset $file $IKCFG_ED 2>/dev/null`
+-
+-    start=`expr $start + 8`
+-    size=`expr $end - $start`
+-
+-    dd if="$file" ibs=1 skip="$start" count="$size" 2>/dev/null | zcat
+-
+-    clean_up
+-    exit 0
+-}
+-
+-
+-usage()
++# ----------------------------------------------------------------------
++# extract-ikconfig - Extract the .config file from a kernel image
++#
++# This will only work when the kernel was compiled with CONFIG_IKCONFIG.
++#
++# The obscure use of the "tr" filter is to work around older versions of
++# "grep" that report the byte offset of the line instead of the pattern.
++#
++# (c) 2009, Dick Streefland <dick@streefland.net>
++# Licensed under the terms of the GNU General Public License.
++# ----------------------------------------------------------------------
++
++gz1='\037\213\010'
++gz2='01'
++cf1='IKCFG_ST\037\213\010'
++cf2='0123456789'
++
++dump_config()
+ {
+-	echo "  usage: extract-ikconfig [b]zImage_filename"
+-}
+-
+-clean_up()
+-{
+-	if [ "$TMPFILE" != "" ]; then
+-		rm -f $TMPFILE
++	if	pos=`tr "$cf1\n$cf2" "\n$cf2=" < "$1" | grep -abo "^$cf2"`
++	then
++		pos=${pos%%:*}
++		tail -c+$(($pos+8)) "$1" | zcat -q
++		exit 0
+ 	fi
+ }
+ 
+-if [ $# -lt 1 ]
++# Check invocation:
++me=${0##*/}
++img=$1
++if	[ $# -ne 1 -o ! -s "$img" ]
+ then
+-	usage
+-	exit 1
++	echo "Usage: $me <kernel-image>" >&2
++	exit 2
+ fi
+ 
+-TMPFILE=`mktemp -t ikconfig-XXXXXX` || exit 1
+-image="$1"
+-
+-# vmlinux: Attempt to dump the configuration from the file directly
+-dump_config "$image"
+-
+-GZHDR1="0x1f 0x8b 0x08 0x00"
+-GZHDR2="0x1f 0x8b 0x08 0x08"
+-
+-# vmlinux.gz: Check for a compressed images
+-off=`$binoffset "$image" $GZHDR1 2>/dev/null`
+-[ "$?" != "0" ] && off="-1"
+-if [ "$off" -eq "-1" ]; then
+-	off=`$binoffset "$image" $GZHDR2 2>/dev/null`
+-	[ "$?" != "0" ] && off="-1"
+-fi
+-if [ "$off" -eq "0" ]; then
+-	zcat <"$image" >"$TMPFILE"
+-	dump_config "$TMPFILE"
+-elif [ "$off" -ne "-1" ]; then
+-	(dd ibs="$off" skip=1 count=0 && dd bs=512k) <"$image" 2>/dev/null | \
+-		zcat >"$TMPFILE"
+-	dump_config "$TMPFILE"
+-fi
+-
+-echo "ERROR: Unable to extract kernel configuration information."
+-echo "       This kernel image may not have the config info."
+-
+-clean_up
++# Initial attempt for uncompressed images or objects:
++dump_config "$img"
++
++# That didn't work, so decompress and try again:
++tmp=/tmp/ikconfig$$
++trap "rm -f $tmp" 0
++for	pos in `tr "$gz1\n$gz2" "\n$gz2=" < "$img" | grep -abo "^$gz2"`
++do
++	pos=${pos%%:*}
++	tail -c+$pos "$img" | zcat 2> /dev/null > $tmp
++	dump_config $tmp
++done
++
++# Bail out:
++echo "$me: Cannot find kernel config." >&2
+ exit 1
