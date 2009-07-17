@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933781AbZGQAGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933766AbZGQAG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933781AbZGQAGi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 20:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933690AbZGQAGf
+	id S933766AbZGQAG5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 20:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933706AbZGQAGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 20:06:35 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39148 "EHLO smtp.gentoo.org"
+	Thu, 16 Jul 2009 20:06:55 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39146 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933746AbZGQAGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933726AbZGQAGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 16 Jul 2009 20:06:05 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org, Julia Lawall <julia@diku.dk>,
-       Sonic Zhang <sonic.zhang@analog.com>
-Subject: [PATCH 20/21] arch/blackfin: Add kmalloc NULL tests
-Date: Thu, 16 Jul 2009 20:05:45 -0400
-Message-Id: <1247789146-18786-21-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH 21/21] Blackfin: define HARDIRQ_BITS again for now
+Date: Thu, 16 Jul 2009 20:05:46 -0400
+Message-Id: <1247789146-18786-22-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
 References: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
@@ -23,89 +22,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+The default values of HARDIRQ_BITS and PREEMPT_BITS in common code leads to
+build failure:
 
-Check that the result of kmalloc is not NULL before passing it to other
-functions.
+In file included from include/linux/interrupt.h:12,
+                from include/linux/kernel_stat.h:8,
+                from arch/blackfin/kernel/asm-offsets.c:32:
+include/linux/hardirq.h:66:2: error: #error PREEMPT_ACTIVE is too low!
 
-In the first two cases, the new code returns -ENOMEM, which seems
-compatible with what is done for similar functions for other architectures.
+So until that gets resolved, just declare our own default value again.
 
-In the last two cases, the new code fails silently, ie just returns,
-because the function has void return type.
-
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
-
-// <smpl>
-@@
-expression *x;
-identifier f;
-constant char *C;
-@@
-
-x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-... when != x == NULL
-    when != x != NULL
-    when != (x || ...)
-(
-kfree(x)
-|
-f(...,C,...,x,...)
-|
-*f(...,x,...)
-|
-*x->f
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/mach-common/smp.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ arch/blackfin/include/asm/hardirq.h |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/blackfin/mach-common/smp.c b/arch/blackfin/mach-common/smp.c
-index e6e3429..349ee3f 100644
---- a/arch/blackfin/mach-common/smp.c
-+++ b/arch/blackfin/mach-common/smp.c
-@@ -211,6 +211,8 @@ int smp_call_function(void (*func)(void *info), void *info, int wait)
- 		return 0;
+diff --git a/arch/blackfin/include/asm/hardirq.h b/arch/blackfin/include/asm/hardirq.h
+index cbd52f8..0b78b87 100644
+--- a/arch/blackfin/include/asm/hardirq.h
++++ b/arch/blackfin/include/asm/hardirq.h
+@@ -6,6 +6,9 @@
+ extern void ack_bad_irq(unsigned int irq);
+ #define ack_bad_irq ack_bad_irq
  
- 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	if (!msg)
-+		return -ENOMEM;
- 	INIT_LIST_HEAD(&msg->list);
- 	msg->call_struct.func = func;
- 	msg->call_struct.info = info;
-@@ -252,6 +254,8 @@ int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
- 	cpu_set(cpu, callmap);
++/* Define until common code gets sane defaults */
++#define HARDIRQ_BITS 9
++
+ #include <asm-generic/hardirq.h>
  
- 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	if (!msg)
-+		return -ENOMEM;
- 	INIT_LIST_HEAD(&msg->list);
- 	msg->call_struct.func = func;
- 	msg->call_struct.info = info;
-@@ -287,6 +291,8 @@ void smp_send_reschedule(int cpu)
- 		return;
- 
- 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	if (!msg)
-+		return;
- 	memset(msg, 0, sizeof(msg));
- 	INIT_LIST_HEAD(&msg->list);
- 	msg->type = BFIN_IPI_RESCHEDULE;
-@@ -314,6 +320,8 @@ void smp_send_stop(void)
- 		return;
- 
- 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
-+	if (!msg)
-+		return;
- 	memset(msg, 0, sizeof(msg));
- 	INIT_LIST_HEAD(&msg->list);
- 	msg->type = BFIN_IPI_CPU_STOP;
+ #endif
 -- 
 1.6.3.3
 
