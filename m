@@ -1,207 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbZGQFdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933293AbZGQFdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932998AbZGQFdt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 01:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932790AbZGQFds
+	id S933293AbZGQFdu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 01:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932790AbZGQFdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 01:33:48 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:59533 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932520AbZGQFds (ORCPT
+	Fri, 17 Jul 2009 01:33:50 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:63707 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932603AbZGQFds convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 17 Jul 2009 01:33:48 -0400
-Subject: Re: [PATCH] Convert blackfin to use arch_gettimeoffset()
-From: john stultz <johnstul@us.ibm.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       uclinux-dist-devel@blackfin.uclinux.org
-In-Reply-To: <8bd0f97a0907161926j258da72cg9dd1ca76ea8be2fb@mail.gmail.com>
-References: <1244758210.7192.5.camel@localhost.localdomain>
-	 <1247790356.7398.14.camel@localhost.localdomain>
-	 <8bd0f97a0907161926j258da72cg9dd1ca76ea8be2fb@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 16 Jul 2009 22:33:45 -0700
-Message-Id: <1247808825.674.4.camel@work-vm>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HNblnoKM6CzzXjh/4i+q3pUQblOWa9q7eNjfn2vygXSUtmXyd24M3F89xZFqoFLCLQ
+         KTChtzROnvWyWpwKt98QHj7297R0P3t8KuXWTjJzq0cbywzgq3dBzsXV1m4lXxSxCeT0
+         vzD/NVa+BMOrozx47GlOtP3EPxFjOifjmoCFU=
+MIME-Version: 1.0
+In-Reply-To: <20090717135847.38B3.E1E9C6FF@jp.fujitsu.com>
+References: <3877989d0907160218l4a28791v90ad22cc048c3440@mail.gmail.com>
+	 <20090717135847.38B3.E1E9C6FF@jp.fujitsu.com>
+Date: Fri, 17 Jul 2009 13:33:47 +0800
+Message-ID: <3877989d0907162233x6e5874e5r3b679454160a6077@mail.gmail.com>
+Subject: Re: [RFC patch] delete improper hot pluggable code of memory affinity
+From: Luming Yu <luming.yu@gmail.com>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-16 at 22:26 -0400, Mike Frysinger wrote:
-> On Thu, Jul 16, 2009 at 20:25, john stultz wrote:
-> > This patch converts blackfin to use GENERIC_TIME via the arch_getoffset()
-> > infrastructure, reducing the amount of arch specific code we need to
-> > maintain.
-> >
-> > This patch applies on top of Linus' current -git tree (2.6.31-rc3).
-> >
-> > I've taken my best swing at converting this, but I'm not 100% confident
-> > I got it right. My cross-compiler is now out of date (gcc4.2) so I
-> > wasn't able to  check if it compiled. Any assistance from arch
-> > maintainers or testers to get this merged would be great.
-> 
-> something seems to be off as the Blackfin defconfig now does:
->   LD      .tmp_vmlinux1
-> kernel/built-in.o: In function `clocksource_forward_now':
-> kernel/time/timekeeping.c:82: undefined reference to `arch_gettimeoffset'
-> kernel/built-in.o: In function `getnstimeofday':
-> kernel/time/timekeeping.c:119: undefined reference to `arch_gettimeoffset'
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> most likely because the Blackfin time.c is the old stuff
-> (non-clocksource) while time-ts.c is the newer stuff (clocksource) and
-> this change only touches time.c
+Without a fix like my proposal, I have seen NUMA configure disabled by
+kernel (due to the code the patch deletes) on a system with Enabled
+bit set , and Hotplug-able bit cleared, and
+CONFIG_MEMORY_HOTPLUG_SPARSE disabled.
 
-Ok. So I guess I missed that time.c isn't built if GENERIC_CLOCKEVENTS
-isn't enabled, so ARCH_HAS_GETTIMEOFFSET needs to depend on !
-GENERIC_CLOCKEVENTS.
-
-Hopefully I've got it cleared up now. Let me know if I'm still causing
-trouble.
-
-thanks
--john
-
-
-
-This patch converts blackfin to use GENERIC_TIME via the
-arch_getoffset() infrastructure, reducing the amount of arch specific
-code we need to maintain.
-
-This patch applies on top of Linus' current -git tree (2.6.31-rc3).
-
-I've taken my best swing at converting this, but I'm not 100% confident
-I got it right. My cross-compiler is now out of date (gcc4.2) so I
-wasn't able to  check if it compiled. Any assistance from arch
-maintainers or testers to get this merged would be great.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
----
-
-diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-index 7faa2f5..c8f5c3d 100644
---- a/arch/blackfin/Kconfig
-+++ b/arch/blackfin/Kconfig
-@@ -229,7 +229,7 @@ endchoice
- 
- config SMP
- 	depends on BF561
--	select GENERIC_TIME
-+	select GENERIC_CLOCKEVENTS
- 	bool "Symmetric multi-processing support"
- 	---help---
- 	  This enables support for systems with more than one CPU,
-@@ -612,12 +612,10 @@ comment "Kernel Timer/Scheduler"
- source kernel/Kconfig.hz
- 
- config GENERIC_TIME
--	bool "Generic time"
--	default y
-+	def_bool y
- 
- config GENERIC_CLOCKEVENTS
- 	bool "Generic clock events"
--	depends on GENERIC_TIME
- 	default y
- 
- choice
-@@ -652,6 +650,10 @@ config GPTMR0_CLOCKSOURCE
- 	depends on GENERIC_CLOCKEVENTS
- 	depends on !TICKSOURCE_GPTMR0
- 
-+config ARCH_USES_GETTIMEOFFSET
-+	depends on !GENERIC_CLOCKEVENTS
-+	def_bool y
-+
- source kernel/time/Kconfig
- 
- comment "Misc"
-diff --git a/arch/blackfin/kernel/time.c b/arch/blackfin/kernel/time.c
-index adb54aa..e5069fe 100644
---- a/arch/blackfin/kernel/time.c
-+++ b/arch/blackfin/kernel/time.c
-@@ -81,11 +81,11 @@ time_sched_init(irqreturn_t(*timer_routine) (int, void *))
- #endif
- }
- 
-+#ifdef CONFIG_ARCH_USES_GETTIMEOFFSET
- /*
-  * Should return useconds since last timer tick
-  */
--#ifndef CONFIG_GENERIC_TIME
--static unsigned long gettimeoffset(void)
-+u32 arch_gettimeoffset(void)
- {
- 	unsigned long offset;
- 	unsigned long clocks_per_jiffy;
-@@ -184,65 +184,6 @@ void __init time_init(void)
- 	time_sched_init(timer_interrupt);
- }
- 
--#ifndef CONFIG_GENERIC_TIME
--void do_gettimeofday(struct timeval *tv)
--{
--	unsigned long flags;
--	unsigned long seq;
--	unsigned long usec, sec;
--
--	do {
--		seq = read_seqbegin_irqsave(&xtime_lock, flags);
--		usec = gettimeoffset();
--		sec = xtime.tv_sec;
--		usec += (xtime.tv_nsec / NSEC_PER_USEC);
--	}
--	while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--
--	while (usec >= USEC_PER_SEC) {
--		usec -= USEC_PER_SEC;
--		sec++;
--	}
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--EXPORT_SYMBOL(do_gettimeofday);
--
--int do_settimeofday(struct timespec *tv)
--{
--	time_t wtm_sec, sec = tv->tv_sec;
--	long wtm_nsec, nsec = tv->tv_nsec;
--
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	write_seqlock_irq(&xtime_lock);
--	/*
--	 * This is revolting. We need to set the xtime.tv_usec
--	 * correctly. However, the value in this location is
--	 * is value at the last tick.
--	 * Discover what correction gettimeofday
--	 * would have done, and then undo it!
--	 */
--	nsec -= (gettimeoffset() * NSEC_PER_USEC);
--
--	wtm_sec = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
--	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
--
--	set_normalized_timespec(&xtime, sec, nsec);
--	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
--
--	ntp_clear();
--
--	write_sequnlock_irq(&xtime_lock);
--	clock_was_set();
--
--	return 0;
--}
--EXPORT_SYMBOL(do_settimeofday);
--#endif /* !CONFIG_GENERIC_TIME */
--
- /*
-  * Scheduler clock - returns current time in nanosec units.
-  */
-
-
+On Fri, Jul 17, 2009 at 1:16 PM, Yasunori Goto<y-goto@jp.fujitsu.com> wrote:
+>
+> Hi, Luming-san.
+>
+>> The current kernel code *wrongly* interprets Hot Pluggable bit of
+>> Memory Affinity Structure (SRAT table in ACPI spec).
+>
+> I'm not sure your patch is correct or not yet, but I would like
+> to tell you a critical point about the definition of
+> Memory Affinity Structure.
+>
+> The spec says the Enable bit of Memory Affinity Structure means that
+> the contents of its memory affinity structure is only VALID.
+> It doesn't mean memory is really connected at the area.
+> It means only that OS can read the entry.
+>
+> When the enabled bit and hot pluggable bit is set on,
+> it may mean that the area may be hot-added after boot up.
+> So, kernel must check e820 or efi to confirm that memory is
+> really connected.
+>
+> If you already know it, sorry for noise....
+> Just for your information.
+>
+> Thanks.
+>
+>
+>
+>> if Hot Pluggable bit is set and CONFIG_MEMORY_HOTPLUG_SPARSE is NOT
+>> set, the memory Affinity will
+>> be ignored. And a faked Node will be used...
+>>
+>> An alternative is to enable CONFIG_MEMORY_HOTPLUG_SPARSE *always*
+>> along with acpi_numa_memory_affinity_init.
+>> Please decide which one is appropriate.
+>>
+>> The downside of this patch is *some useful info* is lost and a follow
+>> up patch is needed.
+>>
+>> **The patch is enclosed in text attachment*
+>> **Using web client to send the patch* *
+>> **below is for review, please apply attached  patch*/
+>>
+>> Thanks,
+>> Luming
+>>
+>>
+>> Signed-off-by: Yu Luming <luming.yu@intel.com>
+>>
+>>  srat_64.c |   16 ----------------
+>>  1 file changed, 16 deletions(-)
+>>
+>>
+>> diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+>> index 2dfcbf9..82423e5 100644
+>> --- a/arch/x86/mm/srat_64.c
+>> +++ b/arch/x86/mm/srat_64.c
+>> @@ -172,11 +172,6 @@ acpi_numa_processor_affinity_init(struct
+>> acpi_srat_cpu_affinity *pa)
+>>              pxm, apic_id, node);
+>>  }
+>>
+>> -#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+>> -static inline int save_add_info(void) {return 1;}
+>> -#else
+>> -static inline int save_add_info(void) {return 0;}
+>> -#endif
+>>  /*
+>>   * Update nodes_add[]
+>>   * This code supports one contiguous hot add area per node
+>> @@ -249,9 +244,6 @@ acpi_numa_memory_affinity_init(struct
+>> acpi_srat_mem_affinity *ma)
+>>       }
+>>       if ((ma->flags & ACPI_SRAT_MEM_ENABLED) == 0)
+>>               return;
+>> -
+>> -     if ((ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) && !save_add_info())
+>> -             return;
+>>       start = ma->base_address;
+>>       end = start + ma->length;
+>>       pxm = ma->proximity_domain;
+>> @@ -291,14 +283,6 @@ acpi_numa_memory_affinity_init(struct
+>> acpi_srat_mem_affinity *ma)
+>>       e820_register_active_regions(node, start >> PAGE_SHIFT,
+>>                                    end >> PAGE_SHIFT);
+>>
+>> -     if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
+>> -             update_nodes_add(node, start, end);
+>> -             /* restore nodes[node] */
+>> -             *nd = oldnode;
+>> -             if ((nd->start | nd->end) == 0)
+>> -                     node_clear(node, nodes_parsed);
+>> -     }
+>> -
+>>       node_memblk_range[num_node_memblks].start = start;
+>>       node_memblk_range[num_node_memblks].end = end;
+>>       memblk_nodeid[num_node_memblks] = node;
+>
+> --
+> Yasunori Goto
+>
+>
+>
