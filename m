@@ -1,74 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbZGQBvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933974AbZGQCHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933965AbZGQBvw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 21:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933605AbZGQBvw
+	id S933974AbZGQCHP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 22:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933942AbZGQCHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 21:51:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36906 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933572AbZGQBvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 21:51:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Guanqun Lu <guanqun.lu@intel.com>
-Subject: Re: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
-Date: Fri, 17 Jul 2009 03:52:11 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, jeremy@goop.org
-References: <1247834204-3084-1-git-send-email-guanqun.lu@intel.com>
-In-Reply-To: <1247834204-3084-1-git-send-email-guanqun.lu@intel.com>
+	Thu, 16 Jul 2009 22:07:15 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53725 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933935AbZGQCHN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 22:07:13 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
+Cc: kosaki.motohiro@jp.fujitsu.com, David Rientjes <rientjes@google.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Miao Xie <miaox@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090717095745.1d3039b1.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090717090003.A903.A69D9226@jp.fujitsu.com> <20090717095745.1d3039b1.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20090717104512.A914.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907170352.11749.rjw@sisk.pl>
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 17 Jul 2009 11:07:09 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 July 2009, Guanqun Lu wrote:
-> We currently only bypass IRQF_TIMER in '__disable_irq',
-> but Xen specific IRQs should not be disabled either.
-> This commit adds a new flag to accompolish this goal
-> without being mixed up with IRQF_TIMER flag.
-
-For some obscure reasons [2/3] didn't reach my inbox.  The other 2 patches
-look fine to me.
-
-Best,
-Rafael
-
-
-> Signed-off-by: Guanqun Lu <guanqun.lu@intel.com>
-> ---
->  include/linux/interrupt.h |    1 +
->  kernel/irq/manage.c       |    3 ++-
->  2 files changed, 3 insertions(+), 1 deletions(-)
+> On Fri, 17 Jul 2009 09:04:46 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
-> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-> index 2721f07..99264c3 100644
-> --- a/include/linux/interrupt.h
-> +++ b/include/linux/interrupt.h
-> @@ -58,6 +58,7 @@
->  #define IRQF_PERCPU		0x00000400
->  #define IRQF_NOBALANCING	0x00000800
->  #define IRQF_IRQPOLL		0x00001000
-> +#define IRQF_NO_SUSPEND		0x00002000
->  
->  /*
->   * Bits used by threaded handlers:
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index 50da676..3dc4e74 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -192,7 +192,8 @@ static inline int setup_affinity(unsigned int irq, struct irq_desc *desc)
->  void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
->  {
->  	if (suspend) {
-> -		if (!desc->action || (desc->action->flags & IRQF_TIMER))
-> +		if (!desc->action ||
-> +		    (desc->action->flags & (IRQF_TIMER | IRQF_NO_SUSPEND)))
->  			return;
->  		desc->status |= IRQ_SUSPENDED;
->  	}
+> > > On Wed, 15 Jul 2009, Lee Schermerhorn wrote:
+> > > 
+> > > > Interestingly, on ia64, the top cpuset mems_allowed gets set to all
+> > > > possible nodes, while on x86_64, it gets set to on-line nodes [or nodes
+> > > > with memory].  Maybe this is a to support hot-plug?
+> > > > 
+> > > 
+> > > numactl --interleave=all simply passes a nodemask with all bits set, so if 
+> > > cpuset_current_mems_allowed includes offline nodes from node_possible_map, 
+> > > then mpol_set_nodemask() doesn't mask them off.
+> > > 
+> > > Seems like we could handle this strictly in mempolicies without worrying 
+> > > about top_cpuset like in the following?
+> > 
+> > This patch seems band-aid patch. it will change memory-hotplug behavior.
+> > Please imazine following scenario:
+> > 
+> > 1. numactl interleave=all process-A
+> > 2. memory hot-add
+> > 
+> > before 2.6.30:
+> > 		-> process-A can use hot-added memory
+> > 
+> > your proposal patch:
+> > 		-> process-A can't use hot-added memory
+> > 
+> 
+> IMHO, the application itseld should be notifed to change its mempolicy by
+> hot-plug script on the host. While an application uses interleave, a new node
+> hot-added is just a noise. I think "How pages are interleaved" should not be
+> changed implicitly. Then, checking at set_mempolicy() seems sane. If notified,
+> application can do page migration and rebuild his mapping in ideal way.
+
+Do you really want ABI change?
+
+
+
+> BUT I don't linke init->mem_allowed contains N_POSSIBLE...it should be initialized
+> to N_HIGH_MEMORY, IMHO.
+
+
+
+
