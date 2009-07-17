@@ -1,84 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934320AbZGQJeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934328AbZGQJiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934320AbZGQJeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 05:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934303AbZGQJeS
+	id S934328AbZGQJiQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 05:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934316AbZGQJiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 05:34:18 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:39319 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934302AbZGQJeQ (ORCPT
+	Fri, 17 Jul 2009 05:38:15 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:61808 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934315AbZGQJiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 05:34:16 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=DPhGY77hYHo2Mwit4Txw/xsqfES2oFlQUmxOuWhoIV+w/78BP7wVnTavCEdjujT2i
-	uQXrs1tEZUbBfwfgYF3cw==
-Date: Fri, 17 Jul 2009 02:34:09 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Menage <menage@google.com>
-cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mel@csn.ul.ie, npiggin@suse.de
-Subject: Re: [PATCH] copy over oom_adj value at fork time
-In-Reply-To: <6599ad830907161629p54783716p7246e030b8da00fe@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0907170225570.15373@chino.kir.corp.google.com>
-References: <200906020557.n525v6KO004302@imap1.linux-foundation.org> <6599ad830907141752n5c701f9ap2a87df0a7f4f6ff3@mail.gmail.com> <20090714210557.0f983c37@bree.surriel.com> <6599ad830907141815x64e74a6ek1499f6032cea6f5@mail.gmail.com>
- <6599ad830907161629p54783716p7246e030b8da00fe@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 17 Jul 2009 05:38:14 -0400
+Subject: [RFC PATCH] kmemleak: Scan all thread stacks
+To: linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Fri, 17 Jul 2009 10:38:12 +0100
+Message-ID: <20090717093359.8288.45464.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-rc1-4-ge6bc-dirty
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Jul 2009 09:38:12.0920 (UTC) FILETIME=[4D9F7B80:01CA06C2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Jul 2009, Paul Menage wrote:
+This patch changes the for_each_process() loop with the
+do_each_thread()/while_each_thread() pair. It also replaces the
+read_lock(&tasklist_lock) with rcu_read_lock() and task_lock(p).
 
-> How about if instead of having the oom_adj be per-mm, we kept an array
-> of counters in the mm, tracking how many users were at each oom_adj
-> level; the OOM killer could then use the level of the mm's highest
-> oom_adj user when deciding how to calculate the badness of a thread
-> using that mm.
-> 
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
 
-That would lead to the same inconsistencies that we had before: consider 
-two tasks sharing the same mm_struct, taskA and taskB.  It was previously 
-possible for taskA to have an oom_adj value of -15 and taskB to have an 
-oom_adj value of +15.  This would cause /proc/pid/oom_score to be very 
-small for taskA and oom_score would be very large for taskB.  With your 
-proposal, taskB's badness score would implicitly be very small, yet it is 
-reported to userspace as very high.
+My questions:
 
-The only way to workaround that is by using the highest oom_adj user for 
-the mm_struct from the array in reporting /proc/pid/oom_score, as well.  
-But that would lead to /proc/pid/oom_adj not affecting oom_score at all, 
-which isn't consistent.
+1. Is it correct that for_each_process() used currently by kmemleak may
+   not loop through all the possible kernel thread stacks?
 
-I think you'll find that having oom_adj values purely be an attribute of 
-the memory it represents is the cleanest solution since it most accurately 
-describes how the oom killer interprets it when deciding on which task to 
-kill.
+2. Is it safe to use rcu_read_lock() and task_lock() when scanning the
+   corresponding kernel stack (thread_info structure)? The loop doesn't
+   do any modification to the task list. The reason for this is to
+   allow kernel preemption when scanning the stacks.
 
-> That would preserve the previous semantics of letting a spawned child
-> inherit a per-thread oom_adj value, while avoiding the specific
-> problem of the OOM killer getting livelocked (that David's patch
-> originally addressed) and the more general case of the inconsistency
-> in determining the oom_adj level of an mm depending on which thread
-> you look at.
-> 
+Alternatively, I can hook kmemleak callbacks into the
+alloc_thread_info/free_thread_info structures but many of these are
+architecture-specific.
 
-Right, it's still a little strange that changing /proc/pid/oom_adj for one 
-thread will change it for another if they share memory, even if they are 
-in different thread groups, but that shouldn't happen if the admin 
-understands that the oom killer must kill _all_ threads sharing memory 
-with the target to lead to future memory freeing.
+Thanks,
 
-The inheritance issue should be fixed with Rik's patch with the exception 
-of vfork -> change /proc/pid-of-child/oom_adj -> execve.  If scripts were 
-written to do that with the old behavior, they'll have to adjust to change 
-oom_adj _after_ the execve to avoid changing the oom_adj value of the 
-vfork parent.  If there is no execve, or we're just doing CLONE_VM, then 
-the child shares memory with the parent and, thus, their oom_adj values 
-will be the same.
+Catalin
+
+
+ mm/kmemleak.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
+
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 983f3f6..a933128 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -1064,7 +1064,6 @@ static void kmemleak_scan(void)
+ {
+ 	unsigned long flags;
+ 	struct kmemleak_object *object, *tmp;
+-	struct task_struct *task;
+ 	int i;
+ 	int new_leaks = 0;
+ 	int gray_list_pass = 0;
+@@ -1135,12 +1134,16 @@ static void kmemleak_scan(void)
+ 	 * not enabled by default.
+ 	 */
+ 	if (kmemleak_stack_scan) {
+-		read_lock(&tasklist_lock);
+-		for_each_process(task)
+-			scan_block(task_stack_page(task),
+-				   task_stack_page(task) + THREAD_SIZE,
+-				   NULL, 0);
+-		read_unlock(&tasklist_lock);
++		struct task_struct *p, *g;
++
++		rcu_read_lock();
++		do_each_thread(g, p) {
++			task_lock(p);
++			scan_block(task_stack_page(p), task_stack_page(p) +
++				   THREAD_SIZE, NULL, 0);
++			task_unlock(p);
++		} while_each_thread(g, p);
++		rcu_read_unlock();
+ 	}
+ 
+ 	/*
+
