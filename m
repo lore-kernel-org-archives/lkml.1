@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbZGQUTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZGQUWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753621AbZGQUTl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZGQUTk
+	id S1756029AbZGQUWs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 16:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbZGQUWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:19:40 -0400
-Received: from kroah.org ([198.145.64.141]:43064 "EHLO coco.kroah.org"
+	Fri, 17 Jul 2009 16:22:46 -0400
+Received: from kroah.org ([198.145.64.141]:43102 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753530AbZGQUTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 16:19:38 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:29 2009
-Message-Id: <20090717201228.781324899@mini.kroah.org>
+	id S1754320AbZGQUTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 16:19:45 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:31 2009
+Message-Id: <20090717201231.389120722@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 17 Jul 2009 13:08:54 -0700
+Date: Fri, 17 Jul 2009 13:09:01 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 03/24] tun/tap: Fix crashes if open() /dev/net/tun and then poll() it. (CVE-2009-1897)
+       Sonny Rao <sonnyrao@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       anton@samba.org, rajamony@us.ibm.com, speight@us.ibm.com,
+       mstephen@us.ibm.com, grimm@us.ibm.com, mikey@ozlabs.au.ibm.com,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 10/24] futexes: Fix infinite loop in get_futex_key() on huge page
 References: <20090717200851.907421303@mini.kroah.org>
-Content-Disposition: inline; filename=tun-tap-fix-crashes-if-open-dev-net-tun-and-then-poll-it.patch
+Content-Disposition: inline; filename=futexes-fix-infinite-loop-in-get_futex_key-on-huge-page.patch
 In-Reply-To: <20090717201639.GA14209@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,47 +33,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+From: Sonny Rao <sonnyrao@us.ibm.com>
 
-commit 3c8a9c63d5fd738c261bd0ceece04d9c8357ca13 upstream.
+commit ce2ae53b750abfaa012ce408e93da131a5b5649b upstream.
 
-Fix NULL pointer dereference in tun_chr_pool() introduced by commit
-33dccbb050bbe35b88ca8cf1228dcf3e4d4b3554 ("tun: Limit amount of queued
-packets per device") and triggered by this code:
+get_futex_key() can infinitely loop if it is called on a
+virtual address that is within a huge page but not aligned to
+the beginning of that page.  The call to get_user_pages_fast
+will return the struct page for a sub-page within the huge page
+and the check for page->mapping will always fail.
 
-	int fd;
-	struct pollfd pfd;
-	fd = open("/dev/net/tun", O_RDWR);
-	pfd.fd = fd;
-	pfd.events = POLLIN | POLLOUT;
-	poll(&pfd, 1, 0);
+The fix is to call compound_head on the page before checking
+that it's mapped.
 
-Reported-by: Eugene Kapun <abacabadabacaba@gmail.com>
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sonny Rao <sonnyrao@us.ibm.com>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: anton@samba.org
+Cc: rajamony@us.ibm.com
+Cc: speight@us.ibm.com
+Cc: mstephen@us.ibm.com
+Cc: grimm@us.ibm.com
+Cc: mikey@ozlabs.au.ibm.com
+LKML-Reference: <20090710231313.GA23572@us.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/tun.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ kernel/futex.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/net/tun.c
-+++ b/drivers/net/tun.c
-@@ -486,12 +486,14 @@ static unsigned int tun_chr_poll(struct 
- {
- 	struct tun_file *tfile = file->private_data;
- 	struct tun_struct *tun = __tun_get(tfile);
--	struct sock *sk = tun->sk;
-+	struct sock *sk;
- 	unsigned int mask = 0;
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -241,6 +241,7 @@ again:
+ 	if (err < 0)
+ 		return err;
  
- 	if (!tun)
- 		return POLLERR;
- 
-+	sk = tun->sk;
-+
- 	DBG(KERN_INFO "%s: tun_chr_poll\n", tun->dev->name);
- 
- 	poll_wait(file, &tun->socket.wait, wait);
++	page = compound_head(page);
+ 	lock_page(page);
+ 	if (!page->mapping) {
+ 		unlock_page(page);
 
 
