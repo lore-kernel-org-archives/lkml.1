@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbZGQWMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757947AbZGQWNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757937AbZGQWMz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 18:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbZGQWMy
+	id S1757947AbZGQWNi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 18:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbZGQWNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 18:12:54 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60088 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752688AbZGQWMy (ORCPT
+	Fri, 17 Jul 2009 18:13:37 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:37051 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757887AbZGQWNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 18:12:54 -0400
-To: john stultz <johnstul@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@tglx.de>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Duplicate vsyscall/vdso gettimeofday implementations on x86_64
-From: Andi Kleen <andi@firstfloor.org>
-References: <1247868130.8334.40.camel@localhost.localdomain>
-Date: Sat, 18 Jul 2009 00:12:52 +0200
-In-Reply-To: <1247868130.8334.40.camel@localhost.localdomain> (john stultz's message of "Fri, 17 Jul 2009 15:02:10 -0700")
-Message-ID: <87eisfvtzv.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Fri, 17 Jul 2009 18:13:37 -0400
+Date: Sat, 18 Jul 2009 00:13:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>,
+       Anders Kaseorg <andersk@ksplice.com>
+Subject: Re: [PATCH] Restructure BSS linker script macros.
+Message-ID: <20090717221336.GA7336@merkur.ravnborg.org>
+Mail-Followup-To: Tim Abbott <tabbott@ksplice.com>,
+	Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+	David Howells <dhowells@redhat.com>,
+	Anders Kaseorg <andersk@ksplice.com>
+References: <alpine.DEB.1.10.0907121820360.23364@vinegar-pot.mit.edu> <20090716203432.GB6096@merkur.ravnborg.org> <alpine.DEB.1.10.0907161636090.6798@vinegar-pot.mit.edu> <alpine.DEB.1.10.0907161841210.6798@vinegar-pot.mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0907161841210.6798@vinegar-pot.mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-john stultz <johnstul@us.ibm.com> writes:
+On Thu, Jul 16, 2009 at 06:58:50PM -0400, Tim Abbott wrote:
+> On Thu, 16 Jul 2009, Tim Abbott wrote:
+> 
+> > On Thu, 16 Jul 2009, Sam Ravnborg wrote:
+> > 
+> > > On Sun, Jul 12, 2009 at 06:23:33PM -0400, Tim Abbott wrote:
+> > > > I'd like acks from Sam and David on this one.  Also CCing Paul, since
+> > > > he has a patch from me which will need to be updated to use
+> > > > BSS_SECTION(0, PAGE_SIZE, 4) once this gets merged.
+> [...]
+> > > Could you please resend including the necessary fix for mn10300 so we do not
+> > > break bisecting.
+> > 
+> > I don't understand what you're asking here.  The original patch I sent 
+> > does include the necessary fix for mn10300 in the first hunk (reproduced 
+> > below).  I intentionally changed the mn10300 use at the same time as 
+> > changing the macros in order to avoid breaking bisecting.
+> 
+> I realized that you probably meant that I should resend the sh patch that 
+> I have currently in linux-next via Paul's tree that is broken by this 
+> change.
+> 
+> Paul -- the patch below differs from the version have in two ways:
+> (1) I updated it to use the fixed BSS linker script macros from this 
+> thread.
+> (2) I dropped the hunk that conflicted with a similar change in the percpu 
+> tree[2], as the version of that change in the percpu tree is better.
 
-> I think the implementation in vclock_gettime.c is nice, as it mostly
-> reuses the clock_gettime() code, but I don't think it actually gets
-> called.
+I do not expect Tejun's work to be included until next merge window.
+It would be nice if we could queue up a lot of vmlinux.lds
+cleanup patches so they are ready for next merge window.
+But we should rely on the arch maintainers mostly - as you nicely
+have done for sh here.
 
-It depends on what glibc uses.
-
-> Andi: You wrote the vclock_gettime.c, do you have any pointers about
-> where you were going with this? Is there a reason you didn't clean it up
-> when you implemented it originally?
-
-The old style vsyscall cannot call the vDSO because it doesn't know
-where it is mapped. And the new style vDSO cannot necessarily
-call the old one vsyscall because there were plans 
-to removing the old style vsyscall for some new programs to avoid
-the last non randomized mapping (but that never got implemented). 
-
-That is why there are two different ways to do this.
-
-Neither can also call into the kernel of course.
-
-In the current setup you could call into the static vsyscall, 
-but that might need to be revised later.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	Sam
