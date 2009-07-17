@@ -1,137 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933950AbZGQBoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933948AbZGQBul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933950AbZGQBoN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 21:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933931AbZGQBoM
+	id S933948AbZGQBul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 21:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757603AbZGQBuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 21:44:12 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:57971 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933497AbZGQBoL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 21:44:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jLyWTq6Wcm87OINHF9PvmPmGAB/+BCaiK/FfMLtFNjhcy5F3v37GYDMIjNE8BPGCzh
-         WBN2V+9tGSa8N5Ird5YUmQ0acm1nvAvzwhAOH08I5/Ub/qcS2jb/b7iS0ODmoeg4McuT
-         rAB6yw45/2J76mU386Bdy+z6YyW/+hJKVwE+g=
-MIME-Version: 1.0
-In-Reply-To: <20090716233836.GF27757@cs.fsu.edu>
-References: <1247412708.6704.105.camel@laptop> <1247505941.7500.39.camel@twins>
-	 <5B78D181-E446-4266-B9DD-AC0A2629C638@soe.ucsc.edu>
-	 <20090713201305.GA25386@cs.fsu.edu> <4A5BAAE7.5020906@nortel.com>
-	 <20090715231109.GH14993@cs.fsu.edu> <1247731113.15471.24.camel@twins>
-	 <20090716221514.GC27757@cs.fsu.edu>
-	 <1ca41c0f0907161534j1918bb44m73f8005d47258534@mail.gmail.com>
-	 <20090716233836.GF27757@cs.fsu.edu>
-Date: Thu, 16 Jul 2009 21:44:09 -0400
-Message-ID: <1ca41c0f0907161844l14176743y3520b1376389bfc@mail.gmail.com>
-Subject: Re: RFC for a new Scheduling policy/class in the Linux-kernel
-From: Karthik Singaram Lakshmanan <karthiksingaram@gmail.com>
-To: Ted Baker <baker@cs.fsu.edu>
-Cc: Peter Zijlstra <peterz@infradead.org>, Chris Friesen <cfriesen@nortel.com>,
-       Noah Watkins <jayhawk@soe.ucsc.edu>, Raistlin <raistlin@linux.it>,
-       Douglas Niehaus <niehaus@ittc.ku.edu>, Henrik Austad <henrik@austad.us>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       Linux RT <linux-rt-users@vger.kernel.org>,
-       Fabio Checconi <fabio@gandalf.sssup.it>,
-       "James H. Anderson" <anderson@cs.unc.edu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       KUSP Google Group <kusp@googlegroups.com>,
-       Tommaso Cucinotta <cucinotta@sssup.it>,
-       Giuseppe Lipari <lipari@retis.sssup.it>, Raj Rajkumar <raj@ece.cmu.edu>,
-       dionisio@sei.cmu.edu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 16 Jul 2009 21:50:40 -0400
+Received: from mga01.intel.com ([192.55.52.88]:37068 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757613AbZGQBuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 21:50:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,414,1243839600"; 
+   d="scan'208";a="708568971"
+Subject: Re: [PATCH 8/8] i8042: support device async suspend & shutdown
+From: Zhang Rui <rui.zhang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Arjan van de Ven <arjan@linux.intel.com>
+In-Reply-To: <20090715003716.GE2360@ucw.cz>
+References: <1247643522.26272.83.camel@rzhang-dt>
+	 <20090715003716.GE2360@ucw.cz>
+Content-Type: text/plain
+Date: Fri, 17 Jul 2009 09:51:28 +0800
+Message-Id: <1247795488.26272.227.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This does not solve the problem of avoiding queue reordering in
-> response to dynamic priority changes, since where you insert the
-> task in the queue (including the bit setting for the priority and
-> the linking/unlinking) depends on the curent priority.
->
+On Wed, 2009-07-15 at 08:37 +0800, Pavel Machek wrote:
+> On Wed 2009-07-15 15:38:42, Zhang Rui wrote:
+> > 
+> > i8042 controller support device async actions.
+> > 
+> > If boot option "dev_async_action" is added,
+> > i8042 controller and its child devices can be
+> > suspended/resumed/shutdown asynchronously.
+> > 
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  drivers/input/serio/i8042.c |   10 +++++++++-
+> >  1 file changed, 9 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/drivers/input/serio/i8042.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/input/serio/i8042.c
+> > +++ linux-2.6/drivers/input/serio/i8042.c
+> > @@ -1284,14 +1284,21 @@ static int __init i8042_init(void)
+> >  		goto err_unregister_driver;
+> >  	}
+> >  
+> > -	err = platform_device_add(i8042_platform_device);
+> > +	err = dev_async_register(&i8042_platform_device->dev,
+> > +			DEV_ASYNC_SUSPEND | DEV_ASYNC_SHUTDOWN);
+> >  	if (err)
+> >  		goto err_free_device;
+> >  
+> > +	err = platform_device_add(i8042_platform_device);
+> > +	if (err)
+> > +		goto err_dev_async_unregister;
+> > +
+> >  	panic_blink = i8042_panic_blink;
+> >  
+> >  	return 0;
+> >  
+> > + err_dev_async_unregister:
+> > +	dev_async_unregister(&i8042_platform_device->dev);
+> 
+> 
+> >   err_free_device:
+> >  	platform_device_put(i8042_platform_device);
+> >   err_unregister_driver:
+> > @@ -1304,6 +1311,7 @@ static int __init i8042_init(void)
+> >  
+> >  static void __exit i8042_exit(void)
+> >  {
+> > +	dev_async_unregister(&i8042_platform_device->dev);
+> >  	platform_device_unregister(i8042_platform_device);
+> >  	platform_driver_unregister(&i8042_driver);
+> >  	i8042_platform_exit();
+> 
+> Could we get the core to do async_unregister during device_unregister?
+> 
+yes, we can.
+I think it's a little strange that drivers need to invoke
+dev_async_register to register an async device group, but don't need to
+call dev_async_unregister to unregister it.
 
-I completely agree with this. The bit map needs to be modified for
-dynamic priority changes. However, atomic operations (like
-Compare-And-Swap) can be used to modify the bitmap. Barring any
-(highly unlikely but bounded) contention scenarios from other
-processors, this implementation would still continue to be efficient
-than maintaining a priority-ordered queue.
+> Or maybe better, just add flags during device_add?
+> 
+Many devices don't know if they support async actions or not during
+device initialization time, like PCI and ACPI devices.
+If we want to create an async group for a PCI device, we have to call
+dev_async_register in the specified PCI device driver, rather than in
+the PCI bus scan stage.
 
-> By the way, the use of bit-maps is very appealing for the O(1)
-> operations, including bit-scan, especially if your machine has
-> atomic set/test bit instructions.  We used this structure for some
-> single-processor RT kernels in the 1980's.  The task scheduling
-> and sleep/wakeup operations were just a few instructions.  However
-> the use of bit-maps forced us to set a fixed limit on the number
-> of tasks in the system.  We also could not change priorities
-> without doing an ugly (non-atomic) re-shuffling of the structures.
->
-> You are proposing one bit per priority level, of course, rather
-> than one bit per task.  This allows you to use linked lists within
-> priorities, but you lose the one-instruction suspend/unsuspend.
->
+thanks,
+rui
 
-We can still maintain the O(1) instruction-suspend/unsuspend, if we
-maintain a counter for each priority level.
-
-(a) When a task suspends on a lock, we can do an atomic increment of
-the counter for its priority level and set the bit on the priority map
-of tasks waiting for the lock. Attaching the task to a
-per-priority-level linked list queue should take O(1) assuming that
-there is a tail pointer.
-
-(b) When the lock is released, find the highest priority bit set on
-the lock's priority map, index into the appropriate per-priority-level
-linked list, and wake up the task at the head of the queue (delete
-operation with O(1)). Do an atomic decrement of the counter, if it
-reaches zero unset the bit on the priority map.
-
-While there are still contention issues that arise with updating the
-linked list and counters, these are restricted to tasks within the
-same priority level (highly unlikely that multiple tasks from the same
-priority level decide to acquire the same lock within a window of a
-couple of instructions), and should be much less than the contention
-arising from all the tasks in the system.
-
-> It is not immediately obvious how to extend this technique to
-> deadline-based scheduling.
->
-> There can only be a finite number of distinct deadlines in a
-> system at any one time.  So at any point in time a finite number
-> of bits is sufficient.  The problem is that the deadlines are
-> advancing, so a fixed mapping of bit positions to deadlines does
-> not work.
->
-> There is one way this can be used with EDF, at least for a single
-> processor, which is related to the way I came up with the SRP.  If
-> you keep a stack of preempting tasks (earliest deadline on top),
-> the positions in the stack do map nicely to a bit vector.
->
-> You then need some other structure for the tasks with deadlines
-> later than the bottom of your stack.
->
-Yes. I did not think about EDF based schedulers when I proposed the
-implementation mechanism. I believe we can work on the SRP idea to get
-a corresponding version for EDF.
-
-> I don't see how this generalizes to SMP.
->
-
-I agree that there needs to be more work to generalize the idea to EDF
-based schedulers on SMP, however, the idea still applies to
-fixed-priority scheduling in the SMP context. Many SMP processors
-support atomic instructions (for example:
-http://software.intel.com/en-us/articles/implementing-scalable-atomic-locks-for-multi-core-intel-em64t-and-ia32-architectures/).
-We can utilize these instructions to efficiently implement such locks
-at least in fixed-priority schedulers (like Deadline Monotonic
-Schedulers) for SMP systems.
-
-Thanks
-- Karthik
