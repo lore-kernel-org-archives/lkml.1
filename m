@@ -1,73 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757960AbZGQW0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbZGQWad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757960AbZGQW0j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 18:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZGQW0i
+	id S1757965AbZGQWad (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 18:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZGQWac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 18:26:38 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:49204 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757862AbZGQW0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 18:26:38 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <4A60FAB2.6030906@crca.org.au>
-Date: Sat, 18 Jul 2009 08:26:58 +1000
-From: Nigel Cunningham <ncunningham@crca.org.au>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
-       Ingo Molnar <mingo@elte.hu>, Nathan Lynch <ntl@pobox.com>,
-       Nigel Cunningham <nigel@tuxonice.net>, stable@kernel.org,
-       containers@lists.linux-foundation.org,
-       linux-pm@lists.linux-foundation.org, Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting of frozen
- tasks really
-References: <20090717121545.489258927@linutronix.de>  <20090717122103.225652146@linutronix.de> <1247833910.15751.61.camel@twins> <alpine.LFD.2.00.0907171441020.11571@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0907171441020.11571@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 17 Jul 2009 18:30:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50386 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757419AbZGQWac (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 18:30:32 -0400
+Date: Fri, 17 Jul 2009 15:29:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: ebiederm@xmission.com, xiyou.wangcong@gmail.com, tao.ma@oracle.com,
+       linux-kernel@vger.kernel.org, adobriyan@gmail.com,
+       mtk.manpages@gmail.com, y-goto@jp.fujitsu.com
+Subject: Re: [RESEND Patch] kcore: remove its pointless size
+Message-Id: <20090717152955.6585cbf9.akpm@linux-foundation.org>
+In-Reply-To: <20090702094138.f86ead92.kamezawa.hiroyu@jp.fujitsu.com>
+References: <m11vpqvozl.fsf@fess.ebiederm.org>
+	<20090613040958.GA2959@cr0>
+	<m17hzdhkr8.fsf@fess.ebiederm.org>
+	<2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
+	<m1my88568n.fsf@fess.ebiederm.org>
+	<20090618030051.GA6133@cr0.nay.redhat.com>
+	<m1tz2ei54r.fsf@fess.ebiederm.org>
+	<20090618044055.GB6133@cr0.nay.redhat.com>
+	<m1prd2rtdf.fsf@fess.ebiederm.org>
+	<20090622085405.GA6499@cr0.nay.redhat.com>
+	<20090630100850.GD5873@cr0.nay.redhat.com>
+	<20090701144742.6ce3535b.akpm@linux-foundation.org>
+	<m14otwq94e.fsf@fess.ebiederm.org>
+	<20090701171249.004968e8.akpm@linux-foundation.org>
+	<20090702094138.f86ead92.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Thu, 2 Jul 2009 09:41:38 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Thomas Gleixner wrote:
-> On Fri, 17 Jul 2009, Peter Zijlstra wrote:
+> On Wed, 1 Jul 2009 17:12:49 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
->> On Fri, 2009-07-17 at 12:25 +0000, Thomas Gleixner wrote:
->>> plain text document attachment (freezer-fix-accounting-for-real.patch)
->>> commit e3c8ca8336 (sched: do not count frozen tasks toward load) broke
->>> the nr_uninterruptible accounting on freeze/thaw. On freeze the task
->>> is excluded from accounting with a check for (task->flags &
->>> PF_FROZEN), but that flag is cleared before the task is thawed. So
->>> while we prevent that the freezing task with state
->>> TASK_UNINTERRUPTIBLE is accounted to nr_uninterruptible we decrement
->>> nr_uninterruptible on thaw.
->>>
->>> Use a separate flag which is handled by the freezing task itself. Set
->>> it before calling the scheduler with TASK_UNINTERRUPTIBLE state and
->>> clear it after we return from frozen state.
->> Right, so I'm wondering why we don't fully revert e3c8ca8336 to begin
->> with.
+> > On Wed, 01 Jul 2009 16:25:05 -0700 ebiederm@xmission.com (Eric W. Biederman) wrote:
+> > > Which is better than showing a random number of dubious relationship
+> > > to the size we normally show.  That code is just a maintenance problem.
+> > 
+> > Well it's not just that st_size is wrong before the first read.  It's
+> > also wrong after memory hot-add, up until the next read.
+> > 
+> And I found kclist_add() is not called at memory hotplug...
 > 
-> Fine with me, but it seems that the cgroup folks have some luser space
-> stuff looking at proc/loadavg which goes berserk when loadavg
-> increases rapidly due to freezing. OTOH that stuff seems to be
-> oblivious to the fact that the commit in question brings loadavg
-> irreversibly to 0 when you do enough freeze/thaw cycles.
+> 
+> > > > If so, should we run get_kcore_size() in proc_kcore_init(), perhaps?
+> > > >
+> > > > In fact, do we need to run get_kcore_size() more than once per boot? 
+> > > >
+> > > > AFAICT we only run kclist_add() during bootup, so if proc_kcore_init()
+> > > > is called at the appropriate time, we can permanently cache its result?
+> > > >
+> > > > In which case get_kcore_size() and kclist_add() can be marked __init.
+> > > >
+> > > > Maybe that's all wrong - I didn't look terribly closely.
+> > > 
+> > > Memory hot add I expect is the excuse.  There is more that could be
+> > > done.  But this patch is an obvious bit of chipping away nonsense
+> > > code.
+> > 
+> > We have the infrastructure to get this right, I think:
+> > 
+> > - run
+> > 
+> > 	proc_root_kcore->size = get_kcore_size(...)
+> > 
+> >   within proc_kcore_init()
+> > 
+> yes, seems sane.
+> 
+> 
+> > - register a memory-hotplug notifier and each time memory goes online
+> >   or offline, rerun
+> > 
+> > 	proc_root_kcore->size = get_kcore_size(...)
+> > 
+> yes. and we need kclist_add() under memory hotplug.
+> 
+> 
+> > - stop running get_kcore_size() within read_kcore().
+> > 
+> > I suspect that read_kcore() will not behave well if a memory hotplug
+> > operation happens concurrently.  But that's a separate problem.
+> > 
+> > (hopefully cc's some memory-hotplug people)
+> > 
+> Maybe no problem. I don't think people does memory hotplug while he reads
+> /proc/kcore. (It sounds like modify coredump while investigating it.)
+> 
 
-That's right. I don't remember the exact details (it's been ages since
-this was first reported to me), but sendmail (IIRC) was looking at the
-load average and stopping delivery until it dropped sufficiently.
+I think I'm about to forget about the above issues.  If everyone else
+does the same, they won't get addressed.  Oh well.
 
-Historically, my solution has been to save and restore the load average
-values (on the theory that hibernation should be transparent to
-userspace), but I dropped that in favour of this approach.
+And I still need to decide whether
+kcore-fix-proc-kcores-statst_size.patch fixes things up sufficiently
+well to justify merging it.
 
-Regards,
-
-Nigel
