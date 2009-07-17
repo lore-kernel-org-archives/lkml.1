@@ -1,90 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933726AbZGQAJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933697AbZGQAOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933726AbZGQAJP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 20:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933703AbZGQAJN
+	id S933697AbZGQAOz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 20:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933655AbZGQAOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 20:09:13 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39122 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933692AbZGQAFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 20:05:54 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 09/21] Blackfin: fix early_dma_memcpy() handling of busy channels
-Date: Thu, 16 Jul 2009 20:05:34 -0400
-Message-Id: <1247789146-18786-10-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
-References: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
+	Thu, 16 Jul 2009 20:14:55 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:34813 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933647AbZGQAOx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 20:14:53 -0400
+Subject: [RESEND] [PATCH] Convert alpha to use arch_gettimeoffset()
+From: john stultz <johnstul@us.ibm.com>
+To: rth@twiddle.net, ink@jurassic.park.msu.ru
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 16 Jul 2009 17:14:07 -0700
+Message-Id: <1247789647.7398.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The early logic to locate a free DMA channel and then set it up was broken
-in a few ways that only manifested itself when we needed to set up more
-than 2 on chip SRAM regions (most board defaults setup 1 or 2).  First, we
-checked the wrong status register (the destination gets updated, not the
-source) and second, we did the ssync before rather than after resetting a
-DMA config register.
+This patch converts alpha to use GENERIC_TIME via the arch_getoffset()
+infrastructure, reducing the amount of arch specific code we need to
+maintain.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+I suspect the alpha arch could even be further improved to provide and
+rpcc() based clocksource, but not having the hardware, I don't feel
+comfortable attempting the more complicated conversion (but I'd be glad
+to help if anyone else is interested).
+
+This patch applies on top of Linus' current -git tree (2.6.31-rc3).
+
+I've taken my best swing at converting this, but I'm not 100% confident
+I got it right. My cross-compiler is now too old, so I couldn't check if
+it builds. So any assistance from arch maintainers or testers to get
+this merged would be great.
+
+thanks
+-john
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 ---
- arch/blackfin/kernel/bfin_dma_5xx.c |   29 ++++++++++++++---------------
- 1 files changed, 14 insertions(+), 15 deletions(-)
 
-diff --git a/arch/blackfin/kernel/bfin_dma_5xx.c b/arch/blackfin/kernel/bfin_dma_5xx.c
-index e0bf8cc..9f9b828 100644
---- a/arch/blackfin/kernel/bfin_dma_5xx.c
-+++ b/arch/blackfin/kernel/bfin_dma_5xx.c
-@@ -253,32 +253,31 @@ void __init early_dma_memcpy(void *pdst, const void *psrc, size_t size)
- 	BUG_ON(src % 4);
- 	BUG_ON(size % 4);
+ Kconfig       |    8 ++++++
+ kernel/time.c |   72 +++-------------------------------------------------------
+ 2 files changed, 12 insertions(+), 68 deletions(-)
+
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 9fb8aae..4434481 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -45,6 +45,14 @@ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
  
--	/* Force a sync in case a previous config reset on this channel
--	 * occurred.  This is needed so subsequent writes to DMA registers
--	 * are not spuriously lost/corrupted.
--	 */
--	__builtin_bfin_ssync();
--
- 	src_ch = 0;
- 	/* Find an avalible memDMA channel */
- 	while (1) {
--		if (!src_ch || src_ch == (struct dma_register *)MDMA_S1_NEXT_DESC_PTR) {
--			dst_ch = (struct dma_register *)MDMA_D0_NEXT_DESC_PTR;
--			src_ch = (struct dma_register *)MDMA_S0_NEXT_DESC_PTR;
--		} else {
-+		if (src_ch == (struct dma_register *)MDMA_S0_NEXT_DESC_PTR) {
- 			dst_ch = (struct dma_register *)MDMA_D1_NEXT_DESC_PTR;
- 			src_ch = (struct dma_register *)MDMA_S1_NEXT_DESC_PTR;
-+		} else {
-+			dst_ch = (struct dma_register *)MDMA_D0_NEXT_DESC_PTR;
-+			src_ch = (struct dma_register *)MDMA_S0_NEXT_DESC_PTR;
- 		}
- 
--		if (!bfin_read16(&src_ch->cfg)) {
-+		if (!bfin_read16(&src_ch->cfg))
-+			break;
-+		else if (bfin_read16(&dst_ch->irq_status) & DMA_DONE) {
-+			bfin_write16(&src_ch->cfg, 0);
- 			break;
--		} else {
--			if (bfin_read16(&src_ch->irq_status) & DMA_DONE)
--				bfin_write16(&src_ch->cfg, 0);
- 		}
--
- 	}
- 
-+	/* Force a sync in case a previous config reset on this channel
-+	 * occurred.  This is needed so subsequent writes to DMA registers
-+	 * are not spuriously lost/corrupted.
-+	 */
-+	__builtin_bfin_ssync();
++config GENERIC_TIME
++	bool
++	default y
 +
- 	/* Destination */
- 	bfin_write32(&dst_ch->start_addr, dst);
- 	bfin_write16(&dst_ch->x_count, size >> 2);
--- 
-1.6.3.3
++config ARCH_USES_GETTIMEOFFSET
++	bool
++	default y
++
+ config ZONE_DMA
+ 	bool
+ 	default y
+diff --git a/arch/alpha/kernel/time.c b/arch/alpha/kernel/time.c
+index b04e2cb..8f7eb6d 100644
+--- a/arch/alpha/kernel/time.c
++++ b/arch/alpha/kernel/time.c
+@@ -408,28 +408,17 @@ time_init(void)
+  * part.  So we can't do the "find absolute time in terms of cycles" thing
+  * that the other ports do.
+  */
+-void
+-do_gettimeofday(struct timeval *tv)
++u32 arch_gettimeoffset(void)
+ {
+-	unsigned long flags;
+-	unsigned long sec, usec, seq;
+ 	unsigned long delta_cycles, delta_usec, partial_tick;
+ 
+-	do {
+-		seq = read_seqbegin_irqsave(&xtime_lock, flags);
+-
+-		delta_cycles = rpcc() - state.last_time;
+-		sec = xtime.tv_sec;
+-		usec = (xtime.tv_nsec / 1000);
+-		partial_tick = state.partial_tick;
+-
+-	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-
+ #ifdef CONFIG_SMP
+ 	/* Until and unless we figure out how to get cpu cycle counters
+ 	   in sync and keep them there, we can't use the rpcc tricks.  */
+ 	delta_usec = 0;
+ #else
++	delta_cycles = rpcc() - state.last_time;
++	partial_tick = state.partial_tick;
+ 	/*
+ 	 * usec = cycles * ticks_per_cycle * 2**48 * 1e6 / (2**48 * ticks)
+ 	 *	= cycles * (s_t_p_c) * 1e6 / (2**48 * ticks)
+@@ -448,62 +437,9 @@ do_gettimeofday(struct timeval *tv)
+ 	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
+ #endif
+ 
+-	usec += delta_usec;
+-	if (usec >= 1000000) {
+-		sec += 1;
+-		usec -= 1000000;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int
+-do_settimeofday(struct timespec *tv)
+-{
+-	time_t wtm_sec, sec = tv->tv_sec;
+-	long wtm_nsec, nsec = tv->tv_nsec;
+-	unsigned long delta_nsec;
+-
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_seqlock_irq(&xtime_lock);
+-
+-	/* The offset that is added into time in do_gettimeofday above
+-	   must be subtracted out here to keep a coherent view of the
+-	   time.  Without this, a full-tick error is possible.  */
+-
+-#ifdef CONFIG_SMP
+-	delta_nsec = 0;
+-#else
+-	delta_nsec = rpcc() - state.last_time;
+-	delta_nsec = (delta_nsec * state.scaled_ticks_per_cycle 
+-		      + state.partial_tick) * 15625;
+-	delta_nsec = ((delta_nsec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
+-	delta_nsec *= 1000;
+-#endif
+-
+-	nsec -= delta_nsec;
+-
+-	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+-	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
+-
+-	set_normalized_timespec(&xtime, sec, nsec);
+-	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
+-
+-	ntp_clear();
+-
+-	write_sequnlock_irq(&xtime_lock);
+-	clock_was_set();
+-	return 0;
++	return delta_usec * 1000;
+ }
+ 
+-EXPORT_SYMBOL(do_settimeofday);
+-
+-
+ /*
+  * In order to set the CMOS clock precisely, set_rtc_mmss has to be
+  * called 500 ms after the second nowtime has started, because when
+
 
