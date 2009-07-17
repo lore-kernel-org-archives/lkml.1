@@ -1,48 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751574AbZGQS4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbZGQTDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751574AbZGQS4r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 14:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZGQS4q
+	id S1751724AbZGQTDd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 15:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZGQTDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 14:56:46 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57766 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbZGQS4p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 14:56:45 -0400
-Date: Fri, 17 Jul 2009 20:56:41 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Sage Weil <sage@newdream.net>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 18/20] ceph: debugging
-Message-ID: <20090717185641.GH8046@one.firstfloor.org>
-References: <1247693090-27796-13-git-send-email-sage@newdream.net> <1247693090-27796-14-git-send-email-sage@newdream.net> <1247693090-27796-15-git-send-email-sage@newdream.net> <1247693090-27796-16-git-send-email-sage@newdream.net> <1247693090-27796-17-git-send-email-sage@newdream.net> <1247693090-27796-18-git-send-email-sage@newdream.net> <1247693090-27796-19-git-send-email-sage@newdream.net> <87d480x16p.fsf@basil.nowhere.org> <Pine.LNX.4.64.0907161014330.8026@cobra.newdream.net> <Pine.LNX.4.64.0907171010470.23194@cobra.newdream.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907171010470.23194@cobra.newdream.net>
-User-Agent: Mutt/1.4.2.2i
+	Fri, 17 Jul 2009 15:03:33 -0400
+Received: from www.tglx.de ([62.245.132.106]:36581 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751002AbZGQTDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 15:03:32 -0400
+Date: Fri, 17 Jul 2009 21:01:41 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Barry Song <21cnbao@gmail.com>
+cc: mingo@redhat.com, dahlmann.thomas@arcor.de,
+       LKML <linux-kernel@vger.kernel.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] Delete redundant IRQ_DISABLED check in irq_thread
+In-Reply-To: <3c17e3570907170758g337703b7l12e1c262d6f385bf@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0907171730070.11571@localhost.localdomain>
+References: <1247820229-4983-1-git-send-email-21cnbao@gmail.com>  <alpine.LFD.2.00.0907171523100.11571@localhost.localdomain> <3c17e3570907170758g337703b7l12e1c262d6f385bf@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good.
+On Fri, 17 Jul 2009, Barry Song wrote:
+> 2009/7/17 Thomas Gleixner <tglx@linutronix.de>:
+> > The correct thing to do is disabling it at the device level if you
+> > need to prevent interrupt storms.
+>
+> For some devices which use level trigger and  buses like spi, i2c.
+> Checking the interrupt source and clear IRQ probably need to
+> read/write the registers of devices by i2c,spi. But i2c, spi access
+> maybe causes schedule based on their driver framework. So the checking
+> operation and clear operation can only be done in process switch. So
+> the only way to avoid interrupt storms is disabling the irq line at
+> hardirq, after clearing irq in the bottom-half by work-queue or
+> thread, then enable it again.
+> For example, a spi touchscreen is touched, then it gives a high level
+> in a GPIO irq line to CPU. CPU enter hardirq, but to clear the high
+> level, it must write the touchscreen by spi, how could it avoid the
+> interrupt storms betweem hardirq and bottom-half if it doesn't disable
+> the irq line since it can't write the spi in hardirq?
 
-Sorry for not doing more (and more serious) reviews, not enough
-time right now.
+Sigh, I probably don't need to understand why hardware designers come
+up with such crap. Using a level triggered interrupt for a device
+which cannot be shut up in the hard interrupt routine is simply
+moronic. But yeah, we have to live with that. :(
 
-> #define _dout(fmt, args...)						\
-> 	pr_debug(" %12.12s:%-4d : " fmt "%s",				\
-> 		 ceph_file_part(__FILE__, sizeof(__FILE__)),		\
-> 		 __LINE__, args);
+Removing the disabled check to fix that stupidity and replacing it by
+a complex accounting mechanism is not an option.
 
-That seems like a wasteful way to do this -- i bet you could
-shrink binary size with debugging on considerably if you move
-the file_part into a function.
+The patently untested patch below should solve your problem without
+adding horrible complexity.
 
--Andi
+I think that's a straight forward solution to the problem and reflects
+the semantics of your use case very clearly while it does not touch
+the disabled logic. You really do not want to disable the interrupt,
+you want to keep it masked until you can unmask it again. That makes a
+huge difference.
 
+All you need to do is to set the irq flow handler of your GPIO pin to
+handle_level_oneshot_irq and the generic code will take care of it.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Thanks,
+
+	tglx
+------
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index cb2e77a..5f22436 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -194,6 +194,8 @@ struct irq_desc {
+ #endif
+ 	atomic_t		threads_active;
+ 	wait_queue_head_t       wait_for_threads;
++	void			(*thread_eoi)(unsigned int irq,
++					      struct irq_desc *desc);
+ #ifdef CONFIG_PROC_FS
+ 	struct proc_dir_entry	*dir;
+ #endif
+@@ -284,6 +286,7 @@ extern irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action);
+  * callable via desc->chip->handle_irq()
+  */
+ extern void handle_level_irq(unsigned int irq, struct irq_desc *desc);
++extern void handle_level_oneshot_irq(unsigned int irq, struct irq_desc *desc);
+ extern void handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc);
+ extern void handle_edge_irq(unsigned int irq, struct irq_desc *desc);
+ extern void handle_simple_irq(unsigned int irq, struct irq_desc *desc);
+diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+index 13c68e7..2aa072c 100644
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -341,27 +341,15 @@ out_unlock:
+ 	spin_unlock(&desc->lock);
+ }
+ 
+-/**
+- *	handle_level_irq - Level type irq handler
+- *	@irq:	the interrupt number
+- *	@desc:	the interrupt description structure for this irq
+- *
+- *	Level type interrupts are active as long as the hardware line has
+- *	the active level. This may require to mask the interrupt and unmask
+- *	it after the associated handler has acknowledged the device, so the
+- *	interrupt line is back to inactive.
+- */
+-void
+-handle_level_irq(unsigned int irq, struct irq_desc *desc)
++static void __handle_level_irq(unsigned int irq, struct irq_desc *desc)
+ {
+ 	struct irqaction *action;
+ 	irqreturn_t action_ret;
+ 
+-	spin_lock(&desc->lock);
+ 	mask_ack_irq(desc, irq);
+ 
+ 	if (unlikely(desc->status & IRQ_INPROGRESS))
+-		goto out_unlock;
++		return;
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+ 	kstat_incr_irqs_this_cpu(irq, desc);
+ 
+@@ -371,7 +359,7 @@ handle_level_irq(unsigned int irq, struct irq_desc *desc)
+ 	 */
+ 	action = desc->action;
+ 	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
+-		goto out_unlock;
++		return;
+ 
+ 	desc->status |= IRQ_INPROGRESS;
+ 	spin_unlock(&desc->lock);
+@@ -382,14 +370,69 @@ handle_level_irq(unsigned int irq, struct irq_desc *desc)
+ 
+ 	spin_lock(&desc->lock);
+ 	desc->status &= ~IRQ_INPROGRESS;
++}
++
++/**
++ *	handle_level_irq - Level type irq handler
++ *	@irq:	the interrupt number
++ *	@desc:	the interrupt description structure for this irq
++ *
++ *	Level type interrupts are active as long as the hardware line has
++ *	the active level. This may require to mask the interrupt and unmask
++ *	it after the associated handler has acknowledged the device, so the
++ *	interrupt line is back to inactive.
++ */
++void
++handle_level_irq(unsigned int irq, struct irq_desc *desc)
++{
++	spin_lock(&desc->lock);
++	__handle_level_irq(irq, desc);
+ 	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
+ 		desc->chip->unmask(irq);
+-out_unlock:
+ 	spin_unlock(&desc->lock);
+ }
+ EXPORT_SYMBOL_GPL(handle_level_irq);
+ 
+ /**
++ *	handle_level_oneshot_irq - Level type oneshot irq handler
++ *	@irq:	the interrupt number
++ *	@desc:	the interrupt description structure for this irq
++ *
++ *	Level type interrupts are active as long as the hardware line has
++ *	the active level. This may require to mask the interrupt and unmask
++ *	it after the associated handler has acknowledged the device, so the
++ *	interrupt line is back to inactive. The oneshot variant keeps the
++ *	interrupt masked on return. This allows to use it with devices
++ *	where the interrupt can not be disabled or acknowledged on the
++ *	device level in the hard interrupt context (device is on i2c, spi..)
++ *	The unmask is done when the threaded interrupt has processed the
++ *	interrupt.
++ */
++void
++handle_level_oneshot_irq(unsigned int irq, struct irq_desc *desc)
++{
++	spin_lock(&desc->lock);
++	__handle_level_irq(irq, desc);
++	desc->status |= IRQ_MASKED;
++	spin_unlock(&desc->lock);
++}
++EXPORT_SYMBOL_GPL(handle_level_oneshot_irq);
++
++/*
++ * One shot mode handlers do not unmask the irq line in the hard
++ * interrupt context. Unmask when the handler has finished.
++ */
++static void unmask_oneshot_irq(unsigned int irq, struct irq_desc *desc)
++{
++	spin_lock_irq(&desc->lock);
++	if (!(desc->status & IRQ_DISABLED) && (desc->status & IRQ_MASKED)) {
++		desc->status &= ~IRQ_MASKED;
++		desc->chip->unmask(irq);
++	}
++	spin_unlock_irq(&desc->lock);
++}
++
++/**
+  *	handle_fasteoi_irq - irq handler for transparent controllers
+  *	@irq:	the interrupt number
+  *	@desc:	the interrupt description structure for this irq
+@@ -584,6 +627,9 @@ __set_irq_handler(unsigned int irq, irq_flow_handler_t handle, int is_chained,
+ 	desc->handle_irq = handle;
+ 	desc->name = name;
+ 
++	if (handle == handle_level_oneshot_irq)
++		desc->thread_eoi = unmask_oneshot_irq;
++
+ 	if (handle != handle_bad_irq && is_chained) {
+ 		desc->status &= ~IRQ_DISABLED;
+ 		desc->status |= IRQ_NOREQUEST | IRQ_NOPROBE;
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 50da676..d0115d4 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -475,6 +475,8 @@ static int irq_thread(void *data)
+ 			spin_unlock_irq(&desc->lock);
+ 
+ 			action->thread_fn(action->irq, action->dev_id);
++			if (desc->thread_eoi)
++				desc->thread_eoi(action->irq, desc);
+ 		}
+ 
+ 		wake = atomic_dec_and_test(&desc->threads_active);
