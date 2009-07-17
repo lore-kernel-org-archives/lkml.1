@@ -1,143 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933293AbZGQFdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933219AbZGQFis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933293AbZGQFdu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 01:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932790AbZGQFdu
+	id S933219AbZGQFis (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 01:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932850AbZGQFis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 01:33:50 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:63707 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932603AbZGQFds convert rfc822-to-8bit (ORCPT
+	Fri, 17 Jul 2009 01:38:48 -0400
+Received: from mail-qy0-f190.google.com ([209.85.221.190]:50120 "EHLO
+	mail-qy0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932801AbZGQFir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 01:33:48 -0400
+	Fri, 17 Jul 2009 01:38:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=HNblnoKM6CzzXjh/4i+q3pUQblOWa9q7eNjfn2vygXSUtmXyd24M3F89xZFqoFLCLQ
-         KTChtzROnvWyWpwKt98QHj7297R0P3t8KuXWTjJzq0cbywzgq3dBzsXV1m4lXxSxCeT0
-         vzD/NVa+BMOrozx47GlOtP3EPxFjOifjmoCFU=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=A8GcMBdiT/CbfoVPARhUd9uYAcjOk/vrZ0U/KNwMa3GfwBcVFgeSJJ8r8/6zgjGsg8
+         k5spE7KlfO7ZC2XPSY6H9cA96meIQcVnNWoAIUhiSXUJ/6VIQ5aDbiq9IGgvCimJO08A
+         IB8OFyEW2hg4hgkIas+r2AUkVqDbx3xTJabxw=
+Date: Fri, 17 Jul 2009 01:38:40 -0400
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] tracing/function: cleanup for function tracer
+Message-ID: <20090717053839.GF4977@nowhere>
+References: <4A5EC5E7.6080307@cn.fujitsu.com> <4A5EC6D4.5040007@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090717135847.38B3.E1E9C6FF@jp.fujitsu.com>
-References: <3877989d0907160218l4a28791v90ad22cc048c3440@mail.gmail.com>
-	 <20090717135847.38B3.E1E9C6FF@jp.fujitsu.com>
-Date: Fri, 17 Jul 2009 13:33:47 +0800
-Message-ID: <3877989d0907162233x6e5874e5r3b679454160a6077@mail.gmail.com>
-Subject: Re: [RFC patch] delete improper hot pluggable code of memory affinity
-From: Luming Yu <luming.yu@gmail.com>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A5EC6D4.5040007@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Without a fix like my proposal, I have seen NUMA configure disabled by
-kernel (due to the code the patch deletes) on a system with Enabled
-bit set , and Hotplug-able bit cleared, and
-CONFIG_MEMORY_HOTPLUG_SPARSE disabled.
+On Thu, Jul 16, 2009 at 02:21:08PM +0800, Xiao Guangrong wrote:
+> We can use %pf input format instead of kallsyms_lookup()
+> and %s input format
+> 
+> Thanks for Li Zefan's offline review.
+> 
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 
-On Fri, Jul 17, 2009 at 1:16 PM, Yasunori Goto<y-goto@jp.fujitsu.com> wrote:
->
-> Hi, Luming-san.
->
->> The current kernel code *wrongly* interprets Hot Pluggable bit of
->> Memory Affinity Structure (SRAT table in ACPI spec).
->
-> I'm not sure your patch is correct or not yet, but I would like
-> to tell you a critical point about the definition of
-> Memory Affinity Structure.
->
-> The spec says the Enable bit of Memory Affinity Structure means that
-> the contents of its memory affinity structure is only VALID.
-> It doesn't mean memory is really connected at the area.
-> It means only that OS can read the entry.
->
-> When the enabled bit and hot pluggable bit is set on,
-> it may mean that the area may be hot-added after boot up.
-> So, kernel must check e820 or efi to confirm that memory is
-> really connected.
->
-> If you already know it, sorry for noise....
-> Just for your information.
->
-> Thanks.
->
->
->
->> if Hot Pluggable bit is set and CONFIG_MEMORY_HOTPLUG_SPARSE is NOT
->> set, the memory Affinity will
->> be ignored. And a faked Node will be used...
->>
->> An alternative is to enable CONFIG_MEMORY_HOTPLUG_SPARSE *always*
->> along with acpi_numa_memory_affinity_init.
->> Please decide which one is appropriate.
->>
->> The downside of this patch is *some useful info* is lost and a follow
->> up patch is needed.
->>
->> **The patch is enclosed in text attachment*
->> **Using web client to send the patch* *
->> **below is for review, please apply attached  patch*/
->>
->> Thanks,
->> Luming
->>
->>
->> Signed-off-by: Yu Luming <luming.yu@intel.com>
->>
->>  srat_64.c |   16 ----------------
->>  1 file changed, 16 deletions(-)
->>
->>
->> diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
->> index 2dfcbf9..82423e5 100644
->> --- a/arch/x86/mm/srat_64.c
->> +++ b/arch/x86/mm/srat_64.c
->> @@ -172,11 +172,6 @@ acpi_numa_processor_affinity_init(struct
->> acpi_srat_cpu_affinity *pa)
->>              pxm, apic_id, node);
->>  }
->>
->> -#ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
->> -static inline int save_add_info(void) {return 1;}
->> -#else
->> -static inline int save_add_info(void) {return 0;}
->> -#endif
->>  /*
->>   * Update nodes_add[]
->>   * This code supports one contiguous hot add area per node
->> @@ -249,9 +244,6 @@ acpi_numa_memory_affinity_init(struct
->> acpi_srat_mem_affinity *ma)
->>       }
->>       if ((ma->flags & ACPI_SRAT_MEM_ENABLED) == 0)
->>               return;
->> -
->> -     if ((ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) && !save_add_info())
->> -             return;
->>       start = ma->base_address;
->>       end = start + ma->length;
->>       pxm = ma->proximity_domain;
->> @@ -291,14 +283,6 @@ acpi_numa_memory_affinity_init(struct
->> acpi_srat_mem_affinity *ma)
->>       e820_register_active_regions(node, start >> PAGE_SHIFT,
->>                                    end >> PAGE_SHIFT);
->>
->> -     if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
->> -             update_nodes_add(node, start, end);
->> -             /* restore nodes[node] */
->> -             *nd = oldnode;
->> -             if ((nd->start | nd->end) == 0)
->> -                     node_clear(node, nodes_parsed);
->> -     }
->> -
->>       node_memblk_range[num_node_memblks].start = start;
->>       node_memblk_range[num_node_memblks].end = end;
->>       memblk_nodeid[num_node_memblks] = node;
->
-> --
-> Yasunori Goto
->
->
->
+
+Queuing these two patches for .32
+
+Thanks!
+
+Frederic.
+
+
+
+> ---
+>  kernel/trace/ftrace.c          |   17 +++--------------
+>  kernel/trace/trace_functions.c |    4 +---
+>  2 files changed, 4 insertions(+), 17 deletions(-)
+> 
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 4521c77..8f7d28e 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -1438,18 +1438,13 @@ static int t_hash_show(struct seq_file *m, void *v)
+>  {
+>  	struct ftrace_func_probe *rec;
+>  	struct hlist_node *hnd = v;
+> -	char str[KSYM_SYMBOL_LEN];
+>  
+>  	rec = hlist_entry(hnd, struct ftrace_func_probe, node);
+>  
+>  	if (rec->ops->print)
+>  		return rec->ops->print(m, rec->ip, rec->ops, rec->data);
+>  
+> -	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
+> -	seq_printf(m, "%s:", str);
+> -
+> -	kallsyms_lookup((unsigned long)rec->ops->func, NULL, NULL, NULL, str);
+> -	seq_printf(m, "%s", str);
+> +	seq_printf(m, "%pf:%pf", (void *)rec->ip, (void *)rec->ops->func);
+>  
+>  	if (rec->data)
+>  		seq_printf(m, ":%p", rec->data);
+> @@ -1547,7 +1542,6 @@ static int t_show(struct seq_file *m, void *v)
+>  {
+>  	struct ftrace_iterator *iter = m->private;
+>  	struct dyn_ftrace *rec = v;
+> -	char str[KSYM_SYMBOL_LEN];
+>  
+>  	if (iter->flags & FTRACE_ITER_HASH)
+>  		return t_hash_show(m, v);
+> @@ -1560,9 +1554,7 @@ static int t_show(struct seq_file *m, void *v)
+>  	if (!rec)
+>  		return 0;
+>  
+> -	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
+> -
+> -	seq_printf(m, "%s\n", str);
+> +	seq_printf(m, "%pf\n", (void *)rec->ip);
+>  
+>  	return 0;
+>  }
+> @@ -2543,7 +2535,6 @@ static void g_stop(struct seq_file *m, void *p)
+>  static int g_show(struct seq_file *m, void *v)
+>  {
+>  	unsigned long *ptr = v;
+> -	char str[KSYM_SYMBOL_LEN];
+>  
+>  	if (!ptr)
+>  		return 0;
+> @@ -2553,9 +2544,7 @@ static int g_show(struct seq_file *m, void *v)
+>  		return 0;
+>  	}
+>  
+> -	kallsyms_lookup(*ptr, NULL, NULL, NULL, str);
+> -
+> -	seq_printf(m, "%s\n", str);
+> +	seq_printf(m, "%pf\n", v);
+>  
+>  	return 0;
+>  }
+> diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
+> index 7402144..b53dc99 100644
+> --- a/kernel/trace/trace_functions.c
+> +++ b/kernel/trace/trace_functions.c
+> @@ -288,11 +288,9 @@ static int
+>  ftrace_trace_onoff_print(struct seq_file *m, unsigned long ip,
+>  			 struct ftrace_probe_ops *ops, void *data)
+>  {
+> -	char str[KSYM_SYMBOL_LEN];
+>  	long count = (long)data;
+>  
+> -	kallsyms_lookup(ip, NULL, NULL, NULL, str);
+> -	seq_printf(m, "%s:", str);
+> +	seq_printf(m, "%pf:", (void *)ip);
+>  
+>  	if (ops == &traceon_probe_ops)
+>  		seq_printf(m, "traceon");
+> -- 
+> 1.6.1.2
+> 
+
