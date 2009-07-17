@@ -1,70 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZGQELE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbZGQE3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751353AbZGQELE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 00:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZGQELD
+	id S1752873AbZGQE3x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 00:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbZGQE3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 00:11:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33220 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750750AbZGQELB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 00:11:01 -0400
-Date: Fri, 17 Jul 2009 14:10:47 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Noah Watkins <jayhawk@soe.ucsc.edu>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: regression: wireless authentication
-Message-Id: <20090717141047.7ce77136.sfr@canb.auug.org.au>
-In-Reply-To: <20090717035706.GA5923@martini>
-References: <20090717035706.GA5923@martini>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__17_Jul_2009_14_10_47_+1000_7NAwRZrSTZuX2L/B"
+	Fri, 17 Jul 2009 00:29:52 -0400
+Received: from mailfilter15.ihug.co.nz ([203.109.136.15]:22473 "EHLO
+	mailfilter15.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752198AbZGQE3p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 00:29:45 -0400
+X-Greylist: delayed 737 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Jul 2009 00:29:44 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: An0cAJOYX0rIQX+h/2dsb2JhbACBUZZnggqGBrAvhA0FiUgC
+X-IronPort-AV: E=Sophos;i="4.42,416,1243771200"; 
+   d="scan'208";a="200016405"
+MIME-Version: 1.0
+Date: Fri, 17 Jul 2009 16:17:10 +1200
+From: CG LOTTO <info@cgnl.net>
+To: undisclosed-recipients:;
+Subject: (no subject)
+Reply-To: cgnlpaycenter@9.cn
+Message-ID: <3de94fb2b7b1953934228db653132dfe@vodafone.co.nz>
+SenderIP: 200.65.127.161
+User-Agent: Vodafone Webmail
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__17_Jul_2009_14_10_47_+1000_7NAwRZrSTZuX2L/B
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Noah,
 
-Lets cc some people who may be able to help ...
-
-On Thu, 16 Jul 2009 20:57:06 -0700 Noah Watkins <jayhawk@soe.ucsc.edu> wrot=
-e:
->
-> With 2.6.31-rc3-next-20090716 all wireless access points are detected, but
-> authentication fails. I haven't verified on an access point w/o WPA.
->=20
-> 2.6.31-rc3 functions fine. I haven't been able to complete a bisect yet.
->=20
-> 05:01.0 Network controller: Atheros Communications Inc. AR5008 Wireless N=
-etwork
-> Adapter (rev 01)
->=20
-> noah
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__17_Jul_2009_14_10_47_+1000_7NAwRZrSTZuX2L/B
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpf+ccACgkQjjKRsyhoI8yRSACfW1gpH6bfQDVgjiZLb+8sqFEx
-80UAn3ql/e2nB2LJLkbkFEiYlhdLF9N4
-=AM5x
------END PGP SIGNATURE-----
-
---Signature=_Fri__17_Jul_2009_14_10_47_+1000_7NAwRZrSTZuX2L/B--
+-- 
+A lump sum of (£1,230,310 GBP) have been credited to your E-mail 
+Address.Congrats...Confirm this receipt by contacting Mr Larry Whyte.
+Email: (cgnlpaycenter@9.cn) your Name:___ Address:___ Age:___ Sex:___
+Occupation:___Tel/Fax:___Country
