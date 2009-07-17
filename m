@@ -1,120 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933920AbZGQBMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933924AbZGQBMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933920AbZGQBMD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 21:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933390AbZGQBMD
+	id S933924AbZGQBMx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 21:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933909AbZGQBMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 21:12:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36829 "EHLO ogre.sisk.pl"
+	Thu, 16 Jul 2009 21:12:53 -0400
+Received: from kroah.org ([198.145.64.141]:34226 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752718AbZGQBMB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 21:12:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/8] introduce the device async action mechanism
-Date: Fri, 17 Jul 2009 03:11:59 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@suse.cz>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
-References: <1247643516.26272.77.camel@rzhang-dt> <20090715060006.71c2e2b6@infradead.org> <1247709910.26272.159.camel@rzhang-dt>
-In-Reply-To: <1247709910.26272.159.camel@rzhang-dt>
+	id S933805AbZGQBMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 21:12:52 -0400
+Date: Thu, 16 Jul 2009 18:12:11 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: swetland@google.com, malchev@google.com,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: HTC Dream: qdsp support for staging
+Message-ID: <20090717011211.GA16704@kroah.com>
+References: <20090710083709.GA6418@elf.ucw.cz>
+ <20090716230042.GB3609@kroah.com>
+ <20090717010157.GA2002@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907170312.00006.rjw@sisk.pl>
+In-Reply-To: <20090717010157.GA2002@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 July 2009, Zhang Rui wrote:
-> On Wed, 2009-07-15 at 21:00 +0800, Arjan van de Ven wrote:
-> > On Wed, 15 Jul 2009 15:38:36 +0800
-> > Zhang Rui <rui.zhang@intel.com> wrote:
-> > 
-> > > Introduce the device async action mechanism.
+On Fri, Jul 17, 2009 at 03:01:57AM +0200, Pavel Machek wrote:
+> On Thu 2009-07-16 16:00:42, Greg KH wrote:
+> > On Fri, Jul 10, 2009 at 10:37:10AM +0200, Pavel Machek wrote:
+> > > From: Iliyan Malchev <ibm@android.com>
 > > > 
-> > > In order to speed up Linux suspend/resume/shutdown process,
-> > > we introduce the device async action mechanism that allow devices
-> > > to suspend/resume/shutdown asynchronously.
+> > > QDSP code is neccessarry for communication with some hardware
+> > > components on HTC Dream, including camera hardware. It also drives DSP
+> > > coproccessor.
 > > > 
-> > > The basic idea is that,
-> > > if the suspend/resume/shutdown process of a device set,
-> > > including a root device and its child devices, are independent of
-> > > other devices, we create an async domain for this device set,
-> > > and make them suspend/resume/shutdown asynchronously.
+> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
 > > 
-> > Hi,
-> > 
-> > I have some concerns about having an async domain per device(group)
-> > rather than having one async domain for all of this, 
+> > Please don't compress patches :(
 > 
-> ﻿we create an async domain ONLY if we are sure that the device group is
-> independent with the other devices.
-> 
-> and IMO, using multiple async domains brings real device async actions.
-> For example, in S3 resume case, there are two device groups:
-> device group1: device1, device2, device3
-> device group2: device4, device5, device6
-> 
-> If they share the global domain, we may get:﻿
-> device group1: device1(cookie 1), device2(cookie 4), device3(cookie 5)
-> device group2: device4(cookie 2), device5(cookie 3), device6(cookie 6)
-> 
-> this is not real asynchronous resume because
-> device3 needs to call async_synchronize_cookie(5) before resume itself.
-> which means that device4 and device5 must be resumed before device3.
-> 
-> But if multiple async domain is used, we get:
-> ﻿device group1: device1(cookie 1), device2(cookie 2), device3(cookie 3)
-> device group2: device4(cookie 1), device5(cookie 2), device6(cookie 3)
-> 
-> device group1 and group2 can be resumed asynchronously.
-> 
-> 
-> Another example, in my previous test,
-> 1. sata controller. takes 0.4s to resume.
-> 2. usb, including uchi and ehci controller takes 1.4s to resume
-> 3. ACPI battery takes 0.3s to resume.
-> 3. all the other devices take 0.2s to resume.
-> 
-> sata, usb and ACPI battery are independent device groups.
-> If we use multiple async domains, we can reduce the total device resume
-> time from 2.3s to a little more than 1.4s because there are a lot of
-> sleep in usb resume process.
-> But if we share the global async domain, the total resume time can only
-> be reduced to about 2.1s because sata, usb and ACPI battery are actually
-> resumed synchronously.
+> I had to -- in order to fit to lkml maillist limits.
 
-Well, first, I'm not really sure that using the async _boot_ infrastructure for
-that is a good choice.  During suspend-resume we know dependencies between
-devices beforehand, at least in theory, so we can use them.
+I have no such limits :)
 
-In particular, we have to make sure that parent devices will not be suspended
-until all of their children have been suspended and children devices will not
-be resumed before the parents.  The current code handles this quite
-efficiently, so I wonder what you're going to do not to break it.
+> > Your patch didn't have any way to actually build the code, care to
+> > respin it and add the proper Kconfig and Makefile hooks?
+> 
+> Well, resending 100K+ patch to get 3 missing lines is somewhat
+> "interesting"... and the problem is that proper Kconfig/Makefile hooks
+> actually depend on order in which you apply the patches.
+> 
+> Would it be possible to just apply the 3 patches, with me supplying
+> Kconfig/Makefile hooks in patch #4? That's sometimes used to
+> aid bisectability, and it would save me quite a lot of work (and
+> possible mistakes) that way.
 
-Second, you seem to think that it only makes sense to execute ->suspend()
-and ->resume() asynchronously (or in parallel), while for example in the case
-of PCI ->suspend_noirq() and ->resume_noirq() also contain code that
-potentially can take quite some time to execute.
+Yes, that would be fine.  Care to send all 4, I've purged the old ones
+from my queue.
 
-Finally, I don't really understand what the code in the $subject patch is
-supposed to do.  In particular, what's the purpose of dev_action()?
-It only seems to check if func is not NULL right now.  Also, you define
-DEV_ASYNC_ACTIONS_ALL as 0, so the condition
-if (!(DEV_ASYNC_ACTIONS_ALL & type)) in dev_async_register() is always
-satisfied.  There are more things like that in this patch, not to mention
-excessive return statements and passing function pointers as (void *).
+thanks,
 
-Can we please discuss this thoroughly before any new patches are sent?
-
-Best,
-Rafael
+greg k-h
