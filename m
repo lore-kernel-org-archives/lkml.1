@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965029AbZGQSFC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964819AbZGQSHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965029AbZGQSFC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 14:05:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934069AbZGQSFB
+	id S964819AbZGQSHW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 14:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933583AbZGQSHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 14:05:01 -0400
-Received: from ns1.singidunum.ac.rs ([212.62.48.42]:58428 "EHLO
-	mail.singidunum.ac.yu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933312AbZGQSFA (ORCPT
+	Fri, 17 Jul 2009 14:07:21 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:58278 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934069AbZGQSHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 14:05:00 -0400
-X-Greylist: delayed 1574 seconds by postgrey-1.27 at vger.kernel.org; Fri, 17 Jul 2009 14:05:00 EDT
-Message-ID: <63280.62.56.141.2.1247852260.squirrel@mail.singidunum.ac.yu>
-Date: Fri, 17 Jul 2009 19:37:40 +0200 (CEST)
-Subject: Attention.
-From: "The University of Oslo" <info@uio.no>
-Reply-To: info.juansmith@gmail.com
-User-Agent: SquirrelMail/1.4.11
+	Fri, 17 Jul 2009 14:07:20 -0400
+Date: Fri, 17 Jul 2009 11:07:20 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 18/20] ceph: debugging
+In-Reply-To: <Pine.LNX.4.64.0907161014330.8026@cobra.newdream.net>
+Message-ID: <Pine.LNX.4.64.0907171010470.23194@cobra.newdream.net>
+References: <1247693090-27796-1-git-send-email-sage@newdream.net>
+ <1247693090-27796-5-git-send-email-sage@newdream.net>
+ <1247693090-27796-6-git-send-email-sage@newdream.net>
+ <1247693090-27796-7-git-send-email-sage@newdream.net>
+ <1247693090-27796-8-git-send-email-sage@newdream.net>
+ <1247693090-27796-9-git-send-email-sage@newdream.net>
+ <1247693090-27796-10-git-send-email-sage@newdream.net>
+ <1247693090-27796-11-git-send-email-sage@newdream.net>
+ <1247693090-27796-12-git-send-email-sage@newdream.net>
+ <1247693090-27796-13-git-send-email-sage@newdream.net>
+ <1247693090-27796-14-git-send-email-sage@newdream.net>
+ <1247693090-27796-15-git-send-email-sage@newdream.net>
+ <1247693090-27796-16-git-send-email-sage@newdream.net>
+ <1247693090-27796-17-git-send-email-sage@newdream.net>
+ <1247693090-27796-18-git-send-email-sage@newdream.net>
+ <1247693090-27796-19-git-send-email-sage@newdream.net> <87d480x16p.fsf@basil.nowhere.org>
+ <Pine.LNX.4.64.0907161014330.8026@cobra.newdream.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The University of Oslo (UiO)
-Boks 1072 Blindern
-NO-0316 OSLO
-Norway
+> On Thu, 16 Jul 2009, Andi Kleen wrote:
+> > Sage Weil <sage@newdream.net> writes:
+> > 
+> > > Some debugging infrastructure, including the ability to adjust the
+> > > level of debug output on a per-file basis.
+> > 
+> > That is already provided by pr_debug()/DYNAMIC_PRINTK in newer kernels.
+> > You should switch to that.
 
-Dear University of Oslo User,
+I'll spare everyone the diff, but
 
-We are currently doing some routine maintenance in our webmail online
-system due to the virus that enter into our system so please bear with us,
+ 19 files changed, 721 insertions(+), 1107 deletions(-)
 
-Note: If you are one of our active user you are to send your Username:
-Password: to us to enable us secure your accout against the virus.
+and ceph_debug.h is now just a wrapper to prefix each line with a filename 
+and line number (below).
 
-Failure to do so will immediately render your email address deactivated
-from our database so we can secure others.
+Thanks-
+sage
 
-We apologize for any inconvenience but trust that you
-that our main concern is for our customers to be
-totally secure.
+---
+#ifndef _FS_CEPH_DEBUG_H
+#define _FS_CEPH_DEBUG_H
+
+/*
+ * wrap pr_debug to include a filename:lineno prefix on each line
+ */
+
+static inline const char *ceph_file_part(const char *s, int len)
+{
+	const char *e = s + len;
+
+	while (e != s && *(e-1) != '/')
+		e--;
+	return e;
+}
+
+#define _dout(fmt, args...)						\
+	pr_debug(" %12.12s:%-4d : " fmt "%s",				\
+		 ceph_file_part(__FILE__, sizeof(__FILE__)),		\
+		 __LINE__, args);
+#define dout(args...) _dout(args, "")
 
 
-Regards,
-University of Oslo
-
-
+#endif
