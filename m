@@ -1,142 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933219AbZGQFis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933403AbZGQFnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933219AbZGQFis (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 01:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932850AbZGQFis
+	id S933403AbZGQFnq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 01:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932899AbZGQFnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 01:38:48 -0400
-Received: from mail-qy0-f190.google.com ([209.85.221.190]:50120 "EHLO
-	mail-qy0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932801AbZGQFir (ORCPT
+	Fri, 17 Jul 2009 01:43:45 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42160 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932850AbZGQFno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 01:38:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=A8GcMBdiT/CbfoVPARhUd9uYAcjOk/vrZ0U/KNwMa3GfwBcVFgeSJJ8r8/6zgjGsg8
-         k5spE7KlfO7ZC2XPSY6H9cA96meIQcVnNWoAIUhiSXUJ/6VIQ5aDbiq9IGgvCimJO08A
-         IB8OFyEW2hg4hgkIas+r2AUkVqDbx3xTJabxw=
-Date: Fri, 17 Jul 2009 01:38:40 -0400
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/function: cleanup for function tracer
-Message-ID: <20090717053839.GF4977@nowhere>
-References: <4A5EC5E7.6080307@cn.fujitsu.com> <4A5EC6D4.5040007@cn.fujitsu.com>
+	Fri, 17 Jul 2009 01:43:44 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH 1/3] Rename pgmoved variable in shrink_active_list()
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20090716173249.GB2267@cmpxchg.org>
+References: <20090716095119.9D0A.A69D9226@jp.fujitsu.com> <20090716173249.GB2267@cmpxchg.org>
+Message-Id: <20090717091920.A90C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A5EC6D4.5040007@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 17 Jul 2009 14:43:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 02:21:08PM +0800, Xiao Guangrong wrote:
-> We can use %pf input format instead of kallsyms_lookup()
-> and %s input format
+> On Thu, Jul 16, 2009 at 09:52:34AM +0900, KOSAKI Motohiro wrote:
+> > Subject: [PATCH] Rename pgmoved variable in shrink_active_list()
+> > 
+> > Currently, pgmoved variable have two meanings. it cause harder reviewing a bit.
+> > This patch separate it.
+> > 
+> > 
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 > 
-> Thanks for Li Zefan's offline review.
+> Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
 > 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-
-
-Queuing these two patches for .32
-
-Thanks!
-
-Frederic.
-
-
-
-> ---
->  kernel/trace/ftrace.c          |   17 +++--------------
->  kernel/trace/trace_functions.c |    4 +---
->  2 files changed, 4 insertions(+), 17 deletions(-)
+> Below are just minor suggestions regarding the changed code.
 > 
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index 4521c77..8f7d28e 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -1438,18 +1438,13 @@ static int t_hash_show(struct seq_file *m, void *v)
->  {
->  	struct ftrace_func_probe *rec;
->  	struct hlist_node *hnd = v;
-> -	char str[KSYM_SYMBOL_LEN];
->  
->  	rec = hlist_entry(hnd, struct ftrace_func_probe, node);
->  
->  	if (rec->ops->print)
->  		return rec->ops->print(m, rec->ip, rec->ops, rec->data);
->  
-> -	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-> -	seq_printf(m, "%s:", str);
-> -
-> -	kallsyms_lookup((unsigned long)rec->ops->func, NULL, NULL, NULL, str);
-> -	seq_printf(m, "%s", str);
-> +	seq_printf(m, "%pf:%pf", (void *)rec->ip, (void *)rec->ops->func);
->  
->  	if (rec->data)
->  		seq_printf(m, ":%p", rec->data);
-> @@ -1547,7 +1542,6 @@ static int t_show(struct seq_file *m, void *v)
->  {
->  	struct ftrace_iterator *iter = m->private;
->  	struct dyn_ftrace *rec = v;
-> -	char str[KSYM_SYMBOL_LEN];
->  
->  	if (iter->flags & FTRACE_ITER_HASH)
->  		return t_hash_show(m, v);
-> @@ -1560,9 +1554,7 @@ static int t_show(struct seq_file *m, void *v)
->  	if (!rec)
->  		return 0;
->  
-> -	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-> -
-> -	seq_printf(m, "%s\n", str);
-> +	seq_printf(m, "%pf\n", (void *)rec->ip);
->  
->  	return 0;
->  }
-> @@ -2543,7 +2535,6 @@ static void g_stop(struct seq_file *m, void *p)
->  static int g_show(struct seq_file *m, void *v)
->  {
->  	unsigned long *ptr = v;
-> -	char str[KSYM_SYMBOL_LEN];
->  
->  	if (!ptr)
->  		return 0;
-> @@ -2553,9 +2544,7 @@ static int g_show(struct seq_file *m, void *v)
->  		return 0;
->  	}
->  
-> -	kallsyms_lookup(*ptr, NULL, NULL, NULL, str);
-> -
-> -	seq_printf(m, "%s\n", str);
-> +	seq_printf(m, "%pf\n", v);
->  
->  	return 0;
->  }
-> diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-> index 7402144..b53dc99 100644
-> --- a/kernel/trace/trace_functions.c
-> +++ b/kernel/trace/trace_functions.c
-> @@ -288,11 +288,9 @@ static int
->  ftrace_trace_onoff_print(struct seq_file *m, unsigned long ip,
->  			 struct ftrace_probe_ops *ops, void *data)
->  {
-> -	char str[KSYM_SYMBOL_LEN];
->  	long count = (long)data;
->  
-> -	kallsyms_lookup(ip, NULL, NULL, NULL, str);
-> -	seq_printf(m, "%s:", str);
-> +	seq_printf(m, "%pf:", (void *)ip);
->  
->  	if (ops == &traceon_probe_ops)
->  		seq_printf(m, "traceon");
-> -- 
-> 1.6.1.2
+> > ---
+> >  mm/vmscan.c |   16 ++++++++--------
+> >  1 file changed, 8 insertions(+), 8 deletions(-)
+> > 
+> > Index: b/mm/vmscan.c
+> > ===================================================================
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -1239,7 +1239,7 @@ static void move_active_pages_to_lru(str
+> >  static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+> >  			struct scan_control *sc, int priority, int file)
+> >  {
+> > -	unsigned long pgmoved;
+> > +	unsigned long nr_taken;
+> >  	unsigned long pgscanned;
+> >  	unsigned long vm_flags;
+> >  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+> > @@ -1247,10 +1247,11 @@ static void shrink_active_list(unsigned 
+> >  	LIST_HEAD(l_inactive);
+> >  	struct page *page;
+> >  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+> > +	unsigned long nr_rotated = 0;
+> >  
+> >  	lru_add_drain();
+> >  	spin_lock_irq(&zone->lru_lock);
+> > -	pgmoved = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
+> > +	nr_taken = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
+> >  					ISOLATE_ACTIVE, zone,
+> >  					sc->mem_cgroup, 1, file);
+> >  	/*
+> > @@ -1260,16 +1261,15 @@ static void shrink_active_list(unsigned 
+> >  	if (scanning_global_lru(sc)) {
+> >  		zone->pages_scanned += pgscanned;
+> >  	}
+> > -	reclaim_stat->recent_scanned[!!file] += pgmoved;
+> > +	reclaim_stat->recent_scanned[!!file] += nr_taken;
 > 
+> Hm, file is a boolean already, the double negation can probably be
+> dropped.
+> 
+> >  	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+> >  	if (file)
+> > -		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
+> > +		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -nr_taken);
+> >  	else
+> > -		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -pgmoved);
+> > +		__mod_zone_page_state(zone, NR_ACTIVE_ANON, -nr_taken);
+> 
+> Should perhaps be in another patch, but we could use
+> 
+> 	__mod_zone_page_state(zone, LRU_ACTIVE + file * LRU_FILE);
+> 
+> like in the call to move_active_pages_to_lru().
+>
+> >  	spin_unlock_irq(&zone->lru_lock);
+> >  
+> > -	pgmoved = 0;  /* count referenced (mapping) mapped pages */
+> >  	while (!list_empty(&l_hold)) {
+> >  		cond_resched();
+> >  		page = lru_to_page(&l_hold);
+> > @@ -1283,7 +1283,7 @@ static void shrink_active_list(unsigned 
+> >  		/* page_referenced clears PageReferenced */
+> >  		if (page_mapping_inuse(page) &&
+> >  		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
+> > -			pgmoved++;
+> > +			nr_rotated++;
+> >  			/*
+> >  			 * Identify referenced, file-backed active pages and
+> >  			 * give them one more trip around the active list. So
+> > @@ -1312,7 +1312,7 @@ static void shrink_active_list(unsigned 
+> >  	 * helps balance scan pressure between file and anonymous pages in
+> >  	 * get_scan_ratio.
+> >  	 */
+> > -	reclaim_stat->recent_rotated[!!file] += pgmoved;
+> > +	reclaim_stat->recent_rotated[!!file] += nr_rotated;
+> 
+> file is boolean.
+> 
+> There is one more double negation in isolate_pages_global() that can
+> be dropped as well.  If you agree, I can submit all those changes in
+> separate patches.
+
+Yeah, thanks please. 
+
+
 
