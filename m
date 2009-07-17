@@ -1,161 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964985AbZGQR3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965010AbZGQR3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964985AbZGQR3L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 13:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934798AbZGQR3I
+	id S965010AbZGQR3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 13:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964980AbZGQR3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 13:29:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49261 "EHLO mx2.redhat.com"
+	Fri, 17 Jul 2009 13:29:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49189 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934796AbZGQR3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 13:29:05 -0400
+	id S933583AbZGQR1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 13:27:54 -0400
 From: Izik Eidus <ieidus@redhat.com>
 To: akpm@linux-foundation.org
 Cc: hugh.dickins@tiscali.co.uk, aarcange@redhat.com, chrisw@redhat.com,
        avi@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au, ieidus@redhat.com,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: [PATCH 06/10] ksm: identify PageKsm pages
-Date: Fri, 17 Jul 2009 20:30:46 +0300
-Message-Id: <1247851850-4298-7-git-send-email-ieidus@redhat.com>
-In-Reply-To: <1247851850-4298-6-git-send-email-ieidus@redhat.com>
-References: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
- <1247851850-4298-2-git-send-email-ieidus@redhat.com>
- <1247851850-4298-3-git-send-email-ieidus@redhat.com>
- <1247851850-4298-4-git-send-email-ieidus@redhat.com>
- <1247851850-4298-5-git-send-email-ieidus@redhat.com>
- <1247851850-4298-6-git-send-email-ieidus@redhat.com>
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au, ieidus@redhat.com
+Subject: [PATCH 00/10] ksm resend
+Date: Fri, 17 Jul 2009 20:30:40 +0300
+Message-Id: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Hey,
 
-KSM will need to identify its kernel merged pages unambiguously,
-and /proc/kpageflags will probably like to do so too.
+First for who that is not familier with what is ksm please take a look at:
+http://lkml.org/lkml/2009/4/19/210
 
-Since KSM will only be substituting anonymous pages, statistics are
-best preserved by making a PageKsm page a special PageAnon page:
-one with no anon_vma.
+About this send:
 
-But KSM then needs its own page_add_ksm_rmap() - keep it in ksm.h near
-PageKsm; and do_wp_page() must COW them, unlike singly mapped PageAnons.
+After modifications by Hugh Dickins to make the ksm code fit more to the
+internal strctures / interfaces of the kernel, I am resending the whole seires
+again.
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Signed-off-by: Chris Wright <chrisw@redhat.com>
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/proc/page.c      |    5 +++++
- include/linux/ksm.h |   29 +++++++++++++++++++++++++++++
- mm/memory.c         |    3 ++-
- 3 files changed, 36 insertions(+), 1 deletions(-)
+The biggest change from previous version that was sent is: the moving into
+madvise interface for registering the application memory to be scan.
+Now when application want its memory to be merged with another applications
+what it do is to call to madvise() with the MADV_MERGEABLE flag set.
 
-diff --git a/fs/proc/page.c b/fs/proc/page.c
-index 2707c6c..2281c2c 100644
---- a/fs/proc/page.c
-+++ b/fs/proc/page.c
-@@ -2,6 +2,7 @@
- #include <linux/compiler.h>
- #include <linux/fs.h>
- #include <linux/init.h>
-+#include <linux/ksm.h>
- #include <linux/mm.h>
- #include <linux/mmzone.h>
- #include <linux/proc_fs.h>
-@@ -95,6 +96,8 @@ static const struct file_operations proc_kpagecount_operations = {
- #define KPF_UNEVICTABLE		18
- #define KPF_NOPAGE		20
- 
-+#define KPF_KSM			21
-+
- /* kernel hacking assistances
-  * WARNING: subject to change, never rely on them!
-  */
-@@ -137,6 +140,8 @@ static u64 get_uflags(struct page *page)
- 		u |= 1 << KPF_MMAP;
- 	if (PageAnon(page))
- 		u |= 1 << KPF_ANON;
-+	if (PageKsm(page))
-+		u |= 1 << KPF_KSM;
- 
- 	/*
- 	 * compound pages: export both head/tail info
-diff --git a/include/linux/ksm.h b/include/linux/ksm.h
-index eb2a448..a485c14 100644
---- a/include/linux/ksm.h
-+++ b/include/linux/ksm.h
-@@ -10,6 +10,7 @@
- #include <linux/bitops.h>
- #include <linux/mm.h>
- #include <linux/sched.h>
-+#include <linux/vmstat.h>
- 
- #ifdef CONFIG_KSM
- int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
-@@ -29,6 +30,27 @@ static inline void ksm_exit(struct mm_struct *mm)
- 	if (test_bit(MMF_VM_MERGEABLE, &mm->flags))
- 		__ksm_exit(mm);
- }
-+
-+/*
-+ * A KSM page is one of those write-protected "shared pages" or "merged pages"
-+ * which KSM maps into multiple mms, wherever identical anonymous page content
-+ * is found in VM_MERGEABLE vmas.  It's a PageAnon page, with NULL anon_vma.
-+ */
-+static inline int PageKsm(struct page *page)
-+{
-+	return ((unsigned long)page->mapping == PAGE_MAPPING_ANON);
-+}
-+
-+/*
-+ * But we have to avoid the checking which page_add_anon_rmap() performs.
-+ */
-+static inline void page_add_ksm_rmap(struct page *page)
-+{
-+	if (atomic_inc_and_test(&page->_mapcount)) {
-+		page->mapping = (void *) PAGE_MAPPING_ANON;
-+		__inc_zone_page_state(page, NR_ANON_PAGES);
-+	}
-+}
- #else  /* !CONFIG_KSM */
- 
- static inline int ksm_madvise(struct vm_area_struct *vma, unsigned long start,
-@@ -45,6 +67,13 @@ static inline int ksm_fork(struct mm_struct *mm, struct mm_struct *oldmm)
- static inline void ksm_exit(struct mm_struct *mm)
- {
- }
-+
-+static inline int PageKsm(struct page *page)
-+{
-+	return 0;
-+}
-+
-+/* No stub required for page_add_ksm_rmap(page) */
- #endif /* !CONFIG_KSM */
- 
- #endif
-diff --git a/mm/memory.c b/mm/memory.c
-index 8b1922c..6707072 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -45,6 +45,7 @@
- #include <linux/swap.h>
- #include <linux/highmem.h>
- #include <linux/pagemap.h>
-+#include <linux/ksm.h>
- #include <linux/rmap.h>
- #include <linux/module.h>
- #include <linux/delayacct.h>
-@@ -1972,7 +1973,7 @@ static int do_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	 * Take out anonymous pages first, anonymous shared vmas are
- 	 * not dirty accountable.
- 	 */
--	if (PageAnon(old_page)) {
-+	if (PageAnon(old_page) && !PageKsm(old_page)) {
- 		if (!trylock_page(old_page)) {
- 			page_cache_get(old_page);
- 			pte_unmap_unlock(page_table, ptl);
--- 
-1.5.6.5
+In addition to changes to the interfaces of ksm,. there was a major code
+clean / optimizations made by Hugh.
+
+There is more work to be taken in the area of documentions, as well as some
+questions regerding to how ksm should handle the way it break the SharedPages
+when it need to do so, but the code seems to be ready to be in the MM tree
+right now to get more testing and reviews from other developers.
+
+The code still need to get Andrea Arcangeli acks.
+(he was busy and will ack it later).
+
+Thanks.
+
+Izik Eidus (10):
+  ksm: add mmu_notifier set_pte_at_notify()
+  ksm: first tidy up madvise_vma()
+  ksm: define MADV_MERGEABLE and MADV_UNMERGEABLE
+  ksm: the mm interface to ksm
+  ksm: no debug in page_dup_rmap()
+  ksm: identify PageKsm pages
+  ksm: Kernel SamePage Merging
+  ksm: prevent mremap move poisoning
+  ksm: change copyright message
+  ksm: change ksm nice level to be 5
+
+ arch/alpha/include/asm/mman.h     |    3 +
+ arch/mips/include/asm/mman.h      |    3 +
+ arch/parisc/include/asm/mman.h    |    3 +
+ arch/xtensa/include/asm/mman.h    |    3 +
+ fs/proc/page.c                    |    5 +
+ include/asm-generic/mman-common.h |    3 +
+ include/linux/ksm.h               |   79 ++
+ include/linux/mm.h                |    1 +
+ include/linux/mmu_notifier.h      |   34 +
+ include/linux/rmap.h              |    6 +-
+ include/linux/sched.h             |    7 +
+ kernel/fork.c                     |    8 +-
+ mm/Kconfig                        |   11 +
+ mm/Makefile                       |    1 +
+ mm/ksm.c                          | 1543 +++++++++++++++++++++++++++++++++++++
+ mm/madvise.c                      |   53 +-
+ mm/memory.c                       |   14 +-
+ mm/mmu_notifier.c                 |   20 +
+ mm/mremap.c                       |   12 +
+ mm/rmap.c                         |   21 -
+ 20 files changed, 1773 insertions(+), 57 deletions(-)
+ create mode 100644 include/linux/ksm.h
+ create mode 100644 mm/ksm.c
 
