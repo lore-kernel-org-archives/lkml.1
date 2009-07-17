@@ -1,74 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbZGQUEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbZGQUOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752849AbZGQUEE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZGQUEE
+	id S1753277AbZGQUOt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 16:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZGQUOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:04:04 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:59967 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752255AbZGQUED convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 16:04:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=cpkQGjY39hEZj5pls+nRHuxqX5pZ6+Q0sPGtvkBJo0M4cKyTuZhJeOC+3o4Y33oB2
-	asaXTNkvkdUhskZabCr0A==
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0907170225570.15373@chino.kir.corp.google.com>
-References: <200906020557.n525v6KO004302@imap1.linux-foundation.org>
-	 <6599ad830907141752n5c701f9ap2a87df0a7f4f6ff3@mail.gmail.com>
-	 <20090714210557.0f983c37@bree.surriel.com>
-	 <6599ad830907141815x64e74a6ek1499f6032cea6f5@mail.gmail.com>
-	 <6599ad830907161629p54783716p7246e030b8da00fe@mail.gmail.com>
-	 <alpine.DEB.2.00.0907170225570.15373@chino.kir.corp.google.com>
-Date: Fri, 17 Jul 2009 13:03:56 -0700
-Message-ID: <6599ad830907171303v255a0d65t64885d37c41b764a@mail.gmail.com>
-Subject: Re: [PATCH] copy over oom_adj value at fork time
-From: Paul Menage <menage@google.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mel@csn.ul.ie, npiggin@suse.de
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Fri, 17 Jul 2009 16:14:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45214 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753098AbZGQUOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 16:14:47 -0400
+Subject: kmemleak issues in alsa
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Takashi Iwai <tiwai@suse.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 18 Jul 2009 01:44:04 +0530
+Message-Id: <1247861644.4513.15.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 17, 2009 at 2:34 AM, David Rientjes<rientjes@google.com> wrote:
->
-> The only way to workaround that is by using the highest oom_adj user for
-> the mm_struct from the array in reporting /proc/pid/oom_score, as well.
+I was getting these kmemleak reports when I build SND_SEQUENCER in
+kernel :
 
-That sounds fine to me.
+unreferenced object 0xf6b0ac00 (size 512):
+  comm "swapper", pid 1, jiffies 4294671240
+  hex dump (first 32 bytes):
+    02 00 00 00 03 4f 53 53 20 73 65 71 75 65 6e 63  .....OSS sequenc
+    65 72 00 00 00 00 00 00 00 00 00 00 00 00 00 00  er..............
+  backtrace:
+    [<c12d7d83>] kmemleak_alloc+0x25/0x49
+    [<c109350d>] kmem_cache_alloc+0x95/0x124
+    [<c12568f0>] seq_create_client1+0x1d/0x165
+    [<c1257b01>] snd_seq_create_kernel_client+0x68/0xe7
+    [<c14c966f>] snd_seq_oss_create_client+0x86/0x143
+    [<c14c958a>] alsa_seq_oss_init+0xf8/0x157
+    [<c100104f>] do_one_initcall+0x4a/0x111
+    [<c14a8608>] kernel_init+0x16b/0x1bc
+    [<c100352b>] kernel_thread_helper+0x7/0x1a
+    [<ffffffff>] 0xffffffff
+unreferenced object 0xf6b08700 (size 128):
+  comm "swapper", pid 1, jiffies 4294671240
+  hex dump (first 32 bytes):
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<c12d7d83>] kmemleak_alloc+0x25/0x49
+    [<c109350d>] kmem_cache_alloc+0x95/0x124
+    [<c12591a3>] snd_seq_pool_new+0x17/0xbe
+    [<c1256955>] seq_create_client1+0x82/0x165
+    [<c1257b01>] snd_seq_create_kernel_client+0x68/0xe7
+    [<c14c966f>] snd_seq_oss_create_client+0x86/0x143
+    [<c14c958a>] alsa_seq_oss_init+0xf8/0x157
+    [<c100104f>] do_one_initcall+0x4a/0x111
+    [<c14a8608>] kernel_init+0x16b/0x1bc
+    [<c100352b>] kernel_thread_helper+0x7/0x1a
+    [<ffffffff>] 0xffffffff
+unreferenced object 0xf6b0aa00 (size 512):
+  comm "swapper", pid 1, jiffies 4294671246
+  hex dump (first 32 bytes):
+    0f 00 00 00 00 00 00 00 52 65 63 65 69 76 65 72  ........Receiver
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<c12d7d83>] kmemleak_alloc+0x25/0x49
+    [<c109350d>] kmem_cache_alloc+0x95/0x124
+    [<c125bdf9>] snd_seq_create_port+0x4c/0x197
+    [<c1257589>] snd_seq_ioctl_create_port+0x52/0x141
+    [<c1256bb3>] snd_seq_do_ioctl+0x59/0x78
+    [<c1256c11>] snd_seq_kernel_client_ctl+0x2f/0x48
+    [<c14c96e1>] snd_seq_oss_create_client+0xf8/0x143
+    [<c14c958a>] alsa_seq_oss_init+0xf8/0x157
+    [<c100104f>] do_one_initcall+0x4a/0x111
+    [<c14a8608>] kernel_init+0x16b/0x1bc
+    [<c100352b>] kernel_thread_helper+0x7/0x1a
+    [<ffffffff>] 0xffffffff
 
-> But that would lead to /proc/pid/oom_adj not affecting oom_score at all,
-> which isn't consistent.
+But when I build SND_SEQUENCER as module these kmemleak issues
+disappear.
 
-Isn't consistent with what? It's perfectly consistent with saying "the
-oom_score of a task is based on the highest oom_adj value of any task
-sharing the same mm". Admittedly it's not 100% consistent with the old
-semantics, but I'm having trouble imagining a scenario where someone
-was relying on the changed semantics.
+Then I noticed that issue was in ordering. 
 
-But taking a completely different approach, is there a reason that we
-couldn't have just moved the do_each_thread() check for OOM_DISABLED
-out of oom_kill_task() and into select_bad_process() at the point
-where we've decided that the thread in question is a better victim
-than the current victim? That would fix the OOM livelock while
-allowing us to keep exactly the same oom_adj/oom_score semantics as in
-previous kernels.
+When build in kernel flow is like this :
 
-> The inheritance issue should be fixed with Rik's patch with the exception
-> of vfork -> change /proc/pid-of-child/oom_adj -> execve.  If scripts were
-> written to do that with the old behavior, they'll have to adjust to change
-> oom_adj _after_ the execve
+OSS sequencer(alsa_seq_oss_init) -> System (snd_seq_system_client_init)
 
-Think about what you're suggesting here - execve() replaces your code
-with whatever you're execing, so unless that code is also written to
-handle oom_adj (which for something like a generic job scheduler, the
-exec'd code is unlikely to do) you're stuck.
+When build as modules flow is like this :
 
-Paul
+System(snd_seq_system_client_init) -> OSS sequencer(alsa_seq_oss_init)
+
+So this fixes above kmemleak issues in my case, I hope it will be
+helpful :
+
+diff --git a/sound/core/seq/oss/seq_oss.c b/sound/core/seq/oss/seq_oss.c
+index f25e3cc..3ddf2c2 100644
+--- a/sound/core/seq/oss/seq_oss.c
++++ b/sound/core/seq/oss/seq_oss.c
+@@ -116,7 +116,7 @@ static void __exit alsa_seq_oss_exit(void)
+ 	unregister_device();
+ }
+ 
+-module_init(alsa_seq_oss_init)
++late_initcall(alsa_seq_oss_init);
+ module_exit(alsa_seq_oss_exit)
+ 
+ /*
+
+--
+JSR
+
+
