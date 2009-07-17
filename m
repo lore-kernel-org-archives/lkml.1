@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964825AbZGQOSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934711AbZGQOXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964825AbZGQOSE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 10:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934688AbZGQOSE
+	id S934711AbZGQOXJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 10:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934699AbZGQOXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 10:18:04 -0400
-Received: from www.tglx.de ([62.245.132.106]:48981 "EHLO www.tglx.de"
+	Fri, 17 Jul 2009 10:23:08 -0400
+Received: from kroah.org ([198.145.64.141]:41757 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934674AbZGQOSC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 10:18:02 -0400
-Date: Fri, 17 Jul 2009 16:17:42 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Guanqun Lu <guanqun.lu@intel.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, jeremy@goop.org
-Subject: Re: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
-In-Reply-To: <200907170352.11749.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0907171615530.11571@localhost.localdomain>
-References: <1247834204-3084-1-git-send-email-guanqun.lu@intel.com> <200907170352.11749.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S934617AbZGQOXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 10:23:06 -0400
+Date: Fri, 17 Jul 2009 07:14:40 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: swetland@google.com, malchev@google.com,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: HTC Dream for staging
+Message-ID: <20090717141440.GA16660@kroah.com>
+References: <20090710083709.GA6418@elf.ucw.cz>
+ <20090716230042.GB3609@kroah.com>
+ <20090717010157.GA2002@elf.ucw.cz>
+ <20090717011211.GA16704@kroah.com>
+ <20090717120657.GB2192@elf.ucw.cz>
+ <20090717134620.GB1315@kroah.com>
+ <20090717135743.GB19854@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090717135743.GB19854@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Jul 2009, Rafael J. Wysocki wrote:
-
-> On Friday 17 July 2009, Guanqun Lu wrote:
-> > We currently only bypass IRQF_TIMER in '__disable_irq',
-> > but Xen specific IRQs should not be disabled either.
-> > This commit adds a new flag to accompolish this goal
-> > without being mixed up with IRQF_TIMER flag.
+On Fri, Jul 17, 2009 at 03:57:43PM +0200, Pavel Machek wrote:
+> On Fri 2009-07-17 06:46:20, Greg KH wrote:
+> > On Fri, Jul 17, 2009 at 02:06:57PM +0200, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > I guess I'm confused. I seem to recall that HTC Dream camera support
+> > > was marged into staging, but I can't see it in
+> > > http://git.kernel.org/?p=linux/kernel/git/gregkh/staging-2.6.git;a=summary
+> > > . Is my memory wrong am I looking at wrong tree?
+> > 
+> > I never merged it.
 > 
-> For some obscure reasons [2/3] didn't reach my inbox.  The other 2 patches
-> look fine to me.
+> Ok, I guessed so. I sent it as patch #4, patch #5 adds makefile glue
+> for all that. They should be all in your inbox now.
 
-I do not receive the patches at all. Can you please resend and cc me ?
+I see 5 patches, but in the future, please number them to ensure that
+they are applied in the correct order.
 
-Thanks,
+thanks,
 
-	tglx
+greg k-h
