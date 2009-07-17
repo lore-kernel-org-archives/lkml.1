@@ -1,122 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934094AbZGQGNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934109AbZGQGVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934094AbZGQGNX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 02:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933903AbZGQGNX
+	id S934109AbZGQGVF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 02:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933998AbZGQGVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 02:13:23 -0400
-Received: from sparc.brc.ubc.ca ([137.82.2.12]:51444 "EHLO sparc.brc.ubc.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933901AbZGQGNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 02:13:22 -0400
-Date: Thu, 16 Jul 2009 23:32:33 -0700 (PDT)
-From: "Li, Ming Chun" <macli@brc.ubc.ca>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] mm: count only reclaimable lru pages
-In-Reply-To: <20090717135632.A91A.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.1.00.0907162315450.17021@mail.selltech.ca>
-References: <23396.1247764286@redhat.com> <alpine.DEB.1.00.0907161130120.16004@mail.selltech.ca> <20090717135632.A91A.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 17 Jul 2009 02:21:05 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60462 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934074AbZGQGVE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 02:21:04 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 17 Jul 2009 15:20:53 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Luming Yu <luming.yu@gmail.com>
+Subject: Re: [RFC patch] delete improper hot pluggable code of memory affinity
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <3877989d0907162303k26bfd293n2edb39c8206f8be8@mail.gmail.com>
+References: <20090717143818.38B7.E1E9C6FF@jp.fujitsu.com> <3877989d0907162303k26bfd293n2edb39c8206f8be8@mail.gmail.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20090717151118.38BC.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 17 Jul 2009, KOSAKI Motohiro wrote:
+> On Fri, Jul 17, 2009 at 1:52 PM, Yasunori Goto<y-goto@jp.fujitsu.com> wrote:
+> >> Without a fix like my proposal, I have seen NUMA configure disabled by
+> >> kernel (due to the code the patch deletes) on a system with Enabled
+> >> bit set , and Hotplug-able bit cleared, and
+> >> CONFIG_MEMORY_HOTPLUG_SPARSE disabled.
+> >
+> > Ok. I guess that save_add_info() was to check percentage of
+> > reserve area when CONFIG_MEMORY_HOTPLUG_RESERVE is set.
+> > Its code was removed at 2.6.25, save_add_info() may be garbage now.
+> >
+> > However, I have one question now.
+> >
+> >>> - ? ?if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
+> >>> - ? ? ? ? ? ?update_nodes_add(node, start, end);
+> >>> - ? ? ? ? ? ?/* restore nodes[node] */
+> >>> - ? ? ? ? ? ?*nd = oldnode;
+> >>> - ? ? ? ? ? ?if ((nd->start | nd->end) == 0)
+> >>> - ? ? ? ? ? ? ? ? ? ?node_clear(node, nodes_parsed);
+> >>> - ? ? }
+> >
+> > I don't understand why you remove this code. could you tell me why?
+> 
+> Good question. This is exactly the place I'm puzzled too.
+> Without delete this code, I still see one fake node instead of 4 real node...
+> I think a flow up patch is needed here...
 
-> > On Thu, 16 Jul 2009, David Howells wrote:
-> > 
-> > > Rik van Riel <riel@redhat.com> wrote:
-> > > 
-> > > > It's part of a series of patches, including the three posted by Kosaki-san
-> > > > last night (to track the number of isolated pages) and the patch I posted
-> > > > last night (to throttle reclaim when too many pages are isolated).
-> > > 
-> > > Okay; Rik gave me a tarball of those patches, which I applied and re-ran the
-> > > test.  The first run of msgctl11 produced lots of:
-> > > 
-> > > 	[root@andromeda ltp]# while ./testcases/bin/msgctl11; do :; done
-> > 
-> > I applied the series of patches on 2.6.31-rc3 and run 
-> > 
-> > while ./testcases/bin/msgctl11; do :; done 
-> > 
-> > four times, only got one OOM kill in the first round and the system is 
-> > quite responsive all the time.
-> > 
-> > # while ./testcases/bin/msgctl11; do :; done
-> > 
-> > ---
-> >  kernel: [  735.507878] msgctl11 invoked oom-killer: gfp_mask=0x84d0, order=0, oom_adj=0
-> 
-> GFP_KERNEL | __GFP_REPEAT __GFP_ZERO
+In my understanding, here is for the case when the SRAT entry is enabled,
+but memory is not connected. (This is why I sent the first mail).
+However, here may have a bug yet. 
 
-ah, ./scripts/gfp-translate 0x84d0 __GFP_WAIT | __GFP_IO | __GFP_FS | 
-__GFP_REPEAT | __GFP_ZERO
- 
-> 
-> >  kernel: [  735.507884] msgctl11 cpuset=/ mems_allowed=0
-> >  kernel: [  735.507888] Pid: 20631, comm: msgctl11 Not tainted 2.6.31-rc3-custom #1
-> >  kernel: [  735.507891] Call Trace:
-> >  kernel: [  735.507900]  [<c01ad781>] oom_kill_process+0x161/0x280
-> >  kernel: [  735.507905]  [<c01adcd3>] ? select_bad_process+0x63/0xd0
-> >  kernel: [  735.507909]  [<c01add8e>] __out_of_memory+0x4e/0xb0
-> >  kernel: [  735.507913]  [<c01ade42>] out_of_memory+0x52/0xa0
-> >  kernel: [  735.507917]  [<c01b0b07>] __alloc_pages_nodemask+0x4d7/0x4f0
-> >  kernel: [  735.507922]  [<c01b0b77>] __get_free_pages+0x17/0x30
-> >  kernel: [  735.507927]  [<c012baa6>] pgd_alloc+0x36/0x250
-> >  kernel: [  735.507932]  [<c01f4ad3>] ? dup_fd+0x23/0x340
-> >  kernel: [  735.507936]  [<c01422f7>] ? dup_mm+0x47/0x350
-> >  kernel: [  735.507939]  [<c0141dd9>] mm_init+0xa9/0xe0
-> >  kernel: [  735.507943]  [<c0142329>] dup_mm+0x79/0x350
-> >  kernel: [  735.507947]  [<c01ffe22>] ? copy_fs_struct+0x22/0x90
-> >  kernel: [  735.507951]  [<c01432d5>] ? copy_process+0xc75/0x1070
-> >  kernel: [  735.507955]  [<c0143090>] copy_process+0xa30/0x1070
-> >  kernel: [  735.507959]  [<c054b204>] ? schedule+0x494/0xa80
-> >  kernel: [  735.507963]  [<c014373f>] do_fork+0x6f/0x330
-> >  kernel: [  735.507968]  [<c014fdce>] ? recalc_sigpending+0xe/0x40
-> >  kernel: [  735.507972]  [<c0107716>] sys_clone+0x36/0x40
-> >  kernel: [  735.507976]  [<c0108dd4>] sysenter_do_call+0x12/0x28
-> >  kernel: [  735.507979] Mem-Info:
-> >  kernel: [  735.507981] DMA per-cpu:
-> >  kernel: [  735.507983] CPU    0: hi:    0, btch:   1 usd:   0
-> >  kernel: [  735.507986] CPU    1: hi:    0, btch:   1 usd:   0
-> >  kernel: [  735.507988] Normal per-cpu:
-> >  kernel: [  735.507990] CPU    0: hi:  186, btch:  31 usd:  17
-> >  kernel: [  735.507993] CPU    1: hi:  186, btch:  31 usd: 180
-> >  kernel: [  735.507994] HighMem per-cpu:
-> >  kernel: [  735.507997] CPU    0: hi:   42, btch:   7 usd:  22
-> >  kernel: [  735.507999] CPU    1: hi:   42, btch:   7 usd:   0
-> >  kernel: [  735.508008] active_anon:82389 inactive_anon:2043 isolated_anon:32
-> >  kernel: [  735.508009]  active_file:2201 inactive_file:5773 isolated_file:31
-> >  kernel: [  735.508010]  unevictable:0 dirty:4 writeback:0 unstable:0 buffer:19
-> >  kernel: [  735.508011]  free:1825 slab_reclaimable:655 slab_unreclaimable:19679
-> >  kernel: [  735.508012]  mapped:1309 shmem:113 pagetables:66757 bounce:0
-> 
-> a lot free pages. but...
-> 
-> >  kernel: [  735.508020] DMA free:3520kB min:64kB low:80kB high:96kB active_anon:2240kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15832kB mlocked:0kB dirty:0kB writeback:0kB mapped:0kB shmem:0kB slab_reclaimable:0kB slab_unreclaimable:132kB kernel_stack:120kB pagetables:2436kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> >  kernel: [  735.508026] lowmem_reserve[]: 0 867 998 998
-> >  kernel: [  735.508035] Normal free:3632kB min:3732kB low:4664kB high:5596kB active_anon:269136kB inactive_anon:0kB active_file:56kB inactive_file:20kB unevictable:0kB isolated(anon):128kB isolated(file):124kB present:887976kB mlocked:0kB dirty:0kB writeback:0kB mapped:4kB shmem:0kB slab_reclaimable:2620kB slab_unreclaimable:78584kB kernel_stack:77328kB pagetables:227972kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:222 all_unreclaimable? no
-> >  kernel: [  735.508042] lowmem_reserve[]: 0 0 1052 1052
-> 
-> DMA and Normal zone doesn't have enough free pages.
- 
-Caculate this way?  
-DMA: 3520K < 64K + 998 * 4K
-Normal: 3632k < 3732k + 1052 * 4k 
+I would like to test here, but I don't have a real x86-64 machine which can
+hot add memory. So, I can just guess now.
 
->
-> >  kernel: [  735.508051] HighMem free:148kB min:128kB low:268kB high:408kB active_anon:58180kB inactive_anon:8172kB active_file:8748kB inactive_file:23072kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:134688kB mlocked:0kB dirty:16kB writeback:0kB mapped:5232kB shmem:452kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:36620kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-> >  kernel: [  735.508057] lowmem_reserve[]: 0 0 0 0
-> 
-> HighMem zone only have enough free pages and reclaimable file cache pages.
-> 
-GFP_KERNEL | GFP_REPEAT | GFP_ZERO could not access HighMem free pages?
+Anyway, thanks for your notification. If you have progress about it,
+please let me know.
 
-Vincent Li
-Biomedical Research Center
-University of British Columbia
+Bye.
+
+-- 
+Yasunori Goto 
+
+
