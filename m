@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbZGQUUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZGQUVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbZGQUUG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbZGQUUD
+	id S1756139AbZGQUVo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 16:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755068AbZGQUVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:20:03 -0400
-Received: from kroah.org ([198.145.64.141]:43130 "EHLO coco.kroah.org"
+	Fri, 17 Jul 2009 16:21:43 -0400
+Received: from kroah.org ([198.145.64.141]:43121 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755267AbZGQUTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 16:19:54 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:36 2009
-Message-Id: <20090717201236.180300826@mini.kroah.org>
+	id S1755073AbZGQUTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 16:19:51 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:34 2009
+Message-Id: <20090717201234.451772052@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 17 Jul 2009 13:09:10 -0700
+Date: Fri, 17 Jul 2009 13:09:07 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Slaby <jirislaby@gmail.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 19/24] floppy: fix lock imbalance
+       NeilBrown <neilb@suse.de>
+Subject: [patch 16/24] md: fix error path when duplicate name is found on md device creation.
 References: <20090717200851.907421303@mini.kroah.org>
-Content-Disposition: inline; filename=floppy-fix-lock-imbalance.patch
+Content-Disposition: inline; filename=md-fix-error-path-when-duplicate-name-is-found-on-md-device-creation.patch
 In-Reply-To: <20090717201639.GA14209@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,37 +30,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: NeilBrown <neilb@suse.de>
 
-commit 8516a500029890a72622d245f8ed32c4e30969b7 upstream.
+commit 1ec22eb2b4a2e1a763106bce36b11c02eaa84e61 upstream.
 
-A crappy macro prevents us unlocking on a fail path.
+When an md device is created by name (rather than number) we need to
+check that the name is not already in use.  If this check finds a
+duplicate, we return an error without dropping the lock or freeing
+the newly create mddev.
+This patch fixes that.
 
-Expand the macro and unlock appropriatelly.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Found-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/block/floppy.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/md/md.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -3327,7 +3327,10 @@ static inline int set_geometry(unsigned 
- 		if (!capable(CAP_SYS_ADMIN))
- 			return -EPERM;
- 		mutex_lock(&open_lock);
--		LOCK_FDC(drive, 1);
-+		if (lock_fdc(drive, 1)) {
-+			mutex_unlock(&open_lock);
-+			return -EINTR;
-+		}
- 		floppy_type[type] = *g;
- 		floppy_type[type].name = "user format";
- 		for (cnt = type << 2; cnt < (type << 2) + 4; cnt++)
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -3876,6 +3876,8 @@ static int md_alloc(dev_t dev, char *nam
+ 			if (mddev2->gendisk &&
+ 			    strcmp(mddev2->gendisk->disk_name, name) == 0) {
+ 				spin_unlock(&all_mddevs_lock);
++				mutex_unlock(&disks_mutex);
++				mddev_put(mddev);
+ 				return -EEXIST;
+ 			}
+ 		spin_unlock(&all_mddevs_lock);
 
 
