@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934653AbZGQNrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934664AbZGQNxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934653AbZGQNrH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 09:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934589AbZGQNrG
+	id S934664AbZGQNxW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 09:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934633AbZGQNxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 09:47:06 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:44756 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933941AbZGQNrG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 09:47:06 -0400
-Date: Fri, 17 Jul 2009 09:44:38 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: what is "temporary" about code in "__register_chrdev_region()"?
-Message-ID: <alpine.LFD.2.00.0907170941360.4333@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 17 Jul 2009 09:53:21 -0400
+Received: from kroah.org ([198.145.64.141]:39787 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934634AbZGQNxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 09:53:21 -0400
+Date: Fri, 17 Jul 2009 06:46:20 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: swetland@google.com, malchev@google.com,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: HTC Dream for staging
+Message-ID: <20090717134620.GB1315@kroah.com>
+References: <20090710083709.GA6418@elf.ucw.cz>
+ <20090716230042.GB3609@kroah.com>
+ <20090717010157.GA2002@elf.ucw.cz>
+ <20090717011211.GA16704@kroah.com>
+ <20090717120657.GB2192@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090717120657.GB2192@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 17, 2009 at 02:06:57PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> I guess I'm confused. I seem to recall that HTC Dream camera support
+> was marged into staging, but I can't see it in
+> http://git.kernel.org/?p=linux/kernel/git/gregkh/staging-2.6.git;a=summary
+> . Is my memory wrong am I looking at wrong tree?
 
-  i was just perusing the code for that routine in fs/char_dev.c and
-noticed the label that some of that code was, well, temporary:
+I never merged it.
 
-        /* temporary */     [line 99]
-        if (major == 0) {
-                for (i = ARRAY_SIZE(chrdevs)-1; i > 0; i--) {
-                        if (chrdevs[i] == NULL)
-                                break;
-                }
+thanks,
 
-                if (i == 0) {
-                        ret = -EBUSY;
-                        goto out;
-                }
-                major = i;
-                ret = major;
-        }
-
-  so what's "temporary" about it?  that it can (dynamically) handle a
-major number of zero?  is that supposed to represent a first step in
-migrating to alloc_chrdev_region(), or what?  i'm just curious,
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-"Kernel Newbie Corner" column @ linux.com:          http://cli.gs/WG6WYX
-========================================================================
+greg k-h
