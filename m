@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934786AbZGQRPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964898AbZGQRUD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934786AbZGQRPq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 13:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934764AbZGQRPp
+	id S964898AbZGQRUD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 13:20:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934732AbZGQRUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 13:15:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58518
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934751AbZGQRPp (ORCPT
+	Fri, 17 Jul 2009 13:20:01 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41670 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933550AbZGQRUB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 13:15:45 -0400
-Date: Fri, 17 Jul 2009 10:15:50 -0700 (PDT)
-Message-Id: <20090717.101550.223298982.davem@davemloft.net>
-To: zbr@ioremap.net
-Cc: vapier@gentoo.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/3] connector: make callback argument type explicit
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090716101957.GA9586@ioremap.net>
-References: <1247696049-15699-1-git-send-email-vapier@gentoo.org>
-	<20090716101957.GA9586@ioremap.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 17 Jul 2009 13:20:01 -0400
+Date: Fri, 17 Jul 2009 18:18:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Harris, Jeff" <Jeff_Harris@kentrox.com>
+Cc: <alan@linux.intel.com>, <vapier@gentoo.org>, <adobriyan@gmail.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tty: Fix tcdrain hang due to tty chars_in_buffer errors
+Message-ID: <20090717181852.54b1e41f@lxorguk.ukuu.org.uk>
+In-Reply-To: <2E93DD7A4E576E48956F4A861E8B2CB801137D6D@dubexchange.corp.kentrox.com>
+References: <1247843274-7462-1-git-send-email-jeff_harris@kentrox.com>
+	<20090717170124.05881456@lxorguk.ukuu.org.uk>
+	<2E93DD7A4E576E48956F4A861E8B2CB801137D6D@dubexchange.corp.kentrox.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Evgeniy Polyakov <zbr@ioremap.net>
-Date: Thu, 16 Jul 2009 14:19:57 +0400
+On Fri, 17 Jul 2009 12:36:22 -0400
+"Harris, Jeff" <Jeff_Harris@kentrox.com> wrote:
 
-> Hi Mike.
-> 
-> Your patches look good, thanks a lot.
-> David, please apply to the appropriate tree.
+> That was my other thought, but there are other kernel drivers which do
+> report errors from chars_in_buffer.  A grep of the code shows
+> ipw_chars_in_buffer in drivers/char/pcmcia/ipwireless/tty.c,
+> hvc_chars_in_buffer in hvc_console.c, ntty_chars_in_buffer in nozomi.c,
+> if_chars_in_buffer in isdn/gigaset/interface.c, etc.  Do they all need
+> to be updated?  
 
-Applied to net-next-2.6, but I am being very generous.
+Yes I've squashed a pile and there may be more left.
 
-In the future please make sure netdev@vger.kernel.org receives all
-networking patch postings so that they properly get tracked at:
+> Should the return type be unsigned int to make the behavior more
+> explicit?  The signed type may be interpreted along the lines of a read
+> or write call which returns a count or a negative value to indicate a
+> failure.
 
-	http://patchwork.ozlabs.org/project/netdev/list/
+That would simply have people returning very large numbers. I don't think
+the compiler can cure that. Putting a WARN_ON(x < 0); might liven it up
+though.
 
-Otherwise they risk getting lost.
+Alan
