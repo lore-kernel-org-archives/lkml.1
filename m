@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934331AbZGQJjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934357AbZGQKBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934331AbZGQJjE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 05:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934303AbZGQJjD
+	id S934357AbZGQKBg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 06:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934349AbZGQKBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 05:39:03 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54747 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S934293AbZGQJjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 05:39:02 -0400
-Message-ID: <4A604654.1090303@cn.fujitsu.com>
-Date: Fri, 17 Jul 2009 17:37:24 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 17 Jul 2009 06:01:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44225 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934345AbZGQKBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 06:01:35 -0400
+Date: Fri, 17 Jul 2009 12:01:33 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: Input : regression - touchpad not detected
+In-Reply-To: <a8e1da0907162213w13a5113dj556bb314e73fb19b@mail.gmail.com>
+Message-ID: <alpine.LRH.2.00.0907171200350.27150@twin.jikos.cz>
+References: <a8e1da0907162213w13a5113dj556bb314e73fb19b@mail.gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jiri Olsa <jolsa@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: dont reset set_ftrace_filter/notrace when opened
- with r/w perm
-References: <20090716165135.GA4739@jolsa.lab.eng.brq.redhat.com>
-In-Reply-To: <20090716165135.GA4739@jolsa.lab.eng.brq.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Olsa wrote:
-> If user setup set_ftrace_filter/set_ftrace_notrace files and then opens them
-> with read&write permissions, the previous setup will be removed.
+On Fri, 17 Jul 2009, Dave Young wrote:
+
+> Hi,
 > 
-
-Currently:
-
- # echo 'sys_open sys_close' > set_ftrace_filter
- # cat set_ftrace_filter
- sys_open
- sys_close
-
-After your patch:
-
- # echo 'sys_open sys_close' > set_ftrace_filter
- # cat set_ftrace_filter
- sys_close
-
-> Tested with following program:
-...
+> since 2.6.31-rc3, sometimes the touchpad of my laptop will not be
+> detected, usually after reboot it will be there.
 > 
-> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+> I have no such problem with 2.6.31-rc2
 > 
-> ---
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index 4521c77..11394bc 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -1661,10 +1661,6 @@ ftrace_regex_open(struct inode *inode, struct file *file, int enable)
->  		return -ENOMEM;
->  
->  	mutex_lock(&ftrace_regex_lock);
-> -	if ((file->f_mode & FMODE_WRITE) &&
-> -	    !(file->f_flags & O_APPEND))
-> -		ftrace_filter_reset(enable);
-> -
->  	if (file->f_mode & FMODE_READ) {
->  		iter->pg = ftrace_pages_start;
->  		iter->flags = enable ? FTRACE_ITER_FILTER :
-> @@ -2260,6 +2256,9 @@ ftrace_regex_write(struct file *file, const char __user *ubuf,
->  		return 0;
->  
->  	mutex_lock(&ftrace_regex_lock);
-> +	if ((file->f_mode & FMODE_WRITE) &&
-> +	    !(file->f_flags & O_APPEND))
-> +		ftrace_filter_reset(enable);
->  
->  	if (file->f_mode & FMODE_READ) {
->  		struct seq_file *m = file->private_data;
-> --
+> `dmesg|grep input` with touchpad detected:
+> 
+> [    2.447119] input: Lid Switch as
+> /devices/LNXSYSTM:00/device:00/PNP0C0D:00/input/input0
+> [    2.458089] input: Power Button as
+> /devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input1
+> [    2.459155] input: Sleep Button as
+> /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input2
+> [    3.093556] input: Video Bus as
+> /devices/LNXSYSTM:00/device:00/PNP0A03:00/device:33/input/input3
+> [    3.120647] input: Video Bus as
+> /devices/LNXSYSTM:00/device:00/PNP0A03:00/device:3b/input/input4
+> [    5.300364] input: AT Translated Set 2 keyboard as
+> /devices/platform/i8042/serio0/input/input5
+> [    5.669278] input: PS/2 Mouse as /devices/platform/i8042/serio1/input/input6
+> [    5.698278] input: AlpsPS/2 ALPS GlidePoint as
+> /devices/platform/i8042/serio1/input/input7
+> 
+> `dmesg|grep input` without touchpad detected:
+> 
+> [    2.454246] input: Lid Switch as
+> /devices/LNXSYSTM:00/device:00/PNP0C0D:00/input/input0
+> [    2.478038] input: Power Button as
+> /devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input1
+> [    2.487538] input: Sleep Button as
+> /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input2
+> [    3.118063] input: Video Bus as
+> /devices/LNXSYSTM:00/device:00/PNP0A03:00/device:33/input/input3
+> [    3.164064] input: Video Bus as
+> /devices/LNXSYSTM:00/device:00/PNP0A03:00/device:3b/input/input4
+> [    5.353006] input: AT Translated Set 2 keyboard as
+> /devices/platform/i8042/serio0/input/input5
+
+Providing the dmesg output with 'i8042.debug' kernel parameter in place 
+from the situation the TouchPad doesn't get detected might be helpful.
+
+-- 
+Jiri Kosina
+SUSE Labs
 
