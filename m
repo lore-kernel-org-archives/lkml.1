@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZGQUUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZGQUTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbZGQUUA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbZGQUT7
+	id S1754467AbZGQUTr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 16:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbZGQUTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:19:59 -0400
-Received: from kroah.org ([198.145.64.141]:43143 "EHLO coco.kroah.org"
+	Fri, 17 Jul 2009 16:19:46 -0400
+Received: from kroah.org ([198.145.64.141]:43098 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755388AbZGQUT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 16:19:57 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:38 2009
-Message-Id: <20090717201237.955389551@mini.kroah.org>
+	id S1753755AbZGQUTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 16:19:44 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:31 2009
+Message-Id: <20090717201231.001369907@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 17 Jul 2009 13:09:14 -0700
+Date: Fri, 17 Jul 2009 13:09:00 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Miklos Szeredi <mszeredi@suse.cz>
-Subject: [patch 23/24] fuse: fix return value of fuse_dev_write()
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 09/24] futex: Fix the write access fault problem for real
 References: <20090717200851.907421303@mini.kroah.org>
-Content-Disposition: inline; filename=fuse-fix-return-value-of-fuse_dev_write.patch
+Content-Disposition: inline; filename=futex-fix-the-write-access-fault-problem-for-real.patch
 In-Reply-To: <20090717201639.GA14209@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +30,138 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Csaba Henk <csaba@gluster.com>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit b4c458b3a23d76936e76678f2074b1528f129f7a upstream.
+commit d0725992c8a6fb63a16bc9e8b2a50094cc4db3cd and aa715284b4d28cabde6c25c568d769a6be712bc8 upstream
 
-On 64 bit systems -- where sizeof(ssize_t) > sizeof(int) -- the following test
-exposes a bug due to a non-careful return of an int or unsigned value:
+commit 64d1304a64 (futex: setup writeable mapping for futex ops which
+modify user space data) did address only half of the problem of write
+access faults.
 
-implement a FUSE filesystem which sends an unsolicited notification to
-the kernel with invalid opcode. The respective write to /dev/fuse
-will return (1 << 32) - EINVAL with errno == 0 instead of -1 with
-errno == EINVAL.
+The patch was made on two wrong assumptions:
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+1) access_ok(VERIFY_WRITE,...) would actually check write access.
+
+   On x86 it does _NOT_. It's a pure address range check.
+
+2) a RW mapped region can not go away under us.
+
+   That's wrong as well. Nobody can prevent another thread to call
+   mprotect(PROT_READ) on that region where the futex resides. If that
+   call hits between the get_user_pages_fast() verification and the
+   actual write access in the atomic region we are toast again.
+
+The solution is to not rely on access_ok and get_user() for any write
+access related fault on private and shared futexes. Instead we need to
+fault it in with verification of write access.
+
+There is no generic non destructive write mechanism which would fault
+the user page in trough a #PF, but as we already know that we will
+fault we can as well call get_user_pages() directly and avoid the #PF
+overhead.
+
+If get_user_pages() returns -EFAULT we know that we can not fix it
+anymore and need to bail out to user space.
+
+Remove a bunch of confusing comments on this issue as well.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/fuse/dev.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/futex.c |   42 +++++++++++++++++++++++-------------------
+ 1 file changed, 23 insertions(+), 19 deletions(-)
 
---- a/fs/fuse/dev.c
-+++ b/fs/fuse/dev.c
-@@ -904,7 +904,7 @@ static ssize_t fuse_dev_write(struct kio
- 			       unsigned long nr_segs, loff_t pos)
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -278,6 +278,25 @@ void put_futex_key(int fshared, union fu
+ 	drop_futex_key_refs(key);
+ }
+ 
++/*
++ * fault_in_user_writeable - fault in user address and verify RW access
++ * @uaddr:	pointer to faulting user space address
++ *
++ * Slow path to fixup the fault we just took in the atomic write
++ * access to @uaddr.
++ *
++ * We have no generic implementation of a non destructive write to the
++ * user address. We know that we faulted in the atomic pagefault
++ * disabled section so we can as well avoid the #PF overhead by
++ * calling get_user_pages() right away.
++ */
++static int fault_in_user_writeable(u32 __user *uaddr)
++{
++	int ret = get_user_pages(current, current->mm, (unsigned long)uaddr,
++				 1, 1, 0, NULL, NULL);
++	return ret < 0 ? ret : 0;
++}
++
+ static u32 cmpxchg_futex_value_locked(u32 __user *uaddr, u32 uval, u32 newval)
  {
- 	int err;
--	unsigned nbytes = iov_length(iov, nr_segs);
-+	size_t nbytes = iov_length(iov, nr_segs);
- 	struct fuse_req *req;
- 	struct fuse_out_header oh;
- 	struct fuse_copy_state cs;
+ 	u32 curval;
+@@ -739,7 +758,6 @@ retry:
+ retry_private:
+ 	op_ret = futex_atomic_op_inuser(op, uaddr2);
+ 	if (unlikely(op_ret < 0)) {
+-		u32 dummy;
+ 
+ 		double_unlock_hb(hb1, hb2);
+ 
+@@ -757,7 +775,7 @@ retry_private:
+ 			goto out_put_keys;
+ 		}
+ 
+-		ret = get_user(dummy, uaddr2);
++		ret = fault_in_user_writeable(uaddr2);
+ 		if (ret)
+ 			goto out_put_keys;
+ 
+@@ -1097,7 +1115,7 @@ retry:
+ handle_fault:
+ 	spin_unlock(q->lock_ptr);
+ 
+-	ret = get_user(uval, uaddr);
++	ret = fault_in_user_writeable(uaddr);
+ 
+ 	spin_lock(q->lock_ptr);
+ 
+@@ -1552,16 +1570,9 @@ out:
+ 	return ret;
+ 
+ uaddr_faulted:
+-	/*
+-	 * We have to r/w  *(int __user *)uaddr, and we have to modify it
+-	 * atomically.  Therefore, if we continue to fault after get_user()
+-	 * below, we need to handle the fault ourselves, while still holding
+-	 * the mmap_sem.  This can occur if the uaddr is under contention as
+-	 * we have to drop the mmap_sem in order to call get_user().
+-	 */
+ 	queue_unlock(&q, hb);
+ 
+-	ret = get_user(uval, uaddr);
++	ret = fault_in_user_writeable(uaddr);
+ 	if (ret)
+ 		goto out_put_key;
+ 
+@@ -1657,17 +1668,10 @@ out:
+ 	return ret;
+ 
+ pi_faulted:
+-	/*
+-	 * We have to r/w  *(int __user *)uaddr, and we have to modify it
+-	 * atomically.  Therefore, if we continue to fault after get_user()
+-	 * below, we need to handle the fault ourselves, while still holding
+-	 * the mmap_sem.  This can occur if the uaddr is under contention as
+-	 * we have to drop the mmap_sem in order to call get_user().
+-	 */
+ 	spin_unlock(&hb->lock);
+ 	put_futex_key(fshared, &key);
+ 
+-	ret = get_user(uval, uaddr);
++	ret = fault_in_user_writeable(uaddr);
+ 	if (!ret)
+ 		goto retry;
+ 
 
 
