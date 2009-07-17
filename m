@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbZGQWSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757960AbZGQW0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757912AbZGQWSt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 18:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZGQWSs
+	id S1757960AbZGQW0j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 18:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZGQW0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 18:18:48 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56716 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751175AbZGQWSs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 18:18:48 -0400
-Date: Sat, 18 Jul 2009 00:18:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kbuild@vger.kernel.org, barryn@pobox.com,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [PATCH,v2] Only add '-fwrapv' to gcc CFLAGS for gcc 4.2 and
-	later
-Message-ID: <20090717221846.GA7347@merkur.ravnborg.org>
-References: <200907100928.07369.elendil@planet.nl> <200907102205.49642.elendil@planet.nl>
+	Fri, 17 Jul 2009 18:26:38 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:49204 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757862AbZGQW0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 18:26:38 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <4A60FAB2.6030906@crca.org.au>
+Date: Sat, 18 Jul 2009 08:26:58 +1000
+From: Nigel Cunningham <ncunningham@crca.org.au>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907102205.49642.elendil@planet.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, Nathan Lynch <ntl@pobox.com>,
+       Nigel Cunningham <nigel@tuxonice.net>, stable@kernel.org,
+       containers@lists.linux-foundation.org,
+       linux-pm@lists.linux-foundation.org, Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting of frozen
+ tasks really
+References: <20090717121545.489258927@linutronix.de>  <20090717122103.225652146@linutronix.de> <1247833910.15751.61.camel@twins> <alpine.LFD.2.00.0907171441020.11571@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0907171441020.11571@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 10, 2009 at 10:05:47PM +0200, Frans Pop wrote:
-> On Friday 10 July 2009, Frans Pop wrote:
-> > The discussion on issue looks to have died, but it has bitten Debian
-> > stable ("Lenny") [1] as it causes init to die on s390 after a kernel
-> > update.
-> >
-> > Here's a possible patch. The exact gcc version to check for is still a
-> > bit open I guess. For the s390 issue I've confirmed that 4.2.4 is OK,
-> > but for safety and because of Andrew's comment above I've set the test
-> > for 4.3 in the patch.
-> 
-> Here's an updated patch as I found the gcc version check was incorrect 
-> (0430 should have been 0403; sorry).
-> 
-> I've now changed the check to allow -fwrapv for gcc 4.2 as that has been 
-> shown to work and because of the consideration mentioned in my previous 
-> mail.
-> 
-> ---
-> From: Frans Pop <elendil@planet.nl>
-> Subject: Only add '-fwrapv' to gcc CFLAGS for gcc 4.2 and later
-> 
-> This flag has been shown to cause init to segfault for kernels
-> compiled with gcc-4.1. gcc version 4.2.4 has been shown to be OK.
-> 
-> This fixes http://bugzilla.kernel.org/show_bug.cgi?id=13012.
-> 
-> Reported-by: Barry K. Nathan <barryn@pobox.com>
-> Signed-off-by: Frans Pop <elendil@planet.nl>
-> 
-> diff --git a/Makefile b/Makefile
-> index 0aeec59..2519fde 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -565,7 +565,8 @@ KBUILD_CFLAGS += $(call 
-> cc-option,-Wdeclaration-after-statement,)
->  KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
->  
->  # disable invalid "can't wrap" optimizations for signed / pointers
-> -KBUILD_CFLAGS	+= $(call cc-option,-fwrapv)
-> +KBUILD_CFLAGS  += $(shell if [ $(call cc-version) -ge 0402 ]; then \
-> +		    echo $(call cc-option,-fwrapv); fi ;)
+Hi.
 
-This would be simpler if you use:
-# cc-ifversion
-# Usage:  EXTRA_CFLAGS += $(call cc-ifversion, -lt, 0402, -O1)
-cc-ifversion = $(shell [ $(call cc-version, $(CC)) $(1) $(2) ] && echo $(3))
+Thomas Gleixner wrote:
+> On Fri, 17 Jul 2009, Peter Zijlstra wrote:
+> 
+>> On Fri, 2009-07-17 at 12:25 +0000, Thomas Gleixner wrote:
+>>> plain text document attachment (freezer-fix-accounting-for-real.patch)
+>>> commit e3c8ca8336 (sched: do not count frozen tasks toward load) broke
+>>> the nr_uninterruptible accounting on freeze/thaw. On freeze the task
+>>> is excluded from accounting with a check for (task->flags &
+>>> PF_FROZEN), but that flag is cleared before the task is thawed. So
+>>> while we prevent that the freezing task with state
+>>> TASK_UNINTERRUPTIBLE is accounted to nr_uninterruptible we decrement
+>>> nr_uninterruptible on thaw.
+>>>
+>>> Use a separate flag which is handled by the freezing task itself. Set
+>>> it before calling the scheduler with TASK_UNINTERRUPTIBLE state and
+>>> clear it after we return from frozen state.
+>> Right, so I'm wondering why we don't fully revert e3c8ca8336 to begin
+>> with.
+> 
+> Fine with me, but it seems that the cgroup folks have some luser space
+> stuff looking at proc/loadavg which goes berserk when loadavg
+> increases rapidly due to freezing. OTOH that stuff seems to be
+> oblivious to the fact that the commit in question brings loadavg
+> irreversibly to 0 when you do enough freeze/thaw cycles.
 
-We have only one user at the moment so I understand why you missed it.
+That's right. I don't remember the exact details (it's been ages since
+this was first reported to me), but sendmail (IIRC) was looking at the
+load average and stopping delivery until it dropped sufficiently.
 
-	Sam
+Historically, my solution has been to save and restore the load average
+values (on the theory that hibernation should be transparent to
+userspace), but I dropped that in favour of this approach.
+
+Regards,
+
+Nigel
