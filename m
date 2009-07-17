@@ -1,164 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964852AbZGQPvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964863AbZGQQAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964852AbZGQPvj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 11:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964835AbZGQPvj
+	id S964863AbZGQQAe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 12:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964847AbZGQQAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 11:51:39 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:60273 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964830AbZGQPvi (ORCPT
+	Fri, 17 Jul 2009 12:00:33 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55739 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964836AbZGQQAd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 11:51:38 -0400
-Date: Fri, 17 Jul 2009 08:51:17 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Nathan Lynch <ntl@pobox.com>, Nigel Cunningham <nigel@tuxonice.net>,
-       stable@kernel.org, containers@lists.linux-foundation.org,
-       linux-pm@lists.linux-foundation.org, Matt Helsley <matthltc@us.ibm.com>
-Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting of frozen
-	tasks really
-Message-ID: <20090717155116.GB5878@count0.beaverton.ibm.com>
-References: <20090717121545.489258927@linutronix.de> <20090717122103.225652146@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090717122103.225652146@linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 17 Jul 2009 12:00:33 -0400
+Date: Fri, 17 Jul 2009 17:01:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Harris <jeff_harris@kentrox.com>
+Cc: alan@linux.intel.com, vapier@gentoo.org, adobriyan@gmail.com,
+       linux-kernel@vger.kernel.org, Jeff Harris <jeff_harris@kentrox.com>
+Subject: Re: [PATCH] tty: Fix tcdrain hang due to tty chars_in_buffer errors
+Message-ID: <20090717170124.05881456@lxorguk.ukuu.org.uk>
+In-Reply-To: <1247843274-7462-1-git-send-email-jeff_harris@kentrox.com>
+References: <1247843274-7462-1-git-send-email-jeff_harris@kentrox.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 17, 2009 at 12:25:01PM -0000, Thomas Gleixner wrote:
-> commit e3c8ca8336 (sched: do not count frozen tasks toward load) broke
-> the nr_uninterruptible accounting on freeze/thaw. On freeze the task
-> is excluded from accounting with a check for (task->flags &
-> PF_FROZEN), but that flag is cleared before the task is thawed. So
-> while we prevent that the freezing task with state
-> TASK_UNINTERRUPTIBLE is accounted to nr_uninterruptible we decrement
-> nr_uninterruptible on thaw.
-> 
-> Use a separate flag which is handled by the freezing task itself. Set
-> it before calling the scheduler with TASK_UNINTERRUPTIBLE state and
-> clear it after we return from frozen state.
+On Fri, 17 Jul 2009 11:07:54 -0400
+Jeff Harris <jeff_harris@kentrox.com> wrote:
 
-I'm sorry, it's not clear to me based on the description what problem is
-being fixed. As far as I can see PF_FROZEN is almost exactly the same as
-PF_FREEZING. When a task is being frozen TIF_FREEZE is set. Then the task
-enters the refrigerator, sets PF_FROZEN, and schedule()s until PF_FROZEN
-is no longer set. The original code with extra comments:
+> If a tty driver's chars_in_buffer callback reports an error, the wait loop in
 
-static inline void frozen_process(void)
-{
-        if (!unlikely(current->flags & PF_NOFREEZE)) {
-                current->flags |= PF_FROZEN;
-                wmb();
-        }
-        clear_freeze_flag(current);
-}
+chars_in_buffer cannot report an error. It reports how many characters
+are in the buffer.
 
-/* Refrigerator is place where frozen processes are stored :-). */
-void refrigerator(void)
-{
-        /* Hmm, should we be allowed to suspend when there are realtime
-           processes around? */
-        long save;
+> A process calling tcdrain will block indefinitely if it calls tcdrain when the
+> device is disconnected.
 
-        task_lock(current);
-        if (freezing(current)) {
-		/* prevent accounting of that task to load */
-                frozen_process();  /* <-- sets PF_FROZEN */
-                task_unlock(current);
-        } else {
-                task_unlock(current);
-                return;
-        }
-        save = current->state;
-        pr_debug("%s entered refrigerator\n", current->comm);
+Fix your chars_in_buffer. On a disconnect its quite reasonable to return
+0, as they are not buffered any more.
 
-        spin_lock_irq(&current->sighand->siglock);
-        recalc_sigpending(); /* We sent fake signal, clean it up */
-        spin_unlock_irq(&current->sighand->siglock);
-
-	/* you set PF_FREEZING here */
-        for (;;) {
-                set_current_state(TASK_UNINTERRUPTIBLE);
-                if (!frozen(current))  /* <-- checks PF_FROZEN */
-                        break;
-                schedule();
-        }
-	/* you clear PF_FREEZING here */
-        pr_debug("%s left refrigerator\n", current->comm);
-        __set_current_state(save);
-}
-
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Nathan Lynch <ntl@pobox.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Nigel Cunningham <nigel@tuxonice.net>
-> Cc: <stable@kernel.org>
-> Cc: containers@lists.linux-foundation.org
-> Cc: linux-pm@lists.linux-foundation.org
-> Cc: Matt Helsley <matthltc@us.ibm.com>
-> 
-> ---
->  include/linux/sched.h |    3 ++-
->  kernel/freezer.c      |    7 +++++++
->  2 files changed, 9 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/sched.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/sched.h
-> +++ linux-2.6/include/linux/sched.h
-> @@ -209,7 +209,7 @@ extern unsigned long long time_sync_thre
->  			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
->  #define task_contributes_to_load(task)	\
->  				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
-> -				 (task->flags & PF_FROZEN) == 0)
-> +				 (task->flags & PF_FREEZING) == 0)
-> 
->  #define __set_task_state(tsk, state_value)		\
->  	do { (tsk)->state = (state_value); } while (0)
-> @@ -1680,6 +1680,7 @@ extern cputime_t task_gtime(struct task_
->  #define PF_MEMALLOC	0x00000800	/* Allocating memory */
->  #define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
->  #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
-> +#define PF_FREEZING	0x00004000	/* freeze in progress. do not account to load */
->  #define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
->  #define PF_FROZEN	0x00010000	/* frozen for system suspend */
->  #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
-> Index: linux-2.6/kernel/freezer.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/freezer.c
-> +++ linux-2.6/kernel/freezer.c
-> @@ -44,12 +44,19 @@ void refrigerator(void)
->  	recalc_sigpending(); /* We sent fake signal, clean it up */
->  	spin_unlock_irq(&current->sighand->siglock);
-> 
-> +	/* prevent accounting of that task to load */
-> +	current->flags |= PF_FREEZING;
-> +
->  	for (;;) {
->  		set_current_state(TASK_UNINTERRUPTIBLE);
->  		if (!frozen(current))
->  			break;
->  		schedule();
->  	}
-> +
-> +	/* Remove the accounting blocker */
-> +	current->flags &= ~PF_FREEZING;
-> +
-
-Hence PF_FREEZING covers slightly less time than PF_FROZEN but
-otherwise does not change the way nr_uninterruptible is incremented or
-decremented (in (de)activate_task()).
-
-So it's not clear to me how adding PF_FREEZING fixes anything. Am I
-missing something?
-
-Cheers,
-	-Matt Helsley
+Alan
