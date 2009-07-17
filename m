@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934559AbZGQNMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934577AbZGQNNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934559AbZGQNMA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 09:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934491AbZGQNMA
+	id S934577AbZGQNNn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 09:13:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934509AbZGQNNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 09:12:00 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:41068 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934419AbZGQNL7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 09:11:59 -0400
-Subject: [PATCH] kmemleak: Protect the seq start/next/stop sequence by
-	rcu_read_lock()
-To: linux-kernel@vger.kernel.org
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Fri, 17 Jul 2009 14:11:57 +0100
-Message-ID: <20090717131043.24954.4134.stgit@pc1117.cambridge.arm.com>
-User-Agent: StGit/0.15-rc1-6-gcef5
+	Fri, 17 Jul 2009 09:13:43 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49799 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934491AbZGQNNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 09:13:42 -0400
+Date: Fri, 17 Jul 2009 15:13:41 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-input@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: xterms freezing on 2.6.31-rc2 (was Re: [regression] Re: 2.6.31-rc2:
+ X stop accepting keystrokes?)
+In-Reply-To: <20090717130649.GA2202@elf.ucw.cz>
+Message-ID: <alpine.LNX.2.00.0907171512260.11648@wotan.suse.de>
+References: <20090714092459.GA2010@elf.ucw.cz> <20090715131611.GB2367@elf.ucw.cz> <20090717125946.GA2022@elf.ucw.cz> <alpine.LNX.2.00.0907171501080.11648@wotan.suse.de> <20090717130649.GA2202@elf.ucw.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Jul 2009 13:11:58.0226 (UTC) FILETIME=[2A19DF20:01CA06E0]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Objects passed to kmemleak_seq_next() have an incremented reference
-count (hence not freed) but they may point via object_list.next to
-other freed objects. To avoid this, the whole start/next/stop sequence
-must be protected by rcu_read_lock().
+On Fri, 17 Jul 2009, Pavel Machek wrote:
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
----
+> > > ...and they seem to be slightly different crashes. Once keyboard was
+> > > dead but mouse worked, second time keyboard still worked but xterms
+> > > kept locking up. I managed to type dmesg into one of them, but that
+> > > xterm hung in middle of dump :-(.
+> > 
+> > I guess that both keyboard and mouse are PS/2 connected, right?
+> 
+> Thinkpad internal keyboard/mouse, yes.
+> 
+> > Any possibility to capture serial console output?
+> 
+> I managed to get dmesg via magic sysrq at some point. I got some
+> softlockup messages and processes seemed to hang.
 
-This is a fix for bug #13761 raised on bugzilla.kernel.org.
+Softlockup in which area?
 
- mm/kmemleak.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+Are you able to ssh into the machine? Where do the xterms hang? 
+(/proc/<pid>/stack)
 
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 5aabd41..4872673 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -1217,7 +1217,6 @@ static void *kmemleak_seq_start(struct seq_file *seq, loff_t *pos)
- 	}
- 	object = NULL;
- out:
--	rcu_read_unlock();
- 	return object;
- }
- 
-@@ -1233,13 +1232,11 @@ static void *kmemleak_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- 
- 	++(*pos);
- 
--	rcu_read_lock();
- 	list_for_each_continue_rcu(n, &object_list) {
- 		next_obj = list_entry(n, struct kmemleak_object, object_list);
- 		if (get_object(next_obj))
- 			break;
- 	}
--	rcu_read_unlock();
- 
- 	put_object(prev_obj);
- 	return next_obj;
-@@ -1255,6 +1252,7 @@ static void kmemleak_seq_stop(struct seq_file *seq, void *v)
- 		 * kmemleak_seq_start may return ERR_PTR if the scan_mutex
- 		 * waiting was interrupted, so only release it if !IS_ERR.
- 		 */
-+		rcu_read_unlock();
- 		mutex_unlock(&scan_mutex);
- 		if (v)
- 			put_object(v);
+> I'm no  longer sure how much keyboard related it is. It seems to
+> happen while typing, but ... the system still reacts to keyboard but
+> xterms hang. 
 
+Could this be related to
+
+	http://lkml.org/lkml/2009/7/16/268
+
+?
+
+-- 
+Jiri Kosina
+SUSE Labs
