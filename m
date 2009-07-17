@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZGQUTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbZGQUTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbZGQUTr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbZGQUTr
+	id S1754958AbZGQUTz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 16:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbZGQUTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:19:47 -0400
-Received: from kroah.org ([198.145.64.141]:43106 "EHLO coco.kroah.org"
+	Fri, 17 Jul 2009 16:19:53 -0400
+Received: from kroah.org ([198.145.64.141]:43124 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753755AbZGQUTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 16:19:46 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:32 2009
-Message-Id: <20090717201231.896581307@mini.kroah.org>
+	id S1754963AbZGQUTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 16:19:52 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:35 2009
+Message-Id: <20090717201235.020571302@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 17 Jul 2009 13:09:02 -0700
+Date: Fri, 17 Jul 2009 13:09:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zhang Rui <rui.zhang@intel.com>, Pierre Ossman <drzeus@drzeus.cx>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 11/24] kernel/resource.c: fix sign extension in reserve_setup()
+       NeilBrown <neilb@suse.de>
+Subject: [patch 17/24] md: avoid dereferencing NULL pointer when accessing suspend_* sysfs attributes.
 References: <20090717200851.907421303@mini.kroah.org>
-Content-Disposition: inline; filename=kernel-resource.c-fix-sign-extension-in-reserve_setup.patch
+Content-Disposition: inline; filename=md-avoid-dereferencing-null-pointer-when-accessing-suspend_-sysfs-attributes.patch
 In-Reply-To: <20090717201639.GA14209@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,40 +30,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: NeilBrown <neilb@suse.de>
 
-commit 8bc1ad7dd301b7ca7454013519fa92e8c53655ff upstream.
+commit b8d966efd9a46a9a35beac50cbff6e30565125ef upstream.
 
-When the 32-bit signed quantities get assigned to the u64 resource_size_t,
-they are incorrectly sign-extended.
+If we try to modify one of the md/ sysfs files
+  suspend_lo or suspend_hi
+when the array is not active, we dereference a NULL.
+Protect against that.
 
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=13253
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=9905
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Reported-by: Leann Ogasawara <leann@ubuntu.com>
-Cc: Pierre Ossman <drzeus@drzeus.cx>
-Reported-by: <pablomme@googlemail.com>
-Tested-by: <pablomme@googlemail.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/resource.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/md/md.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -787,7 +787,7 @@ static int __init reserve_setup(char *st
- 	static struct resource reserve[MAXRESERVE];
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -3589,7 +3589,8 @@ suspend_lo_store(mddev_t *mddev, const c
+ 	char *e;
+ 	unsigned long long new = simple_strtoull(buf, &e, 10);
  
- 	for (;;) {
--		int io_start, io_num;
-+		unsigned int io_start, io_num;
- 		int x = reserved;
+-	if (mddev->pers->quiesce == NULL)
++	if (mddev->pers == NULL ||
++	    mddev->pers->quiesce == NULL)
+ 		return -EINVAL;
+ 	if (buf == e || (*e && *e != '\n'))
+ 		return -EINVAL;
+@@ -3617,7 +3618,8 @@ suspend_hi_store(mddev_t *mddev, const c
+ 	char *e;
+ 	unsigned long long new = simple_strtoull(buf, &e, 10);
  
- 		if (get_option (&str, &io_start) != 2)
+-	if (mddev->pers->quiesce == NULL)
++	if (mddev->pers == NULL ||
++	    mddev->pers->quiesce == NULL)
+ 		return -EINVAL;
+ 	if (buf == e || (*e && *e != '\n'))
+ 		return -EINVAL;
 
 
