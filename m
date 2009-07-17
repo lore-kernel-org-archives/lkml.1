@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbZGQVTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbZGQVfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbZGQVTm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 17:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757861AbZGQVTl
+	id S1757895AbZGQVfT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 17:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757884AbZGQVfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 17:19:41 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:34962 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757860AbZGQVTl (ORCPT
+	Fri, 17 Jul 2009 17:35:18 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:51013 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757868AbZGQVfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 17:19:41 -0400
-Date: Fri, 17 Jul 2009 23:19:39 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>
-Subject: Re: [RFC][ PATCH -tip v2 3/7] Kbuild: disable gcc crossjumping
-Message-ID: <20090717211939.GA7253@merkur.ravnborg.org>
-Mail-Followup-To: Masami Hiramatsu <mhiramat@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-	Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-	lkml <linux-kernel@vger.kernel.org>,
-	systemtap <systemtap@sources.redhat.com>,
-	DLE <dle-develop@lists.sourceforge.net>,
-	Jim Keniston <jkenisto@us.ibm.com>,
-	Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Anders Kaseorg <andersk@ksplice.com>,
-	Tim Abbott <tabbott@ksplice.com>
-References: <20090622212255.5384.53732.stgit@localhost.localdomain> <20090622212313.5384.84166.stgit@localhost.localdomain> <alpine.DEB.2.00.0906271611280.12592@gandalf.stny.rr.com> <20090717202825.GA6872@merkur.ravnborg.org> <4A60E972.1060301@redhat.com>
+	Fri, 17 Jul 2009 17:35:17 -0400
+Date: Fri, 17 Jul 2009 14:35:16 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 18/20] ceph: debugging
+In-Reply-To: <20090717200114.GA6173@basil.fritz.box>
+Message-ID: <Pine.LNX.4.64.0907171433060.23194@cobra.newdream.net>
+References: <1247693090-27796-15-git-send-email-sage@newdream.net>
+ <1247693090-27796-16-git-send-email-sage@newdream.net>
+ <1247693090-27796-17-git-send-email-sage@newdream.net>
+ <1247693090-27796-18-git-send-email-sage@newdream.net>
+ <1247693090-27796-19-git-send-email-sage@newdream.net> <87d480x16p.fsf@basil.nowhere.org>
+ <Pine.LNX.4.64.0907161014330.8026@cobra.newdream.net>
+ <Pine.LNX.4.64.0907171010470.23194@cobra.newdream.net>
+ <20090717185641.GH8046@one.firstfloor.org> <Pine.LNX.4.64.0907171247570.23194@cobra.newdream.net>
+ <20090717200114.GA6173@basil.fritz.box>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A60E972.1060301@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 17, 2009 at 05:13:22PM -0400, Masami Hiramatsu wrote:
-> Sam Ravnborg wrote:
-> > On Sat, Jun 27, 2009 at 04:13:04PM -0400, Steven Rostedt wrote:
-> >> A change like this requires an ACK from Sam Ravnborg.
-> >>
-> >> -- Steve
+On Fri, 17 Jul 2009, Andi Kleen wrote:
+> On Fri, Jul 17, 2009 at 12:52:33PM -0700, Sage Weil wrote:
+> > > > 		 ceph_file_part(__FILE__, sizeof(__FILE__)),		\
+> > > > 		 __LINE__, args);
+> > > 
+> > > That seems like a wasteful way to do this -- i bet you could
+> > > shrink binary size with debugging on considerably if you move
+> > > the file_part into a function.
 > > 
-> > Overdue review...
-> > 
-> > I do not know the gcc option so I cannot comment on theeffect of it.
+> > If you mean ceph_file_part shouldn't be inline, definitely.  Beyond that 
+> > I'm not sure what more to change... it's just a few extra chars on the 
+> > format string and 2 calls instead of 1?
 > 
-> Thanks for comment. however, as far as I can see, I couldn't find
-> in the difference between binary with -fno-crossjump and without it.
-> So I decided to drop this patch...
+> Yes, but you have hundreds/thousands of these calls don't you?
+> 
+> If you have two calls here instead of one and that costs let's say
+> 20 bytes of code and 1000 calls it's already 20K of binary size.
+> 
+> Perhaps code size is not your highest priority now, but 
+> obvious inefficiencies like this are not good.
 
-OK, thanks or info.
+Is that really a concern when compiling with DEBUG or 
+CONFIG_DYNAMIC_DEBUG?  Since pr_debug is a no-op without those anyway, how 
+about:
 
-	Sam
+---
+
+#if defined(DEBUG) || defined(CONFIG_DYNAMIC_DEBUG)
+extern const char *ceph_file_part(const char *s, int len);
+# define dout(fmt, ...)							\
+	pr_debug(" %12.12s:%-4d : " fmt,				\
+		 ceph_file_part(__FILE__, sizeof(__FILE__)),		\
+		 __LINE__, ##__VA_ARGS__);
+#else
+/*
+ * this is a no-op, but keep the faux printk call just so we see any
+ * compiler warnings.
+ */
+# define dout(fmt, ...)	do {						\
+		if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__);	\
+	} while (0)
+#endif
