@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbZGQWKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbZGQWMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757941AbZGQWKv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 18:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbZGQWKu
+	id S1757937AbZGQWMz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 18:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbZGQWMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 18:10:50 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:44523 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751986AbZGQWKt (ORCPT
+	Fri, 17 Jul 2009 18:12:54 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60088 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752688AbZGQWMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 18:10:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=ZnxOc9uuIMz4OPDbFZi1mTsgmjjY1wOsb71FLZuxGkdZvAv3OEYLUlQW1RHsRdaAN/
-         odwVpoPfkVpTYqB2c4L2UU/WjnmHg5dtayf30GOoGykAFzvRooFNXtXy9DKrpzVBvPFs
-         aUnYv2rUbq7K++ZmQZNNPcz0iRiz4hK6ibgYs=
+	Fri, 17 Jul 2009 18:12:54 -0400
+To: john stultz <johnstul@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@tglx.de>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Duplicate vsyscall/vdso gettimeofday implementations on x86_64
+From: Andi Kleen <andi@firstfloor.org>
+References: <1247868130.8334.40.camel@localhost.localdomain>
+Date: Sat, 18 Jul 2009 00:12:52 +0200
+In-Reply-To: <1247868130.8334.40.camel@localhost.localdomain> (john stultz's message of "Fri, 17 Jul 2009 15:02:10 -0700")
+Message-ID: <87eisfvtzv.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20090714165830.GF31657@tpkurt2.suse.de>
-References: <20090518093352.GC15531@tpkurt2.garloff.de>
-	 <20090622140522.GA5378@sgi.com>
-	 <20090714165508.GD31657@tpkurt2.suse.de>
-	 <20090714165830.GF31657@tpkurt2.suse.de>
-Date: Fri, 17 Jul 2009 15:10:48 -0700
-Message-ID: <86802c440907171510r724a02c6h641529cced061823@mail.gmail.com>
-Subject: Re: [PATCH 2/3] Resend: x86-64: Handle SRAT v1 and v2 consistently
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Kurt Garloff <garloff@suse.de>,
-       Linux kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 9:58 AM, Kurt Garloff<garloff@suse.de> wrote:
-> Hi,
->
-> In SRAT v1, we had 8bit proximity domain (PXM) fields; SRAT v2 provides
-> 32bits for these. The new fields were reserved before.
-> According to the ACPI spec, the OS must disregard reserved fields.
->
-> x86-64 was rather inconsistent prior to this patch; it used 8 bits
-> for the pxm field in cpu_affinity, but 32 bits in mem_affinity.
-> This patch makes it consistent: Either use 8 bits consistently (SRAT
-> rev 1 or lower) or 32 bits (SRAT rev 2 or higher).
->
-> This is patch 2/3.
->
-> Signed-off-by: Kurt Garloff <garloff@suse.de>
-> --
+john stultz <johnstul@us.ibm.com> writes:
 
-for 1, 2
+> I think the implementation in vclock_gettime.c is nice, as it mostly
+> reuses the clock_gettime() code, but I don't think it actually gets
+> called.
 
-Acked-by: Yinghai Lu <yinghai@kernel.org>
+It depends on what glibc uses.
 
-YH
+> Andi: You wrote the vclock_gettime.c, do you have any pointers about
+> where you were going with this? Is there a reason you didn't clean it up
+> when you implemented it originally?
+
+The old style vsyscall cannot call the vDSO because it doesn't know
+where it is mapped. And the new style vDSO cannot necessarily
+call the old one vsyscall because there were plans 
+to removing the old style vsyscall for some new programs to avoid
+the last non randomized mapping (but that never got implemented). 
+
+That is why there are two different ways to do this.
+
+Neither can also call into the kernel of course.
+
+In the current setup you could call into the static vsyscall, 
+but that might need to be revised later.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
