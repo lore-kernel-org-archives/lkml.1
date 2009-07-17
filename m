@@ -1,107 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbZGQAEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933678AbZGQAFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933673AbZGQAEw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 20:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933313AbZGQAEw
+	id S933678AbZGQAFt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 20:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933313AbZGQAFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 20:04:52 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55014 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933310AbZGQAEv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 20:04:51 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
-Cc: kosaki.motohiro@jp.fujitsu.com, Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Miao Xie <miaox@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
-References: <1247679064.4089.26.camel@useless.americas.hpqcorp.net> <alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
-Message-Id: <20090717090003.A903.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 17 Jul 2009 09:04:46 +0900 (JST)
+	Thu, 16 Jul 2009 20:05:48 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39103 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933358AbZGQAFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 20:05:47 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH 00/21] Blackfin fixes for 2.6.31
+Date: Thu, 16 Jul 2009 20:05:25 -0400
+Message-Id: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 15 Jul 2009, Lee Schermerhorn wrote:
-> 
-> > Interestingly, on ia64, the top cpuset mems_allowed gets set to all
-> > possible nodes, while on x86_64, it gets set to on-line nodes [or nodes
-> > with memory].  Maybe this is a to support hot-plug?
-> > 
-> 
-> numactl --interleave=all simply passes a nodemask with all bits set, so if 
-> cpuset_current_mems_allowed includes offline nodes from node_possible_map, 
-> then mpol_set_nodemask() doesn't mask them off.
-> 
-> Seems like we could handle this strictly in mempolicies without worrying 
-> about top_cpuset like in the following?
+Just a whole bunch of small fixes / anomaly workarounds, nothing terribly
+interesting.
 
-This patch seems band-aid patch. it will change memory-hotplug behavior.
-Please imazine following scenario:
+Barry Song (1):
+  Blackfin: bf537-stamp: fix irq decl for AD7142
 
-1. numactl interleave=all process-A
-2. memory hot-add
+Graf Yang (3):
+  Blackfin: update anomaly lists to match latest sheets/usage
+  Blackfin: update handling of anomaly 364 (wrong rev id in BF527-0.1)
+  Blackfin: add CPLB entries for Core B on-chip L1 SRAM regions
 
-before 2.6.30:
-		-> process-A can use hot-added memory
+Jie Zhang (1):
+  Blackfin: fix miscompilation in lshrdi3
 
-your proposal patch:
-		-> process-A can't use hot-added memory
+Julia Lawall (1):
+  arch/blackfin: Add kmalloc NULL tests
 
+Michael Hennerich (3):
+  Blackfin: fix incomplete renaming of the bfin-twi-lcd driver
+  Blackfin: fix bugs in GPIO resume code
+  Blackfin: drop per-cpu loops_per_jiffy tracking
 
+Mike Frysinger (5):
+  Blackfin: drop dead flash_probe call
+  Blackfin: restore exception banner when dumping crash info
+  Blackfin: handle BF561 Core B memory regions better when SMP=n
+  Blackfin: fix early_dma_memcpy() handling of busy channels
+  Blackfin: define HARDIRQ_BITS again for now
 
+Robin Getz (6):
+  Blackfin: cleanup code a bit with comments and defines
+  Blackfin: work around anomaly 05000281
+  Blackfin: fix silent crash when no uClinux MTD filesystem exists
+  Blackfin: drop duplicate runtime checking of anomaly 05000448
+  Blackfin: fix handling of IPEND in interrupt context save
+  Blackfin: work around anomaly 05000189
 
-> ---
-> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-> --- a/mm/mempolicy.c
-> +++ b/mm/mempolicy.c
-> @@ -194,6 +194,7 @@ static int mpol_new_bind(struct mempolicy *pol, const nodemask_t *nodes)
->  static int mpol_set_nodemask(struct mempolicy *pol, const nodemask_t *nodes)
->  {
->  	nodemask_t cpuset_context_nmask;
-> +	nodemask_t mems_allowed;
->  	int ret;
->  
->  	/* if mode is MPOL_DEFAULT, pol is NULL. This is right. */
-> @@ -201,20 +202,21 @@ static int mpol_set_nodemask(struct mempolicy *pol, const nodemask_t *nodes)
->  		return 0;
->  
->  	VM_BUG_ON(!nodes);
-> +	nodes_and(mems_allowed, cpuset_current_mems_allowed,
-> +				node_states[N_HIGH_MEMORY]);
->  	if (pol->mode == MPOL_PREFERRED && nodes_empty(*nodes))
->  		nodes = NULL;	/* explicit local allocation */
->  	else {
->  		if (pol->flags & MPOL_F_RELATIVE_NODES)
->  			mpol_relative_nodemask(&cpuset_context_nmask, nodes,
-> -					       &cpuset_current_mems_allowed);
-> +					       &mems_allowed);
->  		else
->  			nodes_and(cpuset_context_nmask, *nodes,
-> -				  cpuset_current_mems_allowed);
-> +				  mems_allowed);
->  		if (mpol_store_user_nodemask(pol))
->  			pol->w.user_nodemask = *nodes;
->  		else
-> -			pol->w.cpuset_mems_allowed =
-> -						cpuset_current_mems_allowed;
-> +			pol->w.cpuset_mems_allowed = mems_allowed;
->  	}
->  
->  	ret = mpol_ops[pol->mode].create(pol,
+Sonic Zhang (1):
+  Blackfin: fix wrong CTS inversion
 
-
+ arch/blackfin/include/asm/context.S                |    7 ++-
+ arch/blackfin/include/asm/cpu.h                    |    1 -
+ arch/blackfin/include/asm/hardirq.h                |    3 +
+ arch/blackfin/include/asm/processor.h              |   21 +++------
+ arch/blackfin/kernel/bfin_dma_5xx.c                |   29 ++++++-------
+ arch/blackfin/kernel/bfin_gpio.c                   |    6 +--
+ arch/blackfin/kernel/cplb-nompu/cplbinit.c         |   23 ++++++++---
+ arch/blackfin/kernel/process.c                     |   14 +++---
+ arch/blackfin/kernel/setup.c                       |   44 ++++++++-----------
+ arch/blackfin/kernel/traps.c                       |    9 +++-
+ arch/blackfin/lib/lshrdi3.c                        |   16 +-------
+ arch/blackfin/mach-bf518/boards/ezbrd.c            |    2 +-
+ arch/blackfin/mach-bf518/include/mach/anomaly.h    |    2 +
+ .../mach-bf518/include/mach/bfin_serial_5xx.h      |    2 +-
+ arch/blackfin/mach-bf527/boards/cm_bf527.c         |    2 +-
+ arch/blackfin/mach-bf527/boards/ezbrd.c            |    2 +-
+ arch/blackfin/mach-bf527/boards/ezkit.c            |    2 +-
+ arch/blackfin/mach-bf527/include/mach/anomaly.h    |    4 +-
+ .../mach-bf527/include/mach/bfin_serial_5xx.h      |    2 +-
+ arch/blackfin/mach-bf533/boards/stamp.c            |    2 +-
+ arch/blackfin/mach-bf533/include/mach/anomaly.h    |    1 +
+ .../mach-bf533/include/mach/bfin_serial_5xx.h      |    2 +-
+ arch/blackfin/mach-bf537/boards/stamp.c            |    4 +-
+ arch/blackfin/mach-bf537/include/mach/anomaly.h    |    2 +
+ .../mach-bf537/include/mach/bfin_serial_5xx.h      |    2 +-
+ arch/blackfin/mach-bf538/include/mach/anomaly.h    |    2 +
+ .../mach-bf538/include/mach/bfin_serial_5xx.h      |    2 +-
+ arch/blackfin/mach-bf548/boards/ezkit.c            |    2 +-
+ arch/blackfin/mach-bf548/include/mach/anomaly.h    |    2 +
+ arch/blackfin/mach-bf561/include/mach/anomaly.h    |    1 +
+ .../mach-bf561/include/mach/bfin_serial_5xx.h      |    2 +-
+ arch/blackfin/mach-bf561/include/mach/mem_map.h    |   23 ++++++++++-
+ arch/blackfin/mach-common/entry.S                  |   12 +++--
+ arch/blackfin/mach-common/smp.c                    |   10 ++++-
+ 34 files changed, 145 insertions(+), 115 deletions(-)
 
