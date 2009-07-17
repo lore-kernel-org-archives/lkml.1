@@ -1,58 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964807AbZGQORh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964825AbZGQOSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964807AbZGQORh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 10:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934674AbZGQORg
+	id S964825AbZGQOSE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 10:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934688AbZGQOSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 10:17:36 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:64378 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934662AbZGQORg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 10:17:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=fyY0EdGTLzlEzBtZuSMGs4ZqKCaL6vqO2YbohZVGOANuRgdcQY6CaD9aBVljRLRphk
-         U6Y1+41U6Frrn68fE8cn/W/M+8tqJafe9872ONekTP2A2tbfJrJwaJ7TuPsp9ny/v1cT
-         4vynWCIa5CBRoxUrlHGS2GlYL6mf+tAtiCGEA=
-Message-ID: <4A60886E.5070106@gmail.com>
-Date: Fri, 17 Jul 2009 16:19:26 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 17 Jul 2009 10:18:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:48981 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934674AbZGQOSC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 10:18:02 -0400
+Date: Fri, 17 Jul 2009 16:17:42 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Guanqun Lu <guanqun.lu@intel.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, jeremy@goop.org
+Subject: Re: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
+In-Reply-To: <200907170352.11749.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0907171615530.11571@localhost.localdomain>
+References: <1247834204-3084-1-git-send-email-guanqun.lu@intel.com> <200907170352.11749.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Bernd Petrovitsch <bernd@firmix.at>
-CC: mingo@redhat.com, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] ia32: strncpy does not null terminate string
-References: <4A60755F.4030604@gmail.com>
-In-Reply-To: <4A60755F.4030604@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-strlcpy() will always null terminate the string.
+On Fri, 17 Jul 2009, Rafael J. Wysocki wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-> The proof is flawed: Global variables are automatically '\0'
-> initialized.
+> On Friday 17 July 2009, Guanqun Lu wrote:
+> > We currently only bypass IRQF_TIMER in '__disable_irq',
+> > but Xen specific IRQs should not be disabled either.
+> > This commit adds a new flag to accompolish this goal
+> > without being mixed up with IRQF_TIMER flag.
+> 
+> For some obscure reasons [2/3] didn't reach my inbox.  The other 2 patches
+> look fine to me.
 
-Hmm, I see, how about using strlcpy instead?
+I do not receive the patches at all. Can you please resend and cc me ?
 
-diff --git a/arch/x86/ia32/sys_ia32.c b/arch/x86/ia32/sys_ia32.c
-index 085a8c3..528972f 100644
---- a/arch/x86/ia32/sys_ia32.c
-+++ b/arch/x86/ia32/sys_ia32.c
-@@ -687,7 +687,7 @@ long sys32_vm86_warning(void)
- 		compat_printk(KERN_INFO
- 			      "%s: vm86 mode not supported on 64 bit kernel\n",
- 			      me->comm);
--		strncpy(lastcomm, me->comm, sizeof(lastcomm));
-+		strlcpy(lastcomm, me->comm, sizeof(lastcomm));
- 	}
- 	return -ENOSYS;
- }
+Thanks,
+
+	tglx
