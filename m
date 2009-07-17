@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933774AbZGQAGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933781AbZGQAGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933774AbZGQAGg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 20:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933744AbZGQAGF
+	id S933781AbZGQAGi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 20:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933690AbZGQAGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 20:06:05 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39138 "EHLO smtp.gentoo.org"
+	Thu, 16 Jul 2009 20:06:35 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39148 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933735AbZGQAGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 20:06:01 -0400
+	id S933746AbZGQAGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 20:06:05 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: [PATCH 17/21] Blackfin: drop per-cpu loops_per_jiffy tracking
-Date: Thu, 16 Jul 2009 20:05:42 -0400
-Message-Id: <1247789146-18786-18-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org, Julia Lawall <julia@diku.dk>,
+       Sonic Zhang <sonic.zhang@analog.com>
+Subject: [PATCH 20/21] arch/blackfin: Add kmalloc NULL tests
+Date: Thu, 16 Jul 2009 20:05:45 -0400
+Message-Id: <1247789146-18786-21-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
 References: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
@@ -23,72 +23,89 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+From: Julia Lawall <julia@diku.dk>
 
-On Blackfin SMP, a per-cpu loops_per_jiffy is pointless since both cores
-always run at the same CCLK.  In addition, the current implementation has
-flaws since the main consumer for loops_per_jiffy (asm/delay.h) uses the
-global kernel loops_per_jiffy and not the per_cpu one.  So punt all of the
-per-cpu handling and go back to the global shared one.
+Check that the result of kmalloc is not NULL before passing it to other
+functions.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+In the first two cases, the new code returns -ENOMEM, which seems
+compatible with what is done for similar functions for other architectures.
+
+In the last two cases, the new code fails silently, ie just returns,
+because the function has void return type.
+
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+expression *x;
+identifier f;
+constant char *C;
+@@
+
+x = \(kmalloc\|kcalloc\|kzalloc\)(...);
+... when != x == NULL
+    when != x != NULL
+    when != (x || ...)
+(
+kfree(x)
+|
+f(...,C,...,x,...)
+|
+*f(...,x,...)
+|
+*x->f
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/include/asm/cpu.h |    1 -
- arch/blackfin/kernel/setup.c    |    7 +++----
- arch/blackfin/mach-common/smp.c |    2 +-
- 3 files changed, 4 insertions(+), 6 deletions(-)
+ arch/blackfin/mach-common/smp.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/blackfin/include/asm/cpu.h b/arch/blackfin/include/asm/cpu.h
-index 565b813..fadfa82 100644
---- a/arch/blackfin/include/asm/cpu.h
-+++ b/arch/blackfin/include/asm/cpu.h
-@@ -32,7 +32,6 @@ struct blackfin_cpudata {
- 	struct task_struct *idle;
- 	unsigned int imemctl;
- 	unsigned int dmemctl;
--	unsigned long loops_per_jiffy;
- 	unsigned long dcache_invld_count;
- 	unsigned long icache_invld_count;
- };
-diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
-index 98c2f79..6225eda 100644
---- a/arch/blackfin/kernel/setup.c
-+++ b/arch/blackfin/kernel/setup.c
-@@ -168,7 +168,6 @@ void __cpuinit bfin_setup_cpudata(unsigned int cpu)
- 	struct blackfin_cpudata *cpudata = &per_cpu(cpu_data, cpu);
- 
- 	cpudata->idle = current;
--	cpudata->loops_per_jiffy = loops_per_jiffy;
- 	cpudata->imemctl = bfin_read_IMEM_CONTROL();
- 	cpudata->dmemctl = bfin_read_DMEM_CONTROL();
- }
-@@ -1159,9 +1158,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 		sclk/1000000, sclk%1000000);
- 	seq_printf(m, "bogomips\t: %lu.%02lu\n"
- 		"Calibration\t: %lu loops\n",
--		(cpudata->loops_per_jiffy * HZ) / 500000,
--		((cpudata->loops_per_jiffy * HZ) / 5000) % 100,
--		(cpudata->loops_per_jiffy * HZ));
-+		(loops_per_jiffy * HZ) / 500000,
-+		((loops_per_jiffy * HZ) / 5000) % 100,
-+		(loops_per_jiffy * HZ));
- 
- 	/* Check Cache configutation */
- 	switch (cpudata->dmemctl & (1 << DMC0_P | 1 << DMC1_P)) {
 diff --git a/arch/blackfin/mach-common/smp.c b/arch/blackfin/mach-common/smp.c
-index 6184005..e6e3429 100644
+index e6e3429..349ee3f 100644
 --- a/arch/blackfin/mach-common/smp.c
 +++ b/arch/blackfin/mach-common/smp.c
-@@ -450,7 +450,7 @@ void __init smp_cpus_done(unsigned int max_cpus)
- 	unsigned int cpu;
+@@ -211,6 +211,8 @@ int smp_call_function(void (*func)(void *info), void *info, int wait)
+ 		return 0;
  
- 	for_each_online_cpu(cpu)
--		bogosum += per_cpu(cpu_data, cpu).loops_per_jiffy;
-+		bogosum += loops_per_jiffy;
+ 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
++	if (!msg)
++		return -ENOMEM;
+ 	INIT_LIST_HEAD(&msg->list);
+ 	msg->call_struct.func = func;
+ 	msg->call_struct.info = info;
+@@ -252,6 +254,8 @@ int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
+ 	cpu_set(cpu, callmap);
  
- 	printk(KERN_INFO "SMP: Total of %d processors activated "
- 	       "(%lu.%02lu BogoMIPS).\n",
+ 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
++	if (!msg)
++		return -ENOMEM;
+ 	INIT_LIST_HEAD(&msg->list);
+ 	msg->call_struct.func = func;
+ 	msg->call_struct.info = info;
+@@ -287,6 +291,8 @@ void smp_send_reschedule(int cpu)
+ 		return;
+ 
+ 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
++	if (!msg)
++		return;
+ 	memset(msg, 0, sizeof(msg));
+ 	INIT_LIST_HEAD(&msg->list);
+ 	msg->type = BFIN_IPI_RESCHEDULE;
+@@ -314,6 +320,8 @@ void smp_send_stop(void)
+ 		return;
+ 
+ 	msg = kmalloc(sizeof(*msg), GFP_ATOMIC);
++	if (!msg)
++		return;
+ 	memset(msg, 0, sizeof(msg));
+ 	INIT_LIST_HEAD(&msg->list);
+ 	msg->type = BFIN_IPI_CPU_STOP;
 -- 
 1.6.3.3
 
