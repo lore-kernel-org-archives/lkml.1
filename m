@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZGQUWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbZGQUTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029AbZGQUWs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbZGQUWq
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:22:46 -0400
-Received: from kroah.org ([198.145.64.141]:43102 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754320AbZGQUTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754399AbZGQUTp (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 17 Jul 2009 16:19:45 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:31 2009
-Message-Id: <20090717201231.389120722@mini.kroah.org>
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZGQUTo
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 17 Jul 2009 16:19:44 -0400
+Received: from kroah.org ([198.145.64.141]:43093 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753877AbZGQUTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 16:19:43 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:30 2009
+Message-Id: <20090717201230.590698517@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 17 Jul 2009 13:09:01 -0700
+Date: Fri, 17 Jul 2009 13:08:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sonny Rao <sonnyrao@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       anton@samba.org, rajamony@us.ibm.com, speight@us.ibm.com,
-       mstephen@us.ibm.com, grimm@us.ibm.com, mikey@ozlabs.au.ibm.com,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 10/24] futexes: Fix infinite loop in get_futex_key() on huge page
+       Mike Frysinger <vapier@gentoo.org>
+Subject: [patch 08/24] Blackfin: fix command line corruption with DEBUG_DOUBLEFAULT
 References: <20090717200851.907421303@mini.kroah.org>
-Content-Disposition: inline; filename=futexes-fix-infinite-loop-in-get_futex_key-on-huge-page.patch
+Content-Disposition: inline; filename=blackfin-fix-command-line-corruption-with-debug_doublefault.patch
 In-Reply-To: <20090717201639.GA14209@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,44 +30,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sonny Rao <sonnyrao@us.ibm.com>
+From: Mike Frysinger <vapier@gentoo.org>
 
-commit ce2ae53b750abfaa012ce408e93da131a5b5649b upstream.
+commit 37082511f06108129bd5f96d625a6fae2d5a4ab4 upstream.
 
-get_futex_key() can infinitely loop if it is called on a
-virtual address that is within a huge page but not aligned to
-the beginning of that page.  The call to get_user_pages_fast
-will return the struct page for a sub-page within the huge page
-and the check for page->mapping will always fail.
+Commit 6b3087c6 (which introduced Blackfin SMP) broke command line passing
+when the DEBUG_DOUBLEFAULT config option was enabled.  Switch the code to
+using a scratch register and not R7 which holds the command line.
 
-The fix is to call compound_head on the page before checking
-that it's mapped.
-
-Signed-off-by: Sonny Rao <sonnyrao@us.ibm.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: anton@samba.org
-Cc: rajamony@us.ibm.com
-Cc: speight@us.ibm.com
-Cc: mstephen@us.ibm.com
-Cc: grimm@us.ibm.com
-Cc: mikey@ozlabs.au.ibm.com
-LKML-Reference: <20090710231313.GA23572@us.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/futex.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/blackfin/mach-common/head.S |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -241,6 +241,7 @@ again:
- 	if (err < 0)
- 		return err;
+--- a/arch/blackfin/mach-common/head.S
++++ b/arch/blackfin/mach-common/head.S
+@@ -126,25 +126,25 @@ ENTRY(__start)
+ 	 * below
+ 	 */
+ 	GET_PDA(p0, r0);
+-	r7 = [p0 + PDA_RETX];
++	r6 = [p0 + PDA_RETX];
+ 	p1.l = _init_saved_retx;
+ 	p1.h = _init_saved_retx;
+-	[p1] = r7;
++	[p1] = r6;
  
-+	page = compound_head(page);
- 	lock_page(page);
- 	if (!page->mapping) {
- 		unlock_page(page);
+-	r7 = [p0 + PDA_DCPLB];
++	r6 = [p0 + PDA_DCPLB];
+ 	p1.l = _init_saved_dcplb_fault_addr;
+ 	p1.h = _init_saved_dcplb_fault_addr;
+-	[p1] = r7;
++	[p1] = r6;
+ 
+-	r7 = [p0 + PDA_ICPLB];
++	r6 = [p0 + PDA_ICPLB];
+ 	p1.l = _init_saved_icplb_fault_addr;
+ 	p1.h = _init_saved_icplb_fault_addr;
+-	[p1] = r7;
++	[p1] = r6;
+ 
+-	r7 = [p0 + PDA_SEQSTAT];
++	r6 = [p0 + PDA_SEQSTAT];
+ 	p1.l = _init_saved_seqstat;
+ 	p1.h = _init_saved_seqstat;
+-	[p1] = r7;
++	[p1] = r6;
+ #endif
+ 
+ 	/* Initialize stack pointer */
 
 
