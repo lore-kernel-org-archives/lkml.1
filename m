@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933697AbZGQAOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933788AbZGQAPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933697AbZGQAOz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 20:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933655AbZGQAOz
+	id S933788AbZGQAPL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 20:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933715AbZGQAPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 20:14:55 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:34813 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933647AbZGQAOx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 20:14:53 -0400
-Subject: [RESEND] [PATCH] Convert alpha to use arch_gettimeoffset()
+	Thu, 16 Jul 2009 20:15:09 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:53364 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933689AbZGQAPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 20:15:05 -0400
+Subject: [RESEND][PATCH] Convert m32r to use arch_gettimeoffset()
 From: john stultz <johnstul@us.ibm.com>
-To: rth@twiddle.net, ink@jurassic.park.msu.ru
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org,
+To: takata@linux-m32r.org
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
        Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1244758210.7192.5.camel@localhost.localdomain>
+References: <1244758210.7192.5.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Thu, 16 Jul 2009 17:14:07 -0700
-Message-Id: <1247789647.7398.5.camel@localhost.localdomain>
+Date: Thu, 16 Jul 2009 17:09:55 -0700
+Message-Id: <1247789395.7398.3.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -25,21 +26,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts alpha to use GENERIC_TIME via the arch_getoffset()
+This patch converts m32r to use GENERIC_TIME via the arch_getoffset()
 infrastructure, reducing the amount of arch specific code we need to
 maintain.
 
-I suspect the alpha arch could even be further improved to provide and
-rpcc() based clocksource, but not having the hardware, I don't feel
-comfortable attempting the more complicated conversion (but I'd be glad
-to help if anyone else is interested).
+I also noted that m32r doesn't seem to be taking the xtime write lock
+before calling do_timer()!  That looks like a pretty bad bug to me. If
+folks agree, let me know and I can move the lock grab to the correct
+spot.
 
 This patch applies on top of Linus' current -git tree (2.6.31-rc3).
 
 I've taken my best swing at converting this, but I'm not 100% confident
-I got it right. My cross-compiler is now too old, so I couldn't check if
-it builds. So any assistance from arch maintainers or testers to get
-this merged would be great.
+I got it right. My cross-compiler is now out of date (gcc4.2) so I
+wasn't able to  check if it compiled. Any assistance from arch
+maintainers or testers to get this merged would be great.
 
 thanks
 -john
@@ -47,73 +48,77 @@ thanks
 Signed-off-by: John Stultz <johnstul@us.ibm.com>
 ---
 
- Kconfig       |    8 ++++++
- kernel/time.c |   72 +++-------------------------------------------------------
- 2 files changed, 12 insertions(+), 68 deletions(-)
+ Kconfig       |    6 ++++
+ kernel/time.c |   74 ++--------------------------------------------------------
+ 2 files changed, 9 insertions(+), 71 deletions(-)
 
-diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-index 9fb8aae..4434481 100644
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -45,6 +45,14 @@ config GENERIC_CALIBRATE_DELAY
- 	bool
- 	default y
+diff --git a/arch/m32r/Kconfig b/arch/m32r/Kconfig
+index cabba33..c41234f 100644
+--- a/arch/m32r/Kconfig
++++ b/arch/m32r/Kconfig
+@@ -41,6 +41,12 @@ config HZ
+ 	int
+ 	default 100
  
 +config GENERIC_TIME
-+	bool
-+	default y
++	def_bool y
 +
 +config ARCH_USES_GETTIMEOFFSET
-+	bool
-+	default y
++	def_bool y
 +
- config ZONE_DMA
- 	bool
- 	default y
-diff --git a/arch/alpha/kernel/time.c b/arch/alpha/kernel/time.c
-index b04e2cb..8f7eb6d 100644
---- a/arch/alpha/kernel/time.c
-+++ b/arch/alpha/kernel/time.c
-@@ -408,28 +408,17 @@ time_init(void)
-  * part.  So we can't do the "find absolute time in terms of cycles" thing
-  * that the other ports do.
-  */
--void
--do_gettimeofday(struct timeval *tv)
+ source "init/Kconfig"
+ 
+ source "kernel/Kconfig.freezer"
+diff --git a/arch/m32r/kernel/time.c b/arch/m32r/kernel/time.c
+index cada3ba..ba61c4c 100644
+--- a/arch/m32r/kernel/time.c
++++ b/arch/m32r/kernel/time.c
+@@ -48,7 +48,7 @@ extern void smp_local_timer_interrupt(void);
+ 
+ static unsigned long latch;
+ 
+-static unsigned long do_gettimeoffset(void)
 +u32 arch_gettimeoffset(void)
  {
--	unsigned long flags;
--	unsigned long sec, usec, seq;
- 	unsigned long delta_cycles, delta_usec, partial_tick;
+ 	unsigned long  elapsed_time = 0;  /* [us] */
  
--	do {
--		seq = read_seqbegin_irqsave(&xtime_lock, flags);
--
--		delta_cycles = rpcc() - state.last_time;
--		sec = xtime.tv_sec;
--		usec = (xtime.tv_nsec / 1000);
--		partial_tick = state.partial_tick;
--
--	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--
- #ifdef CONFIG_SMP
- 	/* Until and unless we figure out how to get cpu cycle counters
- 	   in sync and keep them there, we can't use the rpcc tricks.  */
- 	delta_usec = 0;
- #else
-+	delta_cycles = rpcc() - state.last_time;
-+	partial_tick = state.partial_tick;
- 	/*
- 	 * usec = cycles * ticks_per_cycle * 2**48 * 1e6 / (2**48 * ticks)
- 	 *	= cycles * (s_t_p_c) * 1e6 / (2**48 * ticks)
-@@ -448,62 +437,9 @@ do_gettimeofday(struct timeval *tv)
- 	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
+@@ -93,79 +93,10 @@ static unsigned long do_gettimeoffset(void)
+ #error no chip configuration
  #endif
  
--	usec += delta_usec;
--	if (usec >= 1000000) {
--		sec += 1;
+-	return elapsed_time;
++	return elapsed_time * 1000;
+ }
+ 
+ /*
+- * This version of gettimeofday has near microsecond resolution.
+- */
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long seq;
+-	unsigned long usec, sec;
+-	unsigned long max_ntp_tick = tick_usec - tickadj;
+-
+-	do {
+-		seq = read_seqbegin(&xtime_lock);
+-
+-		usec = do_gettimeoffset();
+-
+-		/*
+-		 * If time_adjust is negative then NTP is slowing the clock
+-		 * so make sure not to go into next possible interval.
+-		 * Better to lose some accuracy than have time go backwards..
+-		 */
+-		if (unlikely(time_adjust < 0))
+-			usec = min(usec, max_ntp_tick);
+-
+-		sec = xtime.tv_sec;
+-		usec += (xtime.tv_nsec / 1000);
+-	} while (read_seqretry(&xtime_lock, seq));
+-
+-	while (usec >= 1000000) {
 -		usec -= 1000000;
+-		sec++;
 -	}
 -
 -	tv->tv_sec = sec;
@@ -122,53 +127,49 @@ index b04e2cb..8f7eb6d 100644
 -
 -EXPORT_SYMBOL(do_gettimeofday);
 -
--int
--do_settimeofday(struct timespec *tv)
+-int do_settimeofday(struct timespec *tv)
 -{
 -	time_t wtm_sec, sec = tv->tv_sec;
--	long wtm_nsec, nsec = tv->tv_nsec;
--	unsigned long delta_nsec;
+- 	long wtm_nsec, nsec = tv->tv_nsec;
 -
 -	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
 -		return -EINVAL;
 -
 -	write_seqlock_irq(&xtime_lock);
+-	/*
+-	 * This is revolting. We need to set "xtime" correctly. However, the
+-	 * value in this location is the value at the most recent update of
+-	 * wall time.  Discover what correction gettimeofday() would have
+-	 * made, and then undo it!
+-	 */
+-	nsec -= do_gettimeoffset() * NSEC_PER_USEC;
 -
--	/* The offset that is added into time in do_gettimeofday above
--	   must be subtracted out here to keep a coherent view of the
--	   time.  Without this, a full-tick error is possible.  */
--
--#ifdef CONFIG_SMP
--	delta_nsec = 0;
--#else
--	delta_nsec = rpcc() - state.last_time;
--	delta_nsec = (delta_nsec * state.scaled_ticks_per_cycle 
--		      + state.partial_tick) * 15625;
--	delta_nsec = ((delta_nsec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1) / 2;
--	delta_nsec *= 1000;
--#endif
--
--	nsec -= delta_nsec;
--
--	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+-	wtm_sec = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
 -	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
 -
 -	set_normalized_timespec(&xtime, sec, nsec);
 -	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
 -
 -	ntp_clear();
--
 -	write_sequnlock_irq(&xtime_lock);
 -	clock_was_set();
+-
 -	return 0;
-+	return delta_usec * 1000;
- }
- 
+-}
+-
 -EXPORT_SYMBOL(do_settimeofday);
 -
--
- /*
+-/*
   * In order to set the CMOS clock precisely, set_rtc_mmss has to be
   * called 500 ms after the second nowtime has started, because when
+  * nowtime is written into the registers of the CMOS clock, it will
+@@ -192,6 +123,7 @@ static irqreturn_t timer_interrupt(int irq, void *dev_id)
+ #ifndef CONFIG_SMP
+ 	profile_tick(CPU_PROFILING);
+ #endif
++	/* XXX FIXME. Uh, the xtime_lock should be held here, no? */
+ 	do_timer(1);
+ 
+ #ifndef CONFIG_SMP
 
 
