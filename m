@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933927AbZGQBSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933937AbZGQB3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933927AbZGQBSj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 21:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933909AbZGQBSi
+	id S933937AbZGQB3o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 21:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933480AbZGQB3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 21:18:38 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36843 "EHLO ogre.sisk.pl"
+	Thu, 16 Jul 2009 21:29:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34100 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933478AbZGQBSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 21:18:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH] power: trivial comment fixes
-Date: Fri, 17 Jul 2009 03:19:02 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Trivial Patch Monkey <trivial@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20090716134257.GA22163@localhost>
-In-Reply-To: <20090716134257.GA22163@localhost>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907170319.02997.rjw@sisk.pl>
+	id S933930AbZGQB3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 21:29:43 -0400
+Date: Fri, 17 Jul 2009 11:29:35 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Barry Song <21cnbao@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Greg KH <greg@kroah.com>
+Subject: linux-next: sound tree build failure
+Message-Id: <20090717112935.2e831eee.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__17_Jul_2009_11_29_35_+1000_FBAQE_+qbyQocvZU"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 16 July 2009, Wu Fengguang wrote:
-> CC: Rafael J. Wysocki <rjw@sisk.pl>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+--Signature=_Fri__17_Jul_2009_11_29_35_+1000_FBAQE_+qbyQocvZU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for the patch, I'll add it to the suspend tree when I'm back home
-(probably on Monday).
+Hi Takashi,
 
-Best,
-Rafael
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
+sound/soc/codecs/ad1938.c: In function 'ad1938_spi_probe':
+sound/soc/codecs/ad1938.c:423: error: 'struct device' has no member named '=
+driver_data'
+sound/soc/codecs/ad1938.c: In function 'ad1938_spi_remove':
+sound/soc/codecs/ad1938.c:430: error: 'struct device' has no member named '=
+driver_data'
 
-> ---
->  kernel/power/snapshot.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- linux.orig/kernel/power/snapshot.c
-> +++ linux/kernel/power/snapshot.c
-> @@ -233,7 +233,7 @@ static void *chain_alloc(struct chain_al
->  
->  #define BM_END_OF_MAP	(~0UL)
->  
-> -#define BM_BITS_PER_BLOCK	(PAGE_SIZE << 3)
-> +#define BM_BITS_PER_BLOCK	(PAGE_SIZE * BITS_PER_BYTE)
->  
->  struct bm_block {
->  	struct list_head hook;	/* hook into a list of bitmap blocks */
-> @@ -275,7 +275,7 @@ static void memory_bm_free(struct memory
->  
->  /**
->   *	create_bm_block_list - create a list of block bitmap objects
-> - *	@nr_blocks - number of blocks to allocate
-> + *	@pages - number of pages to track
->   *	@list - list to put the allocated blocks into
->   *	@ca - chain allocator to be used for allocating memory
->   */
+Caused by commit 1274738d85d0e25c4f82d83f50a6bcbe2397e9ea ("ASoC: new
+ad1938 codec driver based on asoc") interacting with commit
+2e34003ff6237e2216396d61dc8b32ea5959de80 ("Driver core: move
+dev_get/set_drvdata to drivers/base/dd.c") from the driver-core.current
+tree (which will, I assume, be sent to Linus shortly - right, Greg?).
+
+New drivers need to use the (existing) API's dev_{set,get}_drvdata().
+
+I have used the version of the sound tree from next-20090716 for today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__17_Jul_2009_11_29_35_+1000_FBAQE_+qbyQocvZU
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpf0/8ACgkQjjKRsyhoI8zRrQCgnJXEofvETcpXrsrUuDINHunL
+hp8AoKJp0oe2fzUfsdlUka8n0sODN6zw
+=xM4h
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__17_Jul_2009_11_29_35_+1000_FBAQE_+qbyQocvZU--
