@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZGQUUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbZGQUVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbZGQUUe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 16:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbZGQUUD
+	id S1755764AbZGQUVF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 16:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbZGQUTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 16:20:03 -0400
-Received: from kroah.org ([198.145.64.141]:43134 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbZGQUTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 17 Jul 2009 16:19:54 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:36 2009
-Message-Id: <20090717201236.713006028@mini.kroah.org>
+Received: from kroah.org ([198.145.64.141]:43126 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755227AbZGQUTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 16:19:53 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Jul 17 13:12:35 2009
+Message-Id: <20090717201235.532748898@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 17 Jul 2009 13:09:11 -0700
+Date: Fri, 17 Jul 2009 13:09:09 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: [patch 20/24] Fix pci_unmap_addr() et al on i386.
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 18/24] Revert "ipv4: arp announce, arp_proxy and windows ip conflict verification"
 References: <20090717200851.907421303@mini.kroah.org>
-Content-Disposition: inline; filename=fix-pci_unmap_addr-et-al-on-i386.patch
+Content-Disposition: inline; filename=revert-ipv4-arp-announce-arp_proxy-and-windows-ip-conflict-verification.patch
 In-Reply-To: <20090717201639.GA14209@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,37 +31,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Woodhouse <dwmw2@infradead.org>
+From: Eric W. Biederman <ebiederm@xmission.com>
 
-commit 788d84bba47ea3eb377f7a3ae4fd1ee84b84877b upstream.
+commit f8a68e752bc4e39644843403168137663c984524 upstream.
 
-We can run a 32-bit kernel on boxes with an IOMMU, so we need
-pci_unmap_addr() etc. to work -- without it, drivers will leak mappings.
+This reverts commit 73ce7b01b4496a5fbf9caf63033c874be692333f.
 
-To be honest, this whole thing looks like it's more pain than it's
-worth; I'm half inclined to remove the no-op #else case altogether.
+After discovering that we don't listen to gratuitious arps in 2.6.30
+I tracked the failure down to this commit.
 
-But this is the minimal fix, which just does the right thing if
-CONFIG_DMAR is set.
+The patch makes absolutely no sense.  RFC2131 RFC3927 and RFC5227.
+are all in agreement that an arp request with sip == 0 should be used
+for the probe (to prevent learning) and an arp request with sip == tip
+should be used for the gratitous announcement that people can learn
+from.
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+It appears the author of the broken patch got those two cases confused
+and modified the code to drop all gratuitous arp traffic.  Ouch!
+
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/include/asm/pci.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/ipv4/arp.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
---- a/arch/x86/include/asm/pci.h
-+++ b/arch/x86/include/asm/pci.h
-@@ -91,7 +91,7 @@ extern void pci_iommu_alloc(void);
+--- a/net/ipv4/arp.c
++++ b/net/ipv4/arp.c
+@@ -801,11 +801,8 @@ static int arp_process(struct sk_buff *s
+  *  cache.
+  */
  
- #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
- 
--#if defined(CONFIG_X86_64) || defined(CONFIG_DMA_API_DEBUG)
-+#if defined(CONFIG_X86_64) || defined(CONFIG_DMAR) || defined(CONFIG_DMA_API_DEBUG)
- 
- #define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)       \
- 	        dma_addr_t ADDR_NAME;
+-	/*
+-	 *  Special case: IPv4 duplicate address detection packet (RFC2131)
+-	 *  and Gratuitous ARP/ARP Announce. (RFC3927, Section 2.4)
+-	 */
+-	if (sip == 0 || tip == sip) {
++	/* Special case: IPv4 duplicate address detection packet (RFC2131) */
++	if (sip == 0) {
+ 		if (arp->ar_op == htons(ARPOP_REQUEST) &&
+ 		    inet_addr_type(net, tip) == RTN_LOCAL &&
+ 		    !arp_ignore(in_dev, sip, tip))
 
 
