@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934003AbZGQC00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934012AbZGQCdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934003AbZGQC00 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 22:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933990AbZGQC0Z
+	id S934012AbZGQCdl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 22:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933990AbZGQCdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 22:26:25 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:64020 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933982AbZGQC0Y convert rfc822-to-8bit (ORCPT
+	Thu, 16 Jul 2009 22:33:40 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:54972 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933942AbZGQCdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 22:26:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=pO6+KT8iRtSwAwVEH/EUebl9BIccouovj2IIoYmZ3fMkPf+xhpGcdhXn1d+JD0Hg6S
-         ZiSDwQ3uaNVMiYy4LninAZAj4OsIyAJ37WEK0QxPJRXijRZ1Qg2E3pviKS37aQ4zEkQQ
-         2WeEOVfPv3C9VUc1dHB2Ph8LI2mslhGCRI8nI=
-MIME-Version: 1.0
-In-Reply-To: <1247790356.7398.14.camel@localhost.localdomain>
-References: <1244758210.7192.5.camel@localhost.localdomain> 
-	<1247790356.7398.14.camel@localhost.localdomain>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 16 Jul 2009 22:26:04 -0400
-Message-ID: <8bd0f97a0907161926j258da72cg9dd1ca76ea8be2fb@mail.gmail.com>
-Subject: Re: [PATCH] Convert blackfin to use arch_gettimeoffset()
-To: john stultz <johnstul@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
+	Thu, 16 Jul 2009 22:33:39 -0400
+Date: Fri, 17 Jul 2009 08:03:36 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Dan Malek <dan@embeddedalley.com>
+Cc: Linux Containers Mailing List 
+	<containers@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Paul Menage <menage@google.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Vladislav Buzov <vbuzov@embeddedalley.com>
+Subject: Re: [PATCH 1/1] Memory usage limit notification addition to memcg
+Message-ID: <20090717023336.GF3576@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090708095616.cdfe8c7c.kamezawa.hiroyu@jp.fujitsu.com> <6599ad830907131515h3c9622b5v309cf8f13d272bab@mail.gmail.com> <20090714100440.6283.A69D9226@jp.fujitsu.com> <9B7C6FE2-D946-4286-9537-C4A715997B89@embeddedalley.com> <20090716171530.GC3576@balbir.in.ibm.com> <FE89F36E-EB7E-4F11-887C-5371887C7D68@embeddedalley.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <FE89F36E-EB7E-4F11-887C-5371887C7D68@embeddedalley.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 20:25, john stultz wrote:
-> This patch converts blackfin to use GENERIC_TIME via the arch_getoffset()
-> infrastructure, reducing the amount of arch specific code we need to
-> maintain.
->
-> This patch applies on top of Linus' current -git tree (2.6.31-rc3).
->
-> I've taken my best swing at converting this, but I'm not 100% confident
-> I got it right. My cross-compiler is now out of date (gcc4.2) so I
-> wasn't able to  check if it compiled. Any assistance from arch
-> maintainers or testers to get this merged would be great.
+* Dan Malek <dan@embeddedalley.com> [2009-07-16 11:16:29]:
 
-something seems to be off as the Blackfin defconfig now does:
-  LD      .tmp_vmlinux1
-kernel/built-in.o: In function `clocksource_forward_now':
-kernel/time/timekeeping.c:82: undefined reference to `arch_gettimeoffset'
-kernel/built-in.o: In function `getnstimeofday':
-kernel/time/timekeeping.c:119: undefined reference to `arch_gettimeoffset'
-make: *** [.tmp_vmlinux1] Error 1
+> 
+> On Jul 16, 2009, at 10:15 AM, Balbir Singh wrote:
+> 
+> > Dan, if you are suggesting that we incrementally add features, I
+> > completely agree with you, that way the code is reviewable and
+> > maintainable. As we add features we need to
+> 
+> Right, this is all goodness.  My specific comments are this patch
+> adds a new useful feature and it's been through a couple of iterations
+> to make it more acceptable.  Let's post it, as it makes people aware
+> of such a feature since it's currently in use and useful, and then
+> continue the discussion about how to make it (and all of the cgroup
+> features) better.  Otherwise, this is going to degenerate into a "do
+> everything but nothing gets done" ongoing discussion and I'll
+> quickly lose interest and move on the something else :-)
+> 
+> There are currently two discussions in progress.  One is about
+> notification limits, which this feature patch adds.  We need to
+> close this discussion with a more feature rich implementation
+> that addresses both upper and lower notification, the semantics
+> of this feature in a cgroup hierarchy, and in particular the
+> behavior outside of the memory controller group.
+> 
+> The second discussion is about event delivery in cgroups.
+> Linux already has many mechanisms, and some product
+> implementations patch even more of their own into the kernel.
+> Outside of these implementation details, we have to determine
+> what is useful for a cgroup.  Are events just arbitrary (anything
+> can send any kind of event)?  How do we pass  information?
+> Is there some standard header?  How do we control this so
+> the event target is identified and we prevent event floods?
+> And many more.....
+>
 
-most likely because the Blackfin time.c is the old stuff
-(non-clocksource) while time-ts.c is the newer stuff (clocksource) and
-this change only touches time.c
--mike
+I think you keep missing my pointers to cgroupstats - a genetlink
+based mechanism for event delivery and request/response applications.
+
+ 
+> > 1. Look at reuse
+> > 2. Make sure the design is sane and will not prohibit further
+> > development.
+> 
+> 3. Contain the scope of work so I can do it without affecting
+>      the work that pays my salary :-)
+>
+
+Not at the cost of (1) and (2) and a patient discussion around what is
+being proposed. 
+
+-- 
+	Balbir
