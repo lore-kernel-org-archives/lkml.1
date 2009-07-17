@@ -1,98 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933678AbZGQAFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933731AbZGQAF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933678AbZGQAFt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 16 Jul 2009 20:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933313AbZGQAFs
+	id S933731AbZGQAF7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 16 Jul 2009 20:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933720AbZGQAF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 16 Jul 2009 20:05:48 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39103 "EHLO smtp.gentoo.org"
+	Thu, 16 Jul 2009 20:05:57 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:39124 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933358AbZGQAFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 16 Jul 2009 20:05:47 -0400
+	id S933710AbZGQAF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 16 Jul 2009 20:05:56 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 00/21] Blackfin fixes for 2.6.31
-Date: Thu, 16 Jul 2009 20:05:25 -0400
-Message-Id: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org,
+       Sonic Zhang <sonic.zhang@analog.com>
+Subject: [PATCH 11/21] Blackfin: fix wrong CTS inversion
+Date: Thu, 16 Jul 2009 20:05:36 -0400
+Message-Id: <1247789146-18786-12-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
+References: <1247789146-18786-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just a whole bunch of small fixes / anomaly workarounds, nothing terribly
-interesting.
+From: Sonic Zhang <sonic.zhang@analog.com>
 
-Barry Song (1):
-  Blackfin: bf537-stamp: fix irq decl for AD7142
+The Blackfin serial headers were inverting the CTS value leading to wrong
+handling of the CTS line which broke CTS/RTS handling completely.
 
-Graf Yang (3):
-  Blackfin: update anomaly lists to match latest sheets/usage
-  Blackfin: update handling of anomaly 364 (wrong rev id in BF527-0.1)
-  Blackfin: add CPLB entries for Core B on-chip L1 SRAM regions
-
-Jie Zhang (1):
-  Blackfin: fix miscompilation in lshrdi3
-
-Julia Lawall (1):
-  arch/blackfin: Add kmalloc NULL tests
-
-Michael Hennerich (3):
-  Blackfin: fix incomplete renaming of the bfin-twi-lcd driver
-  Blackfin: fix bugs in GPIO resume code
-  Blackfin: drop per-cpu loops_per_jiffy tracking
-
-Mike Frysinger (5):
-  Blackfin: drop dead flash_probe call
-  Blackfin: restore exception banner when dumping crash info
-  Blackfin: handle BF561 Core B memory regions better when SMP=n
-  Blackfin: fix early_dma_memcpy() handling of busy channels
-  Blackfin: define HARDIRQ_BITS again for now
-
-Robin Getz (6):
-  Blackfin: cleanup code a bit with comments and defines
-  Blackfin: work around anomaly 05000281
-  Blackfin: fix silent crash when no uClinux MTD filesystem exists
-  Blackfin: drop duplicate runtime checking of anomaly 05000448
-  Blackfin: fix handling of IPEND in interrupt context save
-  Blackfin: work around anomaly 05000189
-
-Sonic Zhang (1):
-  Blackfin: fix wrong CTS inversion
-
- arch/blackfin/include/asm/context.S                |    7 ++-
- arch/blackfin/include/asm/cpu.h                    |    1 -
- arch/blackfin/include/asm/hardirq.h                |    3 +
- arch/blackfin/include/asm/processor.h              |   21 +++------
- arch/blackfin/kernel/bfin_dma_5xx.c                |   29 ++++++-------
- arch/blackfin/kernel/bfin_gpio.c                   |    6 +--
- arch/blackfin/kernel/cplb-nompu/cplbinit.c         |   23 ++++++++---
- arch/blackfin/kernel/process.c                     |   14 +++---
- arch/blackfin/kernel/setup.c                       |   44 ++++++++-----------
- arch/blackfin/kernel/traps.c                       |    9 +++-
- arch/blackfin/lib/lshrdi3.c                        |   16 +-------
- arch/blackfin/mach-bf518/boards/ezbrd.c            |    2 +-
- arch/blackfin/mach-bf518/include/mach/anomaly.h    |    2 +
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
  .../mach-bf518/include/mach/bfin_serial_5xx.h      |    2 +-
- arch/blackfin/mach-bf527/boards/cm_bf527.c         |    2 +-
- arch/blackfin/mach-bf527/boards/ezbrd.c            |    2 +-
- arch/blackfin/mach-bf527/boards/ezkit.c            |    2 +-
- arch/blackfin/mach-bf527/include/mach/anomaly.h    |    4 +-
  .../mach-bf527/include/mach/bfin_serial_5xx.h      |    2 +-
- arch/blackfin/mach-bf533/boards/stamp.c            |    2 +-
- arch/blackfin/mach-bf533/include/mach/anomaly.h    |    1 +
  .../mach-bf533/include/mach/bfin_serial_5xx.h      |    2 +-
- arch/blackfin/mach-bf537/boards/stamp.c            |    4 +-
- arch/blackfin/mach-bf537/include/mach/anomaly.h    |    2 +
  .../mach-bf537/include/mach/bfin_serial_5xx.h      |    2 +-
- arch/blackfin/mach-bf538/include/mach/anomaly.h    |    2 +
  .../mach-bf538/include/mach/bfin_serial_5xx.h      |    2 +-
- arch/blackfin/mach-bf548/boards/ezkit.c            |    2 +-
- arch/blackfin/mach-bf548/include/mach/anomaly.h    |    2 +
- arch/blackfin/mach-bf561/include/mach/anomaly.h    |    1 +
  .../mach-bf561/include/mach/bfin_serial_5xx.h      |    2 +-
- arch/blackfin/mach-bf561/include/mach/mem_map.h    |   23 ++++++++++-
- arch/blackfin/mach-common/entry.S                  |   12 +++--
- arch/blackfin/mach-common/smp.c                    |   10 ++++-
- 34 files changed, 145 insertions(+), 115 deletions(-)
+ 6 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/blackfin/mach-bf518/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf518/include/mach/bfin_serial_5xx.h
+index 0fb2ce5..dbade93 100644
+--- a/arch/blackfin/mach-bf518/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf518/include/mach/bfin_serial_5xx.h
+@@ -53,7 +53,7 @@
+ #define UART_SET_DLAB(uart)     do { UART_PUT_LCR(uart, UART_GET_LCR(uart) | DLAB); SSYNC(); } while (0)
+ #define UART_CLEAR_DLAB(uart)   do { UART_PUT_LCR(uart, UART_GET_LCR(uart) & ~DLAB); SSYNC(); } while (0)
+ 
+-#define UART_GET_CTS(x) (!gpio_get_value(x->cts_pin))
++#define UART_GET_CTS(x) gpio_get_value(x->cts_pin)
+ #define UART_DISABLE_RTS(x) gpio_set_value(x->rts_pin, 1)
+ #define UART_ENABLE_RTS(x) gpio_set_value(x->rts_pin, 0)
+ #define UART_ENABLE_INTS(x, v) UART_PUT_IER(x, v)
+diff --git a/arch/blackfin/mach-bf527/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf527/include/mach/bfin_serial_5xx.h
+index a625659..ebd6ceb 100644
+--- a/arch/blackfin/mach-bf527/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf527/include/mach/bfin_serial_5xx.h
+@@ -53,7 +53,7 @@
+ #define UART_SET_DLAB(uart)     do { UART_PUT_LCR(uart, UART_GET_LCR(uart) | DLAB); SSYNC(); } while (0)
+ #define UART_CLEAR_DLAB(uart)   do { UART_PUT_LCR(uart, UART_GET_LCR(uart) & ~DLAB); SSYNC(); } while (0)
+ 
+-#define UART_GET_CTS(x) (!gpio_get_value(x->cts_pin))
++#define UART_GET_CTS(x) gpio_get_value(x->cts_pin)
+ #define UART_DISABLE_RTS(x) gpio_set_value(x->rts_pin, 1)
+ #define UART_ENABLE_RTS(x) gpio_set_value(x->rts_pin, 0)
+ #define UART_ENABLE_INTS(x, v) UART_PUT_IER(x, v)
+diff --git a/arch/blackfin/mach-bf533/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf533/include/mach/bfin_serial_5xx.h
+index a3789d7..4062e24 100644
+--- a/arch/blackfin/mach-bf533/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf533/include/mach/bfin_serial_5xx.h
+@@ -53,7 +53,7 @@
+ #define UART_SET_DLAB(uart)     do { UART_PUT_LCR(uart, UART_GET_LCR(uart) | DLAB); SSYNC(); } while (0)
+ #define UART_CLEAR_DLAB(uart)   do { UART_PUT_LCR(uart, UART_GET_LCR(uart) & ~DLAB); SSYNC(); } while (0)
+ 
+-#define UART_GET_CTS(x) (!gpio_get_value(x->cts_pin))
++#define UART_GET_CTS(x) gpio_get_value(x->cts_pin)
+ #define UART_DISABLE_RTS(x) gpio_set_value(x->rts_pin, 1)
+ #define UART_ENABLE_RTS(x) gpio_set_value(x->rts_pin, 0)
+ #define UART_ENABLE_INTS(x, v) UART_PUT_IER(x, v)
+diff --git a/arch/blackfin/mach-bf537/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf537/include/mach/bfin_serial_5xx.h
+index b86662f..e95d54f 100644
+--- a/arch/blackfin/mach-bf537/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf537/include/mach/bfin_serial_5xx.h
+@@ -53,7 +53,7 @@
+ #define UART_SET_DLAB(uart)     do { UART_PUT_LCR(uart, UART_GET_LCR(uart) | DLAB); SSYNC(); } while (0)
+ #define UART_CLEAR_DLAB(uart)   do { UART_PUT_LCR(uart, UART_GET_LCR(uart) & ~DLAB); SSYNC(); } while (0)
+ 
+-#define UART_GET_CTS(x) (!gpio_get_value(x->cts_pin))
++#define UART_GET_CTS(x) gpio_get_value(x->cts_pin)
+ #define UART_DISABLE_RTS(x) gpio_set_value(x->rts_pin, 1)
+ #define UART_ENABLE_RTS(x) gpio_set_value(x->rts_pin, 0)
+ #define UART_ENABLE_INTS(x, v) UART_PUT_IER(x, v)
+diff --git a/arch/blackfin/mach-bf538/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf538/include/mach/bfin_serial_5xx.h
+index c536551..999f239 100644
+--- a/arch/blackfin/mach-bf538/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf538/include/mach/bfin_serial_5xx.h
+@@ -53,7 +53,7 @@
+ #define UART_SET_DLAB(uart)     do { UART_PUT_LCR(uart, UART_GET_LCR(uart) | DLAB); SSYNC(); } while (0)
+ #define UART_CLEAR_DLAB(uart)   do { UART_PUT_LCR(uart, UART_GET_LCR(uart) & ~DLAB); SSYNC(); } while (0)
+ 
+-#define UART_GET_CTS(x) (!gpio_get_value(x->cts_pin))
++#define UART_GET_CTS(x) gpio_get_value(x->cts_pin)
+ #define UART_DISABLE_RTS(x) gpio_set_value(x->rts_pin, 1)
+ #define UART_ENABLE_RTS(x) gpio_set_value(x->rts_pin, 0)
+ #define UART_ENABLE_INTS(x, v) UART_PUT_IER(x, v)
+diff --git a/arch/blackfin/mach-bf561/include/mach/bfin_serial_5xx.h b/arch/blackfin/mach-bf561/include/mach/bfin_serial_5xx.h
+index a1b5087..fd5e887 100644
+--- a/arch/blackfin/mach-bf561/include/mach/bfin_serial_5xx.h
++++ b/arch/blackfin/mach-bf561/include/mach/bfin_serial_5xx.h
+@@ -53,7 +53,7 @@
+ #define UART_SET_DLAB(uart)     do { UART_PUT_LCR(uart, UART_GET_LCR(uart) | DLAB); SSYNC(); } while (0)
+ #define UART_CLEAR_DLAB(uart)   do { UART_PUT_LCR(uart, UART_GET_LCR(uart) & ~DLAB); SSYNC(); } while (0)
+ 
+-#define UART_GET_CTS(x) (!gpio_get_value(x->cts_pin))
++#define UART_GET_CTS(x) gpio_get_value(x->cts_pin)
+ #define UART_DISABLE_RTS(x) gpio_set_value(x->rts_pin, 1)
+ #define UART_ENABLE_RTS(x) gpio_set_value(x->rts_pin, 0)
+ #define UART_ENABLE_INTS(x, v) UART_PUT_IER(x, v)
+-- 
+1.6.3.3
 
