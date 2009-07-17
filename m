@@ -1,163 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934484AbZGQMPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934480AbZGQMSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934484AbZGQMPF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 08:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934466AbZGQMPE
+	id S934480AbZGQMSy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 08:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934419AbZGQMSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 08:15:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46753 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934465AbZGQMPD (ORCPT
+	Fri, 17 Jul 2009 08:18:54 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56178 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934410AbZGQMSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 08:15:03 -0400
-Subject: Re: [patch 1/3] net: serialize hrtimer callback in sched_cbq
+	Fri, 17 Jul 2009 08:18:53 -0400
+Subject: Re: [PATCH 4/5] Use add_page_to_lru_list() helper function
 From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, tglx@linutronix.de,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, kaber@trash.net
-In-Reply-To: <alpine.LFD.2.01.0907140940440.13838@localhost.localdomain>
-References: <20090709215606.526259917@linutronix.de>
-	 <20090712.135555.207096388.davem@davemloft.net>
-	 <alpine.LFD.2.00.0907141040350.2777@localhost.localdomain>
-	 <20090714.090055.56906831.davem@davemloft.net>
-	 <1247588890.7500.186.camel@twins>
-	 <alpine.LFD.2.01.0907140940440.13838@localhost.localdomain>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090716173921.9D54.A69D9226@jp.fujitsu.com>
+References: <20090716173449.9D4B.A69D9226@jp.fujitsu.com>
+	 <20090716173921.9D54.A69D9226@jp.fujitsu.com>
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Fri, 17 Jul 2009 14:14:52 +0200
-Message-Id: <1247832892.15751.35.camel@twins>
+Date: Fri, 17 Jul 2009 14:18:48 +0200
+Message-Id: <1247833128.15751.41.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-14 at 09:42 -0700, Linus Torvalds wrote:
+On Thu, 2009-07-16 at 17:40 +0900, KOSAKI Motohiro wrote:
+> Subject: Use add_page_to_lru_list() helper function
 > 
-> On Tue, 14 Jul 2009, Peter Zijlstra wrote:
-> > 
-> > Linus really hated the softirq mode, which is what prompted me to change
-> > that.
-> > 
-> > Now, it might be he only hated the particular interface and the
-> > resulting code, but I think to remember he simply thought the whole
-> > thing daft.
+> add_page_to_lru_list() is equivalent to
+>   - add lru list (global)
+>   - add lru list (mem-cgroup)
+>   - modify zone stat
 > 
-> Yes. And I hated the bugs it had. 
+> We can use it.
 > 
-> Don't make something as core as timers any more complicated. Don't take 
-> locks in timers and then complain about deadlocks. If your locking is 
-> broken, don't make the core timers be idiotically broken.
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/vmscan.c |    5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
 > 
-> Because it was. The code was a total mess to follow, and had bugs.
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1225,12 +1225,12 @@ static void move_active_pages_to_lru(str
+>  
+>  	while (!list_empty(list)) {
+>  		page = lru_to_page(list);
+> +		list_del(&page->lru);
+>  
+>  		VM_BUG_ON(PageLRU(page));
+>  		SetPageLRU(page);
+>  
+> -		list_move(&page->lru, &zone->lru[lru].list);
+> -		mem_cgroup_add_lru_list(page, lru);
+> +		add_page_to_lru_list(zone, page, lru);
+>  		pgmoved++;
+>  
+>  		if (!pagevec_add(&pvec, page) || list_empty(list)) {
+> @@ -1241,7 +1241,6 @@ static void move_active_pages_to_lru(str
+>  			spin_lock_irq(&zone->lru_lock);
+>  		}
+>  	}
+> -	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+>  	if (!is_active_lru(lru))
+>  		__count_vm_events(PGDEACTIVATE, pgmoved);
+>  }
 
-How would something like the below work for people?
-
----
- include/linux/hrtimer.h |   22 ++++++++++++++++++++--
- kernel/hrtimer.c        |   23 ++++++++++++++++++++++-
- 2 files changed, 42 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index 4759917..e7559fe 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -22,6 +22,7 @@
- #include <linux/wait.h>
- #include <linux/percpu.h>
- #include <linux/timer.h>
-+#include <linux/interrupt.h>
- 
- 
- struct hrtimer_clock_base;
-@@ -91,7 +92,6 @@ enum hrtimer_restart {
-  * @function:	timer expiry callback function
-  * @base:	pointer to the timer base (per cpu and per clock)
-  * @state:	state information (See bit values above)
-- * @cb_entry:	list head to enqueue an expired timer into the callback list
-  * @start_site:	timer statistics field to store the site where the timer
-  *		was started
-  * @start_comm: timer statistics field to store the name of the process which
-@@ -108,7 +108,6 @@ struct hrtimer {
- 	enum hrtimer_restart		(*function)(struct hrtimer *);
- 	struct hrtimer_clock_base	*base;
- 	unsigned long			state;
--	struct list_head		cb_entry;
- #ifdef CONFIG_TIMER_STATS
- 	int				start_pid;
- 	void				*start_site;
-@@ -116,6 +115,12 @@ struct hrtimer {
- #endif
- };
- 
-+struct hrtimer_softirq {
-+	struct hrtimer		timer;
-+	struct tasklet_struct	tasklet;
-+	enum hrtimer_restart	(*function)(struct hrtimer *);
-+};
-+
- /**
-  * struct hrtimer_sleeper - simple sleeper structure
-  * @timer:	embedded timer structure
-@@ -335,6 +340,19 @@ static inline void hrtimer_init_on_stack(struct hrtimer *timer,
- static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
- #endif
- 
-+enum hrtimer_restart __hrtimer_softirq_trampoline(struct hrtimer *timer);
-+void __hrtimer_tasklet_trampoline(unsigned long data);
-+
-+static inline void hrtimer_softirq_init(struct hrtimer_softirq *stimer,
-+		enum hrtimer_restart (*func)(struct hrtimer *),
-+		clockid_t which_clock, enum hrtimer_mode mode)
-+{
-+	hrtimer_init(&stimer->timer, which_clock, mode);
-+	stimer->timer.function = __hrtimer_softirq_trampoline;
-+	tasklet_init(&stimer->tasklet, __hrtimer_tasklet_trampoline, stimer);
-+	stimer->function = func;
-+}
-+
- /* Basic timer operations: */
- extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
- 			 const enum hrtimer_mode mode);
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index ab5eb70..dae063c 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1098,7 +1098,6 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
- 		clock_id = CLOCK_MONOTONIC;
- 
- 	timer->base = &cpu_base->clock_base[clock_id];
--	INIT_LIST_HEAD(&timer->cb_entry);
- 	hrtimer_init_timer_hres(timer);
- 
- #ifdef CONFIG_TIMER_STATS
-@@ -1141,6 +1140,28 @@ int hrtimer_get_res(const clockid_t which_clock, struct timespec *tp)
- }
- EXPORT_SYMBOL_GPL(hrtimer_get_res);
- 
-+enum hrtimer_restart __hrtimer_softirq_trampoline(struct hrtimer *timer)
-+{
-+	struct hrtimer_softirq *stimer =
-+		container_of(timer, struct hrtimer_softirq, timer);
-+
-+	tasklet_hi_schedule(&timer->tasklet);
-+
-+	return HRTIMER_NORESTART;
-+}
-+EXPORT_SYMBOL_GPL(__hrtimer_softirq_trampoline);
-+
-+void __hrtimer_tasklet_trampoline(unsigned long data)
-+{
-+	struct hrtimer_softirq *stimer = (void *)data;
-+	enum hrtimer_restart restart;
-+
-+	restart = stimer->function(&stimer->timer);
-+	if (restart != HRTIMER_NORESTART)
-+		hrtimer_restart(&stimer->timer);
-+}
-+EXPORT_SYMBOL_GPL(__hrtimer_tasklet_trampoline);
-+
- static void __run_hrtimer(struct hrtimer *timer)
- {
- 	struct hrtimer_clock_base *base = timer->base;
-
+This is a net loss, you introduce pgmoved calls to __inc_zone_state,
+instead of the one __mod_zone_page_state() call.
