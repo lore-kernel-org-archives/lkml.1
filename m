@@ -1,73 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbZGRKjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932510AbZGRKkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758143AbZGRKjr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 06:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758062AbZGRKjp
+	id S932510AbZGRKkF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 06:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758129AbZGRKkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 06:39:45 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41249 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753868AbZGRKjp (ORCPT
+	Sat, 18 Jul 2009 06:40:04 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:18495 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758062AbZGRKkC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 06:39:45 -0400
-Date: Sat, 18 Jul 2009 12:39:36 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: David Howells <dhowells@redhat.com>, rgetz@blackfin.uclinux.org,
-       lethal@linux-sh.org, gerg@uclinux.org,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FDPIC: Ignore the loader's PT_GNU_STACK when
-	calculating the stack size
-Message-ID: <20090718103935.GB11381@elf.ucw.cz>
-References: <20090709101930.GJ10937@elf.ucw.cz> <20090704024606.GE1345@ucw.cz> <20090701120814.30741.10146.stgit@warthog.procyon.org.uk> <24530.1247050900@redhat.com> <20090704033429.GA1799@ucw.cz> <8bd0f97a0907081148vc716eeepfdaf8178b1ecbce1@mail.gmail.com> <24280.1247137151@redhat.com> <20090711213018.GA1425@ucw.cz> <8bd0f97a0907140515t2bc47674qac75ba93f8c9fdae@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0907140515t2bc47674qac75ba93f8c9fdae@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 18 Jul 2009 06:40:02 -0400
+Date: Sat, 18 Jul 2009 12:39:51 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@cam.ac.uk>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH] hwmon: Add WM835x PMIC hardware  monitoring driver
+Message-ID: <20090718123951.34c776ca@hyperion.delvare>
+In-Reply-To: <20090718095917.GA10160@opensource.wolfsonmicro.com>
+References: <1247862795-22547-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<20090718111712.78771b36@hyperion.delvare>
+	<20090718095917.GA10160@opensource.wolfsonmicro.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-07-14 08:15:03, Mike Frysinger wrote:
-> On Sat, Jul 11, 2009 at 17:30, Pavel Machek wrote:
-> > On Thu 2009-07-09 11:59:11, David Howells wrote:
-> >> Pavel Machek wrote:
-> >> > > i really dont think this is realistic.  there is exactly one ldso that
-> >> > > everyone uses under FDPIC ELF, and it needs a very minuscule stack.
-> >> >
-> >> > Not very realistic; but that argues that the patch is NOP.
-> >> >
-> >> > And if it _is_ realistic, the patch adds a bug.
-> >>
-> >> No, it doesn't.  The problem is that the loader, when it is linked, is given a
-> >> sillyly large default stack size, and this causes the application to be given a
-> >> much larger stack than is strictly necessary - a stack that is drawn from a
-> >> limited pool of non-pageable RAM and that must be allocated as a contiguous
-> >> lump.
-> >
-> > Fix the loader to only request as big stack as it needs?
+On Sat, 18 Jul 2009 10:59:17 +0100, Mark Brown wrote:
+> On Sat, Jul 18, 2009 at 11:17:12AM +0200, Jean Delvare wrote:
 > 
-> and what if the loader needs a larger stack when run as an application
-> ?  you could make the same exact argument for every library that an
-> application has a DT_NEEDED tag for, or that it dlopen()'s.  but for
-> the same reasons, it doesnt fly.
+> > > +WM8350_NAMED_VOLTAGE(0, USB);
+> > > +WM8350_NAMED_VOLTAGE(1, BATT);
+> > > +WM8350_NAMED_VOLTAGE(2, LINE);
 > 
-> the only stack that should be checked is what the application itself
-> says it needs.  the ldso has no way of knowing what functions exactly
-> the application in question will be using (whether in the ldso itself
-> or in any library), thus only the application itself knows what the
-> stack usage will look like.
+> > I would suggest passing the whole WM8350_AUXADC_USB, etc. string as the
+> > 2nd parameter. This makes grepping the source code for users (as LXR
+> > does for example) possible.
+> 
+> The reason it's formatted like that is that the AUXADC input names match
+> the names of the supplies that are being monitored so the second parameter
+> is also used to provide a label to userspace.
 
-And the application has no way of knowing how much stack this
-particular ldso needs. Too bad, it is all broken.
+This isn't how I read the code. I see a look-up table for labels, so the
+macro implementation is just a detail which shouldn't matter.
 
-(And the solution of taking maximum of all involved parties still
-looks best to me.)
-									Pavel
+> > > +static struct platform_driver wm8350_hwmon_driver = {
+> > > +	.probe = wm8350_hwmon_probe,
+> > > +	.remove = __devexit_p(wm8350_hwmon_remove),
+> > > +	.driver = {
+> > > +		.name = "wm8350-hwmon",
+> 
+> > I think you are supposed to set .owner to THIS_MODULE?
+> 
+> Hrm, yeah.  I need to figure out where I cut'n'pasted this from since I
+> suspect the error came along with that.
+
+Maybe from an i2c driver, where the owner is set at run-time. Back when
+this was implemented, I did object that it would cause confusion
+because it would make different subsystems have different
+requirements... Looks like I was right.
+
+> > When you are done, what is your merge plan? I would be happy to take
+> > the patch in my unofficial hwmon tree and push it in 2.6.32, but due to
+> > wm8350-core dependencies, you may prefer it to be merged differently?
+> 
+> I'm happy to go with whatever is easiest for the people actually doing
+> the merging.  wm8350 is fairly static at the minute - it's much more
+> likely that there would be merge issues from the build infrastructure.
+> It might be a little easier to merge via mfd.
+
+Fine with me.
+
+> I'll fix the rest of your comments, thanks.
+
+OK.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jean Delvare
