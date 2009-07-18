@@ -1,124 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbZGRQKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZGRQLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752962AbZGRQKL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 12:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZGRQKJ
+	id S1753077AbZGRQLb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 12:11:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbZGRQL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 12:10:09 -0400
-Received: from main.gmane.org ([80.91.229.2]:35671 "EHLO ciao.gmane.org"
+	Sat, 18 Jul 2009 12:11:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33035 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752279AbZGRQKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 12:10:07 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Piotr Kaczuba <piotr@attika.ath.cx>
-Subject: [ALSA] emu10k1: hw_ptr skipping when unpausing mplayer
-Date: Sat, 18 Jul 2009 16:07:07 +0000 (UTC)
-Message-ID: <h3srvb$71b$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 83.142.198.206
-User-Agent: Pan/0.132 (Waxed in Black)
+	id S1752183AbZGRQL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 12:11:28 -0400
+Date: Sat, 18 Jul 2009 18:10:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Jiri Slaby <jirislaby@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] wireless: wl12xx, fix lock imbalance
+Message-ID: <20090718161029.GA16343@elte.hu>
+References: <1247520266-32007-1-git-send-email-jirislaby@gmail.com> <1247521235.7178.1.camel@johannes.local> <4A5BAABF.9020708@gmail.com> <1247521789.7178.2.camel@johannes.local> <4A5BAC77.9010503@gmail.com> <1247522068.7178.4.camel@johannes.local> <20090718111948.GD27287@elte.hu> <1247916829.1055.24.camel@johannes.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247916829.1055.24.camel@johannes.local>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since 2.6.30 I'm experiencing sound and video stuttering when unpausing 
-mplayer. The soundcard is an Audigy 1, driver is emu10k1. Kernel is 
-x86_64, userspace is 32-bit. I doesn't happen always, but regularly 
-enough.
 
+* Johannes Berg <johannes@sipsolutions.net> wrote:
 
-Below is the ouput of mplayer:
+> > It would work like this: __acquires()/__releases() would also 
+> > emit section markers like __lockfunc, and lockdep would warn 
+> > about functions that return with unbalanced locks, irqs or 
+> > preempt counts and do not declare themselves as locking related 
+> > functions.
+> > 
+> > This would help catch imbalances at their source.
+> 
+> I don't see a need to do it dynamically since sparse warns about 
+> things like this. It's quirky in some ways and I've tried to fix 
+> it up before (and failed) but it's not something that can't be 
+> fixed, it just needs more than a night of hacking.
 
-[AO_ALSA] alsa-lib: pcm.c:6482:(snd_pcm_mmap_commit) commit offset (8886) 
-doesn't match with appl_ptr (139955) % buf_size (16384)
-[AO_ALSA] Write error: Broken pipe
-[AO_ALSA] Trying to reset soundcard.
-[AO_ALSA] alsa-lib: pcm_hw.c:578:(snd_pcm_hw_prepare) 
-SNDRV_PCM_IOCTL_PREPARE failed: Device or resource busy
-[AO_ALSA] alsa-lib: pcm_hw.c:578:(snd_pcm_hw_prepare) 
-SNDRV_PCM_IOCTL_PREPARE failed: Device or resource busy
-[AO_ALSA] alsa-lib: pcm_hw.c:578:(snd_pcm_hw_prepare) 
-SNDRV_PCM_IOCTL_PREPARE failed: Device or resource busy
-[AO_ALSA] pcm prepare error: Device or resource busy
+Yeah - but Sparse warns about this if it can analyze the code path. 
+If it cannot see through it then it cannot warn. Static analysis 
+will go only that far - dynamic analysis will catch the cases that 
+do happen.
 
+So it's best to have both: static analysis is good at finding 
+imbalances even if they have a very low likelyhood of occuring in 
+practice, while dynamic analysis will catch everything that does 
+trigger in practice, regardless of code flow complexity.
 
-After setting xrun_debug to 5 I get the following in the log:
+( The only white area on the map is rarely executed code that has a
+  complex code flow. Such code is being frowned upon in general at 
+  the review stage. )
 
-PCM: hw_ptr skipping! [Q] (pos=3071, delta=17225, period=1024, 
-jdelta=18/358/0)
-Pid: 0, comm: swapper Not tainted 2.6.30.1-orbiter.x86-64.1 #1
-Call Trace:
- <IRQ>  [<ffffffffa02d7c7f>] ? snd_pcm_period_elapsed+0x4df/0x520 
-[snd_pcm]
- [<ffffffffa031f15f>] ? snd_emu10k1_interrupt+0x25f/0x550 [snd_emu10k1]
- [<ffffffff8023a9ba>] ? run_timer_softirq+0x1a/0x250
- [<ffffffff80268e99>] ? handle_IRQ_event+0x39/0xe0
- [<ffffffff8026ad19>] ? handle_fasteoi_irq+0x79/0x110
- [<ffffffff8020dd17>] ? handle_irq+0x17/0x20
- [<ffffffff8020d7c1>] ? do_IRQ+0x51/0xd0
- [<ffffffff8020bd13>] ? ret_from_intr+0x0/0x9
- <EOI>  [<ffffffff8021bea0>] ? lapic_next_event+0x0/0x20
- [<ffffffff802127aa>] ? default_idle+0x3a/0x40
- [<ffffffff8020a017>] ? cpu_idle+0x47/0xa0
- [<ffffffff805a5aba>] ? start_kernel+0x2c3/0x384
- [<ffffffff805a5373>] ? x86_64_start_kernel+0xe1/0xf2
-PCM: hw_ptr skipping! (pos=5482, delta=3434, period=1024, jdelta=50/71)
-Pid: 2870, comm: mplayer Not tainted 2.6.30.1-orbiter.x86-64.1 #1
-Call Trace:
- [<ffffffffa02d6bd3>] ? snd_pcm_update_hw_ptr+0x1d3/0x220 [snd_pcm]
- [<ffffffffa02d211d>] ? snd_pcm_hwsync+0x9d/0xe0 [snd_pcm]
- [<ffffffffa02d54e3>] ? snd_pcm_ioctl_compat+0x753/0x980 [snd_pcm]
- [<ffffffff80209b36>] ? __switch_to+0x226/0x270
- [<ffffffff80475407>] ? thread_return+0x30/0x1f9
- [<ffffffff8024a032>] ? hrtimer_cancel+0x12/0x20
- [<ffffffff80476710>] ? do_nanosleep+0x30/0xb0
- [<ffffffff8024a0e0>] ? hrtimer_nanosleep+0xa0/0x130
- [<ffffffff802ddd8b>] ? compat_sys_ioctl+0x19b/0x3e0
- [<ffffffff8024d3bb>] ? getnstimeofday+0x5b/0xe0
- [<ffffffff80266b56>] ? audit_syscall_entry+0x166/0x190
- [<ffffffff80227266>] ? cstar_dispatch+0x7/0x26
-PCM: hw_ptr skipping! [Q] (pos=7443, delta=5395, period=1024, 
-jdelta=91/112/2)
-Pid: 2870, comm: mplayer Not tainted 2.6.30.1-orbiter.x86-64.1 #1
-Call Trace:
- <IRQ>  [<ffffffffa02d7c7f>] ? snd_pcm_period_elapsed+0x4df/0x520 
-[snd_pcm]
- [<ffffffffa031f15f>] ? snd_emu10k1_interrupt+0x25f/0x550 [snd_emu10k1]
- [<ffffffff80268e99>] ? handle_IRQ_event+0x39/0xe0
- [<ffffffff8022cd9d>] ? try_to_wake_up+0x14d/0x160
- [<ffffffff8026ad19>] ? handle_fasteoi_irq+0x79/0x110
- [<ffffffff8020dd17>] ? handle_irq+0x17/0x20
- [<ffffffff8020d7c1>] ? do_IRQ+0x51/0xd0
- [<ffffffff8020bd13>] ? ret_from_intr+0x0/0x9
- [<ffffffff8021bea0>] ? lapic_next_event+0x0/0x20
- [<ffffffff802354bd>] ? __do_softirq+0x3d/0xf0
- [<ffffffff8020c2ea>] ? call_softirq+0x1a/0x30
- [<ffffffff8020dcbd>] ? do_softirq+0x2d/0x70
- [<ffffffff802352a5>] ? irq_exit+0x85/0xa0
- [<ffffffff8021c74e>] ? smp_apic_timer_interrupt+0x4e/0x80
- [<ffffffff8020be63>] ? apic_timer_interrupt+0x13/0x20
- <EOI>  [<ffffffffa02d20d9>] ? snd_pcm_hwsync+0x59/0xe0 [snd_pcm]
- [<ffffffffa02d211d>] ? snd_pcm_hwsync+0x9d/0xe0 [snd_pcm]
- [<ffffffffa02d54e3>] ? snd_pcm_ioctl_compat+0x753/0x980 [snd_pcm]
- [<ffffffff80209b36>] ? __switch_to+0x226/0x270
- [<ffffffff80475407>] ? thread_return+0x30/0x1f9
- [<ffffffff8024a032>] ? hrtimer_cancel+0x12/0x20
- [<ffffffff80476710>] ? do_nanosleep+0x30/0xb0
- [<ffffffff8024a0e0>] ? hrtimer_nanosleep+0xa0/0x130
- [<ffffffff802ddd8b>] ? compat_sys_ioctl+0x19b/0x3e0
- [<ffffffff8024d3bb>] ? getnstimeofday+0x5b/0xe0
- [<ffffffff80266b56>] ? audit_syscall_entry+0x166/0x190
- [<ffffffff80227266>] ? cstar_dispatch+0x7/0x26
+> > Plus static tools like Jiri is working on are very useful as 
+> > well. I think Coverty does that too and it's a pity we dont have 
+> > free tools for that. In fact Covery will sweep clean the kernel 
+> > of such bugs, giving OSS tools like 'stanse' the false 
+> > impression that there are no such bugs. There are such bugs - 
+> > there's a constant influx of them. So please work on this, it 
+> > looks very useful.
+> 
+> What's "this" in this context?
 
-The log is virtually flooded with these messages until I interrupt 
-mplayer.
+this == stanse, the static code analyzing thing Jiri mentioned he is 
+working on. The webpage says it will be under the GPL - that's good. 
+Jiri, any release date for the source code?
 
-I'd be graceful for any help.
-
-Greetings,
-Piotr
-
+	Ingo
