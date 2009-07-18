@@ -1,101 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbZGRKm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932566AbZGRKry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbZGRKm6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 06:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758129AbZGRKm4
+	id S932566AbZGRKry (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 06:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758157AbZGRKrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 06:42:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45831 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758080AbZGRKmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 06:42:55 -0400
-Date: Sat, 18 Jul 2009 12:41:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Ian.Campbell@eu.citrix.com, jeremy@goop.org, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       benh@kernel.crashing.org, tony.luck@intel.com, x86@kernel.org,
-       beckyb@kernel.crashing.org, joerg.roedel@amd.com
-Subject: Re: [00/15] swiotlb cleanup
-Message-ID: <20090718104101.GA27239@elte.hu>
-References: <1247234512.4002.417.camel@zakaz.uk.xensource.com> <20090710141248.GE26264@elte.hu> <20090713131157V.fujita.tomonori@lab.ntt.co.jp> <20090713181558B.fujita.tomonori@lab.ntt.co.jp>
+	Sat, 18 Jul 2009 06:47:51 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:45443 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751771AbZGRKrv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 06:47:51 -0400
+Date: Sat, 18 Jul 2009 11:47:48 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@cam.ac.uk>,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH] hwmon: Add WM835x PMIC hardware  monitoring driver
+Message-ID: <20090718104747.GA11121@opensource.wolfsonmicro.com>
+References: <1247862795-22547-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20090718111712.78771b36@hyperion.delvare> <20090718095917.GA10160@opensource.wolfsonmicro.com> <20090718123951.34c776ca@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090713181558B.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090718123951.34c776ca@hyperion.delvare>
+X-Cookie: Are you a turtle?
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jul 18, 2009 at 12:39:51PM +0200, Jean Delvare wrote:
+> On Sat, 18 Jul 2009 10:59:17 +0100, Mark Brown wrote:
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > The reason it's formatted like that is that the AUXADC input names match
+> > the names of the supplies that are being monitored so the second parameter
+> > is also used to provide a label to userspace.
 
-> On Mon, 13 Jul 2009 13:20:22 +0900
-> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > On Fri, 10 Jul 2009 16:12:48 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > > functionality and reimplemented the surrounding infrastructure in 
-> > > > terms of that (and incorporating our additional requirements). I 
-> > > > prototyped this (it is currently unworking, in fact it seems to 
-> > > > have developed rather a taste for filesystems :-() but the 
-> > > > diffstat of my WIP patch is:
-> > > >
-> > > >          arch/x86/kernel/pci-swiotlb.c |    6 
-> > > >          arch/x86/xen/pci-swiotlb.c    |    2 
-> > > >          drivers/pci/xen-iommu.c       |  385 ++++++++++++++++++++++++++++++++++++++++--
-> > > >          include/linux/swiotlb.h       |   12 +
-> > > >          lib/swiotlb.c                 |   10 -
-> > > >          5 files changed, 385 insertions(+), 30 deletions(-)
-> > > >
-> > > > where a fair number of the lines in xen-iommu.c are copies of 
-> > > > functions from swiotlb.c with minor modifications. As I say it 
-> > > > doesn't work yet but I think it's roughly indicative of what such 
-> > > > an approach would look like. I don't like it much but am happy to 
-> > > > run with it if it looks to be the most acceptable approach. [...]
-> > > 
-> > > +400 lines of code to avoid much fewer lines of generic code impact 
-> > > on the lib/swiotlb.c side sounds like a bad technical choice to me. 
-> > 
-> > The amount of code is not the point. The way to impact on the
-> > lib/swiotlb.c is totally wrong from the perspective of the kernel
-> > design; it uses architecture code in the very original (xen) way.
-> 
-> btw, '+400 lines of code to avoid much fewer lines of generic code
-> impact on the lib/swiotlb.c' doesn't sound true to me.
-> 
-> Here is a patch in the way that Xen people want to do:
-> 
-> http://patchwork.kernel.org/patch/26343/
-> 
-> ---
->  arch/x86/Kconfig                 |    4 +
->  arch/x86/include/asm/io.h        |    2 +
->  arch/x86/include/asm/pci_x86.h   |    1 +
->  arch/x86/include/asm/xen/iommu.h |   12 ++
->  arch/x86/kernel/pci-dma.c        |    3 +
->  arch/x86/pci/Makefile            |    1 +
->  arch/x86/pci/init.c              |    6 +
->  arch/x86/pci/xen.c               |   51 +++++++
->  drivers/pci/Makefile             |    2 +
->  drivers/pci/xen-iommu.c          |  271 ++++++++++++++++++++++++++++++++++++++
-> 
-> Even with the way that Xen people want to do, 
-> drivers/pci/xen-iommu.c is about 300 lines. And my patchset 
-> removes the nice amount of lines for dom0 support. I don't see 
-> much difference wrt lines.
+> This isn't how I read the code. I see a look-up table for labels, so the
+> macro implementation is just a detail which shouldn't matter.
 
-ok, that kind of impact looks reasonable. If we are wrong and the 
-Xen model becomes duplicated anywhere else it can still be 
-generalized into core swiotlb code.
+Oh, yes, you're right.  Originally I'd implemented it the way I describe
+but changed the code later - I'd forgotten that I'd done so when
+replying to your mail.
 
-	Ingo
+I'll send a revised version out on Monday.
