@@ -1,93 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbZGRPJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbZGRPJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752742AbZGRPJJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 11:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZGRPJI
+	id S1752971AbZGRPJU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 11:09:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZGRPJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 11:09:08 -0400
-Received: from mail-pz0-f195.google.com ([209.85.222.195]:51218 "EHLO
-	mail-pz0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752165AbZGRPJH (ORCPT
+	Sat, 18 Jul 2009 11:09:17 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35246 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752817AbZGRPJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 11:09:07 -0400
-X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Jul 2009 11:09:06 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sB4lNDeQlF48evHc6mf7dz2jlVkYC+4qUNyxZlsCieKeOpyEzp6AZG0Vq8QpimAARz
-         VgDQuYckiUzO/cRmbla18LJd6UO2yPh1FzUaJN9Pwr7zc+nlcieBnYtlaOYnOufy4DnX
-         pLeJFheoc8Nnj2owotcPkChckEmn6JZ0NYlDw=
-Date: Sun, 19 Jul 2009 00:00:01 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 2/2] kvm: use kvm_get_gdt() and kvm_read_ldt()
-Message-ID: <20090718150000.GA11279@localhost.localdomain>
-References: <20090718145830.GA11275@localhost.localdomain>
+	Sat, 18 Jul 2009 11:09:13 -0400
+X-Sasl-enc: 6m7gJmETK0ZWf9ps+cL/g7oto0hnT6UCmWsppk+/fLHu 1247929752
+Date: Sat, 18 Jul 2009 12:09:09 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] nvram: Fix root triggerable integer overflow crash
+Message-ID: <20090718150909.GA1191@khazad-dum.debian.net>
+References: <200907180256.45934.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090718145830.GA11275@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200907180256.45934.mb@bu3sch.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use kvm_get_gdt() and kvm_read_ldt() to reduce inline assembly code.
+On Sat, 18 Jul 2009, Michael Buesch wrote:
+> This bug probably is exploitable by overwriting the function return address or something
+> like that. But let's hope there's no distribution out there with user write permissions
+> on the /dev/nvram node. So it's probably only exploitable by root.
 
-Cc: Avi Kivity <avi@redhat.com>
-Cc: kvm@vger.kernel.org
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
- arch/x86/kvm/svm.c |    6 +++---
- arch/x86/kvm/x86.c |    5 ++---
- 2 files changed, 5 insertions(+), 6 deletions(-)
+I have seen setups with group-writeable /dev/nvram to support some (old!)
+thinkpad utilities.
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 71510e0..c7c6234 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -263,7 +263,7 @@ static void svm_hardware_enable(void *garbage)
- 
- 	struct svm_cpu_data *svm_data;
- 	uint64_t efer;
--	struct desc_ptr gdt_descr;
-+	struct descriptor_table gdt_descr;
- 	struct desc_struct *gdt;
- 	int me = raw_smp_processor_id();
- 
-@@ -283,8 +283,8 @@ static void svm_hardware_enable(void *garbage)
- 	svm_data->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
- 	svm_data->next_asid = svm_data->max_asid + 1;
- 
--	asm volatile ("sgdt %0" : "=m"(gdt_descr));
--	gdt = (struct desc_struct *)gdt_descr.address;
-+	kvm_get_gdt(&gdt_descr);
-+	gdt = (struct desc_struct *)gdt_descr.base;
- 	svm_data->tss_desc = (struct kvm_ldttss_desc *)(gdt + GDT_ENTRY_TSS);
- 
- 	rdmsrl(MSR_EFER, efer);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 38d9b53..8d32333 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -122,13 +122,12 @@ unsigned long segment_base(u16 selector)
- 	if (selector == 0)
- 		return 0;
- 
--	asm("sgdt %0" : "=m"(gdt));
-+	kvm_get_gdt(&gdt);
- 	table_base = gdt.base;
- 
- 	if (selector & 4) {           /* from ldt */
--		u16 ldt_selector;
-+		u16 ldt_selector = kvm_read_ldt();
- 
--		asm("sldt %0" : "=g"(ldt_selector));
- 		table_base = segment_base(ldt_selector);
- 	}
- 	d = (struct desc_struct *)(table_base + (selector & ~7));
+Even if it cannot be exploited for more than a DoS, IMO that's still bad
+enough to warrant fixing this also on stable kernels if they are vulnerable.
+So, does the fix also apply to 2.6.27+ ?  If it does, please send it to
+stable@kernel.org as well.
+
 -- 
-1.6.0.6
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
