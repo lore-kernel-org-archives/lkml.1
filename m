@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932413AbZGRHAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932454AbZGRHGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932413AbZGRHAK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 03:00:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932317AbZGRHAJ
+	id S932454AbZGRHGr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 03:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932323AbZGRHGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 03:00:09 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:35451 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932268AbZGRHAI (ORCPT
+	Sat, 18 Jul 2009 03:06:45 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:46158 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932317AbZGRHGo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 03:00:08 -0400
-Message-ID: <4A6172F0.60707@davidnewall.com>
-Date: Sat, 18 Jul 2009 16:30:00 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Sat, 18 Jul 2009 03:06:44 -0400
+Date: Sat, 18 Jul 2009 09:06:43 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Dick Streefland <dick@streefland.net>, Randy Dunlap <rdunlap@xenotime.net>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
+Message-ID: <20090718070643.GA7703@merkur.ravnborg.org>
+References: <20090624114607.GA10817@streefland.net> <20090624133148.GA12878@streefland.net> <20090629025146.GA5998@cr0.nay.redhat.com> <20090629113613.GA6853@streefland.net> <20090709023855.GA5648@cr0.nay.redhat.com> <20090709082651.GA6165@streefland.net> <20090710075530.GB6263@cr0.nay.redhat.com> <20090710095432.GA9721@streefland.net> <20090717211703.GF7080@merkur.ravnborg.org> <20090717230859.GB10171@streefland.net>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Regression impacts ServeRAID II on IBM xSeries 5500
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090717230859.GB10171@streefland.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Fujita-san,
+On Sat, Jul 18, 2009 at 01:08:59AM +0200, Dick Streefland wrote:
+> On Friday 2009-07-17 23:17, Sam Ravnborg wrote:
+> | Dick - I lost the original patch.
+> | Can you please resend.
+> | 
+> | In the changelog please include the information that
+> | you tested this with relevant grep versions.
+> 
+> Sure, here it is:
+> 
+> ======================================================================
+> 
+> I've rewritten the extract-ikconfig script to extract the kernel
+> configuration from a kernel compiled with CONFIG_IKCONFIG. The main
+> motivation for the rewrite was to remove the dependency on the
+> external C program binoffset.c, which is compiled on the initial run.
+> 
+> The binoffset executable is invoked with a relative path, which means
+> that the old script can only be run from the top of the kernel tree,
+> and only when you have write permission in the scripts directory.
+> The new script uses tr/grep/tail/zcat only, and can be invoked from
+> anywhere. The binoffset.c program has been removed. This script
+> requires GNU grep 2.5 (released 2002-03-13) or higher, because the -o
+> option was introduced in that version.
+> 
+> Signed-off-by: Dick Streefland <dick@streefland.net>
 
-This is my first time reporting a regression.  I hope I'm doing it right.
+Applied to kbuild-next.git.
 
-According to "git bisect," your patch
-10db10d144c0248f285242f79daf6b9de6b00a62 is the first bad commit before
-a regression which affects my ServeRAID II controller.  I get segfault
-running ipssend, which is the program used to interrogate and configure
-the SCSI RAID controller.
-
-    ipssend[5949]: segfault at 20202020 ip b7ece8b1 sp bfce1d1c error 6 in libc-2.9.so[b7e55000+15c000]
-      
-
-Here's what git output on the final bisect:
-
-    commit 10db10d144c0248f285242f79daf6b9de6b00a62
-    Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-    Date:   Fri Aug 29 12:32:18 2008 +0200
-
-        sg: convert the indirect IO path to use the block layer
-        
-        This patch converts the indirect IO path (including mmap IO and old
-        struct sg_header) to use the block layer functions (blk_get_request,
-        blk_execute_rq_nowait, blk_rq_map_user, etc) instead of
-        scsi_execute_async().
-        
-        [Jens: fixed compile error with SCSI logging enabled]
-        
-        Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-        Signed-off-by: Douglas Gilbert <dougg@torque.net>
-        Cc: Mike Christie <michaelc@cs.wisc.edu>
-        Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-        Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-
-    :040000 040000 a2b5d80fb0a666b49d4bdfc2de3aa15c9d8b1ec7 84a927a0964a616313deb410a1da60dd22e2dc13 M    drivers
-      
-
-My machine and assistance is at your disposal.  Rather than guess what
-information you want: what can I tell you?
-
-Regards,
-
-David
+	Sam
