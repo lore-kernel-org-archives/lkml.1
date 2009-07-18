@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZGRX4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZGSAGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbZGRX4S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 19:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZGRX4S
+	id S1754048AbZGSAGI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 20:06:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZGSAGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 19:56:18 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45090 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751272AbZGRX4R (ORCPT
+	Sat, 18 Jul 2009 20:06:07 -0400
+Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:61499 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753810AbZGSAGH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 19:56:17 -0400
-X-Sasl-enc: m5kdKi9PYy7WvqEb2oV4Cx3EQOIqoQ5TlsDUWyo8emIK 1247961376
-Date: Sat, 18 Jul 2009 20:56:10 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>, Jouni Malinen <j@w1.fi>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Stephen Chen <Stephen.Chen@atheros.com>
-Subject: Re: Generic events for wake up from S1-S4
-Message-ID: <20090718235609.GC25343@khazad-dum.debian.net>
-References: <43e72e890907141511h70a0a987g57cb26e23e5824a9@mail.gmail.com>
- <20090714235332.GA1552@ucw.cz>
- <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com>
- <43e72e890907151100j37feb30av7281d09960ca5db2@mail.gmail.com>
- <20090718103756.GA11381@elf.ucw.cz>
- <43e72e890907181302j600506d5oc208167206c44745@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <43e72e890907181302j600506d5oc208167206c44745@mail.gmail.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sat, 18 Jul 2009 20:06:07 -0400
+X-Greylist: delayed 355 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Jul 2009 20:06:07 EDT
+Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting of frozen
+ tasks really
+From: Nathan Lynch <ntl@pobox.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Matt Helsley <matthltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@tuxonice.net>,
+       stable@kernel.org, containers@lists.linux-foundation.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <1247921791.6597.5.camel@laptop>
+References: <20090717121545.489258927@linutronix.de>
+ <20090717122103.225652146@linutronix.de> <1247833910.15751.61.camel@twins>
+ <20090717152235.GA5878@count0.beaverton.ibm.com>
+ <1247849254.6522.75.camel@laptop>
+ <1247864134.17553.30.camel@localhost.localdomain>
+ <1247921791.6597.5.camel@laptop>
+Content-Type: text/plain
+Date: Sat, 18 Jul 2009 18:59:55 -0500
+Message-Id: <1247961595.5256.63.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-Pobox-Relay-ID: 20A4DE8E-73F7-11DE-8A1C-AEF1826986A2-04752483!a-pb-sasl-sd.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Jul 2009, Luis R. Rodriguez wrote:
-> Hm yeah, but I doubt someone will do that, generally we'd get one wake
-> up event. Can't we just report the first one and ignore the rest?
-
-Well, I'd say keeping it simple is best, here.  What if you ignore the more
-interesting wakeup events by chance (and it is really up to userspace to
-know what it considers interesting...)?  IMHO, just issue as many
-notifications as needed, let userspace filter it if it wants.
-
-But if you guys are talking about something really generic, shouldn't it
-also provide the important "why" along with the "who"?
-
-Even for the most common cases, the "why" is useful: userspace may well want
-to run special routines when it wakes up because of WoL and WoW (instead of
-a key press, lid open or mouse movement...).
-
-When you factor in wakeups caused by platform alarms, well, the "why"
-becomes even more interesting.
-
-> > What about simply reporting "wake event happened on this device" and
-> > doing that for all the devices?
+On Sat, 2009-07-18 at 14:56 +0200, Peter Zijlstra wrote:
+> On Fri, 2009-07-17 at 15:55 -0500, Nathan Lynch wrote:
+> > On Fri, 2009-07-17 at 18:47 +0200, Peter Zijlstra wrote:
+> > > On Fri, 2009-07-17 at 08:22 -0700, Matt Helsley wrote:
+> > > 
+> > > > The job scheduler in question does not use FROZEN as a transient state and
+> > > > does not use checkpoint/restart at all since c/r is still a work in progress.
+> > 
+> > Right, the job scheduler uses the cgroup freezer as a mechanism to
+> > preempt a low priority job for a higher priority job.  (It had used
+> > SIGSTOP in the past.)  So in this scenario a frozen cgroup may remain in
+> > that state for a while.  Load average is consulted as a measure of
+> > system utilization.
 > 
-> That's fine too. Just think it would be nice to be more specific if possible.
+> I think that this is an utterly broken use for it, if you want something
+> like that make a signal cgroup or something and deliver SIGSTOP to all
+> of them.
+> 
+> In other words, why is the freezer any better than the SIGSTOP approach?
 
-A generic way for a device (of any sort, not just network devices!) to
-report that they just issued a system wakeup message, as well as the reason
-it did that seems like a good way to do it to me.
+Documentation/cgroups/freezer-subsystem.txt happens to document this use
+case and the disadvantages of SIGSTOP/SIGCONT.  Does that change your
+opinion at all?
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+
+> > > > Even when used for power management it seems wrong to count frozen tasks
+> > > > towards the loadavg since they aren't using CPU time or waiting for IO.
+> > > 
+> > > You're abusing it for _WHAT_?
+> > 
+> > I think Matt was referring to system-wide suspend/resume/hibernate, not
+> > a behavior of the job scheduler, if that's your concern.
+> 
+> I understood he referred to the crazy use-case you mentioned above, IMHO
+> frozen should be a temporary state used for things like
+> snapshot/migrate.
+
+But snapshot (or checkpoint) and migration aren't possible with mainline
+at this time.  As far as I know, the use case to which you object is the
+primary use of the cgroup freezer on production systems.
+
+
