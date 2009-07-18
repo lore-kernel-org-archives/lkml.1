@@ -1,81 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZGRSZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZGRS0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbZGRSZN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 14:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZGRSZM
+	id S1753449AbZGRS0r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 14:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbZGRS0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 14:25:12 -0400
-Received: from mail-vw0-f173.google.com ([209.85.212.173]:58390 "EHLO
-	mail-vw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751371AbZGRSZL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 14:25:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=il2byALBq2/zpyCaxnpdKD8rsm1fDUDRCp0V2zDSZ+ncd7LPRkK3q0q2z48L0RK4g7
-         LbAFooIs0A8L+4xOwtydRUjAcqXCBsV8TF26bT9iNDdYmlpsdj1AZBaazXTxkQmNe00a
-         5pbcwQdBQbAW/LFoPO4QquYi1LiadvnoPpPzE=
+	Sat, 18 Jul 2009 14:26:47 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:51907 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751526AbZGRS0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 14:26:46 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Jul 2009 14:26:45 EDT
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: "floppy: fix hibernation" causes error on resume from ram
+Date: Sat, 18 Jul 2009 20:19:54 +0200
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <4A620F3E.8080900@tuffmail.co.uk>
+In-Reply-To: <4A620F3E.8080900@tuffmail.co.uk>
 MIME-Version: 1.0
-In-Reply-To: <35e3b0c00907170333p79c5387bk72f9df453bc0ec83@mail.gmail.com>
-References: <35e3b0c00907170333p79c5387bk72f9df453bc0ec83@mail.gmail.com>
-Date: Sat, 18 Jul 2009 11:25:10 -0700
-X-Google-Sender-Auth: 3f4bc7fa59292f34
-Message-ID: <e9c3a7c20907181125j2df722fdh2fd4f50ad7d74d48@mail.gmail.com>
-Subject: Re: Intended usage of the dmaengine
-From: Dan Williams <dan.j.williams@intel.com>
-To: Per Forlin <per.lkml@gmail.com>
-Cc: haavard.skinnemoen@atmel.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907182019.57909.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 17, 2009 at 3:33 AM, Per Forlin<per.lkml@gmail.com> wrote:
-> Hi,
+On Saturday 18 July 2009 20:06:54 Alan Jenkins wrote:
+> Thanks for the hibernation fix!  Until recently I thought my floppy was
+> just dead.  Unfortunately, the fix seems to cause me errors on resume
+> from suspend to ram.  The floppy works fine afterwards, it just spams
+> the log.
 >
-> I work with Linux in embedded systems and I got more interested in
-> dmaengine after Haavard Skinnemoen added the DMA SLAVE support. DMA
-> SLAVE opens up the dmaengine for embedded users and I wonder if there
-> is more room for support towards the embedded world. I've made a test
-> implementation of the dmaengine for our DMAC. Some parts that weren't
-> supported by the dmaengine had to be exported by the driver code. A
-> similar example of this is cyclic DMA jobs in dw_dmac.h.
-> Is this the preferable way to handle it? Or could this functionality
-> be added to the dmaengine instead?
+> On 2.6.30 there were no errors, and the floppy survived suspend-to-ram.
+> So I guess the quick fix would be to only do the fix-up on resume from
+> hibernation, and not suspend-to-ram.
+
+My machine has no suspend-to-RAM so I haven't tested it.
+
+That would be probably the correct fix. But how to do it? AFAIK, there's only 
+one suspend() and one resume() for everything. And that looks very wrong as 
+resume-from-hibernation is fundamentally different from resume-from-RAM.
+
 >
-> Additional support that I would like to have in the "struct dma_engine" is
-> * stopping the dma channel transfer
-> * continue a stopped transfer
-> * PER2PER transfers (dma transfer between two peripherals)
-> * dma transfers from phy mem to per, and per to phy mem
-> * function to return the transfer count of an active dma transfer
-> (useful when the dma channel has been stopped deliberately)
+> Thanks
+> Alan
 >
-> I am willing to propose and contribute updates to the dmaengine
-> regarding this matter. With this email I would like to check with you
-> whether these types of new support are welcome in the dmaengine.
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256645]
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256647] floppy driver state
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256649] -------------------
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256652] now=4305315874 last
+> interrupt=4303125175 diff=2190699 last called handler=ffffffffa00a64d0
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256655] timeout_message=lock
+> fdc Jul 18 15:27:23 alan-desktop kernel: [34795.256657] last output bytes:
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256659]  8 80 4295201276 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256662]  8 80 4295201276 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256664]  8 80 4295201276 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256666]  8 80 4295201276 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256668]  8 80 4297332499 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256669]  8 80 4297332499 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256671]  8 80 4297332499 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256673]  8 80 4297332499 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256675]  8 80 4298652310 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256677]  8 80 4298652310 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256679]  8 80 4298652310 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256681]  8 80 4298652310 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256683]  8 80 4299614961 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256685]  8 80 4299614961 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256687]  8 80 4299614961 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256689]  8 80 4299614961 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256691]  8 80 4303125175 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256693]  8 80 4303125175 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256695]  8 80 4303125175 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256697]  8 80 4303125175 Jul 18
+> 15:27:23 alan-desktop kernel: [34795.256699] last result at 4303125175
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256701] last redo_fd_request
+> at 4303125175
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256703]
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256709] status=0
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256711] fdc_busy=1
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256713]
+> do_floppy=ffffffffa00a64d0
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256715] cont=ffffffffa00ad8c0
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256717] current_req=(null)
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256719] command_status=-1
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256720]
+> Jul 18 15:27:23 alan-desktop kernel: [34795.256829] floppy0: floppy
+> timeout called
+> Jul 18 15:27:23 alan-desktop kernel: [34795.259455] Restarting tasks ...
+> done.
 
-I had a similar conversation with Ira Snyder recently as his DMA_SLAVE
-implementation required architecture specific extensions.  The problem
-is that once you step outside pure memory-to-memory offload the
-implementation rapidly gets architecture specific and quirky very
-quickly.  I am not convinced that it is worth the effort to shoehorn
-functionality that is by definition architecture specific into a
-generic api.  Outside of providing a channel allocation scheme and a
-capability for maintaining some private context for a "slave-dma"
-channel I do not see a consistent role for dmaengine to play in these
-embedded usage models.  You can see that the ARM/pxa developers have
-arrived at a similar conclusion and are not leveraging dmaengine for
-their channel management.
 
-So I would say keep those bits you mentioned above architecture
-specific for now, if we start to see generic cross-architecture
-duplication then we can think about up-leveling the implementation of
-those pieces.
 
-Regards,
-Dan
+-- 
+Ondrej Zary
