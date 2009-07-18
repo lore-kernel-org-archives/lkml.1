@@ -1,45 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZGROWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbZGROWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbZGROWB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 10:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZGROV6
+	id S1752527AbZGROWR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 10:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZGROWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 10:21:58 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53092 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbZGROV5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 10:21:57 -0400
-Date: Sat, 18 Jul 2009 16:21:56 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       Andreas Dilger <adilger@sun.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: How to handle >16TB devices on 32 bit hosts ??
-Message-ID: <20090718142156.GC2682@basil.fritz.box>
-References: <19041.4714.686158.130252@notabene.brown> <20090718043155.GI4231@webber.adilger.int> <871voewm6y.fsf@basil.nowhere.org> <20090718065213.GK4231@webber.adilger.int> <20090718074811.GA2682@basil.fritz.box> <20090718134946.GA25546@mit.edu>
+	Sat, 18 Jul 2009 10:22:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53888 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752408AbZGROWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 10:22:15 -0400
+Date: Sat, 18 Jul 2009 14:21:31 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1247725694-6082-1-git-send-email-fweisbec@gmail.com>
+References: <1247725694-6082-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:sched/core] sched: Drop the need_resched() loop from cond_resched()
+Message-ID: <tip-e7aaaa6934636d7a6cadd9e2a05250fbb6a34f65@git.kernel.org>
+Git-Commit-ID: e7aaaa6934636d7a6cadd9e2a05250fbb6a34f65
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090718134946.GA25546@mit.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 18 Jul 2009 14:21:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We don't have to rewrite fsck; most of the framework for supporting an
-> run-length-conding for compressed bitmaps is already in patches that
-> add > 32-bit block numbers to e2fsprogs; we've just been more focused
-> on getting 64-bit block numbers support merged than implementing
-> compressed bitmaps, but it's only one file that would need to be
-> added, and we might be able to steal the compressed bitmap support
-> from xfsprogs --- which does this already.
+Commit-ID:  e7aaaa6934636d7a6cadd9e2a05250fbb6a34f65
+Gitweb:     http://git.kernel.org/tip/e7aaaa6934636d7a6cadd9e2a05250fbb6a34f65
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Thu, 16 Jul 2009 15:44:29 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 18 Jul 2009 15:51:38 +0200
 
-There are regular reports of xfs_repair failing on 32bit,
-even on volumes far smaller than 16TB.
+sched: Drop the need_resched() loop from cond_resched()
+
+The schedule() function is a loop that reschedules the current
+task while the TIF_NEED_RESCHED flag is set:
+
+void schedule(void)
+{
+need_resched:
+	/* schedule code */
+	if (need_resched())
+		goto need_resched;
+}
+
+And cond_resched() repeat this loop:
+
+do {
+	add_preempt_count(PREEMPT_ACTIVE);
+	schedule();
+	sub_preempt_count(PREEMPT_ACTIVE);
+} while(need_resched());
+
+This loop is needless because schedule() already did the check
+and nothing can set TIF_NEED_RESCHED between schedule() exit
+and the loop check in need_resched().
+
+Then remove this needless loop.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1247725694-6082-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/sched.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 03f7e3f..4c5ee84 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6618,11 +6618,9 @@ static void __cond_resched(void)
+ 	 * PREEMPT_ACTIVE, which could trigger a second
+ 	 * cond_resched() call.
+ 	 */
+-	do {
+-		add_preempt_count(PREEMPT_ACTIVE);
+-		schedule();
+-		sub_preempt_count(PREEMPT_ACTIVE);
+-	} while (need_resched());
++	add_preempt_count(PREEMPT_ACTIVE);
++	schedule();
++	sub_preempt_count(PREEMPT_ACTIVE);
+ }
  
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+ int __sched _cond_resched(void)
