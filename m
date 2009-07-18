@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbZGRPXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZGRPXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149AbZGRPXW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 11:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZGRPXV
+	id S1753219AbZGRPXa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 11:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZGRPX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 11:23:21 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:50537 "EHLO mgw1.diku.dk"
+	Sat, 18 Jul 2009 11:23:26 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:50564 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752501AbZGRPXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 11:23:20 -0400
-Date: Sat, 18 Jul 2009 17:22:41 +0200 (CEST)
+	id S1752501AbZGRPXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 11:23:23 -0400
+Date: Sat, 18 Jul 2009 17:23:10 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/scsi: possible double spin_lock_irqsave
-Message-ID: <Pine.LNX.4.64.0907181722060.26792@ask.diku.dk>
+To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/6] drivers/char: convert nested spin_lock_irqsave to
+ spin_lock
+Message-ID: <Pine.LNX.4.64.0907181722430.26792@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,11 +23,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-If both the test on rport and the call to get_device fail, then the lock is
-already held.  The re-lock is thus moved up into the two branches.
-
-On the other hand if kref_put should not be called with the lock held then
-something else should be done.
+If spin_lock_irqsave is called twice in a row with the same second
+argument, the interrupt state at the point of the second call overwrites
+the value saved by the first call.  Indeed, the second call does not need
+to save the interrupt state, so it is changed to a simple spin_lock.
 
 The semantic match that finds this problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -46,28 +45,22 @@ expression flags;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/scsi/ibmvscsi/ibmvfc.c      |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ drivers/char/generic_serial.c       |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 166d964..d2b88bd 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -4278,15 +4278,16 @@ static void ibmvfc_rport_add_thread(struct work_struct *work)
- 				if (!rport) {
- 					spin_unlock_irqrestore(vhost->host->host_lock, flags);
- 					ibmvfc_tgt_add_rport(tgt);
-+					spin_lock_irqsave(vhost->host->host_lock, flags);
- 				} else if (get_device(&rport->dev)) {
- 					spin_unlock_irqrestore(vhost->host->host_lock, flags);
- 					tgt_dbg(tgt, "Setting rport roles\n");
- 					fc_remote_port_rolechg(rport, tgt->ids.roles);
- 					put_device(&rport->dev);
-+					spin_lock_irqsave(vhost->host->host_lock, flags);
- 				}
+diff --git a/drivers/char/generic_serial.c b/drivers/char/generic_serial.c
+index 9e4e569..ca07fc4 100644
+--- a/drivers/char/generic_serial.c
++++ b/drivers/char/generic_serial.c
+@@ -564,9 +564,9 @@ void gs_close(struct tty_struct * tty, struct file * filp)
+ 	 * line status register.
+ 	 */
  
- 				kref_put(&tgt->kref, ibmvfc_release_tgt);
--				spin_lock_irqsave(vhost->host->host_lock, flags);
- 				break;
- 			}
- 		}
+-	spin_lock_irqsave(&port->driver_lock, flags);
++	spin_lock(&port->driver_lock);
+ 	port->rd->disable_rx_interrupts (port);
+-	spin_unlock_irqrestore(&port->driver_lock, flags);
++	spin_unlock(&port->driver_lock);
+ 	spin_unlock_irqrestore(&port->port.lock, flags);
+ 
+ 	/* close has no way of returning "EINTR", so discard return value */
