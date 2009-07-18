@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758183AbZGRLHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932601AbZGRLUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758183AbZGRLHh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 07:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbZGRLHg
+	id S932601AbZGRLUq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 07:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758177AbZGRLUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 07:07:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37625 "EHLO mx2.mail.elte.hu"
+	Sat, 18 Jul 2009 07:20:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60319 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752904AbZGRLHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 07:07:35 -0400
-Date: Sat, 18 Jul 2009 13:06:20 +0200
+	id S1758175AbZGRLUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 07:20:45 -0400
+Date: Sat, 18 Jul 2009 13:19:49 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>,
+To: Johannes Berg <johannes@sipsolutions.net>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, reif@earthlink.net,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       x86@kernel.org, tony.luck@intel.com, akpm@linux-foundation.org
-Subject: Re: [PATCH v2 0/8] sparc: use asm-generic/dma-mapping-common.h and
-	pci-dma-compat.h
-Message-ID: <20090718110620.GC27287@elte.hu>
-References: <4A5BD7B5.1010904@earthlink.net> <20090714103941B.fujita.tomonori@lab.ntt.co.jp> <20090714092354.GL19087@amd.com> <20090714.131224.205307048.davem@davemloft.net>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] wireless: wl12xx, fix lock imbalance
+Message-ID: <20090718111948.GD27287@elte.hu>
+References: <1247520266-32007-1-git-send-email-jirislaby@gmail.com> <1247521235.7178.1.camel@johannes.local> <4A5BAABF.9020708@gmail.com> <1247521789.7178.2.camel@johannes.local> <4A5BAC77.9010503@gmail.com> <1247522068.7178.4.camel@johannes.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090714.131224.205307048.davem@davemloft.net>
+In-Reply-To: <1247522068.7178.4.camel@johannes.local>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,60 +34,59 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
+* Johannes Berg <johannes@sipsolutions.net> wrote:
 
-> From: Joerg Roedel <joerg.roedel@amd.com>
-> Date: Tue, 14 Jul 2009 11:23:55 +0200
-> 
-> > On Tue, Jul 14, 2009 at 10:40:16AM +0900, FUJITA Tomonori wrote:
-> >> On Mon, 13 Jul 2009 20:56:21 -0400
-> >> Robert Reif <reif@earthlink.net> wrote:
-> >> 
-> >> > The bad address is within the kernel so it looks like
-> >> > it's catching a real bug.
-> >> > 
-> >> > cat kallsyms | grep f0007000
-> >> > f0007000 T trapbase_cpu3
-> >> > 
-> >> > WARNING: at lib/dma-debug.c:873 check_for_illegal_area+0xc8/0x100()
-> >> > esp ffd7ba30: DMA-API: device driver maps memory from kernel text or 
-> >> > rodata [addr=f0007000] [len=4096]
-> >> > Modules linked in: ext3 jbd sd_mod sun_esp esp_scsi scsi_transport_spi 
-> >> 
-> >> Ok, I looked at check_for_illegal_area() in dma-debug.
-> >> 
-> >> What check_for_illegal_area() does looks bogus to me with some of I/O
-> >> remapping hardware.
+> On Mon, 2009-07-13 at 23:51 +0200, Jiri Slaby wrote:
+> > On 07/13/2009 11:49 PM, Johannes Berg wrote:
+> > > On Mon, 2009-07-13 at 23:44 +0200, Jiri Slaby wrote:
+> > > 
+> > >>> I've had local hacks
+> > >>> many times to make sparse aware of mutexes, is there a reason they are
+> > >>> not annotated with __acquire(s)/__release(s) like spinlocks etc.?
+> > >>
+> > >> Mutexes are often locked/unlocked interprocedural which I think sparse
+> > >> can't do much about.
+> > > 
+> > > Well, you annotate those functions too, of course.
 > > 
-> > Can you be more specific about this one? 
-> > check_for_illegal_area() should not depend on any hardware 
-> > because all it does is checking the machine addresses to be 
-> > mapped.
+> > Sorry, I don't understand. What functions I annotate?
 > 
-> The check can't work properly on sparc32.
+> Well those that take the mutex, e.g.
 > 
-> Sparc32 always maps the kernel to a fixed physical location, and 
-> it therefore can execute in the identity mapping area of physical 
-> memory like where all the free pages and kmalloc areas live 
-> virtually.
+> void acquire_foo(struct foo *f)
+> {
+> 	mutex_lock(&f->mtx);
+> }
 > 
-> So if we free up some pages within the kernel image (because the 
-> memory is unused, for exmple that's what's happening here with the 
-> extra trap table pages on Robert's machine) we have pages in the 
-> free page pool that are located right inside of the kernel text, 
-> data, etc.
 > 
-> We'll thus need a way to turn off these checks somehow.  You could 
-> also augment this check by seeing if there is a backing page, and 
-> if so, whether it is PageReserved or not.  That's just one idea.
+> turns to
+> 
+> void acquire_foo(struct foo *f)
+> 	__acquires(f->mtx)
+> {
+> 	mutex_lock(&f->mtx);
+> }
+> 
+> johannes
 
-Hm, note, this sparc32 behavior might break certain aspects of 
-lockdep as well, see kernel/lockdep.c::static_obj(). You could get 
-spurious non-printing of 'trying to register non-static key'.
+Yes. And in fact 'nice' code wants to be either annotated explicitly 
+as 'I am taking locks', or should be balanced.
 
-I'm wondering why sparc32 frees from the middle of the kernel image. 
-The way architectures generally do it is to put freeable pages into 
-a separate section. That way it does not get mingled with the kernel 
-core image area (which stays nicely continuous).
+I was thinking about also using lockdep plus the function-graph 
+tracer for that (in the dynamic lock debugging department).
+
+It would work like this: __acquires()/__releases() would also emit 
+section markers like __lockfunc, and lockdep would warn about 
+functions that return with unbalanced locks, irqs or preempt counts 
+and do not declare themselves as locking related functions.
+
+This would help catch imbalances at their source.
+
+Plus static tools like Jiri is working on are very useful as well. I 
+think Coverty does that too and it's a pity we dont have free tools 
+for that. In fact Covery will sweep clean the kernel of such bugs, 
+giving OSS tools like 'stanse' the false impression that there are 
+no such bugs. There are such bugs - there's a constant influx of 
+them. So please work on this, it looks very useful.
 
 	Ingo
