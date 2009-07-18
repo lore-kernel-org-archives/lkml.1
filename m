@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753688AbZGRUFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbZGRULU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753688AbZGRUFP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 16:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZGRUFN
+	id S1753715AbZGRULU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 16:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbZGRULT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 16:05:13 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:35569 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753628AbZGRUFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 16:05:13 -0400
-From: Ferenc Wagner <wferi@niif.hu>
-To: linux-kernel@vger.kernel.org
-Cc: alan@lxorguk.ukuu.org.uk
-Subject: 2.6.31-rc3: replugging USB serial converter uses new device node
-Date: Sat, 18 Jul 2009 22:04:57 +0200
-Message-ID: <87zlb1u592.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 18 Jul 2009 16:11:19 -0400
+Received: from mail-pz0-f194.google.com ([209.85.222.194]:45905 "EHLO
+	mail-pz0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753664AbZGRULT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 16:11:19 -0400
+X-Greylist: delayed 68118 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Jul 2009 16:11:18 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=MYOZ9a8v+sBHAGLzCDxI2mNxufbl4JgLerpsRoxELE8hOyGPGiYBe1GE8V8a6JnSQo
+         0CDdMSwMCL3pIPjTHCbpB6wP5tCOi8U3z30JUyOuRjGMevTaChDagV2oHs3XQSi7qVgp
+         UPEPF98zShOo1q464wjaivEuovDWdXF2prhGE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090718103756.GA11381@elf.ucw.cz>
+References: <43e72e890907141511h70a0a987g57cb26e23e5824a9@mail.gmail.com> 
+	<20090714235332.GA1552@ucw.cz> <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com> 
+	<43e72e890907151100j37feb30av7281d09960ca5db2@mail.gmail.com> 
+	<20090718103756.GA11381@elf.ucw.cz>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Sat, 18 Jul 2009 13:02:52 -0700
+Message-ID: <43e72e890907181302j600506d5oc208167206c44745@mail.gmail.com>
+Subject: Re: Generic events for wake up from S1-S4
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>, Jouni Malinen <j@w1.fi>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Stephen Chen <Stephen.Chen@atheros.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Jul 18, 2009 at 3:37 AM, Pavel Machek<pavel@ucw.cz> wrote:
+> On Wed 2009-07-15 11:00:07, Luis R. Rodriguez wrote:
+>> On Wed, Jul 15, 2009 at 8:51 AM, Luis R. Rodriguez<mcgrof@gmail.com> wrote:
+>> > On Tue, Jul 14, 2009 at 4:53 PM, Pavel Machek<pavel@ucw.cz> wrote:
+>> >> On Tue 2009-07-14 15:11:45, Luis R. Rodriguez wrote:
+>> >>> I'm working on Wake-on-Wireless support for wireless right now [1].
+>> >>> Upon wake up I wanted to inform the kernel of the event which caused
+>> >>> the wake up but am not clear if there is a generic API for this. Mind
+>> >>> you, for WoW we'll need at least some AC power to the card so we'll
+>> >>> need to at least be in S3-Hot so we'll only need events for that for
+>> >>> now.
+>> >>>
+>> >>> Do we have some generic infrastructure to gather reasons for wake up
+>> >>> from S1-S4 and pass this to userspace yet?
+>> >>
+>> >> I do not think generic api exists...
+>>
+>> Going back to this topic -- any suggestions? Will a generic netlink
+>> family be OK? Or perhaps easier a udev event for some suitable
+>> existing parent ?
+>
+> Is "who woke me" information even relevant? Yes, it may be interesting
+> enough for printk, but... What will userspace do with that information?
 
-Since upgrading to 2.6.31-rc3 from 2.6.30, my ttyUSB device number
-keeps increasing on each replug.  Output of udevadm monitor:
+Splashy event notification thingies?
 
-==poff==
-UEVENT[1247946169.580772] remove   /devices/virtual/net/ppp0 (net)
-UDEV  [1247946169.589775] remove   /devices/virtual/net/ppp0 (net)
-==unplug==
-UEVENT[1247946186.700698] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB2/tty/ttyUSB2 (tty)
-UEVENT[1247946186.700737] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB2 (usb-serial)
-UEVENT[1247946186.700749] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
-UEVENT[1247946186.700760] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/usb_device/usbdev3.6 (usb_device)
-UEVENT[1247946186.700771] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
-UDEV  [1247946186.701535] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB2/tty/ttyUSB2 (tty)
-UDEV  [1247946186.705822] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB2 (usb-serial)
-UDEV  [1247946186.711662] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
-UDEV  [1247946186.715237] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/usb_device/usbdev3.6 (usb_device)
-UDEV  [1247946186.718872] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
-==replug==
-UEVENT[1247946199.654628] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
-UDEV  [1247946199.660946] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
-UEVENT[1247946199.661096] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
-UEVENT[1247946199.688206] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB3 (usb-serial)
-UEVENT[1247946199.688254] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB3/tty/ttyUSB3 (tty)
-UEVENT[1247946199.688266] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/usb_device/usbdev3.7 (usb_device)
-UDEV  [1247946199.710642] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
-UDEV  [1247946199.713898] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB3 (usb-serial)
-UDEV  [1247946199.729618] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/usb_device/usbdev3.7 (usb_device)
-UDEV  [1247946199.739566] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB3/tty/ttyUSB3 (tty)
-==pon==
-UEVENT[1247946268.571857] add      /devices/virtual/net/ppp0 (net)
-UDEV  [1247946268.593127] add      /devices/virtual/net/ppp0 (net)
+I was just trying to avoid verbose debug info for WoW upon wakeup and
+figured it be nice to report back through a generic interface.
 
-Dmesg is available at http://pastebin.com/d516e3e00.
--- 
-Regards,
-Feri.
+> Imagine WoW packet comes, 5msec later WoL packet comes, 5msec later
+> user opens the lid. You report WoW as wakeup reason, but it is
+> inherently "racy".
+
+Hm yeah, but I doubt someone will do that, generally we'd get one wake
+up event. Can't we just report the first one and ignore the rest?
+
+> What about simply reporting "wake event happened on this device" and
+> doing that for all the devices?
+
+That's fine too. Just think it would be nice to be more specific if possible.
+
+  Luis
