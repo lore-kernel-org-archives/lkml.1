@@ -1,120 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbZGRWo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZGRWpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753982AbZGRWo3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 18:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZGRWo3
+	id S1754004AbZGRWpY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 18:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZGRWpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 18:44:29 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:37750 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753841AbZGRWo1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 18:44:27 -0400
-Subject: Re: ext4 memory leak (was Re: [PATCH] x86: _edata should include
- all .data.* sections on X86_64)
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Alexey Fisher <bug-track@fisher-privat.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-ext4@vger.kernel.org
-In-Reply-To: <4A61CE59.3030905@fisher-privat.net>
-References: <84144f020907140019g511723dctb541f6333d1a082b@mail.gmail.com>
-	 <4A5C41C8.7040904@fisher-privat.net>
-	 <1247564356.28240.30.camel@pc1117.cambridge.arm.com>
-	 <1247565175.28240.37.camel@pc1117.cambridge.arm.com>
-	 <4A5C5A59.5080304@fisher-privat.net>
-	 <1247567499.28240.48.camel@pc1117.cambridge.arm.com>
-	 <4A5C5FD0.3020204@fisher-privat.net>
-	 <1247574390.28240.67.camel@pc1117.cambridge.arm.com>
-	 <20090715080336.GA4823@skywalker> <4A5D9939.3000500@fisher-privat.net>
-	 <20090718115556.GA31007@elte.hu>  <4A61CE59.3030905@fisher-privat.net>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Sat, 18 Jul 2009 23:44:16 +0100
-Message-Id: <1247957056.4236.20.camel@toshiba-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Jul 2009 22:44:17.0643 (UTC) FILETIME=[4866D3B0:01CA07F9]
+	Sat, 18 Jul 2009 18:45:23 -0400
+Received: from kroah.org ([198.145.64.141]:44259 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753925AbZGRWpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 18:45:22 -0400
+Date: Sat, 18 Jul 2009 15:32:50 -0700
+From: Greg KH <greg@kroah.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
+Subject: Re: vc: create vcs(a) devices for consoles
+Message-ID: <20090718223250.GB9857@kroah.com>
+References: <1247931257.29760.1.camel@yio.site>
+ <20090718160101.GA13346@kroah.com>
+ <ac3eb2510907180912u7b30d8actcfab15776fe2d99d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ac3eb2510907180912u7b30d8actcfab15776fe2d99d@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-07-18 at 15:30 +0200, Alexey Fisher wrote:
-> suddenly my kernel is not warning free... i have still warning about 
-> acpi_init, cpufreg, intel_gem and inoitfy on my PC and about firmware 
-> loader on my laptop. So i think there is still some job to do. I will 
-> report this warnings soon.
+On Sat, Jul 18, 2009 at 06:12:20PM +0200, Kay Sievers wrote:
+> On Sat, Jul 18, 2009 at 18:01, Greg KH<greg@kroah.com> wrote:
+> > On Sat, Jul 18, 2009 at 05:34:17PM +0200, Kay Sievers wrote:
+> >> From: Kay Sievers <kay.sievers@vrfy.org>
+> >> Subject: vc: create vcs(a) devices for consoles
+> >>
+> >> The buffer for the consoles are unconditionally allocated at
+> >> con_init() time, which miss the creation of the vcs(a) devices.
+> >>
+> >> Since 2.6.30, these devices are no longer created at open()
+> >> and removed on close(), but controlled by the lifetime of the
+> >> buffers.
+> >
+> > Is this a bug in .31-rc right now?  Should this make it into the final
+> > .31 release?
+> 
+> Yes, and in .30.
+> 
+> > And what caused this change, tty changes?  If so, it should go through
+> > Alan Cox's tree.
+> 
+> This change caused it:
+>   http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4995f8ef9d3aac72745e12419d7fbaa8d01b1d81
 
-Mine is not warning free either but they look like real leaks. There are
-also a few more leaks reported by Jaswinder.
+Ah, ok, I will queue it up.
 
-The inotify one was fixed but not in mainline yet (a fix was included in
-my kmemleak-fixes branch).
+thanks,
 
-What I get consistently:
-
-unreferenced object 0xf72a9a80 (size 64):
-  comm "swapper", pid 1, jiffies 4294892557
-  hex dump (first 32 bytes):
-    00 00 00 00 38 00 00 00 00 00 00 00 00 00 00 00  ....8...........
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-  backtrace:
-    [<c056aa8d>] kmemleak_alloc+0x3d/0x70
-    [<c01e234d>] __kmalloc+0x10d/0x210
-    [<c0351122>] kzalloc+0xb/0xd
-    [<c0351798>] acpi_add_single_object+0x609/0xe65
-    [<c03521c6>] acpi_bus_scan+0xfd/0x174
-    [<c07c1629>] acpi_scan_init+0xb5/0xd5
-    [<c07c140b>] acpi_init+0x21e/0x262
-    [<c010112b>] do_one_initcall+0x2b/0x160
-    [<c0799355>] kernel_init+0x150/0x1aa
-    [<c0103e57>] kernel_thread_helper+0x7/0x10
-    [<ffffffff>] 0xffffffff
-
-Every time I kill the X server (reported here -
-http://lkml.org/lkml/2009/7/8/422)
-
-unreferenced object 0xcb5a6600 (size 44):
-  comm "gdm", pid 5246, jiffies 4960
-  hex dump (first 32 bytes):
-    02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-    00 00 00 00 e4 b5 2d ca 90 4e 15 c0 83 14 00 00  ......-..N......
-  backtrace:
-    [<c056aa8d>] kmemleak_alloc+0x3d/0x70
-    [<c01e0be6>] kmem_cache_alloc+0x156/0x1a0
-    [<c01552f9>] alloc_pid+0x19/0x350
-    [<c013e6f0>] copy_process+0x800/0x1230
-    [<c013f18f>] do_fork+0x6f/0x370
-    [<c0101986>] sys_clone+0x36/0x40
-    [<c010319c>] sysenter_do_call+0x12/0x38
-    [<ffffffff>] 0xffffffff
-
-And quite a lot of these (also reported here -
-http://lkml.org/lkml/2009/7/9/110 - but the first one was fixed by
-Jaswinder and included in my kmemleak-fixes branch):
-
-unreferenced object 0xcb0166c0 (size 148):
-  comm "Xorg", pid 5251, jiffies 5784
-  hex dump (first 32 bytes):
-    ff ff ff ff 30 7f 98 c3 00 80 18 cb 90 80 18 cb  ....0...........
-    20 81 18 cb b0 81 18 cb 40 82 18 cb d0 82 18 cb   .......@.......
-  backtrace:
-    [<c056aa8d>] kmemleak_alloc+0x3d/0x70
-    [<c01e0be6>] kmem_cache_alloc+0x156/0x1a0
-    [<c0317bf0>] idr_pre_get+0x50/0x70
-    [<fa448ff4>] drm_gem_handle_create+0x24/0x90 [drm]
-    [<fa8b34ad>] i915_gem_create_ioctl+0x5d/0xb0 [i915]
-    [<fa4477c2>] drm_ioctl+0x192/0x3a0 [drm]
-    [<c01f8339>] vfs_ioctl+0x79/0x90
-    [<c01f849a>] do_vfs_ioctl+0x6a/0x5e0
-    [<c01f8a73>] sys_ioctl+0x63/0x70
-    [<c010319c>] sysenter_do_call+0x12/0x38
-    [<ffffffff>] 0xffffffff
-
--- 
-Catalin
-
+greg k-h
