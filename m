@@ -1,318 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752341AbZGRJRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753701AbZGRJcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752341AbZGRJRb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 05:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbZGRJRa
+	id S1753701AbZGRJcR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 05:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZGRJcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 05:17:30 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:43079 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750808AbZGRJR2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 05:17:28 -0400
-Date: Sat, 18 Jul 2009 11:17:12 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Jonathan Cameron <jic23@cam.ac.uk>,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH] hwmon: Add WM835x PMIC hardware monitoring
-  driver
-Message-ID: <20090718111712.78771b36@hyperion.delvare>
-In-Reply-To: <1247862795-22547-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1247862795-22547-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 18 Jul 2009 05:32:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40373 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751346AbZGRJcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 05:32:13 -0400
+Date: Sat, 18 Jul 2009 11:31:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Dominik Brodowski <linux@brodo.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Adding transition of CPU frequency counting
+	support to perfcounters
+Message-ID: <20090718093115.GB9142@elte.hu>
+References: <20090716.110834.886429911292889318.mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090716.110834.886429911292889318.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0005]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
 
-Sorry for the delay. Thanks Jonathan for the 1st review!
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
 
-On Fri, 17 Jul 2009 21:33:15 +0100, Mark Brown wrote:
-> This driver provides reporting of the status supply voltage rails
-> of the WM835x series of PMICs via the hwmon API.
+> Hi,
 > 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/hwmon/Kconfig           |   10 +++
->  drivers/hwmon/Makefile          |    1 +
->  drivers/hwmon/wm8350-hwmon.c    |  149 +++++++++++++++++++++++++++++++++++++++
->  drivers/mfd/wm8350-core.c       |    3 +
->  include/linux/mfd/wm8350/core.h |    6 ++
->  5 files changed, 169 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/hwmon/wm8350-hwmon.c
-
-Overall it looks very good and I really don't have much to say. Only
-minor things, see below.
-
+> I'm trying to add transition of CPU frequency counting support to perfcounters.
+> If perf can count freq transition, this will be more useful
+> because frequencies of CPUs are dynamic things today.
+> And there's no way to count freq transitions per process level.
 > 
-> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-> index 2d50166..c94d708 100644
-> --- a/drivers/hwmon/Kconfig
-> +++ b/drivers/hwmon/Kconfig
-> @@ -920,6 +920,16 @@ config SENSORS_W83627EHF
->  	  This driver can also be built as a module.  If so, the module
->  	  will be called w83627ehf.
->  
-> +config SENSORS_WM8350
-> +	tristate "Wolfson Microelectronics WM835x"
-> +	depends on MFD_WM8350
-> +	help
-> +	  If you say yes here you get support for the hardware
-> +	  monitoring features of the WM835x series of PMICs.
-> +
-> +	  This driver can also be built as a module.  If so, the module
-> +	  will be called wm8350-hwmon.
-> +
->  config SENSORS_ULTRA45
->  	tristate "Sun Ultra45 PIC16F747"
->  	depends on SPARC64
-> diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-> index b793dce..c02e90e 100644
-> --- a/drivers/hwmon/Makefile
-> +++ b/drivers/hwmon/Makefile
-> @@ -89,6 +89,7 @@ obj-$(CONFIG_SENSORS_VT8231)	+= vt8231.o
->  obj-$(CONFIG_SENSORS_W83627EHF)	+= w83627ehf.o
->  obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l785ts.o
->  obj-$(CONFIG_SENSORS_W83L786NG)	+= w83l786ng.o
-> +obj-$(CONFIG_SENSORS_WM8350)	+= wm8350-hwmon.o
->  
->  ifeq ($(CONFIG_HWMON_DEBUG_CHIP),y)
->  EXTRA_CFLAGS += -DDEBUG
-> diff --git a/drivers/hwmon/wm8350-hwmon.c b/drivers/hwmon/wm8350-hwmon.c
-> new file mode 100644
-> index 0000000..7387620
-> --- /dev/null
-> +++ b/drivers/hwmon/wm8350-hwmon.c
-> @@ -0,0 +1,149 @@
-> +/*
-> + * drivers/hwmon/wm8350-hwmon.c - Wolfson Microelectroncis WM8350 PMIC
+> But I have a question.
+> I copied the way of sw-events already exist such as migration or page-fault.
+> But like this,
+> 
+> % perf stat emacs
+> 
+>  Performance counter stats for 'emacs':
+> 
+>     1324.294227  task-clock-msecs         #      0.704 CPUs
+>            1980  context-switches         #      0.001 M/sec
+>              30  CPU-migrations           #      0.000 M/sec
+>           42986  page-faults              #      0.032 M/sec
+>               0  cpufreq-up               #      0.000 M/sec
+>                  ^^^^^^^^^^
+>               0  cpufreq-down             #      0.000 M/sec
+>                  ^^^^^^^^^^^^      
+>      4057387374  cycles                   #   3063.811 M/sec
+>      4767004447  instructions             #      1.175 IPC
+>        20687483  cache-references         #     15.622 M/sec
+>         5103528  cache-misses             #      3.854 M/sec
+> 
+>     1.880587959  seconds time elapsed
+> 
+> perf said there's no freq transition.
+> But I checked there are some transitions with cpufreq-info.
+> 
+> Can you find something bad in this patch?
+> I'll continue to try implementing.
+> If you find some bad points, I'd like to hear..
 
-Typo: Microelectronics.
+> +		if (freqs->new > freqs->old)
+> +			perf_swcounter_event(PERF_COUNT_SW_CPUFREQ_UP,
+> +					     1, 0, NULL, 0);
+> +		else
+> +			perf_swcounter_event(PERF_COUNT_SW_CPUFREQ_DOWN,
+> +					     1, 0, NULL, 0);
 
-> + *                                  hardware monitoring features.
-> + *
-> + * Copyright (C) 2009 Wolfson Microelectronics plc
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License v2 as published by the
-> + * Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along with
-> + * this program; if not, write to the Free Software Foundation, Inc.,
-> + * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/hwmon.h>
-> +#include <linux/hwmon-sysfs.h>
-> +
-> +#include <linux/mfd/wm8350/core.h>
-> +#include <linux/mfd/wm8350/comparator.h>
-> +
-> +static ssize_t show_name(struct device *dev,
-> +			 struct device_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "wm8350\n");
-> +}
-> +
-> +static const char *input_names[] = {
-> +	[WM8350_AUXADC_USB]  = "USB" ,
-> +	[WM8350_AUXADC_LINE] = "Line" ,
+Could you try:
 
-Coding-style: extra spaces before commas.
+	perf stat -a sleep 60
 
-> +	[WM8350_AUXADC_BATT] = "Battery",
-> +};
-> +
-> +
-> +static ssize_t show_voltage(struct device *dev,
-> +			    struct device_attribute *attr, char *buf)
-> +{
-> +	struct wm8350 *wm8350 = dev_get_drvdata(dev);
-> +	int channel = to_sensor_dev_attr(attr)->index;
-> +	int val;
-> +
-> +	val = wm8350_read_auxadc(wm8350, channel, 0, 0)
-> +		* WM8350_AUX_COEFF / 1000;
+while you do your emacs run that toggles cpufreq events? This makes 
+sure all transitions are counted, regardless of which context 
+triggers it. Do you still get zero counts this way?
 
-You may obtain more accurate values with DIV_ROUND_CLOSEST().
-
-> +
-> +	return sprintf(buf, "%d\n", val);
-> +}
-> +
-> +static ssize_t show_label(struct device *dev,
-> +			  struct device_attribute *attr, char *buf)
-> +{
-> +	int channel = to_sensor_dev_attr(attr)->index;
-> +
-> +	return sprintf(buf, "%s\n", input_names[channel]);
-> +}
-> +
-> +#define WM8350_NAMED_VOLTAGE(id, name) \
-> +	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage,\
-> +				  NULL, WM8350_AUXADC_##name);		\
-> +	static SENSOR_DEVICE_ATTR(in##id##_label, S_IRUGO, show_label,	\
-> +				  NULL, WM8350_AUXADC_##name)
-> +
-> +static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
-> +
-> +WM8350_NAMED_VOLTAGE(0, USB);
-> +WM8350_NAMED_VOLTAGE(1, BATT);
-> +WM8350_NAMED_VOLTAGE(2, LINE);
-
-I would suggest passing the whole WM8350_AUXADC_USB, etc. string as the
-2nd parameter. This makes grepping the source code for users (as LXR
-does for example) possible.
-
-> +
-> +static struct attribute *wm8350_attributes[] = {
-> +	&dev_attr_name.attr,
-> +
-> +	&sensor_dev_attr_in0_input.dev_attr.attr,
-> +	&sensor_dev_attr_in0_label.dev_attr.attr,
-> +	&sensor_dev_attr_in1_input.dev_attr.attr,
-> +	&sensor_dev_attr_in1_label.dev_attr.attr,
-> +	&sensor_dev_attr_in2_input.dev_attr.attr,
-> +	&sensor_dev_attr_in2_label.dev_attr.attr,
-> +
-> +	NULL,
-> +};
-> +
-> +static const struct attribute_group wm8350_attr_group = {
-> +	.attrs	= wm8350_attributes,
-> +};
-> +
-> +static int __devinit wm8350_hwmon_probe(struct platform_device *pdev)
-> +{
-> +	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
-> +	int ret;
-> +
-> +	ret = sysfs_create_group(&pdev->dev.kobj, &wm8350_attr_group);
-> +	if (ret)
-> +		goto err;
-> +
-> +	wm8350->hwmon.classdev = hwmon_device_register(&pdev->dev);
-> +	if (IS_ERR(wm8350->hwmon.classdev)) {
-> +		ret = PTR_ERR(wm8350->hwmon.classdev);
-> +		goto err_group;
-> +	}
-> +
-> +	return 0;
-> +
-> +err_group:
-> +	sysfs_remove_group(&pdev->dev.kobj, &wm8350_attr_group);
-> +err:
-> +	return ret;
-> +}
-> +
-> +static int __devexit wm8350_hwmon_remove(struct platform_device *pdev)
-> +{
-> +	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
-> +
-> +	hwmon_device_unregister(wm8350->hwmon.classdev);
-> +	sysfs_remove_group(&pdev->dev.kobj, &wm8350_attr_group);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver wm8350_hwmon_driver = {
-> +	.probe = wm8350_hwmon_probe,
-> +	.remove = __devexit_p(wm8350_hwmon_remove),
-> +	.driver = {
-> +		.name = "wm8350-hwmon",
-
-I think you are supposed to set .owner to THIS_MODULE?
-
-> +	},
-> +};
-> +
-> +static int __init wm8350_hwmon_init(void)
-> +{
-> +	return platform_driver_register(&wm8350_hwmon_driver);
-> +}
-> +module_init(wm8350_hwmon_init);
-> +
-> +static void __exit wm8350_hwmon_exit(void)
-> +{
-> +	platform_driver_unregister(&wm8350_hwmon_driver);
-> +}
-> +module_exit(wm8350_hwmon_exit);
-> +
-> +MODULE_AUTHOR("Mark Brown");
-
-No e-mail address?
-
-> +MODULE_DESCRIPTION("WM8350 Hardware Monitoring");
-> +MODULE_LICENSE("GPL");
-> +MODULE_ALIAS("platform:wm8350-hwmon");
-> diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
-> index fe24079..9d662a5 100644
-> --- a/drivers/mfd/wm8350-core.c
-> +++ b/drivers/mfd/wm8350-core.c
-> @@ -1472,6 +1472,8 @@ int wm8350_device_init(struct wm8350 *wm8350, int irq,
->  				   &(wm8350->codec.pdev));
->  	wm8350_client_dev_register(wm8350, "wm8350-gpio",
->  				   &(wm8350->gpio.pdev));
-> +	wm8350_client_dev_register(wm8350, "wm8350-hwmon",
-> +				   &(wm8350->hwmon.pdev));
->  	wm8350_client_dev_register(wm8350, "wm8350-power",
->  				   &(wm8350->power.pdev));
->  	wm8350_client_dev_register(wm8350, "wm8350-rtc", &(wm8350->rtc.pdev));
-> @@ -1498,6 +1500,7 @@ void wm8350_device_exit(struct wm8350 *wm8350)
->  	platform_device_unregister(wm8350->wdt.pdev);
->  	platform_device_unregister(wm8350->rtc.pdev);
->  	platform_device_unregister(wm8350->power.pdev);
-> +	platform_device_unregister(wm8350->hwmon.pdev);
->  	platform_device_unregister(wm8350->gpio.pdev);
->  	platform_device_unregister(wm8350->codec.pdev);
->  
-> diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
-> index 42cca67..969b0b5 100644
-> --- a/include/linux/mfd/wm8350/core.h
-> +++ b/include/linux/mfd/wm8350/core.h
-> @@ -605,6 +605,11 @@ struct wm8350_irq {
->  	void *data;
->  };
->  
-> +struct wm8350_hwmon {
-> +	struct platform_device *pdev;
-> +	struct device *classdev;
-> +};
-> +
->  struct wm8350 {
->  	struct device *dev;
->  
-> @@ -629,6 +634,7 @@ struct wm8350 {
->  	/* Client devices */
->  	struct wm8350_codec codec;
->  	struct wm8350_gpio gpio;
-> +	struct wm8350_hwmon hwmon;
->  	struct wm8350_pmic pmic;
->  	struct wm8350_power power;
->  	struct wm8350_rtc rtc;
-
-Bonus points if you also add a short text file at
-Documentation/hwmon/wm8350-hwmon, using the same format as the other
-files there, shortly explaining what hardware the driver is for, what
-it is capable of (e.g. measurement resolution, accuracy and range) and,
-if applicable, its limitations.
-
-When you are done, what is your merge plan? I would be happy to take
-the patch in my unofficial hwmon tree and push it in 2.6.32, but due to
-wm8350-core dependencies, you may prefer it to be merged differently?
-
--- 
-Jean Delvare
+	Ingo
