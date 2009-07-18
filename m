@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbZGRBYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbZGRB2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976AbZGRBYM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 21:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbZGRBYK
+	id S1756878AbZGRB2d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 21:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbZGRB2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 21:24:10 -0400
-Received: from mail-px0-f185.google.com ([209.85.216.185]:62522 "EHLO
-	mail-px0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751809AbZGRBYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 21:24:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=xEvmhbW24H6HFX1AnyQDA4ka0XyzQaq1yTXWyK5nNiYXQ8YbgHbl1eWiEpiOGBbjkG
-         BrddGExwuIw44ZE1OtVO7bZuRcj48OzBykCbqMvPnLFNIiGje7dzFCBICOJZwb+AuwYB
-         DBWNHe5+KV8C48WN0iZyl8kmgd2hnBbiHm8AM=
+	Fri, 17 Jul 2009 21:28:30 -0400
+Received: from sous-sol.org ([216.99.217.87]:51617 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751936AbZGRB23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 21:28:29 -0400
+Date: Fri, 17 Jul 2009 18:28:19 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Sage Weil <sage@newdream.net>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/20] ceph: Ceph distributed file system client v0.10
+Message-ID: <20090718012819.GE8150@sequoia.sous-sol.org>
+References: <1247693090-27796-1-git-send-email-sage@newdream.net> <87hbxcx182.fsf@basil.nowhere.org> <Pine.LNX.4.64.0907161004080.8026@cobra.newdream.net>
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 17 Jul 2009 18:15:40 -0700
-Message-ID: <43e72e890907171815x3a85c788k1b4c0f72954db9e5@mail.gmail.com>
-Subject: khttpd fate
-To: linux-kernel@vger.kernel.org
-Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Ted Merrill <atheros@embuildsw.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0907161004080.8026@cobra.newdream.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was reviewing khttpd [1] history [2], and the last I see is it was
-merged for the 2.4 kernel with enthusiasm. I don't see any information
-about this for 2.6 though, nor can I find any other notes about why
-this was removed. Just curious if someone recalls why it was removed.
+* Sage Weil (sage@newdream.net) wrote:
+> I don't always verify that things like element counts are "sane", though, 
+> so there's currently the possibility of trying to allocate large chunks of 
+> memory.
 
-Also, I really hate how trolly this questions sounds but here it goes anyway:
+There's also the potential of allocating a small amount of memory w/ a
+large element count if you overflow on multiply.  You should definitely
+protect against this if you have such code in ceph client (kcalloc has
+simple example defense).
 
-Such userspace-kernel hacks shouldn't be necessary anymore based on
-'performance/latency' arguments right? I take it khttpd wasn't serious
-but more of a hack for fun and now we should be able to laugh about
-it?
-
-[1] http://www.fenrus.demon.nl/
-[2] http://lwn.net/2001/0118/kernel.php3
-
-  Luis
+thanks,
+-chris
