@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZGRBBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZGRBWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754162AbZGRBBs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 21:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbZGRBBr
+	id S1754766AbZGRBWT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 21:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZGRBWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 21:01:47 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:16356 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbZGRBBq (ORCPT
+	Fri, 17 Jul 2009 21:22:16 -0400
+Received: from outbound-mail-315.bluehost.com ([67.222.54.8]:39947 "HELO
+	outbound-mail-315.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752283AbZGRBWQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 21:01:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=o9s1e2QlqCb0sZnMrgXwZvQCQLXK6dZA6eQIWFP4pWTQ/hkGwc7RQdFOBPhKwao/lB
-         lI4T4jU4yvR1w42Aj85ATheSDBObGwu+gXy0LRlD/yVJ/82XNHAVeAnc5DHS4KFyr8iN
-         YdM90ZDRYL/qljM4Pmuq+xKQ/CI+ivo5PyR9g=
-Date: Sat, 18 Jul 2009 03:00:21 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
+	Fri, 17 Jul 2009 21:22:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=ZiJ3T+DW1ymDu6/JdmkBuBH3h/oGF3vNKDxbpQG5cYm4UyzU4ucjvBWwe232SLspzAo9bzv5Q9b/0CmWWXJtGpwj9RgSbFGNP0p1igBugD0hkPZ9QtGS7K0v6kCLe5jt;
+Date: Fri, 17 Jul 2009 18:22:12 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tj Hariharan <tj.physicist@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: kernel stuck at trying to change CPU resolution.
-Message-ID: <20090718010020.GA20213@Pilar.aei.mpg.de>
-References: <20090626111652.GA7244@TjsLaptop> <20090717153742.d9144d91.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090717153742.d9144d91.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: airlied@linux.ie, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] fb/intelfb: conflict with DRM_I915 and hide by default
+Message-ID: <20090717182212.4675d0e1@jbarnes-g45>
+In-Reply-To: <20090717171326.4a71d8e3.akpm@linux-foundation.org>
+References: <20090703112446.5a69971b@jbarnes-g45>
+	<20090717171326.4a71d8e3.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 17.Jul'09 at 15:37:42 -0700, Andrew Morton wrote:
-> On Fri, 26 Jun 2009 07:16:53 -0400
-> Tj Hariharan <tj.physicist@gmail.com> wrote:
-> 
-> > 
-> > Hi, I have a Pentium-M 1.86GHZ processor Laptop. Standard DELL Latitude
-> > D610. I ran the 2.6.31-rc1 kernel (updated tree as of 10 minutes ago).
-> > The kernel gets stuck at the message saying "Switching to High
-> > resolution mode on CPU0" after about 10 minutes it goes to the next
-> > step, but then continues to get stuck. There is no log, as presumable
-> > this is happening before the kernel fully initialises the harddrive and
-> > passes control to user mode. I am running a non modular kernel with no
-> > major changes made to my configuration since 2.6.27. I have never had
-> > any issues thus far. Since I am using a laptop I am unable to access the
-> > sysrq key (which in my case is not prnt screen, but Fn+PrintScreen, and
-> > Fn key is not read by kernel at all, even after full boot and under
-> > normal conditions). Thank you for your time. I have also attached my
-> > config file. 
-> > 
-> 
-> Thanks for the report.
-> 
-> Is this regression still present in 2.6.31-rc3 or later?
-> 
-> If so, do you know if the bug was present in 2.6.30/29/28?
+On Fri, 17 Jul 2009 17:13:26 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-The above description made me remember about 
-http://lkml.org/lkml/2007/4/30/464
-and
-http://lkml.org/lkml/2007/12/14/148
+> On Fri, 3 Jul 2009 11:24:46 -0700
+> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> 
+> > Users get confused by this driver.  It's really a special purpose
+> > embedded driver, and causes a lot of problems if enabled.  So hide
+> > it under EMBEDDED by default, and make sure it doesn't get enabled
+> > with the i915 DRM driver.
+> > 
+> > Dave, I'm hoping you can feed this to Linus through your tree.  It's
+> > appropriate for 2.6.31 I think.
+> > 
+> > Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> > 
+> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+> > index d6d65ef..ec12f7a 100644
+> > --- a/drivers/video/Kconfig
+> > +++ b/drivers/video/Kconfig
+> > @@ -1117,12 +1117,13 @@ config FB_CARILLO_RANCH
+> >  
+> >  config FB_INTEL
+> >  	tristate "Intel
+> > 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support
+> > (EXPERIMENTAL)"
+> > -	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
+> > +	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
+> > && EMBEDDED select FB_MODE_HELPERS
+> >  	select FB_CFB_FILLRECT
+> >  	select FB_CFB_COPYAREA
+> >  	select FB_CFB_IMAGEBLIT
+> >  	select FB_BOOT_VESA_SUPPORT if FB_INTEL = y
+> > +	depends on !DRM_I915
+> >  	help
+> >  	  This driver supports the on-board graphics built in to
+> > the Intel
+> > 830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM
+> > chipsets.
+> 
+> Nothing happened?
+> 
+> I'll merge this next week(ish) unless given a reason not to.
 
-Perhaps it is just coincidence and the bugs are not related, but
-I felt the need to point them out just in case.
+It's in Dave's tree, pull requested to Linus already, so it should land
+soon.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
