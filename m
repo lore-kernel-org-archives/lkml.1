@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbZGRVu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbZGRWDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753881AbZGRVu2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 17:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZGRVuZ
+	id S1753871AbZGRWDT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 18:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZGRWDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 17:50:25 -0400
-Received: from pond.fysh.org ([166.84.7.109]:59234 "EHLO pond.fysh.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753744AbZGRVuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 17:50:25 -0400
-X-Greylist: delayed 1329 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Jul 2009 17:50:25 EDT
-Date: Sat, 18 Jul 2009 22:28:12 +0100
-From: Athanasius <link@miggy.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Greg KH <gregkh@suse.de>, Julien Tinnes <jt@cr0.org>,
-       Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
-       Eugene Teo <eugene@redhat.com>, Athanasius <link@miggy.org>
-Subject: Re: [link@miggy.org: Re: [patch 2/8] personality: fix
-	PER_CLEAR_ON_SETID (CVE-2009-1895)]
-Message-ID: <20090718212812.GI6722@miggy.org>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Greg KH <gregkh@suse.de>, Julien Tinnes <jt@cr0.org>,
-	Tavis Ormandy <taviso@sdf.lonestar.org>,
-	Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
-	Eugene Teo <eugene@redhat.com>, Athanasius <link@miggy.org>
-References: <20090718202512.GA19587@suse.de> <alpine.LFD.2.01.0907181342500.13838@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0907181342500.13838@localhost.localdomain>
-X-gpg-fingerprint: E218CE1D
-X-gpg-key: http://www.fysh.org/~athan/gpg-key
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 18 Jul 2009 18:03:18 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:51806 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbZGRWDR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 18:03:17 -0400
+Subject: Re: Duplicate vsyscall/vdso gettimeofday implementations on x86_64
+From: john stultz <johnstul@us.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@tglx.de>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <87ab32wmkv.fsf@basil.nowhere.org>
+References: <1247868130.8334.40.camel@localhost.localdomain>
+	 <87eisfvtzv.fsf@basil.nowhere.org>
+	 <1247871284.8334.42.camel@localhost.localdomain>
+	 <87ab32wmkv.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Date: Sat, 18 Jul 2009 15:03:14 -0700
+Message-Id: <1247954594.14494.12.camel@work-vm>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 18, 2009 at 01:48:06PM -0700, Linus Torvalds wrote:
-> On Sat, 18 Jul 2009, Greg KH wrote:
-> > 
-> > and you have the whole idea of personalities being some kind of security
-> > mechanism exposed as a joke.
+On Sat, 2009-07-18 at 08:07 +0200, Andi Kleen wrote:
+> john stultz <johnstul@us.ibm.com> writes:
+> >
+> > Hrmm. Can we deprecate the old method and push glibc to use the new one?
 > 
-> It's _not_ a "security mechanism". It never was.
-...
-> In the absense of raised capabilities, the personality flags don't matter: 
-> because they aren't security. If you have a personality flag that says "I 
-> want to mmap at virtual address zero", you're still going to be limited by 
-> the security layer, and if the security layer says "nope, you can't do 
-> that", then your personality doesn't matter.
+> That would break every old 64bit executable. Also not there are programs
+> who don't use glibc.
 > 
-> See?
+> Also glibc's way of calling the vDSO is still somewhat inefficient
+> (although that could be probably fixed)
+> 
+> > If we remove it the vsyscall interface will old glibc's fall-back
+> > gracefully? 
+> 
+> They would crash gracefully.
+> 
+> I had a couple of different transition plans, but they were all fairly
+> complicated and had various disadvantages, so in the end nothing got
+> done and the old code just left in.
 
-  I can understand and appreciate that, yes.
+Ok. Ulrich mailed me with the same points earlier and here's what I
+said:
 
-  However the content of 'cat /proc/execdomains' is mis-leading for
-the default Execution Domain.  The string '0-0' implies either that you
-can only set 1 of 3 personalities whilst this Execution Domain is current
-OR that this Execution Domain will only be used whilst the set personality
-is one of those 3.  But neither is actually true as this default Execution
-Domain (being the only one in vanilla kernel tree) is a special case.
-  If you don't see a valid reason to change personality(2) behaviour (thus
-still allowing setting aribtrary personality values) then surely it would
-make more sense for the default domain to set pers_high to PER_MASK ?
-I'd suggest it actually be 0xffffffff but the field is only a char.
+It seems the options are:
 
--- 
-- Athanasius = Athanasius(at)miggy.org / http://www.miggy.org/
-                  Finger athan(at)fysh.org for PGP key
-	   "And it's me who is my enemy. Me who beats me up.
-Me who makes the monsters. Me who strips my confidence." Paula Cole - ME
+1) Keep the old vsyscall gtod implementation as is, despite it
+duplicating things. Maybe avoid the code duplication via inlined
+functions.
+
+2) Set the old vsyscall gtod to directly call the syscall.
+
+Neither of these help to avoid the non-randomized syscall instruction.
+And #2 punishes old users for no really good reason, so #1 is probably
+the best approach. 
+
+I'll try to put a patch together next week just to try to clean things
+up a bit. 
+
+If anyone has any other ideas, let me know.
+
+thanks
+-john
+
+
