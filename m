@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZGRHsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbZGRIam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbZGRHsU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 03:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZGRHsR
+	id S932439AbZGRIam (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 04:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753220AbZGRIaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 03:48:17 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52559 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751531AbZGRHsR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 03:48:17 -0400
-Date: Sat, 18 Jul 2009 09:48:11 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       device-mapper development <dm-devel@redhat.com>,
-       Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: How to handle >16TB devices on 32 bit hosts ??
-Message-ID: <20090718074811.GA2682@basil.fritz.box>
-References: <19041.4714.686158.130252@notabene.brown> <20090718043155.GI4231@webber.adilger.int> <871voewm6y.fsf@basil.nowhere.org> <20090718065213.GK4231@webber.adilger.int>
+	Sat, 18 Jul 2009 04:30:39 -0400
+Received: from www.tglx.de ([62.245.132.106]:55947 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752403AbZGRIai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 04:30:38 -0400
+Date: Sat, 18 Jul 2009 10:30:18 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: john stultz <johnstul@us.ibm.com>
+cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@tglx.de>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
+       nikolag@ca.ibm.com, Darren Hart <dvhltc@us.ibm.com>
+Subject: Re: [RFC][PATCH] Introduce CLOCK_REALTIME_COARSE
+In-Reply-To: <1247873945.8334.67.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0907181027510.11571@localhost.localdomain>
+References: <1247873945.8334.67.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090718065213.GK4231@webber.adilger.int>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 18, 2009 at 02:52:13AM -0400, Andreas Dilger wrote:
-> If you aren't running a 32-bit system with this config, you shouldn't
-> really care.  For those systems that need to run in this mode they
-> would rather have it work a few percent slower instead of not at all.
+On Fri, 17 Jul 2009, john stultz wrote:
+> +static int posix_get_realtime_coarse(clockid_t which_clock, struct timespec *tp)
+> +{
+> +	*tp = current_kernel_time();
+> +	return 0;
+> +}
+> +
+> +static int posix_get_monotonic_coarse(clockid_t which_clock,
+> +						struct timespec *tp)
+> +{
+> +	*tp = get_monotonic_coarse();
+> +	return 0;
+> +}
+> +
+> +int posix_get_coarse_res(const clockid_t which_clock, struct timespec *tp)
+> +{
+> +	*tp = ktime_to_timespec(KTIME_LOW_RES);
+> +	return 0;
+> +}
+>  /*
+>   * Initialize everything, well, just everything in Posix clocks/timers ;)
+>   */
+> @@ -255,10 +274,24 @@ static __init int init_posix_timers(void)
+>  		.clock_set = do_posix_clock_nosettime,
+>  		.timer_create = no_timer_create,
+>  	};
+> +	struct k_clock clock_realtime_coarse = {
+> +		.clock_getres = hrtimer_get_res,
 
-Well, it doesn't work at all anyways due to the fsck problem.
+  shouldn't that be posix_get_coarse_res ?
 
-> The last test numbers I saw were 5GB of RAM for a 20TB filesystem,
-> but since the bitmaps used are fully-allocated arrays that isn't
-> surprising.  We are planning to replace this with a tree, since the
-> majority of bitmaps used by e2fsck have large contiguous ranges of
-> set or unset bits and can be represented much more efficiently.
+> +		.clock_get = posix_get_realtime_coarse,
+> +		.clock_set = do_posix_clock_nosettime,
+> +		.timer_create = no_timer_create,
+> +	};
+> +	struct k_clock clock_monotonic_coarse = {
+> +		.clock_getres = hrtimer_get_res,
 
-You would need to get <~2.5GB for 32bit. In practice that's
-the limit you have there.
+  ditto
 
-> Also, for filesystems like btrfs or ZFS the checking can be done
-> online and incrementally without storing a full representation of
-> the state in memory.
+> +		.clock_get = posix_get_monotonic_coarse,
+> +		.clock_set = do_posix_clock_nosettime,
+> +		.timer_create = no_timer_create,
+> +	};
 
-You could, but I suspect it would be cheaper to just use a
-64bit system than to rewrite fsck. 64bit is available
-for a lot of embedded setups these days too.
+Looks good otherwise.
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+      tglx
