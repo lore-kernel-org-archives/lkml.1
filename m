@@ -1,93 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZGRSHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbZGRSTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752478AbZGRSHB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 14:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZGRSHA
+	id S1753222AbZGRSTm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 14:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbZGRSTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 14:07:00 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:52805 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900AbZGRSG7 (ORCPT
+	Sat, 18 Jul 2009 14:19:42 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40313 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751295AbZGRSTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 14:06:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=Tx+AjEFv5KVL0epqa2aJUpw7G+T+pKtKnegSRsU9CNHl/5zZM3KE+evaQiZTSblKQ0
-         hGw8FJyQL9+PoItpxvgrVG7c5wQ95hmNazE/A0cgKJ2RZR8GrEMiXFL7SSWZS6N945D8
-         lqVYjCU+i3WgxqYa+jw7OBvqOqHdQP3pmF2dc=
-Message-ID: <4A620F3E.8080900@tuffmail.co.uk>
-Date: Sat, 18 Jul 2009 19:06:54 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Sat, 18 Jul 2009 14:19:40 -0400
+Date: Sat, 18 Jul 2009 14:19:22 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Theodore Tso <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: How to handle >16TB devices on 32 bit hosts ??
+Message-ID: <20090718181921.GA8990@infradead.org>
+References: <19041.4714.686158.130252@notabene.brown> <20090718043155.GI4231@webber.adilger.int> <871voewm6y.fsf@basil.nowhere.org> <20090718065213.GK4231@webber.adilger.int> <20090718074811.GA2682@basil.fritz.box> <20090718134946.GA25546@mit.edu> <20090718142156.GC2682@basil.fritz.box>
 MIME-Version: 1.0
-To: Ondrej Zary <linux@rainbow-software.org>
-CC: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: "floppy: fix hibernation" causes error on resume from ram
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090718142156.GC2682@basil.fritz.box>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the hibernation fix!  Until recently I thought my floppy was
-just dead.  Unfortunately, the fix seems to cause me errors on resume
-from suspend to ram.  The floppy works fine afterwards, it just spams
-the log.
+On Sat, Jul 18, 2009 at 04:21:56PM +0200, Andi Kleen wrote:
+> > We don't have to rewrite fsck; most of the framework for supporting an
+> > run-length-conding for compressed bitmaps is already in patches that
+> > add > 32-bit block numbers to e2fsprogs; we've just been more focused
+> > on getting 64-bit block numbers support merged than implementing
+> > compressed bitmaps, but it's only one file that would need to be
+> > added, and we might be able to steal the compressed bitmap support
+> > from xfsprogs --- which does this already.
+> 
+> There are regular reports of xfs_repair failing on 32bit,
+> even on volumes far smaller than 16TB.
 
-On 2.6.30 there were no errors, and the floppy survived suspend-to-ram. 
-So I guess the quick fix would be to only do the fix-up on resume from
-hibernation, and not suspend-to-ram.
-
-Thanks
-Alan
-
-Jul 18 15:27:23 alan-desktop kernel: [34795.256645]
-Jul 18 15:27:23 alan-desktop kernel: [34795.256647] floppy driver state
-Jul 18 15:27:23 alan-desktop kernel: [34795.256649] -------------------
-Jul 18 15:27:23 alan-desktop kernel: [34795.256652] now=4305315874 last
-interrupt=4303125175 diff=2190699 last called handler=ffffffffa00a64d0
-Jul 18 15:27:23 alan-desktop kernel: [34795.256655] timeout_message=lock fdc
-Jul 18 15:27:23 alan-desktop kernel: [34795.256657] last output bytes:
-Jul 18 15:27:23 alan-desktop kernel: [34795.256659]  8 80 4295201276
-Jul 18 15:27:23 alan-desktop kernel: [34795.256662]  8 80 4295201276
-Jul 18 15:27:23 alan-desktop kernel: [34795.256664]  8 80 4295201276
-Jul 18 15:27:23 alan-desktop kernel: [34795.256666]  8 80 4295201276
-Jul 18 15:27:23 alan-desktop kernel: [34795.256668]  8 80 4297332499
-Jul 18 15:27:23 alan-desktop kernel: [34795.256669]  8 80 4297332499
-Jul 18 15:27:23 alan-desktop kernel: [34795.256671]  8 80 4297332499
-Jul 18 15:27:23 alan-desktop kernel: [34795.256673]  8 80 4297332499
-Jul 18 15:27:23 alan-desktop kernel: [34795.256675]  8 80 4298652310
-Jul 18 15:27:23 alan-desktop kernel: [34795.256677]  8 80 4298652310
-Jul 18 15:27:23 alan-desktop kernel: [34795.256679]  8 80 4298652310
-Jul 18 15:27:23 alan-desktop kernel: [34795.256681]  8 80 4298652310
-Jul 18 15:27:23 alan-desktop kernel: [34795.256683]  8 80 4299614961
-Jul 18 15:27:23 alan-desktop kernel: [34795.256685]  8 80 4299614961
-Jul 18 15:27:23 alan-desktop kernel: [34795.256687]  8 80 4299614961
-Jul 18 15:27:23 alan-desktop kernel: [34795.256689]  8 80 4299614961
-Jul 18 15:27:23 alan-desktop kernel: [34795.256691]  8 80 4303125175
-Jul 18 15:27:23 alan-desktop kernel: [34795.256693]  8 80 4303125175
-Jul 18 15:27:23 alan-desktop kernel: [34795.256695]  8 80 4303125175
-Jul 18 15:27:23 alan-desktop kernel: [34795.256697]  8 80 4303125175
-Jul 18 15:27:23 alan-desktop kernel: [34795.256699] last result at
-4303125175
-Jul 18 15:27:23 alan-desktop kernel: [34795.256701] last redo_fd_request
-at 4303125175
-Jul 18 15:27:23 alan-desktop kernel: [34795.256703]
-Jul 18 15:27:23 alan-desktop kernel: [34795.256709] status=0
-Jul 18 15:27:23 alan-desktop kernel: [34795.256711] fdc_busy=1
-Jul 18 15:27:23 alan-desktop kernel: [34795.256713]
-do_floppy=ffffffffa00a64d0
-Jul 18 15:27:23 alan-desktop kernel: [34795.256715] cont=ffffffffa00ad8c0
-Jul 18 15:27:23 alan-desktop kernel: [34795.256717] current_req=(null)
-Jul 18 15:27:23 alan-desktop kernel: [34795.256719] command_status=-1
-Jul 18 15:27:23 alan-desktop kernel: [34795.256720]
-Jul 18 15:27:23 alan-desktop kernel: [34795.256829] floppy0: floppy
-timeout called
-Jul 18 15:27:23 alan-desktop kernel: [34795.259455] Restarting tasks ...
-done.
+We have a set of patches pending to reduce memory use in xfs_repair
+dramaticly, replacing bitmaps for tracking used blocks with extent
+structures stored in btrees.
 
