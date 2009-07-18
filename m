@@ -1,66 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbZGRVWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbZGRVhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbZGRVWg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 17:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbZGRVWf
+	id S1753868AbZGRVhz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 17:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbZGRVhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 17:22:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40742 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753576AbZGRVWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 17:22:34 -0400
-Date: Sat, 18 Jul 2009 21:17:03 GMT
-From: tip-bot for Pavel Roskin <proski@gnu.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, proski@gnu.org
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, proski@gnu.org
-In-Reply-To: <20090718204602.5191.360.stgit@mj.roinet.com>
-References: <20090718204602.5191.360.stgit@mj.roinet.com>
-Subject: [tip:timers/urgent] timer: Avoid reading uninitialized data
-Message-ID: <tip-4841158b26e28e1476eed84c7347c18f11317750@git.kernel.org>
-Git-Commit-ID: 4841158b26e28e1476eed84c7347c18f11317750
-X-Mailer: tip-git-log-daemon
+	Sat, 18 Jul 2009 17:37:53 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:40000 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbZGRVhw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 17:37:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SqrSUO8y27r5CGro8hrhRka8jVUK/7/2AOqzUcF9zuRdL8BZYUVqG2EDdVdWZ1iMd/
+         PiLJce8gUbF4gU8Hh/tG4zWk+Gc9Pl/YHFh4ajz+E+3dJBmAA+/ApHOQnDSJ3zVR+ULw
+         2JCLELlZhJ/4kJMcw5oPttXbEWERcE+315qGw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 18 Jul 2009 21:17:04 +0000 (UTC)
+In-Reply-To: <4A623490.50305@tuffmail.co.uk>
+References: <4A61FE7D.9080409@tuffmail.co.uk>
+	 <8db1092f0907181155h3d603a17q11815b9f174ac333@mail.gmail.com>
+	 <4A623490.50305@tuffmail.co.uk>
+Date: Sat, 18 Jul 2009 23:37:49 +0200
+Message-ID: <71cd59b00907181437l6ef362ejc345818a5197a6c4@mail.gmail.com>
+Subject: Re: [RFT] hp-wmi: improved rfkill support for wifi
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Matthew Garrett <mjg@redhat.com>, Frans Pop <elendil@planet.nl>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4841158b26e28e1476eed84c7347c18f11317750
-Gitweb:     http://git.kernel.org/tip/4841158b26e28e1476eed84c7347c18f11317750
-Author:     Pavel Roskin <proski@gnu.org>
-AuthorDate: Sat, 18 Jul 2009 16:46:02 -0400
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Sat, 18 Jul 2009 23:11:43 +0200
+On Sat, Jul 18, 2009 at 10:46 PM, Alan
+Jenkins<alan-jenkins@tuffmail.co.uk> wrote:
+> Maciej Rutecki wrote:
+>> 2009/7/18 Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
+>>
+>>> I borrowed a HP G7000 last week.  The hp-wmi driver seemed a bit
+>>> confused about hard v.s. soft blocks on the wifi, so I fixed it based on
+>>> acpidump output [1].  I hope this will work on other HP model numbers,
+>>> but it would benefit from testing.  Any volunteers?
+>>>
+>>
+>> HP/Compaq nx6310
+>> 2.6.31-rc3+patch
+>>
+>> When is enabled by button:
+>> root@gumis:/sys/class/rfkill# ls
+>> rfkill0  rfkill1  rfkill2  rfkill3
+>> root@gumis:/sys/class/rfkill# cat rfkill*/name
+>> phy0
+>> hci0
+>> hp-wifi
+>> hp-bluetooth
+>> root@gumis:/sys/class/rfkill# cat rfkill*/state
+>> 1
+>> 1
+>> 1
+>> 1
+>>
+>> When disabled by button:
+>> root@gumis:/sys/class/rfkill# ls
+>> rfkill0  rfkill2  rfkill3
+>> root@gumis:/sys/class/rfkill# cat rfkill*/name
+>> phy0
+>> hp-wifi
+>> hp-bluetooth
+>> root@gumis:/sys/class/rfkill# cat rfkill*/state
+>> 2
+>> 1
+>> 0
+>>
+>> I enable again by button:
+>> root@gumis:/sys/class/rfkill# ls
+>> rfkill0  rfkill2  rfkill3  rfkill4
+>> root@gumis:/sys/class/rfkill# cat rfkill*/name
+>> phy0
+>> hp-wifi
+>> hp-bluetooth
+>> hci0
+>> root@gumis:/sys/class/rfkill# cat rfkill*/state
+>> 1
+>> 1
+>> 1
+>> 1
+>>
+>> I disable "by software" in Windows XP (bluetooth and wireless):
+>> root@gumis:/sys/class/rfkill# ls
+>> rfkill0  rfkill1  rfkill2  rfkill3
+>> root@gumis:/sys/class/rfkill# cat rfkill*/name
+>> phy0
+>> hp-wifi
+>> hp-bluetooth
+>> hci0
+>> root@gumis:/sys/class/rfkill# cat rfkill*/state
+>> 2
+>> 0
+>> 1
+>> 1
+>>
+>> Bluetooth works fine when I back to Linux, it seems be enabled during
+>> boot. Wireless is disabled. I cannot connect to network. So I
+>> re-enable it in Windows:
+>> root@gumis:/sys/class/rfkill# ls
+>> rfkill0  rfkill1  rfkill2  rfkill3
+>> root@gumis:/sys/class/rfkill# cat rfkill*/name
+>> phy0
+>> hci0
+>> hp-wifi
+>> hp-bluetooth
+>> root@gumis:/sys/class/rfkill# cat rfkill*/state
+>> 1
+>> 1
+>> 1
+>> 1
+>>
+>> Regards
+>>
+>
+> Great detail!  That all fits with what I was expecting.
+>
+> Linux can also do enabling "by software".  At the moment, you need to
+> download and compile a utility to poke /dev/rfkill.  I wouldn't bother
+> testing it, because I didn't change that bit :-).
 
-timer: Avoid reading uninitialized data
-
-timer->expires may be uninitialized, so check timer_pending() before
-touching timer->expires to pacify kmemcheck.
-
-Signed-off-by: Pavel Roskin <proski@gnu.org>
-LKML-Reference: <20090718204602.5191.360.stgit@mj.roinet.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Utility is here
+http://git.sipsolutions.net/?p=rfkill.git
+And a patch to restore write access to /sys/class/rfkill/*/state file is here
+http://lkml.org/lkml/2009/7/10/339
 
 
----
- kernel/timer.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> I'll try extending this to bluetooth and wwan as Matthew suggested.  If
+> you have time to run "acpidump" and send me the output, that would help
+> me check the details.
 
-diff --git a/kernel/timer.c b/kernel/timer.c
-index 0b36b9e..a7f07d5 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -714,7 +714,7 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
- 	 * networking code - if the timer is re-modified
- 	 * to be the same thing then just return:
- 	 */
--	if (timer->expires == expires && timer_pending(timer))
-+	if (timer_pending(timer) && timer->expires == expires)
- 		return 1;
- 
- 	return __mod_timer(timer, expires, false, TIMER_NOT_PINNED);
+I have an HP 8710p, so if you want acpidump and test on another
+hardware, just ask :).
+
+-- 
+Corentin Chary
+http://xf.iksaif.net - http://uffs.org
