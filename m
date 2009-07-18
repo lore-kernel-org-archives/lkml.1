@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZGRG7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932413AbZGRHAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbZGRG7J (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 02:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbZGRG7G
+	id S932413AbZGRHAK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 03:00:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932317AbZGRHAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 02:59:06 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56041 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259AbZGRG7F (ORCPT
+	Sat, 18 Jul 2009 03:00:09 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:35451 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932268AbZGRHAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 02:59:05 -0400
-Date: Sat, 18 Jul 2009 08:59:03 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kbuild@vger.kernel.org, barryn@pobox.com
-Subject: Re: [PATCH,v2] Only add '-fwrapv' to gcc CFLAGS for gcc 4.2 and
-	later
-Message-ID: <20090718065903.GA7579@merkur.ravnborg.org>
-References: <200907100928.07369.elendil@planet.nl> <200907102205.49642.elendil@planet.nl> <20090717221846.GA7347@merkur.ravnborg.org> <200907180043.53257.elendil@planet.nl>
+	Sat, 18 Jul 2009 03:00:08 -0400
+Message-ID: <4A6172F0.60707@davidnewall.com>
+Date: Sat, 18 Jul 2009 16:30:00 +0930
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907180043.53257.elendil@planet.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Regression impacts ServeRAID II on IBM xSeries 5500
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 18, 2009 at 12:43:51AM +0200, Frans Pop wrote:
-> On Saturday 18 July 2009, Sam Ravnborg wrote:
-> > >  # disable invalid "can't wrap" optimizations for signed / pointers
-> > > -KBUILD_CFLAGS	+= $(call cc-option,-fwrapv)
-> > > +KBUILD_CFLAGS  += $(shell if [ $(call cc-version) -ge 0402 ]; then \
-> > > +		    echo $(call cc-option,-fwrapv); fi ;)
-> >
-> > This would be simpler if you use:
-> 
-> That's now academic as Linus decided on a different fix.
-OK
+Hello Fujita-san,
 
-> 
-> > # cc-ifversion
-> > # Usage:  EXTRA_CFLAGS += $(call cc-ifversion, -lt, 0402, -O1)
-> > cc-ifversion = $(shell [ $(call cc-version, $(CC)) $(1) $(2) ] && echo $(3))
-> >
-> > We have only one user at the moment so I understand why you missed it.
-> 
-> :-)
-> 
-> I based my patch on arch/x86/Makefile:
-> 35:        KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
-> 36:                echo $(call cc-option,-fno-unit-at-a-time); fi ;)
-> 
-> Guess that could be improved to use cc-ifversion then.
-Yes, please...
+This is my first time reporting a regression.  I hope I'm doing it right.
 
-> 
-> And a quick git grep gives a few other potential candidates:
-> arch/ia64/Makefile:44:ifeq ($(call cc-version),0304)
-> arch/parisc/Makefile:129:       @if test "$(call cc-version)" -lt "0303"; then \
-> arch/powerpc/Makefile:80:GCC_BROKEN_VEC := $(shell if [ $(call cc-version) -lt 0400 ] ; then echo "y"; fi)
-> arch/powerpc/Makefile:219:      @if test "$(call cc-version)" = "0304" ; then \
-> arch/um/Makefile-i386:38:KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
-Same goes for these.
+According to "git bisect," your patch
+10db10d144c0248f285242f79daf6b9de6b00a62 is the first bad commit before
+a regression which affects my ServeRAID II controller.  I get segfault
+running ipssend, which is the program used to interrogate and configure
+the SCSI RAID controller.
 
-	Sam
+    ipssend[5949]: segfault at 20202020 ip b7ece8b1 sp bfce1d1c error 6 in libc-2.9.so[b7e55000+15c000]
+      
+
+Here's what git output on the final bisect:
+
+    commit 10db10d144c0248f285242f79daf6b9de6b00a62
+    Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+    Date:   Fri Aug 29 12:32:18 2008 +0200
+
+        sg: convert the indirect IO path to use the block layer
+        
+        This patch converts the indirect IO path (including mmap IO and old
+        struct sg_header) to use the block layer functions (blk_get_request,
+        blk_execute_rq_nowait, blk_rq_map_user, etc) instead of
+        scsi_execute_async().
+        
+        [Jens: fixed compile error with SCSI logging enabled]
+        
+        Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+        Signed-off-by: Douglas Gilbert <dougg@torque.net>
+        Cc: Mike Christie <michaelc@cs.wisc.edu>
+        Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+        Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+
+    :040000 040000 a2b5d80fb0a666b49d4bdfc2de3aa15c9d8b1ec7 84a927a0964a616313deb410a1da60dd22e2dc13 M    drivers
+      
+
+My machine and assistance is at your disposal.  Rather than guess what
+information you want: what can I tell you?
+
+Regards,
+
+David
