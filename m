@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZGRPXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbZGRPYC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbZGRPXn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 11:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbZGRPXk
+	id S1753204AbZGRPYC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 11:24:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbZGRPYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 11:23:40 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:40022 "EHLO mgw2.diku.dk"
+	Sat, 18 Jul 2009 11:24:01 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:50594 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753237AbZGRPXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 11:23:38 -0400
-Date: Sat, 18 Jul 2009 17:23:35 +0200 (CEST)
+	id S1752922AbZGRPYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 11:24:00 -0400
+Date: Sat, 18 Jul 2009 17:23:57 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: R.E.Wolff@BitWizard.nl, linux-kernel@vger.kernel.org,
+To: holt@sgi.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/6] drivers/char/specialix.c: convert nested spin_lock_irqsave
+Subject: [PATCH 3/6] drivers/misc/sgi-xp: convert nested spin_lock_irqsave
  to spin_lock
-Message-ID: <Pine.LNX.4.64.0907181723110.26792@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0907181723360.26792@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -46,87 +46,22 @@ expression flags;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/char/specialix.c            |   24 ++++++++++----------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/misc/sgi-xp/xpc_uv.c        |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/specialix.c b/drivers/char/specialix.c
-index e72be41..758c9ac 100644
---- a/drivers/char/specialix.c
-+++ b/drivers/char/specialix.c
-@@ -1808,10 +1808,10 @@ static int sx_tiocmset(struct tty_struct *tty, struct file *file,
- 		if (clear & TIOCM_DTR)
- 			port->MSVR &= ~MSVR_DTR;
- 	}
--	spin_lock_irqsave(&bp->lock, flags);
-+	spin_lock(&bp->lock);
- 	sx_out(bp, CD186x_CAR, port_No(port));
- 	sx_out(bp, CD186x_MSVR, port->MSVR);
--	spin_unlock_irqrestore(&bp->lock, flags);
-+	spin_unlock(&bp->lock);
- 	spin_unlock_irqrestore(&port->lock, flags);
- 	func_exit();
- 	return 0;
-@@ -1832,11 +1832,11 @@ static int sx_send_break(struct tty_struct *tty, int length)
- 	port->break_length = SPECIALIX_TPS / HZ * length;
- 	port->COR2 |= COR2_ETC;
- 	port->IER  |= IER_TXRDY;
--	spin_lock_irqsave(&bp->lock, flags);
-+	spin_lock(&bp->lock);
- 	sx_out(bp, CD186x_CAR, port_No(port));
- 	sx_out(bp, CD186x_COR2, port->COR2);
- 	sx_out(bp, CD186x_IER, port->IER);
--	spin_unlock_irqrestore(&bp->lock, flags);
-+	spin_unlock(&bp->lock);
- 	spin_unlock_irqrestore(&port->lock, flags);
- 	sx_wait_CCR(bp);
- 	spin_lock_irqsave(&bp->lock, flags);
-@@ -2022,9 +2022,9 @@ static void sx_unthrottle(struct tty_struct *tty)
- 	if (sx_crtscts(tty))
- 		port->MSVR |= MSVR_DTR;
- 	/* Else clause: see remark in "sx_throttle"... */
--	spin_lock_irqsave(&bp->lock, flags);
-+	spin_lock(&bp->lock);
- 	sx_out(bp, CD186x_CAR, port_No(port));
--	spin_unlock_irqrestore(&bp->lock, flags);
-+	spin_unlock(&bp->lock);
- 	if (I_IXOFF(tty)) {
- 		spin_unlock_irqrestore(&port->lock, flags);
- 		sx_wait_CCR(bp);
-@@ -2034,9 +2034,9 @@ static void sx_unthrottle(struct tty_struct *tty)
- 		sx_wait_CCR(bp);
- 		spin_lock_irqsave(&port->lock, flags);
- 	}
--	spin_lock_irqsave(&bp->lock, flags);
-+	spin_lock(&bp->lock);
- 	sx_out(bp, CD186x_MSVR, port->MSVR);
--	spin_unlock_irqrestore(&bp->lock, flags);
-+	spin_unlock(&bp->lock);
- 	spin_unlock_irqrestore(&port->lock, flags);
+diff --git a/drivers/misc/sgi-xp/xpc_uv.c b/drivers/misc/sgi-xp/xpc_uv.c
+index c76677a..d0052ad 100644
+--- a/drivers/misc/sgi-xp/xpc_uv.c
++++ b/drivers/misc/sgi-xp/xpc_uv.c
+@@ -443,9 +443,9 @@ xpc_handle_activate_mq_msg_uv(struct xpc_partition *part,
  
- 	func_exit();
-@@ -2060,10 +2060,10 @@ static void sx_stop(struct tty_struct *tty)
- 
- 	spin_lock_irqsave(&port->lock, flags);
- 	port->IER &= ~IER_TXRDY;
--	spin_lock_irqsave(&bp->lock, flags);
-+	spin_lock(&bp->lock);
- 	sx_out(bp, CD186x_CAR, port_No(port));
- 	sx_out(bp, CD186x_IER, port->IER);
--	spin_unlock_irqrestore(&bp->lock, flags);
-+	spin_unlock(&bp->lock);
- 	spin_unlock_irqrestore(&port->lock, flags);
- 
- 	func_exit();
-@@ -2088,10 +2088,10 @@ static void sx_start(struct tty_struct *tty)
- 	spin_lock_irqsave(&port->lock, flags);
- 	if (port->xmit_cnt && port->xmit_buf && !(port->IER & IER_TXRDY)) {
- 		port->IER |= IER_TXRDY;
--		spin_lock_irqsave(&bp->lock, flags);
-+		spin_lock(&bp->lock);
- 		sx_out(bp, CD186x_CAR, port_No(port));
- 		sx_out(bp, CD186x_IER, port->IER);
--		spin_unlock_irqrestore(&bp->lock, flags);
-+		spin_unlock(&bp->lock);
- 	}
- 	spin_unlock_irqrestore(&port->lock, flags);
- 
+ 		if (msg->activate_gru_mq_desc_gpa !=
+ 		    part_uv->activate_gru_mq_desc_gpa) {
+-			spin_lock_irqsave(&part_uv->flags_lock, irq_flags);
++			spin_lock(&part_uv->flags_lock);
+ 			part_uv->flags &= ~XPC_P_CACHED_ACTIVATE_GRU_MQ_DESC_UV;
+-			spin_unlock_irqrestore(&part_uv->flags_lock, irq_flags);
++			spin_unlock(&part_uv->flags_lock);
+ 			part_uv->activate_gru_mq_desc_gpa =
+ 			    msg->activate_gru_mq_desc_gpa;
+ 		}
