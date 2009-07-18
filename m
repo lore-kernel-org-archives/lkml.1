@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753480AbZGRRXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751479AbZGRRoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753480AbZGRRXw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 13:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbZGRRXq
+	id S1751479AbZGRRoj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 13:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbZGRRoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 13:23:46 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55749 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753377AbZGRRXo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 13:23:44 -0400
-Subject: Re: [tip:core/locking] lockdep: Update memory usage introduced by
- BFS
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, tom.leiming@gmail.com, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-292264ece1ffdc9dacc1af486e28ee91cc66fb2d@git.kernel.org>
-References: <1246201486-7308-9-git-send-email-tom.leiming@gmail.com>
-	 <tip-292264ece1ffdc9dacc1af486e28ee91cc66fb2d@git.kernel.org>
-Content-Type: text/plain
-Date: Sat, 18 Jul 2009 19:23:30 +0200
-Message-Id: <1247937810.6597.34.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sat, 18 Jul 2009 13:44:38 -0400
+Received: from bu3sch.de ([62.75.166.246]:45573 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751015AbZGRRoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 13:44:37 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH] nvram: Fix root triggerable integer overflow crash
+Date: Sat, 18 Jul 2009 19:44:33 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <200907180256.45934.mb@bu3sch.de> <20090718150909.GA1191@khazad-dum.debian.net>
+In-Reply-To: <20090718150909.GA1191@khazad-dum.debian.net>
+X-Move-Along: Nothing to see here. No, really... Nothing.
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907181944.33338.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-07-18 at 14:24 +0000, tip-bot for Ming Lei wrote:
-> Commit-ID:  292264ece1ffdc9dacc1af486e28ee91cc66fb2d
-> Gitweb:     http://git.kernel.org/tip/292264ece1ffdc9dacc1af486e28ee91cc66fb2d
-> Author:     Ming Lei <tom.leiming@gmail.com>
-> AuthorDate: Thu, 16 Jul 2009 15:44:29 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Sat, 18 Jul 2009 16:02:56 +0200
+On Saturday 18 July 2009 17:09:09 Henrique de Moraes Holschuh wrote:
+> On Sat, 18 Jul 2009, Michael Buesch wrote:
+> > This bug probably is exploitable by overwriting the function return address or something
+> > like that. But let's hope there's no distribution out there with user write permissions
+> > on the /dev/nvram node. So it's probably only exploitable by root.
 > 
-> lockdep: Update memory usage introduced by BFS
-> 
-> Also account the BFS memory usage.
-> 
-> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> LKML-Reference: <1246201486-7308-9-git-send-email-tom.leiming@gmail.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> ---
->  kernel/lockdep.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-> index b896f23..930335d 100644
-> --- a/kernel/lockdep.c
-> +++ b/kernel/lockdep.c
-> @@ -3429,7 +3429,8 @@ void __init lockdep_info(void)
->  		sizeof(struct list_head) * CLASSHASH_SIZE +
->  		sizeof(struct lock_list) * MAX_LOCKDEP_ENTRIES +
->  		sizeof(struct lock_chain) * MAX_LOCKDEP_CHAINS +
-> -		sizeof(struct list_head) * CHAINHASH_SIZE) / 1024);
-> +		sizeof(struct list_head) * CHAINHASH_SIZE) / 1024 +
-> +		sizeof(struct circular_queue) + sizeof(bfs_accessed));
->  
->  	printk(" per task-struct memory footprint: %lu bytes\n",
->  		sizeof(struct held_lock) * MAX_LOCK_DEPTH);
+> I have seen setups with group-writeable /dev/nvram to support some (old!)
+> thinkpad utilities.
 
-/usr/src/linux-2.6/kernel/lockdep.c:3493: error: invalid application of
-'sizeof' to incomplete type 'struct circular_queue'
+Yes it is  crw-rw---- 1 root root  on Debian.
+Are there any setuid programs accessing nvram (like the recent tun/pulseaudio exploit?)
 
-This wants the following folded in.
+> Even if it cannot be exploited for more than a DoS,
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/lockdep.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+You can randomly overwrite the kernel stack with the data you write to the device.
+So I do think it is exploitable, because the char device writer controls the kernel stack completely.
+However, I do not have an example exploit.
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 3718a98..33fdda9 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3489,8 +3489,11 @@ void __init lockdep_info(void)
- 		sizeof(struct list_head) * CLASSHASH_SIZE +
- 		sizeof(struct lock_list) * MAX_LOCKDEP_ENTRIES +
- 		sizeof(struct lock_chain) * MAX_LOCKDEP_CHAINS +
--		sizeof(struct list_head) * CHAINHASH_SIZE) / 1024 +
--		sizeof(struct circular_queue) + sizeof(bfs_accessed));
-+		sizeof(struct list_head) * CHAINHASH_SIZE) / 1024
-+#ifdef CONFIG_PROVE_LOCKING
-+		+ sizeof(struct circular_queue) + sizeof(bfs_accessed)
-+#endif
-+		);
- 
- 	printk(" per task-struct memory footprint: %lu bytes\n",
- 		sizeof(struct held_lock) * MAX_LOCK_DEPTH);
+> IMO that's still bad 
+> enough to warrant fixing this also on stable kernels if they are vulnerable.
+> So, does the fix also apply to 2.6.27+ ?  If it does, please send it to
+> stable@kernel.org as well.
 
+Yeah I forgot to add stable to CC.
 
+-- 
+Greetings, Michael.
