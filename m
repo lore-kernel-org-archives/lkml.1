@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZGRSdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbZGRSxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753505AbZGRSdI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 14:33:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZGRSdH
+	id S1753552AbZGRSxQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 14:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZGRSxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 14:33:07 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:9396 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbZGRSdG (ORCPT
+	Sat, 18 Jul 2009 14:53:16 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37554 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752496AbZGRSxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 14:33:06 -0400
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_AGfTd+n7egBtrtuqNBS0PQ)"
-Date: Sat, 18 Jul 2009 14:32:59 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>,
-       stable@const.famille.thibault.fr
-Subject: Re: vc: create vcs(a) devices for consoles
-In-reply-to: <20090718161926.GN28509@const.famille.thibault.fr>
-Message-id: <alpine.LFD.2.00.0907181431400.3138@xanadu.home>
-References: <1247931257.29760.1.camel@yio.site>
- <20090718160101.GA13346@kroah.com>
- <ac3eb2510907180912u7b30d8actcfab15776fe2d99d@mail.gmail.com>
- <20090718161926.GN28509@const.famille.thibault.fr>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 18 Jul 2009 14:53:15 -0400
+X-Sasl-enc: 8Alr3WM8XHELyRerLEyx3aadQo9zOUSPlUIfwU9kr862 1247943194
+Date: Sat, 18 Jul 2009 15:53:11 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] nvram: Fix root triggerable integer overflow crash
+Message-ID: <20090718185311.GA13198@khazad-dum.debian.net>
+References: <200907180256.45934.mb@bu3sch.de>
+ <20090718150909.GA1191@khazad-dum.debian.net>
+ <200907181944.33338.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907181944.33338.mb@bu3sch.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---Boundary_(ID_AGfTd+n7egBtrtuqNBS0PQ)
-Content-type: TEXT/PLAIN; charset=iso-8859-1
-Content-transfer-encoding: 8BIT
-
-On Sat, 18 Jul 2009, Samuel Thibault wrote:
-
-> Kay Sievers, le Sat 18 Jul 2009 18:12:20 +0200, a écrit :
-> > On Sat, Jul 18, 2009 at 18:01, Greg KH<greg@kroah.com> wrote:
-> > > On Sat, Jul 18, 2009 at 05:34:17PM +0200, Kay Sievers wrote:
-> > >> From: Kay Sievers <kay.sievers@vrfy.org>
-> > >> Subject: vc: create vcs(a) devices for consoles
-> > >>
-> > >> The buffer for the consoles are unconditionally allocated at
-> > >> con_init() time, which miss the creation of the vcs(a) devices.
-> > >>
-> > >> Since 2.6.30, these devices are no longer created at open()
-> > >> and removed on close(), but controlled by the lifetime of the
-> > >> buffers.
-> > >
-> > > Is this a bug in .31-rc right now?  Should this make it into the final
-> > > .31 release?
+On Sat, 18 Jul 2009, Michael Buesch wrote:
+> On Saturday 18 July 2009 17:09:09 Henrique de Moraes Holschuh wrote:
+> > On Sat, 18 Jul 2009, Michael Buesch wrote:
+> > > This bug probably is exploitable by overwriting the function return address or something
+> > > like that. But let's hope there's no distribution out there with user write permissions
+> > > on the /dev/nvram node. So it's probably only exploitable by root.
 > > 
-> > Yes, and in .30.
+> > I have seen setups with group-writeable /dev/nvram to support some (old!)
+> > thinkpad utilities.
 > 
-> Please also push it to stable@kernel.org The bug makes the console
-> unusable e.g. for blind users using braille devices.
+> Yes it is  crw-rw---- 1 root root  on Debian.
 
-... as well as blind developers as myself.  Thanks for fixing this.
+That is not a problem. "crw-rw---- 1 root nvram", would be.  That becomes a
+local privilege escalation right there, if it can be exploited for something
+other than DoS (which looks somewhat likely).
 
-
-Nicolas
-
---Boundary_(ID_AGfTd+n7egBtrtuqNBS0PQ)--
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
