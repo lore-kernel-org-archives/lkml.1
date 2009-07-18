@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751714AbZGRMls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751834AbZGRM6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751714AbZGRMls (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 08:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbZGRMlq
+	id S1751834AbZGRM6v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 08:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZGRM6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 08:41:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54578 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751423AbZGRMlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 08:41:45 -0400
-Message-ID: <4A61C2E6.1030507@redhat.com>
-Date: Sat, 18 Jul 2009 05:41:10 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Zhaolei <zhaolei@cn.fujitsu.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Add function to convert between calendar time and
- broken-down time for universal use
-References: <4A5C3BC0.6020701@cn.fujitsu.com> <20090718100050.GB24164@elte.hu>
-In-Reply-To: <20090718100050.GB24164@elte.hu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sat, 18 Jul 2009 08:58:49 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54465 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbZGRM6s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 08:58:48 -0400
+Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting of frozen
+ tasks really
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Matt Helsley <matthltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@tuxonice.net>,
+       stable@kernel.org, containers@lists.linux-foundation.org,
+       linux-pm@lists.linux-foundation.org
+In-Reply-To: <1247864134.17553.30.camel@localhost.localdomain>
+References: <20090717121545.489258927@linutronix.de>
+	 <20090717122103.225652146@linutronix.de> <1247833910.15751.61.camel@twins>
+	 <20090717152235.GA5878@count0.beaverton.ibm.com>
+	 <1247849254.6522.75.camel@laptop>
+	 <1247864134.17553.30.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 18 Jul 2009 14:56:31 +0200
+Message-Id: <1247921791.6597.5.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Fri, 2009-07-17 at 15:55 -0500, Nathan Lynch wrote:
+> On Fri, 2009-07-17 at 18:47 +0200, Peter Zijlstra wrote:
+> > On Fri, 2009-07-17 at 08:22 -0700, Matt Helsley wrote:
+> > 
+> > > The job scheduler in question does not use FROZEN as a transient state and
+> > > does not use checkpoint/restart at all since c/r is still a work in progress.
+> 
+> Right, the job scheduler uses the cgroup freezer as a mechanism to
+> preempt a low priority job for a higher priority job.  (It had used
+> SIGSTOP in the past.)  So in this scenario a frozen cgroup may remain in
+> that state for a while.  Load average is consulted as a measure of
+> system utilization.
 
-Ingo Molnar wrote:
-> I'm also wondering whether including LGPL glibc code in the kernel 
-> like this is license-appropriate
+I think that this is an utterly broken use for it, if you want something
+like that make a signal cgroup or something and deliver SIGSTOP to all
+of them.
 
-You can declare the modified code GPLed, no problem.
+In other words, why is the freezer any better than the SIGSTOP approach?
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> > > Even when used for power management it seems wrong to count frozen tasks
+> > > towards the loadavg since they aren't using CPU time or waiting for IO.
+> > 
+> > You're abusing it for _WHAT_?
+> 
+> I think Matt was referring to system-wide suspend/resume/hibernate, not
+> a behavior of the job scheduler, if that's your concern.
 
-iEYEARECAAYFAkphwuUACgkQ2ijCOnn/RHTUFACcD0BZA8AakHERAjnkFOAbYDE0
-A7YAnRUrer6z+mRmwXgBBT3/jMUGDBV9
-=t0FC
------END PGP SIGNATURE-----
+I understood he referred to the crazy use-case you mentioned above, IMHO
+frozen should be a temporary state used for things like
+snapshot/migrate.
+
+I'm still very tempted to plain simply revert that original patch.
+
