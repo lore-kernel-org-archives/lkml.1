@@ -1,170 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbZGRU36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbZGRUeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbZGRU36 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 16:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbZGRU34
+	id S1753801AbZGRUeh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 16:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753746AbZGRUef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 16:29:56 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37793 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753744AbZGRU3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 16:29:55 -0400
-X-Authenticated: #23875046
-X-Provags-ID: V01U2FsdGVkX197YP5OVFx7qMdnpgI+pPm4tktA4/8DJNwxtAXhVZ
-	LVLmwVWPESttX5
-Message-ID: <4A6230C0.6000509@fisher-privat.net>
-Date: Sat, 18 Jul 2009 22:29:52 +0200
-From: Alexey Fisher <bug-track@fisher-privat.net>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090710)
+	Sat, 18 Jul 2009 16:34:35 -0400
+Received: from www.tglx.de ([62.245.132.106]:36767 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753674AbZGRUef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 16:34:35 -0400
+Date: Sat, 18 Jul 2009 22:33:08 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: s2r badness
+In-Reply-To: <1247947383.4872.3.camel@laptop>
+Message-ID: <alpine.LFD.2.00.0907182223450.11571@localhost.localdomain>
+References: <1247947383.4872.3.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [kmemleak] 60 wornings on sysfs_new_dirent+0x10c
-References: <4A5C20E5.6010203@fisher-privat.net>	 <84144f020907140019g511723dctb541f6333d1a082b@mail.gmail.com>	 <4A5C41C8.7040904@fisher-privat.net> <1247564356.28240.30.camel@pc1117.cambridge.arm.com>
-In-Reply-To: <1247564356.28240.30.camel@pc1117.cambridge.arm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I getting a lot of sysfs_new_dirent warnings with latest ARM git.
-this message come if my usb-cardreader is attached.
+On Sat, 18 Jul 2009, Peter Zijlstra wrote:
 
+> Hi,
+> 
+> s2r seems to resume again on my latest kernel build (used to be broken
+> for a long-ish while).
+> 
+> However it does generate the blow splats.
+> 
+> [   74.576953] ------------[ cut here ]------------
+> [   74.576953] WARNING: at /usr/src/linux-2.6/kernel/softirq.c:143 local_bh_enable_ip+0x8b/0xc0()
+> [   74.576953] Hardware name: 2242CTO
+> [   74.576953] Modules linked in: cryptd aes_x86_64 aes_generic ecryptfs
+> nfs lockd nfs_acl auth_rpcgss sunrpc binfmt_misc fbcon tileblit font
+> bitblit softcursor bridge stp llc bnep autofs4 acpi_cpufreq joydev btusb
+> coretemp sbp2 snd_hda_codec_conexant pcmcia ecb psmouse serio_raw
+> iTCO_wdt iTCO_vendor_support snd_hda_intel snd_hda_codec snd_pcm_oss
+> pcspkr snd_mixer_oss iwlagn iwlcore snd_pcm mac80211 snd_seq_dummy
+> ricoh_mmc sdhci_pci sdhci snd_seq_oss snd_seq_midi snd_rawmidi
+> snd_seq_midi_event yenta_socket rsrc_nonstatic pcmcia_core cfg80211
+> snd_seq snd_timer snd_seq_device snd soundcore snd_page_alloc i915
+> intel_agp thinkpad_acpi led_class video nvram ohci1394 ieee1394 ehci_hcd
+> uhci_hcd fuse
+> [   74.576953] Pid: 5406, comm: bash Not tainted 2.6.31-rc3-tip #32
+> [   74.576953] Call Trace:
+> [   74.576953]  [<ffffffff8107401b>] ? local_bh_enable_ip+0x8b/0xc0
+> [   74.576953]  [<ffffffff8106c838>] warn_slowpath_common+0x78/0xd0
+> [   74.576953]  [<ffffffff8106c89f>] warn_slowpath_null+0xf/0x20
+> [   74.576953]  [<ffffffff8107401b>] local_bh_enable_ip+0x8b/0xc0
+> [   74.576953]  [<ffffffff814d08d9>] _spin_unlock_bh+0x19/0x20
+> [   74.576953]  [<ffffffff810d2c77>] load_debug_registers+0x67/0x80
 
-this are first sysfs_new_dirent warnings:
-======================================================
-unreferenced object 0xffff880133c580a0 (size 8):
-   comm "khubd", pid 218, jiffies 4294893605
-   hex dump (first 8 bytes):
-     31 2d 36 00 01 88 ff ff                          1-6.....
-   backtrace:
-     [<ffffffff814a3115>] kmemleak_alloc+0x25/0x60
-     [<ffffffff810f36ab>] __kmalloc_track_caller+0x10b/0x200
-     [<ffffffff810d4480>] kstrdup+0x40/0x70
-     [<ffffffff8115ebdc>] sysfs_new_dirent+0x10c/0x120
-     [<ffffffff8115f9fd>] create_dir+0x3d/0xb0
-     [<ffffffff8115faa4>] sysfs_create_dir+0x34/0x50
-     [<ffffffff8121ea37>] kobject_add_internal+0xb7/0x200
-     [<ffffffff8121eca8>] kobject_add_varg+0x38/0x60
-     [<ffffffff8121ed84>] kobject_add+0x44/0x70
-     [<ffffffff812f8408>] device_add+0x118/0x5d0
-     [<ffffffff8134914d>] usb_new_device+0x6d/0xe0
-     [<ffffffff8134adf8>] hub_thread+0x878/0x1280
-     [<ffffffff810644f6>] kthread+0x96/0xa0
-     [<ffffffff8100c69a>] child_rip+0xa/0x20
-     [<ffffffffffffffff>] 0xffffffffffffffff
-unreferenced object 0xffff880133c653c0 (size 80):
-   comm "khubd", pid 218, jiffies 4294893605
-   hex dump (first 32 bytes):
-     01 00 00 00 00 00 00 80 10 2e 1c 34 01 88 ff ff  ...........4....
-     00 00 00 00 00 00 00 00 a0 80 c5 33 01 88 ff ff  ...........3....
-   backtrace:
-     [<ffffffff814a3115>] kmemleak_alloc+0x25/0x60
-     [<ffffffff810f2aeb>] kmem_cache_alloc+0xfb/0x180
-     [<ffffffff8115eb0c>] sysfs_new_dirent+0x3c/0x120
-     [<ffffffff8115f9fd>] create_dir+0x3d/0xb0
-     [<ffffffff8115faa4>] sysfs_create_dir+0x34/0x50
-     [<ffffffff8121ea37>] kobject_add_internal+0xb7/0x200
-     [<ffffffff8121eca8>] kobject_add_varg+0x38/0x60
-     [<ffffffff8121ed84>] kobject_add+0x44/0x70
-     [<ffffffff812f8408>] device_add+0x118/0x5d0
-     [<ffffffff8134914d>] usb_new_device+0x6d/0xe0
-     [<ffffffff8134adf8>] hub_thread+0x878/0x1280
-     [<ffffffff810644f6>] kthread+0x96/0xa0
-     [<ffffffff8100c69a>] child_rip+0xa/0x20
-     [<ffffffffffffffff>] 0xffffffffffffffff
-unreferenced object 0xffff880133c580e8 (size 8):
-   comm "khubd", pid 218, jiffies 4294893605
-   hex dump (first 8 bytes):
-     31 2d 36 3a 31 2e 30 00                          1-6:1.0.
-   backtrace:
-     [<ffffffff814a3115>] kmemleak_alloc+0x25/0x60
-     [<ffffffff810f36ab>] __kmalloc_track_caller+0x10b/0x200
-     [<ffffffff810d4480>] kstrdup+0x40/0x70
-     [<ffffffff8115ebdc>] sysfs_new_dirent+0x10c/0x120
-     [<ffffffff8115f9fd>] create_dir+0x3d/0xb0
-     [<ffffffff8115faa4>] sysfs_create_dir+0x34/0x50
-     [<ffffffff8121ea37>] kobject_add_internal+0xb7/0x200
-     [<ffffffff8121eca8>] kobject_add_varg+0x38/0x60
-     [<ffffffff8121ed84>] kobject_add+0x44/0x70
-     [<ffffffff812f8408>] device_add+0x118/0x5d0
-     [<ffffffff81351054>] usb_set_configuration+0x444/0x740
-     [<ffffffff8135aba2>] generic_probe+0x32/0xb0
-     [<ffffffff81351425>] usb_probe_device+0x25/0x30
-     [<ffffffff812faec6>] driver_probe_device+0x86/0x180
-     [<ffffffff812fb0ab>] __device_attach+0x4b/0x50
-     [<ffffffff812fa048>] bus_for_each_drv+0x68/0x90
-unreferenced object 0xffff880133cf2b40 (size 80):
-   comm "khubd", pid 218, jiffies 4294893605
-   hex dump (first 32 bytes):
-     01 00 00 00 00 00 00 80 c0 53 c6 33 01 88 ff ff  .........S.3....
-     00 00 00 00 00 00 00 00 e8 80 c5 33 01 88 ff ff  ...........3....
-   backtrace:
-     [<ffffffff814a3115>] kmemleak_alloc+0x25/0x60
-     [<ffffffff810f2aeb>] kmem_cache_alloc+0xfb/0x180
-     [<ffffffff8115eb0c>] sysfs_new_dirent+0x3c/0x120
-     [<ffffffff8115f9fd>] create_dir+0x3d/0xb0
-     [<ffffffff8115faa4>] sysfs_create_dir+0x34/0x50
-     [<ffffffff8121ea37>] kobject_add_internal+0xb7/0x200
-     [<ffffffff8121eca8>] kobject_add_varg+0x38/0x60
-     [<ffffffff8121ed84>] kobject_add+0x44/0x70
-     [<ffffffff812f8408>] device_add+0x118/0x5d0
-     [<ffffffff81351054>] usb_set_configuration+0x444/0x740
-     [<ffffffff8135aba2>] generic_probe+0x32/0xb0
-     [<ffffffff81351425>] usb_probe_device+0x25/0x30
-     [<ffffffff812faec6>] driver_probe_device+0x86/0x180
-     [<ffffffff812fb0ab>] __device_attach+0x4b/0x50
-     [<ffffffff812fa048>] bus_for_each_drv+0x68/0x90
-     [<ffffffff812fb166>] device_attach+0x86/0x90
-===================================================================
+That's the hw breakpoint support stuff which does the spin_unlock_bh
+at a point where interrupts are disabled. So that's a -tip tree issue,
+not mainline.
 
+> [   74.576953]  [<ffffffff813cbcdb>] restore_processor_state+0x22b/0x280
+> [   74.576953]  [<ffffffff81286643>] acpi_suspend_enter+0x6a/0xeb
+> [   74.576953]  [<ffffffff810a217f>] suspend_devices_and_enter+0x22f/0x240
+> [   74.576953]  [<ffffffff810a22b9>] enter_state+0x129/0x150
+> [   74.576953]  [<ffffffff810a17da>] state_store+0xba/0x100
+> [   74.576953]  [<ffffffff81248a17>] kobj_attr_store+0x17/0x20
+> [   74.576953]  [<ffffffff81176155>] sysfs_write_file+0xc5/0x140
+> [   74.576953]  [<ffffffff8111402b>] vfs_write+0xcb/0x1a0
+> [   74.576953]  [<ffffffff811141f0>] sys_write+0x50/0x90
+> [   74.576953]  [<ffffffff8102e242>] system_call_fastpath+0x16/0x1b
+> [   74.576953] ---[ end trace 58ad491f88b81455 ]---
+> 
+> 
+> [   75.906997] Call Trace:
+> [   75.907001]  <IRQ>  [<ffffffff810b63c6>] __report_bad_irq+0x26/0xa0
+> [   75.907022]  [<ffffffff810b65c8>] note_interrupt+0x188/0x1d0
+> [   75.907029]  [<ffffffff810b6c85>] handle_fasteoi_irq+0xd5/0x100
+> [   75.907038]  [<ffffffff81030b7f>] handle_irq+0x1f/0x30
+> [   75.907043]  [<ffffffff8103029e>] do_IRQ+0x6e/0xf0
+> [   75.907052]  [<ffffffff8102ec53>] ret_from_intr+0x0/0x11
+> [   75.907055]  <EOI>  [<ffffffff81096130>] ? tick_nohz_stop_sched_tick+0x70/0x3a0
+> [   75.907072]  [<ffffffff8102ca0a>] ? cpu_idle+0x2a/0xd0
+> [   75.907080]  [<ffffffff814ba485>] ? rest_init+0x75/0x80
+> [   75.907090]  [<ffffffff817aed55>] ? start_kernel+0x37a/0x42a
+> [   75.907098]  [<ffffffff817ae299>] ? x86_64_start_reservations+0x99/0xb9
+> [   75.907106]  [<ffffffff817ae3be>] ? x86_64_start_kernel+0x105/0x120
+> [   75.907113]  [<ffffffff817ae140>] ? early_idt_handler+0x0/0x71
+> [   75.907117] handlers:
+> [   75.907121] [<ffffffff8137fe10>] (usb_hcd_irq+0x0/0x90)
+> [   75.907130] Disabling IRQ #18
 
-dump:
-==================================================================
-[  604.393175] kmemleak: Object 0xffff880133c580a0 (size 8):
-[  604.393179] kmemleak:   comm "khubd", pid 218, jiffies 4294893605
-[  604.393180] kmemleak:   min_count = 1
-[  604.393182] kmemleak:   count = 0
-[  604.393183] kmemleak:   flags = 0x3
-[  604.393184] kmemleak:   backtrace:
-[  604.393186]      [<ffffffff814a3115>] kmemleak_alloc+0x25/0x60
-[  604.393193]      [<ffffffff810f36ab>] __kmalloc_track_caller+0x10b/0x200
-[  604.393198]      [<ffffffff810d4480>] kstrdup+0x40/0x70
-[  604.393201]      [<ffffffff8115ebdc>] sysfs_new_dirent+0x10c/0x120
-[  604.393206]      [<ffffffff8115f9fd>] create_dir+0x3d/0xb0
-[  604.393209]      [<ffffffff8115faa4>] sysfs_create_dir+0x34/0x50
-[  604.393212]      [<ffffffff8121ea37>] kobject_add_internal+0xb7/0x200
-[  604.393217]      [<ffffffff8121eca8>] kobject_add_varg+0x38/0x60
-[  604.393220]      [<ffffffff8121ed84>] kobject_add+0x44/0x70
-[  604.393223]      [<ffffffff812f8408>] device_add+0x118/0x5d0
-[  604.393227]      [<ffffffff8134914d>] usb_new_device+0x6d/0xe0
-[  604.393232]      [<ffffffff8134adf8>] hub_thread+0x878/0x1280
-[  604.393235]      [<ffffffff810644f6>] kthread+0x96/0xa0
-[  604.393240]      [<ffffffff8100c69a>] child_rip+0xa/0x20
-[  604.393243]      [<ffffffffffffffff>] 0xffffffffffffffff
-===========================================================================
+Does this one happen with mainline as well ?
+ 
+Just to make the list more complete. If tracing is enabled across
+suspend/resume you'll hit that one as well:
 
-gdb:
-==========================================================
-(gdb) l *(sysfs_new_dirent+0x10c)
-0xffffffff8115ebdc is in sysfs_new_dirent (fs/sysfs/dir.c:315).
-310	{
-311		char *dup_name = NULL;
-312		struct sysfs_dirent *sd;
-313	
-314		if (type & SYSFS_COPY_NAME) {
-315			name = dup_name = kstrdup(name, GFP_KERNEL);
-316			if (!name)
-317				return NULL;
-318		}
-319	
-=======================================================
+WARNING: at /home/tglx/work/kernel/git/linux-2.6/kernel/trace/ring_buffer.c:1392 rb_reserve_next_event+0x133/0x27c()
 
+Negative timestamp delta which is probably due to sched_clock not yet
+adjusted to the TSC which got reset.
 
+Thanks,
 
-
+	tglx
