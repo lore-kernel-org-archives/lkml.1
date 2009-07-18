@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZGRW2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZGRWeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbZGRW2d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 18:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZGRW2b
+	id S1753994AbZGRWeO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 18:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZGRWeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 18:28:31 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49196 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753747AbZGRW2b (ORCPT
+	Sat, 18 Jul 2009 18:34:13 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:37507 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753964AbZGRWeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 18:28:31 -0400
-Date: Sat, 18 Jul 2009 15:30:11 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@tglx.de>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, nikolag@ca.ibm.com,
-       Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [RFC][PATCH] Introduce CLOCK_REALTIME_COARSE
-Message-ID: <20090718153011.1de3af8e@infradead.org>
-In-Reply-To: <1247954978.14494.19.camel@work-vm>
-References: <1247873945.8334.67.camel@localhost.localdomain>
-	<alpine.LFD.2.00.0907181027510.11571@localhost.localdomain>
-	<1247954978.14494.19.camel@work-vm>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Sat, 18 Jul 2009 18:34:12 -0400
+Subject: Re: ext4 memory leak (was Re: [PATCH] x86: _edata should include
+ all .data.* sections on X86_64)
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexey Fisher <bug-track@fisher-privat.net>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-ext4@vger.kernel.org
+In-Reply-To: <20090718115556.GA31007@elte.hu>
+References: <84144f020907140019g511723dctb541f6333d1a082b@mail.gmail.com>
+	 <4A5C41C8.7040904@fisher-privat.net>
+	 <1247564356.28240.30.camel@pc1117.cambridge.arm.com>
+	 <1247565175.28240.37.camel@pc1117.cambridge.arm.com>
+	 <4A5C5A59.5080304@fisher-privat.net>
+	 <1247567499.28240.48.camel@pc1117.cambridge.arm.com>
+	 <4A5C5FD0.3020204@fisher-privat.net>
+	 <1247574390.28240.67.camel@pc1117.cambridge.arm.com>
+	 <20090715080336.GA4823@skywalker> <4A5D9939.3000500@fisher-privat.net>
+	 <20090718115556.GA31007@elte.hu>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Sat, 18 Jul 2009 23:33:35 +0100
+Message-Id: <1247956415.4236.9.camel@toshiba-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-OriginalArrivalTime: 18 Jul 2009 22:33:42.0072 (UTC) FILETIME=[CD926380:01CA07F7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 18 Jul 2009 15:09:38 -0700
-john stultz <johnstul@us.ibm.com> wrote:
+On Sat, 2009-07-18 at 13:55 +0200, Ingo Molnar wrote:
+> * Alexey Fisher <bug-track@fisher-privat.net> wrote:
+> 
+> > This patch work for me.
+> 
+> nice. Any leftovers that might be false positives and need 
+> annotation?
 
-> After talking with some application writers who want very fast, but
-> not fine-grained timestamps, I decided to try to implement a new
-> clock_ids to clock_gettime(): CLOCK_REALTIME_COARSE and
-> CLOCK_MONOTONIC_COARSE which returns the time at the last tick. This
-> is very fast as we don't have to access any hardware (which can be
-> very painful if you're using something like the acpi_pm clocksource),
-> and we can even use the vdso clock_gettime() method to avoid the
-> syscall. The only trade off is you only get low-res tick grained time
-> resolution.
+With the latest mainline all the reports I get look like real leaks but
+some of them are pretty difficult to debug. I have a kmemleak
+development tree as well which, among other things like more
+cond_resched() calls, scans all the task stacks (currently using
+for_each_process) but it doesn't reduce the number of reports.
 
-Does this tie us to having a tick? I still have hope that we can get
-rid of the tick even when apps are running .... since with CFS we don't
-really need the tick for the scheduler anymore for example....
+> We learned this with lockdep: the moment a typical x86 distro bootup 
+> is 'warnings free', utility of the debugging facility increases 
+> dramatically: people can standardize on 'kmemleak should never 
+> produce warnings' workflows and distros can also start feeding 
+> kmemleak reports into kerneloops.org or so.
 
-
-
-
-> me_lock, seq));
-> +
-> +	set_normalized_timespec(&now, now.tv_sec + mono.tv_sec,
-> +				now.tv_nsec + mono.tv_nsec);
-> +	return now;
-> +}
-> +EXPORT_SYMBOL(get_monotonic_coarse);
-> +
-
-why does this need to be exported ?
+Yes. It's also easy to identify recent commits causing leaks but
+currently it looks like some of the have been around for some time
+(though probably not so serious leaks).
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Catalin
+
