@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753701AbZGRJcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZGRJgC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753701AbZGRJcR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 05:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZGRJcO
+	id S1754195AbZGRJgC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 05:36:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbZGRJgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 05:32:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40373 "EHLO mx2.mail.elte.hu"
+	Sat, 18 Jul 2009 05:36:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47019 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751346AbZGRJcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 05:32:13 -0400
-Date: Sat, 18 Jul 2009 11:31:15 +0200
+	id S1751445AbZGRJgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 05:36:00 -0400
+Date: Sat, 18 Jul 2009 11:35:00 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Dominik Brodowski <linux@brodo.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] Adding transition of CPU frequency counting
-	support to perfcounters
-Message-ID: <20090718093115.GB9142@elte.hu>
-References: <20090716.110834.886429911292889318.mitake@dcl.info.waseda.ac.jp>
+To: Anton Blanchard <anton@samba.org>
+Cc: a.p.zijlstra@chello.nl, paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf_counter: Add alignment-faults and
+	emulation-faults sw events
+Message-ID: <20090718093500.GC9142@elte.hu>
+References: <20090706120815.GC4391@kryten> <20090710093757.GG27445@elte.hu> <20090715120319.GE9805@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090716.110834.886429911292889318.mitake@dcl.info.waseda.ac.jp>
+In-Reply-To: <20090715120319.GE9805@kryten>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -30,64 +28,76 @@ X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
 X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0005]
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+* Anton Blanchard <anton@samba.org> wrote:
 
-> Hi,
+> Hi Ingo,
 > 
-> I'm trying to add transition of CPU frequency counting support to perfcounters.
-> If perf can count freq transition, this will be more useful
-> because frequencies of CPUs are dynamic things today.
-> And there's no way to count freq transitions per process level.
+> > Looks useful.
+> > 
+> > I'm wondering about the enumeration space: in other cases when 
+> > some simple event was further refined we went to add a new 
+> > perf_type_id and a separate enumeration space, with no limits to 
+> > extensibility. We'd have a new 'enum perf_sw_fault_id' space.
+> > 
+> > Page faults are special anyway, because they carry a 'data' 
+> > (faulting address) sample as well.
+> > 
+> > So i'm wondering how a good, generic enumeration of all things 
+> > page faults would look like. If we extend perf_sw_ids linearly 
+> > we might lose some structure.
+> > 
+> > For example major versus minor might be a dimension (bit) in the 
+> > enumeration space, so we'd have:
+> > 
+> >    { major | minor } x { native, unaligned, emulated }
+> > 
+> > This provides an advantage already: the current 'all' page 
+> > faults counter would become the 'major|minor' case in the new 
+> > enumeration.
+> > 
+> > We could still keep around the old events as well for some time, 
+> > but the tools would use the new enumeration.
 > 
-> But I have a question.
-> I copied the way of sw-events already exist such as migration or page-fault.
-> But like this,
-> 
-> % perf stat emacs
-> 
->  Performance counter stats for 'emacs':
-> 
->     1324.294227  task-clock-msecs         #      0.704 CPUs
->            1980  context-switches         #      0.001 M/sec
->              30  CPU-migrations           #      0.000 M/sec
->           42986  page-faults              #      0.032 M/sec
->               0  cpufreq-up               #      0.000 M/sec
->                  ^^^^^^^^^^
->               0  cpufreq-down             #      0.000 M/sec
->                  ^^^^^^^^^^^^      
->      4057387374  cycles                   #   3063.811 M/sec
->      4767004447  instructions             #      1.175 IPC
->        20687483  cache-references         #     15.622 M/sec
->         5103528  cache-misses             #      3.854 M/sec
-> 
->     1.880587959  seconds time elapsed
-> 
-> perf said there's no freq transition.
-> But I checked there are some transitions with cpufreq-info.
-> 
-> Can you find something bad in this patch?
-> I'll continue to try implementing.
-> If you find some bad points, I'd like to hear..
+> My initial feeling is that emulation and alignment faults 
+> shouldn't roll up into page faults, because that may cause cause 
+> someone to think the problem is something to do with translation. 
+> I don't have a strong opinion on it however :)
 
-> +		if (freqs->new > freqs->old)
-> +			perf_swcounter_event(PERF_COUNT_SW_CPUFREQ_UP,
-> +					     1, 0, NULL, 0);
-> +		else
-> +			perf_swcounter_event(PERF_COUNT_SW_CPUFREQ_DOWN,
-> +					     1, 0, NULL, 0);
+I have no strong feelings either so please pick the variant that 
+feels most natural. I do think we should try to generalize it a bit 
+and move it into its own enumeration space, out of the generic sw 
+counters - do you agree with that?
 
-Could you try:
+> Since we are talking about SW events, I thought I'd bring up some 
+> ideas I was discussing with Paul the other day. The hardware guys 
+> like to build CPI stacks, basically breaking down the CPI into its 
+> components (CPI due to TLB misses, CPI due to dcache misses etc). 
+> This offers a great high level view of what needs to be fixed in 
+> order to improve performance.
+> 
+> Taking a step back, it would be great if we could have enough SW 
+> events and counters to be able to do this at the kernel level. A 
+> few events/counters that come to mind are cputime lost due to 
+> swap, IO initiated by the process, interrupts and other processes 
+> being scheduled. I wonder if the delay accounting code has 
+> anything we can reuse for this.
+> 
+> With these events we could simply run perf stat and instantly see 
+> what needs fixing at both the cpu level (via CPI analysis) and at 
+> the kernel level (via SW counters).
 
-	perf stat -a sleep 60
+Yeah, i like this direction.
 
-while you do your emacs run that toggles cpufreq events? This makes 
-sure all transitions are counted, regardless of which context 
-triggers it. Do you still get zero counts this way?
+Mind extending your patch-set in this way, and also do the more 
+structured pagefault enumeration thing? (unless you have better 
+suggestions)
+
+Thanks,
 
 	Ingo
