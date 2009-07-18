@@ -1,226 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbZGQXjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbZGRAIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758058AbZGQXjx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 19:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758035AbZGQXju
+	id S1758090AbZGRAIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 20:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757974AbZGRAIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 19:39:50 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:60551 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758002AbZGQXjt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 19:39:49 -0400
-Subject: [RFC][PATCH] Introduce CLOCK_REALTIME_COARSE
-From: john stultz <johnstul@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@tglx.de>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, nikolag@ca.ibm.com,
-       Darren Hart <dvhltc@us.ibm.com>
-Content-Type: text/plain
-Date: Fri, 17 Jul 2009 16:39:05 -0700
-Message-Id: <1247873945.8334.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Fri, 17 Jul 2009 20:08:19 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35487 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751671AbZGRAIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 17 Jul 2009 20:08:18 -0400
+From: Neil Brown <neilb@suse.de>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Sat, 18 Jul 2009 10:08:10 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19041.4714.686158.130252@notabene.brown>
+Cc: linux-raid@vger.kernel.org, dm-devel@redhat.com
+Subject: How to handle >16TB devices on 32 bit hosts ??
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey all,
 
-	After talking with some application writers who want very fast, but not
-fine-grained timestamps, I decided to try to implement a new clock_ids
-to clock_gettime(): CLOCK_REALTIME_COARSE and CLOCK_MONOTONIC_COARSE
-which returns the time at the last tick. This is very fast as we don't
-have to access any hardware (which can be very painful if you're using
-something like the acpi_pm clocksource), and we can even use the vdso
-clock_gettime() method to avoid the syscall. The only trade off is you
-only get low-res tick grained time resolution.
+Hi,
+ It has recently come to by attention that Linux on a 32 bit host does
+ not handle devices beyond 16TB particularly well.
 
-This isn't a new idea, I know Ingo pushed a patch (see commit
-5899a0f044f3c80e9f7262ec5bc7164773a4c28e) a little while ago that made
-the vsyscall gettimeofday() return coarse grained time when the
-vsyscall64 sysctrl was set to 2. However this affects all applications
-on a system.
+ In particular, any access that goes through the page cache for the
+ block device is limited to a pgoff_t number of pages.
+ As pgoff_t is "unsigned long" and hence 32bit, and as page size is
+ 4096, this comes to 16TB total.
 
-With this method, applications can choose the proper speed/granularity
-trade-off for themselves.
+ A filesystem created on a 17TB device should be able to access and
+ cache file data perfectly providing CONFIG_LBDAF is set.
+ However if the filesystem caches metadata using the block device,
+ then metadata beyond 16TB will be a problem.
 
-This is a first pass on this implementation, and while I did test it,
-the box I tested it with did not have a glibc new enough to utilize the
-vdso clock_gettime(), so there may still be issues there. I'll find a
-newer box for testing shortly.
+ Access to the block device (/dev/whatever) via open/read/write will
+ also cause problems beyond 16TB, though if O_DIRECT is used I think
+ it should work OK (it will probably try to flushed out completely
+ irrelevant parts of the page cache before allowing the IO, but that
+ is a benign error case I think).
 
-Any thoughts or feedback will be appreciated!
+ With 2TB drives easily available, more people will probably try
+ building arrays this big and we cannot just assume they will only do
+ it on 64bit hosts.
 
-thanks
--john
+ So the question I wanted to ask really is:  is there any point in
+ allowing >16TB arrays to be created on 32bit hosts, or should we just
+ disallow them?  If we allow them, what steps should we take to make
+ the possible failure modes more obvious?
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
----
- arch/x86/vdso/vclock_gettime.c |   39 ++++++++++++++++++++++++++++++++++++---
- include/linux/time.h           |    3 +++
- kernel/posix-timers.c          |   33 +++++++++++++++++++++++++++++++++
- kernel/time/timekeeping.c      |   19 +++++++++++++++++++
- 4 files changed, 91 insertions(+), 3 deletions(-)
+ As I said, I think O_DIRECT largely works fine on these devices and
+ we could fix the few irregularities with little effort.  So one step
+ might be to make mkfs/fsck utilities use O_DIRECT on >16TB devices on
+ 32bit hosts.
 
-diff --git a/arch/x86/vdso/vclock_gettime.c b/arch/x86/vdso/vclock_gettime.c
-index 1ef0f90..e949cc7 100644
---- a/arch/x86/vdso/vclock_gettime.c
-+++ b/arch/x86/vdso/vclock_gettime.c
-@@ -83,14 +83,47 @@ notrace static noinline int do_monotonic(struct timespec *ts)
- 	return 0;
- }
- 
-+notrace static noinline int do_realtime_coarse(struct timespec *ts)
-+{
-+	unsigned long seq;
-+	do {
-+		seq = read_seqbegin(&gtod->lock);
-+		ts->tv_sec = gtod->wall_time_sec;
-+		ts->tv_nsec = gtod->wall_time_nsec;
-+	} while (unlikely(read_seqretry(&gtod->lock, seq)));
-+	return 0;
-+}
-+
-+notrace static noinline int do_monotonic_coarse(struct timespec *ts)
-+{
-+	unsigned long seq, ns, secs;
-+	do {
-+		seq = read_seqbegin(&gtod->lock);
-+		secs = gtod->wall_time_sec;
-+		ns = gtod->wall_time_nsec;
-+		secs += gtod->wall_to_monotonic.tv_sec;
-+		ns += gtod->wall_to_monotonic.tv_nsec;
-+	} while (unlikely(read_seqretry(&gtod->lock, seq)));
-+	vset_normalized_timespec(ts, secs, ns);
-+	return 0;
-+}
-+
- notrace int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
- {
--	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
-+	if (likely(gtod->sysctl_enabled))
- 		switch (clock) {
- 		case CLOCK_REALTIME:
--			return do_realtime(ts);
-+			if (likely(gtod->clock.vread))
-+				return do_realtime(ts);
-+			break;
- 		case CLOCK_MONOTONIC:
--			return do_monotonic(ts);
-+			if (likely(gtod->clock.vread))
-+				return do_monotonic(ts);
-+			break;
-+		case CLOCK_REALTIME_COARSE:
-+			return do_realtime_coarse(ts);
-+		case CLOCK_MONOTONIC_COARSE:
-+			return do_monotonic_coarse(ts);
- 		}
- 	return vdso_fallback_gettime(clock, ts);
- }
-diff --git a/include/linux/time.h b/include/linux/time.h
-index ce321ac..9db8421 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -108,6 +108,7 @@ void timekeeping_init(void);
- 
- unsigned long get_seconds(void);
- struct timespec current_kernel_time(void);
-+struct timespec get_monotonic_coarse(void);
- 
- #define CURRENT_TIME		(current_kernel_time())
- #define CURRENT_TIME_SEC	((struct timespec) { get_seconds(), 0 })
-@@ -225,6 +226,8 @@ struct itimerval {
- #define CLOCK_PROCESS_CPUTIME_ID	2
- #define CLOCK_THREAD_CPUTIME_ID		3
- #define CLOCK_MONOTONIC_RAW		4
-+#define CLOCK_REALTIME_COARSE		5
-+#define CLOCK_MONOTONIC_COARSE		6
- 
- /*
-  * The IDs of various hardware clocks:
-diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
-index 752b036..6821ea1 100644
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -236,6 +236,25 @@ static int posix_get_monotonic_raw(clockid_t which_clock, struct timespec *tp)
- 	return 0;
- }
- 
-+
-+static int posix_get_realtime_coarse(clockid_t which_clock, struct timespec *tp)
-+{
-+	*tp = current_kernel_time();
-+	return 0;
-+}
-+
-+static int posix_get_monotonic_coarse(clockid_t which_clock,
-+						struct timespec *tp)
-+{
-+	*tp = get_monotonic_coarse();
-+	return 0;
-+}
-+
-+int posix_get_coarse_res(const clockid_t which_clock, struct timespec *tp)
-+{
-+	*tp = ktime_to_timespec(KTIME_LOW_RES);
-+	return 0;
-+}
- /*
-  * Initialize everything, well, just everything in Posix clocks/timers ;)
-  */
-@@ -255,10 +274,24 @@ static __init int init_posix_timers(void)
- 		.clock_set = do_posix_clock_nosettime,
- 		.timer_create = no_timer_create,
- 	};
-+	struct k_clock clock_realtime_coarse = {
-+		.clock_getres = hrtimer_get_res,
-+		.clock_get = posix_get_realtime_coarse,
-+		.clock_set = do_posix_clock_nosettime,
-+		.timer_create = no_timer_create,
-+	};
-+	struct k_clock clock_monotonic_coarse = {
-+		.clock_getres = hrtimer_get_res,
-+		.clock_get = posix_get_monotonic_coarse,
-+		.clock_set = do_posix_clock_nosettime,
-+		.timer_create = no_timer_create,
-+	};
- 
- 	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
- 	register_posix_clock(CLOCK_MONOTONIC, &clock_monotonic);
- 	register_posix_clock(CLOCK_MONOTONIC_RAW, &clock_monotonic_raw);
-+	register_posix_clock(CLOCK_REALTIME_COARSE, &clock_realtime_coarse);
-+	register_posix_clock(CLOCK_MONOTONIC_COARSE, &clock_monotonic_coarse);
- 
- 	posix_timers_cache = kmem_cache_create("posix_timers_cache",
- 					sizeof (struct k_itimer), 0, SLAB_PANIC,
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index fa05e88..cfe1f32 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -602,3 +602,22 @@ struct timespec current_kernel_time(void)
- 	return now;
- }
- EXPORT_SYMBOL(current_kernel_time);
-+
-+struct timespec get_monotonic_coarse(void)
-+{
-+	struct timespec now, mono;
-+	unsigned long seq;
-+
-+	do {
-+		seq = read_seqbegin(&xtime_lock);
-+
-+		now = xtime_cache;
-+		mono = wall_to_monotonic;
-+	} while (read_seqretry(&xtime_lock, seq));
-+
-+	set_normalized_timespec(&now, now.tv_sec + mono.tv_sec,
-+				now.tv_nsec + mono.tv_nsec);
-+	return now;
-+}
-+EXPORT_SYMBOL(get_monotonic_coarse);
-+
+ Given that non-O_DIRECT can fail (e.g. in do_generic_file_read,
+       index = *ppos >> PAGE_CACHE_SHIFT
+ will lose data if *ppos is beyond 44 bits) we should probably fail
+ opens on devices larger than 16TB.... though just failing the open
+ doesn't help if the device can change size, as dm and md devices can.
 
+ I believe ext[234] uses the block device's page cache for metadata, so
+ they cannot safely be used with >16TB devices on 32bit.  Is that
+ correct?  Should they fail a mount attempt? Do they?
 
+ Are there any filesystems that do not use the block device cache and
+ so are not limited to 16TB on 32bit?
+
+ Even if no filesystem can use >16TB on 32bit, I suspect dm can
+ usefully use such a device for logical volume management, and as long
+ as each logical volume does not exceed 16TB, all should be happy.  So
+ completely disallowing them might not be best.
+
+ I suppose we could add a CONFIG option to make pgoff_t be 
+ "unsigned long long".  Would the cost/benefit of that be acceptable?
+
+ Your thoughts are most welcome.
+
+Thanks,
+NeilBrown
