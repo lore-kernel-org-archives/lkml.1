@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751665AbZGRFCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173AbZGRFeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751665AbZGRFCk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 01:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZGRFCi
+	id S932173AbZGRFeI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 01:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZGRFeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 01:02:38 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:45576 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbZGRFCh (ORCPT
+	Sat, 18 Jul 2009 01:34:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36456 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751594AbZGRFeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 01:02:37 -0400
-Date: Sat, 18 Jul 2009 06:02:33 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, jgarzik@pobox.com
-Subject: Re: [PATCH] libata: Export AHCI capabilities
-Message-ID: <20090718050233.GA18236@srcf.ucam.org>
-References: <1247854427-3315-1-git-send-email-mjg@redhat.com> <4A61544B.5030403@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A61544B.5030403@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Sat, 18 Jul 2009 01:34:05 -0400
+Date: Fri, 17 Jul 2009 22:33:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net,
+       linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH 1/3] connector: make callback argument type explicit
+Message-Id: <20090717223307.d86a5551.akpm@linux-foundation.org>
+In-Reply-To: <8bd0f97a0907172045j2cff6987xb7ea0aab438bef9d@mail.gmail.com>
+References: <1247696049-15699-1-git-send-email-vapier@gentoo.org>
+	<20090716101957.GA9586@ioremap.net>
+	<20090717.101550.223298982.davem@davemloft.net>
+	<8bd0f97a0907172045j2cff6987xb7ea0aab438bef9d@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 17, 2009 at 10:49:15PM -0600, Robert Hancock wrote:
+On Fri, 17 Jul 2009 23:45:35 -0400 Mike Frysinger <vapier.adi@gmail.com> wrote:
 
-> Surely there's a better format for exporting this information to  
-> userspace than making it parse out the bits from the raw register  
-> contents.. how about separate sysfs files for ESP, HPCP, etc? Or  
-> something more abstracted at a higher level that other drivers (if they  
-> have access to similar information) could use?
+> On Fri, Jul 17, 2009 at 13:15, David Miller wrote:
+> > From: Evgeniy Polyakov <zbr@ioremap.net>
+> >>
+> >> Your patches look good, thanks a lot.
+> >> David, please apply to the appropriate tree.
+> >
+> > Applied to net-next-2.6, but I am being very generous.
+> >
+> > In the future please make sure netdev@vger.kernel.org receives all
+> > networking patch postings so that they properly get tracked at:
+> >
+> > __ __ __ __http://patchwork.ozlabs.org/project/netdev/list/
+> >
+> > Otherwise they risk getting lost.
+> 
+> the fact that the connector code is maintained in the net tree is not
+> mentioned anywhere that i can see.  it isnt in net/, it isnt in
+> drivers/net/, and it isnt in MAINTAINERS.  that means anyone who
+> wishes to submit patches has to basically guess where to send them.
+> going by the default rules, that means the author (Evgeniy) and LKML.
+> expecting people to magically divine net ownership with this driver is
+> ridiculous.
 
-I could split out more of the information, but there's a balance between 
-exposing enough that we won't need to add more values in the near future 
-and ending up with one sysfs file for pretty much every capabilities 
-bit. I'm not aware of any cases where we can currently generalise this 
-to other controllers, but I'm happy to be proven wrong on that.
+y:/usr/src/git26> perl scripts/get_maintainer.pl -f drivers/connector/*.c
+James Morris <jmorris@namei.org>                                         
+Serge Hallyn <serue@us.ibm.com>
+David Howells <dhowells@redhat.com>
+Marc Dionne <marc.c.dionne@gmail.com>
+Frederic Weisbecker <fweisbec@gmail.com>
+Evgeniy Polyakov <zbr@ioremap.net>
+David S. Miller <davem@davemloft.net>
+linux-kernel@vger.kernel.org
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
+Major fail!
+
+A MAINTAINERS record should fix that up.
