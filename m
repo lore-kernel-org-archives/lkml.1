@@ -1,71 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751834AbZGRM6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbZGRN0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751834AbZGRM6v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 08:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZGRM6t
+	id S1751708AbZGRN0h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 09:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbZGRN0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 08:58:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54465 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbZGRM6s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 08:58:48 -0400
-Subject: Re: [patch 2/2] sched: fix nr_uninterruptible accounting of frozen
- tasks really
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Matt Helsley <matthltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Rafael Wysocki <rjw@sisk.pl>,
-       Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@tuxonice.net>,
-       stable@kernel.org, containers@lists.linux-foundation.org,
-       linux-pm@lists.linux-foundation.org
-In-Reply-To: <1247864134.17553.30.camel@localhost.localdomain>
-References: <20090717121545.489258927@linutronix.de>
-	 <20090717122103.225652146@linutronix.de> <1247833910.15751.61.camel@twins>
-	 <20090717152235.GA5878@count0.beaverton.ibm.com>
-	 <1247849254.6522.75.camel@laptop>
-	 <1247864134.17553.30.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 18 Jul 2009 14:56:31 +0200
-Message-Id: <1247921791.6597.5.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 18 Jul 2009 09:26:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55447 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751423AbZGRN0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 09:26:34 -0400
+Date: Sat, 18 Jul 2009 15:25:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: a.p.zijlstra@chello.nl, andi@firstfloor.org, fweisbec@gmail.com,
+       acme@redhat.com, linux-kernel@vger.kernel.org, jbaron@redhat.com
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
+	how many spinlocks to schedstat
+Message-ID: <20090718132535.GC32618@elte.hu>
+References: <1247405045.6733.2.camel@laptop> <20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp> <20090713085119.GA6757@elte.hu> <20090714.094804.869026176829743314.mitake@dcl.info.waseda.ac.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090714.094804.869026176829743314.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.2.5
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-17 at 15:55 -0500, Nathan Lynch wrote:
-> On Fri, 2009-07-17 at 18:47 +0200, Peter Zijlstra wrote:
-> > On Fri, 2009-07-17 at 08:22 -0700, Matt Helsley wrote:
-> > 
-> > > The job scheduler in question does not use FROZEN as a transient state and
-> > > does not use checkpoint/restart at all since c/r is still a work in progress.
+
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+
+> From: Ingo Molnar <mingo@elte.hu>
+> Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+> Date: Mon, 13 Jul 2009 10:51:19 +0200
 > 
-> Right, the job scheduler uses the cgroup freezer as a mechanism to
-> preempt a low priority job for a higher priority job.  (It had used
-> SIGSTOP in the past.)  So in this scenario a frozen cgroup may remain in
-> that state for a while.  Load average is consulted as a measure of
-> system utilization.
-
-I think that this is an utterly broken use for it, if you want something
-like that make a signal cgroup or something and deliver SIGSTOP to all
-of them.
-
-In other words, why is the freezer any better than the SIGSTOP approach?
-
-> > > Even when used for power management it seems wrong to count frozen tasks
-> > > towards the loadavg since they aren't using CPU time or waiting for IO.
+> > X-Mew-Uidl: 4144 3205
+> > Return-Path: <mingo@elte.hu>
+> > Received: from murder ([unix socket])
+> > 	 by ns.dcl.info.waseda.ac.jp (Cyrus v2.3.8-OS X Server 10.5:	9F33) with LMTPA;
+> > 	 Mon, 13 Jul 2009 17:51:35 +0900
+> > X-Sieve: CMU Sieve 2.3
+> > Received: from localhost (localhost [127.0.0.1])
+> > 	by ns.dcl.info.waseda.ac.jp (Postfix) with ESMTP id 418376729D2
+> > 	for <mitake@dcl.info.waseda.ac.jp>; Mon, 13 Jul 2009 17:51:35 +0900 (JST)
+> > X-Virus-Scanned: amavisd-new at dcl.info.waseda.ac.jp
+> > Received: from ns.dcl.info.waseda.ac.jp ([127.0.0.1])
+> > 	by localhost (ns.dcl.info.waseda.ac.jp [127.0.0.1]) (amavisd-new, port 10024)
+> > 	with ESMTP id 4VNvZ6jG1jE9 for <mitake@dcl.info.waseda.ac.jp>;
+> > 	Mon, 13 Jul 2009 17:51:34 +0900 (JST)
+> > Received: from mx3.mail.elte.hu (mx3.mail.elte.hu [157.181.1.138])
+> > 	by ns.dcl.info.waseda.ac.jp (Postfix) with ESMTP id C08246729C2
+> > 	for <mitake@dcl.info.waseda.ac.jp>; Mon, 13 Jul 2009 17:51:33 +0900 (JST)
+> > Received: from elvis.elte.hu ([157.181.1.14])
+> > 	by mx3.mail.elte.hu with esmtp (Exim)
+> > 	id 1MQHFr-0003wM-HT
+> > 	from <mingo@elte.hu>; Mon, 13 Jul 2009 10:51:28 +0200
+> > Received: by elvis.elte.hu (Postfix, from userid 1004)
+> > 	id 115B83E22CE; Mon, 13 Jul 2009 10:51:21 +0200 (CEST)
+> > Message-ID: <20090713085119.GA6757@elte.hu>
+> > References: <1247230336.7529.34.camel@twins> <20090712.162337.287595819039280884.mitake@dcl.info.waseda.ac.jp> <1247405045.6733.2.camel@laptop> <20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp>
+> > MIME-Version: 1.0
+> > In-Reply-To: <20090713.150612.886429910823138064.mitake@dcl.info.waseda.ac.jp>
+> > X-ELTE-SpamScore: -1.5
+> > X-ELTE-SpamLevel: 
+> > X-ELTE-SpamCheck: no
+> > X-ELTE-SpamVersion: ELTE 2.0 
+> > X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%	[score: 0.0000]
+> > Content-Type: text/plain; charset=us-ascii
+> > Content-Disposition: inline
+> > Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+> > From: Ingo Molnar <mingo@elte.hu>
+> > To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+> > Cc: a.p.zijlstra@chello.nl, andi@firstfloor.org, fweisbec@gmail.com,
+> > 	acme@redhat.com, linux-kernel@vger.kernel.org,
+> > 	Jason Baron <jbaron@redhat.com>
+> > Date: Mon, 13 Jul 2009 10:51:19 +0200
+> > User-Agent: Mutt/1.5.18 (2008-05-17)
+> > Received-SPF: neutral (mx3: 157.181.1.14 is neither permitted nor denied by domain of elte.hu) client-ip=157.181.1.14; envelope-from=mingo@elte.hu; helo=elvis.elte.hu;
+> > X-Mew: tab/spc characters on Subject: are simplified.
 > > 
-> > You're abusing it for _WHAT_?
+> > 
+> > * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+> > 
+> > > > Yeah, steve broke it, but then Jason fixed it again, but his 
+> > > > patches might not have made it in yet.
+> > > > 
+> > > >   http://lkml.org/lkml/2009/7/6/313
+> > > 
+> > > Wow! I can obtain lock_acquire with Jason's patch,
+> > > 
+> > > % perf stat -e lockdep:lock_acquire sleep 1
+> > > 
+> > >  Performance counter stats for 'sleep 1':
+> > > 
+> > >            1420  lockdep:lock_acquire
+> > > 
+> > >     1.004953591  seconds time elapsed
+> > > 
+> > > I wanted this.
+> > > So I don't have nothing to do.., but thanks Jason!
+> > 
+> > I gave some review feedback about those patches, see:
+> > 
+> >    http://lkml.org/lkml/2009/7/13/360
+> > 
+> > Once they are addressed we can try them in -tip.
 > 
-> I think Matt was referring to system-wide suspend/resume/hibernate, not
-> a behavior of the job scheduler, if that's your concern.
+> Thanks! I'll try new features of perfcounters. It's interesting.
+> But I told "not found" by lkml.org.
+>
+> Is the post you attempted to point 
+> http://lkml.org/lkml/2009/7/13/36 ?
 
-I understood he referred to the crazy use-case you mentioned above, IMHO
-frozen should be a temporary state used for things like
-snapshot/migrate.
+yeah. The first post should be:
 
-I'm still very tempted to plain simply revert that original patch.
+ http://lkml.org/lkml/2009/7/6/313
 
+	Ingo
