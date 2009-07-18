@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751321AbZGRMDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751444AbZGRMHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751321AbZGRMDG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 08:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZGRMDF
+	id S1751444AbZGRMHJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 08:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZGRMHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 08:03:05 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59415 "EHLO mx3.mail.elte.hu"
+	Sat, 18 Jul 2009 08:07:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60125 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbZGRMDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 08:03:03 -0400
-Date: Sat, 18 Jul 2009 14:01:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH RFC 1/2] Makefile: Never use -fno-omit-frame-pointer
-Message-ID: <20090718120145.GB31007@elte.hu>
-References: <20090616201630.GA4971@oksana.dev.rtsoft.ru> <20090714133716.GC28970@oksana.dev.rtsoft.ru>
+	id S1751063AbZGRMHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 08:07:06 -0400
+Date: Sat, 18 Jul 2009 12:06:11 GMT
+From: tip-bot for Catalin Marinas <catalin.marinas@arm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       bug-track@fisher-privat.net, penberg@cs.helsinki.fi, sam@ravnborg.org,
+       catalin.marinas@arm.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       bug-track@fisher-privat.net, catalin.marinas@arm.com, sam@ravnborg.org,
+       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1247565175.28240.37.camel@pc1117.cambridge.arm.com>
+References: <1247565175.28240.37.camel@pc1117.cambridge.arm.com>
+Subject: [tip:x86/urgent] x86: Include all of .data.* sections in _edata on 64-bit
+Message-ID: <tip-8bcdbe427924a1e4b4e4cf68020e92e9f93fe011@git.kernel.org>
+Git-Commit-ID: 8bcdbe427924a1e4b4e4cf68020e92e9f93fe011
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090714133716.GC28970@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 18 Jul 2009 12:06:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  8bcdbe427924a1e4b4e4cf68020e92e9f93fe011
+Gitweb:     http://git.kernel.org/tip/8bcdbe427924a1e4b4e4cf68020e92e9f93fe011
+Author:     Catalin Marinas <catalin.marinas@arm.com>
+AuthorDate: Tue, 14 Jul 2009 10:52:55 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 18 Jul 2009 13:59:20 +0200
 
-* Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+x86: Include all of .data.* sections in _edata on 64-bit
 
-> On Wed, Jun 17, 2009 at 12:16:30AM +0400, Anton Vorontsov wrote:
-> > According to Segher Boessenkool and GCC manual, -fomit-frame-pointer
-> > is only the default when optimising on archs/ABIs where it doesn't
-> > hinder debugging and -pg. So, we do not get it by default on x86,
-> > not at any optimisation level.
-> > 
-> > On the other hand, *using* -fno-omit-frame-pointer causes gcc to
-> > produce buggy code on PowerPC targets.
-> > 
-> > If Segher and GCC manual are right, this patch should be a no-op
-> > for all arches except PowerPC, where the patch fixes gcc issues.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > ---
-> > 
-> > See this thread for more discussion:
-> > http://osdir.com/ml/linux-kernel/2009-05/msg01754.html
-> > 
-> > p.s.
-> > Obviously, I didn't test this patch on anything else but PPC32. ;-)
-> > 
-> > Segher, do you know if all GCC versions that we support for
-> > building Linux are behaving the way that GCC manual describe?
-> 
-> No news is good news... Ingo, can we merge this into -tip for 
-> testing?
+The .data.read_mostly and .data.cacheline_aligned sections
+aren't covered by the _sdata .. _edata range on x86-64. This
+affects kmemleak reporting leading to possible false
+positives by not scanning the whole data section.
 
-Changes to the top level Makefile should really go via Sam's kbuild 
-tree.
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Tested-by: Alexey Fisher <bug-track@fisher-privat.net>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+LKML-Reference: <1247565175.28240.37.camel@pc1117.cambridge.arm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 
-	Ingo
+
+---
+ arch/x86/kernel/vmlinux.lds.S |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 367e878..59f31d2 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -112,11 +112,6 @@ SECTIONS
+ 		_sdata = .;
+ 		DATA_DATA
+ 		CONSTRUCTORS
+-
+-#ifdef CONFIG_X86_64
+-		/* End of data section */
+-		_edata = .;
+-#endif
+ 	} :data
+ 
+ #ifdef CONFIG_X86_32
+@@ -156,10 +151,8 @@ SECTIONS
+ 	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
+ 		*(.data.read_mostly)
+ 
+-#ifdef CONFIG_X86_32
+ 		/* End of data section */
+ 		_edata = .;
+-#endif
+ 	}
+ 
+ #ifdef CONFIG_X86_64
