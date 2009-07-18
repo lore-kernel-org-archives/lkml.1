@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbZGRANt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751986AbZGRAle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758095AbZGRANt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 17 Jul 2009 20:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbZGRANt
+	id S1751986AbZGRAle (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 17 Jul 2009 20:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZGRAld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 17 Jul 2009 20:13:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46998 "EHLO
+	Fri, 17 Jul 2009 20:41:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42015 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757963AbZGRANs (ORCPT
+	by vger.kernel.org with ESMTP id S1751327AbZGRAld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 17 Jul 2009 20:13:48 -0400
-Date: Fri, 17 Jul 2009 17:13:26 -0700
+	Fri, 17 Jul 2009 20:41:33 -0400
+Date: Fri, 17 Jul 2009 17:41:28 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: airlied@linux.ie, linux-kernel@vger.kernel.org,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH] fb/intelfb: conflict with DRM_I915 and hide by default
-Message-Id: <20090717171326.4a71d8e3.akpm@linux-foundation.org>
-In-Reply-To: <20090703112446.5a69971b@jbarnes-g45>
-References: <20090703112446.5a69971b@jbarnes-g45>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] mm: add gfp mask checking for __get_free_pages()
+Message-Id: <20090717174128.36d00972.akpm@linux-foundation.org>
+In-Reply-To: <20090704020949.GA3047@localhost.localdomain>
+References: <20090704020949.GA3047@localhost.localdomain>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,39 +26,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Jul 2009 11:24:46 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+On Sat, 4 Jul 2009 11:09:50 +0900
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-> Users get confused by this driver.  It's really a special purpose
-> embedded driver, and causes a lot of problems if enabled.  So hide it
-> under EMBEDDED by default, and make sure it doesn't get enabled with
-> the i915 DRM driver.
+> __get_free_pages() with __GFP_HIGHMEM is not safe because the return
+> address cannot represent a highmem page. get_zeroed_page() already has
+> such a debug checking.
 > 
-> Dave, I'm hoping you can feed this to Linus through your tree.  It's
-> appropriate for 2.6.31 I think.
+> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+> ---
+>  mm/page_alloc.c |   24 +++++++++---------------
+>  1 files changed, 9 insertions(+), 15 deletions(-)
 > 
-> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index d6d65ef..ec12f7a 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -1117,12 +1117,13 @@ config FB_CARILLO_RANCH
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index e0f2cdf..4a1a374 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1903,31 +1903,25 @@ EXPORT_SYMBOL(__alloc_pages_nodemask);
+>   */
+>  unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order)
+>  {
+> -	struct page * page;
+> +	struct page *page;
+> +
+> +	/*
+> +	 * __get_free_pages() returns a 32-bit address, which cannot represent
+> +	 * a highmem page
+> +	 */
+> +	VM_BUG_ON((gfp_mask & __GFP_HIGHMEM) != 0);
+> +
+>  	page = alloc_pages(gfp_mask, order);
+>  	if (!page)
+>  		return 0;
+>  	return (unsigned long) page_address(page);
+>  }
+> -
+>  EXPORT_SYMBOL(__get_free_pages);
 >  
->  config FB_INTEL
->  	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support (EXPERIMENTAL)"
-> -	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL
-> +	depends on EXPERIMENTAL && FB && PCI && X86 && AGP_INTEL && EMBEDDED
->  	select FB_MODE_HELPERS
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
->  	select FB_BOOT_VESA_SUPPORT if FB_INTEL = y
-> +	depends on !DRM_I915
->  	help
->  	  This driver supports the on-board graphics built in to the Intel
->            830M/845G/852GM/855GM/865G/915G/915GM/945G/945GM/965G/965GM chipsets.
+>  unsigned long get_zeroed_page(gfp_t gfp_mask)
+>  {
+> -	struct page * page;
+> -
+> -	/*
+> -	 * get_zeroed_page() returns a 32-bit address, which cannot represent
+> -	 * a highmem page
+> -	 */
+> -	VM_BUG_ON((gfp_mask & __GFP_HIGHMEM) != 0);
+> -
+> -	page = alloc_pages(gfp_mask | __GFP_ZERO, 0);
+> -	if (page)
+> -		return (unsigned long) page_address(page);
+> -	return 0;
+> +	return __get_free_pages(gfp_mask | __GFP_ZERO, 0);
+>  }
+> -
+>  EXPORT_SYMBOL(get_zeroed_page);
+>  
+>  void __pagevec_free(struct pagevec *pvec)
 
-Nothing happened?
+Fair enough.
 
-I'll merge this next week(ish) unless given a reason not to.
+I suspect we could just delete that VM_BUG_ON() - we can't go and do
+runtime checking for every darn programmer error, and this would be a
+pretty dumb one.
+
+
+Your patch turns get_zeroed_page() into a simple one-liner wrapper
+around __get_free_pages().  We could perhaps save some .text, some
+kernel stack and some CPU cycles by inlining get_zeroed_page().
+
