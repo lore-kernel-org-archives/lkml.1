@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751479AbZGRRoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZGRSHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751479AbZGRRoj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 13:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbZGRRoi
+	id S1752478AbZGRSHB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 14:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZGRSHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 13:44:38 -0400
-Received: from bu3sch.de ([62.75.166.246]:45573 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751015AbZGRRoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 13:44:37 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH] nvram: Fix root triggerable integer overflow crash
-Date: Sat, 18 Jul 2009 19:44:33 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200907180256.45934.mb@bu3sch.de> <20090718150909.GA1191@khazad-dum.debian.net>
-In-Reply-To: <20090718150909.GA1191@khazad-dum.debian.net>
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	Sat, 18 Jul 2009 14:07:00 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:52805 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751900AbZGRSG7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 14:06:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=Tx+AjEFv5KVL0epqa2aJUpw7G+T+pKtKnegSRsU9CNHl/5zZM3KE+evaQiZTSblKQ0
+         hGw8FJyQL9+PoItpxvgrVG7c5wQ95hmNazE/A0cgKJ2RZR8GrEMiXFL7SSWZS6N945D8
+         lqVYjCU+i3WgxqYa+jw7OBvqOqHdQP3pmF2dc=
+Message-ID: <4A620F3E.8080900@tuffmail.co.uk>
+Date: Sat, 18 Jul 2009 19:06:54 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ondrej Zary <linux@rainbow-software.org>
+CC: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: "floppy: fix hibernation" causes error on resume from ram
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907181944.33338.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 18 July 2009 17:09:09 Henrique de Moraes Holschuh wrote:
-> On Sat, 18 Jul 2009, Michael Buesch wrote:
-> > This bug probably is exploitable by overwriting the function return address or something
-> > like that. But let's hope there's no distribution out there with user write permissions
-> > on the /dev/nvram node. So it's probably only exploitable by root.
-> 
-> I have seen setups with group-writeable /dev/nvram to support some (old!)
-> thinkpad utilities.
+Thanks for the hibernation fix!  Until recently I thought my floppy was
+just dead.  Unfortunately, the fix seems to cause me errors on resume
+from suspend to ram.  The floppy works fine afterwards, it just spams
+the log.
 
-Yes it is  crw-rw---- 1 root root  on Debian.
-Are there any setuid programs accessing nvram (like the recent tun/pulseaudio exploit?)
+On 2.6.30 there were no errors, and the floppy survived suspend-to-ram. 
+So I guess the quick fix would be to only do the fix-up on resume from
+hibernation, and not suspend-to-ram.
 
-> Even if it cannot be exploited for more than a DoS,
+Thanks
+Alan
 
-You can randomly overwrite the kernel stack with the data you write to the device.
-So I do think it is exploitable, because the char device writer controls the kernel stack completely.
-However, I do not have an example exploit.
+Jul 18 15:27:23 alan-desktop kernel: [34795.256645]
+Jul 18 15:27:23 alan-desktop kernel: [34795.256647] floppy driver state
+Jul 18 15:27:23 alan-desktop kernel: [34795.256649] -------------------
+Jul 18 15:27:23 alan-desktop kernel: [34795.256652] now=4305315874 last
+interrupt=4303125175 diff=2190699 last called handler=ffffffffa00a64d0
+Jul 18 15:27:23 alan-desktop kernel: [34795.256655] timeout_message=lock fdc
+Jul 18 15:27:23 alan-desktop kernel: [34795.256657] last output bytes:
+Jul 18 15:27:23 alan-desktop kernel: [34795.256659]  8 80 4295201276
+Jul 18 15:27:23 alan-desktop kernel: [34795.256662]  8 80 4295201276
+Jul 18 15:27:23 alan-desktop kernel: [34795.256664]  8 80 4295201276
+Jul 18 15:27:23 alan-desktop kernel: [34795.256666]  8 80 4295201276
+Jul 18 15:27:23 alan-desktop kernel: [34795.256668]  8 80 4297332499
+Jul 18 15:27:23 alan-desktop kernel: [34795.256669]  8 80 4297332499
+Jul 18 15:27:23 alan-desktop kernel: [34795.256671]  8 80 4297332499
+Jul 18 15:27:23 alan-desktop kernel: [34795.256673]  8 80 4297332499
+Jul 18 15:27:23 alan-desktop kernel: [34795.256675]  8 80 4298652310
+Jul 18 15:27:23 alan-desktop kernel: [34795.256677]  8 80 4298652310
+Jul 18 15:27:23 alan-desktop kernel: [34795.256679]  8 80 4298652310
+Jul 18 15:27:23 alan-desktop kernel: [34795.256681]  8 80 4298652310
+Jul 18 15:27:23 alan-desktop kernel: [34795.256683]  8 80 4299614961
+Jul 18 15:27:23 alan-desktop kernel: [34795.256685]  8 80 4299614961
+Jul 18 15:27:23 alan-desktop kernel: [34795.256687]  8 80 4299614961
+Jul 18 15:27:23 alan-desktop kernel: [34795.256689]  8 80 4299614961
+Jul 18 15:27:23 alan-desktop kernel: [34795.256691]  8 80 4303125175
+Jul 18 15:27:23 alan-desktop kernel: [34795.256693]  8 80 4303125175
+Jul 18 15:27:23 alan-desktop kernel: [34795.256695]  8 80 4303125175
+Jul 18 15:27:23 alan-desktop kernel: [34795.256697]  8 80 4303125175
+Jul 18 15:27:23 alan-desktop kernel: [34795.256699] last result at
+4303125175
+Jul 18 15:27:23 alan-desktop kernel: [34795.256701] last redo_fd_request
+at 4303125175
+Jul 18 15:27:23 alan-desktop kernel: [34795.256703]
+Jul 18 15:27:23 alan-desktop kernel: [34795.256709] status=0
+Jul 18 15:27:23 alan-desktop kernel: [34795.256711] fdc_busy=1
+Jul 18 15:27:23 alan-desktop kernel: [34795.256713]
+do_floppy=ffffffffa00a64d0
+Jul 18 15:27:23 alan-desktop kernel: [34795.256715] cont=ffffffffa00ad8c0
+Jul 18 15:27:23 alan-desktop kernel: [34795.256717] current_req=(null)
+Jul 18 15:27:23 alan-desktop kernel: [34795.256719] command_status=-1
+Jul 18 15:27:23 alan-desktop kernel: [34795.256720]
+Jul 18 15:27:23 alan-desktop kernel: [34795.256829] floppy0: floppy
+timeout called
+Jul 18 15:27:23 alan-desktop kernel: [34795.259455] Restarting tasks ...
+done.
 
-> IMO that's still bad 
-> enough to warrant fixing this also on stable kernels if they are vulnerable.
-> So, does the fix also apply to 2.6.27+ ?  If it does, please send it to
-> stable@kernel.org as well.
-
-Yeah I forgot to add stable to CC.
-
--- 
-Greetings, Michael.
