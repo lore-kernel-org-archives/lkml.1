@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932732AbZGRLr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932748AbZGRLsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932732AbZGRLr1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 07:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932588AbZGRLr0
+	id S932748AbZGRLsd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 07:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932588AbZGRLsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 07:47:26 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60440 "EHLO
+	Sat, 18 Jul 2009 07:48:32 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60546 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932546AbZGRLr0 (ORCPT
+	with ESMTP id S932546AbZGRLsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 07:47:26 -0400
-Date: Sat, 18 Jul 2009 13:47:13 +0200
+	Sat, 18 Jul 2009 07:48:32 -0400
+Date: Sat, 18 Jul 2009 13:48:17 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: Tiago Vignatti <tiago.vignatti@nokia.com>
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@redhat.com>,
        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] vga: implements VGA arbitration on Linux
-Message-ID: <20090718114713.GC1433@ucw.cz>
-References: <1247576250-16274-1-git-send-email-tiago.vignatti@nokia.com> <1247576250-16274-2-git-send-email-tiago.vignatti@nokia.com>
+Subject: Re: [PATCH 2/2] vga: drops a documentation regarding the VGA
+	arbiter
+Message-ID: <20090718114817.GD1433@ucw.cz>
+References: <1247576250-16274-1-git-send-email-tiago.vignatti@nokia.com> <1247576250-16274-2-git-send-email-tiago.vignatti@nokia.com> <1247576250-16274-3-git-send-email-tiago.vignatti@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1247576250-16274-2-git-send-email-tiago.vignatti@nokia.com>
+In-Reply-To: <1247576250-16274-3-git-send-email-tiago.vignatti@nokia.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-07-14 15:57:29, Tiago Vignatti wrote:
-> Signed-off-by: Tiago Vignatti <tiago.vignatti@nokia.com>
 
-
-
-> ---
-
-Some patch description might be useful.
-
-> @@ -0,0 +1,1120 @@
-> +/*
-> + * vgaarb.c
-> + *
-> + * (C) Copyright 2005 Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> + * (C) Copyright 2007 Paulo R. Zanoni <przanoni@gmail.com>
-> + * (C) Copyright 2007, 2009 Tiago Vignatti <vignatti@freedesktop.org>
-> + *
-
-If you  have copyright, GPL would be cool.
-
-> +struct vga_device {
-> +	struct list_head list;
-> +	struct pci_dev *pdev;
-> +	unsigned int decodes;	/* what does it decodes */
-> +	unsigned int owns;	/* what does it owns */
-> +	unsigned int locks;	/* what does it locks */
-
-spelling in comments? And ...how can int tell me what it owns?
-
-
+> +I. Details and Theory of Operation
+> +==================================
 > +
-> +static LIST_HEAD(vga_list);
-> +static DEFINE_SPINLOCK(vga_lock);
-> +static DECLARE_WAIT_QUEUE_HEAD(vga_wait_queue);
+> +I.1 vgaarb
+> +----------
 > +
-> +#ifndef __ARCH_HAS_VGA_DEFAULT_DEVICE
-> +static struct pci_dev *vga_default;
-> +#endif
-> +
-> +static void vga_arb_device_card_gone(struct pci_dev *pdev);
-> +
-> +/* Find somebody in our list */
-> +static struct vga_device *vgadev_find(struct pci_dev *pdev)
-> +{
-> +	struct vga_device *vgadev;
-> +
-> +	list_for_each_entry(vgadev, &vga_list, list)
-> +	    if (pdev == vgadev->pdev)
-> +		return vgadev;
-> +	return NULL;
-> +}
+> +The vgaarb is a module of the Linux Kernel. When it is initially loaded, it
+> +scans all PCI devices and add the VGA ones inside the arbitration. The arbiter
 
-Indent using tabs. checkpatch?
+and adds?
+
+
+> +If the device is hot-{un,}plugged, there is a hook inside the module to notify
+> +them being added/removed in the system and automatically added/removed in
+> +the arbiter.
+
+I don't see who's 'them' here.
+
+> +I.2 libpciaccess
+> +----------------
+> +
+> +To use the vga arbiter char device it was implemented a serie of functions
+
+series?
+
+> +inside the pciaccess library. Two fields were added to struct pci_device for
+> +this be possible:
+> +
+> +    /* the type of resource decoded by the device */
+> +    int vgaarb_rsrc;
+> +    /* the file descriptor (/dev/vga_arbiter) */
+> +    int vgaarb_fd;
+> +
+> +
+> +and the functions:
+> +
+
+What functions?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
