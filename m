@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932641AbZGRHRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbZGRHVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932641AbZGRHRr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 03:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932589AbZGRHRZ
+	id S932319AbZGRHVy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 03:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbZGRHVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 03:17:25 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:50569 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932511AbZGRHRJ (ORCPT
+	Sat, 18 Jul 2009 03:21:50 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:48028 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750827AbZGRHVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 03:17:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Yj+i3xInGYR6gyUjgprHXddyL+TkkgcqSAj17w0xSjGsNdthcBUtoe7Ya88bDmtxA/
-         Kk0G9gUQvFsTP8JxALcpzkzhgv4On5kryW1kVv/7mU7pZXkuVRFyNeytWdOAsqjJoA25
-         dym52Fr48UvzlEyUOmYLsMUQBQeWPzHMJXn3E=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 3/4] tracing/trace_stack: Cleanup for trace_lookup_stack()
-Date: Sat, 18 Jul 2009 03:17:00 -0400
-Message-Id: <1247901421-6389-4-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1247901421-6389-1-git-send-email-fweisbec@gmail.com>
-References: <1247901421-6389-1-git-send-email-fweisbec@gmail.com>
+	Sat, 18 Jul 2009 03:21:49 -0400
+Date: Sat, 18 Jul 2009 09:21:38 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Cheng Renquan <crq@kernel.org>
+Cc: linux-kbuild@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, crquan@gmail.com,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [PATCH 0/6] kbuild configuration system improvements
+Message-ID: <20090718072138.GA7711@merkur.ravnborg.org>
+References: <1247386308-19628-1-git-send-email-crq@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247386308-19628-1-git-send-email-crq@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+On Sun, Jul 12, 2009 at 04:11:42PM +0800, Cheng Renquan wrote:
+> From: Cheng Renquan <crquan@gmail.com>
+> 
+> These patches improve usability of kernel configuration system,
+> 
+> 1. add symbol's value shown accompanied in config item's help message;
+> 2. move the real plumbing functions code from mconf.c to menu.c, make them
+>    be able to be shared with other configuration methods;
+> 3. add "symbol's value shown" support for gconfig/xconfig/config;
+> 
+>     0001-add-symbol-value-to-help-find-the-real-depend.patch
+>     0002-add-menu_get_ext_help-function-to-display-more-infor.patch
+>     0003-menuconfig-improvements.patch
+>     0004-make-use-of-menu_get_ext_help-in-gconfig.patch
+>     0005-make-use-of-menu_get_ext_help-in-qconfig.patch
+>     0006-make-use-of-menu_get_ext_help-in-make-config.patch
 
-We can directly use %pF input format instead of sprint_symbol()
-and %s input format.
+I fixed them all up to:
+1) include "kconfig:" prefix in subject
+2) cc: of Roman Zippel which is kconfig maintainer
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace_stack.c |    9 +--------
- 1 files changed, 1 insertions(+), 8 deletions(-)
+There were a few checkpatch issues that I decided to ignore for now.
 
-diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-index e644af9..a4dc8d9 100644
---- a/kernel/trace/trace_stack.c
-+++ b/kernel/trace/trace_stack.c
-@@ -234,15 +234,8 @@ static void t_stop(struct seq_file *m, void *p)
- static int trace_lookup_stack(struct seq_file *m, long i)
- {
- 	unsigned long addr = stack_dump_trace[i];
--#ifdef CONFIG_KALLSYMS
--	char str[KSYM_SYMBOL_LEN];
- 
--	sprint_symbol(str, addr);
--
--	return seq_printf(m, "%s\n", str);
--#else
--	return seq_printf(m, "%p\n", (void*)addr);
--#endif
-+	return seq_printf(m, "%pF\n", (void *)addr);
- }
- 
- static void print_disabled(struct seq_file *m)
--- 
-1.6.2.3
+Please always cc: Roman on kconfig patches as he is the mintainer.
 
+Applied to kbuild-next.git.
+
+Thanks,
+	Sam
