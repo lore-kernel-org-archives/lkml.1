@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751289AbZGSTzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751419AbZGSUKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751289AbZGSTzZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 15:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbZGSTzY
+	id S1751419AbZGSUKn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 16:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZGSUKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 15:55:24 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51277 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZGSTzX (ORCPT
+	Sun, 19 Jul 2009 16:10:42 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:52934 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751089AbZGSUKl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 15:55:23 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Athanasius <link@miggy.org>, Julien TINNES <jt@cr0.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
-       Eugene Teo <eugene@redhat.com>
-Subject: Re: [link@miggy.org: Re: [patch 2/8] personality: fix PER_CLEAR_ON_SETID (CVE-2009-1895)]
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090718202512.GA19587@suse.de>
-	<alpine.LFD.2.01.0907181342500.13838@localhost.localdomain>
-	<20090718212812.GI6722@miggy.org> <4A6278FD.20807@cr0.org>
-	<20090719122701.GJ6722@miggy.org>
-	<alpine.LFD.2.01.0907191219230.13838@localhost.localdomain>
-Date: Sun, 19 Jul 2009 21:55:19 +0200
-In-Reply-To: <alpine.LFD.2.01.0907191219230.13838@localhost.localdomain> (Linus Torvalds's message of "Sun, 19 Jul 2009 12:27:05 -0700 (PDT)")
-Message-ID: <87r5wc4fdk.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Sun, 19 Jul 2009 16:10:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references
+         :in-reply-to:mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=QvcpQPLM67XYRtJtYLx34zEAkPCpMocza5ZHcYBGfaya/TGzd7CIdQ+TIqSX6pCscZ
+         cEoNajyYTGlVE5vzFmb56TBTpTMC7ACYmb/9UCOyq9dnDkAn8Qto0buA30HbEJB9R/Am
+         EkZVvyyM5o0If8CyB9XQ/cYvw+DcLd3e+fSyU=
+From: Marek Vasut <marek.vasut@gmail.com>
+Organization: Hack&Dev
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SPI driver for LMS283GF05 LCD
+Date: Sun, 19 Jul 2009 22:10:21 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30-1-amd64; KDE/4.2.4; x86_64; ; )
+Cc: rpurdie@rpsys.net, Andrew Morton <akpm@linux-foundation.org>
+References: <200907161004.02552.marek.vasut@gmail.com>
+In-Reply-To: <200907161004.02552.marek.vasut@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200907192210.22033.marek.vasut@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Dne Čt 16. července 2009 10:04:02 Marek Vasut napsal(a):
+> From b7077676a3016327ca1010d3bbc80a0b9f2742e5 Mon Sep 17 00:00:00 2001
+> From: Marek Vasut <marek.vasut@gmail.com>
+> Date: Thu, 16 Jul 2009 04:49:47 +0200
+> Subject: [PATCH] Samsung LMS283GF05 LCD SPI support
 >
-> Other binaries are unhappy with address space randomization because they 
-> need to get the absolute maximum contiguous VM space for some big array. 
-> Ok, so that's less of an issue in 64-bit mode, but there really are 
-> programs out there that link everything statically and want to run at a 
-> low virtual address so that they can get 2.5GB of virtual memory for one 
-> single big allocation. I've written crap like that myself. I'm not _proud_ 
-> of it, but I could easily see that programs like that could be unhappy if 
-> the system wiggles mmap's around for security issues.
+> This patch adds support for the SPI part of LMS283GF05 LCD. The LCD uses
+> SPI for initialization and powerdown sequences. No further defails are
+> specified in the datasheet about the initialization/powerdown sequence,
+> just the magic numbers that have to be sent over SPI bus. This LCD can
+> be found in the Aeronix Zipit Z2 handheld.
+>
+> Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
 
-Another common reason for not supporting randomized mappings is
-when the program loads a "core file" that has pointers to data
-on each boot, as a faster way to initialize data structures. 
-That's common with LISP like languages for example, but even
-e.g. gcc's pre compiled headers implementation works like this.
-
-> Because compatibility is always of paramount importance.
-
-If you want to give it a security angle: not supporting 
-an old application anymore is a very severe DoS attack
-for people using it.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Any update on this one ?
