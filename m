@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZGSQNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbZGSQWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbZGSQNJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 12:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbZGSQNI
+	id S1754889AbZGSQWm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 12:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbZGSQWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 12:13:08 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:58057 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754512AbZGSQNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 12:13:07 -0400
-Date: Sun, 19 Jul 2009 18:13:04 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 10/10, corrected diffstat] drivers/net: Move a dereference
- below a NULL test
-Message-ID: <Pine.LNX.4.64.0907191812010.16542@ask.diku.dk>
+	Sun, 19 Jul 2009 12:22:41 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:43814 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754493AbZGSQWk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 12:22:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xLNiXn+pqEnxJoxIDSs7IiBYXyrI3Kw18h78I2+Ls8vMwAdUnwE2rLKt/LpG/XtgLO
+         DAu8A7X2U14NF7fAPHsxVGlEmzdRcRlRRngDOgxXhKXGt4BQerpI6YE+YnOnGt5Na9wN
+         V/Heqp0XQqCynULt80FuKJwt+fS6SrO9OEq5U=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4A633542.8030502@tlinx.org>
+References: <4A633542.8030502@tlinx.org>
+Date: Sun, 19 Jul 2009 17:22:37 +0100
+Message-ID: <9b2b86520907190922wb4f809dr5a315155211d6744@mail.gmail.com>
+Subject: Re: disk Partition label changes and reflecting them in 
+	/dev/disks-by-label/
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Linda Walsh <lkml@tlinx.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On 7/19/09, Linda Walsh <lkml@tlinx.org> wrote:
+>
+>
+> If I have a disk with no mounted partitions and I change the partition
+> order,
+> the OS will re-read the new partition and life goes on.
+>
+> However, if I create or change a new disk label, it seems label programs
+> (and users) should have an option to reread the labels after the
+> modification.
+>
+> Ideally any prog that changes a Label or UUID would trigger an update
+> of what's in /dev/disks to reflect the new 'reality'.
+>
+> Currently, I go through through a seemingly bizarre ritual of invoking
+> unmounting all other partitions on the same disk, then becoming root,
+> running fdisk on the disk, then just exiting with "w".  This triggers
+> a reread of not only the partition table, but also the new labels.
+>
+> However, I find this far less than ideal.  Is there a better way, or could
+> there be a better way to update new Labels and UUID's that are actually
+> on a disk -- perhaps even as an ordinary user command (since it would be
+> a read-only operation on the disk that simply updates /dev/disk to reflect
+> what's really there -- Especially being able to change only the label (or
+> UUID), only on one partition w/o having to actually unmount other file
+> systems
+> on the disk....?
+>
+> Already implemented?  Or doable?  Or bad idea?
+>
+> Thanks,
+> -linda
 
-If the NULL test is necessary, then the dereferences should be moved below
-the NULL test.
+Already implemented :-).
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+The latest version of udev listens for inotify events on block
+devices.  When a utility writes to the block device (or rather, when
+it closes it after opening it for writing), Udev will synthesize a
+"change" event.  The standard udev rules will re-check the device, and
+update the links under /dev/disk to reflect changes in labels etc.
 
-// <smpl>
-@@
-type T;
-expression E,E1;
-identifier i,fld;
-statement S;
-@@
-
-- T i = E->fld;
-+ T i;
-  ... when != E=E1
-      when != i
-  BUG_ON (E == NULL||...);
-+ i = E->fld;
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/net/ibm_newemac/rgmii.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
-index 1d5379d..8d76cb8 100644
---- a/drivers/net/ibm_newemac/rgmii.c
-+++ b/drivers/net/ibm_newemac/rgmii.c
-@@ -188,11 +188,12 @@ void rgmii_put_mdio(struct of_device *ofdev, int input)
- void rgmii_detach(struct of_device *ofdev, int input)
- {
- 	struct rgmii_instance *dev = dev_get_drvdata(&ofdev->dev);
--	struct rgmii_regs __iomem *p = dev->base;
--
--	mutex_lock(&dev->lock);
-+	struct rgmii_regs __iomem *p;
- 
- 	BUG_ON(!dev || dev->users == 0);
-+	p = dev->base;
-+
-+	mutex_lock(&dev->lock);
- 
- 	RGMII_DBG(dev, "detach(%d)" NL, input);
- 
+Alan
