@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbZGSODA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbZGSOG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbZGSODA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 10:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbZGSOC7
+	id S1754530AbZGSOG2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 10:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZGSOG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 10:02:59 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:54728 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754357AbZGSOC7 (ORCPT
+	Sun, 19 Jul 2009 10:06:27 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:44713 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754313AbZGSOG0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 10:02:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:subject:message-id:user-agent:mime-version
-         :content-type;
-        b=bTTDsxyWvs77SY2KRM++o/PhmUyQ9G8qBFC4n1IOQbYqndUbPIiuCbkcxI5ZYLYEJ2
-         R/UWSk2bdsYDpv3kJZIvwkEpvnvM5NE96c2nokTYnIEv6f0+KTMCzgmuYBaBXbyO0XF6
-         Wq5bIfWQv2hSwG6ymVydJxt1MokmlLlF1ER7c=
-Date: Sun, 19 Jul 2009 16:04:48 +0300 (EAT)
-From: Dan Carpenter <error27@gmail.com>
-X-X-Sender: dcarpenter@bicker
-To: linux-kernel@vger.kernel.org
-Subject: potential null dereference in sysfs_override_clocksource()
-Message-ID: <alpine.DEB.2.00.0907191545580.12306@bicker>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 19 Jul 2009 10:06:26 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4A631C8F.7000002@rtr.ca>
+References: <4A631C8F.7000002@rtr.ca>
+Date: Sun, 19 Jul 2009 10:06:25 -0400
+Message-ID: <829197380907190706i686fd1afwdca0d8be648129@mail.gmail.com>
+Subject: Re: Regression 2.6.31: xc5000 no longer works with Myth-0.21-fixes 
+	branch
+From: Devin Heitmueller <dheitmueller@kernellabs.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Steven Toth <stoth@linuxtv.org>, linux-media@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sun, Jul 19, 2009 at 9:15 AM, Mark Lord<lkml@rtr.ca> wrote:
+> Devin,
+>
+> Thanks for your good efforts and updates on the xc5000 driver.
+> But the version in 2.6.31 no longer works with mythfrontend
+> from the 0.21-fixes branch of MythTV.
+>
+> The mythbackend (recording) program tunes/records fine with it,
+> but any attempt to watch "Live TV" via mythfrontend just locks
+> up the UI for 30 seconds or so, and then it reverts to the menus.
+>
+> I find that rather odd, as mythfrontend normally has very little
+> interaction with the tuner devices.  But it does try to read the
+> signal strength and quality from the tuner, so perhaps this is a
+> clue as to what has gone wrong?
+>
+> I also took just the xc5000.[ch] files from 2.6.31 and tried them
+> with 2.6.30, to help isolate things.  Exactly the same behaviour
+> was observed there, too.  The mythbackend could tune/record,
+> but the mythfrontend would lock up.
+>
+> ???
+>
 
-I am testing a source checker (http://repo.or.cz/w/smatch.git).
+Hello Mark,
 
-It found an issue in sysfs_override_clocksource() from 
-kernel/time/clocksource.c.  If "len" is zero then "ovr" is null and 
-checking ovr->flags will oops on line 517.
+Thank you for the bug report.
 
-kernel/time/clocksource.c
-   516          if (tick_oneshot_mode_active() &&
-   517              !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES)) {
-   518                  printk(KERN_WARNING "%s clocksource is not HRT compatible. "
+Michael Krufky and I tested the tuner changes with what I thought were
+all the tuners that used the xc5000 (yes, between the two of us we
+have quite a collection).  Perhaps we missed one though.
 
-regards,
-dan carpenter
+Replacing xc5000.[ch] would normally be a good idea from a testing
+standpoint.  However, in this case it isn't very conclusive since the
+xc5000 performance and power management improvements exposed numerous
+bugs in various demods, bridges, and even one in dvb core (all of
+which I had to fix before the xc5000 work could be submitted
+upstream).
 
+Could you please provide the following:
 
+1.  Exactly which product you are using (including the USB/PCI id)
+2.  dmesg output from the time the card is inserted (or booted up if
+PCI) to the time *after* you attempted to use the frontend with
+mythtv.
+3.  Whether you are using the device for digital, analog, or both, and
+which the mythtv attempted to use when running the mythfrontend.
 
+Also, Could you please install the latest v4l-dvb code using the
+directions at http://linuxtv.org/repo and see if the problem still
+occurs.  This will tell us if the problem is some patch that didn't
+make it upstream, and will make it easier for me to give you patches
+that provide more debug info.
+
+I will be afk until tonight, but will check my email as soon as I get home.
+
+Cheers,
+
+Devin
+
+-- 
+Devin J. Heitmueller - Kernel Labs
+http://www.kernellabs.com
