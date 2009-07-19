@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751514AbZGSUOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751558AbZGSUQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751514AbZGSUOy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 16:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZGSUOw
+	id S1751558AbZGSUQi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 16:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZGSUQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 16:14:52 -0400
-Received: from rtr.ca ([76.10.145.34]:39422 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751287AbZGSUOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 16:14:51 -0400
-Message-ID: <4A637EB9.5040004@rtr.ca>
-Date: Sun, 19 Jul 2009 16:14:49 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jean Delvare <khali@linux-fr.org>, Andy Walls <awalls@radix.net>,
-       linux-media@vger.kernel.org, Jarod Wilson <jarod@redhat.com>,
-       Mike Isely <isely@pobox.com>, Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Janne Grunau <j@jannau.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org
-Subject: Re: Regression 2.6.31:  ioctl(EVIOCGNAME) no longer returns device
- name
-References: <1247862937.10066.21.camel@palomino.walls.org> <20090719144749.689c2b3a@hyperion.delvare> <4A6316F9.4070109@rtr.ca> <20090719145513.0502e0c9@hyperion.delvare> <4A631B41.5090301@rtr.ca> <4A631CEA.4090802@rtr.ca> <4A632FED.1000809@rtr.ca> <20090719190833.29451277@hyperion.delvare> <4A63656D.4070901@rtr.ca> <4A637212.2000002@rtr.ca> <20090719193952.GC17495@dtor-d630.eng.vmware.com>
-In-Reply-To: <20090719193952.GC17495@dtor-d630.eng.vmware.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 19 Jul 2009 16:16:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51789 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751287AbZGSUQg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 16:16:36 -0400
+Date: Sun, 19 Jul 2009 13:18:08 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Siarhei Liakh <sliakh.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ingo Molnar <mingo@elte.hu>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-cris-kernel@axis.com, Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] x86: NX protection for kernel data
+Message-ID: <20090719131808.77f986f3@infradead.org>
+In-Reply-To: <817ecb6f0907191243m33cc7369qa09a24416fad7769@mail.gmail.com>
+References: <817ecb6f0907191243m33cc7369qa09a24416fad7769@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
-> On Sun, Jul 19, 2009 at 03:20:50PM -0400, Mark Lord wrote:
->> Mark Lord wrote:
->>> (resending.. somebody trimmed linux-kernel from the CC: earlier)
->>>
->>> Jean Delvare wrote:
->>>> On Sun, 19 Jul 2009 10:38:37 -0400, Mark Lord wrote:
->>>>> I'm debugging various other b0rked things in 2.6.31 here right now,
->>>>> so I had a closer look at the Hauppauge I/R remote issue.
->>>>>
->>>>> The ir_kbd_i2c driver *does* still find it after all.
->>>>> But the difference is that the output from 'lsinput' has changed
->>>>> and no longer says "Hauppauge".  Which prevents the application from
->>>>> finding the remote control in the same way as before.
->>>> OK, thanks for the investigation.
->>>>
->>>>> I'll hack the application code here now to use the new output,
->>>>> but I wonder what the the thousands of other users will do when
->>>>> they first try 2.6.31 after release ?
->> ..
->>
->> Mmm.. appears to be a systemwide thing, not just for the i2c stuff.
->> *All* of the input devices now no longer show their real names
->> when queried with ioctl(EVIOCGNAME).  This is a regression from 2.6.30.
->> Note that the real names *are* still stored somewhere, because they
->> do still show up correctly under /sys/
->>
+On Sun, 19 Jul 2009 15:43:06 -0400
+Siarhei Liakh <sliakh.lkml@gmail.com> wrote:
+
+> This patch expands functionality of CONFIG_DEBUG_RODATA to set main
+> (static) kernel data area as NX.
+> The following steps are taken to achieve this:
+> 1. Linker scripts are adjusted so .text always starts and end on a
+> page boundary 2. Linker scripts are adjusted so .rodata and .data
+> always starts and end on a page boundary
+> 3. void mark_nxdata_nx(void) added to arch/x86/mm/init_64.c and
+> arch/x86/mm/init_32.c with actual functionality: NX is set for all
+> pages from _etext through _edata
+> 4. mark_nxdata_nx() called from init_post(void) in init/main.c
 > 
-> Should be fixed by f936601471d1454dacbd3b2a961fd4d883090aeb in the
-> for-linus branch of my tree.
-..
+> The patch have been developed for Linux 2.6.30 x86 by Siarhei Liakh
+> <sliakh.lkml@gmail.com> and Xuxian Jiang <jiang@cs.ncsu.edu>.
 
-Peachy.  Push it, or post it here and I can re-test with it.
+I like the idea, and am happy to see the lack of ifdefs ;)
 
-(does anyone else find it spooky that a google search for the
- above commit id actually finds Dmitry's email quoted above ?
- Mere seconds after he posted it for the very first time ??)
+I wonder if we should have a testcase for this though similar to 
+how stackprotector and rodata get tested already....
