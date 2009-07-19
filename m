@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbZGSGBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751618AbZGSGM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751700AbZGSGBU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 02:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbZGSGBT
+	id S1751618AbZGSGM4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 02:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbZGSGMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 02:01:19 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:54226 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751278AbZGSGBS (ORCPT
+	Sun, 19 Jul 2009 02:12:55 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54179 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbZGSGMz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 02:01:18 -0400
-Subject: Re: block2mtd and ubi are initialized too early when compiled in
- on 2.6.31-rc2
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Tobias Diedrich <ranma@tdiedrich.de>
-Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-In-Reply-To: <20090716142816.GA19523@yamamaya.is-a-geek.org>
-References: <20090715115235.GA21888@yamamaya.is-a-geek.org>
-	 <1247746844.11353.152.camel@localhost.localdomain>
-	 <20090716142816.GA19523@yamamaya.is-a-geek.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 19 Jul 2009 09:00:59 +0300
-Message-Id: <1247983259.11353.214.camel@localhost.localdomain>
+	Sun, 19 Jul 2009 02:12:55 -0400
+Date: Sat, 18 Jul 2009 23:14:29 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Chris Snook <chris.snook@gmail.com>
+Cc: john stultz <johnstul@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@tglx.de>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, nikolag@ca.ibm.com,
+       Darren Hart <dvhltc@us.ibm.com>
+Subject: Re: [RFC][PATCH] Introduce CLOCK_REALTIME_COARSE
+Message-ID: <20090718231429.7ddea95f@infradead.org>
+In-Reply-To: <13a12eea0907182000v654e38a5l265ae5bdadb1a175@mail.gmail.com>
+References: <1247873945.8334.67.camel@localhost.localdomain>
+	<13a12eea0907182000v654e38a5l265ae5bdadb1a175@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 19 Jul 2009 06:01:04.0416 (UTC) FILETIME=[4CDB0A00:01CA0836]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-16 at 16:28 +0200, Tobias Diedrich wrote:
-> Artem Bityutskiy wrote:
-> > Hi,
-> > 
-> > On Wed, 2009-07-15 at 13:52 +0200, Tobias Diedrich wrote:
-> > > On 2.6.31-rc2 the block2mtd drivers module_init is called before any
-> > > block devices have been registered.
-> > 
-> > Hmm, ok. Is this because block devices are registered asynchronously?
-> > Could you please point to the code where it is done, just for reference.
+On Sat, 18 Jul 2009 23:00:55 -0400
+Chris Snook <chris.snook@gmail.com> wrote:
+
+> On Fri, Jul 17, 2009 at 7:39 PM, john stultz<johnstul@us.ibm.com>
+> wrote:
+> > -       if (likely(gtod->sysctl_enabled && gtod->clock.vread))
+> > +       if (likely(gtod->sysctl_enabled))
 > 
-> AFAICS yes.
-> All module_init()s are called asynchronously from init/main.c:do_initcalls()
+> This irks me.  If the sysctl is enabled and the codepath is getting
+> used often enough that we care about performance, branch prediction
+> should do the right thing without compiler hints.  On the other hand,
+> if the sysctl is disabled, and the compiler is telling the cpu to
+> ignore its branch predictor, it'll hurt.  I don't think we should be
+> wrapping (un)likely annotations around configuration options, unless
+> we're biasing against debug conditions where we definitely don't care
+> about performance.  The patch is certainly no worse than the existing
+> code, but while we have the hood up, it might be nice to remove the
+> annotation, unless we're sure that it does no harm, and does some
+> good.
 
-They are done in a kernel thread, but sequentially, one after the other.
-So there is no real synchronicity there.
+it's on x86.. likely/unlikely don't impact the CPU (since there are no
+"ignore the branch predictor" hints), only the code placement.....
 
-I think the real problem is that block-devices are probed/initialized
-asynchronously. E.g., see 'ata_host_register()'. They call
-'async_schedule()' which is doing the slow initialization in a separate
-thread.
+(and that's probably a good thing; CPU branch predictors are pretty
+good, I'd not be surprised if they're at least as good as the
+programmers who think how they code is used)
 
-Thus, you probably should to try to add something like
-'async_synchronize_full()' to the blk2mtd driver and wait for block
-devices to initialize. Or indeed 'wait_for_device_probe()' may be what
-you need.
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+--
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
