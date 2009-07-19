@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbZGSNHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbZGSNQC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754257AbZGSNHk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 09:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbZGSNHj
+	id S1754335AbZGSNQC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 09:16:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbZGSNQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 09:07:39 -0400
-Received: from bu3sch.de ([62.75.166.246]:41833 "EHLO vs166246.vserver.de"
+	Sun, 19 Jul 2009 09:16:01 -0400
+Received: from rtr.ca ([76.10.145.34]:44871 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073AbZGSNHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 09:07:39 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] DAC960: Fix undefined behavior on empty string
-Date: Sun, 19 Jul 2009 15:05:47 +0200
-User-Agent: KMail/1.9.9
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	id S1754300AbZGSNQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 09:16:00 -0400
+Message-ID: <4A631C8F.7000002@rtr.ca>
+Date: Sun, 19 Jul 2009 09:15:59 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Steven Toth <stoth@linuxtv.org>, linux-media@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Regression 2.6.31:  xc5000 no longer works with Myth-0.21-fixes branch
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907191505.47243.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes undefined behavior due to buffer underrun,
-if an empty string is written to the proc file.
+Devin,
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Cc: stable@kernel.org
+Thanks for your good efforts and updates on the xc5000 driver.
+But the version in 2.6.31 no longer works with mythfrontend
+from the 0.21-fixes branch of MythTV.
 
----
+The mythbackend (recording) program tunes/records fine with it,
+but any attempt to watch "Live TV" via mythfrontend just locks
+up the UI for 30 seconds or so, and then it reverts to the menus.
 
-This patch is untested, because I do not have the hardware.
+I find that rather odd, as mythfrontend normally has very little
+interaction with the tuner devices.  But it does try to read the
+signal strength and quality from the tuner, so perhaps this is a
+clue as to what has gone wrong?
 
----
- drivers/block/DAC960.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I also took just the xc5000.[ch] files from 2.6.31 and tried them
+with 2.6.30, to help isolate things.  Exactly the same behaviour
+was observed there, too.  The mythbackend could tune/record,
+but the mythfrontend would lock up.
 
---- linux-2.6.orig/drivers/block/DAC960.c
-+++ linux-2.6/drivers/block/DAC960.c
-@@ -6555,21 +6555,21 @@ static int DAC960_ProcWriteUserCommand(s
- 				       const char __user *Buffer,
- 				       unsigned long Count, void *Data)
- {
-   DAC960_Controller_T *Controller = (DAC960_Controller_T *) Data;
-   unsigned char CommandBuffer[80];
-   int Length;
-   if (Count > sizeof(CommandBuffer)-1) return -EINVAL;
-   if (copy_from_user(CommandBuffer, Buffer, Count)) return -EFAULT;
-   CommandBuffer[Count] = '\0';
-   Length = strlen(CommandBuffer);
--  if (CommandBuffer[Length-1] == '\n')
-+  if (Length > 0 && CommandBuffer[Length-1] == '\n')
-     CommandBuffer[--Length] = '\0';
-   if (Controller->FirmwareType == DAC960_V1_Controller)
-     return (DAC960_V1_ExecuteUserCommand(Controller, CommandBuffer)
- 	    ? Count : -EBUSY);
-   else
-     return (DAC960_V2_ExecuteUserCommand(Controller, CommandBuffer)
- 	    ? Count : -EBUSY);
- }
- 
- 
-
--- 
-Greetings, Michael.
+???
