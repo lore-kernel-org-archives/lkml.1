@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751419AbZGSUKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751461AbZGSUNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751419AbZGSUKn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 16:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZGSUKm
+	id S1751461AbZGSUNf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 16:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZGSUNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 16:10:42 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:52934 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbZGSUKl convert rfc822-to-8bit (ORCPT
+	Sun, 19 Jul 2009 16:13:33 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:57695 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235AbZGSUNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 16:10:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=QvcpQPLM67XYRtJtYLx34zEAkPCpMocza5ZHcYBGfaya/TGzd7CIdQ+TIqSX6pCscZ
-         cEoNajyYTGlVE5vzFmb56TBTpTMC7ACYmb/9UCOyq9dnDkAn8Qto0buA30HbEJB9R/Am
-         EkZVvyyM5o0If8CyB9XQ/cYvw+DcLd3e+fSyU=
-From: Marek Vasut <marek.vasut@gmail.com>
-Organization: Hack&Dev
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SPI driver for LMS283GF05 LCD
-Date: Sun, 19 Jul 2009 22:10:21 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30-1-amd64; KDE/4.2.4; x86_64; ; )
-Cc: rpurdie@rpsys.net, Andrew Morton <akpm@linux-foundation.org>
-References: <200907161004.02552.marek.vasut@gmail.com>
-In-Reply-To: <200907161004.02552.marek.vasut@gmail.com>
+	Sun, 19 Jul 2009 16:13:33 -0400
+Date: Sun, 19 Jul 2009 22:13:30 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Siarhei Liakh <sliakh.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-cris-kernel@axis.com, Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] x86: NX protection for kernel data
+Message-ID: <20090719201330.GA3186@merkur.ravnborg.org>
+References: <817ecb6f0907191243m33cc7369qa09a24416fad7769@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907192210.22033.marek.vasut@gmail.com>
+In-Reply-To: <817ecb6f0907191243m33cc7369qa09a24416fad7769@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dne Čt 16. července 2009 10:04:02 Marek Vasut napsal(a):
-> From b7077676a3016327ca1010d3bbc80a0b9f2742e5 Mon Sep 17 00:00:00 2001
-> From: Marek Vasut <marek.vasut@gmail.com>
-> Date: Thu, 16 Jul 2009 04:49:47 +0200
-> Subject: [PATCH] Samsung LMS283GF05 LCD SPI support
->
-> This patch adds support for the SPI part of LMS283GF05 LCD. The LCD uses
-> SPI for initialization and powerdown sequences. No further defails are
-> specified in the datasheet about the initialization/powerdown sequence,
-> just the magic numbers that have to be sent over SPI bus. This LCD can
-> be found in the Aeronix Zipit Z2 handheld.
->
-> Signed-off-by: Marek Vasut <marek.vasut@gmail.com>
+On Sun, Jul 19, 2009 at 03:43:06PM -0400, Siarhei Liakh wrote:
+> This patch expands functionality of CONFIG_DEBUG_RODATA to set main
+> (static) kernel data area as NX.
+> The following steps are taken to achieve this:
+> 1. Linker scripts are adjusted so .text always starts and end on a page boundary
+> 2. Linker scripts are adjusted so .rodata and .data always starts and
+> end on a page boundary
+> 3. void mark_nxdata_nx(void) added to arch/x86/mm/init_64.c and
+> arch/x86/mm/init_32.c with actual functionality: NX is set for all
+> pages from _etext through _edata
+> 4. mark_nxdata_nx() called from init_post(void) in init/main.c
+> 
+> The patch have been developed for Linux 2.6.30 x86 by Siarhei Liakh
+> <sliakh.lkml@gmail.com> and Xuxian Jiang <jiang@cs.ncsu.edu>.
 
-Any update on this one ?
+
+The patch no longer applies.
+The file vmlinux_32.lds.S and vmlinux_64.lds.S has been unified
+into one file.
+
+
+> --- a/arch/x86/kernel/vmlinux_32.lds.S
+> +++ b/arch/x86/kernel/vmlinux_32.lds.S
+> @@ -47,6 +47,7 @@ SECTIONS
+>  	IRQENTRY_TEXT
+>  	*(.fixup)
+>  	*(.gnu.warning)
+> +  	. = ALIGN(PAGE_SIZE);	/* .text should occupy whole number of pages */
+>    	_etext = .;			/* End of text section */
+
+So _etext cover until page boundary - makes sense.
+
+>    } :text = 0x9090
+> 
+> @@ -93,6 +94,7 @@ SECTIONS
+>  	*(.data.read_mostly)
+>  	_edata = .;		/* End of data section */
+>    }
+> +  . = ALIGN(PAGE_SIZE);		/* needed so we can set NX for .data */
+
+But here _edata does not cover until page boundary.
+And alignmnet is located outside the output section
+definition.
+It would be better/more consistent to follow the style you use for .text here.
+
+
+	Sam
