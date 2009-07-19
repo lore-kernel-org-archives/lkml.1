@@ -1,161 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZGSP10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787AbZGSP1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbZGSP10 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 11:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZGSP1Y
+	id S1754787AbZGSP1a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 11:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbZGSP10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 11:27:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59434 "EHLO hera.kernel.org"
+	Sun, 19 Jul 2009 11:27:26 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:47159 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754566AbZGSP1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 11:27:22 -0400
-Subject: Re: kmemleak issues in alsa
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
-In-Reply-To: <s5h4ot8op0b.wl%tiwai@suse.de>
-References: <1247861644.4513.15.camel@ht.satnam>
-	 <s5h4ot8op0b.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Sun, 19 Jul 2009 20:56:34 +0530
-Message-Id: <1248017194.2548.3.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1754596AbZGSP1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 11:27:23 -0400
+Date: Sun, 19 Jul 2009 17:27:20 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 6/10] drivers/scsi: Move a dereference below a NULL test
+Message-ID: <Pine.LNX.4.64.0907191726590.16542@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Takashi,
+From: Julia Lawall <julia@diku.dk>
 
-On Sun, 2009-07-19 at 14:07 +0200, Takashi Iwai wrote:
-> At Sat, 18 Jul 2009 01:44:04 +0530,
-> Jaswinder Singh Rajput wrote:
-> > 
-> > I was getting these kmemleak reports when I build SND_SEQUENCER in
-> > kernel :
-> > 
-> > unreferenced object 0xf6b0ac00 (size 512):
-> >   comm "swapper", pid 1, jiffies 4294671240
-> >   hex dump (first 32 bytes):
-> >     02 00 00 00 03 4f 53 53 20 73 65 71 75 65 6e 63  .....OSS sequenc
-> >     65 72 00 00 00 00 00 00 00 00 00 00 00 00 00 00  er..............
-> >   backtrace:
-> >     [<c12d7d83>] kmemleak_alloc+0x25/0x49
-> >     [<c109350d>] kmem_cache_alloc+0x95/0x124
-> >     [<c12568f0>] seq_create_client1+0x1d/0x165
-> >     [<c1257b01>] snd_seq_create_kernel_client+0x68/0xe7
-> >     [<c14c966f>] snd_seq_oss_create_client+0x86/0x143
-> >     [<c14c958a>] alsa_seq_oss_init+0xf8/0x157
-> >     [<c100104f>] do_one_initcall+0x4a/0x111
-> >     [<c14a8608>] kernel_init+0x16b/0x1bc
-> >     [<c100352b>] kernel_thread_helper+0x7/0x1a
-> >     [<ffffffff>] 0xffffffff
-> > unreferenced object 0xf6b08700 (size 128):
-> >   comm "swapper", pid 1, jiffies 4294671240
-> >   hex dump (first 32 bytes):
-> >     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-> >     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-> >   backtrace:
-> >     [<c12d7d83>] kmemleak_alloc+0x25/0x49
-> >     [<c109350d>] kmem_cache_alloc+0x95/0x124
-> >     [<c12591a3>] snd_seq_pool_new+0x17/0xbe
-> >     [<c1256955>] seq_create_client1+0x82/0x165
-> >     [<c1257b01>] snd_seq_create_kernel_client+0x68/0xe7
-> >     [<c14c966f>] snd_seq_oss_create_client+0x86/0x143
-> >     [<c14c958a>] alsa_seq_oss_init+0xf8/0x157
-> >     [<c100104f>] do_one_initcall+0x4a/0x111
-> >     [<c14a8608>] kernel_init+0x16b/0x1bc
-> >     [<c100352b>] kernel_thread_helper+0x7/0x1a
-> >     [<ffffffff>] 0xffffffff
-> > unreferenced object 0xf6b0aa00 (size 512):
-> >   comm "swapper", pid 1, jiffies 4294671246
-> >   hex dump (first 32 bytes):
-> >     0f 00 00 00 00 00 00 00 52 65 63 65 69 76 65 72  ........Receiver
-> >     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-> >   backtrace:
-> >     [<c12d7d83>] kmemleak_alloc+0x25/0x49
-> >     [<c109350d>] kmem_cache_alloc+0x95/0x124
-> >     [<c125bdf9>] snd_seq_create_port+0x4c/0x197
-> >     [<c1257589>] snd_seq_ioctl_create_port+0x52/0x141
-> >     [<c1256bb3>] snd_seq_do_ioctl+0x59/0x78
-> >     [<c1256c11>] snd_seq_kernel_client_ctl+0x2f/0x48
-> >     [<c14c96e1>] snd_seq_oss_create_client+0xf8/0x143
-> >     [<c14c958a>] alsa_seq_oss_init+0xf8/0x157
-> >     [<c100104f>] do_one_initcall+0x4a/0x111
-> >     [<c14a8608>] kernel_init+0x16b/0x1bc
-> >     [<c100352b>] kernel_thread_helper+0x7/0x1a
-> >     [<ffffffff>] 0xffffffff
-> > 
-> > But when I build SND_SEQUENCER as module these kmemleak issues
-> > disappear.
-> > 
-> > Then I noticed that issue was in ordering. 
-> > 
-> > When build in kernel flow is like this :
-> > 
-> > OSS sequencer(alsa_seq_oss_init) -> System (snd_seq_system_client_init)
-> > 
-> > When build as modules flow is like this :
-> > 
-> > System(snd_seq_system_client_init) -> OSS sequencer(alsa_seq_oss_init)
-> > 
-> > So this fixes above kmemleak issues in my case, I hope it will be
-> > helpful :
-> > 
-> > diff --git a/sound/core/seq/oss/seq_oss.c b/sound/core/seq/oss/seq_oss.c
-> > index f25e3cc..3ddf2c2 100644
-> > --- a/sound/core/seq/oss/seq_oss.c
-> > +++ b/sound/core/seq/oss/seq_oss.c
-> > @@ -116,7 +116,7 @@ static void __exit alsa_seq_oss_exit(void)
-> >  	unregister_device();
-> >  }
-> >  
-> > -module_init(alsa_seq_oss_init)
-> > +late_initcall(alsa_seq_oss_init);
-> >  module_exit(alsa_seq_oss_exit)
-> 
-> Thanks for checking this.
-> 
-> Another option would be to fix Makefile.  I guess simply putting the
-> line including sound/core/seq/oss/Makefile after the definitions of
-> other seq modules would do the same thing...
+If the NULL test is necessary, then the dereference should be moved below
+the NULL test.  I have additionally added a return if the NULL tests
+succeeds, because it is not clear that the rest of the function, which is
+for debugging only, makes sense in this case.
 
-Yes, this also fixes the ordering and memory leak when build
-SND_SEQUENCER in kernel and is equivalent to :
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-1. insmod sound/core/seq/snd-seq-device.ko
-2. insmod sound/core/seq/snd-seq.ko
-3. insmod sound/core/seq/snd-seq-midi-event.ko
-4. insmod sound/core/seq/oss/snd-seq-oss.ko
+// <smpl>
+@@
+type T;
+expression E,E1;
+identifier i,fld;
+statement S;
+@@
 
-diff --git a/sound/core/seq/Makefile b/sound/core/seq/Makefile
-index 1bcb360..941f64a 100644
---- a/sound/core/seq/Makefile
-+++ b/sound/core/seq/Makefile
-@@ -3,10 +3,6 @@
- # Copyright (c) 1999 by Jaroslav Kysela <perex@perex.cz>
- #
+- T i = E->fld;
++ T i;
+  ... when != E=E1
+      when != i
+  if (E == NULL||...) S
++ i = E->fld;
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/scsi/fd_mcs.c               |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/scsi/fd_mcs.c b/drivers/scsi/fd_mcs.c
+index 85bd54c..eff35cf 100644
+--- a/drivers/scsi/fd_mcs.c
++++ b/drivers/scsi/fd_mcs.c
+@@ -1127,11 +1127,13 @@ static void fd_mcs_print_info(Scsi_Cmnd * SCpnt)
+ 	unsigned int imr;
+ 	unsigned int irr;
+ 	unsigned int isr;
+-	struct Scsi_Host *shpnt = SCpnt->host;
++	struct Scsi_Host *shpnt;
  
--ifeq ($(CONFIG_SND_SEQUENCER_OSS),y)
--  obj-$(CONFIG_SND_SEQUENCER) += oss/
--endif
--
- snd-seq-device-objs := seq_device.o
- snd-seq-objs := seq.o seq_lock.o seq_clientmgr.o seq_memory.o seq_queue.o \
-                 seq_fifo.o seq_prioq.o seq_timer.o \
-@@ -19,7 +15,8 @@ snd-seq-virmidi-objs := seq_virmidi.o
+ 	if (!SCpnt || !SCpnt->host) {
+ 		printk("fd_mcs: cannot provide detailed information\n");
++		return;
+ 	}
++	shpnt = SCpnt->host;
  
- obj-$(CONFIG_SND_SEQUENCER) += snd-seq.o snd-seq-device.o
- ifeq ($(CONFIG_SND_SEQUENCER_OSS),y)
--obj-$(CONFIG_SND_SEQUENCER) += snd-seq-midi-event.o
-+  obj-$(CONFIG_SND_SEQUENCER) += snd-seq-midi-event.o
-+  obj-$(CONFIG_SND_SEQUENCER) += oss/
- endif
- obj-$(CONFIG_SND_SEQ_DUMMY) += snd-seq-dummy.o
- 
---
-JSR
-
+ 	printk("%s\n", fd_mcs_info(SCpnt->host));
+ 	print_banner(SCpnt->host);
