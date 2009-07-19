@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754177AbZGSMDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZGSMHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754177AbZGSMDa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 08:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZGSMD2
+	id S1754194AbZGSMHD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 08:07:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbZGSMHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 08:03:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:36534 "EHLO mx1.suse.de"
+	Sun, 19 Jul 2009 08:07:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39541 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753529AbZGSMD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 08:03:27 -0400
-Date: Sun, 19 Jul 2009 14:03:26 +0200
-Message-ID: <s5h7hy4op69.wl%tiwai@suse.de>
+	id S1753573AbZGSMHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 08:07:01 -0400
+Date: Sun, 19 Jul 2009 14:07:00 +0200
+Message-ID: <s5h4ot8op0b.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Julia Lawall <julia@diku.dk>
-Cc: perex@perex.cz, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 6/6] sound/isa: convert nested spin_lock_irqsave to spin_lock
-In-Reply-To: <Pine.LNX.4.64.0907181725540.26792@ask.diku.dk>
-References: <Pine.LNX.4.64.0907181725540.26792@ask.diku.dk>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kmemleak issues in alsa
+In-Reply-To: <1247861644.4513.15.camel@ht.satnam>
+References: <1247861644.4513.15.camel@ht.satnam>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -27,60 +28,97 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 18 Jul 2009 17:26:14 +0200 (CEST),
-Julia Lawall wrote:
+At Sat, 18 Jul 2009 01:44:04 +0530,
+Jaswinder Singh Rajput wrote:
 > 
-> From: Julia Lawall <julia@diku.dk>
+> I was getting these kmemleak reports when I build SND_SEQUENCER in
+> kernel :
 > 
-> If spin_lock_irqsave is called twice in a row with the same second
-> argument, the interrupt state at the point of the second call overwrites
-> the value saved by the first call.  Indeed, the second call does not need
-> to save the interrupt state, so it is changed to a simple spin_lock.
+> unreferenced object 0xf6b0ac00 (size 512):
+>   comm "swapper", pid 1, jiffies 4294671240
+>   hex dump (first 32 bytes):
+>     02 00 00 00 03 4f 53 53 20 73 65 71 75 65 6e 63  .....OSS sequenc
+>     65 72 00 00 00 00 00 00 00 00 00 00 00 00 00 00  er..............
+>   backtrace:
+>     [<c12d7d83>] kmemleak_alloc+0x25/0x49
+>     [<c109350d>] kmem_cache_alloc+0x95/0x124
+>     [<c12568f0>] seq_create_client1+0x1d/0x165
+>     [<c1257b01>] snd_seq_create_kernel_client+0x68/0xe7
+>     [<c14c966f>] snd_seq_oss_create_client+0x86/0x143
+>     [<c14c958a>] alsa_seq_oss_init+0xf8/0x157
+>     [<c100104f>] do_one_initcall+0x4a/0x111
+>     [<c14a8608>] kernel_init+0x16b/0x1bc
+>     [<c100352b>] kernel_thread_helper+0x7/0x1a
+>     [<ffffffff>] 0xffffffff
+> unreferenced object 0xf6b08700 (size 128):
+>   comm "swapper", pid 1, jiffies 4294671240
+>   hex dump (first 32 bytes):
+>     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+>     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+>   backtrace:
+>     [<c12d7d83>] kmemleak_alloc+0x25/0x49
+>     [<c109350d>] kmem_cache_alloc+0x95/0x124
+>     [<c12591a3>] snd_seq_pool_new+0x17/0xbe
+>     [<c1256955>] seq_create_client1+0x82/0x165
+>     [<c1257b01>] snd_seq_create_kernel_client+0x68/0xe7
+>     [<c14c966f>] snd_seq_oss_create_client+0x86/0x143
+>     [<c14c958a>] alsa_seq_oss_init+0xf8/0x157
+>     [<c100104f>] do_one_initcall+0x4a/0x111
+>     [<c14a8608>] kernel_init+0x16b/0x1bc
+>     [<c100352b>] kernel_thread_helper+0x7/0x1a
+>     [<ffffffff>] 0xffffffff
+> unreferenced object 0xf6b0aa00 (size 512):
+>   comm "swapper", pid 1, jiffies 4294671246
+>   hex dump (first 32 bytes):
+>     0f 00 00 00 00 00 00 00 52 65 63 65 69 76 65 72  ........Receiver
+>     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+>   backtrace:
+>     [<c12d7d83>] kmemleak_alloc+0x25/0x49
+>     [<c109350d>] kmem_cache_alloc+0x95/0x124
+>     [<c125bdf9>] snd_seq_create_port+0x4c/0x197
+>     [<c1257589>] snd_seq_ioctl_create_port+0x52/0x141
+>     [<c1256bb3>] snd_seq_do_ioctl+0x59/0x78
+>     [<c1256c11>] snd_seq_kernel_client_ctl+0x2f/0x48
+>     [<c14c96e1>] snd_seq_oss_create_client+0xf8/0x143
+>     [<c14c958a>] alsa_seq_oss_init+0xf8/0x157
+>     [<c100104f>] do_one_initcall+0x4a/0x111
+>     [<c14a8608>] kernel_init+0x16b/0x1bc
+>     [<c100352b>] kernel_thread_helper+0x7/0x1a
+>     [<ffffffff>] 0xffffffff
 > 
-> The semantic match that finds this problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
+> But when I build SND_SEQUENCER as module these kmemleak issues
+> disappear.
 > 
-> // <smpl>
-> @@
-> expression lock1,lock2;
-> expression flags;
-> @@
+> Then I noticed that issue was in ordering. 
 > 
-> *spin_lock_irqsave(lock1,flags)
-> ... when != flags
-> *spin_lock_irqsave(lock2,flags)
-> // </smpl>
+> When build in kernel flow is like this :
 > 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> OSS sequencer(alsa_seq_oss_init) -> System (snd_seq_system_client_init)
+> 
+> When build as modules flow is like this :
+> 
+> System(snd_seq_system_client_init) -> OSS sequencer(alsa_seq_oss_init)
+> 
+> So this fixes above kmemleak issues in my case, I hope it will be
+> helpful :
+> 
+> diff --git a/sound/core/seq/oss/seq_oss.c b/sound/core/seq/oss/seq_oss.c
+> index f25e3cc..3ddf2c2 100644
+> --- a/sound/core/seq/oss/seq_oss.c
+> +++ b/sound/core/seq/oss/seq_oss.c
+> @@ -116,7 +116,7 @@ static void __exit alsa_seq_oss_exit(void)
+>  	unregister_device();
+>  }
+>  
+> -module_init(alsa_seq_oss_init)
+> +late_initcall(alsa_seq_oss_init);
+>  module_exit(alsa_seq_oss_exit)
 
-Applied now.  Thanks.
+Thanks for checking this.
+
+Another option would be to fix Makefile.  I guess simply putting the
+line including sound/core/seq/oss/Makefile after the definitions of
+other seq modules would do the same thing...
 
 
 Takashi
-
-> 
-> ---
->  sound/isa/gus/gus_pcm.c             |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/sound/isa/gus/gus_pcm.c b/sound/isa/gus/gus_pcm.c
-> index edb11ee..2dcf45b 100644
-> --- a/sound/isa/gus/gus_pcm.c
-> +++ b/sound/isa/gus/gus_pcm.c
-> @@ -795,13 +795,13 @@ static int snd_gf1_pcm_volume_put(struct snd_kcontrol *kcontrol, struct snd_ctl_
->  		if (!(pcmp->flags & SNDRV_GF1_PCM_PFLG_ACTIVE))
->  			continue;
->  		/* load real volume - better precision */
-> -		spin_lock_irqsave(&gus->reg_lock, flags);
-> +		spin_lock(&gus->reg_lock);
->  		snd_gf1_select_voice(gus, pvoice->number);
->  		snd_gf1_ctrl_stop(gus, SNDRV_GF1_VB_VOLUME_CONTROL);
->  		vol = pvoice == pcmp->pvoices[0] ? gus->gf1.pcm_volume_level_left : gus->gf1.pcm_volume_level_right;
->  		snd_gf1_write16(gus, SNDRV_GF1_VW_VOLUME, vol);
->  		pcmp->final_volume = 1;
-> -		spin_unlock_irqrestore(&gus->reg_lock, flags);
-> +		spin_unlock(&gus->reg_lock);
->  	}
->  	spin_unlock_irqrestore(&gus->voice_alloc, flags);
->  	return change;
-> 
