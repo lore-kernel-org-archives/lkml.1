@@ -1,42 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbZGSSZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbZGSS04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbZGSSZk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 14:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbZGSSZj
+	id S1755154AbZGSS04 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 14:26:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbZGSS0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 14:25:39 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:58127 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755051AbZGSSZi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 14:25:38 -0400
-Date: Sun, 19 Jul 2009 19:25:33 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Frans Pop <elendil@planet.nl>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       linux acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFT] hp-wmi: improved rfkill support for wifi
-Message-ID: <20090719182533.GA11496@srcf.ucam.org>
-References: <4A61FE7D.9080409@tuffmail.co.uk> <8db1092f0907181155h3d603a17q11815b9f174ac333@mail.gmail.com> <4A623490.50305@tuffmail.co.uk> <8db1092f0907190028o334371d7g798c1e8cb9a5744b@mail.gmail.com> <4A635618.3070507@tuffmail.co.uk> <8db1092f0907191110p2d3c2c45je61bda6365ed1468@mail.gmail.com>
+	Sun, 19 Jul 2009 14:26:55 -0400
+Received: from rtr.ca ([76.10.145.34]:37069 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751663AbZGSS0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 14:26:54 -0400
+Message-ID: <4A63656D.4070901@rtr.ca>
+Date: Sun, 19 Jul 2009 14:26:53 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8db1092f0907191110p2d3c2c45je61bda6365ed1468@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Andy Walls <awalls@radix.net>, linux-media@vger.kernel.org,
+       Jarod Wilson <jarod@redhat.com>, Mike Isely <isely@pobox.com>,
+       Hans Verkuil <hverkuil@xs4all.nl>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Janne Grunau <j@jannau.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] ir-kbd-i2c: Allow use of ir-kdb-i2c internal get_key
+    funcs and set ir_type
+References: <1247862585.10066.16.camel@palomino.walls.org>	<1247862937.10066.21.camel@palomino.walls.org>	<20090719144749.689c2b3a@hyperion.delvare>	<4A6316F9.4070109@rtr.ca>	<20090719145513.0502e0c9@hyperion.delvare>	<4A631B41.5090301@rtr.ca>	<4A631CEA.4090802@rtr.ca>	<4A632FED.1000809@rtr.ca> <20090719190833.29451277@hyperion.delvare>
+In-Reply-To: <20090719190833.29451277@hyperion.delvare>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 19, 2009 at 08:10:23PM +0200, Maciej Rutecki wrote:
+(resending.. somebody trimmed linux-kernel from the CC: earlier)
 
-> LED from wifi/bluetooth button sometimes flashing(!)
+Jean Delvare wrote:
+> On Sun, 19 Jul 2009 10:38:37 -0400, Mark Lord wrote:
+>> I'm debugging various other b0rked things in 2.6.31 here right now,
+>> so I had a closer look at the Hauppauge I/R remote issue.
+>>
+>> The ir_kbd_i2c driver *does* still find it after all.
+>> But the difference is that the output from 'lsinput' has changed
+>> and no longer says "Hauppauge".  Which prevents the application from
+>> finding the remote control in the same way as before.
+>
+> OK, thanks for the investigation.
+>
+>> I'll hack the application code here now to use the new output,
+>> but I wonder what the the thousands of other users will do when
+>> they first try 2.6.31 after release ?
+>
+> Where does lsinput get the string from?
+..
 
-The LED will flash if wifi is enabled and bluetooth isn't.
+Here's a test program for you:
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/input.h>
+
+// Invoke with "/dev/input/event4" as argv[1]
+//
+// On 2.6.30, this gives the real name, eg. "i2c IR (Hauppauge)".
+// On 2.6.31, it simply gives "event4" as the "name".
+
+int main(int argc, char *argv[])
+{
+	char buf[32];
+	int fd, rc;
+
+	fd = open(argv[1], O_RDONLY);
+	if (fd == -1) {
+		perror(argv[1]);
+		exit(1);
+	}
+	rc = ioctl(fd,EVIOCGNAME(sizeof(buf)),buf);
+	if (rc >= 0)
+		fprintf(stderr,"   name    : \"%.*s\"\n", rc, buf);
+	return 0;
+}
