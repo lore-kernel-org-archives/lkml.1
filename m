@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZGSQGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbZGSQJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbZGSQGk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 12:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbZGSQGi
+	id S1754707AbZGSQJa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 12:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbZGSQJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 12:06:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:20952 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754595AbZGSQGi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 12:06:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type;
-        b=s8ZR8oNxelgKHAKflouWU7aU1i93eK35C91pbTSYrEqczItR+8z3lu8Zc03bv/wAiy
-         VYDtWPxsw6MoEK3Aj9r3bFDu8T3blFTlmJB7aI9gPDD5VONvo9P0TN+br97ykbbq2Zhu
-         AAW1MOyALrbxF5hkyjUFg0VZBlKgfxla+rjzY=
-Message-ID: <4A63448B.1050208@gmail.com>
-Date: Sun, 19 Jul 2009 18:06:35 +0200
-From: Uros Bizjak <ubizjak@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sun, 19 Jul 2009 12:09:29 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:60364 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754366AbZGSQJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 12:09:28 -0400
+Date: Sun, 19 Jul 2009 18:09:25 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/net/mlx4: Adjust constant
+Message-ID: <Pine.LNX.4.64.0907191809050.16542@ask.diku.dk>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH, x86]: Fix movq immediate operand constraints in uaccess_64.h
-Content-Type: multipart/mixed;
- boundary="------------090101080404010508020003"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090101080404010508020003
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Julia Lawall <julia@diku.dk>
 
-Hello!
+The values in the advertising field are typically ADVERTISED_xxx, not
+SUPPORTED_xxx.  Both SUPPORTED_10000baseT_Full and
+ADVERTISED_1000baseT_Full have the same value.
 
-arch/x86/include/asm/uaccess_64.h uses wrong asm operand constraint 
-("ir") for movq insn. Since movq sign-extends its immediate operand, 
-"er" constraint should be used instead.
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-Attached patch changes all uses of __put_user_asm in uaccess_64.h to use 
-"er" when "q" insn suffix is involved.
+// <smpl>
+@@
+struct ethtool_cmd E;
+@@
+*E.advertising = SUPPORTED_10000baseT_Full
+// </smpl>
 
-Patch was compile tested on x86_64 with defconfig.
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Uros.
+---
+ drivers/net/mlx4/en_ethtool.c       |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---------------090101080404010508020003
-Content-Type: text/plain;
- name="p.diff.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="p.diff.txt"
-
-diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
-index 8cc6873..db24b21 100644
---- a/arch/x86/include/asm/uaccess_64.h
-+++ b/arch/x86/include/asm/uaccess_64.h
-@@ -88,11 +88,11 @@ int __copy_to_user(void __user *dst, const void *src, unsigned size)
- 			      ret, "l", "k", "ir", 4);
- 		return ret;
- 	case 8:__put_user_asm(*(u64 *)src, (u64 __user *)dst,
--			      ret, "q", "", "ir", 8);
-+			      ret, "q", "", "er", 8);
- 		return ret;
- 	case 10:
- 		__put_user_asm(*(u64 *)src, (u64 __user *)dst,
--			       ret, "q", "", "ir", 10);
-+			       ret, "q", "", "er", 10);
- 		if (unlikely(ret))
- 			return ret;
- 		asm("":::"memory");
-@@ -101,12 +101,12 @@ int __copy_to_user(void __user *dst, const void *src, unsigned size)
- 		return ret;
- 	case 16:
- 		__put_user_asm(*(u64 *)src, (u64 __user *)dst,
--			       ret, "q", "", "ir", 16);
-+			       ret, "q", "", "er", 16);
- 		if (unlikely(ret))
- 			return ret;
- 		asm("":::"memory");
- 		__put_user_asm(1[(u64 *)src], 1 + (u64 __user *)dst,
--			       ret, "q", "", "ir", 8);
-+			       ret, "q", "", "er", 8);
- 		return ret;
- 	default:
- 		return copy_user_generic((__force void *)dst, src, size);
-@@ -157,7 +157,7 @@ int __copy_in_user(void __user *dst, const void __user *src, unsigned size)
- 			       ret, "q", "", "=r", 8);
- 		if (likely(!ret))
- 			__put_user_asm(tmp, (u64 __user *)dst,
--				       ret, "q", "", "ir", 8);
-+				       ret, "q", "", "er", 8);
- 		return ret;
- 	}
- 	default:
-
---------------090101080404010508020003--
+diff --git a/drivers/net/mlx4/en_ethtool.c b/drivers/net/mlx4/en_ethtool.c
+index 091f990..86467b4 100644
+--- a/drivers/net/mlx4/en_ethtool.c
++++ b/drivers/net/mlx4/en_ethtool.c
+@@ -220,7 +220,7 @@ static int mlx4_en_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+ {
+ 	cmd->autoneg = AUTONEG_DISABLE;
+ 	cmd->supported = SUPPORTED_10000baseT_Full;
+-	cmd->advertising = SUPPORTED_10000baseT_Full;
++	cmd->advertising = ADVERTISED_1000baseT_Full;
+ 	if (netif_carrier_ok(dev)) {
+ 		cmd->speed = SPEED_10000;
+ 		cmd->duplex = DUPLEX_FULL;
