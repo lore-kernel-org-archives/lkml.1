@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZGSP3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZGSPaD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZGSP3l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 11:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbZGSP3k
+	id S1754811AbZGSPaD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 11:30:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZGSPaC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 11:29:40 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:38746 "EHLO mgw2.diku.dk"
+	Sun, 19 Jul 2009 11:30:02 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:57899 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754574AbZGSP3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 11:29:39 -0400
-Date: Sun, 19 Jul 2009 17:29:37 +0200 (CEST)
+	id S1754649AbZGSPaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 11:30:00 -0400
+Date: Sun, 19 Jul 2009 17:29:57 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: pfg@sgi.com, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: mdharm-usb@one-eyed-alien.net, linux-usb@vger.kernel.org,
+       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/10] drivers/serial: Move a dereference below a NULL test
-Message-ID: <Pine.LNX.4.64.0907191729140.16542@ask.diku.dk>
+Subject: [PATCH 8/10] drivers/usb/storage: Drop an unneeded a NULL test
+Message-ID: <Pine.LNX.4.64.0907191729380.16542@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,10 +24,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-If the NULL test is necessary, then the dereference should be moved below
-the NULL test.
+In each case, the NULL test is not necessary because the function is static
+and at the only places where it is called, the us argument has already been
+dereferenced.
 
-The semantic patch that makes this change is as follows:
+The semantic patch that finds the problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
@@ -41,54 +43,49 @@ statement S;
 + T i;
   ... when != E=E1
       when != i
-  BUG_ON (E == NULL);
+  if (E == NULL||...) S
 + i = E->fld;
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/serial/ioc3_serial.c |    3 ++-
- drivers/serial/ioc4_serial.c |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/usb/storage/datafab.c  |    4 ++--
+ drivers/usb/storage/jumpshot.c |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/serial/ioc3_serial.c b/drivers/serial/ioc3_serial.c
-index ae3699d..6d5c91b 100644
---- a/drivers/serial/ioc3_serial.c
-+++ b/drivers/serial/ioc3_serial.c
-@@ -1117,13 +1117,14 @@ static inline int do_read(struct uart_port *the_port, char *buf, int len)
- 	struct ioc3_port *port = get_ioc3_port(the_port);
- 	struct ring *inring;
- 	struct ring_entry *entry;
--	struct port_hooks *hooks = port->ip_hooks;
-+	struct port_hooks *hooks;
- 	int byte_num;
- 	char *sc;
- 	int loop_counter;
+diff --git a/drivers/usb/storage/datafab.c b/drivers/usb/storage/datafab.c
+index 2b6e565..ded836b 100644
+--- a/drivers/usb/storage/datafab.c
++++ b/drivers/usb/storage/datafab.c
+@@ -334,7 +334,7 @@ static int datafab_determine_lun(struct us_data *us,
+ 	unsigned char *buf;
+ 	int count = 0, rc;
  
- 	BUG_ON(!(len >= 0));
- 	BUG_ON(!port);
-+	hooks = port->ip_hooks;
+-	if (!us || !info)
++	if (!info)
+ 		return USB_STOR_TRANSPORT_ERROR;
  
- 	/* There is a nasty timing issue in the IOC3. When the rx_timer
- 	 * expires or the rx_high condition arises, we take an interrupt.
-diff --git a/drivers/serial/ioc4_serial.c b/drivers/serial/ioc4_serial.c
-index 6bab63c..aeca2f8 100644
---- a/drivers/serial/ioc4_serial.c
-+++ b/drivers/serial/ioc4_serial.c
-@@ -2067,13 +2067,14 @@ static inline int do_read(struct uart_port *the_port, unsigned char *buf,
- 	struct ioc4_port *port = get_ioc4_port(the_port, 0);
- 	struct ring *inring;
- 	struct ring_entry *entry;
--	struct hooks *hooks = port->ip_hooks;
-+	struct hooks *hooks;
- 	int byte_num;
- 	char *sc;
- 	int loop_counter;
+ 	memcpy(command, scommand, 8);
+@@ -399,7 +399,7 @@ static int datafab_id_device(struct us_data *us,
+ 	unsigned char *reply;
+ 	int rc;
  
- 	BUG_ON(!(len >= 0));
- 	BUG_ON(!port);
-+	hooks = port->ip_hooks;
+-	if (!us || !info)
++	if (!info)
+ 		return USB_STOR_TRANSPORT_ERROR;
  
- 	/* There is a nasty timing issue in the IOC4. When the rx_timer
- 	 * expires or the rx_high condition arises, we take an interrupt.
+ 	if (info->lun == -1) {
+diff --git a/drivers/usb/storage/jumpshot.c b/drivers/usb/storage/jumpshot.c
+index 1c69420..6168596 100644
+--- a/drivers/usb/storage/jumpshot.c
++++ b/drivers/usb/storage/jumpshot.c
+@@ -335,7 +335,7 @@ static int jumpshot_id_device(struct us_data *us,
+ 	unsigned char *reply;
+ 	int 	 rc;
+ 
+-	if (!us || !info)
++	if (!info)
+ 		return USB_STOR_TRANSPORT_ERROR;
+ 
+ 	command[0] = 0xE0;
