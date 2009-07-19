@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZGSAfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZGSBtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbZGSAfA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 20:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZGSAe6
+	id S1754124AbZGSBtN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 21:49:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbZGSBtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 20:34:58 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:48869 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbZGSAe6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 20:34:58 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Sat, 18 Jul 2009 20:34:37 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] [MMC] mvsdio: fix handling of partial word at the end of PIO
- transfer
-Message-id: <alpine.LFD.2.00.0907182026070.3138@xanadu.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 18 Jul 2009 21:49:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47931 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754091AbZGSBtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 21:49:11 -0400
+Message-ID: <4A627B7D.7080900@kernel.org>
+Date: Sun, 19 Jul 2009 10:48:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Rakib Mullick <rakib.mullick@gmail.com>
+CC: axboe@kernel.dk, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] block: Mark virtio_blk with __refdata in virtio_blk.c
+References: <b9df5fa10907120413l21761e1cxfc26436481954c2a@mail.gmail.com>	 <4A6013F3.1030101@kernel.org> <b9df5fa10907170713u508f5c3br2463d0fc0ba0515@mail.gmail.com>
+In-Reply-To: <b9df5fa10907170713u508f5c3br2463d0fc0ba0515@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Jul 2009 01:49:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Standard data flow for MMC/SD/SDIO cards requires that the mvsdio
-controller be set for big endian operation.  This is causing problems
-with buffers which length is not a multiple of 4 bytes as the last
-partial word doesn't get shifted all the way and stored properly in
-memory.  Let's compensate for this.
+I slightly massaged the commit message and comment and committed it to
+#tj-block-for-linus.  Will push it out in a few days.
 
-Signed-off-by: Nicolas Pitre <nico@marvell.com>
-CC: stable@kernel.org
+Thanks.
+
+>From 4fbfff76079a5c0e1751b0ddf53160d33f7831e7 Mon Sep 17 00:00:00 2001
+From: Rakib Mullick <rakib.mullick@gmail.com>
+Date: Fri, 17 Jul 2009 20:13:22 +0600
+Subject: [PATCH] virtio_blk: mark virtio_blk with __refdata to kill spurious section mismatch
+
+The variable virtio_blk references the function virtblk_probe() (which
+is in .devinit section) and also references the function
+virtblk_remove() ( which is in .devexit section). So, virtio_blk
+simultaneously refers .devinit and .devexit section. To avoid this
+messup, we mark virtio_blk as __refdata.
+
+We were warned by the following warning:
+
+  LD      drivers/block/built-in.o
+  WARNING: drivers/block/built-in.o(.data+0xc8dc): Section mismatch in
+  reference from the variable virtio_blk to the function
+  .devinit.text:virtblk_probe()
+  The variable virtio_blk references
+  the function __devinit virtblk_probe()
+  If the reference is valid then annotate the
+  variable with __init* or __refdata (see linux/init.h) or name the variable:
+  *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+
+  WARNING: drivers/block/built-in.o(.data+0xc8e0): Section mismatch in
+  reference from the variable virtio_blk to the function
+  .devexit.text:virtblk_remove()
+  The variable virtio_blk references
+  the function __devexit virtblk_remove()
+  If the reference is valid then annotate the
+  variable with __exit* (see linux/init.h) or name the variable:
+  *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
+
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
+ drivers/block/virtio_blk.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-Since Pierre is (quite unfortunately) stepping down from MMC 
-maintenance, I'm resending this to you in the hope this will reach 
-mainline in a timely manner.  Some SDIO devices are broken without this.
+diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
+index 43db3ea..024f2d2 100644
+--- a/drivers/block/virtio_blk.c
++++ b/drivers/block/virtio_blk.c
+@@ -424,7 +424,12 @@ static unsigned int features[] = {
+ 	VIRTIO_BLK_F_SCSI, VIRTIO_BLK_F_IDENTIFY
+ };
+ 
+-static struct virtio_driver virtio_blk = {
++/*
++ * virtio_blk causes spurious section mismatch warning by
++ * simultaneously referring to a __devinit and a __devexit function.
++ * Use __refdata to avoid this warning.
++ */
++static struct virtio_driver __refdata virtio_blk = {
+ 	.feature_table = features,
+ 	.feature_table_size = ARRAY_SIZE(features),
+ 	.driver.name =	KBUILD_MODNAME,
+-- 
+1.6.0.2
 
-diff --git a/drivers/mmc/host/mvsdio.c b/drivers/mmc/host/mvsdio.c
-index b56d72f..34e2348 100644
---- a/drivers/mmc/host/mvsdio.c
-+++ b/drivers/mmc/host/mvsdio.c
-@@ -384,7 +384,7 @@ static irqreturn_t mvsd_irq(int irq, void *dev)
- 				u16 val[2] = {0, 0};
- 				val[0] = mvsd_read(MVSD_FIFO);
- 				val[1] = mvsd_read(MVSD_FIFO);
--				memcpy(p, &val, s);
-+				memcpy(p, ((void *)&val) + 4 - s, s);
- 				s = 0;
- 				intr_status = mvsd_read(MVSD_NOR_INTR_STATUS);
- 			}
-@@ -423,7 +423,7 @@ static irqreturn_t mvsd_irq(int irq, void *dev)
- 		if (s < 4) {
- 			if (s && (intr_status & MVSD_NOR_TX_AVAIL)) {
- 				u16 val[2] = {0, 0};
--				memcpy(&val, p, s);
-+				memcpy(((void *)&val) + 4 - s, p, s);
- 				mvsd_write(MVSD_FIFO, val[0]);
- 				mvsd_write(MVSD_FIFO, val[1]);
- 				s = 0;
