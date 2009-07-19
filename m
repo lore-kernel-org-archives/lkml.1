@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751706AbZGSWBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751766AbZGSWFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751706AbZGSWBl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 18:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbZGSWBk
+	id S1751766AbZGSWFA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 18:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbZGSWE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 18:01:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41387 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751321AbZGSWBj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 18:01:39 -0400
-Date: Sun, 19 Jul 2009 23:01:13 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Athanasius <link@miggy.org>, Julien TINNES <jt@cr0.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
-       Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
-       Eugene Teo <eugene@redhat.com>
-Subject: Re: [link@miggy.org: Re: [patch 2/8] personality: fix
- PER_CLEAR_ON_SETID (CVE-2009-1895)]
-Message-ID: <20090719230113.4a4885cf@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907191219230.13838@localhost.localdomain>
-References: <20090718202512.GA19587@suse.de>
-	<alpine.LFD.2.01.0907181342500.13838@localhost.localdomain>
-	<20090718212812.GI6722@miggy.org>
-	<4A6278FD.20807@cr0.org>
-	<20090719122701.GJ6722@miggy.org>
-	<alpine.LFD.2.01.0907191219230.13838@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 19 Jul 2009 18:04:59 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50201 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751466AbZGSWE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 18:04:58 -0400
+Date: Mon, 20 Jul 2009 00:04:57 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Julia Lawall <julia@diku.dk>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/10] drivers/hid: Move dereferences below a NULL test
+In-Reply-To: <Pine.LNX.4.64.0907191725530.16542@ask.diku.dk>
+Message-ID: <alpine.LNX.2.00.0907200004310.11648@wotan.suse.de>
+References: <Pine.LNX.4.64.0907191725530.16542@ask.diku.dk>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> These days? We could probably get rid of that idiotic feature. It's simply 
-> not important enough any more. Does anybody really care? At the same time, 
-> over years we've grown _other_ personality flags, and some of them are 
-> still relevant.
+On Sun, 19 Jul 2009, Julia Lawall wrote:
 
-If it bugs you enough then a sysfs flag of "personality flags to honour"
-is pretty trivial.
+> From: Julia Lawall <julia@diku.dk>
+> 
+> If the NULL test is necessary, then the dereferences should be moved below
+> the NULL test.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> type T;
+> expression E,E1;
+> identifier i,fld;
+> statement S;
+> @@
+> 
+> - T i = E->fld;
+> + T i;
+>   ... when != E=E1
+>       when != i
+>   if (E == NULL||...) S
+> + i = E->fld;
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Alan
+Good catch, applied, thanks Julia.
+
+-- 
+Jiri Kosina
+SUSE Labs
