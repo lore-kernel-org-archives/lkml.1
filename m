@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbZGSPB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbZGSPMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754584AbZGSPB0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 11:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbZGSPBZ
+	id S1754608AbZGSPMF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 11:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbZGSPME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 11:01:25 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:36926 "EHLO Ishtar.tlinx.org"
+	Sun, 19 Jul 2009 11:12:04 -0400
+Received: from rtr.ca ([76.10.145.34]:54171 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754313AbZGSPBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 11:01:24 -0400
-Message-ID: <4A633542.8030502@tlinx.org>
-Date: Sun, 19 Jul 2009 08:01:22 -0700
-From: Linda Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	id S1754527AbZGSPMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 11:12:03 -0400
+Message-ID: <4A6337C1.6080104@rtr.ca>
+Date: Sun, 19 Jul 2009 11:12:01 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: disk Partition label changes and reflecting them in /dev/disks-by-label/
-X-Stationery: 0.4.9
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+Cc: Steven Toth <stoth@linuxtv.org>, linux-media@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Regression 2.6.31: xc5000 no longer works with Myth-0.21-fixes
+ 	branch
+References: <4A631C8F.7000002@rtr.ca> <829197380907190706i686fd1afwdca0d8be648129@mail.gmail.com>
+In-Reply-To: <829197380907190706i686fd1afwdca0d8be648129@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+Devin Heitmueller wrote:
+> On Sun, Jul 19, 2009 at 9:15 AM, Mark Lord<lkml@rtr.ca> wrote:
+>> Devin,
+>>
+>> Thanks for your good efforts and updates on the xc5000 driver.
+>> But the version in 2.6.31 no longer works with mythfrontend
+>> from the 0.21-fixes branch of MythTV.
+..
+> Also, Could you please install the latest v4l-dvb code using the
+> directions at http://linuxtv.org/repo and see if the problem still
+> occurs.  This will tell us if the problem is some patch that didn't
+> make it upstream, and will make it easier for me to give you patches
+> that provide more debug info.
+..
 
-If I have a disk with no mounted partitions and I change the partition 
-order,
-the OS will re-read the new partition and life goes on.
+Okay, I pulled in v4l-dvb-bdd711bbc07e, built/installed/rebooted,
+and ended up with exactly the same behaviour.
 
-However, if I create or change a new disk label, it seems label programs
-(and users) should have an option to reread the labels after the 
-modification.
+So the good news is, nothing appears to have been left out in 2.6.31. :)
 
-Ideally any prog that changes a Label or UUID would trigger an update
-of what's in /dev/disks to reflect the new 'reality'.
+But still no really good clues to go on, other than this observation
+from before:
 
-Currently, I go through through a seemingly bizarre ritual of invoking
-unmounting all other partitions on the same disk, then becoming root,
-running fdisk on the disk, then just exiting with "w".  This triggers
-a reread of not only the partition table, but also the new labels. 
+>> The mythbackend (recording) program tunes/records fine with it,
+>> but any attempt to watch "Live TV" via mythfrontend just locks
+>> up the UI for 30 seconds or so, and then it reverts to the menus.
+>>
+>> I find that rather odd, as mythfrontend normally has very little
+>> interaction with the tuner devices.  But it does try to read the
+>> signal strength and quality from the tuner, so perhaps this is a
+>> clue as to what has gone wrong?
+..
 
-However, I find this far less than ideal.  Is there a better way, or could
-there be a better way to update new Labels and UUID's that are actually
-on a disk -- perhaps even as an ordinary user command (since it would be
-a read-only operation on the disk that simply updates /dev/disk to reflect
-what's really there -- Especially being able to change only the label (or
-UUID), only on one partition w/o having to actually unmount other file 
-systems
-on the disk....?
+Really, the mythfrontend DOES NOT DEAL WITH TUNERS directly,
+leaving that to the mythbackend.  EXCEPT for when it wants to show
+a signal strength/quality indication onscreen, which is done
+when tuning to a new channel.
 
-Already implemented?  Or doable?  Or bad idea?
+So it's got to be something on that pathway, I suspect,
+but despite being a kernel developer, I'm not terribly
+knowledgeable about V4L, DVB, or the MythTV internals.
 
-Thanks,
--linda
-
+Cheers
