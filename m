@@ -1,98 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbZGSNTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZGSNWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754380AbZGSNTj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 09:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZGSNTg
+	id S1754412AbZGSNWR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 09:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZGSNWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 09:19:36 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45317 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754250AbZGSNTf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 09:19:35 -0400
-X-Sasl-enc: MbrK14Y18TtlfwEdGqfA5beV6pRxFX3YojvrvYtIbUyU 1248009574
-Message-ID: <4A631D5A.3030105@imap.cc>
-Date: Sun, 19 Jul 2009 15:19:22 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
-Subject: Re: [RFC] tty (or char) bus?
-References: <4A5CA4CB.8070500@tis.icnet.pl> <20090717175428.GB4852@const.linuxsymposium.org>
-In-Reply-To: <20090717175428.GB4852@const.linuxsymposium.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig88B07A3DAEE0D42B989E0F02"
+	Sun, 19 Jul 2009 09:22:15 -0400
+Received: from mail-a04.ithnet.com ([217.64.83.99]:52016 "HELO ithnet.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754325AbZGSNWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 09:22:14 -0400
+X-Sender-Authentication: net64
+Date: Sun, 19 Jul 2009 15:22:10 +0200
+From: Stephan von Krawczynski <skraw@ithnet.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: What to do with this message (2.6.30.1) ?
+Message-Id: <20090719152210.b0ec33d7.skraw@ithnet.com>
+In-Reply-To: <20090718122311.9955e912.skraw@ithnet.com>
+References: <20090713134621.124aa18e.skraw@ithnet.com>
+	<4807377b0907132240g6f74c9cbnf1302d354a0e0a72@mail.gmail.com>
+	<alpine.DEB.2.00.0907132247001.8784@chino.kir.corp.google.com>
+	<20090715084754.36ff73bf.skraw@ithnet.com>
+	<alpine.DEB.2.00.0907150115190.14393@chino.kir.corp.google.com>
+	<20090715113740.334309dd.skraw@ithnet.com>
+	<alpine.DEB.2.00.0907151323170.22582@chino.kir.corp.google.com>
+	<20090718122311.9955e912.skraw@ithnet.com>
+Organization: ith Kommunikationstechnik GmbH
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig88B07A3DAEE0D42B989E0F02
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sat, 18 Jul 2009 12:23:11 +0200
+Stephan von Krawczynski <skraw@ithnet.com> wrote:
 
-Scripsit Samuel Thibault die 17.07.2009 19:54:
-> Janusz Krzysztofik, le Tue 14 Jul 2009 17:31:23 +0200, a =E9crit :
+> On Wed, 15 Jul 2009 13:24:08 -0700 (PDT)
+> David Rientjes <rientjes@google.com> wrote:
+> 
+> > On Wed, 15 Jul 2009, Stephan von Krawczynski wrote:
+> > 
+> > > > If you have some additional time, it would also be helpful to get a 
+> > > > bisection of when the problem started occurring (it appears to be sometime 
+> > > > between 2.6.29 and 2.6.30).
+> > > 
+> > > Do you know what version should definitely be not affected? I can check one
+> > > kernel version per day, can you name a list which versions to check out? 
+> > > 
+> > 
+> > To my knowledge, this issue was never reported on 2.6.29, so that should 
+> > be a sane starting point.
+> 
+> Todays' news is that 2.6.29.4 has exactly the same problem. I was able to
+> reproduce it. Tonight I will check out 2.6.28.10.
+> 
+> -- 
+> Regards,
+> Stephan
 
->> AFAICS, even if tty lowlevel write() could be used unmodified, a
->> convenient way of reading characters from a tty is missing and should
->> be implemented in a line discipline. Please correct me if I am wrong.
->=20
-> Have you seen the receive_buf line discipline hook?  Indeed it's not a
-> read() operation as from userland, but at least you can get the data
-> from the tty that way.
+I can reproduce the problem with 2.6.28.10.
+Next in line is 2.6.27.26.
+In the meantime I do believe that the problem really lies inside the e1000e
+driver and not the surrounding kernel code.
+Any other driver shows this behaviour in the same environment, escpecially
+neither e1000 nor tg3.
 
-That's as it should be. A read() operation that sleeps until some data
-is available isn't very useful in kernel mode, as it can only be used
-if you have the ability to sleep. A callback function which runs your
-code as soon as the data arrives is a much better fit, although of
-course it requires a bit of rethinking.
-
->> OTOH, I found that some kind of abstraction layer for acccessing devic=
-es=20
->> over a tty could be convenient. Instead of allocating a new line=20
->> discipline for each specific device, sometimes found on a specific boa=
-rd=20
->> only, why not just create a new bus type?
->=20
-> I'd tend to agree with you, as I also have a use case for that: braille=
-
-> & speech synthesis devices.  However for now I haven't found a really
-> convincing argument why line disciplines aren't enough.
-
-I was in the same situation three years ago when I implemented the
-ser_gigaset driver for an RS232 connected ISDN adapter, and found the
-line discipline (LD) interface quite adequate once I had figured out
-how to use it. The only inconvenience is how LDs are loaded and
-attached to a serial interface, via the TIOCSETD ioctl, because you
-need a userspace daemon which keeps the tty device open so that the
-LD stays attached to it.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig88B07A3DAEE0D42B989E0F02
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFKYx1jQ3+did9BuFsRAg3/AJ9DoJ8L+mJpXb4/JW/rGFaS+bFcywCffH+L
-DGXR59/J2JT3LJpG45D6TTs=
-=MRKk
------END PGP SIGNATURE-----
-
---------------enig88B07A3DAEE0D42B989E0F02--
+-- 
+Regards,
+Stephan
