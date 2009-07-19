@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZGSSZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZGSSZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbZGSSZA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 14:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbZGSSY6
+	id S1755215AbZGSSZL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 14:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbZGSSZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 14:24:58 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2852 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755113AbZGSSY5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 14:24:57 -0400
-Subject: Re: [PATCH] drivers/net/mlx4: Adjust constant
-From: Joe Perches <joe@perches.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0907191809050.16542@ask.diku.dk>
-References: <Pine.LNX.4.64.0907191809050.16542@ask.diku.dk>
-Content-Type: text/plain
-Date: Sun, 19 Jul 2009 11:24:51 -0700
-Message-Id: <1248027891.31365.17.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sun, 19 Jul 2009 14:25:10 -0400
+Received: from rtr.ca ([76.10.145.34]:37062 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755145AbZGSSZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 14:25:08 -0400
+Message-ID: <4A636503.8030700@rtr.ca>
+Date: Sun, 19 Jul 2009 14:25:07 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+Cc: Steven Toth <stoth@linuxtv.org>, linux-media@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Regression 2.6.31: xc5000 no longer works with Myth-0.21-fixes
+ 	branch
+References: <4A631C8F.7000002@rtr.ca> <829197380907190706i686fd1afwdca0d8be648129@mail.gmail.com> <4A63317D.6040208@rtr.ca>
+In-Reply-To: <4A63317D.6040208@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-19 at 18:09 +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The values in the advertising field are typically ADVERTISED_xxx, not
-> SUPPORTED_xxx.  Both SUPPORTED_10000baseT_Full and
-> ADVERTISED_1000baseT_Full have the same value.
+Mark Lord wrote:
+..
+> Digital-only, since the tuner stick has never worked (and still doesn't)
+> for analog NTSC with MythTV-0.21-fixes.  That's okay, I really only use
+> it for digital ATSC over-the-air (OTA) reception.
+..
 
-other possibles:
+Further to the analog -- which I don't care a whole bunch about --
+I did try tracing it through mythtv today.  The mythbackend thread
+that dies (segfault) is trying to read audio frames from the
+usb-audio device of the 950Q (/dev/dsp1).
 
-drivers/net/sungem.c:#define ADVERTISE_MASK	(SUPPORTED_10baseT_Half | SUPPORTED_10baseT_Full | \
-			 SUPPORTED_100baseT_Half | SUPPORTED_100baseT_Full | \
-			 SUPPORTED_1000baseT_Half | SUPPORTED_1000baseT_Full | \
-			 SUPPORTED_Pause | SUPPORTED_Autoneg)
-drivers/net/s2io.c:	info->advertising = (SUPPORTED_10000baseT_Full | SUPPORTED_FIBRE);
-drivers/net/spider_net.c:		advertise |= SUPPORTED_1000baseT_Full;
-drivers/net/spider_net.c:		advertise |= SUPPORTED_1000baseT_Half;
+It seems to suffer massive stack corruption from something in there,
+though I'm not at all sure what the cause might be.
+Presumable this same myth code works with other tuners that lack
+hardware mpeg encoding, but I don't have any of those here to test with.
 
+I wonder if it's a 64-bit thing?  My mythbox is pure 64-bits.
 
+Cheers
