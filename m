@@ -1,227 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZGSLoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZGSLyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754091AbZGSLoc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 07:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbZGSLob
+	id S1754125AbZGSLyO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 07:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZGSLyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 07:44:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39919 "EHLO mx2.redhat.com"
+	Sun, 19 Jul 2009 07:54:12 -0400
+Received: from bu3sch.de ([62.75.166.246]:60454 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333AbZGSLoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 07:44:30 -0400
-Date: Sun, 19 Jul 2009 14:44:12 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>
-Subject: [PATCH] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090719114411.GN5638@redhat.com>
+	id S1753333AbZGSLyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 07:54:11 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] acpi-video: Fix integer overflow and possible kernel stack trashing
+Date: Sun, 19 Jul 2009 13:53:31 +0200
+User-Agent: KMail/1.9.9
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Message-Id: <200907191353.32181.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KVM would like to provide x2APIC interface to a guest without emulating
-interrupt remapping device. The reason KVM prefers guest to use x2APIC
-is that x2APIC interface is better virtualizable and provides better
-performance than mmio xAPIC interface:
+This patch fixes a possible kernel crash through stack trashing triggered
+by an integer overflow. If count passed from userspace is (size_t)-1lu, the
+range check will overflow and return false. So the copy_from_user() will
+end up attempting to copy 0xFFFFFFFF (or 0xFFFFFFFFFFFFFFFF) bytes to the kernel stack.
+Of course the copy will fail at some point, because we can't allocate a buffer that big.
+But it will copy as much as it can and then return with an -EFAULT.
+This means the userspace process writing to this proc file controls
+the kernel stack.
 
-- msr exits are faster than mmio (no page table walk, emulation)
-- no need to read back ICR to look at the busy bit
-- one 64 bit ICR write instead of two 32 bit writes
-- shared code with the Hyper-V paravirt interface
+This is probably not useable for a privilege escalation, because the proc file s
+have permissions (S_IFREG | S_IRUGO | S_IWUSR). So only root will be able to crash the machine.
 
-Included patch changes x2APIC enabling logic to enable it even if IR
-initialization failed, but kernel runs under KVM and no apic id is
-greater than 255 (if there is one spec requires BIOS to move to x2apic
-mode before starting an OS).
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Cc: stable@kernel.org
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
 
-This is based on x86 tree commit d7ccd190e5107 with Ingo comments
-addressed (comment formatting, print error on alloc failure).
+version 2: Fix more functions with similar bugs.
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 0a1c283..a010af4 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -49,6 +49,7 @@
- #include <asm/mtrr.h>
- #include <asm/smp.h>
- #include <asm/mce.h>
-+#include <asm/kvm_para.h>
- 
- unsigned int num_processors;
- 
-@@ -1361,52 +1362,76 @@ void enable_x2apic(void)
- }
- #endif /* CONFIG_X86_X2APIC */
- 
--void __init enable_IR_x2apic(void)
-+int __init enable_IR(void)
+This patch is completely untested, because I do not have a machine with acpi-video.
+
+---
+ drivers/acpi/video.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- linux-2.6.orig/drivers/acpi/video.c
++++ linux-2.6/drivers/acpi/video.c
+@@ -1185,21 +1185,21 @@ acpi_video_device_write_state(struct fil
+ 			      const char __user * buffer,
+ 			      size_t count, loff_t * data)
  {
- #ifdef CONFIG_INTR_REMAP
- 	int ret;
--	unsigned long flags;
--	struct IO_APIC_route_entry **ioapic_entries = NULL;
+ 	int status;
+ 	struct seq_file *m = file->private_data;
+ 	struct acpi_video_device *dev = m->private;
+ 	char str[12] = { 0 };
+ 	u32 state = 0;
  
- 	ret = dmar_table_init();
- 	if (ret) {
- 		pr_debug("dmar_table_init() failed with %d:\n", ret);
--		goto ir_failed;
-+		return 0;
- 	}
  
- 	if (!intr_remapping_supported()) {
- 		pr_debug("intr-remapping not supported\n");
--		goto ir_failed;
-+		return 0;
- 	}
+-	if (!dev || count + 1 > sizeof str)
++	if (!dev || count >= sizeof str)
+ 		return -EINVAL;
  
--
- 	if (!x2apic_preenabled && skip_ioapic_setup) {
- 		pr_info("Skipped enabling intr-remap because of skipping "
- 			"io-apic setup\n");
--		return;
-+		return 0;
- 	}
+ 	if (copy_from_user(str, buffer, count))
+ 		return -EFAULT;
  
-+	if (enable_intr_remapping(x2apic_supported()))
-+		return 0;
-+
-+	pr_info("Enabled Interrupt-remapping\n");
-+
-+	return 1;
-+
-+#endif
-+	return 0;
-+}
-+
-+void __init enable_IR_x2apic(void)
-+{
-+	unsigned long flags;
-+	struct IO_APIC_route_entry **ioapic_entries = NULL;
-+	int ret, x2apic_enabled = 0;
-+
- 	ioapic_entries = alloc_ioapic_entries();
- 	if (!ioapic_entries) {
--		pr_info("Allocate ioapic_entries failed: %d\n", ret);
--		goto end;
-+		pr_err("Allocate ioapic_entries failed\n");
-+		goto out;
- 	}
+ 	str[count] = 0;
+ 	state = simple_strtoul(str, NULL, 0);
+ 	state &= ((1ul << 31) | (1ul << 30) | (1ul << 0));
  
- 	ret = save_IO_APIC_setup(ioapic_entries);
- 	if (ret) {
- 		pr_info("Saving IO-APIC state failed: %d\n", ret);
--		goto end;
-+		goto out;
- 	}
- 
- 	local_irq_save(flags);
--	mask_IO_APIC_setup(ioapic_entries);
- 	mask_8259A();
-+	mask_IO_APIC_setup(ioapic_entries);
- 
--	ret = enable_intr_remapping(x2apic_supported());
--	if (ret)
--		goto end_restore;
-+	ret = enable_IR();
-+	if (!ret) {
-+		/* IR is required if there is APIC ID > 255 even when running
-+		 * under KVM
-+		*/
-+		if (max_physical_apicid > 255 || !kvm_para_available())
-+			goto nox2apic;
-+		/*
-+		 * without IR all CPUs can be addressed by IOAPIC/MSI
-+		 * only in physical mode
-+		 */
-+		x2apic_phys = 1;
-+	}
- 
--	pr_info("Enabled Interrupt-remapping\n");
-+	x2apic_enabled = 1;
- 
- 	if (x2apic_supported() && !x2apic_mode) {
- 		x2apic_mode = 1;
-@@ -1414,41 +1439,27 @@ void __init enable_IR_x2apic(void)
- 		pr_info("Enabled x2apic\n");
- 	}
- 
--end_restore:
--	if (ret)
--		/*
--		 * IR enabling failed
--		 */
-+nox2apic:
-+	if (!ret) /* IR enabling failed */
- 		restore_IO_APIC_setup(ioapic_entries);
--
- 	unmask_8259A();
- 	local_irq_restore(flags);
- 
--end:
-+out:
- 	if (ioapic_entries)
- 		free_ioapic_entries(ioapic_entries);
- 
--	if (!ret)
-+	if (x2apic_enabled)
- 		return;
- 
--ir_failed:
--	if (x2apic_preenabled)
--		panic("x2apic enabled by bios. But IR enabling failed");
--	else if (cpu_has_x2apic)
--		pr_info("Not enabling x2apic,Intr-remapping\n");
--#else
--	if (!cpu_has_x2apic)
--		return;
--
--	if (x2apic_preenabled)
--		panic("x2apic enabled prior OS handover,"
--		      " enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
--#endif
--
--	return;
-+	if (x2apic_preenabled) {
-+		panic("x2apic enabled by bios. But IR enabling failed."
-+		      " Check that CONFIG_X86_X2APIC and CONFIG_INTR_REMAP are"
-+		      " enabled.");
-+	} else if (cpu_has_x2apic)
-+		pr_info("Not enabling x2apic, Intr-remapping\n");
- }
- 
--
- #ifdef CONFIG_X86_64
- /*
-  * Detect and enable local APICs on non-SMP boards.
-diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
-index bc3e880..f3b1037 100644
---- a/arch/x86/kernel/apic/probe_64.c
-+++ b/arch/x86/kernel/apic/probe_64.c
-@@ -50,11 +50,11 @@ static struct apic *apic_probe[] __initdata = {
- void __init default_setup_apic_routing(void)
+ 	status = acpi_video_device_set_state(dev, state);
+@@ -1242,21 +1242,21 @@ acpi_video_device_write_brightness(struc
+ 				   const char __user * buffer,
+ 				   size_t count, loff_t * data)
  {
- #ifdef CONFIG_X86_X2APIC
--	if (x2apic_mode && (apic != &apic_x2apic_phys &&
-+	if (x2apic_mode
- #ifdef CONFIG_X86_UV
--		       apic != &apic_x2apic_uv_x &&
-+		       && apic != &apic_x2apic_uv_x
- #endif
--		       apic != &apic_x2apic_cluster)) {
-+		       ) {
- 		if (x2apic_phys)
- 			apic = &apic_x2apic_phys;
- 		else
---
-			Gleb.
+ 	struct seq_file *m = file->private_data;
+ 	struct acpi_video_device *dev = m->private;
+ 	char str[5] = { 0 };
+ 	unsigned int level = 0;
+ 	int i;
+ 
+ 
+-	if (!dev || !dev->brightness || count + 1 > sizeof str)
++	if (!dev || !dev->brightness || count >= sizeof str)
+ 		return -EINVAL;
+ 
+ 	if (copy_from_user(str, buffer, count))
+ 		return -EFAULT;
+ 
+ 	str[count] = 0;
+ 	level = simple_strtoul(str, NULL, 0);
+ 
+ 	if (level > 100)
+ 		return -EFAULT;
+@@ -1524,21 +1524,21 @@ acpi_video_bus_write_POST(struct file *f
+ 			  const char __user * buffer,
+ 			  size_t count, loff_t * data)
+ {
+ 	int status;
+ 	struct seq_file *m = file->private_data;
+ 	struct acpi_video_bus *video = m->private;
+ 	char str[12] = { 0 };
+ 	unsigned long long opt, options;
+ 
+ 
+-	if (!video || count + 1 > sizeof str)
++	if (!video || count >= sizeof str)
+ 		return -EINVAL;
+ 
+ 	status = acpi_video_bus_POST_options(video, &options);
+ 	if (!ACPI_SUCCESS(status))
+ 		return -EINVAL;
+ 
+ 	if (copy_from_user(str, buffer, count))
+ 		return -EFAULT;
+ 
+ 	str[count] = 0;
+@@ -1564,21 +1564,21 @@ acpi_video_bus_write_DOS(struct file *fi
+ 			 const char __user * buffer,
+ 			 size_t count, loff_t * data)
+ {
+ 	int status;
+ 	struct seq_file *m = file->private_data;
+ 	struct acpi_video_bus *video = m->private;
+ 	char str[12] = { 0 };
+ 	unsigned long opt;
+ 
+ 
+-	if (!video || count + 1 > sizeof str)
++	if (!video || count >= sizeof str)
+ 		return -EINVAL;
+ 
+ 	if (copy_from_user(str, buffer, count))
+ 		return -EFAULT;
+ 
+ 	str[count] = 0;
+ 	opt = strtoul(str, NULL, 0);
+ 	if (opt > 7)
+ 		return -EFAULT;
+ 
+
+-- 
+Greetings, Michael.
