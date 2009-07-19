@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751201AbZGSTjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751362AbZGSTkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751201AbZGSTjV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 15:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZGSTjU
+	id S1751362AbZGSTkB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 15:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbZGSTj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 15:39:20 -0400
-Received: from pond.fysh.org ([166.84.7.109]:44636 "EHLO pond.fysh.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750838AbZGSTjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 15:39:19 -0400
-Date: Sun, 19 Jul 2009 20:39:17 +0100
-From: Athanasius <link@miggy.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Athanasius <link@miggy.org>, Julien TINNES <jt@cr0.org>,
-       Greg KH <gregkh@suse.de>, Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
-       Eugene Teo <eugene@redhat.com>
-Subject: Re: [link@miggy.org: Re: [patch 2/8] personality: fix
-	PER_CLEAR_ON_SETID (CVE-2009-1895)]
-Message-ID: <20090719193917.GK6722@miggy.org>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Athanasius <link@miggy.org>, Julien TINNES <jt@cr0.org>,
-	Greg KH <gregkh@suse.de>, Tavis Ormandy <taviso@sdf.lonestar.org>,
-	Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
-	Eugene Teo <eugene@redhat.com>
-References: <20090718202512.GA19587@suse.de> <alpine.LFD.2.01.0907181342500.13838@localhost.localdomain> <20090718212812.GI6722@miggy.org> <4A6278FD.20807@cr0.org> <20090719122701.GJ6722@miggy.org> <alpine.LFD.2.01.0907191219230.13838@localhost.localdomain>
+	Sun, 19 Jul 2009 15:39:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:51994 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbZGSTj4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 15:39:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=HYAa9C33wdmytS/5oR9n89ZkyrOw28Bui//y///voalo+5mmOVztkSBtqiSERLKLfq
+         +hr2UQQOsTu5Uq4NeKsazZiWO0/Tr3rDEeo34O0t40FjzG1mkVM+jRbW5O3qUtRUXARm
+         +QyY3xXjBy/edcrttHsP1TnIXY+03zI209T+c=
+Date: Sun, 19 Jul 2009 12:39:52 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Jean Delvare <khali@linux-fr.org>, Andy Walls <awalls@radix.net>,
+       linux-media@vger.kernel.org, Jarod Wilson <jarod@redhat.com>,
+       Mike Isely <isely@pobox.com>, Hans Verkuil <hverkuil@xs4all.nl>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Janne Grunau <j@jannau.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org
+Subject: Re: Regression 2.6.31:  ioctl(EVIOCGNAME) no longer returns device
+	name
+Message-ID: <20090719193952.GC17495@dtor-d630.eng.vmware.com>
+References: <1247862937.10066.21.camel@palomino.walls.org> <20090719144749.689c2b3a@hyperion.delvare> <4A6316F9.4070109@rtr.ca> <20090719145513.0502e0c9@hyperion.delvare> <4A631B41.5090301@rtr.ca> <4A631CEA.4090802@rtr.ca> <4A632FED.1000809@rtr.ca> <20090719190833.29451277@hyperion.delvare> <4A63656D.4070901@rtr.ca> <4A637212.2000002@rtr.ca>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0907191219230.13838@localhost.localdomain>
-X-gpg-fingerprint: E218CE1D
-X-gpg-key: http://www.fysh.org/~athan/gpg-key
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A637212.2000002@rtr.ca>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 19, 2009 at 12:27:05PM -0700, Linus Torvalds wrote:
-> On Sun, 19 Jul 2009, Athanasius wrote:
-> > 
-> >   And it's that "as long as we ..." that still bothers me.  I've *never*
-> > had any need for any use of this personality feature and this net/tun.c
-> > exploit has proven there can be security gotchas with it.
-> 
-> I do agree. Some of those features may not be worth the cost.
-> 
-...
-> 
-> So I do agree that we can probably get rid of some really dated 
-> personality bits. But I don't think we can really get rid of the concept. 
-> Because compatibility is always of paramount importance.
+On Sun, Jul 19, 2009 at 03:20:50PM -0400, Mark Lord wrote:
+> Mark Lord wrote:
+>> (resending.. somebody trimmed linux-kernel from the CC: earlier)
+>>
+>> Jean Delvare wrote:
+>>> On Sun, 19 Jul 2009 10:38:37 -0400, Mark Lord wrote:
+>>>> I'm debugging various other b0rked things in 2.6.31 here right now,
+>>>> so I had a closer look at the Hauppauge I/R remote issue.
+>>>>
+>>>> The ir_kbd_i2c driver *does* still find it after all.
+>>>> But the difference is that the output from 'lsinput' has changed
+>>>> and no longer says "Hauppauge".  Which prevents the application from
+>>>> finding the remote control in the same way as before.
+>>>
+>>> OK, thanks for the investigation.
+>>>
+>>>> I'll hack the application code here now to use the new output,
+>>>> but I wonder what the the thousands of other users will do when
+>>>> they first try 2.6.31 after release ?
+> ..
+>
+> Mmm.. appears to be a systemwide thing, not just for the i2c stuff.
+> *All* of the input devices now no longer show their real names
+> when queried with ioctl(EVIOCGNAME).  This is a regression from 2.6.30.
+> Note that the real names *are* still stored somewhere, because they
+> do still show up correctly under /sys/
+>
 
-  Would you agree that having these features default-off would be best?
-That way a user or sysadmin isn't suddenly surprised by different
-behaviour.  And those users who do need the functionality can turn it
-on.  Whether that be via compile-time option or a sysctl I leave up to
-the people who know more about Linux Kernel coding than I.  However, I'd
-guess in the interests of vendor-kernel flexibility it should tend
-towards the latter.
-  And, of course, this is what I *thought* Execution Domains were for
-when looking at the code.  Have only the default one and you're limited
-pretty much to 'vanilla Linux'.  Actually have available a module for
-another personality and you allow its selection by users.
-
-  Put the choice in the hands of all users (read sysadmins even if its
-their personal machine) rather than only in the hands of those who can
-be bothered to recompile the kernel with an option, and currently
-needing to hand-edit the source themselves to change the behaviour.
+Should be fixed by f936601471d1454dacbd3b2a961fd4d883090aeb in the
+for-linus branch of my tree.
 
 -- 
-- Athanasius = Athanasius(at)miggy.org / http://www.miggy.org/
-                  Finger athan(at)fysh.org for PGP key
-	   "And it's me who is my enemy. Me who beats me up.
-Me who makes the monsters. Me who strips my confidence." Paula Cole - ME
+Dmitry
