@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751235AbZGST27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZGSTbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751235AbZGST27 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 15:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbZGST24
+	id S1751287AbZGSTbN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 15:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbZGSTbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 15:28:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46287 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750986AbZGST2z (ORCPT
+	Sun, 19 Jul 2009 15:31:11 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:64567 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbZGSTbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 15:28:55 -0400
-Date: Sun, 19 Jul 2009 12:27:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Athanasius <link@miggy.org>
-cc: Julien TINNES <jt@cr0.org>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Tavis Ormandy <taviso@sdf.lonestar.org>,
-       Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
-       Eugene Teo <eugene@redhat.com>
-Subject: Re: [link@miggy.org: Re: [patch 2/8] personality: fix PER_CLEAR_ON_SETID
- (CVE-2009-1895)]
-In-Reply-To: <20090719122701.GJ6722@miggy.org>
-Message-ID: <alpine.LFD.2.01.0907191219230.13838@localhost.localdomain>
-References: <20090718202512.GA19587@suse.de> <alpine.LFD.2.01.0907181342500.13838@localhost.localdomain> <20090718212812.GI6722@miggy.org> <4A6278FD.20807@cr0.org> <20090719122701.GJ6722@miggy.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sun, 19 Jul 2009 15:31:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=P9reRpz7dIOz4rkhUrOF2DtmHwCaiQ8gwFwoVUwA2sIzBlEvd52qP2BF6d0IVbufHo
+         78/eV6TIj1eIdjaXCer4ZtpXY8R+wD7F90oStkbFEcqCeu4igVIHsa6IEImBAqZSZaWc
+         P0O2kP0Adn8k67dqX9GeRJUCVGWAjxQhvq/5s=
+Date: Sun, 19 Jul 2009 12:31:04 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Jean Delvare <khali@linux-fr.org>, Andy Walls <awalls@radix.net>,
+       linux-media@vger.kernel.org, Jarod Wilson <jarod@redhat.com>,
+       Mike Isely <isely@pobox.com>, Hans Verkuil <hverkuil@xs4all.nl>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Janne Grunau <j@jannau.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] ir-kbd-i2c: Allow use of ir-kdb-i2c internal
+	get_key funcs and set ir_type
+Message-ID: <20090719193104.GA17495@dtor-d630.eng.vmware.com>
+References: <1247862585.10066.16.camel@palomino.walls.org> <1247862937.10066.21.camel@palomino.walls.org> <20090719144749.689c2b3a@hyperion.delvare> <4A6316F9.4070109@rtr.ca> <20090719145513.0502e0c9@hyperion.delvare> <4A631B41.5090301@rtr.ca> <4A631CEA.4090802@rtr.ca> <4A632FED.1000809@rtr.ca> <20090719190833.29451277@hyperion.delvare> <4A63656D.4070901@rtr.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A63656D.4070901@rtr.ca>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jul 19, 2009 at 02:26:53PM -0400, Mark Lord wrote:
+> (resending.. somebody trimmed linux-kernel from the CC: earlier)
+>
+> Jean Delvare wrote:
+>> On Sun, 19 Jul 2009 10:38:37 -0400, Mark Lord wrote:
+>>> I'm debugging various other b0rked things in 2.6.31 here right now,
+>>> so I had a closer look at the Hauppauge I/R remote issue.
+>>>
+>>> The ir_kbd_i2c driver *does* still find it after all.
+>>> But the difference is that the output from 'lsinput' has changed
+>>> and no longer says "Hauppauge".  Which prevents the application from
+>>> finding the remote control in the same way as before.
+>>
+>> OK, thanks for the investigation.
+>>
+>>> I'll hack the application code here now to use the new output,
+>>> but I wonder what the the thousands of other users will do when
+>>> they first try 2.6.31 after release ?
+>>
+>> Where does lsinput get the string from?
+> ..
+>
+> Here's a test program for you:
+>
 
-On Sun, 19 Jul 2009, Athanasius wrote:
-> 
->   And it's that "as long as we ..." that still bothers me.  I've *never*
-> had any need for any use of this personality feature and this net/tun.c
-> exploit has proven there can be security gotchas with it.
+And I  think have a fix for that, commit
 
-I do agree. Some of those features may not be worth the cost.
+f936601471d1454dacbd3b2a961fd4d883090aeb
 
-That said, this particular feature made sense at the time it was 
-implemented. Some people really _did_ care about running SVR4 binaries on 
-Linux. There was a time when it was seen as a feature, and important 
-enough to work with. So that "map a zero page at NULL" was an important 
-thing that we wanted such binaries to be able to depend on.
+in the for-linus branch of my tree.
 
-These days? We could probably get rid of that idiotic feature. It's simply 
-not important enough any more. Does anybody really care? At the same time, 
-over years we've grown _other_ personality flags, and some of them are 
-still relevant.
-
-Some binaries are unhappy with address space randomizations. Sometimes 
-it's because of outright bugs (that just were hidden by non-randomized VM 
-layout) - but that doesn't really help, does it? If you depend on that 
-binary, as a user you want the ability to say "run this binary in a mode 
-where it works".
-
-Other binaries are unhappy with address space randomization because they 
-need to get the absolute maximum contiguous VM space for some big array. 
-Ok, so that's less of an issue in 64-bit mode, but there really are 
-programs out there that link everything statically and want to run at a 
-low virtual address so that they can get 2.5GB of virtual memory for one 
-single big allocation. I've written crap like that myself. I'm not _proud_ 
-of it, but I could easily see that programs like that could be unhappy if 
-the system wiggles mmap's around for security issues.
-
-So I do agree that we can probably get rid of some really dated 
-personality bits. But I don't think we can really get rid of the concept. 
-Because compatibility is always of paramount importance.
-
-		Linus
+-- 
+Dmitry
