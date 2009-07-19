@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751585AbZGSV2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751659AbZGSVgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751585AbZGSV2y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 17:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbZGSV2w
+	id S1751659AbZGSVgl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 17:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZGSVgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 17:28:52 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58980 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbZGSV2w (ORCPT
+	Sun, 19 Jul 2009 17:36:39 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:25505 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbZGSVgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 17:28:52 -0400
-Date: Sun, 19 Jul 2009 23:27:21 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] accessibility, speakup, speech synthesis & /sys
-Message-ID: <20090719212721.GJ26511@elf.ucw.cz>
-References: <20090625220452.GF5540@const.famille.thibault.fr> <20090630063454.GI1351@ucw.cz> <20090701221904.GA4431@const> <20090708093516.GE24385@elf.ucw.cz> <20090708094219.GD5451@const.eduroam-ext.univ-nantes.prive> <20090712103133.GE2033@elf.ucw.cz> <20090712145702.GA4703@const> <20090714095243.GE2076@elf.ucw.cz> <20090714124459.GA5034@const.linuxsymposium.org>
+	Sun, 19 Jul 2009 17:36:38 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=LfWDp4Eq8rQbSQM4eOSNiGB9JZihbbiaZNbcPRbbNcwhh5HqjfwR0N3CuHa85gdv8
+	u5y1UcfMuR53khkmWBL4g==
+Date: Sun, 19 Jul 2009 14:36:28 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Stephan von Krawcynski <skraw@ithnet.com>
+Subject: Re: [Bug #13648] nfsd: page allocation failure
+In-Reply-To: <bXZeuxPQAWE.A.BkG.-_oUKB@chimera>
+Message-ID: <alpine.DEB.2.00.0907191433360.14636@chino.kir.corp.google.com>
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera> <bXZeuxPQAWE.A.BkG.-_oUKB@chimera>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090714124459.GA5034@const.linuxsymposium.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 7 Jul 2009, Rafael J. Wysocki wrote:
 
-> > > > > I'd actually say it's particularly not adequate.  Try to feed your dmesg
-> > > > > to a speech synthesizer and try to understand it.
-> > > > 
-> > > > Do you really expect blind people to do kernel hacking?
-> > > 
-> > > They do.  Why shouldn't they be able to?
-> > ...
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
 > 
-> Yes, "..."
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> I'm amazed that you could think that blind people shouldn't do kernel
-> hacking?  Why shouldn't they?  Actually they could be even better at
-> it that sighted people, precisely because kernel stuff is mostly about
-> stuff that you can't see.
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13648
+> Subject		: nfsd: page allocation failure
+> Submitter	: Justin Piszcz <jpiszcz@lucidpixels.com>
+> Date		: 2009-06-22 12:08 (15 days old)
+> References	: http://lkml.org/lkml/2009/6/22/309
+> 
 
-They are welcome to do kernel development. And yes, we probably should
-support braille devices (that's just another piece of hw).
-
-And we could support hw speech synthetizers, too, if those are simple
-drivers.
-
-But I do believe that sw speech synthesis is more important than
-obscure hw synthetizers; it is available on way more machines, and
-there's no reason why hw synthetizers should be superior.
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Stephan von Krawczynski has this problem with e1000e (but not e1000 or 
+tg3) at least as far back as 2.6.28, so this doesn't appear to be a 
+regression introduced in 2.6.30.
