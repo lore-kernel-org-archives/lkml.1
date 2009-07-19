@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZGSBtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZGSCI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbZGSBtN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 18 Jul 2009 21:49:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbZGSBtL
+	id S1754119AbZGSCI7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 18 Jul 2009 22:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZGSCI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 18 Jul 2009 21:49:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47931 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754091AbZGSBtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 18 Jul 2009 21:49:11 -0400
-Message-ID: <4A627B7D.7080900@kernel.org>
-Date: Sun, 19 Jul 2009 10:48:45 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 18 Jul 2009 22:08:57 -0400
+Received: from zola.planet-work.net ([79.99.160.15]:45801 "EHLO
+	zola.planet-work.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbZGSCI5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 18 Jul 2009 22:08:57 -0400
+X-Greylist: delayed 1833 seconds by postgrey-1.27 at vger.kernel.org; Sat, 18 Jul 2009 22:08:57 EDT
+Message-ID: <4A6278FD.20807@cr0.org>
+Date: Sat, 18 Jul 2009 18:38:05 -0700
+From: Julien TINNES <jt@cr0.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: Rakib Mullick <rakib.mullick@gmail.com>
-CC: axboe@kernel.dk, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] block: Mark virtio_blk with __refdata in virtio_blk.c
-References: <b9df5fa10907120413l21761e1cxfc26436481954c2a@mail.gmail.com>	 <4A6013F3.1030101@kernel.org> <b9df5fa10907170713u508f5c3br2463d0fc0ba0515@mail.gmail.com>
-In-Reply-To: <b9df5fa10907170713u508f5c3br2463d0fc0ba0515@mail.gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <gregkh@suse.de>,
+       Julien Tinnes <jt@cr0.org>, Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
+       Eugene Teo <eugene@redhat.com>, Athanasius <link@miggy.org>
+Subject: Re: [link@miggy.org: Re: [patch 2/8] personality: fix	PER_CLEAR_ON_SETID
+ (CVE-2009-1895)]
+References: <20090718202512.GA19587@suse.de> <alpine.LFD.2.01.0907181342500.13838@localhost.localdomain> <20090718212812.GI6722@miggy.org>
+In-Reply-To: <20090718212812.GI6722@miggy.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 19 Jul 2009 01:49:08 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I slightly massaged the commit message and comment and committed it to
-#tj-block-for-linus.  Will push it out in a few days.
+Athanasius a écrit :
+> On Sat, Jul 18, 2009 at 01:48:06PM -0700, Linus Torvalds wrote:
+>> On Sat, 18 Jul 2009, Greg KH wrote:
+>>> and you have the whole idea of personalities being some kind of security
+>>> mechanism exposed as a joke.
+>> It's _not_ a "security mechanism". It never was.
+> ...
+>> In the absense of raised capabilities, the personality flags don't matter: 
+>> because they aren't security. If you have a personality flag that says "I 
+>> want to mmap at virtual address zero", you're still going to be limited by 
+>> the security layer, and if the security layer says "nope, you can't do 
+>> that", then your personality doesn't matter.
+>>
+>> See?
+> 
+>   I can understand and appreciate that, yes.
+> 
+>   However the content of 'cat /proc/execdomains' is mis-leading for
+> the default Execution Domain.  The string '0-0' implies either that you
+> can only set 1 of 3 personalities whilst this Execution Domain is current
+> OR that this Execution Domain will only be used whilst the set personality
+> is one of those 3.  But neither is actually true as this default Execution
+> Domain (being the only one in vanilla kernel tree) is a special case.
+>   If you don't see a valid reason to change personality(2) behaviour (thus
+> still allowing setting aribtrary personality values) then surely it would
+> make more sense for the default domain to set pers_high to PER_MASK ?
+> I'd suggest it actually be 0xffffffff but the field is only a char.
+> 
 
-Thanks.
+So I think we all agree that this is not a security boundary and that
+there is no security problem here.
+A process should be able to change it's own personality, there is no
+issue with this as long as we restrict the set of personalities which
+are preserved when the process gets new privileges.
 
->From 4fbfff76079a5c0e1751b0ddf53160d33f7831e7 Mon Sep 17 00:00:00 2001
-From: Rakib Mullick <rakib.mullick@gmail.com>
-Date: Fri, 17 Jul 2009 20:13:22 +0600
-Subject: [PATCH] virtio_blk: mark virtio_blk with __refdata to kill spurious section mismatch
+Currently, all the personalities are being implemented inside one
+execution domain, the default one.
 
-The variable virtio_blk references the function virtblk_probe() (which
-is in .devinit section) and also references the function
-virtblk_remove() ( which is in .devexit section). So, virtio_blk
-simultaneously refers .devinit and .devexit section. To avoid this
-messup, we mark virtio_blk as __refdata.
+To address your concerns:
+- pers_low and pers_high are compared to the *base* personality (without
+flags), so it's correct to define them as uchar. pers should perhaps be
+defined as uchar as well in lookup_exec_domain
+- since all personalities are implemented inside the default execution
+domain, it would indeed make sense to set default_exec_domain.pers_high
+to PER_MASK. It would not change anything in practice, but it would make
+sense.
 
-We were warned by the following warning:
-
-  LD      drivers/block/built-in.o
-  WARNING: drivers/block/built-in.o(.data+0xc8dc): Section mismatch in
-  reference from the variable virtio_blk to the function
-  .devinit.text:virtblk_probe()
-  The variable virtio_blk references
-  the function __devinit virtblk_probe()
-  If the reference is valid then annotate the
-  variable with __init* or __refdata (see linux/init.h) or name the variable:
-  *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-  WARNING: drivers/block/built-in.o(.data+0xc8e0): Section mismatch in
-  reference from the variable virtio_blk to the function
-  .devexit.text:virtblk_remove()
-  The variable virtio_blk references
-  the function __devexit virtblk_remove()
-  If the reference is valid then annotate the
-  variable with __exit* (see linux/init.h) or name the variable:
-  *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console,
-
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- drivers/block/virtio_blk.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
-index 43db3ea..024f2d2 100644
---- a/drivers/block/virtio_blk.c
-+++ b/drivers/block/virtio_blk.c
-@@ -424,7 +424,12 @@ static unsigned int features[] = {
- 	VIRTIO_BLK_F_SCSI, VIRTIO_BLK_F_IDENTIFY
- };
- 
--static struct virtio_driver virtio_blk = {
-+/*
-+ * virtio_blk causes spurious section mismatch warning by
-+ * simultaneously referring to a __devinit and a __devexit function.
-+ * Use __refdata to avoid this warning.
-+ */
-+static struct virtio_driver __refdata virtio_blk = {
- 	.feature_table = features,
- 	.feature_table_size = ARRAY_SIZE(features),
- 	.driver.name =	KBUILD_MODNAME,
--- 
-1.6.0.2
-
+Julien
