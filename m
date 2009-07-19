@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZGSTbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751201AbZGSTjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751287AbZGSTbN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 15:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbZGSTbL
+	id S1751201AbZGSTjV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 15:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbZGSTjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 15:31:11 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:64567 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750804AbZGSTbJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 15:31:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=P9reRpz7dIOz4rkhUrOF2DtmHwCaiQ8gwFwoVUwA2sIzBlEvd52qP2BF6d0IVbufHo
-         78/eV6TIj1eIdjaXCer4ZtpXY8R+wD7F90oStkbFEcqCeu4igVIHsa6IEImBAqZSZaWc
-         P0O2kP0Adn8k67dqX9GeRJUCVGWAjxQhvq/5s=
-Date: Sun, 19 Jul 2009 12:31:04 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Jean Delvare <khali@linux-fr.org>, Andy Walls <awalls@radix.net>,
-       linux-media@vger.kernel.org, Jarod Wilson <jarod@redhat.com>,
-       Mike Isely <isely@pobox.com>, Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Janne Grunau <j@jannau.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] ir-kbd-i2c: Allow use of ir-kdb-i2c internal
-	get_key funcs and set ir_type
-Message-ID: <20090719193104.GA17495@dtor-d630.eng.vmware.com>
-References: <1247862585.10066.16.camel@palomino.walls.org> <1247862937.10066.21.camel@palomino.walls.org> <20090719144749.689c2b3a@hyperion.delvare> <4A6316F9.4070109@rtr.ca> <20090719145513.0502e0c9@hyperion.delvare> <4A631B41.5090301@rtr.ca> <4A631CEA.4090802@rtr.ca> <4A632FED.1000809@rtr.ca> <20090719190833.29451277@hyperion.delvare> <4A63656D.4070901@rtr.ca>
+	Sun, 19 Jul 2009 15:39:20 -0400
+Received: from pond.fysh.org ([166.84.7.109]:44636 "EHLO pond.fysh.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838AbZGSTjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 15:39:19 -0400
+Date: Sun, 19 Jul 2009 20:39:17 +0100
+From: Athanasius <link@miggy.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Athanasius <link@miggy.org>, Julien TINNES <jt@cr0.org>,
+       Greg KH <gregkh@suse.de>, Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
+       Eugene Teo <eugene@redhat.com>
+Subject: Re: [link@miggy.org: Re: [patch 2/8] personality: fix
+	PER_CLEAR_ON_SETID (CVE-2009-1895)]
+Message-ID: <20090719193917.GK6722@miggy.org>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Athanasius <link@miggy.org>, Julien TINNES <jt@cr0.org>,
+	Greg KH <gregkh@suse.de>, Tavis Ormandy <taviso@sdf.lonestar.org>,
+	Christoph Hellwig <hch@infradead.org>, Kees Cook <kees@ubuntu.com>,
+	Eugene Teo <eugene@redhat.com>
+References: <20090718202512.GA19587@suse.de> <alpine.LFD.2.01.0907181342500.13838@localhost.localdomain> <20090718212812.GI6722@miggy.org> <4A6278FD.20807@cr0.org> <20090719122701.GJ6722@miggy.org> <alpine.LFD.2.01.0907191219230.13838@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A63656D.4070901@rtr.ca>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <alpine.LFD.2.01.0907191219230.13838@localhost.localdomain>
+X-gpg-fingerprint: E218CE1D
+X-gpg-key: http://www.fysh.org/~athan/gpg-key
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 19, 2009 at 02:26:53PM -0400, Mark Lord wrote:
-> (resending.. somebody trimmed linux-kernel from the CC: earlier)
->
-> Jean Delvare wrote:
->> On Sun, 19 Jul 2009 10:38:37 -0400, Mark Lord wrote:
->>> I'm debugging various other b0rked things in 2.6.31 here right now,
->>> so I had a closer look at the Hauppauge I/R remote issue.
->>>
->>> The ir_kbd_i2c driver *does* still find it after all.
->>> But the difference is that the output from 'lsinput' has changed
->>> and no longer says "Hauppauge".  Which prevents the application from
->>> finding the remote control in the same way as before.
->>
->> OK, thanks for the investigation.
->>
->>> I'll hack the application code here now to use the new output,
->>> but I wonder what the the thousands of other users will do when
->>> they first try 2.6.31 after release ?
->>
->> Where does lsinput get the string from?
-> ..
->
-> Here's a test program for you:
->
+On Sun, Jul 19, 2009 at 12:27:05PM -0700, Linus Torvalds wrote:
+> On Sun, 19 Jul 2009, Athanasius wrote:
+> > 
+> >   And it's that "as long as we ..." that still bothers me.  I've *never*
+> > had any need for any use of this personality feature and this net/tun.c
+> > exploit has proven there can be security gotchas with it.
+> 
+> I do agree. Some of those features may not be worth the cost.
+> 
+...
+> 
+> So I do agree that we can probably get rid of some really dated 
+> personality bits. But I don't think we can really get rid of the concept. 
+> Because compatibility is always of paramount importance.
 
-And I  think have a fix for that, commit
+  Would you agree that having these features default-off would be best?
+That way a user or sysadmin isn't suddenly surprised by different
+behaviour.  And those users who do need the functionality can turn it
+on.  Whether that be via compile-time option or a sysctl I leave up to
+the people who know more about Linux Kernel coding than I.  However, I'd
+guess in the interests of vendor-kernel flexibility it should tend
+towards the latter.
+  And, of course, this is what I *thought* Execution Domains were for
+when looking at the code.  Have only the default one and you're limited
+pretty much to 'vanilla Linux'.  Actually have available a module for
+another personality and you allow its selection by users.
 
-f936601471d1454dacbd3b2a961fd4d883090aeb
-
-in the for-linus branch of my tree.
+  Put the choice in the hands of all users (read sysadmins even if its
+their personal machine) rather than only in the hands of those who can
+be bothered to recompile the kernel with an option, and currently
+needing to hand-edit the source themselves to change the behaviour.
 
 -- 
-Dmitry
+- Athanasius = Athanasius(at)miggy.org / http://www.miggy.org/
+                  Finger athan(at)fysh.org for PGP key
+	   "And it's me who is my enemy. Me who beats me up.
+Me who makes the monsters. Me who strips my confidence." Paula Cole - ME
