@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZGSOBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbZGSODA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490AbZGSOBL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 10:01:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbZGSOBK
+	id S1754548AbZGSODA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 10:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbZGSOC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 10:01:10 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:46461 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754366AbZGSOBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 10:01:03 -0400
-Date: Sun, 19 Jul 2009 09:01:02 -0500
-From: Robin Holt <holt@sgi.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Commit 1e137f92 broke my Vaio VGN-FE550G's hda_intel driver.
-Message-ID: <20090719140102.GI6876@sgi.com>
+	Sun, 19 Jul 2009 10:02:59 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:54728 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754357AbZGSOC7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 10:02:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:subject:message-id:user-agent:mime-version
+         :content-type;
+        b=bTTDsxyWvs77SY2KRM++o/PhmUyQ9G8qBFC4n1IOQbYqndUbPIiuCbkcxI5ZYLYEJ2
+         R/UWSk2bdsYDpv3kJZIvwkEpvnvM5NE96c2nokTYnIEv6f0+KTMCzgmuYBaBXbyO0XF6
+         Wq5bIfWQv2hSwG6ymVydJxt1MokmlLlF1ER7c=
+Date: Sun, 19 Jul 2009 16:04:48 +0300 (EAT)
+From: Dan Carpenter <error27@gmail.com>
+X-X-Sender: dcarpenter@bicker
+To: linux-kernel@vger.kernel.org
+Subject: potential null dereference in sysfs_override_clocksource()
+Message-ID: <alpine.DEB.2.00.0907191545580.12306@bicker>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-I finally got frustrated with not having sound available since 2.6.30
-on and decided to bisect to the failure.  I got it narrowed down to:
+I am testing a source checker (http://repo.or.cz/w/smatch.git).
 
-commit 1e137f929bb490ff615ea475ac3904d58b0cdd5e
-Author: Takashi Iwai <tiwai@suse.de>
-Date:   Wed Jan 21 07:41:22 2009 +0100
+It found an issue in sysfs_override_clocksource() from 
+kernel/time/clocksource.c.  If "len" is zero then "ovr" is null and 
+checking ovr->flags will oops on line 517.
 
-    ALSA: hda - Clean up old VAIO hack codes for STAC9872
+kernel/time/clocksource.c
+   516          if (tick_oneshot_mode_active() &&
+   517              !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES)) {
+   518                  printk(KERN_WARNING "%s clocksource is not HRT compatible. "
 
-    Get rid of old VAIO static hack codes for STAC9872 and use the BIOS
-    auto-parser for all models.
+regards,
+dan carpenter
 
 
-What information do you need from this machine in order to get the BIOS
-auto-parser working for this model?
 
-Thanks,
-Robin
