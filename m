@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbZGSPbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbZGSPxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbZGSPbR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 11:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbZGSPbQ
+	id S1754674AbZGSPxX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 11:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbZGSPxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 11:31:16 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:57966 "EHLO mgw1.diku.dk"
+	Sun, 19 Jul 2009 11:53:20 -0400
+Received: from rtr.ca ([76.10.145.34]:36794 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754689AbZGSPbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 11:31:15 -0400
-Date: Sun, 19 Jul 2009 17:31:11 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 10/10] drivers/net: Move a dereference below a NULL test
-Message-ID: <Pine.LNX.4.64.0907191730400.16542@ask.diku.dk>
+	id S1754527AbZGSPxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 11:53:19 -0400
+Message-ID: <4A63416E.2070103@rtr.ca>
+Date: Sun, 19 Jul 2009 11:53:18 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+Cc: Steven Toth <stoth@linuxtv.org>, linux-media@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Regression 2.6.31: xc5000 no longer works with Myth-0.21-fixes
+ 	branch
+References: <4A631C8F.7000002@rtr.ca> <829197380907190706i686fd1afwdca0d8be648129@mail.gmail.com> <4A6337C1.6080104@rtr.ca>
+In-Reply-To: <4A6337C1.6080104@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Mark Lord wrote:
+..
+> Really, the mythfrontend DOES NOT DEAL WITH TUNERS directly,
+> leaving that to the mythbackend.  EXCEPT for when it wants to show
+> a signal strength/quality indication onscreen, which is done
+> when tuning to a new channel.
+> 
+> So it's got to be something on that pathway, I suspect,
+> but despite being a kernel developer, I'm not terribly
+> knowledgeable about V4L, DVB, or the MythTV internals.
+..
 
-If the NULL test is necessary, then the dereferences should be moved below
-the NULL test.
+Okay, got it.  Sort of.  :)
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+1. Patched mythtv to not show the signal strength info.  No effect.
 
-// <smpl>
-@@
-type T;
-expression E,E1;
-identifier i,fld;
-statement S;
-@@
+2. Substituted a different brand/model/chipset DVB tuner for the 950Q,
+and everything was working fine again.  So we know it's not a generic issue.
 
-- T i = E->fld;
-+ T i;
-  ... when != E=E1
-      when != i
-  BUG_ON (E == NULL||...);
-+ i = E->fld;
-// </smpl>
+3. In mythtv-setup -> CaptureCards -> DVB:1 -> RecordingOptions
+there is a tickbox for "Open DVB Card on Demand".  It was ticked,
+so I un-ticked that box.  Everything now works!
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+When that tickbox was selected, the xc5000 took five (5) seconds to "open",
+as it did the firmware upload every time.  This appeared to exceed some
+timeout inside myth.
 
----
- arch/arm/plat-omap/iovmm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+With the tickbox NOT ticked, myth just opens the tuner once at startup,
+and keeps it open, so no more delay when it wants to use it.
 
-diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
-index 1d5379d..8d76cb8 100644
---- a/drivers/net/ibm_newemac/rgmii.c
-+++ b/drivers/net/ibm_newemac/rgmii.c
-@@ -188,11 +188,12 @@ void rgmii_put_mdio(struct of_device *ofdev, int input)
- void rgmii_detach(struct of_device *ofdev, int input)
- {
- 	struct rgmii_instance *dev = dev_get_drvdata(&ofdev->dev);
--	struct rgmii_regs __iomem *p = dev->base;
--
--	mutex_lock(&dev->lock);
-+	struct rgmii_regs __iomem *p;
- 
- 	BUG_ON(!dev || dev->users == 0);
-+	p = dev->base;
-+
-+	mutex_lock(&dev->lock);
- 
- 	RGMII_DBG(dev, "detach(%d)" NL, input);
- 
+I wonder if we can be smarter/faster about the xc5000 firmware uploads?
+
+Cheers 
