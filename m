@@ -1,205 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbZGSLfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbZGSLhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753717AbZGSLfm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 07:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZGSLfk
+	id S1754014AbZGSLhQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 07:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZGSLhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 07:35:40 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:32344
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753285AbZGSLfi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 07:35:38 -0400
-Message-ID: <4A630508.1020802@panasas.com>
-Date: Sun, 19 Jul 2009 14:35:36 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Sun, 19 Jul 2009 07:37:15 -0400
+Received: from bu3sch.de ([62.75.166.246]:58631 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753285AbZGSLhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 07:37:14 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] acpi-video: Fix integer overflow and possible kernel stack trashing
+Date: Sun, 19 Jul 2009 13:36:38 +0200
+User-Agent: KMail/1.9.9
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-CC: Tejun Heo <tj@kernel.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>, Joe Eykholt <jeykholt@cisco.com>
-Subject: Re: [PATCH v2]: New implementation of scsi_execute_async()
-References: <4A563368.5040407@vlnb.net> <4A5CAFB5.1000901@vlnb.net> <4A5D9C46.2000002@panasas.com> <4A5F6E24.3080800@vlnb.net>
-In-Reply-To: <4A5F6E24.3080800@vlnb.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Message-Id: <200907191336.38261.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 Jul 2009 11:35:38.0824 (UTC) FILETIME=[0A229C80:01CA0865]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/16/2009 09:15 PM, Vladislav Bolkhovitin wrote:
-> Boaz Harrosh, on 07/15/2009 01:07 PM wrote:
->> On 07/14/2009 07:17 PM, Vladislav Bolkhovitin wrote:
-<snip>
->>> +struct blk_kern_sg_hdr {
->>> +	struct scatterlist *orig_sgp;
->>> +	union {
->>> +		struct sg_table new_sg_table;
->>> +		struct scatterlist *saved_sg;
->>> +	};
->> There is a struct scatterlist * inside struct sg_table
->> just use that. No need for a union. (It's not like your saving
->> space). In the tail case nents == 1.
->> (orig_nents==0 and loose the tail_only)
-> 
-> This will uncover internal details of SG-chaining implementation, which 
-> you wanted to hide. Or didn't?
-> 
+This patch fixes a possible kernel crash through stack trashing triggered
+by an integer overflow. If count passed from userspace is (size_t)-1lu, the
+range check will overflow and return false. So the copy_from_user() will
+end up attempting to copy 0xFFFFFFFF (or 0xFFFFFFFFFFFFFFFF) bytes to the kernel stack.
+Of course the copy will fail at some point, because we can't allocate a buffer that big.
+But it will copy as much as it can and then return with an -EFAULT.
+This means the userspace process writing to this proc file controls
+the kernel stack.
 
-Are you commenting on the remove of tail_only, or the reuse of
-->new_sg_table.sgl instead of ->saved_sg. The later makes tons of sense
-to me.
+This is probably not useable for a privilege escalation, because the proc file
+has permissions (S_IFREG | S_IRUGO | S_IWUSR). So only root will be able to crash the machine.
 
-if you want to keep the "tail_only" and not hack with nents && orig_nents
-that's fine.
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Cc: stable@kernel.org
 
->>> +	while (hbio != NULL) {
->>> +		bio = hbio;
->>> +		hbio = hbio->bi_next;
->>> +		bio->bi_next = NULL;
->>> +
->>> +		blk_queue_bounce(q, &bio);
->> I do not understand. If you are bouncing on the bio level.
->> why do you need to do all the alignment checks and
->> sg-bouncing + tail handling all this is done again on the bio
->> level.
-> 
-> blk_queue_bounce() does another and completely independent level of 
-> bouncing for pages allocated in the not accessible by the device area.
-> 
+---
 
-No! you miss-understood. blk_queue_bounce() does all the bouncing,
-high-mem, alignment, padding, draining, all of them.
+This patch is completely untested, because I do not have a machine with acpi-video.
 
-The code you took from Tejun was meant to go at the bio level. Here
-you are already taken care of.
+---
+ drivers/acpi/video.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-All you need to do is:
-	loop on all pages
-		add_pc_page();
-		when bio is full
-			chain a new bio 
-	and so on.
+--- linux-2.6.orig/drivers/acpi/video.c
++++ linux-2.6/drivers/acpi/video.c
+@@ -1185,21 +1185,21 @@ acpi_video_device_write_state(struct fil
+ 			      const char __user * buffer,
+ 			      size_t count, loff_t * data)
+ {
+ 	int status;
+ 	struct seq_file *m = file->private_data;
+ 	struct acpi_video_device *dev = m->private;
+ 	char str[12] = { 0 };
+ 	u32 state = 0;
+ 
+ 
+-	if (!dev || count + 1 > sizeof str)
++	if (!dev || count >= sizeof str)
+ 		return -EINVAL;
+ 
+ 	if (copy_from_user(str, buffer, count))
+ 		return -EFAULT;
+ 
+ 	str[count] = 0;
+ 	state = simple_strtoul(str, NULL, 0);
+ 	state &= ((1ul << 31) | (1ul << 30) | (1ul << 0));
+ 
+ 	status = acpi_video_device_set_state(dev, state);
 
-Then at the end call blk_make_request() which will do the bouncing and
-the merging. No need for all the copy/tail_only etc.. this is done by
-lower levels for you already.
-
-If you do that then Tejun is right you should do an:
-	bio_map_sg()
-and not:
-	blk_map_sg()
-
->> It looks to me that perhaps you did not understand Tejun's code
->> His code, as I remember, was on the bio level, but here you
->> are duplicating what is done in bio level.
->>
->> But maybe I don't understand. Tejun?
->>
->>> +	req->cmd_len = cmd_len;
->>> +	memset(req->cmd, 0, BLK_MAX_CDB); /* ATAPI hates garbage after CDB */
->>> +	memcpy(req->cmd, cmd, req->cmd_len);
->> Does not support large commands.
-> 
-> Will be fixed.
-> 
-> (BTW, the SCSI layer assumes large CDBs as single big buffers, but all 
-> SCSI transports I checked transfer large CDBs in 2 different parts: the 
-> first 16 bytes and the rest. I.e. they deal with 2 different buffers. 
-> So, the target side (SCST) deals with 2 buffers for large CDBs as well. 
-> Having only one req->cmd will force SCST to merge those 2 buffers into a 
-> single buffer. 
-> So, scs[i,t]_execute_async() will have to make an 
-> allocation for this as well.)
-> 
-
-Yep, allocation of command buffer if command_size > 16
-
->>> +/**
->>> + * sg_copy_elem - copy one SG element to another
->>> + * @dst_sg:	destination SG element
->>> + * @src_sg:	source SG element
->>> + * @copy_len:	maximum amount of data to copy. If 0, then copy all.
->>> + * @d_km_type:	kmap_atomic type for the destination SG
->>> + * @s_km_type:	kmap_atomic type for the source SG
->>> + *
->>> + * Description:
->>> + *    Data from the source SG element will be copied to the destination SG
->>> + *    element. Returns number of bytes copied. Can switch to the next dst_sg
->>> + *    element, so, to copy to strictly only one dst_sg element, it must be
->>> + *    either last in the chain, or copy_len == dst_sg->length.
->>> + */
->>> +int sg_copy_elem(struct scatterlist *dst_sg, struct scatterlist *src_sg,
->>> +		 size_t copy_len, enum km_type d_km_type,
->>> +		 enum km_type s_km_type)
->>> +{
->>> +	size_t dst_len = dst_sg->length, dst_offs = dst_sg->offset;
->>> +
->>> +	return __sg_copy_elem(&dst_sg, &dst_len, &dst_offs, src_sg,
->>> +		copy_len, d_km_type, s_km_type);
->>> +}
->>> +EXPORT_SYMBOL(sg_copy_elem);
->> Is not sg_copy_elem a copy of an sg with one element. Why do we need
->> two exports.
-> 
-> Perhaps, yes.
-> 
->> I would pass a nents count to below and discard this one.
-> 
-> Perhaps, yes, but only for possible future use. I don't see any use of 
-> it at the moment.
-> 
-
-Why? for example the use of not having another export.
-
->>> +
->>> +/**
->>> + * sg_copy - copy one SG vector to another
->>> + * @dst_sg:	destination SG
->>> + * @src_sg:	source SG
->>> + * @copy_len:	maximum amount of data to copy. If 0, then copy all.
->>> + * @d_km_type:	kmap_atomic type for the destination SG
->>> + * @s_km_type:	kmap_atomic type for the source SG
->>> + *
->>> + * Description:
->>> + *    Data from the source SG vector will be copied to the destination SG
->>> + *    vector. End of the vectors will be determined by sg_next() returning
->>> + *    NULL. Returns number of bytes copied.
->>> + */
->>> +int sg_copy(struct scatterlist *dst_sg,
->>> +	    struct scatterlist *src_sg, size_t copy_len,
->> Total length is nice, but also a nents count
->>
->>> +	    enum km_type d_km_type, enum km_type s_km_type)
->>> +{
->>> +	int res = 0;
->>> +	size_t dst_len, dst_offs;
->>> +
->>> +	if (copy_len == 0)
->>> +		copy_len = 0x7FFFFFFF; /* copy all */
->>> +
->>> +	dst_len = dst_sg->length;
->>> +	dst_offs = dst_sg->offset;
->>> +
->>> +	do {
->>> +		copy_len -= __sg_copy_elem(&dst_sg, &dst_len, &dst_offs,
->>> +				src_sg, copy_len, d_km_type, s_km_type);
->>> +		if ((copy_len == 0) || (dst_sg == NULL))
->>> +			goto out;
->>> +
->>> +		src_sg = sg_next(src_sg);
->>> +	} while (src_sg != NULL);
->>> +
->>> +out:
->>> +	return res;
->>> +}
->>> +EXPORT_SYMBOL(sg_copy);
-> 
-> Thanks,
-> Vlad
-> 
-
+-- 
+Greetings, Michael.
