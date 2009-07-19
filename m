@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbZGSQJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZGSQNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbZGSQJa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 12:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbZGSQJ3
+	id S1754842AbZGSQNJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 12:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754588AbZGSQNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 12:09:29 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:60364 "EHLO mgw2.diku.dk"
+	Sun, 19 Jul 2009 12:13:08 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:58057 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754366AbZGSQJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 12:09:28 -0400
-Date: Sun, 19 Jul 2009 18:09:25 +0200 (CEST)
+	id S1754512AbZGSQNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 12:13:07 -0400
+Date: Sun, 19 Jul 2009 18:13:04 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
 To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/net/mlx4: Adjust constant
-Message-ID: <Pine.LNX.4.64.0907191809050.16542@ask.diku.dk>
+Subject: [PATCH 10/10, corrected diffstat] drivers/net: Move a dereference
+ below a NULL test
+Message-ID: <Pine.LNX.4.64.0907191812010.16542@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,36 +24,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-The values in the advertising field are typically ADVERTISED_xxx, not
-SUPPORTED_xxx.  Both SUPPORTED_10000baseT_Full and
-ADVERTISED_1000baseT_Full have the same value.
+If the NULL test is necessary, then the dereferences should be moved below
+the NULL test.
 
-The semantic match that finds this problem is as follows:
+The semantic patch that makes this change is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
 @@
-struct ethtool_cmd E;
+type T;
+expression E,E1;
+identifier i,fld;
+statement S;
 @@
-*E.advertising = SUPPORTED_10000baseT_Full
+
+- T i = E->fld;
++ T i;
+  ... when != E=E1
+      when != i
+  BUG_ON (E == NULL||...);
++ i = E->fld;
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/mlx4/en_ethtool.c       |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/ibm_newemac/rgmii.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/mlx4/en_ethtool.c b/drivers/net/mlx4/en_ethtool.c
-index 091f990..86467b4 100644
---- a/drivers/net/mlx4/en_ethtool.c
-+++ b/drivers/net/mlx4/en_ethtool.c
-@@ -220,7 +220,7 @@ static int mlx4_en_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
+index 1d5379d..8d76cb8 100644
+--- a/drivers/net/ibm_newemac/rgmii.c
++++ b/drivers/net/ibm_newemac/rgmii.c
+@@ -188,11 +188,12 @@ void rgmii_put_mdio(struct of_device *ofdev, int input)
+ void rgmii_detach(struct of_device *ofdev, int input)
  {
- 	cmd->autoneg = AUTONEG_DISABLE;
- 	cmd->supported = SUPPORTED_10000baseT_Full;
--	cmd->advertising = SUPPORTED_10000baseT_Full;
-+	cmd->advertising = ADVERTISED_1000baseT_Full;
- 	if (netif_carrier_ok(dev)) {
- 		cmd->speed = SPEED_10000;
- 		cmd->duplex = DUPLEX_FULL;
+ 	struct rgmii_instance *dev = dev_get_drvdata(&ofdev->dev);
+-	struct rgmii_regs __iomem *p = dev->base;
+-
+-	mutex_lock(&dev->lock);
++	struct rgmii_regs __iomem *p;
+ 
+ 	BUG_ON(!dev || dev->users == 0);
++	p = dev->base;
++
++	mutex_lock(&dev->lock);
+ 
+ 	RGMII_DBG(dev, "detach(%d)" NL, input);
+ 
