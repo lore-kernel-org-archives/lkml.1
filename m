@@ -1,186 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751079AbZGSTU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751132AbZGST2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751079AbZGSTU4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 15:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbZGSTUy
+	id S1751132AbZGST2X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 15:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbZGST2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 15:20:54 -0400
-Received: from rtr.ca ([76.10.145.34]:35623 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750730AbZGSTUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 15:20:53 -0400
-Message-ID: <4A637212.2000002@rtr.ca>
-Date: Sun, 19 Jul 2009 15:20:50 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Sun, 19 Jul 2009 15:28:22 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:55188 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbZGST2V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 15:28:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Uf5Yv84WhcKyEXWqP+rMbfCy36wX7XJhCXCgY/CPESCRj4ciCpzuFOdGSzZyAuwsAt
+         36U6VucoC7+QM4yLkWNTArmPpmcYRVrOHdekj0wZaKrn7tgKjvDQEkJwEsQw4kR2usWr
+         dzh/kFowQah+GHXoJXelAKGzgGgSZdSASqOEI=
+Message-ID: <4A6373C3.7060304@gmail.com>
+Date: Sun, 19 Jul 2009 21:28:03 +0200
+From: Henk Martijn <h.h.martijn@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Andy Walls <awalls@radix.net>, linux-media@vger.kernel.org,
-       Jarod Wilson <jarod@redhat.com>, Mike Isely <isely@pobox.com>,
-       Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Janne Grunau <j@jannau.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org
-Subject: Regression 2.6.31:  ioctl(EVIOCGNAME) no longer returns device name
-References: <1247862585.10066.16.camel@palomino.walls.org>	<1247862937.10066.21.camel@palomino.walls.org>	<20090719144749.689c2b3a@hyperion.delvare>	<4A6316F9.4070109@rtr.ca>	<20090719145513.0502e0c9@hyperion.delvare>	<4A631B41.5090301@rtr.ca>	<4A631CEA.4090802@rtr.ca>	<4A632FED.1000809@rtr.ca> <20090719190833.29451277@hyperion.delvare> <4A63656D.4070901@rtr.ca>
-In-Reply-To: <4A63656D.4070901@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: jkosina@suse.cz, jirislaby@gmail.com, jussi.kivilinna@mbnet.fi,
+       tomas.hanak@gmail.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] HID: Don't hide HID drivers behind EMBEDDED
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> (resending.. somebody trimmed linux-kernel from the CC: earlier)
-> 
-> Jean Delvare wrote:
->> On Sun, 19 Jul 2009 10:38:37 -0400, Mark Lord wrote:
->>> I'm debugging various other b0rked things in 2.6.31 here right now,
->>> so I had a closer look at the Hauppauge I/R remote issue.
->>>
->>> The ir_kbd_i2c driver *does* still find it after all.
->>> But the difference is that the output from 'lsinput' has changed
->>> and no longer says "Hauppauge".  Which prevents the application from
->>> finding the remote control in the same way as before.
->>
->> OK, thanks for the investigation.
->>
->>> I'll hack the application code here now to use the new output,
->>> but I wonder what the the thousands of other users will do when
->>> they first try 2.6.31 after release ?
-..
-
-Mmm.. appears to be a systemwide thing, not just for the i2c stuff.
-*All* of the input devices now no longer show their real names
-when queried with ioctl(EVIOCGNAME).  This is a regression from 2.6.30.
-Note that the real names *are* still stored somewhere, because they
-do still show up correctly under /sys/
+When trying to minimizing my .config I found that couldn't deselect some HID drivers because they were hidden behind EMBEDDED. What's the reason?
+What about the following:
 
 
-> Here's a test program for you:
-> 
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <unistd.h>
-> #include <errno.h>
-> #include <fcntl.h>
-> #include <sys/ioctl.h>
-> #include <linux/input.h>
-> 
-> // Invoke with "/dev/input/event4" as argv[1]
-> //
-> // On 2.6.30, this gives the real name, eg. "i2c IR (Hauppauge)".
-> // On 2.6.31, it simply gives "event4" as the "name".
-> 
-> int main(int argc, char *argv[])
-> {
->     char buf[32];
->     int fd, rc;
-> 
->     fd = open(argv[1], O_RDONLY);
->     if (fd == -1) {
->         perror(argv[1]);
->         exit(1);
->     }
->     rc = ioctl(fd,EVIOCGNAME(sizeof(buf)),buf);
->     if (rc >= 0)
->         fprintf(stderr,"   name    : \"%.*s\"\n", rc, buf);
->     return 0;
-> }
-..
+---
+ drivers/hid/Kconfig |   54 +++++++++++++++++++++++++-------------------------
+ 1 files changed, 27 insertions(+), 27 deletions(-)
 
-Since this regression should be visible on *any* system, not just mine,
-I think perhaps the input-subsystem developers ought to be the ones to
-go and burn some time on a git-bisect, if need be.
-
-Eg.  Here's what's different on my notebook here:
-
-
---- lsinput.2.6.30	2009-07-19 15:14:38.278293568 -0400
-+++ lsinput.2.6.31	2009-07-19 15:15:43.725375340 -0400
-@@ -3,7 +3,7 @@
-    vendor  : 0x1
-    product : 0x1
-    version : 43841
--   name    : "AT Translated Set 2 keyboard"
-+   name    : "event0"
-    phys    : "isa0060/serio0/input0"
-    bits ev : EV_SYN EV_KEY EV_MSC EV_LED EV_REP
+diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+index 7831a03..274d7e2 100644
+--- a/drivers/hid/Kconfig
++++ b/drivers/hid/Kconfig
+@@ -71,14 +71,14 @@ menu "Special HID drivers"
+ 	depends on HID
  
-@@ -12,7 +12,7 @@
-    vendor  : 0x2
-    product : 0x7
-    version : 4017
--   name    : "SynPS/2 Synaptics TouchPad"
-+   name    : "event1"
-    phys    : "isa0060/serio1/input0"
-    bits ev : EV_SYN EV_KEY EV_ABS
+ config HID_A4TECH
+-	tristate "A4 tech" if EMBEDDED
++	tristate "A4 tech"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for A4 tech X5 and WOP-35 / Trust 450L mice.
  
-@@ -21,7 +21,7 @@
-    vendor  : 0x0
-    product : 0x5
-    version : 0
--   name    : "Lid Switch"
-+   name    : "event2"
-    phys    : "PNP0C0D/button/input0"
-    bits ev : EV_SYN EV_SW
+ config HID_APPLE
+-	tristate "Apple" if EMBEDDED
++	tristate "Apple"
+ 	depends on (USB_HID || BT_HIDP)
+ 	default !EMBEDDED
+ 	---help---
+@@ -89,35 +89,35 @@ config HID_APPLE
+ 	MacBooks, MacBook Pros and Apple Aluminum.
  
-@@ -30,7 +30,7 @@
-    vendor  : 0x0
-    product : 0x1
-    version : 0
--   name    : "Power Button"
-+   name    : "event3"
-    phys    : "PNP0C0C/button/input0"
-    bits ev : EV_SYN EV_KEY
+ config HID_BELKIN
+-	tristate "Belkin" if EMBEDDED
++	tristate "Belkin"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Belkin Flip KVM and Wireless keyboard.
  
-@@ -39,7 +39,7 @@
-    vendor  : 0x0
-    product : 0x3
-    version : 0
--   name    : "Sleep Button"
-+   name    : "event4"
-    phys    : "PNP0C0E/button/input0"
-    bits ev : EV_SYN EV_KEY
+ config HID_CHERRY
+-	tristate "Cherry" if EMBEDDED
++	tristate "Cherry"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Cherry Cymotion keyboard.
  
-@@ -48,34 +48,16 @@
-    vendor  : 0x1f
-    product : 0x1
-    version : 256
--   name    : "PC Speaker"
-+   name    : "event5"
-    phys    : "isa0061/input0"
-    bits ev : EV_SYN EV_SND
+ config HID_CHICONY
+-	tristate "Chicony" if EMBEDDED
++	tristate "Chicony"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Chicony Tactical pad.
  
- /dev/input/event6
--   bustype : (null)
--   vendor  : 0x0
--   product : 0x0
--   version : 0
--   name    : "HDA Intel Mic at Ext Right Jack"
--   phys    : "ALSA"
--   bits ev : EV_SYN EV_SW
--
--/dev/input/event7
--   bustype : (null)
--   vendor  : 0x0
--   product : 0x0
--   version : 0
--   name    : "HDA Intel HP Out at Ext Right Ja"
--   phys    : "ALSA"
--   bits ev : EV_SYN EV_SW
--
--/dev/input/event8
-    bustype : BUS_USB
-    vendor  : 0x46d
-    product : 0xc016
-    version : 272
--   name    : "Logitech Optical USB Mouse"
-+   name    : "event6"
-    phys    : "usb-0000:00:1d.7-5.4/input0"
-    uniq    : ""
-    bits ev : EV_SYN EV_KEY EV_REL EV_MSC
+ config HID_CYPRESS
+-	tristate "Cypress" if EMBEDDED
++	tristate "Cypress"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for cypress mouse and barcode readers.
+ 
+ config HID_DRAGONRISE
+-	tristate "DragonRise Inc. support" if EMBEDDED
++	tristate "DragonRise Inc. support"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+@@ -132,35 +132,35 @@ config DRAGONRISE_FF
+ 	game controllers.
+ 
+ config HID_EZKEY
+-	tristate "Ezkey" if EMBEDDED
++	tristate "Ezkey"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Ezkey BTC 8193 keyboard.
+ 
+ config HID_KYE
+-	tristate "Kye" if EMBEDDED
++	tristate "Kye"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Kye/Genius Ergo Mouse.
+ 
+ config HID_GYRATION
+-	tristate "Gyration" if EMBEDDED
++	tristate "Gyration"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Gyration remote control.
+ 
+ config HID_KENSINGTON
+-	tristate "Kensington" if EMBEDDED
++	tristate "Kensington"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Kensington Slimblade Trackball.
+ 
+ config HID_LOGITECH
+-	tristate "Logitech" if EMBEDDED
++	tristate "Logitech"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+@@ -191,35 +191,35 @@ config LOGIRUMBLEPAD2_FF
+ 	  Rumblepad 2 devices.
+ 
+ config HID_MICROSOFT
+-	tristate "Microsoft" if EMBEDDED
++	tristate "Microsoft"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Microsoft devices that are not fully compliant with HID standard.
+ 
+ config HID_MONTEREY
+-	tristate "Monterey" if EMBEDDED
++	tristate "Monterey"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Monterey Genius KB29E.
+ 
+ config HID_NTRIG
+-	tristate "NTrig" if EMBEDDED
++	tristate "NTrig"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for N-Trig touch screen.
+ 
+ config HID_PANTHERLORD
+-	tristate "Pantherlord devices support" if EMBEDDED
++	tristate "Pantherlord devices support"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for PantherLord/GreenAsia based device support.
+ 
+ config HID_PANTHERLORD
+-	tristate "Pantherlord support" if EMBEDDED
++	tristate "Pantherlord support"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+@@ -235,35 +235,35 @@ config PANTHERLORD_FF
+ 	  or adapter and want to enable force feedback support for it.
+ 
+ config HID_PETALYNX
+-	tristate "Petalynx" if EMBEDDED
++	tristate "Petalynx"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Petalynx Maxter remote control.
+ 
+ config HID_SAMSUNG
+-	tristate "Samsung" if EMBEDDED
++	tristate "Samsung"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Samsung InfraRed remote control.
+ 
+ config HID_SONY
+-	tristate "Sony" if EMBEDDED
++	tristate "Sony"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Sony PS3 controller.
+ 
+ config HID_SUNPLUS
+-	tristate "Sunplus" if EMBEDDED
++	tristate "Sunplus"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Sunplus wireless desktop.
+ 
+ config HID_GREENASIA
+-	tristate "GreenAsia (Product ID 0x12) support" if EMBEDDED
++	tristate "GreenAsia (Product ID 0x12) support"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+@@ -280,7 +280,7 @@ config GREENASIA_FF
+ 	and want to enable force feedback support for it.
+ 
+ config HID_SMARTJOYPLUS
+-	tristate "SmartJoy PLUS PS2/USB adapter support" if EMBEDDED
++	tristate "SmartJoy PLUS PS2/USB adapter support"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+@@ -295,14 +295,14 @@ config SMARTJOYPLUS_FF
+ 	enable force feedback support for it.
+ 
+ config HID_TOPSEED
+-	tristate "TopSeed Cyberlink remote control support" if EMBEDDED
++	tristate "TopSeed Cyberlink remote control support"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+ 	Say Y if you have a TopSeed Cyberlink remote control.
+ 
+ config HID_THRUSTMASTER
+-	tristate "ThrustMaster devices support" if EMBEDDED
++	tristate "ThrustMaster devices support"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+@@ -319,14 +319,14 @@ config THRUSTMASTER_FF
+ 	  want to enable force feedback support for it.
+ 
+ config HID_WACOM
+-	tristate "Wacom Bluetooth devices support" if EMBEDDED
++	tristate "Wacom Bluetooth devices support"
+ 	depends on BT_HIDP
+ 	default !EMBEDDED
+ 	---help---
+ 	Support for Wacom Graphire Bluetooth tablet.
+ 
+ config HID_ZEROPLUS
+-	tristate "Zeroplus based game controller support" if EMBEDDED
++	tristate "Zeroplus based game controller support"
+ 	depends on USB_HID
+ 	default !EMBEDDED
+ 	---help---
+-- 
+1.6.0.2
+
 
 
