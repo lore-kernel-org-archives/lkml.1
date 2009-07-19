@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZGSPaD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbZGSPab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754811AbZGSPaD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 11:30:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZGSPaC
+	id S1754802AbZGSPab (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 11:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZGSPaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 11:30:02 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:57899 "EHLO mgw1.diku.dk"
+	Sun, 19 Jul 2009 11:30:30 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:57942 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754649AbZGSPaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 11:30:00 -0400
-Date: Sun, 19 Jul 2009 17:29:57 +0200 (CEST)
+	id S1754677AbZGSPa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 11:30:28 -0400
+Date: Sun, 19 Jul 2009 17:30:26 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: mdharm-usb@one-eyed-alien.net, linux-usb@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 8/10] drivers/usb/storage: Drop an unneeded a NULL test
-Message-ID: <Pine.LNX.4.64.0907191729380.16542@ask.diku.dk>
+To: jarkko.lavinen@nokia.com, linux-omap@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 9/10] drivers/mmc: Move a dereference below a NULL test
+Message-ID: <Pine.LNX.4.64.0907191729580.16542@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,11 +23,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-In each case, the NULL test is not necessary because the function is static
-and at the only places where it is called, the us argument has already been
-dereferenced.
+If the NULL test is necessary, then the dereference should be moved below
+the NULL test.
 
-The semantic patch that finds the problem is as follows:
+The semantic patch that makes this change is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
@@ -43,49 +41,35 @@ statement S;
 + T i;
   ... when != E=E1
       when != i
-  if (E == NULL||...) S
+  BUG_ON (E == NULL||
+-     i
++     E->fld
+       == NULL || ...);
 + i = E->fld;
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/usb/storage/datafab.c  |    4 ++--
- drivers/usb/storage/jumpshot.c |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/mmc/host/omap.c             |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/usb/storage/datafab.c b/drivers/usb/storage/datafab.c
-index 2b6e565..ded836b 100644
---- a/drivers/usb/storage/datafab.c
-+++ b/drivers/usb/storage/datafab.c
-@@ -334,7 +334,7 @@ static int datafab_determine_lun(struct us_data *us,
- 	unsigned char *buf;
- 	int count = 0, rc;
+diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
+index e7a331d..89281ab 100644
+--- a/drivers/mmc/host/omap.c
++++ b/drivers/mmc/host/omap.c
+@@ -255,11 +255,12 @@ static void mmc_omap_slot_release_work(struct work_struct *work)
  
--	if (!us || !info)
-+	if (!info)
- 		return USB_STOR_TRANSPORT_ERROR;
+ static void mmc_omap_release_slot(struct mmc_omap_slot *slot, int clk_enabled)
+ {
+-	struct mmc_omap_host *host = slot->host;
++	struct mmc_omap_host *host;
+ 	unsigned long flags;
+ 	int i;
  
- 	memcpy(command, scommand, 8);
-@@ -399,7 +399,7 @@ static int datafab_id_device(struct us_data *us,
- 	unsigned char *reply;
- 	int rc;
+-	BUG_ON(slot == NULL || host->mmc == NULL);
++	BUG_ON(slot == NULL || slot->host->mmc == NULL);
++	host = slot->host;
  
--	if (!us || !info)
-+	if (!info)
- 		return USB_STOR_TRANSPORT_ERROR;
- 
- 	if (info->lun == -1) {
-diff --git a/drivers/usb/storage/jumpshot.c b/drivers/usb/storage/jumpshot.c
-index 1c69420..6168596 100644
---- a/drivers/usb/storage/jumpshot.c
-+++ b/drivers/usb/storage/jumpshot.c
-@@ -335,7 +335,7 @@ static int jumpshot_id_device(struct us_data *us,
- 	unsigned char *reply;
- 	int 	 rc;
- 
--	if (!us || !info)
-+	if (!info)
- 		return USB_STOR_TRANSPORT_ERROR;
- 
- 	command[0] = 0xE0;
+ 	if (clk_enabled)
+ 		/* Keeps clock running for at least 8 cycles on valid freq */
