@@ -1,31 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbZGTSKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZGTSLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbZGTSKT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 14:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZGTSKS
+	id S1753351AbZGTSLJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 14:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZGTSLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 14:10:18 -0400
-Received: from outbound-mail-307.bluehost.com ([67.222.53.253]:38136 "HELO
-	outbound-mail-307.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751451AbZGTSKR (ORCPT
+	Mon, 20 Jul 2009 14:11:08 -0400
+Received: from outbound-mail-107.bluehost.com ([69.89.22.7]:57424 "HELO
+	outbound-mail-107.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751822AbZGTSLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 14:10:17 -0400
+	Mon, 20 Jul 2009 14:11:07 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=HpgrG34oM5zcd8P0lN80EqGdSkJsBRbINDxU0d69A8yEoA+dTIymyKr+7CoupR/AqS8yEJW9bg7N4C1+gAvm1/ORJ4aPOLr7y5AQWOzDpM2xTL7WkjOrAngQbWQWtcRd;
-Date: Mon, 20 Jul 2009 11:10:10 -0700
+	b=ASIWta0MmHWQRPF/9TLOWSSwk2Q1FvivxORGrL1Gg5dX64amMih3YJJrwrRmVXDORHYYgl9pZ1Z1FY8YJnaOfrITBHc5y/QwEBB0FYi8siknBu86ATML78AMSO4YTWT1;
+Date: Mon, 20 Jul 2009 11:11:01 -0700
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alberto Gonzalez <alberto6674@gmail.com>
-Cc: Michal Soltys <soltys@ziu.info>, Alberto Gonzalez <alberto6674@gmail.com>,
-       Dave Airlie <airlied@linux.ie>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org
-Subject: Re: Kernel 2.6.30 and udevd problem
-Message-ID: <20090720111010.28bf7b76@jbarnes-g45>
-In-Reply-To: <200907050010.44254.info@gnebu.es>
-References: <200906280821.58631.info@gnebu.es>
-	<200907022137.27847.info@gnebu.es>
-	<4A4D2E11.4020707@ziu.info>
-	<200907050010.44254.info@gnebu.es>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>, DRI <dri-devel@lists.sourceforge.net>,
+       Michel =?UTF-8?B?RMOkbnplcg==?= <michel@daenzer.net>
+Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
+Message-ID: <20090720111101.659a9099@jbarnes-g45>
+In-Reply-To: <20090628201129.GA1546@sucs.org>
+References: <sIiXQlfwS3D.A.81.dj7KKB@chimera>
+	<AN6kEAA5GQ.A.Q7C.Vm7KKB@chimera>
+	<20090628201129.GA1546@sucs.org>
 X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -35,50 +36,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Jul 2009 00:10:43 +0200
-Alberto Gonzalez <alberto6674@gmail.com> wrote:
+On Sun, 28 Jun 2009 21:11:30 +0100
+Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
 
-> On Friday 03 July 2009 00:00:49 Michal Soltys wrote:
-> > Regarding Arch's default distro kernel - it's a bit patched. Most
-> > of the patch file is addition of aufs, but there're other diffs
-> > included as well, some of them modifying i915_reg.h,
-> > intel_display.c and intel_tv.c
-> >
-> > ftp://ftp.archlinux.org/other/kernel26/patch-2.6.30-5-ARCH.bz2
-> >
-> > Not sure how relevant that is, but fyi.
+> On Sun, Jun 07, 2009 at 12:06:18PM +0200, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
+> > Subject		: i915 VT switch with AIGLX causes X lock up
+> > Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
+> > Date		: 2009-02-21 15:38 (107 days old)
+> > First-Bad-Commit:
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
+> > References	:
+> > http://marc.info/?l=linux-kernel&m=123523074304955&w=4
+> > http://lkml.org/lkml/2009/4/27/317 Handled-By	: Jesse Barnes
+> > <jbarnes@virtuousgeek.org> Patch		:
+> > http://patchwork.kernel.org/patch/20197/
 > 
-> Yes, thanks for pointing that out.
+> Still here on 2.6.31-rc1 but...
 > 
-> I now tried a vanilla 2.6.30.1 kernel with a custom config (so I
-> don't have to wait 45 minutes for it to compile) and I still see the
-> problem. This is what I get in dmesg:
-> 
-> [   83.506496] ------------[ cut here ]------------
-> [   83.506500] WARNING: at drivers/gpu/drm/drm_sysfs.c:452 
-> drm_sysfs_hotplug_event+0x2b/0x63()
-> [   83.506502] Hardware name: Studio 540
-> [   83.506503] hotplug uevent
-> [   83.506504] Modules linked in:
-> [   83.506506] Pid: 7, comm: events/0 Tainted: G        W  2.6.30.1 #1
-> [   83.506507] Call Trace:
-> [   83.506511]  [<c1025df9>] warn_slowpath_common+0x65/0x7c
-> [   83.506514]  [<c11e9f9e>] ? drm_sysfs_hotplug_event+0x2b/0x63
-> [   83.506517]  [<c1025e44>] warn_slowpath_fmt+0x24/0x27
-> [   83.506520]  [<c11e9f9e>] drm_sysfs_hotplug_event+0x2b/0x63
-> [   83.506523]  [<c11f33de>] i915_hotplug_work_func+0xe/0x10
-> [   83.506525]  [<c1032f28>] worker_thread+0x131/0x1ab
-> [   83.506528]  [<c11f33d0>] ? i915_hotplug_work_func+0x0/0x10
-> [   83.506531]  [<c1035f61>] ? autoremove_wake_function+0x0/0x2f
-> [   83.506534]  [<c1032df7>] ? worker_thread+0x0/0x1ab
-> [   83.506536]  [<c1035c84>] kthread+0x46/0x6a
-> [   83.506538]  [<c1035c3e>] ? kthread+0x0/0x6a
-> [   83.506541]  [<c10033cf>] kernel_thread_helper+0x7/0x10
-> [   83.506542] ---[ end trace 08f91010f92f7c3c ]---
+> ...this seems to be tied to the version of the Intel X drivers I have.
+> On another install with more recent Intel X drivers I cannot reproduce
+> this issue.
 
-Sorry I missed this update; what about the register dump part of the
-patch?  Presumably you get a ton of these in your log, but with some
-IIR register info beforehand?
+I guess we can mark it closed then, though I don't have the commit id
+of the fix handy...
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
