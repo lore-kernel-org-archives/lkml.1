@@ -1,179 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZGTUJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbZGTUJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZGTUJg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 16:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbZGTUJf
+	id S1754064AbZGTUJp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 16:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZGTUJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 16:09:35 -0400
-Received: from mail.windriver.com ([147.11.1.11]:36138 "EHLO mail.wrs.com"
+	Mon, 20 Jul 2009 16:09:36 -0400
+Received: from mail.windriver.com ([147.11.1.11]:36140 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753143AbZGTUJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 16:09:32 -0400
+	id S1753470AbZGTUJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 16:09:33 -0400
 From: Jason Wessel <jason.wessel@windriver.com>
 To: gregkh@suse.de
 Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
        Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>,
+       dbrownell@users.sourceforge.net, Yinghai Lu <yinghai@kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 04/10] usb,early_printk: EHCI debug controller initialization delays
-Date: Mon, 20 Jul 2009 15:06:26 -0500
-Message-Id: <1248120392-8372-5-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 03/10] ehci-dbgp: Execute early BIOS hand off
+Date: Mon, 20 Jul 2009 15:06:25 -0500
+Message-Id: <1248120392-8372-4-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.0.3.523.g304d0
-In-Reply-To: <1248120392-8372-4-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1248120392-8372-3-git-send-email-jason.wessel@windriver.com>
 References: <1248120392-8372-1-git-send-email-jason.wessel@windriver.com>
  <1248120392-8372-2-git-send-email-jason.wessel@windriver.com>
  <1248120392-8372-3-git-send-email-jason.wessel@windriver.com>
- <1248120392-8372-4-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 20 Jul 2009 20:06:40.0926 (UTC) FILETIME=[9895D3E0:01CA0975]
+X-OriginalArrivalTime: 20 Jul 2009 20:06:39.0785 (UTC) FILETIME=[97E7B990:01CA0975]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When using the EHCI host controller as a polled device, a bit more
-tolerance is required in terms of delays.  On some 3+ghz systems the
-cpu loops were faster than the EHCI device mmio and resulted in the
-controller failing to initialize.
-
-On at least one first generation EHCI controller when it was not
-operating in interrupt mode, it would fail to report a port change
-status, but executing the port reset allowed the debug controller to
-work correctly anyway.  This errata causes a one time 300ms delay in
-the boot time, where as the typical delay is 1-5ms for an EHCI
-controller that does not have this errata.
-
-The debug printk's were fixed to have the correct state messages, and
-there was a conversion from using early_printk to printk to avoid
-calling the dbgp driver while debugging the initialization.
+The PCI quirk code executes a BIOS hand off to obtain full control of
+the EHCI host controller, the self contained ehci-dbgp driver must do
+the same thing using the early PCI API, else the BIOS can cause a
+fatal fault.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 Cc: Greg KH <gregkh@suse.de>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: dbrownell@users.sourceforge.net
 Cc: Yinghai Lu <yinghai@kernel.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- drivers/usb/early/ehci-dbgp.c |   45 +++++++++++++++++++++++-----------------
- 1 files changed, 26 insertions(+), 19 deletions(-)
+ drivers/usb/early/ehci-dbgp.c |   49 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 49 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
-index f4bfe31..6198ebd 100644
+index 51ec414..f4bfe31 100644
 --- a/drivers/usb/early/ehci-dbgp.c
 +++ b/drivers/usb/early/ehci-dbgp.c
-@@ -9,6 +9,12 @@
- #include <asm/pci-direct.h>
- #include <asm/fixmap.h>
+@@ -435,6 +435,53 @@ static void __init detect_set_debug_port(void)
+ 	}
+ }
  
-+#ifdef DBGP_DEBUG
-+# define dbgp_printk printk
-+#else
-+static inline void dbgp_printk(const char *fmt, ...) { }
-+#endif
++/* The code in early_ehci_bios_handoff() is derived from the usb pci
++ * quirk initialization, but altered so as to use the early PCI
++ * routines. */
++#define EHCI_USBLEGSUP_BIOS	(1 << 16)	/* BIOS semaphore */
++#define EHCI_USBLEGCTLSTS	4		/* legacy control/status */
++static void __init early_ehci_bios_handoff(void)
++{
++	u32 hcc_params = readl(&ehci_caps->hcc_params);
++	int offset = (hcc_params >> 8) & 0xff;
++	u32 cap;
++	int msec;
 +
- static struct ehci_caps __iomem *ehci_caps;
- static struct ehci_regs __iomem *ehci_regs;
- static struct ehci_dbg_port __iomem *ehci_debug;
-@@ -342,6 +348,7 @@ static int __init ehci_reset_port(int port)
- 	u32 delay_time, delay;
- 	int loop;
- 
-+	dbgp_printk("ehci_reset_port %i\n", port);
- 	/* Reset the usb debug port */
- 	portsc = readl(&ehci_regs->port_status[port - 1]);
- 	portsc &= ~PORT_PE;
-@@ -352,14 +359,17 @@ static int __init ehci_reset_port(int port)
- 	for (delay_time = 0; delay_time < HUB_RESET_TIMEOUT;
- 	     delay_time += delay) {
- 		dbgp_mdelay(delay);
--
- 		portsc = readl(&ehci_regs->port_status[port - 1]);
-+		if (!(portsc & PORT_RESET))
-+			break;
++	if (!offset)
++		return;
++
++	cap = read_pci_config(ehci_dev.bus, ehci_dev.slot,
++			      ehci_dev.func, offset);
++	dbgp_printk("dbgp: ehci BIOS state %08x\n", cap);
++
++	if ((cap & 0xff) == 1 && (cap & EHCI_USBLEGSUP_BIOS)) {
++		dbgp_printk("dbgp: BIOS handoff\n");
++		write_pci_config_byte(ehci_dev.bus, ehci_dev.slot,
++				      ehci_dev.func, offset + 3, 1);
 +	}
- 		if (portsc & PORT_RESET) {
- 			/* force reset to complete */
--			loop = 2;
-+			loop = 100 * 1000;
- 			writel(portsc & ~(PORT_RWC_BITS | PORT_RESET),
- 				&ehci_regs->port_status[port - 1]);
- 			do {
-+				udelay(1);
- 				portsc = readl(&ehci_regs->port_status[port-1]);
- 			} while ((portsc & PORT_RESET) && (--loop > 0));
- 		}
-@@ -375,7 +385,6 @@ static int __init ehci_reset_port(int port)
- 		/* If we've finished resetting, then break out of the loop */
- 		if (!(portsc & PORT_RESET) && (portsc & PORT_PE))
- 			return 0;
--	}
- 	return -EBUSY;
- }
++
++	/* if boot firmware now owns EHCI, spin till it hands it over. */
++	msec = 1000;
++	while ((cap & EHCI_USBLEGSUP_BIOS) && (msec > 0)) {
++		mdelay(10);
++		msec -= 10;
++		cap = read_pci_config(ehci_dev.bus, ehci_dev.slot,
++				      ehci_dev.func, offset);
++	}
++
++	if (cap & EHCI_USBLEGSUP_BIOS) {
++		/* well, possibly buggy BIOS... try to shut it down,
++		 * and hope nothing goes too wrong */
++		dbgp_printk("dbgp: BIOS handoff failed: %08x\n", cap);
++		write_pci_config_byte(ehci_dev.bus, ehci_dev.slot,
++				      ehci_dev.func, offset + 2, 0);
++	}
++
++	/* just in case, always disable EHCI SMIs */
++	write_pci_config_byte(ehci_dev.bus, ehci_dev.slot, ehci_dev.func,
++			      offset + EHCI_USBLEGCTLSTS, 0);
++}
++
+ static int __init ehci_setup(void)
+ {
+ 	struct usb_debug_descriptor dbgp_desc;
+@@ -446,6 +493,8 @@ static int __init ehci_setup(void)
+ 	int port_map_tried;
+ 	int playtimes = 3;
  
-@@ -384,24 +393,18 @@ static int __init ehci_wait_for_port(int port)
- 	u32 status;
- 	int ret, reps;
++	early_ehci_bios_handoff();
++
+ try_next_time:
+ 	port_map_tried = 0;
  
--	for (reps = 0; reps < 3; reps++) {
--		dbgp_mdelay(100);
-+	for (reps = 0; reps < 300; reps++) {
- 		status = readl(&ehci_regs->status);
--		if (status & STS_PCD) {
--			ret = ehci_reset_port(port);
--			if (ret == 0)
--				return 0;
--		}
-+		if (status & STS_PCD)
-+			break;
-+		dbgp_mdelay(1);
- 	}
-+	ret = ehci_reset_port(port);
-+	if (ret == 0)
-+		return 0;
- 	return -ENOTCONN;
- }
- 
--#ifdef DBGP_DEBUG
--# define dbgp_printk early_printk
--#else
--static inline void dbgp_printk(const char *fmt, ...) { }
--#endif
--
- typedef void (*set_debug_port_t)(int port);
- 
- static void __init default_set_debug_port(int port)
-@@ -520,7 +523,7 @@ try_next_port:
- 		return -1;
- 	}
- 
--	loop = 10;
-+	loop = 250 * 1000;
- 	/* Reset the EHCI controller */
- 	cmd = readl(&ehci_regs->command);
- 	cmd |= CMD_RESET;
-@@ -540,6 +543,7 @@ try_next_port:
- 	ctrl |= DBGP_OWNER;
- 	ctrl &= ~(DBGP_ENABLED | DBGP_INUSE);
- 	writel(ctrl, &ehci_debug->control);
-+	udelay(1);
- 
- 	/* Start the ehci running */
- 	cmd = readl(&ehci_regs->command);
-@@ -554,10 +558,13 @@ try_next_port:
- 	loop = 10;
- 	do {
- 		status = readl(&ehci_regs->status);
--	} while ((status & STS_HALT) && (--loop > 0));
-+		if (!(status & STS_HALT))
-+			break;
-+		udelay(1);
-+	} while (--loop > 0);
- 
- 	if (!loop) {
--		dbgp_printk("ehci can be started\n");
-+		dbgp_printk("ehci can not be started\n");
- 		return -1;
- 	}
- 	dbgp_printk("ehci started\n");
 -- 
 1.6.0.3.523.g304d0
 
