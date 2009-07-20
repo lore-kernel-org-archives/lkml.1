@@ -1,359 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZGTHnO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbZGTHqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbZGTHnO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 03:43:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZGTHnM
+	id S1752849AbZGTHqe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 03:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZGTHqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 03:43:12 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:51212 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbZGTHnK (ORCPT
+	Mon, 20 Jul 2009 03:46:32 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:61037 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbZGTHqb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 03:43:10 -0400
-Date: Mon, 20 Jul 2009 09:43:09 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jing Huang <huangj@brocade.com>
-Cc: James.Bottomley@HansenPartnership.com, kgudipat@brocade.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       rvadivel@brocade.com, vravindr@brocade.com, xmzhang@brocade.com
-Subject: Re: [PATCH 1/5] bfa: Brocade BFA FC SCSI driver (bfad)
-Message-ID: <20090720074309.GC6340@merkur.ravnborg.org>
-References: <200907200622.n6K6MmW7011265@swe57.brocade.com>
+	Mon, 20 Jul 2009 03:46:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=u/+5xBZbdlxK/tqiFnI2PnE6T3rktAlut/etkT34aKfcz06n0UXahzkhkwhZ/7Z9C9
+         BfF3Wr8AH7Z6ON/7RL7KBrroIgqgjRNhybSYU34pEPp0hSdgKSQQn0qPRLbr9X25ZNnw
+         0S70dfFwSCMWOUizc6FZ7kKcpCefu9Wa7QAjU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907200622.n6K6MmW7011265@swe57.brocade.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1248074120.4549.89.camel@violet>
+References: <dd18b0c30907192045t3078451ao9af4c1751d9efe91@mail.gmail.com>
+	 <1248074120.4549.89.camel@violet>
+Date: Mon, 20 Jul 2009 00:46:30 -0700
+Message-ID: <dd18b0c30907200046m70ac61e9wd0464c5f44e7c28@mail.gmail.com>
+Subject: Re: btusb_send_frame: hci0 urb ede00a50 submission failed
+From: Justin Mattock <justinmattock@gmail.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-bluetooth@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jul 20, 2009 at 12:15 AM, Marcel Holtmann<marcel@holtmann.org> wrote:
+> Hi Justin,
+>
+>> Not sure whats happening here,
+>> this morning using s2ram worked like a charm,
+>> now at the end of the day this thing takes a good minute to
+>> wakeup. As for the blueooth finally got it working, but
+>> now I'm seeing this in dmesg:
+>>
+>>
+>> [  708.630722] Restarting tasks ... done.
+>> [  708.910090] usb 5-1: USB disconnect, address 3
+>> [  708.910262] btusb_send_frame: hci0 urb ede00a50 submission failed
+>> [  709.330776] [drm] Loading R500 Microcode
+>>
+>> Maybe suspend works better when cooler, but in anycase
+>> the bluetooth works perfectly recovers from s2ram, scrollball
+>> works as well(all with SELinux running too).
+>
+> what kernel version? Is this a plain vanilla kernel.org kernel or a
+> distro kernel?
+>
+> Regards
+>
+> Marcel
+>
+>
+>
 
-A few small nit-picks. I have not looked into the functionality.
+latest git
+here's a cut from dmesg:
 
-I notice you use semaphores in several places.
-Today mutexes is the preferred choice for locking
-where you use semaphores.
+[13176.287859] PM: Syncing filesystems ... done.
+[13176.291783] Freezing user space processes ... (elapsed 0.00 seconds) done.
+[13176.292142] Freezing remaining freezable tasks ... (elapsed 0.00
+seconds) done.
+[13176.292275] Suspending console(s) (use no_console_suspend to debug)
+[13176.294725] btusb_bulk_complete: hci0 urb f6ac6a50 failed to resubmit (1)
+[13176.295720] btusb_bulk_complete: hci0 urb f6ac66e0 failed to resubmit (1)
+[13176.296719] btusb_intr_complete: hci0 urb f6ac6420 failed to resubmit (1)
+[13176.470263] sd 2:0:1:0: [sda] Synchronizing SCSI cache
+[13176.697678] sd 2:0:1:0: [sda] Stopping disk
+[13177.600230] ath9k 0000:03:00.0: PCI INT A disabled
 
-> +
-> +BFA_TRC_FILE(LDRV, BFAD);
+then s2ram again:
 
-Looks like some prive tracing infrastructure.
-Why not use what we already have?
+[13182.139058] wlan0: associate with AP 00:1e:2a:00:67:f0
+[13182.141361] wlan0: RX ReassocResp from 00:1e:2a:00:67:f0
+(capab=0x431 status=0 aid=2)
+[13182.141364] wlan0: associated
+[13182.150158] usb 5-1: USB disconnect, address 7
+[13182.150332] btusb_send_frame: hci0 urb f1f2c420 submission failed
+[13182.561534] [drm] Loading R500 Microcode
+[13182.561598] [drm] Num pipes: 1
 
-pr_*
-
-> +
-> +static bfa_status_t bfad_fc4_port_new(struct bfad_s *bfad,
-> +				      struct bfad_port_s *port, int roles);
-> +static void     bfad_fc4_port_delete(struct bfad_s *bfad,
-> +				     struct bfad_port_s *port, int roles);
-
-Please rearrange code so these are not needed.
-
-> +
-> +struct semaphore bfad_sem;
-> +int             bfad_scan_done;
-> +
-> +LIST_HEAD(bfad_list);
-> +
-> +static int      bfad_inst;
-> +int             supported_fc4s;
-> +
-
-> +char           *host_name;
-> +char           *os_name;
-> +char           *os_patch;
-> +int             num_rports;
-> +int             num_ios;
-> +int             num_tms;
-> +int             num_fcxps;
-> +int             num_ufbufs;
-> +int             reqq_size;
-> +int             rspq_size;
-> +int             num_sgpgs;
-> +int             rport_del_timeout = BFA_FCS_RPORT_DEF_DEL_TIMEOUT;
-The above are defined in the global scope.
-If this is needed prefix them with bfad_ as you do for
-other global variables.
-
-> +int             bfa_lun_queue_depth = BFAD_LUN_QUEUE_DEPTH;
-> +int             bfa_io_max_sge = BFAD_IO_MAX_SGE;
-> +int             log_level = BFA_LOG_WARNING;
-> +int             ioc_auto_recover = BFA_TRUE;
-> +int             ipfc_enable = BFA_FALSE;
-> +int             ipfc_mtu = -1;
-> +int             linkup_delay = -1;
-
-Same goes here..
-
-> +
-> +/*
-> + * Stores the module parm num_sgpgs value;
-> + * used to reset for bfad next instance.
-> + */
-> +static int num_sgpgs_parm;
-> +
-> +bfa_boolean_t
-> +bfad_is_ready(void)
-
-What is the purpose of bfa_boolean_t?
-Do we need such private typedef?
+Not sure what this is, but from here the mouse is functioning
+as it should.
 
 
-> +{
-> +	struct bfad_s  *bfad = NULL;
-> +
-> +	down(&bfad_sem);
-> +	if (!bfad_scan_done) {
-> +		up(&bfad_sem);
-> +		return BFA_FALSE;
-> +	}
-> +
-> +	list_for_each_entry(bfad, &bfad_list, list_entry) {
-> +		if (!(bfad->bfad_flags & BFAD_DRV_INIT_DONE)) {
-> +			up(&bfad_sem);
-> +			return BFA_FALSE;
-> +		}
-> +	}
-> +	up(&bfad_sem);
-> +
-> +	return BFA_TRUE;
-> +}
-> +
-> +void
-> +bfad_flags_set(struct bfad_s *bfad, u32 flags)
-> +{
-> +	if (bfad)
-> +		bfad->bfad_flags |= flags;
-> +}
-> +
-> +/**
-> + *  BFA callbacks
-> + */
-> +void
-> +bfad_hcb_comp(void *arg, bfa_status_t status)
-> +{
-> +	struct bfad_hal_comp *fcomp = (struct bfad_hal_comp *)arg;
-> +
-> +	fcomp->status = status;
-> +	complete(&fcomp->comp);
-> +}
-> +
-> +/**
-> + * bfa_init callback
-> + */
-> +void
-> +bfa_cb_init(void *drv, bfa_status_t init_status)
-> +{
-> +	struct bfad_s  *bfad = drv;
-> +
-> +	if (init_status == BFA_STATUS_OK)
-> +		bfad->bfad_flags |= BFAD_HAL_INIT_DONE;
-> +
-> +	complete(&bfad->comp);
-> +}
-This is unused?
-[Not referenced, not in a header]
-
-
-> +
-> +/**
-> + * bfa_stop callback
-> + */
-> +void
-> +bfa_cb_stop(void *drv, bfa_status_t stop_status)
-> +{
-> +	struct bfad_s  *bfad = drv;
-> +
-> +	/*
-> +	 * Signal the BFAD stop waiting thread
-> +	 */
-> +	complete(&bfad->comp);
-> +}
-This is unused?
-[Not referenced, not in a header]
-
-> +
-> +/**
-> + * bfa_ioc_diable() callback.
-> + */
-> +void
-> +bfa_cb_ioc_disable(void *drv)
-> +{
-> +	struct bfad_s  *bfad = drv;
-> +
-> +	complete(&bfad->disable_comp);
-> +}
-ditto
-
-> +
-> +void
-> +bfa_fcb_exit(struct bfad_s *drv)
-> +{
-> +	complete(&drv->comp);
-> +}
-ditto
-
-> +
-> +
-> +
-> +/**
-> + *  BFA_FCS callbacks
-> + */
-> +static struct bfad_port_s *
-> +bfad_get_drv_port(struct bfad_s *bfad, struct bfad_vf_s *vf_drv,
-> +		  struct bfad_vport_s *vp_drv)
-> +{
-> +	return ((vp_drv) ? (&(vp_drv)->drv_port)
-> +		: ((vf_drv) ? (&(vf_drv)->base_port) : (&(bfad)->pport)));
-> +}
-> +
-> +struct bfad_port_s *
-> +bfa_fcb_port_new(struct bfad_s *bfad, struct bfa_fcs_port_s *port,
-> +		 enum bfa_port_role roles, struct bfad_vf_s *vf_drv,
-> +		 struct bfad_vport_s *vp_drv)
-> +{
-> +	bfa_status_t    rc;
-> +	struct bfad_port_s *port_drv;
-> +
-> +	if (!vp_drv && !vf_drv) {
-> +		port_drv = &bfad->pport;
-> +		port_drv->pvb_type = BFAD_PORT_PHYS_BASE;
-> +	} else if (!vp_drv && vf_drv) {
-> +		port_drv = &vf_drv->base_port;
-> +		port_drv->pvb_type = BFAD_PORT_VF_BASE;
-> +	} else if (vp_drv && !vf_drv) {
-> +		port_drv = &vp_drv->drv_port;
-> +		port_drv->pvb_type = BFAD_PORT_PHYS_VPORT;
-> +	} else {
-> +		port_drv = &vp_drv->drv_port;
-> +		port_drv->pvb_type = BFAD_PORT_VF_VPORT;
-> +	}
-> +
-> +	port_drv->fcs_port = port;
-> +	port_drv->roles = roles;
-> +	rc = bfad_fc4_port_new(bfad, port_drv, roles);
-> +	if (rc != BFA_STATUS_OK) {
-> +		bfad_fc4_port_delete(bfad, port_drv, roles);
-> +		port_drv = NULL;
-> +	}
-> +
-> +	return port_drv;
-> +}
-unused?
-> +
-> +void
-> +bfa_fcb_port_delete(struct bfad_s *bfad, enum bfa_port_role roles,
-> +		    struct bfad_vf_s *vf_drv, struct bfad_vport_s *vp_drv)
-> +{
-> +	struct bfad_port_s *port_drv;
-> +
-> +	/*
-> +	 * this will be only called from rmmod context
-> +	 */
-> +	if (vp_drv && !vp_drv->comp_del) {
-> +		port_drv = bfad_get_drv_port(bfad, vf_drv, vp_drv);
-> +		bfa_trc(bfad, roles);
-> +		bfad_fc4_port_delete(bfad, port_drv, roles);
-> +	}
-> +}
-unused?
-
-> +
-> +void
-> +bfa_fcb_port_online(struct bfad_s *bfad, enum bfa_port_role roles,
-> +		    struct bfad_vf_s *vf_drv, struct bfad_vport_s *vp_drv)
-> +{
-> +	struct bfad_port_s *port_drv = bfad_get_drv_port(bfad, vf_drv, vp_drv);
-> +
-> +	if (roles & BFA_PORT_ROLE_FCP_IM)
-> +		bfad_im_port_online(bfad, port_drv);
-> +
-> +	if (roles & BFA_PORT_ROLE_FCP_TM)
-> +		bfad_tm_port_online(bfad, port_drv);
-> +
-> +	if ((roles & BFA_PORT_ROLE_FCP_IPFC) && ipfc_enable)
-> +		bfad_ipfc_port_online(bfad, port_drv);
-> +
-> +	bfad_flags_set(bfad, BFAD_PORT_ONLINE);
-> +}
-unused?
-
-As I hit so many seemlingly unused funtions I gues there is
-a header file missing in the patch to make it complete.
-So I will stop checking for this.
-
-
-I have noticed that some functiones are prefixed with "bfa_",
-and others are prefixed with "bfad_".
-Any specific reason for this difference?
-
-
-> +
-> +	/*
-> +	 * populate the hal values back to the driver for sysfs use.
-> +	 * otherwise, the default values will be shown as 0 in sysfs
-> +	 */
-> +	num_rports = bfa_cfg->fwcfg.num_rports;
-> +	num_ios = bfa_cfg->fwcfg.num_ioim_reqs;
-> +	num_tms = bfa_cfg->fwcfg.num_tskim_reqs;
-> +	num_fcxps = bfa_cfg->fwcfg.num_fcxp_reqs;
-> +	num_ufbufs = bfa_cfg->fwcfg.num_uf_bufs;
-> +	reqq_size = bfa_cfg->drvcfg.num_reqq_elems;
-> +	rspq_size = bfa_cfg->drvcfg.num_rspq_elems;
-> +	num_sgpgs = bfa_cfg->drvcfg.num_sgpgs;
-
-This would be more readable if you aligned it like this:
-> +	num_rports = bfa_cfg->fwcfg.num_rports;
-> +	num_ios    = bfa_cfg->fwcfg.num_ioim_reqs;
-> +	num_tms    = bfa_cfg->fwcfg.num_tskim_reqs;
-> +	num_fcxps  = bfa_cfg->fwcfg.num_fcxp_reqs;
-> +	num_ufbufs = bfa_cfg->fwcfg.num_uf_bufs;
-> +	reqq_size  = bfa_cfg->drvcfg.num_reqq_elems;
-> +	rspq_size  = bfa_cfg->drvcfg.num_rspq_elems;
-> +	num_sgpgs  = bfa_cfg->drvcfg.num_sgpgs;
-
-
-> +bfa_status_t
-> +bfad_hal_mem_alloc(struct bfad_s *bfad)
-> +{
-> +	int             i;
-> +	struct bfa_meminfo_s *hal_meminfo = &bfad->meminfo;
-> +	struct bfa_mem_elem_s *meminfo_elem;
-> +	dma_addr_t      phys_addr;
-> +	void           *kva;
-> +	bfa_status_t    rc = BFA_STATUS_OK;
-> +	int             retry_count = 0;
-> +	int             reset_value = 1;
-> +	int             min_num_sgpgs = 512;
-
-It is preferred to split declaration and assignment.
-We know it cost an extra line or two - but it makes code
-more explicit.
-
-Also try to list the variables in inverse order of their length.
-
-So the longest lines are topmost when you declare a variable.
-Something like this:
-
-> +	struct bfa_mem_elem_s *meminfo_elem;
-> +	struct bfa_meminfo_s *hal_meminfo;
-> +	int             min_num_sgpgs;
-> +	int             retry_count;
-> +	int             reset_value;
-> +	dma_addr_t      phys_addr;
-> +	void           *kva;
-> +	bfa_status_t    rc;
-> +	int             i;
-
-> +	hal_meminfo   = &bfad->meminfo;
-> +	min_num_sgpgs = 512;
-> +	retry_count   = 0;
-> +	reset_value   = 1;
-> +	rc            = BFA_STATUS_OK;
-
-
-[ran out of time...]
-
-	Sam
+-- 
+Justin P. Mattock
