@@ -1,55 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZGTSyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZGTTAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753795AbZGTSyb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 14:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZGTSya
+	id S1753305AbZGTTAh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 15:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZGTTAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 14:54:30 -0400
-Received: from ns1.siteground211.com ([209.62.36.12]:41932 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbZGTSya (ORCPT
+	Mon, 20 Jul 2009 15:00:35 -0400
+Received: from ru.mvista.com ([213.79.90.228]:34152 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750780AbZGTTAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 14:54:30 -0400
-Date: Mon, 20 Jul 2009 21:54:22 +0300
-From: Felipe Balbi <me@felipebalbi.com>
-To: balajitk@ti.com
-Cc: linux-kernel@vger.kernel.org, tony@atomide.com,
-       khilman@deeprootsystems.com, david-b@pacbell.net,
-       linux-omap@vger.kernel.org, linux-i2c@vger.kernel.org,
-       sameo@openedhand.com, wim@iguana.be, timo.t.kokkonen@nokia.com,
-       ben-linux@fluff.org, lrg@slimlogic.co.uk,
-       broonie@opensource.wolfsonmicro.com, Rajendra Nayak <rnayak@ti.com>,
-       Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH 4/4] ARM: OMAP: Rename twl4030_ to twl_ in
- twl-regulator.c to make it generic reg
-Message-ID: <20090720185422.GD7984@gandalf>
-Reply-To: me@felipebalbi.com
-References: <1248096765-14299-1-git-send-email-balajitk@ti.com>
+	Mon, 20 Jul 2009 15:00:35 -0400
+Date: Mon, 20 Jul 2009 23:00:34 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Ian Molton <spyro@f2s.com>, Anton Vorontsov <cbou@mail.ru>,
+       Matt Reimer <mreimer@vpop.net>
+Subject: Re: [PATCH 1/3] pda-power: add set_charged functionaltity
+Message-ID: <20090720190034.GA24617@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1247759044-4747-1-git-send-email-daniel@caiaq.de>
+ <20090720182752.GA20602@oksana.dev.rtsoft.ru>
+ <20090720183711.GF19257@buzzloop.caiaq.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1248096765-14299-1-git-send-email-balajitk@ti.com>
+In-Reply-To: <20090720183711.GF19257@buzzloop.caiaq.de>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 20, 2009 at 07:02:45PM +0530, balajitk@ti.com wrote:
-> From: Rajendra Nayak <rnayak@ti.com>
+On Mon, Jul 20, 2009 at 08:37:11PM +0200, Daniel Mack wrote:
+> On Mon, Jul 20, 2009 at 10:27:52PM +0400, Anton Vorontsov wrote:
+> > On Thu, Jul 16, 2009 at 05:44:02PM +0200, Daniel Mack wrote:
+> > > This adds a function to let the power supply core know that the battery
+> > > is fully charged now. This can be done by watching a GPIO line, for
+> > > example.
+> > > 
+> > > Some battery drivers might need that information to calibrate
+> > > themselves.
+> > > 
+> > > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> > > Cc: Ian Molton <spyro@f2s.com>
+> > > Cc: Anton Vorontsov <cbou@mail.ru>
+> > > Cc: Matt Reimer <mreimer@vpop.net>
+> > > ---
+> > >  drivers/power/power_supply_core.c |   16 ++++++++++++++++
+> > >  include/linux/power_supply.h      |    3 +++
+> > 
+> > The patch is missing pda_power.c part?
 > 
->  This patch renames all twl4030_ functions to twl so that regulator driver
->  can be reused by Triton - TWL4030 and Phoenix - TWL6030.
-> 
-> Signed-off-by: Rajendra Nayak <rnayak@ti.com>
-> Signed-off-by: Balaji T K <balajitk@ti.com>
-> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Erm, does it? What would you expect it to do in there?
 
-and again.
+Um... then the patch subject is misleading. It says "pda-power".
+
+Is there any user of this new call, btw? I mean a mainline user,
+or soon to be?
+
+> > >  #if defined(CONFIG_POWER_SUPPLY) || defined(CONFIG_POWER_SUPPLY_MODULE)
+> > >  extern int power_supply_is_system_supplied(void);
+> > > +extern void power_supply_set_battery_charged(void);
+> > 
+> > I don't quite like this interface. Note that system might want
+> > to know if it's supplied (hence global is_system_supplied(void) call),
+> > but having set_battery_charged(void) interface makes little sense
+> > (well, it makes sense for small embedded systems that have just
+> > one battery and one charger)...
+> > 
+> > There is a supplied_to psy field that might help you there...
+> 
+> Hmm. I thought about that too, but didn't find a way to access the
+> single members of the pda-power device and find the right one to
+> access. They're registered on a string base and matched magically once
+> the battery monitor is probed when found on the one-wire bus. Any
+> proposal how an interface could look like that does that?
+> 
+> All I need is a way to pass this information from my platform code down
+> to the battery driver.
+
+Yes, I see the problem, but I don't have a solution off-hand. :-/
+
+Let me think about it for awhile.
+
+> > The cleanup patch looks OK though, I'll apply it.
+> 
+> Thanks. What about the one adding support for the bootstrapping of the
+> current_accum value? I've sent that inline as a reply to the other patch
+> series (4/4) last week (which was probably not a good idea).
+
+"ds2760: add current_accum module parameter"? Looks perfectly OK.
+
+Thanks!
 
 -- 
-balbi
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
