@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbZGTRiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbZGTRi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752767AbZGTRiT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 13:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZGTRiS
+	id S1753116AbZGTRi3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 13:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZGTRi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 13:38:18 -0400
-Received: from viefep12-int.chello.at ([62.179.121.32]:7042 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZGTRiR (ORCPT
+	Mon, 20 Jul 2009 13:38:28 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:8047 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752957AbZGTRiW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 13:38:17 -0400
+	Mon, 20 Jul 2009 13:38:22 -0400
 X-SourceIP: 213.93.53.227
 Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
  breakpoints
@@ -30,8 +30,8 @@ In-Reply-To: <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
 References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
 	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
 Content-Type: text/plain
-Date: Mon, 20 Jul 2009 19:38:55 +0200
-Message-Id: <1248111535.15751.9339.camel@twins>
+Date: Mon, 20 Jul 2009 19:38:57 +0200
+Message-Id: <1248111537.15751.9341.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -45,19 +45,7 @@ On Mon, 2009-07-20 at 13:08 -0400, Frederic Weisbecker wrote:
 > using the counter number 5 and by passsing the address of the
 > breakpoint to set through the config attribute.
 
-
-> +void bp_perf_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
-> +{
-> +	unsigned long target = hw_breakpoint_addr(bp);
-> +
-> +	struct perf_sample_data data = {
-> +		.regs = regs,
-> +		.addr = instruction_pointer(regs),
-> +	};
-> +
-> +	do_perf_swcounter_event(PERF_TYPE_BREAKPOINT, target, 1, 0, &data);
-> +}
-
-.addr would be an associated data address, like for pagefaults and
-cache-misses have, its not the RIP of the faulting ins.
+This seems to be IP based breakpoints. Are there plans for data based
+breakpoints as well? In that case we might want to think about the
+namespace issue, we cannot both call them breakpoint/bp etc.. ;-)
 
