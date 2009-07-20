@@ -1,43 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbZGTRxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbZGTRzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbZGTRxb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 13:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZGTRxa
+	id S1753476AbZGTRzt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 13:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZGTRzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 13:53:30 -0400
-Received: from dns1.vpop.net ([216.193.240.2]:53078 "EHLO mail.vpop.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752700AbZGTRx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 13:53:29 -0400
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Ian Molton <spyro@f2s.com>, Anton Vorontsov <cbou@mail.ru>
-Message-Id: <1ABCC50C-CB75-44E4-8F7A-51D8E275EC0C@vpop.net>
-From: Matt Reimer <mreimer@vpop.net>
-To: Daniel Mack <daniel@caiaq.de>
-In-Reply-To: <1247759044-4747-1-git-send-email-daniel@caiaq.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Mon, 20 Jul 2009 13:55:47 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:49355 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752595AbZGTRzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 13:55:46 -0400
+Message-ID: <4A64AF63.6050300@vlnb.net>
+Date: Mon, 20 Jul 2009 21:54:43 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH]: New implementation of scsi_execute_async()
+References: <4A563368.5040407@vlnb.net> <4A59DF14.7060807@panasas.com> <4A5CAF66.3090909@vlnb.net> <4A5D9117.2060205@panasas.com> <4A5F6DC2.5040008@vlnb.net> <4A6304C7.3070200@panasas.com>
+In-Reply-To: <4A6304C7.3070200@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 1/3] pda-power: add set_charged functionaltity
-Date: Mon, 20 Jul 2009 10:53:27 -0700
-References: <1247759044-4747-1-git-send-email-daniel@caiaq.de>
-X-Mailer: Apple Mail (2.935.3)
+X-Provags-ID: V01U2FsdGVkX18TjeuKutrMJ02E+/FdYp6Nm1X8aXSsK3LC5QI
+ GMD01Q5aqWivPvOZNBnWlbmBHBL5iIz4DsG+U4YR/3iowWfkCB
+ UlHoxjEhbK1Z7X/I6BKAw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 16, 2009, at 8:44 AM, Daniel Mack wrote:
+Boaz Harrosh, on 07/19/2009 03:34 PM wrote:
+> On 07/16/2009 09:13 PM, Vladislav Bolkhovitin wrote:
+>> Boaz Harrosh, on 07/15/2009 12:19 PM wrote:
+>>>>>>  block/blk-map.c            |  536 +++++++++++++++++++++++++++++++++++++++++++++
+>>>>>>  drivers/scsi/scsi_lib.c    |  108 ++++++++-
+>>>>>>  include/linux/blkdev.h     |    6 
+>>>>>>  include/scsi/scsi_device.h |   11 
+>>>>>>  4 files changed, 660 insertions(+), 1 deletion(-)
+>>>>>>
+>>>>> The scsi bits are not needed and just add complexity. 
+>>>>> allocate the request, call blk_rq_map_kern_sg() and
+>>>>> blk_execute_xxx directly from your driver. Since you exacly
+>>>>> know your code path lots of if(s) and flags are saved and that ugly
+>>>>> scsi_io_context allocation.
+>>>> Are you against any helper functions? scsi_lib.c has only scsi_execute_async(),
+>>>> which is a small helper function, which only hides internal machinery details.
+>>>> All the flags it has are needed and can't be avoided, especially
+>>>> SCSI_ASYNC_EXEC_FLAG_HAS_TAIL_SPACE_FOR_PADDING
+>>> Yes I'm sure. This will not be accepted. Just do it directly in the driver
+>>> like all other ULD's and block layer users. Use direct blk API. All these little
+>>> things and flags you are talking about are block specific, there is no single thing
+>>> SCSI about them.
+>> Hmm, I don't understand. What's wrong in this small helper function? Are 
+>> you against any helper functions, so, all users of, e.g., for_each_sg() 
+>> must instead open code the corresponding functionality?
+>>
+>> Do you want me to move scsi_execute_async() from scsi_lib.c to 
+>> scst_lib.c and rename it to scst_execute_async()? This is the maximum I 
+>> can do, because I need this functionality. But it will make all other 
+>> possible users to duplicate it.
 
-> This adds a function to let the power supply core know that the  
-> battery
-> is fully charged now. This can be done by watching a GPIO line, for
-> example.
->
-> Some battery drivers might need that information to calibrate
-> themselves.
+OK, I'll do. But people who will miss it, will blame you by pretty bad
+words!
 
-Looks fine to me.
+> Yes that's what I want, and if you can not save some of it's complexity
+> by, for example, merging of scsi_io_context with the request structure you
+> already have at scst level, or save the double-chained-callbacks at the end,
+> then you've done something wrong.
 
-Acked-by: Matt Reimer <mreimer@vpop.net>
+Are you sure??
 
-Matt
+As I already wrote, in SCST sense allocated on-demand only. It is done
+for performance reasons, because the sense is needed _very_ rarely and
+the buffer for it is quite big, so it's better to save those allocating,
+zeroing and CPU cache trashing. The fact that Linux SCSI ML requires
+sense buffer preallocation is for me something rather to be fixed.
+Pass-through SCST backend is used relatively rarely as well, so it's
+better to keep the sense preallocation for it in the separate code path.
+Then, if there is the sense preallocation, it doesn't matter to alloc
+with it few bytes more.
+
+Is it getting clearer now?
+
+>> Does flag SCSI_ASYNC_EXEC_FLAG_AT_HEAD have nothing to do to SCSI, really?
+>>
+> 
+> Exactly, it's just a parameter at the call to blk_execute_nowait() with it's
+> own defines already. Nothing SCSI.
+
+Well, going this way we can go too far.. Like, to assertion that SCSI
+HEAD OF QUEUE task attribute is a property of the Linux block layer as well.
+
+>>>> The allocation of scsi_io_context is unavoidable, because sense buffer should
+>>>> be allocated anyway.
+>>>>  
+>>> NO!, driver needs to do it's job and provide a sense buffer and call blk API
+>>> just like all the other drivers. this has nothing to do with SCSI.
+>> What job should a driver do? As I wrote, for SCST allocation of the 
+>> sense buffer is necessary in any case (in SCST sense is allocated on 
+>> demand only), so it doesn't matter to allocate few bytes more, if it 
+>> allows to hide unneeded low level details. The same, I guess, should be 
+>> true for all other possible users of this functionality.
+>>
+> 
+> Easiest, as all users do is: If you already have your scst request or
+> command, or what ever you call it. So add a sense_buffer array embedded
+> there, end of story no allocation needed.
+> 
+> How can you be a scsi-target and return the proper errors upstream,
+> without digging into sense-buffer and error returns to produce the
+> correct report.
+
+Most SCST backends don't deal with senses at all and generate them only
+at the latest stage of the commands processing to deliver errors (e.g.,
+file read errors) to initiators.
+
+>>>>>> +/**
+>>>>>> + * blk_rq_unmap_kern_sg - "unmaps" data buffers in the request
+>>>>>> + * @req:	request to unmap
+>>>>>> + * @do_copy:	sets copy data between buffers, if needed, or not
+>>>>>> + *
+>>>>>> + * Description:
+>>>>>> + *    It frees all additional buffers allocated for SG->BIO mapping.
+>>>>>> + */
+>>>>>> +void blk_rq_unmap_kern_sg(struct request *req, int do_copy)
+>>>>>> +{
+>>>>>> +	struct scatterlist *hdr = (struct scatterlist *)req->end_io_data;
+>>>>>> +
+>>>>> You can't use req->end_io_data  here! req->end_io_data is reserved for
+>>>>> blk_execute_async callers. It can not be used for private block use.
+>>>> Why? I see blk_execute_rq() happily uses it. Plus, I implemented stacking of
+>>>> it in scsi_execute_async().
+>>>>
+>>> As I said users of blk_execute_rq_nowait() blk_execute_rq is a user of
+>>> blk_execute_rq_nowait just as the other guy.
+>>>
+>>> "implemented stacking" is exactly the disaster I'm talking about.
+>>> Also it totaly breaks the blk API. Now I need to to specific code
+>>> when mapping with this API as opposed to other mappings when I execute
+>>>
+>>>> Do you have better suggestion?
+>>> I have not look at it deeply but you'll need another system. Perhaps
+>>> like map_user/unmap_user where you give unmap_user the original bio.
+>>> Each user of map_user needs to keep a pointer to the original bio
+>>> on mapping. Maybe some other options as well. You can use the bio's
+>>> private data pointer, when building the first bio from scatter-list.
+>> I can't see how *well documented* stacking of end_io_data can be/lead to 
+>> any problem. All the possible alternatives I can see are worse:
+>>
+>> 1. Add in struct request one more field, like "void *blk_end_io_data" 
+>> and use it.
+>>
+>> 2. Duplicate code of bio's allocation and chaining 
+>> (__blk_rq_map_kern_sg()) for the copy case with additional code for 
+>> allocation and copying of the copy buffers on per-bio basis and use 
+>> bio->bi_private to track the copy info. Tejun Heo used this approach, 
+>> but he had only one bio without any chaining. With the chaining this 
+>> approach becomes terribly overcomplicated and ugly with *NO* real gain.
+>>
+>> Do you like any of them? If not, I'd like to see _practical_ suggestions.
+>>
+> 
+> Again all this is not needed and should be dropped it is already done
+> by bio bouncing. All you need to do is add the pages to bios, chain when
+> full, and call blk_make_request.
+
+Can you show me a place where the bio bouncing, i.e.
+blk_queue_bounce(), does bouncing of misaligned buffers?
+
+I don't see such places. Instead, I see that all users of the block API,
+who cares about the alignment (sg, st, sr, etc.), directly or indirectly
+take care about it, by, e.g., switching to copying functions, before
+calling blk_queue_bounce(). See blk_rq_map_user_iov(), for instance.
+This is exactly what I implemented: handling of misaligned buffers on
+the layer upper blk_queue_bounce().
+
+Thanks,
+Vlad
+
+
