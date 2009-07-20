@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbZGTMOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbZGTMPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbZGTMOz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 08:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZGTMOy
+	id S1753539AbZGTMPO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 08:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbZGTMPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 08:14:54 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:37751 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751482AbZGTMOy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 08:14:54 -0400
-Date: Mon, 20 Jul 2009 17:44:50 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Izik Eidus <ieidus@redhat.com>
-Cc: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk, aarcange@redhat.com,
-       chrisw@redhat.com, avi@redhat.com, riel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 10/10] ksm: change ksm nice level to be 5
-Message-ID: <20090720121450.GG24157@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1247851850-4298-4-git-send-email-ieidus@redhat.com> <1247851850-4298-5-git-send-email-ieidus@redhat.com> <1247851850-4298-6-git-send-email-ieidus@redhat.com> <1247851850-4298-7-git-send-email-ieidus@redhat.com> <1247851850-4298-8-git-send-email-ieidus@redhat.com> <1247851850-4298-9-git-send-email-ieidus@redhat.com> <1247851850-4298-10-git-send-email-ieidus@redhat.com> <1247851850-4298-11-git-send-email-ieidus@redhat.com> <20090720045037.GA24157@balbir.in.ibm.com> <4A645974.3020801@redhat.com>
+	Mon, 20 Jul 2009 08:15:13 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37906 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753209AbZGTMPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 08:15:12 -0400
+Message-ID: <4A645FCE.5030506@suse.de>
+Date: Mon, 20 Jul 2009 14:15:10 +0200
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4A645974.3020801@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: rohan a <info1686@gmail.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: SCSI command (SP-OUT) failing on SLES 9 32-bit
+References: <7a7c22420907142137o4253dfb5gcd72176cd6a38beb@mail.gmail.com>	 <7a7c22420907142326t3b8d4f5fqaf3813cb456186ec@mail.gmail.com>	 <7a7c22420907150803v4f4ae9dn9eff41b5d5a7edf6@mail.gmail.com> <1247670563.4236.16.camel@mulgrave.site>
+In-Reply-To: <1247670563.4236.16.camel@mulgrave.site>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Izik Eidus <ieidus@redhat.com> [2009-07-20 14:48:04]:
-
-> Balbir Singh wrote:
->> * Izik Eidus <ieidus@redhat.com> [2009-07-17 20:30:50]:
+James Bottomley wrote:
+> On Wed, 2009-07-15 at 20:33 +0530, rohan a wrote:
+>> Hi guys,
 >>
->>   
->>> From: Izik Eidus <ieidus@redhat.com>
->>>
->>> ksm should try not to disturb other tasks as much as possible.
->>>
->>> Signed-off-by: Izik Eidus <ieidus@redhat.com>
->>> ---
->>>  mm/ksm.c |    2 +-
->>>  1 files changed, 1 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/mm/ksm.c b/mm/ksm.c
->>> index 75d7802..4afe345 100644
->>> --- a/mm/ksm.c
->>> +++ b/mm/ksm.c
->>> @@ -1270,7 +1270,7 @@ static void ksm_do_scan(unsigned int scan_npages)
->>>
->>>  static int ksm_scan_thread(void *nothing)
->>>  {
->>> -	set_user_nice(current, 0);
->>> +	set_user_nice(current, 5);
->>>     
->>
->> Is the 5 arbitrary? Why not +19? What is the intention of this change
->> - to run when no other task is ready to run?
->>   
->
-> Hey Balbir,
->
-> I thought about giving it the lowest priority of nice before I did this  
-> patch, but then I came into understanding that it isn't right,
-> Although ksm should not distrub other tasks while they are running, it  
-> does need to run while they are running,
-> most of the use cases for ksm is to find identical pages in real time  
-> while they are changing in the application, so giving it the lowest  
-> priority doesn't seems right to me,
->
-> But my understanding of how the nice prioritys are working is just my  
-> intuition, so if you know better and think that for the use case i  
-> described above other nice priority is better fit, tell me and I wont  
-> have any problem to change.
->
->
+>> Any suggestions...please help
+> 
+> I know of no kernel bug that could be causing this.  The SLES9 kernel is
+> just too old though for me to remember clearly.  I'd suggest you file a
+> support incident with SUSE ... they'll debug and fix this on the older
+> kernels; we really only deal with the new kernel and one or two back
+> revisions here on linux-scsi.
+> 
+You did that on purpose.
+The 'they' is actually me :-(
 
+Actually, there already _is_ a bug, so no need to open another one.
+Which HBA are you using?
 
-I was just checking to see why 5? May be it might be a good idea to
-document or at-least have rules on what priorities kernel threads can
-take? 
+Cheers,
 
->>   
->>>  	while (!kthread_should_stop()) {
->>>  		if (ksm_run & KSM_RUN_MERGE) {
->>>     
->>
->>   
->
-
+Hannes
 -- 
-	Balbir
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
