@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZGTByT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbZGTB5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752478AbZGTByT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 21:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbZGTByS
+	id S1752501AbZGTB5w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 21:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbZGTB5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 21:54:18 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39163 "EHLO gate.crashing.org"
+	Sun, 19 Jul 2009 21:57:51 -0400
+Received: from rtr.ca ([76.10.145.34]:40170 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752319AbZGTByS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 21:54:18 -0400
-Subject: Re: proper way to reserve a chunk of memory at the top of the
- kernel?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: linuxppc-dev@ozlabs.org, Linux kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A5CF62F.6020102@nortel.com>
-References: <4A5CF62F.6020102@nortel.com>
-Content-Type: text/plain
-Date: Mon, 20 Jul 2009 11:54:05 +1000
-Message-Id: <1248054845.13067.28.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1752323AbZGTB5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 21:57:50 -0400
+Message-ID: <4A63CF1B.7010909@rtr.ca>
+Date: Sun, 19 Jul 2009 21:57:47 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+Cc: Steven Toth <stoth@linuxtv.org>, linux-media@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Regression 2.6.31: xc5000 no longer works with Myth-0.21-fixes
+ 	branch
+References: <4A631C8F.7000002@rtr.ca>	 <829197380907190706i686fd1afwdca0d8be648129@mail.gmail.com>	 <4A6337C1.6080104@rtr.ca> <4A63416E.2070103@rtr.ca>	 <4A63A15F.8040804@rtr.ca> <829197380907191812v185e0869j2e5fa47483a4de4c@mail.gmail.com>
+In-Reply-To: <829197380907191812v185e0869j2e5fa47483a4de4c@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-14 at 15:18 -0600, Chris Friesen wrote:
-> I have a powerpc board with 512BM of memory.  The BIOS has a chunk of
-> memory at the top end of physical memory which it does not zero out over
-> a reboot.
-> 
-> What's the proper way to tell linux that this chunk of physical memory
-> should be ignored (so that we can access it later without worrying that
-> Linux will try to allocate it)?  Should I be calling
-> 
-> lmb_reserve(lmb_end_of_DRAM() - size, size);
-> 
-> in early_reserve_mem() or is there a better mechanism?
+Devin Heitmueller wrote:
+>
+> 2.  You hit the known analog audio issue that is preventing people
+> from using analog with MythTV.  I guess you can look at the analog
+> support as a work in progress - it works with most apps, but there is
+> something going on specific to MythTV that I haven't isolated yet.
+> Note this issue is completely related to the 950q analog project and
+> has nothing to do with the xc5000 tuner improvements.
+..
 
-The device-tree blob contains a special "reserve map" in the header,
-which automatically turns into calls to lmb_reserve() early during boot,
-so putting your special region in that map should be the right way to do
-what you want without special code.
+One additional thing I noticed here, is that when tuning analog
+for the first time, the firmware is reloaded yet again.. even though
+it has already been loaded once for "digital" operation.
 
-> For comparison, in an older kernel this was done in set_phys_avail(), by
-> calling mem_pieces_remove(&phys_avail, total_lowmem - size, size, 1);
+Perhaps the extra 6-7second delay here is contributing to Myth's problems.
 
-Cheers,
-Ben.
-
-> Thanks,
-> 
-> Chris
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
+Cheers
