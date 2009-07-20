@@ -1,52 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752399AbZGTBdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZGTByT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752399AbZGTBdZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 21:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZGTBdZ
+	id S1752478AbZGTByT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 21:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbZGTByS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 21:33:25 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56068 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752284AbZGTBdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 21:33:24 -0400
-Message-ID: <4A63C8FF.4040001@cn.fujitsu.com>
-Date: Mon, 20 Jul 2009 09:31:43 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/filters: Improve subsystem filter
-References: <4A5EECDC.4080500@cn.fujitsu.com> <20090717203422.GA7136@nowhere> <4A63C166.8010201@cn.fujitsu.com> <20090720012430.GA5172@nowhere>
-In-Reply-To: <20090720012430.GA5172@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 19 Jul 2009 21:54:18 -0400
+Received: from gate.crashing.org ([63.228.1.57]:39163 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752319AbZGTByS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 21:54:18 -0400
+Subject: Re: proper way to reserve a chunk of memory at the top of the
+ kernel?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: linuxppc-dev@ozlabs.org, Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A5CF62F.6020102@nortel.com>
+References: <4A5CF62F.6020102@nortel.com>
+Content-Type: text/plain
+Date: Mon, 20 Jul 2009 11:54:05 +1000
+Message-Id: <1248054845.13067.28.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> bool dry_run sounds perhaps more intuitive for what is happening there.
->> I guess you "try_run". ;)
->>
->>> Because "apply" is surprising in a "add_thing" function, it's like
->>> a field to confirm that we know what what we are doing :)
->>>
->>> (May be I start to become a PITA with my naming worries, especially
->>> since I'm usually not good at it in my patches :)
->>>
->> I'll take "try_run". Naming is often hard for me.
+On Tue, 2009-07-14 at 15:18 -0600, Chris Friesen wrote:
+> I have a powerpc board with 512BM of memory.  The BIOS has a chunk of
+> memory at the top end of physical memory which it does not zero out over
+> a reboot.
 > 
+> What's the proper way to tell linux that this chunk of physical memory
+> should be ignored (so that we can access it later without worrying that
+> Linux will try to allocate it)?  Should I be calling
 > 
-> No I really meant "dry run"
-> "Try run" is already a function that would implicitly fit into
-> every function :)
+> lmb_reserve(lmb_end_of_DRAM() - size, size);
 > 
-> Ie, dry run means:
-> 
-> "Behave as if you were truly doing it, just to see if it works.
-> But don't really do it"
-> 
+> in early_reserve_mem() or is there a better mechanism?
 
-Got it. Thanks. :)
+The device-tree blob contains a special "reserve map" in the header,
+which automatically turns into calls to lmb_reserve() early during boot,
+so putting your special region in that map should be the right way to do
+what you want without special code.
+
+> For comparison, in an older kernel this was done in set_phys_avail(), by
+> calling mem_pieces_remove(&phys_avail, total_lowmem - size, size, 1);
+
+Cheers,
+Ben.
+
+> Thanks,
+> 
+> Chris
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
