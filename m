@@ -1,50 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbZGTKjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbZGTKl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753268AbZGTKjq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 06:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbZGTKjp
+	id S1753333AbZGTKl2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 06:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZGTKl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 06:39:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35635 "EHLO mx2.suse.de"
+	Mon, 20 Jul 2009 06:41:26 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:40072 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751739AbZGTKjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 06:39:45 -0400
-Date: Mon, 20 Jul 2009 12:39:44 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Memory Management <linux-mm@kvack.org>,
-       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
-Message-ID: <20090720103944.GC7070@wotan.suse.de>
-References: <20090715074952.A36C7DDDB2@ozlabs.org> <20090715135620.GD7298@wotan.suse.de> <1248073873.13067.31.camel@pasglop> <20090720080502.GG7298@wotan.suse.de> <1248083961.30899.5.camel@pasglop>
-Mime-Version: 1.0
+	id S1751822AbZGTKl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 06:41:26 -0400
+Date: Mon, 20 Jul 2009 20:38:25 +1000
+From: Anton Blanchard <anton@samba.org>
+To: a.p.zijlstra@chello.nl, mingo@elte.hu, paulus@samba.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] perf_counter: Always return the parent counter id to
+	userspace
+Message-ID: <20090720103825.GA9029@kryten>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248083961.30899.5.camel@pasglop>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 20, 2009 at 07:59:21PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-07-20 at 10:05 +0200, Nick Piggin wrote:
-> > 
-> > Unless anybody has other preferences, just send it straight to Linus in
-> > the next merge window -- if any conflicts did come up anyway they would
-> > be trivial. You could just check against linux-next before doing so, and
-> > should see if it is going to cause problems for any arch pull...
-> 
-> Well, the problem is that powerpc-next will need that patch, which means
-> that if I don't put it in my tree, Steven won't be able to build
-> powerpc-next as part of linux-next until the patch is merged. Hence my
-> question, what's the best way to handle that :-) There isn't an mm-next
-> is there ? If there was, I could tell Steven to always pull powerpc
-> after mm for example. Or I can put it in a git tree of its own with a
-> dependency for Steven to pull.
 
-No I don't think there is an mm-next. But Steven will hold individual
-patches to correct intermediate issues like this, won't he?
+When inheriting counters new tasks get new counter ids. Since
+userspace only knows about the parent ids we need to return them
+and not the actual ids.
 
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
+Index: linux.trees.git/kernel/perf_counter.c
+===================================================================
+--- linux.trees.git.orig/kernel/perf_counter.c	2009-07-20 20:17:44.000000000 +1000
++++ linux.trees.git/kernel/perf_counter.c	2009-07-20 20:36:13.000000000 +1000
+@@ -154,6 +154,20 @@
+ 	}
+ }
+ 
++/* 
++ * If we inherit counters we want to return the parent counter id 
++ * to userspace.
++ */
++static u64 primary_counter_id(struct perf_counter *counter)
++{
++	u64 id = counter->id;
++
++	if (counter->parent)
++		id = counter->parent->id;
++
++	return id;
++}
++
+ /*
+  * Get the perf_counter_context for a task and lock it.
+  * This has to cope with with the fact that until it is locked,
+@@ -1705,7 +1719,7 @@
+ 		values[n++] = counter->total_time_running +
+ 			atomic64_read(&counter->child_total_time_running);
+ 	if (counter->attr.read_format & PERF_FORMAT_ID)
+-		values[n++] = counter->id;
++		values[n++] = primary_counter_id(counter);
+ 	mutex_unlock(&counter->child_mutex);
+ 
+ 	if (count < n * sizeof(u64))
+@@ -2548,7 +2562,7 @@
+ 		lost_event.header.type = PERF_EVENT_LOST;
+ 		lost_event.header.misc = 0;
+ 		lost_event.header.size = sizeof(lost_event);
+-		lost_event.id          = counter->id;
++		lost_event.id          = primary_counter_id(counter);
+ 		lost_event.lost        = atomic_xchg(&data->lost, 0);
+ 
+ 		perf_output_put(handle, lost_event);
+@@ -2704,8 +2718,10 @@
+ 	if (sample_type & PERF_SAMPLE_ADDR)
+ 		perf_output_put(&handle, data->addr);
+ 
+-	if (sample_type & PERF_SAMPLE_ID)
+-		perf_output_put(&handle, counter->id);
++	if (sample_type & PERF_SAMPLE_ID) {
++		u64 id = primary_counter_id(counter);
++		perf_output_put(&handle, id);
++	}
+ 
+ 	if (sample_type & PERF_SAMPLE_CPU)
+ 		perf_output_put(&handle, cpu_entry);
+@@ -2727,7 +2743,7 @@
+ 			if (sub != counter)
+ 				sub->pmu->read(sub);
+ 
+-			group_entry.id = sub->id;
++			group_entry.id = primary_counter_id(sub);
+ 			group_entry.counter = atomic64_read(&sub->count);
+ 
+ 			perf_output_put(&handle, group_entry);
+@@ -2790,11 +2806,7 @@
+ 		u64 id;
+ 
+ 		event.header.size += sizeof(u64);
+-		if (counter->parent)
+-			id = counter->parent->id;
+-		else
+-			id = counter->id;
+-
++		id = primary_counter_id(counter);
+ 		event.format[i++] = id;
+ 	}
+ 
+@@ -3209,7 +3221,7 @@
+ 			.size = sizeof(event),
+ 		},
+ 		.time = sched_clock(),
+-		.id = counter->id,
++		.id = primary_counter_id(counter),
+ 		.period = period,
+ 	};
+ 
+@@ -3241,7 +3253,7 @@
+ 			.size = sizeof(throttle_event),
+ 		},
+ 		.time	= sched_clock(),
+-		.id	= counter->id,
++		.id	= primary_counter_id(counter),
+ 	};
+ 
+ 	ret = perf_output_begin(&handle, counter, sizeof(throttle_event), 1, 0);
