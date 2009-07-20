@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZGTLVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbZGTLii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbZGTLVz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 07:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZGTLVw
+	id S1752050AbZGTLii (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 07:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751059AbZGTLig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 07:21:52 -0400
-Received: from mail.paramount.com.br ([200.231.64.130]:46259 "HELO
-	mail.paramount.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751482AbZGTLVv (ORCPT
+	Mon, 20 Jul 2009 07:38:36 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:10523 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZGTLig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 07:21:51 -0400
-X-Mail-Scanner: Scanned by qSheff-II-2.1-r3 (http://www.enderunix.org/qsheff/)
-Date: Mon, 20 Jul 2009 08:25:52 -0300
-To: undisclosed-recipients:;
-From: Upgrade Team <upgrade.team90@9.cn>
-Reply-to: Upgrade Team <upgrade.team90@9.cn>
-Subject: Urgent Upgrade
-Message-ID: <1921a58d7bb815de4f89eccd2b3ee83a@65.120.56.2>
-X-Priority: 3
-X-Mailer: UebiMiau [PHPMailer version 1.70]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 20 Jul 2009 07:38:36 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [tip:sched/core] sched: Pull up the might_sleep() check into
+ cond_resched()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090720081210.GA5309@nowhere>
+References: <1247725694-6082-6-git-send-email-fweisbec@gmail.com>
+	 <tip-613afbf83298efaead05ebcac23d2285609d7160@git.kernel.org>
+	 <4A6413AB.2050807@cn.fujitsu.com>  <20090720081210.GA5309@nowhere>
+Content-Type: text/plain
+Date: Mon, 20 Jul 2009 13:39:15 +0200
+Message-Id: <1248089955.15751.8494.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-07-20 at 04:12 -0400, Frederic Weisbecker wrote:
 
---
-Attention E-mail Account holder,
+> Hm, I can read that in fs/dcache.c:512
+> 
+> /* dentry->d_lock was dropped in prune_one_dentry() */
+> cond_resched_lock(&dcache_lock);
 
- This message is from the Database Information Technology service  messaging
-center, to all our e-mail account holders. All Mailhub  systems will 
-undergo regularly scheduled maintenance. Access to your mailbox  via our 
-mailportal will be unavailable for some period of time during this 
-maintenanceperiod.
- 
- We shall be carrying out service maintenance on our database and e- mail
-account center for better online services. We are deleting all  unusede-mail
-accounts to create more space for new accounts.
- 
- In order to ensure you do not experience service 
-interruptions/possibledeactivation Please you must reply to this  email
-immediately confirming  your stfx.ca email account details below for
-confirmation/identification
+dentry->d_lock != dcache_lock
 
- 1. First Name & Last Name:
- 2. Full Login Email Address:
- 3. Username & Password:
- 4. Confirm your Current Password:
+> Isn't it a mususe of cond_resched_lock() ?
+> In this case, dcache.c should be fixed.
 
- Failure to do this may automatically render your e-mail account 
-deactivated from our emaildatabase/mailserver. to enable us 
- upgrade your  email account, please do reply to this mail.
- 
- Thanks.
- Upgrade Team
-
-
-
-________________________________________________
-Message sent using UebiMiau 2.7.9
-
+Both sites look good wrt locking. So there's something else fishy.
 
