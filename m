@@ -1,96 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZGTSva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbZGTSvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753808AbZGTSva (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 14:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZGTSv3
+	id S1753841AbZGTSvi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 14:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZGTSvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 14:51:29 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:43004 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752766AbZGTSv3 (ORCPT
+	Mon, 20 Jul 2009 14:51:38 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:37815 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753235AbZGTSva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 14:51:29 -0400
+	Mon, 20 Jul 2009 14:51:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=bqIgRbD44a8ShCLdtlePjq+WCUXsqxezzE3v+qn0VLDvvFpiegf14B77r4tHaOUadm
-         paDU16Heodfrktc/4BmBYHU1dBqEBHXAMfHd5SO4WQmTVbiOzAA7IxBwcZUmWyrkAfZI
-         P5NuIUrwBRgVsfKnnHnyfkx3Cvuv8Gw4FucaY=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=x8lz3wM363mS2wPUDd9Pb2Cjm0BO0HY6a7nqar6/G2GFzn+ElHOSiSd90C156YZ6kb
+         BL3exAZTQrcrIWVh9ahJtYTxoFbobVd+H04FfUWKpWBBuUomNsmMzp9J8034H5W8gRYZ
+         ++3CW4EL57N9T8/m6LKJS+2zb+o8isngX48/c=
 From: Manuel Lauss <manuel.lauss@googlemail.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-mips@linux-mips.org, Manuel Lauss <manuel.lauss@gmail.com>
-Subject: [PATCH] au1xmmc: dev_pm_ops conversion
-Date: Mon, 20 Jul 2009 20:51:21 +0200
-Message-Id: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
+Subject: [PATCH] au1xmmc: allow platforms to disable certain host capabilities
+Date: Mon, 20 Jul 2009 20:51:22 +0200
+Message-Id: <1248115882-20221-2-git-send-email-manuel.lauss@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
+References: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Although the hardware supports a 4/8bit SD interface and the driver
+unconditionally advertises all hardware caps to the MMC core, not all
+datalines may actually be wired up.  This patch introduces another
+field to au1xmmc platform data allowing platforms to disable certain
+advanced host controller features.
+
 Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
 ---
-Run-tested on Au1200.
+ arch/mips/include/asm/mach-au1x00/au1100_mmc.h |    1 +
+ drivers/mmc/host/au1xmmc.c                     |    3 +++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
- drivers/mmc/host/au1xmmc.c |   23 +++++++++++------------
- 1 files changed, 11 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
-index d3f5561..70509c9 100644
---- a/drivers/mmc/host/au1xmmc.c
-+++ b/drivers/mmc/host/au1xmmc.c
-@@ -1131,13 +1131,12 @@ static int __devexit au1xmmc_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
--#ifdef CONFIG_PM
--static int au1xmmc_suspend(struct platform_device *pdev, pm_message_t state)
-+static int au1xmmc_suspend(struct device *dev)
- {
--	struct au1xmmc_host *host = platform_get_drvdata(pdev);
-+	struct au1xmmc_host *host = dev_get_drvdata(dev);
- 	int ret;
- 
--	ret = mmc_suspend_host(host->mmc, state);
-+	ret = mmc_suspend_host(host->mmc, PMSG_SUSPEND);
- 	if (ret)
- 		return ret;
- 
-@@ -1150,27 +1149,27 @@ static int au1xmmc_suspend(struct platform_device *pdev, pm_message_t state)
- 	return 0;
- }
- 
--static int au1xmmc_resume(struct platform_device *pdev)
-+static int au1xmmc_resume(struct device *dev)
- {
--	struct au1xmmc_host *host = platform_get_drvdata(pdev);
-+	struct au1xmmc_host *host = dev_get_drvdata(dev);
- 
- 	au1xmmc_reset_controller(host);
- 
- 	return mmc_resume_host(host->mmc);
- }
--#else
--#define au1xmmc_suspend NULL
--#define au1xmmc_resume NULL
--#endif
-+
-+static struct dev_pm_ops au1xmmc_pmops = {
-+	.resume		= au1xmmc_resume,
-+	.suspend	= au1xmmc_suspend,
-+};
- 
- static struct platform_driver au1xmmc_driver = {
- 	.probe         = au1xmmc_probe,
- 	.remove        = au1xmmc_remove,
--	.suspend       = au1xmmc_suspend,
--	.resume        = au1xmmc_resume,
- 	.driver        = {
- 		.name  = DRIVER_NAME,
- 		.owner = THIS_MODULE,
-+		.pm    = &au1xmmc_pmops,
- 	},
+diff --git a/arch/mips/include/asm/mach-au1x00/au1100_mmc.h b/arch/mips/include/asm/mach-au1x00/au1100_mmc.h
+index c35e209..a674643 100644
+--- a/arch/mips/include/asm/mach-au1x00/au1100_mmc.h
++++ b/arch/mips/include/asm/mach-au1x00/au1100_mmc.h
+@@ -46,6 +46,7 @@ struct au1xmmc_platform_data {
+ 	int(*card_readonly)(void *mmc_host);
+ 	void(*set_power)(void *mmc_host, int state);
+ 	struct led_classdev *led;
++	unsigned long mask_host_caps;
  };
  
+ #define SD0_BASE	0xB0600000
+diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
+index 70509c9..d50e7ea 100644
+--- a/drivers/mmc/host/au1xmmc.c
++++ b/drivers/mmc/host/au1xmmc.c
+@@ -1005,6 +1005,9 @@ static int __devinit au1xmmc_probe(struct platform_device *pdev)
+ 	mmc->ocr_avail = AU1XMMC_OCR;
+ 	mmc->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
+ 
++	/* platform may not be able to use 4/8 bit datapath */
++	mmc->caps &= ~(host->platdata->mask_host_caps);
++
+ 	host->status = HOST_S_IDLE;
+ 
+ 	/* board-specific carddetect setup, if any */
 -- 
 1.6.3.3
 
