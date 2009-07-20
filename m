@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbZGTRIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072AbZGTRKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753375AbZGTRIk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 13:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZGTRIj
+	id S1753072AbZGTRKO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 13:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZGTRKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 13:08:39 -0400
-Received: from mail-px0-f193.google.com ([209.85.216.193]:53625 "EHLO
-	mail-px0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240AbZGTRI1 (ORCPT
+	Mon, 20 Jul 2009 13:10:13 -0400
+Received: from smurf.noris.de ([192.109.102.42]:32705 "EHLO
+	smurf.intern.smurf.noris.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752325AbZGTRKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 13:08:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=NJpcntn/Tt4TZKA12erRtP9s7J4exy2uqftfArRb/ossByZ12cYmiGR07tZiQg4Nli
-         MFG3eOyGMJMXjd3NXbi19dQXB0UchG//ME0z4k5AsmdrGiUWaMcawGVg33l7lxf+woIG
-         Tl1Fj+d+3qwz8Fy0Zu1OHnCSptfxkz+vRKbTU=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linuxtronix.de>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "K . Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [RFC][PATCH 4/5] perfcounter: Grow the event number to 64 bits
-Date: Mon, 20 Jul 2009 13:08:06 -0400
-Message-Id: <1248109687-7808-5-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
-References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
+	Mon, 20 Jul 2009 13:10:12 -0400
+Date: Mon, 20 Jul 2009 19:09:11 +0200
+From: Matthias Urlichs <smurf@smurf.noris.de>
+To: Dave Jones <davej@redhat.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       virtualization@lists.osdl.org, Hank Janssen <hjanssen@microsoft.com>,
+       Haiyang Zhang <haiyangz@microsoft.com>,
+       Sam Ramji <sramji@microsoft.com>, shemminger@linux-foundation.org
+Subject: Re: [patch 00/54] [Announce] Microsoft Hyper-V drivers for Linux
+Message-ID: <20090720170911.GS12833@kiste.smurf.noris.de>
+References: <20090720160025.GA20249@kroah.com> <20090720162810.GA22102@kroah.com> <20090720165941.GA15660@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090720165941.GA15660@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Smurf-Spam-Score: -2.6 (--)
+X-Smurf-Whitelist: +relay_from_hosts
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The event number are defined by the config attr of a counter. When it
-is passed while adding a hit, it is compared against the initial
-config attr, a 64 bits number, to retrieve the targetted counter.
+Hi,
 
-But when we want to add a hit, this event is passed through 32 bits
-parameters, which makes loosing the real event number if its storage
-needs more (case of an address).
+Dave Jones:
+> Given the numerous cleanup patches that already exist, is there any reason
+> to not just post the cleaned up drivers ?  It would certainly be more
+> reviewable than the current pile.
+> 
+Feel free to apply / combinediff these patches before reviewing. :-P
 
-This patch changes the event parameter in some of the helpers which
-add the event hits.
+Personally, I don't want to ever see another patch where substantial
+changes (for some nontrivial value of "substantial") are intermixed
+with distracting s/\<BOOLEAN\>/bool/g cleanups.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Thomas Gleixner <tglx@linuxtronix.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Anton Blanchard <anton@samba.org>
----
- kernel/perf_counter.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 5498890..33ffb5a 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -3435,7 +3435,7 @@ static int perf_swcounter_is_counting(struct perf_counter *counter)
- 
- static int perf_swcounter_match(struct perf_counter *counter,
- 				enum perf_type_id type,
--				u32 event, struct pt_regs *regs)
-+				u64 event, struct pt_regs *regs)
- {
- 	if (!perf_swcounter_is_counting(counter))
- 		return 0;
-@@ -3467,7 +3467,7 @@ static void perf_swcounter_add(struct perf_counter *counter, u64 nr,
- 
- static void perf_swcounter_ctx_event(struct perf_counter_context *ctx,
- 				     enum perf_type_id type,
--				     u32 event, u64 nr, int nmi,
-+				     u64 event, u64 nr, int nmi,
- 				     struct perf_sample_data *data)
- {
- 	struct perf_counter *counter;
-@@ -3497,7 +3497,7 @@ static int *perf_swcounter_recursion_context(struct perf_cpu_context *cpuctx)
- 	return &cpuctx->recursion[0];
- }
- 
--static void do_perf_swcounter_event(enum perf_type_id type, u32 event,
-+static void do_perf_swcounter_event(enum perf_type_id type, u64 event,
- 				    u64 nr, int nmi,
- 				    struct perf_sample_data *data)
- {
 -- 
-1.6.2.3
-
+Matthias Urlichs   |   {M:U} IT Design @ m-u-it.de   |  smurf@smurf.noris.de
+Disclaimer: The quote was selected randomly. Really. | http://smurf.noris.de
+v4sw7$Yhw6+8ln7ma7u7L!wl7DUi2e6t3TMWb8HAGen6g3a4s6Mr1p-3/-6 hackerkey.com
+ - -
+You can never do merely one thing.
+					-- Garrett Hardin
