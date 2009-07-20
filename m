@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409AbZGTRRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZGTRR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752409AbZGTRRK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 13:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZGTRRJ
+	id S1752908AbZGTRR0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 13:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZGTRR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 13:17:09 -0400
-Received: from outbound-mail-307.bluehost.com ([67.222.53.253]:39819 "HELO
-	outbound-mail-307.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750807AbZGTRRI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 13:17:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=gxFWA99v/trZKGCjrn468cnzJ8rfZGWrjmdyRUSzrUXocAbI6TXwTLjLe6Ovxkj2cDOYPqk6Wsze3NxbEz9LVoIRveTAO6AfNy4LHCaMZ8bYJQplqZzSWGdXMq1p0stZ;
-Date: Mon, 20 Jul 2009 10:17:02 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, anthony@codemonkey.ws,
-       avi@redhat.com, kvm@vger.kernel.org, chrisw@redhat.com,
-       hjk@linutronix.de, gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv4] uio: add generic driver for PCI 2.3 devices
-Message-ID: <20090720101702.68fee1ab@jbarnes-g45>
-In-Reply-To: <20090715213909.GA3637@local>
-References: <20090715201340.GA12279@redhat.com>
-	<20090715213909.GA3637@local>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 20 Jul 2009 13:17:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53462 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752620AbZGTRRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 13:17:25 -0400
+Date: Mon, 20 Jul 2009 13:15:23 -0400
+From: Dave Jones <davej@redhat.com>
+To: Matthias Urlichs <smurf@smurf.noris.de>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, virtualization@lists.osdl.org,
+       Hank Janssen <hjanssen@microsoft.com>,
+       Haiyang Zhang <haiyangz@microsoft.com>,
+       Sam Ramji <sramji@microsoft.com>, shemminger@linux-foundation.org
+Subject: Re: [patch 00/54] [Announce] Microsoft Hyper-V drivers for Linux
+Message-ID: <20090720171523.GA16129@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Matthias Urlichs <smurf@smurf.noris.de>, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+	virtualization@lists.osdl.org,
+	Hank Janssen <hjanssen@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Sam Ramji <sramji@microsoft.com>, shemminger@linux-foundation.org
+References: <20090720160025.GA20249@kroah.com> <20090720162810.GA22102@kroah.com> <20090720165941.GA15660@redhat.com> <20090720170911.GS12833@kiste.smurf.noris.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090720170911.GS12833@kiste.smurf.noris.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 15 Jul 2009 23:39:11 +0200
-"Hans J. Koch" <hjk@linutronix.de> wrote:
+On Mon, Jul 20, 2009 at 07:09:11PM +0200, Matthias Urlichs wrote:
+ > Hi,
+ > 
+ > Dave Jones:
+ > > Given the numerous cleanup patches that already exist, is there any reason
+ > > to not just post the cleaned up drivers ?  It would certainly be more
+ > > reviewable than the current pile.
+ > > 
+ > Feel free to apply / combinediff these patches before reviewing. :-P
+ > 
+ > Personally, I don't want to ever see another patch where substantial
+ > changes (for some nontrivial value of "substantial") are intermixed
+ > with distracting s/\<BOOLEAN\>/bool/g cleanups.
 
-> On Wed, Jul 15, 2009 at 11:13:40PM +0300, Michael S. Tsirkin wrote:
-> > This adds a generic uio driver that can bind to any PCI device.
-> > First user will be virtualization where a qemu userspace process
-> > needs to give guest OS access to the device.
-> > 
-> > Interrupts are handled using the Interrupt Disable bit in the PCI
-> > command register and Interrupt Status bit in the PCI status
-> > register.  All devices compliant to PCI 2.3 (circa 2002) and all
-> > compliant PCI Express devices should support these bits.  Driver
-> > detects this support, and won't bind to devices which do not
-> > support the Interrupt Disable Bit in the command register.
-> > 
-> > It's expected that more features of interest to virtualization will
-> > be added to this driver in the future. Possibilities are: mmap for
-> > device resources, MSI/MSI-X, eventfd (to interface with kvm), iommu.
-> 
-> Well, I'm not enough of a PCI expert to tell whether your 2.3-test
-> works or not (can it have side effects, e.g. trigger an interrupt
-> when you toggle that bit?). I've added Jesse Barnes to Cc: since you
-> modify a PCI core header file. If there are no objections from the
-> PCI people, I guess we can take this.
+'Substantial changes' doesn't matter when it's an initial submission.
+By its nature, it's a substantial change.
 
-pci_reg.h portion looks fine to me, and only supporting devices with
-the interrupt disable bit certainly simplifies things.  There were some
-other questions on the thread though (like Greg's similar driver); not
-sure if you've answered those yet.
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+	Dave
