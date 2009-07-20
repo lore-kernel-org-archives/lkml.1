@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbZGTSQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZGTSUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbZGTSQd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 14:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZGTSQc
+	id S1753565AbZGTSUc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 14:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZGTSUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 14:16:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44816 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751854AbZGTSQb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 14:16:31 -0400
-Date: Mon, 20 Jul 2009 11:16:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Damien Wyart <damien.wyart@free.fr>
-cc: Greg KH <gregkh@suse.de>, Wolfgang Walter <wolfgang.walter@stwm.de>,
+	Mon, 20 Jul 2009 14:20:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40826 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752255AbZGTSUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 14:20:30 -0400
+Date: Mon, 20 Jul 2009 21:19:19 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, anthony@codemonkey.ws, avi@redhat.com,
+       kvm@vger.kernel.org, chrisw@redhat.com, gregkh@suse.de,
        linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.30.2: does not boot
-In-Reply-To: <20090720180333.GA2905@brouette>
-Message-ID: <alpine.LFD.2.01.0907201110390.13838@localhost.localdomain>
-References: <20090720040813.GC11940@kroah.com> <200907201613.22483.wolfgang.walter@stwm.de> <20090720150916.GB10015@suse.de> <20090720180333.GA2905@brouette>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+Subject: Re: [PATCHv4] uio: add generic driver for PCI 2.3 devices
+Message-ID: <20090720181919.GA18747@redhat.com>
+References: <20090715201340.GA12279@redhat.com> <20090715213909.GA3637@local> <20090720101702.68fee1ab@jbarnes-g45>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090720101702.68fee1ab@jbarnes-g45>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 20 Jul 2009, Damien Wyart wrote:
+On Mon, Jul 20, 2009 at 10:17:02AM -0700, Jesse Barnes wrote:
+> On Wed, 15 Jul 2009 23:39:11 +0200
+> "Hans J. Koch" <hjk@linutronix.de> wrote:
 > 
-> I am seeing a similar problem (no hang but an immediate reboot) on the
-> same distro. I tried to bisect but got no good kernel in the end.
+> > On Wed, Jul 15, 2009 at 11:13:40PM +0300, Michael S. Tsirkin wrote:
+> > > This adds a generic uio driver that can bind to any PCI device.
+> > > First user will be virtualization where a qemu userspace process
+> > > needs to give guest OS access to the device.
+> > > 
+> > > Interrupts are handled using the Interrupt Disable bit in the PCI
+> > > command register and Interrupt Status bit in the PCI status
+> > > register.  All devices compliant to PCI 2.3 (circa 2002) and all
+> > > compliant PCI Express devices should support these bits.  Driver
+> > > detects this support, and won't bind to devices which do not
+> > > support the Interrupt Disable Bit in the command register.
+> > > 
+> > > It's expected that more features of interest to virtualization will
+> > > be added to this driver in the future. Possibilities are: mmap for
+> > > device resources, MSI/MSI-X, eventfd (to interface with kvm), iommu.
+> > 
+> > Well, I'm not enough of a PCI expert to tell whether your 2.3-test
+> > works or not (can it have side effects, e.g. trigger an interrupt
+> > when you toggle that bit?). I've added Jesse Barnes to Cc: since you
+> > modify a PCI core header file. If there are no objections from the
+> > PCI people, I guess we can take this.
 > 
-> To clarify things I recompiled again 2.6.30.1 with the orginial .config
-> and it also failed to boot (I was happy to have renamed it so the
-> working kernel was still available). I suspected a recent gcc 4.3
-> upgrade so downgraded gcc, but no luck, still getting the same problem.
-> So for now I am quite stuck, but there is clearly a bad problem
-> somewhere...
+> pci_reg.h portion looks fine to me, and only supporting devices with
+> the interrupt disable bit certainly simplifies things.  There were some
+> other questions on the thread though (like Greg's similar driver); not
+> sure if you've answered those yet.
 
-Hmm. So you _had_ a working self-compiled 2.6.30 kernel at some point?
+Yes, and Greg seems satisfied :). See 20090716181919.GB27811@suse.de.
+Chris Wright (author of pci-stub that was mentioned) also acked the
+patch.
 
-One thing to look out for is that a compiler upgrade/downgrade will be 
-invisible to the kernel build system, so if you downgrade the compiler and 
-recompile, you may not actually recompile things at all.
-
-The kernel build system _should_ notice when the build flags change, but 
-gcc versions changing under it, not so much. So you might want to do a 
-"make clean" to be sure.
-
-And quite frankly, I'm not 100% sure even that will always do it.
-
-Why? Many distro's use ccache, and so you may actually get a cached object 
-file from a previous compile (with a previous compiler). Now, ccache is 
-pretty good at noticing when things change, and I can well imagine that it 
-also checks the compiler version (in addition to checking the hash of the 
-preprocessed output and build flags etc), but I haven't double-checked.
-
-So to make doubly sure that you really don't end up using cached object 
-files, you might want to run "ccache -C".
-
-			Linus
+> -- 
+> Jesse Barnes, Intel Open Source Technology Center
