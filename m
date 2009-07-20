@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbZGTSvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZGTSxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbZGTSvi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 14:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZGTSvi
+	id S1753235AbZGTSxN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 14:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZGTSxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 14:51:38 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:37815 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753235AbZGTSva (ORCPT
+	Mon, 20 Jul 2009 14:53:11 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:55911 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbZGTSxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 14:51:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=x8lz3wM363mS2wPUDd9Pb2Cjm0BO0HY6a7nqar6/G2GFzn+ElHOSiSd90C156YZ6kb
-         BL3exAZTQrcrIWVh9ahJtYTxoFbobVd+H04FfUWKpWBBuUomNsmMzp9J8034H5W8gRYZ
-         ++3CW4EL57N9T8/m6LKJS+2zb+o8isngX48/c=
-From: Manuel Lauss <manuel.lauss@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mips@linux-mips.org, Manuel Lauss <manuel.lauss@gmail.com>
-Subject: [PATCH] au1xmmc: allow platforms to disable certain host capabilities
-Date: Mon, 20 Jul 2009 20:51:22 +0200
-Message-Id: <1248115882-20221-2-git-send-email-manuel.lauss@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
-References: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
+	Mon, 20 Jul 2009 14:53:11 -0400
+Date: Mon, 20 Jul 2009 21:52:54 +0300
+From: Felipe Balbi <me@felipebalbi.com>
+To: balajitk@ti.com
+Cc: linux-kernel@vger.kernel.org, tony@atomide.com,
+       khilman@deeprootsystems.com, david-b@pacbell.net,
+       linux-omap@vger.kernel.org, linux-i2c@vger.kernel.org,
+       sameo@openedhand.com, wim@iguana.be, timo.t.kokkonen@nokia.com,
+       ben-linux@fluff.org, lrg@slimlogic.co.uk,
+       broonie@opensource.wolfsonmicro.com,
+       Santosh Shilimkar <santosh.shilimkar@ti.com>,
+       Rajendra Nayak <rnayak@ti.com>
+Subject: Re: [PATCH 1/4] ARM: OMAP: Rename twl4030* driver files to enable
+ re-use
+Message-ID: <20090720185253.GA7984@gandalf>
+Reply-To: me@felipebalbi.com
+References: <1248096671-13828-1-git-send-email-balajitk@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248096671-13828-1-git-send-email-balajitk@ti.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Although the hardware supports a 4/8bit SD interface and the driver
-unconditionally advertises all hardware caps to the MMC core, not all
-datalines may actually be wired up.  This patch introduces another
-field to au1xmmc platform data allowing platforms to disable certain
-advanced host controller features.
+Hi,
 
-Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
----
- arch/mips/include/asm/mach-au1x00/au1100_mmc.h |    1 +
- drivers/mmc/host/au1xmmc.c                     |    3 +++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+On Mon, Jul 20, 2009 at 07:01:11PM +0530, balajitk@ti.com wrote:
+> From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> 
+> The upcoming TWL6030 is companion chip for OMAP4 like the current TWL4030
+> for OMAP3. The common modules like RTC, Regulator creates opportunity
+> to re-use the most of the code from twl4030.
+> 
+> This patch renames few common drivers twl4030* files to twl* to enable
+> the code re-use.
+> 
+> Signed-off-by: Rajendra Nayak <rnayak@ti.com>
+> Signed-off-by: Balaji T K <balajitk@ti.com>
+> Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> ---
+>  arch/arm/mach-omap2/board-2430sdp.c                |    2 +-
+>  arch/arm/mach-omap2/board-3430sdp.c                |    2 +-
+>  arch/arm/mach-omap2/board-ldp.c                    |    2 +-
+>  arch/arm/mach-omap2/board-omap3beagle.c            |    2 +-
+>  arch/arm/mach-omap2/board-omap3pandora.c           |    2 +-
+>  arch/arm/mach-omap2/board-overo.c                  |    2 +-
+>  drivers/gpio/twl4030-gpio.c                        |    2 +-
+>  drivers/mfd/Makefile                               |    2 +-
+>  drivers/mfd/{twl4030-core.c => twl-core.c}         |    8 +++-----
+>  drivers/mfd/twl4030-irq.c                          |    2 +-
+>  drivers/regulator/Makefile                         |    2 +-
+>  .../{twl4030-regulator.c => twl-regulator.c}       |    6 +++---
+>  drivers/rtc/Makefile                               |    2 +-
+>  drivers/rtc/{rtc-twl4030.c => rtc-twl.c}           |    2 +-
+>  drivers/usb/otg/twl4030-usb.c                      |    2 +-
+>  include/linux/i2c/{twl4030.h => twl.h}             |    5 ++++-
+>  sound/soc/codecs/twl4030.c                         |    2 +-
 
-diff --git a/arch/mips/include/asm/mach-au1x00/au1100_mmc.h b/arch/mips/include/asm/mach-au1x00/au1100_mmc.h
-index c35e209..a674643 100644
---- a/arch/mips/include/asm/mach-au1x00/au1100_mmc.h
-+++ b/arch/mips/include/asm/mach-au1x00/au1100_mmc.h
-@@ -46,6 +46,7 @@ struct au1xmmc_platform_data {
- 	int(*card_readonly)(void *mmc_host);
- 	void(*set_power)(void *mmc_host, int state);
- 	struct led_classdev *led;
-+	unsigned long mask_host_caps;
- };
- 
- #define SD0_BASE	0xB0600000
-diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
-index 70509c9..d50e7ea 100644
---- a/drivers/mmc/host/au1xmmc.c
-+++ b/drivers/mmc/host/au1xmmc.c
-@@ -1005,6 +1005,9 @@ static int __devinit au1xmmc_probe(struct platform_device *pdev)
- 	mmc->ocr_avail = AU1XMMC_OCR;
- 	mmc->caps = MMC_CAP_4_BIT_DATA | MMC_CAP_SDIO_IRQ;
- 
-+	/* platform may not be able to use 4/8 bit datapath */
-+	mmc->caps &= ~(host->platdata->mask_host_caps);
-+
- 	host->status = HOST_S_IDLE;
- 
- 	/* board-specific carddetect setup, if any */
+this is kinda useless, we can consider twl6030 as being sw compatible
+(almost) with twl4030. And twl4030 driver already support plenty of
+other devices, just look at drivers/mfd/twl4030-core.c lines 807 - 814.
+We have twl4003, twl5030, tps65950, tps65930 and tps65920.
+
+So IMO, renaming the files is unnecessary.
+
 -- 
-1.6.3.3
-
+balbi
