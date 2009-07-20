@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZGTWb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbZGTWsC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbZGTWb6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 18:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbZGTWb4
+	id S1754260AbZGTWsC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 18:48:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZGTWsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 18:31:56 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:37114 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754051AbZGTWb4 convert rfc822-to-8bit (ORCPT
+	Mon, 20 Jul 2009 18:48:00 -0400
+Received: from mail.candelatech.com ([208.74.158.172]:44481 "EHLO
+	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754094AbZGTWsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 18:31:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KCT8Z3tazSvjHMSdthmrzB3n+EnIB8uFi/XXpSUJstjzgenFV5R4sIhNUiIUcY+RMX
-         aUKq+qMm+NjuRmUEB3p6BmmdNIbd3h2x5NqGA/zVfiq/an7dtcq5f5LK7c54jr14w4J8
-         /HlU7RjVNYl4uNkiAjdgmoJbFMExN/sf0ccik=
+	Mon, 20 Jul 2009 18:48:00 -0400
+X-Greylist: delayed 2305 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Jul 2009 18:48:00 EDT
+Message-ID: <4A64EB1F.4000602@candelatech.com>
+Date: Mon, 20 Jul 2009 15:09:35 -0700
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <6a89f9d50907201440w534e1645q4d3d067c198090eb@mail.gmail.com>
-References: <4A647358.1040009@shipmail.org>
-	 <20090720135844.GA16844@infradead.org> <4A648718.9000709@shipmail.org>
-	 <6a89f9d50907201213x8e16e60s38b0a4bd929ce4ca@mail.gmail.com>
-	 <4A64D16E.90903@shipmail.org>
-	 <6a89f9d50907201440w534e1645q4d3d067c198090eb@mail.gmail.com>
-Date: Tue, 21 Jul 2009 08:31:55 +1000
-Message-ID: <21d7e9970907201531s45a55493od827034a0f26f4c8@mail.gmail.com>
-Subject: Re: DRM drivers with closed source user-space: WAS [Patch 0/3] 
-	Resubmit VIA Chrome9 DRM via_chrome9 for upstream
-From: Dave Airlie <airlied@gmail.com>
-To: Stephane Marchesin <marchesin@icps.u-strasbg.fr>
-Cc: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       DRI <dri-devel@lists.sourceforge.net>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/21 Stephane Marchesin <marchesin@icps.u-strasbg.fr>:
-> 2009/7/20 Thomas Hellström <thomas@shipmail.org>:
->>
->> Stephane,
->> Some comments on how these things has been handled / could be handled.
->>>
->>> I would like to raise a couple of real-life issues I have in mind:
->>>
->>> * First example, let's say VIA gets their Chrome9 DRM merged into the
->>> kernel. Now let's say I reverse engineer the hardware (or use the docs
->>> whenever they're available) and write a 3D component that needs
->>> modifications to the existing DRM interface (or maybe I realize I need
->>> a completely new DRM). Then who gets the upper hand? Do I have to keep
->>> compatibility with user space binary modules that I do not care about?
->>>
->>
->> If there is a serious OS project, I'd start a new DRM driver.
->> That's sort of what may happen with openChrome vs via..
->>
->
-> Well, for user space, there can be as many drivers as you want for a
-> given device. But the DRM policy always was one driver per hardware so
-> as to avoid confusing people, so what you're proposing is in fact not
-> possible. In that case, this would even deter a fully open source
-> driver as it would have to keep the same interface as some (possibly
-> unsupported) driver.
 
-Well with KMS it sort of changes that a small bit, since a KMS driver really
-isn't required to share old interfaces, since having a KMS enabled
-kernel will break any
-userspace that is out there just by setting up the hw different. as
-long as the old
-code is still available in the backwards compat manner it should all be fine.
+I tried mounting an NFS server running FC8 (2.6.26.8-57.fc8 kernel)
+using a Fedora 11 system running an un-patched 2.6.31-rc3 64-bit kernel.
 
-We've also had two drm drivers before, i830 and i915 supported a lot
-of the same hw
-and it mostly worked, if you looked at it from a kernel perspective.
+I am not sure at all that the FC8 system is set up to handle NFSv4 properly, but
+I was expecting some sort of useful error if that was the case.
 
-Dave.
+Instead, I get this continually spewing to /var/log/messages:
+
+Error: state manager failed on NFSv4 server 192.168.100.6 with error 2
+Error: state manager failed on NFSv4 server 192.168.100.6 with error 2
+Error: state manager failed on NFSv4 server 192.168.100.6 with error 2
+Error: state manager failed on NFSv4 server 192.168.100.6 with error 2
+...
+
+On the file-server, I see this:
+Jul 19 04:47:59 fs2 kernel: nfs4_cb: server 192.168.100.196 not responding, timed out
+Jul 19 04:49:29 fs2 kernel: nfs4_cb: server 192.168.100.196 not responding, timed out
+Jul 19 04:49:29 fs2 ntpd[2585]: kernel time sync status change 0001
+Jul 19 04:50:59 fs2 kernel: nfs4_cb: server 192.168.100.196 not responding, timed out
+
+
+I added some debug patches (on top of my other patches, including those to nfs)
+and got some debug info:
+
+It seems that nfs4_init_clientid is returning -2, and establish_clid is returning
+-2.  This causes reclaim lease logic to fail, and that causes state manager to print
+out the error repeatedly.  -2 means ENOENT.
+
+
+As far as I can tell, the mount never completes, staying in D state and filling up
+logs (I deleted a 16GB /var/log/messages file a few minutes ago!)
+
+The mount command I'm trying is:
+mount -t nfs4 192.168.100.6:/export/tmp /mnt/lf/nfs4-0
+
+
+My kernel config is found here:
+http://www.candelatech.com/oss/i7_config.txt
+
+
+Thanks,
+Ben
+
+
+-- 
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
+
