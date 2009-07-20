@@ -1,82 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752271AbZGTKdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753048AbZGTKfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752271AbZGTKdi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 06:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZGTKdg
+	id S1753048AbZGTKfl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 06:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZGTKfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 06:33:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45261 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751267AbZGTKdg (ORCPT
+	Mon, 20 Jul 2009 06:35:39 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59463 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbZGTKfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 06:33:36 -0400
-Subject: Re: [PATCH] kbuild: save ARCH & CROSS_COMPILE when building a
- kernel
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090720100157.GA6467@merkur.ravnborg.org>
-References: <20090720100157.GA6467@merkur.ravnborg.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 20 Jul 2009 12:34:19 +0200
-Message-Id: <1248086059.15751.8405.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 20 Jul 2009 06:35:39 -0400
+Date: Mon, 20 Jul 2009 12:35:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Greg KH <greg@kroah.com>, kernel list <linux-kernel@vger.kernel.org>
+Subject: Dream in staging: separate Kconfig/Makefile into subdirectory
+Message-ID: <20090720103532.GD19341@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-20 at 12:01 +0200, Sam Ravnborg wrote:
+Separate Kconfig/Makefile glue from dream into subdirectory. I plan to
+add few more drivers, and changing staging/Makefile each time sounds
+like inviting conflicts.
+    
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-> From 9e27e311540fbe0c31d9cdfe731ad60a54ad1202 Mon Sep 17 00:00:00 2001
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Mon, 20 Jul 2009 11:49:54 +0200
-> Subject: [PATCH] kbuild: save ARCH & CROSS_COMPILE when building a kernel
-> 
-> When building a kernel for a different architecture
-> kbuild requires the user always to specify ARCH and
-> CROSS_COMPILE on the command-line.
-> 
-> We use the asm symlink to detect if user forgets to
-> specify the correct ARCH value - but that symlink
-> is about to die. And we do now want to loose this check.
-> 
-> This patch save the settings of ARCH and CROSS_COMPILE
-> in a file named ".kbuild".
-> The settings are saved during "make *config" time
-> and always read.
-> 
-> If user try to change the settings we error out.
-> 
-> This works both for plain builds and for O=...
-> builds.
-> So now you can do:
-> $ mkdir sparc64
-> $ make O=sparc64 ARCH=sparc64 CROSS_COMPILE=sparc64-linux- defconfig
-> $ cd sparc64
-> $ make
-> 
-> Notice that you no longer need to tell kbuild
-> the settings of ARCH and CROSS_COMPILE when you type make
-> in the output directory.
-> Likewise for plain builds where you do not use O=...
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index 300b83e..50f9ab0 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -133,11 +133,9 @@ source "drivers/staging/cpc-usb/Kconfig"
+ 
+ source "drivers/staging/pata_rdc/Kconfig"
+ 
+-source "drivers/staging/dream/smd/Kconfig"
+-
+-source "drivers/staging/dream/camera/Kconfig"
+-
+ source "drivers/staging/udlfb/Kconfig"
+ 
++source "drivers/staging/dream/Kconfig"
++
+ endif # !STAGING_EXCLUDE_BUILD
+ endif # STAGING
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index 8d2e1c2..4fa2e07 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -1,7 +1,7 @@
+ # Makefile for staging directory
+ 
+ # fix for build system bug...
+-obj-$(CONFIG_STAGING)		+= staging.o
++obj-$(CONFIG_STAGING)		+= staging.o dream/
+ 
+ obj-$(CONFIG_ET131X)		+= et131x/
+ obj-$(CONFIG_SLICOSS)		+= slicoss/
+@@ -49,5 +49,3 @@ obj-$(CONFIG_VT6656)		+= vt6656/
+ obj-$(CONFIG_USB_CPC)		+= cpc-usb/
+ obj-$(CONFIG_RDC_17F3101X)	+= pata_rdc/
+ obj-$(CONFIG_FB_UDL)		+= udlfb/
+-obj-$(CONFIG_MSM_ADSP)		+= dream/qdsp5/ dream/smd/
+-obj-$(CONFIG_MSM_CAMERA)	+= dream/camera/
+diff --git a/drivers/staging/dream/Kconfig b/drivers/staging/dream/Kconfig
+new file mode 100644
+index 0000000..2e0c972
+--- /dev/null
++++ b/drivers/staging/dream/Kconfig
+@@ -0,0 +1,4 @@
++source "drivers/staging/dream/smd/Kconfig"
++
++source "drivers/staging/dream/camera/Kconfig"
++
+diff --git a/drivers/staging/dream/Makefile b/drivers/staging/dream/Makefile
+new file mode 100644
+index 0000000..ab76800
+--- /dev/null
++++ b/drivers/staging/dream/Makefile
+@@ -0,0 +1,2 @@
++obj-$(CONFIG_MSM_ADSP)		+= qdsp5/ smd/
++obj-$(CONFIG_MSM_CAMERA)	+= camera/
 
-If I were to do:
-
-$ make O=foo-build INSTALL_MOD_STRIP=1 modules_install install
-
-after that, would that still use the CROSS_COMPILE setting used before?
-
-If so, that would break my build. Because arch/x86/boot/install.sh does:
-
-if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
-
-Which will not match my:
-
-make CROSS_COMPILE="distcc ${ARCH}-linux-" -j $DISTCC_SLOTS "$@"
-
-even when $ARCH is the right one for the machine in question.
-
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
