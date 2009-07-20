@@ -1,122 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbZGTMJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbZGTMOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753406AbZGTMJK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 08:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZGTMJJ
+	id S1753460AbZGTMOz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 08:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZGTMOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 08:09:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:53269 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbZGTMJI (ORCPT
+	Mon, 20 Jul 2009 08:14:54 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:37751 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482AbZGTMOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 08:09:08 -0400
-Subject: Re: [PATCH v3 3/4] ftrace: add tracepoint for hrtimer
-From: Peter Zijlstra <peterz@infradead.org>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A641BFC.2050508@cn.fujitsu.com>
-References: <4A604E46.5050903@cn.fujitsu.com>
-	 <4A605009.8060806@cn.fujitsu.com> <1247827801.15751.4.camel@twins>
-	 <4A641BFC.2050508@cn.fujitsu.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 20 Jul 2009 14:09:31 +0200
-Message-Id: <1248091771.15751.8578.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 20 Jul 2009 08:14:54 -0400
+Date: Mon, 20 Jul 2009 17:44:50 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk, aarcange@redhat.com,
+       chrisw@redhat.com, avi@redhat.com, riel@redhat.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 10/10] ksm: change ksm nice level to be 5
+Message-ID: <20090720121450.GG24157@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <1247851850-4298-4-git-send-email-ieidus@redhat.com> <1247851850-4298-5-git-send-email-ieidus@redhat.com> <1247851850-4298-6-git-send-email-ieidus@redhat.com> <1247851850-4298-7-git-send-email-ieidus@redhat.com> <1247851850-4298-8-git-send-email-ieidus@redhat.com> <1247851850-4298-9-git-send-email-ieidus@redhat.com> <1247851850-4298-10-git-send-email-ieidus@redhat.com> <1247851850-4298-11-git-send-email-ieidus@redhat.com> <20090720045037.GA24157@balbir.in.ibm.com> <4A645974.3020801@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4A645974.3020801@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-20 at 15:25 +0800, Xiao Guangrong wrote:
+* Izik Eidus <ieidus@redhat.com> [2009-07-20 14:48:04]:
 
-> >> @@ -1162,9 +1182,8 @@ static void __run_hrtimer(struct hrtimer *timer)
-> >>  	 * the timer base.
-> >>  	 */
-> >>  	spin_unlock(&cpu_base->lock);
-> >> -	trace_hrtimer_entry(timer);
-> >>  	restart = fn(timer);
-> >> -	trace_hrtimer_exit(timer, restart);
-> >> +	trace_hrtimer_callback_done(timer);
-> >>  	spin_lock(&cpu_base->lock);
-> >>  
-> >>  	/*
-> > 
-> > Why bother introducing these tracepoints if you're going to remove them
-> > in the same patch-set?
-> > 
-> 
-> Actually I'm renaming them but not removing them.
+> Balbir Singh wrote:
+>> * Izik Eidus <ieidus@redhat.com> [2009-07-17 20:30:50]:
+>>
+>>   
+>>> From: Izik Eidus <ieidus@redhat.com>
+>>>
+>>> ksm should try not to disturb other tasks as much as possible.
+>>>
+>>> Signed-off-by: Izik Eidus <ieidus@redhat.com>
+>>> ---
+>>>  mm/ksm.c |    2 +-
+>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/mm/ksm.c b/mm/ksm.c
+>>> index 75d7802..4afe345 100644
+>>> --- a/mm/ksm.c
+>>> +++ b/mm/ksm.c
+>>> @@ -1270,7 +1270,7 @@ static void ksm_do_scan(unsigned int scan_npages)
+>>>
+>>>  static int ksm_scan_thread(void *nothing)
+>>>  {
+>>> -	set_user_nice(current, 0);
+>>> +	set_user_nice(current, 5);
+>>>     
+>>
+>> Is the 5 arbitrary? Why not +19? What is the intention of this change
+>> - to run when no other task is ready to run?
+>>   
+>
+> Hey Balbir,
+>
+> I thought about giving it the lowest priority of nice before I did this  
+> patch, but then I came into understanding that it isn't right,
+> Although ksm should not distrub other tasks while they are running, it  
+> does need to run while they are running,
+> most of the use cases for ksm is to find identical pages in real time  
+> while they are changing in the application, so giving it the lowest  
+> priority doesn't seems right to me,
+>
+> But my understanding of how the nice prioritys are working is just my  
+> intuition, so if you know better and think that for the use case i  
+> described above other nice priority is better fit, tell me and I wont  
+> have any problem to change.
+>
+>
 
-Since the new set doesn't include anything comparable to _entry, I'd say
-you're deleting one.
 
-> I can drop the first patch and merge it into the latter patches,
-> but that will lose the credit for Anton Blanchard
+I was just checking to see why 5? May be it might be a good idea to
+document or at-least have rules on what priorities kernel threads can
+take? 
 
-You could fix that with something like:
+>>   
+>>>  	while (!kthread_should_stop()) {
+>>>  		if (ksm_run & KSM_RUN_MERGE) {
+>>>     
+>>
+>>   
+>
 
-Suggested-by: Anton Blanchard
-
-> > Also, the below:
-> > 
-> >> @@ -1275,6 +1294,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
-> >>  				break;
-> >>  			}
-> >>  
-> >> +			trace_hrtimer_expire(timer, basenow.tv64);
-> >>  			__run_hrtimer(timer);
-> >>  		}
-> >>  		base++;
-> >> @@ -1397,6 +1417,7 @@ void hrtimer_run_queues(void)
-> >>  					hrtimer_get_expires_tv64(timer))
-> >>  				break;
-> >>  
-> >> +			trace_hrtimer_expire(timer, base->softirq_time.tv64);
-> >>  			__run_hrtimer(timer);
-> >>  		}
-> >>  		spin_unlock(&cpu_base->lock);
-> > 
-> > indicates you placed that tracepoint in the wrong place.
-> > 
-> > Furthermore, I don't get why you want it there and not on the old
-> > _entry() site, because this adds all kinds of extra overhead and you
-> > loose the exact callback timings.
-> > 
-> 
-> Yes, it's true, but the loose is only about 1 microsecond as I tested it.
-> Do you think it's acceptable or not?
-
-The time is irrelevant, but look at the code, it includes a whole heap
-of things, like debug code, locks, poking at hardware etc.
-
-It simply isn't comparable to before.
-
-> If we put trace_hrtimer_expire() on the old _entry() site, then we can't
-> get the timestamps when hrtimer expires, which is used to calculate the
-> latency of hrtimer.
-
-Ah, but you don't get those anyway, I'd argue the whole expire thing is
-broken. The only expiry you get is the hardware interrupt firing.
-Anything after that is a free-for-all.
-
-Look at that loop in hrtimer_interrupt(), with your tracepoint, they'd
-all expire at the same time, regardless of how long previous callback's
-took to complete.
-
-Also, the whole loop can be re-tried, updating 'now' expiring a whole
-new set of timers without expiry event.
-
-The best you can get is a tracepoint when the hrtimer interrupt happens,
-and the IRQ tracepoint already give you that.
-
-So I really don't see the use-case for this _expiry tracepoint, its just
-too ill-defined.
-
-The _entry and _exit ones I can agree with, this stuff just doesn't make
-any sense.
+-- 
+	Balbir
