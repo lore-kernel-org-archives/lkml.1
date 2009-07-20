@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbZGTC41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751916AbZGTC4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751700AbZGTC41 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 22:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZGTC40
+	id S1751916AbZGTC4g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 22:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZGTC4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 22:56:26 -0400
-Received: from mga09.intel.com ([134.134.136.24]:56904 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751328AbZGTC4Z convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 22:56:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,231,1246863600"; 
-   d="scan'208";a="534205941"
-From: "Lu, Guanqun" <guanqun.lu@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, "jeremy@goop.org" <jeremy@goop.org>
-Date: Mon, 20 Jul 2009 10:55:28 +0800
-Subject: RE: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
-Thread-Topic: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
-Thread-Index: AcoG6WWYaG2Ro2lKSCuHLaGFL6WJLwB+9zsA
-Message-ID: <8FED46E8A9CA574792FC7AACAC38FE7701E6F48AF7@PDSMSX501.ccr.corp.intel.com>
-References: <1247834204-3084-1-git-send-email-guanqun.lu@intel.com>
- <200907170352.11749.rjw@sisk.pl>
- <alpine.LFD.2.00.0907171615530.11571@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0907171615530.11571@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sun, 19 Jul 2009 22:56:34 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49978 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751729AbZGTC4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 19 Jul 2009 22:56:30 -0400
+Message-ID: <04e101ca08e5$be078fa0$808410ac@zhaoleiwin>
+From: "Zhaolei" <zhaolei@cn.fujitsu.com>
+To: "Pavel Machek" <pavel@ucw.cz>, "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <hirofumi@mail.parknet.co.jp>,
+       <linux-kernel@vger.kernel.org>
+References: <4A5C3BC0.6020701@cn.fujitsu.com> <20090714151040.b7b3b26d.akpm@linux-foundation.org> <20090718115019.GH1433@ucw.cz>
+Subject: Re: [PATCH 1/2] Add function to convert between calendar time andbroken-down time for universal use
+Date: Mon, 20 Jul 2009 10:56:55 +0800
 MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.2180
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2180
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6K2uiJ7009077
 
->-----Original Message-----
->From: Thomas Gleixner [mailto:tglx@linutronix.de]
->Sent: Friday, July 17, 2009 10:18 PM
->To: Rafael J. Wysocki
->Cc: Lu, Guanqun; linux-kernel@vger.kernel.org; mingo@elte.hu; jeremy@goop.org
->Subject: Re: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
->
->On Fri, 17 Jul 2009, Rafael J. Wysocki wrote:
->
->> On Friday 17 July 2009, Guanqun Lu wrote:
->> > We currently only bypass IRQF_TIMER in '__disable_irq',
->> > but Xen specific IRQs should not be disabled either.
->> > This commit adds a new flag to accompolish this goal
->> > without being mixed up with IRQF_TIMER flag.
->>
->> For some obscure reasons [2/3] didn't reach my inbox.  The other 2 patches
->> look fine to me.
->
->I do not receive the patches at all. Can you please resend and cc me ?
+* From: "Pavel Machek" <pavel@ucw.cz>
+>> > +extern void gmtime(__kernel_time_t totalsecs,
+>> > +        unsigned int *year, unsigned int *mon, unsigned int *mday,
+>> > +        unsigned int *hour, unsigned int *min, unsigned int *sec,
+>> > +        unsigned int *wday, unsigned int *yday);
+>> > +extern void localtime(__kernel_time_t totalsecs,
+>> > +        unsigned int *year, unsigned int *mon, unsigned int *mday,
+>> > +        unsigned int *hour, unsigned int *min, unsigned int *sec,
+>> > +        unsigned int *wday, unsigned int *yday);
+> 
+> 
+> Should year/mon/.../yday be passed up as a structure?
 
-Resent now, let me know it doesn't get to your inbox again.
+Hello, Pavel
 
-Guanqun
+Thanks for your attention.
 
->
->Thanks,
->
->	tglx
+Actually, I considered to introduce a struct as your think, but finally I
+choose to use arguments list instead of a struct, because:
+1: User can easy to call this function without define a struct
+2: Get rid of adding a additional struct into kernel
+
+In fact, I think both(use a struct or not) should be ok.
+
+Thanks
+Zhaolei
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
