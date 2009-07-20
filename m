@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZGTTy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbZGTT77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbZGTTy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 15:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZGTTy5
+	id S1753686AbZGTT77 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 15:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZGTT76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 15:54:57 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:48200 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750922AbZGTTy4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 15:54:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kpIx127aNX1ZrQxfRBY++AQcUSTlTEEUnPAWHyOP0oMN9uDT9CsjQWS34RHcHv9l1c
-         DcoEFy1ExH1w8nVDxpeFMkDnCsugSCJI20ND0QR2raLJks0J5gkcCSySTHQP9+CrYHZv
-         CDQ8vSb1xTyO3Vs8vOiz+Rz5NpAhQTjTSiwo4=
+	Mon, 20 Jul 2009 15:59:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51703 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751805AbZGTT75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 15:59:57 -0400
+Date: Mon, 20 Jul 2009 12:55:36 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, anthony@codemonkey.ws, avi@redhat.com,
+       kvm@vger.kernel.org, chrisw@redhat.com, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCHv5] uio: add generic driver for PCI 2.3 devices
+Message-ID: <20090720195536.GA30483@suse.de>
+References: <20090720072934.GA12509@redhat.com>
+ <20090720190942.GB7604@local>
+ <20090720195227.GB19009@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <4A64A50D.5040401@tuffmail.co.uk>
-References: <4A61FE7D.9080409@tuffmail.co.uk>
-	 <8db1092f0907181155h3d603a17q11815b9f174ac333@mail.gmail.com>
-	 <4A623490.50305@tuffmail.co.uk>
-	 <8db1092f0907190028o334371d7g798c1e8cb9a5744b@mail.gmail.com>
-	 <4A635618.3070507@tuffmail.co.uk>
-	 <8db1092f0907191110p2d3c2c45je61bda6365ed1468@mail.gmail.com>
-	 <4A6364DF.3040303@tuffmail.co.uk>
-	 <8db1092f0907191208i6fcdf519r8204be542e95bbe4@mail.gmail.com>
-	 <4A64A50D.5040401@tuffmail.co.uk>
-Date: Mon, 20 Jul 2009 21:54:54 +0200
-Message-ID: <8db1092f0907201254m2be66477k6ec2f447bfad9f73@mail.gmail.com>
-Subject: Re: [RFT] hp-wmi: improved rfkill support for wifi
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Matthew Garrett <mjg@redhat.com>, Frans Pop <elendil@planet.nl>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       linux acpi <linux-acpi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090720195227.GB19009@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6KJtPJ7023454
 
-2009/7/20 Alan Jenkins <alan-jenkins@tuffmail.co.uk>:>> ...and here's the version that remembers to register the bluetooth.  I> reviewed the patch again; hopefully that's the last dumb error.[...]
-2.6.31-rc3+ patches:http://lkml.org/lkml/2009/7/18/131http://lkml.org/lkml/2009/7/10/339+ patch below:
-> diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c> index 517ac47..adb26d3 100644> --- a/drivers/platform/x86/hp-wmi.c> +++ b/drivers/platform/x86/hp-wmi.c> @@ -51,6 +51,12 @@ MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");>  #define HPWMI_WIRELESS_QUERY 0x5>  #define HPWMI_HOTKEY_QUERY 0xc>> +enum hp_wmi_radio {> +       HPWMI_WIFI = 0,> +       HPWMI_BLUETOOTH = 1,> +       HPWMI_WWAN = 2,> +};> +>  static int __init hp_wmi_bios_setup(struct platform_device *device);>  static int __exit hp_wmi_bios_remove(struct platform_device *device);>  static int hp_wmi_resume_handler(struct platform_device *device);> @@ -170,8 +176,8 @@ static int hp_wmi_tablet_state(void)>>  static int hp_wmi_set_block(void *data, bool blocked)>  {> -       unsigned long b = (unsigned long) data;> -       int query = BIT(b + 8) | ((!blocked) << b);> +       enum hp_wmi_radio r = (enum hp_wmi_radio) data;> +       int query = BIT(r + 8) | ((!blocked) << r);>>        return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, query);>  }> @@ -180,41 +186,23 @@ static const struct rfkill_ops hp_wmi_rfkill_ops = {>        .set_block = hp_wmi_set_block,>  };>> -static bool hp_wmi_wifi_sw_state(void)> +static bool hp_wmi_get_sw_state(enum hp_wmi_radio r)>  {>        int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);> +       int mask = 0x200 << (r * 8);>> -       if (wireless & 0x200)> +       if (wireless & mask)>                return false;>        else>                return true;>  }>> -static bool hp_wmi_wifi_hw_state(void)> +static bool hp_wmi_get_hw_state(enum hp_wmi_radio r)>  {>        int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);> +       int mask = 0x800 << (r * 8);>> -       if (wireless & 0x800)> -               return false;> -       else> -               return true;> -}> -> -static bool hp_wmi_bluetooth_state(void)> -{> -       int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);> -> -       if (wireless & 0x10000)> -               return false;> -       else> -               return true;> -}> -> -static bool hp_wmi_wwan_state(void)> -{> -       int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);> -> -       if (wireless & 0x1000000)> +       if (wireless & mask)>                return false;>        else>                return true;> @@ -339,50 +327,55 @@ static void hp_wmi_notify(u32 value, void *context)>        struct acpi_buffer response = { ACPI_ALLOCATE_BUFFER, NULL };>        static struct key_entry *key;>        union acpi_object *obj;> +       int eventcode;>>        wmi_get_event_data(value, &response);>>        obj = (union acpi_object *)response.pointer;>> -       if (obj && obj->type == ACPI_TYPE_BUFFER && obj->buffer.length == 8) {> -               int eventcode = *((u8 *) obj->buffer.pointer);> -               if (eventcode == 0x4)> -                       eventcode = hp_wmi_perform_query(HPWMI_HOTKEY_QUERY, 0,> -                                                        0);> -               key = hp_wmi_get_entry_by_scancode(eventcode);> -               if (key) {> -                       switch (key->type) {> -                       case KE_KEY:> -                               input_report_key(hp_wmi_input_dev,> -                                                key->keycode, 1);> -                               input_sync(hp_wmi_input_dev);> -                               input_report_key(hp_wmi_input_dev,> -                                                key->keycode, 0);> -                               input_sync(hp_wmi_input_dev);> -                               break;> -                       }> -               } else if (eventcode == 0x1) {> -                       input_report_switch(hp_wmi_input_dev, SW_DOCK,> -                                           hp_wmi_dock_state());> -                       input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,> -                                           hp_wmi_tablet_state());> +       if (!obj || obj->type != ACPI_TYPE_BUFFER || obj->buffer.length != 8) {> +               printk(KERN_INFO "HP WMI: Unknown response received\n");> +               return;> +       }> +> +       eventcode = *((u8 *) obj->buffer.pointer);> +       if (eventcode == 0x4)> +               eventcode = hp_wmi_perform_query(HPWMI_HOTKEY_QUERY, 0,> +                                               0);> +       key = hp_wmi_get_entry_by_scancode(eventcode);> +       if (key) {> +               switch (key->type) {> +               case KE_KEY:> +                       input_report_key(hp_wmi_input_dev,> +                                        key->keycode, 1);> +                       input_sync(hp_wmi_input_dev);> +                       input_report_key(hp_wmi_input_dev,> +                                        key->keycode, 0);>                        input_sync(hp_wmi_input_dev);> -               } else if (eventcode == 0x5) {> -                       if (wifi_rfkill)> -                               rfkill_set_states(wifi_rfkill,> -                                                 hp_wmi_wifi_sw_state(),> -                                                 hp_wmi_wifi_hw_state());> -                       if (bluetooth_rfkill)> -                               rfkill_set_sw_state(bluetooth_rfkill,> -                                                   hp_wmi_bluetooth_state());> -                       if (wwan_rfkill)> -                               rfkill_set_sw_state(wwan_rfkill,> -                                                   hp_wmi_wwan_state());> -               } else> -                       printk(KERN_INFO "HP WMI: Unknown key pressed - %x\n",> -                              eventcode);> +                       break;> +               }> +       } else if (eventcode == 0x1) {> +               input_report_switch(hp_wmi_input_dev, SW_DOCK,> +                                   hp_wmi_dock_state());> +               input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,> +                                   hp_wmi_tablet_state());> +               input_sync(hp_wmi_input_dev);> +       } else if (eventcode == 0x5) {> +               if (wifi_rfkill)> +                       rfkill_set_states(wifi_rfkill,> +                                         hp_wmi_get_sw_state(HPWMI_WIFI),> +                                         hp_wmi_get_hw_state(HPWMI_WIFI));> +               if (bluetooth_rfkill)> +                       rfkill_set_states(bluetooth_rfkill,> +                                         hp_wmi_get_sw_state(HPWMI_BLUETOOTH),> +                                         hp_wmi_get_hw_state(HPWMI_BLUETOOTH));> +               if (wwan_rfkill)> +                       rfkill_set_states(wwan_rfkill,> +                                         hp_wmi_get_sw_state(HPWMI_WWAN),> +                                         hp_wmi_get_hw_state(HPWMI_WWAN));>        } else> -               printk(KERN_INFO "HP WMI: Unknown response received\n");> +               printk(KERN_INFO "HP WMI: Unknown key pressed - %x\n",> +                       eventcode);>  }>>  static int __init hp_wmi_input_setup(void)> @@ -461,11 +454,11 @@ static int __init hp_wmi_bios_setup(struct platform_device *device)>                wifi_rfkill = rfkill_alloc("hp-wifi", &device->dev,>                                           RFKILL_TYPE_WLAN,>                                           &hp_wmi_rfkill_ops,> -                                          (void *) 0);> +                                          (void *) HPWMI_WIFI);>                rfkill_init_sw_state(wifi_rfkill,> -                                    hp_wmi_wifi_sw_state());> +                                    hp_wmi_get_sw_state(HPWMI_WIFI));>                rfkill_set_hw_state(wifi_rfkill,> -                                   hp_wmi_wifi_hw_state());> +                                   hp_wmi_get_hw_state(HPWMI_WIFI));>                err = rfkill_register(wifi_rfkill);>                if (err)>                        goto register_wifi_error;> @@ -475,7 +468,11 @@ static int __init hp_wmi_bios_setup(struct platform_device *device)>                bluetooth_rfkill = rfkill_alloc("hp-bluetooth", &device->dev,>                                                RFKILL_TYPE_BLUETOOTH,>                                                &hp_wmi_rfkill_ops,> -                                               (void *) 1);> +                                               (void *) HPWMI_BLUETOOTH);> +               rfkill_init_sw_state(bluetooth_rfkill,> +                                    hp_wmi_get_sw_state(HPWMI_BLUETOOTH));> +               rfkill_set_hw_state(bluetooth_rfkill,> +                                   hp_wmi_get_hw_state(HPWMI_BLUETOOTH));>                err = rfkill_register(bluetooth_rfkill);>                if (err)>                        goto register_bluetooth_error;> @@ -485,7 +482,11 @@ static int __init hp_wmi_bios_setup(struct platform_device *device)>                wwan_rfkill = rfkill_alloc("hp-wwan", &device->dev,>                                           RFKILL_TYPE_WWAN,>                                           &hp_wmi_rfkill_ops,> -                                          (void *) 2);> +                                          (void *) HPWMI_WWAN);> +               rfkill_init_sw_state(wwan_rfkill,> +                                    hp_wmi_get_sw_state(HPWMI_WWAN));> +               rfkill_set_hw_state(wwan_rfkill,> +                                   hp_wmi_get_hw_state(HPWMI_WWAN));>                err = rfkill_register(wwan_rfkill);>                if (err)>                        goto register_wwan_err;> @@ -541,9 +542,18 @@ static int hp_wmi_resume_handler(struct platform_device *device)>                            hp_wmi_tablet_state());>        input_sync(hp_wmi_input_dev);>> -       rfkill_set_states(wifi_rfkill,> -                         hp_wmi_wifi_sw_state(),> -                         hp_wmi_wifi_hw_state());> +       if (wifi_rfkill)> +               rfkill_set_states(wifi_rfkill,> +                                 hp_wmi_get_sw_state(HPWMI_WIFI),> +                                 hp_wmi_get_hw_state(HPWMI_WIFI));> +       if (bluetooth_rfkill)> +               rfkill_set_states(bluetooth_rfkill,> +                                 hp_wmi_get_sw_state(HPWMI_BLUETOOTH),> +                                 hp_wmi_get_hw_state(HPWMI_BLUETOOTH));> +       if (wwan_rfkill)> +               rfkill_set_states(wwan_rfkill,> +                                 hp_wmi_get_sw_state(HPWMI_WWAN),> +                                 hp_wmi_get_hw_state(HPWMI_WWAN));>>        return 0;>  }>>>
-root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list0: phy0: Wireless LAN        Soft blocked: yes        Hard blocked: yes1: hp-wifi: Wireless LAN        Soft blocked: yes        Hard blocked: no2: hp-bluetooth: Bluetooth        Soft blocked: yes        Hard blocked: noroot@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill unblock 0root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list0: phy0: Wireless LAN        Soft blocked: no        Hard blocked: yes1: hp-wifi: Wireless LAN        Soft blocked: yes        Hard blocked: no2: hp-bluetooth: Bluetooth        Soft blocked: yes        Hard blocked: noroot@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill unblock 1root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list0: phy0: Wireless LAN        Soft blocked: no        Hard blocked: no1: hp-wifi: Wireless LAN        Soft blocked: no        Hard blocked: no2: hp-bluetooth: Bluetooth        Soft blocked: yes        Hard blocked: noroot@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill unblock 2root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list0: phy0: Wireless LAN        Soft blocked: no        Hard blocked: no1: hp-wifi: Wireless LAN        Soft blocked: no        Hard blocked: no2: hp-bluetooth: Bluetooth        Soft blocked: no        Hard blocked: no3: hci0: Bluetooth        Soft blocked: yes        Hard blocked: noroot@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill unblock 3root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list0: phy0: Wireless LAN        Soft blocked: no        Hard blocked: no1: hp-wifi: Wireless LAN        Soft blocked: no        Hard blocked: no2: hp-bluetooth: Bluetooth        Soft blocked: no        Hard blocked: no3: hci0: Bluetooth        Soft blocked: no        Hard blocked: noroot@gumis:/home/maciek/zrodelka/rfkill/rfkill# hciconfighci0:   Type: USB        BD Address: 00:16:41:88:A0:1B ACL MTU: 1017:8 SCO MTU: 64:8        DOWN        RX bytes:318 acl:0 sco:0 events:6 errors:0        TX bytes:27 acl:0 sco:0 commands:9 errors:0
-Works OK. Thanks :-)
-During compile I have got:CC [M]  drivers/platform/x86/hp-wmi.odrivers/platform/x86/hp-wmi.c: In function ‘hp_wmi_bios_setup’:drivers/platform/x86/hp-wmi.c:460: warning: ignoring return value of‘rfkill_set_hw_state’, declared with attribute warn_unused_resultdrivers/platform/x86/hp-wmi.c:474: warning: ignoring return value of‘rfkill_set_hw_state’, declared with attribute warn_unused_resultdrivers/platform/x86/hp-wmi.c:488: warning: ignoring return value of‘rfkill_set_hw_state’, declared with attribute warn_unused_result
-root@gumis:/home/maciek# gcc -vUsing built-in specs.Target: i486-linux-gnuConfigured with: ../src/configure -v --with-pkgversion='Debian4.3.3-13' --with-bugurl=file:///usr/share/doc/gcc-4.3/README.Bugs--enable-languages=c,c++,fortran,objc,obj-c++ --prefix=/usr--enable-shared --enable-multiarch --with-system-zlib--libexecdir=/usr/lib --without-included-gettext--enable-threads=posix --enable-nls--with-gxx-include-dir=/usr/include/c++/4.3 --program-suffix=-4.3--enable-clocale=gnu --enable-libstdcxx-debug --enable-objc-gc--enable-mpfr --enable-targets=all --with-tune=generic--enable-checking=release --build=i486-linux-gnu --host=i486-linux-gnu--target=i486-linux-gnuThread model: posixgcc version 4.3.3 (Debian 4.3.3-13)
-Regards-- Maciej Ruteckihttp://www.maciek.unixy.pl���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+On Mon, Jul 20, 2009 at 10:52:27PM +0300, Michael S. Tsirkin wrote:
+> On Mon, Jul 20, 2009 at 09:09:43PM +0200, Hans J. Koch wrote:
+> > On Mon, Jul 20, 2009 at 10:29:34AM +0300, Michael S. Tsirkin wrote:
+> > > This adds a generic uio driver that can bind to any PCI device.  First
+> > > user will be virtualization where a qemu userspace process needs to give
+> > > guest OS access to the device.
+> > > 
+> > > Interrupts are handled using the Interrupt Disable bit in the PCI command
+> > > register and Interrupt Status bit in the PCI status register.  All devices
+> > > compliant to PCI 2.3 (circa 2002) and all compliant PCI Express devices should
+> > > support these bits.  Driver detects this support, and won't bind to devices
+> > > which do not support the Interrupt Disable Bit in the command register.
+> > > 
+> > > It's expected that more features of interest to virtualization will be
+> > > added to this driver in the future. Possibilities are: mmap for device
+> > > resources, MSI/MSI-X, eventfd (to interface with kvm), iommu.
+> > 
+> > Thanks for adding the docs! Looks alright to me.
+> > 
+> > Thanks,
+> > Hans
+> > 
+> > > 
+> > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> > > Acked-by: Chris Wright <chrisw@redhat.com>
+> > 
+> > Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+> 
+> Jesse just acked this patch in a private mail, as well.
+> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+Odd, but ok...
+
+I'll queue it up now.
+
+thanks,
+
+greg k-h
