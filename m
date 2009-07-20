@@ -1,81 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752935AbZGTQOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZGTQNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752935AbZGTQOg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 12:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZGTQNo
+	id S1752779AbZGTQNt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 12:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbZGTQNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 12:13:44 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:54931 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750856AbZGTQNe (ORCPT
+	Mon, 20 Jul 2009 12:13:47 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:21818
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752602AbZGTQNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 12:13:34 -0400
-X-SpamScore: -9
-X-BigFish: VPS-9(zz14ffO1402I4015Lzz1202hzzz32i43j63h)
-X-Spam-TCS-SCL: 2:0
+	Mon, 20 Jul 2009 12:13:38 -0400
+X-SpamScore: 2
+X-BigFish: VPS2(zz1402Izz1202hzzz32i43j61h)
+X-Spam-TCS-SCL: 0:0
 X-FB-SS: 5,
-X-WSS-ID: 0KN391Y-04-7DQ-01
+X-WSS-ID: 0KN3922-03-AIN-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>, <norsk5@yahoo.com>,
        <aris@redhat.com>
 CC: <linux-kernel@vger.kernel.org>, <x86@kernel.org>
-Subject: [RFC PATCH 0/14] amd64_edac: marry mcheck to amd64 edac
-Date: Mon, 20 Jul 2009 18:12:51 +0200
-Message-ID: <1248106385-27514-1-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 09/14] amd64_edac: carve out decoding of MCi_STATUS ErrorCode
+Date: Mon, 20 Jul 2009 18:13:00 +0200
+Message-ID: <1248106385-27514-10-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.3.3
-X-OriginalArrivalTime: 20 Jul 2009 16:13:10.0937 (UTC) FILETIME=[F9FB2890:01CA0954]
+In-Reply-To: <1248106385-27514-1-git-send-email-borislav.petkov@amd.com>
+References: <1248106385-27514-1-git-send-email-borislav.petkov@amd.com>
+X-OriginalArrivalTime: 20 Jul 2009 16:13:14.0312 (UTC) FILETIME=[FBFE2480:01CA0954]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+This is the MCE error code from the MCi_STATUS banks, bits [15:0] which
+describe what type of error was encountered: GART TLB, Memory or Bus
+related. The semantics of those bits are the same across all MCE banks
+so decode those separately, irrespectively of MCE type.
 
-this is the first version of the attempt to forward MCE information to
-the amd64 EDAC module for further decoding. When the MCE handler gets
-invoked and the EDAC module is loaded, here's how a decoded MCE looks
-like:
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+---
+ drivers/edac/amd64_edac.c |   56 +++++++++++++++++++++++---------------------
+ 1 files changed, 29 insertions(+), 27 deletions(-)
 
-Disabling lock debugging due to kernel taint
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index a691bb8..e4a0c91 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -2229,9 +2229,6 @@ static void amd64_decode_bus_error(struct mem_ctl_info *mci,
+ 	u32 ec  = ERROR_CODE(info->nbsl);
+ 	u32 xec = EXT_ERROR_CODE(info->nbsl);
+ 
+-	pr_emerg(" Transaction type: %s(%s), %s, Cache Level: %s, %s\n",
+-		 RRRR(ec), II(ec), TO(ec), LL(ec), PP(ec));
+-
+ 	/* Bail early out if this was an 'observed' error */
+ 	if (((ec >> 9) & 0x3) == K8_NBSL_PP_OBS)
+ 		return;
+@@ -2260,7 +2257,8 @@ void amd64_decode_nb_mce(struct mem_ctl_info *mci, struct err_regs *regs,
+ 			 int handle_errors, int ecc)
+ {
+ 	struct amd64_pvt *pvt = mci->pvt_info;
+-	u32 ec, xec;
++	u32 ec  = ERROR_CODE(regs->nbsl);
++	u32 xec = EXT_ERROR_CODE(regs->nbsl);
+ 
+ 	if (!handle_errors)
+ 		return;
+@@ -2279,9 +2277,22 @@ void amd64_decode_nb_mce(struct mem_ctl_info *mci, struct err_regs *regs,
+ 		pr_cont(", core: %d\n", ilog2((regs->nbsh & 0xf)));
+ 	}
+ 
+-	ec = ERROR_CODE(regs->nbsl);
+-	xec = EXT_ERROR_CODE(regs->nbsl);
++	pr_emerg(" %s.\n", EXT_ERR_DESC(xec));
++
++	if (BUS_ERROR(ec))
++		amd64_decode_bus_error(mci, regs, ecc);
+ 
++	/*
++	 * Check the UE bit of the NB status high register, if set generate some
++	 * logs. If NOT a GART error, then process the event as a NO-INFO event.
++	 * If it was a GART error, skip that process.
++	 */
++	if (regs->nbsh & K8_NBSH_UC_ERR && !report_gart_errors)
++		edac_mc_handle_ue_no_info(mci, "UE bit is set");
++}
++
++static inline void amd64_decode_err_code(unsigned int ec)
++{
+ 	if (TLB_ERROR(ec)) {
+ 		/*
+ 		 * GART errors are intended to help graphics driver developers
+@@ -2298,30 +2309,19 @@ void amd64_decode_nb_mce(struct mem_ctl_info *mci, struct err_regs *regs,
+ 		if (!report_gart_errors)
+ 			return;
+ 
+-		pr_emerg(" GART TLB error, Transaction: %s, Cache Level %s\n",
+-			 TT(ec), LL(ec));
++		pr_emerg(" Transaction: %s, Cache Level %s\n", TT(ec), LL(ec));
+ 	} else if (MEM_ERROR(ec)) {
+-		pr_emerg(" Memory/Cache error, Transaction: %s, Type: %s,"
+-			 " Cache Level: %s",
++		pr_emerg(" Transaction: %s, Type: %s, Cache Level: %s",
+ 			 RRRR(ec), TT(ec), LL(ec));
+ 	} else if (BUS_ERROR(ec)) {
+-		pr_emerg(" Bus (Link/DRAM) error\n");
+-		amd64_decode_bus_error(mci, regs, ecc);
++		pr_emerg(" Transaction type: %s(%s), %s, Cache Level: %s,"
++			 " Participating Processor: %s\n",
++			 RRRR(ec), II(ec), TO(ec), LL(ec), PP(ec));
++
+ 	} else {
+ 		/* shouldn't reach here! */
+-		amd64_mc_printk(mci, KERN_WARNING,
+-				"%s(): unknown MCE error 0x%x\n", __func__, ec);
++		pr_warning("Huh? Unknown MCE error 0x%x\n", ec);
+ 	}
+-
+-	pr_emerg("%s.\n", EXT_ERR_DESC(xec));
+-
+-	/*
+-	 * Check the UE bit of the NB status high register, if set generate some
+-	 * logs. If NOT a GART error, then process the event as a NO-INFO event.
+-	 * If it was a GART error, skip that process.
+-	 */
+-	if (regs->nbsh & K8_NBSH_UC_ERR && !report_gart_errors)
+-		edac_mc_handle_ue_no_info(mci, "UE bit is set");
+ }
+ 
+ void decode_mce(struct mce *m)
+@@ -2329,13 +2329,13 @@ void decode_mce(struct mce *m)
+ 	struct err_regs regs;
+ 	int ecc;
+ 
+-	pr_emerg("MC%d_STATUS:\n", m->bank);
++	pr_emerg("MC%d_STATUS: ", m->bank);
+ 
+-	pr_emerg(" Error: %sorrected, Report: %s, MiscV: %svalid, "
++	pr_cont("%sorrected error, report: %s, MiscV: %svalid, "
+ 		 "CPU context corrupt: %s",
+ 		 ((m->status & MCI_STATUS_UC) ? "Unc"  : "C"),
+ 		 ((m->status & MCI_STATUS_EN) ? "yes"  : "no"),
+-		 ((m->status & MCI_STATUS_MISCV) ? ""  : "In"),
++		 ((m->status & MCI_STATUS_MISCV) ? ""  : "in"),
+ 		 ((m->status & MCI_STATUS_PCC) ? "yes" : "no"));
+ 
+ 	/* do the two bits[14:13] together */
+@@ -2345,6 +2345,8 @@ void decode_mce(struct mce *m)
+ 
+ 	pr_cont("\n");
+ 
++	amd64_decode_err_code(m->status & 0xffff);
++
+ 	if (m->bank == 4) {
+ 		regs.nbsl  = (u32) m->status;
+ 		regs.nbsh  = (u32)(m->status >> 32);
+-- 
+1.6.3.3
 
-<0>HARDWARE ERROR
-CPU 3: Machine Check Exception:                4 Bank 0: b20040001c000175
-TSC 714e9b73cf 
-PROCESSOR 2:100f22 TIME 1247237579 SOCKET 0 APIC 3
-MC0_STATUS: Uncorrected error, report: yes, MiscV: invalid, CPU context corrupt: yes
- Data Cache Error: Data/Tag Evict error.
- Transaction: Evict, Type: Data, Cache Level: L1
-This is not a software problem!
-<0>Run through mcelog --ascii to decode and contact your hardware vendor
-Machine check: Processor context corrupt
-Kernel panic - not syncing: Fatal machine check on current CPU
-Pid: 4817, comm: cc1 Tainted: G   M       2.6.31-rc2-00218-g78848b0-dirty #42
-Call Trace:
- <#MC>  [<ffffffff8134a17a>] panic+0xaf/0x178
- [<ffffffff812b5d9e>] ? decode_mce+0x47e/0x540
- [<ffffffff81019210>] ? print_mce+0x90/0x110
- [<ffffffff810193e7>] mce_panic+0x157/0x180
- [<ffffffff81019de7>] do_machine_check+0x757/0x930
- [<ffffffff8134d96d>] ? trace_hardirqs_off_thunk+0x3a/0x3c
- [<ffffffff8134e9cb>] machine_check+0x1b/0x20
- <EOE>
-
-Clearly, the "Run through mcelog... " line is redundant now :) since
-there's no need for userspace decoding anymore and the original EDAC
-functionality (polling workqueue) is still preserved. The code currently
-uses EDAC to decode DRAM ECC errors but this could clearly be extended
-to handle all valid addresses acquired from MCi_ADDR registers.
-
-Comments and further suggestions are most welcome.
-
-Thanks,
-Boris.
-
- arch/x86/kernel/cpu/mcheck/mce.c    |    7 +
- drivers/edac/amd64_edac.c           |  484 +++++++++++++++++++++--------------
- drivers/edac/amd64_edac.h           |   67 ++---
- drivers/edac/amd64_edac_dbg.c       |    2 +-
- drivers/edac/amd64_edac_err_types.c |  126 +++++-----
- 5 files changed, 382 insertions(+), 304 deletions(-)
 
