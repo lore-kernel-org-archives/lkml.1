@@ -1,72 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZGTUNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZGTUPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbZGTUNV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 16:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZGTUNU
+	id S1754036AbZGTUPt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 16:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbZGTUPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 16:13:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41470 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753143AbZGTUNT (ORCPT
+	Mon, 20 Jul 2009 16:15:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:40881 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbZGTUPq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 16:13:19 -0400
-Subject: Re: [PATCH] kbuild: save ARCH & CROSS_COMPILE when building a
- kernel
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090720200522.GA6854@merkur.ravnborg.org>
-References: <20090720100157.GA6467@merkur.ravnborg.org>
-	 <1248086059.15751.8405.camel@twins>
-	 <20090720115134.GA6517@merkur.ravnborg.org>
-	 <1248091243.15751.8550.camel@twins>
-	 <20090720171200.GA6730@merkur.ravnborg.org>
-	 <20090720200522.GA6854@merkur.ravnborg.org>
-Content-Type: text/plain
-Date: Mon, 20 Jul 2009 22:13:17 +0200
-Message-Id: <1248120797.23509.42.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Jul 2009 16:15:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=ZrKjrGeAZX2VH95e1qXcaEwqIbBLtNzecMamxWLAph3ThuuLHgS4Js7xV4lwiFUrs9
+         1HMUyK9+2YMJbAPS+2hv+Nrzl9o/NU7L9y6c9QnyivOUV7+cZZUayOREk1WRCPSPbBFa
+         3LQM2JdgiqzaihxfsJPI4NwC5jl1fopZhZ6As=
+Message-ID: <4A64D06D.3040109@gmail.com>
+Date: Mon, 20 Jul 2009 22:15:41 +0200
+From: Uros Bizjak <ubizjak@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: x86@kernel.org
+Subject: Re: [PATCH, x86]: Fix movq immediate operand constraints in uaccess_64.h
+References: <4A63448B.1050208@gmail.com>
+In-Reply-To: <4A63448B.1050208@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------050103040008040204050607"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-20 at 22:05 +0200, Sam Ravnborg wrote:
+This is a multi-part message in MIME format.
+--------------050103040008040204050607
+Content-Type: text/plain; charset=windows-1250; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> From 27d34661aed0cd3fbf469b8efb24accaf83c1987 Mon Sep 17 00:00:00 2001
-> From: Sam Ravnborg <sam@ravnborg.org>
-> Date: Mon, 20 Jul 2009 21:37:11 +0200
-> Subject: [PATCH] kbuild: Use INSTALLKERNEL to select customized installkernel script
-> 
-> Replace the use of CROSS_COMPILE to select a customized
-> installkernel script with the possibility to set INSTALLKERNEL
-> to select a custom installkernel script when running make:
-> 
->     make INSTALLKERNEL=arm-installkernel install
-> 
-> With this patch we are now more consistent across
-> different architectures - they did not all support use
-> of CROSS_COMPILE.
-> 
-> The use of CROSS_COMPILE was a hack as this really belongs
-> to gcc/binutils and the installkernel script does not change
-> just because we change toolchain.
-> 
-> The use of CROSS_COMPILE caused troubles with an upcoming patch
-> that saves CROSS_COMPILE when a kernel is built -
-> it would no longer be installable.
-> [Thanks to Peter for this hint]
-> 
-> This patch undos what Ian did in commit:
-> 
->   0f8e2d62fa04441cd12c08ce521e84e5bd3f8a46
->   ("use ${CROSS_COMPILE}installkernel in arch/*/boot/install.sh")
-> 
-> The patch has been lightly tested on x86 - but all changes
-> looks obvious.
+On 07/19/2009 06:06 PM, Uros Bizjak wrote:
+> Hello!
+>
+> arch/x86/include/asm/uaccess_64.h uses wrong asm operand constraint 
+> ("ir") for movq insn. Since movq sign-extends its immediate operand, 
+> "er" constraint should be used instead.
+>
+> Attached patch changes all uses of __put_user_asm in uaccess_64.h to 
+> use "er" when "q" insn suffix is involved.
+>
+> Patch was compile tested on x86_64 with defconfig.
+>
+> Uros.
 
-Acked-by: Peter Zijlstra <peterz@infradead.org>
+Uh, missed signed-off line and Cc, so:
 
-Looks good to me, thanks sam!
+Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
 
+
+
+--------------050103040008040204050607
+Content-Type: text/plain;
+ name="p.diff.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="p.diff.txt"
+
+diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
+index 8cc6873..db24b21 100644
+--- a/arch/x86/include/asm/uaccess_64.h
++++ b/arch/x86/include/asm/uaccess_64.h
+@@ -88,11 +88,11 @@ int __copy_to_user(void __user *dst, const void *src, unsigned size)
+ 			      ret, "l", "k", "ir", 4);
+ 		return ret;
+ 	case 8:__put_user_asm(*(u64 *)src, (u64 __user *)dst,
+-			      ret, "q", "", "ir", 8);
++			      ret, "q", "", "er", 8);
+ 		return ret;
+ 	case 10:
+ 		__put_user_asm(*(u64 *)src, (u64 __user *)dst,
+-			       ret, "q", "", "ir", 10);
++			       ret, "q", "", "er", 10);
+ 		if (unlikely(ret))
+ 			return ret;
+ 		asm("":::"memory");
+@@ -101,12 +101,12 @@ int __copy_to_user(void __user *dst, const void *src, unsigned size)
+ 		return ret;
+ 	case 16:
+ 		__put_user_asm(*(u64 *)src, (u64 __user *)dst,
+-			       ret, "q", "", "ir", 16);
++			       ret, "q", "", "er", 16);
+ 		if (unlikely(ret))
+ 			return ret;
+ 		asm("":::"memory");
+ 		__put_user_asm(1[(u64 *)src], 1 + (u64 __user *)dst,
+-			       ret, "q", "", "ir", 8);
++			       ret, "q", "", "er", 8);
+ 		return ret;
+ 	default:
+ 		return copy_user_generic((__force void *)dst, src, size);
+@@ -157,7 +157,7 @@ int __copy_in_user(void __user *dst, const void __user *src, unsigned size)
+ 			       ret, "q", "", "=r", 8);
+ 		if (likely(!ret))
+ 			__put_user_asm(tmp, (u64 __user *)dst,
+-				       ret, "q", "", "ir", 8);
++				       ret, "q", "", "er", 8);
+ 		return ret;
+ 	}
+ 	default:
+
+--------------050103040008040204050607--
