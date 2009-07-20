@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbZGTRi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbZGTRib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753116AbZGTRi3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 13:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZGTRi2
+	id S1753212AbZGTRib (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 13:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZGTRia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 13:38:28 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:8047 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752957AbZGTRiW (ORCPT
+	Mon, 20 Jul 2009 13:38:30 -0400
+Received: from viefep16-int.chello.at ([62.179.121.36]:26261 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbZGTRiT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 13:38:22 -0400
+	Mon, 20 Jul 2009 13:38:19 -0400
 X-SourceIP: 213.93.53.227
 Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
  breakpoints
@@ -30,8 +30,8 @@ In-Reply-To: <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
 References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
 	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
 Content-Type: text/plain
-Date: Mon, 20 Jul 2009 19:38:57 +0200
-Message-Id: <1248111537.15751.9341.camel@twins>
+Date: Mon, 20 Jul 2009 19:38:56 +0200
+Message-Id: <1248111536.15751.9340.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -40,12 +40,7 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 2009-07-20 at 13:08 -0400, Frederic Weisbecker wrote:
-> This adds the support for kernel hardware breakpoints in perfcounter.
-> It is added as a new type of software counter and can be defined by
-> using the counter number 5 and by passsing the address of the
-> breakpoint to set through the config attribute.
+> +       do_perf_swcounter_event(PERF_TYPE_BREAKPOINT, target, 1, 0, &data);
 
-This seems to be IP based breakpoints. Are there plans for data based
-breakpoints as well? In that case we might want to think about the
-namespace issue, we cannot both call them breakpoint/bp etc.. ;-)
+These breakpoints run from IRQ context?
 
