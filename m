@@ -1,501 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751157AbZGTEKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751285AbZGTEKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751157AbZGTEKl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 00:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZGTEKk
+	id S1751285AbZGTEKs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 00:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbZGTEKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 00:10:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42118 "EHLO
+	Mon, 20 Jul 2009 00:10:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42122 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750807AbZGTEK2 (ORCPT
+	with ESMTP id S1750953AbZGTEKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 00:10:28 -0400
-Date: Sun, 19 Jul 2009 21:07:28 -0700
+	Mon, 20 Jul 2009 00:10:30 -0400
+Date: Sun, 19 Jul 2009 21:08:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
 Cc: lwn@lwn.net
-Subject: Re: Linux 2.6.27.27
-Message-ID: <20090720040728.GB11940@kroah.com>
-References: <20090720040655.GA11940@kroah.com>
+Subject: Linux 2.6.30.2
+Message-ID: <20090720040813.GC11940@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090720040655.GA11940@kroah.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 90764ee..387a5fd 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 27
--EXTRAVERSION = .26
-+EXTRAVERSION = .27
- NAME = Trembling Tortoise
- 
- # *DOCUMENTATION*
-@@ -340,7 +340,8 @@ KBUILD_CPPFLAGS := -D__KERNEL__ $(LINUXINCLUDE)
- 
- KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		   -fno-strict-aliasing -fno-common \
--		   -Werror-implicit-function-declaration
-+		   -Werror-implicit-function-declaration \
-+		   -fno-delete-null-pointer-checks
- KBUILD_AFLAGS   := -D__ASSEMBLY__
- 
- # Read KERNELRELEASE from include/config/kernel.release (if it exists)
-@@ -556,7 +557,7 @@ KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
- KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
- 
- # disable invalid "can't wrap" optimzations for signed / pointers
--KBUILD_CFLAGS	+= $(call cc-option,-fwrapv)
-+KBUILD_CFLAGS	+= $(call cc-option,-fno-strict-overflow)
- 
- # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
- # But warn user when we do so
-diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
-index 615fcd3..5900f76 100644
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -3320,7 +3320,10 @@ static inline int set_geometry(unsigned int cmd, struct floppy_struct *g,
- 		if (!capable(CAP_SYS_ADMIN))
- 			return -EPERM;
- 		mutex_lock(&open_lock);
--		LOCK_FDC(drive, 1);
-+		if (lock_fdc(drive, 1)) {
-+			mutex_unlock(&open_lock);
-+			return -EINTR;
-+		}
- 		floppy_type[type] = *g;
- 		floppy_type[type].name = "user format";
- 		for (cnt = type << 2; cnt < (type << 2) + 4; cnt++)
-diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-index 925efaf..ace998c 100644
---- a/drivers/md/dm.c
-+++ b/drivers/md/dm.c
-@@ -265,10 +265,6 @@ static int dm_blk_open(struct inode *inode, struct file *file)
- 		goto out;
- 	}
- 
--	if (test_bit(DMF_FREEING, &md->flags) ||
--	    test_bit(DMF_DELETING, &md->flags))
--		return NULL;
--
- 	dm_get(md);
- 	atomic_inc(&md->open_count);
- 
-diff --git a/drivers/net/tulip/interrupt.c b/drivers/net/tulip/interrupt.c
-index c6bad98..7faf84f 100644
---- a/drivers/net/tulip/interrupt.c
-+++ b/drivers/net/tulip/interrupt.c
-@@ -140,6 +140,7 @@ int tulip_poll(struct napi_struct *napi, int budget)
-                /* If we own the next entry, it is a new packet. Send it up. */
-                while ( ! (tp->rx_ring[entry].status & cpu_to_le32(DescOwned))) {
-                        s32 status = le32_to_cpu(tp->rx_ring[entry].status);
-+		       short pkt_len;
- 
-                        if (tp->dirty_rx + RX_RING_SIZE == tp->cur_rx)
-                                break;
-@@ -151,8 +152,28 @@ int tulip_poll(struct napi_struct *napi, int budget)
- 		       if (++work_done >= budget)
-                                goto not_done;
- 
--                       if ((status & 0x38008300) != 0x0300) {
--                               if ((status & 0x38000300) != 0x0300) {
-+		       /*
-+			* Omit the four octet CRC from the length.
-+			* (May not be considered valid until we have
-+			* checked status for RxLengthOver2047 bits)
-+			*/
-+		       pkt_len = ((status >> 16) & 0x7ff) - 4;
-+
-+		       /*
-+			* Maximum pkt_len is 1518 (1514 + vlan header)
-+			* Anything higher than this is always invalid
-+			* regardless of RxLengthOver2047 bits
-+			*/
-+
-+		       if ((status & (RxLengthOver2047 |
-+				      RxDescCRCError |
-+				      RxDescCollisionSeen |
-+				      RxDescRunt |
-+				      RxDescDescErr |
-+				      RxWholePkt)) != RxWholePkt
-+			   || pkt_len > 1518) {
-+			       if ((status & (RxLengthOver2047 |
-+					      RxWholePkt)) != RxWholePkt) {
-                                 /* Ingore earlier buffers. */
-                                        if ((status & 0xffff) != 0x7fff) {
-                                                if (tulip_debug > 1)
-@@ -161,30 +182,23 @@ int tulip_poll(struct napi_struct *napi, int budget)
-                                                               dev->name, status);
-                                                tp->stats.rx_length_errors++;
-                                        }
--                               } else if (status & RxDescFatalErr) {
-+			       } else {
-                                 /* There was a fatal error. */
-                                        if (tulip_debug > 2)
-                                                printk(KERN_DEBUG "%s: Receive error, Rx status %8.8x.\n",
-                                                       dev->name, status);
-                                        tp->stats.rx_errors++; /* end of a packet.*/
--                                       if (status & 0x0890) tp->stats.rx_length_errors++;
-+				       if (pkt_len > 1518 ||
-+					   (status & RxDescRunt))
-+					       tp->stats.rx_length_errors++;
-+
-                                        if (status & 0x0004) tp->stats.rx_frame_errors++;
-                                        if (status & 0x0002) tp->stats.rx_crc_errors++;
-                                        if (status & 0x0001) tp->stats.rx_fifo_errors++;
-                                }
-                        } else {
--                               /* Omit the four octet CRC from the length. */
--                               short pkt_len = ((status >> 16) & 0x7ff) - 4;
-                                struct sk_buff *skb;
- 
--#ifndef final_version
--                               if (pkt_len > 1518) {
--                                       printk(KERN_WARNING "%s: Bogus packet size of %d (%#x).\n",
--                                              dev->name, pkt_len, pkt_len);
--                                       pkt_len = 1518;
--                                       tp->stats.rx_length_errors++;
--                               }
--#endif
-                                /* Check if the packet is long enough to accept without copying
-                                   to a minimally-sized skbuff. */
-                                if (pkt_len < tulip_rx_copybreak
-@@ -357,14 +371,35 @@ static int tulip_rx(struct net_device *dev)
- 	/* If we own the next entry, it is a new packet. Send it up. */
- 	while ( ! (tp->rx_ring[entry].status & cpu_to_le32(DescOwned))) {
- 		s32 status = le32_to_cpu(tp->rx_ring[entry].status);
-+		short pkt_len;
- 
- 		if (tulip_debug > 5)
- 			printk(KERN_DEBUG "%s: In tulip_rx(), entry %d %8.8x.\n",
- 				   dev->name, entry, status);
- 		if (--rx_work_limit < 0)
- 			break;
--		if ((status & 0x38008300) != 0x0300) {
--			if ((status & 0x38000300) != 0x0300) {
-+
-+		/*
-+		  Omit the four octet CRC from the length.
-+		  (May not be considered valid until we have
-+		  checked status for RxLengthOver2047 bits)
-+		*/
-+		pkt_len = ((status >> 16) & 0x7ff) - 4;
-+		/*
-+		  Maximum pkt_len is 1518 (1514 + vlan header)
-+		  Anything higher than this is always invalid
-+		  regardless of RxLengthOver2047 bits
-+		*/
-+
-+		if ((status & (RxLengthOver2047 |
-+			       RxDescCRCError |
-+			       RxDescCollisionSeen |
-+			       RxDescRunt |
-+			       RxDescDescErr |
-+			       RxWholePkt))        != RxWholePkt
-+		     || pkt_len > 1518) {
-+			if ((status & (RxLengthOver2047 |
-+			     RxWholePkt))         != RxWholePkt) {
- 				/* Ingore earlier buffers. */
- 				if ((status & 0xffff) != 0x7fff) {
- 					if (tulip_debug > 1)
-@@ -373,31 +408,22 @@ static int tulip_rx(struct net_device *dev)
- 							   dev->name, status);
- 					tp->stats.rx_length_errors++;
- 				}
--			} else if (status & RxDescFatalErr) {
-+			} else {
- 				/* There was a fatal error. */
- 				if (tulip_debug > 2)
- 					printk(KERN_DEBUG "%s: Receive error, Rx status %8.8x.\n",
- 						   dev->name, status);
- 				tp->stats.rx_errors++; /* end of a packet.*/
--				if (status & 0x0890) tp->stats.rx_length_errors++;
-+				if (pkt_len > 1518 ||
-+				    (status & RxDescRunt))
-+					tp->stats.rx_length_errors++;
- 				if (status & 0x0004) tp->stats.rx_frame_errors++;
- 				if (status & 0x0002) tp->stats.rx_crc_errors++;
- 				if (status & 0x0001) tp->stats.rx_fifo_errors++;
- 			}
- 		} else {
--			/* Omit the four octet CRC from the length. */
--			short pkt_len = ((status >> 16) & 0x7ff) - 4;
- 			struct sk_buff *skb;
- 
--#ifndef final_version
--			if (pkt_len > 1518) {
--				printk(KERN_WARNING "%s: Bogus packet size of %d (%#x).\n",
--					   dev->name, pkt_len, pkt_len);
--				pkt_len = 1518;
--				tp->stats.rx_length_errors++;
--			}
--#endif
--
- 			/* Check if the packet is long enough to accept without copying
- 			   to a minimally-sized skbuff. */
- 			if (pkt_len < tulip_rx_copybreak
-diff --git a/drivers/net/tulip/tulip.h b/drivers/net/tulip/tulip.h
-index 19abbc3..0afa2d4 100644
---- a/drivers/net/tulip/tulip.h
-+++ b/drivers/net/tulip/tulip.h
-@@ -201,8 +201,38 @@ enum desc_status_bits {
- 	DescStartPkt = 0x20000000,
- 	DescEndRing  = 0x02000000,
- 	DescUseLink  = 0x01000000,
--	RxDescFatalErr = 0x008000,
-+
-+	/*
-+	 * Error summary flag is logical or of 'CRC Error', 'Collision Seen',
-+	 * 'Frame Too Long', 'Runt' and 'Descriptor Error' flags generated
-+	 * within tulip chip.
-+	 */
-+	RxDescErrorSummary = 0x8000,
-+	RxDescCRCError = 0x0002,
-+	RxDescCollisionSeen = 0x0040,
-+
-+	/*
-+	 * 'Frame Too Long' flag is set if packet length including CRC exceeds
-+	 * 1518.  However, a full sized VLAN tagged frame is 1522 bytes
-+	 * including CRC.
-+	 *
-+	 * The tulip chip does not block oversized frames, and if this flag is
-+	 * set on a receive descriptor it does not indicate the frame has been
-+	 * truncated.  The receive descriptor also includes the actual length.
-+	 * Therefore we can safety ignore this flag and check the length
-+	 * ourselves.
-+	 */
-+	RxDescFrameTooLong = 0x0080,
-+	RxDescRunt = 0x0800,
-+	RxDescDescErr = 0x4000,
- 	RxWholePkt   = 0x00000300,
-+	/*
-+	 * Top three bits of 14 bit frame length (status bits 27-29) should
-+	 * never be set as that would make frame over 2047 bytes. The Receive
-+	 * Watchdog flag (bit 4) may indicate the length is over 2048 and the
-+	 * length field is invalid.
-+	 */
-+	RxLengthOver2047 = 0x38000010
- };
- 
- 
-diff --git a/drivers/pci/iova.c b/drivers/pci/iova.c
-index 3ef4ac0..078bf8b 100644
---- a/drivers/pci/iova.c
-+++ b/drivers/pci/iova.c
-@@ -1,9 +1,19 @@
- /*
-- * Copyright (c) 2006, Intel Corporation.
-+ * Copyright © 2006-2009, Intel Corporation.
-  *
-- * This file is released under the GPLv2.
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-+ * Place - Suite 330, Boston, MA 02111-1307 USA.
-  *
-- * Copyright (C) 2006-2008 Intel Corporation
-  * Author: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
-  */
- 
-@@ -123,7 +133,15 @@ move_left:
- 	/* Insert the new_iova into domain rbtree by holding writer lock */
- 	/* Add new node and rebalance tree. */
- 	{
--		struct rb_node **entry = &((prev)), *parent = NULL;
-+		struct rb_node **entry, *parent = NULL;
-+
-+		/* If we have 'prev', it's a valid place to start the
-+		   insertion. Otherwise, start from the root. */
-+		if (prev)
-+			entry = &prev;
-+		else
-+			entry = &iovad->rbroot.rb_node;
-+
- 		/* Figure out where to put new node */
- 		while (*entry) {
- 			struct iova *this = container_of(*entry,
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index ae9775d..eeb7e56 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -572,12 +572,10 @@ static inline void set_page_links(struct page *page, enum zone_type zone,
-  */
- static inline unsigned long round_hint_to_min(unsigned long hint)
- {
--#ifdef CONFIG_SECURITY
- 	hint &= PAGE_MASK;
- 	if (((void *)hint != NULL) &&
- 	    (hint < mmap_min_addr))
- 		return PAGE_ALIGN(mmap_min_addr);
--#endif
- 	return hint;
- }
- 
-diff --git a/include/linux/personality.h b/include/linux/personality.h
-index a84e9ff..1261208 100644
---- a/include/linux/personality.h
-+++ b/include/linux/personality.h
-@@ -40,7 +40,10 @@ enum {
-  * Security-relevant compatibility flags that must be
-  * cleared upon setuid or setgid exec:
-  */
--#define PER_CLEAR_ON_SETID (READ_IMPLIES_EXEC|ADDR_NO_RANDOMIZE)
-+#define PER_CLEAR_ON_SETID (READ_IMPLIES_EXEC  | \
-+			    ADDR_NO_RANDOMIZE  | \
-+			    ADDR_COMPAT_LAYOUT | \
-+			    MMAP_PAGE_ZERO)
- 
- /*
-  * Personality types.
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 80c4d00..1638afd 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -2134,6 +2134,8 @@ static inline int security_file_mmap(struct file *file, unsigned long reqprot,
- 				     unsigned long addr,
- 				     unsigned long addr_only)
- {
-+	if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
-+		return -EACCES;
- 	return 0;
- }
- 
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 03d796c..87f675a 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -741,7 +741,7 @@ static int __init reserve_setup(char *str)
- 	static struct resource reserve[MAXRESERVE];
- 
- 	for (;;) {
--		int io_start, io_num;
-+		unsigned int io_start, io_num;
- 		int x = reserved;
- 
- 		if (get_option (&str, &io_start) != 2)
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 6816e6d..1228d65 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1132,7 +1132,6 @@ static struct ctl_table vm_table[] = {
- 		.strategy	= &sysctl_jiffies,
- 	},
- #endif
--#ifdef CONFIG_SECURITY
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "mmap_min_addr",
-@@ -1141,7 +1140,6 @@ static struct ctl_table vm_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_doulongvec_minmax,
- 	},
--#endif
- #ifdef CONFIG_NUMA
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 0bd9c2d..07b4ec4 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -208,3 +208,21 @@ config VIRT_TO_BUS
- 
- config MMU_NOTIFIER
- 	bool
-+
-+config DEFAULT_MMAP_MIN_ADDR
-+        int "Low address space to protect from user allocation"
-+        default 4096
-+        help
-+	  This is the portion of low virtual memory which should be protected
-+	  from userspace allocation.  Keeping a user from writing to low pages
-+	  can help reduce the impact of kernel NULL pointer bugs.
-+
-+	  For most ia64, ppc64 and x86 users with lots of address space
-+	  a value of 65536 is reasonable and should cause no problems.
-+	  On arm and other archs it should not be higher than 32768.
-+	  Programs which use vm86 functionality would either need additional
-+	  permissions from either the LSM or the capabilities module or have
-+	  this protection disabled.
-+
-+	  This value can be changed after boot using the
-+	  /proc/sys/vm/mmap_min_addr tunable.
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 2ae093e..d330758 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -86,6 +86,9 @@ int sysctl_overcommit_ratio = 50;	/* default is 50% */
- int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
- atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
- 
-+/* amount of vm to protect from userspace access */
-+unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
-+
- /*
-  * Check that a process has enough memory to allocate a new virtual
-  * mapping. 0 means there is enough memory for the allocation to
-diff --git a/security/Kconfig b/security/Kconfig
-index 5592939..38411dd 100644
---- a/security/Kconfig
-+++ b/security/Kconfig
-@@ -92,28 +92,8 @@ config SECURITY_ROOTPLUG
- 
- 	  See <http://www.linuxjournal.com/article.php?sid=6279> for
- 	  more information about this module.
--	  
--	  If you are unsure how to answer this question, answer N.
--
--config SECURITY_DEFAULT_MMAP_MIN_ADDR
--        int "Low address space to protect from user allocation"
--        depends on SECURITY
--        default 0
--        help
--	  This is the portion of low virtual memory which should be protected
--	  from userspace allocation.  Keeping a user from writing to low pages
--	  can help reduce the impact of kernel NULL pointer bugs.
--
--	  For most ia64, ppc64 and x86 users with lots of address space
--	  a value of 65536 is reasonable and should cause no problems.
--	  On arm and other archs it should not be higher than 32768.
--	  Programs which use vm86 functionality would either need additional
--	  permissions from either the LSM or the capabilities module or have
--	  this protection disabled.
--
--	  This value can be changed after boot using the
--	  /proc/sys/vm/mmap_min_addr tunable.
- 
-+	  If you are unsure how to answer this question, answer N.
- 
- source security/selinux/Kconfig
- source security/smack/Kconfig
-diff --git a/security/security.c b/security/security.c
-index 3a4b4f5..27a315d 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -26,9 +26,6 @@ extern void security_fixup_ops(struct security_operations *ops);
- 
- struct security_operations *security_ops;	/* Initialized to NULL */
- 
--/* amount of vm to protect from userspace access */
--unsigned long mmap_min_addr = CONFIG_SECURITY_DEFAULT_MMAP_MIN_ADDR;
--
- static inline int verify(struct security_operations *ops)
- {
- 	/* verify the security_operations structure exists */
+I'm announcing the release of the 2.6.30.2 kernel.  All users of the
+2.6.30 kernel series are very strongly encouraged to upgrade.
+
+I'll also be replying to this message with a copy of the patch between
+2.6.30.1 and 2.6.30.2
+
+The updated 2.6.30.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.30.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.30.y.git;a=summary
+
+thanks,
+
+greg k-h
+
+------------
+
+ Makefile                         |    7 +++--
+ arch/alpha/include/asm/percpu.h  |    6 ++--
+ arch/blackfin/kernel/irqchip.c   |   50 ++++++++-------------------------------
+ arch/blackfin/kernel/setup.c     |    3 +-
+ arch/blackfin/mach-common/head.S |   16 ++++++------
+ arch/blackfin/mach-common/smp.c  |   13 +++++-----
+ arch/x86/include/asm/pci.h       |    2 -
+ block/blk-core.c                 |   10 +++----
+ drivers/block/floppy.c           |    5 +++
+ drivers/md/md.c                  |    8 ++++--
+ drivers/md/raid5.c               |    3 +-
+ drivers/net/tun.c                |    4 ++-
+ drivers/pci/iova.c               |   26 +++++++++++++++++---
+ fs/fuse/dev.c                    |    2 -
+ fs/fuse/file.c                   |    2 -
+ include/asm-generic/percpu.h     |    4 +++
+ include/linux/mm.h               |    2 -
+ include/linux/percpu-defs.h      |    3 +-
+ include/linux/personality.h      |    5 +++
+ include/linux/security.h         |    2 +
+ kernel/futex.c                   |   43 ++++++++++++++++++---------------
+ kernel/resource.c                |    2 -
+ kernel/sysctl.c                  |    2 -
+ lib/dma-debug.c                  |    2 -
+ mm/Kconfig                       |   19 ++++++++++++++
+ mm/mmap.c                        |    3 ++
+ net/ipv4/arp.c                   |    7 +----
+ security/Kconfig                 |   22 -----------------
+ security/security.c              |    3 --
+ 29 files changed, 143 insertions(+), 133 deletions(-)
+
+Christoph Lameter (1):
+      security: use mmap_min_addr indepedently of security models
+
+Csaba Henk (1):
+      fuse: fix return value of fuse_dev_write()
+
+David Woodhouse (2):
+      Fix pci_unmap_addr() et al on i386.
+      Fix iommu address space allocation
+
+Eric W. Biederman (1):
+      Revert "ipv4: arp announce, arp_proxy and windows ip conflict verification"
+
+Eugene Teo (1):
+      Add '-fno-delete-null-pointer-checks' to gcc CFLAGS
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.30.2
+
+Jiri Slaby (1):
+      floppy: fix lock imbalance
+
+Joerg Roedel (1):
+      dma-debug: fix off-by-one error in overlap function
+
+Julien Tinnes (1):
+      personality: fix PER_CLEAR_ON_SETID (CVE-2009-1895)
+
+Linus Torvalds (1):
+      Don't use '-fwrapv' compiler option: it's buggy in gcc-4.1.x
+
+Mariusz Kozlowski (1):
+      tun/tap: Fix crashes if open() /dev/net/tun and then poll() it. (CVE-2009-1897)
+
+Mike Frysinger (2):
+      Blackfin: redo handling of bad irqs
+      Blackfin: fix command line corruption with DEBUG_DOUBLEFAULT
+
+Miklos Szeredi (1):
+      fuse: fix bad return value in fuse_file_poll()
+
+NeilBrown (4):
+      blocK: Restore barrier support for md and probably other virtual devices.
+      md/raid5: suspend shouldn't affect read requests.
+      md: fix error path when duplicate name is found on md device creation.
+      md: avoid dereferencing NULL pointer when accessing suspend_* sysfs attributes.
+
+Sonic Zhang (2):
+      Blackfin: fix accidental reset in some boot modes
+      Blackfin: fix deadlock in SMP IPI handler
+
+Sonny Rao (1):
+      futexes: Fix infinite loop in get_futex_key() on huge page
+
+Tejun Heo (1):
+      alpha: fix percpu build breakage
+
+Thomas Gleixner (1):
+      futex: Fix the write access fault problem for real
+
+Zhang Rui (1):
+      kernel/resource.c: fix sign extension in reserve_setup()
+
