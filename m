@@ -1,104 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZGTMBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbZGTMCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbZGTMBz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 08:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZGTMBy
+	id S1753443AbZGTMCG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 08:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbZGTMCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 08:01:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45370 "EHLO hera.kernel.org"
+	Mon, 20 Jul 2009 08:02:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45386 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189AbZGTMBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 08:01:53 -0400
-Date: Mon, 20 Jul 2009 12:01:14 GMT
+	id S1753250AbZGTMCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 08:02:01 -0400
+Date: Mon, 20 Jul 2009 12:01:29 GMT
 From: tip-bot for Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        akinobu.mita@gmail.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        tglx@linutronix.de, akinobu.mita@gmail.com, mingo@elte.hu
-In-Reply-To: <20090718150853.GA11294@localhost.localdomain>
-References: <20090718150853.GA11294@localhost.localdomain>
-Subject: [tip:x86/asm] x86: Use get_desc_base()
-Message-ID: <tip-254e0a6bff87ab8b22293c4bd1443507df698407@git.kernel.org>
-Git-Commit-ID: 254e0a6bff87ab8b22293c4bd1443507df698407
+In-Reply-To: <20090718150955.GB11294@localhost.localdomain>
+References: <20090718150955.GB11294@localhost.localdomain>
+Subject: [tip:x86/asm] x86: Remove unused patch_espfix_desc()
+Message-ID: <tip-fde0312d01b60a3fd5dc56e69a9613defbbc7097@git.kernel.org>
+Git-Commit-ID: fde0312d01b60a3fd5dc56e69a9613defbbc7097
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 20 Jul 2009 12:01:15 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 20 Jul 2009 12:01:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  254e0a6bff87ab8b22293c4bd1443507df698407
-Gitweb:     http://git.kernel.org/tip/254e0a6bff87ab8b22293c4bd1443507df698407
+Commit-ID:  fde0312d01b60a3fd5dc56e69a9613defbbc7097
+Gitweb:     http://git.kernel.org/tip/fde0312d01b60a3fd5dc56e69a9613defbbc7097
 Author:     Akinobu Mita <akinobu.mita@gmail.com>
-AuthorDate: Sun, 19 Jul 2009 00:08:54 +0900
+AuthorDate: Sun, 19 Jul 2009 00:09:56 +0900
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 19 Jul 2009 18:27:51 +0200
+CommitDate: Sun, 19 Jul 2009 18:27:52 +0200
 
-x86: Use get_desc_base()
+x86: Remove unused patch_espfix_desc()
 
-Use get_desc_base() to get the base address in desc_struct
+patch_espfix_desc() is not used after commit
+dc4c2a0aed3b09f6e255bd5c3faa50fe6e0b2ded
 
 Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-LKML-Reference: <20090718150853.GA11294@localhost.localdomain>
+LKML-Reference: <20090718150955.GB11294@localhost.localdomain>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/doublefault_32.c |    4 +---
- arch/x86/kernel/step.c           |    9 ++++-----
- 2 files changed, 5 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/traps.h |    4 +---
+ arch/x86/kernel/traps.c      |   21 ---------------------
+ 2 files changed, 1 insertions(+), 24 deletions(-)
 
-diff --git a/arch/x86/kernel/doublefault_32.c b/arch/x86/kernel/doublefault_32.c
-index b4f14c6..37250fe 100644
---- a/arch/x86/kernel/doublefault_32.c
-+++ b/arch/x86/kernel/doublefault_32.c
-@@ -27,9 +27,7 @@ static void doublefault_fn(void)
+diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
+index bfd74c0..4da91ad 100644
+--- a/arch/x86/include/asm/traps.h
++++ b/arch/x86/include/asm/traps.h
+@@ -81,9 +81,7 @@ extern int panic_on_unrecovered_nmi;
  
- 	if (ptr_ok(gdt)) {
- 		gdt += GDT_ENTRY_TSS << 3;
--		tss = *(u16 *)(gdt+2);
--		tss += *(u8 *)(gdt+4) << 16;
--		tss += *(u8 *)(gdt+7) << 24;
-+		tss = get_desc_base((struct desc_struct *)gdt);
- 		printk(KERN_EMERG "double fault, tss at %08lx\n", tss);
+ void math_error(void __user *);
+ void math_emulate(struct math_emu_info *);
+-#ifdef CONFIG_X86_32
+-unsigned long patch_espfix_desc(unsigned long, unsigned long);
+-#else
++#ifndef CONFIG_X86_32
+ asmlinkage void smp_thermal_interrupt(void);
+ asmlinkage void mce_threshold_interrupt(void);
+ #endif
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index 5204332..2367941 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -786,27 +786,6 @@ do_spurious_interrupt_bug(struct pt_regs *regs, long error_code)
+ #endif
+ }
  
- 		if (ptr_ok(tss)) {
-diff --git a/arch/x86/kernel/step.c b/arch/x86/kernel/step.c
-index e8b9863..3149032 100644
---- a/arch/x86/kernel/step.c
-+++ b/arch/x86/kernel/step.c
-@@ -4,6 +4,7 @@
- #include <linux/sched.h>
- #include <linux/mm.h>
- #include <linux/ptrace.h>
-+#include <asm/desc.h>
- 
- unsigned long convert_ip_to_linear(struct task_struct *child, struct pt_regs *regs)
+-#ifdef CONFIG_X86_32
+-unsigned long patch_espfix_desc(unsigned long uesp, unsigned long kesp)
+-{
+-	struct desc_struct *gdt = get_cpu_gdt_table(smp_processor_id());
+-	unsigned long base = (kesp - uesp) & -THREAD_SIZE;
+-	unsigned long new_kesp = kesp - base;
+-	unsigned long lim_pages = (new_kesp | (THREAD_SIZE - 1)) >> PAGE_SHIFT;
+-	__u64 desc = *(__u64 *)&gdt[GDT_ENTRY_ESPFIX_SS];
+-
+-	/* Set up base for espfix segment */
+-	desc &= 0x00f0ff0000000000ULL;
+-	desc |=	((((__u64)base) << 16) & 0x000000ffffff0000ULL) |
+-		((((__u64)base) << 32) & 0xff00000000000000ULL) |
+-		((((__u64)lim_pages) << 32) & 0x000f000000000000ULL) |
+-		(lim_pages & 0xffff);
+-	*(__u64 *)&gdt[GDT_ENTRY_ESPFIX_SS] = desc;
+-
+-	return new_kesp;
+-}
+-#endif
+-
+ asmlinkage void __attribute__((weak)) smp_thermal_interrupt(void)
  {
-@@ -23,7 +24,7 @@ unsigned long convert_ip_to_linear(struct task_struct *child, struct pt_regs *re
- 	 * and APM bios ones we just ignore here.
- 	 */
- 	if ((seg & SEGMENT_TI_MASK) == SEGMENT_LDT) {
--		u32 *desc;
-+		struct desc_struct *desc;
- 		unsigned long base;
- 
- 		seg &= ~7UL;
-@@ -33,12 +34,10 @@ unsigned long convert_ip_to_linear(struct task_struct *child, struct pt_regs *re
- 			addr = -1L; /* bogus selector, access would fault */
- 		else {
- 			desc = child->mm->context.ldt + seg;
--			base = ((desc[0] >> 16) |
--				((desc[1] & 0xff) << 16) |
--				(desc[1] & 0xff000000));
-+			base = get_desc_base(desc);
- 
- 			/* 16-bit code segment? */
--			if (!((desc[1] >> 22) & 1))
-+			if (!desc->d)
- 				addr &= 0xffff;
- 			addr += base;
- 		}
+ }
