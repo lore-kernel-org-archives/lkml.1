@@ -1,95 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZGTUJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZGTUKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbZGTUJz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 16:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZGTUJx
+	id S1754222AbZGTUKE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 16:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbZGTUKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 16:09:53 -0400
-Received: from mail.windriver.com ([147.11.1.11]:36170 "EHLO mail.wrs.com"
+	Mon, 20 Jul 2009 16:10:01 -0400
+Received: from mail.windriver.com ([147.11.1.11]:36212 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754066AbZGTUJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 16:09:44 -0400
+	id S1754086AbZGTUJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 16:09:53 -0400
 From: Jason Wessel <jason.wessel@windriver.com>
 To: gregkh@suse.de
 Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       dbrownell@users.sourceforge.net, Alan Stern <stern@rowland.harvard.edu>,
-       Sarah Sharp <sarah.a.sharp@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH 0/10] x86: EHCI and earlyprintk= improvements
-Date: Mon, 20 Jul 2009 15:06:22 -0500
-Message-Id: <1248120392-8372-1-git-send-email-jason.wessel@windriver.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [PATCH 09/10] ehci-dbgp: errata for EHCI debug/host controller synchronization
+Date: Mon, 20 Jul 2009 15:06:31 -0500
+Message-Id: <1248120392-8372-10-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.0.3.523.g304d0
-X-OriginalArrivalTime: 20 Jul 2009 20:06:36.0425 (UTC) FILETIME=[95E70790:01CA0975]
+In-Reply-To: <1248120392-8372-9-git-send-email-jason.wessel@windriver.com>
+References: <1248120392-8372-1-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-2-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-3-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-4-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-5-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-6-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-7-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-8-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-9-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 20 Jul 2009 20:07:04.0645 (UTC) FILETIME=[A6B90F50:01CA0975]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On some EHCI debug controllers after the host controller driver is
+activated, the debug controller will occasionally fail to submit a
+bulk write URB.  On controllers that exhibit this behavior a dummy
+bulk write must get submitted to resynchronize the device.
 
-This patch series against the 2.6.31-rc3 covers improving the
-reliability of earlyprintk when using a usb debug device connected to
-an EHCI debug controller.
+The "dummy bulk write" does not get received by the host attached to
+the other end of the usb debug device.  The usb debug device simply
+acknowledges the "dummy bulk write" and returns to a usable state.
 
-The only patch that is not directly related to the USB earlyprintk is
-the 5th in the series which changes the console registration such that
-you can have more than one earlyprintk device.  It is plausible to
-drop this patch if folks object to the idea or implementation.
+The behavior, without this patch is that you see missing text from a
+complete kernel boot when using the keep option to the earlyprintk
+kernel argument.
 
-These patches were heavily test on 12 different systems with a total
-of 7 different EHCI controllers on both the x86_64 and i386
-architectures.
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+---
+ drivers/usb/early/ehci-dbgp.c |   41 +++++++++++++++++++++++++++++------------
+ 1 files changed, 29 insertions(+), 12 deletions(-)
 
-The series starts by moving the EHCI debug code out of the
-arch/x86/kernel/early_printk.c and over to under the
-drivers/usb/early/ehci-dbgp.c.  It is plausible to use this code on
-other architectures beyond x86.  This also allows the earlyprintk.c to
-stay a bit cleaner, since it is primarily intended to handle the
-"earlyprintk=" setup.
+diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
+index f0a41c6..1206a26 100644
+--- a/drivers/usb/early/ehci-dbgp.c
++++ b/drivers/usb/early/ehci-dbgp.c
+@@ -245,16 +245,9 @@ static inline void dbgp_get_data(void *buf, int size)
+ 		bytes[i] = (hi >> (8*(i - 4))) & 0xff;
+ }
+ 
+-static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
+-			 const char *bytes, int size)
++static int dbgp_out(u32 addr, const char *bytes, int size)
+ {
+-	u32 pids, addr, ctrl;
+-	int ret;
+-
+-	if (size > DBGP_MAX_PACKET)
+-		return -1;
+-
+-	addr = DBGP_EPADDR(devnum, endpoint);
++	u32 pids, ctrl;
+ 
+ 	pids = readl(&ehci_debug->pids);
+ 	pids = dbgp_pid_update(pids, USB_PID_OUT);
+@@ -267,10 +260,34 @@ static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
+ 	dbgp_set_data(bytes, size);
+ 	writel(addr, &ehci_debug->address);
+ 	writel(pids, &ehci_debug->pids);
++	return dbgp_wait_until_done(ctrl);
++}
+ 
+-	ret = dbgp_wait_until_done(ctrl);
+-	if (ret < 0)
+-		return ret;
++static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
++			 const char *bytes, int size)
++{
++	int ret;
++	int loops = 5;
++	u32 addr;
++	if (size > DBGP_MAX_PACKET)
++		return -1;
++
++	addr = DBGP_EPADDR(devnum, endpoint);
++try_again:
++	if (loops--) {
++		ret = dbgp_out(addr, bytes, size);
++		if (ret == -DBGP_ERR_BAD) {
++			int try_loops = 3;
++			do {
++				/* Emit a dummy packet to re-sync communication
++				 * with the debug device */
++				if (dbgp_out(addr, "12345678", 8) >= 0) {
++					udelay(2);
++					goto try_again;
++				}
++			} while (try_loops--);
++		}
++	}
+ 
+ 	return ret;
+ }
+-- 
+1.6.0.3.523.g304d0
 
-The other key changes are:
-   * Update the documentation to reflect the usage constraints
-   * The earlyprintk=keep,... works correctly with dbgp
-   * Make the cr nl handling for dbgp the same as the uart drivers
-   * Numerous errata and initialization fixes to make the usb
-     debug device work with a wide range of EHCI controllers
-
-Thanks,
-Jason.
-
-The following changes since commit 78af08d90b8f745044b1274430bc4bc6b2b27aca:
-  Linus Torvalds (1):
-        Merge branch 'drm-fixes' of git://git.kernel.org/.../airlied/drm-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_gregkh_2
-
-Jason Wessel (10):
-      ehci early_printk: split ehci debug driver from early_printk.c
-      usb,early_printk: insert cr prior to nl as needed
-      ehci-dbgp: Execute early BIOS hand off
-      usb,early_printk: EHCI debug controller initialization delays
-      printk,early_printk,console: Allow more than one early console
-      ehci-dbgp: stability improvements and external re-init
-      ehci-dbgp,ehci: Allow early or late use of the dbgp device
-      ehci-dbgp: errata for EHCI debug controller initialization
-      ehci-dbgp: errata for EHCI debug/host controller synchronization
-      ehci-dbgp,documentation: Documentation updates for ehci-dbgp
-
-
- Documentation/kernel-parameters.txt |    2 +-
- Documentation/x86/earlyprintk.txt   |   39 ++-
- arch/x86/kernel/early_printk.c      |  780 ++--------------------------
- drivers/usb/Makefile                |    1 +
- drivers/usb/early/Makefile          |    5 +
- drivers/usb/early/ehci-dbgp.c       |  996 +++++++++++++++++++++++++++++++++++
- drivers/usb/host/ehci-hcd.c         |   33 ++-
- drivers/usb/host/ehci-hub.c         |   10 +
- drivers/usb/host/ehci-pci.c         |   20 -
- include/linux/usb/ehci_def.h        |   13 +
- kernel/printk.c                     |   41 +-
- 11 files changed, 1154 insertions(+), 786 deletions(-)
- create mode 100644 drivers/usb/early/Makefile
- create mode 100644 drivers/usb/early/ehci-dbgp.c
