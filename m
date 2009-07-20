@@ -1,405 +1,375 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbZGTUF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbZGTUIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953AbZGTUF0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 16:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZGTUFZ
+	id S1753191AbZGTUIu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 16:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbZGTUIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 16:05:25 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:33311 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020AbZGTUFX (ORCPT
+	Mon, 20 Jul 2009 16:08:49 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:41991 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753086AbZGTUIr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 16:05:23 -0400
-Date: Mon, 20 Jul 2009 22:05:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kbuild: save ARCH & CROSS_COMPILE when building a
-	kernel
-Message-ID: <20090720200522.GA6854@merkur.ravnborg.org>
-References: <20090720100157.GA6467@merkur.ravnborg.org> <1248086059.15751.8405.camel@twins> <20090720115134.GA6517@merkur.ravnborg.org> <1248091243.15751.8550.camel@twins> <20090720171200.GA6730@merkur.ravnborg.org>
+	Mon, 20 Jul 2009 16:08:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=mG7mqmHhrdvUybEcA47IPKXAYD7AcBkab9nj4jCI3ke+6h3YsqgibfTsrH47HHn8j0
+         dZ32KG3/lGorP6PzB7fkpfIK27eAlyd85RvazotYsV+EBstlvPwctB1p9OTyGx5L2Dwd
+         hUDBomix5FZmOHgsEzWPSGyFGa9x1x5c8FvY0=
+Message-ID: <4A64CEC9.8020402@tuffmail.co.uk>
+Date: Mon, 20 Jul 2009 21:08:41 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090720171200.GA6730@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: Matthew Garrett <mjg@redhat.com>, Frans Pop <elendil@planet.nl>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       linux acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFT] hp-wmi: improved rfkill support for wifi
+References: <4A61FE7D.9080409@tuffmail.co.uk>	 <8db1092f0907181155h3d603a17q11815b9f174ac333@mail.gmail.com>	 <4A623490.50305@tuffmail.co.uk>	 <8db1092f0907190028o334371d7g798c1e8cb9a5744b@mail.gmail.com>	 <4A635618.3070507@tuffmail.co.uk>	 <8db1092f0907191110p2d3c2c45je61bda6365ed1468@mail.gmail.com>	 <4A6364DF.3040303@tuffmail.co.uk>	 <8db1092f0907191208i6fcdf519r8204be542e95bbe4@mail.gmail.com>	 <4A64A50D.5040401@tuffmail.co.uk> <8db1092f0907201254m2be66477k6ec2f447bfad9f73@mail.gmail.com>
+In-Reply-To: <8db1092f0907201254m2be66477k6ec2f447bfad9f73@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 20, 2009 at 07:12:00PM +0200, Sam Ravnborg wrote:
-> On Mon, Jul 20, 2009 at 02:00:43PM +0200, Peter Zijlstra wrote:
-> > On Mon, 2009-07-20 at 13:51 +0200, Sam Ravnborg wrote:
-> > > -if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
-> > > -if [ -x /sbin/${CROSS_COMPILE}installkernel ]; then exec /sbin/${CROSS_COMPILE}installkernel "$@"; fi
-> > > +for INSTALL in ~/bin/${CROSS_COMPILE} /sbin/${CROSS_COMPILE} ~/bin /sbin/; do
-> > > +       if [ -x ${INSTALL}installkernel ]; then
-> > > +               exec ${INSTALL}installkernel "$@"
-> > > +       fi
-> > > +done
-> > 
-> > Won't that still get upset if CROSS_COMPILE has whitespace in it, which
-> > would form weird filenames etc.. or worse, it might match ~/bin/distcc
-> 
-> The root cause of this is the use of CROSS_COMPILE for the installkernel
-> script.
-> We know that the CROSS_COMPILE prefix changes with the toolcahin and
-> likely is a very personal thing.
-> So rather than using CROSS_COMPILE we should let the user override
-> the installkernel script used.
-> 
-> The simplest replacement is the following patch which solves this and
-> only people relying on the use of CROSS_COMPILE for installkernel
-> needs to change anything.
-> 
-> Needs to change the other ~20 uses of installkernel if we agree on
-> this change.
+Maciej Rutecki wrote:
+> 2009/7/20 Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
+>   
+>> ...and here's the version that remembers to register the bluetooth.  I
+>> reviewed the patch again; hopefully that's the last dumb error.
+>>     
+> [...]
+>
+> 2.6.31-rc3+ patches:
+> http://lkml.org/lkml/2009/7/18/131
+> http://lkml.org/lkml/2009/7/10/339
+> + patch below:
+>
+>   
+>> diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
+>> index 517ac47..adb26d3 100644
+>> --- a/drivers/platform/x86/hp-wmi.c
+>> +++ b/drivers/platform/x86/hp-wmi.c
+>> @@ -51,6 +51,12 @@ MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");
+>>  #define HPWMI_WIRELESS_QUERY 0x5
+>>  #define HPWMI_HOTKEY_QUERY 0xc
+>>
+>> +enum hp_wmi_radio {
+>> +       HPWMI_WIFI = 0,
+>> +       HPWMI_BLUETOOTH = 1,
+>> +       HPWMI_WWAN = 2,
+>> +};
+>> +
+>>  static int __init hp_wmi_bios_setup(struct platform_device *device);
+>>  static int __exit hp_wmi_bios_remove(struct platform_device *device);
+>>  static int hp_wmi_resume_handler(struct platform_device *device);
+>> @@ -170,8 +176,8 @@ static int hp_wmi_tablet_state(void)
+>>
+>>  static int hp_wmi_set_block(void *data, bool blocked)
+>>  {
+>> -       unsigned long b = (unsigned long) data;
+>> -       int query = BIT(b + 8) | ((!blocked) << b);
+>> +       enum hp_wmi_radio r = (enum hp_wmi_radio) data;
+>> +       int query = BIT(r + 8) | ((!blocked) << r);
+>>
+>>        return hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 1, query);
+>>  }
+>> @@ -180,41 +186,23 @@ static const struct rfkill_ops hp_wmi_rfkill_ops = {
+>>        .set_block = hp_wmi_set_block,
+>>  };
+>>
+>> -static bool hp_wmi_wifi_sw_state(void)
+>> +static bool hp_wmi_get_sw_state(enum hp_wmi_radio r)
+>>  {
+>>        int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
+>> +       int mask = 0x200 << (r * 8);
+>>
+>> -       if (wireless & 0x200)
+>> +       if (wireless & mask)
+>>                return false;
+>>        else
+>>                return true;
+>>  }
+>>
+>> -static bool hp_wmi_wifi_hw_state(void)
+>> +static bool hp_wmi_get_hw_state(enum hp_wmi_radio r)
+>>  {
+>>        int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
+>> +       int mask = 0x800 << (r * 8);
+>>
+>> -       if (wireless & 0x800)
+>> -               return false;
+>> -       else
+>> -               return true;
+>> -}
+>> -
+>> -static bool hp_wmi_bluetooth_state(void)
+>> -{
+>> -       int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
+>> -
+>> -       if (wireless & 0x10000)
+>> -               return false;
+>> -       else
+>> -               return true;
+>> -}
+>> -
+>> -static bool hp_wmi_wwan_state(void)
+>> -{
+>> -       int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
+>> -
+>> -       if (wireless & 0x1000000)
+>> +       if (wireless & mask)
+>>                return false;
+>>        else
+>>                return true;
+>> @@ -339,50 +327,55 @@ static void hp_wmi_notify(u32 value, void *context)
+>>        struct acpi_buffer response = { ACPI_ALLOCATE_BUFFER, NULL };
+>>        static struct key_entry *key;
+>>        union acpi_object *obj;
+>> +       int eventcode;
+>>
+>>        wmi_get_event_data(value, &response);
+>>
+>>        obj = (union acpi_object *)response.pointer;
+>>
+>> -       if (obj && obj->type == ACPI_TYPE_BUFFER && obj->buffer.length == 8) {
+>> -               int eventcode = *((u8 *) obj->buffer.pointer);
+>> -               if (eventcode == 0x4)
+>> -                       eventcode = hp_wmi_perform_query(HPWMI_HOTKEY_QUERY, 0,
+>> -                                                        0);
+>> -               key = hp_wmi_get_entry_by_scancode(eventcode);
+>> -               if (key) {
+>> -                       switch (key->type) {
+>> -                       case KE_KEY:
+>> -                               input_report_key(hp_wmi_input_dev,
+>> -                                                key->keycode, 1);
+>> -                               input_sync(hp_wmi_input_dev);
+>> -                               input_report_key(hp_wmi_input_dev,
+>> -                                                key->keycode, 0);
+>> -                               input_sync(hp_wmi_input_dev);
+>> -                               break;
+>> -                       }
+>> -               } else if (eventcode == 0x1) {
+>> -                       input_report_switch(hp_wmi_input_dev, SW_DOCK,
+>> -                                           hp_wmi_dock_state());
+>> -                       input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
+>> -                                           hp_wmi_tablet_state());
+>> +       if (!obj || obj->type != ACPI_TYPE_BUFFER || obj->buffer.length != 8) {
+>> +               printk(KERN_INFO "HP WMI: Unknown response received\n");
+>> +               return;
+>> +       }
+>> +
+>> +       eventcode = *((u8 *) obj->buffer.pointer);
+>> +       if (eventcode == 0x4)
+>> +               eventcode = hp_wmi_perform_query(HPWMI_HOTKEY_QUERY, 0,
+>> +                                               0);
+>> +       key = hp_wmi_get_entry_by_scancode(eventcode);
+>> +       if (key) {
+>> +               switch (key->type) {
+>> +               case KE_KEY:
+>> +                       input_report_key(hp_wmi_input_dev,
+>> +                                        key->keycode, 1);
+>> +                       input_sync(hp_wmi_input_dev);
+>> +                       input_report_key(hp_wmi_input_dev,
+>> +                                        key->keycode, 0);
+>>                        input_sync(hp_wmi_input_dev);
+>> -               } else if (eventcode == 0x5) {
+>> -                       if (wifi_rfkill)
+>> -                               rfkill_set_states(wifi_rfkill,
+>> -                                                 hp_wmi_wifi_sw_state(),
+>> -                                                 hp_wmi_wifi_hw_state());
+>> -                       if (bluetooth_rfkill)
+>> -                               rfkill_set_sw_state(bluetooth_rfkill,
+>> -                                                   hp_wmi_bluetooth_state());
+>> -                       if (wwan_rfkill)
+>> -                               rfkill_set_sw_state(wwan_rfkill,
+>> -                                                   hp_wmi_wwan_state());
+>> -               } else
+>> -                       printk(KERN_INFO "HP WMI: Unknown key pressed - %x\n",
+>> -                              eventcode);
+>> +                       break;
+>> +               }
+>> +       } else if (eventcode == 0x1) {
+>> +               input_report_switch(hp_wmi_input_dev, SW_DOCK,
+>> +                                   hp_wmi_dock_state());
+>> +               input_report_switch(hp_wmi_input_dev, SW_TABLET_MODE,
+>> +                                   hp_wmi_tablet_state());
+>> +               input_sync(hp_wmi_input_dev);
+>> +       } else if (eventcode == 0x5) {
+>> +               if (wifi_rfkill)
+>> +                       rfkill_set_states(wifi_rfkill,
+>> +                                         hp_wmi_get_sw_state(HPWMI_WIFI),
+>> +                                         hp_wmi_get_hw_state(HPWMI_WIFI));
+>> +               if (bluetooth_rfkill)
+>> +                       rfkill_set_states(bluetooth_rfkill,
+>> +                                         hp_wmi_get_sw_state(HPWMI_BLUETOOTH),
+>> +                                         hp_wmi_get_hw_state(HPWMI_BLUETOOTH));
+>> +               if (wwan_rfkill)
+>> +                       rfkill_set_states(wwan_rfkill,
+>> +                                         hp_wmi_get_sw_state(HPWMI_WWAN),
+>> +                                         hp_wmi_get_hw_state(HPWMI_WWAN));
+>>        } else
+>> -               printk(KERN_INFO "HP WMI: Unknown response received\n");
+>> +               printk(KERN_INFO "HP WMI: Unknown key pressed - %x\n",
+>> +                       eventcode);
+>>  }
+>>
+>>  static int __init hp_wmi_input_setup(void)
+>> @@ -461,11 +454,11 @@ static int __init hp_wmi_bios_setup(struct platform_device *device)
+>>                wifi_rfkill = rfkill_alloc("hp-wifi", &device->dev,
+>>                                           RFKILL_TYPE_WLAN,
+>>                                           &hp_wmi_rfkill_ops,
+>> -                                          (void *) 0);
+>> +                                          (void *) HPWMI_WIFI);
+>>                rfkill_init_sw_state(wifi_rfkill,
+>> -                                    hp_wmi_wifi_sw_state());
+>> +                                    hp_wmi_get_sw_state(HPWMI_WIFI));
+>>                rfkill_set_hw_state(wifi_rfkill,
+>> -                                   hp_wmi_wifi_hw_state());
+>> +                                   hp_wmi_get_hw_state(HPWMI_WIFI));
+>>                err = rfkill_register(wifi_rfkill);
+>>                if (err)
+>>                        goto register_wifi_error;
+>> @@ -475,7 +468,11 @@ static int __init hp_wmi_bios_setup(struct platform_device *device)
+>>                bluetooth_rfkill = rfkill_alloc("hp-bluetooth", &device->dev,
+>>                                                RFKILL_TYPE_BLUETOOTH,
+>>                                                &hp_wmi_rfkill_ops,
+>> -                                               (void *) 1);
+>> +                                               (void *) HPWMI_BLUETOOTH);
+>> +               rfkill_init_sw_state(bluetooth_rfkill,
+>> +                                    hp_wmi_get_sw_state(HPWMI_BLUETOOTH));
+>> +               rfkill_set_hw_state(bluetooth_rfkill,
+>> +                                   hp_wmi_get_hw_state(HPWMI_BLUETOOTH));
+>>                err = rfkill_register(bluetooth_rfkill);
+>>                if (err)
+>>                        goto register_bluetooth_error;
+>> @@ -485,7 +482,11 @@ static int __init hp_wmi_bios_setup(struct platform_device *device)
+>>                wwan_rfkill = rfkill_alloc("hp-wwan", &device->dev,
+>>                                           RFKILL_TYPE_WWAN,
+>>                                           &hp_wmi_rfkill_ops,
+>> -                                          (void *) 2);
+>> +                                          (void *) HPWMI_WWAN);
+>> +               rfkill_init_sw_state(wwan_rfkill,
+>> +                                    hp_wmi_get_sw_state(HPWMI_WWAN));
+>> +               rfkill_set_hw_state(wwan_rfkill,
+>> +                                   hp_wmi_get_hw_state(HPWMI_WWAN));
+>>                err = rfkill_register(wwan_rfkill);
+>>                if (err)
+>>                        goto register_wwan_err;
+>> @@ -541,9 +542,18 @@ static int hp_wmi_resume_handler(struct platform_device *device)
+>>                            hp_wmi_tablet_state());
+>>        input_sync(hp_wmi_input_dev);
+>>
+>> -       rfkill_set_states(wifi_rfkill,
+>> -                         hp_wmi_wifi_sw_state(),
+>> -                         hp_wmi_wifi_hw_state());
+>> +       if (wifi_rfkill)
+>> +               rfkill_set_states(wifi_rfkill,
+>> +                                 hp_wmi_get_sw_state(HPWMI_WIFI),
+>> +                                 hp_wmi_get_hw_state(HPWMI_WIFI));
+>> +       if (bluetooth_rfkill)
+>> +               rfkill_set_states(bluetooth_rfkill,
+>> +                                 hp_wmi_get_sw_state(HPWMI_BLUETOOTH),
+>> +                                 hp_wmi_get_hw_state(HPWMI_BLUETOOTH));
+>> +       if (wwan_rfkill)
+>> +               rfkill_set_states(wwan_rfkill,
+>> +                                 hp_wmi_get_sw_state(HPWMI_WWAN),
+>> +                                 hp_wmi_get_hw_state(HPWMI_WWAN));
+>>
+>>        return 0;
+>>  }
+>>
+>>
+>>
+>>     
+>
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list
+> 0: phy0: Wireless LAN
+>         Soft blocked: yes
+>         Hard blocked: yes
+> 1: hp-wifi: Wireless LAN
+>         Soft blocked: yes
+>         Hard blocked: no
+> 2: hp-bluetooth: Bluetooth
+>         Soft blocked: yes
+>         Hard blocked: no
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill unblock 0
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list
+> 0: phy0: Wireless LAN
+>         Soft blocked: no
+>         Hard blocked: yes
+> 1: hp-wifi: Wireless LAN
+>         Soft blocked: yes
+>         Hard blocked: no
+> 2: hp-bluetooth: Bluetooth
+>         Soft blocked: yes
+>         Hard blocked: no
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill unblock 1
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list
+> 0: phy0: Wireless LAN
+>         Soft blocked: no
+>         Hard blocked: no
+> 1: hp-wifi: Wireless LAN
+>         Soft blocked: no
+>         Hard blocked: no
+> 2: hp-bluetooth: Bluetooth
+>         Soft blocked: yes
+>         Hard blocked: no
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill unblock 2
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list
+> 0: phy0: Wireless LAN
+>         Soft blocked: no
+>         Hard blocked: no
+> 1: hp-wifi: Wireless LAN
+>         Soft blocked: no
+>         Hard blocked: no
+> 2: hp-bluetooth: Bluetooth
+>         Soft blocked: no
+>         Hard blocked: no
+> 3: hci0: Bluetooth
+>         Soft blocked: yes
+>         Hard blocked: no
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill unblock 3
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# ./rfkill list
+> 0: phy0: Wireless LAN
+>         Soft blocked: no
+>         Hard blocked: no
+> 1: hp-wifi: Wireless LAN
+>         Soft blocked: no
+>         Hard blocked: no
+> 2: hp-bluetooth: Bluetooth
+>         Soft blocked: no
+>         Hard blocked: no
+> 3: hci0: Bluetooth
+>         Soft blocked: no
+>         Hard blocked: no
+> root@gumis:/home/maciek/zrodelka/rfkill/rfkill# hciconfig
+> hci0:   Type: USB
+>         BD Address: 00:16:41:88:A0:1B ACL MTU: 1017:8 SCO MTU: 64:8
+>         DOWN
+>         RX bytes:318 acl:0 sco:0 events:6 errors:0
+>         TX bytes:27 acl:0 sco:0 commands:9 errors:0
+>
+> Works OK. Thanks :-)
+>
+> During compile I have got:
+> CC [M]  drivers/platform/x86/hp-wmi.o
+> drivers/platform/x86/hp-wmi.c: In function ‘hp_wmi_bios_setup’:
+> drivers/platform/x86/hp-wmi.c:460: warning: ignoring return value of
+> ‘rfkill_set_hw_state’, declared with attribute warn_unused_result
+> drivers/platform/x86/hp-wmi.c:474: warning: ignoring return value of
+> ‘rfkill_set_hw_state’, declared with attribute warn_unused_result
+> drivers/platform/x86/hp-wmi.c:488: warning: ignoring return value of
+> ‘rfkill_set_hw_state’, declared with attribute warn_unused_result
+>   
 
+The attribute is wrong, I've already submitted a patch to remove it.
 
-This is the patch I have cooked up.
-I will push that to kbuild-next soon if there is no futher comments.
+I'll combine this patch with the previous one and submit it tomorrow.
 
-	Sam
-
->From 27d34661aed0cd3fbf469b8efb24accaf83c1987 Mon Sep 17 00:00:00 2001
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 20 Jul 2009 21:37:11 +0200
-Subject: [PATCH] kbuild: Use INSTALLKERNEL to select customized installkernel script
-
-Replace the use of CROSS_COMPILE to select a customized
-installkernel script with the possibility to set INSTALLKERNEL
-to select a custom installkernel script when running make:
-
-    make INSTALLKERNEL=arm-installkernel install
-
-With this patch we are now more consistent across
-different architectures - they did not all support use
-of CROSS_COMPILE.
-
-The use of CROSS_COMPILE was a hack as this really belongs
-to gcc/binutils and the installkernel script does not change
-just because we change toolchain.
-
-The use of CROSS_COMPILE caused troubles with an upcoming patch
-that saves CROSS_COMPILE when a kernel is built -
-it would no longer be installable.
-[Thanks to Peter for this hint]
-
-This patch undos what Ian did in commit:
-
-  0f8e2d62fa04441cd12c08ce521e84e5bd3f8a46
-  ("use ${CROSS_COMPILE}installkernel in arch/*/boot/install.sh")
-
-The patch has been lightly tested on x86 - but all changes
-looks obvious.
-
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ian Campbell <icampbell@arcom.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Mike Frysinger <vapier@gentoo.org>
-Cc: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- Documentation/kbuild/kbuild.txt      |   16 ++++++++++++++++
- Makefile                             |    4 +++-
- arch/arm/Makefile                    |    4 ++--
- arch/arm/boot/install.sh             |    4 ++--
- arch/blackfin/Makefile               |    4 ++--
- arch/blackfin/boot/install.sh        |    6 +++---
- arch/ia64/install.sh                 |    4 ++--
- arch/m32r/boot/compressed/install.sh |    4 ++--
- arch/m68k/install.sh                 |    4 ++--
- arch/parisc/Makefile                 |    4 ++--
- arch/parisc/install.sh               |    4 ++--
- arch/powerpc/Makefile                |    4 ++--
- arch/powerpc/boot/install.sh         |    4 ++--
- arch/s390/boot/install.sh            |    4 ++--
- arch/sh/boot/compressed/install.sh   |    4 ++--
- arch/x86/Makefile                    |    4 ++--
- arch/x86/boot/install.sh             |    4 ++--
- 17 files changed, 50 insertions(+), 32 deletions(-)
-
-diff --git a/Documentation/kbuild/kbuild.txt b/Documentation/kbuild/kbuild.txt
-index f3355b6..bb3bf38 100644
---- a/Documentation/kbuild/kbuild.txt
-+++ b/Documentation/kbuild/kbuild.txt
-@@ -65,6 +65,22 @@ INSTALL_PATH
- INSTALL_PATH specifies where to place the updated kernel and system map
- images. Default is /boot, but you can set it to other values.
- 
-+INSTALLKERNEL
-+--------------------------------------------------
-+Install script called when using "make install".
-+The default name is "installkernel".
-+
-+The script will be called with the following arguments:
-+    $1 - kernel version
-+    $2 - kernel image file
-+    $3 - kernel map file
-+    $4 - default install path (use root directory if blank)
-+
-+The implmentation of "make install" is architecture specific
-+and it may differ from the above.
-+
-+INSTALLKERNEL is provided to enable the possibility to
-+specify a custom installer when cross compiling a kernel.
- 
- MODLIB
- --------------------------------------------------
-diff --git a/Makefile b/Makefile
-index 3c95e76..b55b47a 100644
---- a/Makefile
-+++ b/Makefile
-@@ -342,6 +342,7 @@ OBJCOPY		= $(CROSS_COMPILE)objcopy
- OBJDUMP		= $(CROSS_COMPILE)objdump
- AWK		= awk
- GENKSYMS	= scripts/genksyms/genksyms
-+INSTALLKERNEL  := installkernel
- DEPMOD		= /sbin/depmod
- KALLSYMS	= scripts/kallsyms
- PERL		= perl
-@@ -380,7 +381,8 @@ KERNELVERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
- 
- export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
- export ARCH SRCARCH CONFIG_SHELL HOSTCC HOSTCFLAGS CROSS_COMPILE AS LD CC
--export CPP AR NM STRIP OBJCOPY OBJDUMP MAKE AWK GENKSYMS PERL UTS_MACHINE
-+export CPP AR NM STRIP OBJCOPY OBJDUMP
-+export MAKE AWK GENKSYMS INSTALLKERNEL PERL UTS_MACHINE
- export HOSTCXX HOSTCXXFLAGS LDFLAGS_MODULE CHECK CHECKFLAGS
- 
- export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS LDFLAGS
-diff --git a/arch/arm/Makefile b/arch/arm/Makefile
-index c877d6d..a357614 100644
---- a/arch/arm/Makefile
-+++ b/arch/arm/Makefile
-@@ -266,7 +266,7 @@ define archhelp
-   echo  '                  (supply initrd image via make variable INITRD=<path>)'
-   echo  '  install       - Install uncompressed kernel'
-   echo  '  zinstall      - Install compressed kernel'
--  echo  '                  Install using (your) ~/bin/installkernel or'
--  echo  '                  (distribution) /sbin/installkernel or'
-+  echo  '                  Install using (your) ~/bin/$(INSTALLKERNEL) or'
-+  echo  '                  (distribution) /sbin/$(INSTALLKERNEL) or'
-   echo  '                  install to $$(INSTALL_PATH) and run lilo'
- endef
-diff --git a/arch/arm/boot/install.sh b/arch/arm/boot/install.sh
-index 9f9bed2..06ea7d4 100644
---- a/arch/arm/boot/install.sh
-+++ b/arch/arm/boot/install.sh
-@@ -21,8 +21,8 @@
- #
- 
- # User may have a custom install script
--if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
--if [ -x /sbin/${CROSS_COMPILE}installkernel ]; then exec /sbin/${CROSS_COMPILE}installkernel "$@"; fi
-+if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
-+if [ -x /sbin/${INSTALLKERNEL} ]; then exec /sbin/${INSTALLKERNEL} "$@"; fi
- 
- if [ "$(basename $2)" = "zImage" ]; then
- # Compressed install
-diff --git a/arch/blackfin/Makefile b/arch/blackfin/Makefile
-index 6f9533c..f063b77 100644
---- a/arch/blackfin/Makefile
-+++ b/arch/blackfin/Makefile
-@@ -155,7 +155,7 @@ define archhelp
-   echo  '* vmImage.gz      - Kernel-only image for U-Boot (arch/$(ARCH)/boot/vmImage.gz)'
-   echo  '  vmImage.lzma    - Kernel-only image for U-Boot (arch/$(ARCH)/boot/vmImage.lzma)'
-   echo  '  install         - Install kernel using'
--  echo  '                     (your) ~/bin/$(CROSS_COMPILE)installkernel or'
--  echo  '                     (distribution) PATH: $(CROSS_COMPILE)installkernel or'
-+  echo  '                     (your) ~/bin/$(INSTALLKERNEL) or'
-+  echo  '                     (distribution) PATH: $(INSTALLKERNEL) or'
-   echo  '                     install to $$(INSTALL_PATH)'
- endef
-diff --git a/arch/blackfin/boot/install.sh b/arch/blackfin/boot/install.sh
-index 9560a6b..e2c6e40 100644
---- a/arch/blackfin/boot/install.sh
-+++ b/arch/blackfin/boot/install.sh
-@@ -36,9 +36,9 @@ verify "$3"
- 
- # User may have a custom install script
- 
--if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
--if which ${CROSS_COMPILE}installkernel >/dev/null 2>&1; then
--	exec ${CROSS_COMPILE}installkernel "$@"
-+if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
-+if which ${INSTALLKERNEL} >/dev/null 2>&1; then
-+	exec ${INSTALLKERNEL} "$@"
- fi
- 
- # Default install - same as make zlilo
-diff --git a/arch/ia64/install.sh b/arch/ia64/install.sh
-index 929e780..0e932f5 100644
---- a/arch/ia64/install.sh
-+++ b/arch/ia64/install.sh
-@@ -21,8 +21,8 @@
- 
- # User may have a custom install script
- 
--if [ -x ~/bin/installkernel ]; then exec ~/bin/installkernel "$@"; fi
--if [ -x /sbin/installkernel ]; then exec /sbin/installkernel "$@"; fi
-+if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
-+if [ -x /sbin/${INSTALLKERNEL} ]; then exec /sbin/${INSTALLKERNEL} "$@"; fi
- 
- # Default install - same as make zlilo
- 
-diff --git a/arch/m32r/boot/compressed/install.sh b/arch/m32r/boot/compressed/install.sh
-index 6d72e9e..16e5a0a 100644
---- a/arch/m32r/boot/compressed/install.sh
-+++ b/arch/m32r/boot/compressed/install.sh
-@@ -24,8 +24,8 @@
- 
- # User may have a custom install script
- 
--if [ -x /sbin/installkernel ]; then
--  exec /sbin/installkernel "$@"
-+if [ -x /sbin/${INSTALLKERNEL} ]; then
-+  exec /sbin/${INSTALLKERNEL} "$@"
- fi
- 
- if [ "$2" = "zImage" ]; then
-diff --git a/arch/m68k/install.sh b/arch/m68k/install.sh
-index 9c6bae6..57d640d 100644
---- a/arch/m68k/install.sh
-+++ b/arch/m68k/install.sh
-@@ -33,8 +33,8 @@ verify "$3"
- 
- # User may have a custom install script
- 
--if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
--if [ -x /sbin/${CROSS_COMPILE}installkernel ]; then exec /sbin/${CROSS_COMPILE}installkernel "$@"; fi
-+if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
-+if [ -x /sbin/${INSTALLKERNEL} ]; then exec /sbin/${INSTALLKERNEL} "$@"; fi
- 
- # Default install - same as make zlilo
- 
-diff --git a/arch/parisc/Makefile b/arch/parisc/Makefile
-index da6f669..55cca1d 100644
---- a/arch/parisc/Makefile
-+++ b/arch/parisc/Makefile
-@@ -118,8 +118,8 @@ define archhelp
- 	@echo  '* vmlinux	- Uncompressed kernel image (./vmlinux)'
- 	@echo  '  palo		- Bootable image (./lifimage)'
- 	@echo  '  install	- Install kernel using'
--	@echo  '		  (your) ~/bin/installkernel or'
--	@echo  '		  (distribution) /sbin/installkernel or'
-+	@echo  '		  (your) ~/bin/$(INSTALLKERNEL) or'
-+	@echo  '		  (distribution) /sbin/$(INSTALLKERNEL) or'
- 	@echo  '		  copy to $$(INSTALL_PATH)'
- endef
- 
-diff --git a/arch/parisc/install.sh b/arch/parisc/install.sh
-index 9632b3e..e593fc8 100644
---- a/arch/parisc/install.sh
-+++ b/arch/parisc/install.sh
-@@ -21,8 +21,8 @@
- 
- # User may have a custom install script
- 
--if [ -x ~/bin/installkernel ]; then exec ~/bin/installkernel "$@"; fi
--if [ -x /sbin/installkernel ]; then exec /sbin/installkernel "$@"; fi
-+if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
-+if [ -x /sbin/${INSTALLKERNEL} ]; then exec /sbin/${INSTALLKERNEL} "$@"; fi
- 
- # Default install
- 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index bc35f4e..2be317d 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -182,8 +182,8 @@ define archhelp
-   @echo '  simpleImage.<dt> - Firmware independent image.'
-   @echo '  treeImage.<dt>  - Support for older IBM 4xx firmware (not U-Boot)'
-   @echo '  install         - Install kernel using'
--  @echo '                    (your) ~/bin/installkernel or'
--  @echo '                    (distribution) /sbin/installkernel or'
-+  @echo '                    (your) ~/bin/$(INSTALLKERNEL) or'
-+  @echo '                    (distribution) /sbin/$(INSTALLKERNEL) or'
-   @echo '                    install to $$(INSTALL_PATH) and run lilo'
-   @echo '  *_defconfig     - Select default config from arch/$(ARCH)/configs'
-   @echo ''
-diff --git a/arch/powerpc/boot/install.sh b/arch/powerpc/boot/install.sh
-index 98312d1..b6a256b 100644
---- a/arch/powerpc/boot/install.sh
-+++ b/arch/powerpc/boot/install.sh
-@@ -23,8 +23,8 @@ set -e
- 
- # User may have a custom install script
- 
--if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
--if [ -x /sbin/${CROSS_COMPILE}installkernel ]; then exec /sbin/${CROSS_COMPILE}installkernel "$@"; fi
-+if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
-+if [ -x /sbin/${INSTALLKERNEL} ]; then exec /sbin/${INSTALLKERNEL} "$@"; fi
- 
- # Default install
- 
-diff --git a/arch/s390/boot/install.sh b/arch/s390/boot/install.sh
-index d4026f6..aed3069 100644
---- a/arch/s390/boot/install.sh
-+++ b/arch/s390/boot/install.sh
-@@ -21,8 +21,8 @@
- 
- # User may have a custom install script
- 
--if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
--if [ -x /sbin/${CROSS_COMPILE}installkernel ]; then exec /sbin/${CROSS_COMPILE}installkernel "$@"; fi
-+if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
-+if [ -x /sbin/${INSTALLKERNEL} ]; then exec /sbin/${INSTALLKERNEL} "$@"; fi
- 
- # Default install - same as make zlilo
- 
-diff --git a/arch/sh/boot/compressed/install.sh b/arch/sh/boot/compressed/install.sh
-index 90589f0..f9f4181 100644
---- a/arch/sh/boot/compressed/install.sh
-+++ b/arch/sh/boot/compressed/install.sh
-@@ -23,8 +23,8 @@
- 
- # User may have a custom install script
- 
--if [ -x /sbin/installkernel ]; then
--  exec /sbin/installkernel "$@"
-+if [ -x /sbin/${INSTALLKERNEL} ]; then
-+  exec /sbin/${INSTALLKERNEL} "$@"
- fi
- 
- if [ "$2" = "zImage" ]; then
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 1b68659..0b3b961 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -177,8 +177,8 @@ archclean:
- define archhelp
-   echo  '* bzImage      - Compressed kernel image (arch/x86/boot/bzImage)'
-   echo  '  install      - Install kernel using'
--  echo  '                  (your) ~/bin/installkernel or'
--  echo  '                  (distribution) /sbin/installkernel or'
-+  echo  '                  (your) ~/bin/$(INSTALLKERNEL) or'
-+  echo  '                  (distribution) /sbin/$(INSTALLKERNEL) or'
-   echo  '                  install to $$(INSTALL_PATH) and run lilo'
-   echo  '  fdimage      - Create 1.4MB boot floppy image (arch/x86/boot/fdimage)'
-   echo  '  fdimage144   - Create 1.4MB boot floppy image (arch/x86/boot/fdimage)'
-diff --git a/arch/x86/boot/install.sh b/arch/x86/boot/install.sh
-index 8d60ee1..d13ec1c 100644
---- a/arch/x86/boot/install.sh
-+++ b/arch/x86/boot/install.sh
-@@ -33,8 +33,8 @@ verify "$3"
- 
- # User may have a custom install script
- 
--if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
--if [ -x /sbin/${CROSS_COMPILE}installkernel ]; then exec /sbin/${CROSS_COMPILE}installkernel "$@"; fi
-+if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
-+if [ -x /sbin/${INSTALLKERNEL} ]; then exec /sbin/${INSTALLKERNEL} "$@"; fi
- 
- # Default install - same as make zlilo
- 
--- 
-1.6.2.5
-
+Thanks again
+Alan
