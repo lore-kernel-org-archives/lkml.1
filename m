@@ -1,69 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbZGTT77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbZGTUAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753686AbZGTT77 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 15:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbZGTT76
+	id S1753911AbZGTUAn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 16:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZGTUAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 15:59:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51703 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbZGTT75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 15:59:57 -0400
-Date: Mon, 20 Jul 2009 12:55:36 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, anthony@codemonkey.ws, avi@redhat.com,
-       kvm@vger.kernel.org, chrisw@redhat.com, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCHv5] uio: add generic driver for PCI 2.3 devices
-Message-ID: <20090720195536.GA30483@suse.de>
-References: <20090720072934.GA12509@redhat.com>
- <20090720190942.GB7604@local>
- <20090720195227.GB19009@redhat.com>
+	Mon, 20 Jul 2009 16:00:43 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:49532 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751219AbZGTUAm convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 16:00:42 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Manuel Lauss <manuel.lauss@googlemail.com>
+Subject: Re: [PATCH] au1xmmc: dev_pm_ops conversion
+Date: Mon, 20 Jul 2009 22:00:37 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       manuel.lauss@gmail.com
+References: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
+In-reply-To: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090720195227.GB19009@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200907202200.39288.elendil@planet.nl>
+X-OriginalArrivalTime: 20 Jul 2009 20:00:40.0925 (UTC) FILETIME=[C20208D0:01CA0974]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 20, 2009 at 10:52:27PM +0300, Michael S. Tsirkin wrote:
-> On Mon, Jul 20, 2009 at 09:09:43PM +0200, Hans J. Koch wrote:
-> > On Mon, Jul 20, 2009 at 10:29:34AM +0300, Michael S. Tsirkin wrote:
-> > > This adds a generic uio driver that can bind to any PCI device.  First
-> > > user will be virtualization where a qemu userspace process needs to give
-> > > guest OS access to the device.
-> > > 
-> > > Interrupts are handled using the Interrupt Disable bit in the PCI command
-> > > register and Interrupt Status bit in the PCI status register.  All devices
-> > > compliant to PCI 2.3 (circa 2002) and all compliant PCI Express devices should
-> > > support these bits.  Driver detects this support, and won't bind to devices
-> > > which do not support the Interrupt Disable Bit in the command register.
-> > > 
-> > > It's expected that more features of interest to virtualization will be
-> > > added to this driver in the future. Possibilities are: mmap for device
-> > > resources, MSI/MSI-X, eventfd (to interface with kvm), iommu.
-> > 
-> > Thanks for adding the docs! Looks alright to me.
-> > 
-> > Thanks,
-> > Hans
-> > 
-> > > 
-> > > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-> > > Acked-by: Chris Wright <chrisw@redhat.com>
-> > 
-> > Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-> 
-> Jesse just acked this patch in a private mail, as well.
-> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
+> ---
+> Run-tested on Au1200.
+>
+>  drivers/mmc/host/au1xmmc.c |   23 +++++++++++------------
+>  1 files changed, 11 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
+> index d3f5561..70509c9 100644
+> --- a/drivers/mmc/host/au1xmmc.c
+> +++ b/drivers/mmc/host/au1xmmc.c
+> @@ -1131,13 +1131,12 @@ static int __devexit au1xmmc_remove(struct
+> platform_device *pdev) return 0;
+>  }
+>  
+> -#ifdef CONFIG_PM
 
-Odd, but ok...
+Won't the removal of this test cause a build failure if CONFIG_PM is not 
+set? If the removal of the test is safe, this should IMHO at least be 
+explained in the commit message.
 
-I'll queue it up now.
+The IMO simplest fix would be to restore the #ifdef ...
 
-thanks,
+> -static int au1xmmc_suspend(struct platform_device *pdev, pm_message_t
+> state) +static int au1xmmc_suspend(struct device *dev)
+>  {
+> -       struct au1xmmc_host *host = platform_get_drvdata(pdev);
+> +       struct au1xmmc_host *host = dev_get_drvdata(dev);
+>         int ret;
+>  
+> -       ret = mmc_suspend_host(host->mmc, state);
+> +       ret = mmc_suspend_host(host->mmc, PMSG_SUSPEND);
+>         if (ret)
+>                 return ret;
+>  
+> @@ -1150,27 +1149,27 @@ static int au1xmmc_suspend(struct
+> platform_device *pdev, pm_message_t state) return 0;
+>  }
+>  
+> -static int au1xmmc_resume(struct platform_device *pdev)
+> +static int au1xmmc_resume(struct device *dev)
+>  {
+> -       struct au1xmmc_host *host = platform_get_drvdata(pdev);
+> +       struct au1xmmc_host *host = dev_get_drvdata(dev);
+>  
+>         au1xmmc_reset_controller(host);
+>  
+>         return mmc_resume_host(host->mmc);
+>  }
+> -#else
+> -#define au1xmmc_suspend NULL
+> -#define au1xmmc_resume NULL
 
-greg k-h
+... drop the 3 lines above (as you did) ...
+
+> -#endif
+
+... move this #endif to after the new struct below ...
+
+> +
+> +static struct dev_pm_ops au1xmmc_pmops = {
+> +       .resume         = au1xmmc_resume,
+> +       .suspend        = au1xmmc_suspend,
+> +};
+>  
+>  static struct platform_driver au1xmmc_driver = {
+>         .probe         = au1xmmc_probe,
+>         .remove        = au1xmmc_remove,
+> -       .suspend       = au1xmmc_suspend,
+> -       .resume        = au1xmmc_resume,
+>         .driver        = {
+>                 .name  = DRIVER_NAME,
+>                 .owner = THIS_MODULE,
+> +               .pm    = &au1xmmc_pmops,
+
+... and add an #ifdef CONFIG_PM around the new line above.
+
+>         },
+>  };
+
+Cheers,
+FJP
