@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZGTSLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbZGTSL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbZGTSLJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 14:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZGTSLI
+	id S1753582AbZGTSL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 14:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZGTSL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 14:11:08 -0400
-Received: from outbound-mail-107.bluehost.com ([69.89.22.7]:57424 "HELO
-	outbound-mail-107.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751822AbZGTSLH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 14:11:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=ASIWta0MmHWQRPF/9TLOWSSwk2Q1FvivxORGrL1Gg5dX64amMih3YJJrwrRmVXDORHYYgl9pZ1Z1FY8YJnaOfrITBHc5y/QwEBB0FYi8siknBu86ATML78AMSO4YTWT1;
-Date: Mon, 20 Jul 2009 11:11:01 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, DRI <dri-devel@lists.sourceforge.net>,
-       Michel =?UTF-8?B?RMOkbnplcg==?= <michel@daenzer.net>
-Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
-Message-ID: <20090720111101.659a9099@jbarnes-g45>
-In-Reply-To: <20090628201129.GA1546@sucs.org>
-References: <sIiXQlfwS3D.A.81.dj7KKB@chimera>
-	<AN6kEAA5GQ.A.Q7C.Vm7KKB@chimera>
-	<20090628201129.GA1546@sucs.org>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 20 Jul 2009 14:11:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44443 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751489AbZGTSLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 14:11:25 -0400
+Message-ID: <4A64B342.8070002@redhat.com>
+Date: Mon, 20 Jul 2009 14:11:14 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Izik Eidus <ieidus@redhat.com>
+CC: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk, aarcange@redhat.com,
+       chrisw@redhat.com, avi@redhat.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 05/10] ksm: no debug in page_dup_rmap()
+References: <1247851850-4298-1-git-send-email-ieidus@redhat.com> <1247851850-4298-2-git-send-email-ieidus@redhat.com> <1247851850-4298-3-git-send-email-ieidus@redhat.com> <1247851850-4298-4-git-send-email-ieidus@redhat.com> <1247851850-4298-5-git-send-email-ieidus@redhat.com> <1247851850-4298-6-git-send-email-ieidus@redhat.com>
+In-Reply-To: <1247851850-4298-6-git-send-email-ieidus@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Jun 2009 21:11:30 +0100
-Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-
-> On Sun, Jun 07, 2009 at 12:06:18PM +0200, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
-> > Subject		: i915 VT switch with AIGLX causes X lock up
-> > Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
-> > Date		: 2009-02-21 15:38 (107 days old)
-> > First-Bad-Commit:
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
-> > References	:
-> > http://marc.info/?l=linux-kernel&m=123523074304955&w=4
-> > http://lkml.org/lkml/2009/4/27/317 Handled-By	: Jesse Barnes
-> > <jbarnes@virtuousgeek.org> Patch		:
-> > http://patchwork.kernel.org/patch/20197/
+Izik Eidus wrote:
+> From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 > 
-> Still here on 2.6.31-rc1 but...
+> page_dup_rmap(), used on each mapped page when forking,  was originally
+> just an inline atomic_inc of mapcount.  2.6.22 added CONFIG_DEBUG_VM
+> out-of-line checks to it, which would need to be ever-so-slightly
+> complicated to allow for the PageKsm() we're about to define.
 > 
-> ...this seems to be tied to the version of the Intel X drivers I have.
-> On another install with more recent Intel X drivers I cannot reproduce
-> this issue.
+> But I think these checks never caught anything.  And if it's coding
+> errors we're worried about, such checks should be in page_remove_rmap()
+> too, not just when forking; whereas if it's pagetable corruption we're
+> worried about, then they shouldn't be limited to CONFIG_DEBUG_VM.
 
-I guess we can mark it closed then, though I don't have the commit id
-of the fix handy...
+Acked-by: Rik van Riel <riel@redhat.com>
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+All rights reversed.
