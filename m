@@ -1,536 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbZGTHar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZGTHbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbZGTHar (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 03:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbZGTHaq
+	id S1752764AbZGTHbj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 03:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbZGTHbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 03:30:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54398 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751164AbZGTHao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 03:30:44 -0400
-Date: Mon, 20 Jul 2009 10:29:34 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: anthony@codemonkey.ws, avi@redhat.com, kvm@vger.kernel.org,
-       chrisw@redhat.com, hjk@linutronix.de, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: [PATCHv5] uio: add generic driver for PCI 2.3 devices
-Message-ID: <20090720072934.GA12509@redhat.com>
+	Mon, 20 Jul 2009 03:31:37 -0400
+Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:5278 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752665AbZGTHbg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 03:31:36 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KN2KW3-04-F9X-01
+Date: Mon, 20 Jul 2009 15:31:12 +0800
+From: Crane Cai <crane.cai@amd.com>
+To: khali@linux-fr.org
+CC: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] I2C: Add support for new AMD SMBus devices
+Message-ID: <20090720073112.GA18219@crane-desktop>
+Mail-Followup-To: Crane Cai <crane.cai@amd.com>, khali@linux-fr.org,
+	linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 20 Jul 2009 07:31:10.0156 (UTC) FILETIME=[0D5740C0:01CA090C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a generic uio driver that can bind to any PCI device.  First
-user will be virtualization where a qemu userspace process needs to give
-guest OS access to the device.
+Use driver to detect SMBus devices with Vendor ID AMD and class code is SMBus.
 
-Interrupts are handled using the Interrupt Disable bit in the PCI command
-register and Interrupt Status bit in the PCI status register.  All devices
-compliant to PCI 2.3 (circa 2002) and all compliant PCI Express devices should
-support these bits.  Driver detects this support, and won't bind to devices
-which do not support the Interrupt Disable Bit in the command register.
-
-It's expected that more features of interest to virtualization will be
-added to this driver in the future. Possibilities are: mmap for device
-resources, MSI/MSI-X, eventfd (to interface with kvm), iommu.
-
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
-Acked-by: Chris Wright <chrisw@redhat.com>
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-
+Signed-off-by: Crane Cai <crane.cai@amd.com>
 ---
-Greg, here's a combined patch including documentation, for upstream inclusion.
+ drivers/i2c/busses/i2c-piix4.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-This is intended to solve the problem in virtualization that shared
-interrupts do not work with assigned devices. Earlier versions of this
-patch have circulated on kvm@vger.
-
-Changes since v4:
-- add documentation in Docbook format
-Changes since v3:
-- minor driver version fix
-Changes since v2:
-- remove irqcontrol: user can enable interrupts by
-  writing command register directly
-- don't claim resources as we don't support mmap yet,
-  but note the intent to do so in the commit log
-Changes since v1:
-- some naming changes
-- do a single read to get both command and status register
-
- Documentation/DocBook/uio-howto.tmpl |  163 ++++++++++++++++++++++++++
- MAINTAINERS                          |    8 ++
- drivers/uio/Kconfig                  |   10 ++
- drivers/uio/Makefile                 |    1 +
- drivers/uio/uio_pci_generic.c        |  207 ++++++++++++++++++++++++++++++++++
- include/linux/pci_regs.h             |    1 +
- 6 files changed, 390 insertions(+), 0 deletions(-)
- create mode 100644 drivers/uio/uio_pci_generic.c
-
-diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
-index 8f6e3b2..4d4ce0e 100644
---- a/Documentation/DocBook/uio-howto.tmpl
-+++ b/Documentation/DocBook/uio-howto.tmpl
-@@ -25,6 +25,10 @@
- 	<year>2006-2008</year>
- 	<holder>Hans-Jürgen Koch.</holder>
- </copyright>
-+<copyright>
-+	<year>2009</year>
-+	<holder>Red Hat Inc, Michael S. Tsirkin (mst@redhat.com)</holder>
-+</copyright>
+diff --git a/drivers/i2c/busses/i2c-piix4.c b/drivers/i2c/busses/i2c-piix4.c
+index 0249a7d..034f388 100644
+--- a/drivers/i2c/busses/i2c-piix4.c
++++ b/drivers/i2c/busses/i2c-piix4.c
+@@ -479,6 +479,10 @@ static struct pci_device_id piix4_ids[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP300_SMBUS) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_SBX00_SMBUS) },
++	/* AMD Generic, PCI class code and Vendor ID for SMBus */
++	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_ANY_ID),
++	  .class = PCI_CLASS_SERIAL_SMBUS << 8,
++	  .class_mask = 0xffffff },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_SERVERWORKS,
+ 		     PCI_DEVICE_ID_SERVERWORKS_OSB4) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_SERVERWORKS,
+@@ -499,9 +503,10 @@ static int __devinit piix4_probe(struct pci_dev *dev,
+ {
+ 	int retval;
  
- <legalnotice>
- <para>
-@@ -42,6 +46,13 @@ GPL version 2.
- 
- <revhistory>
- 	<revision>
-+	<revnumber>0.9</revnumber>
-+	<date>2009-07-16</date>
-+	<authorinitials>mst</authorinitials>
-+	<revremark>Added generic pci driver
-+		</revremark>
-+	</revision>
-+	<revision>
- 	<revnumber>0.8</revnumber>
- 	<date>2008-12-24</date>
- 	<authorinitials>hjk</authorinitials>
-@@ -809,6 +820,158 @@ framework to set up sysfs files for this region. Simply leave it alone.
- 
- </chapter>
- 
-+<chapter id="uio_pci_generic" xreflabel="Using Generic driver for PCI cards">
-+<?dbhtml filename="uio_pci_generic.html"?>
-+<title>Generic PCI UIO driver</title>
-+	<para>
-+	The generic driver is a kernel module named uio_pci_generic.
-+	It can work with any device compliant to PCI 2.3 (circa 2002) and
-+	any compliant PCI Express device. Using this, you only need to
-+        write the userspace driver, removing the need to write
-+        a hardware-specific kernel module.
-+	</para>
-+
-+<sect1 id="uio_pci_generic_binding">
-+<title>Making the driver recognize the device</title>
-+	<para>
-+Since the driver does not declare any device ids, it will not get loaded
-+automatically and will not automatically bind to any devices, you must load it
-+and allocate id to the driver yourself. For example:
-+	<programlisting>
-+ modprobe uio_pci_generic
-+ echo &quot;8086 10f5&quot; &gt; /sys/bus/pci/drivers/uio_pci_generic/new_id
-+	</programlisting>
-+	</para>
-+	<para>
-+If there already is a hardware specific kernel driver for your device, the
-+generic driver still won't bind to it, in this case if you want to use the
-+generic driver (why would you?) you'll have to manually unbind the hardware
-+specific driver and bind the generic driver, like this:
-+	<programlisting>
-+    echo -n 0000:00:19.0 &gt; /sys/bus/pci/drivers/e1000e/unbind
-+    echo -n 0000:00:19.0 &gt; /sys/bus/pci/drivers/uio_pci_generic/bind
-+	</programlisting>
-+	</para>
-+	<para>
-+You can verify that the device has been bound to the driver
-+by looking for it in sysfs, for example like the following:
-+	<programlisting>
-+    ls -l /sys/bus/pci/devices/0000:00:19.0/driver
-+	</programlisting>
-+Which if successful should print
-+	<programlisting>
-+  .../0000:00:19.0/driver -&gt; ../../../bus/pci/drivers/uio_pci_generic
-+	</programlisting>
-+Note that the generic driver will not bind to old PCI 2.2 devices.
-+If binding the device failed, run the following command:
-+	<programlisting>
-+  dmesg
-+	</programlisting>
-+and look in the output for failure reasons
-+	</para>
-+</sect1>
-+
-+<sect1 id="uio_pci_generic_internals">
-+<title>Things to know about uio_pci_generic</title>
-+	<para>
-+Interrupts are handled using the Interrupt Disable bit in the PCI command
-+register and Interrupt Status bit in the PCI status register.  All devices
-+compliant to PCI 2.3 (circa 2002) and all compliant PCI Express devices should
-+support these bits.  uio_pci_generic detects this support, and won't bind to
-+devices which do not support the Interrupt Disable Bit in the command register.
-+	</para>
-+	<para>
-+On each interrupt, uio_pci_generic sets the Interrupt Disable bit.
-+This prevents the device from generating further interrupts
-+until the bit is cleared. The userspace driver should clear this
-+bit before blocking and waiting for more interrupts.
-+	</para>
-+</sect1>
-+<sect1 id="uio_pci_generic_userspace">
-+<title>Writing userspace driver using uio_pci_generic</title>
-+	<para>
-+Userspace driver can use pci sysfs interface, or the
-+libpci libray that wraps it, to talk to the device and to
-+re-enable interrupts by writing to the command register.
-+	</para>
-+</sect1>
-+<sect1 id="uio_pci_generic_example">
-+<title>Example code using uio_pci_generic</title>
-+	<para>
-+Here is some sample userspace driver code using uio_pci_generic:
-+<programlisting>
-+#include &lt;stdlib.h&gt;
-+#include &lt;stdio.h&gt;
-+#include &lt;unistd.h&gt;
-+#include &lt;sys/types.h&gt;
-+#include &lt;sys/stat.h&gt;
-+#include &lt;fcntl.h&gt;
-+#include &lt;errno.h&gt;
-+
-+int main()
-+{
-+	int uiofd;
-+	int configfd;
-+	int err;
-+	int i;
-+	unsigned icount;
-+	unsigned char command_high;
-+
-+	uiofd = open(&quot;/dev/uio0&quot;, O_RDONLY);
-+	if (uiofd &lt; 0) {
-+		perror(&quot;uio open:&quot;);
-+		return errno;
-+	}
-+	configfd = open(&quot;/sys/class/uio/uio0/device/config&quot;, O_RDWR);
-+	if (uiofd &lt; 0) {
-+		perror(&quot;config open:&quot;);
-+		return errno;
-+	}
-+
-+	/* Read and cache command value */
-+	err = pread(configfd, &amp;command_high, 1, 5);
-+	if (err != 1) {
-+		perror(&quot;command config read:&quot;);
-+		return errno;
-+	}
-+	command_high &amp;= ~0x4;
-+
-+	for(i = 0;; ++i) {
-+		/* Print out a message, for debugging. */
-+		if (i == 0)
-+			fprintf(stderr, &quot;Started uio test driver.\n&quot;);
-+		else
-+			fprintf(stderr, &quot;Interrupts: %d\n&quot;, icount);
-+
-+		/****************************************/
-+		/* Here we got an interrupt from the
-+		   device. Do something to it. */
-+		/****************************************/
-+
-+		/* Re-enable interrupts. */
-+		err = pwrite(configfd, &amp;command_high, 1, 5);
-+		if (err != 1) {
-+			perror(&quot;config write:&quot;);
-+			break;
-+		}
-+
-+		/* Wait for next interrupt. */
-+		err = read(uiofd, &amp;icount, 4);
-+		if (err != 4) {
-+			perror(&quot;uio read:&quot;);
-+			break;
-+		}
-+
-+	}
-+	return errno;
-+}
-+
-+</programlisting>
-+	</para>
-+</sect1>
-+
-+</chapter>
-+
- <appendix id="app1">
- <title>Further information</title>
- <itemizedlist>
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 18c3f0c..39c7207 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2538,6 +2538,14 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic.git
- S:	Maintained
- F:	include/asm-generic
- 
-+GENERIC UIO DRIVER FOR PCI DEVICES
-+P:	Michael S. Tsirkin
-+M:	mst@redhat.com
-+L:	kvm@vger.kernel.org
-+L:	linux-kernel@vger.kernel.org
-+S:	Supported
-+F:	drivers/uio/uio_pci_generic.c
-+
- GFS2 FILE SYSTEM
- P:	Steven Whitehouse
- M:	swhiteho@redhat.com
-diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-index 7f86534..0f14c8e 100644
---- a/drivers/uio/Kconfig
-+++ b/drivers/uio/Kconfig
-@@ -89,4 +89,14 @@ config UIO_SERCOS3
- 
- 	  If you compile this as a module, it will be called uio_sercos3.
- 
-+config UIO_PCI_GENERIC
-+	tristate "Generic driver for PCI 2.3 and PCI Express cards"
-+	depends on PCI
-+	default n
-+	help
-+	  Generic driver that you can bind, dynamically, to any
-+	  PCI 2.3 compliant and PCI Express card. It is useful,
-+	  primarily, for virtualization scenarios.
-+	  If you compile this as a module, it will be called uio_pci_generic.
-+
- endif
-diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
-index 5c2586d..73b2e75 100644
---- a/drivers/uio/Makefile
-+++ b/drivers/uio/Makefile
-@@ -5,3 +5,4 @@ obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
- obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
- obj-$(CONFIG_UIO_AEC)	+= uio_aec.o
- obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
-+obj-$(CONFIG_UIO_PCI_GENERIC)	+= uio_pci_generic.o
-diff --git a/drivers/uio/uio_pci_generic.c b/drivers/uio/uio_pci_generic.c
-new file mode 100644
-index 0000000..313da35
---- /dev/null
-+++ b/drivers/uio/uio_pci_generic.c
-@@ -0,0 +1,207 @@
-+/* uio_pci_generic - generic UIO driver for PCI 2.3 devices
-+ *
-+ * Copyright (C) 2009 Red Hat, Inc.
-+ * Author: Michael S. Tsirkin <mst@redhat.com>
-+ *
-+ * This work is licensed under the terms of the GNU GPL, version 2.
-+ *
-+ * Since the driver does not declare any device ids, you must allocate
-+ * id and bind the device to the driver yourself.  For example:
-+ *
-+ * # echo "8086 10f5" > /sys/bus/pci/drivers/uio_pci_generic/new_id
-+ * # echo -n 0000:00:19.0 > /sys/bus/pci/drivers/e1000e/unbind
-+ * # echo -n 0000:00:19.0 > /sys/bus/pci/drivers/uio_pci_generic/bind
-+ * # ls -l /sys/bus/pci/devices/0000:00:19.0/driver
-+ * .../0000:00:19.0/driver -> ../../../bus/pci/drivers/uio_pci_generic
-+ *
-+ * Driver won't bind to devices which do not support the Interrupt Disable Bit
-+ * in the command register. All devices compliant to PCI 2.3 (circa 2002) and
-+ * all compliant PCI Express devices should support this bit.
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/uio_driver.h>
-+#include <linux/spinlock.h>
-+
-+#define DRIVER_VERSION	"0.01.0"
-+#define DRIVER_AUTHOR	"Michael S. Tsirkin <mst@redhat.com>"
-+#define DRIVER_DESC	"Generic UIO driver for PCI 2.3 devices"
-+
-+struct uio_pci_generic_dev {
-+	struct uio_info info;
-+	struct pci_dev *pdev;
-+	spinlock_t lock; /* guards command register accesses */
-+};
-+
-+static inline struct uio_pci_generic_dev *
-+to_uio_pci_generic_dev(struct uio_info *info)
-+{
-+	return container_of(info, struct uio_pci_generic_dev, info);
-+}
-+
-+/* Interrupt handler. Read/modify/write the command register to disable
-+ * the interrupt. */
-+static irqreturn_t irqhandler(int irq, struct uio_info *info)
-+{
-+	struct uio_pci_generic_dev *gdev = to_uio_pci_generic_dev(info);
-+	struct pci_dev *pdev = gdev->pdev;
-+	irqreturn_t ret = IRQ_NONE;
-+	u32 cmd_status_dword;
-+	u16 origcmd, newcmd, status;
-+
-+	/* We do a single dword read to retrieve both command and status.
-+	 * Document assumptions that make this possible. */
-+	BUILD_BUG_ON(PCI_COMMAND % 4);
-+	BUILD_BUG_ON(PCI_COMMAND + 2 != PCI_STATUS);
-+
-+	spin_lock_irq(&gdev->lock);
-+	pci_block_user_cfg_access(pdev);
-+
-+	/* Read both command and status registers in a single 32-bit operation.
-+	 * Note: we could cache the value for command and move the status read
-+	 * out of the lock if there was a way to get notified of user changes
-+	 * to command register through sysfs. Should be good for shared irqs. */
-+	pci_read_config_dword(pdev, PCI_COMMAND, &cmd_status_dword);
-+	origcmd = cmd_status_dword;
-+	status = cmd_status_dword >> 16;
-+
-+	/* Check interrupt status register to see whether our device
-+	 * triggered the interrupt. */
-+	if (!(status & PCI_STATUS_INTERRUPT))
-+		goto done;
-+
-+	/* We triggered the interrupt, disable it. */
-+	newcmd = origcmd | PCI_COMMAND_INTX_DISABLE;
-+	if (newcmd != origcmd)
-+		pci_write_config_word(pdev, PCI_COMMAND, newcmd);
-+
-+	/* UIO core will signal the user process. */
-+	ret = IRQ_HANDLED;
-+done:
-+
-+	pci_unblock_user_cfg_access(pdev);
-+	spin_unlock_irq(&gdev->lock);
-+	return ret;
-+}
-+
-+/* Verify that the device supports Interrupt Disable bit in command register,
-+ * per PCI 2.3, by flipping this bit and reading it back: this bit was readonly
-+ * in PCI 2.2. */
-+static int __devinit verify_pci_2_3(struct pci_dev *pdev)
-+{
-+	u16 orig, new;
-+	int err = 0;
-+
-+	pci_block_user_cfg_access(pdev);
-+	pci_read_config_word(pdev, PCI_COMMAND, &orig);
-+	pci_write_config_word(pdev, PCI_COMMAND,
-+			      orig ^ PCI_COMMAND_INTX_DISABLE);
-+	pci_read_config_word(pdev, PCI_COMMAND, &new);
-+	/* There's no way to protect against
-+	 * hardware bugs or detect them reliably, but as long as we know
-+	 * what the value should be, let's go ahead and check it. */
-+	if ((new ^ orig) & ~PCI_COMMAND_INTX_DISABLE) {
-+		err = -EBUSY;
-+		dev_err(&pdev->dev, "Command changed from 0x%x to 0x%x: "
-+			"driver or HW bug?\n", orig, new);
-+		goto err;
-+	}
-+	if (!((new ^ orig) & PCI_COMMAND_INTX_DISABLE)) {
-+		dev_warn(&pdev->dev, "Device does not support "
-+			 "disabling interrupts: unable to bind.\n");
-+		err = -ENODEV;
-+		goto err;
-+	}
-+	/* Now restore the original value. */
-+	pci_write_config_word(pdev, PCI_COMMAND, orig);
-+err:
-+	pci_unblock_user_cfg_access(pdev);
-+	return err;
-+}
-+
-+static int __devinit probe(struct pci_dev *pdev,
-+			   const struct pci_device_id *id)
-+{
-+	struct uio_pci_generic_dev *gdev;
-+	int err;
-+
-+	if (!pdev->irq) {
-+		dev_warn(&pdev->dev, "No IRQ assigned to device: "
-+			 "no support for interrupts?\n");
-+		return -ENODEV;
-+	}
-+
-+	err = pci_enable_device(pdev);
-+	if (err) {
-+		dev_err(&pdev->dev, "%s: pci_enable_device failed: %d\n",
-+			__func__, err);
-+		return err;
-+	}
-+
-+	err = verify_pci_2_3(pdev);
-+	if (err)
-+		goto err_verify;
-+
-+	gdev = kzalloc(sizeof(struct uio_pci_generic_dev), GFP_KERNEL);
-+	if (!gdev) {
-+		err = -ENOMEM;
-+		goto err_alloc;
-+	}
-+
-+	gdev->info.name = "uio_pci_generic";
-+	gdev->info.version = DRIVER_VERSION;
-+	gdev->info.irq = pdev->irq;
-+	gdev->info.irq_flags = IRQF_SHARED;
-+	gdev->info.handler = irqhandler;
-+	gdev->pdev = pdev;
-+	spin_lock_init(&gdev->lock);
-+
-+	if (uio_register_device(&pdev->dev, &gdev->info))
-+		goto err_register;
-+	pci_set_drvdata(pdev, gdev);
-+
-+	return 0;
-+err_register:
-+	kfree(gdev);
-+err_alloc:
-+err_verify:
-+	pci_disable_device(pdev);
-+	return err;
-+}
-+
-+static void remove(struct pci_dev *pdev)
-+{
-+	struct uio_pci_generic_dev *gdev = pci_get_drvdata(pdev);
-+
-+	uio_unregister_device(&gdev->info);
-+	pci_disable_device(pdev);
-+	kfree(gdev);
-+}
-+
-+static struct pci_driver driver = {
-+	.name = "uio_pci_generic",
-+	.id_table = NULL, /* only dynamic id's */
-+	.probe = probe,
-+	.remove = remove,
-+};
-+
-+static int __init init(void)
-+{
-+	pr_info(DRIVER_DESC " version: " DRIVER_VERSION "\n");
-+	return pci_register_driver(&driver);
-+}
-+
-+static void __exit cleanup(void)
-+{
-+	pci_unregister_driver(&driver);
-+}
-+
-+module_init(init);
-+module_exit(cleanup);
-+
-+MODULE_VERSION(DRIVER_VERSION);
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR(DRIVER_AUTHOR);
-+MODULE_DESCRIPTION(DRIVER_DESC);
-diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index fcaee42..dd0bed4 100644
---- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -42,6 +42,7 @@
- #define  PCI_COMMAND_INTX_DISABLE 0x400 /* INTx Emulation Disable */
- 
- #define PCI_STATUS		0x06	/* 16 bits */
-+#define  PCI_STATUS_INTERRUPT	0x08	/* Interrupt status */
- #define  PCI_STATUS_CAP_LIST	0x10	/* Support Capability List */
- #define  PCI_STATUS_66MHZ	0x20	/* Support 66 Mhz PCI 2.1 bus */
- #define  PCI_STATUS_UDF		0x40	/* Support User Definable Features [obsolete] */
+-	if ((dev->vendor == PCI_VENDOR_ID_ATI) &&
++	if (((dev->vendor == PCI_VENDOR_ID_ATI) &&
+ 	    (dev->device == PCI_DEVICE_ID_ATI_SBX00_SMBUS) &&
+-	    (dev->revision >= 0x40))
++	    (dev->revision >= 0x40)) ||
++	    dev->vendor == PCI_VENDOR_ID_AMD)
+ 		/* base address location etc changed in SB800 */
+ 		retval = piix4_setup_sb800(dev, id);
+ 	else
 -- 
-1.6.2.5
+1.6.0.4
+
