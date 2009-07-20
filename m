@@ -1,177 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZGTULd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZGTUJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbZGTULd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 16:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbZGTULa
+	id S1754100AbZGTUJt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 16:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZGTUJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 16:11:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56413 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559AbZGTULZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 16:11:25 -0400
-Subject: Re: [PATCH] sched: Provide iowait counters
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <alpine.DEB.2.00.0907201540550.26208@gandalf.stny.rr.com>
-References: <4A64B813.1080506@linux.intel.com>
-	 <1248117369.23509.33.camel@laptop>
-	 <alpine.DEB.2.00.0907201540550.26208@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Mon, 20 Jul 2009 22:11:16 +0200
-Message-Id: <1248120676.23509.41.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Jul 2009 16:09:45 -0400
+Received: from mail.windriver.com ([147.11.1.11]:36152 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754001AbZGTUJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 16:09:36 -0400
+From: Jason Wessel <jason.wessel@windriver.com>
+To: gregkh@suse.de
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH 05/10] printk,early_printk,console: Allow more than one early console
+Date: Mon, 20 Jul 2009 15:06:27 -0500
+Message-Id: <1248120392-8372-6-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.0.3.523.g304d0
+In-Reply-To: <1248120392-8372-5-git-send-email-jason.wessel@windriver.com>
+References: <1248120392-8372-1-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-2-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-3-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-4-git-send-email-jason.wessel@windriver.com>
+ <1248120392-8372-5-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 20 Jul 2009 20:06:42.0222 (UTC) FILETIME=[995B94E0:01CA0975]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-20 at 15:42 -0400, Steven Rostedt wrote:
-> On Mon, 20 Jul 2009, Peter Zijlstra wrote:
-> > 
-> > > +++ b/kernel/sched_fair.c
-> > > @@ -633,6 +633,11 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
-> > >   		se->block_start = 0;
-> > >   		se->sum_sleep_runtime += delta;
-> > > 
-> > > +		if (tsk->in_iowait) {
-> > > +			se->iowait_sum += delta;
-> > > +			se->iowait_count++;
-> > > +		}
-> > > +
-> > >   		/*
-> > >   		 * Blocking time is in units of nanosecs, so shift by 20 to
-> > >   		 * get a milliseconds-range estimation of the amount of
-> > 
-> > It might be nice to put a tracepoint there as well, now if there was a
-> > way to specify perf counter attributes in the TRACE_EVENT() magic so
-> > that we can feed stuff into perf_tpcounter_event().
-> > 
-> > TP_perf_addr()  -- defaults to 0 when not specified
-> > TP_perf_count() -- defaults to 1 when not specified.
-> > 
-> > Steve, Frederic, is there any way to make that happen?
-> > 
-> > Failing that we could put an actual swcounter in there I suppose.
-> > 
-> > That way we could profile applications based on IO-wait, which would be
-> > cool.
-> 
-> How would you imagine an interface for this? Could you come up with 
-> something that you would like to see, and then I could see if we could 
-> implement it. 
-> 
-> How would the TRACE_EVENT look exactly? Would there be anything different 
-> in the trace point location itself?
+It is very nice to be able to use one early boot device to debug
+another or to have multiple places you can see the early boot
+diagnostics, such as the vga screen or serial device.
 
-Something like:
+This patch changes the early_printk console device registration to
+allow more than one early printk device to get registered via
+register_console().
 
-TRACE_EVENT(sched_iowait,
+A corresponding change is required to the console registration code
+such that it will properly unregister any console marked with the
+CON_BOOT flag via a simple loop during a console handover or at late
+init time.
 
-	TP_PROTO(struct task_struct *p, u64 time),
-
-	TP_ARGS(p, time),
-
-	TP_STRUCT__entry(
-		__field(pid_t, pid )
-		__field(u64,   time)
-	),
-
-	TP_fast_assign(
-		__entry->pid	= p->pid;
-		__entry->time	= time;
-
-		__perf_count(time);
-	),
-
-	TP_printk("task %d waited for IO for %Lu ns",
-		__entry->pid, __entry->time)
-);
-
-Something like the below, except that its probably borken in interesting
-ways..
-
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- include/trace/ftrace.h |   19 ++++++++++++++-----
- kernel/perf_counter.c  |    6 +++---
- 2 files changed, 17 insertions(+), 8 deletions(-)
+ arch/x86/kernel/early_printk.c |   65 ++++++++++++++++++++-------------------
+ kernel/printk.c                |   41 ++++++++++++++++---------
+ 2 files changed, 59 insertions(+), 47 deletions(-)
 
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 1867553..7e550a2 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -447,11 +447,20 @@ static inline int ftrace_get_offsets_##call(				\
- #define TP_FMT(fmt, args...)	fmt "\n", ##args
- 
- #ifdef CONFIG_EVENT_PROFILE
--#define _TRACE_PROFILE(call, proto, args)				\
-+
-+#undef __perf_addr
-+#define __perf_addr(a) addr = (a)
-+
-+#undef __perf_count
-+#define __perf_count(c) count = (c)
-+	
-+#define _TRACE_PROFILE(call, proto, args, assign)			\
- static void ftrace_profile_##call(proto)				\
- {									\
--	extern void perf_tpcounter_event(int);				\
--	perf_tpcounter_event(event_##call.id);				\
-+	extern void perf_tpcounter_event(int, u64, u64);		\
-+	u64 addr = 0, count = 1;					\
-+	{ assign; }							\
-+	perf_tpcounter_event(event_##call.id, addr, count);		\
- }									\
- 									\
- static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
-@@ -476,7 +485,7 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
- 	.profile_disable = ftrace_profile_disable_##call,
- 
- #else
--#define _TRACE_PROFILE(call, proto, args)
-+#define _TRACE_PROFILE(call, proto, args, assign)
- #define _TRACE_PROFILE_INIT(call)
- #endif
- 
-@@ -502,7 +511,7 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
- 
- #undef TRACE_EVENT
- #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
--_TRACE_PROFILE(call, PARAMS(proto), PARAMS(args))			\
-+_TRACE_PROFILE(call, PARAMS(proto), PARAMS(args), PARAMS(assign))	\
- 									\
- static struct ftrace_event_call event_##call;				\
- 									\
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 5498890..879a6ce 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -3680,17 +3680,17 @@ static const struct pmu perf_ops_task_clock = {
- };
- 
- #ifdef CONFIG_EVENT_PROFILE
--void perf_tpcounter_event(int event_id)
-+void perf_tpcounter_event(int event_id, u64 addr, u64 count)
- {
- 	struct perf_sample_data data = {
- 		.regs = get_irq_regs(),
--		.addr = 0,
-+		.addr = addr,
- 	};
- 
- 	if (!data.regs)
- 		data.regs = task_pt_regs(current);
- 
--	do_perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, 1, 1, &data);
-+	do_perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, count, 1, &data);
+diff --git a/arch/x86/kernel/early_printk.c b/arch/x86/kernel/early_printk.c
+index 519a5e1..2acfd3f 100644
+--- a/arch/x86/kernel/early_printk.c
++++ b/arch/x86/kernel/early_printk.c
+@@ -176,10 +176,19 @@ asmlinkage void early_printk(const char *fmt, ...)
+ 	va_end(ap);
  }
- EXPORT_SYMBOL_GPL(perf_tpcounter_event);
  
-
++static inline void early_console_register(struct console *con, int keep_early)
++{
++	early_console = con;
++	if (keep_early)
++		early_console->flags &= ~CON_BOOT;
++	else
++		early_console->flags |= CON_BOOT;
++	register_console(early_console);
++}
+ 
+ static int __init setup_early_printk(char *buf)
+ {
+-	int keep_early;
++	int keep;
+ 
+ 	if (!buf)
+ 		return 0;
+@@ -188,42 +197,34 @@ static int __init setup_early_printk(char *buf)
+ 		return 0;
+ 	early_console_initialized = 1;
+ 
+-	keep_early = (strstr(buf, "keep") != NULL);
+-
+-	if (!strncmp(buf, "serial", 6)) {
+-		early_serial_init(buf + 6);
+-		early_console = &early_serial_console;
+-	} else if (!strncmp(buf, "ttyS", 4)) {
+-		early_serial_init(buf);
+-		early_console = &early_serial_console;
+-	} else if (!strncmp(buf, "vga", 3)
+-		&& boot_params.screen_info.orig_video_isVGA == 1) {
+-		max_xpos = boot_params.screen_info.orig_video_cols;
+-		max_ypos = boot_params.screen_info.orig_video_lines;
+-		current_ypos = boot_params.screen_info.orig_y;
+-		early_console = &early_vga_console;
++	keep = (strstr(buf, "keep") != NULL);
++
++	while (*buf != '\0') {
++		if (!strncmp(buf, "serial", 6)) {
++			early_serial_init(buf + 6);
++			early_console_register(&early_serial_console, keep);
++		}
++		if (!strncmp(buf, "ttyS", 4)) {
++			early_serial_init(buf + 4);
++			early_console_register(&early_serial_console, keep);
++		}
++		if (!strncmp(buf, "vga", 3) &&
++		    boot_params.screen_info.orig_video_isVGA == 1) {
++			max_xpos = boot_params.screen_info.orig_video_cols;
++			max_ypos = boot_params.screen_info.orig_video_lines;
++			current_ypos = boot_params.screen_info.orig_y;
++			early_console_register(&early_vga_console, keep);
++		}
+ #ifdef CONFIG_EARLY_PRINTK_DBGP
+-	} else if (!strncmp(buf, "dbgp", 4)) {
+-		if (early_dbgp_init(buf+4) < 0)
+-			return 0;
+-		early_console = &early_dbgp_console;
+-		/*
+-		 * usb subsys will reset ehci controller, so don't keep
+-		 * that early console
+-		 */
+-		keep_early = 0;
++		if (!strncmp(buf, "dbgp", 4) && !early_dbgp_init(buf + 4))
++			early_console_register(&early_dbgp_console, keep);
+ #endif
+ #ifdef CONFIG_HVC_XEN
+-	} else if (!strncmp(buf, "xen", 3)) {
+-		early_console = &xenboot_console;
++		if (!strncmp(buf, "xen", 3))
++			early_console_register(&xenboot_console, keep);
+ #endif
++		buf++;
+ 	}
+-
+-	if (keep_early)
+-		early_console->flags &= ~CON_BOOT;
+-	else
+-		early_console->flags |= CON_BOOT;
+-	register_console(early_console);
+ 	return 0;
+ }
+ 
+diff --git a/kernel/printk.c b/kernel/printk.c
+index b4d97b5..45e0cec 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -1129,6 +1129,28 @@ void console_start(struct console *console)
+ }
+ EXPORT_SYMBOL(console_start);
+ 
++static int disable_boot_consoles(void)
++{
++	struct console *bootconsole = console_drivers;
++	struct console *nextcon;
++	if (!bootconsole)
++		return 0;
++	while (bootconsole) {
++		nextcon = bootconsole->next;
++		if (bootconsole->flags & CON_BOOT) {
++			printk(KERN_INFO "turn off boot console %s%d\n",
++			       console_drivers->name, console_drivers->index);
++			if (unregister_console(bootconsole) != 0)
++				printk(KERN_ERR "ERROR unregistering %s%d\n",
++				       console_drivers->name,
++				       console_drivers->index);
++		}
++		bootconsole = nextcon;
++	}
++	return 0;
++}
++late_initcall(disable_boot_consoles);
++
+ /*
+  * The console driver calls this routine during kernel initialization
+  * to register the console printing procedure with printk() and to
+@@ -1142,8 +1164,7 @@ void register_console(struct console *console)
+ 	struct console *bootconsole = NULL;
+ 
+ 	if (console_drivers) {
+-		if (console->flags & CON_BOOT)
+-			return;
++
+ 		if (console_drivers->flags & CON_BOOT)
+ 			bootconsole = console_drivers;
+ 	}
+@@ -1216,6 +1237,7 @@ void register_console(struct console *console)
+ 		       console->name, console->index);
+ 		unregister_console(bootconsole);
+ 		console->flags &= ~CON_PRINTBUFFER;
++		disable_boot_consoles();
+ 	} else {
+ 		printk(KERN_INFO "console [%s%d] enabled\n",
+ 		       console->name, console->index);
+@@ -1280,24 +1302,13 @@ int unregister_console(struct console *console)
+ 	if (console_drivers != NULL && console->flags & CON_CONSDEV)
+ 		console_drivers->flags |= CON_CONSDEV;
+ 
++	if (!res)
++		console->index = -1;
+ 	release_console_sem();
+ 	return res;
+ }
+ EXPORT_SYMBOL(unregister_console);
+ 
+-static int __init disable_boot_consoles(void)
+-{
+-	if (console_drivers != NULL) {
+-		if (console_drivers->flags & CON_BOOT) {
+-			printk(KERN_INFO "turn off boot console %s%d\n",
+-				console_drivers->name, console_drivers->index);
+-			return unregister_console(console_drivers);
+-		}
+-	}
+-	return 0;
+-}
+-late_initcall(disable_boot_consoles);
+-
+ #if defined CONFIG_PRINTK
+ 
+ /*
+-- 
+1.6.0.3.523.g304d0
 
