@@ -1,111 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbZGTQcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbZGTQc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753111AbZGTQcP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 12:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZGTQcN
+	id S1753169AbZGTQc7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 12:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZGTQc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 12:32:13 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:40348 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbZGTQcM (ORCPT
+	Mon, 20 Jul 2009 12:32:57 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:62072 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752498AbZGTQc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 12:32:12 -0400
-Date: Mon, 20 Jul 2009 12:32:04 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, earl_chew@agilent.com, alan@lxorguk.ukuu.org.uk,
-       andi@firstfloor.org, oleg@redhat.com
-Subject: Re: [PATCH 3/3] exec: Allow do_coredump to wait for user space
-	pipe readers to complete (v9)
-Message-ID: <20090720163204.GC9060@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090703104447.GA19371@hmsreliant.think-freely.org> <20090720154938.GA8563@hmsreliant.think-freely.org>
+	Mon, 20 Jul 2009 12:32:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QD2xv55UKvin7/MKOeRm/eamlxidzjiODuexqSjIksKrsKVpQHYeOL1yPNLhrHdAlb
+         V8eByTn/0ZjadgUDMCCdqRovDbD1suZb0ibBUgmbVmO+naZ1QYCBkzV0Inecs19yuSAP
+         ThFUFH+goPsPn+XfxElLOmcQPBmVJRA73lbWY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090720154938.GA8563@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-Score: -1.4 (-)
+In-Reply-To: <1198385022.260301248106740802.JavaMail.root@mail-01.cse.ucsc.edu>
+References: <1279186756.260191248106587108.JavaMail.root@mail-01.cse.ucsc.edu>
+	 <1198385022.260301248106740802.JavaMail.root@mail-01.cse.ucsc.edu>
+Date: Tue, 21 Jul 2009 00:32:55 +0800
+Message-ID: <b6a2187b0907200932n365e016p2212dc126b724424@mail.gmail.com>
+Subject: Re: regression: wireless authentication
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Noah Watkins <jayhawk@soe.ucsc.edu>
+Cc: "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-core_pattern: Allow core_pattern pipes to wait for user space to complete
+On Tue, Jul 21, 2009 at 12:19 AM, Noah Watkins<jayhawk@soe.ucsc.edu> wrote:
+> The latest version I've tried that works fine is Linus' 2.6.31-rc3
+> with the latest commit being:
+>
+> commit 35b5c55fee08e6e4001ba98060a2d0b82f70b5f4
 
-One of the things that user space processes like to do is look at metadata for a
-crashing process in their /proc/<pid> directory.  this is racy however, since
-do_coredump in the kernel doesn't wait for the user space process to complete
-before it reaps the crashing process.  This patch corrects that.  Allowing the
-kernel to wait for the user space process to complete before cleaning up the
-crashing process.  This is a bit tricky to do for a few reasons:
+Mine says 78af08d90b8f745044b1274430bc4bc6b2b27aca which is later than
+yours. Wireless working with iwl4965 including WPA2.
 
-1) The user space process isn't our child, so we can't sys_wait4 on it
-2) We need to close the pipe before waiting for the user process to complete,
-since the user process may rely on an EOF condition
-
-I've discussed several solutions with Oleg Nesterov off-list about this, and
-this is the one we've come up with. We add ourselves as a pipe reader (to
-prevent premature cleanup of the pipe_inode_info), and remove ourselves as a
-writer (to provide an EOF condition to the writer in user space), then we
-iterate until the user space process exits (which we detect by pipe->readers ==
-1, hence the > 1 check in the loop).  When we exit the loop, we restore the
-proper reader/writer values, then we return and let filp_close in do_coredump
-clean up the pipe data properly.
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Reported-by: Earl Chew <earl_chew@agilent.com>
-
-
- exec.c |   26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
-
-diff --git a/fs/exec.c b/fs/exec.c
-index 5f70d7e..510b455 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -55,6 +55,7 @@
- #include <linux/kmod.h>
- #include <linux/fsnotify.h>
- #include <linux/fs_struct.h>
-+#include <linux/pipe_fs_i.h>
- 
- #include <asm/uaccess.h>
- #include <asm/mmu_context.h>
-@@ -1718,6 +1719,29 @@ int get_dumpable(struct mm_struct *mm)
- 	return (ret >= 2) ? 2 : ret;
- }
- 
-+static void wait_for_dump_helpers(struct file *file)
-+{
-+	struct pipe_inode_info *pipe;
-+ 
-+	pipe = file->f_path.dentry->d_inode->i_pipe;
-+ 
-+	pipe_lock(pipe);
-+	pipe->readers++;
-+	pipe->writers--;
-+
-+	while ((pipe->readers > 1) && (!signal_pending(current))) {
-+		wake_up_interruptible_sync(&pipe->wait);
-+		kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
-+		pipe_wait(pipe);
-+	}
-+ 
-+	pipe->readers--;
-+	pipe->writers++;
-+	pipe_unlock(pipe);
-+ 
-+}
-+ 
-+
- void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- {
- 	struct core_state core_state;
-@@ -1873,6 +1897,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 	if (retval)
- 		current->signal->group_exit_code |= 0x80;
- close_fail:
-+	if (ispipe && core_pipe_limit)
-+		wait_for_dump_helpers(file);
- 	filp_close(file, NULL);
- fail_dropcount:
- 	if (dump_count)
+Jeff.
