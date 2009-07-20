@@ -1,212 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZGTMCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbZGTMJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbZGTMCa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 08:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZGTMC3
+	id S1753406AbZGTMJK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 08:09:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZGTMJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 08:02:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45425 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753003AbZGTMC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 08:02:27 -0400
-Date: Mon, 20 Jul 2009 12:01:54 GMT
-From: tip-bot for Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akinobu.mita@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, akinobu.mita@gmail.com, mingo@elte.hu
-In-Reply-To: <20090718151219.GD11294@localhost.localdomain>
-References: <20090718151219.GD11294@localhost.localdomain>
-Subject: [tip:x86/asm] x86: Introduce GDT_ENTRY_INIT()
-Message-ID: <tip-d520da1173abd1f918b7e690220e14ba0fc56cfc@git.kernel.org>
-Git-Commit-ID: d520da1173abd1f918b7e690220e14ba0fc56cfc
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 20 Jul 2009 12:01:55 +0000 (UTC)
+	Mon, 20 Jul 2009 08:09:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53269 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZGTMJI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 08:09:08 -0400
+Subject: Re: [PATCH v3 3/4] ftrace: add tracepoint for hrtimer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A641BFC.2050508@cn.fujitsu.com>
+References: <4A604E46.5050903@cn.fujitsu.com>
+	 <4A605009.8060806@cn.fujitsu.com> <1247827801.15751.4.camel@twins>
+	 <4A641BFC.2050508@cn.fujitsu.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 20 Jul 2009 14:09:31 +0200
+Message-Id: <1248091771.15751.8578.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d520da1173abd1f918b7e690220e14ba0fc56cfc
-Gitweb:     http://git.kernel.org/tip/d520da1173abd1f918b7e690220e14ba0fc56cfc
-Author:     Akinobu Mita <akinobu.mita@gmail.com>
-AuthorDate: Sun, 19 Jul 2009 00:12:20 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 19 Jul 2009 18:27:53 +0200
+On Mon, 2009-07-20 at 15:25 +0800, Xiao Guangrong wrote:
 
-x86: Introduce GDT_ENTRY_INIT()
+> >> @@ -1162,9 +1182,8 @@ static void __run_hrtimer(struct hrtimer *timer)
+> >>  	 * the timer base.
+> >>  	 */
+> >>  	spin_unlock(&cpu_base->lock);
+> >> -	trace_hrtimer_entry(timer);
+> >>  	restart = fn(timer);
+> >> -	trace_hrtimer_exit(timer, restart);
+> >> +	trace_hrtimer_callback_done(timer);
+> >>  	spin_lock(&cpu_base->lock);
+> >>  
+> >>  	/*
+> > 
+> > Why bother introducing these tracepoints if you're going to remove them
+> > in the same patch-set?
+> > 
+> 
+> Actually I'm renaming them but not removing them.
 
-GDT_ENTRY_INIT is static initializer of desc_struct.
+Since the new set doesn't include anything comparable to _entry, I'd say
+you're deleting one.
 
-We already have similar macro GDT_ENTRY() but it's static
-initializer for u64 and it cannot be used for desc_struct.
+> I can drop the first patch and merge it into the latter patches,
+> but that will lose the credit for Anton Blanchard
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-LKML-Reference: <20090718151219.GD11294@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+You could fix that with something like:
 
+Suggested-by: Anton Blanchard
 
----
- arch/x86/include/asm/desc_defs.h      |    6 +++++
- arch/x86/include/asm/lguest.h         |    5 ++-
- arch/x86/include/asm/stackprotector.h |    2 +-
- arch/x86/kernel/apm_32.c              |    2 +-
- arch/x86/kernel/cpu/common.c          |   40 ++++++++++++++++----------------
- drivers/pnp/pnpbios/bioscalls.c       |    5 +---
- 6 files changed, 32 insertions(+), 28 deletions(-)
+> > Also, the below:
+> > 
+> >> @@ -1275,6 +1294,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+> >>  				break;
+> >>  			}
+> >>  
+> >> +			trace_hrtimer_expire(timer, basenow.tv64);
+> >>  			__run_hrtimer(timer);
+> >>  		}
+> >>  		base++;
+> >> @@ -1397,6 +1417,7 @@ void hrtimer_run_queues(void)
+> >>  					hrtimer_get_expires_tv64(timer))
+> >>  				break;
+> >>  
+> >> +			trace_hrtimer_expire(timer, base->softirq_time.tv64);
+> >>  			__run_hrtimer(timer);
+> >>  		}
+> >>  		spin_unlock(&cpu_base->lock);
+> > 
+> > indicates you placed that tracepoint in the wrong place.
+> > 
+> > Furthermore, I don't get why you want it there and not on the old
+> > _entry() site, because this adds all kinds of extra overhead and you
+> > loose the exact callback timings.
+> > 
+> 
+> Yes, it's true, but the loose is only about 1 microsecond as I tested it.
+> Do you think it's acceptable or not?
 
-diff --git a/arch/x86/include/asm/desc_defs.h b/arch/x86/include/asm/desc_defs.h
-index a6adefa..9d66848 100644
---- a/arch/x86/include/asm/desc_defs.h
-+++ b/arch/x86/include/asm/desc_defs.h
-@@ -34,6 +34,12 @@ struct desc_struct {
- 	};
- } __attribute__((packed));
- 
-+#define GDT_ENTRY_INIT(flags, base, limit) { { { \
-+		.a = ((limit) & 0xffff) | (((base) & 0xffff) << 16), \
-+		.b = (((base) & 0xff0000) >> 16) | (((flags) & 0xf0ff) << 8) | \
-+			((limit) & 0xf0000) | ((base) & 0xff000000), \
-+	} } }
-+
- enum {
- 	GATE_INTERRUPT = 0xE,
- 	GATE_TRAP = 0xF,
-diff --git a/arch/x86/include/asm/lguest.h b/arch/x86/include/asm/lguest.h
-index 313389c..94cd698 100644
---- a/arch/x86/include/asm/lguest.h
-+++ b/arch/x86/include/asm/lguest.h
-@@ -91,8 +91,9 @@ static inline void lguest_set_ts(void)
- }
- 
- /* Full 4G segment descriptors, suitable for CS and DS. */
--#define FULL_EXEC_SEGMENT ((struct desc_struct){ { {0x0000ffff, 0x00cf9b00} } })
--#define FULL_SEGMENT ((struct desc_struct){ { {0x0000ffff, 0x00cf9300} } })
-+#define FULL_EXEC_SEGMENT \
-+	((struct desc_struct)GDT_ENTRY_INIT(0xc09b, 0, 0xfffff))
-+#define FULL_SEGMENT ((struct desc_struct)GDT_ENTRY_INIT(0xc093, 0, 0xfffff))
- 
- #endif /* __ASSEMBLY__ */
- 
-diff --git a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
-index cdc5e0b..44efdff 100644
---- a/arch/x86/include/asm/stackprotector.h
-+++ b/arch/x86/include/asm/stackprotector.h
-@@ -48,7 +48,7 @@
-  * head_32 for boot CPU and setup_per_cpu_areas() for others.
-  */
- #define GDT_STACK_CANARY_INIT						\
--	[GDT_ENTRY_STACK_CANARY] = { { { 0x00000018, 0x00409000 } } },
-+	[GDT_ENTRY_STACK_CANARY] = GDT_ENTRY_INIT(0x4090, 0, 0x18),
- 
- /*
-  * Initialize the stackprotector canary value.
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index b5e841b..febb2da 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -403,7 +403,7 @@ static DECLARE_WAIT_QUEUE_HEAD(apm_waitqueue);
- static DECLARE_WAIT_QUEUE_HEAD(apm_suspend_waitqueue);
- static struct apm_user *user_list;
- static DEFINE_SPINLOCK(user_list_lock);
--static struct desc_struct bad_bios_desc = { { { 0, 0x00409200 } } };
-+static struct desc_struct bad_bios_desc = GDT_ENTRY_INIT(0x4092, 0, 0);
- 
- static const char driver_version[] = "1.16ac";	/* no spaces */
- 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index f1961c0..8c9bc28 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -71,45 +71,45 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
- 	 * TLS descriptors are currently at a different place compared to i386.
- 	 * Hopefully nobody expects them at a fixed place (Wine?)
- 	 */
--	[GDT_ENTRY_KERNEL32_CS]		= { { { 0x0000ffff, 0x00cf9b00 } } },
--	[GDT_ENTRY_KERNEL_CS]		= { { { 0x0000ffff, 0x00af9b00 } } },
--	[GDT_ENTRY_KERNEL_DS]		= { { { 0x0000ffff, 0x00cf9300 } } },
--	[GDT_ENTRY_DEFAULT_USER32_CS]	= { { { 0x0000ffff, 0x00cffb00 } } },
--	[GDT_ENTRY_DEFAULT_USER_DS]	= { { { 0x0000ffff, 0x00cff300 } } },
--	[GDT_ENTRY_DEFAULT_USER_CS]	= { { { 0x0000ffff, 0x00affb00 } } },
-+	[GDT_ENTRY_KERNEL32_CS]		= GDT_ENTRY_INIT(0xc09b, 0, 0xfffff),
-+	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xa09b, 0, 0xfffff),
-+	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc093, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER32_CS]	= GDT_ENTRY_INIT(0xc0fb, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f3, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xa0fb, 0, 0xfffff),
- #else
--	[GDT_ENTRY_KERNEL_CS]		= { { { 0x0000ffff, 0x00cf9a00 } } },
--	[GDT_ENTRY_KERNEL_DS]		= { { { 0x0000ffff, 0x00cf9200 } } },
--	[GDT_ENTRY_DEFAULT_USER_CS]	= { { { 0x0000ffff, 0x00cffa00 } } },
--	[GDT_ENTRY_DEFAULT_USER_DS]	= { { { 0x0000ffff, 0x00cff200 } } },
-+	[GDT_ENTRY_KERNEL_CS]		= GDT_ENTRY_INIT(0xc09a, 0, 0xfffff),
-+	[GDT_ENTRY_KERNEL_DS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER_CS]	= GDT_ENTRY_INIT(0xc0fa, 0, 0xfffff),
-+	[GDT_ENTRY_DEFAULT_USER_DS]	= GDT_ENTRY_INIT(0xc0f2, 0, 0xfffff),
- 	/*
- 	 * Segments used for calling PnP BIOS have byte granularity.
- 	 * They code segments and data segments have fixed 64k limits,
- 	 * the transfer segment sizes are set at run time.
- 	 */
- 	/* 32-bit code */
--	[GDT_ENTRY_PNPBIOS_CS32]	= { { { 0x0000ffff, 0x00409a00 } } },
-+	[GDT_ENTRY_PNPBIOS_CS32]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff),
- 	/* 16-bit code */
--	[GDT_ENTRY_PNPBIOS_CS16]	= { { { 0x0000ffff, 0x00009a00 } } },
-+	[GDT_ENTRY_PNPBIOS_CS16]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff),
- 	/* 16-bit data */
--	[GDT_ENTRY_PNPBIOS_DS]		= { { { 0x0000ffff, 0x00009200 } } },
-+	[GDT_ENTRY_PNPBIOS_DS]		= GDT_ENTRY_INIT(0x0092, 0, 0xffff),
- 	/* 16-bit data */
--	[GDT_ENTRY_PNPBIOS_TS1]		= { { { 0x00000000, 0x00009200 } } },
-+	[GDT_ENTRY_PNPBIOS_TS1]		= GDT_ENTRY_INIT(0x0092, 0, 0),
- 	/* 16-bit data */
--	[GDT_ENTRY_PNPBIOS_TS2]		= { { { 0x00000000, 0x00009200 } } },
-+	[GDT_ENTRY_PNPBIOS_TS2]		= GDT_ENTRY_INIT(0x0092, 0, 0),
- 	/*
- 	 * The APM segments have byte granularity and their bases
- 	 * are set at run time.  All have 64k limits.
- 	 */
- 	/* 32-bit code */
--	[GDT_ENTRY_APMBIOS_BASE]	= { { { 0x0000ffff, 0x00409a00 } } },
-+	[GDT_ENTRY_APMBIOS_BASE]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff),
- 	/* 16-bit code */
--	[GDT_ENTRY_APMBIOS_BASE+1]	= { { { 0x0000ffff, 0x00009a00 } } },
-+	[GDT_ENTRY_APMBIOS_BASE+1]	= GDT_ENTRY_INIT(0x009a, 0, 0xffff),
- 	/* data */
--	[GDT_ENTRY_APMBIOS_BASE+2]	= { { { 0x0000ffff, 0x00409200 } } },
-+	[GDT_ENTRY_APMBIOS_BASE+2]	= GDT_ENTRY_INIT(0x409a, 0, 0xffff),
- 
--	[GDT_ENTRY_ESPFIX_SS]		= { { { 0x0000ffff, 0x00cf9200 } } },
--	[GDT_ENTRY_PERCPU]		= { { { 0x0000ffff, 0x00cf9200 } } },
-+	[GDT_ENTRY_ESPFIX_SS]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
-+	[GDT_ENTRY_PERCPU]		= GDT_ENTRY_INIT(0xc092, 0, 0xfffff),
- 	GDT_STACK_CANARY_INIT
- #endif
- } };
-diff --git a/drivers/pnp/pnpbios/bioscalls.c b/drivers/pnp/pnpbios/bioscalls.c
-index 45ad3e9..bd035e3 100644
---- a/drivers/pnp/pnpbios/bioscalls.c
-+++ b/drivers/pnp/pnpbios/bioscalls.c
-@@ -60,7 +60,7 @@ do { \
- 	set_desc_limit(&gdt[(selname) >> 3], (size) - 1); \
- } while(0)
- 
--static struct desc_struct bad_bios_desc;
-+static struct desc_struct bad_bios_desc = GDT_ENTRY_INIT(0x4092, 0, 0);
- 
- /*
-  * At some point we want to use this stack frame pointer to unwind
-@@ -476,9 +476,6 @@ void pnpbios_calls_init(union pnp_bios_install_struct *header)
- 	pnp_bios_callpoint.offset = header->fields.pm16offset;
- 	pnp_bios_callpoint.segment = PNP_CS16;
- 
--	bad_bios_desc.a = 0;
--	bad_bios_desc.b = 0x00409200;
--
- 	set_desc_base(&bad_bios_desc, (unsigned long)__va(0x40UL << 4));
- 	set_desc_limit(&bad_bios_desc, 4095 - (0x40 << 4));
- 	for_each_possible_cpu(i) {
+The time is irrelevant, but look at the code, it includes a whole heap
+of things, like debug code, locks, poking at hardware etc.
+
+It simply isn't comparable to before.
+
+> If we put trace_hrtimer_expire() on the old _entry() site, then we can't
+> get the timestamps when hrtimer expires, which is used to calculate the
+> latency of hrtimer.
+
+Ah, but you don't get those anyway, I'd argue the whole expire thing is
+broken. The only expiry you get is the hardware interrupt firing.
+Anything after that is a free-for-all.
+
+Look at that loop in hrtimer_interrupt(), with your tracepoint, they'd
+all expire at the same time, regardless of how long previous callback's
+took to complete.
+
+Also, the whole loop can be re-tried, updating 'now' expiring a whole
+new set of timers without expiry event.
+
+The best you can get is a tracepoint when the hrtimer interrupt happens,
+and the IRQ tracepoint already give you that.
+
+So I really don't see the use-case for this _expiry tracepoint, its just
+too ill-defined.
+
+The _entry and _exit ones I can agree with, this stuff just doesn't make
+any sense.
