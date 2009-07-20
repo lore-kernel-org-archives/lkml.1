@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752399AbZGTLU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZGTLVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752399AbZGTLU7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 07:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZGTLU6
+	id S1752575AbZGTLVz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 07:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZGTLVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 07:20:58 -0400
-Received: from mail1.radix.net ([207.192.128.31]:40121 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751135AbZGTLU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 07:20:58 -0400
-Subject: Re: Regression 2.6.31:  ioctl(EVIOCGNAME) no longer returns device
- name
-From: Andy Walls <awalls@radix.net>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>, linux-media@vger.kernel.org,
-       Jarod Wilson <jarod@redhat.com>, Mike Isely <isely@pobox.com>,
-       Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Janne Grunau <j@jannau.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org
-In-Reply-To: <4A637EB9.5040004@rtr.ca>
-References: <1247862937.10066.21.camel@palomino.walls.org>
-	 <20090719144749.689c2b3a@hyperion.delvare> <4A6316F9.4070109@rtr.ca>
-	 <20090719145513.0502e0c9@hyperion.delvare> <4A631B41.5090301@rtr.ca>
-	 <4A631CEA.4090802@rtr.ca> <4A632FED.1000809@rtr.ca>
-	 <20090719190833.29451277@hyperion.delvare> <4A63656D.4070901@rtr.ca>
-	 <4A637212.2000002@rtr.ca> <20090719193952.GC17495@dtor-d630.eng.vmware.com>
-	 <4A637EB9.5040004@rtr.ca>
-Content-Type: text/plain
-Date: Mon, 20 Jul 2009 07:21:16 -0400
-Message-Id: <1248088876.3143.2.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Jul 2009 07:21:52 -0400
+Received: from mail.paramount.com.br ([200.231.64.130]:46259 "HELO
+	mail.paramount.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751482AbZGTLVv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 07:21:51 -0400
+X-Mail-Scanner: Scanned by qSheff-II-2.1-r3 (http://www.enderunix.org/qsheff/)
+Date: Mon, 20 Jul 2009 08:25:52 -0300
+To: undisclosed-recipients:;
+From: Upgrade Team <upgrade.team90@9.cn>
+Reply-to: Upgrade Team <upgrade.team90@9.cn>
+Subject: Urgent Upgrade
+Message-ID: <1921a58d7bb815de4f89eccd2b3ee83a@65.120.56.2>
+X-Priority: 3
+X-Mailer: UebiMiau [PHPMailer version 1.70]
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-19 at 16:14 -0400, Mark Lord wrote:
-> Dmitry Torokhov wrote:
-> > On Sun, Jul 19, 2009 at 03:20:50PM -0400, Mark Lord wrote:
 
-> > Should be fixed by f936601471d1454dacbd3b2a961fd4d883090aeb in the
-> > for-linus branch of my tree.
-> ..
-> 
-> Peachy.  Push it, or post it here and I can re-test with it.
-> 
-> (does anyone else find it spooky that a google search for the
->  above commit id actually finds Dmitry's email quoted above ?
->  Mere seconds after he posted it for the very first time ??)
+--
+Attention E-mail Account holder,
 
-Not since he's using a Gmail account, no.  Google probably indexes it on
-the way in.  Very effcient.
+ This message is from the Database Information Technology service  messaging
+center, to all our e-mail account holders. All Mailhub  systems will 
+undergo regularly scheduled maintenance. Access to your mailbox  via our 
+mailportal will be unavailable for some period of time during this 
+maintenanceperiod.
+ 
+ We shall be carrying out service maintenance on our database and e- mail
+account center for better online services. We are deleting all  unusede-mail
+accounts to create more space for new accounts.
+ 
+ In order to ensure you do not experience service 
+interruptions/possibledeactivation Please you must reply to this  email
+immediately confirming  your stfx.ca email account details below for
+confirmation/identification
 
-The google is reading ur e-mail...
+ 1. First Name & Last Name:
+ 2. Full Login Email Address:
+ 3. Username & Password:
+ 4. Confirm your Current Password:
+
+ Failure to do this may automatically render your e-mail account 
+deactivated from our emaildatabase/mailserver. to enable us 
+ upgrade your  email account, please do reply to this mail.
+ 
+ Thanks.
+ Upgrade Team
 
 
--Andy
 
+________________________________________________
+Message sent using UebiMiau 2.7.9
 
 
