@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZGTRI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbZGTRIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbZGTRI3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 13:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbZGTRI0
+	id S1753375AbZGTRIk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 13:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZGTRIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 13:08:26 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:3150 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240AbZGTRIY (ORCPT
+	Mon, 20 Jul 2009 13:08:39 -0400
+Received: from mail-px0-f193.google.com ([209.85.216.193]:53625 "EHLO
+	mail-px0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbZGTRI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 13:08:24 -0400
+	Mon, 20 Jul 2009 13:08:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=d0mi/v56yQ1e2fmKiOO86SQkh1G505/6I14ObGYKnBGZ3fY9N6kvieXkG46jzaBAvQ
-         3mt5n+YQsyJwEBTHJXH1lW562djpUKmirgeRSp6tHw9RcZe2ZJTDoz88cxrpJyajU8er
-         rT/e91mCDYLwNpJ7L4g58QZOxr9XxUB+ibLok=
+        b=NJpcntn/Tt4TZKA12erRtP9s7J4exy2uqftfArRb/ossByZ12cYmiGR07tZiQg4Nli
+         MFG3eOyGMJMXjd3NXbi19dQXB0UchG//ME0z4k5AsmdrGiUWaMcawGVg33l7lxf+woIG
+         Tl1Fj+d+3qwz8Fy0Zu1OHnCSptfxkz+vRKbTU=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -31,9 +31,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        "K . Prasad" <prasad@linux.vnet.ibm.com>,
        Alan Stern <stern@rowland.harvard.edu>
-Subject: [RFC][PATCH 3/5] hw-breakpoints: Make user breakpoints API truly generic
-Date: Mon, 20 Jul 2009 13:08:05 -0400
-Message-Id: <1248109687-7808-4-git-send-email-fweisbec@gmail.com>
+Subject: [RFC][PATCH 4/5] perfcounter: Grow the event number to 64 bits
+Date: Mon, 20 Jul 2009 13:08:06 -0400
+Message-Id: <1248109687-7808-5-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
 References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
@@ -41,185 +41,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following the API changes on the kernel breakpoints API,
-the user breakpoints registration now follows the same pattern.
+The event number are defined by the config attr of a counter. When it
+is passed while adding a hit, it is compared against the initial
+config attr, a 64 bits number, to retrieve the targetted counter.
 
-The target, access length and type and now given as parameters
-in the registration helpers to avoid per arch code in generic code.
+But when we want to add a hit, this event is passed through 32 bits
+parameters, which makes loosing the real event number if its storage
+needs more (case of an address).
 
-However, to keep registering or modifying easily a user breakpoint
-from arch code with a prefilled arch breakpoint structure, we provide
-two new helpers:
-
-- register_user_hw_breakpoint_filled(tsk, bp)
-- modify_user_hw_breakpoint_filled(tsk, bp)
+This patch changes the event parameter in some of the helpers which
+add the event hits.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Thomas Gleixner <tglx@linuxtronix.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Anton Blanchard <anton@samba.org>
 ---
- arch/x86/kernel/ptrace.c            |   21 ++++++-----
- include/asm-generic/hw_breakpoint.h |   12 +++++-
- kernel/hw_breakpoint.c              |   65 +++++++++++++++++++++++++++++-----
- 3 files changed, 76 insertions(+), 22 deletions(-)
+ kernel/perf_counter.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index cabdabc..ef0eb10 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -525,17 +525,18 @@ restore:
- 		if (!bp) {
- 			rc = -ENOMEM;
- 			bp = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
--			if (bp) {
--				bp->info.address = thread->debugreg[i];
--				bp->triggered = ptrace_triggered;
--				bp->info.len = len;
--				bp->info.type = type;
--				rc = register_user_hw_breakpoint(tsk, bp);
--				if (rc)
--					kfree(bp);
--			}
-+			if (!bp)
-+				break;
-+
-+			bp->info.address = thread->debugreg[i];
-+			bp->triggered = ptrace_triggered;
-+			bp->info.len = len;
-+			bp->info.type = type;
-+			rc = register_user_hw_breakpoint_filled(tsk, bp);
-+			if (rc)
-+				kfree(bp);
- 		} else
--			rc = modify_user_hw_breakpoint(tsk, bp);
-+			rc = modify_user_hw_breakpoint_filled(tsk, bp);
- 		if (rc)
- 			break;
- 	}
-diff --git a/include/asm-generic/hw_breakpoint.h b/include/asm-generic/hw_breakpoint.h
-index 300fe4c..598e3c4 100644
---- a/include/asm-generic/hw_breakpoint.h
-+++ b/include/asm-generic/hw_breakpoint.h
-@@ -83,10 +83,18 @@ struct hw_breakpoint {
-  * 1-, 2-, and 4-byte lengths may be unavailable.
-  */
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 5498890..33ffb5a 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -3435,7 +3435,7 @@ static int perf_swcounter_is_counting(struct perf_counter *counter)
  
-+extern int register_user_hw_breakpoint_filled(struct task_struct *tsk,
-+					      struct hw_breakpoint *bp);
- extern int register_user_hw_breakpoint(struct task_struct *tsk,
--					struct hw_breakpoint *bp);
-+				       struct hw_breakpoint *bp,
-+				       unsigned long addr, int len,
-+				       enum breakpoint_type type);
-+extern int modify_user_hw_breakpoint_filled(struct task_struct *tsk,
-+					    struct hw_breakpoint *bp);
- extern int modify_user_hw_breakpoint(struct task_struct *tsk,
--					struct hw_breakpoint *bp);
-+				     struct hw_breakpoint *bp,
-+				     unsigned long addr,
-+				     int len, enum breakpoint_type type);
- extern void unregister_user_hw_breakpoint(struct task_struct *tsk,
- 						struct hw_breakpoint *bp);
- /*
-diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-index 0301245..f9e62e7 100644
---- a/kernel/hw_breakpoint.c
-+++ b/kernel/hw_breakpoint.c
-@@ -211,16 +211,14 @@ static void __unregister_user_hw_breakpoint(int pos, struct task_struct *tsk)
- }
- 
- /**
-- * register_user_hw_breakpoint - register a hardware breakpoint for user space
-+ * register_user_hw_breakpoint_filled - register a filled hardware breakpoint
-+ * for user space.
-  * @tsk: pointer to 'task_struct' of the process to which the address belongs
-  * @bp: the breakpoint structure to register
-- *
-- * @bp.info->name or @bp.info->address, @bp.info->len, @bp.info->type and
-  * @bp->triggered must be set properly before invocation
-- *
-  */
--int register_user_hw_breakpoint(struct task_struct *tsk,
--					struct hw_breakpoint *bp)
-+int register_user_hw_breakpoint_filled(struct task_struct *tsk,
-+				       struct hw_breakpoint *bp)
+ static int perf_swcounter_match(struct perf_counter *counter,
+ 				enum perf_type_id type,
+-				u32 event, struct pt_regs *regs)
++				u64 event, struct pt_regs *regs)
  {
- 	struct thread_struct *thread = &(tsk->thread);
- 	int i, rc = -ENOSPC;
-@@ -246,15 +244,40 @@ int register_user_hw_breakpoint(struct task_struct *tsk,
- 	spin_unlock_bh(&hw_breakpoint_lock);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(register_user_hw_breakpoint_filled);
-+
-+/**
-+ * register_user_hw_breakpoint - register a filled hardware breakpoint
-+ * for user space.
-+ * @tsk: pointer to 'task_struct' of the process to which the address belongs
-+ * @bp: the breakpoint structure to register
-+ * @addr: target of the breakpoint
-+ * @len: length of the memory target access
-+ * @type: type of the breakpoint (read-write/read/write/execute)
-+ * @bp->triggered must be set properly before invocation
-+ */
-+int register_user_hw_breakpoint(struct task_struct *tsk,
-+				struct hw_breakpoint *bp,
-+				unsigned long addr,
-+				int len, enum breakpoint_type type)
-+{
-+	int ret;
-+
-+	ret = arch_fill_hw_breakpoint(bp, addr, len, type);
-+	if (ret)
-+		return ret;
-+
-+	return register_user_hw_breakpoint_filled(tsk, bp);
-+}
- EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
+ 	if (!perf_swcounter_is_counting(counter))
+ 		return 0;
+@@ -3467,7 +3467,7 @@ static void perf_swcounter_add(struct perf_counter *counter, u64 nr,
  
- /**
-- * modify_user_hw_breakpoint - modify a user-space hardware breakpoint
-+ * modify_user_hw_breakpoint_filled - modify a filled user-space hardware breakpoint
-  * @tsk: pointer to 'task_struct' of the process to which the address belongs
-- * @bp: the breakpoint structure to unregister
-- *
-+ * @bp: the breakpoint structure to update
-  */
--int modify_user_hw_breakpoint(struct task_struct *tsk, struct hw_breakpoint *bp)
-+int modify_user_hw_breakpoint_filled(struct task_struct *tsk,
-+				     struct hw_breakpoint *bp)
+ static void perf_swcounter_ctx_event(struct perf_counter_context *ctx,
+ 				     enum perf_type_id type,
+-				     u32 event, u64 nr, int nmi,
++				     u64 event, u64 nr, int nmi,
+ 				     struct perf_sample_data *data)
  {
- 	struct thread_struct *thread = &(tsk->thread);
- 	int i, ret = -ENOENT;
-@@ -269,6 +292,28 @@ int modify_user_hw_breakpoint(struct task_struct *tsk, struct hw_breakpoint *bp)
- 	spin_unlock_bh(&hw_breakpoint_lock);
- 	return ret;
+ 	struct perf_counter *counter;
+@@ -3497,7 +3497,7 @@ static int *perf_swcounter_recursion_context(struct perf_cpu_context *cpuctx)
+ 	return &cpuctx->recursion[0];
  }
-+EXPORT_SYMBOL_GPL(modify_user_hw_breakpoint_filled);
-+
-+/**
-+ * modify_user_hw_breakpoint - modify a user-space hardware breakpoint
-+ * @tsk: pointer to 'task_struct' of the process to which the address belongs
-+ * @bp: the breakpoint structure to update
-+ * @addr: target of the breakpoint
-+ * @len: length of the memory target access
-+ * @type: type of the breakpoint (read-write/read/write/execute)
-+ */
-+int modify_user_hw_breakpoint(struct task_struct *tsk, struct hw_breakpoint *bp,
-+			      unsigned long addr, int len,
-+			      enum breakpoint_type type)
-+{
-+	int ret;
-+
-+	ret = arch_fill_hw_breakpoint(bp, addr, len, type);
-+	if (ret)
-+		return ret;
-+
-+	return register_user_hw_breakpoint_filled(tsk, bp);
-+}
- EXPORT_SYMBOL_GPL(modify_user_hw_breakpoint);
  
- /**
+-static void do_perf_swcounter_event(enum perf_type_id type, u32 event,
++static void do_perf_swcounter_event(enum perf_type_id type, u64 event,
+ 				    u64 nr, int nmi,
+ 				    struct perf_sample_data *data)
+ {
 -- 
 1.6.2.3
 
