@@ -1,121 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZGTUU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZGTU02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754095AbZGTUU6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 16:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZGTUU4
+	id S1754032AbZGTU02 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 16:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZGTU00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 16:20:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54998 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752537AbZGTUU4 (ORCPT
+	Mon, 20 Jul 2009 16:26:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34525 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752418AbZGTU0Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 16:20:56 -0400
-Date: Mon, 20 Jul 2009 13:19:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
-       dbrownell@users.sourceforge.net, bjorn.helgaas@hp.com,
-       cascardo@holoscopio.com, Alessandro Zummo <a.zummo@towertech.it>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] RTC: mark if rtc-cmos drivers were successfully
- registered.
-Message-Id: <20090720131959.3b157627.akpm@linux-foundation.org>
-In-Reply-To: <1246766879-5784-1-git-send-email-cascardo@holoscopio.com>
-References: <1246766879-5784-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Jul 2009 16:26:25 -0400
+Date: Mon, 20 Jul 2009 16:26:24 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+Subject: Re: [PATCH] sched: Provide iowait counters
+In-Reply-To: <1248120676.23509.41.camel@laptop>
+Message-ID: <alpine.DEB.2.00.0907201622140.26208@gandalf.stny.rr.com>
+References: <4A64B813.1080506@linux.intel.com>  <1248117369.23509.33.camel@laptop>  <alpine.DEB.2.00.0907201540550.26208@gandalf.stny.rr.com> <1248120676.23509.41.camel@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun,  5 Jul 2009 01:07:59 -0300
-Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com> wrote:
 
-> rtc-cmos has two drivers, one PNP and one platform. When PNP has not
-> succeeded probing, platform is registered. However, it tries to
-> unregister both drivers unconditionally, instead of only unregistering
-> those that were successfully registered. Fix that with a boolean
-> variable for each driver indicating whether registering was successful.
+On Mon, 20 Jul 2009, Peter Zijlstra wrote:
+> > 
+> > How would the TRACE_EVENT look exactly? Would there be anything different 
+> > in the trace point location itself?
+> 
+> Something like:
+> 
+> TRACE_EVENT(sched_iowait,
+> 
+> 	TP_PROTO(struct task_struct *p, u64 time),
+> 
+> 	TP_ARGS(p, time),
+> 
+> 	TP_STRUCT__entry(
+> 		__field(pid_t, pid )
+> 		__field(u64,   time)
+> 	),
+> 
+> 	TP_fast_assign(
+> 		__entry->pid	= p->pid;
+> 		__entry->time	= time;
+> 
+> 		__perf_count(time);
+> 	),
+> 
+> 	TP_printk("task %d waited for IO for %Lu ns",
+> 		__entry->pid, __entry->time)
+> );
+> 
+> Something like the below, except that its probably borken in interesting
+> ways..
+> 
+> ---
+>  include/trace/ftrace.h |   19 ++++++++++++++-----
+>  kernel/perf_counter.c  |    6 +++---
+>  2 files changed, 17 insertions(+), 8 deletions(-)
+> 
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index 1867553..7e550a2 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -447,11 +447,20 @@ static inline int ftrace_get_offsets_##call(				\
+>  #define TP_FMT(fmt, args...)	fmt "\n", ##args
+>  
+>  #ifdef CONFIG_EVENT_PROFILE
+> -#define _TRACE_PROFILE(call, proto, args)				\
+> +
+> +#undef __perf_addr
+> +#define __perf_addr(a) addr = (a)
+> +
+> +#undef __perf_count
+> +#define __perf_count(c) count = (c)
+> +	
+> +#define _TRACE_PROFILE(call, proto, args, assign)			\
+>  static void ftrace_profile_##call(proto)				\
+>  {									\
+> -	extern void perf_tpcounter_event(int);				\
+> -	perf_tpcounter_event(event_##call.id);				\
+> +	extern void perf_tpcounter_event(int, u64, u64);		\
+> +	u64 addr = 0, count = 1;					\
+> +	{ assign; }							\
+> +	perf_tpcounter_event(event_##call.id, addr, count);		\
 
-OK, thanks.  
+The problem here is that the assign also will do the :
 
-This came up a few weeks ago - the kernel was actually crashing deep
-down in the driver core, when a not-registered device was unregistered.
+       TP_fast_assign(
+               __entry->pid    = p->pid;
+               __entry->time   = time;
 
-I believe Kay was planning on making the driver core more robust, so
-that crash shouldn't be happening any more.  Kay, can you please confirm
-that thsi got fixed?
+part, thus you will probably get errors in processing the __entry part.
 
+What about doing instead:
 
-But we still shouldn't be unregistering a not-registered driver, and
-the patch looks to be a suitable way of preventing that.
-
-Alternatively, we could declare that unregistering a not-registered
-driver is a permissible thing for a subsytem to do.  It doesn't sound
-like a good idea though - we'd lose runtime checking opportunities.
-
-
- drivers/rtc/rtc-cmos.c |   23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
-
-diff -puN drivers/rtc/rtc-cmos.c~rtc-mark-if-rtc-cmos-drivers-were-successfully-registered drivers/rtc/rtc-cmos.c
---- a/drivers/rtc/rtc-cmos.c~rtc-mark-if-rtc-cmos-drivers-were-successfully-registered
-+++ a/drivers/rtc/rtc-cmos.c
-@@ -1174,23 +1174,34 @@ static struct platform_driver cmos_platf
- 	}
- };
+ TRACE_EVENT(sched_iowait,
  
-+#ifdef CONFIG_PNP
-+static bool pnp_driver_registered;
-+#endif
-+static bool platform_driver_registered;
-+
- static int __init cmos_init(void)
- {
- 	int retval = 0;
+ 	TP_PROTO(struct task_struct *p, u64 time),
  
- #ifdef	CONFIG_PNP
--	pnp_register_driver(&cmos_pnp_driver);
-+	retval = pnp_register_driver(&cmos_pnp_driver);
-+	if (retval == 0)
-+		pnp_driver_registered = true;
- #endif
+ 	TP_ARGS(p, time),
  
--	if (!cmos_rtc.dev)
-+	if (!cmos_rtc.dev) {
- 		retval = platform_driver_probe(&cmos_platform_driver,
- 					       cmos_platform_probe);
-+		if (retval == 0)
-+			platform_driver_registered = true;
-+	}
+ 	TP_STRUCT__entry(
+ 		__field(pid_t, pid )
+ 		__field(u64,   time)
+ 	),
  
- 	if (retval == 0)
- 		return 0;
+ 	TP_fast_assign(
+ 		__entry->pid	= p->pid;
+ 		__entry->time	= time;
  
- #ifdef	CONFIG_PNP
--	pnp_unregister_driver(&cmos_pnp_driver);
-+	if (pnp_driver_registered)
-+		pnp_unregister_driver(&cmos_pnp_driver);
- #endif
- 	return retval;
- }
-@@ -1199,9 +1210,11 @@ module_init(cmos_init);
- static void __exit cmos_exit(void)
- {
- #ifdef	CONFIG_PNP
--	pnp_unregister_driver(&cmos_pnp_driver);
-+	if (pnp_driver_registered)
-+		pnp_unregister_driver(&cmos_pnp_driver);
- #endif
--	platform_driver_unregister(&cmos_platform_driver);
-+	if (platform_driver_registered)
-+		platform_driver_unregister(&cmos_platform_driver);
- }
- module_exit(cmos_exit);
+ 	) __perf_count(time),
+
+ 	TP_printk("task %d waited for IO for %Lu ns",
+ 		__entry->pid, __entry->time)
+ );
  
-_
+Then we could simply do:
+
+#undef __perf_count
+#define __perf_count(a)
+
+[ do all the ftrace event work ]
+
+#undef TP_fast_assign
+#define TP_fast_assign(a...)
+
+#undef __perf_count
+#define __perf_count(c) count = (c);
 
 
+-- Steve
+
+
+>  }									\
+>  									\
+>  static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
+> @@ -476,7 +485,7 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
+>  	.profile_disable = ftrace_profile_disable_##call,
+>  
+>  #else
+> -#define _TRACE_PROFILE(call, proto, args)
+> +#define _TRACE_PROFILE(call, proto, args, assign)
+>  #define _TRACE_PROFILE_INIT(call)
+>  #endif
+>  
+> @@ -502,7 +511,7 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
+>  
+>  #undef TRACE_EVENT
+>  #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
+> -_TRACE_PROFILE(call, PARAMS(proto), PARAMS(args))			\
+> +_TRACE_PROFILE(call, PARAMS(proto), PARAMS(args), PARAMS(assign))	\
+>  									\
+>  static struct ftrace_event_call event_##call;				\
+>  									\
+> diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+> index 5498890..879a6ce 100644
+> --- a/kernel/perf_counter.c
+> +++ b/kernel/perf_counter.c
+> @@ -3680,17 +3680,17 @@ static const struct pmu perf_ops_task_clock = {
+>  };
+>  
+>  #ifdef CONFIG_EVENT_PROFILE
+> -void perf_tpcounter_event(int event_id)
+> +void perf_tpcounter_event(int event_id, u64 addr, u64 count)
+>  {
+>  	struct perf_sample_data data = {
+>  		.regs = get_irq_regs(),
+> -		.addr = 0,
+> +		.addr = addr,
+>  	};
+>  
+>  	if (!data.regs)
+>  		data.regs = task_pt_regs(current);
+>  
+> -	do_perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, 1, 1, &data);
+> +	do_perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, count, 1, &data);
+>  }
+>  EXPORT_SYMBOL_GPL(perf_tpcounter_event);
+>  
+> 
+> 
+> 
