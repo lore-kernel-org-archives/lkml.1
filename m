@@ -1,74 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbZGTVY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZGTVZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbZGTVY2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 17:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbZGTVY1
+	id S1754058AbZGTVZm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 17:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZGTVZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 17:24:27 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58687 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753266AbZGTVY0 (ORCPT
+	Mon, 20 Jul 2009 17:25:42 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35836 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753107AbZGTVZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 17:24:26 -0400
-Date: Mon, 20 Jul 2009 23:24:24 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       virtualization@lists.osdl.org, Hank Janssen <hjanssen@microsoft.com>,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       Sam Ramji <sramji@microsoft.com>, shemminger@linux-foundation.org
-Subject: Re: [patch 00/54] [Announce] Microsoft Hyper-V drivers for Linux
-In-Reply-To: <20090720160025.GA20249@kroah.com>
-Message-ID: <alpine.LSU.2.00.0907202304180.1353@fbirervta.pbzchgretzou.qr>
-References: <20090720160025.GA20249@kroah.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Mon, 20 Jul 2009 17:25:41 -0400
+Date: Mon, 20 Jul 2009 17:25:41 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jason Wessel <jason.wessel@windriver.com>
+cc: gregkh@suse.de, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <dbrownell@users.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 07/10] ehci-dbgp,ehci: Allow early or late use of the
+ dbgp device
+In-Reply-To: <1248120392-8372-8-git-send-email-jason.wessel@windriver.com>
+Message-ID: <Pine.LNX.4.44L0.0907201721340.5320-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 20 Jul 2009, Jason Wessel wrote:
 
-On Monday 2009-07-20 18:00, Greg Kroah-Hartman wrote:
->
->I'm happy to announce, that after many months of discussions, Microsoft
->has released their Hyper-V Linux drivers under the GPLv2.  Following
->this message, will be the patches that add the drivers to the
->drivers/staging/ tree, and a whole bunch of cleanups.
->
->It's taken a long road to get here, and I'd like to thank the following
->people who made this possible:
->  - Steve Hemminger for the initial prodding and extreme patience
->  - Hank Janssen for providing the code and working with me to get it
->    into a workable and semi-mergable state.  His involvement within
->    Microsoft was also invaluable.
->  - Sam Ramji for his push within Microsoft to make this happen in a
->    manner that works with the Linux community.
->  - Novell for sponsoring my work on the Linux Driver project, without
->    which, this would not have even been possible.
+> If the EHCI debug port is initialized and in use, the EHCI host
+> controller driver must follow two rules.
+> 
+> 1) If the EHCI host driver issues a controller reset, the debug
+>    controller driver re-initialization must get called after the reset
+>    is completed.
+> 
+> 2) The EHCI host driver should ignore any requests to the physical
+>    EHCI debug port when the EHCI debug port is in use.
+> 
+> The code to check for debug port was moved from the ehci_pci_reinit()
+> to the EHCI host controller reset logic because it applies to any
+> condition where EHCI host controller is getting reset.
 
-(Your title as Maintainer of Crap has been well earned. But crap
-should not be maintained, it should be improved.)
+> --- a/drivers/usb/host/ehci-hcd.c
+> +++ b/drivers/usb/host/ehci-hcd.c
+> @@ -238,7 +238,33 @@ static int ehci_reset (struct ehci_hcd *ehci)
+>  {
+>  	int	retval;
+>  	u32	command = ehci_readl(ehci, &ehci->regs->command);
+> -
+> +	u32	temp;
+> +	struct pci_dev *pdev = to_pci_dev(ehci_to_hcd(ehci)->self.controller);
+> +
+> +	/* Special handling for the ehci debug port */
+> +	ehci->debug = NULL;
+> +	/* optional debug port, normally in the first BAR */
+> +	temp = pci_find_capability(pdev, 0x0a);
 
+This isn't going to work very well on systems with non-PCI EHCI
+controllers.  Maybe you should leave debug-port detection in
+ehci-pci.c.  The controller doesn't get reset very much in any case.
 
-I took a random patch to look at
-(add-the-hyper-v-virtual-network-driver.patch to be precise). I think
-the /hv/ subdirectory name should be expanded a little (to, say,
-/hyper-v/); we're not in the Unix days anymore where space is at such
-a premium that people even strip the last e off /usr. Our wireless
-drivers also don't live in /wl/. And since hv does not seem to be
-related to a hypervisor — cf. sunhv.c.
+> +	if (temp) {
+> +		pci_read_config_dword(pdev, temp, &temp);
+> +		temp >>= 16;
+> +		if ((temp & (3 << 13)) == (1 << 13)) {
+> +			temp &= 0xfff;
+> +			ehci->debug = ehci_to_hcd(ehci)->regs + temp;
+> +			temp = ehci_readl(ehci, &ehci->debug->control);
+> +			ehci_info(ehci, "debug port %d%s\n",
+> +				  HCS_DEBUG_PORT(ehci->hcs_params),
+> +				  (temp & DBGP_ENABLED)
+> +				  ? " IN USE"
+> +				  : "");
+> +#ifdef CONFIG_EARLY_PRINTK_DBGP
+> +			if (!dbgp_reset_prep() || !(temp & DBGP_ENABLED))
+> +#else
+> +			if (!(temp & DBGP_ENABLED))
+> +#endif
 
+This sort of thing is better handled by defining dhbp_reset_prep() as 
+an inline routine or macro always returning 1 if 
+CONFIG_EARLY_PRINTK_DBGP isn't set.
 
-As for the code… I was immediately greeted by the screaming-uppercase
-typedef crap jungle that is so redundant[1] yet typical in many
-commercial products. One may hope that the evolution of the posted
-hyper-v code brings a coding strategy breeze into the house of
-Microsoft.
+> @@ -253,6 +279,11 @@ static int ehci_reset (struct ehci_hcd *ehci)
+>  	if (ehci_is_TDI(ehci))
+>  		tdi_reset (ehci);
+>  
+> +#ifdef CONFIG_EARLY_PRINTK_DBGP
+> +	/* Restore debug facilities if the controler was active */
+> +	if (ehci->debug)
+> +		dbgp_external_startup();
+> +#endif
 
-[1] DWORD they could have replaced by uint32_t once it became
-available via C99's stdint.h. The LPCSTR crap only makes sense if you
-are a lazy typist, but I would not call code doing things like LPCSTR
-clean. At least it's one thing - consistent. Consistently hard to
-read, though.
+Similarly here, make dgbp_external_startup() an empty inline function 
+or an empty macro.
+
+Alan Stern
+
