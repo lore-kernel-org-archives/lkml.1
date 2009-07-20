@@ -1,177 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbZGTR5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZGTSA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405AbZGTR5b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 13:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbZGTR5a
+	id S1753543AbZGTSA2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 14:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753281AbZGTSA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 13:57:30 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:55606 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752795AbZGTR53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 13:57:29 -0400
-Message-ID: <4A64AFC2.9030603@vlnb.net>
-Date: Mon, 20 Jul 2009 21:56:18 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 20 Jul 2009 14:00:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38445 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753235AbZGTSA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 14:00:26 -0400
+Date: Mon, 20 Jul 2009 13:56:44 -0400
+From: Aristeu Rozanski <aris@redhat.com>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, norsk5@yahoo.com,
+       linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH 01/14] amd64_edac: simplify error type bits extractors
+Message-ID: <20090720175644.GK8168@redhat.com>
+References: <1248106385-27514-1-git-send-email-borislav.petkov@amd.com> <1248106385-27514-2-git-send-email-borislav.petkov@amd.com>
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Tejun Heo <tj@kernel.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>, Joe Eykholt <jeykholt@cisco.com>
-Subject: Re: [PATCH v2]: New implementation of scsi_execute_async()
-References: <4A563368.5040407@vlnb.net> <4A5CAFB5.1000901@vlnb.net> <4A5D9C46.2000002@panasas.com> <4A5F6E24.3080800@vlnb.net> <4A630508.1020802@panasas.com>
-In-Reply-To: <4A630508.1020802@panasas.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19D5YunNe1ENYsuGS0oaX20QjdWYt9LFX14NuX
- AcJHdfjakqfWiPrOe6vCd2XA8ZWavXkQG8tj5R6SOcX7SzzRqj
- KPCaHmPNFdOhH/wEpJvdQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248106385-27514-2-git-send-email-borislav.petkov@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh, on 07/19/2009 03:35 PM wrote:
-> On 07/16/2009 09:15 PM, Vladislav Bolkhovitin wrote:
->> Boaz Harrosh, on 07/15/2009 01:07 PM wrote:
->>> On 07/14/2009 07:17 PM, Vladislav Bolkhovitin wrote:
-> <snip>
->>>> +struct blk_kern_sg_hdr {
->>>> +	struct scatterlist *orig_sgp;
->>>> +	union {
->>>> +		struct sg_table new_sg_table;
->>>> +		struct scatterlist *saved_sg;
->>>> +	};
->>> There is a struct scatterlist * inside struct sg_table
->>> just use that. No need for a union. (It's not like your saving
->>> space). In the tail case nents == 1.
->>> (orig_nents==0 and loose the tail_only)
->> This will uncover internal details of SG-chaining implementation, which 
->> you wanted to hide. Or didn't?
->>
-> 
-> Are you commenting on the remove of tail_only, or the reuse of
-> ->new_sg_table.sgl instead of ->saved_sg. The later makes tons of sense
-> to me.
-> 
-> if you want to keep the "tail_only" and not hack with nents && orig_nents
-> that's fine.
+Hi Borislav,
+> -	/* If this was an 'observed' error, early out */
+> -	if (ec_pp == K8_NBSL_PP_OBS)
+> -		return;		/* We aren't the node involved */
+> +
+> +	/* Bail early out if this was an 'observed' error */
+> +	if (((ec >> 9) & 0x3) == K8_NBSL_PP_OBS)
+> +		return;
+minor thing:
+this patch and others makes me think if it wouldn't be better to have:
+	#define PP(x)		(((x) >> 9) & 0x3)
+	#define PP_MSG(x)	pp_msgs[PP(x)]
+and the same for LL, TT, RRRR.
 
-Yes, this is exactly what's done.
+the rest of the patch series looks good to me
 
->>>> +	while (hbio != NULL) {
->>>> +		bio = hbio;
->>>> +		hbio = hbio->bi_next;
->>>> +		bio->bi_next = NULL;
->>>> +
->>>> +		blk_queue_bounce(q, &bio);
->>> I do not understand. If you are bouncing on the bio level.
->>> why do you need to do all the alignment checks and
->>> sg-bouncing + tail handling all this is done again on the bio
->>> level.
->> blk_queue_bounce() does another and completely independent level of 
->> bouncing for pages allocated in the not accessible by the device area.
->>
-> 
-> No! you miss-understood. blk_queue_bounce() does all the bouncing,
-> high-mem, alignment, padding, draining, all of them.
-
-Sorry, Boaz, but looks like it is you who don't have the whole picture.
-See the end of my previous e-mail.
-
-> The code you took from Tejun was meant to go at the bio level. Here
-> you are already taken care of.
-> 
-> All you need to do is:
-> 	loop on all pages
-> 		add_pc_page();
-> 		when bio is full
-> 			chain a new bio 
-> 	and so on.
-
-Isn't it what __blk_rq_map_kern_sg() does?
-
-> Then at the end call blk_make_request() which will do the bouncing and
-> the merging. No need for all the copy/tail_only etc.. this is done by
-> lower levels for you already.
-
-It is _not_ done. See the end of my previous e-mail.
-
-> If you do that then Tejun is right you should do an:
-> 	bio_map_sg()
-> and not:
-> 	blk_map_sg()
-> 
->>> It looks to me that perhaps you did not understand Tejun's code
->>> His code, as I remember, was on the bio level, but here you
->>> are duplicating what is done in bio level.
->>>
->>> But maybe I don't understand. Tejun?
->>>
->>>> +	req->cmd_len = cmd_len;
->>>> +	memset(req->cmd, 0, BLK_MAX_CDB); /* ATAPI hates garbage after CDB */
->>>> +	memcpy(req->cmd, cmd, req->cmd_len);
->>> Does not support large commands.
->> Will be fixed.
->>
->> (BTW, the SCSI layer assumes large CDBs as single big buffers, but all 
->> SCSI transports I checked transfer large CDBs in 2 different parts: the 
->> first 16 bytes and the rest. I.e. they deal with 2 different buffers. 
->> So, the target side (SCST) deals with 2 buffers for large CDBs as well. 
->> Having only one req->cmd will force SCST to merge those 2 buffers into a 
->> single buffer. 
->> So, scs[i,t]_execute_async() will have to make an 
->> allocation for this as well.)
->>
-> 
-> Yep, allocation of command buffer if command_size > 16
-
-...which in the majority of cases (if not in all, very possibly) isn't
-needed and can be avoided, because the low level drivers then will split 
-it again on 16 bytes and the rest to deliver to the target. But it isn't 
-related to this our discussion, except as a one more reason to have the 
-scsi_io_context allocation.
-
->>>> +/**
->>>> + * sg_copy_elem - copy one SG element to another
->>>> + * @dst_sg:	destination SG element
->>>> + * @src_sg:	source SG element
->>>> + * @copy_len:	maximum amount of data to copy. If 0, then copy all.
->>>> + * @d_km_type:	kmap_atomic type for the destination SG
->>>> + * @s_km_type:	kmap_atomic type for the source SG
->>>> + *
->>>> + * Description:
->>>> + *    Data from the source SG element will be copied to the destination SG
->>>> + *    element. Returns number of bytes copied. Can switch to the next dst_sg
->>>> + *    element, so, to copy to strictly only one dst_sg element, it must be
->>>> + *    either last in the chain, or copy_len == dst_sg->length.
->>>> + */
->>>> +int sg_copy_elem(struct scatterlist *dst_sg, struct scatterlist *src_sg,
->>>> +		 size_t copy_len, enum km_type d_km_type,
->>>> +		 enum km_type s_km_type)
->>>> +{
->>>> +	size_t dst_len = dst_sg->length, dst_offs = dst_sg->offset;
->>>> +
->>>> +	return __sg_copy_elem(&dst_sg, &dst_len, &dst_offs, src_sg,
->>>> +		copy_len, d_km_type, s_km_type);
->>>> +}
->>>> +EXPORT_SYMBOL(sg_copy_elem);
->>> Is not sg_copy_elem a copy of an sg with one element. Why do we need
->>> two exports.
->> Perhaps, yes.
->>
->>> I would pass a nents count to below and discard this one.
->> Perhaps, yes, but only for possible future use. I don't see any use of 
->> it at the moment.
->>
-> 
-> Why? for example the use of not having another export.
-
-It can be handled without nents by use of copy_len.
-
-Thanks,
-Vlad
-
+-- 
+Aristeu
 
