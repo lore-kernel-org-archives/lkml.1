@@ -1,108 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbZGTHXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZGTHZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700AbZGTHXi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 03:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZGTHXg
+	id S1752697AbZGTHZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 03:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZGTHZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 03:23:36 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:57513 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752612AbZGTHXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 03:23:35 -0400
-Date: Mon, 20 Jul 2009 09:23:34 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jing Huang <huangj@brocade.com>
-Cc: James.Bottomley@HansenPartnership.com, kgudipat@brocade.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       rvadivel@brocade.com, vravindr@brocade.com, xmzhang@brocade.com
-Subject: Re: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver (make)
-Message-ID: <20090720072334.GB6340@merkur.ravnborg.org>
-References: <200907200626.n6K6QsTD011626@swe57.brocade.com>
+	Mon, 20 Jul 2009 03:25:56 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49173 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750879AbZGTHZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 03:25:55 -0400
+Message-ID: <4A641BFC.2050508@cn.fujitsu.com>
+Date: Mon, 20 Jul 2009 15:25:48 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907200626.n6K6QsTD011626@swe57.brocade.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 3/4] ftrace: add tracepoint for hrtimer
+References: <4A604E46.5050903@cn.fujitsu.com>	 <4A605009.8060806@cn.fujitsu.com> <1247827801.15751.4.camel@twins>
+In-Reply-To: <1247827801.15751.4.camel@twins>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 19, 2009 at 11:26:54PM -0700, Jing Huang wrote:
-> From: Jing Huang <huangj@brocade.com>
+Hi Peter,
+
+Thanks for your review.
+
+Peter Zijlstra wrote:
+
+>> +static inline void debug_and_trace_hrtimer_deactivate(struct hrtimer *timer)
+>> +{
+>> +	debug_hrtimer_deactivate(timer);
+>> +	trace_hrtimer_cancel(timer);
+>> +}
 > 
-> This patch contains Makefile and Kconfig file for scsi and bfa.
+> I would argue that tracing is a form of debugging and you shouldn't need
+> to mangle these names like that, simply leave them debug_*().
 > 
-> Signed-off-by: Jing Huang <huangj@brocade.com>
-> diff -urpN orig/drivers/scsi/bfa/Makefile patch/drivers/scsi/bfa/Makefile
-> --- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000 -0800
-> +++ patch/drivers/scsi/bfa/Makefile	2009-07-19 17:48:15.000000000 -0700
-> @@ -0,0 +1,30 @@
-> +#
-> +# Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
-> +# All rights reserved
-> +# www.brocade.com
-> +# 
-> +# Linux driver for Brocade Fibre Channel Host Bus Adapter.
-> +#
-> +# This program is free software; you can redistribute it and/or modify it
-> +# under the terms of the GNU General Public License (GPL) Version 2 as
-> +# published by the Free Software Foundation
-> +#
-> +# This program is distributed in the hope that it will be useful, but
-> +# WITHOUT ANY WARRANTY; without even the implied warranty of
-> +# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> +# General Public License for more details.
-> +#
 
-A big boilerplate for a simple kbuild file...
+I think this makes sense. I'll fix it unless Thomas has objections.
 
-> +obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
-OK - I assume the name of the module is remotely aligned with
-what other scsi drivers uses.
-That is - there is no scsi prefix or anything else that says this is
-a scsi driver. If this is gennerally not used then you do not need it either.
+> 
+>> @@ -1162,9 +1182,8 @@ static void __run_hrtimer(struct hrtimer *timer)
+>>  	 * the timer base.
+>>  	 */
+>>  	spin_unlock(&cpu_base->lock);
+>> -	trace_hrtimer_entry(timer);
+>>  	restart = fn(timer);
+>> -	trace_hrtimer_exit(timer, restart);
+>> +	trace_hrtimer_callback_done(timer);
+>>  	spin_lock(&cpu_base->lock);
+>>  
+>>  	/*
+> 
+> Why bother introducing these tracepoints if you're going to remove them
+> in the same patch-set?
+> 
 
-> +
-> +bfa-objs := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o bfad_fwimg.o \
-> +	bfa_core.o bfa_ioc.o bfa_iocfc.o bfa_aen.o bfa_fcxp.o bfa_lps.o \
-> +	bfa_hw_cb.o bfa_hw_ct.o bfa_intr.o bfa_timer.o bfa_rport.o \
-> +	bfa_fcport.o bfa_port.o bfa_uf.o bfa_sgpg.o bfa_module.o bfa_ioim.o \
-> +	bfa_itnim.o bfa_fcpim.o bfa_tskim.o bfa_log.o bfa_log_module.o \
-> +	bfa_csdebug.o bfa_sm.o plog.o fcbuild.o fabric.o fcpim.o vfapi.o \
-> +	fcptm.o bfa_fcs.o bfa_fcs_port.o bfa_fcs_uf.o bfa_fcs_lport.o \
-> +        fab.o fdmi.o ms.o ns.o scn.o loop.o lport_api.o n2n.o rport.o \
-> +        rport_api.o rport_ftrs.o vport.o
+Actually I'm renaming them but not removing them.
 
-1) Please us:
-bfa-y := bfad.o ....
+I can drop the first patch and merge it into the latter patches,
+but that will lose the credit for Anton Blanchard
 
-This allows you to later use:
-bfa-$(SCSI_BFA_FEATURE) += bfa_feature.o
+> Also, the below:
+> 
+>> @@ -1275,6 +1294,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+>>  				break;
+>>  			}
+>>  
+>> +			trace_hrtimer_expire(timer, basenow.tv64);
+>>  			__run_hrtimer(timer);
+>>  		}
+>>  		base++;
+>> @@ -1397,6 +1417,7 @@ void hrtimer_run_queues(void)
+>>  					hrtimer_get_expires_tv64(timer))
+>>  				break;
+>>  
+>> +			trace_hrtimer_expire(timer, base->softirq_time.tv64);
+>>  			__run_hrtimer(timer);
+>>  		}
+>>  		spin_unlock(&cpu_base->lock);
+> 
+> indicates you placed that tracepoint in the wrong place.
+> 
+> Furthermore, I don't get why you want it there and not on the old
+> _entry() site, because this adds all kinds of extra overhead and you
+> loose the exact callback timings.
+> 
 
+Yes, it's true, but the loose is only about 1 microsecond as I tested it.
+Do you think it's acceptable or not?
 
-2) I personally prefer to avoid the line continuation.
-   So something like this would be *my* style:
+If we put trace_hrtimer_expire() on the old _entry() site, then we can't
+get the timestamps when hrtimer expires, which is used to calculate the
+latency of hrtimer.
 
-   bfa-y := bfad.o bfad_intr.o bfad_os.o bfad_im.o
-
-   # IO stuff
-   bfa-y += bfa_ioc.o bfa_iocfc.o
-
-   # HW near
-   bfa-y += bfa_hw_cb.o bfa_hw_ct.o bfa_intr.o bfa_timer.o
-   bfa-y += bfa_rport.o bfa_fcport.o bfa_port.o
-
-[Understand the concept - I selected filenames almost randomly]
-
-> +
-> +EXTRA_CFLAGS += -I$(obj) -I$(obj)/include -I$(obj)/include/cna
-
-Please use:
-ccflags-y := -I$(obj)/include -I$(obj)/include/cna
-
-I do not see why you need "-I$(obj)" - so I left it out on purpose.
-It should only be needed if you generate files.
+You can see the mail which I send to Thomas last week, can be found here:
+	http://marc.info/?l=linux-kernel&m=124762164322497&w=2)
 
 
-	Sam
+Thanks,
+Xiao
+
+> 
+> 
+> 
