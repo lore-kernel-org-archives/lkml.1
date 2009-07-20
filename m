@@ -1,102 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbZGTMpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbZGTMqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753200AbZGTMpU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 08:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbZGTMpT
+	id S1753493AbZGTMqS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 08:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbZGTMqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 08:45:19 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64451 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbZGTMpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 08:45:18 -0400
-Message-ID: <4A64672E.8020005@cn.fujitsu.com>
-Date: Mon, 20 Jul 2009 20:46:38 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Neil Horman <nhorman@tuxdriver.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Brayan Arraes <brayan@yack.com.br>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c handler"
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Jul 2009 08:46:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34322 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750779AbZGTMqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 08:46:17 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090715074952.A36C7DDDB2@ozlabs.org>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: dhowells@redhat.com, Linux Memory Management <linux-mm@kvack.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
+Date: Mon, 20 Jul 2009 13:46:03 +0100
+Message-ID: <13548.1248093963@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-1) This fix breaks our tools.
-      This fix changes the ABI. panic_on_oops is default 0,
-   and a lots system do not specify the boot option "panic",
-   thus, Sysrq-c will not cause CrashDump(Kdump) as expected.
+> Upcoming paches to support the new 64-bit "BookE" powerpc architecture
+> will need to have the virtual address corresponding to PTE page when
+> freeing it, due to the way the HW table walker works.
+> 
+> Basically, the TLB can be loaded with "large" pages that cover the whole
+> virtual space (well, sort-of, half of it actually) represented by a PTE
+> page, and which contain an "indirect" bit indicating that this TLB entry
+> RPN points to an array of PTEs from which the TLB can then create direct
+> entries. Thus, in order to invalidate those when PTE pages are deleted,
+> we need the virtual address to pass to tlbilx or tlbivax instructions.
+>
+> The old trick of sticking it somewhere in the PTE page struct page sucks
+> too much, the address is almost readily available in all call sites and
+> almost everybody implemets these as macros, so we may as well add the
+> argument everywhere. I added it to the pmd and pud variants for consistency.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-2) When CONFIG_KEXEC=n, Sysrq-c should become an invalid
-   command like Sysrq-D(CONFIG_LOCKDEP, show-all-locks).
-   But this fix makes it a valid command and let it do a
-   hazard thing: cause a page fault(NULL dereference) in kernel.
-
-So, we revert this fix.
-
-|commit d6580a9f15238b87e618310c862231ae3f352d2d
-|Author: Neil Horman <nhorman@tuxdriver.com>
-|Date:   Wed Jun 17 16:28:17 2009 -0700
-
-|    kexec: sysrq: simplify sysrq-c handler
-
-|    Currently the sysrq-c handler is bit over-engineered.  Its behavior is
-|    dependent on a few compile time and run time factors that alter its
-|    behavior which is really unnecessecary.
-
-|    If CONFIG_KEXEC is not configured, sysrq-c, crashes the system with a NULL
-|    pointer dereference.  If CONFIG_KEXEC is configured, it calls crash_kexec
-|    directly, which implies that the kexec kernel will either be booted (if
-|    its been previously loaded), or it will simply do nothing (the no kexec
-|    kernel has been loaded).
-
-|    It would be much easier to just simplify the whole thing to dereference a
-|    NULL pointer all the time regardless of configuration.  That way, it will
-|    always try to crash the system, and if a kexec kernel has been loaded into
-|    reserved space, it will still boot from the page fault trap handler
-|    (assuming panic_on_oops is set appropriately).
-
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
-index 0db3585..39a05b5 100644
---- a/drivers/char/sysrq.c
-+++ b/drivers/char/sysrq.c
-@@ -121,17 +121,20 @@ static struct sysrq_key_op sysrq_unraw_op = {
- #define sysrq_unraw_op (*(struct sysrq_key_op *)0)
- #endif /* CONFIG_VT */
- 
--static void sysrq_handle_crash(int key, struct tty_struct *tty)
-+#ifdef CONFIG_KEXEC
-+static void sysrq_handle_crashdump(int key, struct tty_struct *tty)
- {
--	char *killer = NULL;
--	*killer = 1;
-+	crash_kexec(get_irq_regs());
- }
- static struct sysrq_key_op sysrq_crashdump_op = {
--	.handler	= sysrq_handle_crash,
--	.help_msg	= "Crash",
--	.action_msg	= "Trigger a crash",
-+	.handler	= sysrq_handle_crashdump,
-+	.help_msg	= "Crashdump",
-+	.action_msg	= "Trigger a crashdump",
- 	.enable_mask	= SYSRQ_ENABLE_DUMP,
- };
-+#else
-+#define sysrq_crashdump_op (*(struct sysrq_key_op *)0)
-+#endif
- 
- static void sysrq_handle_reboot(int key, struct tty_struct *tty)
- {
-
-
-
-   
-
+Acked-by: David Howells <dhowells@redhat.com> [MN10300 & FRV]
