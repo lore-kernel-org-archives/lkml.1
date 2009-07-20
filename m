@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbZGTMZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbZGTM0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbZGTMZb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 08:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZGTMZb
+	id S1753645AbZGTM0Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 08:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZGTM0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 08:25:31 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:42019 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753430AbZGTMZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 08:25:30 -0400
-Date: Mon, 20 Jul 2009 05:22:07 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, john stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@tglx.de>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       nikolag@ca.ibm.com, Darren Hart <dvhltc@us.ibm.com>,
-       jatriple@us.ibm.com
-Subject: Re: [RFC][PATCH] Introduce CLOCK_REALTIME_COARSE
-Message-ID: <20090720122207.GB6944@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1247873945.8334.67.camel@localhost.localdomain> <alpine.LFD.2.00.0907181027510.11571@localhost.localdomain> <1247954978.14494.19.camel@work-vm> <20090718153011.1de3af8e@infradead.org> <1248088622.15751.8465.camel@twins>
+	Mon, 20 Jul 2009 08:26:23 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:46778 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752421AbZGTM0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 08:26:23 -0400
+Date: Mon, 20 Jul 2009 07:26:23 -0500
+From: Robin Holt <holt@sgi.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: Commit 1e137f92 broke my Vaio VGN-FE550G's hda_intel driver.
+Message-ID: <20090720122623.GL6876@sgi.com>
+References: <20090719140102.GI6876@sgi.com> <s5hy6qkk6am.wl%tiwai@suse.de> <20090719225538.GK6876@sgi.com> <s5heisbc2rk.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248088622.15751.8465.camel@twins>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <s5heisbc2rk.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 20, 2009 at 01:17:02PM +0200, Peter Zijlstra wrote:
-> On Sat, 2009-07-18 at 15:30 -0700, Arjan van de Ven wrote:
-> > On Sat, 18 Jul 2009 15:09:38 -0700
-> > john stultz <johnstul@us.ibm.com> wrote:
+On Mon, Jul 20, 2009 at 08:00:31AM +0200, Takashi Iwai wrote:
+> At Sun, 19 Jul 2009 17:55:38 -0500,
+> Robin Holt wrote:
 > > 
-> > > After talking with some application writers who want very fast, but
-> > > not fine-grained timestamps, I decided to try to implement a new
-> > > clock_ids to clock_gettime(): CLOCK_REALTIME_COARSE and
-> > > CLOCK_MONOTONIC_COARSE which returns the time at the last tick. This
-> > > is very fast as we don't have to access any hardware (which can be
-> > > very painful if you're using something like the acpi_pm clocksource),
-> > > and we can even use the vdso clock_gettime() method to avoid the
-> > > syscall. The only trade off is you only get low-res tick grained time
-> > > resolution.
+> > > What about to pass model=vaio?  Doesn't it work?
 > > 
-> > Does this tie us to having a tick? I still have hope that we can get
-> > rid of the tick even when apps are running .... since with CFS we don't
-> > really need the tick for the scheduler anymore for example....
+> > That didn't change the behavior.
+> > 
+> > > In anyways, please run alsa-info.sh with --no-upload option, and attach
+> > > the generated file.
+> > 
+> > Here is the output from alsa-info.sh.  This was from the module load without
+> > the model=vaio.  Below, (search for ---Robin---) is the output from alsa-info.sh
+> > with model=vaio.
 > 
-> On the hardware side to make this happen we'd need a platform that has:
+> Thanks.  This look really like a bug.  The pin definition was wrongly
+> placed.  It should have been before the pin overrides.
 > 
->   - cheap, high-res, cross-cpu synced, clocksource
->   - cheap, high-res, clockevents
-> 
-> Maybe power64, sparc64 and s390x qualify, but certainly nothing on x86
-> does.
-> 
-> Furthermore, on the software side we'd need a few modifications, such as
-> doing lazy accounting for things like u/s-time which currently rely on
-> the tick and moving the load-balancing into a hrtimer.
-> 
-> Also, even with the above done, we'd probably want to tinker with the
-> clockevent/hrtimer code and possibly use a second per-cpu hardware timer
-> for the scheduler, since doing the whole hrtimer rb-tree dance for every
-> context switch is simply way too expensive.
-> 
-> But even with all that manged, there's still other bits that rely on the
-> tick -- RCU being one of the more interesting ones.
+> Could you try the patch below?  With the patch, the driver would work
+> even without any model option.
 
-On alternative to the tick is to inform RCU of each transition to/from
-userspace, so that RCU would treat user-mode execution as it currently
-does dyntick-idle state.  If there is -never- to be any scheduling-clock
-interrupts, then RCU would need to also know about transitions to/from
-the idle loop -- which happens automatically if CONFIG_NO_HZ, of course.
+Patch worked perfectly.
 
-But I expect that there would be some additional excitement elsewhere...
-And given the large number of transitions to/from userspace, getting all
-of them noted in the RCU case might be non-trivial as well.
+Acked-by: Robin Holt <holt@sgi.com>
 
-							Thanx, Paul
+Thanks,
+Robin
