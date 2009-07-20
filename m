@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZGTO2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZGTOcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752347AbZGTO2o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 10:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZGTO2n
+	id S1752138AbZGTOcK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 10:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZGTOcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 10:28:43 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:45183 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751822AbZGTO2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 10:28:43 -0400
-Date: Mon, 20 Jul 2009 09:28:41 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] - Complete IRQ interrupt migration in arch_enable_uv_irq()
-Message-ID: <20090720142840.GA8885@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Mon, 20 Jul 2009 10:32:08 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41543 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbZGTOcI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 10:32:08 -0400
+Date: Mon, 20 Jul 2009 23:30:48 +0900 (JST)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 4/5] Use add_page_to_lru_list() helper function
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1248074911.15751.8023.camel@twins>
+References: <20090720143352.747E.A69D9226@jp.fujitsu.com> <1248074911.15751.8023.camel@twins>
+Message-Id: <20090720231618.AF69.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In uv_setup_irq(), the call to create_irq() initially assigns IRQ
-vectors to cpu 0. The subsequent call to assign_irq_vector() in
-arch_enable_uv_irq() migrates the IRQ to another cpu and frees the cpu
-0 vector - at least it will be freed as soon as the "IRQ move"
-completes. 
+> On Mon, 2009-07-20 at 14:37 +0900, KOSAKI Motohiro wrote:
+> > > > @@ -1241,7 +1241,6 @@ static void move_active_pages_to_lru(str
+> > > >  			spin_lock_irq(&zone->lru_lock);
+> > > >  		}
+> > > >  	}
+> > > > -	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+> > > >  	if (!is_active_lru(lru))
+> > > >  		__count_vm_events(PGDEACTIVATE, pgmoved);
+> > > >  }
+> > > 
+> > > This is a net loss, you introduce pgmoved calls to __inc_zone_state,
+> > > instead of the one __mod_zone_page_state() call.
+> > 
+> > max pgmoved is 32. 32 times __inc_zone_state() make 0 or 1 time
+> > atomic operation (not much than two).
+> > I don't think it reduce performance.
+> 
+> its not just atomics, count calls and branches too. It simply adds a ton
+> of code for no particular reason.
 
-arch_enable_uv_irq() needs to send a cleanup IPI to complete the IRQ move.
-Otherwise, assignment of GRU interrupts on large systems (>200 cpus)
-will exhaust the cpu 0 interrupt vectors and initialization of the GRU
-driver will fail.
+hm, I don't think it's tons penalty. I mean vmscan makes tons cache miss
+and function calling penalty is hidden by it.
+But, I agreed this patch doesn't have strong motivation. I can drop this.
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+Andrew, Can you please drop this patch?
 
 
----
- arch/x86/kernel/apic/io_apic.c |    3 +++
- 1 file changed, 3 insertions(+)
 
-Index: linux/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux.orig/arch/x86/kernel/apic/io_apic.c	2009-07-20 07:55:46.000000000 -0500
-+++ linux/arch/x86/kernel/apic/io_apic.c	2009-07-20 07:56:33.000000000 -0500
-@@ -3737,6 +3737,9 @@ int arch_enable_uv_irq(char *irq_name, u
- 	mmr_pnode = uv_blade_to_pnode(mmr_blade);
- 	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
- 
-+	if (cfg->move_in_progress)
-+		send_cleanup_vector(cfg);
-+
- 	return irq;
- }
- 
+
+
