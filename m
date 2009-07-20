@@ -1,115 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753039AbZGTMmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753200AbZGTMpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753039AbZGTMmk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 08:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbZGTMmk
+	id S1753200AbZGTMpU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 08:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbZGTMpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 08:42:40 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:30614 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbZGTMmj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 08:42:39 -0400
-Message-ID: <4A64665B.9000504@nokia.com>
-Date: Mon, 20 Jul 2009 15:43:07 +0300
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Mon, 20 Jul 2009 08:45:19 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64451 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800AbZGTMpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 08:45:18 -0400
+Message-ID: <4A64672E.8020005@cn.fujitsu.com>
+Date: Mon, 20 Jul 2009 20:46:38 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: arun c <arun.edarath@gmail.com>
-CC: Julia Lawall <julia@diku.dk>,
-       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Subject: Re: [PATCH 9/10] drivers/mmc: Move a dereference below a NULL test
-References: <Pine.LNX.4.64.0907191729580.16542@ask.diku.dk>	 <4A642458.6080008@nokia.com> <c656a4d20907200533t1cbe1476l62d8a51fdb796c70@mail.gmail.com>
-In-Reply-To: <c656a4d20907200533t1cbe1476l62d8a51fdb796c70@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Neil Horman <nhorman@tuxdriver.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Brayan Arraes <brayan@yack.com.br>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c handler"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Jul 2009 12:42:31.0655 (UTC) FILETIME=[8C61C770:01CA0937]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arun c wrote:
-> On Mon, Jul 20, 2009 at 1:31 PM, Adrian Hunter<adrian.hunter@nokia.com> wrote:
->> Julia Lawall wrote:
->>> From: Julia Lawall <julia@diku.dk>
->>>
->>> If the NULL test is necessary, then the dereference should be moved below
->>> the NULL test.
->>>
->>> The semantic patch that makes this change is as follows:
->>> (http://www.emn.fr/x-info/coccinelle/)
->>>
->>> // <smpl>
->>> @@
->>> type T;
->>> expression E,E1;
->>> identifier i,fld;
->>> statement S;
->>> @@
->>>
->>> - T i = E->fld;
->>> + T i;
->>>  ... when != E=E1
->>>      when != i
->>>  BUG_ON (E == NULL||
->>> -     i
->>> +     E->fld
->>>       == NULL || ...);
->>> + i = E->fld;
->>> // </smpl>
->>>
->>> Signed-off-by: Julia Lawall <julia@diku.dk>
->>>
->>> ---
->>>  drivers/mmc/host/omap.c             |    5 +++--
->>>  1 files changed, 3 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
->>> index e7a331d..89281ab 100644
->>> --- a/drivers/mmc/host/omap.c
->>> +++ b/drivers/mmc/host/omap.c
->>> @@ -255,11 +255,12 @@ static void mmc_omap_slot_release_work(struct
->>> work_struct *work)
->>>   static void mmc_omap_release_slot(struct mmc_omap_slot *slot, int
->>> clk_enabled)
->>>  {
->>> -       struct mmc_omap_host *host = slot->host;
->>> +       struct mmc_omap_host *host;
->>>        unsigned long flags;
->>>        int i;
->>>  -       BUG_ON(slot == NULL || host->mmc == NULL);
->>> +       BUG_ON(slot == NULL || slot->host->mmc == NULL);
->>> +       host = slot->host;
->>>          if (clk_enabled)
->>>                /* Keeps clock running for at least 8 cycles on valid freq
->>> */
->>> --
->> If slot is NULL it will oops anyway, so the following is better IMHO:
->>
->> static void mmc_omap_release_slot(struct mmc_omap_slot *slot, int
->> clk_enabled)
->> {
->>        struct mmc_omap_host *host = slot->host;
->>        unsigned long flags;
->>        int i;
->>
->>> -       BUG_ON(slot == NULL || host->mmc == NULL);
->>> +       BUG_ON(host->mmc == NULL);
->>        if (clk_enabled)
->>                /* Keeps clock running for at least 8 cycles on valid freq */
->> --
-> 
-> According to http://isc.sans.org/diary.html?storyid=6820&rss "NULL check"
-> must be done before assigning the values. Does Julia Lawall's version
-> is the more correct one??
-> 
-> Arun
 
-It is not a "NULL check" it is an assertion, which can be compiled out.
-On some platforms BUG is implemented as a null dereference anyway
-e.g. on ARM  it is *(int *)0 = 0;
+1) This fix breaks our tools.
+      This fix changes the ABI. panic_on_oops is default 0,
+   and a lots system do not specify the boot option "panic",
+   thus, Sysrq-c will not cause CrashDump(Kdump) as expected.
+
+2) When CONFIG_KEXEC=n, Sysrq-c should become an invalid
+   command like Sysrq-D(CONFIG_LOCKDEP, show-all-locks).
+   But this fix makes it a valid command and let it do a
+   hazard thing: cause a page fault(NULL dereference) in kernel.
+
+So, we revert this fix.
+
+|commit d6580a9f15238b87e618310c862231ae3f352d2d
+|Author: Neil Horman <nhorman@tuxdriver.com>
+|Date:   Wed Jun 17 16:28:17 2009 -0700
+
+|    kexec: sysrq: simplify sysrq-c handler
+
+|    Currently the sysrq-c handler is bit over-engineered.  Its behavior is
+|    dependent on a few compile time and run time factors that alter its
+|    behavior which is really unnecessecary.
+
+|    If CONFIG_KEXEC is not configured, sysrq-c, crashes the system with a NULL
+|    pointer dereference.  If CONFIG_KEXEC is configured, it calls crash_kexec
+|    directly, which implies that the kexec kernel will either be booted (if
+|    its been previously loaded), or it will simply do nothing (the no kexec
+|    kernel has been loaded).
+
+|    It would be much easier to just simplify the whole thing to dereference a
+|    NULL pointer all the time regardless of configuration.  That way, it will
+|    always try to crash the system, and if a kexec kernel has been loaded into
+|    reserved space, it will still boot from the page fault trap handler
+|    (assuming panic_on_oops is set appropriately).
+
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
+index 0db3585..39a05b5 100644
+--- a/drivers/char/sysrq.c
++++ b/drivers/char/sysrq.c
+@@ -121,17 +121,20 @@ static struct sysrq_key_op sysrq_unraw_op = {
+ #define sysrq_unraw_op (*(struct sysrq_key_op *)0)
+ #endif /* CONFIG_VT */
+ 
+-static void sysrq_handle_crash(int key, struct tty_struct *tty)
++#ifdef CONFIG_KEXEC
++static void sysrq_handle_crashdump(int key, struct tty_struct *tty)
+ {
+-	char *killer = NULL;
+-	*killer = 1;
++	crash_kexec(get_irq_regs());
+ }
+ static struct sysrq_key_op sysrq_crashdump_op = {
+-	.handler	= sysrq_handle_crash,
+-	.help_msg	= "Crash",
+-	.action_msg	= "Trigger a crash",
++	.handler	= sysrq_handle_crashdump,
++	.help_msg	= "Crashdump",
++	.action_msg	= "Trigger a crashdump",
+ 	.enable_mask	= SYSRQ_ENABLE_DUMP,
+ };
++#else
++#define sysrq_crashdump_op (*(struct sysrq_key_op *)0)
++#endif
+ 
+ static void sysrq_handle_reboot(int key, struct tty_struct *tty)
+ {
+
+
+
+   
 
