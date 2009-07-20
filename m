@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbZGTHsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZGTHsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857AbZGTHsF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 03:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbZGTHsE
+	id S1752867AbZGTHsg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 03:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZGTHse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 03:48:04 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:33801 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752122AbZGTHsD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 03:48:03 -0400
-Message-ID: <4A642130.8030303@msgid.tls.msk.ru>
-Date: Mon, 20 Jul 2009 11:48:00 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: w@1wt.eu
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.4.37.3
-References: <20090719234914.GA3765@hera.kernel.org>
-In-Reply-To: <20090719234914.GA3765@hera.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 20 Jul 2009 03:48:34 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:36697 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752732AbZGTHsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 03:48:33 -0400
+Date: Mon, 20 Jul 2009 09:48:18 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to
+ [__]p{te,ud,md}_free_tlb()
+Message-ID: <20090720094818.641e6375@skybase>
+In-Reply-To: <1248073873.13067.31.camel@pasglop>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>
+	<20090715135620.GD7298@wotan.suse.de>
+	<1248073873.13067.31.camel@pasglop>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> Linux 2.4.37.3 has just been released.
-[]
-> The second major issue concerns the r8169 driver. Approximately one
-> month ago was revealed an issue with this driver, causing kernel
-> panics and possibly more if too large frames were sent to the chip
-> (CVE-2009-1389). 2.4 was not affected by the bug, but showed the
-> same symptoms. It turned out that there were multiple issues with
-> the setting of RX descriptors after reuse, and some recent 2.6
-> fixes allowing automatic recovery were missing. So after two long
-> days trying to figure out why that damn chip insisted in writing
-> more bytes than allowed (and crashing my box), I could spot and
-> fix the issues.
+On Mon, 20 Jul 2009 17:11:13 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Wed, 2009-07-15 at 15:56 +0200, Nick Piggin wrote:
+> > > I would like to merge the new support that depends on this in 2.6.32,
+> > > so unless there's major objections, I'd like this to go in early during
+> > > the merge window. We can sort out separately how to carry the patch
+> > > around in -next until then since the powerpc tree will have a dependency
+> > > on it.
+> > 
+> > Can't see any problem with that.
 > 
-> If there are 2.4 users with this cheap NIC, I strongly suggest that
-> they upgrade, especially if they're used to encounter freezes or
-> lack of network connectivity once in a while ; for others, well, do
-> not buy that NIC.
+> CC'ing Linus here. How do you want to proceed with that merge ? (IE. so
+> far nobody objected to the patch itself)
+> 
+> IE. The patch affects all archs, though it's a trivial change every
+> time, but I'll have stuff in powerpc-next that depends on it, and so I'm
+> not sure what the right approach is here. Should I put it in the powerpc
+> tree ?
+> 
+> I also didn't have any formal Ack from anybody, neither mm folks nor
+> arch maintainers :-)
 
-The thing is that this very nic is used on-board on vast majority of
-mainboards, at least in cheap- to mid-range price, for amd and intel
-processors.  Also many notebooks use this chip series.  Several months
-ago I were shopping for a mainboard with certain characteristics (I
-needed 3 PCI ports and a way to plug some monitor, and support for 4
-ECC DIMMs and recent Phenom processors) - it was difficult to find such
-a combination alone, without additional constrains for !r8169 chip
-(I finally bought Asus M3A-H/HDMI mobo with atl1 NIC, just by a chance).
+Well the change is trivial, it just adds another unused argument to the
+macros. For the records: it still compiles on s390.
 
-/mjt
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
