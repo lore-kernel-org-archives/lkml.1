@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbZGTSU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbZGTSVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753689AbZGTSU5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 14:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZGTSUz
+	id S1752861AbZGTSVl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 14:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZGTSVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 14:20:55 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:59845 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753086AbZGTSUy (ORCPT
+	Mon, 20 Jul 2009 14:21:41 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:48696 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065AbZGTSVk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 14:20:54 -0400
-Date: Mon, 20 Jul 2009 23:50:45 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Len Brown <lenb@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: s2r badness
-Message-ID: <20090720182045.GA5537@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <1247947383.4872.3.camel@laptop> <alpine.LFD.2.00.0907182223450.11571@localhost.localdomain>
+	Mon, 20 Jul 2009 14:21:40 -0400
+Date: Mon, 20 Jul 2009 20:21:39 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Damien Wyart <damien.wyart@free.fr>, Greg KH <gregkh@suse.de>,
+       Wolfgang Walter <wolfgang.walter@stwm.de>, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.30.2: does not boot
+Message-ID: <20090720182139.GA6784@merkur.ravnborg.org>
+References: <20090720040813.GC11940@kroah.com> <200907201613.22483.wolfgang.walter@stwm.de> <20090720150916.GB10015@suse.de> <20090720180333.GA2905@brouette> <alpine.LFD.2.01.0907201110390.13838@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0907182223450.11571@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0907201110390.13838@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 18, 2009 at 10:33:08PM +0200, Thomas Gleixner wrote:
-> On Sat, 18 Jul 2009, Peter Zijlstra wrote:
+On Mon, Jul 20, 2009 at 11:16:17AM -0700, Linus Torvalds wrote:
 > 
-> > Hi,
-> > 
-> > s2r seems to resume again on my latest kernel build (used to be broken
-> > for a long-ish while).
-> > 
-> > However it does generate the blow splats.
-> > 
-> > [   74.576953] ------------[ cut here ]------------
-> > [   74.576953] WARNING: at /usr/src/linux-2.6/kernel/softirq.c:143 local_bh_enable_ip+0x8b/0xc0()
-> > [   74.576953] Hardware name: 2242CTO
-> > [   74.576953] Modules linked in: cryptd aes_x86_64 aes_generic ecryptfs
-> > nfs lockd nfs_acl auth_rpcgss sunrpc binfmt_misc fbcon tileblit font
-> > bitblit softcursor bridge stp llc bnep autofs4 acpi_cpufreq joydev btusb
-> > coretemp sbp2 snd_hda_codec_conexant pcmcia ecb psmouse serio_raw
-> > iTCO_wdt iTCO_vendor_support snd_hda_intel snd_hda_codec snd_pcm_oss
-> > pcspkr snd_mixer_oss iwlagn iwlcore snd_pcm mac80211 snd_seq_dummy
-> > ricoh_mmc sdhci_pci sdhci snd_seq_oss snd_seq_midi snd_rawmidi
-> > snd_seq_midi_event yenta_socket rsrc_nonstatic pcmcia_core cfg80211
-> > snd_seq snd_timer snd_seq_device snd soundcore snd_page_alloc i915
-> > intel_agp thinkpad_acpi led_class video nvram ohci1394 ieee1394 ehci_hcd
-> > uhci_hcd fuse
-> > [   74.576953] Pid: 5406, comm: bash Not tainted 2.6.31-rc3-tip #32
-> > [   74.576953] Call Trace:
-> > [   74.576953]  [<ffffffff8107401b>] ? local_bh_enable_ip+0x8b/0xc0
-> > [   74.576953]  [<ffffffff8106c838>] warn_slowpath_common+0x78/0xd0
-> > [   74.576953]  [<ffffffff8106c89f>] warn_slowpath_null+0xf/0x20
-> > [   74.576953]  [<ffffffff8107401b>] local_bh_enable_ip+0x8b/0xc0
-> > [   74.576953]  [<ffffffff814d08d9>] _spin_unlock_bh+0x19/0x20
-> > [   74.576953]  [<ffffffff810d2c77>] load_debug_registers+0x67/0x80
 > 
-> That's the hw breakpoint support stuff which does the spin_unlock_bh
-> at a point where interrupts are disabled. So that's a -tip tree issue,
-> not mainline.
->
+> On Mon, 20 Jul 2009, Damien Wyart wrote:
+> > 
+> > I am seeing a similar problem (no hang but an immediate reboot) on the
+> > same distro. I tried to bisect but got no good kernel in the end.
+> > 
+> > To clarify things I recompiled again 2.6.30.1 with the orginial .config
+> > and it also failed to boot (I was happy to have renamed it so the
+> > working kernel was still available). I suspected a recent gcc 4.3
+> > upgrade so downgraded gcc, but no luck, still getting the same problem.
+> > So for now I am quite stuck, but there is clearly a bad problem
+> > somewhere...
+> 
+> Hmm. So you _had_ a working self-compiled 2.6.30 kernel at some point?
+> 
+> One thing to look out for is that a compiler upgrade/downgrade will be 
+> invisible to the kernel build system, so if you downgrade the compiler and 
+> recompile, you may not actually recompile things at all.
+> 
+> The kernel build system _should_ notice when the build flags change, but 
+> gcc versions changing under it, not so much. So you might want to do a 
+> "make clean" to be sure.
 
-load_debug_registers() uses spin_(un)lock_bh() and not a spin-lock() to
-protect itself from flush_thread_hw_breakpoint() [which is invoked in
-softIRQ context].
+The build system does notice if the build flag changes - with the
+excemption that it does not care about the ordering of the build flags.
 
-I'd like to recreate this traceback to investigate and fix this. What
-steps, when done cause this message to appear?
+gcc version changes are not detected as long as the name of gcc stays
+the same - which it does in all normal cases.
 
-Thanks,
-K.Prasad
-
+	Sam
