@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbZGTTbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbZGTTmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753557AbZGTTbb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 15:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZGTTb3
+	id S1753642AbZGTTmP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 15:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbZGTTmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 15:31:29 -0400
-Received: from mga07.intel.com ([143.182.124.22]:30870 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751644AbZGTTb3 (ORCPT
+	Mon, 20 Jul 2009 15:42:13 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43427 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752595AbZGTTmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 15:31:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,236,1246863600"; 
-   d="scan'208";a="167006624"
-Message-ID: <4A64C610.7090406@linux.intel.com>
-Date: Mon, 20 Jul 2009 12:31:28 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
+	Mon, 20 Jul 2009 15:42:13 -0400
+Date: Mon, 20 Jul 2009 15:42:10 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Peter Zijlstra <peterz@infradead.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>,
        "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
 Subject: Re: [PATCH] sched: Provide iowait counters
-References: <4A64B813.1080506@linux.intel.com> <1248117369.23509.33.camel@laptop>
 In-Reply-To: <1248117369.23509.33.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <alpine.DEB.2.00.0907201540550.26208@gandalf.stny.rr.com>
+References: <4A64B813.1080506@linux.intel.com> <1248117369.23509.33.camel@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
+
+On Mon, 20 Jul 2009, Peter Zijlstra wrote:
+> 
+> > +++ b/kernel/sched_fair.c
+> > @@ -633,6 +633,11 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
+> >   		se->block_start = 0;
+> >   		se->sum_sleep_runtime += delta;
+> > 
+> > +		if (tsk->in_iowait) {
+> > +			se->iowait_sum += delta;
+> > +			se->iowait_count++;
+> > +		}
+> > +
+> >   		/*
+> >   		 * Blocking time is in units of nanosecs, so shift by 20 to
+> >   		 * get a milliseconds-range estimation of the amount of
 > 
 > It might be nice to put a tracepoint there as well, now if there was a
 > way to specify perf counter attributes in the TRACE_EVENT() magic so
@@ -49,5 +61,14 @@ Peter Zijlstra wrote:
 > That way we could profile applications based on IO-wait, which would be
 > cool.
 
-it'd be nice if this was also a perfcounter event, no doubt about that
-(I already have some usages in mind).... but that'd be a separate patch.
+How would you imagine an interface for this? Could you come up with 
+something that you would like to see, and then I could see if we could 
+implement it. 
+
+How would the TRACE_EVENT look exactly? Would there be anything different 
+in the trace point location itself?
+
+Thanks,
+
+-- Steve
+
