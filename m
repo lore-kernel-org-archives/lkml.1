@@ -1,130 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbZGTKl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbZGTKsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbZGTKl2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 06:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZGTKl0
+	id S1753375AbZGTKsu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 06:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbZGTKst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 06:41:26 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:40072 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751822AbZGTKl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 06:41:26 -0400
-Date: Mon, 20 Jul 2009 20:38:25 +1000
-From: Anton Blanchard <anton@samba.org>
-To: a.p.zijlstra@chello.nl, mingo@elte.hu, paulus@samba.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] perf_counter: Always return the parent counter id to
-	userspace
-Message-ID: <20090720103825.GA9029@kryten>
+	Mon, 20 Jul 2009 06:48:49 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41163 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752157AbZGTKss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 06:48:48 -0400
+Date: Mon, 20 Jul 2009 12:47:26 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: HTC: touchscreen driver
+Message-ID: <20090720104726.GE19341@elf.ucw.cz>
+References: <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz> <20090713220726.GA28375@elf.ucw.cz> <d6200be20907131829o77bce3d8w8f238bc079478368@mail.gmail.com> <20090714094629.GB2076@elf.ucw.cz> <d6200be20907141507s39b54cccq9f0cedc325d3a203@mail.gmail.com> <20090714221638.GA6512@elf.ucw.cz> <d6200be20907141545k2b40b790x1af853b89517891c@mail.gmail.com> <20090719212330.GI26511@elf.ucw.cz> <d6200be20907192043w3f1aa2abvd0125163e6f5519c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <d6200be20907192043w3f1aa2abvd0125163e6f5519c@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-When inheriting counters new tasks get new counter ids. Since
-userspace only knows about the parent ids we need to return them
-and not the actual ids.
+You probably want (something like) this to mostly fix !EARLY_SUSPEND
+compilation.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-Index: linux.trees.git/kernel/perf_counter.c
-===================================================================
---- linux.trees.git.orig/kernel/perf_counter.c	2009-07-20 20:17:44.000000000 +1000
-+++ linux.trees.git/kernel/perf_counter.c	2009-07-20 20:36:13.000000000 +1000
-@@ -154,6 +154,20 @@
- 	}
- }
+index a45634b..e916cea 100644
+--- a/drivers/staging/dream/synaptics_i2c_rmi.c
++++ b/drivers/staging/dream/synaptics_i2c_rmi.c
+@@ -45,7 +44,9 @@ struct synaptics_ts_data {
+ 	int snap_up[2];
+ 	uint32_t flags;
+ 	int (*power)(int on);
++#ifdef CONFIG_HAS_EARLYSUSPEND
+ 	struct early_suspend early_suspend;
++#endif
+ };
  
-+/* 
-+ * If we inherit counters we want to return the parent counter id 
-+ * to userspace.
-+ */
-+static u64 primary_counter_id(struct perf_counter *counter)
-+{
-+	u64 id = counter->id;
-+
-+	if (counter->parent)
-+		id = counter->parent->id;
-+
-+	return id;
-+}
-+
- /*
-  * Get the perf_counter_context for a task and lock it.
-  * This has to cope with with the fact that until it is locked,
-@@ -1705,7 +1719,7 @@
- 		values[n++] = counter->total_time_running +
- 			atomic64_read(&counter->child_total_time_running);
- 	if (counter->attr.read_format & PERF_FORMAT_ID)
--		values[n++] = counter->id;
-+		values[n++] = primary_counter_id(counter);
- 	mutex_unlock(&counter->child_mutex);
- 
- 	if (count < n * sizeof(u64))
-@@ -2548,7 +2562,7 @@
- 		lost_event.header.type = PERF_EVENT_LOST;
- 		lost_event.header.misc = 0;
- 		lost_event.header.size = sizeof(lost_event);
--		lost_event.id          = counter->id;
-+		lost_event.id          = primary_counter_id(counter);
- 		lost_event.lost        = atomic_xchg(&data->lost, 0);
- 
- 		perf_output_put(handle, lost_event);
-@@ -2704,8 +2718,10 @@
- 	if (sample_type & PERF_SAMPLE_ADDR)
- 		perf_output_put(&handle, data->addr);
- 
--	if (sample_type & PERF_SAMPLE_ID)
--		perf_output_put(&handle, counter->id);
-+	if (sample_type & PERF_SAMPLE_ID) {
-+		u64 id = primary_counter_id(counter);
-+		perf_output_put(&handle, id);
-+	}
- 
- 	if (sample_type & PERF_SAMPLE_CPU)
- 		perf_output_put(&handle, cpu_entry);
-@@ -2727,7 +2743,7 @@
- 			if (sub != counter)
- 				sub->pmu->read(sub);
- 
--			group_entry.id = sub->id;
-+			group_entry.id = primary_counter_id(sub);
- 			group_entry.counter = atomic64_read(&sub->count);
- 
- 			perf_output_put(&handle, group_entry);
-@@ -2790,11 +2806,7 @@
- 		u64 id;
- 
- 		event.header.size += sizeof(u64);
--		if (counter->parent)
--			id = counter->parent->id;
--		else
--			id = counter->id;
--
-+		id = primary_counter_id(counter);
- 		event.format[i++] = id;
- 	}
- 
-@@ -3209,7 +3221,7 @@
- 			.size = sizeof(event),
- 		},
- 		.time = sched_clock(),
--		.id = counter->id,
-+		.id = primary_counter_id(counter),
- 		.period = period,
- 	};
- 
-@@ -3241,7 +3253,7 @@
- 			.size = sizeof(throttle_event),
- 		},
- 		.time	= sched_clock(),
--		.id	= counter->id,
-+		.id	= primary_counter_id(counter),
- 	};
- 
- 	ret = perf_output_begin(&handle, counter, sizeof(throttle_event), 1, 0);
+ #ifdef CONFIG_HAS_EARLYSUSPEND
+@@ -515,7 +516,9 @@ err_check_functionality_failed:
+ static int synaptics_ts_remove(struct i2c_client *client)
+ {
+ 	struct synaptics_ts_data *ts = i2c_get_clientdata(client);
++#ifdef CONFIG_HAS_EARLYSUSPEND
+ 	unregister_early_suspend(&ts->early_suspend);
++#endif
+ 	if (ts->use_irq)
+ 		free_irq(client->irq, ts);
+ 	else
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
