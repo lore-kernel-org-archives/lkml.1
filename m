@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbZGTMPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbZGTMPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753539AbZGTMPO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 08:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbZGTMPN
+	id S1753493AbZGTMPi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 08:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbZGTMPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 08:15:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37906 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753209AbZGTMPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 08:15:12 -0400
-Message-ID: <4A645FCE.5030506@suse.de>
-Date: Mon, 20 Jul 2009 14:15:10 +0200
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: rohan a <info1686@gmail.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: SCSI command (SP-OUT) failing on SLES 9 32-bit
-References: <7a7c22420907142137o4253dfb5gcd72176cd6a38beb@mail.gmail.com>	 <7a7c22420907142326t3b8d4f5fqaf3813cb456186ec@mail.gmail.com>	 <7a7c22420907150803v4f4ae9dn9eff41b5d5a7edf6@mail.gmail.com> <1247670563.4236.16.camel@mulgrave.site>
-In-Reply-To: <1247670563.4236.16.camel@mulgrave.site>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 20 Jul 2009 08:15:37 -0400
+Received: from mail-a04.ithnet.com ([217.64.83.99]:49961 "HELO ithnet.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753439AbZGTMPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 08:15:36 -0400
+X-Sender-Authentication: net64
+Date: Mon, 20 Jul 2009 14:15:32 +0200
+From: Stephan von Krawczynski <skraw@ithnet.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: What to do with this message (2.6.30.1) ?
+Message-Id: <20090720141532.bb733562.skraw@ithnet.com>
+In-Reply-To: <alpine.DEB.2.00.0907151323170.22582@chino.kir.corp.google.com>
+References: <20090713134621.124aa18e.skraw@ithnet.com>
+	<4807377b0907132240g6f74c9cbnf1302d354a0e0a72@mail.gmail.com>
+	<alpine.DEB.2.00.0907132247001.8784@chino.kir.corp.google.com>
+	<20090715084754.36ff73bf.skraw@ithnet.com>
+	<alpine.DEB.2.00.0907150115190.14393@chino.kir.corp.google.com>
+	<20090715113740.334309dd.skraw@ithnet.com>
+	<alpine.DEB.2.00.0907151323170.22582@chino.kir.corp.google.com>
+Organization: ith Kommunikationstechnik GmbH
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Wed, 2009-07-15 at 20:33 +0530, rohan a wrote:
->> Hi guys,
->>
->> Any suggestions...please help
+On Wed, 15 Jul 2009 13:24:08 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
+
+> On Wed, 15 Jul 2009, Stephan von Krawczynski wrote:
 > 
-> I know of no kernel bug that could be causing this.  The SLES9 kernel is
-> just too old though for me to remember clearly.  I'd suggest you file a
-> support incident with SUSE ... they'll debug and fix this on the older
-> kernels; we really only deal with the new kernel and one or two back
-> revisions here on linux-scsi.
+> > > If you have some additional time, it would also be helpful to get a 
+> > > bisection of when the problem started occurring (it appears to be sometime 
+> > > between 2.6.29 and 2.6.30).
+> > 
+> > Do you know what version should definitely be not affected? I can check one
+> > kernel version per day, can you name a list which versions to check out? 
+> > 
 > 
-You did that on purpose.
-The 'they' is actually me :-(
+> To my knowledge, this issue was never reported on 2.6.29, so that should 
+> be a sane starting point.
 
-Actually, there already _is_ a bug, so no need to open another one.
-Which HBA are you using?
+It looks like 2.6.27.26 does not show the problem. We will re-check tonight
+and keep you informed.
 
-Cheers,
-
-Hannes
 -- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Regards,
+Stephan
