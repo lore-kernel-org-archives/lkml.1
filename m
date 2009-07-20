@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751574AbZGTCsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbZGTC41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751574AbZGTCsj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 22:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZGTCsh
+	id S1751700AbZGTC41 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 22:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZGTC40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 22:48:37 -0400
-Received: from mail-px0-f193.google.com ([209.85.216.193]:59908 "EHLO
-	mail-px0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbZGTCsg (ORCPT
+	Sun, 19 Jul 2009 22:56:26 -0400
+Received: from mga09.intel.com ([134.134.136.24]:56904 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751328AbZGTC4Z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 22:48:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:subject:to:content-type:mime-version
-         :content-transfer-encoding:date;
-        b=qZDxogjEB7GwRA2PrQFd7Td29rXsfV44C3zwyAwCZSRlLS3FhvYUMabNJN9Rtn6/xF
-         3MZt5eHPc4+W8aw4if6jMiXtP1KLvtKBdCJsG1eApGibHWkQa0h1BAi12vg0Dx1pqyKZ
-         n+OgLrMnVGKSD0wUwpCkW2xmn+iaoBA1RMPTg=
-Message-ID: <4a63db02.0fba720a.1b25.7464@mx.google.com>
-From: =?GB2312?B?wO7J+kRib3hi?= <trhstrhhtrhtsrh@gmail.com>
-Subject: injpwngsxr@vgaxjwsm.com
-To: jpwngsxr@vgaxjwsm.com
-Content-Type: text/plain;
-	charset="GB2312"
+	Sun, 19 Jul 2009 22:56:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,231,1246863600"; 
+   d="scan'208";a="534205941"
+From: "Lu, Guanqun" <guanqun.lu@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, "jeremy@goop.org" <jeremy@goop.org>
+Date: Mon, 20 Jul 2009 10:55:28 +0800
+Subject: RE: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
+Thread-Topic: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
+Thread-Index: AcoG6WWYaG2Ro2lKSCuHLaGFL6WJLwB+9zsA
+Message-ID: <8FED46E8A9CA574792FC7AACAC38FE7701E6F48AF7@PDSMSX501.ccr.corp.intel.com>
+References: <1247834204-3084-1-git-send-email-guanqun.lu@intel.com>
+ <200907170352.11749.rjw@sisk.pl>
+ <alpine.LFD.2.00.0907171615530.11571@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0907171615530.11571@localhost.localdomain>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Date: Mon, 20 Jul 2009 10:48:28 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6K2n6J7009026
 
+>-----Original Message-----
+>From: Thomas Gleixner [mailto:tglx@linutronix.de]
+>Sent: Friday, July 17, 2009 10:18 PM
+>To: Rafael J. Wysocki
+>Cc: Lu, Guanqun; linux-kernel@vger.kernel.org; mingo@elte.hu; jeremy@goop.org
+>Subject: Re: [PATCH 1/3] add flag IRQF_NO_SUSPEND in 'struct irqaction'
+>
+>On Fri, 17 Jul 2009, Rafael J. Wysocki wrote:
+>
+>> On Friday 17 July 2009, Guanqun Lu wrote:
+>> > We currently only bypass IRQF_TIMER in '__disable_irq',
+>> > but Xen specific IRQs should not be disabled either.
+>> > This commit adds a new flag to accompolish this goal
+>> > without being mixed up with IRQF_TIMER flag.
+>>
+>> For some obscure reasons [2/3] didn't reach my inbox.  The other 2 patches
+>> look fine to me.
+>
+>I do not receive the patches at all. Can you please resend and cc me ?
 
+Resent now, let me know it doesn't get to your inbox again.
 
-0504096278121234567×ð¾´µÄÏÈÉú¡¢Å®Ê¿£º
+Guanqun
 
-  ÄúºÃ£¡
-  ±¾¹«Ë¾×¨Òµ´úÀíÈ«¹ú¸÷µØ¸÷ÐÐÒµµÄ.·þÎñ.½¨Öþ.ÉÌÆ·µÈµÈ¡£¹úË°¡¢µØË°/Æ±¾Ý£¡¶ÔÍâ¿ÉÓÅ»Ý¡££¨ÊÕ·Ñ±ê×¼Îª£º0.3%£­1.5%£©ÊÕÈ¡ÏêÏ¸Ë°ÂÊ¿É¸ù¾Ý´óÐ¡ÉÌÌ¸£¡
-  ¹«Ë¾±¾×Å¹Ë¿ÍÖÁÉÏµÄ×ÚÖ¼£¬¿ÉÏÈ¿ª¾ßÆ±¸ø¹ó¹«Ë¾¡£´ýÑéÖ¤ÎÞÎÊÌâºóÔÙ¸¶¿î£¡Èô¹ó¹«Ë¾ÓÐÐèÒª»òÒÉÎÊ£¬¿ÉÖ±½ÓÀ´µçÁªÏµ£¡
-  ÁªÏµÈË£ºÀî ÏÈ Éú
-
-  µç »°£º158 1465 6372
-  
-  ÓÊÏä£º jinchengongs@126.com
-
-      ÈçÓÐ´òÈÅ£¬Çë¼ûÁÂ£¡Ð»Ð»£¡~
-
-
-
-
-                                            2009-7-20
-
-                                             219.205.214.178 
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+>
+>Thanks,
+>
+>	tglx
