@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZGTHLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbZGTHPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590AbZGTHLi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 03:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751958AbZGTHLh
+	id S1752630AbZGTHPw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 03:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZGTHPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 03:11:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37101 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751491AbZGTHLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 03:11:36 -0400
-Subject: Re: [RFC/PATCH] mm: Pass virtual address to
- [__]p{te,ud,md}_free_tlb()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Memory Management <linux-mm@kvack.org>,
-       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090715135620.GD7298@wotan.suse.de>
-References: <20090715074952.A36C7DDDB2@ozlabs.org>
-	 <20090715135620.GD7298@wotan.suse.de>
+	Mon, 20 Jul 2009 03:15:51 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:34484 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752441AbZGTHPu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 03:15:50 -0400
+Subject: Re: btusb_send_frame: hci0 urb ede00a50 submission failed
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-bluetooth@vger.kernel.org
+In-Reply-To: <dd18b0c30907192045t3078451ao9af4c1751d9efe91@mail.gmail.com>
+References: <dd18b0c30907192045t3078451ao9af4c1751d9efe91@mail.gmail.com>
 Content-Type: text/plain
-Date: Mon, 20 Jul 2009 17:11:13 +1000
-Message-Id: <1248073873.13067.31.camel@pasglop>
+Date: Mon, 20 Jul 2009 09:15:20 +0200
+Message-Id: <1248074120.4549.89.camel@violet>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -30,27 +27,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-15 at 15:56 +0200, Nick Piggin wrote:
-> > I would like to merge the new support that depends on this in 2.6.32,
-> > so unless there's major objections, I'd like this to go in early during
-> > the merge window. We can sort out separately how to carry the patch
-> > around in -next until then since the powerpc tree will have a dependency
-> > on it.
+Hi Justin,
+
+> Not sure whats happening here,
+> this morning using s2ram worked like a charm,
+> now at the end of the day this thing takes a good minute to
+> wakeup. As for the blueooth finally got it working, but
+> now I'm seeing this in dmesg:
 > 
-> Can't see any problem with that.
+> 
+> [  708.630722] Restarting tasks ... done.
+> [  708.910090] usb 5-1: USB disconnect, address 3
+> [  708.910262] btusb_send_frame: hci0 urb ede00a50 submission failed
+> [  709.330776] [drm] Loading R500 Microcode
+> 
+> Maybe suspend works better when cooler, but in anycase
+> the bluetooth works perfectly recovers from s2ram, scrollball
+> works as well(all with SELinux running too).
 
-CC'ing Linus here. How do you want to proceed with that merge ? (IE. so
-far nobody objected to the patch itself)
+what kernel version? Is this a plain vanilla kernel.org kernel or a
+distro kernel?
 
-IE. The patch affects all archs, though it's a trivial change every
-time, but I'll have stuff in powerpc-next that depends on it, and so I'm
-not sure what the right approach is here. Should I put it in the powerpc
-tree ?
+Regards
 
-I also didn't have any formal Ack from anybody, neither mm folks nor
-arch maintainers :-)
-
-Cheers,
-Ben.
+Marcel
 
 
