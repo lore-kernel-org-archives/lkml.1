@@ -1,61 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbZGTNTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZGTNZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbZGTNTx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 09:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZGTNTw
+	id S1753498AbZGTNZM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 09:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZGTNZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 09:19:52 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:1727 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbZGTNTv (ORCPT
+	Mon, 20 Jul 2009 09:25:11 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:39482 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZGTNZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 09:19:51 -0400
-Date: Mon, 20 Jul 2009 15:19:40 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, Jonathan Cameron <jic23@cam.ac.uk>
-Subject: Re: [PATCH] hwmon: Add WM835x PMIC hardware monitoring driver
-Message-ID: <20090720151940.30bd38ca@hyperion.delvare>
-In-Reply-To: <1248090225-16387-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1248090225-16387-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Jul 2009 09:25:10 -0400
+Date: Mon, 20 Jul 2009 15:24:56 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Hans-Joachim Picht <hans@linux.vnet.ibm.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Arnd Schneider <arnd@de.ibm.com>
+Subject: Re: PM/hibernate swapfile regression
+Message-ID: <20090720132456.GA29023@osiris.boeblingen.de.ibm.com>
+References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com> <200907141821.06101.rjw@sisk.pl> <4A6077DE.6060202@tuffmail.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A6077DE.6060202@tuffmail.co.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Jul 2009 12:43:45 +0100, Mark Brown wrote:
-> This driver provides reporting of the status supply voltage rails
-> of the WM835x series of PMICs via the hwmon API.
+On Fri, Jul 17, 2009 at 02:08:46PM +0100, Alan Jenkins wrote:
+> Rafael J. Wysocki wrote:
+> > On Tuesday 14 July 2009, Heiko Carstens wrote:
+> >   
+> >> We've seen this bug:
+> >>
+> >> Jul  8 13:16:02 h05lp03 kernel: BUG: sleeping function called from invalid context at /home/autobuild/BUILD/linux-2.6.30-20090707/include/linux/writeback.h:87
+> >> Jul  8 13:16:02 h05lp03 kernel: in_atomic(): 1, irqs_disabled(): 0, pid: 24377, name: bash
+> >> Jul  8 13:16:02 h05lp03 kernel: 3 locks held by bash/24377:
+> >> Jul  8 13:16:02 h05lp03 kernel: #0:  (&buffer->mutex){+.+.+.}, at: [<0000000000276e74>] sysfs_write_file+0x4c/0x1ac
+> >> Jul  8 13:16:02 h05lp03 kernel: #1:  (pm_mutex#2){+.+.+.}, at: [<000000000018f128>] hibernate+0x34/0x200
+> >> Jul  8 13:16:02 h05lp03 kernel: #2:  (swap_lock){+.+.-.}, at: [<00000000001f371c>] swap_type_of+0x44/0x158
+> >> Jul  8 13:16:02 h05lp03 kernel: CPU: 8 Not tainted 2.6.30-39.x.20090707-s390xdefault #1
+> >> Jul  8 13:16:02 h05lp03 kernel: Process bash (pid: 24377, task: 000000012ce84240, ksp: 00000000c262bb00)
+> >> Jul  8 13:16:02 h05lp03 kernel: 0000000000000000 00000000c262ba88 0000000000000002 0000000000000000
+> >> Jul  8 13:16:02 h05lp03 kernel:       00000000c262bb28 00000000c262baa0 00000000c262baa0 00000000005448c4
+> >> Jul  8 13:16:02 h05lp03 kernel:       0000000000000000 000000012ce84718 000000013d5bf1a8 0000000000000000
+> >> Jul  8 13:16:02 h05lp03 kernel:       000000000000000d 0000000000000000 00000000c262baf8 000000000000000e
+> >> Jul  8 13:16:02 h05lp03 kernel:       0000000000553da8 0000000000105600 00000000c262ba88 00000000c262bad0
+> >> Jul  8 13:16:02 h05lp03 kernel: Call Trace:
+> >> Jul  8 13:16:02 h05lp03 kernel: ([<00000000001054fc>] show_trace+0xf0/0x148)
+> >> Jul  8 13:16:02 h05lp03 kernel: [<00000000001391ba>] __might_sleep+0x172/0x188
+> >> Jul  8 13:16:02 h05lp03 kernel: [<000000000021f738>] ifind+0x88/0xe4
+> >> Jul  8 13:16:02 h05lp03 kernel: [<0000000000220b0e>] iget5_locked+0x66/0x1d8
+> >> Jul  8 13:16:02 h05lp03 kernel: [<000000000023b676>] bdget+0x5e/0x150
+> >> Jul  8 13:16:02 h05lp03 kernel: [<00000000001f37b2>] swap_type_of+0xda/0x158
+> >> Jul  8 13:16:02 h05lp03 kernel: [<0000000000192342>] swsusp_write+0x4e/0x458
+> >> Jul  8 13:16:02 h05lp03 kernel: [<000000000018f254>] hibernate+0x160/0x200
+> >> Jul  8 13:16:02 h05lp03 kernel: [<000000000018d8da>] state_store+0x82/0xa8
+> >> Jul  8 13:16:02 h05lp03 kernel: [<0000000000276f20>] sysfs_write_file+0xf8/0x1ac
+> >> Jul  8 13:16:02 h05lp03 kernel: [<000000000020663a>] vfs_write+0xae/0x15c
+> >> Jul  8 13:16:02 h05lp03 kernel: [<00000000002067e0>] SyS_write+0x54/0xac
+> >> Jul  8 13:16:02 h05lp03 kernel: [<0000000000117a96>] sysc_noemu+0x10/0x16
+> >> Jul  8 13:16:02 h05lp03 kernel: [<00000047083e36b4>] 0x47083e36b4
+> >>
+> >> Looks like this was introduced with git commit a1bb7d61 "PM/hibernate: fix "swap
+> >> breaks after hibernation failures"".
+> >> Calling bdget while holding a spinlock doesn't seem to be a good idea...
+> >>     
+> >
+> > Agreed, sorry for missing that.
+> >
+> > Alan, can you please prepare a fix?
 > 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
+> I'm not sure how to reproduce.  I tried pm-hibernate with
+> CONFIG_DEBUG_SPINLOCK_SLEEP, but nothing showed up in dmesg.
 > 
-> This should address all the issues Jean raised:
->  - Add a brief document to the hwmon directory.
->  - Use full constant names as arguments for template macro.
->  - Use DIV_ROUND_CLOSEST()
->  - Set driver owner.
->  - Fix typos.
-> 
-> Thanks to Jonathan and Jean for their reviews.
-> 
->  Documentation/hwmon/wm8350      |   26 +++++++
->  drivers/hwmon/Kconfig           |   10 +++
->  drivers/hwmon/Makefile          |    1 +
->  drivers/hwmon/wm8350-hwmon.c    |  151 +++++++++++++++++++++++++++++++++++++++
->  drivers/mfd/wm8350-core.c       |    3 +
->  include/linux/mfd/wm8350/core.h |    6 ++
->  6 files changed, 197 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/hwmon/wm8350
->  create mode 100644 drivers/hwmon/wm8350-hwmon.c
+> Here's a quick & dirty patch. Please test (or explain how I can test it
+> myself, whichever is easier :-). swap_unplug_sem is used to avoid
+> holding swap_lock when calling the block device unplug function.  I
+> think it can also be used for this bdget call.
 
-Good work.
+Thanks for the patch. Unfortunately Arnd was unable to reproduce the original
+behaviour. But your patch makes sense anyway.
+I also tested it and nothing broke. So should this go upstream?
 
-Acked-by: Jean Delvare <khali@linux-fr.org>
 
--- 
-Jean Delvare
+> diff --git a/mm/swapfile.c b/mm/swapfile.c
+> index d1ade1a..9176464 100644
+> --- a/mm/swapfile.c
+> +++ b/mm/swapfile.c
+> @@ -744,6 +744,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+>  	if (device)
+>  		bdev = bdget(device);
+> 
+> +	down_read(&swap_unplug_sem);
+>  	spin_lock(&swap_lock);
+>  	for (i = 0; i < nr_swapfiles; i++) {
+>  		struct swap_info_struct *sis = swap_info + i;
+> @@ -752,10 +753,11 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+>  			continue;
+> 
+>  		if (!bdev) {
+> +			spin_unlock(&swap_lock);
+>  			if (bdev_p)
+>  				*bdev_p = bdget(sis->bdev->bd_dev);
+> +			up_read(&swap_unplug_sem);
+> 
+> -			spin_unlock(&swap_lock);
+>  			return i;
+>  		}
+>  		if (bdev == sis->bdev) {
+> @@ -764,16 +766,18 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+>  			se = list_entry(sis->extent_list.next,
+>  					struct swap_extent, list);
+>  			if (se->start_block == offset) {
+> +				spin_unlock(&swap_lock);
+>  				if (bdev_p)
+>  					*bdev_p = bdget(sis->bdev->bd_dev);
+> +				up_read(&swap_unplug_sem);
+> 
+> -				spin_unlock(&swap_lock);
+>  				bdput(bdev);
+>  				return i;
+>  			}
+>  		}
+>  	}
+>  	spin_unlock(&swap_lock);
+> +	up_read(&swap_unplug_sem);
+>  	if (bdev)
+>  		bdput(bdev);
