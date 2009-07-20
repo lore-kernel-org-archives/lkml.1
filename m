@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbZGTDnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751755AbZGTDpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752052AbZGTDnN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 19 Jul 2009 23:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZGTDnM
+	id S1751755AbZGTDpW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 19 Jul 2009 23:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZGTDpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 19 Jul 2009 23:43:12 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:46152 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbZGTDnM convert rfc822-to-8bit (ORCPT
+	Sun, 19 Jul 2009 23:45:21 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:61291 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbZGTDpU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 19 Jul 2009 23:43:12 -0400
+	Sun, 19 Jul 2009 23:45:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=smdWfiWP1lxqbOBlThN9aAxXIO+FGdK9VLRNqPAQDJjQzoPx6xy9QAx+dv2+KUy8Wy
+         vzvX4Q+wKcsMt2gcQPaENIq3Fpm0V3r/jQAwwTU79fohV43wR7YSEgH74FPJYz+Sjxkr
+         +aTpCFFnmxss07i+/4mIaBCab6AiD72C2SKGQ=
 MIME-Version: 1.0
-In-Reply-To: <20090719212330.GI26511@elf.ucw.cz>
-References: <20090710103243.GB7789@elf.ucw.cz>
-	 <20090713202302.GC2569@elf.ucw.cz> <20090713205749.GE2569@elf.ucw.cz>
-	 <20090713220726.GA28375@elf.ucw.cz>
-	 <d6200be20907131829o77bce3d8w8f238bc079478368@mail.gmail.com>
-	 <20090714094629.GB2076@elf.ucw.cz>
-	 <d6200be20907141507s39b54cccq9f0cedc325d3a203@mail.gmail.com>
-	 <20090714221638.GA6512@elf.ucw.cz>
-	 <d6200be20907141545k2b40b790x1af853b89517891c@mail.gmail.com>
-	 <20090719212330.GI26511@elf.ucw.cz>
-Date: Sun, 19 Jul 2009 20:43:10 -0700
-Message-ID: <d6200be20907192043w3f1aa2abvd0125163e6f5519c@mail.gmail.com>
-Subject: Re: HTC: touchscreen driver
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>
+Date: Sun, 19 Jul 2009 20:45:20 -0700
+Message-ID: <dd18b0c30907192045t3078451ao9af4c1751d9efe91@mail.gmail.com>
+Subject: btusb_send_frame: hci0 urb ede00a50 submission failed
+From: Justin Mattock <justinmattock@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linux-bluetooth@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 19, 2009 at 2:23 PM, Pavel Machek<pavel@ucw.cz> wrote:
->
->> > Applying small patch on top of cleaned up driver should be better than
->> > carrying whole driver itself, right?
->>
->> Perhaps, but the only problem I encountered with this driver so far
->> was when calling disable_irq from the interrupt handler stopped
->> working on non-smp systems in 2.6.30 (which is another patch you
->> should probably apply first).
->
-> How do I get that patch? git pull on msm-2.6.29 tree?
+Not sure whats happening here,
+this morning using s2ram worked like a charm,
+now at the end of the day this thing takes a good minute to
+wakeup. As for the blueooth finally got it working, but
+now I'm seeing this in dmesg:
 
-No it is in the android-msm-2.6.30-rc2-test branch at
-git://android.git.kernel.org/kernel/experimental.git (commit
-9f89902daf7a3c6fdd6b0c7494f3cc82d5e09217).
+
+[  708.630722] Restarting tasks ... done.
+[  708.910090] usb 5-1: USB disconnect, address 3
+[  708.910262] btusb_send_frame: hci0 urb ede00a50 submission failed
+[  709.330776] [drm] Loading R500 Microcode
+
+Maybe suspend works better when cooler, but in anycase
+the bluetooth works perfectly recovers from s2ram, scrollball
+works as well(all with SELinux running too).
+
 
 -- 
-Arve Hjønnevåg
+Justin P. Mattock
