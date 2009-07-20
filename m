@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752351AbZGTLoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752511AbZGTLts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752351AbZGTLoc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 07:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZGTLob
+	id S1752511AbZGTLts (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 07:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZGTLts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 07:44:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48369 "EHLO mx2.redhat.com"
+	Mon, 20 Jul 2009 07:49:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39728 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751967AbZGTLoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 07:44:30 -0400
-Message-ID: <4A645974.3020801@redhat.com>
-Date: Mon, 20 Jul 2009 14:48:04 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+	id S1751800AbZGTLtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 07:49:47 -0400
+Date: Mon, 20 Jul 2009 13:47:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-cris-kernel@axis.com, Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] x86: NX protection for kernel data
+Message-ID: <20090720114746.GA29811@elte.hu>
+References: <817ecb6f0907191243m33cc7369qa09a24416fad7769@mail.gmail.com> <20090719201330.GA3186@merkur.ravnborg.org> <817ecb6f0907191709u2abc756cm4bce635ee9b4d0d8@mail.gmail.com> <20090720071007.GA6340@merkur.ravnborg.org>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk, aarcange@redhat.com,
-       chrisw@redhat.com, avi@redhat.com, riel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 10/10] ksm: change ksm nice level to be 5
-References: <1247851850-4298-2-git-send-email-ieidus@redhat.com> <1247851850-4298-3-git-send-email-ieidus@redhat.com> <1247851850-4298-4-git-send-email-ieidus@redhat.com> <1247851850-4298-5-git-send-email-ieidus@redhat.com> <1247851850-4298-6-git-send-email-ieidus@redhat.com> <1247851850-4298-7-git-send-email-ieidus@redhat.com> <1247851850-4298-8-git-send-email-ieidus@redhat.com> <1247851850-4298-9-git-send-email-ieidus@redhat.com> <1247851850-4298-10-git-send-email-ieidus@redhat.com> <1247851850-4298-11-git-send-email-ieidus@redhat.com> <20090720045037.GA24157@balbir.in.ibm.com>
-In-Reply-To: <20090720045037.GA24157@balbir.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090720071007.GA6340@merkur.ravnborg.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * Izik Eidus <ieidus@redhat.com> [2009-07-17 20:30:50]:
->
->   
->> From: Izik Eidus <ieidus@redhat.com>
->>
->> ksm should try not to disturb other tasks as much as possible.
->>
->> Signed-off-by: Izik Eidus <ieidus@redhat.com>
->> ---
->>  mm/ksm.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/mm/ksm.c b/mm/ksm.c
->> index 75d7802..4afe345 100644
->> --- a/mm/ksm.c
->> +++ b/mm/ksm.c
->> @@ -1270,7 +1270,7 @@ static void ksm_do_scan(unsigned int scan_npages)
->>
->>  static int ksm_scan_thread(void *nothing)
->>  {
->> -	set_user_nice(current, 0);
->> +	set_user_nice(current, 5);
->>     
->
-> Is the 5 arbitrary? Why not +19? What is the intention of this change
-> - to run when no other task is ready to run?
->   
 
-Hey Balbir,
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-I thought about giving it the lowest priority of nice before I did this 
-patch, but then I came into understanding that it isn't right,
-Although ksm should not distrub other tasks while they are running, it 
-does need to run while they are running,
-most of the use cases for ksm is to find identical pages in real time 
-while they are changing in the application, so giving it the lowest 
-priority doesn't seems right to me,
+> > >
+> > > But here _edata does not cover until page boundary.
+> > > And alignmnet is located outside the output section
+> > > definition.
+> > > It would be better/more consistent to follow the style you use for .text here.
+> > 
+> > You are correct. _edata should be the last thing in .data, and
+> > alignment should be done before it. However, this brings up a
+> > question: was there any specific reason to leave .data.init_task
+> > beyond the _edata? Should we move _edata into the the last of the
+> > .data.* sections to have poper view of kernel layout?
+> 
+> .data.init_task is loaded into another segment so this is less trivial.
+> Jan Beulich has posted a patch some time ago to address this,
+> but it failed when forwardported to the unified layout.
+> 
+> Btw. -tip (the x86 tree) has a patch included that unify the definition
+> of _edata for 32 and 64 bit.
+> So the best thing you can do is to base your patch on top of
+> the -tip tree.
 
-But my understanding of how the nice prioritys are working is just my 
-intuition, so if you know better and think that for the use case i 
-described above other nice priority is better fit, tell me and I wont 
-have any problem to change.
+which can be found at:
 
-Thanks.
- 
- 
->   
->>  	while (!kthread_should_stop()) {
->>  		if (ksm_run & KSM_RUN_MERGE) {
->>     
->
->   
+  http://people.redhat.com/mingo/tip.git/README
 
+When (re-)submitting the patch please point out the dependency.
+
+	Ingo
