@@ -1,113 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbZGTQPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752878AbZGTQPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752808AbZGTQPa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 12:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZGTQN2
+	id S1752878AbZGTQPo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 12:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZGTQPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 12:13:28 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:26972 "EHLO
-	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbZGTQN0 (ORCPT
+	Mon, 20 Jul 2009 12:15:42 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36019 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752620AbZGTQPj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 12:13:26 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KN3920-04-7DZ-01
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>, <norsk5@yahoo.com>,
-       <aris@redhat.com>
-CC: <linux-kernel@vger.kernel.org>, <x86@kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH 07/14] mce3: pass mce info to EDAC for decoding
-Date: Mon, 20 Jul 2009 18:12:58 +0200
-Message-ID: <1248106385-27514-8-git-send-email-borislav.petkov@amd.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1248106385-27514-1-git-send-email-borislav.petkov@amd.com>
-References: <1248106385-27514-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 20 Jul 2009 16:13:13.0577 (UTC) FILETIME=[FB8DFD90:01CA0954]
+	Mon, 20 Jul 2009 12:15:39 -0400
+Date: Tue, 21 Jul 2009 01:15:05 +0900 (JST)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Subject: Re: [PATCH] hibernate / memory hotplug: always use for_each_populated_zone()
+Cc: kosaki.motohiro@jp.fujitsu.com, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+In-Reply-To: <1248103551.23961.0.camel@localhost.localdomain>
+References: <1248103551.23961.0.camel@localhost.localdomain>
+Message-Id: <20090721011344.AF78.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use a weakly defined symbol instead of ugly ifdefs.
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> 
+> Use for_each_populated_zone() instead of for_each_zone() in hibernation
+> code. This fixes a bug on s390, where we allow both config options
+> HIBERNATION and MEMORY_HOTPLUG, so that we also have a ZONE_MOVABLE
+> here. We only allow hibernation if no memory hotplug operation was
+> performed, so in fact both features can only be used exclusively, but
+> this way we don't need 2 differently configured (distribution) kernels.
+> 
+> If we have an unpopulated ZONE_MOVABLE, we allow hibernation but run
+> into a BUG_ON() in memory_bm_test/set/clear_bit() because hibernation
+> code iterates through all zones, not only the populated zones, in
+> several places. For example, swsusp_free() does for_each_zone() and
+> then checks for pfn_valid(), which is true even if the zone is not
+> populated, resulting in a BUG_ON() later because the pfn cannot be
+> found in the memory bitmap.
+> 
+> Replacing all occurences of for_each_zone() in hibernation code with
+> for_each_populated_zone() would fix this issue.
+> 
+> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-CC: Andi Kleen <andi@firstfloor.org>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- arch/x86/kernel/cpu/mcheck/mce.c |    7 +++++++
- drivers/edac/amd64_edac.c        |   16 ++++++++++++++++
- drivers/edac/amd64_edac.h        |    1 +
- 3 files changed, 24 insertions(+), 0 deletions(-)
+Thanks this effort.
+	Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 484c1e5..36d986c 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -183,6 +183,11 @@ void mce_log(struct mce *mce)
- 	set_bit(0, &mce_need_notify);
- }
- 
-+void __attribute__((weak)) decode_mce(struct mce *m)
-+{
-+	return;
-+}
-+
- static void print_mce(struct mce *m)
- {
- 	printk(KERN_EMERG
-@@ -205,6 +210,8 @@ static void print_mce(struct mce *m)
- 	printk(KERN_EMERG "PROCESSOR %u:%x TIME %llu SOCKET %u APIC %x\n",
- 			m->cpuvendor, m->cpuid, m->time, m->socketid,
- 			m->apicid);
-+
-+	decode_mce(m);
- }
- 
- static void print_mce_head(void)
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 68c5e6b..af08c9e 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2340,6 +2340,22 @@ void amd64_decode_nb_mce(struct mem_ctl_info *mci, struct err_regs *regs,
- 		edac_mc_handle_ue_no_info(mci, "UE bit is set");
- }
- 
-+void decode_mce(struct mce *m)
-+{
-+	struct err_regs regs;
-+
-+	if (m->bank != 4)
-+		return;
-+
-+	regs.nbsl  = (u32) m->status;
-+	regs.nbsh  = (u32)(m->status >> 32);
-+	regs.nbeal = (u32) m->addr;
-+	regs.nbeah = (u32)(m->addr >> 32);
-+
-+	amd64_decode_nb_mce(mci_lookup[0], &regs, 1);
-+}
-+
-+
- /*
-  * The main polling 'check' function, called FROM the edac core to perform the
-  * error checking and if an error is encountered, error processing.
-diff --git a/drivers/edac/amd64_edac.h b/drivers/edac/amd64_edac.h
-index 6e3a9a7..7c9138e 100644
---- a/drivers/edac/amd64_edac.h
-+++ b/drivers/edac/amd64_edac.h
-@@ -71,6 +71,7 @@
- #include <linux/mmzone.h>
- #include <linux/edac.h>
- #include <asm/msr.h>
-+#include <asm/mce.h>
- #include "edac_core.h"
- 
- #define amd64_printk(level, fmt, arg...) \
--- 
-1.6.3.3
 
 
