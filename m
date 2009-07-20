@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZGTSvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZGTSva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbZGTSvB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 14:51:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZGTSvA
+	id S1753808AbZGTSva (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 14:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZGTSv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 14:51:00 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33076 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752595AbZGTSvA (ORCPT
+	Mon, 20 Jul 2009 14:51:29 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:43004 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752766AbZGTSv3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 14:51:00 -0400
-Subject: Re: s2r badness
-From: Peter Zijlstra <peterz@infradead.org>
-To: prasad@linux.vnet.ibm.com
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Len Brown <lenb@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20090720182045.GA5537@in.ibm.com>
-References: <1247947383.4872.3.camel@laptop>
-	 <alpine.LFD.2.00.0907182223450.11571@localhost.localdomain>
-	 <20090720182045.GA5537@in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 20 Jul 2009 20:50:44 +0200
-Message-Id: <1248115844.23509.0.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 20 Jul 2009 14:51:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=bqIgRbD44a8ShCLdtlePjq+WCUXsqxezzE3v+qn0VLDvvFpiegf14B77r4tHaOUadm
+         paDU16Heodfrktc/4BmBYHU1dBqEBHXAMfHd5SO4WQmTVbiOzAA7IxBwcZUmWyrkAfZI
+         P5NuIUrwBRgVsfKnnHnyfkx3Cvuv8Gw4FucaY=
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org, Manuel Lauss <manuel.lauss@gmail.com>
+Subject: [PATCH] au1xmmc: dev_pm_ops conversion
+Date: Mon, 20 Jul 2009 20:51:21 +0200
+Message-Id: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-20 at 23:50 +0530, K.Prasad wrote:
+Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
+---
+Run-tested on Au1200.
 
-> > > [   74.576953] ------------[ cut here ]------------
-> > > [   74.576953] WARNING: at /usr/src/linux-2.6/kernel/softirq.c:143 local_bh_enable_ip+0x8b/0xc0()
-> > > [   74.576953] Hardware name: 2242CTO
+ drivers/mmc/host/au1xmmc.c |   23 +++++++++++------------
+ 1 files changed, 11 insertions(+), 12 deletions(-)
 
-> > > [   74.576953] Pid: 5406, comm: bash Not tainted 2.6.31-rc3-tip #32
-> > > [   74.576953] Call Trace:
-> > > [   74.576953]  [<ffffffff8107401b>] ? local_bh_enable_ip+0x8b/0xc0
-> > > [   74.576953]  [<ffffffff8106c838>] warn_slowpath_common+0x78/0xd0
-> > > [   74.576953]  [<ffffffff8106c89f>] warn_slowpath_null+0xf/0x20
-> > > [   74.576953]  [<ffffffff8107401b>] local_bh_enable_ip+0x8b/0xc0
-> > > [   74.576953]  [<ffffffff814d08d9>] _spin_unlock_bh+0x19/0x20
-> > > [   74.576953]  [<ffffffff810d2c77>] load_debug_registers+0x67/0x80
-> > 
-> > That's the hw breakpoint support stuff which does the spin_unlock_bh
-> > at a point where interrupts are disabled. So that's a -tip tree issue,
-> > not mainline.
-> >
-> 
-> load_debug_registers() uses spin_(un)lock_bh() and not a spin-lock() to
-> protect itself from flush_thread_hw_breakpoint() [which is invoked in
-> softIRQ context].
-> 
-> I'd like to recreate this traceback to investigate and fix this. What
-> steps, when done cause this message to appear?
-
-Close the lid and open it again?
+diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
+index d3f5561..70509c9 100644
+--- a/drivers/mmc/host/au1xmmc.c
++++ b/drivers/mmc/host/au1xmmc.c
+@@ -1131,13 +1131,12 @@ static int __devexit au1xmmc_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PM
+-static int au1xmmc_suspend(struct platform_device *pdev, pm_message_t state)
++static int au1xmmc_suspend(struct device *dev)
+ {
+-	struct au1xmmc_host *host = platform_get_drvdata(pdev);
++	struct au1xmmc_host *host = dev_get_drvdata(dev);
+ 	int ret;
+ 
+-	ret = mmc_suspend_host(host->mmc, state);
++	ret = mmc_suspend_host(host->mmc, PMSG_SUSPEND);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1150,27 +1149,27 @@ static int au1xmmc_suspend(struct platform_device *pdev, pm_message_t state)
+ 	return 0;
+ }
+ 
+-static int au1xmmc_resume(struct platform_device *pdev)
++static int au1xmmc_resume(struct device *dev)
+ {
+-	struct au1xmmc_host *host = platform_get_drvdata(pdev);
++	struct au1xmmc_host *host = dev_get_drvdata(dev);
+ 
+ 	au1xmmc_reset_controller(host);
+ 
+ 	return mmc_resume_host(host->mmc);
+ }
+-#else
+-#define au1xmmc_suspend NULL
+-#define au1xmmc_resume NULL
+-#endif
++
++static struct dev_pm_ops au1xmmc_pmops = {
++	.resume		= au1xmmc_resume,
++	.suspend	= au1xmmc_suspend,
++};
+ 
+ static struct platform_driver au1xmmc_driver = {
+ 	.probe         = au1xmmc_probe,
+ 	.remove        = au1xmmc_remove,
+-	.suspend       = au1xmmc_suspend,
+-	.resume        = au1xmmc_resume,
+ 	.driver        = {
+ 		.name  = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
++		.pm    = &au1xmmc_pmops,
+ 	},
+ };
+ 
+-- 
+1.6.3.3
 
