@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbZGTQTG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbZGTQXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752718AbZGTQTG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 12:19:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZGTQTE
+	id S1752817AbZGTQXN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 12:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbZGTQXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 12:19:04 -0400
-Received: from mail-01.cse.ucsc.edu ([128.114.48.32]:43429 "EHLO
-	mail-01.cse.ucsc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752351AbZGTQTE convert rfc822-to-8bit (ORCPT
+	Mon, 20 Jul 2009 12:23:13 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36109 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752580AbZGTQXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 12:19:04 -0400
-Date: Mon, 20 Jul 2009 09:19:00 -0700 (PDT)
-From: Noah Watkins <jayhawk@soe.ucsc.edu>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Message-ID: <1198385022.260301248106740802.JavaMail.root@mail-01.cse.ucsc.edu>
-In-Reply-To: <1279186756.260191248106587108.JavaMail.root@mail-01.cse.ucsc.edu>
-Subject: Re: regression: wireless authentication
+	Mon, 20 Jul 2009 12:23:12 -0400
+Date: Tue, 21 Jul 2009 01:22:25 +0900 (JST)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH 3/3] add isolate pages vmstat
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
+       Minchan Kim <minchan.kim@gmail.com>
+In-Reply-To: <alpine.DEB.1.10.0907201126390.20389@gentwo.org>
+References: <20090720143838.7481.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0907201126390.20389@gentwo.org>
+Message-Id: <20090721012054.AF7B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Originating-IP: [98.234.142.166]
-X-Mailer: Zimbra 5.0.15_GA_2851.RHEL5_64 (ZimbraWebClient - [unknown] (Linux)/5.0.15_GA_2851.RHEL5_64)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest version I've tried that works fine is Linus' 2.6.31-rc3
-with the latest commit being:
-
-commit 35b5c55fee08e6e4001ba98060a2d0b82f70b5f4
-Merge: e9e961c... b2dde6a...
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Wed Jul 15 10:29:09 2009 -0700
-
-I encountered the problem I described when I booted:
-
-2.6.31-rc3-next-20090716
-
--n
-
------ Original Message -----
-From: "John W. Linville" <linville@tuxdriver.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Cc: "Noah Watkins" <jayhawk@soe.ucsc.edu>, linux-next@vger.kernel.org, "LKML" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-Sent: Monday, July 20, 2009 7:59:34 AM GMT -08:00 US/Canada Pacific
-Subject: Re: regression: wireless authentication
-
-On Fri, Jul 17, 2009 at 02:10:47PM +1000, Stephen Rothwell wrote:
-> Hi Noah,
+> On Mon, 20 Jul 2009, KOSAKI Motohiro wrote:
 > 
-> Lets cc some people who may be able to help ...
-> 
-> On Thu, 16 Jul 2009 20:57:06 -0700 Noah Watkins <jayhawk@soe.ucsc.edu> wrote:
+> > > On Fri, 17 Jul 2009, KOSAKI Motohiro wrote:
+> > >
+> > > > > Why do a separate pass over all the migrates pages? Can you add the
+> > > > > _inc_xx  somewhere after the page was isolated from the lru by calling
+> > > > > try_to_unmap()?
+> > > >
+> > > > calling try_to_unmap()? the pages are isolated before calling migrate_pages().
+> > > > migrate_pages() have multiple caller. then I put this __inc_xx into top of
+> > > > migrate_pages().
+> > >
+> > > Then put the inc_xxx's where the pages are isolated.
 > >
-> > With 2.6.31-rc3-next-20090716 all wireless access points are detected, but
-> > authentication fails. I haven't verified on an access point w/o WPA.
-> > 
-> > 2.6.31-rc3 functions fine. I haven't been able to complete a bisect yet.
-> > 
-> > 05:01.0 Network controller: Atheros Communications Inc. AR5008 Wireless Network
-> > Adapter (rev 01)
+> > Is there any benefit? Why do we need sprinkle __inc_xx to many place?
+> 
+> Its only needed in one place where the pages are isolated.
 
-Odd...have you (i.e. Noah) been using -next trees all along?  What was
-the last previous one that worked?  I didn't push anything out for
--next to pick-up all last week...
+Umm.. I haven't understand this benefit. but I guess I can do that.
+I'll think it later deeply.
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
-			¡Viva Honduras Libre!
+
+
+
