@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbZGTVgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753684AbZGTVjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753779AbZGTVgp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 17:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZGTVgp
+	id S1753684AbZGTVjc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 17:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZGTVja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 17:36:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53624 "EHLO mx2.suse.de"
+	Mon, 20 Jul 2009 17:39:30 -0400
+Received: from mail.windriver.com ([147.11.1.11]:49459 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753516AbZGTVgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 17:36:43 -0400
-Date: Mon, 20 Jul 2009 14:34:29 -0700
-From: Greg KH <gregkh@suse.de>
-To: Alejandro Riveira =?iso-8859-1?Q?Fern=E1ndez?= 
-	<ariveira@gmail.com>
-Cc: Damien Wyart <damien.wyart@free.fr>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: Linux 2.6.30.2: does not boot
-Message-ID: <20090720213429.GA2012@suse.de>
-References: <20090720040813.GC11940@kroah.com>
- <200907201613.22483.wolfgang.walter@stwm.de>
- <20090720150916.GB10015@suse.de>
- <20090720180333.GA2905@brouette>
- <20090720212318.2aa5be21@varda>
- <20090720194229.GB29819@suse.de>
- <20090720215032.476c54b5@varda>
+	id S1751402AbZGTVj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 17:39:29 -0400
+Message-ID: <4A64E3BA.1020009@windriver.com>
+Date: Mon, 20 Jul 2009 16:38:02 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090720215032.476c54b5@varda>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dbrownell@users.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 07/10] ehci-dbgp,ehci: Allow early or late use of the
+ dbgp device
+References: <Pine.LNX.4.44L0.0907201721340.5320-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0907201721340.5320-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 20 Jul 2009 21:37:47.0034 (UTC) FILETIME=[52A3B7A0:01CA0982]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 20, 2009 at 09:50:32PM +0200, Alejandro Riveira Fernández wrote:
-> El Mon, 20 Jul 2009 12:42:29 -0700
-> Greg KH <gregkh@suse.de> escribió:
-> 
-> 
-> > 
-> > What revert do you find needed?
-> 
->  Full story here: 
-> http://bugzilla.kernel.org/show_bug.cgi?id=13362
-> 
->  i'm reverting 7e0986c17f695952ce5d61ed793ce048ba90a661 for my own
-> use. The mail threath with Ivo seems to indicate that my hardware 
-> is weird so i do not think the problem will be resolved anytime soon
-> People lost interest i guess
+Alan Stern wrote:
+> On Mon, 20 Jul 2009, Jason Wessel wrote:
+>> +    /* optional debug port, normally in the first BAR */
+>> +    temp = pci_find_capability(pdev, 0x0a);
+>
+> This isn't going to work very well on systems with non-PCI EHCI
+> controllers.  Maybe you should leave debug-port detection in
+> ehci-pci.c.  The controller doesn't get reset very much in any case.
+>
 
-Ah, ok, I was worried that I had missed something here :)
+I'll take a deeper look as to why it didn't work correctly where the
+code was originally sitting.  It had something to do with the reset
+clearing the debug controller settings.
 
-thanks for the info,
+This chunk got moved prior to creating the reset_prep logic, so in all
+likely hood it should go back to where it was, because we do want this
+to work with the pci and non-pci case.
 
-greg k-h
+>> +            if (!dbgp_reset_prep() || !(temp & DBGP_ENABLED))
+>
+> This sort of thing is better handled by defining dhbp_reset_prep() as
+> an inline routine or macro always returning 1 if
+> CONFIG_EARLY_PRINTK_DBGP isn't set.
+>
+>> +        dbgp_external_startup();
+>
+> Similarly here, make dgbp_external_startup() an empty inline function
+> or an empty macro.
+>
+
+Sure, I'll fix these for a round #2 after any other comments come back.
+
+Thanks for the comments,
+Jason.
