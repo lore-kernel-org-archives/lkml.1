@@ -1,277 +1,344 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbZGTQNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZGTQNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752597AbZGTQNd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 12:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZGTQNb
+	id S1752633AbZGTQNh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 12:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbZGTQNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 12:13:31 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:22935 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbZGTQN0 (ORCPT
+	Mon, 20 Jul 2009 12:13:35 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:6167 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751122AbZGTQN0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 20 Jul 2009 12:13:26 -0400
 X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KN391Y-04-7DR-01
+X-BigFish: VPS3(zzzz1202hzzz32i43j63h)
+X-Spam-TCS-SCL: 2:0
+X-FB-SS: 5,
+X-WSS-ID: 0KN391Y-04-7DP-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>, <norsk5@yahoo.com>,
        <aris@redhat.com>
 CC: <linux-kernel@vger.kernel.org>, <x86@kernel.org>
-Subject: [PATCH 02/14] amd64_edac: cleanup amd64_process_error_info
-Date: Mon, 20 Jul 2009 18:12:53 +0200
-Message-ID: <1248106385-27514-3-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 01/14] amd64_edac: simplify error type bits extractors
+Date: Mon, 20 Jul 2009 18:12:52 +0200
+Message-ID: <1248106385-27514-2-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1248106385-27514-1-git-send-email-borislav.petkov@amd.com>
 References: <1248106385-27514-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 20 Jul 2009 16:13:11.0671 (UTC) FILETIME=[FA6B2870:01CA0954]
+X-OriginalArrivalTime: 20 Jul 2009 16:13:11.0312 (UTC) FILETIME=[FA346100:01CA0954]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* mv amd64_error_info_regs -> err_regs
-
-* remove redundant info ptr
+Teach the error code macros to generate the error description strings
+and use them in the error type decoders directly which removes a bunch
+of code and makes the decoding functions much more readable. Also, fix
+strings and shorten macro names.
 
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |   48 ++++++++++++++++++++------------------------
- drivers/edac/amd64_edac.h |   10 ++++----
- 2 files changed, 27 insertions(+), 31 deletions(-)
+ drivers/edac/amd64_edac.c           |   72 ++++++++++------------------------
+ drivers/edac/amd64_edac.h           |   28 +++++++-------
+ drivers/edac/amd64_edac_err_types.c |   55 ++++++++++++---------------
+ 3 files changed, 59 insertions(+), 96 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 93b119b..844effd 100644
+index 858fe60..93b119b 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -693,7 +693,7 @@ static void find_csrow_limits(struct mem_ctl_info *mci, int csrow,
-  * specific.
-  */
- static u64 extract_error_address(struct mem_ctl_info *mci,
--				 struct amd64_error_info_regs *info)
-+				 struct err_regs *info)
- {
- 	struct amd64_pvt *pvt = mci->pvt_info;
+@@ -1099,8 +1099,8 @@ static void k8_map_sysaddr_to_csrow(struct mem_ctl_info *mci,
+ 	u32 page, offset;
  
-@@ -1047,7 +1047,7 @@ static int k8_early_channel_count(struct amd64_pvt *pvt)
+ 	/* Extract the syndrome parts and form a 16-bit syndrome */
+-	syndrome = EXTRACT_HIGH_SYNDROME(info->nbsl) << 8;
+-	syndrome |= EXTRACT_LOW_SYNDROME(info->nbsh);
++	syndrome  = HIGH_SYNDROME(info->nbsl) << 8;
++	syndrome |= LOW_SYNDROME(info->nbsh);
  
- /* extract the ERROR ADDRESS for the K8 CPUs */
- static u64 k8_get_error_address(struct mem_ctl_info *mci,
--				struct amd64_error_info_regs *info)
-+				struct err_regs *info)
- {
- 	return (((u64) (info->nbeah & 0xff)) << 32) +
- 			(info->nbeal & ~0x03);
-@@ -1090,7 +1090,7 @@ static void k8_read_dram_base_limit(struct amd64_pvt *pvt, int dram)
- }
+ 	/* CHIPKILL enabled */
+ 	if (info->nbcfg & K8_NBCFG_CHIPKILL) {
+@@ -1699,8 +1699,8 @@ static void f10_map_sysaddr_to_csrow(struct mem_ctl_info *mci,
+ 	if (csrow >= 0) {
+ 		error_address_to_page_and_offset(sys_addr, &page, &offset);
  
- static void k8_map_sysaddr_to_csrow(struct mem_ctl_info *mci,
--					struct amd64_error_info_regs *info,
-+					struct err_regs *info,
- 					u64 SystemAddress)
- {
- 	struct mem_ctl_info *src_mci;
-@@ -1309,7 +1309,7 @@ static void amd64_teardown(struct amd64_pvt *pvt)
- }
+-		syndrome = EXTRACT_HIGH_SYNDROME(info->nbsl) << 8;
+-		syndrome |= EXTRACT_LOW_SYNDROME(info->nbsh);
++		syndrome  = HIGH_SYNDROME(info->nbsl) << 8;
++		syndrome |= LOW_SYNDROME(info->nbsh);
  
- static u64 f10_get_error_address(struct mem_ctl_info *mci,
--			struct amd64_error_info_regs *info)
-+			struct err_regs *info)
- {
- 	return (((u64) (info->nbeah & 0xffff)) << 32) +
- 			(info->nbeal & ~0x01);
-@@ -1686,7 +1686,7 @@ static int f10_translate_sysaddr_to_cs(struct amd64_pvt *pvt, u64 sys_addr,
-  * The @sys_addr is usually an error address received from the hardware.
-  */
- static void f10_map_sysaddr_to_csrow(struct mem_ctl_info *mci,
--				     struct amd64_error_info_regs *info,
-+				     struct err_regs *info,
- 				     u64 sys_addr)
- {
- 	struct amd64_pvt *pvt = mci->pvt_info;
-@@ -2043,7 +2043,7 @@ static int get_channel_from_ecc_syndrome(unsigned short syndrome)
-  *	- 0: if no valid error is indicated
-  */
- static int amd64_get_error_info_regs(struct mem_ctl_info *mci,
--				     struct amd64_error_info_regs *regs)
-+				     struct err_regs *regs)
- {
- 	struct amd64_pvt *pvt;
- 	struct pci_dev *misc_f3_ctl;
-@@ -2092,10 +2092,10 @@ err_reg:
-  *	- 0: if no error is found
-  */
- static int amd64_get_error_info(struct mem_ctl_info *mci,
--				struct amd64_error_info_regs *info)
-+				struct err_regs *info)
- {
- 	struct amd64_pvt *pvt;
--	struct amd64_error_info_regs regs;
-+	struct err_regs regs;
- 
- 	pvt = mci->pvt_info;
- 
-@@ -2151,7 +2151,7 @@ static int amd64_get_error_info(struct mem_ctl_info *mci,
- }
- 
+ 		/*
+ 		 * Is CHIPKILL on? If so, then we can attempt to use the
+@@ -2153,36 +2153,22 @@ static int amd64_get_error_info(struct mem_ctl_info *mci,
  static inline void amd64_decode_gart_tlb_error(struct mem_ctl_info *mci,
--					 struct amd64_error_info_regs *info)
-+					 struct err_regs *info)
+ 					 struct amd64_error_info_regs *info)
  {
- 	u32 ec = ERROR_CODE(info->nbsl);
+-	u32 err_code;
+-	u32 ec_tt;		/* error code transaction type (2b) */
+-	u32 ec_ll;		/* error code cache level (2b) */
+-
+-	err_code = EXTRACT_ERROR_CODE(info->nbsl);
+-	ec_ll = EXTRACT_LL_CODE(err_code);
+-	ec_tt = EXTRACT_TT_CODE(err_code);
++	u32 ec = ERROR_CODE(info->nbsl);
  
-@@ -2161,7 +2161,7 @@ static inline void amd64_decode_gart_tlb_error(struct mem_ctl_info *mci,
+ 	amd64_mc_printk(mci, KERN_ERR,
+ 		     "GART TLB event: transaction type(%s), "
+-		     "cache level(%s)\n", tt_msgs[ec_tt], ll_msgs[ec_ll]);
++		     "cache level(%s)\n", TT(ec), LL(ec));
  }
  
  static inline void amd64_decode_mem_cache_error(struct mem_ctl_info *mci,
--				      struct amd64_error_info_regs *info)
-+				      struct err_regs *info)
+ 				      struct amd64_error_info_regs *info)
  {
- 	u32 ec = ERROR_CODE(info->nbsl);
- 
-@@ -2177,7 +2177,7 @@ static inline void amd64_decode_mem_cache_error(struct mem_ctl_info *mci,
-  * ADDRESS and process.
-  */
- static void amd64_handle_ce(struct mem_ctl_info *mci,
--			    struct amd64_error_info_regs *info)
-+			    struct err_regs *info)
- {
- 	struct amd64_pvt *pvt = mci->pvt_info;
- 	u64 SystemAddress;
-@@ -2200,7 +2200,7 @@ static void amd64_handle_ce(struct mem_ctl_info *mci,
- 
- /* Handle any Un-correctable Errors (UEs) */
- static void amd64_handle_ue(struct mem_ctl_info *mci,
--			    struct amd64_error_info_regs *info)
-+			    struct err_regs *info)
- {
- 	int csrow;
- 	u64 SystemAddress;
-@@ -2246,7 +2246,7 @@ static void amd64_handle_ue(struct mem_ctl_info *mci,
- }
- 
- static void amd64_decode_bus_error(struct mem_ctl_info *mci,
--				   struct amd64_error_info_regs *info)
-+				   struct err_regs *info)
- {
- 	u32 ec  = ERROR_CODE(info->nbsl);
- 	u32 xec = EXT_ERROR_CODE(info->nbsl);
-@@ -2297,22 +2297,18 @@ static void amd64_decode_bus_error(struct mem_ctl_info *mci,
- }
- 
- int amd64_process_error_info(struct mem_ctl_info *mci,
--			     struct amd64_error_info_regs *info,
-+			     struct err_regs *regs,
- 			     int handle_errors)
- {
- 	struct amd64_pvt *pvt;
--	struct amd64_error_info_regs *regs;
- 	u32 err_code, ext_ec;
- 	int gart_tlb_error = 0;
- 
- 	pvt = mci->pvt_info;
- 
--	/* If caller doesn't want us to process the error, return */
- 	if (!handle_errors)
- 		return 1;
- 
--	regs = info;
+-	u32 err_code;
+-	u32 ec_rrrr;		/* error code memory transaction (4b) */
+-	u32 ec_tt;		/* error code transaction type (2b) */
+-	u32 ec_ll;		/* error code cache level (2b) */
 -
- 	debugf1("NorthBridge ERROR: mci(0x%p)\n", mci);
- 	debugf1("  MC node(%d) Error-Address(0x%.8x-%.8x)\n",
- 		pvt->mc_node_id, regs->nbeah, regs->nbeal);
-@@ -2378,13 +2374,13 @@ int amd64_process_error_info(struct mem_ctl_info *mci,
- 		gart_tlb_error = 1;
+-	err_code = EXTRACT_ERROR_CODE(info->nbsl);
+-	ec_ll = EXTRACT_LL_CODE(err_code);
+-	ec_tt = EXTRACT_TT_CODE(err_code);
+-	ec_rrrr = EXTRACT_RRRR_CODE(err_code);
++	u32 ec = ERROR_CODE(info->nbsl);
+ 
+ 	amd64_mc_printk(mci, KERN_ERR,
+ 		     "cache hierarchy error: memory transaction type(%s), "
+ 		     "transaction type(%s), cache level(%s)\n",
+-		     rrrr_msgs[ec_rrrr], tt_msgs[ec_tt], ll_msgs[ec_ll]);
++		     RRRR(ec), TT(ec), LL(ec));
+ }
+ 
+ 
+@@ -2262,21 +2248,8 @@ static void amd64_handle_ue(struct mem_ctl_info *mci,
+ static void amd64_decode_bus_error(struct mem_ctl_info *mci,
+ 				   struct amd64_error_info_regs *info)
+ {
+-	u32 err_code, ext_ec;
+-	u32 ec_pp;		/* error code participating processor (2p) */
+-	u32 ec_to;		/* error code timed out (1b) */
+-	u32 ec_rrrr;		/* error code memory transaction (4b) */
+-	u32 ec_ii;		/* error code memory or I/O (2b) */
+-	u32 ec_ll;		/* error code cache level (2b) */
+-
+-	ext_ec = EXTRACT_EXT_ERROR_CODE(info->nbsl);
+-	err_code = EXTRACT_ERROR_CODE(info->nbsl);
+-
+-	ec_ll = EXTRACT_LL_CODE(err_code);
+-	ec_ii = EXTRACT_II_CODE(err_code);
+-	ec_rrrr = EXTRACT_RRRR_CODE(err_code);
+-	ec_to = EXTRACT_TO_CODE(err_code);
+-	ec_pp = EXTRACT_PP_CODE(err_code);
++	u32 ec  = ERROR_CODE(info->nbsl);
++	u32 xec = EXT_ERROR_CODE(info->nbsl);
+ 
+ 	amd64_mc_printk(mci, KERN_ERR,
+ 		"BUS ERROR:\n"
+@@ -2284,20 +2257,17 @@ static void amd64_decode_bus_error(struct mem_ctl_info *mci,
+ 		"  participating processor(%s)\n"
+ 		"  memory transaction type(%s)\n"
+ 		"  cache level(%s) Error Found by: %s\n",
+-		to_msgs[ec_to],
+-		ii_msgs[ec_ii],
+-		pp_msgs[ec_pp],
+-		rrrr_msgs[ec_rrrr],
+-		ll_msgs[ec_ll],
++		TO(ec), II(ec), PP(ec), RRRR(ec), LL(ec),
+ 		(info->nbsh & K8_NBSH_ERR_SCRUBER) ?
+ 			"Scrubber" : "Normal Operation");
+ 
+-	/* If this was an 'observed' error, early out */
+-	if (ec_pp == K8_NBSL_PP_OBS)
+-		return;		/* We aren't the node involved */
++
++	/* Bail early out if this was an 'observed' error */
++	if (((ec >> 9) & 0x3) == K8_NBSL_PP_OBS)
++		return;
+ 
+ 	/* Parse out the extended error code for ECC events */
+-	switch (ext_ec) {
++	switch (xec) {
+ 	/* F10 changed to one Extended ECC error code */
+ 	case F10_NBSL_EXT_ERR_RES:		/* Reserved field */
+ 	case F10_NBSL_EXT_ERR_ECC:		/* F10 ECC ext err code */
+@@ -2377,7 +2347,7 @@ int amd64_process_error_info(struct mem_ctl_info *mci,
+ 		(regs->nbsh & K8_NBSH_CORE3) ? "True" : "False");
+ 
+ 
+-	err_code = EXTRACT_ERROR_CODE(regs->nbsl);
++	err_code = ERROR_CODE(regs->nbsl);
+ 
+ 	/* Determine which error type:
+ 	 *	1) GART errors - non-fatal, developmental events
+@@ -2385,7 +2355,7 @@ int amd64_process_error_info(struct mem_ctl_info *mci,
+ 	 *	3) BUS errors
+ 	 *	4) Unknown error
+ 	 */
+-	if (TEST_TLB_ERROR(err_code)) {
++	if (TLB_ERROR(err_code)) {
+ 		/*
+ 		 * GART errors are intended to help graphics driver developers
+ 		 * to detect bad GART PTEs. It is recommended by AMD to disable
+@@ -2409,10 +2379,10 @@ int amd64_process_error_info(struct mem_ctl_info *mci,
  
  		debugf1("GART TLB error\n");
--		amd64_decode_gart_tlb_error(mci, info);
-+		amd64_decode_gart_tlb_error(mci, regs);
- 	} else if (MEM_ERROR(err_code)) {
+ 		amd64_decode_gart_tlb_error(mci, info);
+-	} else if (TEST_MEM_ERROR(err_code)) {
++	} else if (MEM_ERROR(err_code)) {
  		debugf1("Memory/Cache error\n");
--		amd64_decode_mem_cache_error(mci, info);
-+		amd64_decode_mem_cache_error(mci, regs);
- 	} else if (BUS_ERROR(err_code)) {
+ 		amd64_decode_mem_cache_error(mci, info);
+-	} else if (TEST_BUS_ERROR(err_code)) {
++	} else if (BUS_ERROR(err_code)) {
  		debugf1("Bus (Link/DRAM) error\n");
--		amd64_decode_bus_error(mci, info);
-+		amd64_decode_bus_error(mci, regs);
+ 		amd64_decode_bus_error(mci, info);
  	} else {
- 		/* shouldn't reach here! */
- 		amd64_mc_printk(mci, KERN_WARNING,
-@@ -2399,12 +2395,12 @@ int amd64_process_error_info(struct mem_ctl_info *mci,
- 	if (((ext_ec >= F10_NBSL_EXT_ERR_CRC &&
- 			ext_ec <= F10_NBSL_EXT_ERR_TGT) ||
- 			(ext_ec == F10_NBSL_EXT_ERR_RMW)) &&
--			EXTRACT_LDT_LINK(info->nbsh)) {
-+			EXTRACT_LDT_LINK(regs->nbsh)) {
- 
- 		amd64_mc_printk(mci, KERN_ERR,
- 			"Error on hypertransport link: %s\n",
- 			htlink_msgs[
--			EXTRACT_LDT_LINK(info->nbsh)]);
-+			EXTRACT_LDT_LINK(regs->nbsh)]);
+@@ -2422,7 +2392,7 @@ int amd64_process_error_info(struct mem_ctl_info *mci,
+ 			     err_code);
  	}
  
- 	/*
-@@ -2432,10 +2428,10 @@ EXPORT_SYMBOL_GPL(amd64_process_error_info);
-  */
- static void amd64_check(struct mem_ctl_info *mci)
- {
--	struct amd64_error_info_regs info;
-+	struct err_regs regs;
+-	ext_ec = EXTRACT_EXT_ERROR_CODE(regs->nbsl);
++	ext_ec = EXT_ERROR_CODE(regs->nbsl);
+ 	amd64_mc_printk(mci, KERN_ERR,
+ 		"ExtErr=(0x%x) %s\n", ext_ec, ext_msgs[ext_ec]);
  
--	if (amd64_get_error_info(mci, &info))
--		amd64_process_error_info(mci, &info, 1);
-+	if (amd64_get_error_info(mci, &regs))
-+		amd64_process_error_info(mci, &regs, 1);
- }
- 
- /*
 diff --git a/drivers/edac/amd64_edac.h b/drivers/edac/amd64_edac.h
-index e050a92..c85a5e7 100644
+index ba73015..e050a92 100644
 --- a/drivers/edac/amd64_edac.h
 +++ b/drivers/edac/amd64_edac.h
-@@ -464,7 +464,7 @@ enum amd64_chipset_families {
-  *
-  * Depends on entry into the modules
+@@ -303,9 +303,6 @@ enum {
+ #define K8_NBSL				0x48
+ 
+ 
+-#define EXTRACT_HIGH_SYNDROME(x)	(((x) >> 24) & 0xff)
+-#define EXTRACT_EXT_ERROR_CODE(x)	(((x) >> 16) & 0x1f)
+-
+ /* Family F10h: Normalized Extended Error Codes */
+ #define F10_NBSL_EXT_ERR_RES		0x0
+ #define F10_NBSL_EXT_ERR_CRC		0x1
+@@ -348,16 +345,20 @@ enum {
+ #define K8_NBSL_EXT_ERR_CHIPKILL_ECC	0x8
+ #define K8_NBSL_EXT_ERR_DRAM_PARITY	0xD
+ 
+-#define EXTRACT_ERROR_CODE(x)		((x) & 0xffff)
+-#define	TEST_TLB_ERROR(x)		(((x) & 0xFFF0) == 0x0010)
+-#define	TEST_MEM_ERROR(x)		(((x) & 0xFF00) == 0x0100)
+-#define	TEST_BUS_ERROR(x)		(((x) & 0xF800) == 0x0800)
+-#define	EXTRACT_TT_CODE(x)		(((x) >> 2) & 0x3)
+-#define	EXTRACT_II_CODE(x)		(((x) >> 2) & 0x3)
+-#define	EXTRACT_LL_CODE(x)		(((x) >> 0) & 0x3)
+-#define	EXTRACT_RRRR_CODE(x)		(((x) >> 4) & 0xf)
+-#define	EXTRACT_TO_CODE(x)		(((x) >> 8) & 0x1)
+-#define	EXTRACT_PP_CODE(x)		(((x) >> 9) & 0x3)
++#define ERROR_CODE(x)			((x) & 0xffff)
++#define EXT_ERROR_CODE(x)		(((x) >> 16) & 0x1f)
++#define LOW_SYNDROME(x)			(((x) >> 15) & 0xff)
++#define HIGH_SYNDROME(x)		(((x) >> 24) & 0xff)
++
++#define	TLB_ERROR(x)			(((x) & 0xFFF0) == 0x0010)
++#define	MEM_ERROR(x)			(((x) & 0xFF00) == 0x0100)
++#define	BUS_ERROR(x)			(((x) & 0xF800) == 0x0800)
++#define	TT(x)				tt_msgs[(((x) >> 2) & 0x3)]
++#define	II(x)				ii_msgs[(((x) >> 2) & 0x3)]
++#define	LL(x)				ll_msgs[(((x) >> 0) & 0x3)]
++#define	RRRR(x)				rrrr_msgs[(((x) >> 4) & 0xf)]
++#define	TO(x)				to_msgs[(((x) >> 8) & 0x1)]
++#define	PP(x)				pp_msgs[(((x) >> 9) & 0x3)]
+ 
+ /*
+  * The following are for BUS type errors AFTER values have been normalized by
+@@ -388,7 +389,6 @@ enum {
+ 
+ #define EXTRACT_LDT_LINK(x)		(((x) >> 4) & 0x7)
+ #define EXTRACT_ERR_CPU_MAP(x)		((x) & 0xF)
+-#define EXTRACT_LOW_SYNDROME(x)		(((x) >> 15) & 0xff)
+ 
+ 
+ #define K8_NBEAL			0x50
+diff --git a/drivers/edac/amd64_edac_err_types.c b/drivers/edac/amd64_edac_err_types.c
+index f212ff1..cacdd54 100644
+--- a/drivers/edac/amd64_edac_err_types.c
++++ b/drivers/edac/amd64_edac_err_types.c
+@@ -62,55 +62,48 @@ struct scrubrate scrubrates[] = {
+  * or MSR0000_0411.
   */
--struct amd64_error_info_regs {
-+struct err_regs {
- 	u32 nbcfg;
- 	u32 nbsh;
- 	u32 nbsl;
-@@ -542,7 +542,7 @@ struct amd64_pvt {
- 	u32 online_spare;               /* On-Line spare Reg */
- 
- 	/* temp storage for when input is received from sysfs */
--	struct amd64_error_info_regs ctl_error_info;
-+	struct err_regs ctl_error_info;
- 
- 	/* place to store error injection parameters prior to issue */
- 	struct error_injection injection;
-@@ -601,11 +601,11 @@ struct low_ops {
- 	int (*early_channel_count)(struct amd64_pvt *pvt);
- 
- 	u64 (*get_error_address)(struct mem_ctl_info *mci,
--			struct amd64_error_info_regs *info);
-+			struct err_regs *info);
- 	void (*read_dram_base_limit)(struct amd64_pvt *pvt, int dram);
- 	void (*read_dram_ctl_register)(struct amd64_pvt *pvt);
- 	void (*map_sysaddr_to_csrow)(struct mem_ctl_info *mci,
--					struct amd64_error_info_regs *info,
-+					struct err_regs *info,
- 					u64 SystemAddr);
- 	int (*dbam_map_to_pages)(struct amd64_pvt *pvt, int dram_map);
+ const char *tt_msgs[] = {        /* transaction type */
+-	"instruction",
+-	"data",
+-	"generic",
+-	"reserved"
++	"Instruction",
++	"Data",
++	"Generic",
++	"Reserved"
  };
-@@ -638,7 +638,7 @@ static inline struct low_ops *family_ops(int index)
- #define F11_MIN_SCRUB_RATE_BITS	0x6
  
- int amd64_process_error_info(struct mem_ctl_info *mci,
--			     struct amd64_error_info_regs *info,
-+			     struct err_regs *info,
- 			     int handle_errors);
- int amd64_get_dram_hole_info(struct mem_ctl_info *mci, u64 *hole_base,
- 			     u64 *hole_offset, u64 *hole_size);
+ const char *ll_msgs[] = {	/* cache level */
+-	"L0",
++	"Reserved",
+ 	"L1",
+ 	"L2",
+-	"L3/generic"
++	"L3/Generic"
+ };
+ 
+ const char *rrrr_msgs[] = {
+-	"generic",
+-	"generic read",
+-	"generic write",
+-	"data read",
+-	"data write",
+-	"inst fetch",
+-	"prefetch",
+-	"evict",
+-	"snoop",
+-	"reserved RRRR= 9",
+-	"reserved RRRR= 10",
+-	"reserved RRRR= 11",
+-	"reserved RRRR= 12",
+-	"reserved RRRR= 13",
+-	"reserved RRRR= 14",
+-	"reserved RRRR= 15"
++	"Generic",
++	"Generic Read",
++	"Generic Write",
++	"Data Read",
++	"Data Write",
++	"Instruction Fetch",
++	"Prefetch",
++	"Evict",
++	"Snoop (Probe)"
+ };
+ 
+ const char *pp_msgs[] = {	/* participating processor */
+-	"local node originated (SRC)",
+-	"local node responded to request (RES)",
+-	"local node observed as 3rd party (OBS)",
++	"local node originated the request",
++	"local node responded to request",
++	"local node observed error as 3rd party",
+ 	"generic"
+ };
+ 
+ const char *to_msgs[] = {
+-	"no timeout",
+-	"timed out"
++	"No timeout",
++	"Timed out"
+ };
+ 
+ const char *ii_msgs[] = {	/* memory or i/o */
+-	"mem access",
+-	"reserved",
+-	"i/o access",
+-	"generic"
++	"Memory Access",
++	"Reserved",
++	"IO Access",
++	"Generic"
+ };
+ 
+ /* Map the 5 bits of Extended Error code to the string table. */
 -- 
 1.6.3.3
 
