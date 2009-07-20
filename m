@@ -1,63 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751209AbZGTEun@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751135AbZGTFDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751209AbZGTEun (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 00:50:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbZGTEuk
+	id S1751135AbZGTFDJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 01:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750850AbZGTFDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 00:50:40 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:43543 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822AbZGTEuk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 00:50:40 -0400
-Date: Mon, 20 Jul 2009 10:20:37 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Izik Eidus <ieidus@redhat.com>
-Cc: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk, aarcange@redhat.com,
-       chrisw@redhat.com, avi@redhat.com, riel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 10/10] ksm: change ksm nice level to be 5
-Message-ID: <20090720045037.GA24157@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1247851850-4298-2-git-send-email-ieidus@redhat.com> <1247851850-4298-3-git-send-email-ieidus@redhat.com> <1247851850-4298-4-git-send-email-ieidus@redhat.com> <1247851850-4298-5-git-send-email-ieidus@redhat.com> <1247851850-4298-6-git-send-email-ieidus@redhat.com> <1247851850-4298-7-git-send-email-ieidus@redhat.com> <1247851850-4298-8-git-send-email-ieidus@redhat.com> <1247851850-4298-9-git-send-email-ieidus@redhat.com> <1247851850-4298-10-git-send-email-ieidus@redhat.com> <1247851850-4298-11-git-send-email-ieidus@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1247851850-4298-11-git-send-email-ieidus@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 20 Jul 2009 01:03:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60111 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750807AbZGTFDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 01:03:07 -0400
+Subject: Re: [PATCH] SOUND: OSS sequencer should be initialized after
+ snd_seq_system_client_init
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Takashi Iwai <tiwai@suse.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <1248041987.4302.6.camel@toshiba-laptop>
+References: <1247861644.4513.15.camel@ht.satnam>
+	 <s5h4ot8op0b.wl%tiwai@suse.de> <1248017194.2548.3.camel@ht.satnam>
+	 <s5h1voclkz0.wl%tiwai@suse.de>  <1248020914.2471.4.camel@ht.satnam>
+	 <1248041987.4302.6.camel@toshiba-laptop>
+Content-Type: text/plain
+Date: Mon, 20 Jul 2009 10:32:01 +0530
+Message-Id: <1248066121.2626.7.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Izik Eidus <ieidus@redhat.com> [2009-07-17 20:30:50]:
+Hello Catalin,
 
-> From: Izik Eidus <ieidus@redhat.com>
+On Sun, 2009-07-19 at 23:19 +0100, Catalin Marinas wrote:
+> On Sun, 2009-07-19 at 21:58 +0530, Jaswinder Singh Rajput wrote:
+> > [PATCH] SOUND: OSS sequencer should be initialized after snd_seq_system_client_init
+> > 
+> > When build SND_SEQUENCER in kernel then OSS sequencer(alsa_seq_oss_init)
+> > is initialized before System (snd_seq_system_client_init) which leads to
+> > memory leak :
 > 
-> ksm should try not to disturb other tasks as much as possible.
+> Thanks for investigating this. I haven't looked at the code in detail
+> but I find it a bit weird that initialisation order fixes the memory
+> leak. Shouldn't the memory allocation logic change slightly to avoid the
+> leak as well (that's in case someone manually inserts the modules in the
+> wrong order)?
 > 
-> Signed-off-by: Izik Eidus <ieidus@redhat.com>
-> ---
->  mm/ksm.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/ksm.c b/mm/ksm.c
-> index 75d7802..4afe345 100644
-> --- a/mm/ksm.c
-> +++ b/mm/ksm.c
-> @@ -1270,7 +1270,7 @@ static void ksm_do_scan(unsigned int scan_npages)
-> 
->  static int ksm_scan_thread(void *nothing)
->  {
-> -	set_user_nice(current, 0);
-> +	set_user_nice(current, 5);
 
-Is the 5 arbitrary? Why not +19? What is the intention of this change
-- to run when no other task is ready to run?
+No, you cannot change the order of modules because 
+'insmod sound/core/seq/oss/snd-seq-oss.ko' need following symbols :
 
-> 
->  	while (!kthread_should_stop()) {
->  		if (ksm_run & KSM_RUN_MERGE) {
+[  385.258252] snd_seq_oss: Unknown symbol snd_seq_kernel_client_enqueue
+[  385.258435] snd_seq_oss: Unknown symbol snd_seq_set_queue_tempo
+[  385.258639] snd_seq_oss: Unknown symbol snd_seq_delete_kernel_client
+[  385.258751] snd_seq_oss: Unknown symbol snd_seq_autoload_lock
+[  385.258871] snd_seq_oss: Unknown symbol snd_seq_kernel_client_dispatch
+[  385.259782] snd_seq_oss: Unknown symbol snd_seq_kernel_client_enqueue_blocking
+[  385.260191] snd_seq_oss: Unknown symbol snd_seq_autoload_unlock
+[  385.260418] snd_seq_oss: Unknown symbol snd_seq_device_register_driver
+[  385.260537] snd_seq_oss: Unknown symbol snd_midi_event_free
+[  385.260701] snd_seq_oss: Unknown symbol snd_midi_event_no_status
+[  385.260964] snd_seq_oss: Unknown symbol snd_use_lock_sync_helper
+[  385.261469] snd_seq_oss: Unknown symbol snd_seq_device_unregister_driver
+[  385.261659] snd_seq_oss: Unknown symbol snd_seq_event_port_detach
+[  385.261768] snd_seq_oss: Unknown symbol snd_midi_event_new
+[  385.261910] snd_seq_oss: Unknown symbol snd_midi_event_decode
+[  385.262067] snd_seq_oss: Unknown symbol snd_seq_create_kernel_client
+[  385.262233] snd_seq_oss: Unknown symbol snd_seq_kernel_client_write_poll
+[  385.262432] snd_seq_oss: Unknown symbol snd_midi_event_encode_byte
+[  385.262963] snd_seq_oss: Unknown symbol snd_seq_kernel_client_ctl
 
--- 
-	Balbir
+And we can get these symbols in this way :
+
+1. insmod sound/core/seq/snd-seq-device.ko
+[  385.258751] snd_seq_oss: Unknown symbol snd_seq_autoload_lock
+[  385.260191] snd_seq_oss: Unknown symbol snd_seq_autoload_unlock
+[  385.260418] snd_seq_oss: Unknown symbol snd_seq_device_register_driver
+[  385.261469] snd_seq_oss: Unknown symbol snd_seq_device_unregister_driver
+
+2. insmod sound/core/seq/snd-seq.ko
+[  385.258252] snd_seq_oss: Unknown symbol snd_seq_kernel_client_enqueue
+[  385.258435] snd_seq_oss: Unknown symbol snd_seq_set_queue_tempo
+[  385.258639] snd_seq_oss: Unknown symbol snd_seq_delete_kernel_client
+[  385.258871] snd_seq_oss: Unknown symbol snd_seq_kernel_client_dispatch
+[  385.259782] snd_seq_oss: Unknown symbol snd_seq_kernel_client_enqueue_blocking
+[  385.260964] snd_seq_oss: Unknown symbol snd_use_lock_sync_helper
+[  385.261659] snd_seq_oss: Unknown symbol snd_seq_event_port_detach
+[  385.262067] snd_seq_oss: Unknown symbol snd_seq_create_kernel_client
+[  385.262233] snd_seq_oss: Unknown symbol snd_seq_kernel_client_write_poll
+[  385.262963] snd_seq_oss: Unknown symbol snd_seq_kernel_client_ctl
+
+3. insmod sound/core/seq/snd-seq-midi-event.ko
+[  385.260701] snd_seq_oss: Unknown symbol snd_midi_event_no_status
+[  385.260537] snd_seq_oss: Unknown symbol snd_midi_event_free
+[  385.261768] snd_seq_oss: Unknown symbol snd_midi_event_new
+[  385.261910] snd_seq_oss: Unknown symbol snd_midi_event_decode
+[  385.262432] snd_seq_oss: Unknown symbol snd_midi_event_encode_byte
+
+So the only order is :
+
+1. insmod sound/core/seq/snd-seq-device.ko
+2. insmod sound/core/seq/snd-seq.ko
+3. insmod sound/core/seq/snd-seq-midi-event.ko
+4. insmod sound/core/seq/oss/snd-seq-oss.ko
+
+which is correct, if you change the order like we was getting in
+build-in kernel, which leads to improper initialization and memory leak
+was the side-effect.
+
+Thanks,
+--
+JSR
+
