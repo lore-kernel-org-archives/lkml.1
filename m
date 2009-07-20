@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752171AbZGTP70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752430AbZGTQC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752171AbZGTP70 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 11:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZGTP7Z
+	id S1752430AbZGTQC1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 12:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZGTQCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 11:59:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59185 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751219AbZGTP7Z (ORCPT
+	Mon, 20 Jul 2009 12:02:25 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:47568 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbZGTQCZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 11:59:25 -0400
-Date: Mon, 20 Jul 2009 11:59:22 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: cleanup for tracing_trace_options_read()
-In-Reply-To: <4A3EED63.3090908@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0907201158350.7595@gandalf.stny.rr.com>
-References: <4A3EED63.3090908@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 20 Jul 2009 12:02:25 -0400
+Date: Mon, 20 Jul 2009 17:02:15 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Thomas Hellstr?m <thomas@shipmail.org>,
+       DRI <dri-devel@lists.sourceforge.net>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: DRM drivers with closed source user-space: WAS  [Patch 0/3]
+	Resubmit VIA Chrome9 DRM via_chrome9 for upstream
+Message-ID: <20090720160215.GB27885@srcf.ucam.org>
+References: <4A647358.1040009@shipmail.org> <20090720135844.GA16844@infradead.org> <4A648718.9000709@shipmail.org> <20090720161620.7b027f8d@lxorguk.ukuu.org.uk> <20090720155226.GA27885@srcf.ucam.org> <20090720155745.GB12536@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090720155745.GB12536@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jul 20, 2009 at 11:57:45AM -0400, Christoph Hellwig wrote:
 
-On Mon, 22 Jun 2009, Xiao Guangrong wrote:
+> Greg still claims that qcserial could be used by rebooting from Windows,
+> right?
 
-> '\n' is already appended, and what we need is just an extra
-> space for the '\0'.
+I think any argument that involves us requiring open userspace but 
+allows us to get away with using Windows as a firmware loader is a 
+dubious one :) But yes, it's certainly borderline. I'm not going to 
+argue that it's clearly wrong, and I'm also aware that putting explicit 
+limits on any of this is potentially an invitation for people to try to 
+get as close to the line as they can.
 
-Hi Xiao,
+> In that it would still be extremly borderline to me, but it's
+> settled now.  We also have various SCSI HBA drivers that can be used
+> just fine, but contain tons ot ioctls for management tools that aren't
+> available as open source (or even easily obtainable at all).  Personally
+> I don't think we should merge those unless we have userspace code
+> available freely, but it's a less urgent issue than merging drivers that
+> can't be used at all.  The DRM modules fall to me exactly into that
+> category for "specialised hardware drivers that only have closed
+> applications", and the answer to those should be a clear no.
 
-I'm going through old email (or email lost in the shuffle) and I came 
-across this lost patch. I'll go ahead an apply it.
+I'd lean in the same direction.
 
-Thanks,
-
--- Steve
-
-
-> 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> ---
->  kernel/trace/trace.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 076fa6f..4c3f856 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -2266,8 +2266,8 @@ tracing_trace_options_read(struct file *filp, char __user *ubuf,
->  		len += 3; /* "no" and newline */
->  	}
->  
-> -	/* +2 for \n and \0 */
-> -	buf = kmalloc(len + 2, GFP_KERNEL);
-> +	/* +1 for \0 */
-> +	buf = kmalloc(len + 1, GFP_KERNEL);
->  	if (!buf) {
->  		mutex_unlock(&trace_types_lock);
->  		return -ENOMEM;
-> @@ -2290,7 +2290,7 @@ tracing_trace_options_read(struct file *filp, char __user *ubuf,
->  	}
->  	mutex_unlock(&trace_types_lock);
->  
-> -	WARN_ON(r >= len + 2);
-> +	WARN_ON(r >= len + 1);
->  
->  	r = simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
->  
-> -- 
-> 1.6.1.2
-> 
-> 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
