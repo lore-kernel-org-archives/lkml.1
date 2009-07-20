@@ -1,114 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbZGTUU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbZGTUU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbZGTUU1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 16:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZGTUU0
+	id S1754095AbZGTUU6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 16:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZGTUU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 16:20:26 -0400
-Received: from relay.gothnet.se ([82.193.160.251]:63052 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751629AbZGTUUZ (ORCPT
+	Mon, 20 Jul 2009 16:20:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54998 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752537AbZGTUU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 16:20:25 -0400
-Message-ID: <4A64D16E.90903@shipmail.org>
-Date: Mon, 20 Jul 2009 22:19:58 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080926)
-MIME-Version: 1.0
-To: Stephane Marchesin <marchesin@icps.u-strasbg.fr>
-CC: Christoph Hellwig <hch@infradead.org>,
-       DRI <dri-devel@lists.sourceforge.net>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: DRM drivers with closed source user-space: WAS [Patch 0/3] 	Resubmit
- VIA Chrome9 DRM via_chrome9 for upstream
-References: <4A647358.1040009@shipmail.org>	 <20090720135844.GA16844@infradead.org> <4A648718.9000709@shipmail.org> <6a89f9d50907201213x8e16e60s38b0a4bd929ce4ca@mail.gmail.com>
-In-Reply-To: <6a89f9d50907201213x8e16e60s38b0a4bd929ce4ca@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 20 Jul 2009 16:20:56 -0400
+Date: Mon, 20 Jul 2009 13:19:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org,
+       dbrownell@users.sourceforge.net, bjorn.helgaas@hp.com,
+       cascardo@holoscopio.com, Alessandro Zummo <a.zummo@towertech.it>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] RTC: mark if rtc-cmos drivers were successfully
+ registered.
+Message-Id: <20090720131959.3b157627.akpm@linux-foundation.org>
+In-Reply-To: <1246766879-5784-1-git-send-email-cascardo@holoscopio.com>
+References: <1246766879-5784-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-BitDefender-Scanner: Mail not scanned due to license constraints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephane Marchesin wrote:
->> You obviously got all this completely wrong.
->>
->> I avoid writing closed source drivers whenever I can, I'm not whining and
->> I'm not trying to push any of them. The code VIA is trying to submit has not
->> been written by me nor anybody I know. All VIA code I and the companies I've
->> worked for has written is open-sourced and contributed to the Openchrome /
->> mesa / drm project.
->>
->> The point I'm trying to make is the following:
->>
->> If the common agreement of the linux community is to *NOT* allow these
->> drivers in, so be it, then be honest and go ahead and tell the driver
->> writers. Don't make them respin their development trying to fix minor flaws
->> when their driver won't get in anyway!
->>
->>     
->
->   
+On Sun,  5 Jul 2009 01:07:59 -0300
+Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com> wrote:
 
-Stephane,
-Some comments on how these things has been handled / could be handled.
-> I would like to raise a couple of real-life issues I have in mind:
->
-> * First example, let's say VIA gets their Chrome9 DRM merged into the
-> kernel. Now let's say I reverse engineer the hardware (or use the docs
-> whenever they're available) and write a 3D component that needs
-> modifications to the existing DRM interface (or maybe I realize I need
-> a completely new DRM). Then who gets the upper hand? Do I have to keep
-> compatibility with user space binary modules that I do not care about?
->   
+> rtc-cmos has two drivers, one PNP and one platform. When PNP has not
+> succeeded probing, platform is registered. However, it tries to
+> unregister both drivers unconditionally, instead of only unregistering
+> those that were successfully registered. Fix that with a boolean
+> variable for each driver indicating whether registering was successful.
 
-If there is a serious OS project, I'd start a new DRM driver.
-That's sort of what may happen with openChrome vs via..
+OK, thanks.  
 
-> * Second example, what is the policy if we find security holes in the
-> DRM for a closed user-space afterwards? This breaks the initial
-> promise of security, does that get the driver removed then? Or what if
-> the promise is pending updated documentation that never arrives?
->   
+This came up a few weeks ago - the kernel was actually crashing deep
+down in the driver core, when a not-registered device was unregistered.
 
-I'd say the DRM driver gets disabled unless fixed. How would we handle 
-that problem today with, for example, the SiS driver?
+I believe Kay was planning on making the driver core more robust, so
+that crash shouldn't be happening any more.  Kay, can you please confirm
+that thsi got fixed?
 
-> * Third example, what if down the line we need changes in the DRM that
-> require updating all DRM modules. Do we (we as in DRM developers)
-> touch the DRM files for the VIA Chrome9 stuff, at the risk of breaking
-> the code (since we don't test with proprietary modules)? Or do we let
-> the Chrome9 files as-is, keeping the old DRM infrastructure and
-> therefore add more and more DRM cruft?
->   
 
-Again, this has been done quite commonly in the past and was easier to 
-get right with the old drm.git testing ground. Same issue with 
-unmaintained drivers with OS user-space. Who has actually tested all the 
-drivers when making such a change? I certainly haven't. The change was 
-left for testing for a while in drm.git before Dave moved it upstream.
+But we still shouldn't be unregistering a not-registered driver, and
+the patch looks to be a suitable way of preventing that.
 
-> In my opinion, accepting GPL'ed DRM modules that support binary user
-> space components is like opening pandora's box.
->
-> Stephane
->   
+Alternatively, we could declare that unregistering a not-registered
+driver is a permissible thing for a subsytem to do.  It doesn't sound
+like a good idea though - we'd lose runtime checking opportunities.
 
-Yeah, drivers supporting binary blobs only is out of the question as it 
-seems.
 
-Now's the tricky question how do we handle VIA's patches where they 
-claim they have an open-source 2D component that exercises all of the 
-DRM module for EXA render acceleration, and on top of this the 3D binary 
-driver that apparently uses no additional DRM functionality compared to 
-the 2D component?
+ drivers/rtc/rtc-cmos.c |   23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
 
-In the ideal world I'd of course like to see a Chrome9 3D driver based 
-of the new openChrome drm driver with a modern GPU memory manager, 
-kernel modesetting and Gallium, but that's a dedicated man-year or more 
-away if / when someone decides to work on it.
-
-/Thomas
-
+diff -puN drivers/rtc/rtc-cmos.c~rtc-mark-if-rtc-cmos-drivers-were-successfully-registered drivers/rtc/rtc-cmos.c
+--- a/drivers/rtc/rtc-cmos.c~rtc-mark-if-rtc-cmos-drivers-were-successfully-registered
++++ a/drivers/rtc/rtc-cmos.c
+@@ -1174,23 +1174,34 @@ static struct platform_driver cmos_platf
+ 	}
+ };
+ 
++#ifdef CONFIG_PNP
++static bool pnp_driver_registered;
++#endif
++static bool platform_driver_registered;
++
+ static int __init cmos_init(void)
+ {
+ 	int retval = 0;
+ 
+ #ifdef	CONFIG_PNP
+-	pnp_register_driver(&cmos_pnp_driver);
++	retval = pnp_register_driver(&cmos_pnp_driver);
++	if (retval == 0)
++		pnp_driver_registered = true;
+ #endif
+ 
+-	if (!cmos_rtc.dev)
++	if (!cmos_rtc.dev) {
+ 		retval = platform_driver_probe(&cmos_platform_driver,
+ 					       cmos_platform_probe);
++		if (retval == 0)
++			platform_driver_registered = true;
++	}
+ 
+ 	if (retval == 0)
+ 		return 0;
+ 
+ #ifdef	CONFIG_PNP
+-	pnp_unregister_driver(&cmos_pnp_driver);
++	if (pnp_driver_registered)
++		pnp_unregister_driver(&cmos_pnp_driver);
+ #endif
+ 	return retval;
+ }
+@@ -1199,9 +1210,11 @@ module_init(cmos_init);
+ static void __exit cmos_exit(void)
+ {
+ #ifdef	CONFIG_PNP
+-	pnp_unregister_driver(&cmos_pnp_driver);
++	if (pnp_driver_registered)
++		pnp_unregister_driver(&cmos_pnp_driver);
+ #endif
+-	platform_driver_unregister(&cmos_platform_driver);
++	if (platform_driver_registered)
++		platform_driver_unregister(&cmos_platform_driver);
+ }
+ module_exit(cmos_exit);
+ 
+_
 
 
