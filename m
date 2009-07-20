@@ -1,197 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbZGTQX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZGTQ1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbZGTQX5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 12:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZGTQXz
+	id S1752163AbZGTQ1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 12:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZGTQ1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 12:23:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53381 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752602AbZGTQXx convert rfc822-to-8bit (ORCPT
+	Mon, 20 Jul 2009 12:27:23 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:48906 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751020AbZGTQ1X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 12:23:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/8] introduce the device async action mechanism
-Date: Mon, 20 Jul 2009 18:24:16 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Arjan van de Ven <arjan@linux.intel.com>
-References: <1247643516.26272.77.camel@rzhang-dt> <200907170312.00006.rjw@sisk.pl> <1247798643.26272.275.camel@rzhang-dt>
-In-Reply-To: <1247798643.26272.275.camel@rzhang-dt>
+	Mon, 20 Jul 2009 12:27:23 -0400
+Date: Mon, 20 Jul 2009 12:27:14 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, earl_chew@agilent.com, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, oleg@redhat.com
+Subject: Re: [PATCH 1/3] exec: Make do_coredump more resilient to recursive
+	crashes (v9)
+Message-ID: <20090720162714.GA9060@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090703104447.GA19371@hmsreliant.think-freely.org> <20090720154938.GA8563@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907201824.17755.rjw@sisk.pl>
+In-Reply-To: <20090720154938.GA8563@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 July 2009, Zhang Rui wrote:
-> On Fri, 2009-07-17 at 09:11 +0800, Rafael J. Wysocki wrote:
-> > On Thursday 16 July 2009, Zhang Rui wrote:
-> > > On Wed, 2009-07-15 at 21:00 +0800, Arjan van de Ven wrote:
-> > > > On Wed, 15 Jul 2009 15:38:36 +0800
-> > > > Zhang Rui <rui.zhang@intel.com> wrote:
-> > > > 
-> > > > > Introduce the device async action mechanism.
-> > > > > 
-> > > > > In order to speed up Linux suspend/resume/shutdown process,
-> > > > > we introduce the device async action mechanism that allow devices
-> > > > > to suspend/resume/shutdown asynchronously.
-> > > > > 
-> > > > > The basic idea is that,
-> > > > > if the suspend/resume/shutdown process of a device set,
-> > > > > including a root device and its child devices, are independent of
-> > > > > other devices, we create an async domain for this device set,
-> > > > > and make them suspend/resume/shutdown asynchronously.
-> > > > 
-> > > > Hi,
-> > > > 
-> > > > I have some concerns about having an async domain per device(group)
-> > > > rather than having one async domain for all of this, 
-> > > 
-> > > ﻿we create an async domain ONLY if we are sure that the device group is
-> > > independent with the other devices.
-> > > 
-> > > and IMO, using multiple async domains brings real device async actions.
-> > > For example, in S3 resume case, there are two device groups:
-> > > device group1: device1, device2, device3
-> > > device group2: device4, device5, device6
-> > > 
-> > > If they share the global domain, we may get:﻿
-> > > device group1: device1(cookie 1), device2(cookie 4), device3(cookie 5)
-> > > device group2: device4(cookie 2), device5(cookie 3), device6(cookie 6)
-> > > 
-> > > this is not real asynchronous resume because
-> > > device3 needs to call async_synchronize_cookie(5) before resume itself.
-> > > which means that device4 and device5 must be resumed before device3.
-> > > 
-> > > But if multiple async domain is used, we get:
-> > > ﻿device group1: device1(cookie 1), device2(cookie 2), device3(cookie 3)
-> > > device group2: device4(cookie 1), device5(cookie 2), device6(cookie 3)
-> > > 
-> > > device group1 and group2 can be resumed asynchronously.
-> > > 
-> > > 
-> > > Another example, in my previous test,
-> > > 1. sata controller. takes 0.4s to resume.
-> > > 2. usb, including uchi and ehci controller takes 1.4s to resume
-> > > 3. ACPI battery takes 0.3s to resume.
-> > > 3. all the other devices take 0.2s to resume.
-> > > 
-> > > sata, usb and ACPI battery are independent device groups.
-> > > If we use multiple async domains, we can reduce the total device resume
-> > > time from 2.3s to a little more than 1.4s because there are a lot of
-> > > sleep in usb resume process.
-> > > But if we share the global async domain, the total resume time can only
-> > > be reduced to about 2.1s because sata, usb and ACPI battery are actually
-> > > resumed synchronously.
-> > 
-> > Well, first, I'm not really sure that using the async _boot_ infrastructure for
-> > that is a good choice.
-> 
-> IMO, kernel/async.c provides good interfaces that can be used not only
-> in boot phrase.
-> it's generic enough for suspend/resume.
+core_pattern: Change how we detect recursive dumps with core_pattern pipes
 
-Well, if that were not your opinion, you certainly wouldn't post patches using
-it. :-)
+Change how we detect recursive dumps.  Currently we have a mechanism by which
+we try to compare pathnames of the crashing process to the core_pattern path.
+This is broken for a dozen reasons, and just doesn't work in any sort of robust
+way.  I'm replacing it with the use of a 0 RLIMIT_CORE value.  Since helper
+apps set RLIMIT_CORE to zero, we don't write out core files for any process with
+that particular limit set.  It the core_pattern is a pipe, any non-zero limit is
+translated to RLIM_INFINITY.  This allows complete dumps to be captured, but
+prevents infinite recursion in the event that the core_pattern process itself
+crashes.
 
-> >  During suspend-resume we know dependencies between
-> > devices beforehand, at least in theory, so we can use them.
-> > 
-> that's why I use multiple async domains. :)
-> One domain for a device group.
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Reported-by: Earl Chew <earl_chew@agilent.com>
 
-And how exactly the device groups are defined?
 
-> > In particular, we have to make sure that parent devices will not be suspended
-> > until all of their children have been suspended and children devices will not
-> > be resumed before the parents.
-> 
-> that's not enough.
-> ﻿For examples,
-> ACPI battery and EC are independent devices, but EC must be resumed
-> before battery because battery driver may access some EC address space
-> during resume time.
-> Of course the problem I describe above doesn't exist because ACPI
-> battery driver doesn't have .resume method right now.
-> But this is the case that works well in the current code but can not be
-> converted to async device resume.
-> 
-> > The current code handles this quite
-> > efficiently, so I wonder what you're going to do not to break it.
-> > 
-> sorry I don't quite understand.
-> 
-> > Second, you seem to think that it only makes sense to execute ->suspend()
-> > and ->resume() asynchronously (or in parallel), while for example in the case
-> > of PCI ->suspend_noirq() and ->resume_noirq() also contain code that
-> > potentially can take quite some time to execute.
-> > 
-> IMO, this patch set just provides a framework that can be used for
-> suspend/resume/shutdown optimization, and it doesn't solve all the
-> problem at one time.
-> 
-> IMO, the next step we should do is:
-> 1. analyze the suspend/resume/shutdown process and find out the hotspot,
->    i.e. which drivers suspend/resume slowly
-> 2. If it's software problem that we can fix in the driver, fix it.
->    like commit 24920c8a6358bf5532f1336b990b1c0fe2b599ee
-> 3. If the hardware is slow, try to do it asynchronously.
->    like I did in patch 8/8.
-> 
-> This framework makes it quite easy to register an async device group.
-> 
-> And even the suspend_noirq and resume_noirq can be covered easily with
-> this framework.
-> For example,
-> 1. introduce two new device async actions.
->    ﻿DEV_ASYNC_SUSPEND_NOIRQ/DEV_ASYNC_RESUME_NOIRQ
->    just like what I did in patch 4/8, 5/8 and 6/8.
-> 2. find out which device is slow in ->suspend_noirq and ->resume_noirq
-> 3. see if we can find an async device group that including this device.
-> 4. if yes, register this new async device group,
->    with the type DEV_ASYNC_SUSPEND_NOIRQ/DEV_ASYNC_RESUME_NOIRQ
-> 
-> > Finally, I don't really understand what the code in the $subject patch is
-> > supposed to do.  In particular, what's the purpose of dev_action()?
-> > It only seems to check if func is not NULL right now.  Also, you define
-> > DEV_ASYNC_ACTIONS_ALL as 0, so the condition
-> > if (!(DEV_ASYNC_ACTIONS_ALL & type)) in dev_async_register() is always
-> > satisfied.
-> 
-> please refer to patch 4/8 and 5/8 and 6/8
-> 
-> Patch 2/8 is just a framework. No device async action is support yet.
+ exec.c |   43 +++++++++++++++++++++----------------------
+ 1 file changed, 21 insertions(+), 22 deletions(-)
 
-OK
-
-So please remove the redundant return statements from there and please don't
-use (void *) for passing function pointers.
-
-> And in Patch 4, 5, 6, we introduced three different types of device
-> async actions, DEV_ASYNC_SUSPEND, DEV_ASYNC_RESUME and
-> DEV_ASYNC_SHUTDOWN.
-> I tried to split a big patch into several small patches.
-> And it suggests how to adding a new device async type, like
-> DEV_ASYNC_SUSPEND_NOIRQ, DEV_ASYNC_RESUME_NO_IRQ, etc. :)
-> 
-> > Can we please discuss this thoroughly before any new patches are sent?
-> > 
-> do I still need to resend the patch?
-
-Yes, please.
-
-> If yes, I'll resend patch 2/8, 3/8, 4/8, 5/8, 6/8 as a new big one. :)
-
-Yes, please, I think that would help to understand the design.
-
-Best,
-Rafael
+diff --git a/fs/exec.c b/fs/exec.c
+index 76ed4f6..21d2686 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1788,38 +1788,37 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+  	lock_kernel();
+ 	ispipe = format_corename(corename, signr);
+ 	unlock_kernel();
+-	/*
+-	 * Don't bother to check the RLIMIT_CORE value if core_pattern points
+-	 * to a pipe.  Since we're not writing directly to the filesystem
+-	 * RLIMIT_CORE doesn't really apply, as no actual core file will be
+-	 * created unless the pipe reader choses to write out the core file
+-	 * at which point file size limits and permissions will be imposed
+-	 * as it does with any other process
+-	 */
++
+ 	if ((!ispipe) && (core_limit < binfmt->min_coredump))
+ 		goto fail_unlock;
+ 
+  	if (ispipe) {
++		if (core_limit == 0) {
++			 /*
++			  * Normally core limits are irrelevant to pipes, since
++			  * we're not writing to the file system, but we use
++			  * core_limit of 0 here as a speacial value. Any
++			  * non-zero limit gets set to RLIM_INFINITY below, but
++			  * a limit of 0 skips the dump.  This is a consistent
++			  * way to catch recursive crashes.  We can still crash
++			  * if the core_pattern binary sets RLIM_CORE =  !0
++			  * but it runs as root, and can do lots of stupid things
++			  * Note that we use task_tgid_vnr here to grab the pid of the
++			  * process group leader.  That way we get the right pid if a thread
++			  * in a multi-threaded core_pattern process dies.
++			  */
++			printk(KERN_WARNING "Process %d(%s) has RLIMIT_CORE set to 0\n",
++			       task_tgid_vnr(current), current->comm);
++			printk(KERN_WARNING "Aborting core\n");
++			goto fail_unlock;
++		}
++ 
+ 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
+ 		if (!helper_argv) {
+ 			printk(KERN_WARNING "%s failed to allocate memory\n",
+ 			       __func__);
+ 			goto fail_unlock;
+ 		}
+-		/* Terminate the string before the first option */
+-		delimit = strchr(corename, ' ');
+-		if (delimit)
+-			*delimit = '\0';
+-		delimit = strrchr(helper_argv[0], '/');
+-		if (delimit)
+-			delimit++;
+-		else
+-			delimit = helper_argv[0];
+-		if (!strcmp(delimit, current->comm)) {
+-			printk(KERN_NOTICE "Recursive core dump detected, "
+-					"aborting\n");
+-			goto fail_unlock;
+-		}
+ 
+ 		core_limit = RLIM_INFINITY;
+ 
