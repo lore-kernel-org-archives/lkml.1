@@ -1,137 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752089AbZGTIcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbZGTIsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752089AbZGTIcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 04:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbZGTIcR
+	id S1752782AbZGTIsb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 04:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZGTIsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 04:32:17 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58006 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043AbZGTIcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 04:32:16 -0400
-Date: Mon, 20 Jul 2009 10:32:12 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Janboe Ye <yuan-bo.ye@motorola.com>, linux-kernel@vger.kernel.org,
-       vegard.nossum@gmail.com, fche@redhat.com, cl@linux-foundation.org
-Subject: Re: [RFC][PATCH] Check write to slab memory which freed already using mudflap
-Message-ID: <20090720083212.GA7070@wotan.suse.de>
-References: <1247215920.32044.3.camel@penberg-laptop> <20090710090351.GD14666@wotan.suse.de> <1247217263.771.8.camel@penberg-laptop> <20090710092921.GF14666@wotan.suse.de> <1247218826.771.15.camel@penberg-laptop> <alpine.DEB.2.00.0907100243010.14601@chino.kir.corp.google.com> <1247219506.771.22.camel@penberg-laptop> <alpine.DEB.2.00.0907100253560.14601@chino.kir.corp.google.com> <20090715145907.GE7298@wotan.suse.de> <alpine.DEB.2.00.0907151309540.22582@chino.kir.corp.google.com>
+	Mon, 20 Jul 2009 04:48:30 -0400
+Received: from viefep17-int.chello.at ([62.179.121.37]:59571 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbZGTIs3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 04:48:29 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [tip:sched/core] sched: Pull up the might_sleep() check into
+ cond_resched()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090720081210.GA5309@nowhere>
+References: <1247725694-6082-6-git-send-email-fweisbec@gmail.com>
+	 <tip-613afbf83298efaead05ebcac23d2285609d7160@git.kernel.org>
+	 <4A6413AB.2050807@cn.fujitsu.com>  <20090720081210.GA5309@nowhere>
+Content-Type: text/plain
+Date: Mon, 20 Jul 2009 10:49:07 +0200
+Message-Id: <1248079747.15751.8202.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0907151309540.22582@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 15, 2009 at 01:19:27PM -0700, David Rientjes wrote:
-> On Wed, 15 Jul 2009, Nick Piggin wrote:
-> 
-> > > It's my opinion that slab is on its way out when there's no benchmark that 
-> > > shows it is superior by any significant amount.  If that happens (and if 
-> > > its successor is slub, slqb, or a yet to be implemented allocator), we can 
-> > > probably start a discussion on what's in and what's out at that time.
-> > 
-> > How are you running your netperf test? Over localhost or remotely?
-> > It is a 16 core system? NUMA?
-> > 
-> 
-> I ran it remotely using two machines on the same rack.  Both were four 
-> quad-core UMA systems.
+On Mon, 2009-07-20 at 04:12 -0400, Frederic Weisbecker wrote:
 
-OK, I feared as much ;) I concede localhost testing isn't a good
-idea when doing networking tests (especially where cache hotness
-of things is concerned). So my numbers don't mean too much.
-I'll try to rig up some remote tests (don't have very good network
-setups here). Are you just using single 1GbE, or more?
+> From: Frederic Weisbecker <fweisbec@gmail.com>
+> Subject: [PATCH] sched: Check if the spinlock is locked in cond_resched_lock()
+> 
+> Some uses of cond_resched_lock() might involve an
+> unlocked spinlock, resulting in spurious sleep in
+> atomic warnings.
+> Check whether the spinlock is actually locked and
+> take that into account in the might_sleep() check.
+> 
+> Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index cb070dc..2789658 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -2294,9 +2294,10 @@ extern int _cond_resched(void);
+>  
+>  extern int __cond_resched_lock(spinlock_t *lock);
+>  
+> -#define cond_resched_lock(lock) ({				\
+> -	__might_sleep(__FILE__, __LINE__, PREEMPT_OFFSET);	\
+> -	__cond_resched_lock(lock);				\
+> +#define cond_resched_lock(lock) ({				  \
+> +	__might_sleep(__FILE__, __LINE__, spin_is_locked(lock) ?  \
+> +					  PREEMPT_OFFSET : 0);	  \
+> +	__cond_resched_lock(lock);				  \
+>  })
+>  
+>  extern int __cond_resched_softirq(void);
 
+
+No, this looks utterly broken.. who is to say it doesn't get unlocked
+right after that spin_is_locked() check?
+
+cond_resched_lock() callers must hold the lock they use it on, not doing
+so is broken.
+
+So I would suggest something like the below instead:
+
+(utterly untested)
+
+Almost-signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/lockdep.h |    8 ++++++++
+ kernel/lockdep.c        |   33 +++++++++++++++++++++++++++++++++
+ kernel/sched.c          |    2 ++
+ 3 files changed, 43 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+index 12aabfc..920df42 100644
+--- a/include/linux/lockdep.h
++++ b/include/linux/lockdep.h
+@@ -296,6 +296,10 @@ extern void lock_acquire(struct lockdep_map *lock, unsigned int subclass,
+ extern void lock_release(struct lockdep_map *lock, int nested,
+ 			 unsigned long ip);
  
-> > It seems pretty variable when I run it here, although there seems
-> > to be a pretty clear upper bound on performance, where a lot of the
-> > results land around (then others go anywhere down to less than half
-> > that performance).
-> > 
-> 
-> My results from my slub partial slab thrashing patchset comparing slab and 
-> slub were with a variety of different thread counts, each a multiple of 
-> the number of cores.  The most notable slub regression always appeared in 
-> the higher thread counts with this script:
-
-Yes, I was using your script you put in the earlier post. I did
-run varying numbers of threads, but so much noise in the results
-that I just cut it to a single (high) thread count to get enough
-runs.
-
++#define lockdep_is_held(lock)	lock_is_held(&(lock)->dep_map)
++
++extern int lock_is_held(struct lockdep_map *lock);
++
+ extern void lock_set_class(struct lockdep_map *lock, const char *name,
+ 			   struct lock_class_key *key, unsigned int subclass,
+ 			   unsigned long ip);
+@@ -314,6 +318,8 @@ extern void lockdep_trace_alloc(gfp_t mask);
  
-> #!/bin/bash
-> 
-> TIME=60				# seconds
-> HOSTNAME=hostname.goes.here	# netserver
-> 
-> NR_CPUS=$(grep ^processor /proc/cpuinfo | wc -l)
-> echo NR_CPUS=$NR_CPUS
-> 
-> run_netperf() {
-> 	for i in $(seq 1 $1); do
-> 		netperf -H $HOSTNAME -t TCP_RR -l $TIME &
-> 	done
-> }
-> 
-> ITERATIONS=0
-> while [ $ITERATIONS -lt 10 ]; do
-> 	RATE=0
-> 	ITERATIONS=$[$ITERATIONS + 1]	
-> 	THREADS=$[$NR_CPUS * $ITERATIONS]
-> 	RESULTS=$(run_netperf $THREADS | grep -v '[a-zA-Z]' | awk '{ print $6 }')
-> 
-> 	for j in $RESULTS; do
-> 		RATE=$[$RATE + ${j/.*}]
-> 	done
-> 	echo threads=$THREADS rate=$RATE
-> done
-> 
-> > Anyway, tried to get an idea of performance on my 8 core NUMA system,
-> > over localhost, and just at 64 threads. Ran the test 60 times for
-> > each allocator.
-> > 
-> > Rates for 2.6.31-rc2 (+slqb from Pekka's tree)
-> > SLAB: 1869710
-> > SLQB: 1859710
-> > SLUB: 1769400
-> > 
-> 
-> Great, slqb doesn't regress nearly as much as slub did.
-
-No, although let's see if I can get some remote numbers.
-
+ #define lockdep_depth(tsk)	(debug_locks ? (tsk)->lockdep_depth : 0)
  
-> These statistics do show that pulling slab out in favor of slub 
-> prematurely is probably inadvisible, however, when the performance 
-> achieved with slab in this benchmark is far beyond slub's upper bound.
-
-Well these, and others, I agree. You're not the only one unhappy
-with slub performance (and I wouldn't have wasted my time with
-slqb if I was happy with it). I think we can give SLUB some more
-time though if Christoph has some improvements.
-
++#define lockdep_assert_held(l)	WARN_ON(!lockdep_is_held(l))
++
+ #else /* !LOCKDEP */
  
-> > Now I didn't reboot or restart netperf server during runs, so there
-> > is possibility of results drifting for some reason (eg. due to
-> > cache/node placment).
-> > 
-> 
-> SLUB should perform slightly better after the first run on a NUMA system 
-> since its partial lists (for kmalloc-256 and kmalloc-2048) should be 
-> populated with free slabs, which avoid costly page allocations, because of 
-> min_partial.
+ static inline void lockdep_off(void)
+@@ -358,6 +364,8 @@ struct lock_class_key { };
+ 
+ #define lockdep_depth(tsk)	(0)
+ 
++#define lockdep_assert_held(l)			do { } while (0)
++
+ #endif /* !LOCKDEP */
+ 
+ #ifdef CONFIG_LOCK_STAT
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 3718a98..fd626ea 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -3044,6 +3044,19 @@ __lock_release(struct lockdep_map *lock, int nested, unsigned long ip)
+ 	check_chain_key(curr);
+ }
+ 
++static int __lock_is_held(struct lockdep_map *lock)
++{
++	struct task_struct *curr = current;
++	int i;
++
++	for (i = 0; i < curr->lockdep_depth; i++) {
++		if (curr->held_locks[i].instance == lock)
++			return 1;
++	}
++
++	return 0;
++}
++
+ /*
+  * Check whether we follow the irq-flags state precisely:
+  */
+@@ -3145,6 +3158,26 @@ void lock_release(struct lockdep_map *lock, int nested,
+ }
+ EXPORT_SYMBOL_GPL(lock_release);
+ 
++int lock_is_held(struct lockdep_map *lock)
++{
++	unsigned long flags;
++	int ret = 0;
++
++	if (unlikely(current->lockdep_recursion))
++		return;
++
++	raw_local_irq_save(flags);
++	check_flags(flags);
++
++	current->lockdep_recursion = 1;
++	ret = __lock_is_held(lock);
++	current->lockdep_recursion = 0;
++	raw_local_irq_restore(flags);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(lock_is_held);
++
+ void lockdep_set_current_reclaim_state(gfp_t gfp_mask)
+ {
+ 	current->lockdep_reclaim_gfp = gfp_mask;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 56fb225..6255f82 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6638,6 +6638,8 @@ int __cond_resched_lock(spinlock_t *lock)
+ 	int resched = should_resched();
+ 	int ret = 0;
+ 
++	lockdep_assert_held(lock);
++
+ 	if (spin_needbreak(lock) || resched) {
+ 		spin_unlock(lock);
+ 		if (resched)
 
-Yeah, although it's probably within the noise really. But I can
-turn it into a pseudo-UMA system as well, so I will try with that
-too.
-
-Thanks,
-Nick
 
