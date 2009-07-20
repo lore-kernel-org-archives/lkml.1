@@ -1,70 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbZGTGgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbZGTGg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751821AbZGTGgB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 02:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbZGTGf7
+	id S1752232AbZGTGg0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 02:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZGTGgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 02:35:59 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:35727 "EHLO smtp.gentoo.org"
+	Mon, 20 Jul 2009 02:36:25 -0400
+Received: from mx40.brocade.com ([144.49.195.4]:6301 "EHLO mx40.brocade.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750969AbZGTGfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 02:35:53 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] PREEMPT_ACTIVE: add default defines
-Date: Mon, 20 Jul 2009 02:35:49 -0400
-Message-Id: <1248071749-28044-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <200906241602.38422.arnd@arndb.de>
-References: <200906241602.38422.arnd@arndb.de>
+	id S1750938AbZGTGgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 02:36:25 -0400
+X-IronPort-AV: E=Sophos;i="4.43,233,1246863600"; 
+   d="scan'208";a="70237100"
+Date: Sun, 19 Jul 2009 23:26:54 -0700
+From: Jing Huang <huangj@brocade.com>
+Message-Id: <200907200626.n6K6QsTD011626@swe57.brocade.com>
+To: James.Bottomley@HansenPartnership.com
+Subject: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver (make)
+Cc: kgudipat@brocade.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rvadivel@brocade.com, vravindr@brocade.com,
+       xmzhang@brocade.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+From: Jing Huang <huangj@brocade.com>
 
-The PREEMPT_ACTIVE setting doesn't actually need to be arch-specific, so
-set up a sane default for all arches to (hopefully) migrate to.
+This patch contains Makefile and Kconfig file for scsi and bfa.
 
-> if we look at linux/hardirq.h, it makes this claim:
->  * - bit 28 is the PREEMPT_ACTIVE flag
-> if that's true, then why are we letting any arch set this define ?  a
-> quick survey shows that half the arches (11) are using 0x10000000 (bit
-> 28) while the other half (10) are using 0x4000000 (bit 26).  and then
-> there is the ia64 oddity which uses bit 30.  the exact value here
-> shouldnt really matter across arches though should it ?
-
-actually alpha, arm and avr32 also use bit 30 (0x40000000), there are only
-five (or eight, depending on how you count) architectures (blackfin, h8300,
-m68k, s390 and sparc) using bit 26.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jing Huang <huangj@brocade.com>
 ---
- include/linux/hardirq.h |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ Kconfig      |   10 ++++++++++
+ Makefile     |    1 +
+ bfa/Makefile |   30 ++++++++++++++++++++++++++++++
+ 3 files changed, 41 insertions(+)
 
-diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-index 4525747..41cfbe1 100644
---- a/include/linux/hardirq.h
-+++ b/include/linux/hardirq.h
-@@ -62,6 +62,12 @@
- #define HARDIRQ_OFFSET	(1UL << HARDIRQ_SHIFT)
- #define NMI_OFFSET	(1UL << NMI_SHIFT)
+diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
+--- orig/drivers/scsi/Kconfig	2009-07-19 17:48:15.000000000 -0700
++++ patch/drivers/scsi/Kconfig	2009-07-19 17:48:11.000000000 -0700
+@@ -1819,6 +1819,16 @@ config SCSI_SRP
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called libsrp.
  
-+#ifndef PREEMPT_ACTIVE
-+#define PREEMPT_ACTIVE_BITS	1
-+#define PREEMPT_ACTIVE_SHIFT	(NMI_SHIFT + NMI_BITS)
-+#define PREEMPT_ACTIVE	(__IRQ_MASK(PREEMPT_ACTIVE_BITS) << PREEMPT_ACTIVE_SHIFT)
-+#endif
++config SCSI_BFA_FC
++	tristate "Brocade BFA Fibre Channel Support"
++	depends on PCI && SCSI
++	select SCSI_FC_ATTRS
++	help
++	  This bfa driver supports all Brocade PCIe FC/FCOE host adapters.
 +
- #if PREEMPT_ACTIVE < (1 << (NMI_SHIFT + NMI_BITS))
- #error PREEMPT_ACTIVE is too low!
- #endif
--- 
-1.6.3.3
-
++	  To compile this driver as a module, choose M here. The module will
++	  be called bfa.
++
+ endif # SCSI_LOWLEVEL
+ 
+ source "drivers/scsi/pcmcia/Kconfig"
+diff -urpN orig/drivers/scsi/Makefile patch/drivers/scsi/Makefile
+--- orig/drivers/scsi/Makefile	2009-07-19 17:48:15.000000000 -0700
++++ patch/drivers/scsi/Makefile	2009-07-19 17:48:11.000000000 -0700
+@@ -86,6 +86,7 @@ obj-$(CONFIG_SCSI_QLOGIC_1280)	+= qla128
+ obj-$(CONFIG_SCSI_QLA_FC)	+= qla2xxx/
+ obj-$(CONFIG_SCSI_QLA_ISCSI)	+= qla4xxx/
+ obj-$(CONFIG_SCSI_LPFC)		+= lpfc/
++obj-$(CONFIG_SCSI_BFA_FC)	+= bfa/
+ obj-$(CONFIG_SCSI_PAS16)	+= pas16.o
+ obj-$(CONFIG_SCSI_T128)		+= t128.o
+ obj-$(CONFIG_SCSI_DMX3191D)	+= dmx3191d.o
+diff -urpN orig/drivers/scsi/bfa/Makefile patch/drivers/scsi/bfa/Makefile
+--- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000 -0800
++++ patch/drivers/scsi/bfa/Makefile	2009-07-19 17:48:15.000000000 -0700
+@@ -0,0 +1,30 @@
++#
++# Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
++# All rights reserved
++# www.brocade.com
++# 
++# Linux driver for Brocade Fibre Channel Host Bus Adapter.
++#
++# This program is free software; you can redistribute it and/or modify it
++# under the terms of the GNU General Public License (GPL) Version 2 as
++# published by the Free Software Foundation
++#
++# This program is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++# General Public License for more details.
++#
++obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
++
++bfa-objs := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o bfad_fwimg.o \
++	bfa_core.o bfa_ioc.o bfa_iocfc.o bfa_aen.o bfa_fcxp.o bfa_lps.o \
++	bfa_hw_cb.o bfa_hw_ct.o bfa_intr.o bfa_timer.o bfa_rport.o \
++	bfa_fcport.o bfa_port.o bfa_uf.o bfa_sgpg.o bfa_module.o bfa_ioim.o \
++	bfa_itnim.o bfa_fcpim.o bfa_tskim.o bfa_log.o bfa_log_module.o \
++	bfa_csdebug.o bfa_sm.o plog.o fcbuild.o fabric.o fcpim.o vfapi.o \
++	fcptm.o bfa_fcs.o bfa_fcs_port.o bfa_fcs_uf.o bfa_fcs_lport.o \
++        fab.o fdmi.o ms.o ns.o scn.o loop.o lport_api.o n2n.o rport.o \
++        rport_api.o rport_ftrs.o vport.o
++
++
++EXTRA_CFLAGS += -I$(obj) -I$(obj)/include -I$(obj)/include/cna
