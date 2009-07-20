@@ -1,118 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZGTUJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZGTUJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbZGTUJw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 16:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbZGTUJv
+	id S1754180AbZGTUJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 16:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZGTUJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 16:09:51 -0400
-Received: from mail.windriver.com ([147.11.1.11]:36192 "EHLO mail.wrs.com"
+	Mon, 20 Jul 2009 16:09:53 -0400
+Received: from mail.windriver.com ([147.11.1.11]:36170 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753876AbZGTUJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 16:09:46 -0400
+	id S1754066AbZGTUJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 16:09:44 -0400
 From: Jason Wessel <jason.wessel@windriver.com>
 To: gregkh@suse.de
 Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Yinghai Lu <yinghai@kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       dbrownell@users.sourceforge.net
-Subject: [PATCH 08/10] ehci-dbgp: errata for EHCI debug controller initialization
-Date: Mon, 20 Jul 2009 15:06:30 -0500
-Message-Id: <1248120392-8372-9-git-send-email-jason.wessel@windriver.com>
+       dbrownell@users.sourceforge.net, Alan Stern <stern@rowland.harvard.edu>,
+       Sarah Sharp <sarah.a.sharp@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH 0/10] x86: EHCI and earlyprintk= improvements
+Date: Mon, 20 Jul 2009 15:06:22 -0500
+Message-Id: <1248120392-8372-1-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.0.3.523.g304d0
-In-Reply-To: <1248120392-8372-8-git-send-email-jason.wessel@windriver.com>
-References: <1248120392-8372-1-git-send-email-jason.wessel@windriver.com>
- <1248120392-8372-2-git-send-email-jason.wessel@windriver.com>
- <1248120392-8372-3-git-send-email-jason.wessel@windriver.com>
- <1248120392-8372-4-git-send-email-jason.wessel@windriver.com>
- <1248120392-8372-5-git-send-email-jason.wessel@windriver.com>
- <1248120392-8372-6-git-send-email-jason.wessel@windriver.com>
- <1248120392-8372-7-git-send-email-jason.wessel@windriver.com>
- <1248120392-8372-8-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 20 Jul 2009 20:07:03.0504 (UTC) FILETIME=[A60AF500:01CA0975]
+X-OriginalArrivalTime: 20 Jul 2009 20:06:36.0425 (UTC) FILETIME=[95E70790:01CA0975]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On some EHCI usb debug controllers, the EHCI debug device will fail to
-be seen after a port reset, after a warm reset.  Two options exist to
-get the device to initialize correctly.
 
-Option 1 is to unplug and plug in the device.
+This patch series against the 2.6.31-rc3 covers improving the
+reliability of earlyprintk when using a usb debug device connected to
+an EHCI debug controller.
 
-Option 2 is to use the EHCI port test to get the usb debug device to
-start talking again.  At that point the debug controller port reset
-will succeed.
+The only patch that is not directly related to the USB earlyprintk is
+the 5th in the series which changes the console registration such that
+you can have more than one earlyprintk device.  It is plausible to
+drop this patch if folks object to the idea or implementation.
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Cc: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: dbrownell@users.sourceforge.net
----
- drivers/usb/early/ehci-dbgp.c |   23 ++++++++++++++++++++++-
- include/linux/usb/ehci_def.h  |    1 +
- 2 files changed, 23 insertions(+), 1 deletions(-)
+These patches were heavily test on 12 different systems with a total
+of 7 different EHCI controllers on both the x86_64 and i386
+architectures.
 
-diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
-index b88cb65..f0a41c6 100644
---- a/drivers/usb/early/ehci-dbgp.c
-+++ b/drivers/usb/early/ehci-dbgp.c
-@@ -478,10 +478,13 @@ int dbgp_external_startup(void)
- 	int devnum;
- 	struct usb_debug_descriptor dbgp_desc;
- 	int ret;
--	u32 ctrl, portsc;
-+	u32 ctrl, portsc, cmd;
- 	int dbg_port = dbgp_phys_port;
- 	int tries = 3;
-+	int reset_port_tries = 1;
-+	int try_hard_once = 1;
- 
-+try_port_reset_again:
- 	ret = dbgp_ehci_startup();
- 	if (ret)
- 		return ret;
-@@ -490,6 +493,24 @@ int dbgp_external_startup(void)
- 	ret = ehci_wait_for_port(dbg_port);
- 	if (ret < 0) {
- 		portsc = readl(&ehci_regs->port_status[dbg_port - 1]);
-+		if (!(portsc & PORT_CONNECT) && try_hard_once) {
-+			/* Last ditch effort to try to force enable
-+			 * the debug device by using the packet test
-+			 * ehci command to try and wake it up. */
-+			try_hard_once = 0;
-+			cmd = readl(&ehci_regs->command);
-+			cmd &= ~CMD_RUN;
-+			writel(cmd, &ehci_regs->command);
-+			portsc = readl(&ehci_regs->port_status[dbg_port - 1]);
-+			portsc |= PORT_TEST_PKT;
-+			writel(portsc, &ehci_regs->port_status[dbg_port - 1]);
-+			dbgp_ehci_status("Trying to force debug port online");
-+			mdelay(50);
-+			dbgp_ehci_controller_reset();
-+			goto try_port_reset_again;
-+		} else if (reset_port_tries--) {
-+			goto try_port_reset_again;
-+		}
- 		dbgp_printk("No device found in debug port\n");
- 		return -EIO;
- 	}
-diff --git a/include/linux/usb/ehci_def.h b/include/linux/usb/ehci_def.h
-index 279d48b..209cf36 100644
---- a/include/linux/usb/ehci_def.h
-+++ b/include/linux/usb/ehci_def.h
-@@ -105,6 +105,7 @@ struct ehci_regs {
- #define PORT_WKDISC_E	(1<<21)		/* wake on disconnect (enable) */
- #define PORT_WKCONN_E	(1<<20)		/* wake on connect (enable) */
- /* 19:16 for port testing */
-+#define PORT_TEST_PKT	(0x4<<16)	/* Port Test Control - packet test */
- #define PORT_LED_OFF	(0<<14)
- #define PORT_LED_AMBER	(1<<14)
- #define PORT_LED_GREEN	(2<<14)
--- 
-1.6.0.3.523.g304d0
+The series starts by moving the EHCI debug code out of the
+arch/x86/kernel/early_printk.c and over to under the
+drivers/usb/early/ehci-dbgp.c.  It is plausible to use this code on
+other architectures beyond x86.  This also allows the earlyprintk.c to
+stay a bit cleaner, since it is primarily intended to handle the
+"earlyprintk=" setup.
 
+The other key changes are:
+   * Update the documentation to reflect the usage constraints
+   * The earlyprintk=keep,... works correctly with dbgp
+   * Make the cr nl handling for dbgp the same as the uart drivers
+   * Numerous errata and initialization fixes to make the usb
+     debug device work with a wide range of EHCI controllers
+
+Thanks,
+Jason.
+
+The following changes since commit 78af08d90b8f745044b1274430bc4bc6b2b27aca:
+  Linus Torvalds (1):
+        Merge branch 'drm-fixes' of git://git.kernel.org/.../airlied/drm-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_gregkh_2
+
+Jason Wessel (10):
+      ehci early_printk: split ehci debug driver from early_printk.c
+      usb,early_printk: insert cr prior to nl as needed
+      ehci-dbgp: Execute early BIOS hand off
+      usb,early_printk: EHCI debug controller initialization delays
+      printk,early_printk,console: Allow more than one early console
+      ehci-dbgp: stability improvements and external re-init
+      ehci-dbgp,ehci: Allow early or late use of the dbgp device
+      ehci-dbgp: errata for EHCI debug controller initialization
+      ehci-dbgp: errata for EHCI debug/host controller synchronization
+      ehci-dbgp,documentation: Documentation updates for ehci-dbgp
+
+
+ Documentation/kernel-parameters.txt |    2 +-
+ Documentation/x86/earlyprintk.txt   |   39 ++-
+ arch/x86/kernel/early_printk.c      |  780 ++--------------------------
+ drivers/usb/Makefile                |    1 +
+ drivers/usb/early/Makefile          |    5 +
+ drivers/usb/early/ehci-dbgp.c       |  996 +++++++++++++++++++++++++++++++++++
+ drivers/usb/host/ehci-hcd.c         |   33 ++-
+ drivers/usb/host/ehci-hub.c         |   10 +
+ drivers/usb/host/ehci-pci.c         |   20 -
+ include/linux/usb/ehci_def.h        |   13 +
+ kernel/printk.c                     |   41 +-
+ 11 files changed, 1154 insertions(+), 786 deletions(-)
+ create mode 100644 drivers/usb/early/Makefile
+ create mode 100644 drivers/usb/early/ehci-dbgp.c
