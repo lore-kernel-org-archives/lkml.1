@@ -1,66 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbZGTQDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbZGTQEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752501AbZGTQDu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 12:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZGTQDs
+	id S1752549AbZGTQEu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 12:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZGTQEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 12:03:48 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38964 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751555AbZGTQDs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 12:03:48 -0400
-Date: Mon, 20 Jul 2009 09:00:25 -0700
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       virtualization@lists.osdl.org
-Cc: Hank Janssen <hjanssen@microsoft.com>,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       Sam Ramji <sramji@microsoft.com>, shemminger@linux-foundation.org
-Subject: [patch 00/54] [Announce] Microsoft Hyper-V drivers for Linux
-Message-ID: <20090720160025.GA20249@kroah.com>
+	Mon, 20 Jul 2009 12:04:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53273 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752477AbZGTQEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 12:04:44 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Subject: Re: [PATCH] hibernate / memory hotplug: always use for_each_populated_zone()
+Date: Mon, 20 Jul 2009 18:04:59 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <1248103551.23961.0.camel@localhost.localdomain>
+In-Reply-To: <1248103551.23961.0.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200907201804.59851.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 20 July 2009, Gerald Schaefer wrote:
+> From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> 
+> Use for_each_populated_zone() instead of for_each_zone() in hibernation
+> code. This fixes a bug on s390, where we allow both config options
+> HIBERNATION and MEMORY_HOTPLUG, so that we also have a ZONE_MOVABLE
+> here. We only allow hibernation if no memory hotplug operation was
+> performed, so in fact both features can only be used exclusively, but
+> this way we don't need 2 differently configured (distribution) kernels.
+> 
+> If we have an unpopulated ZONE_MOVABLE, we allow hibernation but run
+> into a BUG_ON() in memory_bm_test/set/clear_bit() because hibernation
+> code iterates through all zones, not only the populated zones, in
+> several places. For example, swsusp_free() does for_each_zone() and
+> then checks for pfn_valid(), which is true even if the zone is not
+> populated, resulting in a BUG_ON() later because the pfn cannot be
+> found in the memory bitmap.
+> 
+> Replacing all occurences of for_each_zone() in hibernation code with
+> for_each_populated_zone() would fix this issue.
 
-Hi all,
+Thanks for the patch, I'm going to add it to my 2.6.32 queue.
 
-I'm happy to announce, that after many months of discussions, Microsoft
-has released their Hyper-V Linux drivers under the GPLv2.  Following
-this message, will be the patches that add the drivers to the
-drivers/staging/ tree, and a whole bunch of cleanups.
+Best,
+Rafael
 
-It's taken a long road to get here, and I'd like to thank the following
-people who made this possible:
-  - Steve Hemminger for the initial prodding and extreme patience
-  - Hank Janssen for providing the code and working with me to get it
-    into a workable and semi-mergable state.  His involvement within
-    Microsoft was also invaluable.
-  - Sam Ramji for his push within Microsoft to make this happen in a
-    manner that works with the Linux community.
-  - Novell for sponsoring my work on the Linux Driver project, without
-    which, this would not have even been possible.
-And there are many others both within Novell and Microsoft, who I do not
-want to slight by not naming, but the list would be too long to go into.
 
-These drivers are to enable Linux to work better when running as a guest
-on top of the Hyper-V system.  There is still a lot of work to do in
-getting this into "proper" mergable state, and moving it out of the
-staging directory, but Hank and I will be undertaking this task.  See
-the TODO file in the drivers/staging/hv/ directory if anyone wishes to
-help out with this task.
-
-The code should be showing up in the linux-next tree soon, as the
-patches are now in my public tree.
-
-If anyone has any questions about this code, please let me and Hank know
-about it.
-
-thanks,
-
-greg k-h
+> Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> ---
+>  kernel/power/snapshot.c |   12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
+> Index: linux-2.6-work/kernel/power/snapshot.c
+> ===================================================================
+> --- linux-2.6-work.orig/kernel/power/snapshot.c
+> +++ linux-2.6-work/kernel/power/snapshot.c
+> @@ -853,7 +853,7 @@ static unsigned int count_highmem_pages(
+>  	struct zone *zone;
+>  	unsigned int n = 0;
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		unsigned long pfn, max_zone_pfn;
+>  
+>  		if (!is_highmem(zone))
+> @@ -916,7 +916,7 @@ static unsigned int count_data_pages(voi
+>  	unsigned long pfn, max_zone_pfn;
+>  	unsigned int n = 0;
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		if (is_highmem(zone))
+>  			continue;
+>  
+> @@ -1010,7 +1010,7 @@ copy_data_pages(struct memory_bitmap *co
+>  	struct zone *zone;
+>  	unsigned long pfn;
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		unsigned long max_zone_pfn;
+>  
+>  		mark_free_pages(zone);
+> @@ -1046,7 +1046,7 @@ void swsusp_free(void)
+>  	struct zone *zone;
+>  	unsigned long pfn, max_zone_pfn;
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		max_zone_pfn = zone->zone_start_pfn + zone->spanned_pages;
+>  		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+>  			if (pfn_valid(pfn)) {
+> @@ -1166,7 +1166,7 @@ static int enough_free_mem(unsigned int 
+>  	struct zone *zone;
+>  	unsigned int free = 0, meta = 0;
+>  
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		meta += snapshot_additional_pages(zone);
+>  		if (!is_highmem(zone))
+>  			free += zone_page_state(zone, NR_FREE_PAGES);
+> @@ -1474,7 +1474,7 @@ static int mark_unsafe_pages(struct memo
+>  	unsigned long pfn, max_zone_pfn;
+>  
+>  	/* Clear page flags */
+> -	for_each_zone(zone) {
+> +	for_each_populated_zone(zone) {
+>  		max_zone_pfn = zone->zone_start_pfn + zone->spanned_pages;
+>  		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+>  			if (pfn_valid(pfn))
+> 
+> 
+> 
