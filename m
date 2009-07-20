@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbZGTX2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZGTXcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754421AbZGTX2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 19:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZGTX2R
+	id S1754207AbZGTXcJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 19:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZGTXcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 19:28:17 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:37648 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751926AbZGTX2Q (ORCPT
+	Mon, 20 Jul 2009 19:32:07 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47687 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753258AbZGTXcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 19:28:16 -0400
-Date: Mon, 20 Jul 2009 16:28:16 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
-       tpmdd-devel@lists.sourceforge.net, dds@google.com,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       Shahbaz Khan <shaz.linux@gmail.com>, seiji.munetoh@gmail.com
-Subject: Re: [PATCH] TPM: DATA_EXPECT bit check bypass
-Message-ID: <20090720232816.GR6370@hexapodia.org>
-References: <1246410255-6839-1-git-send-email-adi@vmware.com> <1246410255-6839-6-git-send-email-adi@vmware.com> <20090701110136.576a1d14@lxorguk.ukuu.org.uk> <1246455920.9140.28.camel@blackbox> <1247765210.30736.3.camel@dyn531421.br.ibm.com> <1247766212.30736.17.camel@dyn531421.br.ibm.com> <49514.1247774890@turing-police.cc.vt.edu> <1247779226.3062.44.camel@dyn531421.br.ibm.com>
+	Mon, 20 Jul 2009 19:32:06 -0400
+Date: Tue, 21 Jul 2009 00:32:39 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, Daniel Mack <daniel@caiaq.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@redhat.com>,
+       Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>,
+       Alan Cox <alan@linux.intel.com>, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] [usb-serial] fix Ooops on uplug
+Message-ID: <20090721003239.44ef8e9b@lxorguk.ukuu.org.uk>
+In-Reply-To: <1248112313-7842-1-git-send-email-daniel@caiaq.de>
+References: <20090720155502.50b84ae9@lxorguk.ukuu.org.uk>
+	<1248112313-7842-1-git-send-email-daniel@caiaq.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247779226.3062.44.camel@dyn531421.br.ibm.com>
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 16, 2009 at 06:20:26PM -0300, Rajiv Andrade wrote:
-> On Thu, 2009-07-16 at 16:08 -0400, Valdis.Kletnieks@vt.edu wrote:
-> > On Thu, 16 Jul 2009 14:43:32 -0300, Rajiv Andrade said:
-> > 
-> > > @@ -582,6 +585,12 @@ static int tpm_tis_init(struct device *dev, resource_siz
-> > e_t start,
-> > >         tpm_get_timeouts(chip);
-> > >         tpm_continue_selftest(chip);
-> > >  
-> > > +       for (i=0; i < 8; i++)
-> > > +               if (ITPM_ID[i] != to_pnp_dev(dev)->id->id[i])
-> > > +                       break;
-> > > +       if (i == 8)
-> > > +               chip->is_itpm = 1;
-> > > +
-> > 
-> > strcmp() variant of some sort instead?
+On Mon, 20 Jul 2009 19:51:53 +0200
+Daniel Mack <daniel@caiaq.de> wrote:
+
+> When an USB serial adapter is disconnected and <Enter> is pressed on a
+> connection still open on it (cu, minicom, ...), the kernel crashes.
 > 
-> Wait, is to_pnp_dev(dev)->id->id[i] null terminated? Maybe memcmp() fits
-> better here..
+> The reason is that the serial port's resources are freed upon disconnect
+> (in serial_hangup()) but the tty device layer is not made aware of that.
+> Hence, the close callback will later access the resources again.
 
-Rather than checking the PNP ID at this point, I suggest something like:
+I don't think that is the case. The hangup terminates access to the
+resources and replaces the file operations at tty level. The tty
+level close called will be the close for the hung up tty ops not the usb
+device ops.
 
-(the context here depends on my earlier series, but it's fairly
-obvious.)
+hangup() is a termination of access to the bus resources for that tty
+handle.
 
-@@ -467,6 +481,11 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
- 		 "1.2 TPM (%04X:%04X rev %d)\n", vendor & 0xffff,
- 		 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
- 
-+	if (vendor == 0x10208086) {
-+		dev_info(dev, "Intel iTPM workaround enabled\n");
-+		chip->itpm = 1;
-+	}
-+
- 	/* Figure out the capabilities */
- 	intfcaps =
- 	    ioread32(chip->vendor.iobase +
-
-(I suppose there should be a #define of 0x10208086 somewhere.)
-
-I'll cook up a refreshed patch series.
-
--andy
+Alan
