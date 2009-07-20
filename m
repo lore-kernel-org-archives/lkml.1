@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbZGTWJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167AbZGTWLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbZGTWJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 18:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZGTWJZ
+	id S1754167AbZGTWLT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 18:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZGTWLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 18:09:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51905 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753825AbZGTWJZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 18:09:25 -0400
-Date: Mon, 20 Jul 2009 15:08:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Krzysztof Oledzki <olel@ans.pl>
-cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       lwn@lwn.net
-Subject: Re: Linux 2.6.27.27
-In-Reply-To: <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl>
-Message-ID: <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
-References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 20 Jul 2009 18:11:19 -0400
+Received: from bu3sch.de ([62.75.166.246]:42119 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753865AbZGTWLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 18:11:18 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: steiner@sgi.com
+Subject: [PATCH] sgi-gru: Fix kernel stack buffer overrun
+Date: Tue, 21 Jul 2009 00:08:38 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907210008.38990.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch fixes a kernel stack buffer overrun in the sgi-gru procfs
+interface implementation.
+The "count" parameter to options_write() is user controlled. So this bug
+can be used to write '\0' bytes to almost arbitrary places on the kernel stack.
 
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Cc: stable@kernel.org
 
-On Mon, 20 Jul 2009, Krzysztof Oledzki wrote:
-> 
-> No problem. Please let me know what should I do to help tracking this issue.
+---
 
-Can you build two kernels: one with -fwrapv, and one with 
--fno-strict-overflow, and then verify that
+This procfs file has 0644 permissions, so the bug is probably not exploitable
+for local privilege escalation.
 
- - they are otherwise identical (ie exact same source code, same compiler 
-   etc)
+---
+ drivers/misc/sgi-gru/gruprocfs.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- - verify that yes, the -fwrapv kernel works, the other does not. Just to 
-   avoid the confusion that obviously exists with Debian/sid binutils 
-   upgrades that _also_ happens result in nonbootable kernels.
+--- linux-2.6.orig/drivers/misc/sgi-gru/gruprocfs.c
++++ linux-2.6/drivers/misc/sgi-gru/gruprocfs.c
+@@ -157,23 +157,23 @@ static int options_show(struct seq_file 
+ 	seq_printf(s, "0x%lx\n", gru_options);
+ 	return 0;
+ }
+ 
+ static ssize_t options_write(struct file *file, const char __user *userbuf,
+ 			     size_t count, loff_t *data)
+ {
+ 	unsigned long val;
+ 	char buf[80];
+ 
++	memset(buf, 0, sizeof(buf));
+ 	if (strncpy_from_user(buf, userbuf, sizeof(buf) - 1) < 0)
+ 		return -EFAULT;
+-	buf[count - 1] = '\0';
+ 	if (!strict_strtoul(buf, 10, &val))
+ 		gru_options = val;
+ 
+ 	return count;
+ }
+ 
+ static int cch_seq_show(struct seq_file *file, void *data)
+ {
+ 	long gid = *(long *)data;
+ 	int i;
 
- - upload the 'vmlinux' images somewhere (I'm not sure what the limits for 
-   binary attachments are at the kernel bugzilla, but that would be the 
-   logical place)
-
-In fact, it would be nice to have a third "identical" kernel build, except 
-with neither -fwrapv/-fno-strict-overflow.
-
-			Linus
+-- 
+Greetings, Michael.
