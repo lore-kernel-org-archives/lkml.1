@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbZGURt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZGURwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbZGURt4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 13:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZGURty
+	id S1755302AbZGURwX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 13:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZGURwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 13:49:54 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:61997 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752259AbZGURtx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 13:49:53 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Ben Greear <greearb@candelatech.com>
-Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
-Date: Tue, 21 Jul 2009 19:49:51 +0200
-User-Agent: KMail/1.9.9
-Cc: trond.myklebust@fys.uio.no, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-References: <4A64EB1F.4000602@candelatech.com> <1248178527.5222.0.camel@heimdal.trondhjem.org> <1248178527.5222.0.camel@heimdal.trondhjem.org> <4A65F184.5060802@candelatech.com>
-In-reply-To: <4A65F184.5060802@candelatech.com>
+	Tue, 21 Jul 2009 13:52:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60403 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753459AbZGURwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 13:52:20 -0400
+Date: Tue, 21 Jul 2009 19:51:39 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: akpm@linux-foundation.org, hugh.dickins@tiscali.co.uk, chrisw@redhat.com,
+       avi@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 06/10] ksm: identify PageKsm pages
+Message-ID: <20090721175139.GE2239@random.random>
+References: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-2-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-3-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-4-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-5-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-6-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-7-git-send-email-ieidus@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907211949.52345.elendil@planet.nl>
-X-OriginalArrivalTime: 21 Jul 2009 17:49:52.0900 (UTC) FILETIME=[A6A23440:01CA0A2B]
+In-Reply-To: <1247851850-4298-7-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Greear wrote:
-> On 07/21/2009 05:15 AM, Trond Myklebust wrote:
->> What does /var/lib/nfs/v4recovery look like on the server?
-> 
-> The server was misconfigured, but I still think the client should
-> behave better in this case.  If you cannot reproduce it, let me know
-> and I can try to be more specific.  If you still want the v4recovery
-> information, let me know and I'll send it.
-> 
-> I had my /etc/exports looking like this on the file-server:
-> 
-> /export/tmp 192.168.100.0/24(rw)
-> 
-> When I changed it to be:
-> /export/tmp 192.168.100.0/24(rw,fsid=0)
-> 
-> And mounted 192.168.100.6:/ instead of 192.168.100.6:/export/tmp
-> then it mounts properly and appears to work just fine.
-> 
-> If I leave file-server configured properly with fsid=0, but try
-> to mount 192.168.100.6:/export/tmp then I get an error about
-> no such file or directory, which also appears to be correct
-> behaviour.
+On Fri, Jul 17, 2009 at 08:30:46PM +0300, Izik Eidus wrote:
+> +static inline int PageKsm(struct page *page)
+> +{
+> +	return ((unsigned long)page->mapping == PAGE_MAPPING_ANON);
+> +}
 
-Duh! I had exactly the same problem this week when I "quickly" set up an 
-NFS server on one of my boxes: forgot to add fsid=0 for the NFS4 root. 
-Result was the mount hanging on the client and the same errors as Ben 
-reported.
+I'm unconvinced it's sane to have PageAnon return 1 on Ksm pages.
 
-It would be great if this configuration problem was detected better.
+The above will also have short lifetime so not sure it's worth it,
+if we want to swap we'll have to move to something that to:
 
-P.S. /var/lib/nfs/v4recovery on the server was empty in my case.
+PageExternal()
+{
+	return (unsigned long)page->mapping & PAGE_MAPPING_EXTERNAL != 0;
+}
+
+> +static inline void page_add_ksm_rmap(struct page *page)
+> +{
+> +	if (atomic_inc_and_test(&page->_mapcount)) {
+> +		page->mapping = (void *) PAGE_MAPPING_ANON;
+> +		__inc_zone_page_state(page, NR_ANON_PAGES);
+> +	}
+> +}
+
+Is it correct to account them as anon pages?
+
+> -	if (PageAnon(old_page)) {
+> +	if (PageAnon(old_page) && !PageKsm(old_page)) {
+>  		if (!trylock_page(old_page)) {
+>  			page_cache_get(old_page);
+>  			pte_unmap_unlock(page_table, ptl);
+
+What exactly does it buy to have PageAnon return 1 on ksm pages,
+besides requiring the above additional check (that if we stick to the
+above code, I would find safer to move inside reuse_swap_page).
