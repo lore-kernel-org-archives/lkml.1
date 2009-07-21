@@ -1,78 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZGUVsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZGUVs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZGUVsU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756139AbZGUVsP
+	id S1756194AbZGUVs1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZGUVs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:48:15 -0400
-Received: from cmpxchg.org ([85.214.51.133]:56887 "EHLO cmpxchg.org"
+	Tue, 21 Jul 2009 17:48:26 -0400
+Received: from mga02.intel.com ([134.134.136.20]:23558 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755502AbZGUVsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:48:12 -0400
-Date: Tue, 21 Jul 2009 23:46:57 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Hans-Joachim Picht <hans@linux.vnet.ibm.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arnd Schneider <arnd@de.ibm.com>, linux-fsdevel@vger.kernel.org
-Subject: Re: PM/hibernate swapfile regression
-Message-ID: <20090721214657.GA27605@cmpxchg.org>
-References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com> <20090720132456.GA29023@osiris.boeblingen.de.ibm.com> <4A659D75.3050004@tuffmail.co.uk> <200907212257.21878.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907212257.21878.rjw@sisk.pl>
+	id S1756181AbZGUVsY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 17:48:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,242,1246863600"; 
+   d="scan'208";a="534770656"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'Sam Ravnborg'" <sam@ravnborg.org>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'linux-kbuild@vger.kernel.org'" <linux-kbuild@vger.kernel.org>,
+       "'linux-arch@vger.kernel.org'" <linux-arch@vger.kernel.org>
+CC: "'Al Viro'" <viro@zeniv.linux.org.uk>, "Luck, Tony" <tony.luck@intel.com>
+Date: Tue, 21 Jul 2009 14:48:22 -0700
+Subject: RE: [PATCH 03/10] ia64: move nr-irqs.h to include/generated
+Thread-Topic: [PATCH 03/10] ia64: move nr-irqs.h to include/generated
+Thread-Index: AcoKSHGuJP9IZmgaQZGWRPeYF1/MkQAA7nGg
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B09F47F2@orsmsx505.amr.corp.intel.com>
+References: <20090721211040.GA7688@merkur.ravnborg.org>
+ <1248211181-6757-3-git-send-email-sam@ravnborg.org>
+In-Reply-To: <1248211181-6757-3-git-send-email-sam@ravnborg.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 10:57:21PM +0200, Rafael J. Wysocki wrote:
-> On Tuesday 21 July 2009, Alan Jenkins wrote:
-> > From 643014ec079610a8b01dfd78c6949c1e8727195b Mon Sep 17 00:00:00 2001
-> > From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> > Date: Tue, 21 Jul 2009 10:17:30 +0100
-> > Subject: [PATCH] PM/hibernate: replace bdget call with bdcopy (simple atomic_inc of i_count)
-> > 
-> > Create bdcopy().  This function copies an existing reference to a
-> > block_device.  It is safe to call from any context.
-> > 
-> > Hibernation code wishes to copy a reference to the active swap device.
-> > Right now it calls bdget() under a spinlock, but this is wrong because
-> > bdget() can sleep.  It doesn't need a full bdget() because we already
-> > hold a reference to active swap devices (and the spinlock protects
-> > against swapoff).
-> > 
-> > Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> > CC: linux-fsdevel@vger.kernel.org
-> > ---
-> >  fs/block_dev.c     |    8 ++++++++
-> >  include/linux/fs.h |    1 +
-> >  mm/swapfile.c      |    4 ++--
-> >  3 files changed, 11 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/fs/block_dev.c b/fs/block_dev.c
-> > index 3a6d4fb..0b04974 100644
-> > --- a/fs/block_dev.c
-> > +++ b/fs/block_dev.c
-> > @@ -564,6 +564,14 @@ struct block_device *bdget(dev_t dev)
-> >  
-> >  EXPORT_SYMBOL(bdget);
-> >  
-> > +struct block_device *bdcopy(struct block_device *bdev)
-> > +{
-> > +	atomic_inc(&bdev->bd_inode->i_count);
-> > +	return bdev;
-> > +}
-> 
-> Hmm.  If you defined bdcopy() as static inline directly in mm/swapfile.c,
-> the patch would be slightly simpler.
+>---
+> arch/ia64/Makefile          |    2 +-
+> arch/ia64/include/asm/irq.h |    2 +-
+> arch/ia64/kernel/Makefile   |    7 ++-----
+> 3 files changed, 4 insertions(+), 7 deletions(-)
+>
+>diff --git a/arch/ia64/Makefile b/arch/ia64/Makefile
+>index 58a7e46..e9fcac6 100644
+>--- a/arch/ia64/Makefile
+>+++ b/arch/ia64/Makefile
+>@@ -108,4 +108,4 @@ archprepare: make_nr_irqs_h FORCE
+> PHONY += make_nr_irqs_h FORCE
+>
+> make_nr_irqs_h: FORCE
+>-	$(Q)$(MAKE) $(build)=arch/ia64/kernel include/asm-ia64/nr-irqs.h
+>+	$(Q)$(MAKE) $(build)=arch/ia64/kernel include/generated/nr-irqs.h
+>diff --git a/arch/ia64/include/asm/irq.h b/arch/ia64/include/asm/irq.h
+>index 5282546..91b920f 100644
+>--- a/arch/ia64/include/asm/irq.h
+>+++ b/arch/ia64/include/asm/irq.h
+>@@ -13,7 +13,7 @@
+>
+> #include <linux/types.h>
+> #include <linux/cpumask.h>
+>-#include <asm-ia64/nr-irqs.h>
+>+#include <generated/nr-irqs.h>
+>
+> static __inline__ int
+> irq_canonicalize (int irq)
+>diff --git a/arch/ia64/kernel/Makefile b/arch/ia64/kernel/Makefile
+>index 6b7edca..cedd773 100644
+>--- a/arch/ia64/kernel/Makefile
+>+++ b/arch/ia64/kernel/Makefile
+>@@ -81,17 +81,14 @@ define cmd_nr_irqs
+> endef
+>
+> # We use internal kbuild rules to avoid the "is up to date" message from
+>make
+>-arch/$(SRCARCH)/kernel/nr-irqs.s: $(srctree)/arch/$(SRCARCH)/kernel/nr-
+>irqs.c \
+>-				$(wildcard $(srctree)/include/asm-ia64/*/irq.h)
+>+arch/ia64/kernel/nr-irqs.s: arch/ia64/kernel/nr-irqs.c
+> 	$(Q)mkdir -p $(dir $@)
+> 	$(call if_changed_dep,cc_s_c)
+>
 
-Please don't do that.
+Could you keep the SRCARCH and srctree variables? There is no need to hard code them.
 
-This helper seems to be generic enough to live next to the rest of the
-bd interface, don't you think?  swapfile.c is a mess already...
+>-include/asm-ia64/nr-irqs.h: arch/$(SRCARCH)/kernel/nr-irqs.s
+>+include/generated/nr-irqs.h: arch/ia64/kernel/nr-irqs.s
+> 	$(Q)mkdir -p $(dir $@)
+> 	$(call cmd,nr_irqs)
+>
+>-clean-files += $(objtree)/include/asm-ia64/nr-irqs.h
+>-
+> #
+> # native ivt.S, entry.S and fsys.S
+> #
 
-	Hannes
+Ditto.
+
