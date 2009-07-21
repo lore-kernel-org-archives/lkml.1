@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZGUTgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZGUTiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbZGUTgv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 15:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755923AbZGUTgu
+	id S1755963AbZGUTiO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 15:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZGUTiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 15:36:50 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:27436 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755921AbZGUTgt convert rfc822-to-8bit (ORCPT
+	Tue, 21 Jul 2009 15:38:12 -0400
+Received: from mail-yx0-f202.google.com ([209.85.210.202]:39211 "EHLO
+	mail-yx0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755588AbZGUTiL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 15:36:49 -0400
+	Tue, 21 Jul 2009 15:38:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:reply-to:in-reply-to:references:date:message-id
          :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=EyVVNRiQwSczDc4C5Wm779fqx20Ik9OgPEvKnp+1R0CxjXRnbIxtI/flflpkI1K5A7
-         PJwJtfZ0Y7Lq4nTcvMD6RQiTL3gAkUg4ExQYgJCXpSz3CMJcZz8HUGCoEOH6oBGOg8zP
-         Wayrs4z8FlApu/8SV/WhLbatqfS5dQU8+Xxyg=
+        b=IrRGGpMd//tffyOpYT2elowYPJR9SdekgG1dIHiMhu+/biUYKbPHWQZSzTsRJ3NjpU
+         rPfMVFE5PlQOzseT1rfMvHfHSySjZHb+mMUQJW+KmxTGCxFTi2Tjb+LVCvZMUkXV7hER
+         yM+zOrsQHaMFbkGD2QfFlfox75w/w9SzENjvY=
 MIME-Version: 1.0
 Reply-To: john.lanza@linux.com
-In-Reply-To: <4bbed3f70907210808m2c90ee4frd3470c1a1310758b@mail.gmail.com>
-References: <19028.3736.892828.352905@samba.org>
+In-Reply-To: <4bbed3f70907210806v14690311wbd579acae44099a9@mail.gmail.com>
+References: <19013.8005.541836.436991@samba.org>
+	 <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk>
 	 <1247069202.4159.212.camel@mulgrave.site>
 	 <20090708171848.21633768@lxorguk.ukuu.org.uk>
 	 <873a96a23x.fsf@devron.myhome.or.jp>
 	 <87hbxhwv0j.fsf@devron.myhome.or.jp>
 	 <19045.14307.658887.752950@samba.org> <4A65875D.7030902@panasas.com>
-	 <20090721103158.GG4133@elf.ucw.cz>
-	 <19045.49553.738185.211806@samba.org>
-	 <4bbed3f70907210808m2c90ee4frd3470c1a1310758b@mail.gmail.com>
-Date: Tue, 21 Jul 2009 15:36:49 -0400
-Message-ID: <4bbed3f70907211236k736bc43ase3ed1c90f8ee92d8@mail.gmail.com>
+	 <19045.48361.502946.399660@samba.org>
+	 <4bbed3f70907210806v14690311wbd579acae44099a9@mail.gmail.com>
+Date: Tue, 21 Jul 2009 15:38:08 -0400
+Message-ID: <4bbed3f70907211238t769d610aj24fc7d5dd48d99a3@mail.gmail.com>
 Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
 From: John Lanza <jdlanza@gmail.com>
 To: tridge@samba.org
-Cc: Pavel Machek <pavel@ucw.cz>, Boaz Harrosh <bharrosh@panasas.com>,
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        James Bottomley <James.Bottomley@hansenpartnership.com>,
        Martin Steigerwald <Martin@lichtvoll.de>,
        Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
-       Rusty Russell <rusty@rustcorp.com.au>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
        OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
        linux-fsdevel@vger.kernel.org,
        Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
@@ -51,37 +51,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending in plain text..........
+Resending in plain text.......
 
-On Tue, Jul 21, 2009 at 11:08 AM, John Lanza <jdlanza@gmail.com> wrote:
+On Tue, Jul 21, 2009 at 11:06 AM, John Lanza<jdlanza@gmail.com> wrote:
+> If I understand the proposal (which I think I do), Tridge is correct.
+> If a patent prohibits a system from performing steps "A" and "B",
+> simply separating the steps into separate modules, or utilities, won't
+> avoid infringement.
 >
-> All:
->
-> I think the email I just sent applies here, as well.  And I echo
-> Tridge's sentiments about giving me a shout if you have some idea for
-> qorkarounds.  I'm here to be a sounding board for you.
+> I'm happy to answer specific questions, but it might be best to do
+> that separately from lkml.
 >
 > johnl
 >
-> On Tue, Jul 21, 2009 at 9:24 AM, <tridge@samba.org> wrote:
-> > Hi Pavel,
-> >
-> >  > Actually, why not having dosfsck creating _matching_ short names for
-> >  > long names? As it only writes short names, it should be safe :-).
-> >
-> > As I mentioned to Boaz, what usually matters for claim construction in
-> > patents is the overall system. I'm sure John Lanza would be happy to
-> > run through it with you if you want a more legally detailed answer,
-> > but basically breaking it up within the one system isn't likely to
-> > help us.
-> >
-> > Like I mentioned to Boaz though, do keep thinking about it. There may
-> > well be a better solution that nobody has suggested yet. You might
-> > also like to read the file wrapper (availble on the USPTO site) which
-> > shows the discussions between the patent office and the
-> > applicant. That is often a good source of inspiration for patent
-> > workarounds. If you think you've found something then it might be a
-> > good idea to raise it with John Lanza first.
-> >
-> > Cheers, Tridge
-> >
+> On Tue, Jul 21, 2009 at 9:04 AM, <tridge@samba.org> wrote:
+>> Hi Boaz,
+>>
+>>  > I guess you tried putting a zero at first char and it breaks everybody?
+>>
+>> It works with some devices, but with many it doesn't. A space followed
+>> by a nul works with quite a lot of devices, but not enough (the last
+>> patch used a space followed by a nul).
+>>
+>> I went to a large electronics store and told them I wanted to buy
+>> devices that didn't work with my computer. They were very helpful, and
+>> as a result I was able to test a lot of devices. That is what led to
+>> the design of this patch (plus the feedback from people like Jan and
+>> his IOneIt MP3 player).
+>>
+>>  > I guess (35^6)*8*7 is not that bad
+>>
+>> yes, but luckily For the WinXP bluescreen the probability of the crash
+>> is actually much lower than that figure would give. With the same
+>> modelling assumptions of WinXP memory slots for 8.3 entries that Paul
+>> used for the last patch, it comes out as less than a 1 in 10k chance
+>> for a full directory (ie. 32767 long filenames). For 100 files in a
+>> directory it is around 1 chance in 10^11. I'm sure Paul will do the
+>> full expansion and modelling if anyone wants more precise numbers.
+>>
+>> For the chkdsk rename, the probability is much easier to calculate as
+>> it is just the usual birthday expansion (see wikipedia for simple
+>> formula for that). That is what gives 0.5% for 32767 files in a
+>> directory, and 4.8x10^-8 for for 100 files.
+>>
+>> Basically it won't happen very often. In each case the probability is
+>> rougly 75x less than it was for the last patch.
+>>
+>>  > What if we had a user mode utility that does these short-names
+>>  > renames that a user can optionally run after umount? since it
+>>  > only writes the (random) short-names it's also safe.
+>>
+>> While I will defer to John Lanza if you want a more complete legal
+>> view on this, I think it is likely that separating the steps of the
+>> patent between programs within one system is not a safe enough legal
+>> strategy to be used.
+>>
+>> Please do keep thinking about it though. There could well be some
+>> simple combination which is legally safe and also technically
+>> completely satisfactory. If you think you have hit on a winner, you
+>> may wish to discuss it with John Lanza in private first though, so it
+>> can be fine tuned before being presented publicly.
+>>
+>> Cheers, Tridge
+>>
+>
