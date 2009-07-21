@@ -1,303 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZGUQEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbZGUQEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbZGUQEA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 12:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbZGUQD7
+	id S1755554AbZGUQEs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 12:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZGUQEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 12:03:59 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:40684 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754350AbZGUQD6 (ORCPT
+	Tue, 21 Jul 2009 12:04:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:16751 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754618AbZGUQEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 12:03:58 -0400
-Subject: [RFC][PATCH] flexible array implementation
-To: akpm@linux-foundation.org
-Cc: containers@lists.linux-foundation.org, bblum@google.com,
-       linux-kernel@vger.kernel.org, menage@google.com,
-       Dave Hansen <dave@linux.vnet.ibm.com>
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Tue, 21 Jul 2009 09:03:33 -0700
-Message-Id: <20090721160333.96AA4D3D@kernel>
+	Tue, 21 Jul 2009 12:04:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MJCidEbo6XhJ1tk2DmEMtQ3EwOwDmmO3bqFw/s6n7wR7Oyc4BYjtmLQoUv3hZEAccP
+         h4orPO4WwakMH8BLGmbJid9V/MS0vpssL+Ohio3F5dFWGnRSDCQgwitbRAR7olfhQ9uj
+         uwJpA+gTaBOLZnZ4dRcWckKdKkPc0ep8bOxI4=
+Date: Tue, 21 Jul 2009 09:04:37 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com, tglx@linutronix.de,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Message-ID: <20090721160436.GD4352@dtor-d630.eng.vmware.com>
+References: <20090714100634.GA4054@elf.ucw.cz> <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com> <20090715133627.GA2538@elf.ucw.cz> <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com> <20090721105924.GK4133@elf.ucw.cz> <20090721113642.GC13286@sirena.org.uk> <5d5443650907210518i6ee4df1evdc04d9ae9453707c@mail.gmail.com> <5d5443650907210530x4aaa03d6gd47ef5f79a3ef8a4@mail.gmail.com> <20090721124933.GA5668@rakim.wolfsonmicro.main>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090721124933.GA5668@rakim.wolfsonmicro.main>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 21, 2009 at 01:49:33PM +0100, Mark Brown wrote:
+> On Tue, Jul 21, 2009 at 06:00:07PM +0530, Trilok Soni wrote:
+> 
+> > Hopefully, this thread can give all details about threaded irq discussion.
+> 
+> > http://lkml.org/lkml/2009/2/27/255
+> 
+> Yes, I'm aware of that - I read it at the time.  It seemed to peter out
+> without any satisfactory solution, unfortunately.  There's two separate
+> issues here:
+> 
+>  - Ordinary devices on interrupt driven or slow buses like I2C.  These
+>    need something along the lines of request_threaded_irq() that's allows
+>    them to schedule the main IRQ handler outside hardirq context so
+>    that they can interact with the device.  They need to do something in
+>    hardirq context to disable the interrupt if it's level triggered but
+>    most of the time the only option they've got is to disable the IRQ
+>    and reenable it when the worker thread is done.  This is the issue
+>    here.
+> 
+>    My immediate thought when I noticed this was that we should probably
+>    fix request_threaded_irq() so that it's useful for them; I'd been
+>    intending to do some digging and try to understand why it is
+>    currently implemented as it is.
+> 
+>  - Multi-function devices like the twl4030 which have an interrupt
+>    controller on them and would like to expose that interrupt controller
+>    via the generic IRQ subsystem.  This was a large part of the
+>    discussion in the thread above is a much trickier problem.
+> 
+> I've added the folks from Samsung posting the MELFAS MCS-5000 driver to
+> the thread since they're running into the same issue.
+> 
 
-Once a structure goes over PAGE_SIZE*2, we see occasional
-allocation failures.  Some people have chosen to switch
-over to things like vmalloc() that will let them keep
-array-like access to such a large structures.  But,
-vmalloc() has plenty of downsides.
+Let's also add Thomas and David since I believe they worked on the
+feature.
 
-Here's an alternative.  I think it's what Andrew was
-suggesting  here:
+>From my part I would like to have the threaded IRQ available to all
+drivers since it seens to be hanlding driver shutdown cleanly and
+without races which is a big plus for me since very few drivers get it
+right.
 
-	http://lkml.org/lkml/2009/7/2/518 
-
-I call it a flexible array.  It does all of its work in
-PAGE_SIZE bits, so never does an order>0 allocation.
-The base level has PAGE_SIZE-2*sizeof(int) bytes of
-storage for pointers to the second level.  So, with a
-32-bit arch, you get about 4MB (4183112 bytes) of total
-storage when the objects pack nicely into a page.  It
-is half that on 64-bit because the pointers are twice
-the size.
-
-The interface is dirt simple.  4 functions:
-	alloc_flex_array()
-	free_flex_array()
-	flex_array_put()
-	flex_array_get()
-
-put() appends an item into the array while get() takes
-indexes and does array-style access.
-
-One thought is that we should perhaps make the base
-structure half the size on 32-bit arches.  That will
-ensure that someone testing on 32-bit will not get
-bitten by the size shrinking by half when moving to
-64-bit.
-
-We could also potentially just pass the "element_size"
-into each of the API functions instead of storing it
-internally.  That would get us one more base pointer
-on 32-bit.
-
-The last improvement that I thought about was letting
-the individual array members span pages.  In this
-implementation, if you have a 2049-byte object, it
-will only pack one of them into each "part" with
-no attempt to pack them.  At this point, I don't think
-the added complexity would be worth it.
-
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
----
-
- linux-2.6.git-dave/include/linux/flex_array.h |   39 ++++++
- linux-2.6.git-dave/lib/Makefile               |    2 
- linux-2.6.git-dave/lib/flex_array.c           |  163 ++++++++++++++++++++++++++
- 3 files changed, 203 insertions(+), 1 deletion(-)
-
-diff -puN /dev/null include/linux/flex_array.h
---- /dev/null	2008-09-02 09:40:19.000000000 -0700
-+++ linux-2.6.git-dave/include/linux/flex_array.h	2009-07-20 15:43:50.000000000 -0700
-@@ -0,0 +1,39 @@
-+#ifndef _FLEX_ARRAY_H
-+#define _FLEX_ARRAY_H
-+
-+#include <linux/types.h>
-+#include <asm/page.h>
-+
-+#define FLEX_ARRAY_PART_SIZE PAGE_SIZE
-+#define FLEX_ARRAY_BASE_SIZE PAGE_SIZE
-+
-+struct flex_array_part;
-+
-+/*
-+ * This is meant to replace cases where an array-like
-+ * structure has gotten to big to fit into kmalloc()
-+ * and the developer is getting tempted to use
-+ * vmalloc().
-+ */
-+
-+struct flex_array {
-+	union {
-+		struct {
-+			int nr_elements;
-+			int element_size;
-+			struct flex_array_part *parts[0];
-+		};
-+		/*
-+		 * This little trick makes sure that
-+		 * sizeof(flex_array) == PAGE_SIZE
-+		 */
-+		char padding[FLEX_ARRAY_BASE_SIZE];
-+	};
-+};
-+
-+struct flex_array *alloc_flex_array(int element_size, int total, gfp_t flags);
-+void free_flex_array(struct flex_array *fa);
-+int flex_array_put(struct flex_array *fa, void *src, gfp_t flags);
-+void *flex_array_get(struct flex_array *fa, int element_nr);
-+
-+#endif /* _FLEX_ARRAY_H */
-diff -puN /dev/null lib/flex_array.c
---- /dev/null	2008-09-02 09:40:19.000000000 -0700
-+++ linux-2.6.git-dave/lib/flex_array.c	2009-07-20 15:44:09.000000000 -0700
-@@ -0,0 +1,163 @@
-+/*
-+ * Flexible array managed in PAGE_SIZE parts
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright IBM Corporation, 2009
-+ *
-+ * Author: Dave Hansen <dave@linux.vnet.ibm.com>
-+ */
-+
-+#include <linux/flex_array.h>
-+#include <linux/slab.h>
-+#include <linux/stddef.h>
-+
-+struct flex_array_part {
-+	char elements[FLEX_ARRAY_PART_SIZE];
-+};
-+
-+static inline int __elements_per_part(int element_size)
-+{
-+	return FLEX_ARRAY_PART_SIZE / element_size;
-+}
-+
-+static inline int __nr_part_ptrs(void)
-+{
-+	int element_offset = offsetof(struct flex_array, parts);
-+	int bytes_left = FLEX_ARRAY_BASE_SIZE - element_offset;
-+	return bytes_left / sizeof(struct flex_array_part *);
-+}
-+
-+/**
-+ * alloc_flex_array - allocate a new flexible array
-+ * @element_size:	the size of individual elements in the array
-+ * @total:		total number of elements that this should hold
-+ *
-+ * We do not actually use @total to size the allocation at this
-+ * point.  It is just used to ensure that the user does not try
-+ * to use this structure for something larger than it can handle
-+ * later on.
-+ */
-+struct flex_array *alloc_flex_array(int element_size, int total, gfp_t flags)
-+{
-+	struct flex_array *ret;
-+	int max_size = __nr_part_ptrs() * __elements_per_part(element_size);
-+
-+	/* max_size will end up 0 if element_size > PAGE_SIZE */
-+	if (total > max_size)
-+		return NULL;
-+	ret = kzalloc(sizeof(struct flex_array), flags);
-+	if (!ret)
-+		return NULL;
-+	ret->element_size = element_size;
-+	return ret;
-+}
-+
-+static int fa_element_to_part_nr(struct flex_array *fa, int element_nr)
-+{
-+	return element_nr / __elements_per_part(fa->element_size);
-+}
-+
-+void free_flex_array(struct flex_array *fa)
-+{
-+	int part_nr;
-+	int max_part;
-+
-+	/* keeps us from getting the index of -1 below */
-+	if (!fa->nr_elements)
-+		goto free_base;
-+
-+	/* we really want the *index* of the last element, thus the -1 */
-+	max_part = fa_element_to_part_nr(fa, fa->nr_elements-1);
-+	for (part_nr = 0; part_nr <= max_part; part_nr++)
-+		kfree(fa->parts[part_nr]);
-+free_base:
-+	kfree(fa);
-+}
-+
-+static int fa_index_inside_part(struct flex_array *fa, int element_nr)
-+{
-+	return (element_nr % __elements_per_part(fa->element_size));
-+}
-+
-+static int offset_inside_part(struct flex_array *fa, int element_nr)
-+{
-+	int part_offset = fa_index_inside_part(fa, element_nr);
-+	return part_offset * fa->element_size;
-+}
-+
-+static inline struct flex_array_part *
-+__fa_get_part(struct flex_array *fa, int part_nr, gfp_t flags)
-+{
-+	struct flex_array_part *part = NULL;
-+	if (part_nr > __nr_part_ptrs())
-+		return NULL;
-+	part = fa->parts[part_nr];
-+	if (!part) {
-+		part = kmalloc(FLEX_ARRAY_PART_SIZE, flags);
-+		if (!part)
-+			return NULL;
-+		fa->parts[part_nr] = part;
-+	}
-+	return part;
-+}
-+
-+/**
-+ * flex_array_put - append a new member into the array
-+ * @src:	address of data to copy into the array
-+ *
-+ * Note that this *copies* the contents of @src into
-+ * the array.  If you are trying to store an array of
-+ * pointers, make sure to pass in &ptr instead of ptr.
-+ */
-+int flex_array_put(struct flex_array *fa, void *src, gfp_t flags)
-+{
-+	int element_nr = fa->nr_elements;
-+	int part_nr = fa_element_to_part_nr(fa, element_nr);
-+	struct flex_array_part *part;
-+	void *dst;
-+
-+	part = __fa_get_part(fa, part_nr, flags);
-+	if (!part)
-+		return -ENOMEM;
-+	dst = &part->elements[offset_inside_part(fa, element_nr)];
-+	fa->nr_elements++;
-+	memcpy(dst, src, fa->element_size);
-+	return 0;
-+}
-+
-+/**
-+ * flex_array_get - pull data back out of the array
-+ * @element_nr:	index of the element to fetch from the array
-+ *
-+ * Returns a pointer to the data at index @element_nr.  Note
-+ * that this is a copy of the data that was passed in.  If you
-+ * are using this to store pointers, you'll get back &ptr.
-+ */
-+void *flex_array_get(struct flex_array *fa, int element_nr)
-+{
-+	int part_nr = fa_element_to_part_nr(fa, element_nr);
-+	struct flex_array_part *part;
-+	int offset;
-+
-+	if (part_nr > __nr_part_ptrs())
-+		return NULL;
-+ 	if (!fa->parts[part_nr])
-+		return NULL;
-+
-+	part = fa->parts[part_nr];
-+	offset = offset_inside_part(fa, element_nr);
-+	return &part->elements[offset_inside_part(fa, element_nr)];
-+}
-diff -puN lib/Makefile~fa lib/Makefile
---- linux-2.6.git/lib/Makefile~fa	2009-07-16 11:40:31.000000000 -0700
-+++ linux-2.6.git-dave/lib/Makefile	2009-07-20 15:44:11.000000000 -0700
-@@ -12,7 +12,7 @@ lib-y := ctype.o string.o vsprintf.o cmd
- 	 idr.o int_sqrt.o extable.o prio_tree.o \
- 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
- 	 proportions.o prio_heap.o ratelimit.o show_mem.o \
--	 is_single_threaded.o plist.o decompress.o
-+	 is_single_threaded.o plist.o decompress.o flex_array.o
- 
- lib-$(CONFIG_MMU) += ioremap.o
- lib-$(CONFIG_SMP) += cpumask.o
-_
+-- 
+Dmitry
