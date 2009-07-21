@@ -1,42 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZGUA3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbZGUAaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbZGUA3i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 20:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZGUA3i
+	id S1754706AbZGUAaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 20:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZGUAaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 20:29:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41909 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754657AbZGUA3h (ORCPT
+	Mon, 20 Jul 2009 20:30:05 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:17180 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754657AbZGUAaD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 20:29:37 -0400
-Date: Mon, 20 Jul 2009 17:28:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Damien Wyart <damien.wyart@free.fr>, Greg KH <gregkh@suse.de>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.30.2: does not boot
-In-Reply-To: <20090721101355.c32a0d27.sfr@canb.auug.org.au>
-Message-ID: <alpine.LFD.2.01.0907201728170.19335@localhost.localdomain>
-References: <20090720040813.GC11940@kroah.com> <200907201613.22483.wolfgang.walter@stwm.de> <20090720150916.GB10015@suse.de> <20090720180333.GA2905@brouette> <alpine.LFD.2.01.0907201110390.13838@localhost.localdomain>
- <20090721101355.c32a0d27.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 20 Jul 2009 20:30:03 -0400
+Date: Mon, 20 Jul 2009 17:28:22 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Subrata Modak <subrata@linux.vnet.ibm.com>
+Cc: ocfs2-devel@oss.oracle.com, Mark Fasheh <mfasheh@suse.com>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       David Howells <dhowells@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix compilation warning for fs/ocfs2/xattr.c
+Message-ID: <20090721002822.GB9183@mail.oracle.com>
+Mail-Followup-To: Subrata Modak <subrata@linux.vnet.ibm.com>,
+	ocfs2-devel@oss.oracle.com, Mark Fasheh <mfasheh@suse.com>,
+	Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+	David Howells <dhowells@redhat.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20090713194928.32372.56679.sendpatchset@subratamodak.linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090713194928.32372.56679.sendpatchset@subratamodak.linux.ibm.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4A650BF2.0094:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 21 Jul 2009, Stephen Rothwell wrote:
+On Tue, Jul 14, 2009 at 01:19:31AM +0530, Subrata Modak wrote:
+> gcc 4.4.1 generates the following build warning on i386:
 > 
-> ccache includes, in the hash of the preprocessed file, "the real compilers
-> size and modification time", so will probably notice an upgrade or
-> downgrade of the compiler.
+> CC [M]  fs/ocfs2/xattr.o
+> fs/ocfs2/xattr.c: In function ‘ocfs2_xattr_block_get’:
+> fs/ocfs2/xattr.c:1055: warning: ‘block_off’ may be used uninitialized in this function
+> 
+> The following fix is based on a similar approach by David Howells
+> few days back: http://lkml.org/lkml/2009/7/9/109,
+> 
+> Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>,
 
-Including something like the assembler? Apparently the problem here was 
-binutils.
+	This is now in the fixes branch of ocfs2.git.
 
-			Linus
+Joel
+
+-- 
+
+Life's Little Instruction Book #15
+
+	"Own a great stereo system."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
