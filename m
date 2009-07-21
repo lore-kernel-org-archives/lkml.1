@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbZGUAA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZGUACr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626AbZGUAA0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 20:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbZGUAAZ
+	id S1754643AbZGUACr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 20:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbZGUACp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 20:00:25 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:58905 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbZGUAAZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 20:00:25 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: virtualization@lists.linux-foundation.org
-Subject: Re: [patch 27/54] Staging: hv: remove ULONG and LONG typedefs
-Date: Tue, 21 Jul 2009 02:00:16 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, virtualization@lists.osdl.org,
-       Greg KH <greg@kroah.com>, Sam Ramji <sramji@microsoft.com>,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       Hank Janssen <hjanssen@microsoft.com>, shemminger@linux-foundation.org
-References: <20090717180850.873962925@mini.kroah.org> <20090717180920.285605541@mini.kroah.org>
-In-Reply-To: <20090717180920.285605541@mini.kroah.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 20 Jul 2009 20:02:45 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42013 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754375AbZGUACo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 20:02:44 -0400
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to
+ [__]p{te,ud,md}_free_tlb()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Memory Management <linux-mm@kvack.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>
+In-Reply-To: <20090720103835.GB7070@wotan.suse.de>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>
+	 <20090715135620.GD7298@wotan.suse.de> <1247709255.27937.5.camel@pasglop>
+	 <20090720081054.GH7298@wotan.suse.de> <1248084041.30899.7.camel@pasglop>
+	 <20090720103835.GB7070@wotan.suse.de>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 10:02:26 +1000
+Message-Id: <1248134546.30899.27.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907210200.16295.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+TB11xN6fCeJ8HMfvr+rLBAh73X2PZZkBwtM3
- Fzlg4NOPToV3I9JSRiF+FcLwKJHix3PIA996vbSSAHQJuaDw2A
- G47nxEIbQ4ce/S6emn/yQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 17 July 2009, Greg Kroah-Hartman wrote:
-> From: Greg Kroah-Hartman <gregkh@suse.de>
+On Mon, 2009-07-20 at 12:38 +0200, Nick Piggin wrote:
+> On Mon, Jul 20, 2009 at 08:00:41PM +1000, Benjamin Herrenschmidt wrote:
+> > On Mon, 2009-07-20 at 10:10 +0200, Nick Piggin wrote:
+> > > 
+> > > Maybe I don't understand your description correctly. The TLB contains
+> > > PMDs, but you say the HW still logically performs another translation
+> > > step using entries in the PMD pages? If I understand that correctly,
+> > > then generic mm does not actually care and would logically fit better
+> > > if those entries were "linux ptes". 
+> > 
+> > They are :-)
+> > 
+> > > The pte invalidation routines
+> > > give the virtual address, which you could use to invalidate the TLB.
+> > 
+> > For PTEs, yes, but not for those PMD entries. IE. I need the virtual
+> > address when destroying PMDs so that I can invalidate those "indirect"
+> > pages. PTEs are already taken care of by existing mechanisms.
 > 
-> The ULONG and LONG typedefs are now removed from the Hyper-V driver
-> code
-> 
+> Hmm, so even after having invalidated all the pte translations
+> then you still need to invalidate the empty indirect page? (or
+> maybe you don't even invalidate the ptes if they're not cached
+> in a TLB).
 
-This conversion is not equivalent:
+The PTEs are cached in the TLB (ie, they turn into normal TLB entries). 
 
->  //
-> -// unsigned types
-> -//
-> -typedef unsigned int		ULONG;
-> -
-> -//
-> -// signed types
-> -//
-> -typedef int					LONG;
+We need to invalidate the indirect entries when the PMD value change
+(ie, when the PTE page is freed) or the TLB would potentially continue
+loading PTEs from a stale PTE page :-)
 
-- // redefine the world, because we can
-- extern char *i;
-- void abs(unsigned u);
-- #define FALSE (2)
+Hence my patch adding the virtual address to pte_free_tlb() which is the
+freeing of a PTE page. I'm adding it to the pmd/pud variants too for
+consistency and because I believe there's no cost.
 
-;-)
+> I believe x86 is also allowed to cache higher level page tables
+> in non-cache coherent storage, and I think it just avoids this
+> issue by flushing the entire TLB when potentially tearing down
+> upper levels. So in theory I think your patch could allow x86 to
+> use invlpg more often as well (in practice the flush-all case
+> and TLB refills are so fast in comparison with invlpg that it
+> probably doesn't gain much especially when talking about
+> invalidating upper levels). So making the generic VM more
+> flexible like that is no problem for me.
 
-> --- a/drivers/staging/hv/include/StorVscApi.h
-> +++ b/drivers/staging/hv/include/StorVscApi.h
-> @@ -117,7 +117,7 @@ typedef struct _STORVSC_DRIVER_OBJECT {
->  } STORVSC_DRIVER_OBJECT;
->  
->  typedef struct _STORVSC_DEVICE_INFO {
-> -	ULONG	PortNumber;
-> +	unsigned long	PortNumber;
->      unsigned char	PathId;
->      unsigned char	TargetId;
->  } STORVSC_DEVICE_INFO;
+Ah that's good to know. I don't know that much about the x86 way of
+doing these things :-)
 
-If this is an API (as the header file name suggests), you just changed it.
-Same for the other hunks in this patch.
+Cheers,
+Ben.
 
-	Arnd <><
+
