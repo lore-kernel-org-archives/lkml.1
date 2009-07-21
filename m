@@ -1,116 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZGUDhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZGUDku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbZGUDhT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 23:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754803AbZGUDhT
+	id S1754838AbZGUDku (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 23:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZGUDkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 23:37:19 -0400
-Received: from fn.samba.org ([216.83.154.106]:51845 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754800AbZGUDhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 23:37:17 -0400
+	Mon, 20 Jul 2009 23:40:49 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:41798 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754602AbZGUDkt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 23:40:49 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=DactWK6b/t0tgVoxi92VOOjVQ/7N9omVyhmJSK3t+Rv/MUL+vcb57Ah5Jwpv3UdT2
+	qRxaVIKIiqihOOmidbtOw==
+Date: Mon, 20 Jul 2009 20:40:41 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Menage <menage@google.com>
+cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mel@csn.ul.ie, npiggin@suse.de
+Subject: Re: [PATCH] copy over oom_adj value at fork time
+In-Reply-To: <6599ad830907201452h5b57a444mf4be96e194cb737@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0907202030400.25770@chino.kir.corp.google.com>
+References: <200906020557.n525v6KO004302@imap1.linux-foundation.org> <6599ad830907141752n5c701f9ap2a87df0a7f4f6ff3@mail.gmail.com> <20090714210557.0f983c37@bree.surriel.com> <6599ad830907141815x64e74a6ek1499f6032cea6f5@mail.gmail.com>
+ <6599ad830907161629p54783716p7246e030b8da00fe@mail.gmail.com> <alpine.DEB.2.00.0907170225570.15373@chino.kir.corp.google.com> <6599ad830907171303v255a0d65t64885d37c41b764a@mail.gmail.com> <alpine.DEB.2.00.0907171559290.30600@chino.kir.corp.google.com>
+ <6599ad830907201452h5b57a444mf4be96e194cb737@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19045.14307.658887.752950@samba.org>
-Date: Tue, 21 Jul 2009 13:37:07 +1000
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Martin Steigerwald <Martin@lichtvoll.de>,
-       Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org, torvalds@linux-foundation.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <87hbxhwv0j.fsf@devron.myhome.or.jp>
-References: <19013.8005.541836.436991@samba.org>
-	<alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr>
-	<19026.38137.63807.427511@samba.org>
-	<200907072356.51553.Martin@lichtvoll.de>
-	<19028.3736.892828.352905@samba.org>
-	<20090708110451.1092afa7@lxorguk.ukuu.org.uk>
-	<1247066878.4159.153.camel@mulgrave.site>
-	<20090708163736.0f98e7e0@lxorguk.ukuu.org.uk>
-	<1247069202.4159.212.camel@mulgrave.site>
-	<20090708171848.21633768@lxorguk.ukuu.org.uk>
-	<873a96a23x.fsf@devron.myhome.or.jp>
-	<87hbxhwv0j.fsf@devron.myhome.or.jp>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks to everyone who helped with the testing of the previous round
-of VFAT patent workaround patches.
+On Mon, 20 Jul 2009, Paul Menage wrote:
 
-I've posted a new set of patches today which tries to address some of
-the technical problems found in the last patch.
+> > My patches don't merely address threads that have an oom_adj value of
+> > OOM_DISABLE while others sharing the same memory do not, they address a
+> > consistency issue whereas those threads may all share memory but have
+> > radically different oom_adj values: that means that only the highest
+> > oom_adj value amongst them is actually used by the oom killer and all
+> > other oom_adj values set by the user for those threads are wrong.
+> 
+> But these patches change an API that has existed for at least 4 years
+> (i.e. before git history exists) and the change is known to break some
+> apps that relied on the existing API.
 
-The new patches:
-
-  - work with Win98
-  - work with Jan's IOneIt MP3 player
-  - work with all the other FAT capable devices I have available for
-    testing
-  - work with existing copies of mtools
-
-The remaining issues that I am aware of are:
-
-  - There is a cosmetic issue with the DOS command prompt under
-    Win98. A directory listing works, but displays garbage in the
-    column where a 8.3 short filename would normally go
-
-  - Similarly, under WinXP, a "dir/x" will show garbage in the 8.3
-    column. For example: http://samba.org/~tridge/dir_test.png
-
-  - mtools has a similar cosmetic issue, which is fixed with a small
-    patch
-
-  - devices which only support 8.3 filenames will not be able to see
-    or use files created with long names with the patch enabled
-
-  - There is a very small chance of WinXP bluescreening if two files
-    in the same directory have the same 11 dummy bytes, and are
-    accessed in quick succession. The chances of this happening is
-    approximately 80x smaller than with the previous patch. As
-    previously noted, this is a very difficult problem to reproduce,
-    and in fact nobody has managed to reproduce it without modifying
-    the patch to use a much smaller number of random bits.
-
-  - Similarly, there is a small chance that chkdsk on Windows will
-    rename one file in a directory if they happen to have the same 11
-    byte dummy values. The probability of this happening is
-    approximately 80x lower than with the previous patch.
-
-Some people have also asked that this patch change the name of the
-filesystem to 'lfat' or similar. I have not included that change in
-this patch as I think it is counter productive. Instead I have added a
-printk_once() to produce a warning like this:
-
-  VFAT: not creating 8.3 short filenames for long names
-
-when the first long filename is created on a VFAT filesystem with this
-patch enabled.
-
-The reason I think this is a better option than a filesystem name
-change is that a name change will break a unknown number of userspace
-tools, scripts and config files. For example, desktop tools for
-mounting filesystems, scripts that use -t vfat, module configuration
-options in /etc could all be broken without any ability to give the
-user feedback on why it broke.
-
-If you have a FAT capable device that you want to test for
-compatibility with the new patches, please have a look at the
-'Testing' section of the following README:
-
-  http://kernel.org/pub/linux/kernel/people/tridge/VFAT/README
-
-It gives details on how you can do testing without having to change
-your kernel.
-
-Cheers, Tridge
+Such applications (none have been mentioned) should be modified to comply 
+with how the oom killer uses oom_adj values, which is identical for all 
+tasks sharing the same mm_struct.  That prevents inconsistent states such 
+as being able to elevate /proc/pid/oom_adj to 16 so that pid is targeted 
+first because of its massive /proc/pid/oom_score when, in actuality, it 
+may be OOM_DISABLE because it shares memory with an OOM_DISABLE parent and 
+cannot be killed.  It is inappropriate for the kernel to report completely 
+erroneous oom scores, which the old behavior allowed, so the end result is 
+your userspace will need to be fixed.
