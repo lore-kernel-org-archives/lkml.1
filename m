@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZGUBvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZGUBzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbZGUBvr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 21:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbZGUBvr
+	id S1754595AbZGUBzb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 21:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZGUBza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 21:51:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56598 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754369AbZGUBvq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 21:51:46 -0400
-Date: Mon, 20 Jul 2009 21:51:46 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: binary ftrace buffer format
-In-Reply-To: <1247520189.4071.4.camel@johannes.local>
-Message-ID: <alpine.DEB.2.00.0907202148140.11494@gandalf.stny.rr.com>
-References: <1247520189.4071.4.camel@johannes.local>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 20 Jul 2009 21:55:30 -0400
+Received: from mail.windriver.com ([147.11.1.11]:47319 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751433AbZGUBza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 21:55:30 -0400
+Message-ID: <4A651FCB.6080704@windriver.com>
+Date: Mon, 20 Jul 2009 20:54:19 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Yinghai Lu <yinghai@kernel.org>
+CC: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 01/10] ehci early_printk: split ehci debug driver from
+ early_printk.c
+References: <1248120392-8372-1-git-send-email-jason.wessel@windriver.com> <1248120392-8372-2-git-send-email-jason.wessel@windriver.com> <4A650786.1030501@kernel.org>
+In-Reply-To: <4A650786.1030501@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Jul 2009 01:54:03.0300 (UTC) FILETIME=[1F9BB640:01CA09A6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yinghai Lu wrote:
+> Jason Wessel wrote:
+>   
+>> Move the dbgp early printk driver in advance of refactoring and adding
+>> new code, so the changes to this code are tracked separately from the
+>> move of the code.
+>>
+>> The drivers/usb/early directory will be the location of the current
+>> and future early usb code for driving usb devices prior initializing
+>> the standard interrupt driven USB drivers.
+>>
+>> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+>> Cc: Greg KH <gregkh@suse.de>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Yinghai Lu <yinghai@kernel.org>
+>> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+>> ---
+>>  arch/x86/kernel/early_printk.c |  715 ---------------------------------------
+>>  drivers/usb/Makefile           |    1 +
+>>  drivers/usb/early/Makefile     |    5 +
+>>  drivers/usb/early/ehci-dbgp.c  |  723 ++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/usb/ehci_def.h   |    6 +
+>>  5 files changed, 735 insertions(+), 715 deletions(-)
+>>  create mode 100644 drivers/usb/early/Makefile
+>>  create mode 100644 drivers/usb/early/ehci-dbgp.c
+>>     
+>
+> before this patch, we could use dbgp without compiling USB susbsystem in...
+>
+>   
 
-On Mon, 13 Jul 2009, Johannes Berg wrote:
+And you shouldn't need it today.  You pointed out an error in the patch
+which I will correct.  The drivers/Makefile needs to be changed, instead
+of the drivers/usb/Makefile.
 
-> Hi!
-> 
-> For the past hour or so I've been trying to make Steven's rb-read.pl
-> script [1] work, but not only is it endian-challenged, working only on
-> LE, but also does it seems to have a different idea of the ring buffer
-> format, so even with fixes I can't get it to print proper data.
-> 
-> I'm convinced that it would be trivial to write a program to parse the
-> binary trace buffer, but I can't find a format description. Can somebody
-> point me to one please?
+The dbgp code was changed in the patch series such that it works with or
+with out the usb subsystem and with or without the earlyconsole=keep,...
 
-I have a tool called trace-cmd (I'm looking into porting it to the perf 
-tool) but it currently does what you want. I've tested it on both 32 bit 
-and 64 bit systems as well as big and little endians. The files can be 
-created on one system and read on another. It contains data in the files 
-to let other systems know how to read it.
+All the code in the drivers/usb/early would work this way as well.  As
+an example, I have an experimental UHCI serial driver that can be used
+via the earlyprintk.
 
-You can get the tool here:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/trace-cmd.git
-
-> 
-> Oh and a tangential question -- that thing seems to work on pages, does
-> that mean I can't trace something larger than a page?
-
-Currently, we have not the need to trace more than a page. But this is 
-something that can be changed in the future, but currently we have not had 
-the need, and when it was developed, Linus suggested pages would be fine.
-
--- Steve
-
-
-> 
-> johannes
-> 
-> [1] http://lwn.net/Articles/321777/
-> 
+Thanks for the feed back.  I'll fix this for the v2 of the patch series.
+Jason.
