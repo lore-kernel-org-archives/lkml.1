@@ -1,214 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZGUGFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZGUGPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbZGUGFQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 02:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbZGUGFO
+	id S1755045AbZGUGPe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 02:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbZGUGPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 02:05:14 -0400
-Received: from mail-px0-f193.google.com ([209.85.216.193]:53871 "EHLO
-	mail-px0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754976AbZGUGEd (ORCPT
+	Tue, 21 Jul 2009 02:15:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34000 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754303AbZGUGPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 02:04:33 -0400
-From: Abhishek Kulkarni <adkulkar@umail.iu.edu>
-To: linux-kernel@vger.kernel.org
-Cc: v9fs-developer@lists.sourceforge.net,
-       Abhishek Kulkarni <adkulkar@umail.iu.edu>
-Subject: [PATCH] 9p: minor comment fixes
-Date: Tue, 21 Jul 2009 00:03:54 -0600
-Message-Id: <1248156236-3005-5-git-send-email-adkulkar@umail.iu.edu>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1248156236-3005-1-git-send-email-adkulkar@umail.iu.edu>
-References: <1248156236-3005-1-git-send-email-adkulkar@umail.iu.edu>
+	Tue, 21 Jul 2009 02:15:32 -0400
+Date: Mon, 20 Jul 2009 23:14:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Abbott <michael@araneidae.co.uk>
+Cc: lm-sensors@lm-sensors.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add low_power support for adm1021 driver.
+Message-Id: <20090720231407.676717e4.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0907061725170.11795@venus.araneidae.co.uk>
+References: <Pine.LNX.4.64.0907061725170.11795@venus.araneidae.co.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the comments -- mostly the improper and/or missing descriptions
-of function parameters.
+On Mon, 6 Jul 2009 17:26:32 +0100 (BST) Michael Abbott <michael@araneidae.co.uk> wrote:
 
-Signed-off-by: Abhishek Kulkarni <adkulkar@umail.iu.edu>
----
-:100644 100644 5fda0a0... e221b14... M	fs/9p/vfs_inode.c
-:100644 100644 787ccdd... 7bbd2d5... M	net/9p/client.c
-:100644 100644 8c2588e... 8d934dd... M	net/9p/trans_fd.c
-:100644 100644 ac49900... 65cb29d... M	net/9p/trans_rdma.c
-:100644 100644 a49484e... 9bf0b73... M	net/9p/trans_virtio.c
- fs/9p/vfs_inode.c     |    3 +--
- net/9p/client.c       |   14 +++++++-------
- net/9p/trans_fd.c     |    8 ++++----
- net/9p/trans_rdma.c   |    9 +++++----
- net/9p/trans_virtio.c |   11 ++++-------
- 5 files changed, 21 insertions(+), 24 deletions(-)
+> Resending this patch previously sent some months again.
+> 
+> Occasionally it is helpful to be able to turn a temperature sensor off
+> (for example if it's making unwanted electrical noise).  This patch
+> adds a sysfs node to put any adm1021 compatible device into low power mode.
+> 
+> Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
+> ---
+>  drivers/hwmon/adm1021.c |   33 +++++++++++++++++++++++++++++++++
+>  1 files changed, 33 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/hwmon/adm1021.c b/drivers/hwmon/adm1021.c
+> index de84398..39434e1 100644
+> --- a/drivers/hwmon/adm1021.c
+> +++ b/drivers/hwmon/adm1021.c
+> @@ -83,6 +83,7 @@ struct adm1021_data {
+>  
+>  	struct mutex update_lock;
+>  	char valid;		/* !=0 if following fields are valid */
+> +	char low_power;		/* !=0 if device in low power mode */
+>  	unsigned long last_updated;	/* In jiffies */
+>  
+>  	int temp_max[2];		/* Register values */
+> @@ -213,6 +214,35 @@ static ssize_t set_temp_min(struct device *dev,
+>  	return count;
+>  }
+>  
+> +static ssize_t show_low_power(
+> +	struct device *dev, struct device_attribute *devattr, char *buf)
 
-diff --git a/fs/9p/vfs_inode.c b/fs/9p/vfs_inode.c
-index 5fda0a0..e221b14 100644
---- a/fs/9p/vfs_inode.c
-+++ b/fs/9p/vfs_inode.c
-@@ -171,7 +171,6 @@ int v9fs_uflags2omode(int uflags, int extended)
- 
- /**
-  * v9fs_blank_wstat - helper function to setup a 9P stat structure
-- * @v9ses: 9P session info (for determining extended mode)
-  * @wstat: structure to initialize
-  *
-  */
-@@ -398,9 +397,9 @@ v9fs_open_created(struct inode *inode, struct file *file)
-  * @v9ses: session information
-  * @dir: directory that dentry is being created in
-  * @dentry:  dentry that is being created
-+ * @extension: 9p2000.u extension string to support devices, etc.
-  * @perm: create permissions
-  * @mode: open mode
-- * @extension: 9p2000.u extension string to support devices, etc.
-  *
-  */
- static struct p9_fid *
-diff --git a/net/9p/client.c b/net/9p/client.c
-index 787ccdd..7bbd2d5 100644
---- a/net/9p/client.c
-+++ b/net/9p/client.c
-@@ -60,9 +60,9 @@ static struct p9_req_t *
- p9_client_rpc(struct p9_client *c, int8_t type, const char *fmt, ...);
- 
- /**
-- * v9fs_parse_options - parse mount options into session structure
-- * @options: options string passed from mount
-- * @v9ses: existing v9fs session information
-+ * parse_options - parse mount options into client structure
-+ * @opts: options string passed from mount
-+ * @clnt: existing v9fs client information
-  *
-  * Return 0 upon success, -ERRNO upon failure
-  */
-@@ -232,7 +232,7 @@ EXPORT_SYMBOL(p9_tag_lookup);
- 
- /**
-  * p9_tag_init - setup tags structure and contents
-- * @tags: tags structure from the client struct
-+ * @c:  v9fs client struct
-  *
-  * This initializes the tags structure for each client instance.
-  *
-@@ -258,7 +258,7 @@ error:
- 
- /**
-  * p9_tag_cleanup - cleans up tags structure and reclaims resources
-- * @tags: tags structure from the client struct
-+ * @c:  v9fs client struct
-  *
-  * This frees resources associated with the tags structure
-  *
-@@ -430,8 +430,8 @@ static int p9_check_errors(struct p9_client *c, struct p9_req_t *req)
- 
- /**
-  * p9_client_flush - flush (cancel) a request
-- * c: client state
-- * req: request to cancel
-+ * @c: client state
-+ * @oldreq: request to cancel
-  *
-  * This sents a flush for a particular requests and links
-  * the flush request to the original request.  The current
-diff --git a/net/9p/trans_fd.c b/net/9p/trans_fd.c
-index 8c2588e..8d934dd 100644
---- a/net/9p/trans_fd.c
-+++ b/net/9p/trans_fd.c
-@@ -119,8 +119,8 @@ struct p9_poll_wait {
-  * @wpos: write position for current frame
-  * @wsize: amount of data to write for current frame
-  * @wbuf: current write buffer
-+ * @poll_pending_link: pending links to be polled per conn
-  * @poll_wait: array of wait_q's for various worker threads
-- * @poll_waddr: ????
-  * @pt: poll state
-  * @rq: current read work
-  * @wq: current write work
-@@ -700,9 +700,9 @@ static int p9_fd_cancel(struct p9_client *client, struct p9_req_t *req)
- }
- 
- /**
-- * parse_options - parse mount options into session structure
-- * @options: options string passed from mount
-- * @opts: transport-specific structure to parse options into
-+ * parse_opts - parse mount options into p9_fd_opts structure
-+ * @params: options string passed from mount
-+ * @opts: fd transport-specific structure to parse options into
-  *
-  * Returns 0 upon success, -ERRNO upon failure
-  */
-diff --git a/net/9p/trans_rdma.c b/net/9p/trans_rdma.c
-index ac49900..65cb29d 100644
---- a/net/9p/trans_rdma.c
-+++ b/net/9p/trans_rdma.c
-@@ -67,14 +67,15 @@
-  * @pd: Protection Domain pointer
-  * @qp: Queue Pair pointer
-  * @cq: Completion Queue pointer
-+ * @dm_mr: DMA Memory Region pointer
-  * @lkey: The local access only memory region key
-  * @timeout: Number of uSecs to wait for connection management events
-  * @sq_depth: The depth of the Send Queue
-  * @sq_sem: Semaphore for the SQ
-  * @rq_depth: The depth of the Receive Queue.
-+ * @rq_count: Count of requests in the Receive Queue.
-  * @addr: The remote peer's address
-  * @req_lock: Protects the active request list
-- * @send_wait: Wait list when the SQ fills up
-  * @cm_done: Completion event for connection management tracking
-  */
- struct p9_trans_rdma {
-@@ -154,9 +155,9 @@ static match_table_t tokens = {
- };
- 
- /**
-- * parse_options - parse mount options into session structure
-- * @options: options string passed from mount
-- * @opts: transport-specific structure to parse options into
-+ * parse_opts - parse mount options into rdma options structure
-+ * @params: options string passed from mount
-+ * @opts: rdma transport-specific structure to parse options into
-  *
-  * Returns 0 upon success, -ERRNO upon failure
-  */
-diff --git a/net/9p/trans_virtio.c b/net/9p/trans_virtio.c
-index a49484e..9bf0b73 100644
---- a/net/9p/trans_virtio.c
-+++ b/net/9p/trans_virtio.c
-@@ -57,11 +57,9 @@ static int chan_index;
-  * @initialized: whether the channel is initialized
-  * @inuse: whether the channel is in use
-  * @lock: protects multiple elements within this structure
-+ * @client: client instance
-  * @vdev: virtio dev associated with this channel
-  * @vq: virtio queue associated with this channel
-- * @tagpool: accounting for tag ids (and request slots)
-- * @reqs: array of request slots
-- * @max_tag: current number of request_slots allocated
-  * @sg: scatter gather list which is used to pack a request (protected?)
-  *
-  * We keep all per-channel information in a structure.
-@@ -92,7 +90,7 @@ static unsigned int rest_of_page(void *data)
- 
- /**
-  * p9_virtio_close - reclaim resources of a channel
-- * @trans: transport state
-+ * @client: client instance
-  *
-  * This reclaims a channel by freeing its resources and
-  * reseting its inuse flag.
-@@ -181,9 +179,8 @@ static int p9_virtio_cancel(struct p9_client *client, struct p9_req_t *req)
- 
- /**
-  * p9_virtio_request - issue a request
-- * @t: transport state
-- * @tc: &p9_fcall request to transmit
-- * @rc: &p9_fcall to put reponse into
-+ * @client: client instance issuing the request
-+ * @req: request to be issued
-  *
-  */
- 
--- 
-1.6.0.4
+This is atypical layout.  Please use something like
 
+static ssize_t show_low_power(struct device *dev,
+				struct device_attribute *devattr, char *buf)
+
+as is used in the rest of this driver, and much kernel code.
+
+> +{
+> +	struct adm1021_data *data = adm1021_update_device(dev);
+> +	return sprintf(buf, "%d\n", data->low_power);
+> +}
+> +
+> +static ssize_t set_low_power(
+> +	struct device *dev, struct device_attribute *devattr,
+> +	const char *buf, size_t count)
+
+ditto
+
+> +{
+> +	struct i2c_client *client = to_i2c_client(dev);
+> +	struct adm1021_data *data = i2c_get_clientdata(client);
+> +	int low_power = simple_strtol(buf, NULL, 10) != 0;
+> +	mutex_lock(&data->update_lock);
+
+And a blank line between end-of-locals and start-of-code.
+
+Please use scripts/checkpatch.pl.  It would have informed you that
+strict_strtoul() is preferred here.  Otherwise we will treat userspace
+input of the form "0blob" and a valid decimal number, which it isn't.
+
+
+> +	if (low_power != data->low_power) {
+> +		int config = i2c_smbus_read_byte_data(
+> +			client, ADM1021_REG_CONFIG_R);
+> +		data->low_power = low_power;
+> +		i2c_smbus_write_byte_data(client, ADM1021_REG_CONFIG_W,
+> +			(config & 0xBF) | (low_power << 6));
+> +	}
+> +	mutex_unlock(&data->update_lock);
+> +
+> +	return count;
+> +}
+> +
+> +
+>  static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp, NULL, 0);
+>  static SENSOR_DEVICE_ATTR(temp1_max, S_IWUSR | S_IRUGO, show_temp_max,
+>  			  set_temp_max, 0);
+> @@ -230,6 +260,8 @@ static SENSOR_DEVICE_ATTR(temp2_min_alarm, S_IRUGO, show_alarm, NULL, 3);
+>  static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_alarm, NULL, 2);
+>  
+>  static DEVICE_ATTR(alarms, S_IRUGO, show_alarms, NULL);
+> +static DEVICE_ATTR(
+> +	low_power, S_IWUSR | S_IRUGO, show_low_power, set_low_power);
+
+Again, please use standard layout.
+
+>  static struct attribute *adm1021_attributes[] = {
+>  	&sensor_dev_attr_temp1_max.dev_attr.attr,
+> @@ -244,6 +276,7 @@ static struct attribute *adm1021_attributes[] = {
+>  	&sensor_dev_attr_temp2_min_alarm.dev_attr.attr,
+>  	&sensor_dev_attr_temp2_fault.dev_attr.attr,
+>  	&dev_attr_alarms.attr,
+> +	&dev_attr_low_power.attr,
+>  	NULL
+>  };
+
+I'll merge this patch as-is anyway so it doesn't get forgotten about.  I'll
+mark it as needing-an-update.
+
+Thanks.
