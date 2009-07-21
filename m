@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZGUOGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbZGUOJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753440AbZGUOGQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 10:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZGUOGQ
+	id S1753608AbZGUOJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 10:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZGUOJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 10:06:16 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:34547 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbZGUOGP convert rfc822-to-8bit (ORCPT
+	Tue, 21 Jul 2009 10:09:26 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:56876 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752250AbZGUOJ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 10:06:15 -0400
-From: "A, Raghu" <raghu.a@ti.com>
-To: "pierre@ossman.eu" <pierre@ossman.eu>,
-       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Dasgupta, Romit" <romit@ti.com>
-Date: Tue, 21 Jul 2009 19:35:55 +0530
-Subject: Restoring back the system state from MMC after a successful
- hibernation
-Thread-Topic: Restoring back the system state from MMC after a successful
- hibernation
-Thread-Index: AcoKDF1gLwtznDWFTOmjlTMBpvE+mQ==
-Message-ID: <2A3DCF3DA181AD40BDE86A3150B27B6B02F1B9BF4C@dbde02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 21 Jul 2009 10:09:26 -0400
+Date: Tue, 21 Jul 2009 23:09:11 +0900 (JST)
+Message-Id: <20090721.230911.193692312.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Cc: agk@redhat.com
+Subject: [PATCH 1/9] I/O bandwidth controller and BIO tracking
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+Hi all,
 
-I am trying a hibernate-restore procedure on my system, wherein I store the context image on a swap partition on a MMC device (/dev/mmcblk0). The hibernation process happens smoothly. However, when I try to restore back, after including "resume = /dev/mmcblk0" in the bootargs, I find that the MMC card does not get detected by the time late_initcall(software_resume) is called, as a result of which the restore does not happen.
+These are new releases of dm-ioband and blkio-cgroup. The major
+changes of these releases are:
+  - dm-ioband can be configured through the cgroup interface. The
+    bandwidth can be assigned on a per cgroup per block device basis.
+  - The event tracing is supported that helps in debugging and
+    monitoring dm-ioband.
+  - A document for blkio-cgroup is available at
+    Documentation/cgroup/blkio.txt.
 
-To resolve the problem, I have included a mmc_flush_scheduled_work() call immediately after the mmc_detect_change(host, 0) call in mmc_start_host(struct mmc_host *host) function defined in linux/drivers/mmc/core/core.c, so that instead of mmc_rescan happening sometime later, it now happens right away, and the MMC card gets detected at the end of the host's .probe() callback itself.
+This series of patches consists of two parts:
+dm-ioband v1.12.1
+  dm-ioband is an I/O bandwidth controller implemented as a
+  device-mapper driver and can control bandwidth on per partition, per
+  user, per process, per virtual machine (such as KVM or Xen) basis.
 
-/*****
+blkio-cgruop v9 
+  blkio-cgroup is a block I/O tracking mechanism implemented on the
+  cgroup memory subsystem. Using this feature the owners of any type
+  of I/O can be determined. This allows dm-ioband to control block I/O
+  bandwidth even when it is accepting delayed write requests.
+  dm-ioband can find the cgroup of each request. It is also for
+  possible that others working on I/O bandwidth throttling to use this
+  functionality to control asynchronous I/O with a little enhancement.
 
-void mmc_start_host(struct mmc_host *host)
+The patches can be applied to both the current device-mapper development
+tree and 2.6.31-rc3.
 
-{
-        mmc_power_off(host);
-        mmc_detect_change(host, 0);
-        mmc_flush_scheduled_work();
-}
+The list of the patches:
+  [PATCH 1/9] I/O bandwidth controller and BIO tracking
+  [PATCH 2/9] dm-ioband-1.12.1: All-in-one patch
+  [PATCH 3/9] blkio-cgroup-v9: The new page_cgroup framework
+  [PATCH 4/9] blkio-cgroup-v9: Refactoring io-context initialization
+  [PATCH 5/9] blkio-cgroup-v9: The body of blkio-cgroup
+  [PATCH 6/9] blkio-cgroup-v9: The document of blkio-cgroup
+  [PATCH 7/9] blkio-cgroup-v9: Page tracking hooks
+  [PATCH 8/9] blkio-cgroup-v9: Fast page tracking
+  [PATCH 9/9] blkio-cgroup-v9: Add a cgroup support to dm-ioband
 
-The host's probe() routine calls mmc_add_host , which in turn calls mmc_start_host.
+Please visit our website, the patches and more information are available.
+  Linux Block I/O Bandwidth Control Project
+  http://sourceforge.net/apps/trac/ioband/
 
-*****/
+I'd like to get some feedbacks from the list. Any comments are
+appreciated.
 
-Is this approach correct? Or is there any other way I can get the MMC card detected before late_initcall(software_resume) happens?
-
-Kindly CC the reply to me as I am not a part of the linux kernel mailing list.
-
-Thanks and Regards
-Raghu A.
+Thanks,
+Ryo Tsuruta
