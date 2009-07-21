@@ -1,68 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZGUIcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbZGUIet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753594AbZGUIcO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 04:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZGUIcL
+	id S1753865AbZGUIet (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 04:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZGUIeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 04:32:11 -0400
-Received: from ns.firmix.at ([62.141.48.66]:3301 "EHLO ns.firmix.at"
+	Tue, 21 Jul 2009 04:34:46 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:40399 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751964AbZGUIcK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 04:32:10 -0400
-X-Greylist: delayed 320 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Jul 2009 04:32:10 EDT
-Subject: Re: [patch 27/54] Staging: hv: remove ULONG and LONG typedefs
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: virtualization@lists.linux-foundation.org, devel@driverdev.osuosl.org,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, Sam Ramji <sramji@microsoft.com>,
-       shemminger@linux-foundation.org
-In-Reply-To: <200907210200.16295.arnd@arndb.de>
-References: <20090717180850.873962925@mini.kroah.org>
-	 <20090717180920.285605541@mini.kroah.org>
-	 <200907210200.16295.arnd@arndb.de>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Tue, 21 Jul 2009 10:26:11 +0200
-Message-Id: <1248164771.16364.7.camel@spike.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	id S1752571AbZGUIep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 04:34:45 -0400
+Message-ID: <4A657D58.2060708@atmel.com>
+Date: Tue, 21 Jul 2009 10:33:28 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Dan Williams <dan.j.williams@intel.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+CC: maciej.sosnowski@intel.com, avictor.za@gmail.com,
+       patrice.vilchez@atmel.com
+Subject: Re: [PATCH 1/2 v3] dmaengine: at_hdmac: new driver for the Atmel
+ AHB 	DMA Controller
+References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>	 <1246641873-21686-1-git-send-email-nicolas.ferre@atmel.com> <e9c3a7c20907180901u3670a8edy2bc5c1b5cf911ab4@mail.gmail.com>
+In-Reply-To: <e9c3a7c20907180901u3670a8edy2bc5c1b5cf911ab4@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.276 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.276 required=5
-X-Spam-Score: -2.276 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-21 at 02:00 +0200, Arnd Bergmann wrote:
-> On Friday 17 July 2009, Greg Kroah-Hartman wrote:
-> > From: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > The ULONG and LONG typedefs are now removed from the Hyper-V driver
-> > code
+Dan Williams :
+> On Fri, Jul 3, 2009 at 10:24 AM, Nicolas Ferre<nicolas.ferre@atmel.com> wrote:
+>> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
+>> at91sam9rl chip. It will be used on other products in the future.
+>>
+>> This first release covers only the memory-to-memory tranfer type. This is the
+>> only tranfer type supported by this chip.  On other products, it will be used
+>> also for peripheral DMA transfer (slave API support to come).
+>>
+>> I used dmatest client without problem in different configurations to test it.
+>>
+>> Full documentation for this controller can be found in the SAM9RL datasheet:
+>> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243
+>>
+>> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+>> ---
+>> v2 is here:
+>> http://lkml.org/lkml/2009/6/26/104
+>>
+>> v2 -> v3:
+>>  - initial number of descriptors to allocate for each channel raised to 64 and
+>>   is now a parameter
+>>  - ack-bit in descriptor flag comment synchronized with TXx9 dma driver
+>>  - atc_desc_get() when short on descriptors in pool: create one at a time
+>>  - allocation flag changed to GFP_ATOMIC in atc_desc_get()
+>>  - call to proper funtion while unmapping: use of new
+>>   DMA_COMPL_{SRC,DEST}_UNMAP_SINGLE flags
+>>  - call dma_run_dependencies() at the end of atc_chain_complete()
+>>
 > 
-> This conversion is not equivalent:
-[...]
-> - // redefine the world, because we can
-[...]
-> - #define FALSE (2)
-That has been done already by the SNMP folks - see
-http://www.faqs.org/rfcs/rfc1903.html under "TruthValue".
-S,CNR and for off-topic ...
+> Looks good, but now I belatedly wonder if that GFP_ATOMIC should be
+> GFP_NOWAIT instead?  Do we really want to consume from the system
+> emergency pools for these allocations (a similar fix is need for
+> ioatdma and fsldma)?
 
-> ;-)
-;-) either ....
+Seems sensible indeed but I know little about allocation flags.
 
-	Bernd
+What do you think about including the driver and then building a patch
+that fixes this flag in all allocation functions at a time.
+It may add exposure to this modification and maybe encourage people to
+react...
+
+Regards,
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+Nicolas Ferre
 
