@@ -1,309 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbZGUI6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbZGUJKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753939AbZGUI6N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 04:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbZGUI6N
+	id S1754051AbZGUJKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 05:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZGUJKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 04:58:13 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62727 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753057AbZGUI6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 04:58:12 -0400
-Message-ID: <4A6582C1.2040609@cn.fujitsu.com>
-Date: Tue, 21 Jul 2009 16:56:33 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 21 Jul 2009 05:10:22 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:40624 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbZGUJKV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 05:10:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=GCPqYtPImOfaMZMX+8zCQL239bXWpkGT/FyaaaZ9WQEfN8OurMkIPPINwuL/Ttocxz
+         jxJTV2cyRjl5DGQ2K96W201xbFg1vMz6h/cBVCh4PImaU6/1qOdTFDFVC4/YUuUlpa0p
+         /uUg9E1htNss9fhn2/htoivp9r3llYwV2kUHI=
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linville@tuxdriver.com, luciano.coelho@nokia.com,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] wireless: wl12xx, fix lock imbalance
+References: <1247603833-10862-1-git-send-email-jirislaby@gmail.com>
+	<87eish56zj.fsf@litku.valot.fi> <4A64E199.70501@gmail.com>
+From: Kalle Valo <kalle.valo@iki.fi>
+Date: Tue, 21 Jul 2009 12:10:14 +0300
+In-Reply-To: <4A64E199.70501@gmail.com> (Jiri Slaby's message of "Mon\, 20 Jul 2009 23\:28\:57 +0200")
+Message-ID: <877hy2qu4p.fsf@litku.valot.fi>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing/events: Add module tracepoints
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add trace points to trace module_load, module_free, module_get,
-module_put and module_request, and use trace_event facility
-to get the trace output.
+Jiri Slaby <jirislaby@gmail.com> writes:
 
-Here's the sample output:
+> But currently I'm confused by wl1251_plt_start and wl1251_plt_stop.
+> They take a lock but doesn't unlock it at all. Neither their callies.
+> Is it hidden somewhere deeper?
 
-     TASK-PID    CPU#    TIMESTAMP  FUNCTION
-        | |       |          |         |
-    <...>-42    [000]     1.758380: module_request: fb0 wait=1 call_site=fb_open
-    ...
-    <...>-60    [000]     3.269403: module_load: scsi_wait_scan 
-    <...>-60    [000]     3.269432: module_put: scsi_wait_scan call_site=sys_init_module refcnt=0
-    <...>-61    [001]     3.273168: module_free: scsi_wait_scan
-    ...
-    <...>-1021  [000]    13.836081: module_load: sunrpc 
-    <...>-1021  [000]    13.840589: module_put: sunrpc call_site=sys_init_module refcnt=-1
-    <...>-1027  [000]    13.848098: module_get: sunrpc call_site=try_module_get refcnt=0
-    <...>-1027  [000]    13.848308: module_get: sunrpc call_site=get_filesystem refcnt=1
-    <...>-1027  [000]    13.848692: module_put: sunrpc call_site=put_filesystem refcnt=0
-    ...
- modprobe-2587  [001]  1088.437213: module_load: trace_events_sample F
- modprobe-2587  [001]  1088.437786: module_put: trace_events_sample call_site=sys_init_module refcnt=0
+I guess that's a bug which creeped in when I ported the patches from our
+internal tree. I'll just remove plt start/stop functions altogether,
+they need to ported to the new nl80211 test mode interface anyway.
 
+Oh damn, I just noticed that I added wl1251_netlink.c accidentally to
+wireless-testing tree. It should definitely not be there, instead we
+need to use nl80211 test command interface. I'll send a patch to remove
+the private netlink stuff soon. John, sorry about this.
 
-Note:
-
-- the taints flag can be 'F', 'C' and/or 'P' if mod->taints != 0
-
-- the module refcnt is percpu, so it can be negative in a specific cpu
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/module.h        |   14 ++++-
- include/trace/events/module.h |  126 +++++++++++++++++++++++++++++++++++++++++
- kernel/kmod.c                 |    4 +
- kernel/module.c               |   11 ++++
- 4 files changed, 152 insertions(+), 3 deletions(-)
- create mode 100644 include/trace/events/module.h
-
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 7a5c82c..86863cd 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -17,10 +17,12 @@
- #include <linux/moduleparam.h>
- #include <linux/marker.h>
- #include <linux/tracepoint.h>
--#include <asm/local.h>
- 
-+#include <asm/local.h>
- #include <asm/module.h>
- 
-+#include <trace/events/module.h>
-+
- /* Not Yet Implemented */
- #define MODULE_SUPPORTED_DEVICE(name)
- 
-@@ -480,7 +482,10 @@ static inline local_t *__module_ref_addr(struct module *mod, int cpu)
- static inline void __module_get(struct module *module)
- {
- 	if (module) {
--		local_inc(__module_ref_addr(module, get_cpu()));
-+		unsigned int cpu = get_cpu();
-+		local_inc(__module_ref_addr(module, cpu));
-+		trace_module_get(module, _THIS_IP_,
-+				 local_read(__module_ref_addr(module, cpu)));
- 		put_cpu();
- 	}
- }
-@@ -491,8 +496,11 @@ static inline int try_module_get(struct module *module)
- 
- 	if (module) {
- 		unsigned int cpu = get_cpu();
--		if (likely(module_is_live(module)))
-+		if (likely(module_is_live(module))) {
- 			local_inc(__module_ref_addr(module, cpu));
-+			trace_module_get(module, _THIS_IP_,
-+				local_read(__module_ref_addr(module, cpu)));
-+		}
- 		else
- 			ret = 0;
- 		put_cpu();
-diff --git a/include/trace/events/module.h b/include/trace/events/module.h
-new file mode 100644
-index 0000000..84160fb
---- /dev/null
-+++ b/include/trace/events/module.h
-@@ -0,0 +1,126 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM module
-+
-+#if !defined(_TRACE_MODULE_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_MODULE_H
-+
-+#include <linux/tracepoint.h>
-+
-+#ifdef CONFIG_MODULES
-+
-+struct module;
-+
-+#define show_module_flags(flags) __print_flags(flags, "",	\
-+	{ (1UL << TAINT_PROPRIETARY_MODULE),	"P" },		\
-+	{ (1UL << TAINT_FORCED_MODULE),		"F" },		\
-+	{ (1UL << TAINT_CRAP),			"C" })
-+
-+TRACE_EVENT(module_load,
-+
-+	TP_PROTO(struct module *mod),
-+
-+	TP_ARGS(mod),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned int,	taints		)
-+		__string(	name,		mod->name	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->taints = mod->taints;
-+		__assign_str(name, mod->name);
-+	),
-+
-+	TP_printk("%s %s", __get_str(name), show_module_flags(__entry->taints))
-+);
-+
-+TRACE_EVENT(module_free,
-+
-+	TP_PROTO(struct module *mod),
-+
-+	TP_ARGS(mod),
-+
-+	TP_STRUCT__entry(
-+		__string(	name,		mod->name	)
-+	),
-+
-+	TP_fast_assign(
-+		__assign_str(name, mod->name);
-+	),
-+
-+	TP_printk("%s", __get_str(name))
-+);
-+
-+TRACE_EVENT(module_get,
-+
-+	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
-+
-+	TP_ARGS(mod, ip, refcnt),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned long,	ip		)
-+		__field(	int,		refcnt		)
-+		__string(	name,		mod->name	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->ip	= ip;
-+		__entry->refcnt	= refcnt;
-+		__assign_str(name, mod->name);
-+	),
-+
-+	TP_printk("%s call_site=%pf refcnt=%d",
-+		  __get_str(name), (void *)__entry->ip, __entry->refcnt)
-+);
-+
-+TRACE_EVENT(module_put,
-+
-+	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
-+
-+	TP_ARGS(mod, ip, refcnt),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned long,	ip		)
-+		__field(	int,		refcnt		)
-+		__string(	name,		mod->name	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->ip	= ip;
-+		__entry->refcnt	= refcnt;
-+		__assign_str(name, mod->name);
-+	),
-+
-+	TP_printk("%s call_site=%pf refcnt=%d",
-+		  __get_str(name), (void *)__entry->ip, __entry->refcnt)
-+);
-+
-+TRACE_EVENT(module_request,
-+
-+	TP_PROTO(char *name, bool wait, unsigned long ip),
-+
-+	TP_ARGS(name, wait, ip),
-+
-+	TP_STRUCT__entry(
-+		__field(	bool,		wait		)
-+		__field(	unsigned long,	ip		)
-+		__string(	name,		name		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->wait	= wait;
-+		__entry->ip	= ip;
-+		__assign_str(name, name);
-+	),
-+
-+	TP_printk("%s wait=%d call_site=%pf",
-+		  __get_str(name), (int)__entry->wait, (void *)__entry->ip)
-+);
-+
-+#endif /* CONFIG_MODULES */
-+
-+#endif /* _TRACE_MODULE_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-+
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index 385c31a..a922808 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -37,6 +37,8 @@
- #include <linux/suspend.h>
- #include <asm/uaccess.h>
- 
-+#include <trace/events/module.h>
-+
- extern int max_threads;
- 
- static struct workqueue_struct *khelper_wq;
-@@ -108,6 +110,8 @@ int __request_module(bool wait, const char *fmt, ...)
- 		return -ENOMEM;
- 	}
- 
-+	trace_module_request(module_name, wait, _RET_IP_);
-+
- 	ret = call_usermodehelper(modprobe_path, argv, envp,
- 			wait ? UMH_WAIT_PROC : UMH_WAIT_EXEC);
- 	atomic_dec(&kmod_concurrent);
-diff --git a/kernel/module.c b/kernel/module.c
-index 0a04983..38bf87a 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -55,6 +55,11 @@
- #include <linux/percpu.h>
- #include <linux/kmemleak.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/module.h>
-+
-+EXPORT_TRACEPOINT_SYMBOL(module_get);
-+
- #if 0
- #define DEBUGP printk
- #else
-@@ -940,6 +945,8 @@ void module_put(struct module *module)
- 	if (module) {
- 		unsigned int cpu = get_cpu();
- 		local_dec(__module_ref_addr(module, cpu));
-+		trace_module_put(module, _RET_IP_,
-+				 local_read(__module_ref_addr(module, cpu)));
- 		/* Maybe they're waiting for us to drop reference? */
- 		if (unlikely(!module_is_live(module)))
- 			wake_up_process(module->waiter);
-@@ -1490,6 +1497,8 @@ static int __unlink_module(void *_mod)
- /* Free a module, remove from lists, etc (must hold module_mutex). */
- static void free_module(struct module *mod)
- {
-+	trace_module_free(mod);
-+
- 	/* Delete from various lists */
- 	stop_machine(__unlink_module, mod, NULL);
- 	remove_notes_attrs(mod);
-@@ -2357,6 +2366,8 @@ static noinline struct module *load_module(void __user *umod,
- 	/* Get rid of temporary copy */
- 	vfree(hdr);
- 
-+	trace_module_load(mod);
-+
- 	/* Done! */
- 	return mod;
- 
 -- 
-1.6.3
-
+Kalle Valo
