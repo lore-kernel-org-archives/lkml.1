@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZGUVQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756225AbZGUVR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZGUVQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756015AbZGUVP6
+	id S1756225AbZGUVR6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbZGUVRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:15:58 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:54718 "EHLO
+	Tue, 21 Jul 2009 17:17:54 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:54742 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754461AbZGUVP4 (ORCPT
+	with ESMTP id S1754950AbZGUVP5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:15:56 -0400
+	Tue, 21 Jul 2009 17:15:57 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: <linux-kernel@vger.kernel.org>, <linux-kbuild@vger.kernel.org>,
        <linux-arch@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 01/10] kbuild: move bounds.h to include/generated
-Date: Tue, 21 Jul 2009 23:19:32 +0200
-Message-Id: <1248211181-6757-1-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 07/10] kbuild: move compile.h to include/generated
+Date: Tue, 21 Jul 2009 23:19:38 +0200
+Message-Id: <1248211181-6757-7-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.2.5
 In-Reply-To: <20090721211040.GA7688@merkur.ravnborg.org>
 References: <20090721211040.GA7688@merkur.ravnborg.org>
@@ -27,91 +27,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Cc: Al Viro <viro@zeniv.linux.org.uk>
 ---
- .gitignore                 |    1 -
- Kbuild                     |    2 +-
- Makefile                   |    2 +-
- include/linux/mmzone.h     |    2 +-
- include/linux/page-flags.h |    2 +-
- kernel/bounds.c            |    2 +-
- 6 files changed, 5 insertions(+), 6 deletions(-)
+ .gitignore              |    1 -
+ arch/x86/boot/version.c |    2 +-
+ init/Makefile           |    6 +++---
+ init/version.c          |    2 +-
+ 4 files changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/.gitignore b/.gitignore
-index b93fb7e..32855c6 100644
+index 624e3ab..0f594d9 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -51,7 +51,6 @@ include/linux/autoconf.h
- include/linux/compile.h
+@@ -46,7 +46,6 @@ Module.symvers
+ #
+ include/config
+ include/linux/autoconf.h
+-include/linux/compile.h
  include/linux/version.h
  include/linux/utsrelease.h
--include/linux/bounds.h
  include/generated
+diff --git a/arch/x86/boot/version.c b/arch/x86/boot/version.c
+index 2723d9b..4d88763 100644
+--- a/arch/x86/boot/version.c
++++ b/arch/x86/boot/version.c
+@@ -14,7 +14,7 @@
  
- # stgit generated dirs
-diff --git a/Kbuild b/Kbuild
-index f056b4f..1165d7a 100644
---- a/Kbuild
-+++ b/Kbuild
-@@ -8,7 +8,7 @@
- #####
- # 1) Generate bounds.h
+ #include "boot.h"
+ #include <linux/utsrelease.h>
+-#include <linux/compile.h>
++#include <generated/compile.h>
  
--bounds-file := include/linux/bounds.h
-+bounds-file := include/generated/bounds.h
+ const char kernel_version[] =
+ 	UTS_RELEASE " (" LINUX_COMPILE_BY "@" LINUX_COMPILE_HOST ") "
+diff --git a/init/Makefile b/init/Makefile
+index 4a243df..2bcd810 100644
+--- a/init/Makefile
++++ b/init/Makefile
+@@ -16,11 +16,11 @@ mounts-$(CONFIG_BLK_DEV_INITRD)	+= do_mounts_initrd.o
+ mounts-$(CONFIG_BLK_DEV_MD)	+= do_mounts_md.o
  
- always  := $(bounds-file)
- targets := $(bounds-file) kernel/bounds.s
-diff --git a/Makefile b/Makefile
-index 79957b3..9bd427e 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1197,7 +1197,7 @@ MRPROPER_DIRS  += include/config include2 usr/include include/generated
- MRPROPER_FILES += .config .config.old include/asm .version .old_version \
-                   include/linux/autoconf.h include/linux/version.h      \
-                   include/linux/utsrelease.h                            \
--                  include/linux/bounds.h include/asm*/asm-offsets.h     \
-+                  include/asm*/asm-offsets.h                            \
- 		  Module.symvers Module.markers tags TAGS cscope*
+ # files to be removed upon make clean
+-clean-files := ../include/linux/compile.h
++clean-files := ../include/generated/compile.h
  
- # clean - Delete most, but leave enough to build external modules
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 8895985..74800d0 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -15,7 +15,7 @@
- #include <linux/seqlock.h>
- #include <linux/nodemask.h>
- #include <linux/pageblock-flags.h>
--#include <linux/bounds.h>
-+#include <generated/bounds.h>
- #include <asm/atomic.h>
- #include <asm/page.h>
+ # dependencies on generated files need to be listed explicitly
  
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index e2e5ce5..e99eaac 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -8,7 +8,7 @@
- #include <linux/types.h>
- #ifndef __GENERATING_BOUNDS_H
- #include <linux/mm_types.h>
--#include <linux/bounds.h>
-+#include <generated/bounds.h>
- #endif /* !__GENERATING_BOUNDS_H */
+-$(obj)/version.o: include/linux/compile.h
++$(obj)/version.o: include/generated/compile.h
  
- /*
-diff --git a/kernel/bounds.c b/kernel/bounds.c
-index 3c53013..98a51f2 100644
---- a/kernel/bounds.c
-+++ b/kernel/bounds.c
-@@ -12,7 +12,7 @@
+ # compile.h changes depending on hostname, generation number, etc,
+ # so we regenerate it always.
+@@ -30,7 +30,7 @@ $(obj)/version.o: include/linux/compile.h
+        chk_compile.h = :
+  quiet_chk_compile.h = echo '  CHK     $@'
+ silent_chk_compile.h = :
+-include/linux/compile.h: FORCE
++include/generated/compile.h: FORCE
+ 	@$($(quiet)chk_compile.h)
+ 	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/mkcompile_h $@ \
+ 	"$(UTS_MACHINE)" "$(CONFIG_SMP)" "$(CONFIG_PREEMPT)" "$(CC) $(KBUILD_CFLAGS)"
+diff --git a/init/version.c b/init/version.c
+index 52a8b98..82328aa 100644
+--- a/init/version.c
++++ b/init/version.c
+@@ -6,7 +6,7 @@
+  *  May be freely distributed as part of Linux.
+  */
  
- void foo(void)
- {
--	/* The enum constants to put into include/linux/bounds.h */
-+	/* The enum constants to put into include/generated/bounds.h */
- 	DEFINE(NR_PAGEFLAGS, __NR_PAGEFLAGS);
- 	DEFINE(MAX_NR_ZONES, __MAX_NR_ZONES);
- 	/* End of constants */
+-#include <linux/compile.h>
++#include <generated/compile.h>
+ #include <linux/module.h>
+ #include <linux/uts.h>
+ #include <linux/utsname.h>
 -- 
 1.6.2.5
 
