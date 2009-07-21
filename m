@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbZGUFvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZGUFyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbZGUFvn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 01:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZGUFvm
+	id S1754781AbZGUFyJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 01:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZGUFyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 01:51:42 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:56052 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754383AbZGUFvl (ORCPT
+	Tue, 21 Jul 2009 01:54:08 -0400
+Received: from mail-pz0-f204.google.com ([209.85.222.204]:55409 "EHLO
+	mail-pz0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752246AbZGUFyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 01:51:41 -0400
+	Tue, 21 Jul 2009 01:54:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:mime-version:content-type
          :content-disposition:user-agent;
-        b=Q1mARw8dR1+Tc10j5YmD+IhdGaz3+x2tZQi+ey4qLnfLOBMFKOreId60E1FgEVuWUu
-         lwyl5iBQgrXwqcAFNZAoHHA39VBAokt6D5fnfgX+6MCZGKz5l8SuYXyOWv7m0RNd8pMC
-         pAM7GXBDRsr2QT6bwMLrtJ1uX1bkPnGJS81Tk=
-Date: Mon, 20 Jul 2009 22:51:37 -0700
+        b=weSxDI9OBdwNTK/P8jgNI2ximJXf5uiMCK9CdMNrjnycY/YsQuo1PPDhu+XC3bZs6o
+         Wv0nNL9bANL6DMLIE9JqqomKEElgj6nTdE2jwBwoZ3dZhmo3SliY6c4gevGvw9IX18eW
+         3g5A350/ihr21uK+d1azTEkICMcIbM8sIriDg=
+Date: Mon, 20 Jul 2009 22:54:02 -0700
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH] Driver core: make pm operations a const pointer
-Message-ID: <20090721055136.GB4671@dtor-d630.eng.vmware.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.31-rc3
+Message-ID: <20090721055401.GC4671@dtor-d630.eng.vmware.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,175 +32,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Hi Linus,
 
-They are not supposed to be modified by drivers, so make them const.
+Please pull from:
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
- drivers/base/platform.c   |    2 +-
- drivers/base/power/main.c |    8 +++++---
- drivers/pci/pci-driver.c  |   16 ++++++++--------
- include/linux/device.h    |    9 +++++----
- 4 files changed, 19 insertions(+), 16 deletions(-)
+to receive updates for the input subsystem.
+
+Changelog:
+---------
+
+Daniel Mack (1):
+      Input: fix EVIOCGNAME/JSIOCGNAME regression
+
+Frans Pop (1):
+      Input: pcspkr - switch driver to dev_pm_ops
+
+Giuseppe Mazzotta (1):
+      Input: wistron_btns - recognize Maxdata Pro 7000 notebooks
+
+Jerone Young (1):
+      Input: atkbd - add force relese key quirk for Soltech TA12
+
+Michael Gruber (1):
+      Input: xpad - don't resend successfully sent outgoing requests
+
+Simon Davie (1):
+      Input: atkbd - add forced release keys quirk for FSC Amilo Pi 3525
 
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 81cb01b..c4b3fce 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -925,7 +925,7 @@ static int platform_pm_restore_noirq(struct device *dev)
- 
- #endif /* !CONFIG_HIBERNATION */
- 
--static struct dev_pm_ops platform_dev_pm_ops = {
-+static const struct dev_pm_ops platform_dev_pm_ops = {
- 	.prepare = platform_pm_prepare,
- 	.complete = platform_pm_complete,
- 	.suspend = platform_pm_suspend,
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 58a3e57..1b1a786 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -157,8 +157,9 @@ void device_pm_move_last(struct device *dev)
-  *	@ops:	PM operations to choose from.
-  *	@state:	PM transition of the system being carried out.
-  */
--static int pm_op(struct device *dev, struct dev_pm_ops *ops,
--			pm_message_t state)
-+static int pm_op(struct device *dev,
-+		 const struct dev_pm_ops *ops,
-+		 pm_message_t state)
- {
- 	int error = 0;
- 
-@@ -220,7 +221,8 @@ static int pm_op(struct device *dev, struct dev_pm_ops *ops,
-  *	The operation is executed with interrupts disabled by the only remaining
-  *	functional CPU in the system.
-  */
--static int pm_noirq_op(struct device *dev, struct dev_pm_ops *ops,
-+static int pm_noirq_op(struct device *dev,
-+			const struct dev_pm_ops *ops,
- 			pm_message_t state)
- {
- 	int error = 0;
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index d76c4c8..0c2ea44 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -575,7 +575,7 @@ static void pci_pm_complete(struct device *dev)
- static int pci_pm_suspend(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_SUSPEND);
-@@ -613,7 +613,7 @@ static int pci_pm_suspend(struct device *dev)
- static int pci_pm_suspend_noirq(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
-@@ -672,7 +672,7 @@ static int pci_pm_resume_noirq(struct device *dev)
- static int pci_pm_resume(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	int error = 0;
- 
- 	/*
-@@ -711,7 +711,7 @@ static int pci_pm_resume(struct device *dev)
- static int pci_pm_freeze(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_FREEZE);
-@@ -780,7 +780,7 @@ static int pci_pm_thaw_noirq(struct device *dev)
- static int pci_pm_thaw(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	int error = 0;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
-@@ -799,7 +799,7 @@ static int pci_pm_thaw(struct device *dev)
- static int pci_pm_poweroff(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
-@@ -872,7 +872,7 @@ static int pci_pm_restore_noirq(struct device *dev)
- static int pci_pm_restore(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	int error = 0;
- 
- 	/*
-@@ -910,7 +910,7 @@ static int pci_pm_restore(struct device *dev)
- 
- #endif /* !CONFIG_HIBERNATION */
- 
--struct dev_pm_ops pci_dev_pm_ops = {
-+const struct dev_pm_ops pci_dev_pm_ops = {
- 	.prepare = pci_pm_prepare,
- 	.complete = pci_pm_complete,
- 	.suspend = pci_pm_suspend,
-diff --git a/include/linux/device.h b/include/linux/device.h
-index aebb810..a286429 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -62,7 +62,7 @@ struct bus_type {
- 	int (*suspend)(struct device *dev, pm_message_t state);
- 	int (*resume)(struct device *dev);
- 
--	struct dev_pm_ops *pm;
-+	const struct dev_pm_ops *pm;
- 
- 	struct bus_type_private *p;
- };
-@@ -132,7 +132,7 @@ struct device_driver {
- 	int (*resume) (struct device *dev);
- 	struct attribute_group **groups;
- 
--	struct dev_pm_ops *pm;
-+	const struct dev_pm_ops *pm;
- 
- 	struct driver_private *p;
- };
-@@ -200,7 +200,8 @@ struct class {
- 	int (*suspend)(struct device *dev, pm_message_t state);
- 	int (*resume)(struct device *dev);
- 
--	struct dev_pm_ops *pm;
-+	const struct dev_pm_ops *pm;
-+
- 	struct class_private *p;
- };
- 
-@@ -291,7 +292,7 @@ struct device_type {
- 	char *(*nodename)(struct device *dev);
- 	void (*release)(struct device *dev);
- 
--	struct dev_pm_ops *pm;
-+	const struct dev_pm_ops *pm;
- };
- 
- /* interface for exporting device attributes */
+Diffstat:
+--------
+
+ drivers/input/evdev.c             |    3 +--
+ drivers/input/joydev.c            |    2 +-
+ drivers/input/joystick/xpad.c     |   26 +++++++++++++-------------
+ drivers/input/keyboard/atkbd.c    |   32 ++++++++++++++++++++++++++++++++
+ drivers/input/misc/pcspkr.c       |    8 ++++++--
+ drivers/input/misc/wistron_btns.c |    9 +++++++++
+ 6 files changed, 62 insertions(+), 18 deletions(-)
+
 -- 
 Dmitry
+
