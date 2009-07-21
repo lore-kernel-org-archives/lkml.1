@@ -1,95 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbZGUPuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZGUPu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbZGUPuG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 11:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZGUPuF
+	id S1754811AbZGUPu1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 11:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbZGUPu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 11:50:05 -0400
-Received: from main.gmane.org ([80.91.229.2]:59658 "EHLO ciao.gmane.org"
+	Tue, 21 Jul 2009 11:50:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46545 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752398AbZGUPuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 11:50:04 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Reinhard Tartler <siretart@tauware.de>
-Subject: is scripts/checkkconfigsymbols.sh actually used?
-Date: Tue, 21 Jul 2009 17:45:21 +0200
-Message-ID: <87eisaujji.fsf@faui44a.informatik.uni-erlangen.de>
-Mime-Version: 1.0
+	id S1752259AbZGUPuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 11:50:24 -0400
+Date: Tue, 21 Jul 2009 17:50:20 +0200
+From: Jan Kara <jack@suse.cz>
+To: Josef Bacik <josef@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       emcnabb@redhat.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Mingming Cao <cmm@us.ibm.com>,
+       Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH] fix softlockups in ext2/3 when trying to allocate
+	blocks
+Message-ID: <20090721155019.GB14105@duck.suse.cz>
+References: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com> <20090720233735.e3c711d1.akpm@linux-foundation.org> <20090721151550.GA2451@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Complaints-To: usenet@ger.gmane.org
-Cc: linux-kbuild@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: faui44a.informatik.uni-erlangen.de
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.94 (gnu/linux)
-Cancel-Lock: sha1:uP6y81yuMgP7Dyf2Rd+u4vyOAN8=
-Cc: linux-kernel@vger.kernel.org
+Content-Disposition: inline
+In-Reply-To: <20090721151550.GA2451@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue 21-07-09 11:15:52, Josef Bacik wrote:
+> On Mon, Jul 20, 2009 at 11:37:35PM -0700, Andrew Morton wrote:
+> > On Mon, 6 Jul 2009 15:47:39 -0400 Josef Bacik <josef@redhat.com> wrote:
+> > 
+> > > This isn't a huge deal, but using a big beefy box with more CPUs than what is
+> > > sane, you can get a nice flood of softlockup messages when running heavy
+> > > multi-threaded io tests on ext2/3.  The processors compete for blocks from the
+> > > allocator, so they will loop quite a bit trying to get their allocation.  This
+> > > patch simply makes sure that we reschedule if need be.  This made the softlockup
+> > > messages disappear whereas before they happened almost immediately.  Thanks,
+> > 
+> > The softlockup threshold is 60 seconds.  For the kernel to spend 60
+> > seconds continuous CPU time in the filesystem is very bad behaviour, and
+> > adding a rescheduling point doesn't fix that!
+> >
+> 
+> In RHEL its set to 10 seconds, so its not totally unreasonable.
+>  
+> > > Tested-by: Evan McNabb <emcnabb@redhat.com>
+> > > Signed-off-by: Josef Bacik <josef@redhat.com>
+> > > ---
+> > >  fs/ext2/balloc.c |    1 +
+> > >  fs/ext3/balloc.c |    2 ++
+> > >  2 files changed, 3 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
+> > > index 7f8d2e5..17dd55f 100644
+> > > --- a/fs/ext2/balloc.c
+> > > +++ b/fs/ext2/balloc.c
+> > > @@ -1176,6 +1176,7 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
+> > >  			break;				/* succeed */
+> > >  		}
+> > >  		num = *count;
+> > > +		cond_resched();
+> > >  	}
+> > >  	return ret;
+> > >  }
+> > > diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
+> > > index 27967f9..cffc8cd 100644
+> > > --- a/fs/ext3/balloc.c
+> > > +++ b/fs/ext3/balloc.c
+> > > @@ -735,6 +735,7 @@ bitmap_search_next_usable_block(ext3_grpblk_t start, struct buffer_head *bh,
+> > >  	struct journal_head *jh = bh2jh(bh);
+> > >  
+> > >  	while (start < maxblocks) {
+> > > +		cond_resched();
+> > >  		next = ext3_find_next_zero_bit(bh->b_data, maxblocks, start);
+> > >  		if (next >= maxblocks)
+> > >  			return -1;
+> > > @@ -1391,6 +1392,7 @@ ext3_try_to_allocate_with_rsv(struct super_block *sb, handle_t *handle,
+> > >  			break;				/* succeed */
+> > >  		}
+> > >  		num = *count;
+> > > +		cond_resched();
+> > >  	}
+> > >  out:
+> > >  	if (ret >= 0) {
+> > 
+> > I worry that something has gone wrong with the reservations code.  The
+> > filesystem _should_ be able to find a free block without any contention
+> > from other CPUs, because there's a range of blocks reserved for this
+> > inode's allocation attempts.
+> > 
+> 
+> Sure, the problem is if we run out of blocks in that reservation window, or
+> somebody else runs out of blocks in their reservation window, we start trying to
+> steal blocks from other inodes reservation windows.
+  Yes, but that should happen only if start running of blocks (all the free
+blocks are reserved). We scan all the groups and try to establish a
+reservation window in each of them... Hmm, looking into the code, we also
+skip groups with less than window_size/2 blocks free. But that should be at
+most 2MB so it shouldn't be a big deal.  How big is the filesystem and how full
+does it get?
+  BTW: You write above you can see the problem on ext2/3. Can you really
+observe it on ext2? I ask because on ext3, the pressure for free blocks is
+much higher in stress tests which create & remove files since the space of
+removed files can be used only after a transaction with delete is
+committed.
+  Also have you verified that we indeed take the 'repeat' loop in
+ext2_try_to_allocate() often (that's when we race with other threads
+allocating blocks)?
 
-(CC'ing Paolo Giarrusso, the author of scripts/checkkconfigsymbols.sh)
+> > Unless the workload has a lot of threads writing to the _same_ file. 
+> > If it does that then yes, we'll have lots of CPUs contenting for blocks
+> > within that inode's reservation window.  Tell us about the workload please.
+> >
+> 
+> The workload is on a box with 32 CPUs and 32GB of ram.  Its running some sort of
+> kernel compiling stress test, which from what I understand is running a kernel
+> compile per CPU.  Then on top of that there is a dd running at the same time.
+  And the kernel compile is single-threaded? My question should probably be
+- roughly how many parallel writers are there?
 
-I'm currently looking at the output of scripts/checkkconfigsymbols.sh to
-find out that on 2.6.30, it reports about 760 unreferenced symbols
-used. I have the impression that the variability implemented in the Linux
-source base is diverging heavily from the variability described in Linux
-Kconfig.
+> > But that shouldn't be happening either because all those write()ing
+> > threads will be serialised by i_mutex.
+> > 
+> > So I don't know what's happening here.  Possibly a better fix would be
+> > to add a lock rather than leaving the contention in place and hiding
+> > it.  Even better would be to understand why the contention is happening
+> > and prevent that.
+> > 
+> 
+> I could probably add some locking in here to help the problem, but I'm worried
+> about the performance impact that would have.  This is just a crap situation,
+  Yeah, I don't like the locking too much either. I'd first like to
+understand what exactly happens on your box. One low-cost thing we could
+try is that we won't scan groups for free blocks starting with group 0 but
+starting with some random group and wrapping around, like we do it when
+searching for free inodes. That should spread writers a bit.
 
-Just with looking over the list, I think I've identified 2 obvious typos
-where the configuration option was misspelled:
+> since we are quickly exhausting our reservation windows and devovling to just
+> schlepping through the block bitmaps for free space, and thats where we start to
+> suck hard.  I can look into it some more and possibly come up with something
+> else, this just seemed to be the quickest way to fix the problem with affecting
+> as little people as possible, especially since it's only reproducing on a box
+> with 32 CPUs and 32GB of RAM.  Thanks,
+  Well, that's not a small machine but not particularly huge either so I
+think we should cope reasonably with it.
 
-The first one is CONFIG_CPUMASK_OFFSTACK:
-
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index b7cbeed..6983591 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -471,14 +471,14 @@ static inline bool init_alloc_desc_masks(struct irq_desc *desc, int cpu,
-  * @new_desc:	pointer to new irq_desc struct
-  *
-  * Insures affinity and pending_masks are copied to new irq_desc.
-- * If !CONFIG_CPUMASKS_OFFSTACK the cpumasks are embedded in the
-+ * If !CONFIG_CPUMASK_OFFSTACK the cpumasks are embedded in the
-  * irq_desc struct so the copy is redundant.
-  */
- 
- static inline void init_copy_desc_masks(struct irq_desc *old_desc,
- 					struct irq_desc *new_desc)
- {
--#ifdef CONFIG_CPUMASKS_OFFSTACK
-+#ifdef CONFIG_CPUMASK_OFFSTACK
- 	cpumask_copy(new_desc->affinity, old_desc->affinity);
- 
- #ifdef CONFIG_GENERIC_PENDING_IRQ
-
-
-The next one is CONFIG_CPU_HOTPLUG:
-
-diff --git a/kernel/smp.c b/kernel/smp.c
-index ad63d85..94188b8 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -57,7 +57,7 @@ hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 			return NOTIFY_BAD;
- 		break;
- 
--#ifdef CONFIG_CPU_HOTPLUG
-+#ifdef CONFIG_HOTPLUG_CPU
- 	case CPU_UP_CANCELED:
- 	case CPU_UP_CANCELED_FROZEN:
- 
-I'm sure that there are quite some false positives in that list, e.g. it
-seems that it does not ignore comments, or that it assumes that all
-CONFIG_ definitions come from kconfig (this is not true,
-e.g. include/linux/memory.h defines CONFIG_MEM_BLOCK_SIZE, but there are
-also other kconfig configuration overrides in some drivers). Still, the
-list is still impressively long. Now I wonder if there are other, more
-obvious problems with scripts/checkkconfigsymbols.sh. Or is the problem
-just that this tool is underadvertised and not well-known?
-
+								Honza
 -- 
-Gruesse/greetings,
-Reinhard Tartler, KeyID 945348A4
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
