@@ -1,65 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751539AbZGUENz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZGUEcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751539AbZGUENz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 00:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbZGUENw
+	id S1752140AbZGUEcB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 00:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZGUEb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 00:13:52 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39266 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbZGUENw (ORCPT
+	Tue, 21 Jul 2009 00:31:59 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:40911 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751145AbZGUEb5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 00:13:52 -0400
-Date: Tue, 21 Jul 2009 00:13:11 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov, sds@tycho.nsa.gov, jmorris@namei.org,
-       spender@grsecurity.net, dwalsh@redhat.com, cl@linux-foundation.org,
-       arjan@infradead.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
-Message-ID: <20090721041311.GE11051@bombadil.infradead.org>
-References: <1248132223.2654.278.camel@localhost>
+	Tue, 21 Jul 2009 00:31:57 -0400
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: "me@felipebalbi.com" <me@felipebalbi.com>,
+       "Krishnamoorthy, Balaji T" <balajitk@ti.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "khilman@deeprootsystems.com" <khilman@deeprootsystems.com>,
+       "david-b@pacbell.net" <david-b@pacbell.net>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+       "sameo@openedhand.com" <sameo@openedhand.com>,
+       "wim@iguana.be" <wim@iguana.be>,
+       "timo.t.kokkonen@nokia.com" <timo.t.kokkonen@nokia.com>,
+       "ben-linux@fluff.org" <ben-linux@fluff.org>,
+       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>,
+       "Nayak, Rajendra" <rnayak@ti.com>
+Date: Tue, 21 Jul 2009 10:01:06 +0530
+Subject: RE: [PATCH 1/4] ARM: OMAP: Rename twl4030* driver files to enable
+ re-use
+Thread-Topic: [PATCH 1/4] ARM: OMAP: Rename twl4030* driver files to enable
+ re-use
+Thread-Index: AcoJa1vAGiWAsbkgRjWudCSsa5zaqgATzr3Q
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02B59502D7@dbde02.ent.ti.com>
+References: <1248096671-13828-1-git-send-email-balajitk@ti.com>
+ <20090720185253.GA7984@gandalf>
+In-Reply-To: <20090720185253.GA7984@gandalf>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248132223.2654.278.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 20, 2009 at 07:23:43PM -0400, Eric Paris wrote:
-> With SELinux mapping the 0 page requires an SELinux policy permission,
-> mmap_zero.  Without SELinux mapping the 0 page requires CAP_SYS_RAWIO.
-> Note that CAP_SYS_RAWIO roughly translates to uid=0 since noone really
-> does interesting things with capabilities.
+> -----Original Message-----
+> From: Felipe Balbi [mailto:me@felipebalbi.com] 
+> Sent: Tuesday, July 21, 2009 12:23 AM
+> To: Krishnamoorthy, Balaji T
+> Cc: linux-kernel@vger.kernel.org; tony@atomide.com; 
+> khilman@deeprootsystems.com; david-b@pacbell.net; 
+> linux-omap@vger.kernel.org; linux-i2c@vger.kernel.org; 
+> sameo@openedhand.com; wim@iguana.be; 
+> timo.t.kokkonen@nokia.com; ben-linux@fluff.org; 
+> lrg@slimlogic.co.uk; broonie@opensource.wolfsonmicro.com; 
+> Shilimkar, Santosh; Nayak, Rajendra
+> Subject: Re: [PATCH 1/4] ARM: OMAP: Rename twl4030* driver 
+> files to enable re-use
 > 
-[...]
-> I believe (from reading mailing lists) if you install WINE on ubuntu it
-> automatically disables these protections.  Thus installing wine on
-> ubuntu disables ALL hardening gains of the mmap_min_addr.
+> Hi,
 > 
-[...]
-> So on a non-SELinux system users would end up with exactly what they
-> have today.  if you want to run WINE as a normal user you have to set
-> mmap_min_addr = 0 and then you no longer need CAP_SYS_RAWIO.  Not much
-> else we can do if your distro down support fine grained permissions.
+> On Mon, Jul 20, 2009 at 07:01:11PM +0530, balajitk@ti.com wrote:
+> > From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> > 
+> > The upcoming TWL6030 is companion chip for OMAP4 like the 
+> current TWL4030
+> > for OMAP3. The common modules like RTC, Regulator creates 
+> opportunity
+> > to re-use the most of the code from twl4030.
+> > 
+> > This patch renames few common drivers twl4030* files to 
+> twl* to enable
+> > the code re-use.
+> > 
+> > Signed-off-by: Rajendra Nayak <rnayak@ti.com>
+> > Signed-off-by: Balaji T K <balajitk@ti.com>
+> > Signed-off-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> > ---
+> >  arch/arm/mach-omap2/board-2430sdp.c                |    2 +-
+> >  arch/arm/mach-omap2/board-3430sdp.c                |    2 +-
+> >  arch/arm/mach-omap2/board-ldp.c                    |    2 +-
+> >  arch/arm/mach-omap2/board-omap3beagle.c            |    2 +-
+> >  arch/arm/mach-omap2/board-omap3pandora.c           |    2 +-
+> >  arch/arm/mach-omap2/board-overo.c                  |    2 +-
+> >  drivers/gpio/twl4030-gpio.c                        |    2 +-
+> >  drivers/mfd/Makefile                               |    2 +-
+> >  drivers/mfd/{twl4030-core.c => twl-core.c}         |    8 +++-----
+> >  drivers/mfd/twl4030-irq.c                          |    2 +-
+> >  drivers/regulator/Makefile                         |    2 +-
+> >  .../{twl4030-regulator.c => twl-regulator.c}       |    6 +++---
+> >  drivers/rtc/Makefile                               |    2 +-
+> >  drivers/rtc/{rtc-twl4030.c => rtc-twl.c}           |    2 +-
+> >  drivers/usb/otg/twl4030-usb.c                      |    2 +-
+> >  include/linux/i2c/{twl4030.h => twl.h}             |    5 ++++-
+> >  sound/soc/codecs/twl4030.c                         |    2 +-
 > 
+> this is kinda useless, we can consider twl6030 as being sw compatible
+> (almost) with twl4030. And twl4030 driver already support plenty of
+> other devices, just look at drivers/mfd/twl4030-core.c lines 
+> 807 - 814.
+> We have twl4003, twl5030, tps65950, tps65930 and tps65920.
+> 
+> So IMO, renaming the files is unnecessary.
+Well tps* are just catalog names of the twl4* family. So you can keep adding whatever names there as long it's a same IC.
 
-Why do we not add a personality flag for this? With that, at least you
-could require a harmless setuid wrapper for wine that just set the
-personality bits and dropped root.
+Perhaps you look in hurry to comment about this. Please look at the intention of these patches. TWL6030 has PM IC similar to TWL4030 with bit different interrupt management. Audio IC is a separate one as compared to combined in case of TWL4030.
 
-That at least would allow the people not shipping SELinux by default,
-(which, really, is everyone but us, afaik...) to at least avoid having
-to whole-sale disable the mmap_min_addr protections, which seems unduly
-harsh... (If they're doing this without consulting the user, then, wow,
-that's just anti-social...)
-
-Of course, I might be missing the plot entirely here.
-
-(Or, as someone else pointed out, force people to run this crap in a
-VM. ;-)
-
-regards, Kyle
+If it allows code re-use by renaming files, it should be good. Isn't it ? 
