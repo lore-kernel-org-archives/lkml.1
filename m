@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbZGUSdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZGUSeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbZGUSdk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 14:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZGUSdj
+	id S1755811AbZGUSeU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 14:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbZGUSeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 14:33:39 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:27729 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755291AbZGUSdj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 14:33:39 -0400
-X-IronPort-AV: E=Sophos;i="4.43,242,1246852800"; 
-   d="scan'208";a="4122344"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] - printk handling more than one CON_BOOT
-Date: Tue, 21 Jul 2009 14:37:03 -0400
-User-Agent: KMail/1.9.5
-CC: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       Sonic.Zhang@analog.com
-References: <200906290703.21539.rgetz@blackfin.uclinux.org> <200907012108.38030.rgetz@blackfin.uclinux.org>
-In-Reply-To: <200907012108.38030.rgetz@blackfin.uclinux.org>
+	Tue, 21 Jul 2009 14:34:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42545 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755507AbZGUSeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 14:34:18 -0400
+Date: Tue, 21 Jul 2009 18:33:45 GMT
+From: tip-bot for Jan Beulich <JBeulich@novell.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andi@firstfloor.org, jbeulich@novell.com, JBeulich@novell.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, jbeulich@novell.com, JBeulich@novell.com,
+       tglx@linutronix.de
+In-Reply-To: <4A5F04B7020000780000AB59@vpn.id2.novell.com>
+References: <4A5F04B7020000780000AB59@vpn.id2.novell.com>
+Subject: [tip:x86/urgent] x86, mce: Fix set_trigger() accessor
+Message-ID: <tip-e9084ec98bb9aa3abc6cf73181177780ce7546f8@git.kernel.org>
+Git-Commit-ID: e9084ec98bb9aa3abc6cf73181177780ce7546f8
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-ID: <200907211437.04056.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 21 Jul 2009 18:33:34.0146 (UTC) FILETIME=[C1049A20:01CA0A31]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Jul 2009 18:33:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 1 Jul 2009 21:08, Robin Getz pondered:
->  printk.c |  146 +++++++++++++++++++++++++++++++++--------------------
->  1 file changed, 92 insertions(+), 54 deletions(-)
-> 
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index b4d97b5..9acc262 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
+Commit-ID:  e9084ec98bb9aa3abc6cf73181177780ce7546f8
+Gitweb:     http://git.kernel.org/tip/e9084ec98bb9aa3abc6cf73181177780ce7546f8
+Author:     Jan Beulich <JBeulich@novell.com>
+AuthorDate: Thu, 16 Jul 2009 09:45:11 +0100
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 21 Jul 2009 10:49:18 -0700
 
-[snip]
+x86, mce: Fix set_trigger() accessor
 
->  static int __init disable_boot_consoles(void)
->  {
-> -	if (console_drivers != NULL) {
-> -		if (console_drivers->flags & CON_BOOT) {
-> +	struct console *con;
-> +
-> +	for_each_console(con) {
-> +		if (con->flags & CON_BOOT) {
->  			printk(KERN_INFO "turn off boot console %s%d\n",
-> -				console_drivers->name, console_drivers->index);
-> -			return unregister_console(console_drivers);
-> +				con->name, con->index);
-> +			return unregister_console(con);
->  		}
->  	}
->  	return 0;
+Fix the condition checking the result of strchr() (which previously
+could result in an oops), and make the function return the number of
+bytes actively used.
 
-This causes a bug that Sonic found.
+[ Impact: fix oops ]
 
-The below patch fixes it, and should be applied to tip.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+LKML-Reference: <4A5F04B7020000780000AB59@vpn.id2.novell.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+
 
 ---
+ arch/x86/kernel/cpu/mcheck/mce.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-From: Sonic Zhang <Sonic.Zhang@analog.com>
-
-Don't return when we find the first bootconsole - it can leave other
-bootconsoles still installed, and they can be used and cause problems later
-(if they are in the init section, and eventually released), and cause
-problems. Make sure we remove all of them.
-
-Signed-off-by: Sonic Zhang <Sonic.Zhang@analog.com>
-Signed-off-by: Robin Getz <rgetz@analog.com>
-
----
-
-diff --git a/kernel/printk.c b/kernel/printk.c
-index e0daaf5..e10d193 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -1352,7 +1352,7 @@ static int __init disable_boot_consoles(void)
- 		if (con->flags & CON_BOOT) {
- 			printk(KERN_INFO "turn off boot console %s%d\n",
- 				con->name, con->index);
--			return unregister_console(con);
-+			unregister_console(con);
- 		}
- 	}
- 	return 0;
-
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 484c1e5..1cfb623 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -1692,17 +1692,15 @@ static ssize_t set_trigger(struct sys_device *s, struct sysdev_attribute *attr,
+ 				const char *buf, size_t siz)
+ {
+ 	char *p;
+-	int len;
+ 
+ 	strncpy(mce_helper, buf, sizeof(mce_helper));
+ 	mce_helper[sizeof(mce_helper)-1] = 0;
+-	len = strlen(mce_helper);
+ 	p = strchr(mce_helper, '\n');
+ 
+-	if (*p)
++	if (p)
+ 		*p = 0;
+ 
+-	return len;
++	return strlen(mce_helper) + !!p;
+ }
+ 
+ static ssize_t set_ignore_ce(struct sys_device *s,
