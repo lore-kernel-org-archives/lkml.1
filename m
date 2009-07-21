@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbZGURf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbZGURg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755840AbZGURf4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 13:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbZGURfz
+	id S1755928AbZGURg5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 13:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755532AbZGURg4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 13:35:55 -0400
-Received: from nox.protox.org ([88.191.38.29]:55392 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755085AbZGURfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 13:35:54 -0400
-Subject: Re: TTM page pool allocator
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>
-Cc: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-In-Reply-To: <4A439D7D.9030401@shipmail.org>
-References: <1245931298.13359.8.camel@localhost.localdomain>
-	 <4A439D7D.9030401@shipmail.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 21 Jul 2009 19:34:35 +0200
-Message-Id: <1248197676.2368.11.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 8bit
+	Tue, 21 Jul 2009 13:36:56 -0400
+Received: from mail.candelatech.com ([208.74.158.172]:51594 "EHLO
+	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755171AbZGURgz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 13:36:55 -0400
+Message-ID: <4A65FCB2.6080903@candelatech.com>
+Date: Tue, 21 Jul 2009 10:36:50 -0700
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
+References: <4A64EB1F.4000602@candelatech.com>	 <1248178527.5222.0.camel@heimdal.trondhjem.org>	 <4A65F184.5060802@candelatech.com> <1248196339.21343.8.camel@heimdal.trondhjem.org>
+In-Reply-To: <1248196339.21343.8.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 17:53 +0200, Thomas Hellström wrote:
-> Jerome Glisse skrev:
-> > Hi,
-> >
-> > Thomas i attach a reworked page pool allocator based on Dave works,
-> > this one should be ok with ttm cache status tracking. It definitely
-> > helps on AGP system, now the bottleneck is in mesa vertex's dma
-> > allocation.
-> >
-> > Cheers,
-> > Jerome
-> >   
-> Hi, Jerome!
-> In general it looks very good. Some things that need fixing:
-> 
-> 1)  We must have a way to hand back pages. I still not quite understand 
-> how the shrink callbacks work and whether they are applicable. Another 
-> scheme would be to free, say 1MB when we have at least 2MB available.
-> 
-> 2) We should avoid including AGP headers if AGP is not configured. 
-> Either reimplement unmap_page_from_agp or map_page_into_agp or move them 
-> out from the AGP headers. We've hade complaints before from people with 
-> AGP free systems that the code doesn't compile.
-> 
-> 3) Since we're allocating (and freeing) in batches we should use the 
-> set_pages_array() interface to avoid a global tlb flush per page.
-> 
-> 4) We could now skip the ttm_tt_populate() in ttm_tt_set_caching, since 
-> it will always allocate cached pages and then transition them.
-> 
+On 07/21/2009 10:12 AM, Trond Myklebust wrote:
+> On Tue, 2009-07-21 at 09:49 -0700, Ben Greear wrote:
+>> On 07/21/2009 05:15 AM, Trond Myklebust wrote:
+>>
+>>> What does /var/lib/nfs/v4recovery look like on the server?
+>> The server was misconfigured, but I still think the client should
+>> behave better in this case.  If you cannot reproduce it, let me know
+>> and I can try to be more specific.  If you still want the v4recovery
+>> information, let me know and I'll send it.
+>
+> So how should the client behave, when a screwed up server allows it to
+> mount but starts returning illegal values for setclientid? The only
+> thing I can see we could do is to tell the user EINSANESERVER...
 
-Okay 4) is bad, what happens (my brain is a bit meltdown so i might be
-wrong) :
-1 - bo get allocated tt->state = unpopulated
-2 - bo is mapped few page are faulted tt->state = unpopulated
-3 - bo is cache transitioned but tt->state == unpopulated but
-    they are page which have been touch by the cpu so we need
-    to clflush them and transition them, this never happen if
-    we don't call ttm_tt_populate and proceed with the remaining
-    of the cache transitioning functions
+Well, it could just fail the mount and give up and not overly spam
+/var/log/messages in a tight loop perhaps?
 
-As a workaround i will try to go through the pages tables and
-transition existing pages. Do you have any idea for a better
-plan ?
+> Now, we _should_ fix the wretched NFS server so that it doesn't do NFSv4
+> mounts when there is no configured root partition. We _should_ also fix
+> the damned thing so that it doesn't return illegal values.
 
-Cheers,
-Jerome
+Sounds fine to me.
+
+Thanks,
+Ben
+
+
+-- 
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
 
