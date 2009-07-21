@@ -1,88 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZGUVyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbZGUVzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756139AbZGUVyO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbZGUVyN
+	id S1756230AbZGUVzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756033AbZGUVzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:54:13 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:49391 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753974AbZGUVyM (ORCPT
+	Tue, 21 Jul 2009 17:55:44 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:33573 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755566AbZGUVzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:54:12 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [2.6.30.1] Significant latency playing video file from NFS4 share
-Date: Tue, 21 Jul 2009 23:54:10 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-nfs@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-References: <200907172250.51504.elendil@planet.nl> <200907211931.50015.elendil@planet.nl> <1248199105.21343.16.camel@heimdal.trondhjem.org>
-In-Reply-To: <1248199105.21343.16.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 21 Jul 2009 17:55:43 -0400
+Date: Tue, 21 Jul 2009 23:55:38 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
+Subject: Re: [RFC][patch 1/5] move clock source related code to
+ clocksource.c
+Message-ID: <20090721235538.14929e8e@skybase>
+In-Reply-To: <1248205851.14209.777.camel@desktop>
+References: <20090721191745.788551122@de.ibm.com>
+	<20090721192057.177653956@de.ibm.com>
+	<1248205851.14209.777.camel@desktop>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907212354.11174.elendil@planet.nl>
-X-OriginalArrivalTime: 21 Jul 2009 21:54:11.0996 (UTC) FILETIME=[C822BDC0:01CA0A4D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 July 2009, Trond Myklebust wrote:
-> This would be where you are losing your performance. 1998.933 ms rtt
-> means that you are seeing a 2 second delay from the instant the RPC
-> client pushes the request into the socket to the moment that socket
-> receives a reply from the server.
->
-> Basically, you have either a _very_ slow server, or (more likely) a
+On Tue, 21 Jul 2009 12:50:51 -0700
+Daniel Walker <dwalker@fifo99.com> wrote:
 
-The server should be fast enough.
+> On Tue, 2009-07-21 at 21:17 +0200, Martin Schwidefsky wrote:
+> > plain text document attachment (clocksource-move.diff)
+> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > 
+> > Move clock source related code from timekeeping.c to clocksource.c
+> > where they belong. The selected clocks source "clock" is now defined
+> > in clocksource.c and clocksource_init is added to set up the initial
+> > clock.
+> 
+> The problem is most (if not all) the code your moving is actually time
+> keeping code .. The reason it seems like clocksource code is cause John
+> wasn't very choosy about which structure he added variables too .. So
+> really this clean up needs to be in reverse, remove all the timekeeping
+> code from the clocksource code.
 
-> networking problem. A tcpdump ought to be able to show what the problem
-> is: whether it is the packets getting ACKed very slowly, and/or if you
-> have dropped packet issues or if it is truly a problem with the server
-> taking a long time to reply.
+You are refering to the following variables, aren't you?
 
-I did run a traceroute alongside and that did not show packet loss, but I 
-do now see some TCP data loss events and retransmits of segments in
-'netstat -s', and "TCP Previous segment lost" with varying time gaps in 
-wireshark. So I guess it is indeed a networking problem.
+        cycle_t cycle_interval;
+        u64     xtime_interval;
+        u32     raw_interval;
+        u64 xtime_nsec;
+        s64 error;
+        struct timespec raw_time;
 
-As I see it both with wired and wireless on the client, the problem must 
-be either in the server or the switch near the server (replacing the 
-cable from the server did not help).
-I suspect the integrated e1000e NIC. Guess I'll add an extra NIC in the 
-server soon to see if that helps.
+There is a dependency between these values and the clocksource. But they
+are only needed for the current active clock, so we could move them out
+of the clocksource data structure and make them static variables in
+timekeeping.c. I guess it would improve the code separation for
+update_wall_time as well. Hmm, worth a try.
 
-Thanks a lot for your help!
+-- 
+blue skies,
+   Martin.
 
+"Reality continues to ruin my life." - Calvin.
 
-P.S. I see one strange thing in wireshark: NFS (or the networking stack) 
-seems to switch between small and large package (?) sizes occasionally in 
-the same stream. Is that normal?
-
-Source     Destination   Protocol   Info
-[...]
-<server>   <client>      RPC        Continuation
-<server>   <client>      RPC        Continuation
-<client>   <server>      TCP        kink > nfs [ACK] ...
-<server>   <client>      RPC        Continuation
-<server>   <client>      RPC        Continuation
-<client>   <server>      TCP        kink > nfs [ACK] ...
-<server>   <client>      TCP        [TCP segment of reassembled PDU]
-<server>   <client>      TCP        [TCP segment of reassembled PDU]
-<client>   <server>      TCP        kink > nfs [ACK] ...
-<server>   <client>      TCP        [TCP segment of reassembled PDU]
-<server>   <client>      TCP        [TCP segment of reassembled PDU]
-<client>   <server>      TCP        kink > nfs [ACK] ...
-[...]
-<server>   <client>      TCP        [TCP segment of reassembled PDU]
-<server>   <client>      RPC        Continuation     (total: 65535 bytes)
-<client>   <server>      TCP        kink > nfs [ACK] ...
-<server>   <client>      RPC        Continuation
-<server>   <client>      RPC        Continuation
-<client>   <server>      TCP        kink > nfs [ACK] ...
-[...]
