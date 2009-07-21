@@ -1,102 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbZGUWZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756445AbZGUW05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438AbZGUWZv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 18:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbZGUWZu
+	id S1756445AbZGUW05 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 18:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbZGUW05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 18:25:50 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:58275 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754609AbZGUWZt (ORCPT
+	Tue, 21 Jul 2009 18:26:57 -0400
+Received: from dakia2.marvell.com ([65.219.4.35]:33240 "EHLO
+	dakia2.marvell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754609AbZGUW04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 18:25:49 -0400
-Date: Tue, 21 Jul 2009 23:25:48 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       David Brownell <david-b@pacbell.net>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Daniel Ribeiro <drwyrm@gmail.com>
-Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
-Message-ID: <20090721222547.GA1948@opensource.wolfsonmicro.com>
-References: <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com> <20090715133627.GA2538@elf.ucw.cz> <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com> <20090721105924.GK4133@elf.ucw.cz> <20090721113642.GC13286@sirena.org.uk> <5d5443650907210518i6ee4df1evdc04d9ae9453707c@mail.gmail.com> <5d5443650907210530x4aaa03d6gd47ef5f79a3ef8a4@mail.gmail.com> <20090721124933.GA5668@rakim.wolfsonmicro.main> <20090721160436.GD4352@dtor-d630.eng.vmware.com> <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
+	Tue, 21 Jul 2009 18:26:56 -0400
+X-ASG-Debug-ID: 1248215216-776701ad0000-xx1T2L
+X-Barracuda-URL: http://10.68.76.222:80/cgi-bin/mark.cgi
+Date: Tue, 21 Jul 2009 18:26:50 -0400 (EDT)
+From: Nicolas Pitre <nico@marvell.com>
+X-X-Sender: nico@xanadu.home
+To: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Lennert Buijtenhek <buytenh@marvell.com>,
+       Saeed Bishara <saeed@marvell.com>,
+       =?ISO-8859-15?Q?J=F6rn_Engel?= <joern@logfs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+X-ASG-Orig-Subj: Re: [PATCH] register orion_nand using platform_driver_probe
+Subject: Re: [PATCH] register orion_nand using platform_driver_probe
+In-Reply-To: <1248209196-15705-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Message-ID: <alpine.LFD.2.00.0907211822330.30629@xanadu.home>
+References: <alpine.LFD.2.00.0907141211260.3138@xanadu.home> <1248209196-15705-1-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
-X-Cookie: Q: Are we not men?
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811582-1355685401-1248215215=:30629"
+X-Barracuda-Connect: maili.marvell.com[10.68.76.51]
+X-Barracuda-Start-Time: 1248215216
+X-Barracuda-Virus-Scanned: by dakia2.marvell.com at marvell.com
+X-Barracuda-Spam-Score: -1002.00
+X-Barracuda-Spam-Status: No, SCORE=-1002.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=1000.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 10:30:26PM +0200, Thomas Gleixner wrote:
-> On Tue, 21 Jul 2009, Dmitry Torokhov wrote:
-> > On Tue, Jul 21, 2009 at 01:49:33PM +0100, Mark Brown wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> > >  - Ordinary devices on interrupt driven or slow buses like I2C.  These
-> > >    need something along the lines of request_threaded_irq() that's allows
-> > >    them to schedule the main IRQ handler outside hardirq context so
-> > >    that they can interact with the device.  They need to do something in
+---1463811582-1355685401-1248215215=:30629
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 
-> There is already a sane solution to the problem:
+On Tue, 21 Jul 2009, Uwe Kleine-König wrote:
 
->       See http://lkml.org/lkml/2009/7/17/174 
+> orion_nand_probe lives in .init.text, so using platform_driver_register
+> to register it is wrong because binding a device after the init memory
+> is discarded (e.g. via sysfs) results in an oops.
+> 
+> As requested by Nicolas Pitre platform_driver_probe is used instead of
+> moving the probe function to .devinit.text as proposed initially.
+> This saves some memory, but devices registered after the driver is
+> probed are not bound (probably there are none) and binding via sysfs
+> isn't possible.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: Lennert Buytenhek <buytenh@marvell.com>
+> Cc: Saeed Bishara <saeed@marvell.com>
+> Cc: Jörn Engel <joern@logfs.org>
+> Cc: Nicolas Pitre <nico@marvell.com>
+> Cc: Tzachi Perelstein <tzachi@marvell.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Cc: David Woodhouse <dwmw2@infradead.org>
+> Cc: linux-mtd@lists.infradead.org
 
-I'll need to have a more detailed look at that but it's not immediately
-clear to me how a driver (or even machine) should use that code - it
-looks more like it's intended to be called from within the IRQ
-infrastructure than from random driver code.
+Acked-by: Nicolas Pitre <nico@marvell.com>
 
-> > >    My immediate thought when I noticed this was that we should probably
-> > >    fix request_threaded_irq() so that it's useful for them; I'd been
-> > >    intending to do some digging and try to understand why it is
-> > >    currently implemented as it is.
+Thanks.  BTW Tzachi's email address is no longer valid.
 
-> What's to fix there ? 
-
-Nothing if the above works, though I guess more documentation wouldn't
-hurt (and possibly a more friendly wrapper).  From the name and
-documentation request_threaded_irq() looks like it should be exactly
-what's needed.
-
-> > >  - Multi-function devices like the twl4030 which have an interrupt
-> > >    controller on them and would like to expose that interrupt controller
-> > >    via the generic IRQ subsystem.  This was a large part of the
-> > >    discussion in the thread above is a much trickier problem.
-
-> Why ?
-
-Partly just because it's idiomatic for the devices - these things are
-from a software point of view essentially a small stack of devices glued
-together and one of the devices on them is an interrupt controller so
-the natural thing is to want to represent that interrupt controller in
-the way Linux normally represents interrupt controllers and be able to
-reuse all the core code rather than having to implement a clone of it.
-
-The other part of it is that it gets you all the interfaces for
-interrupts that the rest of the kernel expects which is needed when the
-device interacts with others.  The biggest issue here is that these
-devices often have GPIOs on them (especially PMICs and audio CODECs).
-These have all the facilities one expects of GPIOs, including being used
-as interrupt sources.  If we need to use chip-specific APIs to interact
-with the interrupts they raise then the drivers for anything using them
-need to know about those APIs and have special cases to work with them
-which obviously doesn't scale.
-
-> > >From my part I would like to have the threaded IRQ available to all
-> > drivers since it seens to be hanlding driver shutdown cleanly and
-> > without races which is a big plus for me since very few drivers get it
-> > right.
-
-> :)
-
-It's also wasteful having to write the code in every single driver that
-needs to handle interrupts on interrupt driven buses.
+> ---
+>  drivers/mtd/nand/orion_nand.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/mtd/nand/orion_nand.c b/drivers/mtd/nand/orion_nand.c
+> index 7ad9722..cb9d13b 100644
+> --- a/drivers/mtd/nand/orion_nand.c
+> +++ b/drivers/mtd/nand/orion_nand.c
+> @@ -171,7 +171,6 @@ static int __devexit orion_nand_remove(struct platform_device *pdev)
+>  }
+>  
+>  static struct platform_driver orion_nand_driver = {
+> -	.probe		= orion_nand_probe,
+>  	.remove		= __devexit_p(orion_nand_remove),
+>  	.driver		= {
+>  		.name	= "orion_nand",
+> @@ -181,7 +180,7 @@ static struct platform_driver orion_nand_driver = {
+>  
+>  static int __init orion_nand_init(void)
+>  {
+> -	return platform_driver_register(&orion_nand_driver);
+> +	return platform_driver_probe(&orion_nand_driver, orion_nand_probe);
+>  }
+>  
+>  static void __exit orion_nand_exit(void)
+> -- 
+> tg: (4b0a840..) t/platsection/orion_nand_driver (depends on: linus/master)
+> 
+---1463811582-1355685401-1248215215=:30629--
