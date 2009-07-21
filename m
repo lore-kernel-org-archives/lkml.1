@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZGUVKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbZGUVOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbZGUVKo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbZGUVKn
+	id S1755446AbZGUVOA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbZGUVOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:10:43 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:39896 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752721AbZGUVKm (ORCPT
+	Tue, 21 Jul 2009 17:14:00 -0400
+Received: from outbound-mail-121.bluehost.com ([67.222.38.21]:39021 "HELO
+	outbound-mail-121.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754111AbZGUVN7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:10:42 -0400
-Date: Tue, 21 Jul 2009 23:10:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH/RFC] Move generated files to include/generated
-Message-ID: <20090721211040.GA7688@merkur.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 21 Jul 2009 17:13:59 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=Kow9YkgEefdIZ93tlSw2T92AmP5o5to3/Z/N3199WFRNTs03NFrEHvuCmJLcLXTCHU8AztpqWDeXJIW1+GsbRevt/vabYW29L1YvOlt/F6YDRuWrUvD7IvjOfk03U2ZZ;
+Date: Tue, 21 Jul 2009 14:07:18 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Diego Calleja <diegocg@gmail.com>
+Cc: Shaohua Li <shaohua.li@intel.com>, Eric Anholt <eric@anholt.net>,
+       airlied@gmail.com, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: KMS oops on 945G system
+Message-ID: <20090721140718.371af9b9@jbarnes-g45>
+In-Reply-To: <200907212250.31353.diegocg@gmail.com>
+References: <200907212250.31353.diegocg@gmail.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In 2.6.30 we introduced support for adding generated
-files to a dedicated directory named "include/generated".
+On Tue, 21 Jul 2009 22:50:31 +0200
+Diego Calleja <diegocg@gmail.com> wrote:
 
-This had a number of benefits:
+> Hi, I'm hitting an oops when I try to enable kernel modesetting. I'm
+> using one of the latests git snapshots, the one which includes some
+> DRM fixes (2.6.31-rc3-00096-g78af08d-dirty). It's not a regression,
+> it's the first time I try this. xserver-xorg-video-intel version is
+> what was released today, 2.8.0. The problem seems to be a "division
+> error" here:
+> 
+> (gdb) l *(intel_update_watermarks+0x5c2)
+> 0x12652 is in intel_update_watermarks
+> (drivers/gpu/drm/i915/intel_display.c:1881). 1876            if
+> (!planea_clock || !planeb_clock) { 1877                    sr_clock =
+> planea_clock ? planea_clock : planeb_clock; 1878
+> line_time_us = (sr_hdisplay * 1000) / sr_clock;
+> 1879                    sr_entries = (((latency_ns / line_time_us) +
+> 1) * pixel_size * 1880
+> sr_hdisplay) / 1000; 1881                    sr_entries =
+> roundup(sr_entries / wm_params->cacheline_size, 1);
+> 1882                    if (sr_entries < wm_params->fifo_size)
+> 1883                            srwm = wm_params->fifo_size -
+> sr_entries; 1884            }
+> 
+> 
+> which according to git it seems to be code from this commit:
+> 
+> commit 7662c8bd6545c12ac7b2b39e4554c3ba34789c50
+> Author: Shaohua Li <shaohua.li@intel.com>
+> 
+>     drm/i915: add FIFO watermark support
 
-  - avoid mixing generated and normal files
-  - allow us to finally kill the asm symlink
-  - simpler .gitignore rules
-  - simpler list of mrproper files
+Yep, my bug.  Should be fixed in Eric's drm-intel-next branch:
+http://git.kernel.org/?p=linux/kernel/git/anholt/drm-intel.git;a=shortlog;h=drm-intel-next
 
-The following patchset introduces use of include/generated
-in several places as documented by the shortlog:
-
-Sam Ravnborg (10):
-      kbuild: move bounds.h to include/generated
-      kbuild: move asm-offsets.h to include/generated
-      ia64: move nr-irqs.h to include/generated
-      sh: move machtypes.h to include/generated
-      arm: move mach-types to include/generated
-      kbuild: drop asm symlink
-      kbuild: move compile.h to include/generated
-      drop unneeded include of autoconf.h
-      kbuild: move autoconf.h to include/generated
-      kbuild: move utsrelease.h to include/generated
-
-We are left with version.h that is still generated in
-include/linux.
-
-And there may be a few architecture specific files I have missed.
-
-This patch serie has a few shortcomings...
-
-1)
-After applying one _must_ do a "make clean" to get
-a buildable kernel.
-This is because we change the path of autoconf.h but
-the patch does not include anything to force a new
-autoconf.h to be created.
-Another workaround is to use a simple "make oldconfig".
-
-2)
-All files will be rebuild.
-We change an option to gcc due to path change of autoconf.h
-so all files will be rebuild.
-
-3)
-If some files are left in include/asm/ we may still
-pick them up.
-This is relevant for asm-offsets.h where we have
-a lot of "#include <asm/asm-offsets.h>".
-And include/asm comes before arch/$ARCH/include/asm
-in the search order.
-
-4)
-We loose the check if this is the correct ARCH we are
-building for as we can no longer check the asm symlink.
-This shortcoming is addressed by another patch that saves
-ARCH and CROSS_COMPILE. But it is not part of this serie.
-
-Individual patches will follow.
-Patches are based on todays mainline.
-
-It is also available at:
-
-    git://git.kernel.org/pub/scm/linux/kernel/git/sam/generated.git
-
-Comments welcome!
-
-	Sam
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
