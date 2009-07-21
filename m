@@ -1,102 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbZGUGiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbZGUGjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755122AbZGUGiA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 02:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbZGUGh6
+	id S1755146AbZGUGjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 02:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbZGUGjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 02:37:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36030 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755043AbZGUGh5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 02:37:57 -0400
-Date: Mon, 20 Jul 2009 23:37:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Josef Bacik <josef@redhat.com>
-Cc: linux-ext4@vger.kernel.org, emcnabb@redhat.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mingming Cao <cmm@us.ibm.com>, Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] fix softlockups in ext2/3 when trying to allocate
- blocks
-Message-Id: <20090720233735.e3c711d1.akpm@linux-foundation.org>
-In-Reply-To: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com>
-References: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Jul 2009 02:39:40 -0400
+Received: from www.tglx.de ([62.245.132.106]:33601 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754964AbZGUGjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 02:39:39 -0400
+Date: Tue, 21 Jul 2009 08:38:21 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Len Brown <lenb@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: s2r badness
+In-Reply-To: <alpine.DEB.2.00.0907201948050.6743@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.2.00.0907210835320.2813@localhost.localdomain>
+References: <1247947383.4872.3.camel@laptop> <alpine.LFD.2.00.0907182223450.11571@localhost.localdomain> <alpine.DEB.2.00.0907201700010.14242@gandalf.stny.rr.com> <alpine.LFD.2.00.0907210101110.2813@localhost.localdomain>
+ <alpine.DEB.2.00.0907201948050.6743@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Jul 2009 15:47:39 -0400 Josef Bacik <josef@redhat.com> wrote:
-
-> This isn't a huge deal, but using a big beefy box with more CPUs than what is
-> sane, you can get a nice flood of softlockup messages when running heavy
-> multi-threaded io tests on ext2/3.  The processors compete for blocks from the
-> allocator, so they will loop quite a bit trying to get their allocation.  This
-> patch simply makes sure that we reschedule if need be.  This made the softlockup
-> messages disappear whereas before they happened almost immediately.  Thanks,
-
-The softlockup threshold is 60 seconds.  For the kernel to spend 60
-seconds continuous CPU time in the filesystem is very bad behaviour, and
-adding a rescheduling point doesn't fix that!
-
-> Tested-by: Evan McNabb <emcnabb@redhat.com>
-> Signed-off-by: Josef Bacik <josef@redhat.com>
-> ---
->  fs/ext2/balloc.c |    1 +
->  fs/ext3/balloc.c |    2 ++
->  2 files changed, 3 insertions(+), 0 deletions(-)
+On Mon, 20 Jul 2009, Steven Rostedt wrote:
+> On Tue, 21 Jul 2009, Thomas Gleixner wrote:
 > 
-> diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
-> index 7f8d2e5..17dd55f 100644
-> --- a/fs/ext2/balloc.c
-> +++ b/fs/ext2/balloc.c
-> @@ -1176,6 +1176,7 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
->  			break;				/* succeed */
->  		}
->  		num = *count;
-> +		cond_resched();
->  	}
->  	return ret;
->  }
-> diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
-> index 27967f9..cffc8cd 100644
-> --- a/fs/ext3/balloc.c
-> +++ b/fs/ext3/balloc.c
-> @@ -735,6 +735,7 @@ bitmap_search_next_usable_block(ext3_grpblk_t start, struct buffer_head *bh,
->  	struct journal_head *jh = bh2jh(bh);
->  
->  	while (start < maxblocks) {
-> +		cond_resched();
->  		next = ext3_find_next_zero_bit(bh->b_data, maxblocks, start);
->  		if (next >= maxblocks)
->  			return -1;
-> @@ -1391,6 +1392,7 @@ ext3_try_to_allocate_with_rsv(struct super_block *sb, handle_t *handle,
->  			break;				/* succeed */
->  		}
->  		num = *count;
-> +		cond_resched();
->  	}
->  out:
->  	if (ret >= 0) {
+> > On Mon, 20 Jul 2009, Steven Rostedt wrote:
+> > > >  
+> > > > Just to make the list more complete. If tracing is enabled across
+> > > > suspend/resume you'll hit that one as well:
+> > > > 
+> > > > WARNING: at /home/tglx/work/kernel/git/linux-2.6/kernel/trace/ring_buffer.c:1392 rb_reserve_next_event+0x133/0x27c()
+> > > > 
+> > > > Negative timestamp delta which is probably due to sched_clock not yet
+> > > > adjusted to the TSC which got reset.
+> > > 
+> > > Perhaps we need to prevent tracing during a "blackout period" of suspend 
+> > > to ram?
+> > 
+> > Perhaps we need to figure out why this is happening and how we best
+> > deal with it. Disabling functionality just because we can not deal
+> > with it right now is not a solution.
+> 
+> Heh, suspend to ram is a black magic art. There's voodoo there that causes 
+> ulcers when you look the wrong way. For example, there's times that simply 
+> calling smp_processor_id() will reboot the box. Hence, the tracer is very 
+> intrusive, and we need to prevent it from doing things at certain areas. 
+> I'm not saying disabling functionality per say, I'm just saying that we 
+> need to make sure the tracer is not doing something in the guts of 
+> bringing the CPU back on line when it is not ready.
+> 
+> Are you saying that we need to move the initialization of sched_clock up, 
+> just to satisfy tracing? If that happens to be the issues here?
 
-I worry that something has gone wrong with the reservations code.  The
-filesystem _should_ be able to find a free block without any contention
-from other CPUs, because there's a range of blocks reserved for this
-inode's allocation attempts.
+No, we need to figure out why the WARN_ON happens and what we can/must
+do either to fixup the trace clock early enough or to prevent tracing
+until the clock is usable again.
 
-Unless the workload has a lot of threads writing to the _same_ file. 
-If it does that then yes, we'll have lots of CPUs contenting for blocks
-within that inode's reservation window.  Tell us about the workload please.
+Thanks,
 
-But that shouldn't be happening either because all those write()ing
-threads will be serialised by i_mutex.
-
-So I don't know what's happening here.  Possibly a better fix would be
-to add a lock rather than leaving the contention in place and hiding
-it.  Even better would be to understand why the contention is happening
-and prevent that.
-
-Thanks.
+	tglx
