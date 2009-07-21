@@ -1,51 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZGUGXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbZGUGgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbZGUGXA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 02:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbZGUGW7
+	id S1755015AbZGUGgl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 02:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbZGUGgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 02:22:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60431 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754627AbZGUGW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 02:22:58 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/3] taskstats-fork: Add a new taskstats command to get notification on fork/clone
-Date: Tue, 21 Jul 2009 11:54:42 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Guillaume Chazarain <guichaz@gmail.com>,
-       procps-feedback@lists.sf.net, Albert Cahalan <albert@users.sf.net>
-References: <200907211031.48294.knikanth@suse.de> <20090721060114.GS24157@balbir.in.ibm.com>
-In-Reply-To: <20090721060114.GS24157@balbir.in.ibm.com>
+	Tue, 21 Jul 2009 02:36:40 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57665 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754912AbZGUGgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 02:36:40 -0400
+Message-ID: <4A656194.50700@cn.fujitsu.com>
+Date: Tue, 21 Jul 2009 14:35:00 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Tom Zanussi <tzanussi@gmail.com>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] tracing/filters: Improve subsystem filter
+References: <4A63D485.7030703@cn.fujitsu.com> <1248154585.6323.26.camel@tropicana>
+In-Reply-To: <1248154585.6323.26.camel@tropicana>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907211154.42563.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 July 2009 11:31:14 Balbir Singh wrote:
-> * Nikanth Karthikesan <knikanth@suse.de> [2009-07-21 10:31:48]:
-> > Add a new taskstats command to register for notification, whenever a new
-> > task forks in the cpumask specified.
->
-> The changelog is sucky.. why do we need this? Why is proc-events not
-> sufficient?
+Tom Zanussi wrote:
+> Hi,
+> 
+> On Mon, 2009-07-20 at 10:20 +0800, Li Zefan wrote:
+>> Currently a subsystem filter should be applicable to all events
+>> under the subsystem, and if it failed, all the event filters
+>> will be cleared. Those behaviors make subsys filter much less
+>> useful:
+>>
+>>   # echo 'vec == 1' > irq/softirq_entry/filter
+>>   # echo 'irq == 5' > irq/filter
+>>   bash: echo: write error: Invalid argument
+>>   # cat irq/softirq_entry/filter
+>>   none
+>>
+>> I'd expect it set the filter for irq_handler_entry/exit, and
+>> not touch softirq_entry/exit.
+>>
+>> The basic idea is, try to see if the filter can be applied
+>> to which events, and then just apply to the those events:
+>>
+>>   # echo 'vec == 1' > softirq_entry/filter
+>>   # echo 'irq == 5' > filter
+>>   # cat irq_handler_entry/filter
+>>   irq == 5
+>>   # cat softirq_entry/filter
+>>   vec == 1
+>>
+> 
+> It looks like it accomplishes the goal, but I wonder if you could
+> simplify it by getting rid of the no_reset flag and all the state-saving
+> while keeping the dry_run param on filter_add_pred to use from
+> filter_add_subsysystem_pred() e.g. something like this:
+> 
+> filter_add_subsystem_pred(...)
+> {
+> 	...
+> 	list_for_each_entry(call, &ftrace_events, list) {
+> 		err = filter_add_pred(ps, call, pred, dry_run = 1);
+> 		if (!err)
+> 			filter_add_pred(ps, call, pred, dry_run = 0);
 
-Ah.. proc-events was the exact thing, I was looking for! Thanks. But it seems 
-there is no documentation for it? May be I didn't search properly...
+This is the same with just call "filter_add_pred(ps, call, pred)"
 
-BTW I did mention the need for this, in 
-http://patchwork.kernel.org/patch/36451/ , but didn't invest time to write a 
-good changelog here, as I suspected something exists already. Sorry. ;-(
+> 		...
+> 	}
+> }
+> 
+> IIRC the state-saving was necessary if the idea was to back out of (or
+> avoid setting) all the filters if one failed, but the new model is to
+> set whichever apply while leaving the rest alone.  I think the simpler
+> approach above accomplishes that, but I may be missing something or have
+> forgotten the original motivation for doing it this way.
+> 
 
-[CC-ed iotop/top people, who were CC-ed in the above mail. So that they can 
-consider using proc-events interface, if it was not considered/used already]
+This won't work as expected. The state-saving is necessary, because
+if any pred is not appliable for an event, the whole operation should
+fail for that event.
 
-Thanks
-Nikanth
+What this patch does is apply the filter to those events that the
+filter is appliable, but not apply parts of the filter to each event.
+
+Imaging the result for those filters with the above code:
+
+  # echo 'irq == 5 && vec == 1' > filter
+  # echo 'irq == 5 || vec == 1' > filter
+  # echo 'irq == 5 || foo == bar' > fitler
+  # echo '(irq == 5 && vec == 1) || irq == 2' > filter
+
