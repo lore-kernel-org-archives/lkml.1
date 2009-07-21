@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZGULaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbZGULc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755396AbZGULaB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 07:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZGULaA
+	id S1755332AbZGULc4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 07:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbZGULcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 07:30:00 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52102 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754617AbZGUL37 (ORCPT
+	Tue, 21 Jul 2009 07:32:55 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:55065 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753175AbZGULcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 07:29:59 -0400
-Date: Tue, 21 Jul 2009 07:29:48 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Gurudatt, Sreenidhi B" <sreenidhi.b.gurudatt@intel.com>,
-       pazke@centrinvest.ru, "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>
-Subject: Re: x86: IPC driver patch for Intel Moorestown platform
-Message-ID: <20090721112948.GA14038@infradead.org>
-References: <98769532B4BB14429434178695419EAE5F3F9541@bgsmsx501.gar.corp.intel.com> <20090721065021.GC11781@centrinvest.ru> <87eisa33bq.fsf@basil.nowhere.org>
+	Tue, 21 Jul 2009 07:32:55 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
+Date: Tue, 21 Jul 2009 13:31:50 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       sds@tycho.nsa.gov, jmorris@namei.org, spender@grsecurity.net,
+       dwalsh@redhat.com, cl@linux-foundation.org, arjan@infradead.org,
+       alan@lxorguk.ukuu.org.uk
+References: <1248132223.2654.278.camel@localhost> <20090721041311.GE11051@bombadil.infradead.org>
+In-Reply-To: <20090721041311.GE11051@bombadil.infradead.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87eisa33bq.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907211331.50196.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18mSe68zeOonmy/AN5q8gRwoBPbYzit1HiYQb7
+ +u+p/6eh11FKMaVFmhyyPToGrA6b/3xxj4X+yXsU5z0BxgzrJb
+ 8Tedfw+DyOkScJcnU68sA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 09:25:29AM +0200, Andi Kleen wrote:
-> "Andrey Panin" <pazke@centrinvest.ru> writes:
+On Tuesday 21 July 2009, Kyle McMartin wrote:
 > 
-> Andrey, Your review would be easier to read if you removed the code
-> you're not commenting on.
+> Why do we not add a personality flag for this? With that, at least you
+> could require a harmless setuid wrapper for wine that just set the
+> personality bits and dropped root.
 
-Full quoting of patches has become a very common desease on Linux lists
-unfortuately, it's really hard to read many patch reviews.
+I thought the MMAP_PAGE_ZERO personality bit was exactly what Brad
+was using in his demonstration. We don't need to define a new bit,
+just use the one that's there ;-).
 
+Then again, setting personality flags does not require root permissions
+normally, so it's not an extremely strong protection, unless you also
+start requiring CAP_SYS_RAWIO for setting MMAP_PAGE_ZERO.
+
+	Arnd <><
