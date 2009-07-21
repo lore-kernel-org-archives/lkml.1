@@ -1,76 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbZGUWSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756438AbZGUWZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbZGUWSl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 18:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbZGUWSl
+	id S1756438AbZGUWZv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 18:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbZGUWZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 18:18:41 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:41260 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755570AbZGUWSk (ORCPT
+	Tue, 21 Jul 2009 18:25:50 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:58275 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754609AbZGUWZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 18:18:40 -0400
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Neil Horman <nhorman@tuxdriver.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Brayan Arraes <brayan@yack.com.br>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <4A64672E.8020005@cn.fujitsu.com>
-	<m1d47vnoq6.fsf@fess.ebiederm.org>
-	<20090720211644.GD9060@hmsreliant.think-freely.org>
-	<4A65644F.7010309@cn.fujitsu.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 21 Jul 2009 15:18:34 -0700
-In-Reply-To: <4A65644F.7010309@cn.fujitsu.com> (Lai Jiangshan's message of "Tue\, 21 Jul 2009 14\:46\:39 +0800")
-Message-ID: <m1ocrdn0hx.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 21 Jul 2009 18:25:49 -0400
+Date: Tue, 21 Jul 2009 23:25:48 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Message-ID: <20090721222547.GA1948@opensource.wolfsonmicro.com>
+References: <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com> <20090715133627.GA2538@elf.ucw.cz> <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com> <20090721105924.GK4133@elf.ucw.cz> <20090721113642.GC13286@sirena.org.uk> <5d5443650907210518i6ee4df1evdc04d9ae9453707c@mail.gmail.com> <5d5443650907210530x4aaa03d6gd47ef5f79a3ef8a4@mail.gmail.com> <20090721124933.GA5668@rakim.wolfsonmicro.main> <20090721160436.GD4352@dtor-d630.eng.vmware.com> <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org, brayan@yack.com.br, vgoyal@redhat.com, akpm@linux-foundation.org, nhorman@tuxdriver.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Lai Jiangshan <laijs@cn.fujitsu.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c handler"
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
+X-Cookie: Q: Are we not men?
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lai Jiangshan <laijs@cn.fujitsu.com> writes:
+On Tue, Jul 21, 2009 at 10:30:26PM +0200, Thomas Gleixner wrote:
+> On Tue, 21 Jul 2009, Dmitry Torokhov wrote:
+> > On Tue, Jul 21, 2009 at 01:49:33PM +0100, Mark Brown wrote:
 
-> Even I agreed your fix, I don't agreed your naming,
-> For your fix, the correct naming should be:
->
-> .help_msg       = "oops(C)",
-> .action_msg     = "Trigger an oops"
->
-> And document it:
-> Sysrq-c always causes an oops by an indirect way. It'll do one of 4 things:
-> 1) panic_on_oops=0, it is just kill the current task.
-> 2) panic_on_oops=1, but CONFIG_KEXEC=n, just normal panic
-> 3) panic_on_oops=1, CONFIG_KEXEC=y, but not enabled, just normal panic
-> 4) panic_on_oops=1, CONFIG_KEXEC=y, kdump was enabled, CrashDump.
+> > >  - Ordinary devices on interrupt driven or slow buses like I2C.  These
+> > >    need something along the lines of request_threaded_irq() that's allows
+> > >    them to schedule the main IRQ handler outside hardirq context so
+> > >    that they can interact with the device.  They need to do something in
 
+> There is already a sane solution to the problem:
 
-That sounds like a great way to sort out the understanding.
+>       See http://lkml.org/lkml/2009/7/17/174 
 
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+I'll need to have a more detailed look at that but it's not immediately
+clear to me how a driver (or even machine) should use that code - it
+looks more like it's intended to be called from within the IRQ
+infrastructure than from random driver code.
 
-Could you turn that into a proper patch?
+> > >    My immediate thought when I noticed this was that we should probably
+> > >    fix request_threaded_irq() so that it's useful for them; I'd been
+> > >    intending to do some digging and try to understand why it is
+> > >    currently implemented as it is.
 
+> What's to fix there ? 
 
-Eric
+Nothing if the above works, though I guess more documentation wouldn't
+hurt (and possibly a more friendly wrapper).  From the name and
+documentation request_threaded_irq() looks like it should be exactly
+what's needed.
+
+> > >  - Multi-function devices like the twl4030 which have an interrupt
+> > >    controller on them and would like to expose that interrupt controller
+> > >    via the generic IRQ subsystem.  This was a large part of the
+> > >    discussion in the thread above is a much trickier problem.
+
+> Why ?
+
+Partly just because it's idiomatic for the devices - these things are
+from a software point of view essentially a small stack of devices glued
+together and one of the devices on them is an interrupt controller so
+the natural thing is to want to represent that interrupt controller in
+the way Linux normally represents interrupt controllers and be able to
+reuse all the core code rather than having to implement a clone of it.
+
+The other part of it is that it gets you all the interfaces for
+interrupts that the rest of the kernel expects which is needed when the
+device interacts with others.  The biggest issue here is that these
+devices often have GPIOs on them (especially PMICs and audio CODECs).
+These have all the facilities one expects of GPIOs, including being used
+as interrupt sources.  If we need to use chip-specific APIs to interact
+with the interrupts they raise then the drivers for anything using them
+need to know about those APIs and have special cases to work with them
+which obviously doesn't scale.
+
+> > >From my part I would like to have the threaded IRQ available to all
+> > drivers since it seens to be hanlding driver shutdown cleanly and
+> > without races which is a big plus for me since very few drivers get it
+> > right.
+
+> :)
+
+It's also wasteful having to write the code in every single driver that
+needs to handle interrupts on interrupt driven buses.
