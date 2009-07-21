@@ -1,210 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbZGUP4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZGUP7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755436AbZGUP4l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 11:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbZGUP4l
+	id S1755383AbZGUP7V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 11:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbZGUP7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 11:56:41 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:46026 "EHLO e7.ny.us.ibm.com"
+	Tue, 21 Jul 2009 11:59:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59776 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755325AbZGUP4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 11:56:40 -0400
-Date: Tue, 21 Jul 2009 21:26:36 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@redhat.com
-Subject: Re: [PATCH 3/9] blkio-cgroup-v9: The new page_cgroup framework
-Message-ID: <20090721155636.GB25127@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090721.230911.193692312.ryov@valinux.co.jp> <20090721.231004.226793074.ryov@valinux.co.jp> <20090721.231211.71098738.ryov@valinux.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090721.231211.71098738.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1755210AbZGUP7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 11:59:17 -0400
+Subject: Re: [PATCH 1/2] VM/SELinux: require CAP_SYS_RAWIO for all
+ mmap_zero operations
+From: Eric Paris <eparis@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
+       jmorris@namei.org, spender@grsecurity.net, dwalsh@redhat.com,
+       cl@linux-foundation.org, arjan@infradead.org, kyle@mcmartin.ca,
+       cpardy@redhat.com, arnd@arndb.de
+In-Reply-To: <20090721163813.0cb5d7ab@lxorguk.ukuu.org.uk>
+References: <20090721144157.14159.23439.stgit@paris.rdu.redhat.com>
+	 <20090721160437.5bda68b4@lxorguk.ukuu.org.uk>
+	 <1248189524.2654.301.camel@localhost>
+	 <20090721163813.0cb5d7ab@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 11:57:13 -0400
+Message-Id: <1248191833.2654.320.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ryo Tsuruta <ryov@valinux.co.jp> [2009-07-21 23:12:11]:
+On Tue, 2009-07-21 at 16:38 +0100, Alan Cox wrote:
+> > turns it off for the whole system when you install WINE.  This patch
+> > doesn't change that fact.  All it does is add that requirement to
+> > SELinux systems that already exists on non-selinux systems.
+> 
+> Prior to this an SELinux system could implement sensible security. 
 
-> This patch makes the page_cgroup framework be able to be used even if
-> the compile option of the cgroup memory controller is off.
-> So blkio-cgroup can use this framework without the memory controller.
-> 
-> Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
-> Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
-> 
-> ---
->  include/linux/memcontrol.h  |    6 ++++++
->  include/linux/mmzone.h      |    4 ++--
->  include/linux/page_cgroup.h |    8 +++++---
->  init/Kconfig                |    4 ++++
->  mm/Makefile                 |    3 ++-
->  mm/memcontrol.c             |    6 ++++++
->  mm/page_cgroup.c            |    3 +--
->  7 files changed, 26 insertions(+), 8 deletions(-)
-> 
-> Index: linux-2.6.31-rc3/include/linux/memcontrol.h
-> ===================================================================
-> --- linux-2.6.31-rc3.orig/include/linux/memcontrol.h
-> +++ linux-2.6.31-rc3/include/linux/memcontrol.h
-> @@ -37,6 +37,8 @@ struct mm_struct;
->   * (Of course, if memcg does memory allocation in future, GFP_KERNEL is sane.)
->   */
-> 
-> +extern void __init_mem_page_cgroup(struct page_cgroup *pc);
-> +
->  extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
->  				gfp_t gfp_mask);
->  /* for swap handling */
-> @@ -121,6 +123,10 @@ void mem_cgroup_update_mapped_file_stat(
->  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
->  struct mem_cgroup;
-> 
-> +static inline void __init_mem_page_cgroup(struct page_cgroup *pc)
-> +{
-> +}
-> +
->  static inline int mem_cgroup_newpage_charge(struct page *page,
->  					struct mm_struct *mm, gfp_t gfp_mask)
->  {
-> Index: linux-2.6.31-rc3/include/linux/mmzone.h
-> ===================================================================
-> --- linux-2.6.31-rc3.orig/include/linux/mmzone.h
-> +++ linux-2.6.31-rc3/include/linux/mmzone.h
-> @@ -605,7 +605,7 @@ typedef struct pglist_data {
->  	int nr_zones;
->  #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
->  	struct page *node_mem_map;
-> -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
-> +#ifdef CONFIG_CGROUP_PAGE
->  	struct page_cgroup *node_page_cgroup;
->  #endif
->  #endif
-> @@ -956,7 +956,7 @@ struct mem_section {
-> 
->  	/* See declaration of similar field in struct zone */
->  	unsigned long *pageblock_flags;
-> -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
-> +#ifdef CONFIG_CGROUP_PAGE
->  	/*
->  	 * If !SPARSEMEM, pgdat doesn't have page_cgroup pointer. We use
->  	 * section. (see memcontrol.h/page_cgroup.h about this.)
-> Index: linux-2.6.31-rc3/include/linux/page_cgroup.h
-> ===================================================================
-> --- linux-2.6.31-rc3.orig/include/linux/page_cgroup.h
-> +++ linux-2.6.31-rc3/include/linux/page_cgroup.h
-> @@ -1,7 +1,7 @@
->  #ifndef __LINUX_PAGE_CGROUP_H
->  #define __LINUX_PAGE_CGROUP_H
-> 
-> -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
-> +#ifdef CONFIG_CGROUP_PAGE
->  #include <linux/bit_spinlock.h>
->  /*
->   * Page Cgroup can be considered as an extended mem_map.
-> @@ -12,9 +12,11 @@
->   */
->  struct page_cgroup {
->  	unsigned long flags;
-> -	struct mem_cgroup *mem_cgroup;
->  	struct page *page;
-> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
-> +	struct mem_cgroup *mem_cgroup;
->  	struct list_head lru;		/* per cgroup LRU list */
-> +#endif
->  };
+Sadly, it couldn't reasonably  :(
 
-If CONFIG_CGROUP_MEM_RES_CTLR is not enabled and CGROUP_PAGE is
-(assuming that the depends on below is refactored), what would this
-change buy us? What is page_cgroup helping us track, the mem_cgroup is
-factored out, so we are interested in the flags only?
+> > > Am I missing something here, this "solution" sounds completely brain
+> > > dead ?
+> > 
+> > Well, with patch 2/2 you still get your SELinux protections (only for 1
+> > page) even if you disable it for the whole system.  So in the end, you
+> > have better protection than you have today with this series....
+> 
+> We know one page isn't sufficient. That has been seen from some exploit
+> cases.
 
+Yet another tunable is easy, and what I mentioned yesterday, i'd
+probably put it in /selinux since it would be an selinux only thing.
+This just seemed reasonable, since the Kconfig default is 4096 that's
+what most people have anyway right?
 
+> So this looks to me like a regression in features, that makes the system
+> less secure and doesn't solve anything at all.
 > 
->  void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat);
-> @@ -83,7 +85,7 @@ static inline void unlock_page_cgroup(st
->  	bit_spin_unlock(PCG_LOCK, &pc->flags);
->  }
-> 
-> -#else /* CONFIG_CGROUP_MEM_RES_CTLR */
-> +#else /* CONFIG_CGROUP_PAGE */
->  struct page_cgroup;
-> 
->  static inline void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
-> Index: linux-2.6.31-rc3/init/Kconfig
-> ===================================================================
-> --- linux-2.6.31-rc3.orig/init/Kconfig
-> +++ linux-2.6.31-rc3/init/Kconfig
-> @@ -614,6 +614,10 @@ config CGROUP_MEM_RES_CTLR_SWAP
-> 
->  endif # CGROUPS
-> 
-> +config CGROUP_PAGE
-> +	def_bool y
+> Whereas if you just set the default SELinux user confinement to allow
+> everything but mapping low pages you wouldn't actually need to mess up
+> the kernel ?
 
-Should def_bool be "y"? Shouldn't the CGROUP_MEM_RES_CTLR select it.
+Herein lies the problem.  It sounds easy to do, but isn't.  Sure I can
+remove mmap_zero from unconfined_t (and actually it should be that way
+in rawhide by default by now) but like I said, it's not even a speed
+bump to be that broad.  
 
-> +	depends on CGROUP_MEM_RES_CTLR
-> +
->  config MM_OWNER
->  	bool
-> 
-> Index: linux-2.6.31-rc3/mm/Makefile
-> ===================================================================
-> --- linux-2.6.31-rc3.orig/mm/Makefile
-> +++ linux-2.6.31-rc3/mm/Makefile
-> @@ -39,6 +39,7 @@ else
->  obj-$(CONFIG_SMP) += allocpercpu.o
->  endif
->  obj-$(CONFIG_QUICKLIST) += quicklist.o
-> -obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
-> +obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
-> +obj-$(CONFIG_CGROUP_PAGE) += page_cgroup.o
->  obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
->  obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
-> Index: linux-2.6.31-rc3/mm/memcontrol.c
-> ===================================================================
-> --- linux-2.6.31-rc3.orig/mm/memcontrol.c
-> +++ linux-2.6.31-rc3/mm/memcontrol.c
-> @@ -129,6 +129,12 @@ struct mem_cgroup_lru_info {
->  	struct mem_cgroup_per_node *nodeinfo[MAX_NUMNODES];
->  };
-> 
-> +void __meminit __init_mem_page_cgroup(struct page_cgroup *pc)
-> +{
-> +	pc->mem_cgroup = NULL;
-> +	INIT_LIST_HEAD(&pc->lru);
-> +}
-> +
->  /*
->   * The memory controller data structure. The memory controller controls both
->   * page cache and RSS per cgroup. We would eventually like to provide
-> Index: linux-2.6.31-rc3/mm/page_cgroup.c
-> ===================================================================
-> --- linux-2.6.31-rc3.orig/mm/page_cgroup.c
-> +++ linux-2.6.31-rc3/mm/page_cgroup.c
-> @@ -14,9 +14,8 @@ static void __meminit
->  __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
->  {
->  	pc->flags = 0;
-> -	pc->mem_cgroup = NULL;
->  	pc->page = pfn_to_page(pfn);
-> -	INIT_LIST_HEAD(&pc->lru);
-> +	__init_mem_page_cgroup(pc);
->  }
->  static unsigned long total_usage;
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+runcon -t wine_t [my exploit]
+win.
 
--- 
-	Balbir
+So now I have to stop allowing unconfined_t to specifically run things
+as wine_t.  Easy enough to get around
+
+chcon -t wine_exec_t [my exploit]
+win.
+
+Well crap, now I have to stop letting unconfined_t label things
+wine_exec_t.  Easy enough to get around if you can load it as an rpm
+(ok, this step is probably harder)
+
+and hell, how do I know I can't just get wine some windows program to
+get win to map the page for me?
+
+Finding all of the contortions that an unconfined user can do is nearly
+impossible.  It's one of the reasons a lot of selinux people argued
+against the unconfined domain to begin with.  There are some analysis
+tools used in high security environments to prove security goals but
+unconfined is such a monstrosity it's too hard to get a handle on.  Make
+everyone log in as user_t (man semanage) and you will be better (but I
+haven't proven it is safe...)
+
+> Currently I have low page protection and I don't have to run wine as
+> CAP_SYS_RAWIO (which comes in the "sucidial ideas") category. I consider
+> the loss of that ability a regression.
+
+and you still could.  Just set mmap_min_addr = 0 and you get SELinux
+protection for confined domains.  I'll gladly add an selinux tunable if
+people like it so SELinux users who don't want to enforce the uid=0 rule
+can do exactly everything they can do today.
+
+Someone on this list has to know a wine guru.  Seems to me there has to
+be a way that we can give wine CAP_SYS_RAWIO just long enough to map the
+page so non-SELinux users aren't left in the lurch they are today.
+
