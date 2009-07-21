@@ -1,82 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbZGUFiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbZGUFnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605AbZGUFiz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 01:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbZGUFix
+	id S1754020AbZGUFnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 01:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbZGUFnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 01:38:53 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53800 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752943AbZGUFiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 01:38:52 -0400
-Message-ID: <4A655434.5060404@cn.fujitsu.com>
-Date: Tue, 21 Jul 2009 13:37:56 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 21/25] io-controller: Per cgroup request descriptor support
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-22-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1246564917-19603-22-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Jul 2009 01:43:17 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50744 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753156AbZGUFnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 01:43:16 -0400
+Date: Tue, 21 Jul 2009 15:43:10 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for July 21
+Message-Id: <20090721154310.eb0c80a5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__21_Jul_2009_15_43_10_+1000_+C+dwdfi=kj=jL3t"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> o Currently a request queue has got fixed number of request descriptors for
->   sync and async requests. Once the request descriptors are consumed, new
->   processes are put to sleep and they effectively become serialized. Because
->   sync and async queues are separate, async requests don't impact sync ones
->   but if one is looking for fairness between async requests, that is not
->   achievable if request queue descriptors become bottleneck.
-> 
-> o Make request descriptor's per io group so that if there is lots of IO
->   going on in one cgroup, it does not impact the IO of other group.
-> 
-> o This is just one relatively simple way of doing things. This patch will
->   probably change after the feedback. Folks have raised concerns that in
->   hierchical setup, child's request descriptors should be capped by parent's
->   request descriptors. May be we need to have per cgroup per device files
->   in cgroups where one can specify the upper limit of request descriptors
->   and whenever a cgroup is created one needs to assign request descritor
->   limit making sure total sum of child's request descriptor is not more than
->   of parent.
-> 
->   I guess something like memory controller. Anyway, that would be the next
->   step. For the time being, we have implemented something simpler as follows.
-> 
-> o This patch implements the per cgroup request descriptors. request pool per
->   queue is still common but every group will have its own wait list and its
->   own count of request descriptors allocated to that group for sync and async
->   queues. So effectively request_list becomes per io group property and not a
->   global request queue feature.
-> 
-> o Currently one can define q->nr_requests to limit request descriptors
->   allocated for the queue. Now there is another tunable q->nr_group_requests
->   which controls the requests descriptr limit per group. q->nr_requests
->   supercedes q->nr_group_requests to make sure if there are lots of groups
->   present, we don't end up allocating too many request descriptors on the
->   queue.
-> 
+--Signature=_Tue__21_Jul_2009_15_43_10_+1000_+C+dwdfi=kj=jL3t
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  Hi Vivek,
+Hi all,
 
-  In order to prevent q->nr_requests from becoming the bottle-neck of allocating
-  requests, whether we can update nr_requests accordingly when allocating or removing
-  a cgroup?
+Changes since 20090720:
 
--- 
-Regards
-Gui Jianfeng
+New tree: ecryptfs
 
+This tree fails to build for powerpc allyesconfig (final link problem).
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 133 trees (counting Linus' and 19 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+Merging thumb-2/thumb-2
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+CONFLICT (content): Merge conflict in fs/configfs/dir.c
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
+CONFLICT (content): Merge conflict in fs/reiserfs/journal.c
+CONFLICT (content): Merge conflict in fs/reiserfs/super.c
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+$ git reset --hard HEAD^
+Merging refs/next/20090713/ttydev
+CONFLICT (content): Merge conflict in drivers/usb/serial/generic.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/pl2303.c
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging edac-amd/for-next
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in drivers/oprofile/oprofile_stats.c
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/perf_counter.c
+CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq_ondemand.c
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+Merging ecryptfs/next
+
+--Signature=_Tue__21_Jul_2009_15_43_10_+1000_+C+dwdfi=kj=jL3t
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkplVW4ACgkQjjKRsyhoI8yWzACghgtWO5Y1EiQ+7p4smWdS6KM3
++xgAoLB2Ctx0bubZa8TH61zl0GxRnVCt
+=N6oX
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__21_Jul_2009_15_43_10_+1000_+C+dwdfi=kj=jL3t--
