@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZGUCfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbZGUCik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbZGUCfV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 22:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZGUCfU
+	id S1754750AbZGUCik (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 22:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZGUCij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 22:35:20 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55919 "EHLO mx1.suse.de"
+	Mon, 20 Jul 2009 22:38:39 -0400
+Received: from rtr.ca ([76.10.145.34]:60265 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754697AbZGUCfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 22:35:20 -0400
-Date: Mon, 20 Jul 2009 19:11:26 -0700
-From: Greg KH <gregkh@suse.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, virtualization@lists.osdl.org,
-       Sam Ramji <sramji@microsoft.com>,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       Hank Janssen <hjanssen@microsoft.com>, shemminger@linux-foundation.org
-Subject: Re: [patch 47/54] Staging: hv: make gVmbusConnection.ChannelLock a
- real spinlock
-Message-ID: <20090721021126.GB11051@suse.de>
-References: <20090717180850.873962925@mini.kroah.org>
- <20090717180923.620590305@mini.kroah.org>
- <200907210139.19672.arnd@arndb.de>
+	id S1754479AbZGUCij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 22:38:39 -0400
+Message-ID: <4A652A2C.5010801@rtr.ca>
+Date: Mon, 20 Jul 2009 22:38:36 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907210139.19672.arnd@arndb.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+Cc: Steven Toth <stoth@linuxtv.org>, linux-media@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Regression 2.6.31: xc5000 no longer works with Myth-0.21-fixes
+ 	branch
+References: <4A631C8F.7000002@rtr.ca>	 <829197380907190706i686fd1afwdca0d8be648129@mail.gmail.com>	 <4A6337C1.6080104@rtr.ca> <4A63416E.2070103@rtr.ca>	 <4A63A15F.8040804@rtr.ca>	 <829197380907191812v185e0869j2e5fa47483a4de4c@mail.gmail.com>	 <4A63CF1B.7010909@rtr.ca> <829197380907191859n64582aa1pb95dd524e292512b@mail.gmail.com>
+In-Reply-To: <829197380907191859n64582aa1pb95dd524e292512b@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 01:39:19AM +0200, Arnd Bergmann wrote:
-> On Friday 17 July 2009, Greg Kroah-Hartman wrote:
-> > I don't think we really want to be doing a irqsave for this code, but I
-> > left it alone to preserve the original codepath.  It should be reviewed
-> > later.
+Devin Heitmueller wrote:
+> On Sun, Jul 19, 2009 at 9:57 PM, Mark Lord<lkml@rtr.ca> wrote:
+..
+>> One additional thing I noticed here, is that when tuning analog
+>> for the first time, the firmware is reloaded yet again.. even though
+>> it has already been loaded once for "digital" operation.
+>>
+>> Perhaps the extra 6-7second delay here is contributing to Myth's problems.
 > 
-> This patch does not preserve the original code path if any of the
-> callers has a different irq state from the others. When flags is
-> shared, releasing the lock actually sets the irq state to whatever
-> another thread was using when failing to acquire the lock while
-> it was held.
-> 
-> The patch of course looks good, but the comment is misleading.
+> That theory would be very easy to check.  Just modprobe xc5000 with
+> no_poweroff=1, load up under digital mode, and then try analog mode
+> and see if you hit the segfault.
+..
 
-Good point, sorry for the misleading comment.
-
-I'll let Hank work out the details as to if the irqsave mode is needed
-or not :)
-
-thanks,
-
-greg k-h
+I tried that today, and it didn't fix anything.  Oh well.  :)
