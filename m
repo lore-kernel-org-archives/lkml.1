@@ -1,52 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZGUVmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZGUVmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbZGUVmE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbZGUVmD
+	id S1756119AbZGUVmf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbZGUVme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:42:03 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:25886 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755251AbZGUVmC (ORCPT
+	Tue, 21 Jul 2009 17:42:34 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:36781 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754902AbZGUVmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:42:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=sCHJMIkDV+IsdIESbT3nkL+N2kk38AAYvPx7CQ9i9jijzpioFWjpX90s58Job63kbG
-         y530qF3RodUrebafHNtOXsM/FfQckBbf8MmXDCIe6hsDaNajsdIWN4BbnAm/wpdC2210
-         Rrej9fCZ1+6IUA1fIGWnL0pzzVj1IupPXXAPc=
+	Tue, 21 Jul 2009 17:42:33 -0400
+Date: Tue, 21 Jul 2009 17:41:47 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Tejun Heo <tj@kernel.org>
+cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@redhat.com,
+       benh@kernel.crashing.org, davem@davemloft.net, dhowells@redhat.com,
+       npiggin@suse.de, JBeulich@novell.com, rusty@rustcorp.com.au,
+       hpa@zytor.com, tglx@linutronix.de, akpm@linux-foundation.org,
+       x86@kernel.org, andi@firstfloor.org
+Subject: Re: [PATCH 01/20] percpu: fix pcpu_reclaim() locking
+In-Reply-To: <1248171979-29166-2-git-send-email-tj@kernel.org>
+Message-ID: <alpine.DEB.1.10.0907211741290.25867@gentwo.org>
+References: <1248171979-29166-1-git-send-email-tj@kernel.org> <1248171979-29166-2-git-send-email-tj@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Date: Wed, 22 Jul 2009 00:42:01 +0300
-Message-ID: <cb315aa70907211442y79575081y9c9951d0c596beb0@mail.gmail.com>
-Subject: Re: Hi-ya
-From: Colby Forbes <colbyforbes4@gmail.com>
-To: good_james_is@yahoo.com
-Cc: linux-kernel@vger.kernel.org, aprile_whyte@yahoo.ca
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do you extremely want to get cash at Internet?
-Get Free Naive Formula to Boom Your Earningswith Blow-by-blow Payments.
-We have very unequal Method to make Unlimited finance.
 
 
-For Full facts take in:
-http://lynk2.us/qjk
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 
 
-
-Good wishes,
-
-ROSE
-
-
----------------------------------------------------------------
-P.S. Come mail a reply with "Terminate" to sanoideoffnek@gmail.com
-if you are no longer interested so we can at once erase you from our file.
-----------
- --- qxqzbwqnf4equ32hngtzxk1ajudu5qdbz2qohtiyupmd7u25lgeki35qz0jmpzviaste1wr87bxz4c5qeljm8f03xrp0fpkih7ryeofhw6l6wstpyh74nty1jfsc9s2rlf57jdkcl1dzo3ide7krg4
