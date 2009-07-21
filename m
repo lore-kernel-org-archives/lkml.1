@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756494AbZGUXFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485AbZGUXG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756494AbZGUXFP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 19:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756277AbZGUXFN
+	id S1756485AbZGUXG6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 19:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756265AbZGUXG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 19:05:13 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2388 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754461AbZGUXFM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 19:05:12 -0400
-Subject: Re: [RFC] move __devinit or __init printk constant format strings
- to __devinitconst or __initdata?
-From: Joe Perches <joe@perches.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       David Woodhouse <dwmw2@infradead.org>, Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <1248217044.10466.202.camel@calx>
-References: <1248211253.31365.337.camel@Joe-Laptop.home>
-	 <1248212925.10466.143.camel@calx>
-	 <1248213403.31365.343.camel@Joe-Laptop.home>
-	 <1248217044.10466.202.camel@calx>
-Content-Type: text/plain
-Date: Tue, 21 Jul 2009 16:05:02 -0700
-Message-Id: <1248217502.31365.381.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Jul 2009 19:06:58 -0400
+Received: from mx10.brocade.com ([208.185.105.18]:36343 "EHLO mx10.brocade.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756253AbZGUXG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 19:06:57 -0400
+X-IronPort-AV: E=Sophos;i="4.43,242,1246863600"; 
+   d="scan'208";a="205068119"
+Date: Tue, 21 Jul 2009 16:06:44 -0700
+From: Jing Huang <huangj@brocade.com>
+Message-Id: <200907212306.n6LN6i6j007166@swe57.brocade.com>
+To: James.Bottomley@HansenPartnership.com
+Subject: [PATCH 0/6] bfa: Brocade BFA FC SCSI driver (overview)
+Cc: kgudipat@brocade.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rvadivel@brocade.com, vravindr@brocade.com,
+       xmzhang@brocade.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-21 at 17:57 -0500, Matt Mackall wrote:
-> On Tue, 2009-07-21 at 14:56 -0700, Joe Perches wrote:
-> > On Tue, 2009-07-21 at 16:48 -0500, Matt Mackall wrote:
-> > > On Tue, 2009-07-21 at 14:20 -0700, Joe Perches wrote:
-> > > > Is moving constant string formats to __devinitconst or __initdata
-> > > > useful for embedded environments?
-> > > Interesting notion, but not worth the trouble in my mind. I think it's
-> > > more worthwhile to look into automatic such stuff in the build somehow.
-> > I think it's not possible today to get gcc to mark
-> > the format strings without source modification.
-> Yep, that's why I specifically said 'build'. It can probably be done in
-> a post-processing step with some ELF wizardry. 
+From: Jing Huang <huangj@brocade.com>
 
-Know any elven wizards?
+I have to resubmit the patch I posted a few days ago. It seems that one of
+the patches I submitted never showed up in LKML (I tried twice), 
+I suspect it got rejected due to its size. Now I am retrying by splitting that
+patch into two.
 
-> > It's pretty easy to script a source conversion.
-> 
-> And that script has to be run how often?
+In this submission, we completed all the pening works in our last submission
+in April, including:
+1) Added support of Brocade PCIe FCOE HBA.
+2) Cleaned up FC state machine code.
+3) Completed implementing code review comments received from the open source
+community.
 
-Once.
+It contains a serial of 6 patches generated using 2.6.30.1 kernel. Here is
+a brief description of each patch:
 
->  I don't think people will find
-> the churn (and general extra ugliness) acceptable. For a typical
-> stripped-down embedded kernel, the amount of gain here will be fairly
-> minimal. I'd be surprised if you got as much as 1K out of it.
+[PATCH 1/6]: SCSI LLD driver code, module init/exit, PCI and SCSI host entry
+points, interrupt handler, and sysfs interface etc. 
 
-Got a typical config that uses printks I could try?
+[PATCH 2/6]: Hardware/FW access code.
 
+[PATCH 3/6]: FC state machines.
 
+[PATCH 4/6]: Common header files shared by linux driver,
+hardware/FW access code, FC state machines.
+
+[PATCH 5/6]: Updated Kconfig and Makefile for driver/scsi, and Makefile
+for bfa driver 
+
+[PATCH 6/6]: Updated MAINTAINER file.
+
+Signed-off-by: Jing Huang <huangj@brocade.com>
+---
