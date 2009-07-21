@@ -1,87 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbZGUUqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbZGUUsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755882AbZGUUqp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 16:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZGUUqo
+	id S1755921AbZGUUsT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 16:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbZGUUsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 16:46:44 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54619 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755476AbZGUUqn (ORCPT
+	Tue, 21 Jul 2009 16:48:19 -0400
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:43283 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755570AbZGUUsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 16:46:43 -0400
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Lennert Buytenhek <buytenh@marvell.com>, Saeed Bishara <saeed@marvell.com>,
-       =?utf-8?q?J=C3=B6rn=20Engel?= <joern@logfs.org>,
-       Nicolas Pitre <nico@marvell.com>,
-       Tzachi Perelstein <tzachi@marvell.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
-Subject: [PATCH] register orion_nand using platform_driver_probe
-Date: Tue, 21 Jul 2009 22:46:36 +0200
-Message-Id: <1248209196-15705-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <alpine.LFD.2.00.0907141211260.3138@xanadu.home>
-References: <alpine.LFD.2.00.0907141211260.3138@xanadu.home>
+	Tue, 21 Jul 2009 16:48:18 -0400
+X-Greylist: delayed 423 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Jul 2009 16:48:17 EDT
+Date: Tue, 21 Jul 2009 22:42:14 +0200
+From: Bastian Blank <waldi@debian.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Cc: Kiko Piris <kernel@pirispons.net>, Damien Wyart <damien.wyart@free.fr>,
+       Greg KH <gregkh@suse.de>, Wolfgang Walter <wolfgang.walter@stwm.de>,
+       hpa@zytor.com, 537862@bugs.debian.org
+Subject: Re: Linux 2.6.30.2: does not boot
+Message-ID: <20090721204214.GA27015@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <waldi@debian.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Kiko Piris <kernel@pirispons.net>,
+	Damien Wyart <damien.wyart@free.fr>, Greg KH <gregkh@suse.de>,
+	Wolfgang Walter <wolfgang.walter@stwm.de>, hpa@zytor.com,
+	537862@bugs.debian.org
+References: <20090720040813.GC11940@kroah.com> <200907201613.22483.wolfgang.walter@stwm.de> <20090720150916.GB10015@suse.de> <20090720180333.GA2905@brouette> <20090720192933.GA22641@superlopez.pirispons.net> <alpine.LFD.2.01.0907201241490.19335@localhost.localdomain> <20090720211908.GA31814@superlopez.pirispons.net> <alpine.LFD.2.01.0907201458000.19335@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0907201458000.19335@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-orion_nand_probe lives in .init.text, so using platform_driver_register
-to register it is wrong because binding a device after the init memory
-is discarded (e.g. via sysfs) results in an oops.
+On Mon, Jul 20, 2009 at 03:02:36PM -0700, Linus Torvalds wrote:
+> On Mon, 20 Jul 2009, Kiko Piris wrote:
+> > Yes, as Marcel Beister pointed, it resulted some binutils bug.
+> > Downgrading the package produced a perfectly bootable 2.6.30.2.
+> Ok, so it's been narrowed down to binutils. Good.
 
-As requested by Nicolas Pitre platform_driver_probe is used instead of
-moving the probe function to .devinit.text as proposed initially.
-This saves some memory, but devices registered after the driver is
-probed are not bound (probably there are none) and binding via sysfs
-isn't possible.
+Okay, I did some work and now got one working and one not working
+kernel. The setup code it, except the payload size and the version
+string, identical. Now to vmlinux.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Lennert Buytenhek <buytenh@marvell.com>
-Cc: Saeed Bishara <saeed@marvell.com>
-Cc: Jörn Engel <joern@logfs.org>
-Cc: Nicolas Pitre <nico@marvell.com>
-Cc: Tzachi Perelstein <tzachi@marvell.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-mtd@lists.infradead.org
+First difference (1-vmlinux is the broken, 2-vmlinux is the working
+version):
+| 2-vmlinux:     file format elf32-i386
+| 2-vmlinux
+| architecture: i386, flags 0x00000113:
+| HAS_RELOC, EXEC_P, HAS_SYMS, D_PAGED
+vs.
+| 1-vmlinux:     file format elf32-i386
+| 1-vmlinux
+| architecture: i386, flags 0x00000013:
+| HAS_RELOC, EXEC_P, HAS_SYMS
+The file lost its D_PAGED flag.
 
----
- drivers/mtd/nand/orion_nand.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+Next:
+|  16 .init.rodata  00000394  c05057e0  005057e0  004067e0  2**4
+|                   CONTENTS, ALLOC, LOAD, RELOC, DATA
+|  17 .data.page_aligned 00000800  c0506000  00506000  00407000  2**5
+|                   CONTENTS, ALLOC, LOAD, DATA
+vs.
+|  16 .init.rodata  00000394  c0506000  00506000  00407000  2**4
+|                   CONTENTS, ALLOC, LOAD, RELOC, DATA
+|  17 .data_nosave  00000c6c  c0506394  00506394  00407394  2**0
+|                   ALLOC
+|  18 .data.page_aligned 00000800  c0507000  00506394  00407394  2**5
+|                   CONTENTS, ALLOC, LOAD, DATA
+So suddenly there apears a .data_nosave with some content, but it is
+marked the same then a bss section and not even properly aligned
+according to the linker script.
 
-diff --git a/drivers/mtd/nand/orion_nand.c b/drivers/mtd/nand/orion_nand.c
-index 7ad9722..cb9d13b 100644
---- a/drivers/mtd/nand/orion_nand.c
-+++ b/drivers/mtd/nand/orion_nand.c
-@@ -171,7 +171,6 @@ static int __devexit orion_nand_remove(struct platform_device *pdev)
- }
- 
- static struct platform_driver orion_nand_driver = {
--	.probe		= orion_nand_probe,
- 	.remove		= __devexit_p(orion_nand_remove),
- 	.driver		= {
- 		.name	= "orion_nand",
-@@ -181,7 +180,7 @@ static struct platform_driver orion_nand_driver = {
- 
- static int __init orion_nand_init(void)
- {
--	return platform_driver_register(&orion_nand_driver);
-+	return platform_driver_probe(&orion_nand_driver, orion_nand_probe);
- }
- 
- static void __exit orion_nand_exit(void)
+The same sections of another working kernel, built with the new
+binutils:
+|  18 .init.rodata  000003bd  c040f4c0  0040f4c0  003104c0  2**2
+|                   CONTENTS, ALLOC, LOAD, RELOC, DATA
+|  19 .data_nosave  00001000  c0410000  00410000  00311000  2**2
+|                   CONTENTS, ALLOC, LOAD, DATA
+|  20 .data.page_aligned 00000800  c0411000  00411000  00312000  2**2
+|                   CONTENTS, ALLOC, LOAD, DATA
+The .data_nosave section is a real one here.
+
+I would say, such holes won't survive the objcopy to create a binary and
+all code is at the wrong location.
+
+Bastian
+
 -- 
-tg: (4b0a840..) t/platsection/orion_nand_driver (depends on: linus/master)
+Punishment becomes ineffective after a certain point.  Men become insensitive.
+		-- Eneg, "Patterns of Force", stardate 2534.7
