@@ -1,137 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbZGUS0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbZGUS0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754350AbZGUS0h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 14:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZGUS0g
+	id S1755648AbZGUS0o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 14:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbZGUS0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 14:26:36 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:56017 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbZGUS0f (ORCPT
+	Tue, 21 Jul 2009 14:26:43 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:64109 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755181AbZGUS0k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 14:26:35 -0400
-Date: Tue, 21 Jul 2009 20:25:05 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: [RFC][PATCH] cache __next_timer_interrupt result
-Message-ID: <20090721202505.7d56a079@skybase>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Jul 2009 14:26:40 -0400
+Message-ID: <4A660854.6080805@vlnb.net>
+Date: Tue, 21 Jul 2009 22:26:28 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH]: New implementation of scsi_execute_async()
+References: <4A563368.5040407@vlnb.net> <4A59DF14.7060807@panasas.com> <4A5CAF66.3090909@vlnb.net> <4A5D9117.2060205@panasas.com> <4A5F6DC2.5040008@vlnb.net> <4A6304C7.3070200@panasas.com> <4A64AF63.6050300@vlnb.net> <4A65765A.8040203@panasas.com>
+In-Reply-To: <4A65765A.8040203@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18hPJsdOGv2q7PRmqRhysUTEu+OPXT3Vnl/9Tz
+ FOXWMWaGJTgpgaZ5EWeRefqZ0FGkXFt9tg0l3cwWu9kkA+Nd+q
+ oLKPI/POwi0x2pkg8uorA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Boaz Harrosh, on 07/21/2009 12:03 PM wrote:
+>>> Yes that's what I want, and if you can not save some of it's complexity
+>>> by, for example, merging of scsi_io_context with the request structure you
+>>> already have at scst level, or save the double-chained-callbacks at the end,
+>>> then you've done something wrong.
+>> Are you sure??
+>>
+>> As I already wrote, in SCST sense allocated on-demand only. It is done
+>> for performance reasons, because the sense is needed _very_ rarely and
+>> the buffer for it is quite big, so it's better to save those allocating,
+>> zeroing and CPU cache trashing. The fact that Linux SCSI ML requires
+>> sense buffer preallocation is for me something rather to be fixed.
+>> Pass-through SCST backend is used relatively rarely as well, so it's
+>> better to keep the sense preallocation for it in the separate code path.
+>> Then, if there is the sense preallocation, it doesn't matter to alloc
+>> with it few bytes more.
+>>
+>> Is it getting clearer now?
+> 
+> Yes it is now clear to me that scst is a mess.
 
-Each time a cpu goes to sleep on a NOHZ=y system the timer wheel is
-searched for the next timer interrupt. It can take quite a few cycles
-to find the next pending timer. This patch adds a field to tvec_base
-that caches the result of __next_timer_interrupt. The hit ratio is
-around 80% on my thinkpad under normal use, on a server I've seen
-hit ratios from 5% to 95% dependent on the workload.
+Sounds impressive. But how much this claim related to the reality? Have 
+you even looked at the SCST code?
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: john stultz <johnstul@us.ibm.com>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
- kernel/timer.c |   24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+> you cannot have more then
+> can_queue commands in-filght. 256 allocated mem_cache buffers of size 64-bytes
+> or size 96+64 bytes does not matter performance. It's the number of allocations
+> that count not the size of allocation, usually. If you want you can have a bigger
+> mem_cache in the scsi-pass-through case to hold a special-with-sense scst-command-
+> structure.
 
-Index: linux-2.6/kernel/timer.c
-===================================================================
---- linux-2.6.orig/kernel/timer.c
-+++ linux-2.6/kernel/timer.c
-@@ -72,6 +72,7 @@ struct tvec_base {
- 	spinlock_t lock;
- 	struct timer_list *running_timer;
- 	unsigned long timer_jiffies;
-+	unsigned long next_timer;
- 	struct tvec_root tv1;
- 	struct tvec tv2;
- 	struct tvec tv3;
-@@ -622,6 +623,9 @@ __mod_timer(struct timer_list *timer, un
- 
- 	if (timer_pending(timer)) {
- 		detach_timer(timer, 0);
-+		if (timer->expires == base->next_timer &&
-+		    !tbase_get_deferrable(timer->base))
-+			base->next_timer = base->timer_jiffies;
- 		ret = 1;
- 	} else {
- 		if (pending_only)
-@@ -663,6 +667,9 @@ __mod_timer(struct timer_list *timer, un
- 	}
- 
- 	timer->expires = expires;
-+	if (timer->expires < base->next_timer &&
-+	    !tbase_get_deferrable(timer->base))
-+		base->next_timer = timer->expires;
- 	internal_add_timer(base, timer);
- 
- out_unlock:
-@@ -781,6 +788,9 @@ void add_timer_on(struct timer_list *tim
- 	spin_lock_irqsave(&base->lock, flags);
- 	timer_set_base(timer, base);
- 	debug_timer_activate(timer);
-+	if (timer->expires < base->next_timer &&
-+	    !tbase_get_deferrable(timer->base))
-+		base->next_timer = timer->expires;
- 	internal_add_timer(base, timer);
- 	/*
- 	 * Check whether the other CPU is idle and needs to be
-@@ -817,6 +827,9 @@ int del_timer(struct timer_list *timer)
- 		base = lock_timer_base(timer, &flags);
- 		if (timer_pending(timer)) {
- 			detach_timer(timer, 1);
-+			if (timer->expires == base->next_timer &&
-+			    !tbase_get_deferrable(timer->base))
-+				base->next_timer = base->timer_jiffies;
- 			ret = 1;
- 		}
- 		spin_unlock_irqrestore(&base->lock, flags);
-@@ -850,6 +863,9 @@ int try_to_del_timer_sync(struct timer_l
- 	ret = 0;
- 	if (timer_pending(timer)) {
- 		detach_timer(timer, 1);
-+		if (timer->expires == base->next_timer &&
-+		    !tbase_get_deferrable(timer->base))
-+			base->next_timer = base->timer_jiffies;
- 		ret = 1;
- 	}
- out:
-@@ -1134,7 +1150,9 @@ unsigned long get_next_timer_interrupt(u
- 	unsigned long expires;
- 
- 	spin_lock(&base->lock);
--	expires = __next_timer_interrupt(base);
-+	if (base->next_timer <= base->timer_jiffies)
-+		base->next_timer = __next_timer_interrupt(base);
-+	expires = base->next_timer;
- 	spin_unlock(&base->lock);
- 
- 	if (time_before_eq(expires, now))
-@@ -1523,6 +1541,7 @@ static int __cpuinit init_timers_cpu(int
- 		INIT_LIST_HEAD(base->tv1.vec + j);
- 
- 	base->timer_jiffies = jiffies;
-+	base->next_timer = base->timer_jiffies;
- 	return 0;
- }
- 
-@@ -1535,6 +1554,9 @@ static void migrate_timer_list(struct tv
- 		timer = list_first_entry(head, struct timer_list, entry);
- 		detach_timer(timer, 0);
- 		timer_set_base(timer, new_base);
-+		if (timer->expires < new_base->next_timer &&
-+		    !tbase_get_deferrable(timer->base))
-+			new_base->next_timer = timer->expires;
- 		internal_add_timer(new_base, timer);
- 	}
- }
+Just FYI: (1) SCST from the very beginning has been designed and 
+implemented to have the best possible performance, (2) InfiniBand 
+already have 1 mks latency and this doesn't seem to be a limit, (3) the 
+maximum sense size defined by SPC is 252 bytes, not 96.
+
+> All drivers that care about sense find a way.
+> 
+> BTW you can call blk_execute_nowait without a sense buffer at all, it is optional.
+
+And so? To lost this sense, if there is one? Would you do so yourself?
+
+Boaz, what are you doing? Are we discussing a particular implementation 
+problem or are you trying by any means to prove how stupid and ignorant 
+I am? Let's return to the problem and stop doing nonsense claims!
+
+>>>> Does flag SCSI_ASYNC_EXEC_FLAG_AT_HEAD have nothing to do to SCSI, really?
+>>>>
+>>> Exactly, it's just a parameter at the call to blk_execute_nowait() with it's
+>>> own defines already. Nothing SCSI.
+>> Well, going this way we can go too far.. Like, to assertion that SCSI
+>> HEAD OF QUEUE task attribute is a property of the Linux block layer as well.
+>>
+> 
+> No "SCSI HEAD OF QUEUE task attribute" is a scsi attribute, none-scsi block
+> devices will not understand what it is. It is executed by the scsi-device.
+> Your flag will work for all block devices exactly because it is a parameter
+> to the block layer.
+> 
+> If you are implementing the scsi protocol to the letter then you must make sure
+> all subsystems comply for example pass the proper flag to the Linux block subsystem.
+
+Again rather a nonsense claim. Of course, in the absolute for full 
+support of HEAD OF QUEUE attribute blk should be modified to be aware of 
+it to keep the corresponding requests in the head of the queue as well 
+as to keep HEAD OF QUEUE attribute set for the corresponding SCSI 
+commands. But, from practical POV, if there is a big stuck queue, 
+inserting a HEAD OF QUEUE request in the head of it is a _lot_ better, 
+than in the tail.
+
+> Hell look at your own code. And answer a simple question what does
+> SCSI_ASYNC_EXEC_FLAG_AT_HEAD do, and how does it do it:
+> 
+> +	blk_execute_rq_nowait(req->q, NULL, req,
+> +		flags & SCSI_ASYNC_EXEC_FLAG_AT_HEAD, scsi_end_async);
+> 
+> I'd say it's just a bit carrier to a boolean parameter at the call to
+> blk_execute_rq_nowait
+
+And so? Does it let us have a good approximation to what we need for 
+HEAD OF QUEUE commands? Yes, it does. This is a regular practice to pass 
+flags down to a call stack and it's used in a million of places.
+
+>>>>>>>> +/**
+>>>>>>>> + * blk_rq_unmap_kern_sg - "unmaps" data buffers in the request
+>>>>>>>> + * @req:	request to unmap
+>>>>>>>> + * @do_copy:	sets copy data between buffers, if needed, or not
+>>>>>>>> + *
+>>>>>>>> + * Description:
+>>>>>>>> + *    It frees all additional buffers allocated for SG->BIO mapping.
+>>>>>>>> + */
+>>>>>>>> +void blk_rq_unmap_kern_sg(struct request *req, int do_copy)
+>>>>>>>> +{
+>>>>>>>> +	struct scatterlist *hdr = (struct scatterlist *)req->end_io_data;
+>>>>>>>> +
+>>>>>>> You can't use req->end_io_data  here! req->end_io_data is reserved for
+>>>>>>> blk_execute_async callers. It can not be used for private block use.
+>>>>>> Why? I see blk_execute_rq() happily uses it. Plus, I implemented stacking of
+>>>>>> it in scsi_execute_async().
+>>>>>>
+>>>>> As I said users of blk_execute_rq_nowait() blk_execute_rq is a user of
+>>>>> blk_execute_rq_nowait just as the other guy.
+>>>>>
+>>>>> "implemented stacking" is exactly the disaster I'm talking about.
+>>>>> Also it totaly breaks the blk API. Now I need to to specific code
+>>>>> when mapping with this API as opposed to other mappings when I execute
+>>>>>
+>>>>>> Do you have better suggestion?
+>>>>> I have not look at it deeply but you'll need another system. Perhaps
+>>>>> like map_user/unmap_user where you give unmap_user the original bio.
+>>>>> Each user of map_user needs to keep a pointer to the original bio
+>>>>> on mapping. Maybe some other options as well. You can use the bio's
+>>>>> private data pointer, when building the first bio from scatter-list.
+>>>> I can't see how *well documented* stacking of end_io_data can be/lead to 
+>>>> any problem. All the possible alternatives I can see are worse:
+>>>>
+>>>> 1. Add in struct request one more field, like "void *blk_end_io_data" 
+>>>> and use it.
+>>>>
+>>>> 2. Duplicate code of bio's allocation and chaining 
+>>>> (__blk_rq_map_kern_sg()) for the copy case with additional code for 
+>>>> allocation and copying of the copy buffers on per-bio basis and use 
+>>>> bio->bi_private to track the copy info. Tejun Heo used this approach, 
+>>>> but he had only one bio without any chaining. With the chaining this 
+>>>> approach becomes terribly overcomplicated and ugly with *NO* real gain.
+>>>>
+>>>> Do you like any of them? If not, I'd like to see _practical_ suggestions.
+>>>>
+>>> Again all this is not needed and should be dropped it is already done
+>>> by bio bouncing. All you need to do is add the pages to bios, chain when
+>>> full, and call blk_make_request.
+>> Can you show me a place where the bio bouncing, i.e.
+>> blk_queue_bounce(), does bouncing of misaligned buffers?
+>>
+> 
+> It's there look harder
+
+Could you point to the exact lines of code, please?
+
+>> I don't see such places. Instead, I see that all users of the block API,
+>> who cares about the alignment (sg, st, sr, etc.), directly or indirectly
+>> take care about it, by, e.g., switching to copying functions, before
+>> calling blk_queue_bounce(). See blk_rq_map_user_iov(), for instance.
+>> This is exactly what I implemented: handling of misaligned buffers on
+>> the layer upper blk_queue_bounce().
+>>
+> 
+> Read the code again, I agree it is a grate mess but ...
+> 
+> For example what about filesystems they just put buffers on a bio and call
+> generic_make_request. sg st sr all do grate stupid things because of historical
+> reasons.
+> 
+> See the old scsi_execute_async of scsi_lib.c where was that alignment and
+> padding? there was not! did it work?
+> 
+> Look at blk_map_kern, where is alignment and padding handling? does it work?
+
+Of course, it works. From blk_rq_map_kern() from 2.6.30.1:
+
+do_copy = !blk_rq_aligned(q, kbuf, len) || object_is_on_stack(kbuf);
+if (do_copy)
+	bio = bio_copy_kern(q, kbuf, len, gfp_mask, reading);
+else
+	bio = bio_map_kern(q, kbuf, len, gfp_mask);
+...
+blk_queue_bounce(q, &rq->bio);
+...
+return 0;
+
+Vlad
