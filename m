@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbZGUKcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZGUKb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbZGUKcK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 06:32:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967AbZGUKcI
+	id S1755236AbZGUKb6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 06:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbZGUKbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 06:32:08 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51277 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754802AbZGUKcF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 06:32:05 -0400
-Date: Tue, 21 Jul 2009 12:31:59 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: tridge@samba.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Martin Steigerwald <Martin@lichtvoll.de>,
-       Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
-       Rusty Russell <rusty@rustcorp.com.au>, john.lanza@linux.com,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org, torvalds@linux-foundation.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-Message-ID: <20090721103158.GG4133@elf.ucw.cz>
-References: <19028.3736.892828.352905@samba.org> <20090708110451.1092afa7@lxorguk.ukuu.org.uk> <1247066878.4159.153.camel@mulgrave.site> <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk> <1247069202.4159.212.camel@mulgrave.site> <20090708171848.21633768@lxorguk.ukuu.org.uk> <873a96a23x.fsf@devron.myhome.or.jp> <87hbxhwv0j.fsf@devron.myhome.or.jp> <19045.14307.658887.752950@samba.org> <4A65875D.7030902@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A65875D.7030902@panasas.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 21 Jul 2009 06:31:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37066 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754818AbZGUK2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 06:28:02 -0400
+From: Tejun Heo <tj@kernel.org>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@redhat.com,
+       benh@kernel.crashing.org, davem@davemloft.net, dhowells@redhat.com,
+       npiggin@suse.de, JBeulich@novell.com, cl@linux-foundation.org,
+       rusty@rustcorp.com.au, hpa@zytor.com, tglx@linutronix.de,
+       akpm@linux-foundation.org, x86@kernel.org, andi@firstfloor.org
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 01/20] percpu: fix pcpu_reclaim() locking
+Date: Tue, 21 Jul 2009 19:26:00 +0900
+Message-Id: <1248171979-29166-2-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1248171979-29166-1-git-send-email-tj@kernel.org>
+References: <1248171979-29166-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Jul 2009 10:26:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+pcpu_reclaim() calls pcpu_depopulate_chunk() which makes use of pages
+array and bitmap returned by pcpu_get_pages_and_bitmap() and thus
+should be called under pcpu_alloc_mutex.  pcpu_reclaim() released the
+mutex before calling depopulate leading to double free and other
+strange problems caused by the unexpected concurrent usages of pages
+array and bitmap.  Fix it.
 
-> >   - Similarly, there is a small chance that chkdsk on Windows will
-> >     rename one file in a directory if they happen to have the same 11
-> >     byte dummy values. The probability of this happening is
-> >     approximately 80x lower than with the previous patch.
-> > 
-> 
-> What if we had a user mode utility that does these short-names
-> renames that a user can optionally run after umount? since it
-> only writes the (random) short-names it's also safe.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+ mm/percpu.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Actually, why not having dosfsck creating _matching_ short names for
-long names? As it only writes short names, it should be safe :-).
-									Pavel
+diff --git a/mm/percpu.c b/mm/percpu.c
+index f993dc8..c44a5b2 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -1181,12 +1181,13 @@ static void pcpu_reclaim(struct work_struct *work)
+ 	}
+ 
+ 	spin_unlock_irq(&pcpu_lock);
+-	mutex_unlock(&pcpu_alloc_mutex);
+ 
+ 	list_for_each_entry_safe(chunk, next, &todo, list) {
+ 		pcpu_depopulate_chunk(chunk, 0, pcpu_unit_size);
+ 		free_pcpu_chunk(chunk);
+ 	}
++
++	mutex_unlock(&pcpu_alloc_mutex);
+ }
+ 
+ /**
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.0.2
+
