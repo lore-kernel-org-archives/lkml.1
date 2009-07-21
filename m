@@ -1,397 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbZGUFga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbZGUFiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbZGUFga (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 01:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZGUFg3
+	id S1753605AbZGUFiz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 01:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbZGUFix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 01:36:29 -0400
-Received: from mail-yx0-f197.google.com ([209.85.210.197]:43557 "EHLO
-	mail-yx0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752577AbZGUFg2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 01:36:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=C6umLMzmOc0ereCkIUS+JhQq9nX4pBjQacrjR76U+eUmLUcBSVL0GVOAkQAs6TxIjg
-         xuy8Ni8XR2iLiaaoYRq41OTnHUwT657kFoSA5eRIlChxXd8xKZO8tfUWSIhaubiZeySd
-         VQAF6JDENwsKLY+CvzBc/yZdg5qvPS9+JBhSQ=
-Subject: Re: [PATCH v2] tracing/filters: Improve subsystem filter
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A63D485.7030703@cn.fujitsu.com>
-References: <4A63D485.7030703@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Tue, 21 Jul 2009 00:36:25 -0500
-Message-Id: <1248154585.6323.26.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Tue, 21 Jul 2009 01:38:53 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53800 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752943AbZGUFiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 01:38:52 -0400
+Message-ID: <4A655434.5060404@cn.fujitsu.com>
+Date: Tue, 21 Jul 2009 13:37:56 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 21/25] io-controller: Per cgroup request descriptor support
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-22-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1246564917-19603-22-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Vivek Goyal wrote:
+> o Currently a request queue has got fixed number of request descriptors for
+>   sync and async requests. Once the request descriptors are consumed, new
+>   processes are put to sleep and they effectively become serialized. Because
+>   sync and async queues are separate, async requests don't impact sync ones
+>   but if one is looking for fairness between async requests, that is not
+>   achievable if request queue descriptors become bottleneck.
+> 
+> o Make request descriptor's per io group so that if there is lots of IO
+>   going on in one cgroup, it does not impact the IO of other group.
+> 
+> o This is just one relatively simple way of doing things. This patch will
+>   probably change after the feedback. Folks have raised concerns that in
+>   hierchical setup, child's request descriptors should be capped by parent's
+>   request descriptors. May be we need to have per cgroup per device files
+>   in cgroups where one can specify the upper limit of request descriptors
+>   and whenever a cgroup is created one needs to assign request descritor
+>   limit making sure total sum of child's request descriptor is not more than
+>   of parent.
+> 
+>   I guess something like memory controller. Anyway, that would be the next
+>   step. For the time being, we have implemented something simpler as follows.
+> 
+> o This patch implements the per cgroup request descriptors. request pool per
+>   queue is still common but every group will have its own wait list and its
+>   own count of request descriptors allocated to that group for sync and async
+>   queues. So effectively request_list becomes per io group property and not a
+>   global request queue feature.
+> 
+> o Currently one can define q->nr_requests to limit request descriptors
+>   allocated for the queue. Now there is another tunable q->nr_group_requests
+>   which controls the requests descriptr limit per group. q->nr_requests
+>   supercedes q->nr_group_requests to make sure if there are lots of groups
+>   present, we don't end up allocating too many request descriptors on the
+>   queue.
+> 
 
-On Mon, 2009-07-20 at 10:20 +0800, Li Zefan wrote:
-> Currently a subsystem filter should be applicable to all events
-> under the subsystem, and if it failed, all the event filters
-> will be cleared. Those behaviors make subsys filter much less
-> useful:
-> 
->   # echo 'vec == 1' > irq/softirq_entry/filter
->   # echo 'irq == 5' > irq/filter
->   bash: echo: write error: Invalid argument
->   # cat irq/softirq_entry/filter
->   none
-> 
-> I'd expect it set the filter for irq_handler_entry/exit, and
-> not touch softirq_entry/exit.
-> 
-> The basic idea is, try to see if the filter can be applied
-> to which events, and then just apply to the those events:
-> 
->   # echo 'vec == 1' > softirq_entry/filter
->   # echo 'irq == 5' > filter
->   # cat irq_handler_entry/filter
->   irq == 5
->   # cat softirq_entry/filter
->   vec == 1
-> 
+  Hi Vivek,
 
-It looks like it accomplishes the goal, but I wonder if you could
-simplify it by getting rid of the no_reset flag and all the state-saving
-while keeping the dry_run param on filter_add_pred to use from
-filter_add_subsysystem_pred() e.g. something like this:
+  In order to prevent q->nr_requests from becoming the bottle-neck of allocating
+  requests, whether we can update nr_requests accordingly when allocating or removing
+  a cgroup?
 
-filter_add_subsystem_pred(...)
-{
-	...
-	list_for_each_entry(call, &ftrace_events, list) {
-		err = filter_add_pred(ps, call, pred, dry_run = 1);
-		if (!err)
-			filter_add_pred(ps, call, pred, dry_run = 0);
-		...
-	}
-}
-
-IIRC the state-saving was necessary if the idea was to back out of (or
-avoid setting) all the filters if one failed, but the new model is to
-set whichever apply while leaving the rest alone.  I think the simpler
-approach above accomplishes that, but I may be missing something or have
-forgotten the original motivation for doing it this way.
-
-Tom
-
-> Changelog for v2:
-> - do some cleanups to address Frederic's comments.
-> 
-> Inspied-by: Steven Rostedt <srostedt@redhat.com>
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  include/linux/ftrace_event.h       |    4 +-
->  kernel/trace/trace.h               |    3 +-
->  kernel/trace/trace_events_filter.c |  124 ++++++++++++++++++++++++------------
->  3 files changed, 87 insertions(+), 44 deletions(-)
-> 
-> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> index 5c093ff..26d3673 100644
-> --- a/include/linux/ftrace_event.h
-> +++ b/include/linux/ftrace_event.h
-> @@ -101,6 +101,8 @@ void trace_current_buffer_discard_commit(struct ring_buffer_event *event);
->  
->  void tracing_record_cmdline(struct task_struct *tsk);
->  
-> +struct event_filter;
-> +
->  struct ftrace_event_call {
->  	struct list_head	list;
->  	char			*name;
-> @@ -116,7 +118,7 @@ struct ftrace_event_call {
->  	int			(*define_fields)(void);
->  	struct list_head	fields;
->  	int			filter_active;
-> -	void			*filter;
-> +	struct event_filter	*filter;
->  	void			*mod;
->  
->  #ifdef CONFIG_EVENT_PROFILE
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index 06886a0..3a87d46 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -768,13 +768,14 @@ struct event_filter {
->  	int			n_preds;
->  	struct filter_pred	**preds;
->  	char			*filter_string;
-> +	bool			no_reset;
->  };
->  
->  struct event_subsystem {
->  	struct list_head	list;
->  	const char		*name;
->  	struct dentry		*entry;
-> -	void			*filter;
-> +	struct event_filter	*filter;
->  	int			nr_events;
->  };
->  
-> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> index b9aae72..c7ed427 100644
-> --- a/kernel/trace/trace_events_filter.c
-> +++ b/kernel/trace/trace_events_filter.c
-> @@ -418,7 +418,14 @@ oom:
->  }
->  EXPORT_SYMBOL_GPL(init_preds);
->  
-> -static void filter_free_subsystem_preds(struct event_subsystem *system)
-> +enum {
-> +	FILTER_DISABLE_ALL,
-> +	FILTER_INIT_NO_RESET,
-> +	FILTER_SKIP_NO_RESET,
-> +};
-> +
-> +static void filter_free_subsystem_preds(struct event_subsystem *system,
-> +					int flag)
->  {
->  	struct ftrace_event_call *call;
->  
-> @@ -426,6 +433,14 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
->  		if (!call->define_fields)
->  			continue;
->  
-> +		if (flag == FILTER_INIT_NO_RESET) {
-> +			call->filter->no_reset = false;
-> +			continue;
-> +		}
-> +
-> +		if (flag == FILTER_SKIP_NO_RESET && call->filter->no_reset)
-> +			continue;
-> +
->  		if (!strcmp(call->system, system->name)) {
->  			filter_disable_preds(call);
->  			remove_filter_string(call->filter);
-> @@ -527,7 +542,8 @@ static filter_pred_fn_t select_comparison_fn(int op, int field_size,
->  
->  static int filter_add_pred(struct filter_parse_state *ps,
->  			   struct ftrace_event_call *call,
-> -			   struct filter_pred *pred)
-> +			   struct filter_pred *pred,
-> +			   bool dry_run)
->  {
->  	struct ftrace_event_field *field;
->  	filter_pred_fn_t fn;
-> @@ -539,10 +555,12 @@ static int filter_add_pred(struct filter_parse_state *ps,
->  
->  	if (pred->op == OP_AND) {
->  		pred->pop_n = 2;
-> -		return filter_add_pred_fn(ps, call, pred, filter_pred_and);
-> +		fn = filter_pred_and;
-> +		goto add_pred_fn;
->  	} else if (pred->op == OP_OR) {
->  		pred->pop_n = 2;
-> -		return filter_add_pred_fn(ps, call, pred, filter_pred_or);
-> +		fn = filter_pred_or;
-> +		goto add_pred_fn;
->  	}
->  
->  	field = find_event_field(call, pred->field_name);
-> @@ -565,9 +583,6 @@ static int filter_add_pred(struct filter_parse_state *ps,
->  		else
->  			fn = filter_pred_strloc;
->  		pred->str_len = field->size;
-> -		if (pred->op == OP_NE)
-> -			pred->not = 1;
-> -		return filter_add_pred_fn(ps, call, pred, fn);
->  	} else {
->  		if (field->is_signed)
->  			ret = strict_strtoll(pred->str_val, 0, &val);
-> @@ -578,27 +593,33 @@ static int filter_add_pred(struct filter_parse_state *ps,
->  			return -EINVAL;
->  		}
->  		pred->val = val;
-> -	}
->  
-> -	fn = select_comparison_fn(pred->op, field->size, field->is_signed);
-> -	if (!fn) {
-> -		parse_error(ps, FILT_ERR_INVALID_OP, 0);
-> -		return -EINVAL;
-> +		fn = select_comparison_fn(pred->op, field->size,
-> +					  field->is_signed);
-> +		if (!fn) {
-> +			parse_error(ps, FILT_ERR_INVALID_OP, 0);
-> +			return -EINVAL;
-> +		}
->  	}
->  
->  	if (pred->op == OP_NE)
->  		pred->not = 1;
->  
-> -	return filter_add_pred_fn(ps, call, pred, fn);
-> +add_pred_fn:
-> +	if (!dry_run)
-> +		return filter_add_pred_fn(ps, call, pred, fn);
-> +	return 0;
->  }
->  
->  static int filter_add_subsystem_pred(struct filter_parse_state *ps,
->  				     struct event_subsystem *system,
->  				     struct filter_pred *pred,
-> -				     char *filter_string)
-> +				     char *filter_string,
-> +				     bool dry_run)
->  {
->  	struct ftrace_event_call *call;
->  	int err = 0;
-> +	bool fail = true;
->  
->  	list_for_each_entry(call, &ftrace_events, list) {
->  
-> @@ -608,16 +629,24 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
->  		if (strcmp(call->system, system->name))
->  			continue;
->  
-> -		err = filter_add_pred(ps, call, pred);
-> -		if (err) {
-> -			filter_free_subsystem_preds(system);
-> -			parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
-> -			goto out;
-> -		}
-> -		replace_filter_string(call->filter, filter_string);
-> +		if (call->filter->no_reset)
-> +			continue;
-> +
-> +		err = filter_add_pred(ps, call, pred, dry_run);
-> +		if (err)
-> +			call->filter->no_reset = true;
-> +		else
-> +			fail = false;
-> +
-> +		if (!dry_run)
-> +			replace_filter_string(call->filter, filter_string);
->  	}
-> -out:
-> -	return err;
-> +
-> +	if (fail) {
-> +		parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
-> +		return err;
-> +	}
-> +	return 0;
->  }
->  
->  static void parse_init(struct filter_parse_state *ps,
-> @@ -976,12 +1005,14 @@ static int check_preds(struct filter_parse_state *ps)
->  static int replace_preds(struct event_subsystem *system,
->  			 struct ftrace_event_call *call,
->  			 struct filter_parse_state *ps,
-> -			 char *filter_string)
-> +			 char *filter_string,
-> +			 bool dry_run)
->  {
->  	char *operand1 = NULL, *operand2 = NULL;
->  	struct filter_pred *pred;
->  	struct postfix_elt *elt;
->  	int err;
-> +	int n_preds = 0;
->  
->  	err = check_preds(ps);
->  	if (err)
-> @@ -1000,19 +1031,14 @@ static int replace_preds(struct event_subsystem *system,
->  			continue;
->  		}
->  
-> +		if (n_preds++ == MAX_FILTER_PRED) {
-> +			parse_error(ps, FILT_ERR_TOO_MANY_PREDS, 0);
-> +			return -ENOSPC;
-> +		}
-> +
->  		if (elt->op == OP_AND || elt->op == OP_OR) {
->  			pred = create_logical_pred(elt->op);
-> -			if (call)
-> -				err = filter_add_pred(ps, call, pred);
-> -			else
-> -				err = filter_add_subsystem_pred(ps, system,
-> -							pred, filter_string);
-> -			filter_free_pred(pred);
-> -			if (err)
-> -				return err;
-> -
-> -			operand1 = operand2 = NULL;
-> -			continue;
-> +			goto add_pred;
->  		}
->  
->  		if (!operand1 || !operand2) {
-> @@ -1021,11 +1047,12 @@ static int replace_preds(struct event_subsystem *system,
->  		}
->  
->  		pred = create_pred(elt->op, operand1, operand2);
-> +add_pred:
->  		if (call)
-> -			err = filter_add_pred(ps, call, pred);
-> +			err = filter_add_pred(ps, call, pred, false);
->  		else
->  			err = filter_add_subsystem_pred(ps, system, pred,
-> -							filter_string);
-> +						filter_string, dry_run);
->  		filter_free_pred(pred);
->  		if (err)
->  			return err;
-> @@ -1066,7 +1093,7 @@ int apply_event_filter(struct ftrace_event_call *call, char *filter_string)
->  		goto out;
->  	}
->  
-> -	err = replace_preds(NULL, call, ps, filter_string);
-> +	err = replace_preds(NULL, call, ps, filter_string, false);
->  	if (err)
->  		append_filter_err(ps, call->filter);
->  
-> @@ -1090,7 +1117,7 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
->  	mutex_lock(&event_mutex);
->  
->  	if (!strcmp(strstrip(filter_string), "0")) {
-> -		filter_free_subsystem_preds(system);
-> +		filter_free_subsystem_preds(system, FILTER_DISABLE_ALL);
->  		remove_filter_string(system->filter);
->  		mutex_unlock(&event_mutex);
->  		return 0;
-> @@ -1101,7 +1128,6 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
->  	if (!ps)
->  		goto out_unlock;
->  
-> -	filter_free_subsystem_preds(system);
->  	replace_filter_string(system->filter, filter_string);
->  
->  	parse_init(ps, filter_ops, filter_string);
-> @@ -1111,9 +1137,23 @@ int apply_subsystem_event_filter(struct event_subsystem *system,
->  		goto out;
->  	}
->  
-> -	err = replace_preds(system, NULL, ps, filter_string);
-> -	if (err)
-> +	filter_free_subsystem_preds(system, FILTER_INIT_NO_RESET);
-> +
-> +	/* try to see the filter can be applied to which events */
-> +	err = replace_preds(system, NULL, ps, filter_string, true);
-> +	if (err) {
-> +		append_filter_err(ps, system->filter);
-> +		goto out;
-> +	}
-> +
-> +	filter_free_subsystem_preds(system, FILTER_SKIP_NO_RESET);
-> +
-> +	/* really apply the filter to the events */
-> +	err = replace_preds(system, NULL, ps, filter_string, false);
-> +	if (err) {
->  		append_filter_err(ps, system->filter);
-> +		filter_free_subsystem_preds(system, 2);
-> +	}
->  
->  out:
->  	filter_opstack_clear(ps);
+-- 
+Regards
+Gui Jianfeng
 
