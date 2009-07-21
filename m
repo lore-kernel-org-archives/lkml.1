@@ -1,145 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbZGUFMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZGUFPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752254AbZGUFMO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 01:12:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZGUFMN
+	id S1752623AbZGUFPx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 01:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZGUFPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 01:12:13 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:62349 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbZGUFMN convert rfc822-to-8bit (ORCPT
+	Tue, 21 Jul 2009 01:15:52 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:60619 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751563AbZGUFPv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 01:12:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fkSN0u8V0dtrBAVAtJaGqHUGsYTDcPjSyh06aCNXR1tuSG1oX5dk0OSZbzPdVKFQLs
-         +g6IJpHaJdp4DOfE2dkpe+efsAXO+yGGsdHk5O2eNhzySaSXAeWFAyeHnAPQ01vcueg2
-         35FMFQzMW8D8n6qg+HVXDOh9doWoG7FYcienA=
-MIME-Version: 1.0
-In-Reply-To: <200907202200.39288.elendil@planet.nl>
-References: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
-	 <200907202200.39288.elendil@planet.nl>
-Date: Tue, 21 Jul 2009 07:12:11 +0200
-Message-ID: <f861ec6f0907202212h4b28982fjcb9787a3915d7ee7@mail.gmail.com>
-Subject: Re: [PATCH] au1xmmc: dev_pm_ops conversion
-From: Manuel Lauss <manuel.lauss@googlemail.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       manuel.lauss@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Jul 2009 01:15:51 -0400
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: "me@felipebalbi.com" <me@felipebalbi.com>,
+       "Krishnamoorthy, Balaji T" <balajitk@ti.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "khilman@deeprootsystems.com" <khilman@deeprootsystems.com>,
+       "david-b@pacbell.net" <david-b@pacbell.net>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
+       "sameo@openedhand.com" <sameo@openedhand.com>,
+       "wim@iguana.be" <wim@iguana.be>,
+       "timo.t.kokkonen@nokia.com" <timo.t.kokkonen@nokia.com>,
+       "ben-linux@fluff.org" <ben-linux@fluff.org>,
+       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>,
+       "Nayak, Rajendra" <rnayak@ti.com>
+Date: Tue, 21 Jul 2009 10:45:04 +0530
+Subject: RE: [RFC][PATCH 1/4] OMAP4: PMIC: Add support for twl6030 irq
+ framework
+Thread-Topic: [RFC][PATCH 1/4] OMAP4: PMIC: Add support for twl6030 irq
+ framework
+Thread-Index: AcoJbVZJkoXrFMf0TROXX1zrGUrHcAAT0aHw
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02B595037E@dbde02.ent.ti.com>
+References: <1248096992-14610-1-git-send-email-balajitk@ti.com>
+ <20090720190706.GE7984@gandalf>
+In-Reply-To: <20090720190706.GE7984@gandalf>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good Morning Frans,
+Felipe,
+Thanks for the review.
 
-On Mon, Jul 20, 2009 at 10:00 PM, Frans Pop<elendil@planet.nl> wrote:
->> Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
->> ---
->> Run-tested on Au1200.
->>
->>  drivers/mmc/host/au1xmmc.c |   23 +++++++++++------------
->>  1 files changed, 11 insertions(+), 12 deletions(-)
->>
->> diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
->> index d3f5561..70509c9 100644
->> --- a/drivers/mmc/host/au1xmmc.c
->> +++ b/drivers/mmc/host/au1xmmc.c
->> @@ -1131,13 +1131,12 @@ static int __devexit au1xmmc_remove(struct
->> platform_device *pdev) return 0;
->>  }
->>
->> -#ifdef CONFIG_PM
->
-> Won't the removal of this test cause a build failure if CONFIG_PM is not
-> set? If the removal of the test is safe, this should IMHO at least be
-> explained in the commit message.
+> -----Original Message-----
+> From: Felipe Balbi [mailto:me@felipebalbi.com] 
+> Sent: Tuesday, July 21, 2009 12:37 AM
+> To: Krishnamoorthy, Balaji T
+> Cc: linux-kernel@vger.kernel.org; tony@atomide.com; 
+> khilman@deeprootsystems.com; david-b@pacbell.net; 
+> linux-omap@vger.kernel.org; linux-i2c@vger.kernel.org; 
+> sameo@openedhand.com; wim@iguana.be; 
+> timo.t.kokkonen@nokia.com; ben-linux@fluff.org; 
+> lrg@slimlogic.co.uk; broonie@opensource.wolfsonmicro.com; 
+> Nayak, Rajendra; Shilimkar, Santosh
+> Subject: Re: [RFC][PATCH 1/4] OMAP4: PMIC: Add support for 
+> twl6030 irq framework
+ 
+I can summarize all your review comments in two points.
 
-No, it builds just fine without CONFIG_PM; it was there to shave off a
-few bytes from the kernel image.  But not everyone tests this driver
-with CONFIG_PM=y, because apparently noone really needed PM on
-this platform (Alchemy), and a full build of most of the boards using this
-driver fails with PM enabled.
+1. Renaming is some thing __you__ think in not necessary.
 
-This way the PM methods at least get a compile-test in the non-pm case.
+For this, I have already responded but just to clarify others on
+the list, I am just copy pasting your point and our view on this topic. 
+************************************************************************
+> this is kinda useless, we can consider twl6030 as being sw compatible
+> (almost) with twl4030. And twl4030 driver already support plenty of
+> other devices, just look at drivers/mfd/twl4030-core.c lines 
+> 807 - 814.
+> We have twl4003, twl5030, tps65950, tps65930 and tps65920.
+> 
+> So IMO, renaming the files is unnecessary.
+Well tps* are just another catalog names of the twl4* family. So you can
+keep adding whatever names there as long it's a same IC.
 
+Perhaps you look in hurry to comment about this. Please look at the
+intention of these patches. TWL6030 has PM IC similar to TWL4030 with
+bit different interrupt management. Audio IC is a separate one as
+compared to combined in case of TWL4030.
 
->> -static int au1xmmc_suspend(struct platform_device *pdev, pm_message_t
->> state) +static int au1xmmc_suspend(struct device *dev)
->>  {
->> -       struct au1xmmc_host *host = platform_get_drvdata(pdev);
->> +       struct au1xmmc_host *host = dev_get_drvdata(dev);
->>         int ret;
->>
->> -       ret = mmc_suspend_host(host->mmc, state);
->> +       ret = mmc_suspend_host(host->mmc, PMSG_SUSPEND);
->>         if (ret)
->>                 return ret;
->>
->> @@ -1150,27 +1149,27 @@ static int au1xmmc_suspend(struct
->> platform_device *pdev, pm_message_t state) return 0;
->>  }
->>
->> -static int au1xmmc_resume(struct platform_device *pdev)
->> +static int au1xmmc_resume(struct device *dev)
->>  {
->> -       struct au1xmmc_host *host = platform_get_drvdata(pdev);
->> +       struct au1xmmc_host *host = dev_get_drvdata(dev);
->>
->>         au1xmmc_reset_controller(host);
->>
->>         return mmc_resume_host(host->mmc);
->>  }
->> -#else
->> -#define au1xmmc_suspend NULL
->> -#define au1xmmc_resume NULL
->
-> ... drop the 3 lines above (as you did) ...
->
->> -#endif
->
-> ... move this #endif to after the new struct below ...
->
->> +
->> +static struct dev_pm_ops au1xmmc_pmops = {
->> +       .resume         = au1xmmc_resume,
->> +       .suspend        = au1xmmc_suspend,
->> +};
->>
->>  static struct platform_driver au1xmmc_driver = {
->>         .probe         = au1xmmc_probe,
->>         .remove        = au1xmmc_remove,
->> -       .suspend       = au1xmmc_suspend,
->> -       .resume        = au1xmmc_resume,
->>         .driver        = {
->>                 .name  = DRIVER_NAME,
->>                 .owner = THIS_MODULE,
->> +               .pm    = &au1xmmc_pmops,
+If it allows code re-use by renaming files, it should be good. Isn't it ?
+************************************************************************
+Here is summary of Major difference between Triton(TWL4030) and
+Phoenix(TWL6030_ chips are:
+    -GPIO, Keypad is not present in Phoenix
+    -I2C Chips addresses of modules like RTC, BCI, ADC, USB, PMC Master/Slave 
+     have changed.  Base address of these module register is also changed.
+    -PIH and SIH, module interrupt status registers will be replaced by PIH 
+     (INT_STS_A, INT_STS_B and INT_STS_C) and module interrupt status registers
+    -MADC to GPADC in Phoenix, 17 channels supported
+     GPADC in Phoenix supports Realtime, Asynchronous SW request.
+    -RTC register offsets have changed. Addition/removal of LDO/SMPS Voltage 
+     Regulators
 
-I like what Magnus Damm did for some of the SuperH drivers:
+2. Usage of compile time macros like "CONFIG_TWL4030" and CONFIG_TWL6030"
+should be avoided and you think it would break multi-omap.
 
-#ifdef CONFIG_PM
-[...]
-#define DRIVER_PM_OPS (&driver_pm_ops)
-#else
-#define DRIVER_PM_OPS NULL
-#endif
+If we just go by definition " Multi-OMAP" is for different OMAP IC's. TWL4030
+and TWL6030 are external companion IC's to OMAP.
+Any ways, these compile time switches can be avoided if we make runtime
+provision for these TWL IC's like. 
+"is_twl4030(), is_twl6030" etc like "cpu_is_24xx(),cpu_is_44xx()" etc.
 
-...
-      .driver = {
-...
-             .pm = DRIVER_PM_OPS,
-      }
-...
+Obviously this asks to make the driver register map (which is different in
+case of TWL6030 w.r.t TWL4030) to be held in some arrays and select the
+appropriate one run-time.  But it's doable if it helps.
 
-I'd like to keep the pm stuff enabled at all times since it doesn't hurt
-in the non-pm case and if kernel size becomes a problem I can add the
-#defines back.
+The patch series was made under _assumption_ that either TWL4030 or TWL6030 
+would be used. I am not sure whether there will boards where both will
+co-exist.
 
-What do you think?
-
-Thank you!
-      Manuel Lauss
+Regards
+Santosh
