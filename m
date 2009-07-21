@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbZGUVtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbZGUVtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187AbZGUVtG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbZGUVtF
+	id S1756235AbZGUVtS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbZGUVtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:49:05 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:41490 "EHLO mail-out2.uio.no"
+	Tue, 21 Jul 2009 17:49:16 -0400
+Received: from waste.org ([66.93.16.53]:54497 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755503AbZGUVtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:49:04 -0400
-Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Ben Greear <greearb@candelatech.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-In-Reply-To: <1248211050.21343.38.camel@heimdal.trondhjem.org>
-References: <4A64EB1F.4000602@candelatech.com>
-	 <1248178527.5222.0.camel@heimdal.trondhjem.org>
-	 <4A65F184.5060802@candelatech.com>
-	 <1248196339.21343.8.camel@heimdal.trondhjem.org>
-	 <4A65FCB2.6080903@candelatech.com>
-	 <1248199140.21343.17.camel@heimdal.trondhjem.org>
-	 <4A660295.9020807@candelatech.com>
-	 <1248200897.21343.19.camel@heimdal.trondhjem.org>
-	 <4A6609A9.3000504@candelatech.com>
-	 <1248211050.21343.38.camel@heimdal.trondhjem.org>
+	id S1756205AbZGUVtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 17:49:13 -0400
+Subject: Re: [RFC] move __devinit or __init printk constant format strings
+ to __devinitconst or __initdata?
+From: Matt Mackall <mpm@selenic.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       David Woodhouse <dwmw2@infradead.org>, Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <1248211253.31365.337.camel@Joe-Laptop.home>
+References: <1248211253.31365.337.camel@Joe-Laptop.home>
 Content-Type: text/plain
-Date: Tue, 21 Jul 2009 17:48:59 -0400
-Message-Id: <1248212939.5034.1.camel@heimdal.trondhjem.org>
+Date: Tue, 21 Jul 2009 16:48:45 -0500
+Message-Id: <1248212925.10466.143.camel@calx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 2 sum rcpts/h 10 sum msgs/h 2 total rcpts 925 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 1C3A3AA64894C80DF27EF7E47C530768CFF9A07C
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 2 total 81 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-21 at 17:17 -0400, Trond Myklebust wrote:
-> On Tue, 2009-07-21 at 11:32 -0700, Ben Greear wrote:
-> > On 07/21/2009 11:28 AM, Trond Myklebust wrote:
-> > > On Tue, 2009-07-21 at 11:01 -0700, Ben Greear wrote:
-> > >> On 07/21/2009 10:59 AM, Trond Myklebust wrote:
-> > >>> On Tue, 2009-07-21 at 10:36 -0700, Ben Greear wrote:
-> > >>>> On 07/21/2009 10:12 AM, Trond Myklebust wrote:
-> > >>>>> On Tue, 2009-07-21 at 09:49 -0700, Ben Greear wrote:
-> > >>>>>> On 07/21/2009 05:15 AM, Trond Myklebust wrote:
-> > >>>>>>
-> > >>>>>>> What does /var/lib/nfs/v4recovery look like on the server?
-> > >>>>>> The server was misconfigured, but I still think the client should
-> > >>>>>> behave better in this case.  If you cannot reproduce it, let me know
-> > >>>>>> and I can try to be more specific.  If you still want the v4recovery
-> > >>>>>> information, let me know and I'll send it.
-> > >>>>> So how should the client behave, when a screwed up server allows it to
-> > >>>>> mount but starts returning illegal values for setclientid? The only
-> > >>>>> thing I can see we could do is to tell the user EINSANESERVER...
-> > >>>> Well, it could just fail the mount and give up and not overly spam
-> > >>>> /var/log/messages in a tight loop perhaps?
-> > >>> This doesn't happen at mount time. It happens when you open a file.
-> > >> Not for me, and evidently not for the other person that reported
-> > >> similar results.  All I had to do was attempt the mount (which never
-> > >> completed).
-> > >>
-> > >> Thanks,
-> > >> Ben
-> > >
-> > > Ah... You have NFS_V4_1 enabled despite the Kconfig warning... Does the
-> > > bug occur when you turn this off too?
-> > 
-> > Yes, it did.
+On Tue, 2009-07-21 at 14:20 -0700, Joe Perches wrote:
+> Is moving constant string formats to __devinitconst or __initdata
+> useful for embedded environments?
 > 
-> OK. The following patch should fix that particular regression.
+> As in:
 > 
-> Note that there is a bug remaining inside nfs4_init_session(): we
-> shouldn't be copying the rsize/wsize into the nfs_client if the latter
-> was already initialised. I'm going to leave that for the moment, though,
-> since that bug wasn't introduced by my patch, and it doesn't affect
-> NFSv4.0.
+> #define printk_section(section, fmt, ...)				\
+> ({ static const section char __fmt[] = fmt; printk(__fmt, ##__VA_ARGS__); })
+> 
+> #define pr_err_section(section, fmt, ...) \
+> 	printk_section(section, KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
+> 
+> with a use of:
+> 
+> static int __devinit foo_probe(struct platform_device *pdev)
+> {
+> 	if (bar())
+> 		pr_err_section(__devinitconst,
+> 			       "A long error message\n");
+> }
+> 
+> or
+> 
+> static int __init foo_init(struct platform_device *pdev)
+> {
+> 	if (bar())
+> 		pr_err_section(__initdata,
+> 			       "A long error message\n");
+> }
 
-With that patch applied, I now get the expected behaviour when mounting
-a server with no NFSv4 root from a 2.6.31-rc3 based client:
+Interesting notion, but not worth the trouble in my mind. I think it's
+more worthwhile to look into automatic such stuff in the build somehow.
 
-root@heimdal:~# mount -t nfs4 munkholm.local:/ /mnt
-mount.nfs4: mounting munkholm.local:/ failed, reason given by server:
-  No such file or directory
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-Trond
 
