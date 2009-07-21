@@ -1,148 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbZGUU4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbZGUU64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbZGUU4t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 16:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbZGUU4t
+	id S1755938AbZGUU64 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 16:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbZGUU64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 16:56:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33302 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755834AbZGUU4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 16:56:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: PM/hibernate swapfile regression
-Date: Tue, 21 Jul 2009 22:57:21 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       "Hans-Joachim Picht" <hans@linux.vnet.ibm.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arnd Schneider <arnd@de.ibm.com>, linux-fsdevel@vger.kernel.org
-References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com> <20090720132456.GA29023@osiris.boeblingen.de.ibm.com> <4A659D75.3050004@tuffmail.co.uk>
-In-Reply-To: <4A659D75.3050004@tuffmail.co.uk>
+	Tue, 21 Jul 2009 16:58:56 -0400
+Received: from mail-px0-f186.google.com ([209.85.216.186]:50836 "EHLO
+	mail-px0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752398AbZGUU6z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 16:58:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FRSwiHPvZ6+a3EGvsNBsqHQ0+0td01ePjtKTwyT2S5lKSY/IZnNWbdIqjWIQkxiZ+b
+         jXIy4hxArELbs58Ee/eQptT6DVn7yS/rZUjtpqzIVrmC5rMP/C3ZtgXNJTj0xjIukHU0
+         ZMDAcrVFAMxqyssURImLfy3QuKp6E71tTADVA=
+Date: Tue, 21 Jul 2009 13:58:41 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Message-ID: <20090721205841.GA7755@dtor-d630.eng.vmware.com>
+References: <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com> <20090715133627.GA2538@elf.ucw.cz> <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com> <20090721105924.GK4133@elf.ucw.cz> <20090721113642.GC13286@sirena.org.uk> <5d5443650907210518i6ee4df1evdc04d9ae9453707c@mail.gmail.com> <5d5443650907210530x4aaa03d6gd47ef5f79a3ef8a4@mail.gmail.com> <20090721124933.GA5668@rakim.wolfsonmicro.main> <20090721160436.GD4352@dtor-d630.eng.vmware.com> <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907212257.21878.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 July 2009, Alan Jenkins wrote:
-> Heiko Carstens wrote:
-> > On Fri, Jul 17, 2009 at 02:08:46PM +0100, Alan Jenkins wrote:
-> >   
-> >> Rafael J. Wysocki wrote:
-> >>     
-> >>> On Tuesday 14 July 2009, Heiko Carstens wrote:
-> >>>   
-> >>>       
-> >>>> We've seen this bug [...]
-> >>>>
-> >>>> Looks like this was introduced with git commit a1bb7d61 "PM/hibernate: fix "swap
-> >>>> breaks after hibernation failures"".
-> >>>> Calling bdget while holding a spinlock doesn't seem to be a good idea...
-> >>>>     
-> >>>>         
-> >>> Agreed, sorry for missing that.
-> >>>
-> >>> Alan, can you please prepare a fix?
-> >>>       
-> >> Here's a quick & dirty patch [...]
-> >>     
-> >
-> > Thanks for the patch. Unfortunately Arnd was unable to reproduce the original
-> > behaviour. But your patch makes sense anyway.
-> > I also tested it and nothing broke. So should this go upstream?  
+On Tue, Jul 21, 2009 at 10:30:26PM +0200, Thomas Gleixner wrote:
+> On Tue, 21 Jul 2009, Dmitry Torokhov wrote:
 > 
-> I do want to fix it, but I think there's a better way.
+> > On Tue, Jul 21, 2009 at 01:49:33PM +0100, Mark Brown wrote:
+> > > On Tue, Jul 21, 2009 at 06:00:07PM +0530, Trilok Soni wrote:
+> > > 
+> > > > Hopefully, this thread can give all details about threaded irq discussion.
+> > > 
+> > > > http://lkml.org/lkml/2009/2/27/255
+> > > 
+> > > Yes, I'm aware of that - I read it at the time.  It seemed to peter out
+> > > without any satisfactory solution, unfortunately.  There's two separate
+> > > issues here:
+> > > 
+> > >  - Ordinary devices on interrupt driven or slow buses like I2C.  These
+> > >    need something along the lines of request_threaded_irq() that's allows
+> > >    them to schedule the main IRQ handler outside hardirq context so
+> > >    that they can interact with the device.  They need to do something in
+> > >    hardirq context to disable the interrupt if it's level triggered but
+> > >    most of the time the only option they've got is to disable the IRQ
+> > >    and reenable it when the worker thread is done.  This is the issue
+> > >    here.
 > 
-> It doesn't really need the sleeping bdget().  All we want is
-> atomic_inc(&bdev->bd_inode->i_count).  I think we should call it bdcopy().
+> There is already a sane solution to the problem:
 > 
-> ---------->
-> From 643014ec079610a8b01dfd78c6949c1e8727195b Mon Sep 17 00:00:00 2001
-> From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> Date: Tue, 21 Jul 2009 10:17:30 +0100
-> Subject: [PATCH] PM/hibernate: replace bdget call with bdcopy (simple atomic_inc of i_count)
+>       See http://lkml.org/lkml/2009/7/17/174 
 > 
-> Create bdcopy().  This function copies an existing reference to a
-> block_device.  It is safe to call from any context.
+> > >    My immediate thought when I noticed this was that we should probably
+> > >    fix request_threaded_irq() so that it's useful for them; I'd been
+> > >    intending to do some digging and try to understand why it is
+> > >    currently implemented as it is.
 > 
-> Hibernation code wishes to copy a reference to the active swap device.
-> Right now it calls bdget() under a spinlock, but this is wrong because
-> bdget() can sleep.  It doesn't need a full bdget() because we already
-> hold a reference to active swap devices (and the spinlock protects
-> against swapoff).
-> 
-> Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> CC: linux-fsdevel@vger.kernel.org
-> ---
->  fs/block_dev.c     |    8 ++++++++
->  include/linux/fs.h |    1 +
->  mm/swapfile.c      |    4 ++--
->  3 files changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/fs/block_dev.c b/fs/block_dev.c
-> index 3a6d4fb..0b04974 100644
-> --- a/fs/block_dev.c
-> +++ b/fs/block_dev.c
-> @@ -564,6 +564,14 @@ struct block_device *bdget(dev_t dev)
+> What's to fix there ? 
 >  
->  EXPORT_SYMBOL(bdget);
->  
-> +struct block_device *bdcopy(struct block_device *bdev)
-> +{
-> +	atomic_inc(&bdev->bd_inode->i_count);
-> +	return bdev;
-> +}
 
-Hmm.  If you defined bdcopy() as static inline directly in mm/swapfile.c,
-the patch would be slightly simpler.
+duisable_irq_nosync() in the hard interrupt handler stops the thread
+handler from running. Unfortunately there are devices where it is the
+only thing we can do in the hard interrupt.
 
-Best,
-Rafael
-
-
-> +
-> +EXPORT_SYMBOL(bdcopy);
-> +
->  long nr_blockdev_pages(void)
->  {
->  	struct block_device *bdev;
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 0872372..eeb1091 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1946,6 +1946,7 @@ extern void putname(const char *name);
->  extern int register_blkdev(unsigned int, const char *);
->  extern void unregister_blkdev(unsigned int, const char *);
->  extern struct block_device *bdget(dev_t);
-> +extern struct block_device *bdcopy(struct block_device *bdev);
->  extern void bd_set_size(struct block_device *, loff_t size);
->  extern void bd_forget(struct inode *inode);
->  extern void bdput(struct block_device *);
-> diff --git a/mm/swapfile.c b/mm/swapfile.c
-> index d1ade1a..272ea8e 100644
-> --- a/mm/swapfile.c
-> +++ b/mm/swapfile.c
-> @@ -753,7 +753,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
->  
->  		if (!bdev) {
->  			if (bdev_p)
-> -				*bdev_p = bdget(sis->bdev->bd_dev);
-> +				*bdev_p = bdcopy(sis->bdev);
->  
->  			spin_unlock(&swap_lock);
->  			return i;
-> @@ -765,7 +765,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
->  					struct swap_extent, list);
->  			if (se->start_block == offset) {
->  				if (bdev_p)
-> -					*bdev_p = bdget(sis->bdev->bd_dev);
-> +					*bdev_p = bdcopy(sis->bdev);
->  
->  				spin_unlock(&swap_lock);
->  				bdput(bdev);
+-- 
+Dmitry
