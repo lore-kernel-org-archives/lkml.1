@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbZGUWbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbZGUWeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbZGUWbY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 18:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZGUWbX
+	id S1756161AbZGUWeH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 18:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbZGUWeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 18:31:23 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:45890 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbZGUWbW (ORCPT
+	Tue, 21 Jul 2009 18:34:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49028 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753564AbZGUWeF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 18:31:22 -0400
-Subject: Re: [RFC][PATCH] Introduce CLOCK_REALTIME_COARSE
-From: john stultz <johnstul@us.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@tglx.de>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, nikolag@ca.ibm.com,
-       Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <20090718153011.1de3af8e@infradead.org>
-References: <1247873945.8334.67.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0907181027510.11571@localhost.localdomain>
-	 <1247954978.14494.19.camel@work-vm> <20090718153011.1de3af8e@infradead.org>
-Content-Type: text/plain
-Date: Tue, 21 Jul 2009 15:31:19 -0700
-Message-Id: <1248215479.3298.124.camel@localhost>
+	Tue, 21 Jul 2009 18:34:05 -0400
+Date: Tue, 21 Jul 2009 15:33:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: containers@lists.linux-foundation.org, bblum@google.com,
+       linux-kernel@vger.kernel.org, menage@google.com
+Subject: Re: [RFC][PATCH] flexible array implementation
+Message-Id: <20090721153356.f62d8424.akpm@linux-foundation.org>
+In-Reply-To: <1248213411.13249.5669.camel@nimitz>
+References: <20090721160333.96AA4D3D@kernel>
+	<20090721131839.27f3a5aa.akpm@linux-foundation.org>
+	<1248213411.13249.5669.camel@nimitz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-07-18 at 15:30 -0700, Arjan van de Ven wrote:
-> On Sat, 18 Jul 2009 15:09:38 -0700
-> john stultz <johnstul@us.ibm.com> wrote:
+On Tue, 21 Jul 2009 14:56:51 -0700
+Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+
+> I've added some comments in the kerneldoc for the (newly renamed) alloc
+> function:
 > 
-> > After talking with some application writers who want very fast, but
-> > not fine-grained timestamps, I decided to try to implement a new
-> > clock_ids to clock_gettime(): CLOCK_REALTIME_COARSE and
-> > CLOCK_MONOTONIC_COARSE which returns the time at the last tick. This
-> > is very fast as we don't have to access any hardware (which can be
-> > very painful if you're using something like the acpi_pm clocksource),
-> > and we can even use the vdso clock_gettime() method to avoid the
-> > syscall. The only trade off is you only get low-res tick grained time
-> > resolution.
-> 
-> Does this tie us to having a tick? I still have hope that we can get
-> rid of the tick even when apps are running .... since with CFS we don't
-> really need the tick for the scheduler anymore for example....
+>  * The maximum number of elements is currently the number of elements
+>  * that can be stored in a page times the number of page pointers
+>  * that we can fit in the base structure or (using integer math):
+>  *
+>  *      (PAGE_SIZE/element_size) * (PAGE_SIZE-8)/sizeof(void *)
+>  *
+>  * Here's a table showing example capacities.  Note that the maximum
+>  * index that the get/put() functions is just nr_objects-1.
+>  *
+>  * Element size | Objects  | Objects |
+>  * PAGE_SIZE=4k |  32-bit  |  64-bit |
+>  * ----------------------------------|
+>  *      1 byte  |  4186112 | 2093056 |
+>  *      2 bytes |  2093056 | 1046528 |
+>  *      3 bytes |  1395030 |  697515 |
+>  *      4 bytes |  1046528 |  523264 |
+>  *     32 bytes |   130816 |   65408 |
+>  *     33 bytes |   126728 |   63364 |
+>  *   2048 bytes |     2044 |   10228 |
+>  *   2049 bytes |     1022 |     511 |
+>  *       void * |  1046528 |  261632 |
 
-So it does require some sort of periodic interval. But the granularity
-is probably flexible, although I'm not sure it would be of much use if
-the granularity gets to be lower then 100hz. 
+4-bytes on 32-bit and 8-bytes on 64-bit are the most interesting ones
+(IMO).  So what we're basically saying is "2MB on 64-bit".
 
-While being 100% tickless, even when non-idle would be nice, there will
-be some need for timekeeping events to prevent clocksource counters from
-wrapping, and to do accurate NTP steering.
-
-Even so, the value we're exporting in this patch is the xtime_cache,
-which is updated every tick. This is currently used in file
-timestamping, so if we go 100% tickless, we'll have to change the file
-timestamping to use the actual CLOCK_REALTIME clock_id, which requires a
-possibly slow hardware read and would likely hurt fs performance.
-
-So this patch doesn't so much tie us to having a tick or periodic event
-any more the the fs timestamping does.
-
-
-> > me_lock, seq));
-> > +
-> > +	set_normalized_timespec(&now, now.tv_sec + mono.tv_sec,
-> > +				now.tv_nsec + mono.tv_nsec);
-> > +	return now;
-> > +}
-> > +EXPORT_SYMBOL(get_monotonic_coarse);
-> > +
-> 
-> why does this need to be exported ?
-
-Doesn't. Thanks for noticing!
-
-thanks
--john
-
-
+I wonder if that's enough for known likely callers.  Hopefully it is.
 
