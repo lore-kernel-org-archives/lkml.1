@@ -1,281 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZGUMMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZGUMPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbZGUMMi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 08:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZGUMMh
+	id S1755477AbZGUMPe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 08:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZGUMPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 08:12:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48627 "EHLO hera.kernel.org"
+	Tue, 21 Jul 2009 08:15:32 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:57775 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753640AbZGUMMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 08:12:35 -0400
-Message-ID: <4A65B0AB.5000608@kernel.org>
-Date: Tue, 21 Jul 2009 21:12:27 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-Subject: [RFC PATCH] ia64: convert to dynamic percpu allocator
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754590AbZGUMPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 08:15:32 -0400
+Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Ben Greear <greearb@candelatech.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+In-Reply-To: <4A64EB1F.4000602@candelatech.com>
+References: <4A64EB1F.4000602@candelatech.com>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 08:15:27 -0400
+Message-Id: <1248178527.5222.0.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Jul 2009 12:12:35 +0000 (UTC)
+X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 3 sum msgs/h 1 total rcpts 899 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 60AFBC3F07442B429A513A91B3BD192C51B725D0
+X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 73 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unlike other archs, ia64 reserves space for percpu areas during early
-memory initialization.  The space for cpu0 is reserved separate in the
-linker script.  Other cpus occupy a contiguous region indexed by cpu
-number on contiguous memory model or are grouped by node on
-discontiguous memory model.
+On Mon, 2009-07-20 at 15:09 -0700, Ben Greear wrote:
+> I tried mounting an NFS server running FC8 (2.6.26.8-57.fc8 kernel)
+> using a Fedora 11 system running an un-patched 2.6.31-rc3 64-bit kernel.
+> 
+> I am not sure at all that the FC8 system is set up to handle NFSv4 properly, but
+> I was expecting some sort of useful error if that was the case.
+> 
+> Instead, I get this continually spewing to /var/log/messages:
+> 
+> Error: state manager failed on NFSv4 server 192.168.100.6 with error 2
+> Error: state manager failed on NFSv4 server 192.168.100.6 with error 2
+> Error: state manager failed on NFSv4 server 192.168.100.6 with error 2
+> Error: state manager failed on NFSv4 server 192.168.100.6 with error 2
+> ...
+> 
+> On the file-server, I see this:
+> Jul 19 04:47:59 fs2 kernel: nfs4_cb: server 192.168.100.196 not responding, timed out
+> Jul 19 04:49:29 fs2 kernel: nfs4_cb: server 192.168.100.196 not responding, timed out
+> Jul 19 04:49:29 fs2 ntpd[2585]: kernel time sync status change 0001
+> Jul 19 04:50:59 fs2 kernel: nfs4_cb: server 192.168.100.196 not responding, timed out
+> 
+> 
+> I added some debug patches (on top of my other patches, including those to nfs)
+> and got some debug info:
+> 
+> It seems that nfs4_init_clientid is returning -2, and establish_clid is returning
+> -2.  This causes reclaim lease logic to fail, and that causes state manager to print
+> out the error repeatedly.  -2 means ENOENT.
+> 
+> 
+> As far as I can tell, the mount never completes, staying in D state and filling up
+> logs (I deleted a 16GB /var/log/messages file a few minutes ago!)
+> 
+> The mount command I'm trying is:
+> mount -t nfs4 192.168.100.6:/export/tmp /mnt/lf/nfs4-0
+> 
+> 
+> My kernel config is found here:
+> http://www.candelatech.com/oss/i7_config.txt
+> 
 
-As allocation and initialization are done by the arch code, all that
-setup_per_cpu_areas() needs to do is communicating the determined
-layout to the percpu allocator.  This patch implements
-setup_per_cpu_areas() for both contig and discontig memory models and
-drops HAVE_LEGACY_PER_CPU_AREA.
+What does /var/lib/nfs/v4recovery look like on the server?
 
-NOT_SIGNED_OFF_YET
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
----
-I don't have access to an ia64 machine so I could only test with ski.
-With sim_defconfig, it boots but I didn't have any userland.
-discontig configuration builds fine but I couldn't test it.
+Trond
 
-Can you guys please verify this patch?
-
-This patch is available in the following git tree.
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git review-ia64
-
-Thanks.
-
- arch/ia64/Kconfig        |    3 -
- arch/ia64/kernel/setup.c |   12 ------
- arch/ia64/mm/contig.c    |   67 +++++++++++++++++++++++++++++++++
- arch/ia64/mm/discontig.c |   94 +++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 161 insertions(+), 15 deletions(-)
-
-Index: work/arch/ia64/Kconfig
-===================================================================
---- work.orig/arch/ia64/Kconfig
-+++ work/arch/ia64/Kconfig
-@@ -89,9 +89,6 @@ config GENERIC_TIME_VSYSCALL
- 	bool
- 	default y
- 
--config HAVE_LEGACY_PER_CPU_AREA
--	def_bool y
--
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y
- 
-Index: work/arch/ia64/mm/contig.c
-===================================================================
---- work.orig/arch/ia64/mm/contig.c
-+++ work/arch/ia64/mm/contig.c
-@@ -186,6 +186,73 @@ alloc_per_cpu_data(void)
- 	cpu_data = __alloc_bootmem(PERCPU_PAGE_SIZE * NR_CPUS-1,
- 				   PERCPU_PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
- }
-+
-+/**
-+ * setup_per_cpu_areas - setup percpu areas
-+ *
-+ * Arch code has already allocated and initialized percpu areas.  All
-+ * this function has to do is to teach the determined layout to the
-+ * dynamic percpu allocator, which happens to be more complex than
-+ * creating whole new ones using helpers.
-+ */
-+void __init
-+setup_per_cpu_areas(void)
-+{
-+	struct pcpu_alloc_info *ai;
-+	struct pcpu_group_info *gi;
-+	unsigned int *cpu_map;
-+	unsigned int cpu;
-+	void *base, *grp0_base, *grp1_base = NULL;
-+	int rc;
-+
-+	ai = pcpu_alloc_alloc_info(2, nr_cpu_ids);
-+	if (!ai)
-+		panic("failed to allocate pcpu_alloc_info");
-+	cpu_map = ai->groups[0].cpu_map;
-+
-+	/* cpus are identity mapped to units */
-+	for_each_possible_cpu(cpu)
-+		cpu_map[cpu] = cpu;
-+
-+	/* determine bases */
-+	base = grp0_base = __per_cpu_start + __per_cpu_offset[0];
-+	if (num_possible_cpus() > 1) {
-+		grp1_base = __per_cpu_start + __per_cpu_offset[1];
-+		base = min(grp0_base, grp1_base);
-+	}
-+
-+	/* set basic parameters */
-+	ai->static_size		= __per_cpu_end - __per_cpu_start;
-+	ai->reserved_size	= PERCPU_MODULE_RESERVE; /* tj - necessary? */
-+	ai->dyn_size		= PERCPU_DYNAMIC_RESERVE;
-+	ai->unit_size		= PERCPU_PAGE_SIZE;
-+	ai->atom_size		= PAGE_SIZE;
-+	ai->alloc_size		= PERCPU_PAGE_SIZE;
-+
-+	/*
-+	 * BSP is always present and occupies separate statically
-+	 * reserved area.
-+	 */
-+	ai->nr_groups = 0;
-+	gi = &ai->groups[ai->nr_groups++];
-+	gi->nr_units		= 1;
-+	gi->base_offset		= grp0_base - base;
-+	gi->cpu_map		= &cpu_map[0];
-+
-+	if (grp1_base) {
-+		/* all APs occupy single contiguos region indexed by cpu id */
-+		gi = &ai->groups[ai->nr_groups++];
-+		gi->nr_units		= nr_cpu_ids - 1;
-+		gi->base_offset		= grp1_base - base;
-+		gi->cpu_map		= &cpu_map[1];
-+	}
-+
-+	rc = pcpu_setup_first_chunk(ai, base);
-+	if (rc)
-+		panic("failed to setup percpu area (err=%d)", rc);
-+
-+	pcpu_free_alloc_info(ai);
-+}
- #else
- #define alloc_per_cpu_data() do { } while (0)
- #endif /* CONFIG_SMP */
-Index: work/arch/ia64/mm/discontig.c
-===================================================================
---- work.orig/arch/ia64/mm/discontig.c
-+++ work/arch/ia64/mm/discontig.c
-@@ -159,6 +159,100 @@ static void *per_cpu_node_setup(void *cp
- 	return cpu_data;
- }
- 
-+#ifdef CONFIG_SMP
-+/**
-+ * setup_per_cpu_areas - setup percpu areas
-+ *
-+ * Arch code has already allocated and initialized percpu areas.  All
-+ * this function has to do is to teach the determined layout to the
-+ * dynamic percpu allocator, which happens to be more complex than
-+ * creating whole new ones using helpers.
-+ */
-+void __init setup_per_cpu_areas(void)
-+{
-+	struct pcpu_alloc_info *ai;
-+	struct pcpu_group_info *gi;
-+	unsigned int *cpu_map;
-+	void *base;
-+	unsigned long base_offset;
-+	unsigned int cpu;
-+	int node, prev_node, unit, nr_units, rc;
-+
-+	ai = pcpu_alloc_alloc_info(MAX_NUMNODES + 1, nr_cpu_ids);
-+	if (!ai)
-+		panic("failed to allocate pcpu_alloc_info");
-+	cpu_map = ai->groups[0].cpu_map;
-+
-+	/* determine base */
-+	base = (void *)ULONG_MAX;
-+	for_each_possible_cpu(cpu)
-+		base = min(base,
-+			   (void *)(__per_cpu_offset[cpu] + __per_cpu_start));
-+	base_offset = (void *)__per_cpu_start - base;
-+
-+	/*
-+	 * Build cpu_map.  cpu0 is always mapped to unit0.  The rest
-+	 * are grouped by node.
-+	 */
-+	unit = 0;
-+	cpu_map[unit++] = 0;
-+	for_each_node(node) {
-+		for_each_possible_cpu(cpu) {
-+			if (cpu == 0)
-+				continue;
-+			if (node == node_cpuid[cpu].nid)
-+				cpu_map[unit++] = cpu;
-+		}
-+	}
-+	nr_units = unit;
-+
-+	/* set basic parameters */
-+	ai->static_size		= __per_cpu_end - __per_cpu_start;
-+	ai->reserved_size	= PERCPU_MODULE_RESERVE; /* tj - necessary? */
-+	ai->dyn_size		= PERCPU_DYNAMIC_RESERVE;
-+	ai->unit_size		= PERCPU_PAGE_SIZE;
-+	ai->atom_size		= PAGE_SIZE;
-+	ai->alloc_size		= PERCPU_PAGE_SIZE;
-+
-+	/*
-+	 * BSP is always present and occupies separate statically
-+	 * reserved area.
-+	 */
-+	ai->nr_groups = 0;
-+	gi = &ai->groups[ai->nr_groups++];
-+	gi->nr_units		= 1;
-+	gi->base_offset		= __per_cpu_offset[0] + base_offset;
-+	gi->cpu_map		= &cpu_map[0];
-+
-+	/*
-+	 * APs should be put into groups according to node.  Walk
-+	 * cpu_map and create new groups at node boundaries.
-+	 */
-+	prev_node = -1;
-+	for (unit = 1; unit < nr_units; unit++) {
-+		unsigned int cpu = cpu_map[unit];
-+
-+		node = node_cpuid[cpu].nid;
-+		if (node == prev_node) {
-+			gi->nr_units++;
-+			continue;
-+		}
-+		prev_node = node;
-+
-+		gi = &ai->groups[ai->nr_groups++];
-+		gi->nr_units		= 1;
-+		gi->base_offset		= __per_cpu_offset[cpu] + base_offset;
-+		gi->cpu_map		= &cpu_map[unit];
-+	}
-+
-+	rc = pcpu_setup_first_chunk(ai, base);
-+	if (rc)
-+		panic("failed to setup percpu area (err=%d)", rc);
-+
-+	pcpu_free_alloc_info(ai);
-+}
-+#endif
-+
- /**
-  * fill_pernode - initialize pernode data.
-  * @node: the node id.
-Index: work/arch/ia64/kernel/setup.c
-===================================================================
---- work.orig/arch/ia64/kernel/setup.c
-+++ work/arch/ia64/kernel/setup.c
-@@ -856,18 +856,6 @@ identify_cpu (struct cpuinfo_ia64 *c)
- }
- 
- /*
-- * In UP configuration, setup_per_cpu_areas() is defined in
-- * include/linux/percpu.h
-- */
--#ifdef CONFIG_SMP
--void __init
--setup_per_cpu_areas (void)
--{
--	/* start_kernel() requires this... */
--}
--#endif
--
--/*
-  * Do the following calculations:
-  *
-  * 1. the max. cache line size.
