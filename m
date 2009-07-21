@@ -1,50 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbZGUXIC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZGUXIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756525AbZGUXIC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 19:08:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517AbZGUXIA
+	id S1756533AbZGUXIp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 19:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbZGUXIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 19:08:00 -0400
-Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:3624 "EHLO
-	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756480AbZGUXH7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 19:07:59 -0400
-X-Greylist: delayed 2094 seconds by postgrey-1.27 at vger.kernel.org; Tue, 21 Jul 2009 19:07:59 EDT
-Message-ID: <4A664220.5070503@shikadi.net>
-Date: Wed, 22 Jul 2009 08:33:04 +1000
-From: Adam Nielsen <a.nielsen@shikadi.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.21) Gecko/20090529 Thunderbird/2.0.0.21 Mnenhy/0.7.5.0
+	Tue, 21 Jul 2009 19:08:44 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40710 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756366AbZGUXIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 19:08:43 -0400
+Message-ID: <4A664A76.5000902@garzik.org>
+Date: Tue, 21 Jul 2009 19:08:38 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-CC: Linux USB <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Blacklisting a usbhid device
-References: <d1351198778762a135751934d1977539.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <d1351198778762a135751934d1977539.squirrel@intranet.cs.nmsu.edu>
-Content-Type: text/plain; charset=UTF-8
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Linux NFS ML <linux-nfs@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.31-rc3 nfsv4 client regression (oops)
+References: <4A5C3858.6070303@garzik.org> <1247571788.19099.32.camel@heimdal.trondhjem.org>
+In-Reply-To: <1247571788.19099.32.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -3.8 (---)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-3.8 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Any suggestions on how to either work within the usbhid framework or how
-> to get usbhid to stop claiming the device?
+Trond Myklebust wrote:
+> NFSv4: Fix an Oops in nfs4_free_lock_state
+> 
+> The oops http://www.kerneloops.org/raw.php?rawid=537858&msgid= appears to
+> be due to the nfs4_lock_state->ls_state field being uninitialised. This
+> happens if the call to nfs4_free_lock_state() is triggered at the end of
+> nfs4_get_lock_state().
+> 
+> The fixe is to move the initialisation of ls_state into the allocator.
+> 
+> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
+> 
+>  fs/nfs/nfs4state.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
+> index b73c5a7..65ca8c1 100644
+> --- a/fs/nfs/nfs4state.c
+> +++ b/fs/nfs/nfs4state.c
+> @@ -553,6 +553,7 @@ static struct nfs4_lock_state *nfs4_alloc_lock_state(struct nfs4_state *state, f
+>  	INIT_LIST_HEAD(&lsp->ls_sequence.list);
+>  	lsp->ls_seqid.sequence = &lsp->ls_sequence;
+>  	atomic_set(&lsp->ls_count, 1);
+> +	lsp->ls_state = state;
+>  	lsp->ls_owner = fl_owner;
+>  	spin_lock(&clp->cl_lock);
+>  	nfs_alloc_unique_id(&clp->cl_lockowner_id, &lsp->ls_id, 1, 64);
+> @@ -587,7 +588,6 @@ static struct nfs4_lock_state *nfs4_get_lock_state(struct nfs4_state *state, fl_
+>  		if (lsp != NULL)
+>  			break;
+>  		if (new != NULL) {
+> -			new->ls_state = state;
+>  			list_add(&new->ls_locks, &state->lock_states);
+>  			set_bit(LK_STATE_IN_USE, &state->flags);
 
->From userland you can get the usbhid driver to release the device like this:
+Ping?  This is headed upstream, right?
 
-  cd /sys/bus/usb/drivers/usbhid
-  echo '9-1:1.0' > unbind
+This oops fix has lived outside the tree for at least a week now, and 
+IMO needs to move upstream...
 
-Where '9-1:1.0' is the device you want to release.  Presumably you could do
-the same thing on the kernel side when your driver is loaded.  This would give
-better functionality, in that the usbhid driver would handle basic
-functionality if your driver isn't loaded, but as soon as your driver was
-loaded the extra functionality would become available.
+	Jeff
 
-Of course this bypasses usbhid's functionality.  I imagine it would be better
-to write a hid driver and let usbhid handle the USB side of things.  Have a
-look in drivers/hid/ for some hid driver examples that do this.
 
-Cheers,
-Adam.
 
