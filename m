@@ -1,126 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZGUPQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbZGUPQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755334AbZGUPQK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 11:16:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbZGUPQJ
+	id S1755368AbZGUPQa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 11:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZGUPQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 11:16:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50921 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754272AbZGUPQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 11:16:08 -0400
-Date: Tue, 21 Jul 2009 11:15:52 -0400
-From: Josef Bacik <josef@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Josef Bacik <josef@redhat.com>, linux-ext4@vger.kernel.org,
-       emcnabb@redhat.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Mingming Cao <cmm@us.ibm.com>,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] fix softlockups in ext2/3 when trying to allocate
-	blocks
-Message-ID: <20090721151550.GA2451@localhost.localdomain>
-References: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com> <20090720233735.e3c711d1.akpm@linux-foundation.org>
+	Tue, 21 Jul 2009 11:16:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:18444 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754542AbZGUPQ1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 11:16:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=D8UDvMU2G4gPruRJXtXJzCkYZtzTQkVp2FvNalDxiPON2ok7V5f8CQPYdSyyP9NhSN
+         I7fDCfsYMWVtMIGmJRAxeDvhvv21iLnq/sOHx4gWGQ1JooCznYPpPoxXIGzIK7xKtuGV
+         55EaY/qfZ/K05rvfhjS4r64nTMj3ovYoQbMZ0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090720233735.e3c711d1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Reply-To: john.lanza@linux.com
+In-Reply-To: <19045.49553.738185.211806@samba.org>
+References: <19028.3736.892828.352905@samba.org>
+	 <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk>
+	 <1247069202.4159.212.camel@mulgrave.site>
+	 <20090708171848.21633768@lxorguk.ukuu.org.uk>
+	 <873a96a23x.fsf@devron.myhome.or.jp>
+	 <87hbxhwv0j.fsf@devron.myhome.or.jp>
+	 <19045.14307.658887.752950@samba.org> <4A65875D.7030902@panasas.com>
+	 <20090721103158.GG4133@elf.ucw.cz>
+	 <19045.49553.738185.211806@samba.org>
+Date: Tue, 21 Jul 2009 11:08:49 -0400
+Message-ID: <4bbed3f70907210808m2c90ee4frd3470c1a1310758b@mail.gmail.com>
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+From: John Lanza <jdlanza@gmail.com>
+To: tridge@samba.org
+Cc: Pavel Machek <pavel@ucw.cz>, Boaz Harrosh <bharrosh@panasas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Martin Steigerwald <Martin@lichtvoll.de>,
+       Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org, torvalds@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 20, 2009 at 11:37:35PM -0700, Andrew Morton wrote:
-> On Mon, 6 Jul 2009 15:47:39 -0400 Josef Bacik <josef@redhat.com> wrote:
-> 
-> > This isn't a huge deal, but using a big beefy box with more CPUs than what is
-> > sane, you can get a nice flood of softlockup messages when running heavy
-> > multi-threaded io tests on ext2/3.  The processors compete for blocks from the
-> > allocator, so they will loop quite a bit trying to get their allocation.  This
-> > patch simply makes sure that we reschedule if need be.  This made the softlockup
-> > messages disappear whereas before they happened almost immediately.  Thanks,
-> 
-> The softlockup threshold is 60 seconds.  For the kernel to spend 60
-> seconds continuous CPU time in the filesystem is very bad behaviour, and
-> adding a rescheduling point doesn't fix that!
+All:
+
+I think the email I just sent applies here, as well.  And I echo
+Tridge's sentiments about giving me a shout if you have some idea for
+qorkarounds.  I'm here to be a sounding board for you.
+
+johnl
+
+On Tue, Jul 21, 2009 at 9:24 AM, <tridge@samba.org> wrote:
+> Hi Pavel,
 >
-
-In RHEL its set to 10 seconds, so its not totally unreasonable.
- 
-> > Tested-by: Evan McNabb <emcnabb@redhat.com>
-> > Signed-off-by: Josef Bacik <josef@redhat.com>
-> > ---
-> >  fs/ext2/balloc.c |    1 +
-> >  fs/ext3/balloc.c |    2 ++
-> >  2 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
-> > index 7f8d2e5..17dd55f 100644
-> > --- a/fs/ext2/balloc.c
-> > +++ b/fs/ext2/balloc.c
-> > @@ -1176,6 +1176,7 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
-> >  			break;				/* succeed */
-> >  		}
-> >  		num = *count;
-> > +		cond_resched();
-> >  	}
-> >  	return ret;
-> >  }
-> > diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
-> > index 27967f9..cffc8cd 100644
-> > --- a/fs/ext3/balloc.c
-> > +++ b/fs/ext3/balloc.c
-> > @@ -735,6 +735,7 @@ bitmap_search_next_usable_block(ext3_grpblk_t start, struct buffer_head *bh,
-> >  	struct journal_head *jh = bh2jh(bh);
-> >  
-> >  	while (start < maxblocks) {
-> > +		cond_resched();
-> >  		next = ext3_find_next_zero_bit(bh->b_data, maxblocks, start);
-> >  		if (next >= maxblocks)
-> >  			return -1;
-> > @@ -1391,6 +1392,7 @@ ext3_try_to_allocate_with_rsv(struct super_block *sb, handle_t *handle,
-> >  			break;				/* succeed */
-> >  		}
-> >  		num = *count;
-> > +		cond_resched();
-> >  	}
-> >  out:
-> >  	if (ret >= 0) {
-> 
-> I worry that something has gone wrong with the reservations code.  The
-> filesystem _should_ be able to find a free block without any contention
-> from other CPUs, because there's a range of blocks reserved for this
-> inode's allocation attempts.
-> 
-
-Sure, the problem is if we run out of blocks in that reservation window, or
-somebody else runs out of blocks in their reservation window, we start trying to
-steal blocks from other inodes reservation windows.
-
-> Unless the workload has a lot of threads writing to the _same_ file. 
-> If it does that then yes, we'll have lots of CPUs contenting for blocks
-> within that inode's reservation window.  Tell us about the workload please.
+>  > Actually, why not having dosfsck creating _matching_ short names for
+>  > long names? As it only writes short names, it should be safe :-).
 >
-
-The workload is on a box with 32 CPUs and 32GB of ram.  Its running some sort of
-kernel compiling stress test, which from what I understand is running a kernel
-compile per CPU.  Then on top of that there is a dd running at the same time.
- 
-> But that shouldn't be happening either because all those write()ing
-> threads will be serialised by i_mutex.
-> 
-> So I don't know what's happening here.  Possibly a better fix would be
-> to add a lock rather than leaving the contention in place and hiding
-> it.  Even better would be to understand why the contention is happening
-> and prevent that.
-> 
-
-I could probably add some locking in here to help the problem, but I'm worried
-about the performance impact that would have.  This is just a crap situation,
-since we are quickly exhausting our reservation windows and devovling to just
-schlepping through the block bitmaps for free space, and thats where we start to
-suck hard.  I can look into it some more and possibly come up with something
-else, this just seemed to be the quickest way to fix the problem with affecting
-as little people as possible, especially since it's only reproducing on a box
-with 32 CPUs and 32GB of RAM.  Thanks,
-
-Josef
+> As I mentioned to Boaz, what usually matters for claim construction in
+> patents is the overall system. I'm sure John Lanza would be happy to
+> run through it with you if you want a more legally detailed answer,
+> but basically breaking it up within the one system isn't likely to
+> help us.
+>
+> Like I mentioned to Boaz though, do keep thinking about it. There may
+> well be a better solution that nobody has suggested yet. You might
+> also like to read the file wrapper (availble on the USPTO site) which
+> shows the discussions between the patent office and the
+> applicant. That is often a good source of inspiration for patent
+> workarounds. If you think you've found something then it might be a
+> good idea to raise it with John Lanza first.
+>
+> Cheers, Tridge
+>
