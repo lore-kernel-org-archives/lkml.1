@@ -1,107 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbZGUFac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbZGUFd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752915AbZGUFac (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 01:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZGUFaa
+	id S1753008AbZGUFd7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 01:33:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZGUFd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 01:30:30 -0400
-Received: from ns1.siteground211.com ([209.62.36.12]:40049 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751923AbZGUFa3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 01:30:29 -0400
-Date: Tue, 21 Jul 2009 08:30:21 +0300
-From: Felipe Balbi <me@felipebalbi.com>
-To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-Cc: "me@felipebalbi.com" <me@felipebalbi.com>,
-       "Krishnamoorthy, Balaji T" <balajitk@ti.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "khilman@deeprootsystems.com" <khilman@deeprootsystems.com>,
-       "david-b@pacbell.net" <david-b@pacbell.net>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
-       "sameo@openedhand.com" <sameo@openedhand.com>,
-       "wim@iguana.be" <wim@iguana.be>,
-       "timo.t.kokkonen@nokia.com" <timo.t.kokkonen@nokia.com>,
-       "ben-linux@fluff.org" <ben-linux@fluff.org>,
-       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
-       "broonie@opensource.wolfsonmicro.com" 
-	<broonie@opensource.wolfsonmicro.com>,
-       "Nayak, Rajendra" <rnayak@ti.com>
-Subject: Re: [RFC][PATCH 1/4] OMAP4: PMIC: Add support for twl6030 irq
- framework
-Message-ID: <20090721053021.GB13013@gandalf>
-Reply-To: me@felipebalbi.com
-References: <1248096992-14610-1-git-send-email-balajitk@ti.com>
- <20090720190706.GE7984@gandalf>
- <EAF47CD23C76F840A9E7FCE10091EFAB02B595037E@dbde02.ent.ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB02B595037E@dbde02.ent.ti.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Tue, 21 Jul 2009 01:33:57 -0400
+Received: from mga01.intel.com ([192.55.52.88]:54906 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752544AbZGUFd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 01:33:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,239,1246863600"; 
+   d="scan'208";a="709579410"
+Subject: Re: mmotm 2009-07-16-14-32 - sudden OOPS at boot in ACPI code
+From: Lin Ming <ming.m.lin@intel.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
+       Bob Moore <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
+       linux-kernel@vger.kernel.org, linux-acpi <linux-acpi@vger.kernel.org>
+In-Reply-To: <d3f22a0907202225v66c6535dg27d54e1158e7df7a@mail.gmail.com>
+References: <200907162134.n6GLY2kt019816@imap1.linux-foundation.org>
+	 <9078.1248144738@turing-police.cc.vt.edu>
+	 <Pine.LNX.4.64.0907210418420.15680@sister.anvils>
+	 <d3f22a0907202225v66c6535dg27d54e1158e7df7a@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 13:33:59 +0800
+Message-Id: <1248154439.1852.49.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
 
-please send text mails and break your lines at 80 characters!
-
-On Tue, Jul 21, 2009 at 10:45:04AM +0530, Shilimkar, Santosh wrote:
-> Here is summary of Major difference between Triton(TWL4030) and
-> Phoenix(TWL6030_ chips are:
->     -GPIO, Keypad is not present in Phoenix
->     -I2C Chips addresses of modules like RTC, BCI, ADC, USB, PMC Master/Slave 
->      have changed.  Base address of these module register is also changed.
->     -PIH and SIH, module interrupt status registers will be replaced by PIH 
->      (INT_STS_A, INT_STS_B and INT_STS_C) and module interrupt status registers
->     -MADC to GPADC in Phoenix, 17 channels supported
->      GPADC in Phoenix supports Realtime, Asynchronous SW request.
->     -RTC register offsets have changed. Addition/removal of LDO/SMPS Voltage 
->      Regulators
-
-all of this can be addressed without ifdeferry around the code. Just add
-proper abstraction via platform_data, and that 'features' you see in
-twl4030-core.c
-
-> 2. Usage of compile time macros like "CONFIG_TWL4030" and CONFIG_TWL6030"
-> should be avoided and you think it would break multi-omap.
+> From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Date: Tue, Jul 21, 2009 at 11:33 AM
+> Subject: Re: mmotm 2009-07-16-14-32 - sudden OOPS at boot in ACPI code
+> To: Valdis.Kletnieks@vt.edu
+> Cc: Andrew Morton <akpm@linux-foundation.org>, Bob Moore
+> <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
+> linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 > 
-> If we just go by definition " Multi-OMAP" is for different OMAP IC's. TWL4030
-> and TWL6030 are external companion IC's to OMAP.
+> 
+> On Mon, 20 Jul 2009, Valdis.Kletnieks@vt.edu wrote:
+> > On Thu, 16 Jul 2009 14:34:02 PDT, akpm@linux-foundation.org said:
+> > > The mm-of-the-moment snapshot 2009-07-16-14-32 has been uploaded to
+> >
+> > Dies a horrid death during early boot. Dell Latitude D820, and this graphics:
+> >
+> > 01:00.0 VGA compatible controller: nVidia Corporation G72M [Quadro NVS 110M/GeForce Go 7300] (rev a1)
+> 
+> Oh yes, I was getting just the same with Intel graphics (i915);
+> but promptly forgot about it once I'd a workaround in place,
+> and moved on to other things, sorry.
+> 
+> >
+> > Traceback (hand-copied from a very crappy cell-phone picture)
+> >
+> > strcmp+0x4/0x1f
+> > acpi_device+probe+0xac/0x13e
+> > driver_probe_device+0xc9/0x14e
+> > __driver_attach+0x58/0x7c
+> > ? __driver_attach+0x58/0x7c
+> > ? __driver_attach+0x58/0x7c
+> > bus_for_each_dev+0x54/0x89
+> > driver_attach+0x19/0x1b
+> > bus_add_driver+0xv4/0x1fe
+> > driver_register+0xb7/0x128
+> > ? acpi_video_init+0x0/0x17
+> > acpi_bus_register_driver+0x3e/0x42
+> > acpi_video_register+0x42/0x6e
+> > acpi_video_init+0x15/0x17
+> > do_one_initcall+0x56/0x130
+> >
+> > Analysis shows it's the following code from (inlined) acpi_device_install_notify_handler
+> >
+> > static int acpi_device_install_notify_handler(struct acpi_device *device)
+> > {
+> >         acpi_status status;
+> >         char *hid;
+> >
+> >         hid = acpi_device_hid(device);
+> >         if (!strcmp(hid, ACPI_BUTTON_HID_POWERF))
+> >
+> > but we never check if hid is non-trash before feeding it to strcmp.  Looks
+> > like something in this linux-next commit is involved:
+> >
+> > commit ed444824932d2a563858d82ec1ea29b0aa775e91
+> > Author: Bob Moore <robert.moore@intel.com>
+> > Date:   Mon Jun 29 13:39:29 2009 +0800
+> >
+> > I suspect something in acpi_get_object_info() is going astray, causing
+> > acpi_device_set_id() to set the ->pnp.hardware_id to NULL in this code:
+> >
+> >         if (hid) {
+> >                 device->pnp.hardware_id = ACPI_ALLOCATE_ZEROED(strlen (hid) + 1);
+> >                 if (device->pnp.hardware_id) {
+> >                         strcpy(device->pnp.hardware_id, hid);
+> >                         device->flags.hardware_id = 1;
+> >                 }
+> >         } else
+> >                 device->pnp.hardware_id = NULL;
+> >
+> > The else clause is new in this commit.
+> 
+> I think pnp.hardware_id has changed from being a builtin array to
+> an allocated pointer: so before there was always a zeroed array to
 
-what will happen if you build on kernel image for booting omap3 and
-omap4 ???
+Yes, pnp.hardware_id and pnp.unique_id are now allocated pointer.
+We made the change for acpi_get_object_info interface.
 
-> Any ways, these compile time switches can be avoided if we make runtime
-> provision for these TWL IC's like. 
-> "is_twl4030(), is_twl6030" etc like "cpu_is_24xx(),cpu_is_44xx()" etc.
+> strcmp against, whereas now there's a NULL pointer if you come to
+> use acpi_device_install_notify_handler() "too early".
+> 
+> Patch that works for me at the bottom.
 
-or you just use the 'features' in the twl4030-core.c and based on that
-pass a flag to the children notifying it's triton/gaia/reno/phoenix.
+Yes, 
+your patch can workaround the problem in
+acpi_device_install_notify_handler.
 
-> Obviously this asks to make the driver register map (which is different in
-> case of TWL6030 w.r.t TWL4030) to be held in some arrays and select the
-> appropriate one run-time.  But it's doable if it helps.
+But there are other places call strcmp to compare HID/UID.
+So we'd better fix acpi_device_hid/_uid as below,
 
-I'd say that's better than ifdeferry.
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index 6e83a68..6c64366 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -188,8 +188,8 @@ struct acpi_device_pnp {
+ 
+ #define acpi_device_bid(d)	((d)->pnp.bus_id)
+ #define acpi_device_adr(d)	((d)->pnp.bus_address)
+-#define acpi_device_hid(d)	((d)->pnp.hardware_id)
+-#define acpi_device_uid(d)	((d)->pnp.unique_id)
++#define acpi_device_hid(d)	((d)->pnp.hardware_id ? (d)->pnp.hardware_id : "\0")
++#define acpi_device_uid(d)	((d)->pnp.unique_id ? (d)->pnp.unique_id : "\0")
+ #define acpi_device_name(d)	((d)->pnp.device_name)
+ #define acpi_device_class(d)	((d)->pnp.device_class)
+ 
+---
+Thanks,
+Lin Ming
 
-> The patch series was made under _assumption_ that either TWL4030 or TWL6030 
-> would be used. I am not sure whether there will boards where both will
-> co-exist.
+> 
+> >
+> > Looking at the old code, it *may* be that the ACPI code on my laptop is just
+> > busticated and/or there's no _HID method for the graphics card, and the old
+> > code Just Happened To Work in previous kernels because ->pnp.hardware_id
+> > wouldn't actually get set *at all* in acpi_device_set_id, so we'd get random
+> > stale data that was bogus, but didn't give strcmp() indigestion...
+> >
+> > Any wisdom on debugging this further (including how to tell if the ACPI
+> > tables have a sane _HID method for the graphics card) would be appreciated...
+> >
+> > Or is the correct fix in fact to just add a 'if (!hid) return -EINVAL;' to
+> > acpi_device_install_notify_handler()?
+> 
+> [PATCH mmotm] acpi: work around NULL hardware_id
+> 
+> Work around NULL pnp.hardware_id in acpi_device_install_notify_handler()
+> when probing video device.
+> 
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> ---
+> Signoff provided to handle the unlikely event that this hack
+> is actually the right fix!
+> 
+>  drivers/acpi/scan.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- mmotm/drivers/acpi/scan.c   2009-07-17 12:53:20.000000000 +0100
+> +++ linux/drivers/acpi/scan.c   2009-07-17 21:19:10.000000000 +0100
+> @@ -376,12 +376,12 @@ static int acpi_device_install_notify_ha
+>        char *hid;
+> 
+>        hid = acpi_device_hid(device);
+> -       if (!strcmp(hid, ACPI_BUTTON_HID_POWERF))
+> +       if (hid && !strcmp(hid, ACPI_BUTTON_HID_POWERF))
+>                status =
+>                    acpi_install_fixed_event_handler(ACPI_EVENT_POWER_BUTTON,
+>                                                     acpi_device_notify_fixed,
+>                                                     device);
+> -       else if (!strcmp(hid, ACPI_BUTTON_HID_SLEEPF))
+> +       else if (hid && !strcmp(hid, ACPI_BUTTON_HID_SLEEPF))
+>                status =
+>                    acpi_install_fixed_event_handler(ACPI_EVENT_SLEEP_BUTTON,
+>                                                     acpi_device_notify_fixed,
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-not in the same board, but think of building one kernel image for both
-omap3 and omap4. Nobody will do that in real life for real products, but
-it's really useful when it goes about testing code on several boards.
-You don't have to spend time building several different kernel images,
-you build only one that boots on all.
-
--- 
-balbi
