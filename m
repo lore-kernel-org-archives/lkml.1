@@ -1,115 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751629AbZGUHkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbZGUHoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751629AbZGUHkq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 03:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbZGUHko
+	id S1751805AbZGUHoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 03:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbZGUHop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 03:40:44 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48313 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751072AbZGUHkn (ORCPT
+	Tue, 21 Jul 2009 03:44:45 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:22221 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbZGUHoo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 03:40:43 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 21 Jul 2009 16:38:46 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Nick Piggin <npiggin@suse.de>,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] hibernate / memory hotplug: always use
- for_each_populated_zone()
-Message-Id: <20090721163846.2a8001c1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090721071508.GB12734@osiris.boeblingen.de.ibm.com>
-References: <1248103551.23961.0.camel@localhost.localdomain>
-	<4A64E1D6.8090102@crca.org.au>
-	<20090721071508.GB12734@osiris.boeblingen.de.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Jul 2009 03:44:44 -0400
+Message-ID: <4A6571A9.5070007@gmail.com>
+Date: Tue, 21 Jul 2009 10:43:37 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       MTD mailing list <linux-mtd@lists.infradead.org>,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] MTD:  Correct typo "MTD_DATAFLASH_VERIFY_WRITE".
+References: <alpine.LFD.2.00.0907192115420.18015@localhost>
+In-Reply-To: <alpine.LFD.2.00.0907192115420.18015@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 21 Jul 2009 07:43:53.0882 (UTC) FILETIME=[FEF857A0:01CA09D6]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009 09:15:08 +0200
-Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+Seems correct to me, I'll put it to l2-mtd-2.6.git, thanks.
 
-> On Tue, Jul 21, 2009 at 07:29:58AM +1000, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > Gerald Schaefer wrote:
-> > > From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> > > 
-> > > Use for_each_populated_zone() instead of for_each_zone() in hibernation
-> > > code. This fixes a bug on s390, where we allow both config options
-> > > HIBERNATION and MEMORY_HOTPLUG, so that we also have a ZONE_MOVABLE
-> > > here. We only allow hibernation if no memory hotplug operation was
-> > > performed, so in fact both features can only be used exclusively, but
-> > > this way we don't need 2 differently configured (distribution) kernels.
-> > > 
-> > > If we have an unpopulated ZONE_MOVABLE, we allow hibernation but run
-> > > into a BUG_ON() in memory_bm_test/set/clear_bit() because hibernation
-> > > code iterates through all zones, not only the populated zones, in
-> > > several places. For example, swsusp_free() does for_each_zone() and
-> > > then checks for pfn_valid(), which is true even if the zone is not
-> > > populated, resulting in a BUG_ON() later because the pfn cannot be
-> > > found in the memory bitmap.
-> > 
-> > I agree with your logic and patch, but doesn't this also imply that the
-> > s390 implementation pfn_valid should be changed to return false for
-> > those pages?
-> 
-> For CONFIG_SPARSEMEM, which s390 uses, there is no architecture specific
-> pfn_valid() implementation.
-> Also it looks like the semantics of pfn_valid() aren't clear.
-> At least for sparsemem it means nothing but "the memmap for the section
-> this page belongs to exists". So it just means the struct page for the
-> pfn exists.
+CCint David who seem to introduced this in the following commit:
 
-Historically, pfn_valid() just means "there is a memmap." no other meanings
-in any configs/archs.
+commit 8c64038e4c077b2b37c6b27d0c40c77a3ddfaeef
+Author: David Brownell <dbrownell@users.sourceforge.net>
+Date:   Wed Aug 6 21:55:14 2008 -0700
+
+     [MTD] make dataflash write-verify be optional
+
+     This adds a WRITE_VERIFY Kconfig option to the DataFlash driver,
+     closely mirroring the similar NAND and ONENAND options, giving
+     an option to disable some code that's currently always enabled.
+
+     Removing this step probably saves a millisecond or so per page
+     when writing data, which will add up quickly since these pages
+     are small (the largest is 1 KiB).  It doesn't seem to add a
+     lot in terms of reliability, and wouldn't detect errors which
+     crop up when transferring data to the on-chip SRAM buffer.
+
+     Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+     Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+     Acked-by: Andrew Victor <linux@maxim.org.za>
+     Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+
+On 07/20/2009 04:19 AM, Robert P. J. Day wrote:
+> Fix the misspelling to match the actual config variable defined in
+> drivers/mtd/devi ces/Kconfig:
+>
+> config MTD_DATAFLASH_WRITE_VERIFY
+>          bool "Verify DataFlash page writes"
+>          depends on MTD_DATAFLASH
+>
+> Signed-off-by: Robert P. J. Day<rpjday@crashcourse.ca>
+>
+> ---
+>
+>    you know, there's a *reason* i keep reporting these anomalies...
+>
+> diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
+> deleted file mode 100644
+> index e69de29..0000000
+> diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
+> index 43976aa..70a7369 100644
+> --- a/drivers/mtd/devices/mtd_dataflash.c
+> +++ b/drivers/mtd/devices/mtd_dataflash.c
+> @@ -401,7 +401,7 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
+>   		(void) dataflash_waitready(priv->spi);
+>
+>
+> -#ifdef CONFIG_MTD_DATAFLASH_VERIFY_WRITE
+> +#ifdef CONFIG_MTD_DATAFLASH_WRITE_VERIFY
+>
+>   		/* (3) Compare to Buffer1 */
+>   		addr = pageaddr<<  priv->page_offset;
+> @@ -430,7 +430,7 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
+>   		} else
+>   			status = 0;
+>
+> -#endif	/* CONFIG_MTD_DATAFLASH_VERIFY_WRITE */
+> +#endif	/* CONFIG_MTD_DATAFLASH_WRITE_VERIFY */
+>
+>   		remaining = remaining - writelen;
+>   		pageaddr++;
+>
+> ========================================================================
+> Robert P. J. Day                               Waterloo, Ontario, CANADA
+>
+>          Linux Consulting, Training and Annoying Kernel Pedantry.
+>
+> Web page:                                          http://crashcourse.ca
+> Twitter:                                       http://twitter.com/rpjday
+> "Kernel Newbie Corner" column @ linux.com:          http://cli.gs/WG6WYX
+> ========================================================================
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 
-> We still have pfn_present() for CONFIG_SPARSEMEM. But that just means
-> "some pages in the section this pfn belongs to are present."
-
-It just exists for sparsemem internal purpose IIUC.
-
-
-> So it looks like checking for pfn_valid() and afterwards checking
-> for PG_Reserved (?) might give what one would expect.
-I think so, too. If memory is offline, PG_reserved is always set.
-
-In general, it's expected that "page is contiguous in MAX_ORDER range"
-and no memory holes in MAX_ORDER. In most case, PG_reserved is checked
-for skipping not-existing memory.
-
-
-> Looks all a bit confusing to me.
-> Or maybe it's just me who is confused? :)
-> 
-IIRC, there are no generic interface to know whether there is a physical page.
-
-pfn_valid() is only for memmap and people have used
-	if (pfn_valid(pfn) && !PageReserved(page))
-check.
-But, hmm, If hibernation have to save PG_reserved memory, general solution is
-use copy_user_page() and handle fault.
-
-Alternative is making use of walk_memory_resource() as memory hotplug does.
-It checks resource information registered.
-
-Thanks,
--Kame
-
-
-
-
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
