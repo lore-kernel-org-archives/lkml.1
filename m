@@ -1,78 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZGUHVF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbZGUHWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751962AbZGUHVF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 03:21:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbZGUHVE
+	id S1752155AbZGUHWJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 03:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbZGUHWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 03:21:04 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60361 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751289AbZGUHVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 03:21:03 -0400
-Date: Tue, 21 Jul 2009 09:21:01 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, linux-mm@kvack.org
-Subject: Re: [PATCH] hibernate / memory hotplug: always use for_each_populated_zone()
-Message-ID: <20090721072101.GC7816@wotan.suse.de>
-References: <1248103551.23961.0.camel@localhost.localdomain> <4A64E1D6.8090102@crca.org.au> <20090721071508.GB12734@osiris.boeblingen.de.ibm.com>
+	Tue, 21 Jul 2009 03:22:08 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:43383 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211AbZGUHWG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 03:22:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=kGXr833EH4t6dEvz474lY9of4LyiJf6+D/BVsPW0ioR77tCijCs/F4SCMYD1Ve33QW
+         QHe+s4MSNHH41lyIX6B6c5pJ83YJmpaloIOy36j3eXsi37XTcV13Ty281xi1hRfR189R
+         azKI/dvVzGS62EjoEnzu6mnND2TAYtNWTpilM=
+Subject: Re: [PATCH v2] tracing/filters: Improve subsystem filter
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A656194.50700@cn.fujitsu.com>
+References: <4A63D485.7030703@cn.fujitsu.com>
+	 <1248154585.6323.26.camel@tropicana>  <4A656194.50700@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 02:22:03 -0500
+Message-Id: <1248160924.6323.57.camel@tropicana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090721071508.GB12734@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 09:15:08AM +0200, Heiko Carstens wrote:
-> On Tue, Jul 21, 2009 at 07:29:58AM +1000, Nigel Cunningham wrote:
-> > Hi.
+On Tue, 2009-07-21 at 14:35 +0800, Li Zefan wrote:
+> Tom Zanussi wrote:
+> > Hi,
 > > 
-> > Gerald Schaefer wrote:
-> > > From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> > > 
-> > > Use for_each_populated_zone() instead of for_each_zone() in hibernation
-> > > code. This fixes a bug on s390, where we allow both config options
-> > > HIBERNATION and MEMORY_HOTPLUG, so that we also have a ZONE_MOVABLE
-> > > here. We only allow hibernation if no memory hotplug operation was
-> > > performed, so in fact both features can only be used exclusively, but
-> > > this way we don't need 2 differently configured (distribution) kernels.
-> > > 
-> > > If we have an unpopulated ZONE_MOVABLE, we allow hibernation but run
-> > > into a BUG_ON() in memory_bm_test/set/clear_bit() because hibernation
-> > > code iterates through all zones, not only the populated zones, in
-> > > several places. For example, swsusp_free() does for_each_zone() and
-> > > then checks for pfn_valid(), which is true even if the zone is not
-> > > populated, resulting in a BUG_ON() later because the pfn cannot be
-> > > found in the memory bitmap.
+> > On Mon, 2009-07-20 at 10:20 +0800, Li Zefan wrote:
+> >> Currently a subsystem filter should be applicable to all events
+> >> under the subsystem, and if it failed, all the event filters
+> >> will be cleared. Those behaviors make subsys filter much less
+> >> useful:
+> >>
+> >>   # echo 'vec == 1' > irq/softirq_entry/filter
+> >>   # echo 'irq == 5' > irq/filter
+> >>   bash: echo: write error: Invalid argument
+> >>   # cat irq/softirq_entry/filter
+> >>   none
+> >>
+> >> I'd expect it set the filter for irq_handler_entry/exit, and
+> >> not touch softirq_entry/exit.
+> >>
+> >> The basic idea is, try to see if the filter can be applied
+> >> to which events, and then just apply to the those events:
+> >>
+> >>   # echo 'vec == 1' > softirq_entry/filter
+> >>   # echo 'irq == 5' > filter
+> >>   # cat irq_handler_entry/filter
+> >>   irq == 5
+> >>   # cat softirq_entry/filter
+> >>   vec == 1
+> >>
 > > 
-> > I agree with your logic and patch, but doesn't this also imply that the
-> > s390 implementation pfn_valid should be changed to return false for
-> > those pages?
+> > It looks like it accomplishes the goal, but I wonder if you could
+> > simplify it by getting rid of the no_reset flag and all the state-saving
+> > while keeping the dry_run param on filter_add_pred to use from
+> > filter_add_subsysystem_pred() e.g. something like this:
+> > 
+> > filter_add_subsystem_pred(...)
+> > {
+> > 	...
+> > 	list_for_each_entry(call, &ftrace_events, list) {
+> > 		err = filter_add_pred(ps, call, pred, dry_run = 1);
+> > 		if (!err)
+> > 			filter_add_pred(ps, call, pred, dry_run = 0);
 > 
-> For CONFIG_SPARSEMEM, which s390 uses, there is no architecture specific
-> pfn_valid() implementation.
-> Also it looks like the semantics of pfn_valid() aren't clear.
-> At least for sparsemem it means nothing but "the memmap for the section
-> this page belongs to exists". So it just means the struct page for the
-> pfn exists.
-> We still have pfn_present() for CONFIG_SPARSEMEM. But that just means
-> "some pages in the section this pfn belongs to are present."
-> So it looks like checking for pfn_valid() and afterwards checking
-> for PG_Reserved (?) might give what one would expect.
-> Looks all a bit confusing to me.
-> Or maybe it's just me who is confused? :)
+> This is the same with just call "filter_add_pred(ps, call, pred)"
+> 
+> > 		...
+> > 	}
+> > }
+> > 
+> > IIRC the state-saving was necessary if the idea was to back out of (or
+> > avoid setting) all the filters if one failed, but the new model is to
+> > set whichever apply while leaving the rest alone.  I think the simpler
+> > approach above accomplishes that, but I may be missing something or have
+> > forgotten the original motivation for doing it this way.
+> > 
+> 
+> This won't work as expected. The state-saving is necessary, because
+> if any pred is not appliable for an event, the whole operation should
+> fail for that event.
+> 
+> What this patch does is apply the filter to those events that the
+> filter is appliable, but not apply parts of the filter to each event.
+> 
 
-It would be nice to remove PG_reserved (most architectures also set
-it I think for kernel text and IIRC bootmem), it could then be used
-as a PG_arch_2 bit, and we could ask architectures to impement
-pfn_is_ram (or whatever's going to be most useful).
+Yeah, you're right - I was confusing preds with filters when reading
+this.
+
+Acked-by: Tom Zanussi <tzanussi@gmail.com>
+
+
+> Imaging the result for those filters with the above code:
+> 
+>   # echo 'irq == 5 && vec == 1' > filter
+>   # echo 'irq == 5 || vec == 1' > filter
+>   # echo 'irq == 5 || foo == bar' > fitler
+>   # echo '(irq == 5 && vec == 1) || irq == 2' > filter
+> 
 
