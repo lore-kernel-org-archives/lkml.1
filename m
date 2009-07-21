@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751053AbZGUHPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751141AbZGUHRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751053AbZGUHPP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 03:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZGUHPO
+	id S1751141AbZGUHRA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 03:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904AbZGUHQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 03:15:14 -0400
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:38166 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803AbZGUHPM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 03:15:12 -0400
-Date: Tue, 21 Jul 2009 09:15:08 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Nick Piggin <npiggin@suse.de>,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] hibernate / memory hotplug: always use
- for_each_populated_zone()
-Message-ID: <20090721071508.GB12734@osiris.boeblingen.de.ibm.com>
-References: <1248103551.23961.0.camel@localhost.localdomain>
- <4A64E1D6.8090102@crca.org.au>
-MIME-Version: 1.0
+	Tue, 21 Jul 2009 03:16:59 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60251 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbZGUHQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 03:16:58 -0400
+Date: Tue, 21 Jul 2009 09:16:54 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Rik van Riel <riel@redhat.com>
+Cc: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
+       hugh.dickins@tiscali.co.uk, aarcange@redhat.com, chrisw@redhat.com,
+       avi@redhat.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 05/10] ksm: no debug in page_dup_rmap()
+Message-ID: <20090721071654.GB7816@wotan.suse.de>
+References: <1247851850-4298-1-git-send-email-ieidus@redhat.com> <1247851850-4298-2-git-send-email-ieidus@redhat.com> <1247851850-4298-3-git-send-email-ieidus@redhat.com> <1247851850-4298-4-git-send-email-ieidus@redhat.com> <1247851850-4298-5-git-send-email-ieidus@redhat.com> <1247851850-4298-6-git-send-email-ieidus@redhat.com> <4A64B342.8070002@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A64E1D6.8090102@crca.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4A64B342.8070002@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 07:29:58AM +1000, Nigel Cunningham wrote:
-> Hi.
+On Mon, Jul 20, 2009 at 02:11:14PM -0400, Rik van Riel wrote:
+> Izik Eidus wrote:
+> >From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> >
+> >page_dup_rmap(), used on each mapped page when forking,  was originally
+> >just an inline atomic_inc of mapcount.  2.6.22 added CONFIG_DEBUG_VM
+> >out-of-line checks to it, which would need to be ever-so-slightly
+> >complicated to allow for the PageKsm() we're about to define.
+> >
+> >But I think these checks never caught anything.  And if it's coding
+> >errors we're worried about, such checks should be in page_remove_rmap()
+> >too, not just when forking; whereas if it's pagetable corruption we're
+> >worried about, then they shouldn't be limited to CONFIG_DEBUG_VM.
 > 
-> Gerald Schaefer wrote:
-> > From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> > 
-> > Use for_each_populated_zone() instead of for_each_zone() in hibernation
-> > code. This fixes a bug on s390, where we allow both config options
-> > HIBERNATION and MEMORY_HOTPLUG, so that we also have a ZONE_MOVABLE
-> > here. We only allow hibernation if no memory hotplug operation was
-> > performed, so in fact both features can only be used exclusively, but
-> > this way we don't need 2 differently configured (distribution) kernels.
-> > 
-> > If we have an unpopulated ZONE_MOVABLE, we allow hibernation but run
-> > into a BUG_ON() in memory_bm_test/set/clear_bit() because hibernation
-> > code iterates through all zones, not only the populated zones, in
-> > several places. For example, swsusp_free() does for_each_zone() and
-> > then checks for pfn_valid(), which is true even if the zone is not
-> > populated, resulting in a BUG_ON() later because the pfn cannot be
-> > found in the memory bitmap.
-> 
-> I agree with your logic and patch, but doesn't this also imply that the
-> s390 implementation pfn_valid should be changed to return false for
-> those pages?
+> Acked-by: Rik van Riel <riel@redhat.com>
 
-For CONFIG_SPARSEMEM, which s390 uses, there is no architecture specific
-pfn_valid() implementation.
-Also it looks like the semantics of pfn_valid() aren't clear.
-At least for sparsemem it means nothing but "the memmap for the section
-this page belongs to exists". So it just means the struct page for the
-pfn exists.
-We still have pfn_present() for CONFIG_SPARSEMEM. But that just means
-"some pages in the section this pfn belongs to are present."
-So it looks like checking for pfn_valid() and afterwards checking
-for PG_Reserved (?) might give what one would expect.
-Looks all a bit confusing to me.
-Or maybe it's just me who is confused? :)
+I like debug code like this as it helps comment the code a litte
+bit too. We've got lots of debug checks in the VM and probably
+very few of them catch anything useful... I'd kind of like to see
+it be ever-so-slightly complicated with PageKsm, and even a call
+to page_check_anon_rmap put into page_remove_rmap (which is a good
+idea).
+
+pagetable corruption/struct page corruption I think is good to
+check for, but it is fine to have such checks under DEBUG_VM --
+we have a couple of orders of magnitude more memory that is not
+for struct page, so decent coverage of memory corruption kind of
+wants slab and page debugging too, don't you think?
+
+/checks the sky for pigs...
+  
