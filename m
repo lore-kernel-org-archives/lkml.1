@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZGUVjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZGUVmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbZGUVjO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZGUVjN
+	id S1756044AbZGUVmE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbZGUVmD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:39:13 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:6413 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755503AbZGUVjM (ORCPT
+	Tue, 21 Jul 2009 17:42:03 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:25886 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755251AbZGUVmC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:39:12 -0400
+	Tue, 21 Jul 2009 17:42:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
          :content-transfer-encoding;
-        b=F4Ael4nclYDfqs6bu1MCd/1GQVJoDrvsUWjuG+DuVBjwyMhYcfgkppnJQhdz5Vf410
-         Gt1L4Z/N3/mqIZruCuhfHT2Dlfe0F7ywKAsYz9sgq2SMfFgaSpe+MjJSUADsbof80WEd
-         +WQ2aNNKirJIDovJGOtU6N2XJC7aXblZIS1eQ=
-Message-ID: <4A66357E.1080200@gmail.com>
-Date: Tue, 21 Jul 2009 23:39:10 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
+        b=sCHJMIkDV+IsdIESbT3nkL+N2kk38AAYvPx7CQ9i9jijzpioFWjpX90s58Job63kbG
+         y530qF3RodUrebafHNtOXsM/FfQckBbf8MmXDCIe6hsDaNajsdIWN4BbnAm/wpdC2210
+         Rrej9fCZ1+6IUA1fIGWnL0pzzVj1IupPXXAPc=
 MIME-Version: 1.0
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-CC: Linux USB <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Blacklisting a usbhid device
-References: <d1351198778762a135751934d1977539.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <d1351198778762a135751934d1977539.squirrel@intranet.cs.nmsu.edu>
-X-Enigmail-Version: 0.96a
+Date: Wed, 22 Jul 2009 00:42:01 +0300
+Message-ID: <cb315aa70907211442y79575081y9c9951d0c596beb0@mail.gmail.com>
+Subject: Re: Hi-ya
+From: Colby Forbes <colbyforbes4@gmail.com>
+To: good_james_is@yahoo.com
+Cc: linux-kernel@vger.kernel.org, aprile_whyte@yahoo.ca
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/21/2009 10:40 PM, Rick L. Vinyard, Jr. wrote:
-> --- a/drivers/hid/usbhid/hid-quirks.c
-> +++ b/drivers/hid/usbhid/hid-quirks.c
-> @@ -63,6 +63,7 @@ static const struct hid_blacklist {
-> 
->  	{ USB_VENDOR_ID_WISEGROUP_LTD, USB_DEVICE_ID_SMARTJOY_DUAL_PLUS,
-> HID_QUIRK_NOGET | HID_QUIRK_MULTI_INPUT },
->  	{ USB_VENDOR_ID_WISEGROUP_LTD2, USB_DEVICE_ID_SMARTJOY_DUAL_PLUS,
-> HID_QUIRK_NOGET | HID_QUIRK_MULTI_INPUT },
-> +	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_G13, 0x00000004 },
-> 
->  	{ 0, 0 }
->  };
+Do you extremely want to get cash at Internet?
+Get Free Naive Formula to Boom Your Earningswith Blow-by-blow Payments.
+We have very unequal Method to make Unlimited finance.
 
-It's too late for driver base to not bind the device with usbhid. Use
-hid_ignore_list in drivers/hid/hid-core.c instead. This list contains
-rather quirks.
+
+For Full facts take in:
+http://lynk2.us/qjk
+
+
+
+Good wishes,
+
+ROSE
+
+
+---------------------------------------------------------------
+P.S. Come mail a reply with "Terminate" to sanoideoffnek@gmail.com
+if you are no longer interested so we can at once erase you from our file.
+----------
+ --- qxqzbwqnf4equ32hngtzxk1ajudu5qdbz2qohtiyupmd7u25lgeki35qz0jmpzviaste1wr87bxz4c5qeljm8f03xrp0fpkih7ryeofhw6l6wstpyh74nty1jfsc9s2rlf57jdkcl1dzo3ide7krg4
