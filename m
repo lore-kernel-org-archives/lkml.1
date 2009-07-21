@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZGUQRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZGUQTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbZGUQRI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 12:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZGUQRH
+	id S1755549AbZGUQTf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 12:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZGUQTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 12:17:07 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37872 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751850AbZGUQRG (ORCPT
+	Tue, 21 Jul 2009 12:19:33 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:47068 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751973AbZGUQTc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 12:17:06 -0400
-Date: Tue, 21 Jul 2009 17:18:11 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Daniel Mack <daniel@caiaq.de>,
+	Tue, 21 Jul 2009 12:19:32 -0400
+Date: Tue, 21 Jul 2009 18:19:28 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
        Kernel development list <linux-kernel@vger.kernel.org>,
        USB list <linux-usb@vger.kernel.org>
 Subject: Re: [PATCH] [usb-serial] fix Ooops on uplug
-Message-ID: <20090721171811.278a2c62@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.44L0.0907211205420.2724-100000@iolanthe.rowland.org>
-References: <20090721170055.10cce812@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.0907211205420.2724-100000@iolanthe.rowland.org>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Message-ID: <20090721161928.GD13236@buzzloop.caiaq.de>
+References: <20090721004531.1036d9af@lxorguk.ukuu.org.uk> <Pine.LNX.4.44L0.0907211141180.2652-100000@iolanthe.rowland.org> <20090721171625.6e2c54e4@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090721171625.6e2c54e4@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009 12:11:39 -0400 (EDT)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+On Tue, Jul 21, 2009 at 05:16:25PM +0100, Alan Cox wrote:
+> > I got something similar with a pl2303 device, though not a crash.  I 
+> > plugged in the device, opened /dev/ttyUSB0, unplugged the device, then 
+> > tried to read from the open file descriptor.  The read provoked this:
+> 
+> That looks like it occurs after the read, however that trace shows the
+> close() method being called off sys_close() which in turn means a hang up
+> didn't occur when it was unplugged.
 
-> On Tue, 21 Jul 2009, Alan Cox wrote:
-> 
-> > > The problem is that freed resources are accessed, and that can lead to
-> > > any kind of strange kernel faults from crashing to other subsequent
-> > > errors.
-> > > 
-> > > Did you try my patch?
-> 
-> No.
-> 
-> > We've already established your patch is wrong. So trying it isn't at all
-> > helpful.
-> 
-> I'll take your word for it.  It will take some time to figure out 
-> exactly which buffers are getting used after they are freed, although 
-> the most likely is the usb_serial_port structure itself.
-> 
-> Let you know what I find...
+It was, at least in my case. Did some printk debugging and it showed
+that the hangup callback was entered what freed the serial device.
 
-On the tty side if you look in tty_io.c there is a define
+> > This is only a lockdep warning, and I don't understand its
+> > significance.  Even worse, when I plugged in a USB flash drive
+> > afterward this appeared:
+> 
+> Looks like something freed the resources but didn't hang up when the
+> disconnect occurred
 
-TTY_DEBUG_HANGUP
-
-which exists especially for these sorts of events..
+Probably the real fix would be to let the tty layer know the device died
+from the hangup handler.
 
