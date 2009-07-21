@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZGUQub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZGUQvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480AbZGUQub (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 12:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbZGUQu3
+	id S1755442AbZGUQvi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 12:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZGUQvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 12:50:29 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:49385 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754035AbZGUQu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 12:50:28 -0400
-Date: Tue, 21 Jul 2009 18:47:46 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: mchehab@infradead.org, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/media/dvb: Use dst_type field instead of type_flags
-Message-ID: <Pine.LNX.4.64.0907211847190.26529@ask.diku.dk>
+	Tue, 21 Jul 2009 12:51:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54245 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753017AbZGUQvh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 12:51:37 -0400
+Date: Tue, 21 Jul 2009 09:49:19 -0700
+From: Greg KH <greg@kroah.com>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Cc: jmorris@namei.org, sds@tycho.nsa.gov, casey@schaufler-ca.com,
+       ebiederm@xmission.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov
+Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on
+ sysfs files, directories, and symlinks.
+Message-ID: <20090721164919.GD14746@kroah.com>
+References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>
+ <1248193767.10726.21.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248193767.10726.21.camel@localhost>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Tue, Jul 21, 2009 at 12:29:27PM -0400, David P. Quigley wrote:
+> Its been almost a week and I haven't heard any additional feedback on
+> this patch. Are there any other complaints or should Greg take the
+> patch?
 
-It seems from other code that it is the dst_type field rather than the
-type_flags field that contains values of the form DST_TYPE_IS...
-The type_flags field contains values of the form DST_TYPE_HAS...
+Greg needs acks from Casey and others, like I stated before, before I
+will take the patch.
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+thanks,
 
-// <smpl>
-@@ struct dst_state E; @@
-
-(
-*E.type_flags == 
-  \( DST_TYPE_IS_SAT\|DST_TYPE_IS_TERR\|DST_TYPE_IS_CABLE\|DST_TYPE_IS_ATSC \)
-|
-*E.type_flags != 
-  \( DST_TYPE_IS_SAT\|DST_TYPE_IS_TERR\|DST_TYPE_IS_CABLE\|DST_TYPE_IS_ATSC \)
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/media/dvb/bt8xx/dst.c       |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/media/dvb/bt8xx/dst.c b/drivers/media/dvb/bt8xx/dst.c
-index fec1d77..91353a6 100644
---- a/drivers/media/dvb/bt8xx/dst.c
-+++ b/drivers/media/dvb/bt8xx/dst.c
-@@ -1059,7 +1059,7 @@ static int dst_get_tuner_info(struct dst_state *state)
- 		dprintk(verbose, DST_ERROR, 1, "DST type has TS=188");
- 	}
- 	if (state->board_info[0] == 0xbc) {
--		if (state->type_flags != DST_TYPE_IS_ATSC)
-+		if (state->dst_type != DST_TYPE_IS_ATSC)
- 			state->type_flags |= DST_TYPE_HAS_TS188;
- 		else
- 			state->type_flags |= DST_TYPE_HAS_NEWTUNE_2;
+greg k-h
