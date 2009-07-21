@@ -1,623 +1,756 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZGUOhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbZGUOip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754590AbZGUOhh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 10:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbZGUOhg
+	id S1754844AbZGUOip (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 10:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbZGUOim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 10:37:36 -0400
-Received: from mga02.intel.com ([134.134.136.20]:26300 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751158AbZGUOhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 10:37:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,240,1246863600"; 
-   d="scan'208";a="432035824"
-Date: Tue, 21 Jul 2009 15:56:48 +0200
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl
-Subject: [patch] x86, perf_counter, bts: add bts to perf_counter
-Message-ID: <20090721155648.A17047@sedona.ch.intel.com>
-Mime-Version: 1.0
+	Tue, 21 Jul 2009 10:38:42 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:51983 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746AbZGUOil (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 10:38:41 -0400
+Date: Tue, 21 Jul 2009 17:35:50 +0300
+From: Felipe Balbi <me@felipebalbi.com>
+To: Felipe Balbi <felipe.balbi@nokia.com>
+Cc: ext Artem Bityutskiy <dedekind1@gmail.com>,
+       Felipe Balbi <me@felipebalbi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 1/4] staging: cpc-usb: convert comment style in cpc.h
+Message-ID: <20090721143547.GA27121@gandalf>
+Reply-To: me@felipebalbi.com
+References: <1248180746-18140-1-git-send-email-me@felipebalbi.com>
+ <1248180746-18140-2-git-send-email-me@felipebalbi.com>
+ <4A65CF81.9070008@gmail.com>
+ <20090721142833.GA20401@nokia.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="zhXaljGHf11kAtnf"
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090721142833.GA20401@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement a performance counter with:
-    attr.type           = PERF_TYPE_HARDWARE
-    attr.config         = PERF_COUNT_HW_BRANCH_INSTRUCTIONS
-    attr.sample_period  = 1
 
-using branch trace store (BTS) on x86 hardware, if available.
+--zhXaljGHf11kAtnf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The from and to address for each branch can be sampled using:
-    PERF_SAMPLE_IP      for the from address
-    PERF_SAMPLE_ADDR    for the to address
+Hi,
 
+On Tue, Jul 21, 2009 at 05:28:33PM +0300, Felipe Balbi wrote:
+> Hi,
+> 
+> On Tue, Jul 21, 2009 at 04:24:01PM +0200, ext Artem Bityutskiy wrote:
+> > If you decided to clean this up, then how about using better
+> > commenting style documented in Documentation/CodingStyle?
+> > 
+> > Namely, Use
+> > /*
+> >   * blah
+> >   */
+> > 
+> > style.
+> > 
+> > Also, how about making sentences start from a capital letter,
+> > and re-format the whole comment better?
+> 
+> the patch is only about converting comment style and that's all. Any
+> other changes I left for other cleanup patches which are being cooked.
 
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+here's an updated version with comment style fixed up, though.
+
+-- 
+balbi
+
+--zhXaljGHf11kAtnf
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="0001-staging-cpc-usb-convert-comment-style-in-cpc.h.patch"
+
+>From 47f3a0a93d80013a7dd4c29990e47b64062f124a Mon Sep 17 00:00:00 2001
+From: Felipe Balbi <me@felipebalbi.com>
+Date: Tue, 21 Jul 2009 15:42:42 +0300
+Subject: [PATCH 1/4] staging: cpc-usb: convert comment style in cpc.h
+
+Signed-off-by: Felipe Balbi <me@felipebalbi.com>
 ---
- arch/x86/include/asm/perf_counter.h |   10 	10 +	0 -	0 !
- arch/x86/kernel/cpu/perf_counter.c  |  311 	305 +	6 -	0 !
- include/linux/perf_counter.h        |    2 	2 +	0 -	0 !
- kernel/perf_counter.c               |   10 	9 +	1 -	0 !
- 4 files changed, 326 insertions(+), 7 deletions(-)
+ drivers/staging/cpc-usb/cpc.h |  519 ++++++++++++++++++++---------------------
+ 2 files changed, 249 insertions(+), 271 deletions(-)
 
-Index: b/arch/x86/kernel/cpu/perf_counter.c
-===================================================================
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -6,6 +6,7 @@
-  *  Copyright (C) 2009 Jaswinder Singh Rajput
-  *  Copyright (C) 2009 Advanced Micro Devices, Inc., Robert Richter
-  *  Copyright (C) 2008-2009 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-+ *  Copyright (C) 2009 Intel Corporation, <markus.t.metzger@intel.com>
-  *
-  *  For licencing details see kernel-base/COPYING
-  */
-@@ -20,6 +21,7 @@
- #include <linux/sched.h>
- #include <linux/uaccess.h>
- #include <linux/highmem.h>
-+#include <linux/cpu.h>
+diff --git a/drivers/staging/cpc-usb/cpc.h b/drivers/staging/cpc-usb/cpc.h
+index ed8cb34..b2fda5d 100644
+--- a/drivers/staging/cpc-usb/cpc.h
++++ b/drivers/staging/cpc-usb/cpc.h
+@@ -10,243 +10,223 @@
+ #ifndef CPC_HEADER
+ #define CPC_HEADER
  
- #include <asm/apic.h>
- #include <asm/stacktrace.h>
-@@ -27,12 +29,42 @@
- 
- static u64 perf_counter_mask __read_mostly;
- 
-+/* The maximal number of PEBS counters: */
-+#define MAX_PEBS_COUNTERS	4
-+
-+/* The size of a BTS record in bytes: */
-+#define BTS_RECORD_SIZE		24
-+
-+/* The size of a per-cpu BTS buffer in bytes: */
-+#define BTS_BUFFER_SIZE		(BTS_RECORD_SIZE * 1024)
-+
-+/* The BTS overflow threshold in bytes from the end of the buffer: */
-+#define BTS_OVFL_TH		(BTS_RECORD_SIZE * 16)
-+
+-// the maximum length of the union members within a CPC_MSG
+-// this value can be defined by the customer, but has to be
+-// >= 64 bytes
+-// however, if not defined before, we set a length of 64 byte
 +/*
-+ * A debug store configuration.
-+ *
-+ * We only support architectures that use 64bit fields.
++ * the maximum length of the union members within a CPC_MSG
++ * this value can be defined by the customer, but has to be
++ * >= 64 bytes
++ * however, if not defined before, we set a length of 64 byte
 + */
-+struct debug_store {
-+	u64	bts_buffer_base;
-+	u64	bts_index;
-+	u64	bts_absolute_maximum;
-+	u64	bts_interrupt_threshold;
-+	u64	pebs_buffer_base;
-+	u64	pebs_index;
-+	u64	pebs_absolute_maximum;
-+	u64	pebs_interrupt_threshold;
-+	u64	pebs_counter_reset[MAX_PEBS_COUNTERS];
-+};
-+
- struct cpu_hw_counters {
- 	struct perf_counter	*counters[X86_PMC_IDX_MAX];
- 	unsigned long		used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	unsigned long		active_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	unsigned long		interrupts;
- 	int			enabled;
-+	struct debug_store	*ds;
- };
+ #if !defined(CPC_MSG_LEN) || (CPC_MSG_LEN < 64)
+ #undef CPC_MSG_LEN
+ #define CPC_MSG_LEN 64
+ #endif
  
- /*
-@@ -57,6 +89,8 @@ struct x86_pmu {
- 	u64		counter_mask;
- 	u64		max_period;
- 	u64		intel_ctrl;
-+	void		(*enable_bts)(u64 config);
-+	void		(*disable_bts)(void);
- };
- 
- static struct x86_pmu x86_pmu __read_mostly;
-@@ -576,6 +610,9 @@ x86_perf_counter_update(struct perf_coun
- 	u64 prev_raw_count, new_raw_count;
- 	s64 delta;
- 
-+	if (idx == X86_PMC_IDX_FIXED_BTS)
-+		return 0;
-+
- 	/*
- 	 * Careful: an NMI might modify the previous counter value.
- 	 *
-@@ -659,10 +696,108 @@ static void release_pmc_hardware(void)
- 		enable_lapic_nmi_watchdog();
- }
- 
-+static inline bool bts_available(void)
-+{
-+	return x86_pmu.enable_bts != NULL;
-+}
-+
-+static inline void init_debug_store_on_cpu(int cpu)
-+{
-+	struct debug_store *ds = per_cpu(cpu_hw_counters, cpu).ds;
-+
-+	if (!ds)
-+		return;
-+
-+	wrmsr_on_cpu(cpu, MSR_IA32_DS_AREA,
-+		     (u32)((u64)(long)ds), (u32)((u64)(long)ds >> 32));
-+}
-+
-+static inline void fini_debug_store_on_cpu(int cpu)
-+{
-+	if (!per_cpu(cpu_hw_counters, cpu).ds)
-+		return;
-+
-+	wrmsr_on_cpu(cpu, MSR_IA32_DS_AREA, 0, 0);
-+}
-+
-+static void release_bts_hardware(void)
-+{
-+	int cpu;
-+
-+	if (!bts_available())
-+		return;
-+
-+	get_online_cpus();
-+
-+	for_each_online_cpu(cpu)
-+		fini_debug_store_on_cpu(cpu);
-+
-+	for_each_possible_cpu(cpu) {
-+		struct debug_store *ds = per_cpu(cpu_hw_counters, cpu).ds;
-+
-+		if (!ds)
-+			continue;
-+
-+		per_cpu(cpu_hw_counters, cpu).ds = NULL;
-+
-+		kfree((void *)(long)ds->bts_buffer_base);
-+		kfree(ds);
-+	}
-+
-+	put_online_cpus();
-+}
-+
-+static int reserve_bts_hardware(void)
-+{
-+	int cpu, err = 0;
-+
-+	if (!bts_available())
-+		return -EOPNOTSUPP;
-+
-+	get_online_cpus();
-+
-+	for_each_possible_cpu(cpu) {
-+		struct debug_store *ds;
-+		void *buffer;
-+
-+		err = -ENOMEM;
-+		buffer = kzalloc(BTS_BUFFER_SIZE, GFP_KERNEL);
-+		if (unlikely(!buffer))
-+			break;
-+
-+		ds = kzalloc(sizeof(*ds), GFP_KERNEL);
-+		if (unlikely(!ds)) {
-+			kfree(buffer);
-+			break;
-+		}
-+
-+		ds->bts_buffer_base = (u64)(long)buffer;
-+		ds->bts_index = ds->bts_buffer_base;
-+		ds->bts_absolute_maximum =
-+			ds->bts_buffer_base + BTS_BUFFER_SIZE;
-+		ds->bts_interrupt_threshold =
-+			ds->bts_absolute_maximum - BTS_OVFL_TH;
-+
-+		per_cpu(cpu_hw_counters, cpu).ds = ds;
-+		err = 0;
-+	}
-+
-+	if (err)
-+		release_bts_hardware();
-+	else
-+		for_each_online_cpu(cpu)
-+			init_debug_store_on_cpu(cpu);
-+
-+	put_online_cpus();
-+
-+	return err;
-+}
-+
- static void hw_perf_counter_destroy(struct perf_counter *counter)
- {
- 	if (atomic_dec_and_mutex_lock(&active_counters, &pmc_reserve_mutex)) {
- 		release_pmc_hardware();
-+		release_bts_hardware();
- 		mutex_unlock(&pmc_reserve_mutex);
- 	}
- }
-@@ -705,6 +840,42 @@ set_ext_hw_attr(struct hw_perf_counter *
- 	return 0;
- }
- 
-+static void intel_pmu_enable_bts(u64 config)
-+{
-+	unsigned long debugctlmsr;
-+
-+	debugctlmsr = get_debugctlmsr();
-+
-+	debugctlmsr |= (1 << 6);
-+	debugctlmsr |= (1 << 7);
-+
-+	if (!(config & ARCH_PERFMON_EVENTSEL_OS))
-+		debugctlmsr |= (1 << 9);
-+
-+	if (!(config & ARCH_PERFMON_EVENTSEL_USR))
-+		debugctlmsr |= (1 << 10);
-+
-+	update_debugctlmsr(debugctlmsr);
-+}
-+
-+static void intel_pmu_disable_bts(void)
-+{
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+	unsigned long debugctlmsr;
-+
-+	if (!cpuc->ds)
-+		return;
-+
-+	debugctlmsr = get_debugctlmsr();
-+
-+	debugctlmsr &= ~(1 << 6);
-+	debugctlmsr &= ~(1 << 7);
-+	debugctlmsr &= ~(1 << 9);
-+	debugctlmsr &= ~(1 << 10);
-+
-+	update_debugctlmsr(debugctlmsr);
-+}
-+
- /*
-  * Setup the hardware configuration for a given attr_type
-  */
-@@ -721,9 +892,13 @@ static int __hw_perf_counter_init(struct
- 	err = 0;
- 	if (!atomic_inc_not_zero(&active_counters)) {
- 		mutex_lock(&pmc_reserve_mutex);
--		if (atomic_read(&active_counters) == 0 && !reserve_pmc_hardware())
--			err = -EBUSY;
--		else
-+		if (atomic_read(&active_counters) == 0) {
-+			if (!reserve_pmc_hardware())
-+				err = -EBUSY;
-+			else
-+				reserve_bts_hardware();
-+		}
-+		if (!err)
- 			atomic_inc(&active_counters);
- 		mutex_unlock(&pmc_reserve_mutex);
- 	}
-@@ -801,7 +976,18 @@ static void p6_pmu_disable_all(void)
- 
- static void intel_pmu_disable_all(void)
- {
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+
-+	if (!cpuc->enabled)
-+		return;
-+
-+	cpuc->enabled = 0;
-+	barrier();
-+
- 	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, 0);
-+
-+	if (test_bit(X86_PMC_IDX_FIXED_BTS, cpuc->active_mask))
-+		intel_pmu_disable_bts();
- }
- 
- static void amd_pmu_disable_all(void)
-@@ -859,7 +1045,25 @@ static void p6_pmu_enable_all(void)
- 
- static void intel_pmu_enable_all(void)
- {
-+	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-+
-+	if (cpuc->enabled)
-+		return;
-+
-+	cpuc->enabled = 1;
-+	barrier();
-+
- 	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, x86_pmu.intel_ctrl);
-+
-+	if (test_bit(X86_PMC_IDX_FIXED_BTS, cpuc->active_mask)) {
-+		struct perf_counter *counter =
-+			cpuc->counters[X86_PMC_IDX_FIXED_BTS];
-+
-+		if (WARN_ON_ONCE(!counter))
-+			return;
-+
-+		intel_pmu_enable_bts(counter->hw.config);
-+	}
- }
- 
- static void amd_pmu_enable_all(void)
-@@ -946,6 +1150,11 @@ p6_pmu_disable_counter(struct hw_perf_co
- static inline void
- intel_pmu_disable_counter(struct hw_perf_counter *hwc, int idx)
- {
-+	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+		intel_pmu_disable_bts();
-+		return;
-+	}
-+
- 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
- 		intel_pmu_disable_fixed(hwc, idx);
- 		return;
-@@ -974,6 +1183,9 @@ x86_perf_counter_set_period(struct perf_
- 	s64 period = hwc->sample_period;
- 	int err, ret = 0;
- 
-+	if (idx == X86_PMC_IDX_FIXED_BTS)
-+		return 0;
-+
- 	/*
- 	 * If we are way outside a reasoable range then just skip forward:
- 	 */
-@@ -1056,6 +1268,14 @@ static void p6_pmu_enable_counter(struct
- 
- static void intel_pmu_enable_counter(struct hw_perf_counter *hwc, int idx)
- {
-+	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+		if (!__get_cpu_var(cpu_hw_counters).enabled)
-+			return;
-+
-+		intel_pmu_enable_bts(hwc->config);
-+		return;
-+	}
-+
- 	if (unlikely(hwc->config_base == MSR_ARCH_PERFMON_FIXED_CTR_CTRL)) {
- 		intel_pmu_enable_fixed(hwc, idx);
- 		return;
-@@ -1077,11 +1297,16 @@ fixed_mode_idx(struct perf_counter *coun
- {
- 	unsigned int event;
- 
-+	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
-+
-+	if (unlikely((event ==
-+		      x86_pmu.event_map(PERF_COUNT_HW_BRANCH_INSTRUCTIONS)) &&
-+		     (hwc->sample_period == 1)))
-+		return X86_PMC_IDX_FIXED_BTS;
-+
- 	if (!x86_pmu.num_counters_fixed)
- 		return -1;
- 
--	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
+-// check the operating system used
+-#ifdef _WIN32 // running a Windows OS
 -
- 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_INSTRUCTIONS)))
- 		return X86_PMC_IDX_FIXED_INSTRUCTIONS;
- 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_CPU_CYCLES)))
-@@ -1102,7 +1327,25 @@ static int x86_pmu_enable(struct perf_co
- 	int idx;
- 
- 	idx = fixed_mode_idx(counter, hwc);
--	if (idx >= 0) {
-+	if (idx == X86_PMC_IDX_FIXED_BTS) {
-+		/*
-+		 * Try to use BTS for branch tracing. If that is not
-+		 * available, try to get a generic counter.
-+		 */
-+		if (unlikely(!cpuc->ds))
-+			goto try_generic;
-+
-+		/*
-+		 * Try to get the fixed counter, if that is already taken
-+		 * then try to get a generic counter:
-+		 */
-+		if (test_and_set_bit(idx, cpuc->used_mask))
-+			goto try_generic;
-+
-+		hwc->config_base	= 0;
-+		hwc->counter_base	= 0;
-+		hwc->idx		= idx;
-+	} else if (idx >= 0) {
- 		/*
- 		 * Try to get the fixed counter, if that is already taken
- 		 * then try to get a generic counter:
-@@ -1213,6 +1456,42 @@ void perf_counter_print_debug(void)
- 	local_irq_restore(flags);
- }
- 
-+static void intel_pmu_drain_bts_buffer(struct cpu_hw_counters *cpuc,
-+				       struct perf_sample_data *data)
-+{
-+	struct debug_store *ds = cpuc->ds;
-+	struct bts_record {
-+		u64	from;
-+		u64	to;
-+		u64	flags;
-+	};
-+	struct perf_counter *counter = cpuc->counters[X86_PMC_IDX_FIXED_BTS];
-+	unsigned long orig_ip = data->regs->ip;
-+	u64 at;
-+
-+	if (!counter)
-+		return;
-+
-+	if (!ds)
-+		return;
-+
-+	for (at = ds->bts_buffer_base;
-+	     at < ds->bts_index;
-+	     at += sizeof(struct bts_record)) {
-+		struct bts_record *rec = (struct bts_record *)(long)at;
-+
-+		data->regs->ip	= rec->from;
-+		data->addr	= rec->to;
-+
-+		perf_counter_output(counter, 1, data);
-+	}
-+
-+	ds->bts_index = ds->bts_buffer_base;
-+
-+	data->regs->ip	= orig_ip;
-+	data->addr	= 0;
-+}
-+
- static void x86_pmu_disable(struct perf_counter *counter)
- {
- 	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-@@ -1237,6 +1516,15 @@ static void x86_pmu_disable(struct perf_
- 	 * that we are disabling:
- 	 */
- 	x86_perf_counter_update(counter, hwc, idx);
-+
-+	/* Drain the remaining BTS records. */
-+	if (unlikely(idx == X86_PMC_IDX_FIXED_BTS)) {
-+		struct perf_sample_data data;
-+		struct pt_regs regs;
-+
-+		data.regs = &regs;
-+		intel_pmu_drain_bts_buffer(cpuc, &data);
-+	}
- 	cpuc->counters[idx] = NULL;
- 	clear_bit(idx, cpuc->used_mask);
- 
-@@ -1264,6 +1552,7 @@ static int intel_pmu_save_and_restart(st
- 
- static void intel_pmu_reset(void)
- {
-+	struct debug_store *ds = __get_cpu_var(cpu_hw_counters).ds;
- 	unsigned long flags;
- 	int idx;
- 
-@@ -1281,6 +1570,8 @@ static void intel_pmu_reset(void)
- 	for (idx = 0; idx < x86_pmu.num_counters_fixed; idx++) {
- 		checking_wrmsrl(MSR_ARCH_PERFMON_FIXED_CTR0 + idx, 0ull);
- 	}
-+	if (ds)
-+		ds->bts_index = ds->bts_buffer_base;
- 
- 	local_irq_restore(flags);
- }
-@@ -1346,6 +1637,7 @@ static int intel_pmu_handle_irq(struct p
- 	cpuc = &__get_cpu_var(cpu_hw_counters);
- 
- 	perf_disable();
-+	intel_pmu_drain_bts_buffer(cpuc, &data);
- 	status = intel_pmu_get_status();
- 	if (!status) {
- 		perf_enable();
-@@ -1547,6 +1839,8 @@ static struct x86_pmu intel_pmu = {
- 	 * the generic counter period:
- 	 */
- 	.max_period		= (1ULL << 31) - 1,
-+	.enable_bts		= intel_pmu_enable_bts,
-+	.disable_bts		= intel_pmu_disable_bts,
- };
- 
- static struct x86_pmu amd_pmu = {
-@@ -1938,3 +2232,8 @@ struct perf_callchain_entry *perf_callch
- 
- 	return entry;
- }
-+
-+void hw_perf_counter_setup_online(int cpu)
-+{
-+	init_debug_store_on_cpu(cpu);
-+}
-Index: b/include/linux/perf_counter.h
-===================================================================
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -681,6 +681,8 @@ struct perf_sample_data {
- 
- extern int perf_counter_overflow(struct perf_counter *counter, int nmi,
- 				 struct perf_sample_data *data);
-+extern void perf_counter_output(struct perf_counter *counter, int nmi,
-+				struct perf_sample_data *data);
- 
- /*
-  * Return 1 for a software counter, 0 for a hardware counter
-Index: b/kernel/perf_counter.c
-===================================================================
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -87,6 +87,7 @@ void __weak hw_perf_disable(void)		{ bar
- void __weak hw_perf_enable(void)		{ barrier(); }
- 
- void __weak hw_perf_counter_setup(int cpu)	{ barrier(); }
-+void __weak hw_perf_counter_setup_online(int cpu)	{ barrier(); }
- 
- int __weak
- hw_perf_group_sched_in(struct perf_counter *group_leader,
-@@ -2606,7 +2607,7 @@ static u32 perf_counter_tid(struct perf_
- 	return task_pid_nr_ns(p, counter->ns);
- }
- 
--static void perf_counter_output(struct perf_counter *counter, int nmi,
-+void perf_counter_output(struct perf_counter *counter, int nmi,
- 				struct perf_sample_data *data)
- {
- 	int ret;
-@@ -4491,6 +4492,11 @@ perf_cpu_notify(struct notifier_block *s
- 		perf_counter_init_cpu(cpu);
- 		break;
- 
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		hw_perf_counter_setup_online(cpu);
-+		break;
-+
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
- 		perf_counter_exit_cpu(cpu);
-@@ -4515,6 +4521,8 @@ void __init perf_counter_init(void)
- {
- 	perf_cpu_notify(&perf_cpu_nb, (unsigned long)CPU_UP_PREPARE,
- 			(void *)(long)smp_processor_id());
-+	perf_cpu_notify(&perf_cpu_nb, (unsigned long)CPU_ONLINE,
-+			(void *)(long)smp_processor_id());
- 	register_cpu_notifier(&perf_cpu_nb);
- }
- 
-Index: b/arch/x86/include/asm/perf_counter.h
-===================================================================
---- a/arch/x86/include/asm/perf_counter.h
-+++ b/arch/x86/include/asm/perf_counter.h
-@@ -84,6 +84,16 @@ union cpuid10_edx {
- #define MSR_ARCH_PERFMON_FIXED_CTR2			0x30b
- #define X86_PMC_IDX_FIXED_BUS_CYCLES			(X86_PMC_IDX_FIXED + 2)
- 
+-// define basic types on Windows platforms
+-#ifdef _MSC_VER // Visual Studio
+-	typedef unsigned __int8 u8;
+-	typedef unsigned __int16 u16;
+-	typedef unsigned __int32 u32;
+-#else // Borland Compiler
+-	typedef unsigned char u8;
+-	typedef unsigned short u16;
+-	typedef unsigned int u32;
+-#endif
+-	// on Windows OS we use a byte alignment of 1
+-	#pragma pack(push, 1)
+-
+-	// set the calling conventions for the library function calls
+-	#define CALL_CONV __stdcall
+-#else
+-	// Kernel headers already define this types
+-	#ifndef __KERNEL__
+-		// define basic types
+-		typedef unsigned char u8;
+-		typedef unsigned short u16;
+-		typedef unsigned int u32;
+-	#endif
+-
+-	// Linux does not use this calling convention
+-	#define CALL_CONV
+-#endif
+-
+-// Transmission of events from CPC interfaces to PC can be individually
+-// controlled per event type. Default state is: don't transmit
+-// Control values are constructed by bit-or of Subject and Action
+-// and passed to CPC_Control()
 +/*
-+ * We model BTS tracing as another fixed-mode PMC.
-+ *
-+ * We choose a value in the middle of the fixed counter range, since lower
-+ * values are used by actual fixed counters and higher values are used
-+ * to indicate other overflow conditions in the PERF_GLOBAL_STATUS msr.
++ * Transmission of events from CPC interfaces to PC can be individually
++ * controlled per event type. Default state is: don't transmit
++ * Control values are constructed by bit-or of Subject and Action
++ * and passed to CPC_Control()
 + */
-+#define X86_PMC_IDX_FIXED_BTS				(X86_PMC_IDX_FIXED + 16)
+ 
+-// Control-Values for CPC_Control() Command Subject Selection
++/* Control-Values for CPC_Control() Command Subject Selection */
+ #define CONTR_CAN_Message 0x04
+ #define CONTR_Busload	  0x08
+ #define	CONTR_CAN_State	  0x0C
+ #define	CONTR_SendAck	  0x10
+ #define	CONTR_Filter	  0x14
+-#define CONTR_CmdQueue    0x18	// reserved, do not use
++#define CONTR_CmdQueue    0x18	/* reserved, do not use */
+ #define CONTR_BusError    0x1C
+ 
+-// Control Command Actions
++/* Control Command Actions */
+ #define CONTR_CONT_OFF    0
+ #define CONTR_CONT_ON     1
+ #define CONTR_SING_ON     2
+-// CONTR_SING_ON doesn't change CONTR_CONT_ON state, so it should be
+-// read as: transmit at least once
++/*
++ * CONTR_SING_ON doesn't change CONTR_CONT_ON state, so it should be
++ * read as: transmit at least once
++ */
+ 
+-// defines for confirmed request
++/* defines for confirmed request */
+ #define DO_NOT_CONFIRM 0
+ #define DO_CONFIRM     1
+ 
+-// event flags
++/* event flags */
+ #define EVENT_READ 0x01
+ #define EVENT_WRITE 0x02
+ 
+-// Messages from CPC to PC contain a message object type field.
+-// The following message types are sent by CPC and can be used in
+-// handlers, others should be ignored.
+-#define CPC_MSG_T_RESYNC        0 // Normally to be ignored
+-#define CPC_MSG_T_CAN           1 // CAN data frame
+-#define CPC_MSG_T_BUSLOAD       2 // Busload message
+-#define CPC_MSG_T_STRING        3 // Normally to be ignored
+-#define CPC_MSG_T_CONTI         4 // Normally to be ignored
+-#define CPC_MSG_T_MEM           7 // Normally not to be handled
+-#define	CPC_MSG_T_RTR           8 // CAN remote frame
+-#define CPC_MSG_T_TXACK	        9 // Send acknowledge
+-#define CPC_MSG_T_POWERUP      10 // Power-up message
+-#define	CPC_MSG_T_CMD_NO       11 // Normally to be ignored
+-#define	CPC_MSG_T_CAN_PRMS     12 // Actual CAN parameters
+-#define	CPC_MSG_T_ABORTED      13 // Command aborted message
+-#define	CPC_MSG_T_CANSTATE     14 // CAN state message
+-#define CPC_MSG_T_RESET        15 // used to reset CAN-Controller
+-#define	CPC_MSG_T_XCAN         16 // XCAN data frame
+-#define CPC_MSG_T_XRTR         17 // XCAN remote frame
+-#define CPC_MSG_T_INFO         18 // information strings
+-#define CPC_MSG_T_CONTROL      19 // used for control of interface/driver behaviour
+-#define CPC_MSG_T_CONFIRM      20 // response type for confirmed requests
+-#define CPC_MSG_T_OVERRUN      21 // response type for overrun conditions
+-#define CPC_MSG_T_KEEPALIVE    22 // response type for keep alive conditions
+-#define CPC_MSG_T_CANERROR     23 // response type for bus error conditions
+-#define CPC_MSG_T_DISCONNECTED 24 // response type for a disconnected interface
+-#define CPC_MSG_T_ERR_COUNTER  25 // RX/TX error counter of CAN controller
+-
+-#define CPC_MSG_T_FIRMWARE    100 // response type for USB firmware download
+-
+-// Messages from the PC to the CPC interface contain a command field
+-// Most of the command types are wrapped by the library functions and have therefore
+-// normally not to be used.
+-// However, programmers who wish to circumvent the library and talk directly
+-// to the drivers (mainly Linux programmers) can use the following
+-// command types:
+-
+-#define CPC_CMD_T_CAN                 1	// CAN data frame
+-#define CPC_CMD_T_CONTROL             3	// used for control of interface/driver behaviour
+-#define	CPC_CMD_T_CAN_PRMS            6	// set CAN parameters
+-#define	CPC_CMD_T_CLEARBUF            8	// clears input queue; this is depricated, use CPC_CMD_T_CLEAR_MSG_QUEUE instead
+-#define	CPC_CMD_T_INQ_CAN_PARMS      11	// inquire actual CAN parameters
+-#define	CPC_CMD_T_FILTER_PRMS        12	// set filter parameter
+-#define	CPC_CMD_T_RTR                13	// CAN remote frame
+-#define	CPC_CMD_T_CANSTATE           14	// CAN state message
+-#define	CPC_CMD_T_XCAN               15	// XCAN data frame
+-#define CPC_CMD_T_XRTR               16	// XCAN remote frame
+-#define CPC_CMD_T_RESET              17	// used to reset CAN-Controller
+-#define CPC_CMD_T_INQ_INFO           18	// miscellanous information strings
+-#define CPC_CMD_T_OPEN_CHAN          19	// open a channel
+-#define CPC_CMD_T_CLOSE_CHAN         20	// close a channel
+-#define CPC_CMD_T_CNTBUF             21	// this is depricated, use CPC_CMD_T_INQ_MSG_QUEUE_CNT instead
+-#define CPC_CMD_T_CAN_EXIT          200 // exit the CAN (disable interrupts; reset bootrate; reset output_cntr; mode = 1)
+-
+-#define CPC_CMD_T_INQ_MSG_QUEUE_CNT  CPC_CMD_T_CNTBUF   // inquires the count of elements in the message queue
+-#define CPC_CMD_T_INQ_ERR_COUNTER    25	                // request the CAN controllers error counter
+-#define	CPC_CMD_T_CLEAR_MSG_QUEUE    CPC_CMD_T_CLEARBUF // clear CPC_MSG queue
+-#define	CPC_CMD_T_CLEAR_CMD_QUEUE    28	                // clear CPC_CMD queue
+-#define CPC_CMD_T_FIRMWARE          100                 // reserved, must not be used
+-#define CPC_CMD_T_USB_RESET         101                 // reserved, must not be used
+-#define CPC_CMD_T_WAIT_NOTIFY       102                 // reserved, must not be used
+-#define CPC_CMD_T_WAIT_SETUP        103                 // reserved, must not be used
+-#define	CPC_CMD_T_ABORT             255                 // Normally not to be used
+-
+-// definitions for CPC_MSG_T_INFO
+-// information sources
++/*
++ * Messages from CPC to PC contain a message object type field.
++ * The following message types are sent by CPC and can be used in
++ * handlers, others should be ignored.
++ */
++#define CPC_MSG_T_RESYNC        0 /* Normally to be ignored */
++#define CPC_MSG_T_CAN           1 /* CAN data frame */
++#define CPC_MSG_T_BUSLOAD       2 /* Busload message */
++#define CPC_MSG_T_STRING        3 /* Normally to be ignored */
++#define CPC_MSG_T_CONTI         4 /* Normally to be ignored */
++#define CPC_MSG_T_MEM           7 /* Normally not to be handled */
++#define	CPC_MSG_T_RTR           8 /* CAN remote frame */
++#define CPC_MSG_T_TXACK	        9 /* Send acknowledge */
++#define CPC_MSG_T_POWERUP      10 /* Power-up message */
++#define	CPC_MSG_T_CMD_NO       11 /* Normally to be ignored */
++#define	CPC_MSG_T_CAN_PRMS     12 /* Actual CAN parameters */
++#define	CPC_MSG_T_ABORTED      13 /* Command aborted message */
++#define	CPC_MSG_T_CANSTATE     14 /* CAN state message */
++#define CPC_MSG_T_RESET        15 /* used to reset CAN-Controller */
++#define	CPC_MSG_T_XCAN         16 /* XCAN data frame */
++#define CPC_MSG_T_XRTR         17 /* XCAN remote frame */
++#define CPC_MSG_T_INFO         18 /* information strings */
++#define CPC_MSG_T_CONTROL      19 /* used for control of interface/driver behaviour */
++#define CPC_MSG_T_CONFIRM      20 /* response type for confirmed requests */
++#define CPC_MSG_T_OVERRUN      21 /* response type for overrun conditions */
++#define CPC_MSG_T_KEEPALIVE    22 /* response type for keep alive conditions */
++#define CPC_MSG_T_CANERROR     23 /* response type for bus error conditions */
++#define CPC_MSG_T_DISCONNECTED 24 /* response type for a disconnected interface */
++#define CPC_MSG_T_ERR_COUNTER  25 /* RX/TX error counter of CAN controller */
 +
++#define CPC_MSG_T_FIRMWARE    100 /* response type for USB firmware download */
 +
- #ifdef CONFIG_PERF_COUNTERS
- extern void init_hw_perf_counters(void);
- extern void perf_counters_lapic_init(void);
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
++/*
++ * Messages from the PC to the CPC interface contain a command field
++ * Most of the command types are wrapped by the library functions and have therefore
++ * normally not to be used.
++ * However, programmers who wish to circumvent the library and talk directly
++ * to the drivers (mainly Linux programmers) can use the following
++ * command types:
++ */
++#define CPC_CMD_T_CAN                 1	/* CAN data frame */
++#define CPC_CMD_T_CONTROL             3	/* used for control of interface/driver behaviour */
++#define	CPC_CMD_T_CAN_PRMS            6	/* set CAN parameters */
++#define	CPC_CMD_T_CLEARBUF            8	/* clears input queue; this is depricated, use CPC_CMD_T_CLEAR_MSG_QUEUE instead */
++#define	CPC_CMD_T_INQ_CAN_PARMS      11	/* inquire actual CAN parameters */
++#define	CPC_CMD_T_FILTER_PRMS        12	/* set filter parameter */
++#define	CPC_CMD_T_RTR                13	/* CAN remote frame */
++#define	CPC_CMD_T_CANSTATE           14	/* CAN state message */
++#define	CPC_CMD_T_XCAN               15	/* XCAN data frame */
++#define CPC_CMD_T_XRTR               16	/* XCAN remote frame */
++#define CPC_CMD_T_RESET              17	/* used to reset CAN-Controller */
++#define CPC_CMD_T_INQ_INFO           18	/* miscellanous information strings */
++#define CPC_CMD_T_OPEN_CHAN          19	/* open a channel */
++#define CPC_CMD_T_CLOSE_CHAN         20	/* close a channel */
++#define CPC_CMD_T_CNTBUF             21	/* this is depricated, use CPC_CMD_T_INQ_MSG_QUEUE_CNT instead */
++#define CPC_CMD_T_CAN_EXIT          200 /* exit the CAN (disable interrupts; reset bootrate; reset output_cntr; mode = 1) */
++
++#define CPC_CMD_T_INQ_MSG_QUEUE_CNT  CPC_CMD_T_CNTBUF   /* inquires the count of elements in the message queue */
++#define CPC_CMD_T_INQ_ERR_COUNTER    25	                /* request the CAN controllers error counter */
++#define	CPC_CMD_T_CLEAR_MSG_QUEUE    CPC_CMD_T_CLEARBUF /* clear CPC_MSG queue */
++#define	CPC_CMD_T_CLEAR_CMD_QUEUE    28	                /* clear CPC_CMD queue */
++#define CPC_CMD_T_FIRMWARE          100                 /* reserved, must not be used */
++#define CPC_CMD_T_USB_RESET         101                 /* reserved, must not be used */
++#define CPC_CMD_T_WAIT_NOTIFY       102                 /* reserved, must not be used */
++#define CPC_CMD_T_WAIT_SETUP        103                 /* reserved, must not be used */
++#define	CPC_CMD_T_ABORT             255                 /* Normally not to be used */
++
++/* definitions for CPC_MSG_T_INFO information sources */
+ #define CPC_INFOMSG_T_UNKNOWN_SOURCE 0
+ #define CPC_INFOMSG_T_INTERFACE      1
+ #define CPC_INFOMSG_T_DRIVER         2
+ #define CPC_INFOMSG_T_LIBRARY        3
+ 
+-// information types
++/* information types */
+ #define CPC_INFOMSG_T_UNKNOWN_TYPE   0
+ #define CPC_INFOMSG_T_VERSION        1
+ #define CPC_INFOMSG_T_SERIAL         2
+ 
+-// definitions for controller types
+-#define PCA82C200   1 // Philips basic CAN controller, replaced by SJA1000
+-#define SJA1000     2 // Philips basic CAN controller
+-#define AN82527     3 // Intel full CAN controller
+-#define M16C_BASIC  4 // M16C controller running in basic CAN (not full CAN) mode
+-
+-// channel open error codes
+-#define CPC_ERR_NO_FREE_CHANNEL            -1	// no more free space within the channel array
+-#define CPC_ERR_CHANNEL_ALREADY_OPEN       -2	// the channel is already open
+-#define CPC_ERR_CHANNEL_NOT_ACTIVE         -3	// access to a channel not active failed
+-#define CPC_ERR_NO_DRIVER_PRESENT          -4	// no driver at the location searched by the library
+-#define CPC_ERR_NO_INIFILE_PRESENT         -5	// the library could not find the inifile
+-#define CPC_ERR_WRONG_PARAMETERS           -6	// wrong parameters in the inifile
+-#define CPC_ERR_NO_INTERFACE_PRESENT       -7	// 1. The specified interface is not connected
+-						// 2. The interface (mostly CPC-USB) was disconnected upon operation
+-#define CPC_ERR_NO_MATCHING_CHANNEL        -8	// the driver couldn't find a matching channel
+-#define CPC_ERR_NO_BUFFER_AVAILABLE        -9	// the driver couldn't allocate buffer for messages
+-#define CPC_ERR_NO_INTERRUPT               -10	// the requested interrupt couldn't be claimed
+-#define CPC_ERR_NO_MATCHING_INTERFACE      -11	// no interface type related to this channel was found
+-#define CPC_ERR_NO_RESOURCES               -12	// the requested resources could not be claimed
+-#define CPC_ERR_SOCKET                     -13	// error concerning TCP sockets
+-
+-// init error codes
+-#define CPC_ERR_WRONG_CONTROLLER_TYPE      -14	// wrong CAN controller type within initialization
+-#define CPC_ERR_NO_RESET_MODE              -15	// the controller could not be set into reset mode
+-#define CPC_ERR_NO_CAN_ACCESS              -16	// the CAN controller could not be accessed
+-
+-// transmit error codes
+-#define CPC_ERR_CAN_WRONG_ID               -20	// the provided CAN id is too big
+-#define CPC_ERR_CAN_WRONG_LENGTH           -21	// the provided CAN length is too long
+-#define CPC_ERR_CAN_NO_TRANSMIT_BUF        -22	// the transmit buffer was occupied
+-#define CPC_ERR_CAN_TRANSMIT_TIMEOUT       -23	// The message could not be sent within a
+-						// specified time
+-
+-// other error codes
+-#define CPC_ERR_SERVICE_NOT_SUPPORTED      -30	// the requested service is not supported by the interface
+-#define CPC_ERR_IO_TRANSFER                -31	// a transmission error down to the driver occurred
+-#define CPC_ERR_TRANSMISSION_FAILED        -32	// a transmission error down to the interface occurred
+-#define CPC_ERR_TRANSMISSION_TIMEOUT       -33	// a timeout occurred within transmission to the interface
+-#define CPC_ERR_OP_SYS_NOT_SUPPORTED       -35	// the operating system is not supported
+-#define CPC_ERR_UNKNOWN                    -40	// an unknown error ocurred (mostly IOCTL errors)
+-
+-#define CPC_ERR_LOADING_DLL                -50	// the library 'cpcwin.dll' could not be loaded
+-#define CPC_ERR_ASSIGNING_FUNCTION         -51	// the specified function could not be assigned
+-#define CPC_ERR_DLL_INITIALIZATION         -52	// the DLL was not initialized correctly
+-#define CPC_ERR_MISSING_LICFILE            -55	// the file containing the licenses does not exist
+-#define CPC_ERR_MISSING_LICENSE            -56	// a required license was not found
+-
+-// CAN state bit values. Ignore any bits not listed
++/* definitions for controller types */
++#define PCA82C200   1 /* Philips basic CAN controller, replaced by SJA1000 */
++#define SJA1000     2 /* Philips basic CAN controller */
++#define AN82527     3 /* Intel full CAN controller */
++#define M16C_BASIC  4 /* M16C controller running in basic CAN (not full CAN) mode */
++
++/* channel open error codes */
++#define CPC_ERR_NO_FREE_CHANNEL            -1	/* no more free space within the channel array */
++#define CPC_ERR_CHANNEL_ALREADY_OPEN       -2	/* the channel is already open */
++#define CPC_ERR_CHANNEL_NOT_ACTIVE         -3	/* access to a channel not active failed */
++#define CPC_ERR_NO_DRIVER_PRESENT          -4	/* no driver at the location searched by the library */
++#define CPC_ERR_NO_INIFILE_PRESENT         -5	/* the library could not find the inifile */
++#define CPC_ERR_WRONG_PARAMETERS           -6	/* wrong parameters in the inifile */
++#define CPC_ERR_NO_INTERFACE_PRESENT       -7	/* 1. The specified interface is not connected */
++						/* 2. The interface (mostly CPC-USB) was disconnected upon operation */
++#define CPC_ERR_NO_MATCHING_CHANNEL        -8	/* the driver couldn't find a matching channel */
++#define CPC_ERR_NO_BUFFER_AVAILABLE        -9	/* the driver couldn't allocate buffer for messages */
++#define CPC_ERR_NO_INTERRUPT               -10	/* the requested interrupt couldn't be claimed */
++#define CPC_ERR_NO_MATCHING_INTERFACE      -11	/* no interface type related to this channel was found */
++#define CPC_ERR_NO_RESOURCES               -12	/* the requested resources could not be claimed */
++#define CPC_ERR_SOCKET                     -13	/* error concerning TCP sockets */
++
++/* init error codes */
++#define CPC_ERR_WRONG_CONTROLLER_TYPE      -14	/* wrong CAN controller type within initialization */
++#define CPC_ERR_NO_RESET_MODE              -15	/* the controller could not be set into reset mode */
++#define CPC_ERR_NO_CAN_ACCESS              -16	/* the CAN controller could not be accessed */
++
++/* transmit error codes */
++#define CPC_ERR_CAN_WRONG_ID               -20	/* the provided CAN id is too big */
++#define CPC_ERR_CAN_WRONG_LENGTH           -21	/* the provided CAN length is too long */
++#define CPC_ERR_CAN_NO_TRANSMIT_BUF        -22	/* the transmit buffer was occupied */
++#define CPC_ERR_CAN_TRANSMIT_TIMEOUT       -23	/* The message could not be sent within a */
++						/* specified time */
++
++/* other error codes */
++#define CPC_ERR_SERVICE_NOT_SUPPORTED      -30	/* the requested service is not supported by the interface */
++#define CPC_ERR_IO_TRANSFER                -31	/* a transmission error down to the driver occurred */
++#define CPC_ERR_TRANSMISSION_FAILED        -32	/* a transmission error down to the interface occurred */
++#define CPC_ERR_TRANSMISSION_TIMEOUT       -33	/* a timeout occurred within transmission to the interface */
++#define CPC_ERR_OP_SYS_NOT_SUPPORTED       -35	/* the operating system is not supported */
++#define CPC_ERR_UNKNOWN                    -40	/* an unknown error ocurred (mostly IOCTL errors) */
++
++#define CPC_ERR_LOADING_DLL                -50	/* the library 'cpcwin.dll' could not be loaded */
++#define CPC_ERR_ASSIGNING_FUNCTION         -51	/* the specified function could not be assigned */
++#define CPC_ERR_DLL_INITIALIZATION         -52	/* the DLL was not initialized correctly */
++#define CPC_ERR_MISSING_LICFILE            -55	/* the file containing the licenses does not exist */
++#define CPC_ERR_MISSING_LICENSE            -56	/* a required license was not found */
++
++/* CAN state bit values. Ignore any bits not listed */
+ #define CPC_CAN_STATE_BUSOFF     0x80
+ #define CPC_CAN_STATE_ERROR      0x40
+ 
+-// Mask to help ignore undefined bits
++/* Mask to help ignore undefined bits */
+ #define CPC_CAN_STATE_MASK       0xc0
+ 
+-// CAN-Message representation in a CPC_MSG
+-// Message object type is CPC_MSG_T_CAN or CPC_MSG_T_RTR
+-// or CPC_MSG_T_XCAN or CPC_MSG_T_XRTR
++/*
++ * CAN-Message representation in a CPC_MS
++ * Message object type is CPC_MSG_T_CAN or CPC_MSG_T_RTR
++ * or CPC_MSG_T_XCAN or CPC_MSG_T_XRTR
++ */
+ typedef struct CPC_CAN_MSG {
+ 	u32 id;
+ 	u8 length;
+ 	u8 msg[8];
+ } CPC_CAN_MSG_T;
+ 
+-
+-// representation of the CAN parameters for the PCA82C200 controller
++/* representation of the CAN parameters for the PCA82C200 controller */
+ typedef struct CPC_PCA82C200_PARAMS {
+-	u8 acc_code;	// Acceptance-code for receive, Standard: 0
+-	u8 acc_mask;	// Acceptance-mask for receive, Standard: 0xff (everything)
+-	u8 btr0;	// Bus-timing register 0
+-	u8 btr1;	// Bus-timing register 1
+-	u8 outp_contr;	// Output-control register
++	u8 acc_code;	/* Acceptance-code for receive, Standard: 0 */
++	u8 acc_mask;	/* Acceptance-mask for receive, Standard: 0xff (everything) */
++	u8 btr0;	/* Bus-timing register 0 */
++	u8 btr1;	/* Bus-timing register 1 */
++	u8 outp_contr;	/* Output-control register */
+ } CPC_PCA82C200_PARAMS_T;
+ 
+-// representation of the CAN parameters for the SJA1000 controller
++/* representation of the CAN parameters for the SJA1000 controller */
+ typedef struct CPC_SJA1000_PARAMS {
+-	u8 mode;	// enables single or dual acceptance filtering
+-	u8 acc_code0;	// Acceptance-code for receive, Standard: 0
++	u8 mode;	/* enables single or dual acceptance filtering */
++	u8 acc_code0;	/* Acceptance-code for receive, Standard: 0 */
+ 	u8 acc_code1;
+ 	u8 acc_code2;
+ 	u8 acc_code3;
+-	u8 acc_mask0;	// Acceptance-mask for receive, Standard: 0xff (everything)
++	u8 acc_mask0;	/* Acceptance-mask for receive, Standard: 0xff (everything) */
+ 	u8 acc_mask1;
+ 	u8 acc_mask2;
+ 	u8 acc_mask3;
+-	u8 btr0;	// Bus-timing register 0
+-	u8 btr1;	// Bus-timing register 1
+-	u8 outp_contr;	// Output-control register
++	u8 btr0;	/* Bus-timing register 0 */
++	u8 btr1;	/* Bus-timing register 1 */
++	u8 outp_contr;	/* Output-control register */
+ } CPC_SJA1000_PARAMS_T;
+ 
+-// representation of the CAN parameters for the M16C controller
+-// in basic CAN mode (means no full CAN)
++/*
++ * representation of the CAN parameters for the M16C controller
++ * in basic CAN mode (means no full CAN)
++ */
+ typedef struct CPC_M16C_BASIC_PARAMS {
+ 	u8 con0;
+ 	u8 con1;
+@@ -267,9 +247,9 @@ typedef struct CPC_M16C_BASIC_PARAMS {
+ 	u8 acc_ext_mask3;
+ } CPC_M16C_BASIC_PARAMS_T;
+ 
+-// CAN params message representation
++/* CAN params message representation */
+ typedef struct CPC_CAN_PARAMS {
+-	u8 cc_type;	// represents the controller type
++	u8 cc_type;	/* represents the controller type */
+ 	union {
+ 		CPC_M16C_BASIC_PARAMS_T m16c_basic;
+ 		CPC_SJA1000_PARAMS_T sja1000;
+@@ -277,111 +257,108 @@ typedef struct CPC_CAN_PARAMS {
+ 	} cc_params;
+ } CPC_CAN_PARAMS_T;
+ 
+-// the following structures are slightly different for Windows and Linux
+-// To be able to use the 'Select' mechanism with Linux the application
+-// needs to know the devices file desciptor.
+-// This mechanism is not implemented within Windows and the file descriptor
+-// is therefore not needed
+-#ifdef _WIN32
+-
+-// CAN init params message representation
+-typedef struct CPC_INIT_PARAMS {
+-	CPC_CAN_PARAMS_T canparams;
+-} CPC_INIT_PARAMS_T;
+-
+-#else// Linux
+-
+-// CHAN init params representation
++/* CHAN init params representation */
+ typedef struct CPC_CHAN_PARAMS {
+ 	int fd;
+ } CPC_CHAN_PARAMS_T;
+ 
+-// CAN init params message representation
++/* CAN init params message representation */
+ typedef struct CPC_INIT_PARAMS {
+ 	CPC_CHAN_PARAMS_T chanparams;
+ 	CPC_CAN_PARAMS_T canparams;
+ } CPC_INIT_PARAMS_T;
+ 
+-#endif
+-
+-// structure for confirmed message handling
++/* structure for confirmed message handling */
+ typedef struct CPC_CONFIRM {
+-	u8 result; // error code
++	u8 result; /* error code */
+ } CPC_CONFIRM_T;
+ 
+-// structure for information requests
++/* structure for information requests */
+ typedef struct CPC_INFO {
+-	u8 source;                 // interface, driver or library
+-	u8 type;                   // version or serial number
+-	char msg[CPC_MSG_LEN - 2]; // string holding the requested information
++	u8 source;                 /* interface, driver or library */
++	u8 type;                   /* version or serial number */
++	char msg[CPC_MSG_LEN - 2]; /* string holding the requested information */
+ } CPC_INFO_T;
+ 
+-// OVERRUN ///////////////////////////////////////
+-// In general two types of overrun may occur.
+-// A hardware overrun, where the CAN controller
+-// lost a message, because the interrupt was
+-// not handled before the next messgae comes in.
+-// Or a software overrun, where i.e. a received
+-// message could not be stored in the CPC_MSG
+-// buffer.
+-
+-// After a software overrun has occurred
+-// we wait until we have CPC_OVR_GAP slots
+-// free in the CPC_MSG buffer.
++/*
++ * OVERRUN
++ * In general two types of overrun may occur.
++ * A hardware overrun, where the CAN controller
++ * lost a message, because the interrupt was
++ * not handled before the next messgae comes in.
++ * Or a software overrun, where i.e. a received
++ * message could not be stored in the CPC_MSG
++ * buffer.
++ */
++
++/* After a software overrun has occurred
++ * we wait until we have CPC_OVR_GAP slots
++ * free in the CPC_MSG buffer.
++ */
+ #define CPC_OVR_GAP               10
+ 
+-// Two types of software overrun may occur.
+-// A received CAN message or a CAN state event
+-// can cause an overrun.
+-// Note: A CPC_CMD which would normally store
+-// its result immediately in the CPC_MSG
+-// queue may fail, because the message queue is full.
+-// This will not generate an overrun message, but
+-// will halt command execution, until this command
+-// is able to store its message in the message queue.
++/*
++ * Two types of software overrun may occur.
++ * A received CAN message or a CAN state event
++ * can cause an overrun.
++ * Note: A CPC_CMD which would normally store
++ * its result immediately in the CPC_MSG
++ * queue may fail, because the message queue is full.
++ * This will not generate an overrun message, but
++ * will halt command execution, until this command
++ * is able to store its message in the message queue.
++ */
+ #define CPC_OVR_EVENT_CAN       0x01
+ #define CPC_OVR_EVENT_CANSTATE  0x02
+ #define CPC_OVR_EVENT_BUSERROR  0x04
+ 
+-// If the CAN controller lost a message
+-// we indicate it with the highest bit
+-// set in the count field.
++/*
++ * If the CAN controller lost a message
++ * we indicate it with the highest bit
++ * set in the count field.
++ */
+ #define CPC_OVR_HW              0x80
+ 
+-// structure for overrun conditions
++/* structure for overrun conditions */
+ typedef struct {
+ 	u8 event;
+ 	u8 count;
+ } CPC_OVERRUN_T;
+ 
+-// CAN errors ////////////////////////////////////
+-// Each CAN controller type has different
+-// registers to record errors.
+-// Therefor a structure containing the specific
+-// errors is set up for each controller here
++/*
++ * CAN errors
++ * Each CAN controller type has different
++ * registers to record errors.
++ * Therefor a structure containing the specific
++ * errors is set up for each controller here
++ */
+ 
+-// SJA1000 error structure
+-// see the SJA1000 datasheet for detailed
+-// explanation of the registers
++/*
++ * SJA1000 error structure
++ * see the SJA1000 datasheet for detailed
++ * explanation of the registers
++ */
+ typedef struct CPC_SJA1000_CAN_ERROR {
+-	u8 ecc;   // error capture code register
+-	u8 rxerr; // RX error counter register
+-	u8 txerr; // TX error counter register
++	u8 ecc;   /* error capture code register */
++	u8 rxerr; /* RX error counter register */
++	u8 txerr; /* TX error counter register */
+ } CPC_SJA1000_CAN_ERROR_T;
+ 
+-// M16C error structure
+-// see the M16C datasheet for detailed
+-// explanation of the registers
++/*
++ * M16C error structure
++ * see the M16C datasheet for detailed
++ * explanation of the registers
++ */
+ typedef struct CPC_M16C_CAN_ERROR {
+-	u8 tbd;	// to be defined
++	u8 tbd;	/* to be defined */
+ } CPC_M16C_CAN_ERROR_T;
+ 
+-// structure for CAN error conditions
++/* structure for CAN error conditions */
+ #define  CPC_CAN_ECODE_ERRFRAME   0x01
+ typedef struct CPC_CAN_ERROR {
+ 	u8 ecode;
+ 	struct {
+-		u8 cc_type; // CAN controller type
++		u8 cc_type; /* CAN controller type */
+ 		union {
+ 			CPC_SJA1000_CAN_ERROR_T sja1000;
+ 			CPC_M16C_CAN_ERROR_T m16c;
+@@ -389,36 +366,40 @@ typedef struct CPC_CAN_ERROR {
+ 	} cc;
+ } CPC_CAN_ERROR_T;
+ 
+-// Structure containing RX/TX error counter.
+-// This structure is used to request the
+-// values of the CAN controllers TX and RX
+-// error counter.
++/*
++ * Structure containing RX/TX error counter.
++ * This structure is used to request the
++ * values of the CAN controllers TX and RX
++ * error counter.
++ */
+ typedef struct CPC_CAN_ERR_COUNTER {
+ 	u8 rx;
+ 	u8 tx;
+ } CPC_CAN_ERR_COUNTER_T;
+ 
+-// If this flag is set, transmissions from PC to CPC are protected against loss
++/* If this flag is set, transmissions from PC to CPC are protected against loss */
+ #define CPC_SECURE_TO_CPC	0x01
+ 
+-// If this flag is set, transmissions from CPC to PC are protected against loss
++/* If this flag is set, transmissions from CPC to PC are protected against loss */
+ #define CPC_SECURE_TO_PC	0x02
+ 
+-// If this flag is set, the CAN-transmit buffer is checked to be free before sending a message
++/* If this flag is set, the CAN-transmit buffer is checked to be free before sending a message */
+ #define CPC_SECURE_SEND		0x04
+ 
+-// If this flag is set, the transmission complete flag is checked
+-// after sending a message
+-// THIS IS CURRENTLY ONLY IMPLEMENTED IN THE PASSIVE INTERFACE DRIVERS
++/*
++ * If this flag is set, the transmission complete flag is checked
++ * after sending a message
++ * THIS IS CURRENTLY ONLY IMPLEMENTED IN THE PASSIVE INTERFACE DRIVERS
++ */
+ #define CPC_SECURE_TRANSMIT	0x08
+ 
+-// main message type used between library and application
++/* main message type used between library and application */
+ typedef struct CPC_MSG {
+-	u8 type;	// type of message
+-	u8 length;	// length of data within union 'msg'
+-	u8 msgid;	// confirmation handle
+-	u32 ts_sec;	// timestamp in seconds
+-	u32 ts_nsec;	// timestamp in nano seconds
++	u8 type;	/* type of message */
++	u8 length;	/* length of data within union 'msg' */
++	u8 msgid;	/* confirmation handle */
++	u32 ts_sec;	/* timestamp in seconds */
++	u32 ts_nsec;	/* timestamp in nano seconds */
+ 	union {
+ 		u8 generic[CPC_MSG_LEN];
+ 		CPC_CAN_MSG_T canmsg;
+@@ -433,8 +414,4 @@ typedef struct CPC_MSG {
+ 	} msg;
+ } CPC_MSG_T;
+ 
+-#ifdef _WIN32
+-#pragma pack(pop)		// reset the byte alignment
+-#endif
+-
+-#endif				// CPC_HEADER
++#endif /* CPC_HEADER */
+-- 
+1.6.4.rc1
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
 
+--zhXaljGHf11kAtnf--
