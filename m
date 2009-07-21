@@ -1,102 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZGUVe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZGUVhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbZGUVe3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZGUVe3
+	id S1755918AbZGUVhR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZGUVhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:34:29 -0400
-Received: from mail6.webfaction.com ([74.55.86.74]:56093 "EHLO
-	smtp.webfaction.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755145AbZGUVe2 (ORCPT
+	Tue, 21 Jul 2009 17:37:16 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54830 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbZGUVhP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:34:28 -0400
-Date: Tue, 21 Jul 2009 22:34:36 +0100 (BST)
-From: Troy Moure <twmoure@szypr.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Krzysztof Oledzki <olel@ans.pl>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       stable@kernel.org, lwn@lwn.net
-Subject: Re: Linux 2.6.27.27
-In-Reply-To: <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0907212211040.4630@troy-laptop>
-References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
- <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain> <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 21 Jul 2009 17:37:15 -0400
+Date: Tue, 21 Jul 2009 23:37:06 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: tridge@samba.org
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Martin Steigerwald <Martin@lichtvoll.de>,
+       Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
+       Rusty Russell <rusty@rustcorp.com.au>, john.lanza@linux.com,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org, torvalds@linux-foundation.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+Message-ID: <20090721213705.GB29060@elf.ucw.cz>
+References: <1247066878.4159.153.camel@mulgrave.site> <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk> <1247069202.4159.212.camel@mulgrave.site> <20090708171848.21633768@lxorguk.ukuu.org.uk> <873a96a23x.fsf@devron.myhome.or.jp> <87hbxhwv0j.fsf@devron.myhome.or.jp> <19045.14307.658887.752950@samba.org> <4A65875D.7030902@panasas.com> <20090721103158.GG4133@elf.ucw.cz> <19045.49553.738185.211806@samba.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19045.49553.738185.211806@samba.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-
-On Tue, 21 Jul 2009, Linus Torvalds wrote:
-
-> > Great. This is all about as perfect as could be asked for. Now it's just a 
-> > question of trying to find the right code generation difference...
+>  > Actually, why not having dosfsck creating _matching_ short names for
+>  > long names? As it only writes short names, it should be safe :-).
 > 
-> Ok, that "just" is turning out to be really painful.
+> As I mentioned to Boaz, what usually matters for claim construction in
+> patents is the overall system. I'm sure John Lanza would be happy to
+> run through it with you if you want a more legally detailed answer,
+> but basically breaking it up within the one system isn't likely to
+> help us.
 
-I think I've found something interesting.  Look at the the code generated 
-for edid_checksum() in driver/video/fbmon.c.  This is what I see for the 
--fno-strict-overflow kernel:
+Hehe, or we could create just long names and mark filesystem as
+"needing repair" so that Windows fixes it up for us on next mount ;-).
+									Pavel
 
-...
-ffffffff803b37ed <edid_checksum>:
-ffffffff803b37ed:       53                      push   %rbx
-ffffffff803b37ee:       48 89 fb                mov    %rdi,%rbx
-ffffffff803b37f1:       e8 8d fd ff ff          callq  ffffffff803b3583 <check_edid>
-ffffffff803b37f6:       85 c0                   test   %eax,%eax
-ffffffff803b37f8:       89 c6                   mov    %eax,%esi
-ffffffff803b37fa:       74 08                   je     ffffffff803b3804 <edid_checksum+0x17>
-ffffffff803b37fc:       48 89 df                mov    %rbx,%rdi
-ffffffff803b37ff:       e8 c0 fe ff ff          callq  ffffffff803b36c4 <fix_edid>
-ffffffff803b3804:       eb fe                   jmp    ffffffff803b3804 <edid_checksum+0x17>
-
-ffffffff803b3806 <fb_parse_edid>:
-ffffffff803b3806:       41 54                   push   %r12
-ffffffff803b3808:       48 85 ff                test   %rdi,%rdi
-...
-
-That last insn in edid_checksum() doesn't look *quite* right to me...
-
-The -fnone kernel has something a lot more sensible-looking:
-
-ffffffff803b39dd <edid_checksum>:
-ffffffff803b39dd:       53                      push   %rbx
-ffffffff803b39de:       48 89 fb                mov    %rdi,%rbx
-ffffffff803b39e1:       e8 8d fd ff ff          callq  ffffffff803b3773 <check_$
-ffffffff803b39e6:       85 c0                   test   %eax,%eax
-ffffffff803b39e8:       89 c6                   mov    %eax,%esi
-ffffffff803b39ea:       74 08                   je     ffffffff803b39f4 <edid_c$
-ffffffff803b39ec:       48 89 df                mov    %rbx,%rdi
-ffffffff803b39ef:       e8 c0 fe ff ff          callq  ffffffff803b38b4 <fix_ed$
-ffffffff803b39f4:       31 c9                   xor    %ecx,%ecx
-ffffffff803b39f6:       31 f6                   xor    %esi,%esi
-ffffffff803b39f8:       31 d2                   xor    %edx,%edx
-ffffffff803b39fa:       eb 0a                   jmp    ffffffff803b3a06 <edid_c$
-ffffffff803b39fc:       0f b6 c0                movzbl %al,%eax
-ffffffff803b39ff:       8a 04 03                mov    (%rbx,%rax,1),%al
-ffffffff803b3a02:       01 c1                   add    %eax,%ecx
-ffffffff803b3a04:       09 c6                   or     %eax,%esi
-ffffffff803b3a06:       88 d0                   mov    %dl,%al
-ffffffff803b3a08:       ff c2                   inc    %edx
-ffffffff803b3a0a:       81 fa 81 00 00 00       cmp    $0x81,%edx
-ffffffff803b3a10:       75 ea                   jne    ffffffff803b39fc <edid_c$
-ffffffff803b3a12:       84 c9                   test   %cl,%cl
-ffffffff803b3a14:       0f 94 c0                sete   %al
-ffffffff803b3a17:       40 84 f6                test   %sil,%sil
-ffffffff803b3a1a:       5b                      pop    %rbx
-ffffffff803b3a1b:       0f 95 c2                setne  %dl
-ffffffff803b3a1e:       21 d0                   and    %edx,%eax
-ffffffff803b3a20:       0f b6 c0                movzbl %al,%eax
-ffffffff803b3a23:       c3                      retq
-
-ffffffff803b3a24 <fb_parse_edid>:
-ffffffff803b3a24:       41 54                   push   %r12
-ffffffff803b3a26:       48 85 ff                test   %rdi,%rdi
-
-Hope that helps narrow things down ;)
-
-	Troy
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
