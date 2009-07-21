@@ -1,77 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbZGUIet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbZGUIsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbZGUIet (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 04:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZGUIeq
+	id S1753766AbZGUIsu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 04:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZGUIst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 04:34:46 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:40399 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752571AbZGUIep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 04:34:45 -0400
-Message-ID: <4A657D58.2060708@atmel.com>
-Date: Tue, 21 Jul 2009 10:33:28 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-CC: maciej.sosnowski@intel.com, avictor.za@gmail.com,
-       patrice.vilchez@atmel.com
-Subject: Re: [PATCH 1/2 v3] dmaengine: at_hdmac: new driver for the Atmel
- AHB 	DMA Controller
-References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>	 <1246641873-21686-1-git-send-email-nicolas.ferre@atmel.com> <e9c3a7c20907180901u3670a8edy2bc5c1b5cf911ab4@mail.gmail.com>
-In-Reply-To: <e9c3a7c20907180901u3670a8edy2bc5c1b5cf911ab4@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 21 Jul 2009 04:48:49 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52171 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbZGUIss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 04:48:48 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 21 Jul 2009 17:46:59 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       xiyou.wangcong@gmail.com, tao.ma@oracle.com,
+       linux-kernel@vger.kernel.org, adobriyan@gmail.com,
+       mtk.manpages@gmail.com, y-goto@jp.fujitsu.com
+Subject: Re: [RESEND Patch] kcore: remove its pointless size
+Message-Id: <20090721174659.2c860ee4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090721110924.39a93078.kamezawa.hiroyu@jp.fujitsu.com>
+References: <m11vpqvozl.fsf@fess.ebiederm.org>
+	<20090613040958.GA2959@cr0>
+	<m17hzdhkr8.fsf@fess.ebiederm.org>
+	<2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
+	<m1my88568n.fsf@fess.ebiederm.org>
+	<20090618030051.GA6133@cr0.nay.redhat.com>
+	<m1tz2ei54r.fsf@fess.ebiederm.org>
+	<20090618044055.GB6133@cr0.nay.redhat.com>
+	<m1prd2rtdf.fsf@fess.ebiederm.org>
+	<20090622085405.GA6499@cr0.nay.redhat.com>
+	<20090630100850.GD5873@cr0.nay.redhat.com>
+	<20090701144742.6ce3535b.akpm@linux-foundation.org>
+	<m14otwq94e.fsf@fess.ebiederm.org>
+	<20090701171249.004968e8.akpm@linux-foundation.org>
+	<20090702094138.f86ead92.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090717152955.6585cbf9.akpm@linux-foundation.org>
+	<20090721110924.39a93078.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams :
-> On Fri, Jul 3, 2009 at 10:24 AM, Nicolas Ferre<nicolas.ferre@atmel.com> wrote:
->> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
->> at91sam9rl chip. It will be used on other products in the future.
->>
->> This first release covers only the memory-to-memory tranfer type. This is the
->> only tranfer type supported by this chip.  On other products, it will be used
->> also for peripheral DMA transfer (slave API support to come).
->>
->> I used dmatest client without problem in different configurations to test it.
->>
->> Full documentation for this controller can be found in the SAM9RL datasheet:
->> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243
->>
->> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
->> ---
->> v2 is here:
->> http://lkml.org/lkml/2009/6/26/104
->>
->> v2 -> v3:
->>  - initial number of descriptors to allocate for each channel raised to 64 and
->>   is now a parameter
->>  - ack-bit in descriptor flag comment synchronized with TXx9 dma driver
->>  - atc_desc_get() when short on descriptors in pool: create one at a time
->>  - allocation flag changed to GFP_ATOMIC in atc_desc_get()
->>  - call to proper funtion while unmapping: use of new
->>   DMA_COMPL_{SRC,DEST}_UNMAP_SINGLE flags
->>  - call dma_run_dependencies() at the end of atc_chain_complete()
->>
+On Tue, 21 Jul 2009 11:09:24 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Fri, 17 Jul 2009 15:29:55 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Looks good, but now I belatedly wonder if that GFP_ATOMIC should be
-> GFP_NOWAIT instead?  Do we really want to consume from the system
-> emergency pools for these allocations (a similar fix is need for
-> ioatdma and fsldma)?
+> > On Thu, 2 Jul 2009 09:41:38 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > I think I'm about to forget about the above issues.  If everyone else
+> > does the same, they won't get addressed.  Oh well.
+> > 
+> > And I still need to decide whether
+> > kcore-fix-proc-kcores-statst_size.patch fixes things up sufficiently
+> > well to justify merging it.
+> >
+> 
+> Hmm, I read fs/proc/kcore.c and feel followng, now.
+> 
+> - kclist doesn't handle memory hole, then, it will never be "correct" size.
+>   For example, arch/x86/mm/init.c calls kclist_add() as following
+> 
+>   715         kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
+>   716                    VMALLOC_END-VMALLOC_START);
+> 
+>   Wow, extremely big anyway.
+> 
+> - Then, yes. Size of /proc/kcode is pointless. Anyway, what's important is
+>   not "size", but ELF phder of kcore.
+> 
+> To this patch,
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+Ah...BTW, if set size to be 0,
+ %objdump -x /proc/kcore
+returns immediately because objdump finds size as 0. but readelf seems to
+work well.
 
-Seems sensible indeed but I know little about allocation flags.
+Thanks,
+-Kame
 
-What do you think about including the driver and then building a patch
-that fixes this flag in all allocation functions at a time.
-It may add exposure to this modification and maybe encourage people to
-react...
 
-Regards,
--- 
-Nicolas Ferre
+
 
