@@ -1,25 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZGUTzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbZGUTzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbZGUTzf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 15:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbZGUTzd
+	id S1756026AbZGUTzW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 15:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbZGUTzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 15:55:33 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:45647 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756029AbZGUTz3 (ORCPT
+	Tue, 21 Jul 2009 15:55:21 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:2126 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756012AbZGUTzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 15:55:29 -0400
-Subject: [PATCH 2 2/4] cciss: use mutex instead of flag to indicate busy
-	initializing
+	Tue, 21 Jul 2009 15:55:19 -0400
+Subject: [PATCH 2 0/4] cciss rmmod/scan-thread fixes
 To: linux-kernel@vger.kernel.org
 From: Andrew Patterson <andrew.patterson@hp.com>
 Cc: akpm@linux-foundation.org, linux-scsi@vger.kernel.org, mike.miller@hp.com,
        jens.axboe@oracle.com
-Date: Tue, 21 Jul 2009 13:55:27 -0600
-Message-ID: <20090721195527.20740.1301.stgit@bob.kio>
-In-Reply-To: <20090721195517.20740.18994.stgit@bob.kio>
-References: <20090721195517.20740.18994.stgit@bob.kio>
+Date: Tue, 21 Jul 2009 13:55:17 -0600
+Message-ID: <20090721195517.20740.18994.stgit@bob.kio>
 User-Agent: StGit/0.14.3.386.gb02d
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -28,67 +25,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cciss: use mutex instead of flag to indicate busy initializing
+The following series fixes several problems causing hangs while
+rmmoding the cciss driver. In the process of fixing these hangs, I
+also reworked the the logical drive scanning kernel thread to use one
+thread per driver rather than one thread per controller. I also added
+a sysfs attribute to kick off a controller scan.
 
-Convert busy_initializing from simple integer flag to mutex, so we
-can use it to block and thus avoid some race conditions.
+Changelog
 
-Acked-by: Mike Miller <mike.miller@hp.com>
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
----
+v2
 
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 970c896..085ab11 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -751,7 +751,7 @@ static int cciss_open(struct block_device *bdev, fmode_t mode)
- 	printk(KERN_DEBUG "cciss_open %s\n", bdev->bd_disk->disk_name);
- #endif				/* CCISS_DEBUG */
- 
--	if (host->busy_initializing || drv->busy_configuring)
-+	if (mutex_is_locked(&host->busy_initializing) || drv->busy_configuring)
- 		return -EBUSY;
- 	/*
- 	 * Root is allowed to open raw volume zero even if it's not configured
-@@ -3915,7 +3915,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 	if (i < 0)
- 		return -1;
- 
--	hba[i]->busy_initializing = 1;
-+	mutex_init(&hba[i]->busy_initializing);
-+	mutex_lock(&hba[i]->busy_initializing);
- 	INIT_HLIST_HEAD(&hba[i]->cmpQ);
- 	INIT_HLIST_HEAD(&hba[i]->reqQ);
- 
-@@ -4034,7 +4035,7 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 
- 	hba[i]->cciss_max_sectors = 2048;
- 
--	hba[i]->busy_initializing = 0;
-+	mutex_unlock(&hba[i]->busy_initializing);
- 
- 	rebuild_lun_table(hba[i], 1);
- 	hba[i]->cciss_scan_thread = kthread_run(scan_thread, hba[i],
-@@ -4062,7 +4063,7 @@ clean2:
- clean1:
- 	cciss_destroy_hba_sysfs_entry(hba[i]);
- clean0:
--	hba[i]->busy_initializing = 0;
-+	mutex_unlock(&hba[i]->busy_initializing);
- 	/* cleanup any queues that may have been initialized */
- 	for (j=0; j <= hba[i]->highest_lun; j++){
- 		drive_info_struct *drv = &(hba[i]->drv[j]);
-diff --git a/drivers/block/cciss.h b/drivers/block/cciss.h
-index 06a5db2..bf1699c 100644
---- a/drivers/block/cciss.h
-+++ b/drivers/block/cciss.h
-@@ -107,7 +107,7 @@ struct ctlr_info
- 	int			nr_allocs;
- 	int			nr_frees; 
- 	int			busy_configuring;
--	int			busy_initializing;
-+	struct mutex		busy_initializing;
- 
- 	/* This element holds the zero based queue number of the last
- 	 * queue to be started.  It is used for fairness.
+Staticially initialize scan_mutex and scan_q.
+Remove unneeded function declarations.
+Added a patch that uses a mutex to indicate we are busy initializing
+rather than a integer flag.
+Remove a possible scan race by moving the busy_initializing unlock after
+the call to rebuild_luntable in cciss_init_one.
+Reworked the scan thread to use a more traditional loop with a
+set_current_state(TASK_INTERRUPTIBLE); schedule() at the top of the
+loop.
 
+ .../ABI/testing/sysfs-bus-pci-devices-cciss        |    7 +
+ drivers/block/cciss.c                              |  204 +++++++++++++++++---
+ drivers/block/cciss.h                              |    9 +
+ 3 files changed, 191 insertions(+), 29 deletions(-)
+
+Andrew Patterson (4):
+      cciss: remove logical drive sysfs entries during driver cleanup.
+      cciss: use mutex instead of flag to indicate busy initializing
+      cciss: use only one scan thread
+      cciss: kick off logical drive topology rescan through sysfs
+
+
+
+-- 
+Andrew Patterson
