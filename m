@@ -1,117 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZGUTiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbZGUTkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbZGUTiO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 15:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZGUTiM
+	id S1755768AbZGUTkm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 15:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbZGUTkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 15:38:12 -0400
-Received: from mail-yx0-f202.google.com ([209.85.210.202]:39211 "EHLO
-	mail-yx0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755588AbZGUTiL convert rfc822-to-8bit (ORCPT
+	Tue, 21 Jul 2009 15:40:40 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48160 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755190AbZGUTkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 15:38:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=IrRGGpMd//tffyOpYT2elowYPJR9SdekgG1dIHiMhu+/biUYKbPHWQZSzTsRJ3NjpU
-         rPfMVFE5PlQOzseT1rfMvHfHSySjZHb+mMUQJW+KmxTGCxFTi2Tjb+LVCvZMUkXV7hER
-         yM+zOrsQHaMFbkGD2QfFlfox75w/w9SzENjvY=
+	Tue, 21 Jul 2009 15:40:39 -0400
+Date: Tue, 21 Jul 2009 21:40:36 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: David Miller <davem@davemloft.net>
+Cc: fthain@telegraphics.com.au, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       jgarzik@redhat.com, geert@linux-m68k.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] move macsonic's probe function to .devinit.text
+Message-ID: <20090721194036.GB10770@pengutronix.de>
+References: <1247345591-22643-19-git-send-email-u.kleine-koenig@pengutronix.de> <1247345591-22643-20-git-send-email-u.kleine-koenig@pengutronix.de> <alpine.OSX.2.00.0907220032230.796@silk.local> <20090721.122058.23378599.davem@davemloft.net>
 MIME-Version: 1.0
-Reply-To: john.lanza@linux.com
-In-Reply-To: <4bbed3f70907210806v14690311wbd579acae44099a9@mail.gmail.com>
-References: <19013.8005.541836.436991@samba.org>
-	 <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk>
-	 <1247069202.4159.212.camel@mulgrave.site>
-	 <20090708171848.21633768@lxorguk.ukuu.org.uk>
-	 <873a96a23x.fsf@devron.myhome.or.jp>
-	 <87hbxhwv0j.fsf@devron.myhome.or.jp>
-	 <19045.14307.658887.752950@samba.org> <4A65875D.7030902@panasas.com>
-	 <19045.48361.502946.399660@samba.org>
-	 <4bbed3f70907210806v14690311wbd579acae44099a9@mail.gmail.com>
-Date: Tue, 21 Jul 2009 15:38:08 -0400
-Message-ID: <4bbed3f70907211238t769d610aj24fc7d5dd48d99a3@mail.gmail.com>
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-From: John Lanza <jdlanza@gmail.com>
-To: tridge@samba.org
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Martin Steigerwald <Martin@lichtvoll.de>,
-       Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org, torvalds@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090721.122058.23378599.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending in plain text.......
+Hi David,
 
-On Tue, Jul 21, 2009 at 11:06 AM, John Lanza<jdlanza@gmail.com> wrote:
-> If I understand the proposal (which I think I do), Tridge is correct.
-> If a patent prohibits a system from performing steps "A" and "B",
-> simply separating the steps into separate modules, or utilities, won't
-> avoid infringement.
+On Tue, Jul 21, 2009 at 12:20:58PM -0700, David Miller wrote:
+> From: Finn Thain <fthain@telegraphics.com.au>
+> Date: Wed, 22 Jul 2009 01:14:36 +1000 (EST)
 >
-> I'm happy to answer specific questions, but it might be best to do
-> that separately from lkml.
->
-> johnl
->
-> On Tue, Jul 21, 2009 at 9:04 AM, <tridge@samba.org> wrote:
->> Hi Boaz,
->>
->>  > I guess you tried putting a zero at first char and it breaks everybody?
->>
->> It works with some devices, but with many it doesn't. A space followed
->> by a nul works with quite a lot of devices, but not enough (the last
->> patch used a space followed by a nul).
->>
->> I went to a large electronics store and told them I wanted to buy
->> devices that didn't work with my computer. They were very helpful, and
->> as a result I was able to test a lot of devices. That is what led to
->> the design of this patch (plus the feedback from people like Jan and
->> his IOneIt MP3 player).
->>
->>  > I guess (35^6)*8*7 is not that bad
->>
->> yes, but luckily For the WinXP bluescreen the probability of the crash
->> is actually much lower than that figure would give. With the same
->> modelling assumptions of WinXP memory slots for 8.3 entries that Paul
->> used for the last patch, it comes out as less than a 1 in 10k chance
->> for a full directory (ie. 32767 long filenames). For 100 files in a
->> directory it is around 1 chance in 10^11. I'm sure Paul will do the
->> full expansion and modelling if anyone wants more precise numbers.
->>
->> For the chkdsk rename, the probability is much easier to calculate as
->> it is just the usual birthday expansion (see wikipedia for simple
->> formula for that). That is what gives 0.5% for 32767 files in a
->> directory, and 4.8x10^-8 for for 100 files.
->>
->> Basically it won't happen very often. In each case the probability is
->> rougly 75x less than it was for the last patch.
->>
->>  > What if we had a user mode utility that does these short-names
->>  > renames that a user can optionally run after umount? since it
->>  > only writes the (random) short-names it's also safe.
->>
->> While I will defer to John Lanza if you want a more complete legal
->> view on this, I think it is likely that separating the steps of the
->> patent between programs within one system is not a safe enough legal
->> strategy to be used.
->>
->> Please do keep thinking about it though. There could well be some
->> simple combination which is legally safe and also technically
->> completely satisfactory. If you think you have hit on a winner, you
->> may wish to discuss it with John Lanza in private first though, so it
->> can be fine tuned before being presented publicly.
->>
->> Cheers, Tridge
->>
->
+> > On Sat, 11 Jul 2009, Uwe Kleine-K?nig wrote:
+> > 
+> >> A pointer to mac_sonic_probe is passed to the core via
+> >> platform_driver_register and so the function must not disappear when
+> >> the .init sections are discarded.  Otherwise (if also having
+> >> HOTPLUG=y) unbinding and binding a device to the driver via sysfs will
+> >> result in an oops as does a device being registered late.
+> > 
+> > This patch works for me (tested on a Quadra 630). I still get an oops
+> > on rmmod, but that's a separate issue. I'll send a patch for that.
+> 
+> Applied, but Uwe _please_ post networking patches to
+> netdev@vger.kernel.org so that they get properly logged
+> and tracked at:
+There are 8 patches in this series that touch drivers/net, only one of
+them had a Cc: to netdev.
+
+The diffstat of my series for drivers/net is
+ drivers/net/arm/am79c961a.c  |    2 +-
+ drivers/net/arm/at91_ether.c |    2 +-
+ drivers/net/jazzsonic.c      |    4 ++--
+ drivers/net/macsonic.c       |   14 +++++++-------
+ drivers/net/meth.c           |    2 +-
+ drivers/net/sb1250-mac.c     |    2 +-
+ drivers/net/sgiseeq.c        |    2 +-
+ drivers/net/xtsonic.c        |    2 +-
+ 8 files changed, 15 insertions(+), 15 deletions(-)
+
+drivers/net/arm/at91_ether.c got a NACK by David Brownell---he wants the
+alternative to be implemented.
+drivers/net/arm/am79c961a.c got the Cc to netdev@
+You now took drivers/net/macsonic.c.
+
+Should I repost the remaining 5 to netdev@?
+
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
