@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbZGUQYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbZGUQZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755684AbZGUQYG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 12:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZGUQYE
+	id S1755654AbZGUQZy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 12:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZGUQZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 12:24:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38990 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755278AbZGUQYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 12:24:03 -0400
-Subject: Re: [PATCH 1/2] VM/SELinux: require CAP_SYS_RAWIO for all
- mmap_zero operations
-From: Eric Paris <eparis@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
-       jmorris@namei.org, spender@grsecurity.net, dwalsh@redhat.com,
-       cl@linux-foundation.org, arjan@infradead.org, kyle@mcmartin.ca,
-       cpardy@redhat.com, arnd@arndb.de
-In-Reply-To: <20090721170909.6182230c@lxorguk.ukuu.org.uk>
-References: <20090721144157.14159.23439.stgit@paris.rdu.redhat.com>
-	 <20090721160437.5bda68b4@lxorguk.ukuu.org.uk>
-	 <1248189524.2654.301.camel@localhost>
-	 <20090721163813.0cb5d7ab@lxorguk.ukuu.org.uk>
-	 <1248191833.2654.320.camel@localhost>
-	 <20090721170909.6182230c@lxorguk.ukuu.org.uk>
+	Tue, 21 Jul 2009 12:25:52 -0400
+Received: from dallas.jonmasters.org ([72.29.103.172]:43872 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754397AbZGUQZv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 12:25:51 -0400
+Subject: Re: Disk access just before shutdown power off.
+From: Jon Masters <jonathan@jonmasters.org>
+To: James Courtier-Dutton <James@superbug.demon.co.uk>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A647277.4000009@superbug.demon.co.uk>
+References: <4A647277.4000009@superbug.demon.co.uk>
 Content-Type: text/plain
-Date: Tue, 21 Jul 2009 12:23:14 -0400
-Message-Id: <1248193394.2654.327.camel@localhost>
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Tue, 21 Jul 2009 12:25:44 -0400
+Message-Id: <1248193544.4873.1.camel@perihelion.bos.jonmasters.org>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-21 at 17:09 +0100, Alan Cox wrote:
+On Mon, 2009-07-20 at 14:34 +0100, James Courtier-Dutton wrote:
 
-> It's a really ugly problem that almost begs for better hardware
-> facilities (such as the multiple independent address spaces in some
-> processors)
+> When I shutdown my Linux laptop, it does an orderly shutdown with quite
+> a lot of HD activity during shutdown which eventually stops when the
+> screen goes blank. Then there is some delay (5-10 seconds) and then a
+> quick flurry of HD access just before it powers itself off.
 
-If only we knew someone who worked at intel.....   *smile*
+That would be the journal being synced back to disk as an fsync is done
+prior to unmounting/remounting-ro. You can't do anything about this
+because it needs to be the last thing that is done.
 
-Are you on board with the change I propose as long as I make the address
-space controlled by SELinux tunable instead of fixed at one page?  Thus
-allowing one to maintain the status quo?  Yeah, still sucks for
-non-selinux systems and wine, but at least there can be hardening
-against a non-root local authenticated user on a default fedora
-install...
+Jon.
 
--Eric
 
