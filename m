@@ -1,105 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbZGUWyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbZGUW5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbZGUWyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 18:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbZGUWyQ
+	id S1756295AbZGUW5s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 18:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbZGUW5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 18:54:16 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50675 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753257AbZGUWyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 18:54:15 -0400
-Date: Tue, 21 Jul 2009 23:55:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Daniel Mack <daniel@caiaq.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH] [usb-serial] fix Ooops on uplug
-Message-ID: <20090721235512.7a1784be@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.44L0.0907211632080.2679-100000@iolanthe.rowland.org>
-References: <20090721202123.404339aa@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.0907211632080.2679-100000@iolanthe.rowland.org>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Tue, 21 Jul 2009 18:57:47 -0400
+Received: from waste.org ([66.93.16.53]:49811 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755855AbZGUW5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 18:57:46 -0400
+Subject: Re: [RFC] move __devinit or __init printk constant format strings
+ to __devinitconst or __initdata?
+From: Matt Mackall <mpm@selenic.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       David Woodhouse <dwmw2@infradead.org>, Tim Bird <tim.bird@am.sony.com>
+In-Reply-To: <1248213403.31365.343.camel@Joe-Laptop.home>
+References: <1248211253.31365.337.camel@Joe-Laptop.home>
+	 <1248212925.10466.143.camel@calx>
+	 <1248213403.31365.343.camel@Joe-Laptop.home>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 17:57:24 -0500
+Message-Id: <1248217044.10466.202.camel@calx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > We can't just skip freeing the resources in the hangup method as
-> > tty_port_close_start() will return 0 and leak them on a hangup.
+On Tue, 2009-07-21 at 14:56 -0700, Joe Perches wrote:
+> On Tue, 2009-07-21 at 16:48 -0500, Matt Mackall wrote:
+> > On Tue, 2009-07-21 at 14:20 -0700, Joe Perches wrote:
+> > > Is moving constant string formats to __devinitconst or __initdata
+> > > useful for embedded environments?
+> > > As in:
+> > > #define printk_section(section, fmt, ...)				\
+> > > ({ static const section char __fmt[] = fmt; printk(__fmt, ##__VA_ARGS__); })
+> > > #define pr_err_section(section, fmt, ...) \
+> > > 	printk_section(section, KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
+> > > with a use of:
+> > > static int __devinit foo_probe(struct platform_device *pdev)
+> > > {
+> > > 	if (bar())
+> > > 		pr_err_section(__devinitconst,
+> > > 			       "A long error message\n");
+> > > }
 > 
-> Wait a second.  Does the same serial_hangup() routine get called when
-> an RS-232 (for example) hangup event occurs, like DCD turning off, and
-> when the USB device is unplugged?  Sure, the second implies the first,
-> but they need to be treated differently.  After the first, the hardware
-> is still present and so the port resources shouldn't be released.
+> > Interesting notion, but not worth the trouble in my mind. I think it's
+> > more worthwhile to look into automatic such stuff in the build somehow.
+> 
+> I think it's not possible today to get gcc to mark
+> the format strings without source modification.
 
-The sequences of behaviour for the tty interface are usually
+Yep, that's why I specifically said 'build'. It can probably be done in
+a post-processing step with some ELF wizardry. 
 
-	open
-		allocate resources
-		start uart
+> It's pretty easy to script a source conversion.
 
-	do stuff
+And that script has to be run how often? I don't think people will find
+the churn (and general extra ugliness) acceptable. For a typical
+stripped-down embedded kernel, the amount of gain here will be fairly
+minimal. I'd be surprised if you got as much as 1K out of it.
 
-	close
-		stop uart
-		free resources
-
-and if a hang up occurs:
-
-	open
-		allocate resources
-		start uart
-	do stuff
-
-	hangup event
-		stop uart
-		free resources
-		wake any pending openers
-
-	[pending open completes]
-		allocate resources
-		start uart
-
-	[original opener closes]
-	close
-		was hung up
-		do nothing much
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
 
-> Perhaps not; I'll explain.  It's very simplistic, because when I wrote 
-> it I didn't know what was going on with the tty layer internals.  (I 
-> still don't, come to that.)
-
-Ok so between us we know the answer I hope 8)
-
-> The usb_serial_port structures should exist as long as they are needed, 
-> which means as long as the USB device is connected or the tty device 
-> file is open.  That's how my original design was meant to work, but it 
-> is now messed up by the fact that we get two "close" events -- a fake 
-> one during disconnect and then the real one later.
-
-The tty notion of "open" is really open->hangup or open->close. Once the
-hangup occurs you may have a file handle to a tty object but it doesn't
-talk to hardware. You need to open it again to get access again. Between
-hangup and close you are sitting on a dead file handle that returns
-errors if you use it. The hardware is owned by whoever opened it next.
-
-The historical model for this is from dial in. A carrier drop is
-effectively a secure attention key, it has to kill off anything left on
-the port so an evil user cannot leave a key logger active on the port.
-
-> Eliminating the fake calls seems like the cleanest solution.  
-> Alternatively, we could keep the fake close (but not the fake release!)
-> and change serial_close() so that it calls serial_do_free() even if 
-> tty_port_close_start returns 0.
-
-There are several other cases where tty_port_close_start returns zero
-(such as multiple openers and not being the last one)
-
-Alan
