@@ -1,90 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbZGUGlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbZGUGqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbZGUGlk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 02:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbZGUGlj
+	id S1753801AbZGUGqI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 02:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZGUGqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 02:41:39 -0400
-Received: from bizon.gios.gov.pl ([195.187.34.71]:51832 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755043AbZGUGli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 02:41:38 -0400
-Date: Tue, 21 Jul 2009 08:40:26 +0200 (CEST)
-From: Krzysztof Oledzki <olel@ans.pl>
-X-X-Sender: ole@bizon.gios.gov.pl
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Marc Dionne <marc.c.dionne@gmail.com>, Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       lwn@lwn.net
-Subject: Re: Linux 2.6.27.27
-In-Reply-To: <alpine.LFD.2.01.0907201750150.19335@localhost.localdomain>
-Message-ID: <alpine.LNX.1.10.0907210833450.29729@bizon.gios.gov.pl>
-References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
- <4A650219.3060003@gmail.com> <alpine.LFD.2.01.0907201650570.19335@localhost.localdomain> <4A650DE1.20105@gmail.com> <alpine.LFD.2.01.0907201750150.19335@localhost.localdomain>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 21 Jul 2009 02:46:07 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63694 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751537AbZGUGqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 02:46:06 -0400
+Message-ID: <4A65644F.7010309@cn.fujitsu.com>
+Date: Tue, 21 Jul 2009 14:46:39 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1144830174-877450442-1248158426=:29729"
+To: Neil Horman <nhorman@tuxdriver.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, Brayan Arraes <brayan@yack.com.br>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c
+ handler"
+References: <4A64672E.8020005@cn.fujitsu.com> <m1d47vnoq6.fsf@fess.ebiederm.org> <20090720211644.GD9060@hmsreliant.think-freely.org>
+In-Reply-To: <20090720211644.GD9060@hmsreliant.think-freely.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1144830174-877450442-1248158426=:29729
-Content-Type: TEXT/PLAIN; charset=iso-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
-
-
-
-On Mon, 20 Jul 2009, Linus Torvalds wrote:
-
->
->
-> On Mon, 20 Jul 2009, Marc Dionne wrote:
->>>
->>> Hmm. This sounds more like the binutils bug that people had. Sounds like
->>> an assembler bug if the *.o file ends up being empty or at some fixed
->>> size. If it was cc1 that fails, I'd expect to not see an *.o file at all,
->>> since it didn't generate good assembly.
->>>
->>> In fact, your behavior sounds like the thing that produces the *.o files
->>> core-dumped or died for other reasons, and had a 64kB buffer that either
->>> got flushed or not. That would explain the "zero or exactly 64kB" size.
->>>
->>> It could be ccache too, of course.
+Neil Horman wrote:
+> On Mon, Jul 20, 2009 at 12:22:57PM -0700, Eric W. Biederman wrote:
+>> Lai Jiangshan <laijs@cn.fujitsu.com> writes:
 >>
->> Actually in my case it turns out that it is ccache after all - if I remove it
->> from the picture everything is fine.  If I re-enable it, even with a clean
->> cache, I get the problem.
+>>> 1) This fix breaks our tools.
+>>>       This fix changes the ABI. panic_on_oops is default 0,
+>>>    and a lots system do not specify the boot option "panic",
+>>>    thus, Sysrq-c will not cause CrashDump(Kdump) as expected.
+>> How does it break your tools?
 >>
->> It might just be a coincidence that it's triggered by the -fwrapv change.
->
-> Ok, so this is getting ridiculous. Do we have _three_ different kernel
-> issues going on at the same time, all subtly related to tools issues
-> rather than the kernel source tree itself?
->
-> That's just completely bizarre.
->
-> So right now we have:
->
-> - Krzysztof Oledzki: the only one who so far has really pinpointed it to
->   the -fwrapv change itself.
->
->   It would be good to really double-check that this is not about ccache,
->   since Marc apparently gets a good kernel without ccache, and -fwrapv
->   seems to be involved.
+> Well, upstream doesn't really care about ABI stability, particularly in the
+> sysrq space. 
 
-There is no ccache configured in my systems and the same problem appears 
-on a different servers (both i386 and x86-64). However, the configs are 
-very similar and the hardware is nearly identical.
+"simplify sysrq-c handler" sounds like a cleanup patch,
+why we let a cleanup patch changes the ABI?
 
-I'm pretty sure the only different between bootable and unbootable kernel 
-is that fwrapv vs strict-overflow change.
 
-Best regards,
+> That aside however, it seems like sysrq-c is doing the right thing
+> with my patch in place, namely, attempting to crash the system.  If the
+> panic_on_oops sysctl isn't set, then a crash fails, as expected
 
- 				Krzysztof Olêdzki
----1144830174-877450442-1248158426=:29729--
+The original name is "crashdump", so crash should be performed as expected.
+
+(unlike the prior behavior, which forced a kexec reboot of the system while ignoring the
+> sysctl, which seems like it would be labeled the unexpected behavior to me.
+> Regardless, it seems like the right thing to do if you want sysrq-c to do the
+> right thing from the start is set panic on the kernel command line.  Not sure
+> what the problem is there. 
+> 
+>>> 2) When CONFIG_KEXEC=n, Sysrq-c should become an invalid
+>>>    command like Sysrq-D(CONFIG_LOCKDEP, show-all-locks).
+>>>    But this fix makes it a valid command and let it do a
+>>>    hazard thing: cause a page fault(NULL dereference) in kernel.
+>>>
+>>> So, we revert this fix.
+>> The idea was to extend sysrq-d to also be a way of testing NULL
+>> pointer dereferences.  How is that a bad idea?
+>>
+> Agreed, about the only thing that I see as wrong with my change is that I
+
+also the naming.
+
+> neglected to change the documentation.  Prior to my change, the behavior was
+> completely muddled.  Sysrq-c would do one of 3 things:
+> 
+> 1) If kexec wasn't built into the kernel, it would do nothing
+> 2) If kexec was built into the kernel but not enabled, it would try and fail to
+> execute a kdump
+> 3) if kdump was enabled and configured, it would crash
+
+I don't think it's muddled.
+1) If kexec wasn't built into the kernel, IT'S NOT A VALID COMMAND.
+2),3) It always try to crashdump. not oops, not normal panic.
+
+> 
+> Under the current implementation, you can always crash the kernel (assuming
+> you've enabled sysrq, and have permission to use it), which will trigger a kdump
+> (or just crash the system, which is usefull for development in and of its own
+> right), or will simply record and oops (if panic_on_oops is clear).  The only
+> case that left open is booting a kdump kernel without handling a bad page fault,
+> which you can do from user space anyway via the kexec -e command.  I fail to see
+> how the previous implementation is superior.
+
+Even I agreed your fix, I don't agreed your naming,
+For your fix, the correct naming should be:
+
+.help_msg       = "oops(C)",
+.action_msg     = "Trigger an oops"
+
+And document it:
+Sysrq-c always causes an oops by an indirect way. It'll do one of 4 things:
+1) panic_on_oops=0, it is just kill the current task.
+2) panic_on_oops=1, but CONFIG_KEXEC=n, just normal panic
+3) panic_on_oops=1, CONFIG_KEXEC=y, but not enabled, just normal panic
+4) panic_on_oops=1, CONFIG_KEXEC=y, kdump was enabled, CrashDump.
+
+Lai.
+
+
+
