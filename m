@@ -1,161 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbZGUFBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbZGUFMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbZGUFBe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 01:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZGUFBY
+	id S1752254AbZGUFMO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 01:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZGUFMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 01:01:24 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58064 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751512AbZGUFBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 01:01:12 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] taskstats-fork: Update the sample program getdelays.c to include fork notification
-Date: Tue, 21 Jul 2009 10:31:56 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: balbir@linux.vnet.ibm.com
+	Tue, 21 Jul 2009 01:12:13 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:62349 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbZGUFMN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 01:12:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fkSN0u8V0dtrBAVAtJaGqHUGsYTDcPjSyh06aCNXR1tuSG1oX5dk0OSZbzPdVKFQLs
+         +g6IJpHaJdp4DOfE2dkpe+efsAXO+yGGsdHk5O2eNhzySaSXAeWFAyeHnAPQ01vcueg2
+         35FMFQzMW8D8n6qg+HVXDOh9doWoG7FYcienA=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907211031.56242.knikanth@suse.de>
+In-Reply-To: <200907202200.39288.elendil@planet.nl>
+References: <1248115882-20221-1-git-send-email-manuel.lauss@gmail.com>
+	 <200907202200.39288.elendil@planet.nl>
+Date: Tue, 21 Jul 2009 07:12:11 +0200
+Message-ID: <f861ec6f0907202212h4b28982fjcb9787a3915d7ee7@mail.gmail.com>
+Subject: Re: [PATCH] au1xmmc: dev_pm_ops conversion
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       manuel.lauss@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the sample program, Documentation/accounting/getdelays.c to print a
-message whenever a new task forks/clones in the cpumask specified. Change the
-command-line option -m used to specify the cpumask to register to receive
-taskstas on exit as -e and add an option -f for fork notification.
+Good Morning Frans,
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+On Mon, Jul 20, 2009 at 10:00 PM, Frans Pop<elendil@planet.nl> wrote:
+>> Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
+>> ---
+>> Run-tested on Au1200.
+>>
+>>  drivers/mmc/host/au1xmmc.c |   23 +++++++++++------------
+>>  1 files changed, 11 insertions(+), 12 deletions(-)
+>>
+>> diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
+>> index d3f5561..70509c9 100644
+>> --- a/drivers/mmc/host/au1xmmc.c
+>> +++ b/drivers/mmc/host/au1xmmc.c
+>> @@ -1131,13 +1131,12 @@ static int __devexit au1xmmc_remove(struct
+>> platform_device *pdev) return 0;
+>>  }
+>>
+>> -#ifdef CONFIG_PM
+>
+> Won't the removal of this test cause a build failure if CONFIG_PM is not
+> set? If the removal of the test is safe, this should IMHO at least be
+> explained in the commit message.
 
----
+No, it builds just fine without CONFIG_PM; it was there to shave off a
+few bytes from the kernel image.  But not everyone tests this driver
+with CONFIG_PM=y, because apparently noone really needed PM on
+this platform (Alchemy), and a full build of most of the boards using this
+driver fails with PM enabled.
 
-diff --git a/Documentation/accounting/getdelays.c b/Documentation/accounting/getdelays.c
-index aa73e72..fcbec43 100644
---- a/Documentation/accounting/getdelays.c
-+++ b/Documentation/accounting/getdelays.c
-@@ -69,12 +69,13 @@ struct msgtemplate {
- 	char buf[MAX_MSG_SIZE];
- };
- 
--char cpumask[100+6*MAX_CPUS];
-+char fork_cpumask[100+6*MAX_CPUS];
-+char exit_cpumask[100+6*MAX_CPUS];
- 
- static void usage(void)
- {
- 	fprintf(stderr, "getdelays [-dilv] [-w logfile] [-r bufsize] "
--			"[-m cpumask] [-t tgid] [-p pid]\n");
-+			"[-e cpumask] [-f cpumask] [-t tgid] [-p pid]\n");
- 	fprintf(stderr, "  -d: print delayacct stats\n");
- 	fprintf(stderr, "  -i: print IO accounting (works only with -p)\n");
- 	fprintf(stderr, "  -l: listen forever\n");
-@@ -260,7 +261,8 @@ int main(int argc, char *argv[])
- 	int fd = 0;
- 	int count = 0;
- 	int write_file = 0;
--	int maskset = 0;
-+	int fork_maskset = 0;
-+	int exit_maskset = 0;
- 	char *logfile = NULL;
- 	int loop = 0;
- 	int containerset = 0;
-@@ -270,7 +272,7 @@ int main(int argc, char *argv[])
- 	struct msgtemplate msg;
- 
- 	while (1) {
--		c = getopt(argc, argv, "qdiw:r:m:t:p:vlC:");
-+		c = getopt(argc, argv, "qdiw:r:e:f:t:p:vlC:");
- 		if (c < 0)
- 			break;
- 
-@@ -302,10 +304,15 @@ int main(int argc, char *argv[])
- 			if (rcvbufsz < 0)
- 				err(1, "Invalid rcv buf size\n");
- 			break;
--		case 'm':
--			strncpy(cpumask, optarg, sizeof(cpumask));
--			maskset = 1;
--			printf("cpumask %s maskset %d\n", cpumask, maskset);
-+		case 'f':
-+			strncpy(fork_cpumask, optarg, sizeof(fork_cpumask));
-+			fork_maskset = 1;
-+			printf("fork_cpumask %s maskset %d\n", fork_cpumask, fork_maskset);
-+			break;
-+		case 'e':
-+			strncpy(exit_cpumask, optarg, sizeof(exit_cpumask));
-+			exit_maskset = 1;
-+			printf("exit_cpumask %s maskset %d\n", exit_cpumask, exit_maskset);
- 			break;
- 		case 't':
- 			tid = atoi(optarg);
-@@ -354,10 +361,21 @@ int main(int argc, char *argv[])
- 	}
- 	PRINTF("family id %d\n", id);
- 
--	if (maskset) {
-+	if (fork_maskset) {
-+		rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
-+			      TASKSTATS_CMD_ATTR_REGISTER_FORK_CPUMASK,
-+			      &fork_cpumask, strlen(fork_cpumask) + 1);
-+		PRINTF("Sent register fork cpumask, retval %d\n", rc);
-+		if (rc < 0) {
-+			fprintf(stderr, "error sending register fork cpumask\n");
-+			goto err;
-+		}
-+	}
-+
-+	if (exit_maskset) {
- 		rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
- 			      TASKSTATS_CMD_ATTR_REGISTER_CPUMASK,
--			      &cpumask, strlen(cpumask) + 1);
-+			      &exit_cpumask, strlen(exit_cpumask) + 1);
- 		PRINTF("Sent register cpumask, retval %d\n", rc);
- 		if (rc < 0) {
- 			fprintf(stderr, "error sending register cpumask\n");
-@@ -393,7 +411,7 @@ int main(int argc, char *argv[])
- 			goto err;
- 		}
- 	}
--	if (!maskset && !tid && !containerset) {
-+	if (!fork_maskset && !exit_maskset && !tid && !containerset) {
- 		usage();
- 		goto err;
- 	}
-@@ -429,6 +447,9 @@ int main(int argc, char *argv[])
- 		while (len < rep_len) {
- 			len += NLA_ALIGN(na->nla_len);
- 			switch (na->nla_type) {
-+			case TASKSTATS_TYPE_PID_TGID:
-+				printf("New Task: \n");
-+				/* Fall through */
- 			case TASKSTATS_TYPE_AGGR_TGID:
- 				/* Fall through */
- 			case TASKSTATS_TYPE_AGGR_PID:
-@@ -488,10 +509,18 @@ int main(int argc, char *argv[])
- 		}
- 	} while (loop);
- done:
--	if (maskset) {
-+	if (fork_maskset) {
-+		rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
-+			      TASKSTATS_CMD_ATTR_DEREGISTER_FORK_CPUMASK,
-+			      &fork_cpumask, strlen(fork_cpumask) + 1);
-+		printf("Sent deregister fork mask, retval %d\n", rc);
-+		if (rc < 0)
-+			err(rc, "error sending deregister fork cpumask\n");
-+	}
-+	if (exit_maskset) {
- 		rc = send_cmd(nl_sd, id, mypid, TASKSTATS_CMD_GET,
- 			      TASKSTATS_CMD_ATTR_DEREGISTER_CPUMASK,
--			      &cpumask, strlen(cpumask) + 1);
-+			      &exit_cpumask, strlen(exit_cpumask) + 1);
- 		printf("Sent deregister mask, retval %d\n", rc);
- 		if (rc < 0)
- 			err(rc, "error sending deregister cpumask\n");
+This way the PM methods at least get a compile-test in the non-pm case.
 
+
+>> -static int au1xmmc_suspend(struct platform_device *pdev, pm_message_t
+>> state) +static int au1xmmc_suspend(struct device *dev)
+>>  {
+>> -       struct au1xmmc_host *host = platform_get_drvdata(pdev);
+>> +       struct au1xmmc_host *host = dev_get_drvdata(dev);
+>>         int ret;
+>>
+>> -       ret = mmc_suspend_host(host->mmc, state);
+>> +       ret = mmc_suspend_host(host->mmc, PMSG_SUSPEND);
+>>         if (ret)
+>>                 return ret;
+>>
+>> @@ -1150,27 +1149,27 @@ static int au1xmmc_suspend(struct
+>> platform_device *pdev, pm_message_t state) return 0;
+>>  }
+>>
+>> -static int au1xmmc_resume(struct platform_device *pdev)
+>> +static int au1xmmc_resume(struct device *dev)
+>>  {
+>> -       struct au1xmmc_host *host = platform_get_drvdata(pdev);
+>> +       struct au1xmmc_host *host = dev_get_drvdata(dev);
+>>
+>>         au1xmmc_reset_controller(host);
+>>
+>>         return mmc_resume_host(host->mmc);
+>>  }
+>> -#else
+>> -#define au1xmmc_suspend NULL
+>> -#define au1xmmc_resume NULL
+>
+> ... drop the 3 lines above (as you did) ...
+>
+>> -#endif
+>
+> ... move this #endif to after the new struct below ...
+>
+>> +
+>> +static struct dev_pm_ops au1xmmc_pmops = {
+>> +       .resume         = au1xmmc_resume,
+>> +       .suspend        = au1xmmc_suspend,
+>> +};
+>>
+>>  static struct platform_driver au1xmmc_driver = {
+>>         .probe         = au1xmmc_probe,
+>>         .remove        = au1xmmc_remove,
+>> -       .suspend       = au1xmmc_suspend,
+>> -       .resume        = au1xmmc_resume,
+>>         .driver        = {
+>>                 .name  = DRIVER_NAME,
+>>                 .owner = THIS_MODULE,
+>> +               .pm    = &au1xmmc_pmops,
+
+I like what Magnus Damm did for some of the SuperH drivers:
+
+#ifdef CONFIG_PM
+[...]
+#define DRIVER_PM_OPS (&driver_pm_ops)
+#else
+#define DRIVER_PM_OPS NULL
+#endif
+
+...
+      .driver = {
+...
+             .pm = DRIVER_PM_OPS,
+      }
+...
+
+I'd like to keep the pm stuff enabled at all times since it doesn't hurt
+in the non-pm case and if kernel size becomes a problem I can add the
+#defines back.
+
+What do you think?
+
+Thank you!
+      Manuel Lauss
