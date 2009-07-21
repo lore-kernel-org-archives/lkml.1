@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755620AbZGUUgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbZGUUgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755620AbZGUUgJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 16:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbZGUUgI
+	id S1755825AbZGUUgd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 16:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZGUUgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 16:36:08 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:35562 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754035AbZGUUgH convert rfc822-to-8bit (ORCPT
+	Tue, 21 Jul 2009 16:36:32 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:43536 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755145AbZGUUgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 16:36:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=S8kiye5akmc2ItvPQ3oe0U9CZAZ0Kn7f6IV5GOnYlxCuXG1cIaXGVmeRk4T4RWGeZD
-         yhyB2edU8J5wfoDzoFlWs3tSD1kOB2TxF+AqUg1tPGkgqc8+e4UB+y1G2LTa2rw44Az0
-         RUyXDUK1DaAzcTQin8/WXkBMkdveicePpYX8o=
-From: Marek Vasut <marek.vasut@gmail.com>
-Organization: Hack&Dev
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 1/2] MMC Agressive clocking framework v5
-Date: Tue, 21 Jul 2009 22:35:46 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30-1-amd64; KDE/4.2.4; x86_64; ; )
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-       Linus Walleij <linus.walleij@stericsson.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Pierre Ossman <pierre@ossman.eu>
-References: <1248128808-2241-1-git-send-email-linus.walleij@stericsson.com> <63386a3d0907211328v3c060012r3acc2d5f88e4d9eb@mail.gmail.com>
-In-Reply-To: <63386a3d0907211328v3c060012r3acc2d5f88e4d9eb@mail.gmail.com>
+	Tue, 21 Jul 2009 16:36:31 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Jean Pihet <jpihet@mvista.com>, Tony Lindgren <tony@atomide.com>,
+       Pierre Ossman <drzeus@drzeus.cx>, Andy Lowe <alowe@mvista.com>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH] register mmci-omap-hs using platform_driver_probe
+Date: Tue, 21 Jul 2009 22:36:13 +0200
+Message-Id: <1248208573-15171-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <200907111529.21165.david-b@pacbell.net>
+References: <200907111529.21165.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200907212235.47006.marek.vasut@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dne Út 21. července 2009 22:28:25 Linus Walleij napsal(a):
-> Then the ChangeLog I missed yesterday due to sitting up too
-> late:
->
-> ChangeLog v4->v5:
->
-> * Make mmc_set_data_timeout() in core.c work even if ios.clock is
->   set to zero by the clock gating code.
->
-> * Give the host-centric functions the mmc_host_clk* prefix instead
->   so it is clear that it's host functionality that is being
->   called.
->
-> * Mailing this to Andrew Morton and LKML since the previous MMC
->   maintainer stepped down.
-Pierre gave up on mmc subsystem maintainance ?
->
-> Linus Walleij
->
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+omap_mmc_probe lives in .init.text, so using platform_driver_register
+to register it is wrong because binding a device after the init memory
+is discarded (e.g. via sysfs) results in an oops.
 
+As requested by David Brownell platform_driver_probe is used instead of
+moving the probe function to .devinit.text as proposed initially.
+This saves some memory, but devices registered after the driver is
+probed are not bound (probably there are none) and binding via sysfs
+isn't possible.
+
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Jean Pihet <jpihet@mvista.com>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Andy Lowe <alowe@mvista.com>
+Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Madhusudhan Chikkature<madhu.cr@ti.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/mmc/host/omap_hsmmc.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 1cf9cfb..40d9830 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -1307,7 +1307,6 @@ clk_en_err:
+ #endif
+ 
+ static struct platform_driver omap_mmc_driver = {
+-	.probe		= omap_mmc_probe,
+ 	.remove		= omap_mmc_remove,
+ 	.suspend	= omap_mmc_suspend,
+ 	.resume		= omap_mmc_resume,
+@@ -1320,7 +1319,7 @@ static struct platform_driver omap_mmc_driver = {
+ static int __init omap_mmc_init(void)
+ {
+ 	/* Register the MMC driver */
+-	return platform_driver_register(&omap_mmc_driver);
++	return platform_driver_probe(&omap_mmc_driver, omap_mmc_probe);
+ }
+ 
+ static void __exit omap_mmc_cleanup(void)
+-- 
+tg: (4b0a840..) t/platsection/omap_mmc_driver (depends on: linus/master)
