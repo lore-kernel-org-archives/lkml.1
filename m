@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbZGUQuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755480AbZGUQub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbZGUQuM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 12:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbZGUQuL
+	id S1755480AbZGUQub (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 12:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbZGUQu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 12:50:11 -0400
-Received: from main.gmane.org ([80.91.229.2]:45061 "EHLO ciao.gmane.org"
+	Tue, 21 Jul 2009 12:50:29 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:49385 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752802AbZGUQuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 12:50:10 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: problems debugging panic with gdb, kdump, and vmcore
-Date: Tue, 21 Jul 2009 10:52:03 -0600
-Message-ID: <4A65F233.9030605@gmail.com>
-References: <f488382f0907202146m6d124de9w19c13222690718b9@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-In-Reply-To: <f488382f0907202146m6d124de9w19c13222690718b9@mail.gmail.com>
+	id S1754035AbZGUQu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 12:50:28 -0400
+Date: Tue, 21 Jul 2009 18:47:46 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: mchehab@infradead.org, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/media/dvb: Use dst_type field instead of type_flags
+Message-ID: <Pine.LNX.4.64.0907211847190.26529@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/20/2009 10:46 PM, Steven Noonan wrote:
-> Hi folks,
->
-> I've got a kernel panic that is easily reproducible (I am 99% sure
-> that 2.6.30.2 itself isn't to blame, it's the out-of-tree drm module I
-> built from here: http://cgit.freedesktop.org/mesa/drm/). I could just
-> follow the stack trace, but I'd like to learn how to use kexec/kdump
-> to debug this. So far, I've got kexec successfully loading a kernel on
-> a panic, and I'm able to copy the vmcore out of /proc to someplace
-> permanent, but trying to use gdb on it gives very strange results. I
-> don't know what I'm doing wrong. I've rebuilt the kernel multiple
-> times and ensured that ccache is cleared each time just in case that
-> might interfere. Here's what I'm getting with gdb:
->
->
-> Alcarin linux # pwd
-> /usr/src/linux
-> Alcarin linux # gdb vmlinux /var/tmp/vmcore
-> GNU gdb 6.8
-> Copyright (C) 2008 Free Software Foundation, Inc.
-> License GPLv3+: GNU GPL version 3 or later<http://gnu.org/licenses/gpl.html>
-> This is free software: you are free to change and redistribute it.
-> There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
-> and "show warranty" for details.
-> This GDB was configured as "i686-pc-linux-gnu"...
->
-> warning: exec file is newer than core file.
+From: Julia Lawall <julia@diku.dk>
 
-Why is the vmlinux file newer than the vmcore file?
+It seems from other code that it is the dst_type field rather than the
+type_flags field that contains values of the form DST_TYPE_IS...
+The type_flags field contains values of the form DST_TYPE_HAS...
 
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@ struct dst_state E; @@
+
+(
+*E.type_flags == 
+  \( DST_TYPE_IS_SAT\|DST_TYPE_IS_TERR\|DST_TYPE_IS_CABLE\|DST_TYPE_IS_ATSC \)
+|
+*E.type_flags != 
+  \( DST_TYPE_IS_SAT\|DST_TYPE_IS_TERR\|DST_TYPE_IS_CABLE\|DST_TYPE_IS_ATSC \)
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/media/dvb/bt8xx/dst.c       |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/media/dvb/bt8xx/dst.c b/drivers/media/dvb/bt8xx/dst.c
+index fec1d77..91353a6 100644
+--- a/drivers/media/dvb/bt8xx/dst.c
++++ b/drivers/media/dvb/bt8xx/dst.c
+@@ -1059,7 +1059,7 @@ static int dst_get_tuner_info(struct dst_state *state)
+ 		dprintk(verbose, DST_ERROR, 1, "DST type has TS=188");
+ 	}
+ 	if (state->board_info[0] == 0xbc) {
+-		if (state->type_flags != DST_TYPE_IS_ATSC)
++		if (state->dst_type != DST_TYPE_IS_ATSC)
+ 			state->type_flags |= DST_TYPE_HAS_TS188;
+ 		else
+ 			state->type_flags |= DST_TYPE_HAS_NEWTUNE_2;
