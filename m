@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZGUQNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbZGUQPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbZGUQNE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 12:13:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbZGUQND
+	id S1755212AbZGUQPV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 12:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZGUQPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 12:13:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58168 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754618AbZGUQNC (ORCPT
+	Tue, 21 Jul 2009 12:15:21 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37868 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751134AbZGUQPU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 12:13:02 -0400
-Date: Tue, 21 Jul 2009 09:11:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Krzysztof Oledzki <olel@ans.pl>
-cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       lwn@lwn.net
-Subject: Re: Linux 2.6.27.27
-In-Reply-To: <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl>
-Message-ID: <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain>
-References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
- <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 21 Jul 2009 12:15:20 -0400
+Date: Tue, 21 Jul 2009 17:16:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Daniel Mack <daniel@caiaq.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] [usb-serial] fix Ooops on uplug
+Message-ID: <20090721171625.6e2c54e4@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.44L0.0907211141180.2652-100000@iolanthe.rowland.org>
+References: <20090721004531.1036d9af@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.0907211141180.2652-100000@iolanthe.rowland.org>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 21 Jul 2009, Krzysztof Oledzki wrote:
+> > If that is occuring then the bug is elsewhere. The hang up sequence
+> > reconnects the user space to the hung up tty ops and no longer references
+> > the hardware.
 > 
-> OK, there are three kernels, exactly as you requested:
-> 
-> http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/vmlinux-fno-strict-overflow.bz2 (Hangs)
-> http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/vmlinux-fwrapv.bz2 (OK)
-> http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/vmlinux-fnone.bz2 (OK)
+> I got something similar with a pl2303 device, though not a crash.  I 
+> plugged in the device, opened /dev/ttyUSB0, unplugged the device, then 
+> tried to read from the open file descriptor.  The read provoked this:
 
-Perfect.
+That looks like it occurs after the read, however that trace shows the
+close() method being called off sys_close() which in turn means a hang up
+didn't occur when it was unplugged.
 
-And interestingly, the "fno-strict-overflow" kernel is actually much 
-closer to the "fnone" kernel than to the "fwrapv" one. I have some silly 
-scripts based on 'objdump -d' plus a lot of stupid sed scripting to remove 
-the trivial differences due to instruction addresses, and then doing a 
-'diff -u' between the munged disassembly of the kernels gives me:
+> This is only a lockdep warning, and I don't understand its
+> significance.  Even worse, when I plugged in a USB flash drive
+> afterward this appeared:
 
-  [torvalds@nehalem fno-strict-overflow]$ wc -l fnone-to-fno-strict-overflow fwrapv-to-fno-strict-overflow 
-    39309 fnone-to-fno-strict-overflow
-    91423 fwrapv-to-fno-strict-overflow
-   130732 total
+Looks like something freed the resources but didn't hang up when the
+disconnect occurred
 
-ie the diff from the kernel with no flags is less than twice the size of 
-the diff from fwrapv.
+> So it looks like something really is wrong, some sort of 
+> use-after-free.  Maybe a refcounting imbalance.
 
-Still - it's almost 40kB of diffs of disassembly, so I'm not going to 
-guarantee that I can make any sense of it and find the compiler problem in 
-it. But I'll try. And send you test-patches to see if I can pinpoint the 
-code that causes the problem.
+A tty getting destructed before it should have been would perhaps do some
+of it but it doesn't explain how the close path got where it did.
 
-> Kernels are identical and are compiled from the same config, on the same
-> server with gcc-4.2.4, binutils-2.19. There is no ccache installed and the
-> kernels are not patched with any additonal patches - just vanilla
-> linux-2.6.27.27.
+What should be occurring is
 
-Thank you.
+	USB disconnect
+		usb_serial_disconnect(interface)
+		tty_hangup(tty)   [this is buggy and commented as such in
+		the USB code as it should do it synchronously]
 
-> Screenshot from the hanging kernel (-fno-strict-overflow):
->  http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/2.6.27.27-hang.png
-> 
-> Dmesg from a bootable kernel:
->  http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/dmesg
+	tty_hangup()
+	do_tty_hangup()
 
-Great. This is all about as perfect as could be asked for. Now it's just a 
-question of trying to find the right code generation difference...
+	file->f_ops = &hung_up_tty_ops;
 
-			Linus
+		(so the USB close will never be called)
+
+	ldisc hangup
+	tty->ops->hangup (no-op on USB serial)
+
+so the trace to me implies that the usb_serial_disconnect is not
+happening. That in turn leads the close method to be called on a
+disconnected port which in turn crashes stuff.
+
+(and it also explains why Daniel's change although bogus stops the crash)
+
+
