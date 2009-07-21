@@ -1,73 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbZGUL37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZGULaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384AbZGUL37 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 07:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbZGUL37
+	id S1755396AbZGULaB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 07:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZGULaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 07:29:59 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58401 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754566AbZGUL36 (ORCPT
+	Tue, 21 Jul 2009 07:30:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52102 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754617AbZGUL37 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 07:29:58 -0400
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       xiyou.wangcong@gmail.com, tao.ma@oracle.com,
-       linux-kernel@vger.kernel.org, adobriyan@gmail.com,
-       mtk.manpages@gmail.com, y-goto@jp.fujitsu.com
-Subject: Re: [RFC][PATCH 0/3] kcore: clean up and update ram information properly
-From: Andi Kleen <andi@firstfloor.org>
-References: <m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0>
-	<m17hzdhkr8.fsf@fess.ebiederm.org>
-	<2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
-	<m1my88568n.fsf@fess.ebiederm.org>
-	<20090618030051.GA6133@cr0.nay.redhat.com>
-	<m1tz2ei54r.fsf@fess.ebiederm.org>
-	<20090618044055.GB6133@cr0.nay.redhat.com>
-	<m1prd2rtdf.fsf@fess.ebiederm.org>
-	<20090622085405.GA6499@cr0.nay.redhat.com>
-	<20090630100850.GD5873@cr0.nay.redhat.com>
-	<20090701144742.6ce3535b.akpm@linux-foundation.org>
-	<m14otwq94e.fsf@fess.ebiederm.org>
-	<20090701171249.004968e8.akpm@linux-foundation.org>
-	<20090702094138.f86ead92.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090717152955.6585cbf9.akpm@linux-foundation.org>
-	<20090721183628.edbb7b99.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 21 Jul 2009 13:29:57 +0200
-In-Reply-To: <20090721183628.edbb7b99.kamezawa.hiroyu@jp.fujitsu.com> (KAMEZAWA Hiroyuki's message of "Tue, 21 Jul 2009 18:36:28 +0900")
-Message-ID: <873a8q2s0a.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 21 Jul 2009 07:29:59 -0400
+Date: Tue, 21 Jul 2009 07:29:48 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Gurudatt, Sreenidhi B" <sreenidhi.b.gurudatt@intel.com>,
+       pazke@centrinvest.ru, "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>
+Subject: Re: x86: IPC driver patch for Intel Moorestown platform
+Message-ID: <20090721112948.GA14038@infradead.org>
+References: <98769532B4BB14429434178695419EAE5F3F9541@bgsmsx501.gar.corp.intel.com> <20090721065021.GC11781@centrinvest.ru> <87eisa33bq.fsf@basil.nowhere.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87eisa33bq.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
+On Tue, Jul 21, 2009 at 09:25:29AM +0200, Andi Kleen wrote:
+> "Andrey Panin" <pazke@centrinvest.ru> writes:
+> 
+> Andrey, Your review would be easier to read if you removed the code
+> you're not commenting on.
 
-> Now, /proc/kcore is built on kclist information which is constructed at boot.
-> This kclist includes physical memory range information but not updated at
-> memory hotplug. And, this information tends to includes big memory hole.
->
-> On the other hand, /proc/iomem includes all physical memory information as
-> "System RAM" and this is updated properly and kdump use this, IIUC. 
-> (I hope all archtecuture stores necessary information...)
->
-> This patch tries to build kclist for physical memory(direct map) on
-> /proc/iomem info. It's refreshed at open("/proc/kcore",) if necesasry.
->
-> This is just a RFC. Any comments are welcome.
->
-> [1/3] ... clean up kclist handling.
-> [2/3] ... clean up kclist_add()
-> [3/3] ... use /proc/iomem information for /proc/kcore.
+Full quoting of patches has become a very common desease on Linux lists
+unfortuately, it's really hard to read many patch reviews.
 
-Great cleanup! Thanks.
-
-The only missing part that we still need is to also include 
-the kallsyms information, then the core would be even more useful.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
