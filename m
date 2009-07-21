@@ -1,92 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbZGUIsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbZGUI6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753766AbZGUIsu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 04:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZGUIst
+	id S1753939AbZGUI6N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 04:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbZGUI6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 04:48:49 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52171 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbZGUIss (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 04:48:48 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 21 Jul 2009 17:46:59 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       xiyou.wangcong@gmail.com, tao.ma@oracle.com,
-       linux-kernel@vger.kernel.org, adobriyan@gmail.com,
-       mtk.manpages@gmail.com, y-goto@jp.fujitsu.com
-Subject: Re: [RESEND Patch] kcore: remove its pointless size
-Message-Id: <20090721174659.2c860ee4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090721110924.39a93078.kamezawa.hiroyu@jp.fujitsu.com>
-References: <m11vpqvozl.fsf@fess.ebiederm.org>
-	<20090613040958.GA2959@cr0>
-	<m17hzdhkr8.fsf@fess.ebiederm.org>
-	<2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
-	<m1my88568n.fsf@fess.ebiederm.org>
-	<20090618030051.GA6133@cr0.nay.redhat.com>
-	<m1tz2ei54r.fsf@fess.ebiederm.org>
-	<20090618044055.GB6133@cr0.nay.redhat.com>
-	<m1prd2rtdf.fsf@fess.ebiederm.org>
-	<20090622085405.GA6499@cr0.nay.redhat.com>
-	<20090630100850.GD5873@cr0.nay.redhat.com>
-	<20090701144742.6ce3535b.akpm@linux-foundation.org>
-	<m14otwq94e.fsf@fess.ebiederm.org>
-	<20090701171249.004968e8.akpm@linux-foundation.org>
-	<20090702094138.f86ead92.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090717152955.6585cbf9.akpm@linux-foundation.org>
-	<20090721110924.39a93078.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Jul 2009 04:58:13 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62727 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753057AbZGUI6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 04:58:12 -0400
+Message-ID: <4A6582C1.2040609@cn.fujitsu.com>
+Date: Tue, 21 Jul 2009 16:56:33 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing/events: Add module tracepoints
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009 11:09:24 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Add trace points to trace module_load, module_free, module_get,
+module_put and module_request, and use trace_event facility
+to get the trace output.
 
-> On Fri, 17 Jul 2009 15:29:55 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Thu, 2 Jul 2009 09:41:38 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > I think I'm about to forget about the above issues.  If everyone else
-> > does the same, they won't get addressed.  Oh well.
-> > 
-> > And I still need to decide whether
-> > kcore-fix-proc-kcores-statst_size.patch fixes things up sufficiently
-> > well to justify merging it.
-> >
-> 
-> Hmm, I read fs/proc/kcore.c and feel followng, now.
-> 
-> - kclist doesn't handle memory hole, then, it will never be "correct" size.
->   For example, arch/x86/mm/init.c calls kclist_add() as following
-> 
->   715         kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
->   716                    VMALLOC_END-VMALLOC_START);
-> 
->   Wow, extremely big anyway.
-> 
-> - Then, yes. Size of /proc/kcode is pointless. Anyway, what's important is
->   not "size", but ELF phder of kcore.
-> 
-> To this patch,
-> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-Ah...BTW, if set size to be 0,
- %objdump -x /proc/kcore
-returns immediately because objdump finds size as 0. but readelf seems to
-work well.
+Here's the sample output:
 
-Thanks,
--Kame
+     TASK-PID    CPU#    TIMESTAMP  FUNCTION
+        | |       |          |         |
+    <...>-42    [000]     1.758380: module_request: fb0 wait=1 call_site=fb_open
+    ...
+    <...>-60    [000]     3.269403: module_load: scsi_wait_scan 
+    <...>-60    [000]     3.269432: module_put: scsi_wait_scan call_site=sys_init_module refcnt=0
+    <...>-61    [001]     3.273168: module_free: scsi_wait_scan
+    ...
+    <...>-1021  [000]    13.836081: module_load: sunrpc 
+    <...>-1021  [000]    13.840589: module_put: sunrpc call_site=sys_init_module refcnt=-1
+    <...>-1027  [000]    13.848098: module_get: sunrpc call_site=try_module_get refcnt=0
+    <...>-1027  [000]    13.848308: module_get: sunrpc call_site=get_filesystem refcnt=1
+    <...>-1027  [000]    13.848692: module_put: sunrpc call_site=put_filesystem refcnt=0
+    ...
+ modprobe-2587  [001]  1088.437213: module_load: trace_events_sample F
+ modprobe-2587  [001]  1088.437786: module_put: trace_events_sample call_site=sys_init_module refcnt=0
 
 
+Note:
 
+- the taints flag can be 'F', 'C' and/or 'P' if mod->taints != 0
+
+- the module refcnt is percpu, so it can be negative in a specific cpu
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/linux/module.h        |   14 ++++-
+ include/trace/events/module.h |  126 +++++++++++++++++++++++++++++++++++++++++
+ kernel/kmod.c                 |    4 +
+ kernel/module.c               |   11 ++++
+ 4 files changed, 152 insertions(+), 3 deletions(-)
+ create mode 100644 include/trace/events/module.h
+
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 7a5c82c..86863cd 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -17,10 +17,12 @@
+ #include <linux/moduleparam.h>
+ #include <linux/marker.h>
+ #include <linux/tracepoint.h>
+-#include <asm/local.h>
+ 
++#include <asm/local.h>
+ #include <asm/module.h>
+ 
++#include <trace/events/module.h>
++
+ /* Not Yet Implemented */
+ #define MODULE_SUPPORTED_DEVICE(name)
+ 
+@@ -480,7 +482,10 @@ static inline local_t *__module_ref_addr(struct module *mod, int cpu)
+ static inline void __module_get(struct module *module)
+ {
+ 	if (module) {
+-		local_inc(__module_ref_addr(module, get_cpu()));
++		unsigned int cpu = get_cpu();
++		local_inc(__module_ref_addr(module, cpu));
++		trace_module_get(module, _THIS_IP_,
++				 local_read(__module_ref_addr(module, cpu)));
+ 		put_cpu();
+ 	}
+ }
+@@ -491,8 +496,11 @@ static inline int try_module_get(struct module *module)
+ 
+ 	if (module) {
+ 		unsigned int cpu = get_cpu();
+-		if (likely(module_is_live(module)))
++		if (likely(module_is_live(module))) {
+ 			local_inc(__module_ref_addr(module, cpu));
++			trace_module_get(module, _THIS_IP_,
++				local_read(__module_ref_addr(module, cpu)));
++		}
+ 		else
+ 			ret = 0;
+ 		put_cpu();
+diff --git a/include/trace/events/module.h b/include/trace/events/module.h
+new file mode 100644
+index 0000000..84160fb
+--- /dev/null
++++ b/include/trace/events/module.h
+@@ -0,0 +1,126 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM module
++
++#if !defined(_TRACE_MODULE_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_MODULE_H
++
++#include <linux/tracepoint.h>
++
++#ifdef CONFIG_MODULES
++
++struct module;
++
++#define show_module_flags(flags) __print_flags(flags, "",	\
++	{ (1UL << TAINT_PROPRIETARY_MODULE),	"P" },		\
++	{ (1UL << TAINT_FORCED_MODULE),		"F" },		\
++	{ (1UL << TAINT_CRAP),			"C" })
++
++TRACE_EVENT(module_load,
++
++	TP_PROTO(struct module *mod),
++
++	TP_ARGS(mod),
++
++	TP_STRUCT__entry(
++		__field(	unsigned int,	taints		)
++		__string(	name,		mod->name	)
++	),
++
++	TP_fast_assign(
++		__entry->taints = mod->taints;
++		__assign_str(name, mod->name);
++	),
++
++	TP_printk("%s %s", __get_str(name), show_module_flags(__entry->taints))
++);
++
++TRACE_EVENT(module_free,
++
++	TP_PROTO(struct module *mod),
++
++	TP_ARGS(mod),
++
++	TP_STRUCT__entry(
++		__string(	name,		mod->name	)
++	),
++
++	TP_fast_assign(
++		__assign_str(name, mod->name);
++	),
++
++	TP_printk("%s", __get_str(name))
++);
++
++TRACE_EVENT(module_get,
++
++	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
++
++	TP_ARGS(mod, ip, refcnt),
++
++	TP_STRUCT__entry(
++		__field(	unsigned long,	ip		)
++		__field(	int,		refcnt		)
++		__string(	name,		mod->name	)
++	),
++
++	TP_fast_assign(
++		__entry->ip	= ip;
++		__entry->refcnt	= refcnt;
++		__assign_str(name, mod->name);
++	),
++
++	TP_printk("%s call_site=%pf refcnt=%d",
++		  __get_str(name), (void *)__entry->ip, __entry->refcnt)
++);
++
++TRACE_EVENT(module_put,
++
++	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
++
++	TP_ARGS(mod, ip, refcnt),
++
++	TP_STRUCT__entry(
++		__field(	unsigned long,	ip		)
++		__field(	int,		refcnt		)
++		__string(	name,		mod->name	)
++	),
++
++	TP_fast_assign(
++		__entry->ip	= ip;
++		__entry->refcnt	= refcnt;
++		__assign_str(name, mod->name);
++	),
++
++	TP_printk("%s call_site=%pf refcnt=%d",
++		  __get_str(name), (void *)__entry->ip, __entry->refcnt)
++);
++
++TRACE_EVENT(module_request,
++
++	TP_PROTO(char *name, bool wait, unsigned long ip),
++
++	TP_ARGS(name, wait, ip),
++
++	TP_STRUCT__entry(
++		__field(	bool,		wait		)
++		__field(	unsigned long,	ip		)
++		__string(	name,		name		)
++	),
++
++	TP_fast_assign(
++		__entry->wait	= wait;
++		__entry->ip	= ip;
++		__assign_str(name, name);
++	),
++
++	TP_printk("%s wait=%d call_site=%pf",
++		  __get_str(name), (int)__entry->wait, (void *)__entry->ip)
++);
++
++#endif /* CONFIG_MODULES */
++
++#endif /* _TRACE_MODULE_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
++
+diff --git a/kernel/kmod.c b/kernel/kmod.c
+index 385c31a..a922808 100644
+--- a/kernel/kmod.c
++++ b/kernel/kmod.c
+@@ -37,6 +37,8 @@
+ #include <linux/suspend.h>
+ #include <asm/uaccess.h>
+ 
++#include <trace/events/module.h>
++
+ extern int max_threads;
+ 
+ static struct workqueue_struct *khelper_wq;
+@@ -108,6 +110,8 @@ int __request_module(bool wait, const char *fmt, ...)
+ 		return -ENOMEM;
+ 	}
+ 
++	trace_module_request(module_name, wait, _RET_IP_);
++
+ 	ret = call_usermodehelper(modprobe_path, argv, envp,
+ 			wait ? UMH_WAIT_PROC : UMH_WAIT_EXEC);
+ 	atomic_dec(&kmod_concurrent);
+diff --git a/kernel/module.c b/kernel/module.c
+index 0a04983..38bf87a 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -55,6 +55,11 @@
+ #include <linux/percpu.h>
+ #include <linux/kmemleak.h>
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/module.h>
++
++EXPORT_TRACEPOINT_SYMBOL(module_get);
++
+ #if 0
+ #define DEBUGP printk
+ #else
+@@ -940,6 +945,8 @@ void module_put(struct module *module)
+ 	if (module) {
+ 		unsigned int cpu = get_cpu();
+ 		local_dec(__module_ref_addr(module, cpu));
++		trace_module_put(module, _RET_IP_,
++				 local_read(__module_ref_addr(module, cpu)));
+ 		/* Maybe they're waiting for us to drop reference? */
+ 		if (unlikely(!module_is_live(module)))
+ 			wake_up_process(module->waiter);
+@@ -1490,6 +1497,8 @@ static int __unlink_module(void *_mod)
+ /* Free a module, remove from lists, etc (must hold module_mutex). */
+ static void free_module(struct module *mod)
+ {
++	trace_module_free(mod);
++
+ 	/* Delete from various lists */
+ 	stop_machine(__unlink_module, mod, NULL);
+ 	remove_notes_attrs(mod);
+@@ -2357,6 +2366,8 @@ static noinline struct module *load_module(void __user *umod,
+ 	/* Get rid of temporary copy */
+ 	vfree(hdr);
+ 
++	trace_module_load(mod);
++
+ 	/* Done! */
+ 	return mod;
+ 
+-- 
+1.6.3
 
