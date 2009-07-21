@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbZGUPXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbZGUPe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbZGUPXr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 11:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755246AbZGUPXq
+	id S1755178AbZGUPe5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 11:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754328AbZGUPe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 11:23:46 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:56269 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754686AbZGUPXp (ORCPT
+	Tue, 21 Jul 2009 11:34:56 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:62289 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751850AbZGUPe4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 11:23:45 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: x86: IPC driver patch for Intel Moorestown platform
-Date: Tue, 21 Jul 2009 17:23:36 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
-Cc: "Gurudatt, Sreenidhi B" <sreenidhi.b.gurudatt@intel.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>
-References: <98769532B4BB14429434178695419EAE5F3F9541@bgsmsx501.gar.corp.intel.com> <200907211700.21059.arnd@arndb.de> <20090721161023.7607ea7f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090721161023.7607ea7f@lxorguk.ukuu.org.uk>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 21 Jul 2009 11:34:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=qG/8f0DpXaUHvpGIYp13S3UbYGAWAHr+kAowKTr0nSLsqu+RVMo1PiekpJB8wS0/3
+	L76B73z8bIGofHzdy4Vtw==
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+In-Reply-To: <20090721120106.GW24157@balbir.in.ibm.com>
+References: <1248171926-20232-1-git-send-email-dfeng@redhat.com>
+	 <20090721111019.GV24157@balbir.in.ibm.com>
+	 <8522a3d30907210438u6fce081fi835bf964d0c01e8a@mail.gmail.com>
+	 <20090721120106.GW24157@balbir.in.ibm.com>
+Date: Tue, 21 Jul 2009 08:34:51 -0700
+Message-ID: <6599ad830907210834y30e7d57aj978898a300a447d0@mail.gmail.com>
+Subject: Re: [PATCH] cgroup: fix reverse unlock sequence in cgroup_get_sb
+From: Paul Menage <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Zefan Li <lizf.kernel@gmail.com>, Xiaotian Feng <dfeng@redhat.com>,
+       lizf@cn.fujitsu.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907211723.36862.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18Lw0oEK5X0vOkpN0adzgIiXeJWhoW+C2RUTM5
- BfoPv4uwj7j45JXC+ZO1MHENFC3/6XQnqTwEjGIw5rWGuhScWN
- InwnEHolmZKjl9UHgVYyw==
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 July 2009, Alan Cox wrote:
-> > 1. built-in code adds platform-device for mrst_ipc
-> > 2. user space auto-loads the mrst_ipc driver
-> > 3. mrst_ipc driver creates child devices for each of its attached
-> >    devices
-> 
-> The devices talking to it already are devices - but they will be input
-> devices, watchdogs, etc. They already belong in existing classes.
+On Tue, Jul 21, 2009 at 5:01 AM, Balbir Singh<balbir@linux.vnet.ibm.com> wrote:
+>
+> lock(A)
+> lock(B)
+> unlock(A)
+> unlock(B)
+>
+> Tomorrow if a unsuspecting programmer does this
+>
+> lock(A)
+> lock(B)
+> unlock(A)
+>
+> code block
+>
+> unlock(B)
+>
+>
+> What protects code block? lock B? Is that the intention?
+>
 
-Remember that devices normally are both in the /sys/class hierarchy
-as a class device and in the /sys/devices hierarchy based on their
-attachment.
+An "unsuspecting programmer" shouldn't be adding code to
+multi-threaded routines without thoroughly understanding the locking.
 
-> I also don't believe the mrst ipc is enumerable either. If it was
-> enumerable it would make a lot more sense.
+I guess there's no harm in this patch, but as Li says, it doesn't
+really change anything.
 
-It could be done along the same lines as ./drivers/input/serio/i8042.c:
-
-The platform knows when an i8042 chip is present and adds the
-serio devices it statically knows about. The serio driver then
-adds input class devices for them. You probably wouldn't /have/
-to add a new bus_type but could reuse nested platform devices.
-
-	Arnd <><
+Paul
