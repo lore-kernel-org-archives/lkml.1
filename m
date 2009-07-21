@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbZGUAaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751532AbZGUAhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754706AbZGUAaH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 20:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZGUAaF
+	id S1751532AbZGUAhz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 20:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbZGUAhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 20:30:05 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:17180 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbZGUAaD (ORCPT
+	Mon, 20 Jul 2009 20:37:54 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:56578 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbZGUAhx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 20:30:03 -0400
-Date: Mon, 20 Jul 2009 17:28:22 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Subrata Modak <subrata@linux.vnet.ibm.com>
-Cc: ocfs2-devel@oss.oracle.com, Mark Fasheh <mfasheh@suse.com>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       David Howells <dhowells@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix compilation warning for fs/ocfs2/xattr.c
-Message-ID: <20090721002822.GB9183@mail.oracle.com>
-Mail-Followup-To: Subrata Modak <subrata@linux.vnet.ibm.com>,
-	ocfs2-devel@oss.oracle.com, Mark Fasheh <mfasheh@suse.com>,
-	Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-	David Howells <dhowells@redhat.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20090713194928.32372.56679.sendpatchset@subratamodak.linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090713194928.32372.56679.sendpatchset@subratamodak.linux.ibm.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A650BF2.0094:SCFMA4539814,ss=1,fgs=0
+	Mon, 20 Jul 2009 20:37:53 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Message-id: <4A650DE1.20105@gmail.com>
+Date: Mon, 20 Jul 2009 20:37:53 -0400
+From: Marc Dionne <marc.c.dionne@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre)
+ Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Krzysztof Oledzki <olel@ans.pl>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       stable@kernel.org, lwn@lwn.net
+Subject: Re: Linux 2.6.27.27
+References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl>
+ <20090720151008.GC10015@suse.de>
+ <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain>
+ <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl>
+ <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
+ <4A650219.3060003@gmail.com>
+ <alpine.LFD.2.01.0907201650570.19335@localhost.localdomain>
+In-reply-to: <alpine.LFD.2.01.0907201650570.19335@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 14, 2009 at 01:19:31AM +0530, Subrata Modak wrote:
-> gcc 4.4.1 generates the following build warning on i386:
-> 
-> CC [M]  fs/ocfs2/xattr.o
-> fs/ocfs2/xattr.c: In function ‘ocfs2_xattr_block_get’:
-> fs/ocfs2/xattr.c:1055: warning: ‘block_off’ may be used uninitialized in this function
-> 
-> The following fix is based on a similar approach by David Howells
-> few days back: http://lkml.org/lkml/2009/7/9/109,
-> 
-> Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>,
+On 07/20/2009 07:56 PM, Linus Torvalds wrote:
+>
+> On Mon, 20 Jul 2009, Marc Dionne wrote:
+>> I might be seeing a slightly different bug, but in case it's helpful, the
+>> behaviour here on Fedora rawhide with gcc-4.4.0-14.x86_64 and
+>> binutils-2.19.51.0.11-27.fc12.x86_64 is that I get various .o files that come
+>> out as completely empty files (or in one case as a precisely 64K sized file
+>> that gives a "File format not recognized" error"), and the latest 2.6.31-rc
+>> git can't be built at all.
+>
+> Hmm. This sounds more like the binutils bug that people had. Sounds like
+> an assembler bug if the *.o file ends up being empty or at some fixed
+> size. If it was cc1 that fails, I'd expect to not see an *.o file at all,
+> since it didn't generate good assembly.
+>
+> In fact, your behavior sounds like the thing that produces the *.o files
+> core-dumped or died for other reasons, and had a 64kB buffer that either
+> got flushed or not. That would explain the "zero or exactly 64kB" size.
+>
+> It could be ccache too, of course.
 
-	This is now in the fixes branch of ocfs2.git.
+Actually in my case it turns out that it is ccache after all - if I 
+remove it from the picture everything is fine.  If I re-enable it, even 
+with a clean cache, I get the problem.
 
-Joel
+It might just be a coincidence that it's triggered by the -fwrapv change.
 
--- 
-
-Life's Little Instruction Book #15
-
-	"Own a great stereo system."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Marc
