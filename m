@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZGUO2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbZGUOey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754701AbZGUO2h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 10:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbZGUO2g
+	id S1754818AbZGUOey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 10:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbZGUOey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 10:28:36 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:58173 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754365AbZGUO2g (ORCPT
+	Tue, 21 Jul 2009 10:34:54 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:48489 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752571AbZGUOex (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 10:28:36 -0400
-Date: Tue, 21 Jul 2009 17:28:33 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Felipe Balbi <me@felipebalbi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 1/4] staging: cpc-usb: convert comment style in cpc.h
-Message-ID: <20090721142833.GA20401@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1248180746-18140-1-git-send-email-me@felipebalbi.com>
- <1248180746-18140-2-git-send-email-me@felipebalbi.com>
- <4A65CF81.9070008@gmail.com>
+	Tue, 21 Jul 2009 10:34:53 -0400
+Date: Tue, 21 Jul 2009 10:34:53 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jason Wessel <jason.wessel@windriver.com>
+cc: gregkh@suse.de, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <dbrownell@users.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 07/10] ehci-dbgp,ehci: Allow early or late use of the
+ dbgp device
+In-Reply-To: <4A657296.4050002@windriver.com>
+Message-ID: <Pine.LNX.4.44L0.0907211033390.2967-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A65CF81.9070008@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 21 Jul 2009 14:28:15.0114 (UTC) FILETIME=[7BCA8EA0:01CA0A0F]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 21 Jul 2009, Jason Wessel wrote:
 
-On Tue, Jul 21, 2009 at 04:24:01PM +0200, ext Artem Bityutskiy wrote:
-> If you decided to clean this up, then how about using better
-> commenting style documented in Documentation/CodingStyle?
+> Alan Stern wrote:
+> > On Mon, 20 Jul 2009, Jason Wessel wrote:
+> >> +    /* optional debug port, normally in the first BAR */
+> >> +    temp = pci_find_capability(pdev, 0x0a);
+> > This isn't going to work very well on systems with non-PCI EHCI
+> > controllers.  Maybe you should leave debug-port detection in
+> > ehci-pci.c.  The controller doesn't get reset very much in any case.
+> >
+>  
 > 
-> Namely, Use
-> /*
->   * blah
->   */
+> The high level debug port detection still needed to move, but you are
+> correct, it needs to move with in the ehci-pci.c.
 > 
-> style.
+> The ehci_reset() definitely clears the debug controller in the pci
+> probe call to ehci_pci_setup().  The debug port detect code just needs
+> to get called before the ehci_reset() in this case.
 > 
-> Also, how about making sentences start from a capital letter,
-> and re-format the whole comment better?
+> The repaired patch is inline below.
 
-the patch is only about converting comment style and that's all. Any
-other changes I left for other cleanup patches which are being cooked.
+This is much better.
 
--- 
-balbi
+Alan Stern
+
