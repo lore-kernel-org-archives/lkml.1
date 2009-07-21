@@ -1,99 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZGUMK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZGUMMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbZGUMK0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 08:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbZGUMKZ
+	id S1755456AbZGUMMi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 08:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZGUMMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 08:10:25 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43624 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752431AbZGUMKY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 08:10:24 -0400
-Date: Tue, 21 Jul 2009 13:10:26 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Gurudatt, Sreenidhi B" <sreenidhi.b.gurudatt@intel.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>
-Subject: Re: x86: IPC driver patch for Intel Moorestown platform
-Message-ID: <20090721131026.12107411@lxorguk.ukuu.org.uk>
-In-Reply-To: <200907211324.26617.arnd@arndb.de>
-References: <98769532B4BB14429434178695419EAE5F3F9541@bgsmsx501.gar.corp.intel.com>
-	<200907211324.26617.arnd@arndb.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Jul 2009 08:12:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48627 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753640AbZGUMMf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 08:12:35 -0400
+Message-ID: <4A65B0AB.5000608@kernel.org>
+Date: Tue, 21 Jul 2009 21:12:27 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+Subject: [RFC PATCH] ia64: convert to dynamic percpu allocator
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Jul 2009 12:12:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The naming is unfortunate, because IPC in our context normally
-> refers to Inter-Process-Communication, which is very different
+Unlike other archs, ia64 reserves space for percpu areas during early
+memory initialization.  The space for cpu0 is reserved separate in the
+linker script.  Other cpus occupy a contiguous region indexed by cpu
+number on contiguous memory model or are grouped by node on
+discontiguous memory model.
 
-Actually its also various other things in the kernel already - including
-a type of Sparc system. The device is an "IPC" and calling it something
-else is going to confuse. The code uses mrst_ipc_ as a prefix not ipc_
-for good reason.
+As allocation and initialization are done by the arch code, all that
+setup_per_cpu_areas() needs to do is communicating the determined
+layout to the percpu allocator.  This patch implements
+setup_per_cpu_areas() for both contig and discontig memory models and
+drops HAVE_LEGACY_PER_CPU_AREA.
 
-> > +u32 mrst_ipc_batt_read(u8 ioc, int *err);
-> > +int mrst_ipc_batt_write(u8 ioc, u32 value);
-> > +int mrst_ipc_get_batt_properties(struct mrst_ipc_batt_prop_data *prop_data);
-> > +int mrst_ipc_set_watchdog(struct watchdog_reg_data *p_watchdog_data);
-> > +int mrst_ipc_program_io_bus_master(struct mrst_ipc_io_bus_master_regs
-> > +                       *p_reg_data);
-> > +int lnw_ipc_single_cmd(u8 cmd_id, u8 sub_id, int size, int msi);
-> 
-> As mentioned, these all don't seem to belong in the base driver.
+NOT_SIGNED_OFF_YET
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+---
+I don't have access to an ia64 machine so I could only test with ski.
+With sim_defconfig, it boots but I didn't have any userland.
+discontig configuration builds fine but I couldn't test it.
 
-There are differences between how the various things talk over the IPC.
-There are also locking rules such as the mutex for a single message/reply
-at a time. I think it would actually get horribly ugly if stuff got
-abstracted too much out of the mrst ipc code.
+Can you guys please verify this patch?
 
-> Hmm, so your driver can by design only work with a single
-> instance of the hardware. Normally, the recommendation is
-> to put all these variables into a structure that you pass
-> around between all functions.
+This patch is available in the following git tree.
 
-"There can be only one", which isn't to say it might not be bad
-futureproofing.
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git review-ia64
 
-> This function looks really strange, it is not called anywhere in your
-> driver, is not exported for modules and does not make sense as a
-> library interface. The lock does not appear to protect anything
-> either.
+Thanks.
 
-Agreed the lock isn't needed in the init/setup function.
+ arch/ia64/Kconfig        |    3 -
+ arch/ia64/kernel/setup.c |   12 ------
+ arch/ia64/mm/contig.c    |   67 +++++++++++++++++++++++++++++++++
+ arch/ia64/mm/discontig.c |   94 +++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 161 insertions(+), 15 deletions(-)
 
-> You really should not hardcode I/O addresses like IPC_BASE_ADDRESS
-> and I2C_SER_BUS. These normally come from some kind of bus probing
-> or from a firmware table. Again, like for the PCI stuff, the virtual
-
-They are hardcoded.
-
-> It seems like the calling conventions for mrst_pmic_ioread are
-> unnecessarily complicated. r_data.num_entries is always 1, so
-> why pass a variable-length array?
-
-mrst_pmic_ioread is also exported for external users. The ioread8/write8
-helpers are for the normal case.
-
-> > +#define LNW_IPC1_BASE          0xff11c000
-> > +#define LNW_IPC1_MMAP_SIZE     1024
-> 
-> As mentioned before, don't hardcode but read from
-> an appropriate interface.
-
-These are hardcoded - kind of like the APIC and stuff are. Remember
-Moorestown is not a PC.
-
-As regards device instances the devices that use it generally create
-their own because they want to be devices like watchdogs, thermal
-monitors or input devices. The IPC itself could probably be a platform
-device with no real problem although I don't think it would actually gain
-anything ?
-
-Alan
+Index: work/arch/ia64/Kconfig
+===================================================================
+--- work.orig/arch/ia64/Kconfig
++++ work/arch/ia64/Kconfig
+@@ -89,9 +89,6 @@ config GENERIC_TIME_VSYSCALL
+ 	bool
+ 	default y
+ 
+-config HAVE_LEGACY_PER_CPU_AREA
+-	def_bool y
+-
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool y
+ 
+Index: work/arch/ia64/mm/contig.c
+===================================================================
+--- work.orig/arch/ia64/mm/contig.c
++++ work/arch/ia64/mm/contig.c
+@@ -186,6 +186,73 @@ alloc_per_cpu_data(void)
+ 	cpu_data = __alloc_bootmem(PERCPU_PAGE_SIZE * NR_CPUS-1,
+ 				   PERCPU_PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
+ }
++
++/**
++ * setup_per_cpu_areas - setup percpu areas
++ *
++ * Arch code has already allocated and initialized percpu areas.  All
++ * this function has to do is to teach the determined layout to the
++ * dynamic percpu allocator, which happens to be more complex than
++ * creating whole new ones using helpers.
++ */
++void __init
++setup_per_cpu_areas(void)
++{
++	struct pcpu_alloc_info *ai;
++	struct pcpu_group_info *gi;
++	unsigned int *cpu_map;
++	unsigned int cpu;
++	void *base, *grp0_base, *grp1_base = NULL;
++	int rc;
++
++	ai = pcpu_alloc_alloc_info(2, nr_cpu_ids);
++	if (!ai)
++		panic("failed to allocate pcpu_alloc_info");
++	cpu_map = ai->groups[0].cpu_map;
++
++	/* cpus are identity mapped to units */
++	for_each_possible_cpu(cpu)
++		cpu_map[cpu] = cpu;
++
++	/* determine bases */
++	base = grp0_base = __per_cpu_start + __per_cpu_offset[0];
++	if (num_possible_cpus() > 1) {
++		grp1_base = __per_cpu_start + __per_cpu_offset[1];
++		base = min(grp0_base, grp1_base);
++	}
++
++	/* set basic parameters */
++	ai->static_size		= __per_cpu_end - __per_cpu_start;
++	ai->reserved_size	= PERCPU_MODULE_RESERVE; /* tj - necessary? */
++	ai->dyn_size		= PERCPU_DYNAMIC_RESERVE;
++	ai->unit_size		= PERCPU_PAGE_SIZE;
++	ai->atom_size		= PAGE_SIZE;
++	ai->alloc_size		= PERCPU_PAGE_SIZE;
++
++	/*
++	 * BSP is always present and occupies separate statically
++	 * reserved area.
++	 */
++	ai->nr_groups = 0;
++	gi = &ai->groups[ai->nr_groups++];
++	gi->nr_units		= 1;
++	gi->base_offset		= grp0_base - base;
++	gi->cpu_map		= &cpu_map[0];
++
++	if (grp1_base) {
++		/* all APs occupy single contiguos region indexed by cpu id */
++		gi = &ai->groups[ai->nr_groups++];
++		gi->nr_units		= nr_cpu_ids - 1;
++		gi->base_offset		= grp1_base - base;
++		gi->cpu_map		= &cpu_map[1];
++	}
++
++	rc = pcpu_setup_first_chunk(ai, base);
++	if (rc)
++		panic("failed to setup percpu area (err=%d)", rc);
++
++	pcpu_free_alloc_info(ai);
++}
+ #else
+ #define alloc_per_cpu_data() do { } while (0)
+ #endif /* CONFIG_SMP */
+Index: work/arch/ia64/mm/discontig.c
+===================================================================
+--- work.orig/arch/ia64/mm/discontig.c
++++ work/arch/ia64/mm/discontig.c
+@@ -159,6 +159,100 @@ static void *per_cpu_node_setup(void *cp
+ 	return cpu_data;
+ }
+ 
++#ifdef CONFIG_SMP
++/**
++ * setup_per_cpu_areas - setup percpu areas
++ *
++ * Arch code has already allocated and initialized percpu areas.  All
++ * this function has to do is to teach the determined layout to the
++ * dynamic percpu allocator, which happens to be more complex than
++ * creating whole new ones using helpers.
++ */
++void __init setup_per_cpu_areas(void)
++{
++	struct pcpu_alloc_info *ai;
++	struct pcpu_group_info *gi;
++	unsigned int *cpu_map;
++	void *base;
++	unsigned long base_offset;
++	unsigned int cpu;
++	int node, prev_node, unit, nr_units, rc;
++
++	ai = pcpu_alloc_alloc_info(MAX_NUMNODES + 1, nr_cpu_ids);
++	if (!ai)
++		panic("failed to allocate pcpu_alloc_info");
++	cpu_map = ai->groups[0].cpu_map;
++
++	/* determine base */
++	base = (void *)ULONG_MAX;
++	for_each_possible_cpu(cpu)
++		base = min(base,
++			   (void *)(__per_cpu_offset[cpu] + __per_cpu_start));
++	base_offset = (void *)__per_cpu_start - base;
++
++	/*
++	 * Build cpu_map.  cpu0 is always mapped to unit0.  The rest
++	 * are grouped by node.
++	 */
++	unit = 0;
++	cpu_map[unit++] = 0;
++	for_each_node(node) {
++		for_each_possible_cpu(cpu) {
++			if (cpu == 0)
++				continue;
++			if (node == node_cpuid[cpu].nid)
++				cpu_map[unit++] = cpu;
++		}
++	}
++	nr_units = unit;
++
++	/* set basic parameters */
++	ai->static_size		= __per_cpu_end - __per_cpu_start;
++	ai->reserved_size	= PERCPU_MODULE_RESERVE; /* tj - necessary? */
++	ai->dyn_size		= PERCPU_DYNAMIC_RESERVE;
++	ai->unit_size		= PERCPU_PAGE_SIZE;
++	ai->atom_size		= PAGE_SIZE;
++	ai->alloc_size		= PERCPU_PAGE_SIZE;
++
++	/*
++	 * BSP is always present and occupies separate statically
++	 * reserved area.
++	 */
++	ai->nr_groups = 0;
++	gi = &ai->groups[ai->nr_groups++];
++	gi->nr_units		= 1;
++	gi->base_offset		= __per_cpu_offset[0] + base_offset;
++	gi->cpu_map		= &cpu_map[0];
++
++	/*
++	 * APs should be put into groups according to node.  Walk
++	 * cpu_map and create new groups at node boundaries.
++	 */
++	prev_node = -1;
++	for (unit = 1; unit < nr_units; unit++) {
++		unsigned int cpu = cpu_map[unit];
++
++		node = node_cpuid[cpu].nid;
++		if (node == prev_node) {
++			gi->nr_units++;
++			continue;
++		}
++		prev_node = node;
++
++		gi = &ai->groups[ai->nr_groups++];
++		gi->nr_units		= 1;
++		gi->base_offset		= __per_cpu_offset[cpu] + base_offset;
++		gi->cpu_map		= &cpu_map[unit];
++	}
++
++	rc = pcpu_setup_first_chunk(ai, base);
++	if (rc)
++		panic("failed to setup percpu area (err=%d)", rc);
++
++	pcpu_free_alloc_info(ai);
++}
++#endif
++
+ /**
+  * fill_pernode - initialize pernode data.
+  * @node: the node id.
+Index: work/arch/ia64/kernel/setup.c
+===================================================================
+--- work.orig/arch/ia64/kernel/setup.c
++++ work/arch/ia64/kernel/setup.c
+@@ -856,18 +856,6 @@ identify_cpu (struct cpuinfo_ia64 *c)
+ }
+ 
+ /*
+- * In UP configuration, setup_per_cpu_areas() is defined in
+- * include/linux/percpu.h
+- */
+-#ifdef CONFIG_SMP
+-void __init
+-setup_per_cpu_areas (void)
+-{
+-	/* start_kernel() requires this... */
+-}
+-#endif
+-
+-/*
+  * Do the following calculations:
+  *
+  * 1. the max. cache line size.
