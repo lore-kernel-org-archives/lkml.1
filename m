@@ -1,90 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbZGUUPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZGUUTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754697AbZGUUPv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 16:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755803AbZGUUPv
+	id S1756091AbZGUUTT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 16:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbZGUUTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 16:15:51 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:1305 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697AbZGUUPu (ORCPT
+	Tue, 21 Jul 2009 16:19:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51983 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755898AbZGUUTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 16:15:50 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH v2 2/2] PCI Hotplug: acpiphp: get pci_bus from acpi handle correctly
-Date: Tue, 21 Jul 2009 14:15:47 -0600
-User-Agent: KMail/1.9.10
-Cc: jbarnes@virtuousgeek.org, lenb@kernel.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <20090714204823.18933.40768.stgit@bob.kio> <200907201455.44959.bjorn.helgaas@hp.com> <20090721195755.GJ32046@ldl.fc.hp.com>
-In-Reply-To: <20090721195755.GJ32046@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 21 Jul 2009 16:19:18 -0400
+Date: Tue, 21 Jul 2009 13:18:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: containers@lists.linux-foundation.org, bblum@google.com,
+       linux-kernel@vger.kernel.org, menage@google.com,
+       dave@linux.vnet.ibm.com
+Subject: Re: [RFC][PATCH] flexible array implementation
+Message-Id: <20090721131839.27f3a5aa.akpm@linux-foundation.org>
+In-Reply-To: <20090721160333.96AA4D3D@kernel>
+References: <20090721160333.96AA4D3D@kernel>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907211415.47628.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 July 2009 01:57:55 pm Alex Chiang wrote:
-> * Bjorn Helgaas <bjorn.helgaas@hp.com>:
-> > On Tuesday 14 July 2009 02:53:33 pm Alex Chiang wrote:
-> > > We cannot simply call acpi_get_pci_dev() on any random ACPI handle
-> > > and hope that it works, because a PCI root bridge may not have
-> > > an associated struct pci_dev.
-> > > 
-> > > This is allowed per the PCI specification, and is referred to as a
-> > > non-materialized bridge.
-> > > 
-> > > So, depending on the type of PCI bridge that the handle points to,
-> > > use the appropriate interface to return the struct pci_bus correctly.
-> > > 
-> > > Signed-off-by: Alex Chiang <achiang@hp.com>
-> > > ---
-> > > 
-> > >  drivers/pci/hotplug/acpiphp_glue.c |   27 ++++++++++++++++-----------
-> > >  1 files changed, 16 insertions(+), 11 deletions(-)
-> > > 
-> > > diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-> > > index 0cb0f83..fa4658b 100644
-> > > --- a/drivers/pci/hotplug/acpiphp_glue.c
-> > > +++ b/drivers/pci/hotplug/acpiphp_glue.c
-> > > @@ -62,6 +62,21 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus);
-> > >  static void acpiphp_set_hpp_values(acpi_handle handle, struct pci_bus *bus);
-> > >  static void handle_hotplug_event_func(acpi_handle handle, u32 type, void *context);
-> > >  
-> > > +static struct pci_bus *pci_bus_from_handle(acpi_handle handle)
-> > > +{
-> > > +	struct pci_bus *pbus;
-> > > +
-> > > +	if (acpi_is_root_bridge(handle)) {
-> > > +		struct acpi_pci_root *root = acpi_pci_find_root(handle);
-> > > +		pbus = root->bus;
-> > > +	} else {
-> > > +		struct pci_dev *pdev = acpi_get_pci_dev(handle);
-> > > +		pbus = pdev->subordinate;
-> > > +		pci_dev_put(pdev);
-> > > +	}
-> > > +	return pbus;
-> > 
-> > I worry that acpi_is_root_bridge() merely checks the device IDs of
-> > "handle", which isn't quite the same as checking whether the pci_root
-> > driver has claimed "handle".
+On Tue, 21 Jul 2009 09:03:33 -0700
+Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+
 > 
-> Hm, I understand this concern in a theoretical sense, but could
-> you explain more of what you're thinking about, and give me a
-> concrete example of something that might go wrong here?
+> Once a structure goes over PAGE_SIZE*2, we see occasional
+> allocation failures.  Some people have chosen to switch
+> over to things like vmalloc() that will let them keep
+> array-like access to such a large structures.  But,
+> vmalloc() has plenty of downsides.
 
-My concern is only theoretical -- I could imagine a PNP0A03 device
-in the namespace (so acpi_is_root_bridge() is true) that has not been
-claimed by the pci_root driver (so acpi_pci_find_root() returns NULL).
+Thanks for looking into this.
 
-I don't think this will happen in practice because pci_root can't be
-a module, but it's easier to analyze with just one check, since you
-can learn everything you need from acpi_pci_find_root() without also
-depending on acpi_is_root_bridge().
+> Here's an alternative.  I think it's what Andrew was
+> suggesting  here:
+> 
+> 	http://lkml.org/lkml/2009/7/2/518 
+> 
+> I call it a flexible array.  It does all of its work in
+> PAGE_SIZE bits, so never does an order>0 allocation.
+> The base level has PAGE_SIZE-2*sizeof(int) bytes of
+> storage for pointers to the second level.  So, with a
+> 32-bit arch, you get about 4MB (4183112 bytes) of total
+> storage when the objects pack nicely into a page.  It
+> is half that on 64-bit because the pointers are twice
+> the size.
+> 
+> The interface is dirt simple.  4 functions:
+> 	alloc_flex_array()
+> 	free_flex_array()
 
-Bjorn
+flex_array_alloc() and flex_array_free(), please.
+
+> 	flex_array_put()
+> 	flex_array_get()
+
+It's important to document the arguments too!  The lack of an `index'
+arg to flex_array_put() was important info.
+
+> put() appends an item into the array while get() takes
+> indexes and does array-style access.
+
+The interface is rather unexpected.  Some callers will want
+random-access writes and will have sparse data sets.  Can we make it
+more array-like?
+
+What are the constraints of this implementation?  Maximum index, maximum
+number of elements, etc?
+
+What are the locking rules?  Caller-provided, obviously (and
+correctly).  If the caller wants to use a spinlock the caller must use
+GFP_ATOMIC and handle the fallout when that fails.  (But they'd need to
+handle the fallout with mutex/GFP_KERNEL too).
+
+> One thought is that we should perhaps make the base
+> structure half the size on 32-bit arches.  That will
+> ensure that someone testing on 32-bit will not get
+> bitten by the size shrinking by half when moving to
+> 64-bit.
+
+{scratches head}
+
+If you say so ;)
+
+> We could also potentially just pass the "element_size"
+> into each of the API functions instead of storing it
+> internally.  That would get us one more base pointer
+> on 32-bit.
+> 
+> The last improvement that I thought about was letting
+> the individual array members span pages.  In this
+> implementation, if you have a 2049-byte object, it
+> will only pack one of them into each "part" with
+> no attempt to pack them.  At this point, I don't think
+> the added complexity would be worth it.
+
+I expect the majority of callers will be storing plain old pointers in here.
+
+In fact the facility would be quite useful if it explicitly stored and
+returned void*'s, like radix-tree and IDR.
+
+Do we know of any potential callers which would want flex_array to
+store elements by value in this manner?
+
+> ...
+>
+> +struct flex_array *alloc_flex_array(int element_size, int total, gfp_t flags)
+> +{
+> +	struct flex_array *ret;
+> +	int max_size = __nr_part_ptrs() * __elements_per_part(element_size);
+> +
+> +	/* max_size will end up 0 if element_size > PAGE_SIZE */
+> +	if (total > max_size)
+> +		return NULL;
+> +	ret = kzalloc(sizeof(struct flex_array), flags);
+> +	if (!ret)
+> +		return NULL;
+> +	ret->element_size = element_size;
+> +	return ret;
+> +}
+
+I expect that a decent proportion of users of this facility will only
+ever want a single flex_array.  So they'll want to be able to define and
+initialise their flex_array at compile-time.
+
+That looks pretty easy to do?
