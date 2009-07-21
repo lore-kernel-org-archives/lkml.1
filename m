@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751681AbZGUHTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbZGUHUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751681AbZGUHTy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 03:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZGUHTv
+	id S1751896AbZGUHUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 03:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZGUHUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 03:19:51 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:42531 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZGUHTu (ORCPT
+	Tue, 21 Jul 2009 03:20:33 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47267 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbZGUHUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 03:19:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=f9da9dsXZ6tfST46mDe0E0GCEhmqa18+AMk0ITygFwFW8ijySiDV6KQE62YOUWaLVF
-         djow81dOhXkxEZo5o/TqVoXEhi8sG1kQW5I463rG2iTdACyOGlXwfygEVNt6/C/7ZBuw
-         dqFskKjmQtTMlU5X3YbYoyu86Q1+CtgwtdTr4=
+	Tue, 21 Jul 2009 03:20:33 -0400
+Date: Tue, 21 Jul 2009 16:19:30 +0900 (JST)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Subject: Re: [PATCH] copy over oom_adj value at fork time
+Cc: kosaki.motohiro@jp.fujitsu.com, David Rientjes <rientjes@google.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mel@csn.ul.ie, npiggin@suse.de
+In-Reply-To: <6599ad830907201452h5b57a444mf4be96e194cb737@mail.gmail.com>
+References: <alpine.DEB.2.00.0907171559290.30600@chino.kir.corp.google.com> <6599ad830907201452h5b57a444mf4be96e194cb737@mail.gmail.com>
+Message-Id: <20090721161319.2ABD.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <1248111536.15751.9340.camel@twins>
-References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
-	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
-	 <1248111536.15751.9340.camel@twins>
-Date: Tue, 21 Jul 2009 09:19:49 +0200
-Message-ID: <c62985530907210019l1bf7dbeei2215a1ba018dec71@mail.gmail.com>
-Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware 
-	breakpoints
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "K . Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/20, Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> On Mon, 2009-07-20 at 13:08 -0400, Frederic Weisbecker wrote:
->> +       do_perf_swcounter_event(PERF_TYPE_BREAKPOINT, target, 1, 0,
->> &data);
->
-> These breakpoints run from IRQ context?
+> On Fri, Jul 17, 2009 at 4:12 PM, David Rientjes<rientjes@google.com> wrote:
+> >
+> > My patches don't merely address threads that have an oom_adj value of
+> > OOM_DISABLE while others sharing the same memory do not, they address a
+> > consistency issue whereas those threads may all share memory but have
+> > radically different oom_adj values: that means that only the highest
+> > oom_adj value amongst them is actually used by the oom killer and all
+> > other oom_adj values set by the user for those threads are wrong.
+> 
+> But these patches change an API that has existed for at least 4 years
+> (i.e. before git history exists) and the change is known to break some
+> apps that relied on the existing API. Should there be more
+> justification than to fix an inconsistency that only you seem to be
+> claiming is a problem? (Yes, I know it also fixes the OOM killer
+> livelock, but that could be done without breaking the API).
 
-Hmm, I guess but I'm not sure exactly :-/
+Paul, I'd like to clarily this duscussion. Doesn't Rik's patch fix your vfork issue or
+you worry about generic ABI breaking issue?
+
+
