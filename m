@@ -1,325 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbZGUTzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbZGUT5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbZGUTzm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 15:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZGUTzl
+	id S1753081AbZGUT5R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 15:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZGUT5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 15:55:41 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:18317 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753107AbZGUTzf (ORCPT
+	Tue, 21 Jul 2009 15:57:16 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:52005 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751973AbZGUT5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 15:55:35 -0400
-Subject: [PATCH 2 3/4] cciss: use only one scan thread
-To: linux-kernel@vger.kernel.org
-From: Andrew Patterson <andrew.patterson@hp.com>
-Cc: akpm@linux-foundation.org, linux-scsi@vger.kernel.org, mike.miller@hp.com,
-       jens.axboe@oracle.com
-Date: Tue, 21 Jul 2009 13:55:32 -0600
-Message-ID: <20090721195532.20740.16845.stgit@bob.kio>
-In-Reply-To: <20090721195517.20740.18994.stgit@bob.kio>
-References: <20090721195517.20740.18994.stgit@bob.kio>
-User-Agent: StGit/0.14.3.386.gb02d
+	Tue, 21 Jul 2009 15:57:16 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
+Date: Tue, 21 Jul 2009 21:57:13 +0200
+User-Agent: KMail/1.9.9
+Cc: greearb@candelatech.com, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+References: <4A64EB1F.4000602@candelatech.com> <1248178527.5222.0.camel@heimdal.trondhjem.org> <4A65F184.5060802@candelatech.com> <1248196339.21343.8.camel@heimdal.trondhjem.org> <4A65FCB2.6080903@candelatech.com> <1248199140.21343.17.camel@heimdal.trondhjem.org> <4A660295.9020807@candelatech.com> <1248200897.21343.19.camel@heimdal.trondhjem.org> <4A6609A9.3000504@candelatech.com> <4A6609A9.3000504@candelatech.com> <1248202462.21343.21.camel@heimdal.trondhjem.org>
+In-reply-To: <1248202462.21343.21.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907212157.14781.elendil@planet.nl>
+X-OriginalArrivalTime: 21 Jul 2009 19:57:15.0482 (UTC) FILETIME=[71F7ABA0:01CA0A3D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cciss: use only one scan thread
+Trond Myklebust wrote:
+> OK. Then the NFSv4.1 merge has screwed up the state management. We do
+> NOT want to hold client id state on the server when there is no file
+> state...
 
-Replace the use of one scan kthread per controller with one per driver.
-Use a queue to hold a list of controllers that need to be rescanned with
-routines to add and remove controllers from the queue.
-Fix locking and completion handling to prevent a hang during rmmod.
+Hmm. I doubt that as I can reproduce the same problem (at least the mount 
+hanging, not necessarily the errors) with .30, which I presume is before 
+the merge.
 
-Acked-by: Mike Miller <mike.miller@hp.com>
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
----
+I have seen the errors too, but that may have been with 2.6.31 (though 
+definitely without NFS_V4_1). I seem unable to reproduce those with .30.
 
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 085ab11..0ce90c0 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -39,6 +39,7 @@
- #include <linux/hdreg.h>
- #include <linux/spinlock.h>
- #include <linux/compat.h>
-+#include <linux/mutex.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
- 
-@@ -155,6 +156,10 @@ static struct board_type products[] = {
- 
- static ctlr_info_t *hba[MAX_CTLR];
- 
-+static struct task_struct *cciss_scan_thread;
-+static DEFINE_MUTEX(scan_mutex);
-+static LIST_HEAD(scan_q);
-+
- static void do_cciss_request(struct request_queue *q);
- static irqreturn_t do_cciss_intr(int irq, void *dev_id);
- static int cciss_open(struct block_device *bdev, fmode_t mode);
-@@ -3232,20 +3237,121 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
-+/**
-+ * add_to_scan_list() - add controller to rescan queue
-+ * @h:		      Pointer to the controller.
-+ *
-+ * Adds the controller to the rescan queue if not already on the queue.
-+ *
-+ * returns 1 if added to the queue, 0 if skipped (could be on the
-+ * queue already, or the controller could be initializing or shutting
-+ * down).
-+ **/
-+static int add_to_scan_list(struct ctlr_info *h)
-+{
-+	struct ctlr_info *test_h;
-+	int found = 0;
-+	int ret = 0;
-+
-+	if (mutex_is_locked(&h->busy_initializing))
-+		return 0;
-+
-+	if (!mutex_trylock(&h->busy_shutting_down))
-+		return 0;
-+
-+	mutex_lock(&scan_mutex);
-+	list_for_each_entry(test_h, &scan_q, scan_list) {
-+		if (test_h == h) {
-+			found = 1;
-+			break;
-+		}
-+	}
-+	if (!found && !h->busy_scanning) {
-+		INIT_COMPLETION(h->scan_wait);
-+		list_add_tail(&h->scan_list, &scan_q);
-+		ret = 1;
-+	}
-+	mutex_unlock(&scan_mutex);
-+	mutex_unlock(&h->busy_shutting_down);
-+
-+	return ret;
-+}
-+
-+/**
-+ * remove_from_scan_list() - remove controller from rescan queue
-+ * @h:			   Pointer to the controller.
-+ *
-+ * Removes the controller from the rescan queue if present. Blocks if
-+ * the controller is currently conducting a rescan.
-+ **/
-+static void remove_from_scan_list(struct ctlr_info *h)
-+{
-+	struct ctlr_info *test_h, *tmp_h;
-+	int scanning = 0;
-+
-+	mutex_lock(&scan_mutex);
-+	list_for_each_entry_safe(test_h, tmp_h, &scan_q, scan_list) {
-+		if (test_h == h) {
-+			list_del(&h->scan_list);
-+			complete_all(&h->scan_wait);
-+			mutex_unlock(&scan_mutex);
-+			return;
-+		}
-+	}
-+	if (&h->busy_scanning)
-+		scanning = 0;
-+	mutex_unlock(&scan_mutex);
-+
-+	if (scanning)
-+		wait_for_completion(&h->scan_wait);
-+}
-+
-+/**
-+ * scan_thread() - kernel thread used to rescan controllers
-+ * @data:	 Ignored.
-+ *
-+ * A kernel thread used scan for drive topology changes on
-+ * controllers. The thread processes only one controller at a time
-+ * using a queue.  Controllers are added to the queue using
-+ * add_to_scan_list() and removed from the queue either after done
-+ * processing or using remove_from_scan_list().
-+ *
-+ * returns 0.
-+ **/
- static int scan_thread(void *data)
- {
--	ctlr_info_t *h = data;
--	int rc;
--	DECLARE_COMPLETION_ONSTACK(wait);
--	h->rescan_wait = &wait;
-+	struct ctlr_info *h;
- 
--	for (;;) {
--		rc = wait_for_completion_interruptible(&wait);
-+	while (1) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule();
- 		if (kthread_should_stop())
- 			break;
--		if (!rc)
--			rebuild_lun_table(h, 0);
-+
-+		while (1) {
-+			mutex_lock(&scan_mutex);
-+			if (list_empty(&scan_q)) {
-+				mutex_unlock(&scan_mutex);
-+				break;
-+			}
-+
-+			h = list_entry(scan_q.next,
-+				       struct ctlr_info,
-+				       scan_list);
-+			list_del(&h->scan_list);
-+			h->busy_scanning = 1;
-+			mutex_unlock(&scan_mutex);
-+
-+			if (h) {
-+				rebuild_lun_table(h, 0);
-+				complete_all(&h->scan_wait);
-+				mutex_lock(&scan_mutex);
-+				h->busy_scanning = 0;
-+				mutex_unlock(&scan_mutex);
-+			}
-+		}
- 	}
-+
- 	return 0;
- }
- 
-@@ -3268,8 +3374,8 @@ static int check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c)
- 	case REPORT_LUNS_CHANGED:
- 		printk(KERN_WARNING "cciss%d: report LUN data "
- 			"changed\n", h->ctlr);
--		if (h->rescan_wait)
--			complete(h->rescan_wait);
-+		add_to_scan_list(h);
-+		wake_up_process(cciss_scan_thread);
- 		return 1;
- 	break;
- 	case POWER_OR_RESET:
-@@ -3919,6 +4025,7 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 	mutex_lock(&hba[i]->busy_initializing);
- 	INIT_HLIST_HEAD(&hba[i]->cmpQ);
- 	INIT_HLIST_HEAD(&hba[i]->reqQ);
-+	mutex_init(&hba[i]->busy_shutting_down);
- 
- 	if (cciss_pci_init(hba[i], pdev) != 0)
- 		goto clean0;
-@@ -3927,6 +4034,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 	hba[i]->ctlr = i;
- 	hba[i]->pdev = pdev;
- 
-+	init_completion(&hba[i]->scan_wait);
-+
- 	if (cciss_create_hba_sysfs_entry(hba[i]))
- 		goto clean0;
- 
-@@ -4035,13 +4144,9 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 
- 	hba[i]->cciss_max_sectors = 2048;
- 
--	mutex_unlock(&hba[i]->busy_initializing);
--
- 	rebuild_lun_table(hba[i], 1);
--	hba[i]->cciss_scan_thread = kthread_run(scan_thread, hba[i],
--				"cciss_scan%02d", i);
--	if (IS_ERR(hba[i]->cciss_scan_thread))
--		return PTR_ERR(hba[i]->cciss_scan_thread);
-+
-+	mutex_unlock(&hba[i]->busy_initializing);
- 
- 	return 1;
- 
-@@ -4126,8 +4231,9 @@ static void __devexit cciss_remove_one(struct pci_dev *pdev)
- 		return;
- 	}
- 
--	kthread_stop(hba[i]->cciss_scan_thread);
-+	mutex_lock(&hba[i]->busy_shutting_down);
- 
-+	remove_from_scan_list(hba[i]);
- 	remove_proc_entry(hba[i]->devname, proc_cciss);
- 	unregister_blkdev(hba[i]->major, hba[i]->devname);
- 
-@@ -4174,6 +4280,7 @@ static void __devexit cciss_remove_one(struct pci_dev *pdev)
- 	pci_release_regions(pdev);
- 	pci_set_drvdata(pdev, NULL);
- 	cciss_destroy_hba_sysfs_entry(hba[i]);
-+	mutex_unlock(&hba[i]->busy_shutting_down);
- 	free_hba(i);
- }
- 
-@@ -4206,15 +4313,25 @@ static int __init cciss_init(void)
- 	if (err)
- 		return err;
- 
-+	/* Start the scan thread */
-+	cciss_scan_thread = kthread_run(scan_thread, NULL, "cciss_scan");
-+	if (IS_ERR(cciss_scan_thread)) {
-+		err = PTR_ERR(cciss_scan_thread);
-+		goto err_bus_unregister;
-+	}
-+
- 	/* Register for our PCI devices */
- 	err = pci_register_driver(&cciss_pci_driver);
- 	if (err)
--		goto err_bus_register;
-+		goto err_thread_stop;
- 
- 	return 0;
- 
--err_bus_register:
-+err_thread_stop:
-+	kthread_stop(cciss_scan_thread);
-+err_bus_unregister:
- 	bus_unregister(&cciss_bus_type);
-+
- 	return err;
- }
- 
-@@ -4231,6 +4348,7 @@ static void __exit cciss_cleanup(void)
- 			cciss_remove_one(hba[i]->pdev);
- 		}
- 	}
-+	kthread_stop(cciss_scan_thread);
- 	remove_proc_entry("driver/cciss", NULL);
- 	bus_unregister(&cciss_bus_type);
- }
-diff --git a/drivers/block/cciss.h b/drivers/block/cciss.h
-index bf1699c..6fb9dcc 100644
---- a/drivers/block/cciss.h
-+++ b/drivers/block/cciss.h
-@@ -2,6 +2,7 @@
- #define CCISS_H
- 
- #include <linux/genhd.h>
-+#include <linux/mutex.h>
- 
- #include "cciss_cmd.h"
- 
-@@ -108,6 +109,8 @@ struct ctlr_info
- 	int			nr_frees; 
- 	int			busy_configuring;
- 	struct mutex		busy_initializing;
-+	int			busy_scanning;
-+	struct mutex   		busy_shutting_down;
- 
- 	/* This element holds the zero based queue number of the last
- 	 * queue to be started.  It is used for fairness.
-@@ -122,8 +125,8 @@ struct ctlr_info
- 	/* and saved for later processing */
- #endif
- 	unsigned char alive;
--	struct completion *rescan_wait;
--	struct task_struct *cciss_scan_thread;
-+	struct list_head scan_list;
-+	struct completion scan_wait;
- 	struct device dev;
- };
- 
+On the server (.30) in /etc/exportfs:
+/srv/exports         10.19.66.0/24(rw,subtree_check,sync,mp,nohide)
+/srv/exports/data    10.19.66.0/24(rw,subtree_check,sync,mp,nohide)
 
+# exportfs
+/srv/exports         10.19.66.0/24
+/srv/exports/data    10.19.66.0/24
+
+On the client (.30.2):
+# mount thorin:/data /mnt -t nfs4
+<hangs>
+
+Cheers,
+FJP
