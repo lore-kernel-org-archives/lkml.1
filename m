@@ -1,162 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbZGUK2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZGUK2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235AbZGUK2W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 06:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbZGUK2S
+	id S1755345AbZGUK2s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 06:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbZGUK2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 06:28:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37037 "EHLO hera.kernel.org"
+	Tue, 21 Jul 2009 06:28:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37115 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755130AbZGUK17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 06:27:59 -0400
+	id S1754974AbZGUK2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 06:28:12 -0400
 From: Tejun Heo <tj@kernel.org>
 To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@redhat.com,
        benh@kernel.crashing.org, davem@davemloft.net, dhowells@redhat.com,
        npiggin@suse.de, JBeulich@novell.com, cl@linux-foundation.org,
        rusty@rustcorp.com.au, hpa@zytor.com, tglx@linutronix.de,
        akpm@linux-foundation.org, x86@kernel.org, andi@firstfloor.org
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 15/20] percpu: use group information to allocate vmap areas sparsely
-Date: Tue, 21 Jul 2009 19:26:14 +0900
-Message-Id: <1248171979-29166-16-git-send-email-tj@kernel.org>
+Subject: [PATCHSET percpu#for-next] implement and use sparse embedding first chunk allocator
+Date: Tue, 21 Jul 2009 19:25:59 +0900
+Message-Id: <1248171979-29166-1-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1248171979-29166-1-git-send-email-tj@kernel.org>
-References: <1248171979-29166-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Jul 2009 10:27:00 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 21 Jul 2009 10:26:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ai->groups[] contains which units need to be put consecutively and at
-what offset from the chunk base address.  Compile this information
-into pcpu_group_offsets[] and pcpu_group_sizes[] in
-pcpu_setup_first_chunk() and use them to allocate sparse vm areas
-using pcpu_get_vm_areas().
+Hello, all.
 
-This will be used to allow directly using sparse NUMA memories as
-percpu areas.
+This patchset teaches percpu allocator how to manage very sparse
+units, vmalloc how to allocate congruent sparse vmap areas and combine
+them to extend the embedding allocator to allow embedding of sparse
+unit addresses.  This basically implements Christoph's sparse
+congruent allocator.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Nick Piggin <npiggin@suse.de>
----
- mm/percpu.c |   35 ++++++++++++++++++++++++++---------
- 1 files changed, 26 insertions(+), 9 deletions(-)
+This allows NUMA configurations to use bootmem allocated memory
+directly as non-NUMA machines do with the embedding allocator.
+Setting up the first chunk is basically consisted of allocating memory
+for each cpu and then build percpu configuration to so that the first
+chunk is composed of those memory areas, which means that there can be
+huge holes between units and chunks may overlap each other.
 
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 7b5e194..cc9c4c6 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -98,7 +98,7 @@ struct pcpu_chunk {
- 	int			map_used;	/* # of map entries used */
- 	int			map_alloc;	/* # of map entries allocated */
- 	int			*map;		/* allocation map */
--	struct vm_struct	*vm;		/* mapped vmalloc region */
-+	struct vm_struct	**vms;		/* mapped vmalloc regions */
- 	bool			immutable;	/* no [de]population allowed */
- 	unsigned long		populated[];	/* populated bitmap */
- };
-@@ -106,7 +106,7 @@ struct pcpu_chunk {
- static int pcpu_unit_pages __read_mostly;
- static int pcpu_unit_size __read_mostly;
- static int pcpu_nr_units __read_mostly;
--static int pcpu_chunk_size __read_mostly;
-+static int pcpu_atom_size __read_mostly;
- static int pcpu_nr_slots __read_mostly;
- static size_t pcpu_chunk_struct_size __read_mostly;
- 
-@@ -121,6 +121,11 @@ EXPORT_SYMBOL_GPL(pcpu_base_addr);
- static const int *pcpu_unit_map __read_mostly;		/* cpu -> unit */
- const unsigned long *pcpu_unit_offsets __read_mostly;	/* cpu -> unit offset */
- 
-+/* group information, used for vm allocation */
-+static int pcpu_nr_groups __read_mostly;
-+static const unsigned long *pcpu_group_offsets __read_mostly;
-+static const size_t *pcpu_group_sizes __read_mostly;
-+
- /*
-  * The first chunk which always exists.  Note that unlike other
-  * chunks, this one can be allocated and mapped in several different
-@@ -988,8 +993,8 @@ static void free_pcpu_chunk(struct pcpu_chunk *chunk)
- {
- 	if (!chunk)
- 		return;
--	if (chunk->vm)
--		free_vm_area(chunk->vm);
-+	if (chunk->vms)
-+		pcpu_free_vm_areas(chunk->vms, pcpu_nr_groups);
- 	pcpu_mem_free(chunk->map, chunk->map_alloc * sizeof(chunk->map[0]));
- 	kfree(chunk);
- }
-@@ -1006,8 +1011,10 @@ static struct pcpu_chunk *alloc_pcpu_chunk(void)
- 	chunk->map_alloc = PCPU_DFL_MAP_ALLOC;
- 	chunk->map[chunk->map_used++] = pcpu_unit_size;
- 
--	chunk->vm = get_vm_area(pcpu_chunk_size, GFP_KERNEL);
--	if (!chunk->vm) {
-+	chunk->vms = pcpu_get_vm_areas(pcpu_group_offsets, pcpu_group_sizes,
-+				       pcpu_nr_groups, pcpu_atom_size,
-+				       GFP_KERNEL);
-+	if (!chunk->vms) {
- 		free_pcpu_chunk(chunk);
- 		return NULL;
- 	}
-@@ -1015,7 +1022,7 @@ static struct pcpu_chunk *alloc_pcpu_chunk(void)
- 	INIT_LIST_HEAD(&chunk->list);
- 	chunk->free_size = pcpu_unit_size;
- 	chunk->contig_hint = pcpu_unit_size;
--	chunk->base_addr = chunk->vm->addr;
-+	chunk->base_addr = chunk->vms[0]->addr - pcpu_group_offsets[0];
- 
- 	return chunk;
- }
-@@ -1571,6 +1578,8 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
- 	size_t dyn_size = ai->dyn_size;
- 	size_t size_sum = ai->static_size + ai->reserved_size + dyn_size;
- 	struct pcpu_chunk *schunk, *dchunk = NULL;
-+	unsigned long *group_offsets;
-+	size_t *group_sizes;
- 	unsigned long *unit_off;
- 	unsigned int cpu;
- 	int *unit_map;
-@@ -1588,7 +1597,9 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
- 
- 	pcpu_dump_alloc_info(KERN_DEBUG, ai);
- 
--	/* determine number of units and initialize unit_map and base */
-+	/* process group information and build config tables accordingly */
-+	group_offsets = alloc_bootmem(ai->nr_groups * sizeof(group_offsets[0]));
-+	group_sizes = alloc_bootmem(ai->nr_groups * sizeof(group_sizes[0]));
- 	unit_map = alloc_bootmem(nr_cpu_ids * sizeof(unit_map[0]));
- 	unit_off = alloc_bootmem(nr_cpu_ids * sizeof(unit_off[0]));
- 
-@@ -1599,6 +1610,9 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
- 	for (group = 0, unit = 0; group < ai->nr_groups; group++, unit += i) {
- 		const struct pcpu_group_info *gi = &ai->groups[group];
- 
-+		group_offsets[group] = gi->base_offset;
-+		group_sizes[group] = gi->nr_units * ai->unit_size;
-+
- 		for (i = 0; i < gi->nr_units; i++) {
- 			cpu = gi->cpu_map[i];
- 			if (cpu == NR_CPUS)
-@@ -1620,13 +1634,16 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
- 	for_each_possible_cpu(cpu)
- 		BUG_ON(unit_map[cpu] == NR_CPUS);
- 
-+	pcpu_nr_groups = ai->nr_groups;
-+	pcpu_group_offsets = group_offsets;
-+	pcpu_group_sizes = group_sizes;
- 	pcpu_unit_map = unit_map;
- 	pcpu_unit_offsets = unit_off;
- 
- 	/* determine basic parameters */
- 	pcpu_unit_pages = ai->unit_size >> PAGE_SHIFT;
- 	pcpu_unit_size = pcpu_unit_pages << PAGE_SHIFT;
--	pcpu_chunk_size = pcpu_nr_units * pcpu_unit_size;
-+	pcpu_atom_size = ai->atom_size;
- 	pcpu_chunk_struct_size = sizeof(struct pcpu_chunk) +
- 		BITS_TO_LONGS(pcpu_unit_pages) * sizeof(unsigned long);
- 
--- 
-1.6.0.2
+When further chunks are necessary pcpu_get_vm_areas() is called with
+parameters to specify how many areas are necessary, how large each
+should be and how apart they're from each other.  The function scans
+vmalloc address space top down looking for matching holes and returns
+array of vmap areas.  As the newly allocated areas are offset exactly
+the same as the first chunk, the rest is pretty straight-forward.
 
+This has the following benefits.
+
+* No special remapping necessary.  Arch codes don't need change its
+  address mapping or anything.  It just needs to inform percpu
+  allocator how percpu areas ends up like.  percpu allocator will
+  take any layout.
+
+* No additional TLB pressure.  Both page and large page remapping adds
+  TLB pressure.  With embedding, there's no overhead.  Whatever
+  translations being used for linear mapping is used as-is.
+
+* Removes dup-mapping.  Large page remapping ends up mapping the same
+  page twice.  This causes subtle problem on x86 when page attribute
+  needs to be changed.  The maps need to be looked up and split into
+  page mappings, which is a bit fragile.  As embedding doesn't remap
+  anything, this problem doesn't exist.
+
+The only restriction is that the vmalloc area needs to be huge - at
+least orders of magnitude larger than the distances between NUMA
+nodes.  For 64bit machines, this isn't a problem but on 32bit NUMA
+machines address space is a scarce resource.  For x86_32 NUMAs, the
+page mapping allocator is used.  The reason for choosing page over
+large page is because page is far simpler and the advantage of large
+page isn't very clear.
+
+ 0001-percpu-fix-pcpu_reclaim-locking.patch
+ 0002-percpu-improve-boot-messages.patch
+ 0003-percpu-rename-4k-first-chunk-allocator-to-page.patch
+ 0004-percpu-build-first-chunk-allocators-selectively.patch
+ 0005-percpu-generalize-first-chunk-allocator-selection.patch
+ 0006-percpu-drop-static_size-from-first-chunk-allocator.patch
+ 0007-percpu-make-dyn_size-mandatory-for-pcpu_setup_firs.patch
+ 0008-percpu-add-align-to-pcpu_fc_alloc_fn_t.patch
+ 0009-percpu-move-pcpu_lpage_build_unit_map-and-pcpul_l.patch
+ 0010-percpu-introduce-pcpu_alloc_info-and-pcpu_group_inf.patch
+ 0011-percpu-add-pcpu_unit_offsets.patch
+ 0012-percpu-add-chunk-base_addr.patch
+ 0013-vmalloc-separate-out-insert_vmalloc_vm.patch
+ 0014-vmalloc-implement-pcpu_get_vm_areas.patch
+ 0015-percpu-use-group-information-to-allocate-vmap-areas.patch
+ 0016-percpu-update-embedding-first-chunk-allocator-to-ha.patch
+ 0017-x86-percpu-use-embedding-for-64bit-NUMA-and-page-fo.patch
+ 0018-percpu-kill-lpage-first-chunk-allocator.patch
+ 0019-sparc64-use-embedding-percpu-first-chunk-allocator.patch
+ 0020-powerpc64-convert-to-dynamic-percpu-allocator.patch
+
+0001 fixes locking bug on reclaim path which was introduced by
+2f39e637ea240efb74cf807d31c93a71a0b89174.
+
+0002-0007 are misc changes.  4k allocator is renamed to page.
+Messages are made prettier and more informative.  Avoid building
+unused first chunk allocators and so on.  Nothing really drastic but
+small cleanups to ease further changes.
+
+0008-0009 prepares for later changes.  @align is added to
+pcpu_fc_alloc and functions are relocated.
+
+0010 changes how first chunk configuration is passed to
+pcpu_setup_first_chunk().  All information is collected into
+pcpu_alloc_info struct including the unit grouping information which
+used to be lost in the process.  This change allows percpu allocator
+to have enough information to allocate congruent vmap areas.
+
+0011-0012 prepares percpu for sparse groups and units in them.  offset
+information is added and used to calculate addresses.
+
+0013-0014 implement pcpu_get_vm_areas() which allocate congruent vmap
+areas.
+
+0015-0016 teaches percpu how to use multiple vm areas to allow sparse
+groups and extends embedding allocator so that it knows how to embed
+sparse areas.
+
+0017 converts x86_64 NUMA to use embedding and x86_32 NUMA page.
+
+0018 kills now unused lpage allocator and the related page attribute
+code.
+
+0019 converts sparc64 to use embedding allocator.
+
+0020 converts powerpc64 to dynamic percpu allocator using embedding
+allocator.
+
+After this series, only ia64 is left with the static allocator.  I
+have the patch but don't have machine to verify it on.  Will post as
+RFC patch.
+
+This patchset is on top of
+
+ linus#master (aea1f7964ae6cba5eb419a958956deb9016b3341)
+ + [1] perpcu-fix-sparse-possible-cpu-map-handling patchset
+ + pulled into percpu#for-next (457f82bac659745f6d5052e4c493d92d62722c9c)
+
+and available in the following git tree.  Please note that the
+following tree is temporary and will be rebased.
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git review
+
+Diffstat follows.  Only 112 lines added.  :-)
+
+ Documentation/kernel-parameters.txt |   11 
+ arch/powerpc/Kconfig                |    4 
+ arch/powerpc/kernel/setup_64.c      |   61 +
+ arch/sparc/Kconfig                  |    3 
+ arch/sparc/kernel/smp_64.c          |  124 ---
+ arch/x86/Kconfig                    |    6 
+ arch/x86/kernel/setup_percpu.c      |  201 +-----
+ arch/x86/mm/pageattr.c              |   20 
+ include/linux/percpu.h              |  105 +--
+ include/linux/vmalloc.h             |    6 
+ mm/percpu.c                         | 1139 +++++++++++++++++-------------------
+ mm/vmalloc.c                        |  338 ++++++++++
+ 12 files changed, 1065 insertions(+), 953 deletions(-)
+
+Thanks.
+
+--
+tejun
+
+[1] http://thread.gmane.org/gmane.linux.kernel/867587
