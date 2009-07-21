@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZGUQvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbZGUQxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbZGUQvi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 12:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZGUQvh
+	id S1755369AbZGUQxP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 12:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbZGUQxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 12:51:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54245 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753017AbZGUQvh (ORCPT
+	Tue, 21 Jul 2009 12:53:13 -0400
+Received: from tango.0pointer.de ([85.214.72.216]:44086 "EHLO
+	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbZGUQxN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 12:51:37 -0400
-Date: Tue, 21 Jul 2009 09:49:19 -0700
-From: Greg KH <greg@kroah.com>
-To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Cc: jmorris@namei.org, sds@tycho.nsa.gov, casey@schaufler-ca.com,
-       ebiederm@xmission.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov
-Subject: Re: [PATCH] Security/sysfs: Enable security xattrs to be set on
- sysfs files, directories, and symlinks.
-Message-ID: <20090721164919.GD14746@kroah.com>
-References: <1247665721-2619-1-git-send-email-dpquigl@tycho.nsa.gov>
- <1248193767.10726.21.camel@localhost>
+	Tue, 21 Jul 2009 12:53:13 -0400
+Date: Tue, 21 Jul 2009 18:52:48 +0200
+From: Lennart Poettering <mzxreary@0pointer.de>
+To: linux-kernel@vger.kernel.org
+Subject: Can access to /proc/$PID/exe be relaxed?
+Message-ID: <20090721165248.GA27549@tango.0pointer.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248193767.10726.21.camel@localhost>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Organization: Red Hat, Inc.
+X-Campaign-1: ()  ASCII Ribbon Campaign
+X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
+User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 12:29:27PM -0400, David P. Quigley wrote:
-> Its been almost a week and I haven't heard any additional feedback on
-> this patch. Are there any other complaints or should Greg take the
-> patch?
+Hi!
 
-Greg needs acks from Casey and others, like I stated before, before I
-will take the patch.
+Unless I am mistaken a process currently needs CAP_SYS_PTRACE to read
+/proc/$PID/exe for abritrary processes. Does that make sense? Could
+that be relaxed? Is there any reason to limit access to that link at
+all? To me the data from /proc/$PID/cmdline seems to be far more
+worthy to be protected than /proc/$PID/exe, or am I missing something?
 
-thanks,
+Tbh, looking at the code I don't really get where CAP_SYS_PTRACE seems
+to be required, but experimenting from userspace this seems to be the
+case.
 
-greg k-h
+Lennart
+
+-- 
+Lennart Poettering                        Red Hat, Inc.
+lennart [at] poettering [dot] net
+http://0pointer.net/lennart/           GnuPG 0x1A015CC4
