@@ -1,77 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbZGUNpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZGUNqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbZGUNpn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 09:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbZGUNpn
+	id S1752936AbZGUNqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 09:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZGUNqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 09:45:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59303 "EHLO mx2.redhat.com"
+	Tue, 21 Jul 2009 09:46:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59712 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbZGUNpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 09:45:42 -0400
-Subject: Re: SDIO Stack and Device Support
-From: Dan Williams <dcbw@redhat.com>
-To: Robert Emanuele <rob@emanuele.us>
-Cc: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <9f53b4330907171620u5fd71e69t862f582a05251f0@mail.gmail.com>
-References: <9f53b4330907161718ydbac090k2afc7a749fc9f6f2@mail.gmail.com>
-	 <4A604246.5060204@gmail.com>
-	 <9f53b4330907171620u5fd71e69t862f582a05251f0@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 21 Jul 2009 09:46:11 -0400
-Message-Id: <1248183971.6558.11.camel@localhost.localdomain>
-Mime-Version: 1.0
+	id S1751499AbZGUNqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 09:46:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH] Driver core: make pm operations a const pointer
+Date: Tue, 21 Jul 2009 15:46:49 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <20090721055136.GB4671@dtor-d630.eng.vmware.com>
+In-Reply-To: <20090721055136.GB4671@dtor-d630.eng.vmware.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907211546.49906.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-17 at 16:20 -0700, Robert Emanuele wrote:
-> This support for these wireless chips in the mainline kernel is great.
->  Originally I was looking at wireless SDIO cards from Spectec and
-> Silex.  What manufacturers use the libertas/Marvell chipsets in SDIO
-> Cards?  (or are they only available as modules?)
+Hi Dmitry,
 
-Wi2Wi makes SDIO boards based off the 8686.  I don't offhand know of
-consumer-type  dongles or SDIO cards that you can get that contain the
-libertas chips, they are usually repackaged as more embedded-type
-modules.  But if you look around for 8686 or 8385 you can find them.
+Please always Cc linux-pm on PM-related patches.
 
-Dan
-
-> Thank you,
+On Tuesday 21 July 2009, Dmitry Torokhov wrote:
+> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 > 
-> Rob
-> 
-> On Fri, Jul 17, 2009 at 2:20 AM, Jonathan
-> Cameron<Jonathan.Cameron@gmail.com> wrote:
-> > Robert Emanuele wrote:
-> >> Greetings all,
-> >>
-> >> I'm trying to find out more information about the status of an SDIO
-> >> stack and SDIO devices in the kernel.  I see under drivers/mmc/ some
-> >> SDIO support.
-> >>
-> >> I'm evaluating the potential of getting a Wireless SDIO card to work
-> >> with the 2.6 kernel.  So far all I see in the kernel is support for an
-> >> SDIO UART.  There is a patch on sourceforge for an SDIO stack and
-> >> drivers from Atheros but that is for 2.6.18.  Is there current support
-> >> for other SDIO wireless devices in the kernel?
-> >>
-> > There is pretty good support for the Marvell chips (sd8686 etc) in the
-> > mainline
-> > kernel. Take a look under drivers/net/wireless/libertas/
-> >
-> > I've also copied in the linux-wireless list.
-> >
-> >
-> >
-> >
-> >
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> They are not supposed to be modified by drivers, so make them const.
 
+OK, I guess I should handle this.
+
+Greg, is the patch fine with you?
+
+Magnus, would it cause any trouble to you?
+
+Rafael
+
+
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> ---
+> 
+>  drivers/base/platform.c   |    2 +-
+>  drivers/base/power/main.c |    8 +++++---
+>  drivers/pci/pci-driver.c  |   16 ++++++++--------
+>  include/linux/device.h    |    9 +++++----
+>  4 files changed, 19 insertions(+), 16 deletions(-)
+> 
+> 
+> diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+> index 81cb01b..c4b3fce 100644
+> --- a/drivers/base/platform.c
+> +++ b/drivers/base/platform.c
+> @@ -925,7 +925,7 @@ static int platform_pm_restore_noirq(struct device *dev)
+>  
+>  #endif /* !CONFIG_HIBERNATION */
+>  
+> -static struct dev_pm_ops platform_dev_pm_ops = {
+> +static const struct dev_pm_ops platform_dev_pm_ops = {
+>  	.prepare = platform_pm_prepare,
+>  	.complete = platform_pm_complete,
+>  	.suspend = platform_pm_suspend,
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 58a3e57..1b1a786 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -157,8 +157,9 @@ void device_pm_move_last(struct device *dev)
+>   *	@ops:	PM operations to choose from.
+>   *	@state:	PM transition of the system being carried out.
+>   */
+> -static int pm_op(struct device *dev, struct dev_pm_ops *ops,
+> -			pm_message_t state)
+> +static int pm_op(struct device *dev,
+> +		 const struct dev_pm_ops *ops,
+> +		 pm_message_t state)
+>  {
+>  	int error = 0;
+>  
+> @@ -220,7 +221,8 @@ static int pm_op(struct device *dev, struct dev_pm_ops *ops,
+>   *	The operation is executed with interrupts disabled by the only remaining
+>   *	functional CPU in the system.
+>   */
+> -static int pm_noirq_op(struct device *dev, struct dev_pm_ops *ops,
+> +static int pm_noirq_op(struct device *dev,
+> +			const struct dev_pm_ops *ops,
+>  			pm_message_t state)
+>  {
+>  	int error = 0;
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index d76c4c8..0c2ea44 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -575,7 +575,7 @@ static void pci_pm_complete(struct device *dev)
+>  static int pci_pm_suspend(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  
+>  	if (pci_has_legacy_pm_support(pci_dev))
+>  		return pci_legacy_suspend(dev, PMSG_SUSPEND);
+> @@ -613,7 +613,7 @@ static int pci_pm_suspend(struct device *dev)
+>  static int pci_pm_suspend_noirq(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  
+>  	if (pci_has_legacy_pm_support(pci_dev))
+>  		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
+> @@ -672,7 +672,7 @@ static int pci_pm_resume_noirq(struct device *dev)
+>  static int pci_pm_resume(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  	int error = 0;
+>  
+>  	/*
+> @@ -711,7 +711,7 @@ static int pci_pm_resume(struct device *dev)
+>  static int pci_pm_freeze(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  
+>  	if (pci_has_legacy_pm_support(pci_dev))
+>  		return pci_legacy_suspend(dev, PMSG_FREEZE);
+> @@ -780,7 +780,7 @@ static int pci_pm_thaw_noirq(struct device *dev)
+>  static int pci_pm_thaw(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  	int error = 0;
+>  
+>  	if (pci_has_legacy_pm_support(pci_dev))
+> @@ -799,7 +799,7 @@ static int pci_pm_thaw(struct device *dev)
+>  static int pci_pm_poweroff(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  
+>  	if (pci_has_legacy_pm_support(pci_dev))
+>  		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
+> @@ -872,7 +872,7 @@ static int pci_pm_restore_noirq(struct device *dev)
+>  static int pci_pm_restore(struct device *dev)
+>  {
+>  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  	int error = 0;
+>  
+>  	/*
+> @@ -910,7 +910,7 @@ static int pci_pm_restore(struct device *dev)
+>  
+>  #endif /* !CONFIG_HIBERNATION */
+>  
+> -struct dev_pm_ops pci_dev_pm_ops = {
+> +const struct dev_pm_ops pci_dev_pm_ops = {
+>  	.prepare = pci_pm_prepare,
+>  	.complete = pci_pm_complete,
+>  	.suspend = pci_pm_suspend,
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index aebb810..a286429 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -62,7 +62,7 @@ struct bus_type {
+>  	int (*suspend)(struct device *dev, pm_message_t state);
+>  	int (*resume)(struct device *dev);
+>  
+> -	struct dev_pm_ops *pm;
+> +	const struct dev_pm_ops *pm;
+>  
+>  	struct bus_type_private *p;
+>  };
+> @@ -132,7 +132,7 @@ struct device_driver {
+>  	int (*resume) (struct device *dev);
+>  	struct attribute_group **groups;
+>  
+> -	struct dev_pm_ops *pm;
+> +	const struct dev_pm_ops *pm;
+>  
+>  	struct driver_private *p;
+>  };
+> @@ -200,7 +200,8 @@ struct class {
+>  	int (*suspend)(struct device *dev, pm_message_t state);
+>  	int (*resume)(struct device *dev);
+>  
+> -	struct dev_pm_ops *pm;
+> +	const struct dev_pm_ops *pm;
+> +
+>  	struct class_private *p;
+>  };
+>  
+> @@ -291,7 +292,7 @@ struct device_type {
+>  	char *(*nodename)(struct device *dev);
+>  	void (*release)(struct device *dev);
+>  
+> -	struct dev_pm_ops *pm;
+> +	const struct dev_pm_ops *pm;
+>  };
+>  
+>  /* interface for exporting device attributes */
