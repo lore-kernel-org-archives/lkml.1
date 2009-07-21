@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbZGUWgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbZGUWiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756212AbZGUWgA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 18:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZGUWf7
+	id S1756428AbZGUWiE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 18:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbZGUWiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 18:35:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57260 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754332AbZGUWf7 (ORCPT
+	Tue, 21 Jul 2009 18:38:03 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33701 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754377AbZGUWiC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 18:35:59 -0400
-Date: Tue, 21 Jul 2009 15:35:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: containers@lists.linux-foundation.org, bblum@google.com,
-       linux-kernel@vger.kernel.org, menage@google.com,
-       vda.linux@googlemail.com, mikew@google.com
-Subject: Re: [RFCv2][PATCH] flexible array implementation
-Message-Id: <20090721153524.54a08fa5.akpm@linux-foundation.org>
-In-Reply-To: <1248214145.13249.5671.camel@nimitz>
-References: <20090721220017.60A219D3@kernel>
-	<1248214145.13249.5671.camel@nimitz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Jul 2009 18:38:02 -0400
+Date: Wed, 22 Jul 2009 00:37:39 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andy Whitcroft <apw@canonical.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: checkpatch whitespace
+Message-ID: <20090721223739.GB29955@elf.ucw.cz>
+References: <20090721100113.GC4133@elf.ucw.cz> <200907221305.28115.bzolnier@gmail.com> <20090721130618.GP12122@shadowen.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090721130618.GP12122@shadowen.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009 15:09:05 -0700
-Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-
-> On Tue, 2009-07-21 at 15:00 -0700, Dave Hansen wrote:
+On Tue 2009-07-21 14:06:18, Andy Whitcroft wrote:
+> On Wed, Jul 22, 2009 at 01:05:27PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Tuesday 21 July 2009 12:01:14 Pavel Machek wrote:
 > > 
-> > The interface is dirt simple.  4 functions:
-> >         alloc_flex_array()
-> >         free_flex_array()
-> >         flex_array_put()
-> >         flex_array_get()
+> > > Would it be possible to add autofixing to checkpatch? Fixing
+> > > whitespace issues by hand is useless & boring task...
 > > 
-> > put() appends an item into the array while get() takes
-> > indexes and does array-style access.
+> > That's why most people use scripts for it.. ;)
+> > 
+> > scripts/cleanfile
+> > scripts/cleanpatch
+> > 
+> > Maybe we should make checkpatch inform people about them
+> > (if any whitespace errors were detected)..
 > 
-> I need to update this description, but the kerneldoc comments are up to
-> date.
-> 
-> That reminds me...  People will get somewhat weird behavior if they mix
-> flex_array_append() and flex_array_put().  Is that OK?  Should
-> flex_array_put() modify ->nr_elements to point to the element past the
-> one that was just put()?  Should we perhaps drop the append() function
-> and the ->nr_elements variable completely?
+> That sounds like a good idea.  Will have a look at doing that.
 
-I'd say that we can drop ->append.  C arrays don't have an `append', and
-callers trivially append stuff to arrays all the time.  `for (i = 0; i < ....'
+Yes, that would be great. Thanks!
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
