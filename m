@@ -1,102 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZGUVs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbZGUVtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbZGUVs1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZGUVs0
+	id S1756187AbZGUVtG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbZGUVtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:48:26 -0400
-Received: from mga02.intel.com ([134.134.136.20]:23558 "EHLO mga02.intel.com"
+	Tue, 21 Jul 2009 17:49:05 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:41490 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756181AbZGUVsY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:48:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,242,1246863600"; 
-   d="scan'208";a="534770656"
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "'Sam Ravnborg'" <sam@ravnborg.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'linux-kbuild@vger.kernel.org'" <linux-kbuild@vger.kernel.org>,
-       "'linux-arch@vger.kernel.org'" <linux-arch@vger.kernel.org>
-CC: "'Al Viro'" <viro@zeniv.linux.org.uk>, "Luck, Tony" <tony.luck@intel.com>
-Date: Tue, 21 Jul 2009 14:48:22 -0700
-Subject: RE: [PATCH 03/10] ia64: move nr-irqs.h to include/generated
-Thread-Topic: [PATCH 03/10] ia64: move nr-irqs.h to include/generated
-Thread-Index: AcoKSHGuJP9IZmgaQZGWRPeYF1/MkQAA7nGg
-Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B09F47F2@orsmsx505.amr.corp.intel.com>
-References: <20090721211040.GA7688@merkur.ravnborg.org>
- <1248211181-6757-3-git-send-email-sam@ravnborg.org>
-In-Reply-To: <1248211181-6757-3-git-send-email-sam@ravnborg.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1755503AbZGUVtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 17:49:04 -0400
+Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Ben Greear <greearb@candelatech.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+In-Reply-To: <1248211050.21343.38.camel@heimdal.trondhjem.org>
+References: <4A64EB1F.4000602@candelatech.com>
+	 <1248178527.5222.0.camel@heimdal.trondhjem.org>
+	 <4A65F184.5060802@candelatech.com>
+	 <1248196339.21343.8.camel@heimdal.trondhjem.org>
+	 <4A65FCB2.6080903@candelatech.com>
+	 <1248199140.21343.17.camel@heimdal.trondhjem.org>
+	 <4A660295.9020807@candelatech.com>
+	 <1248200897.21343.19.camel@heimdal.trondhjem.org>
+	 <4A6609A9.3000504@candelatech.com>
+	 <1248211050.21343.38.camel@heimdal.trondhjem.org>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 17:48:59 -0400
+Message-Id: <1248212939.5034.1.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 2 sum rcpts/h 10 sum msgs/h 2 total rcpts 925 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 1C3A3AA64894C80DF27EF7E47C530768CFF9A07C
+X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 2 total 81 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->---
-> arch/ia64/Makefile          |    2 +-
-> arch/ia64/include/asm/irq.h |    2 +-
-> arch/ia64/kernel/Makefile   |    7 ++-----
-> 3 files changed, 4 insertions(+), 7 deletions(-)
->
->diff --git a/arch/ia64/Makefile b/arch/ia64/Makefile
->index 58a7e46..e9fcac6 100644
->--- a/arch/ia64/Makefile
->+++ b/arch/ia64/Makefile
->@@ -108,4 +108,4 @@ archprepare: make_nr_irqs_h FORCE
-> PHONY += make_nr_irqs_h FORCE
->
-> make_nr_irqs_h: FORCE
->-	$(Q)$(MAKE) $(build)=arch/ia64/kernel include/asm-ia64/nr-irqs.h
->+	$(Q)$(MAKE) $(build)=arch/ia64/kernel include/generated/nr-irqs.h
->diff --git a/arch/ia64/include/asm/irq.h b/arch/ia64/include/asm/irq.h
->index 5282546..91b920f 100644
->--- a/arch/ia64/include/asm/irq.h
->+++ b/arch/ia64/include/asm/irq.h
->@@ -13,7 +13,7 @@
->
-> #include <linux/types.h>
-> #include <linux/cpumask.h>
->-#include <asm-ia64/nr-irqs.h>
->+#include <generated/nr-irqs.h>
->
-> static __inline__ int
-> irq_canonicalize (int irq)
->diff --git a/arch/ia64/kernel/Makefile b/arch/ia64/kernel/Makefile
->index 6b7edca..cedd773 100644
->--- a/arch/ia64/kernel/Makefile
->+++ b/arch/ia64/kernel/Makefile
->@@ -81,17 +81,14 @@ define cmd_nr_irqs
-> endef
->
-> # We use internal kbuild rules to avoid the "is up to date" message from
->make
->-arch/$(SRCARCH)/kernel/nr-irqs.s: $(srctree)/arch/$(SRCARCH)/kernel/nr-
->irqs.c \
->-				$(wildcard $(srctree)/include/asm-ia64/*/irq.h)
->+arch/ia64/kernel/nr-irqs.s: arch/ia64/kernel/nr-irqs.c
-> 	$(Q)mkdir -p $(dir $@)
-> 	$(call if_changed_dep,cc_s_c)
->
+On Tue, 2009-07-21 at 17:17 -0400, Trond Myklebust wrote:
+> On Tue, 2009-07-21 at 11:32 -0700, Ben Greear wrote:
+> > On 07/21/2009 11:28 AM, Trond Myklebust wrote:
+> > > On Tue, 2009-07-21 at 11:01 -0700, Ben Greear wrote:
+> > >> On 07/21/2009 10:59 AM, Trond Myklebust wrote:
+> > >>> On Tue, 2009-07-21 at 10:36 -0700, Ben Greear wrote:
+> > >>>> On 07/21/2009 10:12 AM, Trond Myklebust wrote:
+> > >>>>> On Tue, 2009-07-21 at 09:49 -0700, Ben Greear wrote:
+> > >>>>>> On 07/21/2009 05:15 AM, Trond Myklebust wrote:
+> > >>>>>>
+> > >>>>>>> What does /var/lib/nfs/v4recovery look like on the server?
+> > >>>>>> The server was misconfigured, but I still think the client should
+> > >>>>>> behave better in this case.  If you cannot reproduce it, let me know
+> > >>>>>> and I can try to be more specific.  If you still want the v4recovery
+> > >>>>>> information, let me know and I'll send it.
+> > >>>>> So how should the client behave, when a screwed up server allows it to
+> > >>>>> mount but starts returning illegal values for setclientid? The only
+> > >>>>> thing I can see we could do is to tell the user EINSANESERVER...
+> > >>>> Well, it could just fail the mount and give up and not overly spam
+> > >>>> /var/log/messages in a tight loop perhaps?
+> > >>> This doesn't happen at mount time. It happens when you open a file.
+> > >> Not for me, and evidently not for the other person that reported
+> > >> similar results.  All I had to do was attempt the mount (which never
+> > >> completed).
+> > >>
+> > >> Thanks,
+> > >> Ben
+> > >
+> > > Ah... You have NFS_V4_1 enabled despite the Kconfig warning... Does the
+> > > bug occur when you turn this off too?
+> > 
+> > Yes, it did.
+> 
+> OK. The following patch should fix that particular regression.
+> 
+> Note that there is a bug remaining inside nfs4_init_session(): we
+> shouldn't be copying the rsize/wsize into the nfs_client if the latter
+> was already initialised. I'm going to leave that for the moment, though,
+> since that bug wasn't introduced by my patch, and it doesn't affect
+> NFSv4.0.
 
-Could you keep the SRCARCH and srctree variables? There is no need to hard code them.
+With that patch applied, I now get the expected behaviour when mounting
+a server with no NFSv4 root from a 2.6.31-rc3 based client:
 
->-include/asm-ia64/nr-irqs.h: arch/$(SRCARCH)/kernel/nr-irqs.s
->+include/generated/nr-irqs.h: arch/ia64/kernel/nr-irqs.s
-> 	$(Q)mkdir -p $(dir $@)
-> 	$(call cmd,nr_irqs)
->
->-clean-files += $(objtree)/include/asm-ia64/nr-irqs.h
->-
-> #
-> # native ivt.S, entry.S and fsys.S
-> #
+root@heimdal:~# mount -t nfs4 munkholm.local:/ /mnt
+mount.nfs4: mounting munkholm.local:/ failed, reason given by server:
+  No such file or directory
 
-Ditto.
+Trond
 
