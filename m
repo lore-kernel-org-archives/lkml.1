@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZGUBrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbZGUBsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbZGUBrB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 21:47:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbZGUBrA
+	id S1754561AbZGUBsM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 21:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZGUBsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 21:47:00 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:55491 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754537AbZGUBq7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 21:46:59 -0400
-Date: Tue, 21 Jul 2009 10:46:39 +0900 (JST)
-Message-Id: <20090721.104639.746976804375753666.mitake@dcl.info.waseda.ac.jp>
-To: a.p.zijlstra@chello.nl
-Cc: mingo@elte.hu, fweisbec@gmail.com, linux@brodo.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] Adding transition of CPU frequency counting
- support to perfcounters
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <1247933355.6597.11.camel@laptop>
-References: <20090718093115.GB9142@elte.hu>
-	<20090718.231137.187581409.mitake@dcl.info.waseda.ac.jp>
-	<1247933355.6597.11.camel@laptop>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 20 Jul 2009 21:48:11 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55422 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754290AbZGUBsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 21:48:10 -0400
+Message-ID: <4A651DF2.3060403@cn.fujitsu.com>
+Date: Tue, 21 Jul 2009 09:46:26 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Tom Zanussi <tzanussi@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] tracing/filters: Improve subsystem filter
+References: <4A63D485.7030703@cn.fujitsu.com> <alpine.DEB.2.00.0907201207390.7595@gandalf.stny.rr.com> <alpine.DEB.2.00.0907201230320.7595@gandalf.stny.rr.com> <4A651907.1090805@cn.fujitsu.com> <alpine.DEB.2.00.0907202131390.11494@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0907202131390.11494@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH][RFC] Adding transition of CPU frequency counting support to perfcounters
-Date: Sat, 18 Jul 2009 18:09:15 +0200
-
-> On Sat, 2009-07-18 at 23:11 +0900, mitake@dcl.info.waseda.ac.jp wrote:
-> > 
-> > Oh, my perf could count cpufreq events!
-> > Thanks for your nice advice!
-> > 
-> > % perf stat -a sleep 60
-> > 
-> >  Performance counter stats for 'sleep 60':
-> > 
-> >   479088.075595  task-clock-msecs         #      7.984 CPUs
-> >          199080  context-switches         #      0.000 M/sec
-> >           19584  CPU-migrations           #      0.000 M/sec
-> >          322978  page-faults              #      0.001 M/sec
-> >              29  cpufreq-up               #      0.000 M/sec
-> >              42  cpufreq-down             #      0.000 M/sec
-> >     73703367828  cycles                   #    153.841 M/sec
-> >     52005203450  instructions             #      0.706 IPC
-> >       209762467  cache-references         #      0.438 M/sec
-> >        84916856  cache-misses             #      0.177 M/sec
-> > 
-> >    60.009508200  seconds time elapsed
-> > 
-> > And I'm using ondemand governor now,
-> > so kernel thread [kondemand] context causes freq transition.
-> > I didn't notice that...
-> > 
-> > Could you merge this patch?
-> > Can I send this patch with descriptions and Signed-off-by?
+>> Proposal 2:
+>>
+>>   # cat filter
+>>   irq_handler_entry: irq == 5
+>>   irq_handler_exit: none
+>>   softirq_entry: vec == 1
+>>   softirq_exit: vec == 2
 > 
-> Why, what is the usecase?
-> 
+> I like proposal 2, it is very intuitive.
 > 
 
-Hmm, I considered, and I noticed that this patch makes no sense.
-Because my first purpose "collecting CPU freq transitions per process level"
-is completely nonsense. CPU freq transitions are global things, not one of processes.
+Me too.
 
-In either case, "up" and "down" are too poor information.
-At least freqs of each time should be recorded.
+>> Which do you think is better? Or do you have some better idea?
+>>
+>> And in the failure case:
+>>
+>>   # echo 'irq == not_num' > filter
+>>   bash: echo: write error: Invalid argument
+>>
+>> 1:
+>>   # cat filter
+>>   (still shows filters in each event like above)
+>>
+>> or shows error message (the current behavior)
+> 
+> No need to show error messages of failed filter modifications in the 
+> "filter" file.
+> 
+>> 2:
+>>   # cat filter
+>>   irq == not_num
+>>   ^
+>>   parse_error: Couldn't find or set field in one of a subsystem's events
+> 
+> This looks good, BUT, it is too much. If you want to implement an error 
+> message like the above, it should probably be a "pr_info()" thing.
+> 
 
-Sorry, please disregard this patch.
+Yeah, I think it's too much too, but that's exactly what we have.
+And I posted a patch to remove those error messages, but Tom and
+Frederic didn't seem to like it:
+
+	http://lkml.org/lkml/2009/6/17/89
