@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZGUPrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbZGUPsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbZGUPrb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 11:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbZGUPra
+	id S1755516AbZGUPsl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 11:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbZGUPsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 11:47:30 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:60770 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753974AbZGUPra (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 11:47:30 -0400
-Date: Tue, 21 Jul 2009 21:17:11 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: containers@lists.linux-foundation.org, Zefan Li <lizf.kernel@gmail.com>,
-       linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>
-Subject: Re: [PATCH] cgroup: fix reverse unlock sequence in cgroup_get_sb
-Message-ID: <20090721154711.GZ24157@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <1248171926-20232-1-git-send-email-dfeng@redhat.com> <20090721111019.GV24157@balbir.in.ibm.com> <8522a3d30907210438u6fce081fi835bf964d0c01e8a@mail.gmail.com> <20090721120106.GW24157@balbir.in.ibm.com> <6599ad830907210834y30e7d57aj978898a300a447d0@mail.gmail.com>
+	Tue, 21 Jul 2009 11:48:39 -0400
+Received: from iabervon.org ([66.92.72.58]:46569 "EHLO iabervon.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755480AbZGUPsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 11:48:39 -0400
+Date: Tue, 21 Jul 2009 11:48:37 -0400 (EDT)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: Pavel Machek <pavel@ucw.cz>
+cc: apw@canonical.com, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: checkpatch whitespace
+In-Reply-To: <20090721100113.GC4133@elf.ucw.cz>
+Message-ID: <alpine.LNX.2.00.0907211139400.2147@iabervon.org>
+References: <20090721100113.GC4133@elf.ucw.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <6599ad830907210834y30e7d57aj978898a300a447d0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* menage@google.com <menage@google.com> [2009-07-21 08:34:51]:
+On Tue, 21 Jul 2009, Pavel Machek wrote:
 
-> On Tue, Jul 21, 2009 at 5:01 AM, Balbir Singh<balbir@linux.vnet.ibm.com> wrote:
-> >
-> > lock(A)
-> > lock(B)
-> > unlock(A)
-> > unlock(B)
-> >
-> > Tomorrow if a unsuspecting programmer does this
-> >
-> > lock(A)
-> > lock(B)
-> > unlock(A)
-> >
-> > code block
-> >
-> > unlock(B)
-> >
-> >
-> > What protects code block? lock B? Is that the intention?
-> >
-> 
-> An "unsuspecting programmer" shouldn't be adding code to
-> multi-threaded routines without thoroughly understanding the locking.
-> 
+> I don't think that a bit of trailing whitespace hurts that much (it is
+> very easy to create when fixing overly long lines, another checkpatch
+> complain), and at least akpm autofixes the whitespace, anyway, but...
 
-Agreed, but why leave behind places for people to do so. There is the
-consistency factor as well, see below.
+The problem with trailing whitespace in files is that future developers 
+have to keep it the same while making changes in the area, or it'll add 
+noise to their commits and patches. Fixing up a patch to stop removing 
+trailing whitespace is even more of a pain than fixing a patch to stop 
+adding it.
 
+> Would it be possible to add autofixing to checkpatch? Fixing
+> whitespace issues by hand is useless & boring task...
 
-> I guess there's no harm in this patch, but as Li says, it doesn't
-> really change anything.
->
+Until checkpatch does it, "git apply" can be configured to auto-correct.
 
-Well all the other places do it right in the same routine. 
-
--- 
-	Balbir
+	-Daniel
+*This .sig left intentionally blank*
