@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbZGUHL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751053AbZGUHPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbZGUHL6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 03:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZGUHL4
+	id S1751053AbZGUHPP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 03:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZGUHPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 03:11:56 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:33219 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbZGUHLz (ORCPT
+	Tue, 21 Jul 2009 03:15:14 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:38166 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750803AbZGUHPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 03:11:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JHp3cLUo+Jhy+OubIUx/W61BsX4ikqpwSjDwgcZ9AGWBMPjXU/f/5r4HpeuBc3ni9P
-         x8Dm+NPXuQnh2jtY7GyPCi5hFF1q/7f2BtEjxZ4mqjhjY1zYyKUd+KZ8HtlfdmCS5Rft
-         GMcYyCrN9krV8Q7ZDdc7pE+XFuPN5bdVqeOrg=
-MIME-Version: 1.0
-In-Reply-To: <1248111535.15751.9339.camel@twins>
-References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
-	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
-	 <1248111535.15751.9339.camel@twins>
-Date: Tue, 21 Jul 2009 09:11:53 +0200
-Message-ID: <c62985530907210011m786f8f24g3f0de7560312cf07@mail.gmail.com>
-Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware 
-	breakpoints
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+	Tue, 21 Jul 2009 03:15:12 -0400
+Date: Tue, 21 Jul 2009 09:15:08 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "K . Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, Nick Piggin <npiggin@suse.de>,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] hibernate / memory hotplug: always use
+ for_each_populated_zone()
+Message-ID: <20090721071508.GB12734@osiris.boeblingen.de.ibm.com>
+References: <1248103551.23961.0.camel@localhost.localdomain>
+ <4A64E1D6.8090102@crca.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A64E1D6.8090102@crca.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/20, Peter Zijlstra <a.p.zijlstra@chello.nl>:
-> On Mon, 2009-07-20 at 13:08 -0400, Frederic Weisbecker wrote:
->> This adds the support for kernel hardware breakpoints in perfcounter.
->> It is added as a new type of software counter and can be defined by
->> using the counter number 5 and by passsing the address of the
->> breakpoint to set through the config attribute.
->
->
->> +void bp_perf_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
->> +{
->> +	unsigned long target = hw_breakpoint_addr(bp);
->> +
->> +	struct perf_sample_data data = {
->> +		.regs = regs,
->> +		.addr = instruction_pointer(regs),
->> +	};
->> +
->> +	do_perf_swcounter_event(PERF_TYPE_BREAKPOINT, target, 1, 0, &data);
->> +}
->
-> .addr would be an associated data address, like for pagefaults and
-> cache-misses have, its not the RIP of the faulting ins.
+On Tue, Jul 21, 2009 at 07:29:58AM +1000, Nigel Cunningham wrote:
+> Hi.
+> 
+> Gerald Schaefer wrote:
+> > From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> > 
+> > Use for_each_populated_zone() instead of for_each_zone() in hibernation
+> > code. This fixes a bug on s390, where we allow both config options
+> > HIBERNATION and MEMORY_HOTPLUG, so that we also have a ZONE_MOVABLE
+> > here. We only allow hibernation if no memory hotplug operation was
+> > performed, so in fact both features can only be used exclusively, but
+> > this way we don't need 2 differently configured (distribution) kernels.
+> > 
+> > If we have an unpopulated ZONE_MOVABLE, we allow hibernation but run
+> > into a BUG_ON() in memory_bm_test/set/clear_bit() because hibernation
+> > code iterates through all zones, not only the populated zones, in
+> > several places. For example, swsusp_free() does for_each_zone() and
+> > then checks for pfn_valid(), which is true even if the zone is not
+> > populated, resulting in a BUG_ON() later because the pfn cannot be
+> > found in the memory bitmap.
+> 
+> I agree with your logic and patch, but doesn't this also imply that the
+> s390 implementation pfn_valid should be changed to return false for
+> those pages?
 
-Ah ok, then I'll set the actual data memory address that is breakpointed.
-
-Thanks.
+For CONFIG_SPARSEMEM, which s390 uses, there is no architecture specific
+pfn_valid() implementation.
+Also it looks like the semantics of pfn_valid() aren't clear.
+At least for sparsemem it means nothing but "the memmap for the section
+this page belongs to exists". So it just means the struct page for the
+pfn exists.
+We still have pfn_present() for CONFIG_SPARSEMEM. But that just means
+"some pages in the section this pfn belongs to are present."
+So it looks like checking for pfn_valid() and afterwards checking
+for PG_Reserved (?) might give what one would expect.
+Looks all a bit confusing to me.
+Or maybe it's just me who is confused? :)
