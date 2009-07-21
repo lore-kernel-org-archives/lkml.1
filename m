@@ -1,108 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751855AbZGUAuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbZGUBDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751855AbZGUAuY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 20:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbZGUAuX
+	id S1753087AbZGUBDu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 21:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZGUBDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 20:50:23 -0400
-Received: from smtp.microsoft.com ([131.107.115.212]:52084 "EHLO
-	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZGUAuW convert rfc822-to-8bit (ORCPT
+	Mon, 20 Jul 2009 21:03:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59075 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752694AbZGUBDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 20:50:22 -0400
-X-Greylist: delayed 326 seconds by postgrey-1.27 at vger.kernel.org; Mon, 20 Jul 2009 20:50:22 EDT
-From: Hank Janssen <hjanssen@microsoft.com>
-To: Arnd Bergmann <arnd@arndb.de>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-CC: Greg Kroah-Hartman <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       Greg KH <greg@kroah.com>, Sam Ramji <sramji@microsoft.com>,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       "shemminger@linux-foundation.org" <shemminger@linux-foundation.org>
-Subject: RE: [patch 27/54] Staging: hv: remove ULONG and LONG typedefs
-Thread-Topic: [patch 27/54] Staging: hv: remove ULONG and LONG typedefs
-Thread-Index: AQHKCVPQj6mhFmQrk02S/bcT1owjx5B/jyUA//+WyWA=
-Date: Tue, 21 Jul 2009 00:44:55 +0000
-Message-ID: <8AFC7968D54FB448A30D8F38F259C56209A3A56B@TK5EX14MBXC114.redmond.corp.microsoft.com>
-References: <20090717180850.873962925@mini.kroah.org>
- <20090717180920.285605541@mini.kroah.org> <200907210200.16295.arnd@arndb.de>
-In-Reply-To: <200907210200.16295.arnd@arndb.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 20 Jul 2009 21:03:48 -0400
+Date: Mon, 20 Jul 2009 18:01:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Marc Dionne <marc.c.dionne@gmail.com>
+cc: Krzysztof Oledzki <olel@ans.pl>, Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       lwn@lwn.net
+Subject: Re: Linux 2.6.27.27
+In-Reply-To: <4A650DE1.20105@gmail.com>
+Message-ID: <alpine.LFD.2.01.0907201750150.19335@localhost.localdomain>
+References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
+ <4A650219.3060003@gmail.com> <alpine.LFD.2.01.0907201650570.19335@localhost.localdomain> <4A650DE1.20105@gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Arnd,
+On Mon, 20 Jul 2009, Marc Dionne wrote:
+> > 
+> > Hmm. This sounds more like the binutils bug that people had. Sounds like
+> > an assembler bug if the *.o file ends up being empty or at some fixed
+> > size. If it was cc1 that fails, I'd expect to not see an *.o file at all,
+> > since it didn't generate good assembly.
+> > 
+> > In fact, your behavior sounds like the thing that produces the *.o files
+> > core-dumped or died for other reasons, and had a 64kB buffer that either
+> > got flushed or not. That would explain the "zero or exactly 64kB" size.
+> > 
+> > It could be ccache too, of course.
+> 
+> Actually in my case it turns out that it is ccache after all - if I remove it
+> from the picture everything is fine.  If I re-enable it, even with a clean
+> cache, I get the problem.
+> 
+> It might just be a coincidence that it's triggered by the -fwrapv change.
 
-Thanks for this and the other mails reviewing the code.
+Ok, so this is getting ridiculous. Do we have _three_ different kernel 
+issues going on at the same time, all subtly related to tools issues 
+rather than the kernel source tree itself?
 
-My TODO list keeps on getting bigger :). I will check into all of these and correct them.
+That's just completely bizarre.
 
-Keep them coming!
+So right now we have:
 
-Thanks!
+ - Krzysztof Oledzki: the only one who so far has really pinpointed it to 
+   the -fwrapv change itself.
 
-Hank.
+   It would be good to really double-check that this is not about ccache, 
+   since Marc apparently gets a good kernel without ccache, and -fwrapv 
+   seems to be involved. 
 
+ - Marc Dionne: ccache getting confused, with 0-byte and 64kB object 
+   files. But why -fwrapv vs -fno-strict-overflow would matter is totally 
+   unclear. Just happenstance? Something silly like overflowing the 
+   length of the ccache argument buffer?
 
------Original Message-----
-From: Arnd Bergmann [mailto:arnd@arndb.de]
-Sent: Monday, July 20, 2009 5:00 PM
-To: virtualization@lists.linux-foundation.org
-Cc: Greg Kroah-Hartman; linux-kernel@vger.kernel.org; devel@driverdev.osuosl.org; virtualization@lists.osdl.org; Greg KH; Sam Ramji; Haiyang Zhang; Hank Janssen; shemminger@linux-foundation.org
-Subject: Re: [patch 27/54] Staging: hv: remove ULONG and LONG typedefs
+   It would be wonderful to figure out what odd issue ccache might have. 
+   The kernel command line isn't _that_ long, but it does end up being 
+   something reasonably monstrous like
 
-On Friday 17 July 2009, Greg Kroah-Hartman wrote:
-> From: Greg Kroah-Hartman <gregkh@suse.de>
->
-> The ULONG and LONG typedefs are now removed from the Hyper-V driver
-> code
->
+	gcc -Wp,-MD,kernel/.fork.s.d -nostdinc -isystem 
+		/usr/lib/gcc/x86_64-redhat-linux/4.4.0/include -Iinclude 
+		-I/home/torvalds/v2.6/linux/arch/x86/include -include 
+		include/linux/autoconf.h -D__KERNEL__ -Wall -Wundef -Wstrict-prototypes 
+		-Wno-trigraphs -fno-strict-aliasing -fno-common 
+		-Werror-implicit-function-declaration -Wno-format-security 
+		-fno-delete-null-pointer-checks -Os -m64 -march=core2 -mno-red-zone 
+		-mcmodel=kernel -funit-at-a-time -maccumulate-outgoing-args 
+		-DCONFIG_AS_CFI=1 -DCONFIG_AS_CFI_SIGNAL_FRAME=1 -pipe -Wno-sign-compare 
+		-fno-asynchronous-unwind-tables -mno-sse -mno-mmx -mno-sse2 -mno-3dnow 
+		-Wframe-larger-than=2048 -fno-stack-protector -fno-omit-frame-pointer 
+		-fno-optimize-sibling-calls -Wdeclaration-after-statement 
+		-Wno-pointer-sign -fwrapv -fno-dwarf2-cfi-asm -D"KBUILD_STR(s)=#s" 
+		-D"KBUILD_BASENAME=KBUILD_STR(fork)"  -D"KBUILD_MODNAME=KBUILD_STR(fork)"  
+		-fverbose-asm -S -o kernel/fork.s kernel/fork.c
 
-This conversion is not equivalent:
+   so we are getting into the kilobyte range for it, and mayeb simply the 
+   longer argument made something fail. But other build systems do even 
+   worse things, I'm sure.
 
->  //
-> -// unsigned types
-> -//
-> -typedef unsigned int         ULONG;
-> -
-> -//
-> -// signed types
-> -//
-> -typedef int                                  LONG;
+ - the Debian/sid binutils package failure, solved by downgrading 
+   binutils.
 
-- // redefine the world, because we can
-- extern char *i;
-- void abs(unsigned u);
-- #define FALSE (2)
+Crazy, crazy.
 
-;-)
-
-> --- a/drivers/staging/hv/include/StorVscApi.h
-> +++ b/drivers/staging/hv/include/StorVscApi.h
-> @@ -117,7 +117,7 @@ typedef struct _STORVSC_DRIVER_OBJECT {
->  } STORVSC_DRIVER_OBJECT;
->
->  typedef struct _STORVSC_DEVICE_INFO {
-> -     ULONG   PortNumber;
-> +     unsigned long   PortNumber;
->      unsigned char    PathId;
->      unsigned char    TargetId;
->  } STORVSC_DEVICE_INFO;
-
-If this is an API (as the header file name suggests), you just changed it.
-Same for the other hunks in this patch.
-
-        Arnd <><
-
+		Linus
