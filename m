@@ -1,123 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZGUFPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbZGUFWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623AbZGUFPx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 01:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZGUFPw
+	id S1752686AbZGUFWH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 01:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZGUFWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 01:15:52 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:60619 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751563AbZGUFPv convert rfc822-to-8bit (ORCPT
+	Tue, 21 Jul 2009 01:22:05 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:54276 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751265AbZGUFWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 01:15:51 -0400
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-To: "me@felipebalbi.com" <me@felipebalbi.com>,
-       "Krishnamoorthy, Balaji T" <balajitk@ti.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tony@atomide.com" <tony@atomide.com>,
-       "khilman@deeprootsystems.com" <khilman@deeprootsystems.com>,
-       "david-b@pacbell.net" <david-b@pacbell.net>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>,
-       "sameo@openedhand.com" <sameo@openedhand.com>,
-       "wim@iguana.be" <wim@iguana.be>,
-       "timo.t.kokkonen@nokia.com" <timo.t.kokkonen@nokia.com>,
-       "ben-linux@fluff.org" <ben-linux@fluff.org>,
-       "lrg@slimlogic.co.uk" <lrg@slimlogic.co.uk>,
-       "broonie@opensource.wolfsonmicro.com" 
-	<broonie@opensource.wolfsonmicro.com>,
-       "Nayak, Rajendra" <rnayak@ti.com>
-Date: Tue, 21 Jul 2009 10:45:04 +0530
-Subject: RE: [RFC][PATCH 1/4] OMAP4: PMIC: Add support for twl6030 irq
- framework
-Thread-Topic: [RFC][PATCH 1/4] OMAP4: PMIC: Add support for twl6030 irq
- framework
-Thread-Index: AcoJbVZJkoXrFMf0TROXX1zrGUrHcAAT0aHw
-Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02B595037E@dbde02.ent.ti.com>
-References: <1248096992-14610-1-git-send-email-balajitk@ti.com>
- <20090720190706.GE7984@gandalf>
-In-Reply-To: <20090720190706.GE7984@gandalf>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 21 Jul 2009 01:22:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AsH53DmMdUDSReGE4sjTAFF7aS920sPFCNNqqdKmLp/QnI/ICk8DpfGFhVYfRdmZG5
+         XdBCEzg/5xEC/x9zLo9VXSGoIPA84EUnLsb2b7vv1+Qaq9eML8WcbqkuF0AracF8gh5z
+         sGNpAj/1pu8AVuOYkcamhFnaN5Cd5K8vDcht0=
+Date: Mon, 20 Jul 2009 22:21:57 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Subrata Modak <subrata@linux.vnet.ibm.com>
+Cc: Pau Oliva Fora <pof@eslack.org>, linux-input@vger.kernel.org,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       David Howells <dhowells@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 04/06][RESEND] Fix compilation warning for
+	drivers/input/touchscreen/htcpen.c
+Message-ID: <20090721052157.GA2605@dtor-d630.eng.vmware.com>
+References: <20090721022344.30853.25784.sendpatchset@subratamodak.linux.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090721022344.30853.25784.sendpatchset@subratamodak.linux.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Felipe,
-Thanks for the review.
+Hi Subrata,
 
-> -----Original Message-----
-> From: Felipe Balbi [mailto:me@felipebalbi.com] 
-> Sent: Tuesday, July 21, 2009 12:37 AM
-> To: Krishnamoorthy, Balaji T
-> Cc: linux-kernel@vger.kernel.org; tony@atomide.com; 
-> khilman@deeprootsystems.com; david-b@pacbell.net; 
-> linux-omap@vger.kernel.org; linux-i2c@vger.kernel.org; 
-> sameo@openedhand.com; wim@iguana.be; 
-> timo.t.kokkonen@nokia.com; ben-linux@fluff.org; 
-> lrg@slimlogic.co.uk; broonie@opensource.wolfsonmicro.com; 
-> Nayak, Rajendra; Shilimkar, Santosh
-> Subject: Re: [RFC][PATCH 1/4] OMAP4: PMIC: Add support for 
-> twl6030 irq framework
- 
-I can summarize all your review comments in two points.
-
-1. Renaming is some thing __you__ think in not necessary.
-
-For this, I have already responded but just to clarify others on
-the list, I am just copy pasting your point and our view on this topic. 
-************************************************************************
-> this is kinda useless, we can consider twl6030 as being sw compatible
-> (almost) with twl4030. And twl4030 driver already support plenty of
-> other devices, just look at drivers/mfd/twl4030-core.c lines 
-> 807 - 814.
-> We have twl4003, twl5030, tps65950, tps65930 and tps65920.
+On Tue, Jul 21, 2009 at 07:53:44AM +0530, Subrata Modak wrote:
+> gcc 4.4.1 generates the following build warning on i386:
 > 
-> So IMO, renaming the files is unnecessary.
-Well tps* are just another catalog names of the twl4* family. So you can
-keep adding whatever names there as long it's a same IC.
+> CC drivers/input/touchscreen/htcpen.o
+> drivers/input/touchscreen/htcpen.c:50: warning: 'pnp_ids' defined but not used
+> 
+> Fix this by removing the static keyword when you are actually exporting
+> that structure. This patch was earlier posted on 14th July 2009:
+> http://lkml.org/lkml/2009/7/14/362,
+> 
+> Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>
 
-Perhaps you look in hurry to comment about this. Please look at the
-intention of these patches. TWL6030 has PM IC similar to TWL4030 with
-bit different interrupt management. Audio IC is a separate one as
-compared to combined in case of TWL4030.
+Umm, no, we don't export this particular structure, we are exporting
+another structure referencing this. Are you compiling without module
+support by any chance?
 
-If it allows code re-use by renaming files, it should be good. Isn't it ?
-************************************************************************
-Here is summary of Major difference between Triton(TWL4030) and
-Phoenix(TWL6030_ chips are:
-    -GPIO, Keypad is not present in Phoenix
-    -I2C Chips addresses of modules like RTC, BCI, ADC, USB, PMC Master/Slave 
-     have changed.  Base address of these module register is also changed.
-    -PIH and SIH, module interrupt status registers will be replaced by PIH 
-     (INT_STS_A, INT_STS_B and INT_STS_C) and module interrupt status registers
-    -MADC to GPADC in Phoenix, 17 channels supported
-     GPADC in Phoenix supports Realtime, Asynchronous SW request.
-    -RTC register offsets have changed. Addition/removal of LDO/SMPS Voltage 
-     Regulators
+> ---
+> 
+> --- a/drivers/input/touchscreen/htcpen.c	2009-05-20 10:40:54.000000000 +0530
+> +++ b/drivers/input/touchscreen/htcpen.c	2009-07-15 06:15:34.000000000 +0530
+> @@ -47,7 +47,7 @@ static int invert_y;
+>  module_param(invert_y, bool, 0644);
+>  MODULE_PARM_DESC(invert_y, "If set, Y axis is inverted");
+>  
+> -static struct pnp_device_id pnp_ids[] = {
+> +struct pnp_device_id pnp_ids[] = {
+>  	{ .id = "PNP0cc0" },
+>  	{ .id = "" }
+>  };
+> 
 
-2. Usage of compile time macros like "CONFIG_TWL4030" and CONFIG_TWL6030"
-should be avoided and you think it would break multi-omap.
-
-If we just go by definition " Multi-OMAP" is for different OMAP IC's. TWL4030
-and TWL6030 are external companion IC's to OMAP.
-Any ways, these compile time switches can be avoided if we make runtime
-provision for these TWL IC's like. 
-"is_twl4030(), is_twl6030" etc like "cpu_is_24xx(),cpu_is_44xx()" etc.
-
-Obviously this asks to make the driver register map (which is different in
-case of TWL6030 w.r.t TWL4030) to be held in some arrays and select the
-appropriate one run-time.  But it's doable if it helps.
-
-The patch series was made under _assumption_ that either TWL4030 or TWL6030 
-would be used. I am not sure whether there will boards where both will
-co-exist.
-
-Regards
-Santosh
+-- 
+Dmitry
