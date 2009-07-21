@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZGUPFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZGUPJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbZGUPFQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 11:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbZGUPFO
+	id S1754577AbZGUPJi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 11:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZGUPJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 11:05:14 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51656 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754035AbZGUPFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 11:05:13 -0400
-Date: Tue, 21 Jul 2009 16:04:37 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
-       jmorris@namei.org, spender@grsecurity.net, dwalsh@redhat.com,
-       cl@linux-foundation.org, arjan@infradead.org, kyle@mcmartin.ca,
-       cpardy@redhat.com, arnd@arndb.de
-Subject: Re: [PATCH 1/2] VM/SELinux: require CAP_SYS_RAWIO for all mmap_zero
- operations
-Message-ID: <20090721160437.5bda68b4@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090721144157.14159.23439.stgit@paris.rdu.redhat.com>
-References: <20090721144157.14159.23439.stgit@paris.rdu.redhat.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Jul 2009 11:09:37 -0400
+Received: from cmpxchg.org ([85.214.51.133]:33282 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751134AbZGUPJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 11:09:36 -0400
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: linux@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] arm: boolean bit testing
+Date: Tue, 21 Jul 2009 17:08:28 +0200
+Message-Id: <1248188908-10083-1-git-send-email-hannes@cmpxchg.org>
+X-Mailer: git-send-email 1.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009 10:41:58 -0400
-Eric Paris <eparis@redhat.com> wrote:
+Bit testing (test, testset, testclear, testchange) for bit numbers
+known at compile time returns a word with the tested-for bit set.
 
-> Currently non-SELinux systems need CAP_SYS_RAWIO for an application to mmap
-> the 0 page.  On SELinux systems they need a specific SELinux permission,
-> but do not need CAP_SYS_RAWIO.  This has proved to be a poor decision by
-> the SELinux team as, by default, SELinux users are logged in unconfined and
-> thus a malicious non-root has nothing stopping them from mapping the 0 page
-> of virtual memory.
+Change it to return a true boolean value so to make it consistent with
+the out-of-line path and all the other bitops implementations.
 
-So the poor decision is in fact that the SELinux users start as
-unconfined rather than taking away a few things like the the min map
-stuff which can then be given back to specific apps.
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+ arch/arm/include/asm/bitops.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-> On a non-SELinux system, a malicious non-root user is unable to do this, as
-> they need CAP_SYS_RAWIO.
-> 
-> This patch checks CAP_SYS_RAWIO for all operations which attemt to map a
-> page below mmap_min_addr.
+My limited ARM asm-foo says that the testop macro functions properly
+already.  Please double check.
 
-So "wine" now needs to run with CAP_SYS_RAWIO or you turn all the
-security off.
+diff --git a/arch/arm/include/asm/bitops.h b/arch/arm/include/asm/bitops.h
+index 63a481f..338ff19 100644
+--- a/arch/arm/include/asm/bitops.h
++++ b/arch/arm/include/asm/bitops.h
+@@ -84,7 +84,7 @@ ____atomic_test_and_set_bit(unsigned int bit, volatile unsigned long *p)
+ 	*p = res | mask;
+ 	raw_local_irq_restore(flags);
+ 
+-	return res & mask;
++	return (res & mask) != 0;
+ }
+ 
+ static inline int
+@@ -101,7 +101,7 @@ ____atomic_test_and_clear_bit(unsigned int bit, volatile unsigned long *p)
+ 	*p = res & ~mask;
+ 	raw_local_irq_restore(flags);
+ 
+-	return res & mask;
++	return (res & mask) != 0;
+ }
+ 
+ static inline int
+@@ -118,7 +118,7 @@ ____atomic_test_and_change_bit(unsigned int bit, volatile unsigned long *p)
+ 	*p = res ^ mask;
+ 	raw_local_irq_restore(flags);
+ 
+-	return res & mask;
++	return (res & mask) != 0;
+ }
+ 
+ #include <asm-generic/bitops/non-atomic.h>
+-- 
+1.6.3
 
-Am I missing something here, this "solution" sounds completely brain
-dead ?
-
-Alan
