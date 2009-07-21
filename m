@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbZGUQff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZGUQfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755705AbZGUQff (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 12:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbZGUQfe
+	id S1755781AbZGUQfp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 12:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755767AbZGUQfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 12:35:34 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:34311 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754062AbZGUQfd (ORCPT
+	Tue, 21 Jul 2009 12:35:44 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:61307 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755763AbZGUQfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 12:35:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=c5EXkhsG8EbfgAOywReNxO9TZ69oHDEqvgCahOUpN9zBTmP2hhHkpn5i2k/bgSjaCg
-         QtvvrNE6fO8/dBnDDi86LAL+GDQSk5xA1QleONi8EgMbfb3M4QATdhGpd4SaJo03XQXH
-         L8KAE4bo0czC6O8bSwuGxwQJMRAc1fGjcRm3Y=
+	Tue, 21 Jul 2009 12:35:43 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Gurudatt, Sreenidhi B" <sreenidhi.b.gurudatt@intel.com>
+Subject: Re: x86: IPC driver patch for Intel Moorestown platform
+Date: Tue, 21 Jul 2009 18:35:36 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>
+References: <98769532B4BB14429434178695419EAE5F3F9541@bgsmsx501.gar.corp.intel.com> <200907211723.36862.arnd@arndb.de> <98769532B4BB14429434178695419EAE5F45B41A@bgsmsx501.gar.corp.intel.com>
+In-Reply-To: <98769532B4BB14429434178695419EAE5F45B41A@bgsmsx501.gar.corp.intel.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-In-Reply-To: <42fb2af3afccef87d78ca6dd86169ad180b63271.1248190728.git.jbaron@redhat.com>
-References: <cover.1248190728.git.jbaron@redhat.com> <42fb2af3afccef87d78ca6dd86169ad180b63271.1248190728.git.jbaron@redhat.com>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Tue, 21 Jul 2009 09:26:54 -0700
-X-Google-Sender-Auth: 27f59657fefb1093
-Message-ID: <2c0942db0907210926ra96ee33ke3e6ac8c57458be8@mail.gmail.com>
-Subject: Re: [PATCH 2/2] perf_counter: detect debugfs location
-To: Jason Baron <jbaron@redhat.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, paulus@samba.org,
-       a.p.zijlstra@chello.nl, rostedt@goodmis.org, fweisbec@gmail.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907211835.36195.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+w98lSMOYp8O+oQiv9uJS0q+Aa6gQFoAfCw6s
+ uQgFTH+EQguQxnjSFCQ72yEH9/Litmrxm2npl+uOh8xJT4mVHy
+ U/gQmOG39itS/7y6QI4mkn25ItWLmB2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 9:20 AM, Jason Baron <jbaron@redhat.com> wrote:
+On Tuesday 21 July 2009, Gurudatt, Sreenidhi B wrote:
+> On Tuesday 21 July 2009, Alan Cox wrote:
+> > > 1. built-in code adds platform-device for mrst_ipc
+> > > 2. user space auto-loads the mrst_ipc driver
 >
-> Search for the debugfs filesystem in /proc/mounts, but also allows the user to
-> specify '--debugfs-dir=blah' or set the environment variable: 'PERF_DIR_DEBUGFS'
+> The IPC driver APIs for host drivers communicate with the SCU 
+> (System Controller Unit) firmware on the platform. It is used
+> by many Moorestown platform specific drivers such as Audio,
+> Touch Screen, GPIO, Battery, Power Management etc for accessing
+> PMIC (Power Management Interrupt Controller). It will typically
+> get loaded during boot and gets unloaded on shutdown.
+> I don't think it should be loaded and unloaded by the user-space apps.
 
-> -static char default_debugfs_path[] = "/sys/kernel/debug/tracing/events";
+Well, all modules get loaded from user space (modprobe)
+by definition, I was not referring to interactive applictions.
 
-There are server systems out there that run with thousands of mounts.
-It would be kinder to the users of those systems (ie, faster perf
-startup) if you only went rooting around /proc/mounts if opening the
-default location failed.
+The real difference is whether it can get autoloaded at
+boot time by udev based on the present device nodes, or
+you need to manually put it into /etc/modules.
+
+If you simply create platform devices at boot time,
+you get both the autoloading and a reasonable representation
+in /sys/devices/platform/mrst_ipc/... for free.
+
+	Arnd <><
