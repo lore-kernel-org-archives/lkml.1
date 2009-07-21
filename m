@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZGUQXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbZGUQYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755639AbZGUQXk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 12:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZGUQXj
+	id S1755684AbZGUQYG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 12:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbZGUQYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 12:23:39 -0400
-Received: from tango.0pointer.de ([85.214.72.216]:40943 "EHLO
-	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754397AbZGUQXi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 12:23:38 -0400
-Date: Tue, 21 Jul 2009 18:23:12 +0200
-From: Lennart Poettering <mzxreary@0pointer.de>
+	Tue, 21 Jul 2009 12:24:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38990 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755278AbZGUQYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 12:24:03 -0400
+Subject: Re: [PATCH 1/2] VM/SELinux: require CAP_SYS_RAWIO for all
+ mmap_zero operations
+From: Eric Paris <eparis@redhat.com>
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vt: add an event interface
-Message-ID: <20090721162312.GA25151@tango.0pointer.de>
-References: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk>
-Organization: Red Hat, Inc.
-X-Campaign-1: ()  ASCII Ribbon Campaign
-X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
-User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
+       jmorris@namei.org, spender@grsecurity.net, dwalsh@redhat.com,
+       cl@linux-foundation.org, arjan@infradead.org, kyle@mcmartin.ca,
+       cpardy@redhat.com, arnd@arndb.de
+In-Reply-To: <20090721170909.6182230c@lxorguk.ukuu.org.uk>
+References: <20090721144157.14159.23439.stgit@paris.rdu.redhat.com>
+	 <20090721160437.5bda68b4@lxorguk.ukuu.org.uk>
+	 <1248189524.2654.301.camel@localhost>
+	 <20090721163813.0cb5d7ab@lxorguk.ukuu.org.uk>
+	 <1248191833.2654.320.camel@localhost>
+	 <20090721170909.6182230c@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 12:23:14 -0400
+Message-Id: <1248193394.2654.327.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 02.07.09 12:36, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+On Tue, 2009-07-21 at 17:09 +0100, Alan Cox wrote:
 
-(Sorry for the long delay in responding, I have been travelling)
+> It's a really ugly problem that almost begs for better hardware
+> facilities (such as the multiple independent address spaces in some
+> processors)
 
-> Lennart how does this fit your needs - this replaces the existing wait
-> active hack with a race free one and adds other events with a proper
-> infrastructure for them.
+If only we knew someone who worked at intel.....   *smile*
 
-Sounds good to me. Though tbh, in my eyes the "proper" fix for this
-whole problem would be something which would enable userspace to
-poll() for VT changes. Having blocking ioctl()s still requires most
-userspace applications to spawn a thread for doing that since usually
-they are not exclusively waiting for VT events, but also for dbus
-requests or some other events.
+Are you on board with the change I propose as long as I make the address
+space controlled by SELinux tunable instead of fixed at one page?  Thus
+allowing one to maintain the status quo?  Yeah, still sucks for
+non-selinux systems and wine, but at least there can be hardening
+against a non-root local authenticated user on a default fedora
+install...
 
-But OTOH I guess 2 threads are still better than the old situation
-requiring processes to run 64 threads for listening for VT changes.
+-Eric
 
-Oh, and one more note: instead of padding the struct it would probably
-be more future-proof to simply pass the struct size in addition to the
-struct to the ioctl().
-
-Lennart
-
-> From: Alan Cox <alan@linux.intel.com>
-> 
-> This is needed and requested in various forms for ConsoleKit, screenblank
-> handling and the like so do the job with a single interface. Also build the
-> interface so that unlike VT_WAITACTIVE and friends it won't miss events.
-> 
-> Signed-off-by: Alan Cox <alan@linux.intel.com>
-
--- 
-Lennart Poettering                        Red Hat, Inc.
-lennart [at] poettering [dot] net
-http://0pointer.net/lennart/           GnuPG 0x1A015CC4
