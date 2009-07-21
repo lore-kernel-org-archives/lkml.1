@@ -1,92 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbZGUUna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbZGUUqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755790AbZGUUna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 16:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbZGUUn3
+	id S1755882AbZGUUqp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 16:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZGUUqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 16:43:29 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:29090 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753161AbZGUUn1 (ORCPT
+	Tue, 21 Jul 2009 16:46:44 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:54619 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755476AbZGUUqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 16:43:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer;
-        b=Q2IEiAD+ijN4PO9RHeLS7/86ekDUq80w94Filpw7HrTAwhsUExmtdtoeSgMXmIp/dJ
-         C17mPGdseggdckoOyA/CxzCq/ZvzmTGqmXpj6sS/CAbCiw5f0wNbRHBOBbuerZYFRxTD
-         0CMvkyEFD0Gv54ybbPRjGPwAThD87gpK4lwqo=
-Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
-From: Daniel Ribeiro <drwyrm@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com, tglx@linutronix.de,
-       David Brownell <david-b@pacbell.net>
-In-Reply-To: <20090721160436.GD4352@dtor-d630.eng.vmware.com>
-References: <20090714100634.GA4054@elf.ucw.cz>
-	 <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com>
-	 <20090715133627.GA2538@elf.ucw.cz>
-	 <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com>
-	 <20090721105924.GK4133@elf.ucw.cz> <20090721113642.GC13286@sirena.org.uk>
-	 <5d5443650907210518i6ee4df1evdc04d9ae9453707c@mail.gmail.com>
-	 <5d5443650907210530x4aaa03d6gd47ef5f79a3ef8a4@mail.gmail.com>
-	 <20090721124933.GA5668@rakim.wolfsonmicro.main>
-	 <20090721160436.GD4352@dtor-d630.eng.vmware.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-OhjLO42kfIzVIPhva3bN"
-Date: Tue, 21 Jul 2009 17:43:15 -0300
-Message-Id: <1248208995.4333.46.camel@brutus>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 21 Jul 2009 16:46:43 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Lennert Buytenhek <buytenh@marvell.com>, Saeed Bishara <saeed@marvell.com>,
+       =?utf-8?q?J=C3=B6rn=20Engel?= <joern@logfs.org>,
+       Nicolas Pitre <nico@marvell.com>,
+       Tzachi Perelstein <tzachi@marvell.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org
+Subject: [PATCH] register orion_nand using platform_driver_probe
+Date: Tue, 21 Jul 2009 22:46:36 +0200
+Message-Id: <1248209196-15705-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <alpine.LFD.2.00.0907141211260.3138@xanadu.home>
+References: <alpine.LFD.2.00.0907141211260.3138@xanadu.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+orion_nand_probe lives in .init.text, so using platform_driver_register
+to register it is wrong because binding a device after the init memory
+is discarded (e.g. via sysfs) results in an oops.
 
---=-OhjLO42kfIzVIPhva3bN
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+As requested by Nicolas Pitre platform_driver_probe is used instead of
+moving the probe function to .devinit.text as proposed initially.
+This saves some memory, but devices registered after the driver is
+probed are not bound (probably there are none) and binding via sysfs
+isn't possible.
 
-Em Ter, 2009-07-21 =C3=A0s 09:04 -0700, Dmitry Torokhov escreveu:
-> On Tue, Jul 21, 2009 at 01:49:33PM +0100, Mark Brown wrote:
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Lennert Buytenhek <buytenh@marvell.com>
+Cc: Saeed Bishara <saeed@marvell.com>
+Cc: Jörn Engel <joern@logfs.org>
+Cc: Nicolas Pitre <nico@marvell.com>
+Cc: Tzachi Perelstein <tzachi@marvell.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-mtd@lists.infradead.org
 
-> >  - Multi-function devices like the twl4030 which have an interrupt
-> >    controller on them and would like to expose that interrupt controlle=
-r
-> >    via the generic IRQ subsystem.  This was a large part of the
-> >    discussion in the thread above is a much trickier problem.
-> >=20
-> > I've added the folks from Samsung posting the MELFAS MCS-5000 driver to
-> > the thread since they're running into the same issue.
-> >=20
-> Let's also add Thomas and David since I believe they worked on the
-> feature.
+---
+ drivers/mtd/nand/orion_nand.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Please, keep me on CC too, pcap has an interrupt controller, is
-connected to SPI bus and exposes its interrupts via generic IRQ
-subsystem.
-
---=20
-Daniel Ribeiro
-
---=-OhjLO42kfIzVIPhva3bN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Esta =?ISO-8859-1?Q?=E9?= uma parte de mensagem
- assinada digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpmKGMACgkQw3OYl0G0liSBoACfUmMi1epB1ROtkx6SfNyd1DEK
-nFsAoIq3RNP2Tb9IboODK8eG2srrXWGw
-=xZZe
------END PGP SIGNATURE-----
-
---=-OhjLO42kfIzVIPhva3bN--
-
+diff --git a/drivers/mtd/nand/orion_nand.c b/drivers/mtd/nand/orion_nand.c
+index 7ad9722..cb9d13b 100644
+--- a/drivers/mtd/nand/orion_nand.c
++++ b/drivers/mtd/nand/orion_nand.c
+@@ -171,7 +171,6 @@ static int __devexit orion_nand_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver orion_nand_driver = {
+-	.probe		= orion_nand_probe,
+ 	.remove		= __devexit_p(orion_nand_remove),
+ 	.driver		= {
+ 		.name	= "orion_nand",
+@@ -181,7 +180,7 @@ static struct platform_driver orion_nand_driver = {
+ 
+ static int __init orion_nand_init(void)
+ {
+-	return platform_driver_register(&orion_nand_driver);
++	return platform_driver_probe(&orion_nand_driver, orion_nand_probe);
+ }
+ 
+ static void __exit orion_nand_exit(void)
+-- 
+tg: (4b0a840..) t/platsection/orion_nand_driver (depends on: linus/master)
