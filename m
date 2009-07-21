@@ -1,127 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZGUDLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZGUD1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbZGUDLU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 20 Jul 2009 23:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbZGUDLS
+	id S1754809AbZGUD1A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 20 Jul 2009 23:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbZGUD07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 20 Jul 2009 23:11:18 -0400
-Received: from fn.samba.org ([216.83.154.106]:55193 "EHLO lists.samba.org"
+	Mon, 20 Jul 2009 23:26:59 -0400
+Received: from mga03.intel.com ([143.182.124.21]:8102 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754592AbZGUDLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 20 Jul 2009 23:11:15 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754655AbZGUD06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 20 Jul 2009 23:26:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,238,1246863600"; 
+   d="scan'208";a="167134250"
+Subject: Re: mmotm 2009-07-16-14-32 - sudden OOPS at boot in ACPI code
+From: Lin Ming <ming.m.lin@intel.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bob Moore <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
+       linux-kernel@vger.kernel.org, linux-acpi <linux-acpi@vger.kernel.org>
+In-Reply-To: <d3f22a0907202021o525c98ebg4ef3f0d5d1c3016@mail.gmail.com>
+References: <200907162134.n6GLY2kt019816@imap1.linux-foundation.org>
+	 <9078.1248144738@turing-police.cc.vt.edu>
+	 <d3f22a0907202021o525c98ebg4ef3f0d5d1c3016@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 21 Jul 2009 11:27:02 +0800
+Message-Id: <1248146822.1852.32.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Message-ID: <19045.11460.815706.98797@samba.org>
-Date: Tue, 21 Jul 2009 12:49:40 +1000
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Cc: torvalds@linux-foundation.org,
-       Ogawa Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, john.lanza@linux.com
-Subject: [PATCH 1/2] FAT: Add FAT_NO_83NAME flag
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the first of two patches which attempt to address the
-technical concerns raised by the previous round of VFAT patent
-workaround patches.
 
-This patch adds a new flag field 'FAT_NO_83NAME' for FAT files. When
-this flag is set on an 8.3 FAT entry, both the MSDOS and VFAT
-filesystems will skip the entry. For MSDOS this makes the file
-inaccessible. For VFAT it makes the file only accessible by the long
-filename.
+> From:  <Valdis.Kletnieks@vt.edu>
+> Date: Tue, Jul 21, 2009 at 10:52 AM
+> Subject: mmotm 2009-07-16-14-32 - sudden OOPS at boot in ACPI code
+> To: Andrew Morton <akpm@linux-foundation.org>, Bob Moore
+> <robert.moore@intel.com>, Len Brown <lenb@kernel.org>
+> Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+> 
+> 
+> On Thu, 16 Jul 2009 14:34:02 PDT, akpm@linux-foundation.org said:
+> > The mm-of-the-moment snapshot 2009-07-16-14-32 has been uploaded to
+> 
+> Dies a horrid death during early boot. Dell Latitude D820, and this graphics:
+> 
+> 01:00.0 VGA compatible controller: nVidia Corporation G72M [Quadro NVS
+> 110M/GeForce Go 7300] (rev a1)
+> 
+> Traceback (hand-copied from a very crappy cell-phone picture)
+> 
+> strcmp+0x4/0x1f
+> acpi_device+probe+0xac/0x13e
+> driver_probe_device+0xc9/0x14e
+> __driver_attach+0x58/0x7c
+> ? __driver_attach+0x58/0x7c
+> ? __driver_attach+0x58/0x7c
+> bus_for_each_dev+0x54/0x89
+> driver_attach+0x19/0x1b
+> bus_add_driver+0xv4/0x1fe
+> driver_register+0xb7/0x128
+> ? acpi_video_init+0x0/0x17
+> acpi_bus_register_driver+0x3e/0x42
+> acpi_video_register+0x42/0x6e
+> acpi_video_init+0x15/0x17
+> do_one_initcall+0x56/0x130
+> 
+> Analysis shows it's the following code from (inlined)
+> acpi_device_install_notify_handler
+> 
+> static int acpi_device_install_notify_handler(struct acpi_device *device)
+> {
+>        acpi_status status;
+>        char *hid;
+> 
+>        hid = acpi_device_hid(device);
+>        if (!strcmp(hid, ACPI_BUTTON_HID_POWERF))
+> 
+> but we never check if hid is non-trash before feeding it to strcmp.  Looks
+> like something in this linux-next commit is involved:
+> 
+> commit ed444824932d2a563858d82ec1ea29b0aa775e91
+> Author: Bob Moore <robert.moore@intel.com>
+> Date:   Mon Jun 29 13:39:29 2009 +0800
+> 
+> I suspect something in acpi_get_object_info() is going astray, causing
+> acpi_device_set_id() to set the ->pnp.hardware_id to NULL in this code:
+> 
+>        if (hid) {
+>                device->pnp.hardware_id = ACPI_ALLOCATE_ZEROED(strlen (hid) + 1);
+>                if (device->pnp.hardware_id) {
+>                        strcpy(device->pnp.hardware_id, hid);
+>                        device->flags.hardware_id = 1;
+>                }
+>        } else
+>                device->pnp.hardware_id = NULL;
+> 
+> The else clause is new in this commit.
 
-The justification for this patch is to provide a clean way to
-distinguish files created on VFAT filesystems with long filenames but
-without a 8.3 short name. It uses a unused bit in the FAT directory
-entry to store the FAT_NO_83NAME flag.
+Hi, would you please try below patch?
 
-This patch, combined with the following VFAT_FS_NO_DUALNAMES patch,
-address the following technical issues found with the last series of
-patches:
-
-  - Fixed problems with Win98, although some cosmetic issues remain
-  - Fixed problems with all tested MP3 players and similar devices
-  - Lowers the probability of a WinXP bluescreen by a factor of about 80x
-  - Fixed problems with mtools, although some cosmetic issues remain
-    that require a small mtools patch to fix
-
-More details and testing tools are available at
-
-  http://kernel.org/pub/linux/kernel/people/tridge/VFAT/
-
-Signed-off-by: Andrew Tridgell <tridge@samba.org>
----
- fs/fat/dir.c             |   14 ++++++++++++++
- include/linux/msdos_fs.h |    1 +
- 2 files changed, 15 insertions(+), 0 deletions(-)
-
-diff --git a/fs/fat/dir.c b/fs/fat/dir.c
-index 38ff75a..902e84c 100644
---- a/fs/fat/dir.c
-+++ b/fs/fat/dir.c
-@@ -385,6 +385,13 @@ parse_record:
- 				goto end_of_dir;
- 		}
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index 6e83a68..6c64366 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -188,8 +188,8 @@ struct acpi_device_pnp {
  
-+		/*
-+		 * The FAT_NO_83NAME flag is used to mark files
-+		 * created with no 8.3 short name
-+		 */
-+		if (de->lcase & FAT_NO_83NAME)
-+			goto compare_longname;
-+
- 		memcpy(work, de->name, sizeof(de->name));
- 		/* see namei.c, msdos_format_name */
- 		if (work[0] == 0x05)
-@@ -429,6 +436,7 @@ parse_record:
- 		if (fat_name_match(sbi, name, name_len, bufname, len))
- 			goto found;
+ #define acpi_device_bid(d)	((d)->pnp.bus_id)
+ #define acpi_device_adr(d)	((d)->pnp.bus_address)
+-#define acpi_device_hid(d)	((d)->pnp.hardware_id)
+-#define acpi_device_uid(d)	((d)->pnp.unique_id)
++#define acpi_device_hid(d)	((d)->pnp.hardware_id ? (d)->pnp.hardware_id : "\0")
++#define acpi_device_uid(d)	((d)->pnp.unique_id ? (d)->pnp.unique_id : "\0")
+ #define acpi_device_name(d)	((d)->pnp.device_name)
+ #define acpi_device_class(d)	((d)->pnp.device_class)
  
-+compare_longname:
- 		if (nr_slots) {
- 			void *longname = unicode + FAT_MAX_UNI_CHARS;
- 			int size = PATH_MAX - FAT_MAX_UNI_SIZE;
-@@ -530,6 +538,8 @@ parse_record:
- 		if (de->attr != ATTR_EXT && IS_FREE(de->name))
- 			goto record_end;
- 	} else {
-+		if (de->lcase & FAT_NO_83NAME)
-+			goto record_end;
- 		if ((de->attr & ATTR_VOLUME) || IS_FREE(de->name))
- 			goto record_end;
- 	}
-@@ -935,6 +945,10 @@ int fat_scan(struct inode *dir, const unsigned char *name,
- 	sinfo->bh = NULL;
- 	while (fat_get_short_entry(dir, &sinfo->slot_off, &sinfo->bh,
- 				   &sinfo->de) >= 0) {
-+		/* skip files marked as having no 8.3 short name  */
-+		if (sinfo->de->lcase & FAT_NO_83NAME)
-+			continue;
-+
- 		if (!strncmp(sinfo->de->name, name, MSDOS_NAME)) {
- 			sinfo->slot_off -= sizeof(*sinfo->de);
- 			sinfo->nr_slots = 1;
-diff --git a/include/linux/msdos_fs.h b/include/linux/msdos_fs.h
-index ce38f1c..639e6a4 100644
---- a/include/linux/msdos_fs.h
-+++ b/include/linux/msdos_fs.h
-@@ -43,6 +43,7 @@
- 
- #define CASE_LOWER_BASE	8	/* base is lower case */
- #define CASE_LOWER_EXT	16	/* extension is lower case */
-+#define FAT_NO_83NAME	32	/* no 8.3 short filename for this file */
- 
- #define DELETED_FLAG	0xe5	/* marks file as deleted when in name[0] */
- #define IS_FREE(n)	(!*(n) || *(n) == DELETED_FLAG)
--- 
-1.6.0.4
+
+Thanks,
+Lin Ming
 
