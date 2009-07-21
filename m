@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbZGUGBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbZGUGEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbZGUGBS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 02:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZGUGBS
+	id S1754965AbZGUGEb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 02:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbZGUGEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 02:01:18 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:56180 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754515AbZGUGBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 02:01:17 -0400
-Date: Tue, 21 Jul 2009 11:31:14 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] taskstats-fork: Add a new taskstats command to get
-	notification on fork/clone
-Message-ID: <20090721060114.GS24157@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <200907211031.48294.knikanth@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <200907211031.48294.knikanth@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 21 Jul 2009 02:04:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:62225 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbZGUGE2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 02:04:28 -0400
+From: Abhishek Kulkarni <adkulkar@umail.iu.edu>
+To: linux-kernel@vger.kernel.org
+Cc: v9fs-developer@lists.sourceforge.net,
+       Abhishek Kulkarni <adkulkar@umail.iu.edu>
+Subject: [PATCH] 9p: Remove redundant inode uid/gid assignment
+Date: Tue, 21 Jul 2009 00:03:50 -0600
+Message-Id: <1248156236-3005-1-git-send-email-adkulkar@umail.iu.edu>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nikanth Karthikesan <knikanth@suse.de> [2009-07-21 10:31:48]:
+Remove a redundant update of inode's i_uid and i_gid
+after v9fs_get_inode() since the latter already sets up
+a new inode and sets the proper uid and gid values.
 
-> Add a new taskstats command to register for notification, whenever a new task
-> forks in the cpumask specified.
->
+Signed-off-by: Abhishek Kulkarni <adkulkar@umail.iu.edu>
+---
+:100644 100644 38d695d... b5295fd... M	fs/9p/vfs_super.c
+ fs/9p/vfs_super.c |    5 -----
+ 1 files changed, 0 insertions(+), 5 deletions(-)
 
-The changelog is sucky.. why do we need this? Why is proc-events not
-sufficient?
+diff --git a/fs/9p/vfs_super.c b/fs/9p/vfs_super.c
+index 38d695d..b5295fd 100644
+--- a/fs/9p/vfs_super.c
++++ b/fs/9p/vfs_super.c
+@@ -113,8 +113,6 @@ static int v9fs_get_sb(struct file_system_type *fs_type, int flags,
+ 	struct v9fs_session_info *v9ses = NULL;
+ 	struct p9_wstat *st = NULL;
+ 	int mode = S_IRWXUGO | S_ISVTX;
+-	uid_t uid = current_fsuid();
+-	gid_t gid = current_fsgid();
+ 	struct p9_fid *fid;
+ 	int retval = 0;
  
-
+@@ -150,9 +148,6 @@ static int v9fs_get_sb(struct file_system_type *fs_type, int flags,
+ 		goto release_sb;
+ 	}
+ 
+-	inode->i_uid = uid;
+-	inode->i_gid = gid;
+-
+ 	root = d_alloc_root(inode);
+ 	if (!root) {
+ 		iput(inode);
 -- 
-	Balbir
+1.6.0.4
+
