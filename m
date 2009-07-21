@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbZGUVzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbZGUVzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756230AbZGUVzp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 17:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756033AbZGUVzo
+	id S1756257AbZGUVzq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 17:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbZGUVzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 17:55:44 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:33573 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755566AbZGUVzn (ORCPT
+	Tue, 21 Jul 2009 17:55:45 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51722 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755897AbZGUVzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 17:55:43 -0400
-Date: Tue, 21 Jul 2009 23:55:38 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [RFC][patch 1/5] move clock source related code to
- clocksource.c
-Message-ID: <20090721235538.14929e8e@skybase>
-In-Reply-To: <1248205851.14209.777.camel@desktop>
-References: <20090721191745.788551122@de.ibm.com>
-	<20090721192057.177653956@de.ibm.com>
-	<1248205851.14209.777.camel@desktop>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 21 Jul 2009 17:55:44 -0400
+Date: Tue, 21 Jul 2009 17:55:36 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Hans-Joachim Picht <hans@linux.vnet.ibm.com>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Arnd Schneider <arnd@de.ibm.com>, linux-fsdevel@vger.kernel.org
+Subject: Re: PM/hibernate swapfile regression
+Message-ID: <20090721215536.GA9502@infradead.org>
+References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com> <200907141821.06101.rjw@sisk.pl> <4A6077DE.6060202@tuffmail.co.uk> <20090720132456.GA29023@osiris.boeblingen.de.ibm.com> <4A659D75.3050004@tuffmail.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A659D75.3050004@tuffmail.co.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009 12:50:51 -0700
-Daniel Walker <dwalker@fifo99.com> wrote:
+On Tue, Jul 21, 2009 at 11:50:29AM +0100, Alan Jenkins wrote:
+> +struct block_device *bdcopy(struct block_device *bdev)
+> +{
+> +	atomic_inc(&bdev->bd_inode->i_count);
+> +	return bdev;
+> +}
+> +
+> +EXPORT_SYMBOL(bdcopy);
 
-> On Tue, 2009-07-21 at 21:17 +0200, Martin Schwidefsky wrote:
-> > plain text document attachment (clocksource-move.diff)
-> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > 
-> > Move clock source related code from timekeeping.c to clocksource.c
-> > where they belong. The selected clocks source "clock" is now defined
-> > in clocksource.c and clocksource_init is added to set up the initial
-> > clock.
-> 
-> The problem is most (if not all) the code your moving is actually time
-> keeping code .. The reason it seems like clocksource code is cause John
-> wasn't very choosy about which structure he added variables too .. So
-> really this clean up needs to be in reverse, remove all the timekeeping
-> code from the clocksource code.
+The function name doesn't make any sense.  You don't copy anything
+here, but you grab a reference to it.  A better name would be bdgrab,
+mirroing the names of functions like igrab.  A kerneldoc comment
+documenting it would also be very helpful.
 
-You are refering to the following variables, aren't you?
-
-        cycle_t cycle_interval;
-        u64     xtime_interval;
-        u32     raw_interval;
-        u64 xtime_nsec;
-        s64 error;
-        struct timespec raw_time;
-
-There is a dependency between these values and the clocksource. But they
-are only needed for the current active clock, so we could move them out
-of the clocksource data structure and make them static variables in
-timekeeping.c. I guess it would improve the code separation for
-update_wall_time as well. Hmm, worth a try.
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Why do you export it?  The swapfile code is not actually modular.
 
