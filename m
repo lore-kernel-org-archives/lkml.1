@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZGUKo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZGUKpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755330AbZGUKo0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 06:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbZGUKoZ
+	id S1755333AbZGUKpM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 06:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZGUKpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 06:44:25 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:51778 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754989AbZGUKoY (ORCPT
+	Tue, 21 Jul 2009 06:45:09 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:51540 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754989AbZGUKpI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 06:44:24 -0400
-Date: Tue, 21 Jul 2009 12:44:22 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: tridge@samba.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Martin Steigerwald <Martin@lichtvoll.de>, Theodore Tso <tytso@mit.edu>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org, torvalds@linux-foundation.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <4A65875D.7030902@panasas.com>
-Message-ID: <alpine.LSU.2.00.0907211236380.14924@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org> <alpine.LSU.2.00.0907062221520.27775@fbirervta.pbzchgretzou.qr> <19026.38137.63807.427511@samba.org> <200907072356.51553.Martin@lichtvoll.de> <19028.3736.892828.352905@samba.org> <20090708110451.1092afa7@lxorguk.ukuu.org.uk>
- <1247066878.4159.153.camel@mulgrave.site> <20090708163736.0f98e7e0@lxorguk.ukuu.org.uk> <1247069202.4159.212.camel@mulgrave.site> <20090708171848.21633768@lxorguk.ukuu.org.uk> <873a96a23x.fsf@devron.myhome.or.jp> <87hbxhwv0j.fsf@devron.myhome.or.jp>
- <19045.14307.658887.752950@samba.org> <4A65875D.7030902@panasas.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Tue, 21 Jul 2009 06:45:08 -0400
+X-SpamScore: -15
+X-BigFish: VPS-15(zz1432R98dN1402I1442Jzz1202hzzz32i6bh6di43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KN4OIM-03-H6Q-01
+Date: Tue, 21 Jul 2009 12:44:43 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, norsk5@yahoo.com,
+       aris@redhat.com, linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH 07/14] mce3: pass mce info to EDAC for decoding
+Message-ID: <20090721104443.GC32338@aftab>
+References: <1248106385-27514-1-git-send-email-borislav.petkov@amd.com>
+ <1248106385-27514-8-git-send-email-borislav.petkov@amd.com>
+ <20090720180446.GB16072@basil.fritz.box>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20090720180446.GB16072@basil.fritz.box>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 21 Jul 2009 10:44:43.0344 (UTC) FILETIME=[41C0DD00:01CA09F0]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jul 20, 2009 at 08:04:46PM +0200, Andi Kleen wrote:
+> On Mon, Jul 20, 2009 at 06:12:58PM +0200, Borislav Petkov wrote:
+> > Use a weakly defined symbol instead of ugly ifdefs.
+> 
+> I'm not sure what you're trying to archive, but if you're
+> trying to catch corrected MCs you're hooking into the 
+> wrong function. print_mce is only called for PCC=1.
 
-On Tuesday 2009-07-21 11:16, Boaz Harrosh wrote:
->>   - Similarly, there is a small chance that chkdsk on Windows will
->>     rename one file in a directory if they happen to have the same 11
->>     byte dummy values. The probability of this happening is
->>     approximately 80x lower than with the previous patch.
->
->What if we had a user mode utility that does these short-names
->renames that a user can optionally run after umount? since it
->only writes the (random) short-names it's also safe.
+Well, I was able to mce-inject a PCC=0 MCE with UC set:
 
-Mm, user-mode. tridgefat could trigger a usermode process at open(2)
-time to rebuild the short name with traditional semantics to counter
-the 'breakage' induced by random 8.3 names.
+HARDWARE ERROR
+CPU 0: Machine Check Exception:                0 Bank 5: b400200000000f0f
+TSC a84597c1a0 ADDR 1234 
+PROCESSOR 2:100f22 TIME 1248092118 SOCKET 0 APIC 0
+MC5_STATUS: Uncorrected error, report: yes, MiscV: invalid, CPU context corrupt: no
+ FR Error: CPU Watchdog timer expire.
+ Transaction type: Generic(Generic), Timed out, Cache Level: L3/Generic, generic
+This is not a software problem!
+
+Irrespective, I'm more focused on decoding all MCEs that are graded to
+be output, no matter the severity and obviate the staring and meditating
+on MC5_STATUS (0xb400200000000f0f) for example while trying to decipher
+what kind of error it was. Long term, we'd like to do more decoding
+depending on the error type and use EDAC for that.
+
+> Also if you're checking for specific banks you
+> need to check for vendor/cpu model first of course.
+> In your current implementation e.g. a Intel CPU
+> would pass some random event into your AMD specific code,
+> which is probably not intended and might even crash.
+
+Actually I wanted to worry about that only after we have more than one
+vendor-specific MCE decoders :).
+ 
+> It would be probably cleaner if you defined a standard
+> notifier chain interface.
+
+Sounds like a cleaner solution, at a first glance. Will look into it.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
