@@ -1,98 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbZGUGgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbZGUGiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755015AbZGUGgl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 02:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbZGUGgk
+	id S1755122AbZGUGiA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 02:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbZGUGh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 02:36:40 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57665 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754912AbZGUGgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 02:36:40 -0400
-Message-ID: <4A656194.50700@cn.fujitsu.com>
-Date: Tue, 21 Jul 2009 14:35:00 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Tom Zanussi <tzanussi@gmail.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] tracing/filters: Improve subsystem filter
-References: <4A63D485.7030703@cn.fujitsu.com> <1248154585.6323.26.camel@tropicana>
-In-Reply-To: <1248154585.6323.26.camel@tropicana>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 21 Jul 2009 02:37:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36030 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755043AbZGUGh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 02:37:57 -0400
+Date: Mon, 20 Jul 2009 23:37:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josef Bacik <josef@redhat.com>
+Cc: linux-ext4@vger.kernel.org, emcnabb@redhat.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mingming Cao <cmm@us.ibm.com>, Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH] fix softlockups in ext2/3 when trying to allocate
+ blocks
+Message-Id: <20090720233735.e3c711d1.akpm@linux-foundation.org>
+In-Reply-To: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com>
+References: <20090706194739.GB19798@dhcp231-156.rdu.redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tom Zanussi wrote:
-> Hi,
+On Mon, 6 Jul 2009 15:47:39 -0400 Josef Bacik <josef@redhat.com> wrote:
+
+> This isn't a huge deal, but using a big beefy box with more CPUs than what is
+> sane, you can get a nice flood of softlockup messages when running heavy
+> multi-threaded io tests on ext2/3.  The processors compete for blocks from the
+> allocator, so they will loop quite a bit trying to get their allocation.  This
+> patch simply makes sure that we reschedule if need be.  This made the softlockup
+> messages disappear whereas before they happened almost immediately.  Thanks,
+
+The softlockup threshold is 60 seconds.  For the kernel to spend 60
+seconds continuous CPU time in the filesystem is very bad behaviour, and
+adding a rescheduling point doesn't fix that!
+
+> Tested-by: Evan McNabb <emcnabb@redhat.com>
+> Signed-off-by: Josef Bacik <josef@redhat.com>
+> ---
+>  fs/ext2/balloc.c |    1 +
+>  fs/ext3/balloc.c |    2 ++
+>  2 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> On Mon, 2009-07-20 at 10:20 +0800, Li Zefan wrote:
->> Currently a subsystem filter should be applicable to all events
->> under the subsystem, and if it failed, all the event filters
->> will be cleared. Those behaviors make subsys filter much less
->> useful:
->>
->>   # echo 'vec == 1' > irq/softirq_entry/filter
->>   # echo 'irq == 5' > irq/filter
->>   bash: echo: write error: Invalid argument
->>   # cat irq/softirq_entry/filter
->>   none
->>
->> I'd expect it set the filter for irq_handler_entry/exit, and
->> not touch softirq_entry/exit.
->>
->> The basic idea is, try to see if the filter can be applied
->> to which events, and then just apply to the those events:
->>
->>   # echo 'vec == 1' > softirq_entry/filter
->>   # echo 'irq == 5' > filter
->>   # cat irq_handler_entry/filter
->>   irq == 5
->>   # cat softirq_entry/filter
->>   vec == 1
->>
-> 
-> It looks like it accomplishes the goal, but I wonder if you could
-> simplify it by getting rid of the no_reset flag and all the state-saving
-> while keeping the dry_run param on filter_add_pred to use from
-> filter_add_subsysystem_pred() e.g. something like this:
-> 
-> filter_add_subsystem_pred(...)
-> {
-> 	...
-> 	list_for_each_entry(call, &ftrace_events, list) {
-> 		err = filter_add_pred(ps, call, pred, dry_run = 1);
-> 		if (!err)
-> 			filter_add_pred(ps, call, pred, dry_run = 0);
+> diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
+> index 7f8d2e5..17dd55f 100644
+> --- a/fs/ext2/balloc.c
+> +++ b/fs/ext2/balloc.c
+> @@ -1176,6 +1176,7 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
+>  			break;				/* succeed */
+>  		}
+>  		num = *count;
+> +		cond_resched();
+>  	}
+>  	return ret;
+>  }
+> diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
+> index 27967f9..cffc8cd 100644
+> --- a/fs/ext3/balloc.c
+> +++ b/fs/ext3/balloc.c
+> @@ -735,6 +735,7 @@ bitmap_search_next_usable_block(ext3_grpblk_t start, struct buffer_head *bh,
+>  	struct journal_head *jh = bh2jh(bh);
+>  
+>  	while (start < maxblocks) {
+> +		cond_resched();
+>  		next = ext3_find_next_zero_bit(bh->b_data, maxblocks, start);
+>  		if (next >= maxblocks)
+>  			return -1;
+> @@ -1391,6 +1392,7 @@ ext3_try_to_allocate_with_rsv(struct super_block *sb, handle_t *handle,
+>  			break;				/* succeed */
+>  		}
+>  		num = *count;
+> +		cond_resched();
+>  	}
+>  out:
+>  	if (ret >= 0) {
 
-This is the same with just call "filter_add_pred(ps, call, pred)"
+I worry that something has gone wrong with the reservations code.  The
+filesystem _should_ be able to find a free block without any contention
+from other CPUs, because there's a range of blocks reserved for this
+inode's allocation attempts.
 
-> 		...
-> 	}
-> }
-> 
-> IIRC the state-saving was necessary if the idea was to back out of (or
-> avoid setting) all the filters if one failed, but the new model is to
-> set whichever apply while leaving the rest alone.  I think the simpler
-> approach above accomplishes that, but I may be missing something or have
-> forgotten the original motivation for doing it this way.
-> 
+Unless the workload has a lot of threads writing to the _same_ file. 
+If it does that then yes, we'll have lots of CPUs contenting for blocks
+within that inode's reservation window.  Tell us about the workload please.
 
-This won't work as expected. The state-saving is necessary, because
-if any pred is not appliable for an event, the whole operation should
-fail for that event.
+But that shouldn't be happening either because all those write()ing
+threads will be serialised by i_mutex.
 
-What this patch does is apply the filter to those events that the
-filter is appliable, but not apply parts of the filter to each event.
+So I don't know what's happening here.  Possibly a better fix would be
+to add a lock rather than leaving the contention in place and hiding
+it.  Even better would be to understand why the contention is happening
+and prevent that.
 
-Imaging the result for those filters with the above code:
-
-  # echo 'irq == 5 && vec == 1' > filter
-  # echo 'irq == 5 || vec == 1' > filter
-  # echo 'irq == 5 || foo == bar' > fitler
-  # echo '(irq == 5 && vec == 1) || irq == 2' > filter
-
+Thanks.
