@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZGUKv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbZGUKvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbZGUKv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 06:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZGUKv1
+	id S1755300AbZGUKvx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 06:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZGUKvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 06:51:27 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:38687 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754830AbZGUKv0 (ORCPT
+	Tue, 21 Jul 2009 06:51:52 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:3397 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754850AbZGUKvv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 06:51:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=kZdbHJn5Xei8Ti91yIdBiBZh1dmBJI6zX+9/5dQ4/qwuMjJXfJmneFC3+5Z0cmFF7s
-         95f9wP+mWCQulLpcnLPIseXjmWRlhVDA61nz9drdyfc16cbzGwewHWs2F1adJV74seDz
-         jDfBphiQAdajx8cuZtwVNtHEgNT8TbeqBLCMA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Dwayne Rightler <drightler@technicalogic.com>
-Subject: Re: No UDMA with BLK_DEV_IT821X with 2.6.30.2
-Date: Wed, 22 Jul 2009 12:47:23 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc3-next-20090720-03987-ged696ea; KDE/4.2.4; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <4A64F7BA.2030900@technicalogic.com>
-In-Reply-To: <4A64F7BA.2030900@technicalogic.com>
+	Tue, 21 Jul 2009 06:51:51 -0400
+X-SpamScore: -4
+X-BigFish: VPS-4(zz98dNzz1202hzzz32i6bh6di61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KN4OU0-02-752-01
+Date: Tue, 21 Jul 2009 12:51:05 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: Doug Thompson <norsk5@yahoo.com>, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, aris@redhat.com, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [PATCH 07/14] mce3: pass mce info to EDAC for decoding II
+Message-ID: <20090721105105.GE32338@aftab>
+References: <20090720180446.GB16072@basil.fritz.box>
+ <935428.51568.qm@web50110.mail.re2.yahoo.com>
+ <20090720194419.GD16072@basil.fritz.box>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-Message-Id: <200907221247.24090.bzolnier@gmail.com>
+In-Reply-To: <20090720194419.GD16072@basil.fritz.box>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 21 Jul 2009 10:51:05.0846 (UTC) FILETIME=[25BE0960:01CA09F1]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 July 2009 01:03:22 Dwayne Rightler wrote:
-> Hello,
-> 
-> I have a ITE8212 PCI card and it does not seem to allow UDMA on the 
-> drives attached.  The drives run at ATA100 under other controllers.
-> 
-> Dmesg:
-> 
-> [    3.029612] it821x 0000:01:07.0: IDE controller (0x1283:0x8212 rev 0x13)
-> [    3.029835] ACPI: PCI Interrupt Link [APC4] enabled at IRQ 19
-> [    3.029840] pci 0000:01:07.0: PCI INT A -> Link[APC4] -> GSI 19 
-> (level, low) -> IRQ 19
-> [    3.029847] it821x 0000:01:07.0: controller in smart mode
+On Mon, Jul 20, 2009 at 09:44:19PM +0200, Andi Kleen wrote:
 
-The controller is running in the "smart mode" in which it takes care
-of setting the transfer speed (the driver reports standard MWDMA2 mode
-to higher-layers for compatibility reasons).
+> As far as I can see this whole thing barely works even on AMD
+> due to the other problems.
+
+Care to let us in on those so that we get a chance to fix them?
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
