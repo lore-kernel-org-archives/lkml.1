@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZGVPTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752852AbZGVPTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbZGVPTl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 11:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZGVPTl
+	id S1752852AbZGVPTv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 11:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbZGVPTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 11:19:41 -0400
-Received: from www.tglx.de ([62.245.132.106]:57106 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752646AbZGVPTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 11:19:40 -0400
-Date: Wed, 22 Jul 2009 17:19:29 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT pull] timer fixes for 2.6.31
-Message-ID: <alpine.LFD.2.00.0907221718410.2813@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 22 Jul 2009 11:19:51 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60078 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbZGVPTu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 11:19:50 -0400
+Date: Wed, 22 Jul 2009 11:19:49 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jiri Olsa <jolsa@redhat.com>
+cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH] tracing: dont reset set_ftrace_filter/notrace when opened
+ with r/w perm
+In-Reply-To: <20090722074230.GA18925@jolsa.lab.eng.brq.redhat.com>
+Message-ID: <alpine.DEB.2.00.0907221119260.1059@gandalf.stny.rr.com>
+References: <20090716165135.GA4739@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.2.00.0907202104130.17909@gandalf.stny.rr.com> <20090722074230.GA18925@jolsa.lab.eng.brq.redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull the latest timers-fixes-for-linus git tree from:
+On Wed, 22 Jul 2009, Jiri Olsa wrote:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
+> On Mon, Jul 20, 2009 at 09:11:34PM -0400, Steven Rostedt wrote:
+> > 
+> > On Thu, 16 Jul 2009, Jiri Olsa wrote:
+> > 
+> > > If user setup set_ftrace_filter/set_ftrace_notrace files and then opens them
+> > > with read&write permissions, the previous setup will be removed.
+> > 
+> > This is exactly what it was suppose to do.
+> > 
+> > man fopen:
+> > 
+> >        w+     Open for reading and writing.  The file is created  if  it  does
+> >               not  exist, otherwise it is truncated.  The stream is positioned
+> >               at the beginning of the file.
+> > 
+> > Which means that if you open a file for "w+" it will truncate it. Hence, 
+> > you will remove all previous settings.
+> > 
+> > What you want is:
+> > 
+> >        a+     Open for reading and appending (writing at end  of  file).   The
+> >               file is created if it does not exist.  The initial file position
+> >               for reading is at the beginning  of  the  file,  but  output  is
+> >               always appended to the end of the file.
+> > 
+> > Change the belowe code from "w+" to "a+" and you get your expected result.
+> 
+> My point was that if you open set_ftrace_filter/set_ftrace_notrace with just O_RDWR
+> perm. and will use the file just for reading, the filter will reset.
+> 
+> You're right about the "w+", there's the O_CREAT|O_TRUNC, sry I missed that.. ;)
+> Anyway with "r+" you'll get O_RDWR perm. only, showing the issue:
 
-Thanks,
+Ah, then the fix would be to check against O_TRUNC.
 
-	tglx
-
------------------->
-Pavel Roskin (1):
-      timer: Avoid reading uninitialized data
-
-Thomas Gleixner (1):
-      clocksource: Prevent NULL pointer dereference
-
-
- kernel/time/clocksource.c |    2 +-
- kernel/timer.c            |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 592bf58..7466cb8 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -513,7 +513,7 @@ static ssize_t sysfs_override_clocksource(struct sys_device *dev,
- 	 * Check to make sure we don't switch to a non-highres capable
- 	 * clocksource if the tick code is in oneshot mode (highres or nohz)
- 	 */
--	if (tick_oneshot_mode_active() &&
-+	if (tick_oneshot_mode_active() && ovr &&
- 	    !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES)) {
- 		printk(KERN_WARNING "%s clocksource is not HRT compatible. "
- 			"Cannot switch while in HRT/NOHZ mode\n", ovr->name);
-diff --git a/kernel/timer.c b/kernel/timer.c
-index 0b36b9e..a7f07d5 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -714,7 +714,7 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
- 	 * networking code - if the timer is re-modified
- 	 * to be the same thing then just return:
- 	 */
--	if (timer->expires == expires && timer_pending(timer))
-+	if (timer_pending(timer) && timer->expires == expires)
- 		return 1;
- 
- 	return __mod_timer(timer, expires, false, TIMER_NOT_PINNED);
+-- Steve
