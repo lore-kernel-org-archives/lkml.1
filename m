@@ -1,190 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZGVOCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbZGVOOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755954AbZGVOCg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 10:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbZGVOCe
+	id S1755721AbZGVOOH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 10:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZGVOOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 10:02:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45393 "EHLO hera.kernel.org"
+	Wed, 22 Jul 2009 10:14:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57751 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755931AbZGVOCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 10:02:31 -0400
-Date: Wed, 22 Jul 2009 14:01:29 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
-       davem@davemloft.net
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
-       davem@davemloft.net
-In-Reply-To: <1248265724.27058.1366.camel@twins>
-References: <1248265724.27058.1366.camel@twins>
-Subject: [tip:timers/urgent] softirq: introduce tasklet_hrtimer infrastructure
-Message-ID: <tip-d34dc684eaad4e9561bbce423ac2581a48441fb0@git.kernel.org>
-Git-Commit-ID: d34dc684eaad4e9561bbce423ac2581a48441fb0
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 22 Jul 2009 14:01:32 +0000 (UTC)
+	id S1755067AbZGVOOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 10:14:04 -0400
+Subject: Re: [PATCH] fix offset checks in do_sendfile to use unsigned values
+From: Jeff Layton <jlayton@redhat.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       smfrench@gmail.com, hch@infradead.org
+In-Reply-To: <20090722135110.GA3091@cmpxchg.org>
+References: <1248262099-12514-1-git-send-email-jlayton@redhat.com>
+	 <1248262099-12514-2-git-send-email-jlayton@redhat.com>
+	 <20090722125945.GA2834@cmpxchg.org>
+	 <1248269879.4534.12.camel@tlielax.poochiereds.net>
+	 <20090722135110.GA3091@cmpxchg.org>
+Content-Type: multipart/mixed; boundary="=-F43uCi3SlHVZxYj2YkbQ"
+Date: Wed, 22 Jul 2009 10:13:52 -0400
+Message-Id: <1248272032.4534.27.camel@tlielax.poochiereds.net>
+Mime-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d34dc684eaad4e9561bbce423ac2581a48441fb0
-Gitweb:     http://git.kernel.org/tip/d34dc684eaad4e9561bbce423ac2581a48441fb0
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Wed, 22 Jul 2009 14:18:35 +0200
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Wed, 22 Jul 2009 15:53:28 +0200
 
-softirq: introduce tasklet_hrtimer infrastructure
+--=-F43uCi3SlHVZxYj2YkbQ
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-commit ca109491f (hrtimer: removing all ur callback modes) moved all
-hrtimer callbacks into hard interrupt context when high resolution
-timers are active. That breaks code which relied on the assumption
-that the callback happens in softirq context.
+On Wed, 2009-07-22 at 15:51 +0200, Johannes Weiner wrote:
 
-Provide a generic infrastructure which combines tasklets and hrtimers
-together to provide an in-softirq hrtimer experience.
+> > Any of these patches will fix the immediate problem, but I think this
+> > code in do_sendfile should still account for the possibility that
+> > someone can set the value larger than MAX_LFS_FILESIZE. An alternative
+> > is to consider a WARN at mount time when filesystems set s_maxbytes
+> > larger than that value (that might help catch out of tree filesystems
+> > that get this wrong and prevent this sort of silent bug in the future).
+> 
+> Isn't MAX_LFS_FILESIZE by definition the maximum sensible value for
+> s_maxbytes?
+> 
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: torvalds@linux-foundation.org
-Cc: kaber@trash.net
-Cc: David Miller <davem@davemloft.net>
-LKML-Reference: <1248265724.27058.1366.camel@twins>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Pretty much, but nothing seems to enforce it or let you know when you've
+exceeded it. It sort of seems like s_maxbytes ought to be loff_t or
+something instead of an unsigned long long. A negative value there
+wouldn't make much sense, but no one would be as tempted to set it
+higher than MAX_LFS_FILESIZE.
 
+> > Either way, the patch I posted for this isn't sufficient since there are
+> > some checks that need to be done against the signed values (the
+> > (pos < 0) check, for instance). I'll post a respun patch in a bit that
+> > should fix up those problems.
+> 
+> That is already handled in rw_verify_area(), I think, so we should be
+> able to drop it completely.
 
+If we get rid of those checks altogether, then "max" will become unused.
+Is that really OK here?
+
+For discussion purposes, I've attached a replacement patch that I'm
+working with now.
+-- 
+Jeff Layton <jlayton@redhat.com>
+
+--=-F43uCi3SlHVZxYj2YkbQ
+Content-Disposition: attachment; filename*0=0001-fix-offset-checks-in-do_sendfile-to-use-unsigned-val.pat; filename*1=ch
+Content-Type: text/x-patch; name="0001-fix-offset-checks-in-do_sendfile-to-use-unsigned-val.patch"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+>From 00a22f2f1e34ba0765ca49120499e681477a265a Mon Sep 17 00:00:00 2001
+From: Jeff Layton <jlayton@redhat.com>
+Date: Wed, 22 Jul 2009 08:36:22 -0400
+Subject: [PATCH] fix offset checks in do_sendfile to use unsigned values (try #2)
+
+This is the second version of this patch. Some of the checks do need
+to use signed values. This patch should be more correct in that regard.
+This also adds a check to make sure that "pos + count" doesn't
+overflow.
+
+If do_sendfile is called with a "max" value of 0, it grabs the lesser
+s_maxbytes value of the two superblocks to use instead. There's a
+problem here however. s_maxbytes is an unsigned long long and it gets
+cast to a signed value. If both s_maxbytes values are large enough, max
+will end up being negative and the comparisons in this code won't work
+correctly.
+
+Change do_sendfile to use unsigned values internally for the offset
+checks against "max".
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- include/linux/interrupt.h |   26 ++++++++++++++++++
- kernel/softirq.c          |   64 ++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 89 insertions(+), 1 deletions(-)
+ fs/read_write.c |   21 ++++++++++++---------
+ 1 files changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 2721f07..fd4c9c6 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -14,6 +14,7 @@
- #include <linux/irqflags.h>
- #include <linux/smp.h>
- #include <linux/percpu.h>
-+#include <linux/hrtimer.h>
- 
- #include <asm/atomic.h>
- #include <asm/ptrace.h>
-@@ -517,6 +518,31 @@ extern void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu);
- extern void tasklet_init(struct tasklet_struct *t,
- 			 void (*func)(unsigned long), unsigned long data);
- 
-+struct tasklet_hrtimer {
-+	struct hrtimer		timer;
-+	struct tasklet_struct	tasklet;
-+	enum hrtimer_restart	(*function)(struct hrtimer *);
-+};
-+
-+extern void
-+tasklet_hrtimer_init(struct tasklet_hrtimer *ttimer,
-+		     enum hrtimer_restart (*function)(struct hrtimer *),
-+		     clockid_t which_clock, enum hrtimer_mode mode);
-+
-+static inline
-+int tasklet_hrtimer_start(struct tasklet_hrtimer *ttimer, ktime_t time,
-+			  const enum hrtimer_mode mode)
-+{
-+	return hrtimer_start(&ttimer->timer, time, mode);
-+}
-+
-+static inline
-+void tasklet_hrtimer_cancel(struct tasklet_hrtimer *ttimer)
-+{
-+	hrtimer_cancel(&ttimer->timer);
-+	tasklet_kill(&ttimer->tasklet);
-+}
-+
- /*
-  * Autoprobing for irqs:
-  *
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 3a94905..eb5e131 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -345,7 +345,9 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
- 	softirq_vec[nr].action = action;
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 6c8c55d..2c5b402 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -788,11 +788,11 @@ SYSCALL_DEFINE5(pwritev, unsigned long, fd, const struct iovec __user *, vec,
  }
  
--/* Tasklets */
-+/*
-+ * Tasklets
-+ */
- struct tasklet_head
+ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+-			   size_t count, loff_t max)
++			   size_t count, unsigned long long max)
  {
- 	struct tasklet_struct *head;
-@@ -493,6 +495,66 @@ void tasklet_kill(struct tasklet_struct *t)
+ 	struct file * in_file, * out_file;
+ 	struct inode * in_inode, * out_inode;
+-	loff_t pos;
++	unsigned long long pos, newpos;
+ 	ssize_t retval;
+ 	int fput_needed_in, fput_needed_out, fl;
  
- EXPORT_SYMBOL(tasklet_kill);
+@@ -835,14 +835,16 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+ 		goto fput_out;
+ 	count = retval;
  
-+/*
-+ * tasklet_hrtimer
-+ */
+-	if (!max)
+-		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
+-
+-	pos = *ppos;
+ 	retval = -EINVAL;
+-	if (unlikely(pos < 0))
++	if (unlikely(*ppos < 0))
+ 		goto fput_out;
+-	if (unlikely(pos + count > max)) {
 +
-+/*
-+ * The trampoline is called when the hrtimer expires. If this is
-+ * called from the hrtimer interrupt then we schedule the tasklet as
-+ * the timer callback function expects to run in softirq context. If
-+ * it's called in softirq context anyway (i.e. high resolution timers
-+ * disabled) then the hrtimer callback is called right away.
-+ */
-+static enum hrtimer_restart __hrtimer_tasklet_trampoline(struct hrtimer *timer)
-+{
-+	struct tasklet_hrtimer *ttimer =
-+		container_of(timer, struct tasklet_hrtimer, timer);
-+
-+	if (hrtimer_is_hres_active(timer)) {
-+		tasklet_hi_schedule(&ttimer->tasklet);
-+		return HRTIMER_NORESTART;
-+	}
-+	return ttimer->function(timer);
-+}
-+
-+/*
-+ * Helper function which calls the hrtimer callback from
-+ * tasklet/softirq context
-+ */
-+static void __tasklet_hrtimer_trampoline(unsigned long data)
-+{
-+	struct tasklet_hrtimer *ttimer = (void *)data;
-+	enum hrtimer_restart restart;
-+
-+	restart = ttimer->function(&ttimer->timer);
-+	if (restart != HRTIMER_NORESTART)
-+		hrtimer_restart(&ttimer->timer);
-+}
-+
-+/**
-+ * tasklet_hrtimer_init - Init a tasklet/hrtimer combo for softirq callbacks
-+ * @ttimer:	 tasklet_hrtimer which is initialized
-+ * @function:	 hrtimer callback funtion which gets called from softirq context
-+ * @which_clock: clock id (CLOCK_MONOTONIC/CLOCK_REALTIME)
-+ * @mode:	 hrtimer mode (HRTIMER_MODE_ABS/HRTIMER_MODE_REL)
-+ */
-+void tasklet_hrtimer_init(struct tasklet_hrtimer *ttimer,
-+			  enum hrtimer_restart (*function)(struct hrtimer *),
-+			  clockid_t which_clock, enum hrtimer_mode mode)
-+{
-+	hrtimer_init(&ttimer->timer, which_clock, mode);
-+	ttimer->timer.function = __hrtimer_tasklet_trampoline;
-+	tasklet_init(&ttimer->tasklet, __tasklet_hrtimer_trampoline,
-+		     (unsigned long)ttimer);
-+	ttimer->function = function;
-+}
-+EXPORT_SYMBOL_GPL(tasklet_hrtimer_init);
-+
-+/*
-+ * Remote softirq bits
-+ */
-+
- DEFINE_PER_CPU(struct list_head [NR_SOFTIRQS], softirq_work_list);
- EXPORT_PER_CPU_SYMBOL(softirq_work_list);
++	if (!max)
++		max = min(in_inode->i_sb->s_maxbytes,
++			  out_inode->i_sb->s_maxbytes);
++	pos = (unsigned long long) *ppos;
++	newpos = pos + count;
++	if (unlikely(newpos > max || newpos < count)) {
+ 		retval = -EOVERFLOW;
+ 		if (pos >= max)
+ 			goto fput_out;
+@@ -869,7 +871,8 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
  
+ 	inc_syscr(current);
+ 	inc_syscw(current);
+-	if (*ppos > max)
++	pos = (unsigned long long) *ppos;
++	if (pos > max)
+ 		retval = -EOVERFLOW;
+ 
+ fput_out:
+-- 
+1.6.2.5
+
+
+--=-F43uCi3SlHVZxYj2YkbQ--
+
