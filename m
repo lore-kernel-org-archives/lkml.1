@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZGVCrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbZGVC4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbZGVCrY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 22:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZGVCrX
+	id S1756024AbZGVC4w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 22:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbZGVC4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 22:47:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55855 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbZGVCrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 22:47:22 -0400
-Date: Tue, 21 Jul 2009 21:57:07 -0400
-From: Dave Jones <davej@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Ted Merrill <atheros@embuildsw.com>
-Subject: Re: khttpd fate
-Message-ID: <20090722015706.GB6025@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Kyle McMartin <kyle@mcmartin.ca>,
-	"Luis R. Rodriguez" <mcgrof@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-	Ted Merrill <atheros@embuildsw.com>
-References: <43e72e890907171815x3a85c788k1b4c0f72954db9e5@mail.gmail.com> <20090722002039.GF11051@bombadil.infradead.org> <4A665F09.7050104@zytor.com>
+	Tue, 21 Jul 2009 22:56:52 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:47314 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755940AbZGVC4v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 22:56:51 -0400
+X-AuditID: b753bd60-ad649ba000006009-84-4a667ff0dc9a
+Message-ID: <4A667FD4.3010509@hitachi.com>
+Date: Wed, 22 Jul 2009 11:56:20 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A665F09.7050104@zytor.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, ak@linux.intel.com,
+       seto.hidetoshi@jp.fujitsu.com
+Cc: linux-kernel@vger.kernel.org,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
+Subject: [PATCH] x86, mce: Rename incorrect macro name "CONFIG_X86_THRESHOLD"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
+X-FMFTCR: RANGEC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 05:36:25PM -0700, H. Peter Anvin wrote:
- > On 07/21/2009 05:20 PM, Kyle McMartin wrote:
- > > 
- > > I think it kind of got replaced by tux, which Red Hat shipped for a
- > > while, but has been dropped now. I seem to recall davej mentioning a
- > > while ago that apache had gotten much better at serving static content,
- > > which is what khttpd/tux were very good at.
- > > 
- > 
- > Also, lighttpd does really well, all in userspace.  After all, static
- > http serving really is mostly a bit of header parsing followed by
- > sendfile(), so as long as a user-space process doesn't just sit on a
- > bunch of memory it can be done very cheaply.
- 
-I think the rise of dynamically generated content was a big thing that
-killed it off. With more and more of the web getting ajaxified, and the
-php etc being offloaded to apache anyway, it just makes more sense to
-have one webserver do everything as long as it's "fast enough".
+CONFIG_X86_THRESHOLD used in arch/x86/kernel/irqinit.c is always
+undefined.  Rename it to the correct name "CONFIG_X86_MCE_THRESHOLD".
 
-I wrote something up on this a few years back when I made the decision to
-drop Tux from the Fedora kernel. http://kernelslacker.livejournal.com/tag/tux
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ arch/x86/kernel/irqinit.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Dave
+diff --git a/arch/x86/kernel/irqinit.c b/arch/x86/kernel/irqinit.c
+index 8a194ad..ccf8ab5 100644
+--- a/arch/x86/kernel/irqinit.c
++++ b/arch/x86/kernel/irqinit.c
+@@ -187,7 +187,7 @@ static void __init apic_intr_init(void)
+ #ifdef CONFIG_X86_THERMAL_VECTOR
+ 	alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
+ #endif
+-#ifdef CONFIG_X86_THRESHOLD
++#ifdef CONFIG_X86_MCE_THRESHOLD
+ 	alloc_intr_gate(THRESHOLD_APIC_VECTOR, threshold_interrupt);
+ #endif
+ #if defined(CONFIG_X86_MCE) && defined(CONFIG_X86_LOCAL_APIC)
+-- 
+1.6.2.5
+
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
 
