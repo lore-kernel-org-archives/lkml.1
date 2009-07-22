@@ -1,84 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbZGVGQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbZGVGSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbZGVGQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 02:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbZGVGQY
+	id S1756618AbZGVGSw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 02:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZGVGSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 02:16:24 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60829 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751611AbZGVGQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 02:16:18 -0400
-Message-ID: <4A66AE53.2050209@cn.fujitsu.com>
-Date: Wed, 22 Jul 2009 14:14:43 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Wed, 22 Jul 2009 02:18:51 -0400
+Received: from mail-pz0-f203.google.com ([209.85.222.203]:60172 "EHLO
+	mail-pz0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbZGVGSv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 02:18:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZS/Tz9kEaP9UC27gJIMqlL5molhxEJ9UZKIZxoMUOUbsdZ3Cb2WMxsuaw1f2KUM0mf
+         QYKe4DP4TI/7sfeh4o9URr5xqKmdnuUxISDMmCktuJ8+car2Zb8CQC+A9wAdORW95JLS
+         lkq/9o9QFFhI0ap79H8houLPrmgSIOxna0UqE=
+Date: Wed, 22 Jul 2009 14:21:03 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/4] kcore: remove noise from walk_memory_resource
+Message-ID: <20090722062103.GE6281@cr0.nay.redhat.com>
+References: <20090722140613.0a751811.kamezawa.hiroyu@jp.fujitsu.com> <20090722141227.9712ee7b.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       bblum@google.com, linux-kernel@vger.kernel.org, menage@google.com,
-       vda.linux@googlemail.com, mikew@google.com
-Subject: Re: [RFCv2][PATCH] flexible array implementation
-References: <20090721220017.60A219D3@kernel>	 <4A66868F.4010001@cn.fujitsu.com> <1248237292.24021.2.camel@nimitz>
-In-Reply-To: <1248237292.24021.2.camel@nimitz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090722141227.9712ee7b.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-12:34, Dave Hansen wrote:
-> On Wed, 2009-07-22 at 11:25 +0800, Li Zefan wrote:
->>> +/**
->>> + * flex_array_put - copy data into the array at @element_nr
->>> + * @src:	address of data to copy into the array
->>> + * @element_nr:	index of the position in which to insert
->>> + * 		the new element.
->> @fa and @flags are not documented.
-> 
-> True...  But one of my pet peeves are kerneldocs like this:
-> 
-> 	@fa: the flex array
-> 	@flags: GFP flags
-> 
-> It's so trivially obvious from looking at the types and the variable
-> names that I'm not sure it's worth the cost of the lines.  
-> 
+On Wed, Jul 22, 2009 at 02:12:27PM +0900, KAMEZAWA Hiroyuki wrote:
+>From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+>Originally, walk_memory_resource() was introduced to traverse all memory
+>of "System RAM" for detecting memory hotplug/unplug range.
+>For doing so, flags of IORESOUCE_MEM|IORESOURCE_BUSY was used and this
+>was enough for memory hotplug because scanning range was controlled properly.
+>
+>But for using other purpose, /proc/kcore, this may includes some firmware
+>area marked as IORESOURCE_BUSY | IORESOUCE_MEM. This patch makes the check
+>strict to find out busy "System RAM".
+>
+>Note: PPC64 keeps their own walk_memory_resouce(), which walk through
+>ppc64's lmb informaton. Because old kclist_add() is called per lmb,
+>this patch makes no difference in behavior, finally.
+>
+>Changelog v2:
+> - new patch from v2.
+>
+>Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>---
+> kernel/resource.c |   18 ++++++++++++++----
+> 1 file changed, 14 insertions(+), 4 deletions(-)
+>
+>Index: mmotm-2.6.31-Jul16/kernel/resource.c
+>===================================================================
+>--- mmotm-2.6.31-Jul16.orig/kernel/resource.c
+>+++ mmotm-2.6.31-Jul16/kernel/resource.c
+>@@ -237,10 +237,10 @@ EXPORT_SYMBOL(release_resource);
+> #if !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
+> /*
+>  * Finds the lowest memory reosurce exists within [res->start.res->end)
+>- * the caller must specify res->start, res->end, res->flags.
+>+ * the caller must specify res->start, res->end, res->flags and "name".
+>  * If found, returns 0, res is overwritten, if not found, returns -1.
+>  */
+>-static int find_next_system_ram(struct resource *res)
+>+static int find_next_system_ram(struct resource *res, char *name)
+> {
+> 	resource_size_t start, end;
+> 	struct resource *p;
+>@@ -256,6 +256,8 @@ static int find_next_system_ram(struct r
+> 		/* system ram is just marked as IORESOURCE_MEM */
+> 		if (p->flags != res->flags)
+> 			continue;
+>+		if (name && strcmp(p->name, name))
+>+			continue;
+> 		if (p->start > end) {
+> 			p = NULL;
+> 			break;
+>@@ -273,19 +275,27 @@ static int find_next_system_ram(struct r
+> 		res->end = p->end;
+> 	return 0;
+> }
+>+
+>+/*
+>+ * This function calls callback against all memory range of "System RAM"
+>+ * which are marked as IORESOURCE_MEM and IORESOUCE_BUSY.
+>+ * Now, this function is only for "System RAM".
 
-I'm not kernel-doc expert, but ./scripts/kernel-doc will warn
-on this. And from time to time, we receive patches to fix
-kernel-doc.
 
->>> + *
->>> + * Note that this *copies* the contents of @src into
->>> + * the array.  If you are trying to store an array of
->>> + * pointers, make sure to pass in &ptr instead of ptr.
->>> + *
->>> + * Locking must be provided by the caller.
->>> + */
->>> +int flex_array_put(struct flex_array *fa, int element_nr, void *src, gfp_t flags)
->>> +{
->>> +	int part_nr = fa_element_to_part_nr(fa, element_nr);
->>> +	struct flex_array_part *part;
->>> +	void *dst;
->>> +
->>> +	part = __fa_get_part(fa, part_nr, flags);
->>> +	if (!part)
->>> +		return -ENOMEM;
->> So this may allocate memory, and has disavantages:
->>
->> - If flex_array_put() is called in atomic context, flags has to be GFP_ATOMIC.
->> - and thus it may fail.
->>
->> Since we pass the total_elem to flex_array_alloc(), how about add a flag,
->> and if the flag is set, the alloc() will also allocate all fa_parts?
->>
->> And add __flex_array_put(), which assumes fa_parts has been allocated.
-> 
-> How about flex_array_prealloc()?  It seems to work for all the radix
-> tree users.
-> 
+Then we should change its name, shouldn't we? :)
 
-I have no strong opinion. I just want a non-fail version of
-flex_array_put() (I mean "void __flex_array_put()").
+>+ */
+> int
+> walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
+>-			int (*func)(unsigned long, unsigned long, void *))
+>+		int (*func)(unsigned long, unsigned long, void *))
 
+
+This line is a trivial change, I don't want to see it mixed with
+the rest...
+
+
+> {
+> 	struct resource res;
+> 	unsigned long pfn, len;
+> 	u64 orig_end;
+> 	int ret = -1;
+>+
+> 	res.start = (u64) start_pfn << PAGE_SHIFT;
+> 	res.end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
+> 	res.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+> 	orig_end = res.end;
+>-	while ((res.start < res.end) && (find_next_system_ram(&res) >= 0)) {
+>+	while ((res.start < res.end) &&
+>+		(find_next_system_ram(&res, "System RAM") >= 0)) {
+> 		pfn = (unsigned long)(res.start >> PAGE_SHIFT);
+> 		len = (unsigned long)((res.end + 1 - res.start) >> PAGE_SHIFT);
+> 		ret = (*func)(pfn, len, arg);
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
