@@ -1,101 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZGVRiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZGVRlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbZGVRiK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 13:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZGVRiJ
+	id S1752908AbZGVRlO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZGVRlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 13:38:09 -0400
-Received: from n22a.bullet.mail.mud.yahoo.com ([68.142.207.188]:21965 "HELO
-	n22a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752404AbZGVRiI (ORCPT
+	Wed, 22 Jul 2009 13:41:13 -0400
+Received: from ru.mvista.com ([213.79.90.228]:7449 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750869AbZGVRlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 13:38:08 -0400
-X-Yahoo-Newman-Id: 991415.44936.bm@omp410.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Kim0GfnoPBCwnXDwTbBdFWT79Iq5kLyhg6XAEfmC8VxcjgrVVRxcll3HwNuLtaTzfRH6QpuA7qlhGYwM+z3jDu4hexOzXZlFRDuiGWWo3EsSZIoOWMKzMFPnlQcN4pggW48W15m82oABLZvUcgy7ptO7B17UAXv6QV17QMXmGk4=  ;
-X-YMail-OSG: pJQI6zsVM1lkx46oALB11NRhXDLGxdKs5iewpdTkp15LongvBy7eBrgWXxko9H4aobj_DReJycpStYsTMhf.QbWvwX10Gf4u17dPMeOU42PUlcfY1E_R6O1xrRNlj..Wiua3AQg58ARbBeo.jYO99PS1lm2KQGnLvYF93iK6xL5a5bhhPpnIC6RJ5oFpG57wnu2p9bMxTxv4RA3VlQfh17iRaNfdXK79uytZRjRvpc_fcy.ee01wxVEcZA6LrTVEDYJuh2CI2rU0xpycyTsRdgVtJUo2qet_FDfgEqIeP_oZxOu5RFtB.v08JobmgWimZBR1.YroXiF1Chw5ZOQtDFwM
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] register mmci-omap-hs using platform_driver_probe
-Date: Wed, 22 Jul 2009 10:38:07 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, Jean Pihet <jpihet@mvista.com>,
-       Tony Lindgren <tony@atomide.com>, Pierre Ossman <drzeus@drzeus.cx>,
-       Andy Lowe <alowe@mvista.com>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       "Greg Kroah-Hartman" <gregkh@suse.de>
-References: <200907111529.21165.david-b@pacbell.net> <1248208573-15171-1-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1248208573-15171-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	Wed, 22 Jul 2009 13:41:12 -0400
+Date: Wed, 22 Jul 2009 21:41:11 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Ian Molton <spyro@f2s.com>, Anton Vorontsov <cbou@mail.ru>,
+       Matt Reimer <mreimer@vpop.net>
+Subject: Re: [PATCH 1/3] pda-power: add set_charged functionaltity
+Message-ID: <20090722174111.GA14636@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1247759044-4747-1-git-send-email-daniel@caiaq.de>
+ <20090720182752.GA20602@oksana.dev.rtsoft.ru>
+ <20090720183711.GF19257@buzzloop.caiaq.de>
+ <20090720190034.GA24617@oksana.dev.rtsoft.ru>
+ <20090722172045.GH13236@buzzloop.caiaq.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=windows-1251
 Content-Disposition: inline
-Message-Id: <200907221038.08162.david-b@pacbell.net>
+In-Reply-To: <20090722172045.GH13236@buzzloop.caiaq.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 21 July 2009, Uwe Kleine-König wrote:
-> omap_mmc_probe lives in .init.text, so using platform_driver_register
-> to register it is wrong because binding a device after the init memory
-> is discarded (e.g. via sysfs) results in an oops.
+On Wed, Jul 22, 2009 at 07:20:45PM +0200, Daniel Mack wrote:
+> On Mon, Jul 20, 2009 at 11:00:34PM +0400, Anton Vorontsov wrote:
+> > > Hmm. I thought about that too, but didn't find a way to access the
+> > > single members of the pda-power device and find the right one to
+> > > access. They're registered on a string base and matched magically once
+> > > the battery monitor is probed when found on the one-wire bus. Any
+> > > proposal how an interface could look like that does that?
+> > > 
+> > > All I need is a way to pass this information from my platform code down
+> > > to the battery driver.
+> > 
+> > Yes, I see the problem, but I don't have a solution off-hand. :-/
+> > 
+> > Let me think about it for awhile.
 > 
-> As requested by David Brownell platform_driver_probe is used instead of
-> moving the probe function to .devinit.text as proposed initially.
-> This saves some memory, but devices registered after the driver is
-> probed are not bound (probably there are none) and binding via sysfs
-> isn't possible.
+> What about something like the patch below?
 > 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Cc: Jean Pihet <jpihet@mvista.com>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Pierre Ossman <drzeus@drzeus.cx>
-> Cc: Andy Lowe <alowe@mvista.com>
-> Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> The platform code interface would look like
+> 
+> 	struct power_supply *psy =
+> 		power_support_get_by_name("ds2760.0");
+> 	if (psy)
+> 		power_supply_set_battery_charged(psy);
+> 
+> Couldn't test it yet as my hardware is missing, but I would still like
+> to hear your comments about it :)
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+Wow, looks perfect. Let me know when you test it, and I'll
+apply that patch.
 
-> Cc: Madhusudhan Chikkature<madhu.cr@ti.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Thanks!
+
+
+> Daniel
 > 
-> ---
->  drivers/mmc/host/omap_hsmmc.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-> index 1cf9cfb..40d9830 100644
-> --- a/drivers/mmc/host/omap_hsmmc.c
-> +++ b/drivers/mmc/host/omap_hsmmc.c
-> @@ -1307,7 +1307,6 @@ clk_en_err:
->  #endif
->  
->  static struct platform_driver omap_mmc_driver = {
-> -	.probe		= omap_mmc_probe,
->  	.remove		= omap_mmc_remove,
->  	.suspend	= omap_mmc_suspend,
->  	.resume		= omap_mmc_resume,
-> @@ -1320,7 +1319,7 @@ static struct platform_driver omap_mmc_driver = {
->  static int __init omap_mmc_init(void)
->  {
->  	/* Register the MMC driver */
-> -	return platform_driver_register(&omap_mmc_driver);
-> +	return platform_driver_probe(&omap_mmc_driver, omap_mmc_probe);
+> 
+> commit 1a865b0023619c93de095fdb35823e57a496fc0b
+> Author: Daniel Mack <daniel@caiaq.de>
+> Date:   Thu Jul 16 15:54:46 2009 +0200
+> 
+>     pwoer_supply: get_by_name and set_charged functionaltity
+>     
+>     This adds a function to get a power_supply device from the class of
+>     registered devices by name reference. It can be used to find a specific
+>     battery to call power_supply_set_battery_charged() on.
+>     
+>     Some battery drivers might need that information to calibrate
+>     themselves.
+>     
+>     Signed-off-by: Daniel Mack <daniel@caiaq.de>
+>     Cc: Ian Molton <spyro@f2s.com>
+>     Cc: Anton Vorontsov <cbou@mail.ru>
+>     Cc: Matt Reimer <mreimer@vpop.net>
+> 
+> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+> index 58f10ac..ddb4800 100644
+> --- a/drivers/power/power_supply_core.c
+> +++ b/drivers/power/power_supply_core.c
+> @@ -117,6 +117,34 @@ int power_supply_is_system_supplied(void)
 >  }
+>  EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
 >  
->  static void __exit omap_mmc_cleanup(void)
-> -- 
-> tg: (4b0a840..) t/platsection/omap_mmc_driver (depends on: linus/master)
-> 
-> 
+> +int power_supply_set_battery_charged(struct power_supply *psy)
+> +{
+> +	if (psy->type == POWER_SUPPLY_TYPE_BATTERY && psy->set_charged) {
+> +		psy->set_charged(psy);
+> +		return 0;
+> +	}
+> +
+> +	return -EINVAL;
+> +}
+> +EXPORT_SYMBOL_GPL(power_supply_set_battery_charged);
+> +
+> +static int power_supply_match_device_by_name(struct device *dev, void *data)
+> +{
+> +	const char *name = data;
+> +	struct power_supply *psy = dev_get_drvdata(dev);
+> +
+> +	return strcmp(psy->name, name) == 0;
+> +}
+> +
+> +struct power_supply *power_supply_get_by_name(char *name)
+> +{
+> +	struct device *dev = class_find_device(power_supply_class, NULL, name,
+> +					power_supply_match_device_by_name);
+> +
+> +	return dev ? dev_get_drvdata(dev) : NULL;
+> +}
+> +EXPORT_SYMBOL_GPL(power_supply_get_by_name);
+> +
+>  int power_supply_register(struct device *parent, struct power_supply *psy)
+>  {
+>  	int rc = 0;
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index 594c494..49f3296 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -126,6 +126,7 @@ struct power_supply {
+>  			    enum power_supply_property psp,
+>  			    union power_supply_propval *val);
+>  	void (*external_power_changed)(struct power_supply *psy);
+> +	void (*set_charged)(struct power_supply *psy);
+>  
+>  	/* For APM emulation, think legacy userspace. */
+>  	int use_for_apm;
+> @@ -165,8 +166,10 @@ struct power_supply_info {
+>  	int use_for_apm;
+>  };
+>  
+> +extern struct power_supply *power_supply_get_by_name(char *name);
+>  extern void power_supply_changed(struct power_supply *psy);
+>  extern int power_supply_am_i_supplied(struct power_supply *psy);
+> +extern int power_supply_set_battery_charged(struct power_supply *psy);
+>  
+>  #if defined(CONFIG_POWER_SUPPLY) || defined(CONFIG_POWER_SUPPLY_MODULE)
+>  extern int power_supply_is_system_supplied(void);
 
-
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
