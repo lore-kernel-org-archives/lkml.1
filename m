@@ -1,523 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbZGVTu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbZGVTuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754759AbZGVTu5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 15:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZGVTts
+	id S1754709AbZGVTuM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 15:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZGVTuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 15:49:48 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:48734 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754449AbZGVTrj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 15:47:39 -0400
-From: Sage Weil <sage@newdream.net>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 18/19] ceph: debugfs
-Date: Wed, 22 Jul 2009 12:51:52 -0700
-Message-Id: <1248292313-31326-19-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1248292313-31326-18-git-send-email-sage@newdream.net>
-References: <1248292313-31326-1-git-send-email-sage@newdream.net>
- <1248292313-31326-2-git-send-email-sage@newdream.net>
- <1248292313-31326-3-git-send-email-sage@newdream.net>
- <1248292313-31326-4-git-send-email-sage@newdream.net>
- <1248292313-31326-5-git-send-email-sage@newdream.net>
- <1248292313-31326-6-git-send-email-sage@newdream.net>
- <1248292313-31326-7-git-send-email-sage@newdream.net>
- <1248292313-31326-8-git-send-email-sage@newdream.net>
- <1248292313-31326-9-git-send-email-sage@newdream.net>
- <1248292313-31326-10-git-send-email-sage@newdream.net>
- <1248292313-31326-11-git-send-email-sage@newdream.net>
- <1248292313-31326-12-git-send-email-sage@newdream.net>
- <1248292313-31326-13-git-send-email-sage@newdream.net>
- <1248292313-31326-14-git-send-email-sage@newdream.net>
- <1248292313-31326-15-git-send-email-sage@newdream.net>
- <1248292313-31326-16-git-send-email-sage@newdream.net>
- <1248292313-31326-17-git-send-email-sage@newdream.net>
- <1248292313-31326-18-git-send-email-sage@newdream.net>
+	Wed, 22 Jul 2009 15:50:10 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:63159 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754487AbZGVTuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 15:50:00 -0400
+X-IronPort-AV: E=Sophos;i="4.43,248,1246863600"; 
+   d="scan'208";a="210448957"
+Cc: Ben Greear <greearb@candelatech.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Message-Id: <A7103385-4525-4B7B-9CBA-5DBCB99A98F0@netapp.com>
+From: Andy Adamson <andros@netapp.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+In-Reply-To: <1248211050.21343.38.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
+Date: Wed, 22 Jul 2009 15:49:58 -0400
+References: <4A64EB1F.4000602@candelatech.com> <1248178527.5222.0.camel@heimdal.trondhjem.org> <4A65F184.5060802@candelatech.com> <1248196339.21343.8.camel@heimdal.trondhjem.org> <4A65FCB2.6080903@candelatech.com> <1248199140.21343.17.camel@heimdal.trondhjem.org> <4A660295.9020807@candelatech.com> <1248200897.21343.19.camel@heimdal.trondhjem.org> <4A6609A9.3000504@candelatech.com> <1248211050.21343.38.camel@heimdal.trondhjem.org>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Basic state information is available via /debug/ceph, including
-instances of the client, fsids, current monitor, mds and osd maps,
-outstanding server requests, and hooks to adjust debug levels.
 
-Signed-off-by: Sage Weil <sage@newdream.net>
----
- fs/ceph/debugfs.c |  462 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 462 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/debugfs.c
+On Jul 21, 2009, at 5:17 PM, Trond Myklebust wrote:
 
-diff --git a/fs/ceph/debugfs.c b/fs/ceph/debugfs.c
-new file mode 100644
-index 0000000..ffbc3c3
---- /dev/null
-+++ b/fs/ceph/debugfs.c
-@@ -0,0 +1,462 @@
-+#include <linux/module.h>
-+#include <linux/ctype.h>
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+
-+#include "super.h"
-+#include "mds_client.h"
-+
-+/*
-+ * Implement /debug/ceph fun
-+ *
-+ * /debug/ceph/caps_reservation  - expose caps reservation stats
-+ * /debug/ceph/client*  - an instance of the ceph client
-+ *      .../fsid        - mounted fsid
-+ *      .../osdmap      - current osdmap
-+ *      .../mdsmap      - current mdsmap
-+ *      .../monmap      - current monmap
-+ *      .../osdc        - active osd requests
-+ *      .../mdsc        - active mds requests
-+ *      .../monc        - mon client state
-+ *      .../dentry_lru  - dump contents of dentry lru
-+ */
-+
-+static struct dentry *ceph_debugfs_dir;
-+static struct dentry *ceph_debugfs_caps_reservation;
-+
-+static int fsid_show(struct seq_file *s, void *p)
-+{
-+	struct ceph_client *client = s->private;
-+
-+	seq_printf(s, "%llx.%llx\n",
-+	       le64_to_cpu(__ceph_fsid_major(&client->monc.monmap->fsid)),
-+	       le64_to_cpu(__ceph_fsid_minor(&client->monc.monmap->fsid)));
-+	return 0;
-+}
-+
-+static int monmap_show(struct seq_file *s, void *p)
-+{
-+	int i;
-+	struct ceph_client *client = s->private;
-+
-+	if (client->monc.monmap == NULL)
-+		return 0;
-+
-+	seq_printf(s, "epoch %d\n", client->monc.monmap->epoch);
-+	for (i = 0; i < client->monc.monmap->num_mon; i++) {
-+		struct ceph_entity_inst *inst =
-+			&client->monc.monmap->mon_inst[i];
-+
-+		seq_printf(s, "\t%s%d\t%u.%u.%u.%u:%u\n",
-+			       ENTITY_NAME(inst->name),
-+			       IPQUADPORT(inst->addr.ipaddr));
-+	}
-+	return 0;
-+}
-+
-+static int mdsmap_show(struct seq_file *s, void *p)
-+{
-+	int i;
-+	struct ceph_client *client = s->private;
-+
-+	if (client->mdsc.mdsmap == NULL)
-+		return 0;
-+	seq_printf(s, "epoch %d\n", client->mdsc.mdsmap->m_epoch);
-+	seq_printf(s, "root %d\n", client->mdsc.mdsmap->m_root);
-+	seq_printf(s, "session_timeout %d\n",
-+		       client->mdsc.mdsmap->m_session_timeout);
-+	seq_printf(s, "session_autoclose %d\n",
-+		       client->mdsc.mdsmap->m_session_autoclose);
-+	for (i = 0; i < client->mdsc.mdsmap->m_max_mds; i++) {
-+		struct ceph_entity_addr *addr = &client->mdsc.mdsmap->m_addr[i];
-+		int state = client->mdsc.mdsmap->m_state[i];
-+
-+		seq_printf(s, "\tmds%d\t%u.%u.%u.%u:%u\t(%s)\n",
-+			       i,
-+			       IPQUADPORT(addr->ipaddr),
-+			       ceph_mds_state_name(state));
-+	}
-+	return 0;
-+}
-+
-+static int osdmap_show(struct seq_file *s, void *p)
-+{
-+	int i;
-+	struct ceph_client *client = s->private;
-+
-+	if (client->osdc.osdmap == NULL)
-+		return 0;
-+	seq_printf(s, "epoch %d\n", client->osdc.osdmap->epoch);
-+	seq_printf(s, "flags%s%s\n",
-+		   (client->osdc.osdmap->flags & CEPH_OSDMAP_NEARFULL) ?
-+		   " NEARFULL" : "",
-+		   (client->osdc.osdmap->flags & CEPH_OSDMAP_FULL) ?
-+		   " FULL" : "");
-+	for (i = 0; i < client->osdc.osdmap->num_pools; i++) {
-+		struct ceph_pg_pool_info *pool =
-+			&client->osdc.osdmap->pg_pool[i];
-+		seq_printf(s, "pg_pool %d pg_num %d / %d, lpg_num %d / %d\n",
-+			   i, pool->v.pg_num, pool->pg_num_mask,
-+			   pool->v.lpg_num, pool->lpg_num_mask);
-+	}
-+	for (i = 0; i < client->osdc.osdmap->max_osd; i++) {
-+		struct ceph_entity_addr *addr =
-+			&client->osdc.osdmap->osd_addr[i];
-+		int state = client->osdc.osdmap->osd_state[i];
-+		char sb[64];
-+
-+		seq_printf(s,
-+		       "\tosd%d\t%u.%u.%u.%u:%u\t%3d%%\t(%s)\n",
-+		       i, IPQUADPORT(addr->ipaddr),
-+		       ((client->osdc.osdmap->osd_weight[i]*100) >> 16),
-+		       ceph_osdmap_state_str(sb, sizeof(sb), state));
-+	}
-+	return 0;
-+}
-+
-+static int monc_show(struct seq_file *s, void *p)
-+{
-+	struct ceph_client *client = s->private;
-+	struct ceph_mon_statfs_request *req;
-+	u64 nexttid = 0;
-+	int got;
-+	struct ceph_mon_client *monc = &client->monc;
-+
-+	mutex_lock(&monc->statfs_mutex);
-+
-+	if (monc->want_osdmap)
-+		seq_printf(s, "want osdmap %u\n", (unsigned)monc->want_osdmap);
-+	if (monc->want_mdsmap)
-+		seq_printf(s, "want mdsmap %u\n", (unsigned)monc->want_mdsmap);
-+
-+	while (nexttid < monc->last_tid) {
-+		got = radix_tree_gang_lookup(&monc->statfs_request_tree,
-+					     (void **)&req, nexttid, 1);
-+		if (got == 0)
-+			break;
-+		nexttid = req->tid + 1;
-+
-+		seq_printf(s, "%u.%u.%u.%u:%u (%s%d)\tstatfs\n",
-+			IPQUADPORT(req->request->hdr.dst.addr.ipaddr),
-+			ENTITY_NAME(req->request->hdr.dst.name));
-+	}
-+	mutex_unlock(&monc->statfs_mutex);
-+
-+	return 0;
-+}
-+
-+static int mdsc_show(struct seq_file *s, void *p)
-+{
-+	struct ceph_client *client = s->private;
-+	struct ceph_mds_request *req;
-+	u64 nexttid = 0;
-+	int got;
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	int pathlen;
-+	u64 pathbase;
-+	char *path;
-+
-+	mutex_lock(&mdsc->mutex);
-+	while (nexttid < mdsc->last_tid) {
-+		got = radix_tree_gang_lookup(&mdsc->request_tree,
-+					     (void **)&req, nexttid, 1);
-+		if (got == 0)
-+			break;
-+		nexttid = req->r_tid + 1;
-+
-+		seq_printf(s, "%lld\t%u.%u.%u.%u:%u (%s%d)\t",
-+			   req->r_tid,
-+			   IPQUADPORT(req->r_request->hdr.dst.addr.ipaddr),
-+			   ENTITY_NAME(req->r_request->hdr.dst.name));
-+
-+		seq_printf(s, "%s", ceph_mds_op_name(req->r_op));
-+
-+		if (req->r_got_unsafe)
-+			seq_printf(s, "\t(unsafe)");
-+		else
-+			seq_printf(s, "\t");
-+
-+		if (req->r_inode) {
-+			seq_printf(s, " #%llx", ceph_ino(req->r_inode));
-+		} else if (req->r_dentry) {
-+			path = ceph_mdsc_build_path(req->r_dentry, &pathlen,
-+						    &pathbase, 0);
-+			spin_lock(&req->r_dentry->d_lock);
-+			seq_printf(s, " #%llx/%.*s (%s)",
-+				   ceph_ino(req->r_dentry->d_parent->d_inode),
-+				   req->r_dentry->d_name.len,
-+				   req->r_dentry->d_name.name,
-+				   path ? path : "");
-+			spin_unlock(&req->r_dentry->d_lock);
-+			kfree(path);
-+		} else if (req->r_path1) {
-+			seq_printf(s, " #%llx/%s", req->r_ino1.ino,
-+				   req->r_path1);
-+		}
-+
-+		if (req->r_old_dentry) {
-+			path = ceph_mdsc_build_path(req->r_old_dentry, &pathlen,
-+						    &pathbase, 0);
-+			spin_lock(&req->r_old_dentry->d_lock);
-+			seq_printf(s, " #%llx/%.*s (%s)",
-+			   ceph_ino(req->r_old_dentry->d_parent->d_inode),
-+				   req->r_old_dentry->d_name.len,
-+				   req->r_old_dentry->d_name.name,
-+				   path ? path : "");
-+			spin_unlock(&req->r_old_dentry->d_lock);
-+			kfree(path);
-+		} else if (req->r_path2) {
-+			if (req->r_ino2.ino)
-+				seq_printf(s, " #%llx/%s", req->r_ino2.ino,
-+					   req->r_path2);
-+			else
-+				seq_printf(s, " %s", req->r_path2);
-+		}
-+
-+		seq_printf(s, "\n");
-+	}
-+	mutex_unlock(&mdsc->mutex);
-+
-+	return 0;
-+}
-+
-+static int osdc_show(struct seq_file *s, void *p)
-+{
-+	struct ceph_client *client = s->private;
-+	struct ceph_osd_client *osdc = &client->osdc;
-+	u64 nexttid = 0;
-+
-+	mutex_lock(&osdc->request_mutex);
-+	while (nexttid < osdc->last_tid) {
-+		struct ceph_osd_request *req;
-+		struct ceph_osd_request_head *head;
-+		struct ceph_osd_op *op;
-+		int num_ops;
-+		int opcode, olen;
-+		int got, i;
-+
-+		got = radix_tree_gang_lookup(&osdc->request_tree,
-+					     (void **)&req, nexttid, 1);
-+		if (got == 0)
-+			break;
-+
-+		nexttid = req->r_tid + 1;
-+
-+		seq_printf(s, "%lld\t%u.%u.%u.%u:%u (%s%d)\t",
-+			   req->r_tid,
-+			   IPQUADPORT(req->r_request->hdr.dst.addr.ipaddr),
-+			   ENTITY_NAME(req->r_request->hdr.dst.name));
-+
-+		head = req->r_request->front.iov_base;
-+		op = (void *)(head + 1);
-+
-+		num_ops = le16_to_cpu(head->num_ops);
-+		olen = le32_to_cpu(head->object_len);
-+		seq_printf(s, "%.*s", olen,
-+			   (const char *)(head->ops + num_ops));
-+
-+		if (req->r_reassert_version.epoch)
-+			seq_printf(s, "\t%u'%llu",
-+			   (unsigned)le32_to_cpu(req->r_reassert_version.epoch),
-+			   le64_to_cpu(req->r_reassert_version.version));
-+		else
-+			seq_printf(s, "\t");
-+
-+		for (i = 0; i < num_ops; i++) {
-+			opcode = le16_to_cpu(op->op);
-+			seq_printf(s, "\t%s", ceph_osd_op_name(opcode));
-+			op++;
-+		}
-+
-+		seq_printf(s, "\n");
-+	}
-+	mutex_unlock(&osdc->request_mutex);
-+	return 0;
-+}
-+
-+static int caps_reservation_show(struct seq_file *s, void *p)
-+{
-+	int total, avail, used, reserved;
-+
-+	ceph_reservation_status(&total, &avail, &used, &reserved);
-+
-+	seq_printf(s, "total\t\t%d\n"
-+		      "avail\t\t%d\n"
-+		      "used\t\t%d\n"
-+		      "reserved\t%d\n",
-+		   total, avail, used, reserved);
-+	return 0;
-+}
-+
-+static int dentry_lru_show(struct seq_file *s, void *ptr)
-+{
-+	struct ceph_client *client = s->private;
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_dentry_info *di;
-+
-+	spin_lock(&mdsc->dentry_lru_lock);
-+	list_for_each_entry(di, &mdsc->dentry_lru, lru) {
-+		struct dentry *dentry = di->dentry;
-+		seq_printf(s, "%p %p\t%.*s\n",
-+			   di, dentry, dentry->d_name.len, dentry->d_name.name);
-+	}
-+	spin_unlock(&mdsc->dentry_lru_lock);
-+
-+	return 0;
-+}
-+
-+#define DEFINE_SHOW_FUNC(name) 						\
-+static int name##_open(struct inode *inode, struct file *file)		\
-+{									\
-+	struct seq_file *sf;						\
-+	int ret;							\
-+									\
-+	ret = single_open(file, name, NULL);				\
-+	sf = file->private_data;					\
-+	sf->private = inode->i_private;					\
-+	return ret;							\
-+}									\
-+									\
-+static const struct file_operations name##_fops = {			\
-+	.open		= name##_open,					\
-+	.read		= seq_read,					\
-+	.llseek		= seq_lseek,					\
-+	.release	= single_release,				\
-+};
-+
-+DEFINE_SHOW_FUNC(fsid_show)
-+DEFINE_SHOW_FUNC(monmap_show)
-+DEFINE_SHOW_FUNC(mdsmap_show)
-+DEFINE_SHOW_FUNC(osdmap_show)
-+DEFINE_SHOW_FUNC(monc_show)
-+DEFINE_SHOW_FUNC(mdsc_show)
-+DEFINE_SHOW_FUNC(osdc_show)
-+DEFINE_SHOW_FUNC(caps_reservation_show)
-+DEFINE_SHOW_FUNC(dentry_lru_show)
-+
-+int ceph_debugfs_init(void)
-+{
-+	int ret = -ENOMEM;
-+
-+	ceph_debugfs_dir = debugfs_create_dir("ceph", NULL);
-+
-+	if (!ceph_debugfs_dir)
-+		goto out;
-+
-+	ceph_debugfs_caps_reservation = debugfs_create_file("caps_reservation",
-+					0400,
-+					ceph_debugfs_dir,
-+					NULL,
-+					&caps_reservation_show_fops);
-+	if (!ceph_debugfs_caps_reservation)
-+		goto out;
-+
-+	return 0;
-+
-+out:
-+	ceph_debugfs_cleanup();
-+	return ret;
-+}
-+
-+void ceph_debugfs_cleanup(void)
-+{
-+	debugfs_remove(ceph_debugfs_caps_reservation);
-+	debugfs_remove(ceph_debugfs_dir);
-+}
-+
-+int ceph_debugfs_client_init(struct ceph_client *client)
-+{
-+	int ret = 0;
-+#define TMP_NAME_SIZE 16
-+	char name[TMP_NAME_SIZE];
-+
-+	snprintf(name, TMP_NAME_SIZE, "client%d", client->whoami);
-+
-+	client->debugfs_dir = debugfs_create_dir(name, ceph_debugfs_dir);
-+	if (!client->debugfs_dir)
-+		goto out;
-+
-+	client->monc.debugfs_file = debugfs_create_file("monc",
-+						      0600,
-+						      client->debugfs_dir,
-+						      client,
-+						      &monc_show_fops);
-+	if (ret)
-+		goto out;
-+
-+	client->mdsc.debugfs_file = debugfs_create_file("mdsc",
-+						      0600,
-+						      client->debugfs_dir,
-+						      client,
-+						      &mdsc_show_fops);
-+	if (ret)
-+		goto out;
-+
-+	client->osdc.debugfs_file = debugfs_create_file("osdc",
-+						      0600,
-+						      client->debugfs_dir,
-+						      client,
-+						      &osdc_show_fops);
-+	if (ret)
-+		goto out;
-+
-+	client->debugfs_fsid = debugfs_create_file("fsid",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&fsid_show_fops);
-+	if (!client->debugfs_fsid)
-+		goto out;
-+
-+	client->debugfs_monmap = debugfs_create_file("monmap",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&monmap_show_fops);
-+	if (!client->debugfs_monmap)
-+		goto out;
-+
-+	client->debugfs_mdsmap = debugfs_create_file("mdsmap",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&mdsmap_show_fops);
-+	if (!client->debugfs_mdsmap)
-+		goto out;
-+
-+	client->debugfs_osdmap = debugfs_create_file("osdmap",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&osdmap_show_fops);
-+	if (!client->debugfs_osdmap)
-+		goto out;
-+
-+	client->debugfs_dentry_lru = debugfs_create_file("dentry_lru",
-+					0600,
-+					client->debugfs_dir,
-+					client,
-+					&dentry_lru_show_fops);
-+	if (!client->debugfs_osdmap)
-+		goto out;
-+
-+	return 0;
-+
-+out:
-+	ceph_debugfs_client_cleanup(client);
-+	return ret;
-+}
-+
-+void ceph_debugfs_client_cleanup(struct ceph_client *client)
-+{
-+	debugfs_remove(client->monc.debugfs_file);
-+	debugfs_remove(client->mdsc.debugfs_file);
-+	debugfs_remove(client->osdc.debugfs_file);
-+	debugfs_remove(client->debugfs_dentry_lru);
-+	debugfs_remove(client->debugfs_monmap);
-+	debugfs_remove(client->debugfs_mdsmap);
-+	debugfs_remove(client->debugfs_osdmap);
-+	debugfs_remove(client->debugfs_fsid);
-+	debugfs_remove(client->debugfs_dir);
-+}
-+
--- 
-1.5.6.5
+> On Tue, 2009-07-21 at 11:32 -0700, Ben Greear wrote:
+>> On 07/21/2009 11:28 AM, Trond Myklebust wrote:
+>>> On Tue, 2009-07-21 at 11:01 -0700, Ben Greear wrote:
+>>>> On 07/21/2009 10:59 AM, Trond Myklebust wrote:
+>>>>> On Tue, 2009-07-21 at 10:36 -0700, Ben Greear wrote:
+>>>>>> On 07/21/2009 10:12 AM, Trond Myklebust wrote:
+>>>>>>> On Tue, 2009-07-21 at 09:49 -0700, Ben Greear wrote:
+>>>>>>>> On 07/21/2009 05:15 AM, Trond Myklebust wrote:
+>>>>>>>>
+>>>>>>>>> What does /var/lib/nfs/v4recovery look like on the server?
+>>>>>>>> The server was misconfigured, but I still think the client  
+>>>>>>>> should
+>>>>>>>> behave better in this case.  If you cannot reproduce it, let  
+>>>>>>>> me know
+>>>>>>>> and I can try to be more specific.  If you still want the  
+>>>>>>>> v4recovery
+>>>>>>>> information, let me know and I'll send it.
+>>>>>>> So how should the client behave, when a screwed up server  
+>>>>>>> allows it to
+>>>>>>> mount but starts returning illegal values for setclientid? The  
+>>>>>>> only
+>>>>>>> thing I can see we could do is to tell the user EINSANESERVER...
+>>>>>> Well, it could just fail the mount and give up and not overly  
+>>>>>> spam
+>>>>>> /var/log/messages in a tight loop perhaps?
+>>>>> This doesn't happen at mount time. It happens when you open a  
+>>>>> file.
+>>>> Not for me, and evidently not for the other person that reported
+>>>> similar results.  All I had to do was attempt the mount (which  
+>>>> never
+>>>> completed).
+>>>>
+>>>> Thanks,
+>>>> Ben
+>>>
+>>> Ah... You have NFS_V4_1 enabled despite the Kconfig warning...  
+>>> Does the
+>>> bug occur when you turn this off too?
+>>
+>> Yes, it did.
+>
+> OK. The following patch should fix that particular regression.
+>
+> Note that there is a bug remaining inside nfs4_init_session(): we
+> shouldn't be copying the rsize/wsize into the nfs_client if the latter
+> was already initialised.
+
+The rsize/wsize is copied into the session prior to the create_session  
+call (triggered by the state management code you moved), and is used  
+for session negotiation. At this point the nfs_client cl_cons_state is  
+set to NFS_CS_SESSION_INITING (see nfs4_alloc_session), so the  
+nfs_client is not initialized.  The cl_cons_state is set to  
+NFS_CS_READY after a successful create_session call.
+
+-->Andy
+
+> I'm going to leave that for the moment, though,
+> since that bug wasn't introduced by my patch, and it doesn't affect
+> NFSv4.0.
+>
+> Cheers,
+>  Trond
+> -----------------------------------------------------------------
+> From: Trond Myklebust <Trond.Myklebust@netapp.com>
+> NFSv4: Fix an NFSv4 mount regression
+>
+> Commit 008f55d0e019943323c20a03493a2ba5672a4cc8 (nfs41: recover  
+> lease in
+> _nfs4_lookup_root) forces the state manager to always run on mount.  
+> This is
+> a bug in the case of NFSv4.0, which doesn't require us to send a
+> setclientid until we want to grab file state.
+>
+> In any case, this is completely the wrong place to be doing state
+> management. Moving that code into nfs4_init_session...
+>
+> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
+>
+> fs/nfs/client.c   |   18 +++---------------
+> fs/nfs/nfs4_fs.h  |    6 ++++++
+> fs/nfs/nfs4proc.c |   24 +++++++++++++++++-------
+> 3 files changed, 26 insertions(+), 22 deletions(-)
+>
+>
+> diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+> index c2d0616..8d25ccb 100644
+> --- a/fs/nfs/client.c
+> +++ b/fs/nfs/client.c
+> @@ -1242,20 +1242,6 @@ error:
+> 	return error;
+> }
+>
+> -/*
+> - * Initialize a session.
+> - * Note: save the mount rsize and wsize for create_server  
+> negotiation.
+> - */
+> -static void nfs4_init_session(struct nfs_client *clp,
+> -			      unsigned int wsize, unsigned int rsize)
+> -{
+> -#if defined(CONFIG_NFS_V4_1)
+> -	if (nfs4_has_session(clp)) {
+> -		clp->cl_session->fc_attrs.max_rqst_sz = wsize;
+> -		clp->cl_session->fc_attrs.max_resp_sz = rsize;
+> -	}
+> -#endif /* CONFIG_NFS_V4_1 */
+> -}
+>
+> /*
+>  * Session has been established, and the client marked ready.
+> @@ -1350,7 +1336,9 @@ struct nfs_server *nfs4_create_server(const  
+> struct nfs_parsed_mount_data *data,
+> 	BUG_ON(!server->nfs_client->rpc_ops);
+> 	BUG_ON(!server->nfs_client->rpc_ops->file_inode_ops);
+>
+> -	nfs4_init_session(server->nfs_client, server->wsize, server->rsize);
+> +	error = nfs4_init_session(server);
+> +	if (error < 0)
+> +		goto error;
+>
+> 	/* Probe the root fh to retrieve its FSID */
+> 	error = nfs4_path_walk(server, mntfh, data->nfs_server.export_path);
+> diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
+> index 61bc3a3..6ea07a3 100644
+> --- a/fs/nfs/nfs4_fs.h
+> +++ b/fs/nfs/nfs4_fs.h
+> @@ -220,6 +220,7 @@ extern void nfs4_destroy_session(struct  
+> nfs4_session *session);
+> extern struct nfs4_session *nfs4_alloc_session(struct nfs_client  
+> *clp);
+> extern int nfs4_proc_create_session(struct nfs_client *, int reset);
+> extern int nfs4_proc_destroy_session(struct nfs4_session *);
+> +extern int nfs4_init_session(struct nfs_server *server);
+> #else /* CONFIG_NFS_v4_1 */
+> static inline int nfs4_setup_sequence(struct nfs_client *clp,
+> 		struct nfs4_sequence_args *args, struct nfs4_sequence_res *res,
+> @@ -227,6 +228,11 @@ static inline int nfs4_setup_sequence(struct  
+> nfs_client *clp,
+> {
+> 	return 0;
+> }
+> +
+> +static inline int nfs4_init_session(struct nfs_server *server)
+> +{
+> +	return 0;
+> +}
+> #endif /* CONFIG_NFS_V4_1 */
+>
+> extern struct nfs4_state_maintenance_ops *nfs4_state_renewal_ops[];
+> diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+> index ff0c080..df24f67 100644
+> --- a/fs/nfs/nfs4proc.c
+> +++ b/fs/nfs/nfs4proc.c
+> @@ -2040,15 +2040,9 @@ static int _nfs4_lookup_root(struct  
+> nfs_server *server, struct nfs_fh *fhandle,
+> 		.rpc_argp = &args,
+> 		.rpc_resp = &res,
+> 	};
+> -	int status;
+>
+> 	nfs_fattr_init(info->fattr);
+> -	status = nfs4_recover_expired_lease(server);
+> -	if (!status)
+> -		status = nfs4_check_client_ready(server->nfs_client);
+> -	if (!status)
+> -		status = nfs4_call_sync(server, &msg, &args, &res, 0);
+> -	return status;
+> +	return nfs4_call_sync(server, &msg, &args, &res, 0);
+> }
+>
+> static int nfs4_lookup_root(struct nfs_server *server, struct nfs_fh  
+> *fhandle,
+> @@ -4793,6 +4787,22 @@ int nfs4_proc_destroy_session(struct  
+> nfs4_session *session)
+> 	return status;
+> }
+>
+> +int nfs4_init_session(struct nfs_server *server)
+> +{
+> +	struct nfs_client *clp = server->nfs_client;
+> +	int ret;
+> +
+> +	if (!nfs4_has_session(clp))
+> +		return 0;
+> +
+> +	clp->cl_session->fc_attrs.max_rqst_sz = server->wsize;
+> +	clp->cl_session->fc_attrs.max_resp_sz = server->rsize;
+> +	ret = nfs4_recover_expired_lease(server);
+> +	if (!ret)
+> +		ret = nfs4_check_client_ready(clp);
+> +	return ret;
+> +}
+> +
+> /*
+>  * Renew the cl_session lease.
+>  */
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs"  
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
