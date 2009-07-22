@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbZGVUrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbZGVUw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbZGVUrc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 16:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbZGVUrb
+	id S1752937AbZGVUw5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 16:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZGVUw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 16:47:31 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:32871 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752458AbZGVUrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 16:47:31 -0400
-Subject: Re: [PATCH 1/6] regulator: Add regulator_get_exclusive() API
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Eric Miao <eric.y.miao@gmail.com>, Daniel Ribeiro <drwyrm@gmail.com>
-Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Haojian Zhuang <haojian.zhuang@gmail.com>
-In-Reply-To: <20090722095803.GB21171@rakim.wolfsonmicro.main>
-References: <1248188428-11277-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <1248209397.4333.50.camel@brutus> <4A667231.3020809@gmail.com>
-	 <20090722095803.GB21171@rakim.wolfsonmicro.main>
-Content-Type: text/plain
-Date: Wed, 22 Jul 2009 21:47:29 +0100
-Message-Id: <1248295649.25964.848.camel@vega.slimlogic.co.uk>
+	Wed, 22 Jul 2009 16:52:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41216 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751415AbZGVUw4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 16:52:56 -0400
+Date: Wed, 22 Jul 2009 13:52:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marek Vasut <marek.vasut@gmail.com>
+Cc: linux-kernel@vger.kernel.org, rpurdie@rpsys.net
+Subject: Re: [PATCH] SPI driver for LMS283GF05 LCD
+Message-Id: <20090722135243.ac1accfb.akpm@linux-foundation.org>
+In-Reply-To: <200907161004.02552.marek.vasut@gmail.com>
+References: <200907161004.02552.marek.vasut@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 10:58 +0100, Mark Brown wrote:
-> On Wed, Jul 22, 2009 at 09:58:09AM +0800, Eric Miao wrote:
-> > Daniel Ribeiro wrote:
+On Thu, 16 Jul 2009 10:04:02 +0200
+Marek Vasut <marek.vasut@gmail.com> wrote:
+
+> >From b7077676a3016327ca1010d3bbc80a0b9f2742e5 Mon Sep 17 00:00:00 2001                     
+> From: Marek Vasut <marek.vasut@gmail.com>                                                  
+> Date: Thu, 16 Jul 2009 04:49:47 +0200                                                      
+> Subject: [PATCH] Samsung LMS283GF05 LCD SPI support                                        
 > 
-> > > Can you update pxamci.c and twl4030-mmc.c to make use of this new API?
+> This patch adds support for the SPI part of LMS283GF05 LCD. The LCD uses
+> SPI for initialization and powerdown sequences. No further defails are  
+> specified in the datasheet about the initialization/powerdown sequence, 
+> just the magic numbers that have to be sent over SPI bus. This LCD can  
+> be found in the Aeronix Zipit Z2 handheld.                              
+
+The patch is wordwrapped and has all its tabs replaced with spaces.
+
 > 
-> > I think that deserves another two patches for making use of this
-> > new API.
-> 
-> Due to my workload, the cross tree merge issues and my lack of any test
-> hardware I wasn't in a hurry to do that myself - probably not until
-> after the merge window.  It'd probably be as easy for people with
-> relevant systems to do the updates.
+> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+> index f9d19be..3f9cce3 100644                                                 
+> --- a/drivers/video/backlight/Kconfig                                         
+> +++ b/drivers/video/backlight/Kconfig                                         
+> @@ -31,6 +31,13 @@ config LCD_CORGI                                           
+>           Say y here to support the LCD panels usually found on SHARP         
+>           corgi (C7x0) and spitz (Cxx00) models.                              
+>                                                                               
+> +config LCD_LMS283GF05                                                        
+> +       tristate "Samsung LMS283GF05 LCD"                                     
+> +       depends on LCD_CLASS_DEVICE && SPI_MASTER                             
+> +       help                                                                  
+> +         SPI driver for Samsung LMS283GF05. This provides basic support      
+> +         for powering the LCD up/down through a sysfs interface.             
+> +                                                                             
 
-I agree, my workload wont allow me to test this on my pxa atm :-/
-
-Eric, Daniel, any chance you could oblige with a tested patch for your
-respective systems ?
-
-Thanks
-
-Liam
+It generally looks OK to me.  Should it have a Kconfig dependency for
+its use of the GPIO layer?
 
