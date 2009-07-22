@@ -1,58 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbZGVCF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZGVCJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbZGVCF3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 22:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbZGVCF2
+	id S1755008AbZGVCJc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 22:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754206AbZGVCJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 22:05:28 -0400
-Received: from mga02.intel.com ([134.134.136.20]:20691 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754238AbZGVCF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 22:05:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,243,1246863600"; 
-   d="scan'208";a="432235374"
-Subject: Re: linux-next: manual merge of the net tree with the
- wireless-current tree
-From: Zhu Yi <yi.zhu@intel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: David Miller <davem@davemloft.net>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Ortiz, Samuel" <samuel.ortiz@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <20090722115956.482777b4.sfr@canb.auug.org.au>
-References: <20090722115956.482777b4.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Wed, 22 Jul 2009 10:05:21 +0800
-Message-Id: <1248228321.3747.48.camel@debian>
+	Tue, 21 Jul 2009 22:09:31 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49548 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753757AbZGVCJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 22:09:30 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 22 Jul 2009 11:07:39 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, Ryo Tsuruta <ryov@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@redhat.com
+Subject: Re: [PATCH 3/9] blkio-cgroup-v9: The new page_cgroup framework
+Message-Id: <20090722110739.e00c0f18.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090722102058.c1cf731b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090721.230911.193692312.ryov@valinux.co.jp>
+	<20090721.231004.226793074.ryov@valinux.co.jp>
+	<20090721.231211.71098738.ryov@valinux.co.jp>
+	<20090721155636.GB25127@balbir.in.ibm.com>
+	<20090722102058.c1cf731b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 09:59 +0800, Stephen Rothwell wrote:
-> Hi David,
+On Wed, 22 Jul 2009 10:20:58 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Tue, 21 Jul 2009 21:26:36 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> Today's linux-next merge of the net tree got a conflict in
-> drivers/net/wireless/iwmc3200wifi/netdev.c between commit
-> 513a2396d8e8327aff1ce50bea3fb4f16ff3455b ("iwmc3200wifi: fix NULL pointer
-> dereference in iwm_if_free") from the wireless-current tree and commit
-> 3549716484a95fd16f7fcf8b68699bd4c803b382 ("iwmc3200wifi: cache keys when
-> interface is down") from the net tree.
+> > * Ryo Tsuruta <ryov@valinux.co.jp> [2009-07-21 23:12:11]:
+> > 
+> > > This patch makes the page_cgroup framework be able to be used even if
+> > > the compile option of the cgroup memory controller is off.
+> > > So blkio-cgroup can use this framework without the memory controller.
+> > > 
+> > > Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+> > > Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+> > > 
+> > > ---
+> > >  include/linux/memcontrol.h  |    6 ++++++
+> > >  include/linux/mmzone.h      |    4 ++--
+> > >  include/linux/page_cgroup.h |    8 +++++---
+> > >  init/Kconfig                |    4 ++++
+> > >  mm/Makefile                 |    3 ++-
+> > >  mm/memcontrol.c             |    6 ++++++
+> > >  mm/page_cgroup.c            |    3 +--
+> > >  7 files changed, 26 insertions(+), 8 deletions(-)
+> > > 
+> > > Index: linux-2.6.31-rc3/include/linux/memcontrol.h
+> > > ===================================================================
+> > > --- linux-2.6.31-rc3.orig/include/linux/memcontrol.h
+> > > +++ linux-2.6.31-rc3/include/linux/memcontrol.h
+> > > @@ -37,6 +37,8 @@ struct mm_struct;
+> > >   * (Of course, if memcg does memory allocation in future, GFP_KERNEL is sane.)
+> > >   */
+> > > 
+> > > +extern void __init_mem_page_cgroup(struct page_cgroup *pc);
+> > > +
+> > >  extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
+> > >  				gfp_t gfp_mask);
+> > >  /* for swap handling */
+> > > @@ -121,6 +123,10 @@ void mem_cgroup_update_mapped_file_stat(
+> > >  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+> > >  struct mem_cgroup;
+> > > 
+> > > +static inline void __init_mem_page_cgroup(struct page_cgroup *pc)
+> > > +{
+> > > +}
+> > > +
+> > >  static inline int mem_cgroup_newpage_charge(struct page *page,
+> > >  					struct mm_struct *mm, gfp_t gfp_mask)
+> > >  {
+> > > Index: linux-2.6.31-rc3/include/linux/mmzone.h
+> > > ===================================================================
+> > > --- linux-2.6.31-rc3.orig/include/linux/mmzone.h
+> > > +++ linux-2.6.31-rc3/include/linux/mmzone.h
+> > > @@ -605,7 +605,7 @@ typedef struct pglist_data {
+> > >  	int nr_zones;
+> > >  #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
+> > >  	struct page *node_mem_map;
+> > > -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > +#ifdef CONFIG_CGROUP_PAGE
+> > >  	struct page_cgroup *node_page_cgroup;
+> > >  #endif
+> > >  #endif
+> > > @@ -956,7 +956,7 @@ struct mem_section {
+> > > 
+> > >  	/* See declaration of similar field in struct zone */
+> > >  	unsigned long *pageblock_flags;
+> > > -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > +#ifdef CONFIG_CGROUP_PAGE
+> > >  	/*
+> > >  	 * If !SPARSEMEM, pgdat doesn't have page_cgroup pointer. We use
+> > >  	 * section. (see memcontrol.h/page_cgroup.h about this.)
+> > > Index: linux-2.6.31-rc3/include/linux/page_cgroup.h
+> > > ===================================================================
+> > > --- linux-2.6.31-rc3.orig/include/linux/page_cgroup.h
+> > > +++ linux-2.6.31-rc3/include/linux/page_cgroup.h
+> > > @@ -1,7 +1,7 @@
+> > >  #ifndef __LINUX_PAGE_CGROUP_H
+> > >  #define __LINUX_PAGE_CGROUP_H
+> > > 
+> > > -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > +#ifdef CONFIG_CGROUP_PAGE
+> > >  #include <linux/bit_spinlock.h>
+> > >  /*
+> > >   * Page Cgroup can be considered as an extended mem_map.
+> > > @@ -12,9 +12,11 @@
+> > >   */
+> > >  struct page_cgroup {
+> > >  	unsigned long flags;
+> > > -	struct mem_cgroup *mem_cgroup;
+> > >  	struct page *page;
+> > > +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > +	struct mem_cgroup *mem_cgroup;
+> > >  	struct list_head lru;		/* per cgroup LRU list */
+> > > +#endif
+> > >  };
+> > 
+> > If CONFIG_CGROUP_MEM_RES_CTLR is not enabled and CGROUP_PAGE is
+> > (assuming that the depends on below is refactored), what would this
+> > change buy us? What is page_cgroup helping us track, the mem_cgroup is
+> > factored out, so we are interested in the flags only?
+> > 
+> plz remove CONFIG. This jsut makes code complicated.
+> or plz use your own infrastructure, not depends on page_cgroup.
 > 
-> Just context changes.   I fixed it up (see below) and can carry the fix
-> as necessary.
 
-Hi Stephen,
+BTW, you can't modify page_cgroup->flags bit without cmpxchg.
+Then, patch [5/9] is completely broken, now because new bit is used
+with atomic bit ops but without lock_page_cgroup(). (see mmotm)
 
-The correct fix should be
-http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commitdiff;h=126e91ba8cfe45a772aad2f51049ac7cedf5bbfd
+Why struct page's flags bit can includes zone id etc...is just because
+it's initalized before using. Anyway, this is "flags" bit. If you want
+to modify multiple bit at once, plz use cmpxchg.
+Then, I buy patch [8/9] and just skip this patch.
 
-We need to make the free wdev the last one.
+But, following is more straightforward. (and what you do is not different
+from this.)
+==
+struct page {
+	.....
+#ifdef CONFIG_BLOCKIO_CGROUP
+	void *blockio_cgroup;
+#endif
+}
+==
 
-Thanks,
--yi
+
+Regards,
+-Kame
+
+
 
