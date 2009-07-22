@@ -1,93 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbZGVPSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZGVPSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbZGVPSK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 11:18:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZGVPSJ
+	id S1752815AbZGVPSo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 11:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZGVPSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 11:18:09 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:50988 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752608AbZGVPSI (ORCPT
+	Wed, 22 Jul 2009 11:18:44 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:37149 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbZGVPSn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 11:18:08 -0400
-Date: Wed, 22 Jul 2009 20:47:59 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/ksym_tracer: support quick clear for
-	ksym_trace_filter
-Message-ID: <20090722151759.GA11367@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <4A6685BB.2090809@cn.fujitsu.com> <4A66869A.9000106@cn.fujitsu.com> <20090722050636.GA9039@in.ibm.com> <4A66E261.2090105@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A66E261.2090105@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 22 Jul 2009 11:18:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=vH5vR/fQh8NaDfya0bOlredcmOXwOzqpWaZBh/3zpzoVnEWhK4ek078baICqSjcfhT
+         S3KqUxf+szJoiaZbPyClV+BY6rvYT+gNeRgxVqpFsDNTZuiNPRFOawbjvTBYVSMW8WuJ
+         5Tx/IUkrORT74RhxKSTDXmxG502aeAbZ8MPj8=
+From: Manuel Lauss <manuel.lauss@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org, Manuel Lauss <manuel.lauss@gmail.com>,
+       Frans Pop <elendil@planet.nl>
+Subject: [PATCH V2] au1xmmc: dev_pm_ops conversion
+Date: Wed, 22 Jul 2009 17:18:39 +0200
+Message-Id: <1248275919-3296-1-git-send-email-manuel.lauss@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 05:56:49PM +0800, Xiao Guangrong wrote:
-> 
-> 
-> K.Prasad wrote:
-> > On Wed, Jul 22, 2009 at 11:25:14AM +0800, Xiao Guangrong wrote:
-> >> It's rather bored to clear symbol one by one in ksym_trace_filter
-> >> file, so, this patch can let ksym_trace_filter file support quick
-> >> clear, we can write "0" to this file, it can clear all symbols
-> >>
-> >> for example:
-> >>  # cat ksym_trace_filter
-> >>  ksym_filter_head:rw-
-> >>  global_trace:rw-
-> >>  # echo 0 > ksym_trace_filter
-> >>  # cat ksym_trace_filter
-> >>  #
-> >>
-> > 
-> > It's nice to have this feature added and the other patches fix issues in
-> > ksym tracer. Can you have this patch add the capability to clear all
-> > breakpoints in one-shot through wild-cards?
-> > 
-> 
-> It already can clear all breakpoints in one-shot by write "0" to
-> ksym_trace_filter file, do you means that we need to support other
-> way for it? like:
-> 
-> echo > ksym_trace_filter
-> echo "*:---" > ksym_trace_filter
-> 
-> IMHO, one way to clear all breakpoints is enough, no need to add
-> more code for the same function, for example, in trace events filter,
-> only echo 0 > filter can properly clear all filters.
-> 
-> Are you sure other way is necessary? 
-> 
-> Thanks,
-> Xiao
->
+Cc: Frans Pop <elendil@planet.nl>
+Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
+---
+V1->V2: don't remove CONFIG_PM
 
-As I stated before, the ability to support
-echo "*:---" > ksym_trace_filter was Ingo Molnar's suggestion, so if
-he's not particular about having it now we may skip it.
+ drivers/mmc/host/au1xmmc.c |   24 +++++++++++++++---------
+ 1 files changed, 15 insertions(+), 9 deletions(-)
 
-However, given that it requires just a few lines of code in addition,
-say
-
-+	/* Clear all breakpoints if echo "*:---" > ksym_trace_filter */
-+	if ((strncmp(ksymname, "*", strlen("*")) == 0) && (op == 0)) {
-+		ksym_trace_reset(NULL);
-+		kfree(input_string);
-+		return count;
-+	}
-
-in ksym_trace_filter_write(), and that the patch is already present it
-shouldn't be bothersome to add it.
-
-Thanks,
-K.Prasad
+diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
+index d3f5561..2d4e20f 100644
+--- a/drivers/mmc/host/au1xmmc.c
++++ b/drivers/mmc/host/au1xmmc.c
+@@ -1132,12 +1132,12 @@ static int __devexit au1xmmc_remove(struct platform_device *pdev)
+ }
+ 
+ #ifdef CONFIG_PM
+-static int au1xmmc_suspend(struct platform_device *pdev, pm_message_t state)
++static int au1xmmc_suspend(struct device *dev)
+ {
+-	struct au1xmmc_host *host = platform_get_drvdata(pdev);
++	struct au1xmmc_host *host = dev_get_drvdata(dev);
+ 	int ret;
+ 
+-	ret = mmc_suspend_host(host->mmc, state);
++	ret = mmc_suspend_host(host->mmc, PMSG_SUSPEND);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -1150,27 +1150,33 @@ static int au1xmmc_suspend(struct platform_device *pdev, pm_message_t state)
+ 	return 0;
+ }
+ 
+-static int au1xmmc_resume(struct platform_device *pdev)
++static int au1xmmc_resume(struct device *dev)
+ {
+-	struct au1xmmc_host *host = platform_get_drvdata(pdev);
++	struct au1xmmc_host *host = dev_get_drvdata(dev);
+ 
+ 	au1xmmc_reset_controller(host);
+ 
+ 	return mmc_resume_host(host->mmc);
+ }
++
++static struct dev_pm_ops au1xmmc_pmops = {
++	.resume		= au1xmmc_resume,
++	.suspend	= au1xmmc_suspend,
++};
++
++#define AU1XMMC_PMOPS &au1xmmc_pmops
++
+ #else
+-#define au1xmmc_suspend NULL
+-#define au1xmmc_resume NULL
++#define AU1XMMC_PMOPS NULL
+ #endif
+ 
+ static struct platform_driver au1xmmc_driver = {
+ 	.probe         = au1xmmc_probe,
+ 	.remove        = au1xmmc_remove,
+-	.suspend       = au1xmmc_suspend,
+-	.resume        = au1xmmc_resume,
+ 	.driver        = {
+ 		.name  = DRIVER_NAME,
+ 		.owner = THIS_MODULE,
++		.pm    = AU1XMMC_PMOPS,
+ 	},
+ };
+ 
+-- 
+1.6.3.3
 
