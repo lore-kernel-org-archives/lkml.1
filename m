@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZGVVrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZGVVsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbZGVVrY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 17:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZGVVrX
+	id S1754244AbZGVVsp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 17:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbZGVVso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 17:47:23 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:60662 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753663AbZGVVrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 17:47:22 -0400
-Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andy Adamson <andros@netapp.com>
-Cc: Ben Greear <greearb@candelatech.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-In-Reply-To: <74713B5B-DF7F-4357-AE3A-0F6B44C41116@netapp.com>
-References: <4A64EB1F.4000602@candelatech.com>
-	 <1248178527.5222.0.camel@heimdal.trondhjem.org>
-	 <4A65F184.5060802@candelatech.com>
-	 <1248196339.21343.8.camel@heimdal.trondhjem.org>
-	 <4A65FCB2.6080903@candelatech.com>
-	 <1248199140.21343.17.camel@heimdal.trondhjem.org>
-	 <4A660295.9020807@candelatech.com>
-	 <1248200897.21343.19.camel@heimdal.trondhjem.org>
-	 <4A6609A9.3000504@candelatech.com>
-	 <1248211050.21343.38.camel@heimdal.trondhjem.org>
-	 <A7103385-4525-4B7B-9CBA-5DBCB99A98F0@netapp.com>
-	 <1248294013.5234.35.camel@heimdal.trondhjem.org>
-	 <74713B5B-DF7F-4357-AE3A-0F6B44C41116@netapp.com>
-Content-Type: text/plain
-Date: Wed, 22 Jul 2009 17:47:16 -0400
-Message-Id: <1248299236.9202.3.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 4 msgs/h 1 sum rcpts/h 6 sum msgs/h 1 total rcpts 936 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 01F1727DB8767497FF018260CE7F91DFD2D425B3
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 84 max/h 5 blacklist 0 greylist 0 ratelimit 0
+	Wed, 22 Jul 2009 17:48:44 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:43252 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754034AbZGVVsn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 17:48:43 -0400
+Date: Wed, 22 Jul 2009 23:48:42 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Cheng Renquan <crq@kernel.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       crquan@gmail.com, Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [PATCH 0/6] kbuild configuration system improvements
+Message-ID: <20090722214842.GA8695@merkur.ravnborg.org>
+References: <1247386308-19628-1-git-send-email-crq@kernel.org> <20090718072138.GA7711@merkur.ravnborg.org> <20090722134321.34f1ebf7.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090722134321.34f1ebf7.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 17:32 -0400, Andy Adamson wrote:
-> nfs4_init_session should simply return if the nfs_client cl_cons_state  
-> is not NFS_CS_SESSION_INITING.
-> I shouldn't be trying to set the session max_resp_sz/max_rqst_sz to  
-> the rsize/wsize, but rather to the maximum rsize/wsize supported by  
-> the client.
-> If the server accepts or increases the max_resp_sz/max_rqst_sz then  
-> all is well.
-> If the server reduces the max_resp_sz/max_rqst_sz, the maximum rsize/ 
-> wsize available for NFSv4.1 partition mounts to the server needs to be  
-> reduced accordingly. So the nfs_server rsize/wsize needs to be bound  
-> by the session max_resp_sz/max_rqst_sz as well as by the maximum  
-> supported size.
+On Wed, Jul 22, 2009 at 01:43:21PM -0700, Randy Dunlap wrote:
+> On Sat, 18 Jul 2009 09:21:38 +0200 Sam Ravnborg wrote:
+> 
+> > On Sun, Jul 12, 2009 at 04:11:42PM +0800, Cheng Renquan wrote:
+> > > From: Cheng Renquan <crquan@gmail.com>
+> > > 
+> > > These patches improve usability of kernel configuration system,
+> > > 
+> > > 1. add symbol's value shown accompanied in config item's help message;
+> > > 2. move the real plumbing functions code from mconf.c to menu.c, make them
+> > >    be able to be shared with other configuration methods;
+> > > 3. add "symbol's value shown" support for gconfig/xconfig/config;
+> > > 
+> > >     0001-add-symbol-value-to-help-find-the-real-depend.patch
+> > >     0002-add-menu_get_ext_help-function-to-display-more-infor.patch
+> > >     0003-menuconfig-improvements.patch
+> > >     0004-make-use-of-menu_get_ext_help-in-gconfig.patch
+> > >     0005-make-use-of-menu_get_ext_help-in-qconfig.patch
+> > >     0006-make-use-of-menu_get_ext_help-in-make-config.patch
+> > 
+> > I fixed them all up to:
+> > 1) include "kconfig:" prefix in subject
+> > 2) cc: of Roman Zippel which is kconfig maintainer
+> > 
+> > There were a few checkpatch issues that I decided to ignore for now.
+> > 
+> > Please always cc: Roman on kconfig patches as he is the mintainer.
+> > 
+> > Applied to kbuild-next.git.
+> 
+> 
+> FWIW, I still get a segfault in gconfig (as I reported several months ago).
+> I suppose that if it's a real issue, someone else will also see this.
 
-Well.... The rsize/wsize is one thing, but how about acls? We simply
-don't know how big they may become.
+I assumed it was fixed - the changelog patches did
+not mention any outstanding issues.
 
-An alternative would be to let the server choose the
-max_rqst_sz/max_resp_sz by always requesting the maximum allowed value.
+Following fix is needed.
 
-Trond
+	Sam
 
+diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
+index 931d782..b74f746 100644
+--- a/scripts/kconfig/menu.c
++++ b/scripts/kconfig/menu.c
+@@ -528,5 +528,6 @@ void menu_get_ext_help(struct menu *menu, struct gstr *help)
+ 	} else {
+ 		str_append(help, nohelp_text);
+ 	}
+-	get_symbol_str(help, sym);
++	if (sym)
++		get_symbol_str(help, sym);
+ }
+
+
+
+
+> 
+> ---
+> ~Randy
+> LPC 2009, Sept. 23-25, Portland, Oregon
+> http://linuxplumbersconf.org/2009/
+> 
