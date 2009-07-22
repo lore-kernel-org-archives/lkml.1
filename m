@@ -1,76 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbZGVPQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbZGVPQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752655AbZGVPQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 11:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZGVPQl
+	id S1752714AbZGVPQy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 11:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZGVPQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 11:16:41 -0400
-Received: from mail-qy0-f173.google.com ([209.85.221.173]:58144 "EHLO
-	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752089AbZGVPQk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 11:16:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fDpwqCqKLO7LsiDlcpE0vMiAIbWfuTLdeqQrqu9jXzc2R7d1ds166U/fNciH2H8T7u
-         830sfu6io6UthKtDnUJ28VD/Ge7fMo9tYmanMtz7t8ffUgWdSjjYX5VS+ZWKHMTZqVWJ
-         0B/eqyMoV/xuUmU2yFxyLrwIxgV1Kk4C6RsbQ=
+	Wed, 22 Jul 2009 11:16:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41905 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752616AbZGVPQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 11:16:52 -0400
+Date: Wed, 22 Jul 2009 15:15:35 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:timers/core] hrtimer: Remove cb_entry from struct hrtimer
+Message-ID: <tip-fbd90375d7531927d312766b548376d909811b4d@git.kernel.org>
+Git-Commit-ID: fbd90375d7531927d312766b548376d909811b4d
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <1248262099-12514-1-git-send-email-jlayton@redhat.com>
-References: <1248262099-12514-1-git-send-email-jlayton@redhat.com>
-Date: Wed, 22 Jul 2009 10:16:38 -0500
-Message-ID: <524f69650907220816j6400c1fdr4efd8754437f7a13@mail.gmail.com>
-Subject: Re: [PATCH] libfs: make get_sb_pseudo set s_maxbytes to value that 
-	can be cast to signed
-From: Steve French <smfrench@gmail.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 22 Jul 2009 15:15:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ack
+Commit-ID:  fbd90375d7531927d312766b548376d909811b4d
+Gitweb:     http://git.kernel.org/tip/fbd90375d7531927d312766b548376d909811b4d
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Wed, 22 Jul 2009 13:40:14 +0200
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Wed, 22 Jul 2009 17:12:32 +0200
 
-On Wed, Jul 22, 2009 at 6:28 AM, Jeff Layton<jlayton@redhat.com> wrote:
-> This patch is a counterpart to the CIFS patch posted yesterday. I
-> believe either patch will fix the problem seen in do_sendfile since the
-> smaller s_maxbytes value for the two superblocks is used there.
->
-> get_sb_pseudo sets s_maxbytes to ~0ULL, which becomes negative when cast
-> to a signed value. Fix it to use MAX_LFS_FILESIZE which casts properly
-> to a positive signed value.
->
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/libfs.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/fs/libfs.c b/fs/libfs.c
-> index ddfa899..dcec3d3 100644
-> --- a/fs/libfs.c
-> +++ b/fs/libfs.c
-> @@ -217,7 +217,7 @@ int get_sb_pseudo(struct file_system_type *fs_type, char *name,
->                return PTR_ERR(s);
->
->        s->s_flags = MS_NOUSER;
-> -       s->s_maxbytes = ~0ULL;
-> +       s->s_maxbytes = MAX_LFS_FILESIZE;
->        s->s_blocksize = PAGE_SIZE;
->        s->s_blocksize_bits = PAGE_SHIFT;
->        s->s_magic = magic;
-> --
-> 1.6.0.6
->
->
+hrtimer: Remove cb_entry from struct hrtimer
+
+It's unused, remove it.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <new-submission>
 
 
+---
+ include/linux/hrtimer.h |    2 --
+ kernel/hrtimer.c        |    1 -
+ 2 files changed, 0 insertions(+), 3 deletions(-)
 
--- 
-Thanks,
-
-Steve
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index 54648e6..40e7d54 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -91,7 +91,6 @@ enum hrtimer_restart {
+  * @function:	timer expiry callback function
+  * @base:	pointer to the timer base (per cpu and per clock)
+  * @state:	state information (See bit values above)
+- * @cb_entry:	list head to enqueue an expired timer into the callback list
+  * @start_site:	timer statistics field to store the site where the timer
+  *		was started
+  * @start_comm: timer statistics field to store the name of the process which
+@@ -108,7 +107,6 @@ struct hrtimer {
+ 	enum hrtimer_restart		(*function)(struct hrtimer *);
+ 	struct hrtimer_clock_base	*base;
+ 	unsigned long			state;
+-	struct list_head		cb_entry;
+ #ifdef CONFIG_TIMER_STATS
+ 	int				start_pid;
+ 	void				*start_site;
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 43d151f..052a0f5 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1092,7 +1092,6 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
+ 		clock_id = CLOCK_MONOTONIC;
+ 
+ 	timer->base = &cpu_base->clock_base[clock_id];
+-	INIT_LIST_HEAD(&timer->cb_entry);
+ 	hrtimer_init_timer_hres(timer);
+ 
+ #ifdef CONFIG_TIMER_STATS
