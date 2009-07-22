@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbZGVCNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbZGVCTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755602AbZGVCNK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 22:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbZGVCNJ
+	id S1755809AbZGVCTF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 22:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbZGVCTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 22:13:09 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49751 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753757AbZGVCNJ (ORCPT
+	Tue, 21 Jul 2009 22:19:04 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52302 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754479AbZGVCTD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 22:13:09 -0400
+	Tue, 21 Jul 2009 22:19:03 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 22 Jul 2009 11:11:20 +0900
+Date: Wed, 22 Jul 2009 11:17:14 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Ryo Tsuruta <ryov@valinux.co.jp>
 Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
        containers@lists.linux-foundation.org,
        virtualization@lists.linux-foundation.org,
        xen-devel@lists.xensource.com, agk@redhat.com
-Subject: Re: [PATCH 5/9] blkio-cgroup-v9: The body of blkio-cgroup
-Message-Id: <20090722111120.e4fe974f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090721.231405.189716609.ryov@valinux.co.jp>
-References: <20090721.231004.226793074.ryov@valinux.co.jp>
-	<20090721.231211.71098738.ryov@valinux.co.jp>
-	<20090721.231313.104044139.ryov@valinux.co.jp>
+Subject: Re: [PATCH 7/9] blkio-cgroup-v9: Page tracking hooks
+Message-Id: <20090722111714.8af6c5d8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090721.232316.183036419.ryov@valinux.co.jp>
+References: <20090721.231313.104044139.ryov@valinux.co.jp>
 	<20090721.231405.189716609.ryov@valinux.co.jp>
+	<20090721.231505.112612378.ryov@valinux.co.jp>
+	<20090721.232316.183036419.ryov@valinux.co.jp>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -34,47 +34,131 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009 23:14:05 +0900 (JST)
+On Tue, 21 Jul 2009 23:23:16 +0900 (JST)
 Ryo Tsuruta <ryov@valinux.co.jp> wrote:
 
-> The body of blkio-cgroup.
-> + * blkio_cgroup_set_owner() - set the owner ID of a page.
-> + * @page:	the page we want to tag
-> + * @mm:		the mm_struct of a page owner
-> + *
-> + * Make a given page have the blkio-cgroup ID of the owner of this page.
-> + */
-> +void blkio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
+> This patch contains several hooks that let the blkio-cgroup framework to know
+> which blkio-cgroup is the owner of a page before starting I/O against the page.
+
+> @@ -464,6 +465,7 @@ int add_to_page_cache_locked(struct page
+>  					gfp_mask & GFP_RECLAIM_MASK);
+>  	if (error)
+>  		goto out;
+> +	blkio_cgroup_set_owner(page, current->mm);
+>  
+
+This part is doubtful...Is this necessary ? 
+I recommend you that the caller should attach owner by itself.
 
 
-> + * blkio_cgroup_reset_owner() - reset the owner ID of a page
-> + * @page:	the page we want to tag
-> + * @mm:		the mm_struct of a page owner
-> + *
-> + * Change the owner of a given page if necessary.
-> + */
-> +void blkio_cgroup_reset_owner(struct page *page, struct mm_struct *mm)
-> +{
-> +	blkio_cgroup_set_owner(page, mm);
-> +}
+>  	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
+>  	if (error == 0) {
+> Index: linux-2.6.31-rc3/mm/memory.c
+> ===================================================================
+> --- linux-2.6.31-rc3.orig/mm/memory.c
+> +++ linux-2.6.31-rc3/mm/memory.c
+> @@ -51,6 +51,7 @@
+>  #include <linux/init.h>
+>  #include <linux/writeback.h>
+>  #include <linux/memcontrol.h>
+> +#include <linux/biotrack.h>
+>  #include <linux/mmu_notifier.h>
+>  #include <linux/kallsyms.h>
+>  #include <linux/swapops.h>
+> @@ -2115,6 +2116,7 @@ gotten:
+>  		 */
+>  		ptep_clear_flush_notify(vma, address, page_table);
+>  		page_add_new_anon_rmap(new_page, vma, address);
+> +		blkio_cgroup_set_owner(new_page, mm);
 
+plz do this in swap-out code.
 
-> +void blkio_cgroup_reset_owner_pagedirty(struct page *page, struct mm_struct *mm)
-> +{
-> +	if (!page_is_file_cache(page))
-> +		return;
-> +	if (current->flags & PF_MEMALLOC)
-> +		return;
-> +
+>  		set_pte_at(mm, address, page_table, entry);
+>  		update_mmu_cache(vma, address, entry);
+>  		if (old_page) {
+> @@ -2580,6 +2582,7 @@ static int do_swap_page(struct mm_struct
+>  	flush_icache_page(vma, page);
+>  	set_pte_at(mm, address, page_table, pte);
+>  	page_add_anon_rmap(page, vma, address);
 > +	blkio_cgroup_reset_owner(page, mm);
-> +}
-> +
 
-Hmm, why pass "mm" not "thread" ? Do we need to take care of mm->ownder ?
-Why "current" is bad ?
+and this.
 
-Thanks,
+
+>  	/* It's better to call commit-charge after rmap is established */
+>  	mem_cgroup_commit_charge_swapin(page, ptr);
+>  
+> @@ -2644,6 +2647,7 @@ static int do_anonymous_page(struct mm_s
+>  		goto release;
+>  	inc_mm_counter(mm, anon_rss);
+>  	page_add_new_anon_rmap(page, vma, address);
+> +	blkio_cgroup_set_owner(page, mm);
+>  	set_pte_at(mm, address, page_table, entry);
+>  
+and this.
+
+>  	/* No need to invalidate - it was non-present before */
+> @@ -2791,6 +2795,7 @@ static int __do_fault(struct mm_struct *
+>  		if (anon) {
+>  			inc_mm_counter(mm, anon_rss);
+>  			page_add_new_anon_rmap(page, vma, address);
+> +			blkio_cgroup_set_owner(page, mm);
+and this.
+
+IMHO, later io for swap-out is caused by the caller of swapout, not page's
+owner. plz charge to them or,
+  - add special BLOCK CGROUP ID for the kernel's swap out. 
+
+Bye,
 -Kame
 
-
+>  		} else {
+>  			inc_mm_counter(mm, file_rss);
+>  			page_add_file_rmap(page);
+> Index: linux-2.6.31-rc3/mm/page-writeback.c
+> ===================================================================
+> --- linux-2.6.31-rc3.orig/mm/page-writeback.c
+> +++ linux-2.6.31-rc3/mm/page-writeback.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/init.h>
+>  #include <linux/backing-dev.h>
+>  #include <linux/task_io_accounting_ops.h>
+> +#include <linux/biotrack.h>
+>  #include <linux/blkdev.h>
+>  #include <linux/mpage.h>
+>  #include <linux/rmap.h>
+> @@ -1247,6 +1248,7 @@ int __set_page_dirty_nobuffers(struct pa
+>  			BUG_ON(mapping2 != mapping);
+>  			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+>  			account_page_dirtied(page, mapping);
+> +			blkio_cgroup_reset_owner_pagedirty(page, current->mm);
+>  			radix_tree_tag_set(&mapping->page_tree,
+>  				page_index(page), PAGECACHE_TAG_DIRTY);
+>  		}
+> Index: linux-2.6.31-rc3/mm/swap_state.c
+> ===================================================================
+> --- linux-2.6.31-rc3.orig/mm/swap_state.c
+> +++ linux-2.6.31-rc3/mm/swap_state.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/pagevec.h>
+>  #include <linux/migrate.h>
+>  #include <linux/page_cgroup.h>
+> +#include <linux/biotrack.h>
+>  
+>  #include <asm/pgtable.h>
+>  
+> @@ -307,6 +308,7 @@ struct page *read_swap_cache_async(swp_e
+>  		 */
+>  		__set_page_locked(new_page);
+>  		SetPageSwapBacked(new_page);
+> +		blkio_cgroup_set_owner(new_page, current->mm);
+>  		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+>  		if (likely(!err)) {
+>  			/*
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
