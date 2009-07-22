@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbZGVU6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753751AbZGVU7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715AbZGVU6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 16:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbZGVU6d
+	id S1753751AbZGVU7l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 16:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZGVU7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 16:58:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59226 "EHLO
+	Wed, 22 Jul 2009 16:59:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59931 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753464AbZGVU6c (ORCPT
+	by vger.kernel.org with ESMTP id S1752278AbZGVU7k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 16:58:32 -0400
-Date: Wed, 22 Jul 2009 13:57:57 -0700
+	Wed, 22 Jul 2009 16:59:40 -0400
+Date: Wed, 22 Jul 2009 13:58:58 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Martin Samuelsson <sam.linux.kernel@gmail.com>
-Cc: rbultje@ronald.bitfreak.net, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
+To: sam.linux.kernel@gmail.com, rbultje@ronald.bitfreak.net,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org
 Subject: Re: [patch] drivers/media/video/zoran_card.c: en/decoder loading
-Message-Id: <20090722135757.1653962f.akpm@linux-foundation.org>
-In-Reply-To: <20080127190129.6a1554ef.sam.linux.kernel@gmail.com>
+Message-Id: <20090722135858.f2d0fe16.akpm@linux-foundation.org>
+In-Reply-To: <20090722135757.1653962f.akpm@linux-foundation.org>
 References: <20080127190129.6a1554ef.sam.linux.kernel@gmail.com>
+	<20090722135757.1653962f.akpm@linux-foundation.org>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,34 +27,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-media)
+On Wed, 22 Jul 2009 13:57:57 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Sun, 27 Jan 2008 19:01:29 +0100
-Martin Samuelsson <sam.linux.kernel@gmail.com> wrote:
-
-> This enables the avs6eyes to load the bt866 and ks0127 drivers automatically.
+> (cc linux-media)
 > 
-> Signed-off-by: Martin Samuelsson <sam.linux.kernel@gmail.com>
-> ---
->  zoran_card.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> --- linux-2.6.24-ori/drivers/media/video/zoran_card.c	2008-01-24 23:58:37.000000000 +0100
-> +++ linux-2.6.24-sam/drivers/media/video/zoran_card.c	2008-01-27 17:16:51.000000000 +0100
-> @@ -366,6 +366,12 @@ i2cid_to_modulename (u16 i2c_id)
->  	case I2C_DRIVERID_MSE3000:
->  		name = "mse3000";
->  		break;*/
-> +	case I2C_DRIVERID_BT866:
-> +		name = "bt866";
-> +		break;
-> +	case I2C_DRIVERID_KS0127:
-> +		name = "ks0127";
-> +		break;
->  	default:
->  		break;
->  	}
+> On Sun, 27 Jan 2008 19:01:29 +0100
 
-The Zoran driver has changed a lot since 2.6.24 and I can't find
-anywhere where a patch like this might be applied.
+oops
 
-Please check a current kernel and update the patch if it is still needed?
+> Martin Samuelsson <sam.linux.kernel@gmail.com> wrote:
+> 
+> > This enables the avs6eyes to load the bt866 and ks0127 drivers automatically.
+> > 
+> > Signed-off-by: Martin Samuelsson <sam.linux.kernel@gmail.com>
+> > ---
+> >  zoran_card.c |    6 ++++++
+> >  1 file changed, 6 insertions(+)
+> > --- linux-2.6.24-ori/drivers/media/video/zoran_card.c	2008-01-24 23:58:37.000000000 +0100
+> > +++ linux-2.6.24-sam/drivers/media/video/zoran_card.c	2008-01-27 17:16:51.000000000 +0100
+> > @@ -366,6 +366,12 @@ i2cid_to_modulename (u16 i2c_id)
+> >  	case I2C_DRIVERID_MSE3000:
+> >  		name = "mse3000";
+> >  		break;*/
+> > +	case I2C_DRIVERID_BT866:
+> > +		name = "bt866";
+> > +		break;
+> > +	case I2C_DRIVERID_KS0127:
+> > +		name = "ks0127";
+> > +		break;
+> >  	default:
+> >  		break;
+> >  	}
+> 
+> The Zoran driver has changed a lot since 2.6.24 and I can't find
+> anywhere where a patch like this might be applied.
+> 
+> Please check a current kernel and update the patch if it is still needed?
+
+sorry, operator error.
