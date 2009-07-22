@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbZGVWT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZGVWek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbZGVWT7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 18:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZGVWT7
+	id S1755195AbZGVWek (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 18:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZGVWek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 18:19:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38237 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753338AbZGVWT6 (ORCPT
+	Wed, 22 Jul 2009 18:34:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34760 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754672AbZGVWej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 18:19:58 -0400
-Date: Wed, 22 Jul 2009 15:17:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pierre Ossman <pierre@ossman.eu>
-Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org, nico@cam.org,
-       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
-       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
-       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
-       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
-       ian@mnementh.co.uk, HaraldWelte@viatech.com, JosephChan@via.com.tw,
-       adrian.hunter@nokia.com
-Subject: Re: New MMC maintainer needed
-Message-Id: <20090722151744.fffd7bf5.akpm@linux-foundation.org>
-In-Reply-To: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 22 Jul 2009 18:34:39 -0400
+Date: Wed, 22 Jul 2009 23:35:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Daniel Mack <daniel@caiaq.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] [usb-serial] fix Ooops on uplug
+Message-ID: <20090722233544.34b91378@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.44L0.0907221352340.3918-100000@iolanthe.rowland.org>
+References: <20090722171707.5fa39803@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.44L0.0907221352340.3918-100000@iolanthe.rowland.org>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,63 +29,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Jul 2009 15:36:01 +0200
-Pierre Ossman <pierre@ossman.eu> wrote:
+> Hmmm.  serial_open() doesn't call tty_port_block_til_ready() until just 
+> before it returns.  Shouldn't it do this before locking port->mutex and 
+> incrementing port->port.count?
 
-> I'm afraid the time has come for me to step down as maintainer for the
-> MMC/SD/SDIO subsystem and for someone else to take over the rudder. It
-> is no secret that I haven't been able to give the maintainer role the
-> resources it required, and as a result it has gone from being a fun
-> hobby to a burdensome chore. I was hoping it was a temporary slump, but
-> this has been the norm for over a year now, so it's time for me to
-> throw in the towel.
+There shouldn't be a serial_open or serial_close as such IMHO, but I can't
+simply rewrite everything in one go. Instead commonality is getting
+extracted piece by piece.
+
+> In fact, should usb-serial.c be touching port->port.count at all?  Is 
+> it reserved for use by the tty core?
+
+Ultimately I am pretty sure that for open and close usb serial should in
+fact have to provide
+
+	-	power management hooks
+	-	hardware init/shutdown hooks
+	-	modem control
+	-	modem status
+
+and nothing else. The same model will fit all the other drivers but they
+all currently contain different code for this and do stuff differently.
+Power to some means PCI D3 to USB means the usb autopm etc.
+Hibernate/Resume has to fit there somewhere and I'll freely admit I've
+not quite figured out how that should go together with this model.
+
+So far I've extract the modem hooks needed for open/close (DTR control,
+CD state, wakeups) and some of the code duplicated everywhere in
+open/close/hangup (and which in USB serial were basically a work of
+fiction with no resemblance to the standard). The open is only half done
+so far (hence the wait_until helper) and the close path is not all there
+- hence close_start/close_end.
+
+At the moment I have two main goals
+
+- Get to the point where every serial port in the system contains a tty
+  port
+- Remove the 10 million alternative mis-implementations of half the tty
+  code found in each driver or in "glue" that does what the tty layer
+  should be doing (half of usb-serial, most of the uart layer)
+
+All without being able to just break it for six months and drop support
+for most of the hardware.
+
+> > > There's an obvious race here between hangup and close.  The assignment 
+> > > of hung_up_tty_fops to filp->f_op is protected by the BKL and not much 
+> > > else.  Does the code in tty_release_dev() check to see whether this 
+> > > assignment has been made before calling tty->ops->close()?  It doesn't 
+> > > like like it to me.  With the wrong timing, you could end up telling 
+> > > the device driver to stop the uart twice.
+> > 
+> > The core hangup and close code are interlocked (now - didn't use to be).
 > 
-> I don't have any clear nominees for a replacement, but if you feel that
-> you are in a position to take over the maintainer role then please
-> raise your hand.
-> 
-> I only have a few patches in my queue right now and I can push those
-> off to Linus before I quit. There are however a lot of unhandled
-> messages that need attention. I can provide a list once a successor has
-> been named.
-> 
-> I realise that you have put a lot of time and effort into the patches
-> you send me and I am truly sorry that I haven't been able to handle
-> them better. Hopefully me stepping down means that we get someone who
-> can actually take care of everything in a timely manner.
-> 
-> I haven't decided what to do with the sdhci maintainership yet. Right
-> now I only know I need a break and freeing myself from the MMC
-> maintainer role is the first step. Hopefully I can return as a
-> developer in the future.
-> 
+> But are they interlocked enough?
 
-Thanks, Pierre.
+I think so at this point. I may be wrong. I was wrong about it earlier
+this -rc series ;)
 
-Until and unless someone else steps up I can act as maintainer of last
-resort for MMC.  As I'm presently doing for fbdev, hwmon, rtc, spi,
-gpio, i2o and about 1000 other identifiable subsystems.
+> Why doesn't tty_release_dev() test tty_hung_up_p() before calling
+> tty->ops->close() instead of making the driver do it?
 
-Fortunately, MMC doesn't appear to have its own mailing list so I'll
-actually get to see the patches.  I do monitor a couple of
-subsystem-specific lists (fbdev, hwmon) but the delays can be awful - a
-month or two.
+Ask Ted, see if he can remember why he did it that way 15 years ago on a
+non SMP non lock using (except for kernel mode non-pre-emption) kernel.
+Basically the tty layer was designed for a different world and then
+patched up badly. The original design was wrong in several areas and the
+result is a can of worms that eventually had to be opened.
 
-
-When it comes to subsystems about which I have little knowledge I tend
-to work as follows:
-
-- scan the patch to see if anything stands out to my inexperienced eye
-
-- if possible, comment on it to make a bit of noise and to let the
-  submitter and others know that a) someone has looked at it and b)
-  there's a chance that it'll be merged.
-
-- try to identify some people who might have an interest in the patch
-  and/or who might have related experience which would help them review
-  this one effectively.
-
-So if someone finds themselves cc'ed on an MMC email from myself,
-please do take a bit of time to pass an eye across it, and let us know
-that you have done so - it really helps.
-
+Alan
