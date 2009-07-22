@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbZGVPPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752620AbZGVPQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752486AbZGVPPW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 11:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZGVPPW
+	id S1752620AbZGVPQK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 11:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZGVPQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 11:15:22 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38132 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbZGVPPV (ORCPT
+	Wed, 22 Jul 2009 11:16:09 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42117 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601AbZGVPQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 11:15:21 -0400
-Date: Wed, 22 Jul 2009 17:15:21 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org, rpurdie@rpsys.net
-Subject: Re: GFS2: Add LED support to GFS2
-Message-ID: <20090722151521.GB6035@basil.fritz.box>
-References: <1248260198.3456.4.camel@localhost.localdomain> <87k5203hdx.fsf@basil.nowhere.org> <1248274288.3298.5.camel@localhost.localdomain> <20090722145534.GA6035@basil.fritz.box> <1248274951.3298.11.camel@localhost.localdomain>
+	Wed, 22 Jul 2009 11:16:08 -0400
+Date: Wed, 22 Jul 2009 11:16:06 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/events: Add module tracepoints
+In-Reply-To: <4A66C468.5070100@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0907221115020.1059@gandalf.stny.rr.com>
+References: <4A6582C1.2040609@cn.fujitsu.com> <200907221352.17850.rusty@rustcorp.com.au> <4A66C468.5070100@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248274951.3298.11.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I did consider adding a feature to filter events on a per superblock
-> basis, but I decided against it in the end, as it seemed to be making
-> things too complicated (how should we specify the superblock? what
-> should the user interface be?).
 
-Maybe key on mount points? (so passing vfsmnts) 
+On Wed, 22 Jul 2009, Li Zefan wrote:
 
-So have some sysfs file where you echo mount points into to enable
-LED activity.
+> Rusty Russell wrote:
+> > On Tue, 21 Jul 2009 06:26:33 pm Li Zefan wrote:
+> >> Add trace points to trace module_load, module_free, module_get,
+> >> module_put and module_request, and use trace_event facility
+> >> to get the trace output.
+> > 
+> > Hi Li Zefan,
+> > 
+> >    I don't know anything about tracing, but the module code changes look
+> > simple and fine to me.
+> > 
+> 
+> I guess I can take this as an ack. :)
 
-Ok that would be a little clumpsy for a "10 million bind mounts" case,
-but presumably that's very rare and they can still make it work.
+I'll take it as an ack too ;-)
 
--Andi
+> 
+> Tracing is used to have a deep insight into the system, analyse
+> performance issue, help debugging, dump info at system panic,
+> etc..
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Looks good. I'm currently doing some maintenance on my systems, but once 
+that is done, I'll go ahead and queue up your patches.
+
+Thanks,
+
+-- Steve
+
