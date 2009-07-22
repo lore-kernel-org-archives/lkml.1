@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbZGVQ7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZGVRAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752414AbZGVQ7i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 12:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZGVQ7i
+	id S1753839AbZGVRAE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZGVRAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 12:59:38 -0400
-Received: from claw.goop.org ([74.207.240.146]:37298 "EHLO claw.goop.org"
+	Wed, 22 Jul 2009 13:00:03 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:51896 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbZGVQ7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 12:59:37 -0400
-Message-ID: <4A674577.4020206@goop.org>
-Date: Wed, 22 Jul 2009 09:59:35 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Bastian Blank <bastian@waldi.eu.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
-Subject: [PATCH] x86/amd: don't probe for extended APIC ID if APICs are disabled
-References: <20090604104016.GT5736@alberich.amd.com> <20090721103642.GA10071@wavehammer.waldi.eu.org> <4A65F34D.40506@goop.org> <20090722095436.GA9000@wavehammer.waldi.eu.org> <alpine.LFD.2.00.0907221628110.2813@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0907221628110.2813@localhost.localdomain>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751923AbZGVRAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 13:00:00 -0400
+Date: Wed, 22 Jul 2009 09:59:53 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: netdev@vger.kernel.org, pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Michael Guntsche <mike@it-loops.com>
+Subject: Re: [PATCH] NET / skge: Enable WoL by default if supported
+Message-ID: <20090722095953.0806bea2@nehalam>
+In-Reply-To: <200907221458.55616.rjw@sisk.pl>
+References: <200907221458.55616.rjw@sisk.pl>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we've logically disabled apics, don't probe the PCI space for the
-AMD extended APIC ID.
+On Wed, 22 Jul 2009 14:58:55 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-[ Impact: prevent boot crash under Xen. ]
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> If skge hardware is capable of waking up the system from sleep,
+> enable magic packet WoL during driver initialisation.
+> 
+> This makes WoL work without calling 'ethtool -s ethX wol g'
+> for each adapter.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Tested-by: Michael Guntsche <mike@it-loops.com>
+> ---
+>  drivers/net/skge.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/net/skge.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/skge.c
+> +++ linux-2.6/drivers/net/skge.c
+> @@ -3856,8 +3856,10 @@ static struct net_device *skge_devinit(s
+>  	skge->speed = -1;
+>  	skge->advertising = skge_supported_modes(hw);
+>  
+> -	if (device_may_wakeup(&hw->pdev->dev))
+> +	if (device_can_wakeup(&hw->pdev->dev)) {
+>  		skge->wol = wol_supported(hw) & WAKE_MAGIC;
+> +		device_set_wakeup_enable(&hw->pdev->dev, skge->wol);
+> +	}
+>  
+>  	hw->dev[port] = dev;
+>  
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Reported-by: Bastian Blank <bastian@waldi.eu.org>
-
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 28e5f59..e2485b0 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -356,7 +356,7 @@ static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
- #endif
- #if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_PCI)
- 	/* check CPU config space for extended APIC ID */
--	if (c->x86 >= 0xf) {
-+	if (cpu_has_apic && c->x86 >= 0xf) {
- 		unsigned int val;
- 		val = read_pci_config(0, 24, 0, 0x68);
- 		if ((val & ((1 << 17) | (1 << 18))) == ((1 << 17) | (1 << 18)))
-
-
+Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+-- 
