@@ -1,69 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbZGVD0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbZGVDhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbZGVD0e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 23:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbZGVD0e
+	id S1756499AbZGVDhi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 23:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbZGVDhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 23:26:34 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57321 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbZGVD0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 23:26:33 -0400
-Message-ID: <4A66868F.4010001@cn.fujitsu.com>
-Date: Wed, 22 Jul 2009 11:25:03 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 21 Jul 2009 23:37:38 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43923 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755875AbZGVDhh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 23:37:37 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4A668964.5040800@jp.fujitsu.com>
+Date: Wed, 22 Jul 2009 12:37:08 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       bblum@google.com, linux-kernel@vger.kernel.org, menage@google.com,
-       vda.linux@googlemail.com, mikew@google.com
-Subject: Re: [RFCv2][PATCH] flexible array implementation
-References: <20090721220017.60A219D3@kernel>
-In-Reply-To: <20090721220017.60A219D3@kernel>
-Content-Type: text/plain; charset=UTF-8
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+CC: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, ak@linux.intel.com,
+       linux-kernel@vger.kernel.org,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       Taketoshi Sakuraba <taketoshi.sakuraba.hc@hitachi.com>
+Subject: Re: [PATCH] x86, mce: Rename incorrect macro name "CONFIG_X86_THRESHOLD"
+References: <4A667FD4.3010509@hitachi.com>
+In-Reply-To: <4A667FD4.3010509@hitachi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/**
-> + * flex_array_put - copy data into the array at @element_nr
-> + * @src:	address of data to copy into the array
-> + * @element_nr:	index of the position in which to insert
-> + * 		the new element.
+Hidehiro Kawai wrote:
+> CONFIG_X86_THRESHOLD used in arch/x86/kernel/irqinit.c is always
+> undefined.  Rename it to the correct name "CONFIG_X86_MCE_THRESHOLD".
+> 
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> ---
+>  arch/x86/kernel/irqinit.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/irqinit.c b/arch/x86/kernel/irqinit.c
+> index 8a194ad..ccf8ab5 100644
+> --- a/arch/x86/kernel/irqinit.c
+> +++ b/arch/x86/kernel/irqinit.c
+> @@ -187,7 +187,7 @@ static void __init apic_intr_init(void)
+>  #ifdef CONFIG_X86_THERMAL_VECTOR
+>  	alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
+>  #endif
+> -#ifdef CONFIG_X86_THRESHOLD
+> +#ifdef CONFIG_X86_MCE_THRESHOLD
+>  	alloc_intr_gate(THRESHOLD_APIC_VECTOR, threshold_interrupt);
+>  #endif
+>  #if defined(CONFIG_X86_MCE) && defined(CONFIG_X86_LOCAL_APIC)
 
-@fa and @flags are not documented.
 
-> + *
-> + * Note that this *copies* the contents of @src into
-> + * the array.  If you are trying to store an array of
-> + * pointers, make sure to pass in &ptr instead of ptr.
-> + *
-> + * Locking must be provided by the caller.
-> + */
-> +int flex_array_put(struct flex_array *fa, int element_nr, void *src, gfp_t flags)
-> +{
-> +	int part_nr = fa_element_to_part_nr(fa, element_nr);
-> +	struct flex_array_part *part;
-> +	void *dst;
-> +
-> +	part = __fa_get_part(fa, part_nr, flags);
-> +	if (!part)
-> +		return -ENOMEM;
+It seems that this ifdef was introduced by the following merge commit:
 
-So this may allocate memory, and has disavantages:
+> commit 940010c5a314a7bd9b498593bc6ba1718ac5aec5
+> Merge: 8dc8e5e... 991ec02...
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Thu Jun 11 17:55:42 2009 +0200
+> 
+>     Merge branch 'linus' into perfcounters/core
+> 
+>     Conflicts:
+>         arch/x86/kernel/irqinit.c
+>         arch/x86/kernel/irqinit_64.c
+>         arch/x86/kernel/traps.c
+>         arch/x86/mm/fault.c
+>         include/linux/sched.h
+>         kernel/exit.c
 
-- If flex_array_put() is called in atomic context, flags has to be GFP_ATOMIC.
-- and thus it may fail.
+Thank you for finding it!
 
-Since we pass the total_elem to flex_array_alloc(), how about add a flag,
-and if the flag is set, the alloc() will also allocate all fa_parts?
+Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 
-And add __flex_array_put(), which assumes fa_parts has been allocated.
 
-> +	dst = &part->elements[offset_inside_part(fa, element_nr)];
-> +	memcpy(dst, src, fa->element_size);
-> +	return 0;
-> +}
-> +
+Thanks,
+H.Seto
+
