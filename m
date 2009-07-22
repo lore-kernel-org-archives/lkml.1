@@ -1,53 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbZGVUcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751929AbZGVUds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753464AbZGVUcJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 16:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbZGVUcJ
+	id S1751929AbZGVUds (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 16:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZGVUds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 16:32:09 -0400
-Received: from mail.windriver.com ([147.11.1.11]:50100 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753323AbZGVUcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 16:32:07 -0400
-Message-ID: <4A677722.2010203@windriver.com>
-Date: Wed, 22 Jul 2009 15:31:30 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Wed, 22 Jul 2009 16:33:48 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:54675 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751034AbZGVUdr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 16:33:47 -0400
+Date: Wed, 22 Jul 2009 22:33:45 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux arch <linux-arch@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH/RFC] Move generated files to include/generated
+Message-ID: <20090722203345.GA8643@merkur.ravnborg.org>
+References: <20090721211040.GA7688@merkur.ravnborg.org> <20090722095818.GH6281@cr0.nay.redhat.com> <200907221550.15280.arnd@arndb.de>
 MIME-Version: 1.0
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       ralf@linux-mips.org, Wu Zhangjin <wuzj@lemote.com>,
-       Yan Hua <yanh@lemote.com>, Philippe Vachon <philippe@cowpig.ca>,
-       Zhang Le <r0bertz@gentoo.org>, Zhang Fuxin <zhangfx@lemote.com>,
-       loongson-dev <loongson-dev@googlegroups.com>,
-       Liu Junliang <liujl@lemote.com>, Erwan Lerale <erwan@thiscow.com>,
-       Arnaud Patard <apatard@mandriva.com>
-Subject: Re: [PATCH v4 02/16] [loongson] kgdb: Remove out-of-date board-specific
- source code
-References: <cover.1246546684.git.wuzhangjin@gmail.com> <0e211b21ed263c482b3717e8feb9bd84e1a11839.1246546684.git.wuzhangjin@gmail.com>
-In-Reply-To: <0e211b21ed263c482b3717e8feb9bd84e1a11839.1246546684.git.wuzhangjin@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jul 2009 20:31:26.0931 (UTC) FILETIME=[6323B230:01CA0B0B]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907221550.15280.arnd@arndb.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Zhangjin wrote:
-> From: Wu Zhangjin <wuzj@lemote.com>
->
-> as the commit: 8854700115ecf8aa6f087aa915b7b6cf18090d39 shows, the new
-> mips-specific kgdb implementation not need this board-specific source
-> code, just remove it.
->
-> Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
->   
+On Wed, Jul 22, 2009 at 03:50:15PM +0200, Arnd Bergmann wrote:
+> On Wednesday 22 July 2009, Amerigo Wang wrote:
+> > On Tue, Jul 21, 2009 at 11:10:40PM +0200, Sam Ravnborg wrote:
+> > >In 2.6.30 we introduced support for adding generated
+> > >files to a dedicated directory named "include/generated".
+> >
+> > Personally, I don't like this, I hate to see
+> > #include <generated/foo.h>
+> 
+> I think that moving the generated files to a common location
+> makes a lot of sense, but it seems easier to move them
+> to include/generated/linux/ or even to (generated/linux/) and
+> then add -Iinclude/generated/ to the gcc command line so
+> you don't need to actually change all the users.
 
-That should be the last of the dbg_io.c files.
+To put some numbers on this..
+utsrelease.h - incuded in 19 files
+autoconf.h - included in 0 files
+bounds.h - included in 2 files
+compile.h - included in 1 file
+asm-offsets.h - included in 240 files
+version.h - included in 184 files
 
-Looks good to me.
+So the only relevant files to discuss here is asm-offsets.h
+and version.h.
 
-Acked-by: Jason Wessel <jason.wessel@windriver.com>
+We cannot break "#include <linux/version.h>" because
+that would break each and every external module.
 
-Thanks,
-Jason.
+The solution to this is a simple file:
+cat include/linux/version.h
+#include <generated.version.h>
+
+
+For asm-offsets.h the patch-set create an architecture
+specific asm-offsets.h that include the generated version.
+But I would prefer to see this redone so they include
+the generated version directly.
+This would also document that asm-offsets.h is a generated file.
+
+The amount of includes pr arch is listed below - not a huge deal to fix up.
+
+alpha      5
+arm        30
+avr32      3
+blackfin   9
+cris       3
+frv        5
+h8300      2
+ia64       15
+m32r       0
+m68k       6
+m68knommu  5
+microblaze 5
+mips       25
+mn10300    6
+parisc     14
+powerpc    43
+s390       13
+sh         8
+sparc      6
+um         2
+x86        24
+xtensa     8
+
+
+	Sam
