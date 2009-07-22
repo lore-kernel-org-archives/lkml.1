@@ -1,86 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbZGVCAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbZGVCCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755049AbZGVCAH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 22:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZGVCAE
+	id S1754709AbZGVCCK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 22:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZGVCCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 22:00:04 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59646 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754709AbZGVCAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 22:00:03 -0400
-Date: Wed, 22 Jul 2009 12:00:00 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Christian Lamparter <chunkeey@web.de>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: linux-next: manual merge of the net tree with the wireless-current
- tree
-Message-Id: <20090722120000.4b0f2901.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Jul 2009 22:02:10 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40107 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752034AbZGVCCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 22:02:09 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4A6672F9.3050800@jp.fujitsu.com>
+Date: Wed, 22 Jul 2009 11:01:29 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Neil Horman <nhorman@tuxdriver.com>
+CC: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, Brayan Arraes <brayan@yack.com.br>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Subject: Re: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c
+ handler"
+References: <4A64672E.8020005@cn.fujitsu.com> <4A6564F2.10404@jp.fujitsu.com> <20090721110857.GA21612@hmsreliant.think-freely.org>
+In-Reply-To: <20090721110857.GA21612@hmsreliant.think-freely.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Neil Horman wrote:
+> None of this answers Erics question, what is it that you could do before, that
+> you couldn't do now?
 
-Today's linux-next merge of the net tree got a conflict in
-net/wireless/scan.c between commit
-9e81eccf199d910e5ea8db377a43478e4eccd033 ("cfg80211: double free in
-__cfg80211_scan_done") from the wireless-current tree and commit
-667503ddcb96f3b10211f997fe55907fa7509841 ("cfg80211: fix locking") from
-the net tree.
+One is, as Ohmichi-san pointed, triggering kdump via echo c > /proc/sysrq-trigger.
 
-Overlapping additions.  I fixed it up (I think - see below) and can carry
-the fix as ncessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+In contrast to oops via SysRq-c from keyboard interrupt which results in
+panic due to in_interrupt(), oops via echo-c will not become panic unless
+panic_on_oops.
 
-diff --cc net/wireless/scan.c
-index 9271118,4f552c3..0000000
---- a/net/wireless/scan.c
-+++ b/net/wireless/scan.c
-@@@ -35,8 -48,10 +48,8 @@@ void __cfg80211_scan_done(struct work_s
-  	else
-  		nl80211_send_scan_done(wiphy_to_dev(request->wiphy), dev);
-  
- -	wiphy_to_dev(request->wiphy)->scan_req = NULL;
- -
-  #ifdef CONFIG_WIRELESS_EXT
-- 	if (!aborted) {
-+ 	if (!request->aborted) {
-  		memset(&wrqu, 0, sizeof(wrqu));
-  
-  		wireless_send_event(dev, SIOCGIWSCAN, &wrqu, NULL);
-@@@ -46,9 -61,24 +59,25 @@@
-  	dev_put(dev);
-  
-   out:
- +	wiphy_to_dev(request->wiphy)->scan_req = NULL;
-+ 	cfg80211_unlock_rdev(rdev);
-  	kfree(request);
-  }
-+ 
-+ void cfg80211_scan_done(struct cfg80211_scan_request *request, bool aborted)
-+ {
-+ 	struct net_device *dev = dev_get_by_index(&init_net, request->ifidx);
-+ 	if (WARN_ON(!dev)) {
-+ 		kfree(request);
-+ 		return;
-+ 	}
-+ 
-+ 	WARN_ON(request != wiphy_to_dev(request->wiphy)->scan_req);
-+ 
-+ 	request->aborted = aborted;
-+ 	schedule_work(&wiphy_to_dev(request->wiphy)->scan_done_wk);
-+ 	dev_put(dev);
-+ }
-  EXPORT_SYMBOL(cfg80211_scan_done);
-  
-  static void bss_release(struct kref *ref)
+So in other words, we could expect same effect in both of echo-c and SysRq-c
+before, but now we cannot because it depends on the panic_on_oops.
+Isn't it a regression?
+
+Whether kdump should be executed on oops (which is not panic) or not is a
+separate thing.
+
+> There are reasons to want to have a convenient way to
+> crash the kernel, other than to test kdump (several distributions have augmented
+> sysrq-c to do this for some time to test other previous dump mechanisms and
+> features), so while its not been upstream, saying that its well known to test
+> kdump without causing an oops is a bit of a misleading statement.
+
+Let make me sure the difference between 'crash', 'oops', and 'panic'.
+At least 'oops' is not panic, as is obvious from the name of panic_on_oops.
+And it seems you are using 'crash' and 'oops' in mixture.
+
+If you mean 'crash' as 'panic', my complaint is echo-c does not panic while
+SysRq-c does panic.  So if possible I'd like to suggest a change like:
+
+ static void sysrq_handle_crash(int key, struct tty_struct *tty)
+ {
+-	char *killer = NULL;
+-	*killer = 1;
++	panic("SysRq-triggered panic!\n");
+ }
+
+I agree that causing a real crash(panic) is better way to test crashdump than
+calling the entry function of the crashdump directly, and also that opening
+the path for other dump mechanisms is welcomed.
+ 
+> It seems to
+> me that right now your major complaint is that the documentation is out of date,
+> and you're having to do things slightly differently to get the same behavioral
+> results.  Would it solve your issue, if we simply updated the documentation to
+> illustrate how it works now?
+
+Of course the documentation should be updated asap.
+But I think the major complaint is about a difference in the behaviors of SysRq-c
+and "echo c > /proc/sysrq-trigger".
+
+
+Thanks,
+H.Seto
+
