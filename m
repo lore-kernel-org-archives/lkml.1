@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbZGVNzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbZGVOBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755656AbZGVNzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbZGVNze
+	id S1755278AbZGVOBY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 10:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733AbZGVOBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:55:34 -0400
-Received: from tundra.namei.org ([65.99.196.166]:53498 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754592AbZGVNze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:55:34 -0400
-Date: Wed, 22 Jul 2009 23:53:44 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Eric Paris <eparis@redhat.com>
-cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
-       spender@grsecurity.net, dwalsh@redhat.com, cl@linux-foundation.org,
-       arjan@infradead.org, alan@lxorguk.ukuu.org.uk, kyle@mcmartin.ca,
-       cpardy@redhat.com, arnd@arndb.de
-Subject: Re: [PATCH -v2 1/2] VM/SELinux: require CAP_SYS_RAWIO for all
- mmap_zero operations
-In-Reply-To: <20090721230339.20180.99803.stgit@paris.rdu.redhat.com>
-Message-ID: <alpine.LRH.2.00.0907222345530.17486@tundra.namei.org>
-References: <20090721230339.20180.99803.stgit@paris.rdu.redhat.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 22 Jul 2009 10:01:23 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:42580 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753957AbZGVOBX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 10:01:23 -0400
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: linux@arm.linux.org.uk, hpa@zytor.com
+Cc: alain@knaff.lu, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Subject: [PATCH 1/5] lib/decompress_*: only include <linux/slab.h> if STATIC is not defined
+Date: Wed, 22 Jul 2009 16:01:15 +0200
+Message-Id: <1248271279-9920-1-git-send-email-albin.tonnerre@free-electrons.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009, Eric Paris wrote:
+These includes were added by 079effb6933f34b9b1b67b08bd4fd7fb672d16ef to
+fix the build when using kmemtrace. However this is not necessary when
+used to create a compressed kernel, and actually creates issues (brings
+a lot of things unavailable in the decompression environment), so don't
+include it if STATIC is defined.
 
->  	error = security_file_mmap(file, reqprot, prot, flags, addr, 0);
->  	if (error)
->  		return error;
-> +
-> +	if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
-> +		return -EACCES;
-> +
+Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+---
+ lib/decompress_bunzip2.c |    2 +-
+ lib/decompress_inflate.c |    2 +-
+ lib/decompress_unlzma.c  |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-These DAC checks should happen before the LSM hook, in keeping with the 
-general design goal of LSM of "DAC before MAC", so that application 
-behavior remains as consistent as possible.
-
-
-- James
+diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
+index 708e2a8..14b0c7d 100644
+--- a/lib/decompress_bunzip2.c
++++ b/lib/decompress_bunzip2.c
+@@ -47,10 +47,10 @@
+ 
+ #ifndef STATIC
+ #include <linux/decompress/bunzip2.h>
++#include <linux/slab.h>
+ #endif /* !STATIC */
+ 
+ #include <linux/decompress/mm.h>
+-#include <linux/slab.h>
+ 
+ #ifndef INT_MAX
+ #define INT_MAX 0x7fffffff
+diff --git a/lib/decompress_inflate.c b/lib/decompress_inflate.c
+index e36b296..fc30d50 100644
+--- a/lib/decompress_inflate.c
++++ b/lib/decompress_inflate.c
+@@ -19,11 +19,11 @@
+ #include "zlib_inflate/inflate.h"
+ 
+ #include "zlib_inflate/infutil.h"
++#include <linux/slab.h>
+ 
+ #endif /* STATIC */
+ 
+ #include <linux/decompress/mm.h>
+-#include <linux/slab.h>
+ 
+ #define INBUF_LEN (16*1024)
+ 
+diff --git a/lib/decompress_unlzma.c b/lib/decompress_unlzma.c
+index 32123a1..f078c88 100644
+--- a/lib/decompress_unlzma.c
++++ b/lib/decompress_unlzma.c
+@@ -31,10 +31,10 @@
+ 
+ #ifndef STATIC
+ #include <linux/decompress/unlzma.h>
++#include <linux/slab.h>
+ #endif /* STATIC */
+ 
+ #include <linux/decompress/mm.h>
+-#include <linux/slab.h>
+ 
+ #define	MIN(a, b) (((a) < (b)) ? (a) : (b))
+ 
 -- 
-James Morris
-<jmorris@namei.org>
+1.6.0.4
+
