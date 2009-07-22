@@ -1,109 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbZGVRL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZGVRM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbZGVRL4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 13:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbZGVRL4
+	id S1753943AbZGVRM5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbZGVRM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 13:11:56 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:57535 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753484AbZGVRLz (ORCPT
+	Wed, 22 Jul 2009 13:12:56 -0400
+Received: from outbound-mail-131.bluehost.com ([67.222.39.21]:56099 "HELO
+	outbound-mail-131.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752969AbZGVRMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 13:11:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
-         :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=sKrJ0B3dTOLysiLnsGffsFIiQe9cl5SW3s4LGhmBO36yVE4eg0R8PsrcqJyxXjfdUu
-         URMtgPRYaaeFaDDuB9ZgMW+CmrL9Lp1p+ajSLcq82qy88JH4bc2i/3aJgQ/+tVymNScP
-         GCplg6Uws8xw7VEQheUZRyb1GgjLBr5YAqbLM=
-Date: Wed, 22 Jul 2009 20:11:48 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Christoph Hellwig <hch@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Do cpu-endian MMIO accessors exist?
-Message-ID: <20090722201148.19f47119@daedalus.pq.iki.fi>
-In-Reply-To: <200907220001.59388.arnd@arndb.de>
-References: <20090721234243.1928d9e2@daedalus.pq.iki.fi>
-	<200907212315.50225.arnd@arndb.de>
-	<20090721213333.GA27202@infradead.org>
-	<200907220001.59388.arnd@arndb.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
+	Wed, 22 Jul 2009 13:12:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:X-Identified-User;
+	b=hS1ok1s9ejGTI+j9I/CN8N4VCsl4yi4y+jjwCYTzEhqV4aKSP6wEIFZLW+r6RS/2R9eRlhx9au7CYQd7ntJlTe9zSpyf3L4xDq94PNpM+2RlZlMf3quJg3QVaOWMLRFv;
+Date: Wed, 22 Jul 2009 10:12:51 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alberto Gonzalez <alberto6674@gmail.com>
+Cc: Alberto Gonzalez <alberto6674@gmail.com>, Michal Soltys <soltys@ziu.info>,
+       Dave Airlie <airlied@linux.ie>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org
+Subject: Re: Kernel 2.6.30 and udevd problem
+Message-ID: <20090722101251.0b6c7300@jbarnes-g45>
+In-Reply-To: <200907221851.20916.info@gnebu.es>
+References: <200906280821.58631.info@gnebu.es>
+	<200907221525.29507.info@gnebu.es>
+	<20090722090834.6ab45aae@jbarnes-g45>
+	<200907221851.20916.info@gnebu.es>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="MP_/AmxVL+Vzeck4LYT3D8=5wUX"
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009 00:01:59 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+--MP_/AmxVL+Vzeck4LYT3D8=5wUX
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On Tuesday 21 July 2009, Christoph Hellwig wrote:
-> > Why would you want to do that?  That just means a useless byteswap.
-> > We really should have a generic native-endian MMIO-access API as there
-> > is quite a bit of hardware with features like that, and currently we
-> > have a miriad of hacks using __raw_* and manual barriers, the ppc
-> > specific accessors and god knows what.
+On Wed, 22 Jul 2009 18:51:20 +0200
+Alberto Gonzalez <alberto6674@gmail.com> wrote:
 
-My motivation is to clean up nouveau code, and I was first thinking the
-same as Christoph.
-
-Arnd is right, there is an easy way to switch the card's endianess,
-in theory. I hear there are few cases where it doesn't work yet.
-
-> The byte swap on powerpc I/O instructions is practically free
-> on all the interesting CPUs, and on the others it is still
-> swamped by the overhead of the synchronization. If you care
-> about the latency of MMIO instructions, going to explicit
-> synchronization would help much more, saving hundreds of
-> cycles per I/O rather than one cycle for a saved byte swap.
-
-I figured something like that while reading the ppc implementation.
-Therefore having the card always LE is not much different from setting
-it to cpu endianness. I'll let the Nouveau developers decide which
-way to do it, and keep it as is for now.
-
-> The powerpc in_le32 style functions are a completely different
-> story, they are basically defined to operate only on on-chip
-> components, while ioread32 and readl do work on PCI devices.
-
-So what should I use on BE arches when the card is in BE mode?
-Not out_be32() but iowrite32be()?
-I never even noticed that io*be() functions exist, thanks for the hint.
-
-On LE arches I'll stick to {read,write}[bwl], which in my
-understanding always handle the hardware as LE. Right?
-
-> No portable code should ever use the __raw_* functions and
-> architecture specific barriers.
-
-Yeah, it felt like that, hence I asked here.
-
-> It would of course be easy to just define an API extension
-> to ioread along the lines of
+> On Wednesday 22 July 2009 18:08:34 Jesse Barnes wrote:
+> > On Wed, 22 Jul 2009 15:25:29 +0200
+> > Alberto Gonzalez <alberto6674@gmail.com> wrote:
+> > > Ok, I caught a complete log from boot to when the problem starts.
+> > > There doesn't seem to be anything significantly different, but
+> > > just in case.
+> >
+> > Oh I guess this is without the debug patch I attached...  this one
+> > should be a bit less noisy but tell me which bit is stuck.
 > 
-> #ifdef __BIG_ENDIAN
-> #define ioread16_native ioread16be
-> #define ioread32_native ioread32be
-> #define iowrite16_native iowrite16be
-> #define iowrite32_native iowrite32be
-> #else
-> #define ioread16_native ioread16
-> #define ioread32_native ioread32
-> #define iowrite16_native iowrite16
-> #define iowrite32_native iowrite32
-> #endif
+> Actually it was with the debug patch found here applied:
 > 
-> but I'm not yet convinced that there is a potential user that
-> should not just be fixed in a different way.
+> http://lkml.org/lkml/2009/7/2/290
+> 
+> Now I captured another one with the latest patch. This time the
+> problem started after opening Amarok.
+> 
 
-This is how it currently is.
+Ah I must have been looking at the wrong register.  This one makes it
+look like one of your HDMI hotplug bits is getting stuck (HDMIC in
+particular).  This might not even be wired up on your platform...
 
-
-Thanks.
+This test hack should prevent us from responding to those interrupts...
 
 -- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+Jesse Barnes, Intel Open Source Technology Center
+
+--MP_/AmxVL+Vzeck4LYT3D8=5wUX
+Content-Type: text/x-patch; name=i915-g4x-hotplug-hack.patch
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=i915-g4x-hotplug-hack.patch
+
+diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
+index f340b3f..ecbf0b2 100644
+--- a/drivers/gpu/drm/i915/i915_irq.c
++++ b/drivers/gpu/drm/i915/i915_irq.c
+@@ -962,7 +962,7 @@ int i915_driver_irq_postinstall(struct drm_device *dev)
+ 		dev_priv->hotplug_supported_mask = CRT_HOTPLUG_INT_STATUS |
+ 			TV_HOTPLUG_INT_STATUS | SDVOC_HOTPLUG_INT_STATUS |
+ 			SDVOB_HOTPLUG_INT_STATUS;
+-		if (IS_G4X(dev)) {
++		if (IS_G4X(dev) && 0) {
+ 			dev_priv->hotplug_supported_mask |=
+ 				HDMIB_HOTPLUG_INT_STATUS |
+ 				HDMIC_HOTPLUG_INT_STATUS |
+
+--MP_/AmxVL+Vzeck4LYT3D8=5wUX--
