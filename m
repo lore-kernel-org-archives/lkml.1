@@ -1,90 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZGVI1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZGVI2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbZGVI1K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 04:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZGVI1J
+	id S1756110AbZGVI2p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 04:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbZGVI2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 04:27:09 -0400
-Received: from relay.gothnet.se ([82.193.160.251]:51449 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753906AbZGVI1G convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 04:27:06 -0400
-Message-ID: <4A66CD54.6070104@shipmail.org>
-Date: Wed, 22 Jul 2009 10:27:00 +0200
-From: =?UTF-8?B?VGhvbWFzIEhlbGxzdHLDtm0=?= <thomas@shipmail.org>
-Organization: VMware
-User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
-MIME-Version: 1.0
-To: Jerome Glisse <glisse@freedesktop.org>
-CC: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: TTM page pool allocator
-References: <1245931298.13359.8.camel@localhost.localdomain>	 <4A439D7D.9030401@shipmail.org> <1248197676.2368.11.camel@localhost>
-In-Reply-To: <1248197676.2368.11.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-X-BitDefender-Scanner: Mail not scanned due to license constraints
-Content-Transfer-Encoding: 8BIT
+	Wed, 22 Jul 2009 04:28:44 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:38001 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754460AbZGVI2n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 04:28:43 -0400
+Date: Wed, 22 Jul 2009 17:28:43 +0900 (JST)
+Message-Id: <20090722.172843.193696974.ryov@valinux.co.jp>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@redhat.com
+Subject: Re: [PATCH 3/9] blkio-cgroup-v9: The new page_cgroup framework
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090722110739.e00c0f18.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090721155636.GB25127@balbir.in.ibm.com>
+	<20090722102058.c1cf731b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090722110739.e00c0f18.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jerome Glisse wrote:
-> On Thu, 2009-06-25 at 17:53 +0200, Thomas Hellström wrote:
->   
->> Jerome Glisse skrev:
->>     
->>> Hi,
->>>
->>> Thomas i attach a reworked page pool allocator based on Dave works,
->>> this one should be ok with ttm cache status tracking. It definitely
->>> helps on AGP system, now the bottleneck is in mesa vertex's dma
->>> allocation.
->>>
->>> Cheers,
->>> Jerome
->>>   
->>>       
->> Hi, Jerome!
->> In general it looks very good. Some things that need fixing:
->>
->> 1)  We must have a way to hand back pages. I still not quite understand 
->> how the shrink callbacks work and whether they are applicable. Another 
->> scheme would be to free, say 1MB when we have at least 2MB available.
->>
->> 2) We should avoid including AGP headers if AGP is not configured. 
->> Either reimplement unmap_page_from_agp or map_page_into_agp or move them 
->> out from the AGP headers. We've hade complaints before from people with 
->> AGP free systems that the code doesn't compile.
->>
->> 3) Since we're allocating (and freeing) in batches we should use the 
->> set_pages_array() interface to avoid a global tlb flush per page.
->>
->> 4) We could now skip the ttm_tt_populate() in ttm_tt_set_caching, since 
->> it will always allocate cached pages and then transition them.
->>
->>     
->
-> Okay 4) is bad, what happens (my brain is a bit meltdown so i might be
-> wrong) :
-> 1 - bo get allocated tt->state = unpopulated
-> 2 - bo is mapped few page are faulted tt->state = unpopulated
-> 3 - bo is cache transitioned but tt->state == unpopulated but
->     they are page which have been touch by the cpu so we need
->     to clflush them and transition them, 
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > Index: linux-2.6.31-rc3/include/linux/page_cgroup.h
+> > > > ===================================================================
+> > > > --- linux-2.6.31-rc3.orig/include/linux/page_cgroup.h
+> > > > +++ linux-2.6.31-rc3/include/linux/page_cgroup.h
+> > > > @@ -1,7 +1,7 @@
+> > > >  #ifndef __LINUX_PAGE_CGROUP_H
+> > > >  #define __LINUX_PAGE_CGROUP_H
+> > > > 
+> > > > -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > > +#ifdef CONFIG_CGROUP_PAGE
+> > > >  #include <linux/bit_spinlock.h>
+> > > >  /*
+> > > >   * Page Cgroup can be considered as an extended mem_map.
+> > > > @@ -12,9 +12,11 @@
+> > > >   */
+> > > >  struct page_cgroup {
+> > > >  	unsigned long flags;
+> > > > -	struct mem_cgroup *mem_cgroup;
+> > > >  	struct page *page;
+> > > > +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > > +	struct mem_cgroup *mem_cgroup;
+> > > >  	struct list_head lru;		/* per cgroup LRU list */
+> > > > +#endif
+> > > >  };
+> > > 
+> > > If CONFIG_CGROUP_MEM_RES_CTLR is not enabled and CGROUP_PAGE is
+> > > (assuming that the depends on below is refactored), what would this
+> > > change buy us? What is page_cgroup helping us track, the mem_cgroup is
+> > > factored out, so we are interested in the flags only?
+> > > 
+> > plz remove CONFIG. This jsut makes code complicated.
+> > or plz use your own infrastructure, not depends on page_cgroup.
 
-Right.
+Thanks for reviewing the patch.
+Do you mean that remove only CONFIG_CGROUP_MEM_RES_CTR in struct
+page_cgroup? Is it OK to define CONFIG_CGROUP_PAGE?
 
-> this never happen if
->     we don't call ttm_tt_populate and proceed with the remaining
->     of the cache transitioning functions
->   
+> BTW, you can't modify page_cgroup->flags bit without cmpxchg.
+> Then, patch [5/9] is completely broken, now because new bit is used
+> with atomic bit ops but without lock_page_cgroup(). (see mmotm)
+> 
+> Why struct page's flags bit can includes zone id etc...is just because
+> it's initalized before using. Anyway, this is "flags" bit. If you want
+> to modify multiple bit at once, plz use cmpxchg.
+> Then, I buy patch [8/9] and just skip this patch.
 
-Why can't we just skip ttm_tt_populate and proceed with the remaining of 
-the cache transitioning functions? Then all pages currently allocated to 
-the TTM will be transitioned.
+O.K. I'll use cmpxchg.
+ 
+> But, following is more straightforward. (and what you do is not different
+> from this.)
+> ==
+> struct page {
+> 	.....
+> #ifdef CONFIG_BLOCKIO_CGROUP
+> 	void *blockio_cgroup;
+> #endif
+> }
+> ==
 
-/Thomas
+This increases the size of struct page. Could I get a consensus on
+this approach?
 
+Thanks,
+Ryo Tsuruta
 
-
+> Regards,
+> -Kame
+> 
+> 
