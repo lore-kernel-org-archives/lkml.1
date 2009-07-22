@@ -1,64 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbZGVV6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZGVWDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406AbZGVV6T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 17:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZGVV6S
+	id S1754595AbZGVWDi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 18:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZGVWDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 17:58:18 -0400
-Received: from imp02.mtu.ru ([62.5.255.19]:55860 "EHLO imp02.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754183AbZGVV6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 17:58:18 -0400
-From: Pavel Vasilyev <pavel@pavlinux.ru>
-Reply-To: pavel@pavlinux.ru
-Organization: Pavlinux Inc.
-To: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: GART_IOMMU without AGP
-Date: Thu, 23 Jul 2009 01:58:06 +0400
-User-Agent: KMail/1.9.10
-References: <200907221926.50397.pavel@pavlinux.ru> <20090722213746.GA20241@redhat.com>
-In-Reply-To: <20090722213746.GA20241@redhat.com>
-X-Face: =?utf-8?q?=2EqZWJ=3F=248Zrl=26r=7C-=3B8=7ESTufc!R0d=5E=3FdE-g/S=5FryU2S=5D=27?=
- =?utf-8?q?=24vQ7EYY=3DBSj=5DJ-Gp=5FVXPpl=27ci/i=0A=09yH=5B=249HGUU=3Af?=@6hyHiQKeEv#S(K4XtVe$?0UO@',
- =?utf-8?q?!=25=5CR=3A7a=3BITA=3B=7Cs=7C=3F=25+T6=7E5=3Aq=2E2i=5DzA=25=0A=09?=
- =?utf-8?q?Mn-t3kOWGQ?=(7@ZOZ/0@+baHY#Fj&e/k'#p}#F<U{[DP[@"XbG&pmU~{oOMsPc4q|4/,
- =?utf-8?q?du8=0A=09?="'s*i`2=h[f!7!`#',39O3
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3025347.dAUiAPe5lO";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Wed, 22 Jul 2009 18:03:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35058 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754511AbZGVWDh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 18:03:37 -0400
+Date: Wed, 22 Jul 2009 15:02:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] cpu_hotplug: don't affect current task's affinity
+Message-Id: <20090722150246.6d28003a.akpm@linux-foundation.org>
+In-Reply-To: <4A5C4626.8000000@cn.fujitsu.com>
+References: <4A5C4626.8000000@cn.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907230158.15417.pavel@pavlinux.ru>
-X-Spam-Flag: NO
-X-Spam-Yversion: Spamooborona-3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3025347.dAUiAPe5lO
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, 14 Jul 2009 16:47:34 +0800
+Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-On Thursday 23 July 2009 01:37:46 Dave Jones wrote:
-> The lack of AGP slots doesn't mean a lack of AGP bus.
-> It's part of the K8 on-CPU northbridge.
+> 
+> _cpu_down() changes current task's affinity and then
+> recovers it at the end.
+> 
+> It brings two defects:
+> 
+> 1) The recovering will failed in some condition.
+> 
+> # grep Cpus_allowed_list /proc/$$/status
+> Cpus_allowed_list:      0-3
+> 
+> # taskset -pc 2 $$
+> pid 29075's current affinity list: 0-3
+> pid 29075's new affinity list: 2
+> 
+> # grep Cpus_allowed_list /proc/$$/status
+> Cpus_allowed_list:      2
+> 
+> # echo 0 > /sys/devices/system/cpu/cpu2/online
+> 
+> # grep Cpus_allowed_list /proc/$$/status
+> Cpus_allowed_list:      0
+> 
+> In linux, tasks' "Cpus_allowed_list" which are "2" originally
+> will become "0-1,3" after the cpu#2 is offlined.
+> 
+> This "Cpus_allowed_list:      0" is suspicionful.
+> 
+> 2) current task is a userspace task, the user may change
+> its cpu-affinity at the same time. The user may get unexpected
+> result if _cpu_down() changes current task's affinity.
+> 
+> Actually, we don't have to change the affinity.
+> We create a kernel thread to do the works.
+> 
 
-Fine. But if I do not have AGP-card, why do I need the support of bus AGP? :)
-It may allow the user to the toggle on or off when needed.
+I've rewritten the description as below.  Can you check it please?
 
---nextPart3025347.dAUiAPe5lO
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+: _cpu_down() changes the current task's affinity and then recovers it at the
+: end.
+: 
+: It has two problems:
+: 
+: 1) The recovery of the current tasks's cpus_allowed will fail under
+:    some conditions.
+: 
+:    # grep Cpus_allowed_list /proc/$$/status
+:    Cpus_allowed_list:      0-3
+: 
+:    # taskset -pc 2 $$
+:    pid 29075's current affinity list: 0-3
+:    pid 29075's new affinity list: 2
+: 
+:    # grep Cpus_allowed_list /proc/$$/status
+:    Cpus_allowed_list:      2
+: 
+:    # echo 0 > /sys/devices/system/cpu/cpu2/online
+: 
+:    # grep Cpus_allowed_list /proc/$$/status
+:    Cpus_allowed_list:      0
+: 
+:    Here, the Cpus_allowed_list was originally "2" and has become
+:    "0-1,3" after cpu #2 is offlined.
+: 
+:    This "Cpus_allowed_list:      0" is incorrect.
+: 
+: 2) If the current task is a userspace task, the user may change its
+:    cpu-affinity during the CPU hot-unplugging.  This change can be
+:    overwritten when _cpu_down() changes the current task's affinity.
+: 
+: 
+: Fix all this by not changing the current tasks's affinity.  Instead we
+: create a kernel thread to do the work.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
 
-iD8DBQBKZ4t3OqfDywN0JIkRAgApAJ9ZTAZpcqEyqJdWtuvraDg2x/zsvACeNtAB
-+GOKdj4kTrQ6etYU/DqwgMk=
-=HdXe
------END PGP SIGNATURE-----
 
---nextPart3025347.dAUiAPe5lO--
+I don't fully understand 1).  You say that the tasks's cpus_allowed has
+become "0-1,3".  But it hasn't - it has become "0".
+
+Are you saying that the mask is internally 0-1,3 and that the
+/proc/$$/status file is incorrectly displaying it?
+
+Or are you saying that the mask _should_ have been 0-1,3 but the kernel
+incorrectly set it to "0"?
+
+
+Also, it says "The recovery of the current tasks's cpus_allowed will
+fail under some conditions".  What are those conditions?
+
+Thanks.
