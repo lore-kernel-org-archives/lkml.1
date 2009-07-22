@@ -1,74 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752493AbZGVLPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbZGVL2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752493AbZGVLPT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 07:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZGVLPT
+	id S1752812AbZGVL2E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 07:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbZGVL2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 07:15:19 -0400
-Received: from tango.0pointer.de ([85.214.72.216]:50277 "EHLO
-	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbZGVLPR (ORCPT
+	Wed, 22 Jul 2009 07:28:03 -0400
+Received: from bizon.gios.gov.pl ([195.187.34.71]:37747 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751582AbZGVL2C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 07:15:17 -0400
-Date: Wed, 22 Jul 2009 13:14:52 +0200
-From: Lennart Poettering <mzxreary@0pointer.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vt: add an event interface
-Message-ID: <20090722111452.GA24954@tango.0pointer.de>
-References: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk> <20090721162312.GA25151@tango.0pointer.de> <20090721173247.158a6292@lxorguk.ukuu.org.uk>
+	Wed, 22 Jul 2009 07:28:02 -0400
+X-Greylist: delayed 1459 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Jul 2009 07:28:01 EDT
+Date: Wed, 22 Jul 2009 12:54:27 +0200 (CEST)
+From: Krzysztof Oledzki <oley@ans.pl>
+X-X-Sender: ole@bizon.gios.gov.pl
+To: Jens Rosenboom <jens@leia.mcbone.net>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Troy Moure <twmoure@szypr.net>, Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
+Subject: Re: Linux 2.6.27.27
+In-Reply-To: <1248256689.7237.2.camel@fnki-nb00130>
+Message-ID: <alpine.LNX.1.10.0907221252230.26357@bizon.gios.gov.pl>
+References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl>  <20090720151008.GC10015@suse.de>  <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain>  <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl>  <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
+  <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl>  <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl>  <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain>  <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain> 
+ <alpine.LFD.2.00.0907212211040.4630@troy-laptop>  <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain>  <alpine.LFD.2.01.0907211811410.19335@localhost.localdomain>  <alpine.LNX.1.10.0907220914150.26357@bizon.gios.gov.pl> 
+ <alpine.LNX.1.10.0907221022380.26357@bizon.gios.gov.pl> <1248256689.7237.2.camel@fnki-nb00130>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090721173247.158a6292@lxorguk.ukuu.org.uk>
-Organization: Red Hat, Inc.
-X-Campaign-1: ()  ASCII Ribbon Campaign
-X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
-User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1144830174-1430614368-1248260067=:26357"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21.07.09 17:32, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> 
-> > Sounds good to me. Though tbh, in my eyes the "proper" fix for this
-> > whole problem would be something which would enable userspace to
-> > poll() for VT changes. Having blocking ioctl()s still requires most
-> 
-> The question there is what device do you poll(). It's easy enough to
-> magic up a separate vtevent device I guess.
+---1144830174-1430614368-1248260067=:26357
+Content-Type: TEXT/PLAIN; charset=iso-8859-2; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-Hmm, maybe we could just use the usual console devices and use SIGERR
-or SIGURG or something like that to signal those events? And then have
-an ioctl() to actually read them?
 
-> > But OTOH I guess 2 threads are still better than the old situation
-> > requiring processes to run 64 threads for listening for VT changes.
-> > 
-> > Oh, and one more note: instead of padding the struct it would probably
-> > be more future-proof to simply pass the struct size in addition to the
-> > struct to the ioctl().
-> 
-> Padding is a lot simpler and less likely to cause bugs later
-> (typecasting, mischecking of sizes etc). For the kernel I favour
-> simplicity. A vtevent poll/read interface would be even cleaner so I will
-> think about that a bit further.
 
-But this isn't a kernel-internal iface, but something exposed to
-userspace. Userspace interfaces should be designed cleanly and
-future-proof. And padding structs is just painful and unflexible,
-since you might end up not reserving enough space for your future
-extensions, however until those extensions actually happen you always
-pass uneeded memory to the kernel.
+On Wed, 22 Jul 2009, Jens Rosenboom wrote:
 
-But uh, then again, everything's better than the current situation. As
-long as we get something that doesn't require 64 threads for watching
-VT switches I am happy.
+> On Wed, 2009-07-22 at 10:32 +0200, Krzysztof Oledzki wrote:
+>>
+>> On Wed, 22 Jul 2009, Krzysztof Oledzki wrote:
+>>
+>>>
+>>>
+>>> On Tue, 21 Jul 2009, Linus Torvalds wrote:
+>>>
+>>>>
+>>>>
+>>>> On Tue, 21 Jul 2009, Linus Torvalds wrote:
+>>>>>
+>>>>> Anyway, I bet we can work around the compiler bug by just changing the
+>>>>> type of "i" from "unsigned char" to be a plain "int".
+>>>>
+>>>> IOW, like this.
+>>>>
+>>>> 		Linus
+>>>>
+>>>> ---
+>>>> drivers/video/fbmon.c |    4 ++--
+>>>> 1 files changed, 2 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+>>>> index 5c1a2c0..af4a15c 100644
+>>>> --- a/drivers/video/fbmon.c
+>>>> +++ b/drivers/video/fbmon.c
+>>>> @@ -256,8 +256,8 @@ static void fix_edid(unsigned char *edid, int fix)
+>>>>
+>>>> static int edid_checksum(unsigned char *edid)
+>>>> {
+>>>> -	unsigned char i, csum = 0, all_null = 0;
+>>>> -	int err = 0, fix = check_edid(edid);
+>>>> +	unsigned csum = 0, all_null = 0;
+>
+> I guess Linus shouldn't have deleted the "char" here...
 
-Lennart
+Yep! However, it took me one more hour to find it. I should have read my 
+mails more often. ;)
 
--- 
-Lennart Poettering                        Red Hat, Inc.
-lennart [at] poettering [dot] net
-http://0pointer.net/lennart/           GnuPG 0x1A015CC4
+Thanks.
+
+Best regards,
+
+ 			Krzysztof Olêdzki
+---1144830174-1430614368-1248260067=:26357--
