@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZGVUzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbZGVU4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbZGVUzB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 16:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZGVUzA
+	id S1753220AbZGVU4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 16:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZGVU4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 16:55:00 -0400
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:51053 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752409AbZGVUzA (ORCPT
+	Wed, 22 Jul 2009 16:56:13 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:35951 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751735AbZGVU4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 16:55:00 -0400
-X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Jul 2009 16:54:59 EDT
-Message-ID: <4A677A27.30203@freemail.hu>
-Date: Wed, 22 Jul 2009 22:44:23 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Wed, 22 Jul 2009 16:56:12 -0400
+Date: Wed, 22 Jul 2009 21:55:51 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
+       swetland@google.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
+       rlove@google.com
+Subject: Re: ARM platform trees (was: Re: HTC Dream aka. t-mobile g1
+	support)
+Message-ID: <20090722205551.GB1575@n2100.arm.linux.org.uk>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <20090611135442.6b9ab315@lxorguk.ukuu.org.uk> <20090611131245.GN795@n2100.arm.linux.org.uk> <87skgok3i9.fsf_-_@deeprootsystems.com>
 MIME-Version: 1.0
-To: Trivial Patch Monkey <trivial@kernel.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] gcov: fix typo in CONFIG_DEBUG_FS
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32721; Body=2 Fuz1=2
-	Fuz2=2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87skgok3i9.fsf_-_@deeprootsystems.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Wed, Jul 22, 2009 at 10:54:06AM -0700, Kevin Hilman wrote:
+> Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
+> 
+> > On Thu, Jun 11, 2009 at 01:54:42PM +0100, Alan Cox wrote:
+> >> Make your tree the core ARM code only, any other patches you don't
+> >> accept. Aggressively push stuff out to platform code, and if people want
+> >> to change core code "because our platform is different" make them extract
+> >> it into the platform layer not carry it in the core bits.
+> >
+> > I'm all for giving this a try after this merge window is over.
+> 
+> So, in preparation for the next merge window...
+> 
+> Is there an official way for ARM platform maintainers like myself to
+> get stuff merged via Linus' tree?  Is simply sending a pull request to
+> Linus/LKML all that's required?
 
-The correct name is CONFIG_DEBUG_FS, add the missing underscore.
-
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.31-rc3/Documentation/gcov.txt.orig	2009-07-20 19:56:05.000000000 +0200
-+++ linux-2.6.31-rc3/Documentation/gcov.txt	2009-07-21 22:53:20.000000000 +0200
-@@ -47,7 +47,7 @@
-
- Configure the kernel with:
-
--        CONFIG_DEBUGFS=y
-+        CONFIG_DEBUG_FS=y
-         CONFIG_GCOV_KERNEL=y
-
- and to get coverage data for the entire kernel:
+Yup.
