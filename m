@@ -1,111 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbZGVFOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbZGVFOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752608AbZGVFOQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 01:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZGVFOP
+	id S1752850AbZGVFOZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 01:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZGVFOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 01:14:15 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59800 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751369AbZGVFOO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 01:14:14 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 22 Jul 2009 14:12:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: [PATCH 4/4] kcore: remove noise from walk_memory_resource
-Message-Id: <20090722141227.9712ee7b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090722140613.0a751811.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090722140613.0a751811.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Jul 2009 01:14:25 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:44715 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752710AbZGVFOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 01:14:24 -0400
+Date: Wed, 22 Jul 2009 15:10:53 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: mingo@elte.hu, paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf_counter: Always return the parent counter id to
+	userspace
+Message-ID: <20090722051052.GC9029@kryten>
+References: <20090720103825.GA9029@kryten> <1248087346.15751.8437.camel@twins> <20090720114720.GB9029@kryten> <1248095846.15751.8781.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248095846.15751.8781.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+ 
+Hi Peter,
+ 
+> Hmm, ok, so how about something like this:
+> 
+> ---
+> Subject: perf_counter: PERF_SAMPLE_ID and inherited counters
+> 
+> Anton noted that for inherited counters the counter-id as provided by
+> PERF_SAMPLE_ID isn't mappable to the id found through PERF_RECORD_ID
+> because each inherited counter gets its own id.
+> 
+> His suggestion was to always return the parent counter id, since that is
+> the primary counter id as exposed. However, these inherited counters
+> have a unique identifier so that events like PERF_EVENT_PERIOD and
+> PERF_EVENT_THROTTLE can be specific about which counter gets modified,
+> which is important when trying to normalize the sample streams.
+> 
+> This patch removes PERF_EVENT_PERIOD in favour of PERF_SAMPLE_PERIOD,
+> which is more useful anyway, since changing periods became a lot more
+> common than initially thought -- rendering PERF_EVENT_PERIOD the less
+> useful solution (also, PERF_SAMPLE_PERIOD reports the more accurate
+> value, since it reports the value used to trigger the overflow, whereas
+> PERF_EVENT_PERIOD simply reports the requested period changed, which
+> might only take effect on the next cycle).
+> 
+> This still leaves us PERF_EVENT_THROTTLE to consider, but since that
+> _should_ be a rare occurrence, and linking it to a primary id is the
+> most useful bit to diagnose the problem, we introduce a
+> PERF_SAMPLE_STREAM_ID, for those few cases where the full reconstruction
+> is important.
 
-Originally, walk_memory_resource() was introduced to traverse all memory
-of "System RAM" for detecting memory hotplug/unplug range.
-For doing so, flags of IORESOUCE_MEM|IORESOURCE_BUSY was used and this
-was enough for memory hotplug because scanning range was controlled properly.
+I gave it a try and the perf.data results make much more sense.
+Thanks!
 
-But for using other purpose, /proc/kcore, this may includes some firmware
-area marked as IORESOURCE_BUSY | IORESOUCE_MEM. This patch makes the check
-strict to find out busy "System RAM".
-
-Note: PPC64 keeps their own walk_memory_resouce(), which walk through
-ppc64's lmb informaton. Because old kclist_add() is called per lmb,
-this patch makes no difference in behavior, finally.
-
-Changelog v2:
- - new patch from v2.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- kernel/resource.c |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
-
-Index: mmotm-2.6.31-Jul16/kernel/resource.c
-===================================================================
---- mmotm-2.6.31-Jul16.orig/kernel/resource.c
-+++ mmotm-2.6.31-Jul16/kernel/resource.c
-@@ -237,10 +237,10 @@ EXPORT_SYMBOL(release_resource);
- #if !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
- /*
-  * Finds the lowest memory reosurce exists within [res->start.res->end)
-- * the caller must specify res->start, res->end, res->flags.
-+ * the caller must specify res->start, res->end, res->flags and "name".
-  * If found, returns 0, res is overwritten, if not found, returns -1.
-  */
--static int find_next_system_ram(struct resource *res)
-+static int find_next_system_ram(struct resource *res, char *name)
- {
- 	resource_size_t start, end;
- 	struct resource *p;
-@@ -256,6 +256,8 @@ static int find_next_system_ram(struct r
- 		/* system ram is just marked as IORESOURCE_MEM */
- 		if (p->flags != res->flags)
- 			continue;
-+		if (name && strcmp(p->name, name))
-+			continue;
- 		if (p->start > end) {
- 			p = NULL;
- 			break;
-@@ -273,19 +275,27 @@ static int find_next_system_ram(struct r
- 		res->end = p->end;
- 	return 0;
- }
-+
-+/*
-+ * This function calls callback against all memory range of "System RAM"
-+ * which are marked as IORESOURCE_MEM and IORESOUCE_BUSY.
-+ * Now, this function is only for "System RAM".
-+ */
- int
- walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
--			int (*func)(unsigned long, unsigned long, void *))
-+		int (*func)(unsigned long, unsigned long, void *))
- {
- 	struct resource res;
- 	unsigned long pfn, len;
- 	u64 orig_end;
- 	int ret = -1;
-+
- 	res.start = (u64) start_pfn << PAGE_SHIFT;
- 	res.end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
- 	res.flags = IORESOURCE_MEM | IORESOURCE_BUSY;
- 	orig_end = res.end;
--	while ((res.start < res.end) && (find_next_system_ram(&res) >= 0)) {
-+	while ((res.start < res.end) &&
-+		(find_next_system_ram(&res, "System RAM") >= 0)) {
- 		pfn = (unsigned long)(res.start >> PAGE_SHIFT);
- 		len = (unsigned long)((res.end + 1 - res.start) >> PAGE_SHIFT);
- 		ret = (*func)(pfn, len, arg);
-
+Anton
