@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbZGVKVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbZGVKTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753147AbZGVKVj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbZGVKVe
+	id S1755430AbZGVKTL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:19:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbZGVKS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:21:34 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:57001 "EHLO
+	Wed, 22 Jul 2009 06:18:56 -0400
+Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbZGVKK3 (ORCPT
+	with ESMTP id S1754142AbZGVKKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:29 -0400
+	Wed, 22 Jul 2009 06:10:37 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -19,10 +19,11 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Dan Smith <danms@us.ibm.com>
-Subject: [RFC v17][PATCH 55/60] c/r: define s390-specific checkpoint-restart code
-Date: Wed, 22 Jul 2009 06:00:17 -0400
-Message-Id: <1248256822-23416-56-git-send-email-orenl@librato.com>
+       Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v17][PATCH 30/60] c/r: infrastructure for shared objects
+Date: Wed, 22 Jul 2009 05:59:52 -0400
+Message-Id: <1248256822-23416-31-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -30,468 +31,706 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Smith <danms@us.ibm.com>
+The state of shared objects is saved once. On the first encounter, the
+state is dumped and the object is assigned a unique identifier (objref)
+and also stored in a hash table (indexed by its physical kernel address).
+>From then on the object will be found in the hash and only its identifier
+is saved.
 
-Implement the s390 arch-specific checkpoint/restart helpers.  This
-is on top of Oren Laadan's c/r code.
+On restart the identifier is looked up in the hash table; if not found
+then the state is read, the object is created, and added to the hash
+table (this time indexed by its identifier). Otherwise, the object in
+the hash table is used.
 
-With these, I am able to checkpoint and restart simple programs as per
-Oren's patch intro.  While on x86 I never had to freeze a single task
-to checkpoint it, on s390 I do need to.  That is a prereq for consistent
-snapshots (esp with multiple processes) anyway so I don't see that as
-a problem.
+The hash is "one-way": objects added to it are never deleted until the
+hash it discarded. The hash is discarded at the end of checkpoint or
+restart, whether successful or not.
 
-Changelog:
-    Jun 15:
-            . Fix checkpoint and restart compat wrappers
-    May 28:
-            . Export asm/checkpoint_hdr.h to userspace
-            . Define CKPT_ARCH_ID for S390
-    Apr 11:
-            . Introduce ckpt_arch_vdso()
-    Feb 27:
-            . Add checkpoint_s390.h
-            . Fixed up save and restore of PSW, with the non-address bits
-              properly masked out
-    Feb 25:
-            . Make checkpoint_hdr.h safe for inclusion in userspace
-            . Replace comment about vsdo code
-            . Add comment about restoring access registers
-            . Write and read an empty ckpt_hdr_head_arch record to appease
-              code (mktree) that expects it to be there
-            . Utilize NUM_CKPT_WORDS in checkpoint_hdr.h
-    Feb 24:
-            . Use CKPT_COPY() to unify the un/loading of cpu and mm state
-            . Fix fprs definition in ckpt_hdr_cpu
-            . Remove debug WARN_ON() from checkpoint.c
-    Feb 23:
-            . Macro-ize the un/packing of trace flags
-            . Fix the crash when externally-linked
-            . Break out the restart functions into restart.c
-            . Remove unneeded s390_enable_sie() call
-    Jan 30:
-            . Switched types in ckpt_hdr_cpu to __u64 etc.
-              (Per Oren suggestion)
-            . Replaced direct inclusion of structs in
-              ckpt_hdr_cpu with the struct members.
-              (Per Oren suggestion)
-            . Also ended up adding a bunch of new things
-              into restart (mm_segment, ksp, etc) in vain
-              attempt to get code using fpu to not segfault
-              after restart.
+The hash keeps a reference to every object that is added to it, matching
+the object's type, and maintains this reference during its lifetime.
+Therefore, it is always safe to use an object that is stored in the hash.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Signed-off-by: Dan Smith <danms@us.ibm.com>
+Changelog[v17]:
+  - Add ckpt_obj->flags with CKPT_OBJ_CHECKPOINTED flag
+  - Add prototype of ckpt_obj_lookup
+  - Complain on attempt to add NULL ptr to objhash
+  - Prepare for 'leaks detection'
+Changelog[v16]:
+  - Introduce ckpt_obj_lookup() to find an object by its ptr
+Changelog[v14]:
+  - Introduce 'struct ckpt_obj_ops' to better modularize shared objs.
+  - Replace long 'switch' statements with table lookups and callbacks.
+  - Introduce checkpoint_obj() and restart_obj() helpers
+  - Shared objects now dumped/saved right before they are referenced
+  - Cleanup interface of shared objects
+Changelog[v13]:
+  - Use hash_long() with 'unsigned long' cast to support 64bit archs
+    (Nathan Lynch <ntl@pobox.com>)
+Changelog[v11]:
+  - Doc: be explicit about grabbing a reference and object lifetime
+Changelog[v4]:
+  - Fix calculation of hash table size
+Changelog[v3]:
+  - Use standard hlist_... for hash table
+
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- arch/s390/include/asm/Kbuild           |    1 +
- arch/s390/include/asm/checkpoint_hdr.h |   89 +++++++++++++++
- arch/s390/include/asm/unistd.h         |    4 +-
- arch/s390/kernel/compat_wrapper.S      |   14 +++
- arch/s390/kernel/syscalls.S            |    2 +
- arch/s390/mm/Makefile                  |    1 +
- arch/s390/mm/checkpoint.c              |  183 ++++++++++++++++++++++++++++++++
- arch/s390/mm/checkpoint_s390.h         |   23 ++++
- include/linux/checkpoint_hdr.h         |    2 +
- 9 files changed, 318 insertions(+), 1 deletions(-)
- create mode 100644 arch/s390/include/asm/checkpoint_hdr.h
- create mode 100644 arch/s390/mm/checkpoint.c
- create mode 100644 arch/s390/mm/checkpoint_s390.h
+ checkpoint/Makefile              |    1 +
+ checkpoint/objhash.c             |  419 ++++++++++++++++++++++++++++++++++++++
+ checkpoint/restart.c             |   50 +++++-
+ checkpoint/sys.c                 |    6 +
+ include/linux/checkpoint.h       |   18 ++
+ include/linux/checkpoint_hdr.h   |   14 ++
+ include/linux/checkpoint_types.h |    2 +
+ 7 files changed, 508 insertions(+), 2 deletions(-)
+ create mode 100644 checkpoint/objhash.c
 
-diff --git a/arch/s390/include/asm/Kbuild b/arch/s390/include/asm/Kbuild
-index 63a2341..3282a6e 100644
---- a/arch/s390/include/asm/Kbuild
-+++ b/arch/s390/include/asm/Kbuild
-@@ -8,6 +8,7 @@ header-y += ucontext.h
- header-y += vtoc.h
- header-y += zcrypt.h
- header-y += chsc.h
-+header-y += checkpoint_hdr.h
+diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+index 99364cc..5aa6a75 100644
+--- a/checkpoint/Makefile
++++ b/checkpoint/Makefile
+@@ -4,6 +4,7 @@
  
- unifdef-y += cmb.h
- unifdef-y += debug.h
-diff --git a/arch/s390/include/asm/checkpoint_hdr.h b/arch/s390/include/asm/checkpoint_hdr.h
+ obj-$(CONFIG_CHECKPOINT) += \
+ 	sys.o \
++	objhash.o \
+ 	checkpoint.o \
+ 	restart.o \
+ 	process.o
+diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
 new file mode 100644
-index 0000000..ad9449e
+index 0000000..eb2bb55
 --- /dev/null
-+++ b/arch/s390/include/asm/checkpoint_hdr.h
-@@ -0,0 +1,89 @@
-+#ifndef __ASM_S390_CKPT_HDR_H
-+#define __ASM_S390_CKPT_HDR_H
++++ b/checkpoint/objhash.c
+@@ -0,0 +1,419 @@
 +/*
-+ *  Checkpoint/restart - architecture specific headers s/390
++ *  Checkpoint-restart - object hash infrastructure to manage shared objects
 + *
-+ *  Copyright IBM Corp. 2009
++ *  Copyright (C) 2008-2009 Oren Laadan
 + *
 + *  This file is subject to the terms and conditions of the GNU General Public
 + *  License.  See the file COPYING in the main directory of the Linux
 + *  distribution for more details.
 + */
 +
-+#ifndef _CHECKPOINT_CKPT_HDR_H_
-+#error asm/checkpoint_hdr.h included directly
-+#endif
-+
-+#include <linux/types.h>
-+#include <asm/ptrace.h>
-+
-+#ifdef __KERNEL__
-+#include <asm/processor.h>
-+#else
-+#include <sys/user.h>
-+#endif
-+
-+#ifdef CONFIG_64BIT
-+#define CKPT_ARCH_ID	CKPT_ARCH_S390X
-+/* else - if we ever support 32bit - CKPT_ARCH_S390 */
-+#endif
-+
-+/*
-+ * Notes
-+ * NUM_GPRS defined in <asm/ptrace.h> to be 16
-+ * NUM_FPRS defined in <asm/ptrace.h> to be 16
-+ * NUM_APRS defined in <asm/ptrace.h> to be 16
-+ * NUM_CR_WORDS defined in <asm/ptrace.h> to be 3
-+ */
-+struct ckpt_hdr_cpu {
-+	struct ckpt_hdr h;
-+	__u64 args[1];
-+	__u64 gprs[NUM_GPRS];
-+	__u64 orig_gpr2;
-+	__u16 svcnr;
-+	__u16 ilc;
-+	__u32 acrs[NUM_ACRS];
-+	__u64 ieee_instruction_pointer;
-+
-+	/* psw_t */
-+	__u64 psw_t_mask;
-+	__u64 psw_t_addr;
-+
-+	/* s390_fp_regs_t */
-+	__u32 fpc;
-+	union {
-+		float f;
-+		double d;
-+		__u64 ui;
-+		struct {
-+			__u32 fp_hi;
-+			__u32 fp_lo;
-+		} fp;
-+	} fprs[NUM_FPRS];
-+
-+	/* per_struct */
-+	__u64 per_control_regs[NUM_CR_WORDS];
-+	__u64 starting_addr;
-+	__u64 ending_addr;
-+	__u64 address;
-+	__u16 perc_atmid;
-+	__u8 access_id;
-+	__u8 single_step;
-+	__u8 instruction_fetch;
-+};
-+
-+struct ckpt_hdr_mm_context {
-+	struct ckpt_hdr h;
-+	unsigned long vdso_base;
-+	int noexec;
-+	int has_pgste;
-+	int alloc_pgste;
-+	unsigned long asce_bits;
-+	unsigned long asce_limit;
-+};
-+
-+struct ckpt_hdr_header_arch {
-+	struct ckpt_hdr h;
-+};
-+
-+#endif /* __ASM_S390_CKPT_HDR__H */
-diff --git a/arch/s390/include/asm/unistd.h b/arch/s390/include/asm/unistd.h
-index c80602d..5d1678a 100644
---- a/arch/s390/include/asm/unistd.h
-+++ b/arch/s390/include/asm/unistd.h
-@@ -269,7 +269,9 @@
- #define	__NR_pwritev		329
- #define __NR_rt_tgsigqueueinfo	330
- #define __NR_perf_counter_open	331
--#define NR_syscalls 332
-+#define __NR_checkpoint		332
-+#define __NR_restart		333
-+#define NR_syscalls 334
- 
- /* 
-  * There are some system calls that are not present on 64 bit, some
-diff --git a/arch/s390/kernel/compat_wrapper.S b/arch/s390/kernel/compat_wrapper.S
-index 88a8336..e882f99 100644
---- a/arch/s390/kernel/compat_wrapper.S
-+++ b/arch/s390/kernel/compat_wrapper.S
-@@ -1840,3 +1840,17 @@ sys_perf_counter_open_wrapper:
- 	lgfr	%r5,%r5			# int
- 	llgfr	%r6,%r6			# unsigned long
- 	jg	sys_perf_counter_open	# branch to system call
-+
-+	.globl sys_checkpoint_wrapper
-+sys_checkpoint_wrapper:
-+	lgfr	%r2,%r2			# pid_t
-+	lgfr	%r3,%r3			# int
-+	llgfr	%r4,%r4			# unsigned long
-+	jg	compat_sys_checkpoint
-+
-+	.globl sys_restore_wrapper
-+sys_restore_wrapper:
-+	lgfr	%r2,%r2			# int
-+	lgfr	%r3,%r3			# int
-+	llgfr	%r4,%r4			# unsigned long
-+	jg	compat_sys_restore
-diff --git a/arch/s390/kernel/syscalls.S b/arch/s390/kernel/syscalls.S
-index ad1acd2..67518e2 100644
---- a/arch/s390/kernel/syscalls.S
-+++ b/arch/s390/kernel/syscalls.S
-@@ -340,3 +340,5 @@ SYSCALL(sys_preadv,sys_preadv,compat_sys_preadv_wrapper)
- SYSCALL(sys_pwritev,sys_pwritev,compat_sys_pwritev_wrapper)
- SYSCALL(sys_rt_tgsigqueueinfo,sys_rt_tgsigqueueinfo,compat_sys_rt_tgsigqueueinfo_wrapper) /* 330 */
- SYSCALL(sys_perf_counter_open,sys_perf_counter_open,sys_perf_counter_open_wrapper)
-+SYSCALL(sys_checkpoint,sys_checkpoint,sys_checkpoint_wrapper)
-+SYSCALL(sys_restart,sys_restart,sys_restore_wrapper)
-diff --git a/arch/s390/mm/Makefile b/arch/s390/mm/Makefile
-index db05661..e3d356d 100644
---- a/arch/s390/mm/Makefile
-+++ b/arch/s390/mm/Makefile
-@@ -6,3 +6,4 @@ obj-y	 := init.o fault.o extmem.o mmap.o vmem.o pgtable.o maccess.o
- obj-$(CONFIG_CMM) += cmm.o
- obj-$(CONFIG_HUGETLB_PAGE) += hugetlbpage.o
- obj-$(CONFIG_PAGE_STATES) += page-states.o
-+obj-$(CONFIG_CHECKPOINT) += checkpoint.o
-diff --git a/arch/s390/mm/checkpoint.c b/arch/s390/mm/checkpoint.c
-new file mode 100644
-index 0000000..a4a5da9
---- /dev/null
-+++ b/arch/s390/mm/checkpoint.c
-@@ -0,0 +1,183 @@
-+/*
-+ *  Checkpoint/restart - architecture specific support for s390
-+ *
-+ *  Copyright IBM Corp. 2009
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
++/* default debug level for output */
++#define CKPT_DFLAG  CKPT_DOBJ
 +
 +#include <linux/kernel.h>
-+#include <asm/system.h>
-+#include <asm/pgtable.h>
-+#include <asm/elf.h>
-+
++#include <linux/hash.h>
 +#include <linux/checkpoint.h>
 +#include <linux/checkpoint_hdr.h>
++
++struct ckpt_obj;
++struct ckpt_obj_ops;
++
++/* object operations */
++struct ckpt_obj_ops {
++	char *obj_name;
++	enum obj_type obj_type;
++	void (*ref_drop)(void *ptr);
++	int (*ref_grab)(void *ptr);
++	int (*checkpoint)(struct ckpt_ctx *ctx, void *ptr);
++	void *(*restore)(struct ckpt_ctx *ctx);
++};
++
++struct ckpt_obj {
++	int objref;
++	int flags;
++	void *ptr;
++	struct ckpt_obj_ops *ops;
++	struct hlist_node hash;
++};
++
++/* object internal flags */
++#define CKPT_OBJ_CHECKPOINTED		0x1   /* object already checkpointed */
++
++struct ckpt_obj_hash {
++	struct hlist_head *head;
++	int next_free_objref;
++};
++
++/* helper grab/drop functions: */
++
++static void obj_no_drop(void *ptr)
++{
++	return;
++}
++
++static int obj_no_grab(void *ptr)
++{
++	return 0;
++}
++
++static struct ckpt_obj_ops ckpt_obj_ops[] = {
++	/* ignored object */
++	{
++		.obj_name = "IGNORED",
++		.obj_type = CKPT_OBJ_IGNORE,
++		.ref_drop = obj_no_drop,
++		.ref_grab = obj_no_grab,
++	},
++};
++
++
++#define CKPT_OBJ_HASH_NBITS  10
++#define CKPT_OBJ_HASH_TOTAL  (1UL << CKPT_OBJ_HASH_NBITS)
++
++static void obj_hash_clear(struct ckpt_obj_hash *obj_hash)
++{
++	struct hlist_head *h = obj_hash->head;
++	struct hlist_node *n, *t;
++	struct ckpt_obj *obj;
++	int i;
++
++	for (i = 0; i < CKPT_OBJ_HASH_TOTAL; i++) {
++		hlist_for_each_entry_safe(obj, n, t, &h[i], hash) {
++			obj->ops->ref_drop(obj->ptr);
++			kfree(obj);
++		}
++	}
++}
++
++void ckpt_obj_hash_free(struct ckpt_ctx *ctx)
++{
++	struct ckpt_obj_hash *obj_hash = ctx->obj_hash;
++
++	if (obj_hash) {
++		obj_hash_clear(obj_hash);
++		kfree(obj_hash->head);
++		kfree(ctx->obj_hash);
++		ctx->obj_hash = NULL;
++	}
++}
++
++int ckpt_obj_hash_alloc(struct ckpt_ctx *ctx)
++{
++	struct ckpt_obj_hash *obj_hash;
++	struct hlist_head *head;
++
++	obj_hash = kzalloc(sizeof(*obj_hash), GFP_KERNEL);
++	if (!obj_hash)
++		return -ENOMEM;
++	head = kzalloc(CKPT_OBJ_HASH_TOTAL * sizeof(*head), GFP_KERNEL);
++	if (!head) {
++		kfree(obj_hash);
++		return -ENOMEM;
++	}
++
++	obj_hash->head = head;
++	obj_hash->next_free_objref = 1;
++
++	ctx->obj_hash = obj_hash;
++	return 0;
++}
++
++static struct ckpt_obj *obj_find_by_ptr(struct ckpt_ctx *ctx, void *ptr)
++{
++	struct hlist_head *h;
++	struct hlist_node *n;
++	struct ckpt_obj *obj;
++
++	h = &ctx->obj_hash->head[hash_long((unsigned long) ptr,
++					   CKPT_OBJ_HASH_NBITS)];
++	hlist_for_each_entry(obj, n, h, hash)
++		if (obj->ptr == ptr)
++			return obj;
++	return NULL;
++}
++
++static struct ckpt_obj *obj_find_by_objref(struct ckpt_ctx *ctx, int objref)
++{
++	struct hlist_head *h;
++	struct hlist_node *n;
++	struct ckpt_obj *obj;
++
++	h = &ctx->obj_hash->head[hash_long((unsigned long) objref,
++					   CKPT_OBJ_HASH_NBITS)];
++	hlist_for_each_entry(obj, n, h, hash)
++		if (obj->objref == objref)
++			return obj;
++	return NULL;
++}
++
++/**
++ * ckpt_obj_new - add an object to the obj_hash
++ * @ctx: checkpoint context
++ * @ptr: pointer to object
++ * @objref: object unique id
++ * @ops: object operations
++ *
++ * Add the object to the obj_hash. If @objref is zero, assign a unique
++ * object id and use @ptr as a hash key [checkpoint]. Else use @objref
++ * as a key [restart].
++ */
++static struct ckpt_obj *obj_new(struct ckpt_ctx *ctx, void *ptr,
++				int objref, enum obj_type type)
++{
++	struct ckpt_obj_ops *ops = &ckpt_obj_ops[type];
++	struct ckpt_obj *obj;
++	int i, ret;
++
++	/* explicitly disallow null pointers */
++	BUG_ON(!ptr);
++	/* make sure we don't change this accidentally */
++	BUG_ON(ops->obj_type != type);
++
++	obj = kzalloc(sizeof(*obj), GFP_KERNEL);
++	if (!obj)
++		return ERR_PTR(-ENOMEM);
++
++	obj->ptr = ptr;
++	obj->ops = ops;
++
++	if (!objref) {
++		/* use @obj->ptr to index, assign objref (checkpoint) */
++		obj->objref = ctx->obj_hash->next_free_objref++;;
++		i = hash_long((unsigned long) ptr, CKPT_OBJ_HASH_NBITS);
++	} else {
++		/* use @obj->objref to index (restart) */
++		obj->objref = objref;
++		i = hash_long((unsigned long) objref, CKPT_OBJ_HASH_NBITS);
++	}
++
++	ret = ops->ref_grab(obj->ptr);
++	if (ret < 0) {
++		kfree(obj);
++		obj = ERR_PTR(ret);
++	} else {
++		hlist_add_head(&obj->hash, &ctx->obj_hash->head[i]);
++	}
++
++	return obj;
++}
 +
 +/**************************************************************************
 + * Checkpoint
 + */
 +
-+static void s390_copy_regs(int op, struct ckpt_hdr_cpu *h,
-+			   struct task_struct *t)
++/**
++ * obj_lookup_add - lookup object and add if not in objhash
++ * @ctx: checkpoint context
++ * @ptr: pointer to object
++ * @type: object type
++ * @first: [output] first encounter (added to table)
++ *
++ * Look up the object pointed to by @ptr in the hash table. If it isn't
++ * already found there, add the object, and allocate a unique object
++ * id. Grab a reference to every object that is added, and maintain the
++ * reference until the entire hash is freed.
++ */
++static struct ckpt_obj *obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
++				       enum obj_type type, int *first)
 +{
-+	struct pt_regs *regs = task_pt_regs(t);
-+	struct thread_struct *thr = &t->thread;
++	struct ckpt_obj *obj;
 +
-+	/* Save the whole PSW to facilitate forensic debugging, but only
-+	 * restore the address portion to avoid letting userspace do
-+	 * bad things by manipulating its value.
-+	 */
-+	if (op == CKPT_CPT) {
-+		CKPT_COPY(op, h->psw_t_addr, regs->psw.addr);
++	obj = obj_find_by_ptr(ctx, ptr);
++	if (!obj) {
++		obj = obj_new(ctx, ptr, 0, type);
++		*first = 1;
 +	} else {
-+		regs->psw.addr &= ~PSW_ADDR_INSN;
-+		regs->psw.addr |= h->psw_t_addr;
++		BUG_ON(obj->ops->obj_type != type);
++		*first = 0;
 +	}
-+
-+	CKPT_COPY(op, h->args[0], regs->args[0]);
-+	CKPT_COPY(op, h->orig_gpr2, regs->orig_gpr2);
-+	CKPT_COPY(op, h->svcnr, regs->svcnr);
-+	CKPT_COPY(op, h->ilc, regs->ilc);
-+	CKPT_COPY(op, h->ieee_instruction_pointer,
-+		thr->ieee_instruction_pointer);
-+	CKPT_COPY(op, h->psw_t_mask, regs->psw.mask);
-+	CKPT_COPY(op, h->fpc, thr->fp_regs.fpc);
-+	CKPT_COPY(op, h->starting_addr, thr->per_info.starting_addr);
-+	CKPT_COPY(op, h->ending_addr, thr->per_info.ending_addr);
-+	CKPT_COPY(op, h->address, thr->per_info.lowcore.words.address);
-+	CKPT_COPY(op, h->perc_atmid, thr->per_info.lowcore.words.perc_atmid);
-+	CKPT_COPY(op, h->access_id, thr->per_info.lowcore.words.access_id);
-+	CKPT_COPY(op, h->single_step, thr->per_info.single_step);
-+	CKPT_COPY(op, h->instruction_fetch, thr->per_info.instruction_fetch);
-+
-+	CKPT_COPY_ARRAY(op, h->gprs, regs->gprs, NUM_GPRS);
-+	CKPT_COPY_ARRAY(op, h->fprs, thr->fp_regs.fprs, NUM_FPRS);
-+	CKPT_COPY_ARRAY(op, h->acrs, thr->acrs, NUM_ACRS);
-+	CKPT_COPY_ARRAY(op, h->per_control_regs,
-+		      thr->per_info.control_regs.words.cr, NUM_CR_WORDS);
++	return obj;
 +}
 +
-+static void s390_mm(int op, struct ckpt_hdr_mm_context *h,
-+		    struct mm_struct *mm)
++/**
++ * ckpt_obj_lookup - lookup object (by pointer) in objhash
++ * @ctx: checkpoint context
++ * @ptr: pointer to object
++ * @type: object type
++ *
++ * [used during checkpoint].
++ * Return: objref (or zero if not found)
++ */
++int ckpt_obj_lookup(struct ckpt_ctx *ctx, void *ptr, enum obj_type type)
 +{
-+	CKPT_COPY(op, h->noexec, mm->context.noexec);
-+	CKPT_COPY(op, h->has_pgste, mm->context.has_pgste);
-+	CKPT_COPY(op, h->alloc_pgste, mm->context.alloc_pgste);
-+	CKPT_COPY(op, h->asce_bits, mm->context.asce_bits);
-+	CKPT_COPY(op, h->asce_limit, mm->context.asce_limit);
++	struct ckpt_obj *obj;
++
++	obj = obj_find_by_ptr(ctx, ptr);
++	BUG_ON(obj && obj->ops->obj_type != type);
++	if (obj)
++		ckpt_debug("%s objref %d\n", obj->ops->obj_name, obj->objref);
++	return obj ? obj->objref : 0;
 +}
 +
-+int checkpoint_thread(struct ckpt_ctx *ctx, struct task_struct *t)
++/**
++ * ckpt_obj_lookup_add - lookup object and add if not in objhash
++ * @ctx: checkpoint context
++ * @ptr: pointer to object
++ * @type: object type
++ * @first: [output] first encoutner (added to table)
++ *
++ * [used during checkpoint].
++ * Return: objref
++ */
++int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
++			enum obj_type type, int *first)
 +{
-+	return 0;
++	struct ckpt_obj *obj;
++
++	obj = obj_lookup_add(ctx, ptr, type, first);
++	if (IS_ERR(obj))
++		return PTR_ERR(obj);
++	ckpt_debug("%s objref %d first %d\n",
++		   obj->ops->obj_name, obj->objref, *first);
++	obj->flags |= CKPT_OBJ_CHECKPOINTED;
++	return obj->objref;
 +}
 +
-+/* dump the cpu state and registers of a given task */
-+int checkpoint_cpu(struct ckpt_ctx *ctx, struct task_struct *t)
++/**
++ * checkpoint_obj - if not already in hash, add object and checkpoint
++ * @ctx: checkpoint context
++ * @ptr: pointer to object
++ * @type: object type
++ *
++ * Use obj_lookup_add() to lookup (and possibly add) the object to the
++ * hash table. If the CKPT_OBJ_CHECKPOINTED flag isn't set, then also
++ * save the object's state using its ops->checkpoint().
++ *
++ * [This is used during checkpoint].
++ * Returns: objref
++ */
++int checkpoint_obj(struct ckpt_ctx *ctx, void *ptr, enum obj_type type)
 +{
-+	struct ckpt_hdr_cpu *h;
-+	int ret;
++	struct ckpt_hdr_objref *h;
++	struct ckpt_obj *obj;
++	int first, ret = 0;
 +
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_CPU);
-+	if (!h)
-+		return -ENOMEM;
++	obj = obj_lookup_add(ctx, ptr, type, &first);
++	if (IS_ERR(obj))
++		return PTR_ERR(obj);
 +
-+	s390_copy_regs(CKPT_CPT, h, t);
++	if (!(obj->flags & CKPT_OBJ_CHECKPOINTED)) {
++		h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_OBJREF);
++		if (!h)
++			return -ENOMEM;
 +
-+	ret = ckpt_write_obj(ctx, (struct ckpt_hdr *) h);
-+	ckpt_hdr_put(ctx, h);
++		h->objtype = type;
++		h->objref = obj->objref;
++		ret = ckpt_write_obj(ctx, &h->h);
++		ckpt_hdr_put(ctx, h);
 +
-+	return ret;
-+}
++		if (ret < 0)
++			return ret;
 +
-+/* Write an empty header since it is assumed to be there */
-+int checkpoint_write_header_arch(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_hdr_header_arch *h;
-+	int ret;
++		/* invoke callback to actually dump the state */
++		if (obj->ops->checkpoint)
++			ret = obj->ops->checkpoint(ctx, ptr);
 +
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_HEADER_ARCH);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	ret = ckpt_write_obj(ctx, (struct ckpt_hdr *) h);
-+	ckpt_hdr_put(ctx, h);
-+
-+	return ret;
-+}
-+
-+int checkpoint_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm)
-+{
-+	struct ckpt_hdr_mm_context *h;
-+	int ret;
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_MM_CONTEXT);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	s390_mm(CKPT_CPT, h, mm);
-+
-+	ret = ckpt_write_obj(ctx, (struct ckpt_hdr *) h);
-+	ckpt_hdr_put(ctx, h);
-+
-+	return ret;
++		obj->flags |= CKPT_OBJ_CHECKPOINTED;
++	}
++	return (ret < 0 ? ret : obj->objref);
 +}
 +
 +/**************************************************************************
 + * Restart
 + */
 +
-+int restore_thread(struct ckpt_ctx *ctx)
-+{
-+	return 0;
-+}
-+
-+int restore_cpu(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_hdr_cpu *h;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_CPU);
-+	if (IS_ERR(h))
-+		return PTR_ERR(h);
-+
-+	s390_copy_regs(CKPT_RST, h, current);
-+
-+	/* s390 does not restore the access registers after a syscall,
-+	 * but does on a task switch.  Since we're switching tasks (in
-+	 * a way), we need to replicate that behavior here.
-+	 */
-+	restore_access_regs(h->acrs);
-+
-+	ckpt_hdr_put(ctx, h);
-+	return 0;
-+}
-+
-+int restore_read_header_arch(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_hdr_header_arch *h;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_HEADER_ARCH);
-+	if (IS_ERR(h))
-+		return PTR_ERR(h);
-+
-+	ckpt_hdr_put(ctx, h);
-+	return 0;
-+}
-+
-+
-+int restore_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm)
-+{
-+	struct ckpt_hdr_mm_context *h;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_MM_CONTEXT);
-+	if (IS_ERR(h))
-+		return PTR_ERR(h);
-+
-+	s390_mm(CKPT_RST, h, mm);
-+
-+	ckpt_hdr_put(ctx, h);
-+	return 0;
-+}
-diff --git a/arch/s390/mm/checkpoint_s390.h b/arch/s390/mm/checkpoint_s390.h
-new file mode 100644
-index 0000000..c3bf24d
---- /dev/null
-+++ b/arch/s390/mm/checkpoint_s390.h
-@@ -0,0 +1,23 @@
-+/*
-+ *  Checkpoint/restart - architecture specific support for s390
++/**
++ * restore_obj - read in and restore a (first seen) shared object
++ * @ctx: checkpoint context
++ * @h: ckpt_hdr of shared object
 + *
-+ *  Copyright IBM Corp. 2009
++ * Read in the header payload (struct ckpt_hdr_objref). Lookup the
++ * object to verify it isn't there.  Then restore the object's state
++ * and add it to the objash. No need to explicitly grab a reference -
++ * we hold the initial instance of this object. (Object maintained
++ * until the entire hash is free).
 + *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
++ * [This is used during restart].
 + */
++int restore_obj(struct ckpt_ctx *ctx, struct ckpt_hdr_objref *h)
++{
++	struct ckpt_obj_ops *ops;
++	struct ckpt_obj *obj;
++	void *ptr = NULL;
 +
-+#ifndef _S390_CHECKPOINT_H
-+#define _S390_CHECKPOINT_H
++	ckpt_debug("len %d ref %d type %d\n", h->h.len, h->objref, h->objtype);
++	if (obj_find_by_objref(ctx, h->objref))
++		return -EINVAL;
 +
-+#include <linux/checkpoint_hdr.h>
-+#include <linux/sched.h>
-+#include <linux/mm_types.h>
++	if (h->objtype >= CKPT_OBJ_MAX)
++		return -EINVAL;
 +
-+extern void checkpoint_s390_regs(int op, struct ckpt_hdr_cpu *h,
-+				 struct task_struct *t);
-+extern void checkpoint_s390_mm(int op, struct ckpt_hdr_mm_context *h,
-+			       struct mm_struct *mm);
++	ops = &ckpt_obj_ops[h->objtype];
++	BUG_ON(ops->obj_type != h->objtype);
 +
-+#endif /* _S390_CHECKPOINT_H */
++	if (ops->restore)
++		ptr = ops->restore(ctx);
++	if (IS_ERR(ptr))
++		return PTR_ERR(ptr);
++
++	obj = obj_new(ctx, ptr, h->objref, h->objtype);
++	/*
++	 * Drop an extra reference to the object returned by ops->restore:
++	 * On success, this clears the extra reference taken by obj_new(),
++	 * and on failure, this cleans up the object itself.
++	 */
++	ops->ref_drop(ptr);
++	if (IS_ERR(obj)) {
++		ops->ref_drop(ptr);
++		return PTR_ERR(obj);
++	}
++	return obj->objref;
++}
++
++/**
++ * ckpt_obj_insert - add an object with a given objref to obj_hash
++ * @ctx: checkpoint context
++ * @ptr: pointer to object
++ * @objref: unique object id
++ * @type: object type
++ *
++ * Add the object pointer to by @ptr and identified by unique object id
++ * @objref to the hash table (indexed by @objref).  Grab a reference to
++ * every object added, and maintain it until the entire hash is freed.
++ *
++ * [This is used during restart].
++ */
++int ckpt_obj_insert(struct ckpt_ctx *ctx, void *ptr,
++		    int objref, enum obj_type type)
++{
++	struct ckpt_obj *obj;
++
++	obj = obj_new(ctx, ptr, objref, type);
++	if (IS_ERR(obj))
++		return PTR_ERR(obj);
++	ckpt_debug("%s objref %d\n", obj->ops->obj_name, objref);
++	return obj->objref;
++}
++
++/**
++ * ckpt_obj_fetch - fetch an object by its identifier
++ * @ctx: checkpoint context
++ * @objref: object id
++ * @type: object type
++ *
++ * Lookup the objref identifier by @objref in the hash table. Return
++ * an error not found.
++ *
++ * [This is used during restart].
++ */
++void *ckpt_obj_fetch(struct ckpt_ctx *ctx, int objref, enum obj_type type)
++{
++	struct ckpt_obj *obj;
++
++	obj = obj_find_by_objref(ctx, objref);
++	if (!obj)
++		return ERR_PTR(-EINVAL);
++	ckpt_debug("%s ref %d\n", obj->ops->obj_name, obj->objref);
++	return (obj->ops->obj_type == type ? obj->ptr : ERR_PTR(-ENOMSG));
++}
+diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+index 1b1f639..81790fe 100644
+--- a/checkpoint/restart.c
++++ b/checkpoint/restart.c
+@@ -25,6 +25,34 @@
+ #include <linux/checkpoint_hdr.h>
+ 
+ /**
++ * _ckpt_read_objref - dispatch handling of a shared object
++ * @ctx: checkpoint context
++ * @hh: objrect descriptor
++ */
++static int _ckpt_read_objref(struct ckpt_ctx *ctx, struct ckpt_hdr *hh)
++{
++	struct ckpt_hdr *h;
++	int ret;
++
++	h = ckpt_hdr_get(ctx, hh->len);
++	if (!h)
++		return -ENOMEM;
++
++	*h = *hh;	/* yay ! */
++
++	_ckpt_debug(CKPT_DOBJ, "shared len %d type %d\n", h->len, h->type);
++	ret = ckpt_kread(ctx, (h + 1), hh->len - sizeof(struct ckpt_hdr));
++	if (ret < 0)
++		goto out;
++
++	ret = restore_obj(ctx, (struct ckpt_hdr_objref *) h);
++ out:
++	ckpt_hdr_put(ctx, h);
++	return ret;
++}
++
++
++/**
+  * _ckpt_read_obj - read an object (ckpt_hdr followed by payload)
+  * @ctx: checkpoint context
+  * @h: desired ckpt_hdr
+@@ -39,6 +67,7 @@ static int _ckpt_read_obj(struct ckpt_ctx *ctx, struct ckpt_hdr *h,
+ {
+ 	int ret;
+ 
++ again:
+ 	ret = ckpt_kread(ctx, h, sizeof(*h));
+ 	if (ret < 0)
+ 		return ret;
+@@ -46,7 +75,15 @@ static int _ckpt_read_obj(struct ckpt_ctx *ctx, struct ckpt_hdr *h,
+ 		    h->type, h->len, len, max);
+ 	if (h->len < sizeof(*h))
+ 		return -EINVAL;
++
+ 	/* if len specified, enforce, else if maximum specified, enforce */
++	if (h->type == CKPT_HDR_OBJREF) {
++		ret = _ckpt_read_objref(ctx, h);
++		if (ret < 0)
++			return ret;
++		goto again;
++	}
++
+ 	if ((len && h->len != len) || (!len && max && h->len > max))
+ 		return -EINVAL;
+ 
+@@ -155,6 +192,7 @@ static void *ckpt_read_obj(struct ckpt_ctx *ctx, int len, int max)
+ 	struct ckpt_hdr *h;
+ 	int ret;
+ 
++ again:
+ 	ret = ckpt_kread(ctx, &hh, sizeof(hh));
+ 	if (ret < 0)
+ 		return ERR_PTR(ret);
+@@ -162,6 +200,14 @@ static void *ckpt_read_obj(struct ckpt_ctx *ctx, int len, int max)
+ 		    hh.type, hh.len, len, max);
+ 	if (hh.len < sizeof(*h))
+ 		return ERR_PTR(-EINVAL);
++
++	if (hh.type == CKPT_HDR_OBJREF) {
++		ret = _ckpt_read_objref(ctx, &hh);
++		if (ret < 0)
++			return ERR_PTR(ret);
++		goto again;
++	}
++
+ 	/* if len specified, enforce, else if maximum specified, enforce */
+ 	if ((len && hh.len != len) || (!len && max && hh.len > max))
+ 		return ERR_PTR(-EINVAL);
+@@ -214,8 +260,8 @@ void *ckpt_read_obj_type(struct ckpt_ctx *ctx, int len, int type)
+  * @type: desired object type
+  *
+  * This differs from ckpt_read_obj_type() in that the length of the
+- * incoming object is flexible (up to the maximum specified by @len),
+- * as determined by the ckpt_hdr data.
++ * incoming object is flexible (up to the maximum specified by @len;
++ * unlimited if @len is 0), as determined by the ckpt_hdr data.
+  *
+  * Return: new buffer allocated on success, error pointer otherwise
+  */
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+index c8921f0..d16d48f 100644
+--- a/checkpoint/sys.c
++++ b/checkpoint/sys.c
+@@ -194,6 +194,8 @@ static void ckpt_ctx_free(struct ckpt_ctx *ctx)
+ 	if (ctx->file)
+ 		fput(ctx->file);
+ 
++	ckpt_obj_hash_free(ctx);
++
+ 	if (ctx->tasks_arr)
+ 		task_arr_free(ctx);
+ 
+@@ -231,6 +233,10 @@ static struct ckpt_ctx *ckpt_ctx_alloc(int fd, unsigned long uflags,
+ 	if (!ctx->file)
+ 		goto err;
+ 
++	err = -ENOMEM;
++	if (ckpt_obj_hash_alloc(ctx) < 0)
++		goto err;
++
+ 	atomic_inc(&ctx->refcount);
+ 	return ctx;
+  err:
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index b6af5b9..8eb5434 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -61,6 +61,7 @@ extern int ckpt_write_err(struct ckpt_ctx *ctx, char *fmt, ...);
+ 
+ extern int _ckpt_read_obj_type(struct ckpt_ctx *ctx,
+ 			       void *ptr, int len, int type);
++extern int _ckpt_read_nbuffer(struct ckpt_ctx *ctx, void *ptr, int len);
+ extern int _ckpt_read_buffer(struct ckpt_ctx *ctx, void *ptr, int len);
+ extern int _ckpt_read_string(struct ckpt_ctx *ctx, void *ptr, int len);
+ extern void *ckpt_read_obj_type(struct ckpt_ctx *ctx, int len, int type);
+@@ -78,6 +79,22 @@ extern void *ckpt_read_buf_type(struct ckpt_ctx *ctx, int len, int type);
+ #define ckpt_test_ctx_complete(ctx)  \
+ 	((ctx)->kflags & (CKPT_CTX_SUCCESS | CKPT_CTX_ERROR))
+ 
++/* obj_hash */
++extern void ckpt_obj_hash_free(struct ckpt_ctx *ctx);
++extern int ckpt_obj_hash_alloc(struct ckpt_ctx *ctx);
++
++extern int restore_obj(struct ckpt_ctx *ctx, struct ckpt_hdr_objref *h);
++extern int checkpoint_obj(struct ckpt_ctx *ctx, void *ptr,
++			  enum obj_type type);
++extern int ckpt_obj_lookup(struct ckpt_ctx *ctx, void *ptr,
++			   enum obj_type type);
++extern int ckpt_obj_lookup_add(struct ckpt_ctx *ctx, void *ptr,
++			       enum obj_type type, int *first);
++extern void *ckpt_obj_fetch(struct ckpt_ctx *ctx, int objref,
++			    enum obj_type type);
++extern int ckpt_obj_insert(struct ckpt_ctx *ctx, void *ptr, int objref,
++			   enum obj_type type);
++
+ extern void ckpt_ctx_get(struct ckpt_ctx *ctx);
+ extern void ckpt_ctx_put(struct ckpt_ctx *ctx);
+ 
+@@ -107,6 +124,7 @@ extern int restore_restart_block(struct ckpt_ctx *ctx);
+ #define CKPT_DBASE	0x1		/* anything */
+ #define CKPT_DSYS	0x2		/* generic (system) */
+ #define CKPT_DRW	0x4		/* image read/write */
++#define CKPT_DOBJ	0x8		/* shared objects */
+ 
+ #define CKPT_DDEFAULT	0xffff		/* default debug level */
+ 
 diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index 2364a6f..3671e72 100644
+index ad5851d..7c46638 100644
 --- a/include/linux/checkpoint_hdr.h
 +++ b/include/linux/checkpoint_hdr.h
-@@ -87,7 +87,9 @@ enum {
+@@ -48,6 +48,7 @@ enum {
+ 	CKPT_HDR_HEADER_ARCH,
+ 	CKPT_HDR_BUFFER,
+ 	CKPT_HDR_STRING,
++	CKPT_HDR_OBJREF,
  
- /* architecture */
- enum {
-+	/* do not change order (will break ABI) */
+ 	CKPT_HDR_TREE = 101,
+ 	CKPT_HDR_TASK,
+@@ -67,6 +68,19 @@ enum {
  	CKPT_ARCH_X86_32 = 1,
-+	CKPT_ARCH_S390X,
  };
  
- /* shared objrects (objref) */
++/* shared objrects (objref) */
++struct ckpt_hdr_objref {
++	struct ckpt_hdr h;
++	__u32 objtype;
++	__s32 objref;
++} __attribute__((aligned(8)));
++
++/* shared objects types */
++enum obj_type {
++	CKPT_OBJ_IGNORE = 0,
++	CKPT_OBJ_MAX
++};
++
+ /* kernel constants */
+ struct ckpt_hdr_const {
+ 	/* task */
+diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
+index 4785df6..bd78d19 100644
+--- a/include/linux/checkpoint_types.h
++++ b/include/linux/checkpoint_types.h
+@@ -38,6 +38,8 @@ struct ckpt_ctx {
+ 
+ 	atomic_t refcount;
+ 
++	struct ckpt_obj_hash *obj_hash;	/* repository for shared objects */
++
+ 	char err_string[256];	/* checkpoint: error string */
+ 
+ 	/* [multi-process checkpoint] */
 -- 
 1.6.0.4
 
