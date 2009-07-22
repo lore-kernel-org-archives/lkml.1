@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbZGVNHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbZGVNJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755150AbZGVNHr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbZGVNHq
+	id S1755252AbZGVNJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbZGVNJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:07:46 -0400
-Received: from viefep19-int.chello.at ([62.179.121.39]:58542 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754062AbZGVNHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:07:46 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] perf_counter: Improve perf stat and perf record option
- parsing
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anton Blanchard <anton@samba.org>
-Cc: mingo@elte.hu, paulus@samba.org, fweisbec@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090722130412.GD9029@kryten>
-References: <20090722130412.GD9029@kryten>
-Content-Type: text/plain
-Date: Wed, 22 Jul 2009 15:08:55 +0200
-Message-Id: <1248268135.27058.1414.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Jul 2009 09:09:58 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:60101 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754673AbZGVNJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 09:09:58 -0400
+Date: Wed, 22 Jul 2009 23:05:46 +1000
+From: Anton Blanchard <anton@samba.org>
+To: a.p.zijlstra@chello.nl, mingo@elte.hu, paulus@samba.org,
+       fweisbec@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] perf_counter: Fix throttle/unthrottle event logging
+Message-ID: <20090722130546.GE9029@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 23:04 +1000, Anton Blanchard wrote:
-> perf stat and perf record currently look for all options on the command
-> line. This can lead to some confusion:
-> 
-> # perf stat ls -l
->   Error: unknown switch `l'
-> 
-> While we can work around this by adding '--' before the command, the git
-> option parsing code can stop at the first non option:
-> 
-> # perf stat ls -l
->  Performance counter stats for 'ls -l':
-> ....
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-I queued it, thanks Anton.
+Right now we only print PERF_EVENT_THROTTLE + 1 (ie PERF_EVENT_UNTHROTTLE).
+Fix this to print both a throttle and unthrottle event.
 
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux.trees.git/kernel/perf_counter.c
+===================================================================
+--- linux.trees.git.orig/kernel/perf_counter.c	2009-07-22 22:43:36.000000000 +1000
++++ linux.trees.git/kernel/perf_counter.c	2009-07-22 22:55:10.000000000 +1000
+@@ -3195,7 +3195,7 @@ static void perf_log_throttle(struct per
+ 		u64				stream_id;
+ 	} throttle_event = {
+ 		.header = {
+-			.type = PERF_EVENT_THROTTLE + 1,
++			.type = PERF_EVENT_THROTTLE,
+ 			.misc = 0,
+ 			.size = sizeof(throttle_event),
+ 		},
+@@ -3204,6 +3204,9 @@ static void perf_log_throttle(struct per
+ 		.stream_id	= counter->id,
+ 	};
+ 
++	if (enable)
++		throttle_event.header.type = PERF_EVENT_UNTHROTTLE;
++
+ 	ret = perf_output_begin(&handle, counter, sizeof(throttle_event), 1, 0);
+ 	if (ret)
+ 		return;
