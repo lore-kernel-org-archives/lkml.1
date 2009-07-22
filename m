@@ -1,70 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZGVJ4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZGVJ5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753380AbZGVJ4L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 05:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZGVJ4K
+	id S1753432AbZGVJ5B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 05:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZGVJ5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 05:56:10 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:9259 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbZGVJ4I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 05:56:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JqMGRQxQ66TgW88NPCGRr/SQdhpkB3dQaSl+aZNmfwkp9jIuhEt1cAmnjPWDnjQJ3s
-         Zgwo3ZIMV0TXm/7ur/ToA/hN0BXFmPNWwG9y652IW2j+pBt1LJOpcAZlyGuISCMl23R8
-         AJFr/lcasGJmRzxy636iwidjnqBDwUiBj3ULM=
-Date: Wed, 22 Jul 2009 17:58:18 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH/RFC] Move generated files to include/generated
-Message-ID: <20090722095818.GH6281@cr0.nay.redhat.com>
-References: <20090721211040.GA7688@merkur.ravnborg.org>
+	Wed, 22 Jul 2009 05:57:00 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64739 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752858AbZGVJ47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 05:56:59 -0400
+Message-ID: <4A66E261.2090105@cn.fujitsu.com>
+Date: Wed, 22 Jul 2009 17:56:49 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090721211040.GA7688@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: prasad@linux.vnet.ibm.com
+CC: Ingo Molnar <mingo@elte.hu>, Alan Stern <stern@rowland.harvard.edu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/ksym_tracer: support quick clear for	ksym_trace_filter
+References: <4A6685BB.2090809@cn.fujitsu.com> <4A66869A.9000106@cn.fujitsu.com> <20090722050636.GA9039@in.ibm.com>
+In-Reply-To: <20090722050636.GA9039@in.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 21, 2009 at 11:10:40PM +0200, Sam Ravnborg wrote:
->In 2.6.30 we introduced support for adding generated
->files to a dedicated directory named "include/generated".
->
 
 
-Personally, I don't like this, I hate to see
-#include <generated/foo.h>
-.
+K.Prasad wrote:
+> On Wed, Jul 22, 2009 at 11:25:14AM +0800, Xiao Guangrong wrote:
+>> It's rather bored to clear symbol one by one in ksym_trace_filter
+>> file, so, this patch can let ksym_trace_filter file support quick
+>> clear, we can write "0" to this file, it can clear all symbols
+>>
+>> for example:
+>>  # cat ksym_trace_filter
+>>  ksym_filter_head:rw-
+>>  global_trace:rw-
+>>  # echo 0 > ksym_trace_filter
+>>  # cat ksym_trace_filter
+>>  #
+>>
+> 
+> It's nice to have this feature added and the other patches fix issues in
+> ksym tracer. Can you have this patch add the capability to clear all
+> breakpoints in one-shot through wild-cards?
+> 
 
->This had a number of benefits:
->
->  - avoid mixing generated and normal files
+It already can clear all breakpoints in one-shot by write "0" to
+ksym_trace_filter file, do you means that we need to support other
+way for it? like:
 
-I don't think this is an advantage...
+echo > ksym_trace_filter
+echo "*:---" > ksym_trace_filter
 
+IMHO, one way to clear all breakpoints is enough, no need to add
+more code for the same function, for example, in trace events filter,
+only echo 0 > filter can properly clear all filters.
 
->  - allow us to finally kill the asm symlink
+Are you sure other way is necessary? 
 
+Thanks,
+Xiao
 
-This makes sense, but it looks like only when 'make O=xxx',
-no?
-
-
->  - simpler .gitignore rules
->  - simpler list of mrproper files
-
-Neither these two.
-
-The benifits we get is little, I think.
-
-Thanks.
+> Ingo wanted something like "echo "*:---" > ksym_trace_filter". The patch
+> I sent here: http://lkml.org/lkml/2009/6/20/73 implements the same. You
+> may want to implement something on those lines.
+> 
+> Thanks,
+> K.Prasad
+> 
+> 
+> 
