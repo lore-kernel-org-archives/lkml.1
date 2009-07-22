@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbZGVKVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754375AbZGVKKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbZGVKVi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbZGVKVh
+	id S1754375AbZGVKKq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZGVKKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:21:37 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
+	Wed, 22 Jul 2009 06:10:43 -0400
+Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:57001 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753951AbZGVKK3 (ORCPT
+	with ESMTP id S1754168AbZGVKKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:29 -0400
+	Wed, 22 Jul 2009 06:10:38 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -21,9 +21,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Pavel Emelyanov <xemul@openvz.org>,
        Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v17][PATCH 48/60] c/r (ipc): allow allocation of a desired ipc identifier
-Date: Wed, 22 Jul 2009 06:00:10 -0400
-Message-Id: <1248256822-23416-49-git-send-email-orenl@librato.com>
+Subject: [RFC v17][PATCH 24/60] c/r: restart-blocks
+Date: Wed, 22 Jul 2009 05:59:46 -0400
+Message-Id: <1248256822-23416-25-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -31,366 +31,448 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During restart, we need to allocate ipc objects that with the same
-identifiers as recorded during checkpoint. Modify the allocation
-code allow an in-kernel caller to request a specific ipc identifier.
-The system call interface remains unchanged.
+(Paraphrasing what's said this message:
+http://lists.openwall.net/linux-kernel/2007/12/05/64)
+
+Restart blocks are callbacks used cause a system call to be restarted
+with the arguments specified in the system call restart block. It is
+useful for system call that are not idempotent, i.e. the argument(s)
+might be a relative timeout, where some adjustments are required when
+restarting the system call. It relies on the system call itself to set
+up its restart point and the argument save area.  They are rare: an
+actual signal would turn that it an EINTR. The only case that should
+ever trigger this is some kernel action that interrupts the system
+call, but does not actually result in any user-visible state changes -
+like freeze and thaw.
+
+So restart blocks are about time remaining for the system call to
+sleep/wait. Generally in c/r, there are two possible time models that
+we can follow: absolute, relative. Here, I chose to save the relative
+timeout, measured from the beginning of the checkpoint. The time when
+the checkpoint (and restart) begin is also saved. This information is
+sufficient to restart in either model (absolute or negative).
+
+Which model to use should eventually be a per application choice (and
+possible configurable via cradvise() or some sort). For now, we adopt
+the relative model, namely, at restart the timeout is set relative to
+the beginning of the restart.
+
+To checkpoint, we check if a task has a valid restart block, and if so
+we save the *remaining* time that is has to wait/sleep, and the type
+of the restart block.
+
+To restart, we fill in the data required at the proper place in the
+thread information. If the system call return an error (which is
+possibly an -ERESTARTSYS eg), we not only use that error as our own
+return value, but also arrange for the task to execute the signal
+handler (by faking a signal). The handler, in turn, already has the
+code to handle these restart request gracefully.
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- ipc/msg.c  |   17 ++++++++++++-----
- ipc/sem.c  |   17 ++++++++++++-----
- ipc/shm.c  |   19 +++++++++++++------
- ipc/util.c |   42 +++++++++++++++++++++++++++++-------------
- ipc/util.h |    9 +++++----
- 5 files changed, 71 insertions(+), 33 deletions(-)
+ arch/x86/include/asm/checkpoint_hdr.h |    1 -
+ checkpoint/checkpoint.c               |    1 +
+ checkpoint/process.c                  |  226 +++++++++++++++++++++++++++++++++
+ checkpoint/restart.c                  |    5 +-
+ checkpoint/sys.c                      |    1 +
+ include/linux/checkpoint.h            |    4 +
+ include/linux/checkpoint_hdr.h        |   22 +++
+ include/linux/checkpoint_types.h      |    3 +
+ 8 files changed, 260 insertions(+), 3 deletions(-)
 
-diff --git a/ipc/msg.c b/ipc/msg.c
-index 2ceab7f..1db7c45 100644
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -73,7 +73,7 @@ struct msg_sender {
- #define msg_unlock(msq)		ipc_unlock(&(msq)->q_perm)
+diff --git a/arch/x86/include/asm/checkpoint_hdr.h b/arch/x86/include/asm/checkpoint_hdr.h
+index c5762fb..f4d1e14 100644
+--- a/arch/x86/include/asm/checkpoint_hdr.h
++++ b/arch/x86/include/asm/checkpoint_hdr.h
+@@ -58,7 +58,6 @@ struct ckpt_hdr_header_arch {
  
- static void freeque(struct ipc_namespace *, struct kern_ipc_perm *);
--static int newque(struct ipc_namespace *, struct ipc_params *);
-+static int newque(struct ipc_namespace *, struct ipc_params *, int);
- #ifdef CONFIG_PROC_FS
- static int sysvipc_msg_proc_show(struct seq_file *s, void *it);
- #endif
-@@ -174,10 +174,12 @@ static inline void msg_rmid(struct ipc_namespace *ns, struct msg_queue *s)
-  * newque - Create a new msg queue
-  * @ns: namespace
-  * @params: ptr to the structure that contains the key and msgflg
-+ * @req_id: request desired id if available (-1 if don't care)
-  *
-  * Called with msg_ids.rw_mutex held (writer)
-  */
--static int newque(struct ipc_namespace *ns, struct ipc_params *params)
-+static int
-+newque(struct ipc_namespace *ns, struct ipc_params *params, int req_id)
- {
- 	struct msg_queue *msq;
- 	int id, retval;
-@@ -201,7 +203,7 @@ static int newque(struct ipc_namespace *ns, struct ipc_params *params)
- 	/*
- 	 * ipc_addid() locks msq
- 	 */
--	id = ipc_addid(&msg_ids(ns), &msq->q_perm, ns->msg_ctlmni);
-+	id = ipc_addid(&msg_ids(ns), &msq->q_perm, ns->msg_ctlmni, req_id);
- 	if (id < 0) {
- 		security_msg_queue_free(msq);
- 		ipc_rcu_putref(msq);
-@@ -309,7 +311,7 @@ static inline int msg_security(struct kern_ipc_perm *ipcp, int msgflg)
- 	return security_msg_queue_associate(msq, msgflg);
+ struct ckpt_hdr_thread {
+ 	struct ckpt_hdr h;
+-	/* FIXME: restart blocks */
+ 	__u32 thread_info_flags;
+ 	__u16 gdt_entry_tls_entries;
+ 	__u16 sizeof_tls_array;
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index 226735c..8facd9a 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -22,6 +22,7 @@
+ #include <linux/mount.h>
+ #include <linux/utsname.h>
+ #include <linux/magic.h>
++#include <linux/hrtimer.h>
+ #include <linux/checkpoint.h>
+ #include <linux/checkpoint_hdr.h>
+ 
+diff --git a/checkpoint/process.c b/checkpoint/process.c
+index d2c59d2..a0bf344 100644
+--- a/checkpoint/process.c
++++ b/checkpoint/process.c
+@@ -12,6 +12,9 @@
+ #define CKPT_DFLAG  CKPT_DSYS
+ 
+ #include <linux/sched.h>
++#include <linux/posix-timers.h>
++#include <linux/futex.h>
++#include <linux/poll.h>
+ #include <linux/checkpoint.h>
+ #include <linux/checkpoint_hdr.h>
+ 
+@@ -47,6 +50,116 @@ static int checkpoint_task_struct(struct ckpt_ctx *ctx, struct task_struct *t)
+ 	return ckpt_write_string(ctx, t->comm, TASK_COMM_LEN);
  }
  
--SYSCALL_DEFINE2(msgget, key_t, key, int, msgflg)
-+int do_msgget(key_t key, int msgflg, int req_id)
- {
- 	struct ipc_namespace *ns;
- 	struct ipc_ops msg_ops;
-@@ -324,7 +326,12 @@ SYSCALL_DEFINE2(msgget, key_t, key, int, msgflg)
- 	msg_params.key = key;
- 	msg_params.flg = msgflg;
- 
--	return ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params);
-+	return ipcget(ns, &msg_ids(ns), &msg_ops, &msg_params, req_id);
-+}
-+
-+SYSCALL_DEFINE2(msgget, key_t, key, int, msgflg)
++/* dump the task_struct of a given task */
++int checkpoint_restart_block(struct ckpt_ctx *ctx, struct task_struct *t)
 +{
-+	return do_msgget(key, msgflg, -1);
- }
- 
- static inline unsigned long
-diff --git a/ipc/sem.c b/ipc/sem.c
-index 87c2b64..a2b2135 100644
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -92,7 +92,7 @@
- #define sem_unlock(sma)		ipc_unlock(&(sma)->sem_perm)
- #define sem_checkid(sma, semid)	ipc_checkid(&sma->sem_perm, semid)
- 
--static int newary(struct ipc_namespace *, struct ipc_params *);
-+static int newary(struct ipc_namespace *, struct ipc_params *, int);
- static void freeary(struct ipc_namespace *, struct kern_ipc_perm *);
- #ifdef CONFIG_PROC_FS
- static int sysvipc_sem_proc_show(struct seq_file *s, void *it);
-@@ -227,11 +227,13 @@ static inline void sem_rmid(struct ipc_namespace *ns, struct sem_array *s)
-  * newary - Create a new semaphore set
-  * @ns: namespace
-  * @params: ptr to the structure that contains key, semflg and nsems
-+ * @req_id: request desired id if available (-1 if don't care)
-  *
-  * Called with sem_ids.rw_mutex held (as a writer)
-  */
- 
--static int newary(struct ipc_namespace *ns, struct ipc_params *params)
-+static int
-+newary(struct ipc_namespace *ns, struct ipc_params *params, int req_id)
- {
- 	int id;
- 	int retval;
-@@ -263,7 +265,7 @@ static int newary(struct ipc_namespace *ns, struct ipc_params *params)
- 		return retval;
- 	}
- 
--	id = ipc_addid(&sem_ids(ns), &sma->sem_perm, ns->sc_semmni);
-+	id = ipc_addid(&sem_ids(ns), &sma->sem_perm, ns->sc_semmni, req_id);
- 	if (id < 0) {
- 		security_sem_free(sma);
- 		ipc_rcu_putref(sma);
-@@ -308,7 +310,7 @@ static inline int sem_more_checks(struct kern_ipc_perm *ipcp,
- 	return 0;
- }
- 
--SYSCALL_DEFINE3(semget, key_t, key, int, nsems, int, semflg)
-+int do_semget(key_t key, int nsems, int semflg, int req_id)
- {
- 	struct ipc_namespace *ns;
- 	struct ipc_ops sem_ops;
-@@ -327,7 +329,12 @@ SYSCALL_DEFINE3(semget, key_t, key, int, nsems, int, semflg)
- 	sem_params.flg = semflg;
- 	sem_params.u.nsems = nsems;
- 
--	return ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params);
-+	return ipcget(ns, &sem_ids(ns), &sem_ops, &sem_params, req_id);
-+}
++	struct ckpt_hdr_restart_block *h;
++	struct restart_block *restart_block;
++	long (*fn)(struct restart_block *);
++	s64 base, expire = 0;
++	int ret;
 +
-+SYSCALL_DEFINE3(semget, key_t, key, int, nsems, int, semflg)
-+{
-+	return do_semget(key, nsems, semflg, -1);
- }
- 
- /*
-diff --git a/ipc/shm.c b/ipc/shm.c
-index 15dd238..0ee2c35 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -62,7 +62,7 @@ static struct vm_operations_struct shm_vm_ops;
- #define shm_unlock(shp)			\
- 	ipc_unlock(&(shp)->shm_perm)
- 
--static int newseg(struct ipc_namespace *, struct ipc_params *);
-+static int newseg(struct ipc_namespace *, struct ipc_params *, int);
- static void shm_open(struct vm_area_struct *vma);
- static void shm_close(struct vm_area_struct *vma);
- static void shm_destroy (struct ipc_namespace *ns, struct shmid_kernel *shp);
-@@ -83,7 +83,7 @@ void shm_init_ns(struct ipc_namespace *ns)
-  * Called with shm_ids.rw_mutex (writer) and the shp structure locked.
-  * Only shm_ids.rw_mutex remains locked on exit.
-  */
--static void do_shm_rmid(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
-+void do_shm_rmid(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
- {
- 	struct shmid_kernel *shp;
- 	shp = container_of(ipcp, struct shmid_kernel, shm_perm);
-@@ -326,11 +326,13 @@ static struct vm_operations_struct shm_vm_ops = {
-  * newseg - Create a new shared memory segment
-  * @ns: namespace
-  * @params: ptr to the structure that contains key, size and shmflg
-+ * @req_id: request desired id if available (-1 if don't care)
-  *
-  * Called with shm_ids.rw_mutex held as a writer.
-  */
- 
--static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
-+static int
-+newseg(struct ipc_namespace *ns, struct ipc_params *params, int req_id)
- {
- 	key_t key = params->key;
- 	int shmflg = params->flg;
-@@ -385,7 +387,7 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
- 	if (IS_ERR(file))
- 		goto no_file;
- 
--	id = ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
-+	id = ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni, req_id);
- 	if (id < 0) {
- 		error = id;
- 		goto no_id;
-@@ -443,7 +445,7 @@ static inline int shm_more_checks(struct kern_ipc_perm *ipcp,
- 	return 0;
- }
- 
--SYSCALL_DEFINE3(shmget, key_t, key, size_t, size, int, shmflg)
-+int do_shmget(key_t key, size_t size, int shmflg, int req_id)
- {
- 	struct ipc_namespace *ns;
- 	struct ipc_ops shm_ops;
-@@ -459,7 +461,12 @@ SYSCALL_DEFINE3(shmget, key_t, key, size_t, size, int, shmflg)
- 	shm_params.flg = shmflg;
- 	shm_params.u.size = size;
- 
--	return ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params);
-+	return ipcget(ns, &shm_ids(ns), &shm_ops, &shm_params, req_id);
-+}
++	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_RESTART_BLOCK);
++	if (!h)
++		return -ENOMEM;
 +
-+SYSCALL_DEFINE3(shmget, key_t, key, size_t, size, int, shmflg)
-+{
-+	return do_shmget(key, size, shmflg, -1);
- }
- 
- static inline unsigned long copy_shmid_to_user(void __user *buf, struct shmid64_ds *in, int version)
-diff --git a/ipc/util.c b/ipc/util.c
-index b8e4ba9..ca248ec 100644
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -247,10 +247,12 @@ int ipc_get_maxid(struct ipc_ids *ids)
-  *	Called with ipc_ids.rw_mutex held as a writer.
-  */
-  
--int ipc_addid(struct ipc_ids* ids, struct kern_ipc_perm* new, int size)
-+int
-+ipc_addid(struct ipc_ids *ids, struct kern_ipc_perm *new, int size, int req_id)
- {
- 	uid_t euid;
- 	gid_t egid;
-+	int lid = 0;
- 	int id, err;
- 
- 	if (size > IPCMNI)
-@@ -259,28 +261,41 @@ int ipc_addid(struct ipc_ids* ids, struct kern_ipc_perm* new, int size)
- 	if (ids->in_use >= size)
- 		return -ENOSPC;
- 
-+	if (req_id >= 0)
-+		lid = ipcid_to_idx(req_id);
++	base = ktime_to_ns(ctx->ktime_begin);
++	restart_block = &task_thread_info(t)->restart_block;
++	fn = restart_block->fn;
 +
- 	spin_lock_init(&new->lock);
- 	new->deleted = 0;
- 	rcu_read_lock();
- 	spin_lock(&new->lock);
- 
--	err = idr_get_new(&ids->ipcs_idr, new, &id);
-+	err = idr_get_new_above(&ids->ipcs_idr, new, lid, &id);
- 	if (err) {
- 		spin_unlock(&new->lock);
- 		rcu_read_unlock();
- 		return err;
- 	}
- 
-+	if (req_id >= 0) {
-+		if (id != lid) {
-+			idr_remove(&ids->ipcs_idr, id);
-+			spin_unlock(&new->lock);
-+			rcu_read_unlock();
-+			return -EBUSY;
-+		}
-+		new->seq = req_id / SEQ_MULTIPLIER;
++	/* FIX: enumerate clockid_t so we're immune to changes */
++
++	if (fn == do_no_restart_syscall) {
++
++		h->function_type = CKPT_RESTART_BLOCK_NONE;
++		ckpt_debug("restart_block: non\n");
++
++	} else if (fn == hrtimer_nanosleep_restart) {
++
++		h->function_type = CKPT_RESTART_BLOCK_HRTIMER_NANOSLEEP;
++		h->arg_0 = restart_block->nanosleep.index;
++		h->arg_1 = (unsigned long) restart_block->nanosleep.rmtp;
++		expire = restart_block->nanosleep.expires;
++		ckpt_debug("restart_block: hrtimer expire %lld now %lld\n",
++			 expire, base);
++
++	} else if (fn == posix_cpu_nsleep_restart) {
++		struct timespec ts;
++
++		h->function_type = CKPT_RESTART_BLOCK_POSIX_CPU_NANOSLEEP;
++		h->arg_0 = restart_block->arg0;
++		h->arg_1 = restart_block->arg1;
++		ts.tv_sec = restart_block->arg2;
++		ts.tv_nsec = restart_block->arg3;
++		expire = timespec_to_ns(&ts);
++		ckpt_debug("restart_block: posix_cpu expire %lld now %lld\n",
++			 expire, base);
++
++#ifdef CONFIG_COMPAT
++	} else if (fn == compat_nanosleep_restart) {
++
++		h->function_type = CKPT_RESTART_BLOCK_NANOSLEEP;
++		h->arg_0 = restart_block->nanosleep.index;
++		h->arg_1 = (unsigned long)restart_block->nanosleep.rmtp;
++		h->arg_2 = (unsigned long)restart_block->nanosleep.compat_rmtp;
++		expire = restart_block->nanosleep.expires;
++		ckpt_debug("restart_block: compat expire %lld now %lld\n",
++			 expire, base);
++
++	} else if (fn == compat_clock_nanosleep_restart) {
++
++		h->function_type = CKPT_RESTART_BLOCK_COMPAT_CLOCK_NANOSLEEP;
++		h->arg_0 = restart_block->nanosleep.index;
++		h->arg_1 = (unsigned long)restart_block->nanosleep.rmtp;
++		h->arg_2 = (unsigned long)restart_block->nanosleep.compat_rmtp;
++		expire = restart_block->nanosleep.expires;
++		ckpt_debug("restart_block: compat_clock expire %lld now %lld\n",
++			 expire, base);
++
++#endif
++	} else if (fn == futex_wait_restart) {
++
++		h->function_type = CKPT_RESTART_BLOCK_FUTEX;
++		h->arg_0 = (unsigned long) restart_block->futex.uaddr;
++		h->arg_1 = restart_block->futex.val;
++		h->arg_2 = restart_block->futex.flags;
++		h->arg_3 = restart_block->futex.bitset;
++		expire = restart_block->futex.time;
++		ckpt_debug("restart_block: futex expire %lld now %lld\n",
++			 expire, base);
++
++	} else if (fn == do_restart_poll) {
++		struct timespec ts;
++
++		h->function_type = CKPT_RESTART_BLOCK_POLL;
++		h->arg_0 = (unsigned long) restart_block->poll.ufds;
++		h->arg_1 = restart_block->poll.nfds;
++		h->arg_2 = restart_block->poll.has_timeout;
++		ts.tv_sec = restart_block->poll.tv_sec;
++		ts.tv_nsec = restart_block->poll.tv_nsec;
++		expire = timespec_to_ns(&ts);
++		ckpt_debug("restart_block: poll expire %lld now %lld\n",
++			 expire, base);
++
 +	} else {
-+		new->seq = ids->seq++;
-+		if (ids->seq > ids->seq_max)
-+			ids->seq = 0;
++
++		BUG();
++
 +	}
 +
- 	ids->in_use++;
- 
- 	current_euid_egid(&euid, &egid);
- 	new->cuid = new->uid = euid;
- 	new->gid = new->cgid = egid;
- 
--	new->seq = ids->seq++;
--	if(ids->seq > ids->seq_max)
--		ids->seq = 0;
--
- 	new->id = ipc_buildid(id, new->seq);
- 	return id;
- }
-@@ -296,7 +311,7 @@ int ipc_addid(struct ipc_ids* ids, struct kern_ipc_perm* new, int size)
-  *	when the key is IPC_PRIVATE.
-  */
- static int ipcget_new(struct ipc_namespace *ns, struct ipc_ids *ids,
--		struct ipc_ops *ops, struct ipc_params *params)
-+		struct ipc_ops *ops, struct ipc_params *params, int req_id)
- {
- 	int err;
- retry:
-@@ -306,7 +321,7 @@ retry:
- 		return -ENOMEM;
- 
- 	down_write(&ids->rw_mutex);
--	err = ops->getnew(ns, params);
-+	err = ops->getnew(ns, params, req_id);
- 	up_write(&ids->rw_mutex);
- 
- 	if (err == -EAGAIN)
-@@ -351,6 +366,7 @@ static int ipc_check_perms(struct kern_ipc_perm *ipcp, struct ipc_ops *ops,
-  *	@ids: IPC identifer set
-  *	@ops: the actual creation routine to call
-  *	@params: its parameters
-+ *	@req_id: request desired id if available (-1 if don't care)
-  *
-  *	This routine is called by sys_msgget, sys_semget() and sys_shmget()
-  *	when the key is not IPC_PRIVATE.
-@@ -360,7 +376,7 @@ static int ipc_check_perms(struct kern_ipc_perm *ipcp, struct ipc_ops *ops,
-  *	On success, the ipc id is returned.
-  */
- static int ipcget_public(struct ipc_namespace *ns, struct ipc_ids *ids,
--		struct ipc_ops *ops, struct ipc_params *params)
-+		struct ipc_ops *ops, struct ipc_params *params, int req_id)
- {
- 	struct kern_ipc_perm *ipcp;
- 	int flg = params->flg;
-@@ -381,7 +397,7 @@ retry:
- 		else if (!err)
- 			err = -ENOMEM;
- 		else
--			err = ops->getnew(ns, params);
-+			err = ops->getnew(ns, params, req_id);
- 	} else {
- 		/* ipc object has been locked by ipc_findkey() */
- 
-@@ -742,12 +758,12 @@ struct kern_ipc_perm *ipc_lock_check(struct ipc_ids *ids, int id)
-  * Common routine called by sys_msgget(), sys_semget() and sys_shmget().
-  */
- int ipcget(struct ipc_namespace *ns, struct ipc_ids *ids,
--			struct ipc_ops *ops, struct ipc_params *params)
-+		struct ipc_ops *ops, struct ipc_params *params, int req_id)
- {
- 	if (params->key == IPC_PRIVATE)
--		return ipcget_new(ns, ids, ops, params);
-+		return ipcget_new(ns, ids, ops, params, req_id);
- 	else
--		return ipcget_public(ns, ids, ops, params);
-+		return ipcget_public(ns, ids, ops, params, req_id);
- }
- 
- /**
-diff --git a/ipc/util.h b/ipc/util.h
-index 764b51a..159a73c 100644
---- a/ipc/util.h
-+++ b/ipc/util.h
-@@ -71,7 +71,7 @@ struct ipc_params {
-  *      . routine to call for an extra check if needed
-  */
- struct ipc_ops {
--	int (*getnew) (struct ipc_namespace *, struct ipc_params *);
-+	int (*getnew) (struct ipc_namespace *, struct ipc_params *, int);
- 	int (*associate) (struct kern_ipc_perm *, int);
- 	int (*more_checks) (struct kern_ipc_perm *, struct ipc_params *);
- };
-@@ -94,7 +94,7 @@ void __init ipc_init_proc_interface(const char *path, const char *header,
- #define ipcid_to_idx(id) ((id) % SEQ_MULTIPLIER)
- 
- /* must be called with ids->rw_mutex acquired for writing */
--int ipc_addid(struct ipc_ids *, struct kern_ipc_perm *, int);
-+int ipc_addid(struct ipc_ids *, struct kern_ipc_perm *, int, int);
- 
- /* must be called with ids->rw_mutex acquired for reading */
- int ipc_get_maxid(struct ipc_ids *);
-@@ -171,7 +171,8 @@ static inline void ipc_unlock(struct kern_ipc_perm *perm)
- 
- struct kern_ipc_perm *ipc_lock_check(struct ipc_ids *ids, int id);
- int ipcget(struct ipc_namespace *ns, struct ipc_ids *ids,
--			struct ipc_ops *ops, struct ipc_params *params);
-+	   struct ipc_ops *ops, struct ipc_params *params, int req_id);
- void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
--		void (*free)(struct ipc_namespace *, struct kern_ipc_perm *));
-+	       void (*free)(struct ipc_namespace *, struct kern_ipc_perm *));
++	/* common to all restart blocks: */
++	h->arg_4 = (base < expire ? expire - base : 0);
 +
- #endif
++	ckpt_debug("restart_block: args %#llx %#llx %#llx %#llx %#llx\n",
++		 h->arg_0, h->arg_1, h->arg_2, h->arg_3, h->arg_4);
++
++	ret = ckpt_write_obj(ctx, &h->h);
++	ckpt_hdr_put(ctx, h);
++
++	ckpt_debug("restart_block ret %d\n", ret);
++	return ret;
++}
++
+ /* dump the entire state of a given task */
+ int checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
+ {
+@@ -60,6 +173,10 @@ int checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
+ 	ckpt_debug("thread %d\n", ret);
+ 	if (ret < 0)
+ 		goto out;
++	ret = checkpoint_restart_block(ctx, t);
++	ckpt_debug("restart-blocks %d\n", ret);
++	if (ret < 0)
++		goto out;
+ 	ret = checkpoint_cpu(ctx, t);
+ 	ckpt_debug("cpu %d\n", ret);
+  out:
+@@ -95,6 +212,111 @@ static int restore_task_struct(struct ckpt_ctx *ctx)
+ 	return ret;
+ }
+ 
++int restore_restart_block(struct ckpt_ctx *ctx)
++{
++	struct ckpt_hdr_restart_block *h;
++	struct restart_block restart_block;
++	struct timespec ts;
++	clockid_t clockid;
++	s64 expire;
++	int ret = 0;
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_RESTART_BLOCK);
++	if (IS_ERR(h))
++		return PTR_ERR(h);
++
++	expire = ktime_to_ns(ctx->ktime_begin) + h->arg_4;
++	restart_block.fn = NULL;
++
++	ckpt_debug("restart_block: expire %lld begin %lld\n",
++		 expire, ktime_to_ns(ctx->ktime_begin));
++	ckpt_debug("restart_block: args %#llx %#llx %#llx %#llx %#llx\n",
++		 h->arg_0, h->arg_1, h->arg_2, h->arg_3, h->arg_4);
++
++	switch (h->function_type) {
++	case CKPT_RESTART_BLOCK_NONE:
++		restart_block.fn = do_no_restart_syscall;
++		break;
++	case CKPT_RESTART_BLOCK_HRTIMER_NANOSLEEP:
++		clockid = h->arg_0;
++		if (clockid < 0 || invalid_clockid(clockid))
++			break;
++		restart_block.fn = hrtimer_nanosleep_restart;
++		restart_block.nanosleep.index = clockid;
++		restart_block.nanosleep.rmtp =
++			(struct timespec __user *) (unsigned long) h->arg_1;
++		restart_block.nanosleep.expires = expire;
++		break;
++	case CKPT_RESTART_BLOCK_POSIX_CPU_NANOSLEEP:
++		clockid = h->arg_0;
++		if (clockid < 0 || invalid_clockid(clockid))
++			break;
++		restart_block.fn = posix_cpu_nsleep_restart;
++		restart_block.arg0 = clockid;
++		restart_block.arg1 = h->arg_1;
++		ts = ns_to_timespec(expire);
++		restart_block.arg2 = ts.tv_sec;
++		restart_block.arg3 = ts.tv_nsec;
++		break;
++#ifdef CONFIG_COMPAT
++	case CKPT_RESTART_BLOCK_COMPAT_NANOSLEEP:
++		clockid = h->arg_0;
++		if (clockid < 0 || invalid_clockid(clockid))
++			break;
++		restart_block.fn = compat_nanosleep_restart;
++		restart_block.nanosleep.index = clockid;
++		restart_block.nanosleep.rmtp =
++			(struct timespec __user *) (unsigned long) h->arg_1;
++		restart_block.nanosleep.compat_rmtp =
++			(struct compat_timespec __user *)
++				(unsigned long) h->arg_2;
++		resatrt_block.nanosleep.expires = expire;
++		break;
++	case CKPT_RESTART_BLOCK_COMPAT_CLOCK_NANOSLEEP:
++		clockid = h->arg_0;
++		if (clockid < 0 || invalid_clockid(clockid))
++			break;
++		restart_block.fn = compat_clock_nanosleep_restart;
++		restart_block.nanosleep.index = clockid;
++		restart_block.nanosleep.rmtp =
++			(struct timespec __user *) (unsigned long) h->arg_1;
++		restart_block.nanosleep.compat_rmtp =
++			(struct compat_timespec __user *)
++				(unsigned long) h->arg_2;
++		resatrt_block.nanosleep.expires = expire;
++		break;
++#endif
++	case CKPT_RESTART_BLOCK_FUTEX:
++		restart_block.fn = futex_wait_restart;
++		restart_block.futex.uaddr = (u32 *) (unsigned long) h->arg_0;
++		restart_block.futex.val = h->arg_1;
++		restart_block.futex.flags = h->arg_2;
++		restart_block.futex.bitset = h->arg_3;
++		restart_block.futex.time = expire;
++		break;
++	case CKPT_RESTART_BLOCK_POLL:
++		restart_block.fn = do_restart_poll;
++		restart_block.poll.ufds =
++			(struct pollfd __user *) (unsigned long) h->arg_0;
++		restart_block.poll.nfds = h->arg_1;
++		restart_block.poll.has_timeout = h->arg_2;
++		ts = ns_to_timespec(expire);
++		restart_block.poll.tv_sec = ts.tv_sec;
++		restart_block.poll.tv_nsec = ts.tv_nsec;
++		break;
++	default:
++		break;
++	}
++
++	if (restart_block.fn)
++		task_thread_info(current)->restart_block = restart_block;
++	else
++		ret = -EINVAL;
++
++	ckpt_hdr_put(ctx, h);
++	return ret;
++}
++
+ /* read the entire state of the current task */
+ int restore_task(struct ckpt_ctx *ctx)
+ {
+@@ -108,6 +330,10 @@ int restore_task(struct ckpt_ctx *ctx)
+ 	ckpt_debug("thread %d\n", ret);
+ 	if (ret < 0)
+ 		goto out;
++	ret = restore_restart_block(ctx);
++	ckpt_debug("restart-blocks %d\n", ret);
++	if (ret < 0)
++		goto out;
+ 	ret = restore_cpu(ctx);
+ 	ckpt_debug("cpu %d\n", ret);
+  out:
+diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+index 62e19b4..582d6b4 100644
+--- a/checkpoint/restart.c
++++ b/checkpoint/restart.c
+@@ -16,6 +16,8 @@
+ #include <linux/file.h>
+ #include <linux/magic.h>
+ #include <linux/utsname.h>
++#include <asm/syscall.h>
++#include <linux/elf.h>
+ #include <linux/checkpoint.h>
+ #include <linux/checkpoint_hdr.h>
+ 
+@@ -393,6 +395,5 @@ long do_restart(struct ckpt_ctx *ctx, pid_t pid)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	/* on success, adjust the return value if needed [TODO] */
+-	return restore_retval(ctx);
++	return restore_retval();
+ }
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+index dda2c21..b37bc8c 100644
+--- a/checkpoint/sys.c
++++ b/checkpoint/sys.c
+@@ -193,6 +193,7 @@ static struct ckpt_ctx *ckpt_ctx_alloc(int fd, unsigned long uflags,
+ 
+ 	ctx->uflags = uflags;
+ 	ctx->kflags = kflags;
++	ctx->ktime_begin = ktime_get();
+ 
+ 	err = -EBADF;
+ 	ctx->file = fget(fd);
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index f7e2cb8..01541b8 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -66,6 +66,10 @@ extern int restore_read_header_arch(struct ckpt_ctx *ctx);
+ extern int restore_thread(struct ckpt_ctx *ctx);
+ extern int restore_cpu(struct ckpt_ctx *ctx);
+ 
++extern int checkpoint_restart_block(struct ckpt_ctx *ctx,
++				    struct task_struct *t);
++extern int restore_restart_block(struct ckpt_ctx *ctx);
++
+ 
+ /* debugging flags */
+ #define CKPT_DBASE	0x1		/* anything */
+diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
+index ce43aa9..fa23629 100644
+--- a/include/linux/checkpoint_hdr.h
++++ b/include/linux/checkpoint_hdr.h
+@@ -50,6 +50,7 @@ enum {
+ 	CKPT_HDR_STRING,
+ 
+ 	CKPT_HDR_TASK = 101,
++	CKPT_HDR_RESTART_BLOCK,
+ 	CKPT_HDR_THREAD,
+ 	CKPT_HDR_CPU,
+ 
+@@ -120,4 +121,25 @@ struct ckpt_hdr_task {
+ 	__u64 clear_child_tid;
+ } __attribute__((aligned(8)));
+ 
++/* restart blocks */
++struct ckpt_hdr_restart_block {
++	struct ckpt_hdr h;
++	__u64 function_type;
++	__u64 arg_0;
++	__u64 arg_1;
++	__u64 arg_2;
++	__u64 arg_3;
++	__u64 arg_4;
++} __attribute__((aligned(8)));
++
++enum restart_block_type {
++	CKPT_RESTART_BLOCK_NONE = 1,
++	CKPT_RESTART_BLOCK_HRTIMER_NANOSLEEP,
++	CKPT_RESTART_BLOCK_POSIX_CPU_NANOSLEEP,
++	CKPT_RESTART_BLOCK_COMPAT_NANOSLEEP,
++	CKPT_RESTART_BLOCK_COMPAT_CLOCK_NANOSLEEP,
++	CKPT_RESTART_BLOCK_POLL,
++	CKPT_RESTART_BLOCK_FUTEX
++};
++
+ #endif /* _CHECKPOINT_CKPT_HDR_H_ */
+diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
+index 21b5965..220c209 100644
+--- a/include/linux/checkpoint_types.h
++++ b/include/linux/checkpoint_types.h
+@@ -15,10 +15,13 @@
+ #include <linux/sched.h>
+ #include <linux/nsproxy.h>
+ #include <linux/fs.h>
++#include <linux/ktime.h>
+ 
+ struct ckpt_ctx {
+ 	int crid;		/* unique checkpoint id */
+ 
++	ktime_t ktime_begin;	/* checkpoint start time */
++
+ 	pid_t root_pid;				/* [container] root pid */
+ 	struct task_struct *root_task;		/* [container] root task */
+ 	struct nsproxy *root_nsproxy;		/* [container] root nsproxy */
 -- 
 1.6.0.4
 
