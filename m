@@ -1,122 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZGVWDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbZGVWDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754595AbZGVWDi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 18:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZGVWDi
+	id S1754529AbZGVWDH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 18:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbZGVWDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 18:03:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35058 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754511AbZGVWDh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 18:03:37 -0400
-Date: Wed, 22 Jul 2009 15:02:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] cpu_hotplug: don't affect current task's affinity
-Message-Id: <20090722150246.6d28003a.akpm@linux-foundation.org>
-In-Reply-To: <4A5C4626.8000000@cn.fujitsu.com>
-References: <4A5C4626.8000000@cn.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 22 Jul 2009 18:03:06 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:58074 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754353AbZGVWDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 18:03:04 -0400
+X-IronPort-AV: E=Sophos;i="4.43,248,1246863600"; 
+   d="scan'208";a="210516375"
+Cc: Ben Greear <greearb@candelatech.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Message-Id: <2CC45724-FD70-4F00-84F7-4D0E2158D6B5@netapp.com>
+From: Andy Adamson <andros@netapp.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+In-Reply-To: <1248299236.9202.3.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
+Date: Wed, 22 Jul 2009 18:03:03 -0400
+References: <4A64EB1F.4000602@candelatech.com> <1248178527.5222.0.camel@heimdal.trondhjem.org> <4A65F184.5060802@candelatech.com> <1248196339.21343.8.camel@heimdal.trondhjem.org> <4A65FCB2.6080903@candelatech.com> <1248199140.21343.17.camel@heimdal.trondhjem.org> <4A660295.9020807@candelatech.com> <1248200897.21343.19.camel@heimdal.trondhjem.org> <4A6609A9.3000504@candelatech.com> <1248211050.21343.38.camel@heimdal.trondhjem.org> <A7103385-4525-4B7B-9CBA-5DBCB99A98F0@netapp.com> <1248294013.5234.35.camel@heimdal.trondhjem.org> <74713B5B-DF7F-4357-AE3A-0F6B44C41116@netapp.com> <1248299236.9202.3.camel@heimdal.trondhjem.org>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 14 Jul 2009 16:47:34 +0800
-Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-> 
-> _cpu_down() changes current task's affinity and then
-> recovers it at the end.
-> 
-> It brings two defects:
-> 
-> 1) The recovering will failed in some condition.
-> 
-> # grep Cpus_allowed_list /proc/$$/status
-> Cpus_allowed_list:      0-3
-> 
-> # taskset -pc 2 $$
-> pid 29075's current affinity list: 0-3
-> pid 29075's new affinity list: 2
-> 
-> # grep Cpus_allowed_list /proc/$$/status
-> Cpus_allowed_list:      2
-> 
-> # echo 0 > /sys/devices/system/cpu/cpu2/online
-> 
-> # grep Cpus_allowed_list /proc/$$/status
-> Cpus_allowed_list:      0
-> 
-> In linux, tasks' "Cpus_allowed_list" which are "2" originally
-> will become "0-1,3" after the cpu#2 is offlined.
-> 
-> This "Cpus_allowed_list:      0" is suspicionful.
-> 
-> 2) current task is a userspace task, the user may change
-> its cpu-affinity at the same time. The user may get unexpected
-> result if _cpu_down() changes current task's affinity.
-> 
-> Actually, we don't have to change the affinity.
-> We create a kernel thread to do the works.
-> 
+On Jul 22, 2009, at 5:47 PM, Trond Myklebust wrote:
 
-I've rewritten the description as below.  Can you check it please?
+> On Wed, 2009-07-22 at 17:32 -0400, Andy Adamson wrote:
+>> nfs4_init_session should simply return if the nfs_client  
+>> cl_cons_state
+>> is not NFS_CS_SESSION_INITING.
+>> I shouldn't be trying to set the session max_resp_sz/max_rqst_sz to
+>> the rsize/wsize, but rather to the maximum rsize/wsize supported by
+>> the client.
+>> If the server accepts or increases the max_resp_sz/max_rqst_sz then
+>> all is well.
+>> If the server reduces the max_resp_sz/max_rqst_sz, the maximum rsize/
+>> wsize available for NFSv4.1 partition mounts to the server needs to  
+>> be
+>> reduced accordingly. So the nfs_server rsize/wsize needs to be bound
+>> by the session max_resp_sz/max_rqst_sz as well as by the maximum
+>> supported size.
+>
+> Well.... The rsize/wsize is one thing, but how about acls? We simply
+> don't know how big they may become.
 
-: _cpu_down() changes the current task's affinity and then recovers it at the
-: end.
-: 
-: It has two problems:
-: 
-: 1) The recovery of the current tasks's cpus_allowed will fail under
-:    some conditions.
-: 
-:    # grep Cpus_allowed_list /proc/$$/status
-:    Cpus_allowed_list:      0-3
-: 
-:    # taskset -pc 2 $$
-:    pid 29075's current affinity list: 0-3
-:    pid 29075's new affinity list: 2
-: 
-:    # grep Cpus_allowed_list /proc/$$/status
-:    Cpus_allowed_list:      2
-: 
-:    # echo 0 > /sys/devices/system/cpu/cpu2/online
-: 
-:    # grep Cpus_allowed_list /proc/$$/status
-:    Cpus_allowed_list:      0
-: 
-:    Here, the Cpus_allowed_list was originally "2" and has become
-:    "0-1,3" after cpu #2 is offlined.
-: 
-:    This "Cpus_allowed_list:      0" is incorrect.
-: 
-: 2) If the current task is a userspace task, the user may change its
-:    cpu-affinity during the CPU hot-unplugging.  This change can be
-:    overwritten when _cpu_down() changes the current task's affinity.
-: 
-: 
-: Fix all this by not changing the current tasks's affinity.  Instead we
-: create a kernel thread to do the work.
+Yeah - has anything been submitted for 4.2 to fix this? (a readdir  
+cookie - like thingie)
 
+>
+>
+> An alternative would be to let the server choose the
+> max_rqst_sz/max_resp_sz by always requesting the maximum allowed  
+> value.
 
+OK  - maximum allowed value instead of maximum client supported value...
 
-I don't fully understand 1).  You say that the tasks's cpus_allowed has
-become "0-1,3".  But it hasn't - it has become "0".
+>
+> Trond
+>
 
-Are you saying that the mask is internally 0-1,3 and that the
-/proc/$$/status file is incorrectly displaying it?
-
-Or are you saying that the mask _should_ have been 0-1,3 but the kernel
-incorrectly set it to "0"?
-
-
-Also, it says "The recovery of the current tasks's cpus_allowed will
-fail under some conditions".  What are those conditions?
-
-Thanks.
