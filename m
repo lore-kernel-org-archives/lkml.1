@@ -1,434 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZGVKMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZGVKMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbZGVKMu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbZGVKMs
+	id S1754788AbZGVKMd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZGVKMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:12:48 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
-	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754621AbZGVKKy (ORCPT
+	Wed, 22 Jul 2009 06:12:31 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33700 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754653AbZGVKM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:54 -0400
-From: Oren Laadan <orenl@librato.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v17][PATCH 45/60] c/r: make ckpt_may_checkpoint_task() check each namespace individually
-Date: Wed, 22 Jul 2009 06:00:07 -0400
-Message-Id: <1248256822-23416-46-git-send-email-orenl@librato.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
-References: <1248256822-23416-1-git-send-email-orenl@librato.com>
+	Wed, 22 Jul 2009 06:12:27 -0400
+Subject: Re: [PATCH v3 3/4] ftrace: add tracepoint for hrtimer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A66DDB6.4000700@cn.fujitsu.com>
+References: <4A604E46.5050903@cn.fujitsu.com>
+	 <4A605009.8060806@cn.fujitsu.com> <1247827801.15751.4.camel@twins>
+	 <4A641BFC.2050508@cn.fujitsu.com> <1248091771.15751.8578.camel@twins>
+	 <4A66DDB6.4000700@cn.fujitsu.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 22 Jul 2009 12:13:18 +0200
+Message-Id: <1248257598.27058.1227.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For a given namespace type, say XXX, if a checkpoint was taken on a
-CONFIG_XXX_NS system, is restarted on a !CONFIG_XXX_NS, then ensure
-that:
+On Wed, 2009-07-22 at 17:36 +0800, Xiao Guangrong wrote:
+> 
+> Peter Zijlstra wrote:
+> 
+> > Ah, but you don't get those anyway, I'd argue the whole expire thing is
+> > broken. The only expiry you get is the hardware interrupt firing.
+> > Anything after that is a free-for-all.
+> > 
+> > Look at that loop in hrtimer_interrupt(), with your tracepoint, they'd
+> > all expire at the same time, regardless of how long previous callback's
+> > took to complete.
+> > 
+> > Also, the whole loop can be re-tried, updating 'now' expiring a whole
+> > new set of timers without expiry event.
+> > 
+> 
+> Yes, the expire time that got by _expire() is incorrect and thanks for
+> your point out.
+> 
+> > The best you can get is a tracepoint when the hrtimer interrupt happens,
+> > and the IRQ tracepoint already give you that.
+> > 
+> 
+> I'm trying to fix it address your comment, but meet some problems,
+> the time of ftrace output can't solve everything, because:
+> 
+> 1: the time unit of ftrace output is microsecond, but hrtimer's unit
+>    is nanosecond, it's not exact for us
+> 
+> 2: the time of ftrace ouput is the time after system boot, but we need
+>    xtime and wall_to_monotonic to calculate latency of hrtimer,
+>    for example:
+>    insmod-3821  [001]  3192.239335: hrtimer_start: timer=d08a1480  expires=1245162841000000000 ns
+>    <idle>-0     [001]  3201.506127: hrtimer_expire: timer=d08a1480
+>    
+>   we expect the timer expire at 1245162841000000000 ns, this is base on
+>   xtime, but we don't know the interval running that we are expect hrtimer
+>   to run if we don't know the xtime at hrtimer_start or hrtimer_expire.
+> 
+> But it's hard for hrtime's TRACE_EVENT to get xtime and wall_to_monotonic
+> since it's a fast patch, if we have to do this, the code maybe like below:
+> 
+> TRACE_EVENT(hrtimer_expire,
+> 
+> 	......
+> 
+> 	TP_STRUCT__entry(
+> 		__field( void *,	timer	)
+> 		__field( s64,		now	)
+> 		__field( s64, 		offset	)
+> 	),
+> 
+> 	TP_fast_assign(
+> 		__entry->timer	= timer;
+> 		__entry->now	= ktime_get().tv64;
+> 		__entry->wtom 	= timespec_to_ktime(wall_to_monotonic).tv64;
+> 	),
+> 
+> 	TP_printk("timer=%p now=%llu ns wtom=%llu", __entry->timer,
+> 		 (unsigned long long)__entry->now, (unsigned long long)__entry->wtom)
+> );
+> 
+> We need cooperate with trace_hrtimer_init() to get hrtimer's clockid.
+> 
+> That make trace_hrtimer_expire() slow.
+> 
+> Though the original patch get expire time not exactly, but It harm system's 
+> performance very little.
 
-1) The global settings of the global (init) namespace do not get
-overwritten. Creating new objects in that namespace is ok, as long as
-the request identifier is available.
+OK, so what you want to measure is the time of the actual callback
+happening (hrtimer_entry) vs that where you would have expected it to
+happen (hrtimer_start + delay), right?
 
-2) All restarting tasks use a single namespace - because it is
-impossible to create additional namespaces to accommodate for what had
-been checkpointed.
+So what's wrong with printing the expected expiration time in the
+hrtimer_start tracepoint in the cheap clock units?
 
-Original patch introducing nsproxy c/r by Dan Smith <danms@us.ibm.com>
-
-Chagnelog[v17]:
-  - Only collect sub-objects of struct_nsproxy once.
-  - Restore namespace pieces directly instead of using sys_unshare()
-  - Proper handling of restart from namespace(s) without namespace(s)
-
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
----
- checkpoint/checkpoint.c        |   20 ++++++++--
- checkpoint/objhash.c           |   28 ++++++++++++++
- checkpoint/process.c           |   81 ++++++++++++++++++++++++++++++++++++++++
- include/linux/checkpoint.h     |    5 ++
- include/linux/checkpoint_hdr.h |   13 ++++++
- kernel/nsproxy.c               |   76 +++++++++++++++++++++++++++++++++++++
- 6 files changed, 219 insertions(+), 4 deletions(-)
-
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index c68e443..af6b58b 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -281,6 +281,8 @@ static int checkpoint_all_tasks(struct ckpt_ctx *ctx)
- static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
- {
- 	struct task_struct *root = ctx->root_task;
-+	struct nsproxy *nsproxy;
-+	int ret = 0;
- 
- 	ckpt_debug("check %d\n", task_pid_nr_ns(t, ctx->root_nsproxy->pid_ns));
- 
-@@ -324,11 +326,21 @@ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
- 		return -EINVAL;
- 	}
- 
--	/* FIX: change this when namespaces are added */
--	if (task_nsproxy(t) != ctx->root_nsproxy)
--		return -EPERM;
-+	rcu_read_lock();
-+	nsproxy = task_nsproxy(t);
-+	if (nsproxy->uts_ns != ctx->root_nsproxy->uts_ns)
-+		ret = -EPERM;
-+	if (nsproxy->ipc_ns != ctx->root_nsproxy->ipc_ns)
-+		ret = -EPERM;
-+	if (nsproxy->mnt_ns != ctx->root_nsproxy->mnt_ns)
-+		ret = -EPERM;
-+	if (nsproxy->pid_ns != ctx->root_nsproxy->pid_ns)
-+		ret = -EPERM;
-+	if (nsproxy->net_ns != ctx->root_nsproxy->net_ns)
-+		ret = -EPERM;
-+	rcu_read_unlock();
- 
--	return 0;
-+	return ret;
- }
- 
- #define CKPT_HDR_PIDS_CHUNK	256
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-index 02b42a0..18ede6f 100644
---- a/checkpoint/objhash.c
-+++ b/checkpoint/objhash.c
-@@ -132,6 +132,22 @@ static int obj_mm_users(void *ptr)
- 	return atomic_read(&((struct mm_struct *) ptr)->mm_users);
- }
- 
-+static int obj_ns_grab(void *ptr)
-+{
-+	get_nsproxy((struct nsproxy *) ptr);
-+	return 0;
-+}
-+
-+static void obj_ns_drop(void *ptr)
-+{
-+	put_nsproxy((struct nsproxy *) ptr);
-+}
-+
-+static int obj_ns_users(void *ptr)
-+{
-+	return atomic_read(&((struct nsproxy *) ptr)->count);
-+}
-+
- static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 	/* ignored object */
- 	{
-@@ -179,6 +195,16 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 		.checkpoint = checkpoint_mm,
- 		.restore = restore_mm,
- 	},
-+	/* ns object */
-+	{
-+		.obj_name = "NSPROXY",
-+		.obj_type = CKPT_OBJ_NS,
-+		.ref_drop = obj_ns_drop,
-+		.ref_grab = obj_ns_grab,
-+		.ref_users = obj_ns_users,
-+		.checkpoint = checkpoint_ns,
-+		.restore = restore_ns,
-+	},
- };
- 
- 
-@@ -520,6 +546,8 @@ int ckpt_obj_contained(struct ckpt_ctx *ctx)
- 
- 	/* account for ctx->file reference (if in the table already) */
- 	ckpt_obj_users_inc(ctx, ctx->file, 1);
-+	/* account for ctx->root_nsproxy reference (if in the table already) */
-+	ckpt_obj_users_inc(ctx, ctx->root_nsproxy, 1);
- 
- 	hlist_for_each_entry(obj, node, &ctx->obj_hash->list, next) {
- 		if (!obj->ops->ref_users)
-diff --git a/checkpoint/process.c b/checkpoint/process.c
-index 5d71016..40e83c9 100644
---- a/checkpoint/process.c
-+++ b/checkpoint/process.c
-@@ -12,6 +12,7 @@
- #define CKPT_DFLAG  CKPT_DSYS
- 
- #include <linux/sched.h>
-+#include <linux/nsproxy.h>
- #include <linux/posix-timers.h>
- #include <linux/futex.h>
- #include <linux/poll.h>
-@@ -103,6 +104,35 @@ static int checkpoint_task_struct(struct ckpt_ctx *ctx, struct task_struct *t)
- 	return ckpt_write_string(ctx, t->comm, TASK_COMM_LEN);
- }
- 
-+static int checkpoint_task_ns(struct ckpt_ctx *ctx, struct task_struct *t)
-+{
-+	struct ckpt_hdr_task_ns *h;
-+	struct nsproxy *nsproxy;
-+	int ns_objref;
-+	int ret;
-+
-+	rcu_read_lock();
-+	nsproxy = task_nsproxy(t);
-+	get_nsproxy(nsproxy);
-+	rcu_read_unlock();
-+
-+	ns_objref = checkpoint_obj(ctx, nsproxy, CKPT_OBJ_NS);
-+	put_nsproxy(nsproxy);
-+
-+	ckpt_debug("nsproxy: objref %d\n", ns_objref);
-+	if (ns_objref < 0)
-+		return ns_objref;
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_TASK_NS);
-+	if (!h)
-+		return -ENOMEM;
-+	h->ns_objref = ns_objref;
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+
-+	return ret;
-+}
-+
- static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
- {
- 	struct ckpt_hdr_task_objs *h;
-@@ -110,6 +140,19 @@ static int checkpoint_task_objs(struct ckpt_ctx *ctx, struct task_struct *t)
- 	int mm_objref;
- 	int ret;
- 
-+	/*
-+	 * Shared objects may have dependencies among them: task->mm
-+	 * depends on task->nsproxy (by ipc_ns). Therefore first save
-+	 * the namespaces, and then the remaining shared objects.
-+	 * During restart a task will already have its namespaces
-+	 * restored when it gets to restore, e.g. its memory.
-+	 */
-+
-+	ret = checkpoint_task_ns(ctx, t);
-+	ckpt_debug("ns: objref %d\n", ret);
-+	if (ret < 0)
-+		return ret;
-+
- 	files_objref = checkpoint_obj_file_table(ctx, t);
- 	ckpt_debug("files: objref %d\n", files_objref);
- 	if (files_objref < 0) {
-@@ -283,6 +326,9 @@ int ckpt_collect_task(struct ckpt_ctx *ctx, struct task_struct *t)
- {
- 	int ret;
- 
-+	ret = ckpt_collect_ns(ctx, t);
-+	if (ret < 0)
-+		return ret;
- 	ret = ckpt_collect_file_table(ctx, t);
- 	if (ret < 0)
- 		return ret;
-@@ -356,11 +402,46 @@ static int restore_task_struct(struct ckpt_ctx *ctx)
- 	return ret;
- }
- 
-+static int restore_task_ns(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_hdr_task_ns *h;
-+	struct nsproxy *nsproxy;
-+	int ret = 0;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_TASK_NS);
-+	if (IS_ERR(h))
-+		return PTR_ERR(h);
-+
-+	nsproxy = ckpt_obj_fetch(ctx, h->ns_objref, CKPT_OBJ_NS);
-+	if (IS_ERR(nsproxy)) {
-+		ret = PTR_ERR(nsproxy);
-+		goto out;
-+	}
-+
-+	if (nsproxy != task_nsproxy(current)) {
-+		get_nsproxy(nsproxy);
-+		switch_task_namespaces(current, nsproxy);
-+	}
-+ out:
-+	ckpt_debug("nsproxy: ret %d (%p)\n", ret, task_nsproxy(current));
-+	ckpt_hdr_put(ctx, h);
-+	return ret;
-+}
-+
- static int restore_task_objs(struct ckpt_ctx *ctx)
- {
- 	struct ckpt_hdr_task_objs *h;
- 	int ret;
- 
-+	/*
-+	 * Namespaces come first, because ->mm depends on ->nsproxy,
-+	 * and because shared objects are restored before they are
-+	 * referenced. See comment in checkpoint_task_objs.
-+	 */
-+	ret = restore_task_ns(ctx);
-+	if (ret < 0)
-+		return ret;
-+
- 	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_TASK_OBJS);
- 	if (IS_ERR(h))
- 		return PTR_ERR(h);
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 5920453..e433b5c 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -126,6 +126,11 @@ extern int checkpoint_restart_block(struct ckpt_ctx *ctx,
- 				    struct task_struct *t);
- extern int restore_restart_block(struct ckpt_ctx *ctx);
- 
-+/* namespaces */
-+extern int ckpt_collect_ns(struct ckpt_ctx *ctx, struct task_struct *t);
-+extern int checkpoint_ns(struct ckpt_ctx *ctx, void *ptr);
-+extern void *restore_ns(struct ckpt_ctx *ctx);
-+
- /* file table */
- extern int ckpt_collect_file_table(struct ckpt_ctx *ctx, struct task_struct *t);
- extern int checkpoint_obj_file_table(struct ckpt_ctx *ctx,
-diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index b187719..af18332 100644
---- a/include/linux/checkpoint_hdr.h
-+++ b/include/linux/checkpoint_hdr.h
-@@ -52,10 +52,12 @@ enum {
- 
- 	CKPT_HDR_TREE = 101,
- 	CKPT_HDR_TASK,
-+	CKPT_HDR_TASK_NS,
- 	CKPT_HDR_TASK_OBJS,
- 	CKPT_HDR_RESTART_BLOCK,
- 	CKPT_HDR_THREAD,
- 	CKPT_HDR_CPU,
-+	CKPT_HDR_NS,
- 
- 	/* 201-299: reserved for arch-dependent */
- 
-@@ -94,6 +96,7 @@ enum obj_type {
- 	CKPT_OBJ_FILE_TABLE,
- 	CKPT_OBJ_FILE,
- 	CKPT_OBJ_MM,
-+	CKPT_OBJ_NS,
- 	CKPT_OBJ_MAX
- };
- 
-@@ -173,6 +176,16 @@ struct ckpt_hdr_task {
- 	__u64 robust_futex_list; /* a __user ptr */
- } __attribute__((aligned(8)));
- 
-+/* namespaces */
-+struct ckpt_hdr_task_ns {
-+	struct ckpt_hdr h;
-+	__s32 ns_objref;
-+} __attribute__((aligned(8)));
-+
-+struct ckpt_hdr_ns {
-+	struct ckpt_hdr h;
-+} __attribute__((aligned(8)));
-+
- /* task's shared resources */
- struct ckpt_hdr_task_objs {
- 	struct ckpt_hdr h;
-diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
-index 09b4ff9..54cb987 100644
---- a/kernel/nsproxy.c
-+++ b/kernel/nsproxy.c
-@@ -21,6 +21,7 @@
- #include <linux/pid_namespace.h>
- #include <net/net_namespace.h>
- #include <linux/ipc_namespace.h>
-+#include <linux/checkpoint.h>
- 
- static struct kmem_cache *nsproxy_cachep;
- 
-@@ -221,6 +222,81 @@ void exit_task_namespaces(struct task_struct *p)
- 	switch_task_namespaces(p, NULL);
- }
- 
-+#ifdef CONFIG_CHECKPOINT
-+int ckpt_collect_ns(struct ckpt_ctx *ctx, struct task_struct *t)
-+{
-+	struct nsproxy *nsproxy;
-+	int exists;
-+	int ret;
-+
-+	rcu_read_lock();
-+	nsproxy = task_nsproxy(t);
-+	if (nsproxy)
-+		get_nsproxy(nsproxy);
-+	rcu_read_unlock();
-+
-+	if (!nsproxy)
-+		return 0;
-+
-+	/* if already exists, don't proceed inside the struct */
-+	exists = ckpt_obj_lookup(ctx, nsproxy, CKPT_OBJ_NS);
-+
-+	ret = ckpt_obj_collect(ctx, nsproxy, CKPT_OBJ_NS);
-+	if (ret < 0 || exists)
-+		goto out;
-+
-+	/* TODO: collect other namespaces here */
-+ out:
-+	put_nsproxy(nsproxy);
-+	return ret;
-+}
-+
-+static int do_checkpoint_ns(struct ckpt_ctx *ctx, struct nsproxy *nsproxy)
-+{
-+	struct ckpt_hdr_ns *h;
-+	int ret;
-+
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_NS);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	/* TODO: Write other namespaces here */
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+	return ret;
-+}
-+
-+
-+int checkpoint_ns(struct ckpt_ctx *ctx, void *ptr)
-+{
-+	return do_checkpoint_ns(ctx, (struct nsproxy *) ptr);
-+}
-+
-+static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_hdr_ns *h;
-+	struct nsproxy *nsproxy = NULL;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_NS);
-+	if (IS_ERR(h))
-+		return (struct nsproxy *) h;
-+
-+	nsproxy = current->nsproxy;
-+	get_nsproxy(nsproxy);
-+
-+	/* TODO: add more namespaces here */
-+
-+	ckpt_hdr_put(ctx, h);
-+	return nsproxy;
-+}
-+
-+void *restore_ns(struct ckpt_ctx *ctx)
-+{
-+	return (void *) do_restore_ns(ctx);
-+}
-+#endif /* CONFIG_CHECKPOINT */
-+
- static int __init nsproxy_cache_init(void)
- {
- 	nsproxy_cachep = KMEM_CACHE(nsproxy, SLAB_PANIC);
--- 
-1.6.0.4
 
