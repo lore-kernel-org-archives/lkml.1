@@ -1,266 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbZGVBA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZGVBKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbZGVBA6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 21:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZGVBA6
+	id S1753769AbZGVBKG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 21:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZGVBKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 21:00:58 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:55669 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbZGVBA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 21:00:57 -0400
-From: "Madhusudhan" <madhu.cr@ti.com>
-To: "'Linus Walleij'" <linus.walleij@stericsson.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>
-Cc: "'Pierre Ossman'" <pierre@ossman.eu>,
-       <linux-arm-kernel@lists.arm.linux.org.uk>
-References: <1248128843-2528-1-git-send-email-linus.walleij@stericsson.com>
-Subject: RE: [PATCH 2/2] Modify MMCI/PL180 to handle agressive clocking v7
-Date: Tue, 21 Jul 2009 20:00:01 -0500
-Message-ID: <009101ca0a67$bda24cc0$544ff780@am.dhcp.ti.com>
+	Tue, 21 Jul 2009 21:10:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45925 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751406AbZGVBKE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 21:10:04 -0400
+Date: Tue, 21 Jul 2009 18:07:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Troy Moure <twmoure@szypr.net>
+cc: Krzysztof Oledzki <olel@ans.pl>, Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
+Subject: Re: Linux 2.6.27.27
+In-Reply-To: <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0907211759180.19335@localhost.localdomain>
+References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
+ <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain> <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
+ <alpine.LFD.2.00.0907212211040.4630@troy-laptop> <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <1248128843-2528-1-git-send-email-linus.walleij@stericsson.com>
-Thread-Index: AcoJjoVOc5eq3bdJRvqJ8Oo/qsvSEAA2N40w
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-> -----Original Message-----
-> From: linux-arm-kernel-bounces@lists.arm.linux.org.uk [mailto:linux-arm-
-> kernel-bounces@lists.arm.linux.org.uk] On Behalf Of Linus Walleij
-> Sent: Monday, July 20, 2009 5:27 PM
-> To: Andrew Morton; linux-kernel@vger.kernel.org
-> Cc: Pierre Ossman; linux-arm-kernel@lists.arm.linux.org.uk; Linus Walleij
-> Subject: [PATCH 2/2] Modify MMCI/PL180 to handle agressive clocking v7
+On Tue, 21 Jul 2009, Linus Torvalds wrote:
 > 
-> This adds a few clk_enable()/clk_disable() calls to the MMCI
-> driver so as to handle an set_ios() request with clock
-> frequency set to 0 as an instruction to gate the block clock.
-> This also breaks out the clock setting code into its own
-> function to simplify the set_ios() function a bit.
+> Just out of curiosity, how did you find it? Now that I know where to look, 
+> it's very obvious in the assembler diffs, but I didn't notice it until you 
+> pointed it out just because there is so _much_ of the diffs...
 
-Is it possible to share the WRITE/READ throughput numbers with and without
-clock gating enabled? It could be good info.
+Ahh. I think I see how you found it. Looking at the diffs, there's only a 
+few places where the number of instructions changed by a big fraction. And 
+there's only _one_ place that has a factor-of-three difference (26 lines 
+in the correct cases, and 7 lines in the wrong one). Clever.
 
-Regards,
-Madhu
-> 
-> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
-> ---
->  drivers/mmc/host/mmci.c |   86 +++++++++++++++++++++++++++++++++++-------
-> ----
->  drivers/mmc/host/mmci.h |    3 +-
->  2 files changed, 67 insertions(+), 22 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/mmci.c b/drivers/mmc/host/mmci.c
-> index e1aa847..db09b69 100644
-> --- a/drivers/mmc/host/mmci.c
-> +++ b/drivers/mmc/host/mmci.c
-> @@ -37,8 +37,34 @@
-> 
->  static unsigned int fmax = 515633;
-> 
-> +/*
-> + * This must be called with host->lock held
-> + */
-> +static void mmci_set_clkreg(struct mmci_host *host, unsigned int desired)
-> +{
-> +	u32 clk = 0;
-> +
-> +	if (desired) {
-> +		if (desired >= host->mclk) {
-> +			clk = MCI_CLK_BYPASS;
-> +			host->cclk = host->mclk;
-> +			DBG(host, "MMCI: bypass clock divider, cclk = %u
-Hz\n",
-> host->cclk);
-> +		} else {
-> +			clk = host->mclk / (2 * desired) - 1;
-> +			if (clk >= 256)
-> +				clk = 255;
-> +			host->cclk = host->mclk / (2 * (clk + 1));
-> +			DBG(host, "MMCI: divide cclk to %u Hz (divide %u by
-> %u)\n", host->cclk, host->mclk, clk);
-> +		}
-> +		if (host->hw_designer == 0x80)
-> +			clk |= MCI_FCEN; /* Bug fix in ST IP block */
-> +		clk |= MCI_CLK_ENABLE;
-> +	}
-> +	writel(clk, host->base + MMCICLOCK);
-> +}
-> +
->  static void
-> -mmci_request_end(struct mmci_host *host, struct mmc_request *mrq)
-> + mmci_request_end(struct mmci_host *host, struct mmc_request *mrq)
->  {
->  	writel(0, host->base + MMCICOMMAND);
-> 
-> @@ -418,22 +444,7 @@ static void mmci_request(struct mmc_host *mmc, struct
-> mmc_request *mrq)
->  static void mmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
->  {
->  	struct mmci_host *host = mmc_priv(mmc);
-> -	u32 clk = 0, pwr = 0;
-> -
-> -	if (ios->clock) {
-> -		if (ios->clock >= host->mclk) {
-> -			clk = MCI_CLK_BYPASS;
-> -			host->cclk = host->mclk;
-> -		} else {
-> -			clk = host->mclk / (2 * ios->clock) - 1;
-> -			if (clk >= 256)
-> -				clk = 255;
-> -			host->cclk = host->mclk / (2 * (clk + 1));
-> -		}
-> -		if (host->hw_designer == 0x80)
-> -			clk |= MCI_FCEN; /* Bug fix in ST IP block */
-> -		clk |= MCI_CLK_ENABLE;
-> -	}
-> +	u32 pwr = 0;
-> 
->  	if (host->plat->translate_vdd)
->  		pwr |= host->plat->translate_vdd(mmc_dev(mmc), ios->vdd);
-> @@ -464,12 +475,30 @@ static void mmci_set_ios(struct mmc_host *mmc,
-> struct mmc_ios *ios)
->  		}
->  	}
-> 
-> -	writel(clk, host->base + MMCICLOCK);
-> +	spin_lock(&host->lock);
-> +
-> +	/*
-> +	 * Turn on clock whenever ios->clock transitions
-> +	 * from 0 to !=0 and gate it off whenever ios->clock
-> +	 * transitions from !=0 to 0.
-> +	 */
-> +	if (host->iosclock == 0 && ios->clock != 0) {
-> +		clk_enable(host->clk);
-> +		mmci_set_clkreg(host, ios->clock);
-> +	} else if (host->iosclock != 0 && ios->clock == 0) {
-> +		clk_disable(host->clk);
-> +	}
-> +	host->iosclock = ios->clock;
-> 
->  	if (host->pwr != pwr) {
->  		host->pwr = pwr;
-> +		/* Clock may be gated (ios->clock still 0) */
-> +		clk_enable(host->clk);
->  		writel(pwr, host->base + MMCIPOWER);
-> +		clk_disable(host->clk);
->  	}
-> +
-> +	spin_unlock(&host->lock);
->  }
-> 
->  static const struct mmc_host_ops mmci_ops = {
-> @@ -546,6 +575,7 @@ static int __devinit mmci_probe(struct amba_device
-> *dev, struct amba_id *id)
->  		host->mclk = clk_get_rate(host->clk);
->  		DBG(host, "eventual mclk rate: %u Hz\n", host->mclk);
->  	}
-> +	host->iosclock = 0;
->  	host->base = ioremap(dev->res.start, resource_size(&dev->res));
->  	if (!host->base) {
->  		ret = -ENOMEM;
-> @@ -615,6 +645,8 @@ static int __devinit mmci_probe(struct amba_device
-> *dev, struct amba_id *id)
->  	host->timer.expires = jiffies + HZ;
->  	add_timer(&host->timer);
-> 
-> +	/* The first IOS will turn the clock on again */
-> +	clk_disable(host->clk);
->  	return 0;
-> 
->   irq0_free:
-> @@ -646,17 +678,22 @@ static int __devexit mmci_remove(struct amba_device
-> *dev)
-> 
->  		mmc_remove_host(mmc);
-> 
-> +		/* framework may have gated the block clock */
-> +		clk_enable(host->clk);
-> +
->  		writel(0, host->base + MMCIMASK0);
->  		writel(0, host->base + MMCIMASK1);
-> 
->  		writel(0, host->base + MMCICOMMAND);
->  		writel(0, host->base + MMCIDATACTRL);
-> 
-> +		clk_disable(host->clk);
-> +
->  		free_irq(dev->irq[0], host);
->  		free_irq(dev->irq[1], host);
-> 
->  		iounmap(host->base);
-> -		clk_disable(host->clk);
-> +
->  		clk_put(host->clk);
-> 
->  		mmc_free_host(mmc);
-> @@ -677,8 +714,11 @@ static int mmci_suspend(struct amba_device *dev,
-> pm_message_t state)
->  		struct mmci_host *host = mmc_priv(mmc);
-> 
->  		ret = mmc_suspend_host(mmc, state);
-> -		if (ret == 0)
-> +		if (ret == 0) {
-> +			clk_enable(host->clk);
->  			writel(0, host->base + MMCIMASK0);
-> +			clk_disable(host->clk);
-> +		}
->  	}
-> 
->  	return ret;
-> @@ -692,7 +732,11 @@ static int mmci_resume(struct amba_device *dev)
->  	if (mmc) {
->  		struct mmci_host *host = mmc_priv(mmc);
-> 
-> -		writel(MCI_IRQENABLE, host->base + MMCIMASK0);
-> +		if (ret == 0) {
-> +			clk_enable(host->clk);
-> +			writel(MCI_IRQENABLE, host->base + MMCIMASK0);
-> +			clk_disable(host->clk);
-> +		}
-> 
->  		ret = mmc_resume_host(mmc);
->  	}
-> diff --git a/drivers/mmc/host/mmci.h b/drivers/mmc/host/mmci.h
-> index 0441bac..796db94 100644
-> --- a/drivers/mmc/host/mmci.h
-> +++ b/drivers/mmc/host/mmci.h
-> @@ -137,7 +137,7 @@
->   * The size of the FIFO in bytes.
->   */
->  #define MCI_FIFOSIZE	(16*4)
-> -
-> +
->  #define MCI_FIFOHALFSIZE (MCI_FIFOSIZE / 2)
-> 
->  #define NR_SG		16
-> @@ -158,6 +158,7 @@ struct mmci_host {
-> 
->  	unsigned int		mclk;
->  	unsigned int		cclk;
-> +	unsigned int		iosclock;
->  	u32			pwr;
->  	struct mmc_platform_data *plat;
-> 
-> --
-> 1.6.2.5
-> 
-> 
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-
-> kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+There's also a case in do_page_fault() where -fno-strict-overflow 
+generates a _lot_ more instructions than the other cases (but not by a 
+factor of three - but it expands 63 instructions to 100). I'm not seeing 
+quite _why_ it does that, but it does various stupid things like multiply 
+by 0x38 etc. But it doesn't look buggy, it just looks stupid.
 
+Or did you just brute-force it and spend a lot of time eyeballing things?
 
+			Linus
