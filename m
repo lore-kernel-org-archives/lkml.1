@@ -1,268 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbZGVF6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZGVF7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493AbZGVF6h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 01:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbZGVF6h
+	id S1756551AbZGVF7Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 01:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756300AbZGVF7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 01:58:37 -0400
-Received: from mail-px0-f186.google.com ([209.85.216.186]:39489 "EHLO
-	mail-px0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756217AbZGVF6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 01:58:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=X6gUpDo7mxsrlHAWvVMDarPLT0XwHoA/ZL512v//dQfblNBhXyIditqA+jOxZ7nkCy
-         YyRsX6pk0YGncW10XURR1rTvmjVQL2FzyWG157PhWIJSN2RV7tXm0pGw/gkbqxFGZKFh
-         XaIrfvpANMObVkxcnaf1ia01fHeElpd8jkbGs=
-Date: Wed, 22 Jul 2009 14:00:47 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/4] kcore: add kclist type
-Message-ID: <20090722060047.GC6281@cr0.nay.redhat.com>
-References: <20090722140613.0a751811.kamezawa.hiroyu@jp.fujitsu.com> <20090722140813.e8f04793.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 22 Jul 2009 01:59:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46862 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756254AbZGVF7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 01:59:24 -0400
+Message-ID: <4A66AAA5.4080600@kernel.org>
+Date: Wed, 22 Jul 2009 14:59:01 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090722140813.e8f04793.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] block fixes for 2.6.31-rc4
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 22 Jul 2009 05:59:18 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 02:08:13PM +0900, KAMEZAWA Hiroyuki wrote:
->From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
->Now, kclist_add() only eats start address and size as its arguments.
->Considering to make kclist dynamically reconfigulable, it's necessary
->to know which kclists are for System RAM and whic is not.
->
->This patch add kclist types as
->  KCORE_RAM
->  KCORE_VMALLOC
->  KCORE_TEXT
->  KCORE_OTHER
->
->region for KCORE_RAM will be dynamically updated at memory hotplug.
+Hello, Linus.
 
+Please consider pulling from the following temp block fixes tree.  It
+can be merged into the current #master without any conflict.
 
-The idea is good, but will it be used in any of your latter patches?
-I don't see it, can you point it out?
+ git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-block-for-linus
+
+The tree contains five fixes I've collected since last week.
+
+* Two patches deal with build problems (spurious section mismatch
+  warning and unnecessary NULL check).
+
+* Fix z2ram unregistering more minors than it registers.
+
+* Fix incorrect merge test resulting from comparing flag bits directly
+  when the boolean result should be compared.  This was introduced by
+  recent block layer fix to avoid merging requests of different
+  failfast settings and may prevent valid merges.
+
+* /sys/block/*/queue/read_ahead_kb used unsigned long on store but
+  used int on show and thus showed overflowed values if the value was
+  large enough.  Fix it to use unsigned long.
+
+I'll be unavailable from tomorrow but Jens will be back next week.
 
 Thanks.
+---
+Julia Lawall (1):
+      ataflop: adjust NULL test
 
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+Rakib Mullick (1):
+      virtio_blk: mark virtio_blk with __refdata to kill spurious section mismat
+ch
 
+Tejun Heo (1):
+      block: fix failfast merge testing in elv_rq_merge_ok()
 
->
->Chnagelog v1->v2
-> - no changes.
->
->Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->---
-> arch/ia64/mm/init.c       |    7 ++++---
-> arch/mips/mm/init.c       |    7 ++++---
-> arch/powerpc/mm/init_32.c |    4 ++--
-> arch/powerpc/mm/init_64.c |    5 +++--
-> arch/sh/mm/init.c         |    4 ++--
-> arch/x86/mm/init_32.c     |    4 ++--
-> arch/x86/mm/init_64.c     |   11 ++++++-----
-> fs/proc/kcore.c           |    3 ++-
-> include/linux/proc_fs.h   |   13 +++++++++++--
-> 9 files changed, 36 insertions(+), 22 deletions(-)
->
->Index: mmotm-2.6.31-Jul16/include/linux/proc_fs.h
->===================================================================
->--- mmotm-2.6.31-Jul16.orig/include/linux/proc_fs.h
->+++ mmotm-2.6.31-Jul16/include/linux/proc_fs.h
->@@ -78,10 +78,18 @@ struct proc_dir_entry {
-> 	struct list_head pde_openers;	/* who did ->open, but not ->release */
-> };
-> 
->+enum kcore_type {
->+	KCORE_TEXT,
->+	KCORE_VMALLOC,
->+	KCORE_RAM,
->+	KCORE_OTHER,
->+};
->+
-> struct kcore_list {
-> 	struct list_head list;
-> 	unsigned long addr;
-> 	size_t size;
->+	int type;
-> };
-> 
-> struct vmcore {
->@@ -233,11 +241,12 @@ static inline void dup_mm_exe_file(struc
-> #endif /* CONFIG_PROC_FS */
-> 
-> #if !defined(CONFIG_PROC_KCORE)
->-static inline void kclist_add(struct kcore_list *new, void *addr, size_t size)
->+static inline void
->+kclist_add(struct kcore_list *new, void *addr, size_t size, int type)
-> {
-> }
-> #else
->-extern void kclist_add(struct kcore_list *, void *, size_t);
->+extern void kclist_add(struct kcore_list *, void *, size_t, int type);
-> #endif
-> 
-> union proc_op {
->Index: mmotm-2.6.31-Jul16/arch/ia64/mm/init.c
->===================================================================
->--- mmotm-2.6.31-Jul16.orig/arch/ia64/mm/init.c
->+++ mmotm-2.6.31-Jul16/arch/ia64/mm/init.c
->@@ -639,9 +639,10 @@ mem_init (void)
-> 
-> 	high_memory = __va(max_low_pfn * PAGE_SIZE);
-> 
->-	kclist_add(&kcore_mem, __va(0), max_low_pfn * PAGE_SIZE);
->-	kclist_add(&kcore_vmem, (void *)VMALLOC_START, VMALLOC_END-VMALLOC_START);
->-	kclist_add(&kcore_kernel, _stext, _end - _stext);
->+	kclist_add(&kcore_mem, __va(0), max_low_pfn * PAGE_SIZE, KCORE_RAM);
->+	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
->+			VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
->+	kclist_add(&kcore_kernel, _stext, _end - _stext, KCORE_TEXT);
-> 
-> 	for_each_online_pgdat(pgdat)
-> 		if (pgdat->bdata->node_bootmem_map)
->Index: mmotm-2.6.31-Jul16/arch/mips/mm/init.c
->===================================================================
->--- mmotm-2.6.31-Jul16.orig/arch/mips/mm/init.c
->+++ mmotm-2.6.31-Jul16/arch/mips/mm/init.c
->@@ -409,11 +409,12 @@ void __init mem_init(void)
-> 	if ((unsigned long) &_text > (unsigned long) CKSEG0)
-> 		/* The -4 is a hack so that user tools don't have to handle
-> 		   the overflow.  */
->-		kclist_add(&kcore_kseg0, (void *) CKSEG0, 0x80000000 - 4);
->+		kclist_add(&kcore_kseg0, (void *) CKSEG0,
->+				0x80000000 - 4, KCORE_TEXT);
-> #endif
->-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
->+	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
->-		   VMALLOC_END-VMALLOC_START);
->+		   VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> 
-> 	printk(KERN_INFO "Memory: %luk/%luk available (%ldk kernel code, "
-> 	       "%ldk reserved, %ldk data, %ldk init, %ldk highmem)\n",
->Index: mmotm-2.6.31-Jul16/arch/powerpc/mm/init_32.c
->===================================================================
->--- mmotm-2.6.31-Jul16.orig/arch/powerpc/mm/init_32.c
->+++ mmotm-2.6.31-Jul16/arch/powerpc/mm/init_32.c
->@@ -270,11 +270,11 @@ static int __init setup_kcore(void)
-> 						size);
-> 		}
-> 
->-		kclist_add(kcore_mem, __va(base), size);
->+		kclist_add(kcore_mem, __va(base), size, KCORE_RAM);
-> 	}
-> 
-> 	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
->-		VMALLOC_END-VMALLOC_START);
->+		VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> 
-> 	return 0;
-> }
->Index: mmotm-2.6.31-Jul16/arch/powerpc/mm/init_64.c
->===================================================================
->--- mmotm-2.6.31-Jul16.orig/arch/powerpc/mm/init_64.c
->+++ mmotm-2.6.31-Jul16/arch/powerpc/mm/init_64.c
->@@ -128,10 +128,11 @@ static int __init setup_kcore(void)
-> 		if (!kcore_mem)
-> 			panic("%s: kmalloc failed\n", __func__);
-> 
->-		kclist_add(kcore_mem, __va(base), size);
->+		kclist_add(kcore_mem, __va(base), size, KCORE_RAM);
-> 	}
-> 
->-	kclist_add(&kcore_vmem, (void *)VMALLOC_START, VMALLOC_END-VMALLOC_START);
->+	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
->+		VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> 
-> 	return 0;
-> }
->Index: mmotm-2.6.31-Jul16/arch/sh/mm/init.c
->===================================================================
->--- mmotm-2.6.31-Jul16.orig/arch/sh/mm/init.c
->+++ mmotm-2.6.31-Jul16/arch/sh/mm/init.c
->@@ -218,9 +218,9 @@ void __init mem_init(void)
-> 	datasize =  (unsigned long) &_edata - (unsigned long) &_etext;
-> 	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
-> 
->-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
->+	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
->-		   VMALLOC_END - VMALLOC_START);
->+		   VMALLOC_END - VMALLOC_START, KCORE_VMALLOC);
-> 
-> 	printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, "
-> 	       "%dk data, %dk init)\n",
->Index: mmotm-2.6.31-Jul16/arch/x86/mm/init_32.c
->===================================================================
->--- mmotm-2.6.31-Jul16.orig/arch/x86/mm/init_32.c
->+++ mmotm-2.6.31-Jul16/arch/x86/mm/init_32.c
->@@ -886,9 +886,9 @@ void __init mem_init(void)
-> 	datasize =  (unsigned long) &_edata - (unsigned long) &_etext;
-> 	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
-> 
->-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
->+	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
->-		   VMALLOC_END-VMALLOC_START);
->+		   VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> 
-> 	printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, "
-> 			"%dk reserved, %dk data, %dk init, %ldk highmem)\n",
->Index: mmotm-2.6.31-Jul16/arch/x86/mm/init_64.c
->===================================================================
->--- mmotm-2.6.31-Jul16.orig/arch/x86/mm/init_64.c
->+++ mmotm-2.6.31-Jul16/arch/x86/mm/init_64.c
->@@ -677,13 +677,14 @@ void __init mem_init(void)
-> 	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
-> 
-> 	/* Register memory areas for /proc/kcore */
->-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
->+	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
->-		   VMALLOC_END-VMALLOC_START);
->-	kclist_add(&kcore_kernel, &_stext, _end - _stext);
->-	kclist_add(&kcore_modules, (void *)MODULES_VADDR, MODULES_LEN);
->+		   VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
->+	kclist_add(&kcore_kernel, &_stext, _end - _stext, KCORE_TEXT);
->+	kclist_add(&kcore_modules, (void *)MODULES_VADDR, MODULES_LEN,
->+			KCORE_OTHER);
-> 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_START,
->-				 VSYSCALL_END - VSYSCALL_START);
->+			 VSYSCALL_END - VSYSCALL_START, KCORE_OTHER);
-> 
-> 	printk(KERN_INFO "Memory: %luk/%luk available (%ldk kernel code, "
-> 			 "%ldk absent, %ldk reserved, %ldk data, %ldk init)\n",
->Index: mmotm-2.6.31-Jul16/fs/proc/kcore.c
->===================================================================
->--- mmotm-2.6.31-Jul16.orig/fs/proc/kcore.c
->+++ mmotm-2.6.31-Jul16/fs/proc/kcore.c
->@@ -62,10 +62,11 @@ static LIST_HEAD(kclist_head);
-> static DEFINE_RWLOCK(kclist_lock);
-> 
-> void
->-kclist_add(struct kcore_list *new, void *addr, size_t size)
->+kclist_add(struct kcore_list *new, void *addr, size_t size, int type)
-> {
-> 	new->addr = (unsigned long)addr;
-> 	new->size = size;
->+	new->type = type;
-> 
-> 	write_lock(&kclist_lock);
-> 	list_add_tail(&new->list, &kclist_head);
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+Xiaotian Feng (1):
+      block: sysfs fix mismatched queue_var_{store,show} in 64bit kernel
+
+Zhaolei (1):
+      z2ram: Small cleanup for z2ram.c
+
+ block/blk-sysfs.c          |   11 ++++++-----
+ block/elevator.c           |   13 +++++++++----
+ drivers/block/ataflop.c    |    2 +-
+ drivers/block/virtio_blk.c |    7 ++++++-
+ drivers/block/z2ram.c      |    2 +-
+ 5 files changed, 23 insertions(+), 12 deletions(-)
+
+diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
+index b1cd040..418d636 100644
+--- a/block/blk-sysfs.c
++++ b/block/blk-sysfs.c
+@@ -16,9 +16,9 @@ struct queue_sysfs_entry {
+ };
+
+ static ssize_t
+-queue_var_show(unsigned int var, char *page)
++queue_var_show(unsigned long var, char *page)
+ {
+-	return sprintf(page, "%d\n", var);
++	return sprintf(page, "%lu\n", var);
+ }
+
+ static ssize_t
+@@ -77,7 +77,8 @@ queue_requests_store(struct request_queue *q, const char *page, size_t count)
+
+ static ssize_t queue_ra_show(struct request_queue *q, char *page)
+ {
+-	int ra_kb = q->backing_dev_info.ra_pages << (PAGE_CACHE_SHIFT - 10);
++	unsigned long ra_kb = q->backing_dev_info.ra_pages <<
++					(PAGE_CACHE_SHIFT - 10);
+
+ 	return queue_var_show(ra_kb, (page));
+ }
+@@ -189,9 +190,9 @@ static ssize_t queue_nomerges_store(struct request_queue *q, const char *page,
+
+ static ssize_t queue_rq_affinity_show(struct request_queue *q, char *page)
+ {
+-	unsigned int set = test_bit(QUEUE_FLAG_SAME_COMP, &q->queue_flags);
++	bool set = test_bit(QUEUE_FLAG_SAME_COMP, &q->queue_flags);
+
+-	return queue_var_show(set != 0, page);
++	return queue_var_show(set, page);
+ }
+
+ static ssize_t
+diff --git a/block/elevator.c b/block/elevator.c
+index 6f23753..2d511f9 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -101,11 +101,16 @@ int elv_rq_merge_ok(struct request *rq, struct bio *bio)
+ 		return 0;
+
+ 	/*
+-	 * Don't merge if failfast settings don't match
++	 * Don't merge if failfast settings don't match.
++	 *
++	 * FIXME: The negation in front of each condition is necessary
++	 * because bio and request flags use different bit positions
++	 * and the accessors return those bits directly.  This
++	 * ugliness will soon go away.
+ 	 */
+-	if (bio_failfast_dev(bio)	!= blk_failfast_dev(rq)		||
+-	    bio_failfast_transport(bio)	!= blk_failfast_transport(rq)	||
+-	    bio_failfast_driver(bio)	!= blk_failfast_driver(rq))
++	if (!bio_failfast_dev(bio)	 != !blk_failfast_dev(rq)	||
++	    !bio_failfast_transport(bio) != !blk_failfast_transport(rq)	||
++	    !bio_failfast_driver(bio)	 != !blk_failfast_driver(rq))
+ 		return 0;
+
+ 	if (!elv_iosched_allow_merge(rq, bio))
+diff --git a/drivers/block/ataflop.c b/drivers/block/ataflop.c
+index f5e7180..3ff0294 100644
+--- a/drivers/block/ataflop.c
++++ b/drivers/block/ataflop.c
+@@ -1627,7 +1627,7 @@ static int fd_ioctl(struct block_device *bdev, fmode_t mode,
+ 				drive, dtp->blocks, dtp->spt, dtp->stretch);
+
+ 		/* sanity check */
+-		if (!dtp || setprm.track != dtp->blocks/dtp->spt/2 ||
++		if (setprm.track != dtp->blocks/dtp->spt/2 ||
+ 		    setprm.head != 2) {
+ 			redo_fd_request();
+ 			return -EINVAL;
+diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
+index 43db3ea..024f2d2 100644
+--- a/drivers/block/virtio_blk.c
++++ b/drivers/block/virtio_blk.c
+@@ -424,7 +424,12 @@ static unsigned int features[] = {
+ 	VIRTIO_BLK_F_SCSI, VIRTIO_BLK_F_IDENTIFY
+ };
+
+-static struct virtio_driver virtio_blk = {
++/*
++ * virtio_blk causes spurious section mismatch warning by
++ * simultaneously referring to a __devinit and a __devexit function.
++ * Use __refdata to avoid this warning.
++ */
++static struct virtio_driver __refdata virtio_blk = {
+ 	.feature_table = features,
+ 	.feature_table_size = ARRAY_SIZE(features),
+ 	.driver.name =	KBUILD_MODNAME,
+diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
+index 4575171..b259040 100644
+--- a/drivers/block/z2ram.c
++++ b/drivers/block/z2ram.c
+@@ -374,7 +374,7 @@ err:
+ static void __exit z2_exit(void)
+ {
+     int i, j;
+-    blk_unregister_region(MKDEV(Z2RAM_MAJOR, 0), 256);
++    blk_unregister_region(MKDEV(Z2RAM_MAJOR, 0), Z2MINOR_COUNT);
+     unregister_blkdev(Z2RAM_MAJOR, DEVICE_NAME);
+     del_gendisk(z2ram_gendisk);
+     put_disk(z2ram_gendisk);
