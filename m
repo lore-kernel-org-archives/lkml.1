@@ -1,99 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbZGVB7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbZGVCAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753742AbZGVB7c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 21:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZGVB7c
+	id S1755049AbZGVCAH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 22:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZGVCAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 21:59:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54893 "EHLO mx2.redhat.com"
+	Tue, 21 Jul 2009 22:00:04 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:59646 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751220AbZGVB7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 21:59:31 -0400
-Message-ID: <4A667218.7040105@redhat.com>
-Date: Wed, 22 Jul 2009 09:57:44 +0800
-From: Danny Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: lizf@cn.fujitsu.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cgroup: fix reverse unlock sequence in cgroup_get_sb
-References: <1248171926-20232-1-git-send-email-dfeng@redhat.com> <6599ad830907210903q7206cac2l83a9139d19c5e1a@mail.gmail.com>
-In-Reply-To: <6599ad830907210903q7206cac2l83a9139d19c5e1a@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------050805030304000303050602"
+	id S1754709AbZGVCAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 22:00:03 -0400
+Date: Wed, 22 Jul 2009 12:00:00 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Christian Lamparter <chunkeey@web.de>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: linux-next: manual merge of the net tree with the wireless-current
+ tree
+Message-Id: <20090722120000.4b0f2901.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050805030304000303050602
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi David,
 
-On 07/22/2009 12:03 AM, Paul Menage wrote:
-> On Tue, Jul 21, 2009 at 3:25 AM, Xiaotian Feng<dfeng@redhat.com>  wrote:
->> In cgroup_get_sb, the lock sequence is:
->>         mutex_lock(&inode->i_mutex);
->>         mutex_lock(&cgroup->mutex);
->> so the last unlock sequence should be:
->
-> Make this "so for consistency the last ..." ?
->
-> Maybe make the patch title "Make unlock sequence in cgroup_get_sb
-> consistent" so someone looking through the change logs for fixes to
-> backport doesn't wrongly thing that this fixes any bug"?
->
+Today's linux-next merge of the net tree got a conflict in
+net/wireless/scan.c between commit
+9e81eccf199d910e5ea8db377a43478e4eccd033 ("cfg80211: double free in
+__cfg80211_scan_done") from the wireless-current tree and commit
+667503ddcb96f3b10211f997fe55907fa7509841 ("cfg80211: fix locking") from
+the net tree.
 
-Yep, this is a trivial patch.  Modified following your suggestion, thank 
-you.
-
->>         mutex_unlock(&cgroup->mutex);
->>         mutex_unlock(&inode->i_mutex);
->>
->> Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
->
-> Acked-by: Paul Menage<menage@google.com>
->
-> Paul
-
-
---------------050805030304000303050602
-Content-Type: text/x-patch;
- name="0001-cgroup-make-unlock-sequence-in-cgroup_get_sb-consistent.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename*0="0001-cgroup-make-unlock-sequence-in-cgroup_get_sb-consistent";
- filename*1=".patch"
-
->From ff96b0dc4a5f06a0e5b7f8dfa5df2b93e993302c Mon Sep 17 00:00:00 2001
-From: Xiaotian Feng <dfeng@redhat.com>
-Date: Tue, 21 Jul 2009 18:06:43 +0800
-Subject: [PATCH] cgroup: make unlock sequence in cgroup_get_sb consistent
-
-Make the last unlock sequence consistent with previous unlock sequeue.
-
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
----
- kernel/cgroup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 3737a68..11ef162 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -1140,8 +1140,8 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
- 		BUG_ON(root->number_of_cgroups != 1);
- 
- 		cgroup_populate_dir(root_cgrp);
--		mutex_unlock(&inode->i_mutex);
- 		mutex_unlock(&cgroup_mutex);
-+		mutex_unlock(&inode->i_mutex);
- 	}
- 
- 	simple_set_mnt(mnt, sb);
+Overlapping additions.  I fixed it up (I think - see below) and can carry
+the fix as ncessary.
 -- 
-1.6.2.5
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-
---------------050805030304000303050602--
+diff --cc net/wireless/scan.c
+index 9271118,4f552c3..0000000
+--- a/net/wireless/scan.c
++++ b/net/wireless/scan.c
+@@@ -35,8 -48,10 +48,8 @@@ void __cfg80211_scan_done(struct work_s
+  	else
+  		nl80211_send_scan_done(wiphy_to_dev(request->wiphy), dev);
+  
+ -	wiphy_to_dev(request->wiphy)->scan_req = NULL;
+ -
+  #ifdef CONFIG_WIRELESS_EXT
+- 	if (!aborted) {
++ 	if (!request->aborted) {
+  		memset(&wrqu, 0, sizeof(wrqu));
+  
+  		wireless_send_event(dev, SIOCGIWSCAN, &wrqu, NULL);
+@@@ -46,9 -61,24 +59,25 @@@
+  	dev_put(dev);
+  
+   out:
+ +	wiphy_to_dev(request->wiphy)->scan_req = NULL;
++ 	cfg80211_unlock_rdev(rdev);
+  	kfree(request);
+  }
++ 
++ void cfg80211_scan_done(struct cfg80211_scan_request *request, bool aborted)
++ {
++ 	struct net_device *dev = dev_get_by_index(&init_net, request->ifidx);
++ 	if (WARN_ON(!dev)) {
++ 		kfree(request);
++ 		return;
++ 	}
++ 
++ 	WARN_ON(request != wiphy_to_dev(request->wiphy)->scan_req);
++ 
++ 	request->aborted = aborted;
++ 	schedule_work(&wiphy_to_dev(request->wiphy)->scan_done_wk);
++ 	dev_put(dev);
++ }
+  EXPORT_SYMBOL(cfg80211_scan_done);
+  
+  static void bss_release(struct kref *ref)
