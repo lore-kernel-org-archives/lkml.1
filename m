@@ -1,79 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752286AbZGVPMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbZGVPPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752286AbZGVPMR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 11:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbZGVPMR
+	id S1752486AbZGVPPW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 11:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZGVPPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 11:12:17 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:38805 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbZGVPMQ (ORCPT
+	Wed, 22 Jul 2009 11:15:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38132 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751295AbZGVPPV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 11:12:16 -0400
-Date: Wed, 22 Jul 2009 20:41:23 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Fix traceback seen when resuming after suspend-to-ram
-Message-ID: <20090722151123.GA4934@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+	Wed, 22 Jul 2009 11:15:21 -0400
+Date: Wed, 22 Jul 2009 17:15:21 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, cluster-devel@redhat.com,
+       linux-kernel@vger.kernel.org, rpurdie@rpsys.net
+Subject: Re: GFS2: Add LED support to GFS2
+Message-ID: <20090722151521.GB6035@basil.fritz.box>
+References: <1248260198.3456.4.camel@localhost.localdomain> <87k5203hdx.fsf@basil.nowhere.org> <1248274288.3298.5.camel@localhost.localdomain> <20090722145534.GA6035@basil.fritz.box> <1248274951.3298.11.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1248274951.3298.11.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-	Please accept a patch that fixes the warning message and traceback
-seen upon a resume after suspend-to-ram.
+> I did consider adding a feature to filter events on a per superblock
+> basis, but I decided against it in the end, as it seemed to be making
+> things too complicated (how should we specify the superblock? what
+> should the user interface be?).
 
-The warning message is emitted because
-spin_unlock_bh()<--load_debug_registers() is invoked with interrupts
-disabled upon 'resume' unlike when invoked at boot-time, and was
-reported on LKML here: http://lkml.org/lkml/2009/7/18/145.
+Maybe key on mount points? (so passing vfsmnts) 
 
-This patch modifies load_debug_registers() to block all interrupts and not
-just bottom-halves (bottom-halves were blocked in load_debug_registers()
-prevent flush_thread_hw_breakpoint() from interfering when invoked from
-SoftIRQ context).
+So have some sysfs file where you echo mount points into to enable
+LED activity.
 
-Fix traceback seen when resuming after suspend-to-ram
+Ok that would be a little clumpsy for a "10 million bind mounts" case,
+but presumably that's very rare and they can still make it work.
 
-This patch fixes a traceback when resuming after a suspend-to-ram operation.
-The traceback warns about entering slowpatch due to a spin_unlock_bh() done
-from interrupt context.
+-Andi
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- kernel/hw_breakpoint.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-Index: linux-2.6-tip/kernel/hw_breakpoint.c
-===================================================================
---- linux-2.6-tip.orig/kernel/hw_breakpoint.c
-+++ linux-2.6-tip/kernel/hw_breakpoint.c
-@@ -80,17 +80,15 @@ void load_debug_registers(void)
- 	unsigned long flags;
- 	struct task_struct *tsk = current;
- 
--	spin_lock_bh(&hw_breakpoint_lock);
--
- 	/* Prevent IPIs for new kernel breakpoint updates */
--	local_irq_save(flags);
-+	spin_lock_irqsave(&hw_breakpoint_lock, flags);
-+
- 	arch_update_kernel_hw_breakpoint(NULL);
--	local_irq_restore(flags);
- 
- 	if (test_tsk_thread_flag(tsk, TIF_DEBUG))
- 		arch_install_thread_hw_breakpoint(tsk);
- 
--	spin_unlock_bh(&hw_breakpoint_lock);
-+	spin_unlock_irqrestore(&hw_breakpoint_lock, flags);
- }
- 
- /*
+-- 
+ak@linux.intel.com -- Speaking for myself only.
