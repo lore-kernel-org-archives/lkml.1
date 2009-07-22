@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbZGWNGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZGWNJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbZGWNGu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 09:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZGWNGu
+	id S1754205AbZGWNJt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 09:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZGWNJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 09:06:50 -0400
-Received: from viefep12-int.chello.at ([62.179.121.32]:60895 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754004AbZGWNGt (ORCPT
+	Thu, 23 Jul 2009 09:09:48 -0400
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:15303 "EHLO
+	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751597AbZGWNJr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 09:06:49 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
- breakpoints
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "K . Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-In-Reply-To: <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
-References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
-	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
-Content-Type: text/plain
-Date: Thu, 23 Jul 2009 15:08:13 +0200
-Message-Id: <1248354493.26273.2.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 09:09:47 -0400
+X-SpamScore: -5
+X-BigFish: VPS-5(zz140fM1442Jzz1202hzzz32i6bh1f9i67h)
+X-Spam-TCS-SCL: 6:0
+X-WSS-ID: 0KN8K9L-02-16X-01
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
+Date: Wed, 22 Jul 2009 17:40:48 -0500
+Message-ID: <6453C3CB8E2B3646B0D020C112613273036209FB@sausexmb4.amd.com>
+In-Reply-To: <200907090950.06204.sheng@linux.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
+Thread-Index: AcoAN5DdI+0qECmpTsOh2vJXjZz60wK5aszg
+References: <200905050909.58583.mark.langsdorf@amd.com> <200907081319.57307.sheng@linux.intel.com> <6453C3CB8E2B3646B0D020C112613273036209F0@sausexmb4.amd.com> <200907090950.06204.sheng@linux.intel.com>
+From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+To: "Sheng Yang" <sheng@linux.intel.com>
+CC: "Roedel, Joerg" <Joerg.Roedel@amd.com>, <peterz@infradead.org>,
+       "Ingo Molnar" <mingo@elte.hu>, <avi@redhat.com>, <kvm@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, "Edwin Zhai" <edwin.zhai@intel.com>
+X-OriginalArrivalTime: 22 Jul 2009 22:40:49.0277 (UTC) FILETIME=[75DBB2D0:01CA0B1D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-20 at 13:08 -0400, Frederic Weisbecker wrote:
-> This adds the support for kernel hardware breakpoints in perfcounter.
-> It is added as a new type of software counter and can be defined by
-> using the counter number 5 and by passsing the address of the
-> breakpoint to set through the config attribute.
+> Um, I am afraid we have the different result... With your 
+> scheduler patch, we got 1% more performance improvement
+> in the quick test. Of course more tests are needed to
+> find a better value of delay.
 
-Is there a limit to these hardware breakpoints? If so, the software
-counter model is not sufficient, since we assume we can always schedule
-all software counters. However if you were to add more counters than you
-have hardware breakpoints you're hosed.
+What was your test case?  How many runs did you do?
+My results had a lot of variance in them.
+
+> Do you have time to work on it recently?
+
+I've been working with the former VI guys on some scheduler
+improvements for Xen, and hope to get back to this some
+next week.
+
+-Mark Langsdorf
+Operating System Research Center
+AMD
 
