@@ -1,119 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbZGVQwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZGVQ5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858AbZGVQwR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 12:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZGVQwQ
+	id S1752347AbZGVQ5S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 12:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbZGVQ5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 12:52:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57812 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751788AbZGVQwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 12:52:15 -0400
-Date: Wed, 22 Jul 2009 18:52:03 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
-       chrisw@redhat.com, avi@redhat.com, riel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au, Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 06/10] ksm: identify PageKsm pages
-Message-ID: <20090722165202.GA8937@random.random>
-References: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
- <1247851850-4298-2-git-send-email-ieidus@redhat.com>
- <1247851850-4298-3-git-send-email-ieidus@redhat.com>
- <1247851850-4298-4-git-send-email-ieidus@redhat.com>
- <1247851850-4298-5-git-send-email-ieidus@redhat.com>
- <1247851850-4298-6-git-send-email-ieidus@redhat.com>
- <1247851850-4298-7-git-send-email-ieidus@redhat.com>
- <20090721175139.GE2239@random.random>
- <Pine.LNX.4.64.0907221313370.529@sister.anvils>
+	Wed, 22 Jul 2009 12:57:18 -0400
+Received: from smtp104.sbc.mail.gq1.yahoo.com ([67.195.15.63]:22859 "HELO
+	smtp104.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752054AbZGVQ5R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 12:57:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=moypcimLfQeUkVFaBbhG4qLFYrWrrzpD+Gmkb2PEnIVgqVqEjkkHDZmg78tg9ylbxq4EwQ/1p1HEw5bWuaZT/kSIt/zyByURDF6G5BN0oYTZCWwqaSltJQiIUYvxwId2UNuL9kF7NERJRJuJ9Rf6/5g9DLxYLnfccPuS9HDhsbI=  ;
+X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
+X-YMail-OSG: f7.wKocVM1lfC.jOXdkemKZldKdscTJnhVwvUt48_1IzSND6q8mZG5zi3S4CCTLPAj3c_42qMUsQV9KFMK_faZgbBJHTGqX92iAzOJ020sfGBM0BovyvIRFdCK9i7fHcZlJ8Z_BaDgQGwLcEdh6O_uBZVyYmLhcvdo3cBPM6vZoZS1xRV1BIi4cyn9PrlTRuSCL3val8Z2Fv7bhDCerXlIfN6YKH4FtgwlDNSGuiKFrQx.ZwVXhklMDezDIRxv_FqWRwM1UvLEH3bwMh
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Date: Wed, 22 Jul 2009 09:57:15 -0700
+User-Agent: KMail/1.9.10
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       "Arve Hj?nnev?g" <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       Daniel Ribeiro <drwyrm@gmail.com>
+References: <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com> <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain> <1248269443.27058.1449.camel@twins>
+In-Reply-To: <1248269443.27058.1449.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907221313370.529@sister.anvils>
+Message-Id: <200907220957.16499.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 01:45:15PM +0100, Hugh Dickins wrote:
-> If they're to be vm_normal_page pages (I think we'll agree they are),
-> then for now they have to be counted either as file pages or as anon
-> pages.  We could trawl through mm/ adding the third category for KSM
-> pages, but I don't think that would be sensible - KSM is mostly
-> keeping out of everybody's way, and I want to preserve that.
+On Wednesday 22 July 2009, Peter Zijlstra wrote:
+> Wouldn't it be better if we could express the nesting property from
+> within genirq, so that we can do things like:
+> 
+>   register_chip_nested(parent_chip, parent_irq, slave_chip);
+> 
+> And let genirq set-up the needed magic to make the nesting work.
 
-That was basically the idea, keeping out of everybody's way. This was
-more true in the past than today, I mean back when CONFIG_KSM=m was
-allowed.. Today instead KSM is more like CONFIG_SWAP, which is surely
-nice from the standpoint that it should be always available and I like
-that.
+I've been requesting such IRQ chaining support for some time
+now ... if the ears are now listening, that kind of direction
+should be pursued.
 
-> swapping these pages we will use a PAGE_MAPPING_KSM bit 2 (set in
-> addition to PAGE_MAPPING_ANON), so that the pointer in page->mapping
 
-Ok if it was my choice I wouldn't make them Anon pages.
+> Also, how important is it that subhandler1..n run in their own thread?
 
-My background is that in theory, and from a madvise API standpoint,
-Ksm could work on more than Anon pages in the future.
+Completely unimportant in a practical sense.  Undesirable, even;
+wasteful to allocate all those stack pages and keep them idle
+most of the time.
 
-Example is when pagecache is enabled in host to provide the same
-pre-cache feature that tmem provides to Xen. We already have that
-pre-cache of tmem since day zero in KVM (in fact we only more recently
-had a way to switch it off and do zerocopy DMA with O_DIRECT, kind of
-turning off tmem).
+There might be an argument that the design isn't technicaly done
+until that model *can* be supported.  On the flip side, last time
+this came up there was no "customer demand" for that ... it was
+all "supplier push".
 
-So it wouldn't be impossible to have a shared pre-cache even when we
-don't share the same parent qcow2 image, but that is purely
-theoretical, and it likely never happen. So I am ok with considering
-ksm pages as anon...
 
-For swap we'll need to sue a new bitflag there and adjust PageAnon to
-check against &(PAGE_MAPPING_ANON|PAGE_MAPPING_KSM)!=0, which will
-have the same runtime cost, so no problem there.
+> That is, can't we let them run from the thread that is otherwise waiting
+> for the completino anyway?
 
-> But I'd still expect them to be PageAnon: even more so, really -
-> once they're swapping, they're even more ordinary anonymous pages.
+That would be far preferable, yes.
 
-Frankly the fact they swap on swap device, doesn't make them more
-anonymous the same way /dev/shm files are filebacked and they swap to
-swap device too.
+- Dave
 
-> Leave them out of such accounting completely, or give them their
-> own stats: yes, that can be done, but not without changes elsewhere;
-> which I think we'd prefer not to press until KSM is a more accepted
-> part of regular mm operation.
-
-Ok.
-
-> That's certainly the ugliest part of accepting PageKsm pages as
-> PageAnon, and I wept when I realized we needed that check (well,
-> I exaggerate a little ;).
-
-Yes, that very change is exactly what actually made me to rewind back
-to the issue of why Ksm pages provides benefit to be Anon pages too.
-
-> It didn't cross my mind to move it into reuse_swap_page(): yes,
-> we could do that.  I don't see how it's safer; and to be honest,
-
-I thought it was safer, because reuse_swap_page is the thing that tell
-us if we can takeover an anon page and avoid COW. So anybody calling
-reuse_swap_page should first check if it's a Ksm page outside of it,
-and not takeover in that case. Ksm pages must always be readonly to
-avoid screwing stable tree lookups (stable tree is never regenerated
-and we need it to stay stable). The swapin path right now doesn't
-require the check because we know Ksm pages won't come in from swap
-but I thought it was safer to have reuse_swap_page to be aware instead
-of leaving the job to the caller. Not that it makes much difference.
-
-> its main appeal to me is that it would hide this wart away more,
-> where fewer eyes would notice it.  Which may not be the best
-> argument for making the move!  Technically, I think it would
-> just increase the overhead of COWing a KSM page (getting that
-> page lock, maybe having to drop ptlock etc.), but that may not
-> matter much: please persuade me it's safer in reuse_swap_page()
-> and I'll move it there.
-
-Yes it increases overhead a bit, but Ksm pages are never locked so the
-difference in overhead is negligeable. It's up to you...
-
-Ack 6/10 too..
