@@ -1,230 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZGVKyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbZGVLDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753283AbZGVKyF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZGVKyF
+	id S1751544AbZGVLDg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 07:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbZGVLDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:54:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52105 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbZGVKyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:54:03 -0400
-Subject: GFS2: Add LED support to GFS2
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Cc: rpurdie@rpsys.net
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Wed, 22 Jul 2009 11:56:38 +0100
-Message-Id: <1248260198.3456.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Jul 2009 07:03:35 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:46751 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbZGVLDd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 07:03:33 -0400
+Date: Wed, 22 Jul 2009 12:03:28 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: alsa-devel@alsa-project.org, Jonathan McDowell <noodles@earth.li>,
+       Tony Lindgren <tony@atomide.com>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       e3-hacking@earth.li, Arun KS <arunks@mistralsolutions.com>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [RFC] [PATCH 3/3] ASoC: add support for Amstrad
+	E3 (Delta) machine
+Message-ID: <20090722110328.GB7622@sirena.org.uk>
+References: <200907220523.01107.jkrzyszt@tis.icnet.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907220523.01107.jkrzyszt@tis.icnet.pl>
+X-Cookie: One size fits all.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From e1fac35b9c2af276473db50fae581ef56626240c Mon Sep 17 00:00:00 2001
-From: Steven Whitehouse <swhiteho@redhat.com>
-Date: Wed, 22 Jul 2009 11:40:16 +0100
-Subject: [PATCH] GFS2: Add LED support to GFS2
+On Wed, Jul 22, 2009 at 05:22:59AM +0200, Janusz Krzysztofik wrote:
 
-This adds a standalone module which uses the GFS2 tracepoints
-as a hook to provide LED trigger events. Events can be sent
-when glocks change state, when glock demote requests are
-received (both local and remote events are included) and also
-when the log is flushed.
+> Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+> ---
+> CPU DAI parameters best matching the codec DAI has been selected out
+> empirically for best user experience.
 
-The log flush event lights the LED during the duration of the
-log flush event. The other two triggers light the LED for 1/10th
-second after the event has occurred.
+Again, all the documentation you've got here could quite happily go in
+the commit message and there's a bunch of checkpatch issues.
 
-I've tested this by using GFS2 in "nolock" mode on my laptop
-by getting it to flash the thinkpad battery LED on the various
-events and verified that it occurs when expected.
+> +#include <sound/soc-dapm.h>
+> +#include <sound/jack.h>
 
-One possible future development is to introduce an event for
-filesystem errors, but that is not included in the current
-patch.
+ASoC will pull that one in for you, not that it really matters.
 
-There is currently no way to filter events per-filesystem so
-events will be reported for all GFS2 filesystems which are
-mounted.
+> +	/* Setup pins after corresponding bits if changed */
+> +	if ((bool)snd_soc_dapm_get_pin_status(codec, "Speaker") !=
+> +			(bool)(function & (1 << AMS_DELTA_SPEAKER))) {
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Don't like these casts...  why are they needed?
 
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 7c8e712..5dc598e 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -297,4 +297,7 @@ config LEDS_TRIGGER_DEFAULT_ON
- comment "iptables trigger is under Netfilter config (LED target)"
- 	depends on LEDS_TRIGGERS
- 
-+comment "The gfs2 events trigger is under the File systems config"
-+	depends on LEDS_TRIGGERS
-+
- endif # NEW_LEDS
-diff --git a/fs/gfs2/Kconfig b/fs/gfs2/Kconfig
-index 5971359..d6ad86f 100644
---- a/fs/gfs2/Kconfig
-+++ b/fs/gfs2/Kconfig
-@@ -36,3 +36,14 @@ config GFS2_FS_LOCKING_DLM
- 	  Most users of GFS2 will require this. It provides the locking
- 	  interface between GFS2 and the DLM, which is required to use GFS2
- 	  in a cluster environment.
-+
-+config GFS2_FS_LEDS
-+	tristate "GFS2 Event LED Driver"
-+	depends on GFS2_FS && LEDS_TRIGGERS
-+	help
-+	 A driver which allows various interesting GFS2 filesystem events
-+	 to trigger LEDs via the LED subsystem. Currently available events
-+	 are glock activity, glock demote requests and log flushing. The
-+	 LEDs are configured the /sys/class/leds/*/trigger files.
-+
-+
-diff --git a/fs/gfs2/Makefile b/fs/gfs2/Makefile
-index 3da2f1f..b3f1117 100644
---- a/fs/gfs2/Makefile
-+++ b/fs/gfs2/Makefile
-@@ -7,4 +7,4 @@ gfs2-y := acl.o bmap.o dir.o eaops.o eattr.o glock.o \
- 	recovery.o rgrp.o super.o sys.o trans.o util.o
- 
- gfs2-$(CONFIG_GFS2_FS_LOCKING_DLM) += lock_dlm.o
--
-+obj-$(CONFIG_GFS2_FS_LEDS) += ledtrig-gfs2.o
-diff --git a/fs/gfs2/ledtrig-gfs2.c b/fs/gfs2/ledtrig-gfs2.c
-new file mode 100644
-index 0000000..e18aa89
---- /dev/null
-+++ b/fs/gfs2/ledtrig-gfs2.c
-@@ -0,0 +1,124 @@
-+/*
-+ * GFS2 Event LED driver
-+ *
-+ * Copyright (C) 2009 Red Hat Inc.
-+ * This copyrighted material is made available to anyone wishing to use,
-+ * modify, copy, or redistribute it subject to the terms and conditions
-+ * of the GNU General Public License version 2.
-+ *
-+ * Author: Steven Whitehouse <swhiteho@redhat.com>
-+ *
-+ * Allows triggering of LEDs by various interesting GFS2 filesystem
-+ * events. Currently supported events are:
-+ *  1) Glock state changes
-+ *  2) Demote requests (local & remote)
-+ *  3) Log flushing
-+ *
-+ * References:
-+ * ledtrig-ide-disk.c by Richard Purdie <rpurdie@openedhand.com>
-+ * blktrace.c (as an example of registering/using tracepoints)
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/jiffies.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/timer.h>
-+#include <linux/leds.h>
-+#include <linux/gfs2_ondisk.h>
-+#include "incore.h"
-+#include "glock.h"
-+#include "trace_gfs2.h"
-+
-+struct gfs2_led_timer {
-+	struct led_trigger *trigger;
-+	struct timer_list timer;
-+	int events;
-+};
-+
-+DEFINE_LED_TRIGGER(led_log_flush);
-+
-+static struct gfs2_led_timer gfs2_led_state_change;
-+static struct gfs2_led_timer gfs2_led_demote_rq;
-+
-+static void ledtrig_mod_timer(struct gfs2_led_timer *t)
-+{
-+	t->events++;
-+	if (!timer_pending(&t->timer))
-+		mod_timer(&t->timer, jiffies + msecs_to_jiffies(10));
-+}
-+
-+static void ledtrig_state_change(const struct gfs2_glock *gl,
-+				 unsigned int new_state)
-+{
-+	ledtrig_mod_timer(&gfs2_led_state_change);
-+}
-+
-+static void ledtrig_demote_rq(const struct gfs2_glock *gl)
-+{
-+	ledtrig_mod_timer(&gfs2_led_demote_rq);
-+}
-+
-+static void ledtrig_log_flush(const struct gfs2_sbd *sdp, int start)
-+{
-+	if (start)
-+		led_trigger_event(led_log_flush, LED_FULL);
-+	else
-+		led_trigger_event(led_log_flush, LED_OFF);
-+}
-+
-+static void ledtrig_timerfunc(unsigned long data)
-+{
-+	struct gfs2_led_timer *t = (struct gfs2_led_timer *)data;
-+	if (t->events) {
-+		t->events = 0;
-+		led_trigger_event(t->trigger, LED_FULL);
-+		mod_timer(&t->timer, jiffies + msecs_to_jiffies(10));
-+		return;
-+	}
-+	led_trigger_event(t->trigger, LED_OFF);
-+}
-+
-+static int __init ledtrig_gfs2_init(void)
-+{
-+	int ret;
-+
-+	init_timer(&gfs2_led_state_change.timer);
-+	init_timer(&gfs2_led_demote_rq.timer);
-+	setup_timer(&gfs2_led_state_change.timer, ledtrig_timerfunc,
-+		    (unsigned long)&gfs2_led_state_change);
-+	setup_timer(&gfs2_led_demote_rq.timer, ledtrig_timerfunc,
-+		    (unsigned long)&gfs2_led_demote_rq);
-+
-+	ret = register_trace_gfs2_glock_state_change(ledtrig_state_change);
-+	WARN_ON(ret);
-+	ret = register_trace_gfs2_demote_rq(ledtrig_demote_rq);
-+	WARN_ON(ret);
-+	ret = register_trace_gfs2_log_flush(ledtrig_log_flush);
-+	WARN_ON(ret);
-+
-+	led_trigger_register_simple("gfs2-glock-state", &gfs2_led_state_change.trigger);
-+	led_trigger_register_simple("gfs2-glock-demote", &gfs2_led_demote_rq.trigger);
-+	led_trigger_register_simple("gfs2-log-flush", &led_log_flush);
-+	return 0;
-+}
-+
-+static void __exit ledtrig_gfs2_exit(void)
-+{
-+	del_timer_sync(&gfs2_led_state_change.timer);
-+	del_timer_sync(&gfs2_led_demote_rq.timer);
-+
-+	unregister_trace_gfs2_glock_state_change(ledtrig_state_change);
-+	unregister_trace_gfs2_demote_rq(ledtrig_demote_rq);
-+	led_trigger_unregister_simple(gfs2_led_state_change.trigger);
-+	led_trigger_unregister_simple(gfs2_led_demote_rq.trigger);
-+	led_trigger_unregister_simple(led_log_flush);
-+}
-+
-+module_init(ledtrig_gfs2_init);
-+module_exit(ledtrig_gfs2_exit);
-+
-+MODULE_AUTHOR("Steven Whitehouse <swhiteho@redhat.com>");
-+MODULE_DESCRIPTION("GFS2 Event LED Driver");
-+MODULE_LICENSE("GPL");
-+
--- 
-1.6.0.6
+> +static const struct snd_kcontrol_new ams_delta_audio_controls[] = {
+> +	SOC_ENUM_EXT("Audio Function", ams_delta_audio_enum[0],
+> +			ams_delta_get_audio_mode, ams_delta_set_audio_mode),
+> +};
 
+Is it possible to control all the functions of the audio mode
+independantly or are only certain combinations possible?
 
+> +static struct snd_soc_jack_gpio ams_delta_hook_switch_gpios[];
+> +static struct snd_soc_jack_pin ams_delta_hook_switch_pins[] = {
+> +	{
+> +		.pin = "Mouthpiece",
+> +		.mask = SND_JACK_MICROPHONE,
+> +	},
+> +	{
+> +		.pin = "Earphone",
+> +		.mask = SND_JACK_HEADPHONE,
+> +	},
+> +	{
+> +		.pin = "Speaker",
+> +		.mask = SND_JACK_HEADPHONE,
+> +		.invert = 1,
+> +	},
+> +	{
+> +		.pin = "Microphone",
+> +		.mask = SND_JACK_MICROPHONE,
+> +		.invert = 1,
+> +	},
+> +};
 
+I guess microphone and speaker are for speakerphone mode while
+mouthpiece and earpiece are a headset?  Might be nice to come up with
+names that make the paring a bit clearer, or possibly just put a comment
+in there.
+
+> +/* To actually apply any modem controlled configuration changes to the codec,
+> + * we must connect codec DAI pins to the modem for a moment.  Be carefull
+> + * not to interfere with digital mute function that shares the same hardware. */
+> +static struct timer_list cx81801_timer;
+> +static bool cx81801_cmd_pending = 0;
+> +static bool ams_delta_muted;
+> +
+> +static void cx81801_timeout(unsigned long data)
+> +{
+> +	/* REVISIT - locking? */
+
+Yeah, locking is probably a good idea :)
+
+> +		/* Set DAPM pins after hook switch present state */
+> +#if 0
+> +		/* Fails for switch state matching initial gpio->state = 0 */
+> +		snd_soc_jack_report(&ams_delta_ams_delta_hook_switch, 
+> +			gpio_get_value(ams_delta_hook_switch_gpios[0].gpio) ?
+> +					0 : SND_JACK_HEADSET, SND_JACK_HEADSET);
+
+Hrm.  We should just fix that so that adding a pin forces a sync rather
+than just doing a report.  The GPIO jack wrapper ought to just do
+everything you need without any code in the machine driver.
+
+> +
+> +	/* REVISIT - Don't know how to do that */
+> +	/*
+> +	 * Remove controls that we expose when over the modem control available:
+> +	 * - virtual audio mode switch,
+> +	 * - hook switch to DAPM pins links
+> +	 */
+
+You can't do that.  Rather than adding and removing the controls
+dynamically I'd suggest hiding the controls from applications while
+they're inactive - this will also avoid any renumbering which might
+confuse them.  However, that API isn't in mainline yet.
+
+Takashi, there is a patch adding a snd_ctl_activate_id() call in your
+unstable tree which hasn't made it into mainline and should help here -
+would there be any problem merging it?  I've got another use case for it
+in ASoC that I'm hoping to find time to look at soon.
+
+> +	/* Add board specific DAPM controls */
+> +	if (!snd_soc_dapm_new_controls(codec, ams_delta_dapm_widgets,
+> +				ARRAY_SIZE(ams_delta_dapm_widgets))) {
+> +		if (!snd_soc_dapm_add_routes(codec, ams_delta_audio_map,
+> +					ARRAY_SIZE(ams_delta_audio_map))) {
+
+The error handling here is a bit odd...
+
+> +	/* Add hook switch */
+> +	if (!snd_soc_jack_new(&ams_delta_audio_card, "hook_switch",
+> +				SND_JACK_HEADSET, &ams_delta_hook_switch)) {
+> +		if (!snd_soc_jack_add_gpios(&ams_delta_hook_switch,
+> +					ARRAY_SIZE(ams_delta_hook_switch_gpios),
+> +					ams_delta_hook_switch_gpios)) {
+> +#ifdef CONFIG_GPIO_SYSFS
+> +			/* Expose hook switch over sysfs if configured */
+> +			gpio_export(ams_delta_hook_switch_gpios[0].gpio, false);
+> +#endif
+
+The gpio_export() should be in the ASoC GPIO code rather than here, I'd
+expect - care to cook up a patch?
