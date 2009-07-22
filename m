@@ -1,68 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbZGVReI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZGVRhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753971AbZGVReI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 13:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZGVReH
+	id S1753906AbZGVRhi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZGVRhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 13:34:07 -0400
-Received: from n23b.bullet.mail.mud.yahoo.com ([68.142.206.142]:28933 "HELO
-	n23b.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752356AbZGVReH (ORCPT
+	Wed, 22 Jul 2009 13:37:37 -0400
+Received: from n17.bullet.mail.mud.yahoo.com ([68.142.206.144]:43214 "HELO
+	n17.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752192AbZGVRhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 13:34:07 -0400
-X-Yahoo-Newman-Id: 368503.90148.bm@omp420.mail.mud.yahoo.com
+	Wed, 22 Jul 2009 13:37:37 -0400
+X-Yahoo-Newman-Id: 511395.45421.bm@omp415.mail.mud.yahoo.com
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qfCuchMMMVk4Qb7JEuTQ93E+974n+JQriaPuupo0/EnGQzpbNqH7hjk+mR7oguuFGCb+p7T+bbT9CSqtmw4D1zzE5LgviC001NW+6ctg2+dH6CAo/BCeDKBUC6O2nAUBEK0U4F9x7FcH0JdYKBJTWB3mbql+Re/qRoJ9sttTfE4=  ;
-X-YMail-OSG: cTwMHmIVM1lfcyQom9EVOknr1iY5vmg1NOo4fxl7nGe.1XP77xVeTjKweANjXoLjOYXttKmFQCt64KQrMANuimWCEVTeBiVg9hMt6QGNdR.CWIxPEAboYvJrbQsrmR_m6as8S9ARxlwvHfIe0rHwCUa2rn9XcY.fyy8OUnDfow9vLQGWUqZxizrY1TKM29CSPEwO.eLKBatO9NqCGErZJwYr4gDc7c4ZXHE2Ytp1HnSr3uQtkvNn7IoPX_Pccft.XMAMNLvn7.ZS.kEd
+  b=aXYmftpsdPiVlBXW9MNcthVtBRTaQkZp0HqjXcTo7XBVQgBDvlNi32sDX/5yFeycnc8d/ZALBgly66PJfHwUrcjmVhIXDalQBImcpatFbwkzRR2d8an33RSytYQJlQ1XmXCWVjqSEGkhNHkreTOx4WnypXtiVC4Y+wFt9ncNClE=  ;
+X-YMail-OSG: pyFy3KMVM1mR.ZDmwZhAXT7sUh0KcteqZ7_wsHJDmLSpYTMKf1GITaoOrgC096yWMiD8NdRUSbyI2NQSCOZjsjX_8unI3EVvQ1zw9qXfK39HB8qCRJXnduJQ5ZT_OSb0mHq0Z0Hh.eVwR2.q11LadmeXN41SwbaCkR7W525t_hacvkMturE_a_z.VST02X0jSKNtNt4aJDNPz74WZER9WVADYxz24RcxzPeWLa2ssksm1kLgtovJbx8CRsjPiYCXyOCztA50MNViCl5eBpEFlRvXyreKHFtC8yA_kcmkixHTSNk-
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
-Date: Wed, 22 Jul 2009 10:34:04 -0700
+To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] register at91_ether using platform_driver_probe
+Date: Wed, 22 Jul 2009 10:37:36 -0700
 User-Agent: KMail/1.9.10
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       "Arve Hj?nnev?g" <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20090714100634.GA4054@elf.ucw.cz> <200907220939.33399.david-b@pacbell.net> <alpine.LFD.2.00.0907221841340.2813@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0907221841340.2813@localhost.localdomain>
+Cc: linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       netdev@vger.kernel.org,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <linux@maxim.org.za>,
+       Roel Kluin <12o3l@tiscali.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>
+References: <200907111527.46441.david-b@pacbell.net> <1248207099-14583-1-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1248207099-14583-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200907221034.05410.david-b@pacbell.net>
+Message-Id: <200907221037.36541.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 July 2009, Thomas Gleixner wrote:
+On Tuesday 21 July 2009, Uwe Kleine-König wrote:
+> at91ether_probe lives in .init.text, so using platform_driver_register
+> to register it is wrong because binding a device after the init memory
+> is discarded (e.g. via sysfs) results in an oops.
 > 
-> > Can that be cleaned up a bit, so that the handle_level_oneshot_irq()
-> > and unmask_oneshot_irq() stuff kicks in automatically when needed,
-> > instead of requiring board-specific (or driver-specific) code to get
-> > that stuff right?
-> 
-> The only way I can see is to set a special trigger flag like
-> IRQF_TRIGGER_RISING & Co. 
-> 
-> i.e. IRQF_TRIGGER_LEVEL | IRQF_TRIGGER_ONESHOT
-> 
-> That might work.
+> As requested by David Brownell platform_driver_probe is used instead of
+> moving the probe function to .devinit.text as proposed initially.
+> This saves some memory, but devices registered after the driver is
+> probed are not bound (probably there are none) and binding via sysfs
+> isn't possible.
 
-That direction, yes ... request_threaded_irq() can't infer ONESHOT
-from IRQF_TRIGGER_{LOW,HIGH} since the hardirq handler might be
-able to get Real Work (tm) done in some non-I2C/non-SPI cases.
+Right, these devices do not hotplug.
 
-Another alternative syntax:  magic cookies for the hardirq handler.
-Example, pass NULL to get a default punt-to-irqthread behavior, with
-ONESHOT set up if it sees IRQF_TRIGGER_HIGH or IRQF_TRIGGER_LOW.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+
+.... and thanks for doing it this way.  :)
+
+> Cc: netdev@vger.kernel.org
+> Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+> Cc: Marc Pignat <marc.pignat@hevs.ch>
+> Cc: Andrew Victor <linux@maxim.org.za>
+> Cc: Roel Kluin <12o3l@tiscali.nl>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  drivers/net/arm/at91_ether.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/arm/at91_ether.c b/drivers/net/arm/at91_ether.c
+> index 2e7419a..5041d10 100644
+> --- a/drivers/net/arm/at91_ether.c
+> +++ b/drivers/net/arm/at91_ether.c
+> @@ -1228,7 +1228,6 @@ static int at91ether_resume(struct platform_device *pdev)
+>  #endif
+>  
+>  static struct platform_driver at91ether_driver = {
+> -	.probe		= at91ether_probe,
+>  	.remove		= __devexit_p(at91ether_remove),
+>  	.suspend	= at91ether_suspend,
+>  	.resume		= at91ether_resume,
+> @@ -1240,7 +1239,7 @@ static struct platform_driver at91ether_driver = {
+>  
+>  static int __init at91ether_init(void)
+>  {
+> -	return platform_driver_register(&at91ether_driver);
+> +	return platform_driver_probe(&at91ether_driver, at91ether_probe);
+>  }
+>  
+>  static void __exit at91ether_exit(void)
+> -- 
+> tg: (4b0a840..) t/platsection/at91ether_driver (depends on: linus/master)
+> 
+> 
+
+
 
