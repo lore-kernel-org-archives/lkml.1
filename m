@@ -1,248 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbZGVKM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZGVKLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbZGVKM7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754618AbZGVKM6
+	id S1754799AbZGVKLZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZGVKK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:12:58 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:45266 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753629AbZGVKMx (ORCPT
+	Wed, 22 Jul 2009 06:10:58 -0400
+Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
+	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754597AbZGVKKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:12:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=r3Wjo1rJ4G8yakneaYn6AKbcm5QJlQaJyW38+ILt5gDQxwDfY9hW2XVAiObiVx3CJN
-         CszkSkSTBOUudZIVzttBDQzjFhyrFmaX+nwlwZUs18PdUhmd7527bwXs/afiW6+VV/Qt
-         sYhjEc4a77tfhVwAJJtdAX/+5RP+hGQkZfeHw=
-From: Ahmed Ammar <b33fc0d3@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.arm.linux.org.uk,
-       Ahmed Ammar <aammar@edge-techno.com>
-Subject: [PATCH 1/1] [ARM] ep93xx clockevent support
-Date: Wed, 22 Jul 2009 13:12:45 +0300
-Message-Id: <1248257565-11333-1-git-send-email-b33fc0d3@gentoo.org>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1248253786-18993-2-git-send-email-b33fc0d3@gentoo.org>
-References: <1248253786-18993-2-git-send-email-b33fc0d3@gentoo.org>
+	Wed, 22 Jul 2009 06:10:53 -0400
+From: Oren Laadan <orenl@librato.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: [RFC v17][PATCH 15/60] pids 5/7: Add target_pids parameter to copy_process()
+Date: Wed, 22 Jul 2009 05:59:37 -0400
+Message-Id: <1248256822-23416-16-git-send-email-orenl@librato.com>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
+References: <1248256822-23416-1-git-send-email-orenl@librato.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ahmed Ammar <aammar@edge-techno.com>
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Based on previous work by Thomas Gleixner.
+The new parameter will be used in a follow-on patch when clone_with_pids()
+is implemented.
 
-Signed-off-by: Ahmed Ammar <aammar@edge-techno.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- arch/arm/Kconfig                                |    2 +
- arch/arm/mach-ep93xx/core.c                     |  130 ++++++++++++++++++-----
- arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h |    6 +
- 3 files changed, 112 insertions(+), 26 deletions(-)
+ kernel/fork.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 74713a5..f33fd06 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -273,6 +273,8 @@ config ARCH_EP93XX
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
- 	select ARCH_REQUIRE_GPIOLIB
-+	select GENERIC_TIME
-+	select GENERIC_CLOCKEVENTS
- 	help
- 	  This enables support for the Cirrus EP93xx series of CPUs.
- 
-diff --git a/arch/arm/mach-ep93xx/core.c b/arch/arm/mach-ep93xx/core.c
-index 7983a3b..cbd9187 100644
---- a/arch/arm/mach-ep93xx/core.c
-+++ b/arch/arm/mach-ep93xx/core.c
-@@ -33,6 +33,9 @@
- #include <linux/termios.h>
- #include <linux/amba/bus.h>
- #include <linux/amba/serial.h>
-+#include <linux/clocksource.h>
-+#include <linux/clockchips.h>
-+
- #include <linux/io.h>
- #include <linux/i2c.h>
- #include <linux/i2c-gpio.h>
-@@ -100,55 +103,130 @@ void __init ep93xx_map_io(void)
-  * to use this timer for something else.  We also use timer 4 for keeping
-  * track of lost jiffies.
-  */
--static unsigned int last_jiffy_time;
--
--#define TIMER4_TICKS_PER_JIFFY		((CLOCK_TICK_RATE + (HZ/2)) / HZ)
- 
- static irqreturn_t ep93xx_timer_interrupt(int irq, void *dev_id)
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 8c9ca1c..6f90cf4 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -948,12 +948,12 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 					unsigned long stack_size,
+ 					int __user *child_tidptr,
+ 					struct pid *pid,
++					pid_t *target_pids,
+ 					int trace)
  {
--	__raw_writel(1, EP93XX_TIMER1_CLEAR);
--	while ((signed long)
--		(__raw_readl(EP93XX_TIMER4_VALUE_LOW) - last_jiffy_time)
--						>= TIMER4_TICKS_PER_JIFFY) {
--		last_jiffy_time += TIMER4_TICKS_PER_JIFFY;
--		timer_tick();
--	}
--
-+	struct clock_event_device *evt = dev_id;
-+ 	__raw_writel(EP93XX_TC_CLEAR, EP93XX_TIMER1_CLEAR);
-+	evt->event_handler(evt);
- 	return IRQ_HANDLED;
- }
+ 	int retval;
+ 	struct task_struct *p;
+ 	int cgroup_callbacks_done = 0;
+-	pid_t *target_pids = NULL;
  
-+ 
-+static int ep93xx_set_next_event(unsigned long evt,
-+				  struct clock_event_device *unused)
-+{
-+	u32 tmode = __raw_readl(EP93XX_TIMER1_CONTROL);
-+
-+	/* stop timer */
-+	__raw_writel(tmode & ~EP93XX_TC123_ENABLE, EP93XX_TIMER1_CONTROL);
-+	/* program timer */
-+	__raw_writel(evt, EP93XX_TIMER1_LOAD);
-+	/* start timer */
-+	__raw_writel(tmode | EP93XX_TC123_ENABLE, EP93XX_TIMER1_CONTROL);
-+
-+	return 0;
-+}
-+
-+static void ep93xx_set_mode(enum clock_event_mode mode,
-+			    struct clock_event_device *evt)
-+{
-+	u32 tmode = EP93XX_TC123_SEL_508KHZ;
-+	/* Disable timer */
-+	__raw_writel(tmode, EP93XX_TIMER1_CONTROL);
-+
-+	switch(mode) {
-+	case CLOCK_EVT_MODE_PERIODIC:
-+		/* Set timer period  */
-+		__raw_writel((508469 / HZ) - 1, EP93XX_TIMER1_LOAD);
-+		tmode |= EP93XX_TC123_PERIODIC;
-+
-+	case CLOCK_EVT_MODE_ONESHOT:
-+		tmode |= EP93XX_TC123_ENABLE;
-+		__raw_writel(tmode, EP93XX_TIMER1_CONTROL);
-+		break;
-+
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+	case CLOCK_EVT_MODE_UNUSED:
-+	case CLOCK_EVT_MODE_RESUME:
-+		return;
-+	}
-+}
-+
-+static struct clock_event_device clockevent_ep93xx = {
-+	.name		= "ep93xx-timer1",
-+	.features	= CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_PERIODIC,
-+	.shift		= 32,
-+	.set_mode	= ep93xx_set_mode,
-+	.set_next_event	= ep93xx_set_next_event,
-+};
-+
- static struct irqaction ep93xx_timer_irq = {
- 	.name		= "ep93xx timer",
- 	.flags		= IRQF_DISABLED | IRQF_TIMER | IRQF_IRQPOLL,
- 	.handler	= ep93xx_timer_interrupt,
-+	.dev_id 	= &clockevent_ep93xx,
- };
+ 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
+ 		return ERR_PTR(-EINVAL);
+@@ -1328,7 +1328,7 @@ struct task_struct * __cpuinit fork_idle(int cpu)
+ 	struct pt_regs regs;
  
--static void __init ep93xx_timer_init(void)
-+static void __init ep93xx_clockevent_init(void)
- {
--	/* Enable periodic HZ timer.  */
--	__raw_writel(0x48, EP93XX_TIMER1_CONTROL);
--	__raw_writel((508469 / HZ) - 1, EP93XX_TIMER1_LOAD);
--	__raw_writel(0xc8, EP93XX_TIMER1_CONTROL);
-+	setup_irq(IRQ_EP93XX_TIMER1, &ep93xx_timer_irq);
-+	clockevent_ep93xx.mult = div_sc(508469, NSEC_PER_SEC,
-+					clockevent_ep93xx.shift);
-+	clockevent_ep93xx.max_delta_ns =
-+		clockevent_delta2ns(0xfffffffe, &clockevent_ep93xx);
-+	clockevent_ep93xx.min_delta_ns =
-+		clockevent_delta2ns(0xf, &clockevent_ep93xx);
-+	clockevent_ep93xx.cpumask = cpumask_of(0);
-+	clockevents_register_device(&clockevent_ep93xx);
-+}
+ 	task = copy_process(CLONE_VM, 0, idle_regs(&regs), 0, NULL,
+-			    &init_struct_pid, 0);
++			    &init_struct_pid, NULL, 0);
+ 	if (!IS_ERR(task))
+ 		init_idle(task, cpu);
  
--	/* Enable lost jiffy timer.  */
--	__raw_writel(0x100, EP93XX_TIMER4_VALUE_HIGH);
-+/*
-+ * timer4 is a 40 Bit timer, separated in a 32bit and a 8 bit
-+ * register, EP93XX_TIMER4_VALUE_LOW stores 32 bit word. The
-+ * controlregister is in EP93XX_TIMER4_VALUE_HIGH
-+ */
+@@ -1351,6 +1351,7 @@ long do_fork(unsigned long clone_flags,
+ 	struct task_struct *p;
+ 	int trace = 0;
+ 	long nr;
++	pid_t *target_pids = NULL;
  
--	setup_irq(IRQ_EP93XX_TIMER1, &ep93xx_timer_irq);
-+cycle_t ep93xx_get_cycles(void)
-+{
-+	return __raw_readl(EP93XX_TIMER4_VALUE_LOW);
- }
+ 	/*
+ 	 * Do some preliminary argument and permissions checking before we
+@@ -1391,7 +1392,7 @@ long do_fork(unsigned long clone_flags,
+ 		trace = tracehook_prepare_clone(clone_flags);
  
--static unsigned long ep93xx_gettimeoffset(void)
-+static struct clocksource clocksource_ep93xx = {
-+	.name		= "ep93xx_timer4",
-+	.rating		= 200,
-+	.read		= ep93xx_get_cycles,
-+	.mask		= 0xFFFFFFFF,
-+	.shift		= 20,
-+	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-+};
-+
-+/*
-+ * Returns current time from boot in nsecs. It's OK for this to wrap
-+ * around for now, as it's just a relative time stamp.
-+ */
-+unsigned long long sched_clock(void)
- {
--	int offset;
-+	return cyc2ns(&clocksource_ep93xx, ep93xx_get_cycles());
-+}
- 
--	offset = __raw_readl(EP93XX_TIMER4_VALUE_LOW) - last_jiffy_time;
-+static void __init ep93xx_clocksource_init(void)
-+{
-+	/* Reset time-stamp counter */
-+	__raw_writel(0x100, EP93XX_TIMER4_VALUE_HIGH);
-+	clocksource_ep93xx.mult =
-+		clocksource_hz2mult(983040, clocksource_ep93xx.shift);
-+	clocksource_register(&clocksource_ep93xx);
-+}
- 
--	/* Calculate (1000000 / 983040) * offset.  */
--	return offset + (53 * offset / 3072);
-+static void __init ep93xx_timer_init(void)
-+{
-+	ep93xx_clocksource_init();
-+	ep93xx_clockevent_init();
- }
- 
- struct sys_timer ep93xx_timer = {
--	.init		= ep93xx_timer_init,
--	.offset		= ep93xx_gettimeoffset,
-+ 	.init			= ep93xx_timer_init,
- };
- 
- 
-diff --git a/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h b/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
-index 36c23fb..473cdec 100644
---- a/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
-+++ b/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
-@@ -101,6 +101,12 @@
- #define EP93XX_TIMER3_CONTROL		EP93XX_TIMER_REG(0x88)
- #define EP93XX_TIMER3_CLEAR		EP93XX_TIMER_REG(0x8c)
- 
-+#define EP93XX_TC_CLEAR			0x00000001
-+#define EP93XX_TC123_ENABLE		0x00000080
-+#define EP93XX_TC123_PERIODIC		0x00000040
-+#define EP93XX_TC123_SEL_508KHZ		0x00000008
-+#define EP93XX_TC4_ENABLE		0x00000100
-+
- #define EP93XX_I2S_BASE			(EP93XX_APB_VIRT_BASE + 0x00020000)
- 
- #define EP93XX_SECURITY_BASE		(EP93XX_APB_VIRT_BASE + 0x00030000)
+ 	p = copy_process(clone_flags, stack_start, regs, stack_size,
+-			 child_tidptr, NULL, trace);
++			 child_tidptr, NULL, target_pids, trace);
+ 	/*
+ 	 * Do this prior waking up the new thread - the thread pointer
+ 	 * might get invalid after that point, if the thread exits quickly.
 -- 
-1.6.3.3
+1.6.0.4
 
