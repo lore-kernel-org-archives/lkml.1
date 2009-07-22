@@ -1,32 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbZGVIlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZGVImn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbZGVIlg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 04:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756430AbZGVIlf
+	id S1756505AbZGVImn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 04:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756358AbZGVImn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 04:41:35 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58021 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756406AbZGVIld (ORCPT
+	Wed, 22 Jul 2009 04:42:43 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46270 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751611AbZGVImm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 04:41:33 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 22 Jul 2009 17:39:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@redhat.com
-Subject: Re: [PATCH 3/9] blkio-cgroup-v9: The new page_cgroup framework
-Message-Id: <20090722173941.7608387e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090722.172843.193696974.ryov@valinux.co.jp>
-References: <20090721155636.GB25127@balbir.in.ibm.com>
-	<20090722102058.c1cf731b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090722110739.e00c0f18.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090722.172843.193696974.ryov@valinux.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 22 Jul 2009 04:42:42 -0400
+Date: Wed, 22 Jul 2009 09:43:09 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Pekka Paalanen <pq@iki.fi>,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       lethal@linux-sh.org, linux-sh@vger.kernel.org
+Subject: Re: Do cpu-endian MMIO accessors exist?
+Message-ID: <20090722094309.10b25290@lxorguk.ukuu.org.uk>
+In-Reply-To: <200907221035.50025.arnd@arndb.de>
+References: <20090721234243.1928d9e2@daedalus.pq.iki.fi>
+	<200907220005.27583.arnd@arndb.de>
+	<4A66BEAD.3080404@gmail.com>
+	<200907221035.50025.arnd@arndb.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -34,180 +31,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009 17:28:43 +0900 (JST)
-Ryo Tsuruta <ryov@valinux.co.jp> wrote:
-> > But, following is more straightforward. (and what you do is not different
-> > from this.)
-> > ==
-> > struct page {
-> > 	.....
-> > #ifdef CONFIG_BLOCKIO_CGROUP
-> > 	void *blockio_cgroup;
-> > #endif
-> > }
-> > ==
+On Wed, 22 Jul 2009 10:35:49 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
+
+> On Wednesday 22 July 2009, Jiri Slaby wrote:
+> > No, I should have written this explicitly. I meant read* have a barrier,
+> > whereas ioread* do not. Similarly for writes. Is this expected?
+> > 
+> > For example:
+> > #define __raw_readl(a) (__chk_io_ptr(a), *(volatile u32 __force *)(a))
+> > #define readl(a)       ({ u32 r_ = __raw_readl(a); mb(); r_; })
+> > #define ioread32(a)    __raw_readl(a)
 > 
-> This increases the size of struct page. Could I get a consensus on
-> this approach?
+> No, this looks like a bug. I would have expected
 > 
-Just God knows ;)
+> #define ioread32(a)    readl(a)
+> 
+> in this case. Also, ioread32 should actually multiplex between
+> readl() and inl() based on the address token, as the code in
+> lib/iomap.c does. It's probably easy enough to enable
+> CONFIG_GENERIC_IOMAP on sh, and remove the ioread*/iowrite*
+> macros from arch/sh/include/asm/io.h.
 
-To be honest, what I expected in these days for people of blockio cgroup is like
-following for getting room for themselves.
-
-I'm now thinking to do this by myself and offer a room for you because
-terrible bugs have been gone now and I have time.
-
-Balbir, if you have no concerns, I'll clean up and send this to mmotm.
-(maybe softlimit accesses pc->page and I have to update this.)
-
-Note: This is _not_ tested at all.
-
-Thanks,
--Kame
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-page cgroup has pointer to memmap it stands for.
-But, page_cgroup->page is not accessed in fast path and not necessary
-and not modified. Then, it's not to be maintained as pointer.
-
-This patch removes "page" from page_cgroup and add
-page_cgroup_to_page() function. This uses some amount of FLAGS bit
-as struct page does.
-As side effect, nid, zid can be obtaind from page_cgroup itself.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- include/linux/page_cgroup.h |   19 ++++++++++++++++---
- mm/page_cgroup.c            |   42 ++++++++++++++++++++++++++++++++----------
- 2 files changed, 48 insertions(+), 13 deletions(-)
-
-Index: mmotm-2.6.31-Jul16/include/linux/page_cgroup.h
-===================================================================
---- mmotm-2.6.31-Jul16.orig/include/linux/page_cgroup.h
-+++ mmotm-2.6.31-Jul16/include/linux/page_cgroup.h
-@@ -13,7 +13,7 @@
- struct page_cgroup {
- 	unsigned long flags;
- 	struct mem_cgroup *mem_cgroup;
--	struct page *page;
-+	/* block io tracking will use extra unsigned long bytes */
- 	struct list_head lru;		/* per cgroup LRU list */
- };
- 
-@@ -32,7 +32,12 @@ static inline void __init page_cgroup_in
- #endif
- 
- struct page_cgroup *lookup_page_cgroup(struct page *page);
-+struct page *page_cgroup_to_page(struct page_cgroup *page);
- 
-+/*
-+ * TOP MOST (NODE_SHIFT+ZONE_SHIFT or SECTION_SHIFT bits of "flags" are used
-+ * for detecting pfn as struct page does.
-+ */
- enum {
- 	/* flags for mem_cgroup */
- 	PCG_LOCK,  /* page cgroup is locked */
-@@ -71,14 +76,22 @@ CLEARPCGFLAG(AcctLRU, ACCT_LRU)
- TESTPCGFLAG(AcctLRU, ACCT_LRU)
- TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
- 
-+#ifdef NODE_NOT_IN_PAGE_FLAGS
- static inline int page_cgroup_nid(struct page_cgroup *pc)
- {
--	return page_to_nid(pc->page);
-+	struct page *page= page_cgroup_to_page(pc);
-+	return page_to_nid(page);
- }
-+#else
-+static inline int page_cgroup_nid(struct page_cgroup *pc)
-+{
-+	return (pc->flags >> NODES_PGSHIFT) & NODES_MASK;
-+}
-+#endif
- 
- static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
- {
--	return page_zonenum(pc->page);
-+	return (pc->flags >> ZONEID_PGSHIFT) & ZONEID_MASK;
- }
- 
- static inline void lock_page_cgroup(struct page_cgroup *pc)
-Index: mmotm-2.6.31-Jul16/mm/page_cgroup.c
-===================================================================
---- mmotm-2.6.31-Jul16.orig/mm/page_cgroup.c
-+++ mmotm-2.6.31-Jul16/mm/page_cgroup.c
-@@ -13,9 +13,12 @@
- static void __meminit
- __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
- {
--	pc->flags = 0;
-+	unsigned long flags;
-+
- 	pc->mem_cgroup = NULL;
--	pc->page = pfn_to_page(pfn);
-+	/* Copy NODE/ZONE/SECTION information from struct page */
-+	flags = pfn_to_page(pfn)->flags;
-+	pc->flags = flags & ~((1 << __NR_PAGEFLAGS) - 1);
- 	INIT_LIST_HEAD(&pc->lru);
- }
- static unsigned long total_usage;
-@@ -42,6 +45,18 @@ struct page_cgroup *lookup_page_cgroup(s
- 	return base + offset;
- }
- 
-+struct page *page_cgroup_to_page(struct page_cgroup *pc)
-+{
-+	int nid = (page->flags >> SECTIONS_PGSHIFT) & SECTIONS_MASK;
-+	unsigned long pfn, offset;
-+
-+	offset = pc - NODE_DATA(nid)->node_page_cgroup
-+	pfn = NODE_DATA(nid)->node_start_pfn + offset;
-+
-+	return pfn_to_page(pfn);
-+}
-+
-+
- static int __init alloc_node_page_cgroup(int nid)
- {
- 	struct page_cgroup *base, *pc;
-@@ -104,6 +119,18 @@ struct page_cgroup *lookup_page_cgroup(s
- 	return section->page_cgroup + pfn;
- }
- 
-+struct page *page_cgroup_to_page(struct page_cgroup *pc)
-+{
-+	unsigned long pfn, sectionid;
-+	struct mem_section *section;
-+
-+	sectionid = (pc->flags >> SECTIONS_PGSHIFT) & SECTIONS_MASK;
-+	section = __nr_to_section(sectionid);
-+
-+	pfn = pc - section->page_cgroup;
-+	return pfn_to_page(pfn);
-+}
-+
- /* __alloc_bootmem...() is protected by !slab_available() */
- static int __init_refok init_section_page_cgroup(unsigned long pfn)
- {
-@@ -128,15 +155,10 @@ static int __init_refok init_section_pag
- 		}
- 	} else {
- 		/*
-- 		 * We don't have to allocate page_cgroup again, but
--		 * address of memmap may be changed. So, we have to initialize
--		 * again.
-+ 		 * We don't have to allocate page_cgroup again, and we don't
-+		 * take care of address of memmap.
- 		 */
--		base = section->page_cgroup + pfn;
--		table_size = 0;
--		/* check address of memmap is changed or not. */
--		if (base->page == pfn_to_page(pfn))
--			return 0;
-+		return 0;
- 	}
- 
- 	if (!base) {
-
+If your platform is purely MMIO based then ioread32 and readl can become
+the same thing, which is much more efficient. Even if you have port based
+devices that are mapped as MMIO surely its more efficient to do the
+relevant address tweaking in the iomap not in the read ?
