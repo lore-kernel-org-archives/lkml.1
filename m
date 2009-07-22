@@ -1,75 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbZGVIoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbZGVIsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbZGVIoz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 04:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbZGVIoz
+	id S1756354AbZGVIsB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 04:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756571AbZGVIsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 04:44:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:32846 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756120AbZGVIox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 04:44:53 -0400
-Date: Wed, 22 Jul 2009 10:44:24 +0200
-From: John Kacur <jkacur@redhat.com>
-To: linux-rt-users@vger.kernel.org, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, williams@redhat.com
-Subject: i915_driver_irq_handler - BUG: NULL pointer dereference
-Message-ID: <20090722084424.GA3507@tycho.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 22 Jul 2009 04:48:00 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40570 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756305AbZGVIr7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 04:47:59 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 22 Jul 2009 17:46:09 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@redhat.com
+Subject: Re: [PATCH 3/9] blkio-cgroup-v9: The new page_cgroup framework
+Message-Id: <20090722174609.537a8ac2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090722083722.GI24157@balbir.in.ibm.com>
+References: <20090721155636.GB25127@balbir.in.ibm.com>
+	<20090722102058.c1cf731b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090722110739.e00c0f18.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090722.172843.193696974.ryov@valinux.co.jp>
+	<20090722083722.GI24157@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Thomas et al
+On Wed, 22 Jul 2009 14:07:22 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-I'm still seeing this sometimes, in this case during shutdown with the experimental rt kernel
-based off of 2.6.31-rc3
+> * Ryo Tsuruta <ryov@valinux.co.jp> [2009-07-22 17:28:43]:
+> 
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > > > Index: linux-2.6.31-rc3/include/linux/page_cgroup.h
+> > > > > > ===================================================================
+> > > > > > --- linux-2.6.31-rc3.orig/include/linux/page_cgroup.h
+> > > > > > +++ linux-2.6.31-rc3/include/linux/page_cgroup.h
+> > > > > > @@ -1,7 +1,7 @@
+> > > > > >  #ifndef __LINUX_PAGE_CGROUP_H
+> > > > > >  #define __LINUX_PAGE_CGROUP_H
+> > > > > > 
+> > > > > > -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > > > > +#ifdef CONFIG_CGROUP_PAGE
+> > > > > >  #include <linux/bit_spinlock.h>
+> > > > > >  /*
+> > > > > >   * Page Cgroup can be considered as an extended mem_map.
+> > > > > > @@ -12,9 +12,11 @@
+> > > > > >   */
+> > > > > >  struct page_cgroup {
+> > > > > >  	unsigned long flags;
+> > > > > > -	struct mem_cgroup *mem_cgroup;
+> > > > > >  	struct page *page;
+> > > > > > +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > > > > +	struct mem_cgroup *mem_cgroup;
+> > > > > >  	struct list_head lru;		/* per cgroup LRU list */
+> > > > > > +#endif
+> > > > > >  };
+> > > > > 
+> > > > > If CONFIG_CGROUP_MEM_RES_CTLR is not enabled and CGROUP_PAGE is
+> > > > > (assuming that the depends on below is refactored), what would this
+> > > > > change buy us? What is page_cgroup helping us track, the mem_cgroup is
+> > > > > factored out, so we are interested in the flags only?
+> > > > > 
+> > > > plz remove CONFIG. This jsut makes code complicated.
+> > > > or plz use your own infrastructure, not depends on page_cgroup.
+> > 
+> > Thanks for reviewing the patch.
+> > Do you mean that remove only CONFIG_CGROUP_MEM_RES_CTR in struct
+> > page_cgroup? Is it OK to define CONFIG_CGROUP_PAGE?
+> > 
+> > > BTW, you can't modify page_cgroup->flags bit without cmpxchg.
+> > > Then, patch [5/9] is completely broken, now because new bit is used
+> > > with atomic bit ops but without lock_page_cgroup(). (see mmotm)
+> > > 
+> > > Why struct page's flags bit can includes zone id etc...is just because
+> > > it's initalized before using. Anyway, this is "flags" bit. If you want
+> > > to modify multiple bit at once, plz use cmpxchg.
+> > > Then, I buy patch [8/9] and just skip this patch.
+> > 
+> > O.K. I'll use cmpxchg.
+> > 
+> > > But, following is more straightforward. (and what you do is not different
+> > > from this.)
+> > > ==
+> > > struct page {
+> > > 	.....
+> > > #ifdef CONFIG_BLOCKIO_CGROUP
+> > > 	void *blockio_cgroup;
+> > > #endif
+> > > }
+> > > ==
+> > 
+> > This increases the size of struct page. Could I get a consensus on
+> > this approach?
+> >
+> 
+> 
+> This defeats the entire purpose of page_cgroup, IMHO. You need to add
+> the cgroup pointer to page_cgroup or use css id's there.
+>  
+My point is
+ - increasing size of struct page is verrry difficult.
+ - increasing size of struct page_cgroup should be.
+Any diffrence ?
 
-The system is going down for reboot NOW!
-Disabling monthly Smolt update: [  OK  ]
-Shutting down Avahi daemon: [drm:gm45_get_vblank_counter] *ERROR* trying to get1
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000084
-IP: [<ffffffffa05df8ef>] i915_driver_irq_handler+0x848/0x8e9 [i915]
-PGD 12b9b1067 PUD 12c0ce067 PMD 0 
-Oops: 0000 [#1] PREEMPT SMP 
-last sysfs file: /sys/class/power_supply/BAT0/energy_full
-CPU 1 
-Modules linked in: fuse i915 drm i2c_algo_bit ipt_MASQUERADE iptable_nat nf_nat]
-Pid: 2644, comm: irq/31-i915@pci Not tainted 2.6.31-rc3-rt1 #1 2241B48
-RIP: 0010:[<ffffffffa05df8ef>]  [<ffffffffa05df8ef>] i915_driver_irq_handler+0x]
-RSP: 0018:ffff88012adf9d40  EFLAGS: 00010282
-RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000004b01
-RDX: ffffc90006502898 RSI: 0000000000000003 RDI: 0000000050b909e3
-RBP: ffff88012adf9db0 R08: 0000000050b909e3 R09: 0000000050b909e3
-R10: 00000000bdbd66d2 R11: 0000000000018600 R12: 0000000000000000
-R13: ffff880138d169c0 R14: ffff88012ac30000 R15: ffff880139008000
-FS:  0000000000000000(0000) GS:ffff88002bfda000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000084 CR3: 0000000139198000 CR4: 00000000000026e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process irq/31-i915@pci (pid: 2644, threadinfo ffff88012adf8000, task ffff88012)
-Stack:
- ffff88012ac301f0 ffff88012ac302d8 ffff88012ac30110 000000402b864628
-<0> 0044000000040206 ffffffff00000004 0000000050b909e3 0000000050b909e3
-<0> 0000000050b909e3 ffff88012b8645c0 ffff88012b864628 ffff880138d169c0
-Call Trace:
- [<ffffffff810b5528>] irq_thread+0xeb/0x22b
- [<ffffffff810b543d>] ? irq_thread+0x0/0x22b
- [<ffffffff810b543d>] ? irq_thread+0x0/0x22b
- [<ffffffff81070b13>] kthread+0xa6/0xae
- [<ffffffff8104ccf0>] ? schedule_tail+0x57/0xd5
- [<ffffffff810851e4>] ? trace_hardirqs_on_caller+0x126/0x169
- [<ffffffff8100d15a>] child_rip+0xa/0x20
- [<ffffffff8100cac0>] ? restore_args+0x0/0x30
- [<ffffffff81070a6d>] ? kthread+0x0/0xae
- [<ffffffff8100d150>] ? child_rip+0x0/0x20
-Code: 00 00 8b 18 49 8b 87 00 0a 00 00 48 8b 80 18 03 00 00 48 85 c0 74 20 48 8 
-RIP  [<ffffffffa05df8ef>] i915_driver_irq_handler+0x848/0x8e9 [i915]
- RSP <ffff88012adf9d40>
-CR2: 0000000000000084
----[ end trace d237249163e43cb0 ]---
+Then, plz don't go this way without enough amounts of effort.
+plz see my patch to reduce size struct page_cgroup, it's _a_ effort.
+
+Thanks,
+-Kame
+
+
 
