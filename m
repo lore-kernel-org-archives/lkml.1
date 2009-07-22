@@ -1,285 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbZGVGHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbZGVGIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756595AbZGVGHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 02:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbZGVGHn
+	id S1756609AbZGVGIq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 02:08:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756562AbZGVGIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 02:07:43 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34008 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756333AbZGVGHm (ORCPT
+	Wed, 22 Jul 2009 02:08:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47997
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756340AbZGVGIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 02:07:42 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 22 Jul 2009 15:05:52 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/4] kcore: add kclist type
-Message-Id: <20090722150552.079798cb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090722060047.GC6281@cr0.nay.redhat.com>
-References: <20090722140613.0a751811.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090722140813.e8f04793.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090722060047.GC6281@cr0.nay.redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 22 Jul 2009 02:08:45 -0400
+Date: Tue, 21 Jul 2009 23:08:51 -0700 (PDT)
+Message-Id: <20090721.230851.178052748.davem@davemloft.net>
+To: petkovbb@googlemail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] ide-tape: fix handling of postponed rqs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090722055657.GA15465@liondog.tnic>
+References: <1247910917-5237-4-git-send-email-petkovbb@gmail.com>
+	<20090721.204704.123531717.davem@davemloft.net>
+	<20090722055657.GA15465@liondog.tnic>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6M69CJ7014979
 
-On Wed, 22 Jul 2009 14:00:47 +0800
-Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
+From: Borislav Petkov <petkovbb@googlemail.com>
+Date: Wed, 22 Jul 2009 07:56:57 +0200
 
-> On Wed, Jul 22, 2009 at 02:08:13PM +0900, KAMEZAWA Hiroyuki wrote:
-> >From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >
-> >Now, kclist_add() only eats start address and size as its arguments.
-> >Considering to make kclist dynamically reconfigulable, it's necessary
-> >to know which kclists are for System RAM and whic is not.
-> >
-> >This patch add kclist types as
-> >  KCORE_RAM
-> >  KCORE_VMALLOC
-> >  KCORE_TEXT
-> >  KCORE_OTHER
-> >
-> >region for KCORE_RAM will be dynamically updated at memory hotplug.
+> On Tue, Jul 21, 2009 at 08:47:04PM -0700, David Miller wrote:
 > 
+>> drivers/ide/ide-tape.c: In function â€˜ide_tape_stall_queueâ€™:
+>> drivers/ide/ide-tape.c:379: warning: unused variable â€˜rqâ€™
 > 
-> The idea is good, but will it be used in any of your latter patches?
-> I don't see it, can you point it out?
-> 
-> Thanks.
-> 
-In patch [3/4], at rebuilding physical memory information, All KCORE_RAM are
-removed and new KCORE_RAM based on new kernel's information are added.
+> Sorry about that, rq is used only in the debug statement and I forgot to
+> do a non-debug build, my bad.
 
-I wonder KCORE_RAM shouldn't have "executable" bit but it's just a nitpick ;)
-
-Thanks,
--Kame
-
-
-
-> Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
-> 
-> 
-> >
-> >Chnagelog v1->v2
-> > - no changes.
-> >
-> >Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >---
-> > arch/ia64/mm/init.c       |    7 ++++---
-> > arch/mips/mm/init.c       |    7 ++++---
-> > arch/powerpc/mm/init_32.c |    4 ++--
-> > arch/powerpc/mm/init_64.c |    5 +++--
-> > arch/sh/mm/init.c         |    4 ++--
-> > arch/x86/mm/init_32.c     |    4 ++--
-> > arch/x86/mm/init_64.c     |   11 ++++++-----
-> > fs/proc/kcore.c           |    3 ++-
-> > include/linux/proc_fs.h   |   13 +++++++++++--
-> > 9 files changed, 36 insertions(+), 22 deletions(-)
-> >
-> >Index: mmotm-2.6.31-Jul16/include/linux/proc_fs.h
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/include/linux/proc_fs.h
-> >+++ mmotm-2.6.31-Jul16/include/linux/proc_fs.h
-> >@@ -78,10 +78,18 @@ struct proc_dir_entry {
-> > 	struct list_head pde_openers;	/* who did ->open, but not ->release */
-> > };
-> > 
-> >+enum kcore_type {
-> >+	KCORE_TEXT,
-> >+	KCORE_VMALLOC,
-> >+	KCORE_RAM,
-> >+	KCORE_OTHER,
-> >+};
-> >+
-> > struct kcore_list {
-> > 	struct list_head list;
-> > 	unsigned long addr;
-> > 	size_t size;
-> >+	int type;
-> > };
-> > 
-> > struct vmcore {
-> >@@ -233,11 +241,12 @@ static inline void dup_mm_exe_file(struc
-> > #endif /* CONFIG_PROC_FS */
-> > 
-> > #if !defined(CONFIG_PROC_KCORE)
-> >-static inline void kclist_add(struct kcore_list *new, void *addr, size_t size)
-> >+static inline void
-> >+kclist_add(struct kcore_list *new, void *addr, size_t size, int type)
-> > {
-> > }
-> > #else
-> >-extern void kclist_add(struct kcore_list *, void *, size_t);
-> >+extern void kclist_add(struct kcore_list *, void *, size_t, int type);
-> > #endif
-> > 
-> > union proc_op {
-> >Index: mmotm-2.6.31-Jul16/arch/ia64/mm/init.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/ia64/mm/init.c
-> >+++ mmotm-2.6.31-Jul16/arch/ia64/mm/init.c
-> >@@ -639,9 +639,10 @@ mem_init (void)
-> > 
-> > 	high_memory = __va(max_low_pfn * PAGE_SIZE);
-> > 
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn * PAGE_SIZE);
-> >-	kclist_add(&kcore_vmem, (void *)VMALLOC_START, VMALLOC_END-VMALLOC_START);
-> >-	kclist_add(&kcore_kernel, _stext, _end - _stext);
-> >+	kclist_add(&kcore_mem, __va(0), max_low_pfn * PAGE_SIZE, KCORE_RAM);
-> >+	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
-> >+			VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> >+	kclist_add(&kcore_kernel, _stext, _end - _stext, KCORE_TEXT);
-> > 
-> > 	for_each_online_pgdat(pgdat)
-> > 		if (pgdat->bdata->node_bootmem_map)
-> >Index: mmotm-2.6.31-Jul16/arch/mips/mm/init.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/mips/mm/init.c
-> >+++ mmotm-2.6.31-Jul16/arch/mips/mm/init.c
-> >@@ -409,11 +409,12 @@ void __init mem_init(void)
-> > 	if ((unsigned long) &_text > (unsigned long) CKSEG0)
-> > 		/* The -4 is a hack so that user tools don't have to handle
-> > 		   the overflow.  */
-> >-		kclist_add(&kcore_kseg0, (void *) CKSEG0, 0x80000000 - 4);
-> >+		kclist_add(&kcore_kseg0, (void *) CKSEG0,
-> >+				0x80000000 - 4, KCORE_TEXT);
-> > #endif
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
-> >+	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> > 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
-> >-		   VMALLOC_END-VMALLOC_START);
-> >+		   VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 
-> > 	printk(KERN_INFO "Memory: %luk/%luk available (%ldk kernel code, "
-> > 	       "%ldk reserved, %ldk data, %ldk init, %ldk highmem)\n",
-> >Index: mmotm-2.6.31-Jul16/arch/powerpc/mm/init_32.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/powerpc/mm/init_32.c
-> >+++ mmotm-2.6.31-Jul16/arch/powerpc/mm/init_32.c
-> >@@ -270,11 +270,11 @@ static int __init setup_kcore(void)
-> > 						size);
-> > 		}
-> > 
-> >-		kclist_add(kcore_mem, __va(base), size);
-> >+		kclist_add(kcore_mem, __va(base), size, KCORE_RAM);
-> > 	}
-> > 
-> > 	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
-> >-		VMALLOC_END-VMALLOC_START);
-> >+		VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 
-> > 	return 0;
-> > }
-> >Index: mmotm-2.6.31-Jul16/arch/powerpc/mm/init_64.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/powerpc/mm/init_64.c
-> >+++ mmotm-2.6.31-Jul16/arch/powerpc/mm/init_64.c
-> >@@ -128,10 +128,11 @@ static int __init setup_kcore(void)
-> > 		if (!kcore_mem)
-> > 			panic("%s: kmalloc failed\n", __func__);
-> > 
-> >-		kclist_add(kcore_mem, __va(base), size);
-> >+		kclist_add(kcore_mem, __va(base), size, KCORE_RAM);
-> > 	}
-> > 
-> >-	kclist_add(&kcore_vmem, (void *)VMALLOC_START, VMALLOC_END-VMALLOC_START);
-> >+	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
-> >+		VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 
-> > 	return 0;
-> > }
-> >Index: mmotm-2.6.31-Jul16/arch/sh/mm/init.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/sh/mm/init.c
-> >+++ mmotm-2.6.31-Jul16/arch/sh/mm/init.c
-> >@@ -218,9 +218,9 @@ void __init mem_init(void)
-> > 	datasize =  (unsigned long) &_edata - (unsigned long) &_etext;
-> > 	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
-> > 
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
-> >+	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> > 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
-> >-		   VMALLOC_END - VMALLOC_START);
-> >+		   VMALLOC_END - VMALLOC_START, KCORE_VMALLOC);
-> > 
-> > 	printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, "
-> > 	       "%dk data, %dk init)\n",
-> >Index: mmotm-2.6.31-Jul16/arch/x86/mm/init_32.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/x86/mm/init_32.c
-> >+++ mmotm-2.6.31-Jul16/arch/x86/mm/init_32.c
-> >@@ -886,9 +886,9 @@ void __init mem_init(void)
-> > 	datasize =  (unsigned long) &_edata - (unsigned long) &_etext;
-> > 	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
-> > 
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
-> >+	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> > 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
-> >-		   VMALLOC_END-VMALLOC_START);
-> >+		   VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 
-> > 	printk(KERN_INFO "Memory: %luk/%luk available (%dk kernel code, "
-> > 			"%dk reserved, %dk data, %dk init, %ldk highmem)\n",
-> >Index: mmotm-2.6.31-Jul16/arch/x86/mm/init_64.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/x86/mm/init_64.c
-> >+++ mmotm-2.6.31-Jul16/arch/x86/mm/init_64.c
-> >@@ -677,13 +677,14 @@ void __init mem_init(void)
-> > 	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
-> > 
-> > 	/* Register memory areas for /proc/kcore */
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
-> >+	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> > 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
-> >-		   VMALLOC_END-VMALLOC_START);
-> >-	kclist_add(&kcore_kernel, &_stext, _end - _stext);
-> >-	kclist_add(&kcore_modules, (void *)MODULES_VADDR, MODULES_LEN);
-> >+		   VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> >+	kclist_add(&kcore_kernel, &_stext, _end - _stext, KCORE_TEXT);
-> >+	kclist_add(&kcore_modules, (void *)MODULES_VADDR, MODULES_LEN,
-> >+			KCORE_OTHER);
-> > 	kclist_add(&kcore_vsyscall, (void *)VSYSCALL_START,
-> >-				 VSYSCALL_END - VSYSCALL_START);
-> >+			 VSYSCALL_END - VSYSCALL_START, KCORE_OTHER);
-> > 
-> > 	printk(KERN_INFO "Memory: %luk/%luk available (%ldk kernel code, "
-> > 			 "%ldk absent, %ldk reserved, %ldk data, %ldk init)\n",
-> >Index: mmotm-2.6.31-Jul16/fs/proc/kcore.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/fs/proc/kcore.c
-> >+++ mmotm-2.6.31-Jul16/fs/proc/kcore.c
-> >@@ -62,10 +62,11 @@ static LIST_HEAD(kclist_head);
-> > static DEFINE_RWLOCK(kclist_lock);
-> > 
-> > void
-> >-kclist_add(struct kcore_list *new, void *addr, size_t size)
-> >+kclist_add(struct kcore_list *new, void *addr, size_t size, int type)
-> > {
-> > 	new->addr = (unsigned long)addr;
-> > 	new->size = size;
-> >+	new->type = type;
-> > 
-> > 	write_lock(&kclist_lock);
-> > 	list_add_tail(&new->list, &kclist_head);
-> >
-> >--
-> >To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >the body of a message to majordomo@vger.kernel.org
-> >More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >Please read the FAQ at  http://www.tux.org/lkml/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+Applied, thanks.
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
